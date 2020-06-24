@@ -53,6 +53,7 @@ PETSC_INTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(
 PETSC_INTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Mat,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);

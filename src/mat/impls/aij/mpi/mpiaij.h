@@ -1,5 +1,3 @@
-
-
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
 
@@ -12,8 +10,6 @@ typedef struct { /* used by MatCreateMPIAIJSumSeqAIJ for reusing the merged matr
   PetscMPIInt nsend,nrecv;
   PetscInt    *bi,*bj;    /* i and j array of the local portion of mpi C (matrix product) - rename to ci, cj! */
   PetscInt    *owners_co,*coi,*coj;    /* i and j array of (p->B)^T*A*P - used in the communication */
-  PetscErrorCode (*destroy)(Mat);
-  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_Merge_SeqsToMPI;
 
 typedef struct { /* used by MatPtAPXXX_MPIAIJ_MPIAIJ() and MatMatMultXXX_MPIAIJ_MPIAIJ() */
@@ -27,16 +23,12 @@ typedef struct { /* used by MatPtAPXXX_MPIAIJ_MPIAIJ() and MatMatMultXXX_MPIAIJ_
   Mat                     A_loc;                   /* used by MatTransposeMatMult(), contains api and apj */
   ISLocalToGlobalMapping  ltog;                    /* mapping from local column indices to global column indices for A_loc */
   Mat                     Pt;                      /* used by MatTransposeMatMult(), Pt = P^T */
-  PetscBool               freestruct;              /* flag for MatFreeIntermediateDataStructures() */
   Mat                     Rd,Ro,AP_loc,C_loc,C_oth;
   PetscInt                algType;                 /* implementation algorithm */
   PetscSF                 sf;                      /* use it to communicate remote part of C */
   PetscInt                *c_othi,*c_rmti;
 
   Mat_Merge_SeqsToMPI *merge;
-  PetscErrorCode (*destroy)(Mat);
-  PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
-  PetscErrorCode (*view)(Mat,PetscViewer);
 } Mat_APMPI;
 
 typedef struct {
@@ -74,11 +66,7 @@ typedef struct {
   /* Used by MatDistribute_MPIAIJ() to allow reuse of previous matrix allocation  and nonzero pattern */
   PetscInt *ld;                    /* number of entries per row left of diagona block */
 
-  Mat_APMPI         *ap;              /* used by MatMatMult() and MatPtAP() */
-  Mat_RARt          *rart;            /* used by MatRARt() */
-  Mat_MatMatMatMult *matmatmatmult;   /* used by MatMatMatMult() */
-
-  /* Used by MPICUSP and MPICUSPARSE classes */
+  /* Used by MPICUSPARSE classes */
   void * spptr;
 
 } Mat_MPIAIJ;
@@ -135,22 +123,19 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat,M
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat,Mat,Mat);
-PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_AP(Mat);
-PETSC_INTERN PetscErrorCode MatFreeIntermediateDataStructures_MPIAIJ_BC(Mat);
 
 #if defined(PETSC_HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat);
 #endif
 
-PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ_PtAP(void*);
+PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(void*);
 
 PETSC_INTERN PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 PETSC_INTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 PETSC_INTERN PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]);
 PETSC_INTERN PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat,const PetscInt[],const PetscInt[]);
-PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
-PETSC_INTERN PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void*);
 PETSC_INTERN PetscErrorCode MatSetOption_MPIAIJ(Mat,MatOption,PetscBool);
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat,Mat,PetscReal,Mat);
@@ -159,7 +144,6 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat);
-PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 
 PETSC_INTERN PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems*,Mat);

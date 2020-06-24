@@ -42,8 +42,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBoundedInt("-degree", "Number of degrees at each level of refinement", "ex3.cxx", options->degree, &options->degree, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-ghost", "Number of ghost layers in the mesh", "ex3.cxx", options->nghost, &options->nghost, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex3.cxx", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-input", "The input mesh file", "ex3.cxx", options->input_file, options->input_file, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex3.cxx", options->output_file, options->output_file, PETSC_MAX_PATH_LEN, &options->write_output);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-input", "The input mesh file", "ex3.cxx", options->input_file, options->input_file, sizeof(options->input_file), NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex3.cxx", options->output_file, options->output_file, sizeof(options->output_file), &options->write_output);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);

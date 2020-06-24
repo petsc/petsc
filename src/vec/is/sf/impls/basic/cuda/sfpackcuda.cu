@@ -192,16 +192,37 @@ template<typename Type> struct Maxloc {
   With bs>1 and a unit > 64 bits, the current element-wise atomic approach can not guarantee the whole
   insertion is atomic. Hope no user codes rely on that.
 */
-
-#if defined(PETSC_USE_REAL_DOUBLE)
 __device__ static double atomicExch(double* address,double val) {return __longlong_as_double(atomicExch((unsigned long long int*)address,__double_as_longlong(val)));}
-#endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
 __device__ static PetscInt atomicExch(PetscInt* address,PetscInt val) {return (PetscInt)(atomicExch((unsigned long long int*)address,(unsigned long long int)val));}
 #endif
 
 template<typename Type> struct AtomicInsert {__device__ Type operator() (Type& x,Type y) const {return atomicExch(&x,y);}};
+
+#if defined(PETSC_HAVE_COMPLEX)
+#if defined(PETSC_USE_REAL_DOUBLE)
+/* CUDA does not support 128-bit atomics. Users should not insert different 128-bit PetscComplex values to the same location */
+template<> struct AtomicInsert<PetscComplex> {
+  __device__ PetscComplex operator() (PetscComplex& x,PetscComplex y) const {
+    PetscComplex         old, *z = &old;
+    double               *xp = (double*)&x,*yp = (double*)&y;
+    AtomicInsert<double> op;
+    z[0] = op(xp[0],yp[0]);
+    z[1] = op(xp[1],yp[1]);
+    return old; /* The returned value may not be atomic. It can be mix of two ops. Caller should discard it. */
+  }
+};
+#elif defined(PETSC_USE_REAL_SINGLE)
+template<> struct AtomicInsert<PetscComplex> {
+  __device__ PetscComplex operator() (PetscComplex& x,PetscComplex y) const {
+    double               *xp = (double*)&x,*yp = (double*)&y;
+    AtomicInsert<double> op;
+    return op(xp[0],yp[0]);
+  }
+};
+#endif
+#endif
 
 /*
   Atomic add operations
@@ -270,6 +291,7 @@ template<> struct AtomicAdd<float> {
   }
 };
 
+#if defined(PETSC_HAVE_COMPLEX)
 template<> struct AtomicAdd<PetscComplex> {
  __device__ PetscComplex operator() (PetscComplex& x,PetscComplex y) const {
   PetscComplex         old, *z = &old;
@@ -280,6 +302,7 @@ template<> struct AtomicAdd<PetscComplex> {
   return old; /* The returned value may not be atomic. It can be mix of two ops. Caller should discard it. */
  }
 };
+#endif
 
 /*
   Atomic Mult operations:
@@ -784,10 +807,13 @@ static void PackInit_ComplexType(PetscSFLink link)
   link->d_ScatterAndMult   = ScatterAndOp<Type,Mult<Type>  ,BS,EQ>;
   link->d_FetchAndAddLocal = FetchAndOpLocal<Type,Add<Type>,BS,EQ>;
 
+  link->da_UnpackAndInsert = UnpackAndOp<Type,AtomicInsert<Type>,BS,EQ>;
   link->da_UnpackAndAdd    = UnpackAndOp<Type,AtomicAdd<Type>,BS,EQ>;
   link->da_UnpackAndMult   = NULL; /* Not implemented yet */
   link->da_FetchAndAdd     = NULL; /* Return value of atomicAdd on complex is not atomic */
-  link->da_ScatterAndAdd   = ScatterAndOp<Type,AtomicAdd<Type>,BS,EQ>;
+
+  link->da_ScatterAndInsert = ScatterAndOp<Type,AtomicInsert<Type>,BS,EQ>;
+  link->da_ScatterAndAdd    = ScatterAndOp<Type,AtomicAdd<Type>,BS,EQ>;
 }
 #endif
 

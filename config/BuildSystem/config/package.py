@@ -83,7 +83,6 @@ class Package(config.base.Configure):
     self.requires32bitintblas   = 1  # 1 means that the package will not work with 64 bit integer BLAS/LAPACK
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
-    self.requirec99flag         = 0  # package must be compiled with C99 flags
     self.usesopenmp             = 'no'  # yes, no, unknow package is built to use OpenMP
 
     # Outside coupling
@@ -143,7 +142,7 @@ class Package(config.base.Configure):
       self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
-    if not self.isMPI and not self.package == 'make':
+    if not self.isMPI and not self.package in ['make','cuda','thrust']:
       # force MPI to be the first package configured since all other packages
       # may depend on its compilers defined here
       self.mpi         = framework.require('config.packages.MPI',self)
@@ -169,6 +168,7 @@ class Package(config.base.Configure):
     name:         The module name (usually the filename)
     package:      The lowercase name
     PACKAGE:      The uppercase name
+    pkgname:      The name of pkg-config (.pc) file
     downloadname:     Name for download option (usually name)
     downloaddirnames: names for downloaded directory (first part of string) (usually downloadname)
     '''
@@ -179,8 +179,8 @@ class Package(config.base.Configure):
       self.name           = 'DEBUGGING'
     self.PACKAGE          = self.name.upper()
     self.package          = self.name.lower()
+    self.pkgname          = self.package
     self.downloadname     = self.name
-    self.pkgname          = self.name
     self.downloaddirnames = [self.downloadname];
     return
 
@@ -325,7 +325,7 @@ class Package(config.base.Configure):
   def getInstallDir(self):
     '''Returns --prefix (or the value computed from --package-prefix-hash) if provided otherwise $PETSC_DIR/$PETSC_ARCH'''
     '''Special case for packages such as sowing that are have self.publicInstall == 0 it always locates them in $PETSC_DIR/$PETSC_ARCH'''
-    '''Special special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
+    '''Special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
     if not self.packageDir: self.packageDir = self.downLoad()
@@ -1086,6 +1086,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
   def configure(self):
     if hasattr(self, 'download_solaris') and config.setCompilers.Configure.isSolaris(self.log):
       self.download = self.download_solaris
+    if hasattr(self, 'download_darwin') and config.setCompilers.Configure.isDarwin(self.log):
+      self.download = self.download_darwin
     if self.download and self.argDB['download-'+self.downloadname.lower()] and (not self.framework.batchBodies or self.installwithbatch):
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
@@ -1390,7 +1392,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
                 downLoad():
                   ...
                   download and unpack the source to self.packageDir,
-          Install():
+            Install():
             /* This must be implemented by a package subclass */
 
     Install:
@@ -1569,20 +1571,8 @@ class GNUPackage(Package):
 
     return args
 
-  def Install(self):
-    ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
-    args = self.formGNUConfigureArgs()  # allow package to change self.packageDir
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
-       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
-    args = ' '.join(args)
-    conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = open(conffile, 'w')
-    fd.write(args)
-    fd.close()
-    ### Use conffile to check whether a reconfigure/rebuild is required
-    if not self.installNeeded(conffile):
-      return self.installDir
-
+  def preInstall(self):
+    '''Run pre-install steps like generate configure script'''
     if not os.path.isfile(os.path.join(self.packageDir,'configure')):
       if not self.programs.autoreconf:
         raise RuntimeError('autoreconf required for ' + self.PACKAGE+' not found (or broken)! Use your package manager to install autoconf')
@@ -1599,6 +1589,23 @@ class GNUPackage(Package):
           raise RuntimeError('Error in autoreconf: ' + str(e))
       except RuntimeError as e:
         raise RuntimeError('Error running libtoolize or autoreconf on ' + self.PACKAGE+': '+str(e))
+
+
+  def Install(self):
+    ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
+    args = self.formGNUConfigureArgs()  # allow package to change self.packageDir
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
+    args = ' '.join(args)
+    conffile = os.path.join(self.packageDir,self.package+'.petscconf')
+    fd = open(conffile, 'w')
+    fd.write(args)
+    fd.close()
+    ### Use conffile to check whether a reconfigure/rebuild is required
+    if not self.installNeeded(conffile):
+      return self.installDir
+
+    self.preInstall()
 
     if self.builddir == 'yes':
       folder = os.path.join(self.packageDir, 'petsc-build')
@@ -1668,10 +1675,6 @@ class CMakePackage(Package):
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
-    if self.requirec99flag:
-      if (self.compilers.c99flag == None):
-        raise RuntimeError('Requires c99 compiler. Configure cold not determine compatible compiler flag. Perhaps you can specify via CFLAG')
-      cflags += ' '+self.compilers.c99flag
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     args.append('-DCMAKE_C_FLAGS_DEBUG:STRING="'+cflags+'"')
     args.append('-DCMAKE_C_FLAGS_RELEASE:STRING="'+cflags+'"')

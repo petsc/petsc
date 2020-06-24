@@ -13,9 +13,9 @@ class Configure(config.package.Package):
     self.mkl                 = 0  # indicates BLAS/LAPACK library used is Intel MKL
     self.separateBlas        = 1
     self.required            = 1
-    self.lookforbydefault    = 1
     self.alternativedownload = 'f2cblaslapack'
     self.missingRoutines     = []
+    self.has_cheaders        = 0
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -82,9 +82,9 @@ class Configure(config.package.Package):
   def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routineIn = 'dot'):
     '''This checks the given library for the routine, dot by default'''
     oldLibs = self.compilers.LIBS
-    routine   = self.mangleBlas(routineIn)
+    routine = self.mangleBlas(routineIn)
     self.libraries.saveLog()
-    found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
+    found = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
     self.logWrite(self.libraries.restoreLog())
     self.compilers.LIBS = oldLibs
     return found
@@ -93,8 +93,8 @@ class Configure(config.package.Package):
     oldLibs = self.compilers.LIBS
     if not isinstance(routinesIn, list): routinesIn = [routinesIn]
     routines = list(routinesIn)
-    found   = 1
-    routines   = map(self.mangleBlas, routines)
+    found = 1
+    routines = map(self.mangleBlas, routines)
 
     for routine in routines:
       self.libraries.saveLog()
@@ -179,6 +179,7 @@ class Configure(config.package.Package):
       yield ('BLIS', self.blis.lib, 'liblapack.a', self.blis.known64, self.blis.usesopenmp)
     if self.openblas.found:
       self.f2c = 0
+      self.include = self.openblas.include
       if self.openblas.libDir:
         yield ('OpenBLAS with full path', None, os.path.join(self.openblas.libDir,'libopenblas.a'),self.openblas.known64,self.openblas.usesopenmp)
       else:
@@ -462,6 +463,7 @@ class Configure(config.package.Package):
         self.dlib = self.lib+self.dlib
         self.framework.packages.append(self)
         break
+      self.include = []
     if not self.foundBlas:
       # check for split blas/blas-dev packages
       import glob
@@ -515,6 +517,31 @@ class Configure(config.package.Package):
     if self.argDB['with-64-bit-blas-indices'] and not self.has64bitindices:
       raise RuntimeError('You requested 64 bit integer BLAS/LAPACK using --with-64-bit-blas-indices but they are not available given your other BLAS/LAPACK options')
 
+    # check for the presence of the C interface (may be needed by external packages)
+    self.executeTest(self.checkCHeaders)
+
+  def checkCHeaders(self):
+    '''Check for cblas.h and lapacke.h'''
+    if self.has_cheaders: return
+    if self.checkInclude(self.include, ['cblas.h','lapacke.h']):
+      self.has_cheaders = 1
+      return
+
+    incl = []
+    if 'with-blaslapack-include' in self.argDB:
+      incl = self.argDB['with-blaslapack-include']
+      if not isinstance(incl, list): incl = [incl]
+    elif 'with-blaslapack-dir' in self.argDB:
+      incl = [os.path.join(self.argDB['with-blaslapack-dir'],'include')]
+    else:
+      return
+
+    linc = self.include + incl
+    if self.checkInclude(linc, ['cblas.h','lapacke.h']):
+      self.include = linc
+      self.has_cheaders = 1
+      return
+
   def checkMKL(self):
     '''Check for Intel MKL library'''
     self.libraries.saveLog()
@@ -545,9 +572,9 @@ class Configure(config.package.Package):
             self.logPrint('Unable to find MKL include directory!')
           else:
             self.logPrint('MKL include path set to ' + str(self.include))
-      self.versionname         = 'INTEL_MKL_VERSION'
-      self.versioninclude      = 'mkl_version.h'
-      self.versiontitle        = 'Intel MKL Version'
+      self.versionname    = 'INTEL_MKL_VERSION'
+      self.versioninclude = 'mkl_version.h'
+      self.versiontitle   = 'Intel MKL Version'
       self.checkVersion()
     self.logWrite(self.libraries.restoreLog())
     return

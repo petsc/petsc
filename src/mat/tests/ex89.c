@@ -101,7 +101,7 @@ int main(int argc,char **argv)
   }
 
   /* Free intermediate data structures created for reuse of C=Pt*A*P */
-  ierr = MatFreeIntermediateDataStructures(C);CHKERRQ(ierr);
+  ierr = MatProductClear(C);CHKERRQ(ierr);
 
   ierr = MatPtAPMultEqual(A,P,C,10,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");

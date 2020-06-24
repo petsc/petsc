@@ -99,7 +99,7 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 
   PetscFunctionBegin;
   /* ViennaCL backend selection: CUDA, OpenCL, or OpenMP */
-  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_backend",string,12,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_backend",string,sizeof(string),&flg);CHKERRQ(ierr);
   if (flg) {
     try {
       ierr = PetscStrcasecmp(string,"cuda",&flg_cuda);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 
 #if defined(PETSC_HAVE_OPENCL)
   /* ViennaCL OpenCL device type configuration */
-  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_opencl_device_type",string,12,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_opencl_device_type",string,sizeof(string),&flg);CHKERRQ(ierr);
   if (flg) {
     try {
       ierr = PetscStrcasecmp(string,"cpu",&flg);CHKERRQ(ierr);
@@ -215,12 +215,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
  */
 PetscErrorCode VecViennaCLAllocateCheck(Vec v)
 {
-  PetscErrorCode ierr;
-  int            rank;
-
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  // First allocate memory on the GPU if needed
   if (!v->spptr) {
     try {
       v->spptr                            = new Vec_ViennaCL;
@@ -922,7 +917,6 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = PetscLogGpuFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) {
-      ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
       ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       try {
         *z = viennacl::linalg::norm_inf(*xgpu);
@@ -931,7 +925,6 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-      ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
     } else if (type == NORM_1) {
       ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       try {

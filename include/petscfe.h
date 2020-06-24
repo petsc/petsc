@@ -37,9 +37,10 @@ PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
 
 .seealso: PetscSpaceSetType(), PetscSpace
 J*/
-typedef const char *PetscSpaceType;
+typedef const char* PetscSpaceType;
 #define PETSCSPACEPOLYNOMIAL "poly"
 #define PETSCSPACETENSOR     "tensor"
+#define PETSCSPACESUM        "sum"
 #define PETSCSPACEPOINT      "point"
 #define PETSCSPACESUBSPACE   "subspace"
 
@@ -75,6 +76,14 @@ PETSC_EXTERN PetscErrorCode PetscSpaceTensorSetNumSubspaces(PetscSpace, PetscInt
 PETSC_EXTERN PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSpaceTensorSetSubspace(PetscSpace, PetscInt, PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceTensorGetSubspace(PetscSpace, PetscInt, PetscSpace *);
+
+PETSC_EXTERN PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSpaceSumSetSubspace(PetscSpace, PetscInt, PetscSpace);
+PETSC_EXTERN PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace, PetscInt, PetscSpace *);
+PETSC_EXTERN PetscErrorCode PetscSpaceSumSetConcatenate(PetscSpace, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscSpaceSumGetConcatenate(PetscSpace, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces,const PetscSpace subspaces[],PetscBool concatenate,PetscSpace *sumSpace);
 
 PETSC_EXTERN PetscErrorCode PetscSpacePointGetPoints(PetscSpace, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscSpacePointSetPoints(PetscSpace, PetscQuadrature);
@@ -243,8 +252,10 @@ PETSC_EXTERN PetscErrorCode PetscFEIntegrateBd(PetscDS, PetscInt,
                                                PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual(PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual(PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian(PetscDS, PetscFEJacobianType, PetscInt, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS, PetscInt, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateHybridJacobian(PetscDS, PetscFEJacobianType, PetscInt, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode PetscFECompositeGetMapping(PetscFE, PetscInt *, const PetscReal *[], const PetscReal *[], const PetscReal *[]);
 

@@ -117,6 +117,105 @@ static PetscErrorCode MatDestroy_CF(Mat A)
   ierr = MatShellGetContext(A,&B);CHKERRQ(ierr);
   if (!B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
   ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_anytype_C",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+typedef struct {
+  void           *userdata;
+  PetscErrorCode (*userdestroy)(void*);
+  PetscErrorCode (*numeric)(Mat);
+  MatProductType ptype;
+  Mat            Dwork;
+} MatMatCF;
+
+static PetscErrorCode MatProductDestroy_CF(void *data)
+{
+  PetscErrorCode ierr;
+  MatMatCF       *mmcfdata = (MatMatCF*)data;
+
+  PetscFunctionBegin;
+  if (mmcfdata->userdestroy) {
+    ierr = (*mmcfdata->userdestroy)(mmcfdata->userdata);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&mmcfdata->Dwork);CHKERRQ(ierr);
+  ierr = PetscFree(mmcfdata);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatProductNumericPhase_CF(Mat A, Mat B, Mat C, void *data)
+{
+  PetscErrorCode ierr;
+  MatMatCF       *mmcfdata = (MatMatCF*)data;
+
+  PetscFunctionBegin;
+  if (!mmcfdata) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing data");
+  if (!mmcfdata->numeric) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing numeric operation");
+  /* the MATSHELL interface allows us to play with the product data */
+  ierr = PetscNew(&C->product);CHKERRQ(ierr);
+  C->product->type  = mmcfdata->ptype;
+  C->product->data  = mmcfdata->userdata;
+  C->product->Dwork = mmcfdata->Dwork;
+  ierr = MatShellGetContext(A,&C->product->A);CHKERRQ(ierr);
+  C->product->B = B;
+  ierr = (*mmcfdata->numeric)(C);CHKERRQ(ierr);
+  ierr = PetscFree(C->product);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatProductSymbolicPhase_CF(Mat A, Mat B, Mat C, void **data)
+{
+  PetscErrorCode ierr;
+  MatMatCF       *mmcfdata;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&C->product->A);CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatProductSymbolic(C);CHKERRQ(ierr);
+  /* the MATSHELL interface does not allow non-empty product data */
+  ierr = PetscNew(&mmcfdata);CHKERRQ(ierr);
+
+  mmcfdata->numeric     = C->ops->productnumeric;
+  mmcfdata->ptype       = C->product->type;
+  mmcfdata->userdata    = C->product->data;
+  mmcfdata->userdestroy = C->product->destroy;
+  mmcfdata->Dwork       = C->product->Dwork;
+
+  C->product->Dwork   = NULL;
+  C->product->data    = NULL;
+  C->product->destroy = NULL;
+  C->product->A       = A;
+
+  *data = mmcfdata;
+  PetscFunctionReturn(0);
+}
+
+/* only for A of type shell, mainly used for MatMat operations of shells with AXPYs */
+static PetscErrorCode MatProductSetFromOptions_CF(Mat D)
+{
+  Mat            A,B,Ain;
+  void           (*Af)(void) = NULL;
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  MatCheckProduct(D,1);
+  if (D->product->type == MATPRODUCT_ABC) PetscFunctionReturn(0);
+  A = D->product->A;
+  B = D->product->B;
+  ierr = MatIsShell(A,&flg);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatProductSetFromOptions_anytype_C",&Af);CHKERRQ(ierr);
+  if (Af == (void(*)(void))MatProductSetFromOptions_CF) {
+    ierr = MatShellGetContext(A,&Ain);CHKERRQ(ierr);
+  } else PetscFunctionReturn(0);
+  D->product->A = Ain;
+  ierr = MatProductSetFromOptions(D);CHKERRQ(ierr);
+  D->product->A = A;
+  if (D->ops->productsymbolic) { /* we have a symbolic match, now populate the MATSHELL operations */
+    ierr = MatShellSetMatProductOperation(A,D->product->type,MatProductSymbolicPhase_CF,MatProductNumericPhase_CF,MatProductDestroy_CF,((PetscObject)B)->type_name,NULL);CHKERRQ(ierr);
+    ierr = MatProductSetFromOptions(D);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -137,6 +236,9 @@ PetscErrorCode MatConvertFrom_Shell(Mat A, MatType newtype,MatReuse reuse,Mat *B
     ierr = MatShellSetOperation(M,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_CF);CHKERRQ(ierr);
     ierr = MatShellSetOperation(M,MATOP_GET_DIAGONAL,  (void (*)(void))MatGetDiagonal_CF);CHKERRQ(ierr);
     ierr = MatShellSetOperation(M,MATOP_DESTROY,       (void (*)(void))MatDestroy_CF);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)M,"MatProductSetFromOptions_anytype_C",MatProductSetFromOptions_CF);CHKERRQ(ierr);
+    ierr = PetscFree(M->defaultvectype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(A->defaultvectype,&M->defaultvectype);CHKERRQ(ierr);
     *B = M;
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not implemented");
   PetscFunctionReturn(0);

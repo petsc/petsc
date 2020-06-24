@@ -1,0 +1,18 @@
+[0]Processor rank is >> 
+MPI_Comm_rank =
+
+     0
+
+[0]The result is >>   Name               Size            Bytes  Class     Attributes
+
+  MPI_Comm_rank      1x1                 8  double              
+  MPI_Comm_size      1x1                 8  double              
+  x                  5x1                40  double              
+
+Vec Object: x 1 MPI processes
+  type: seq
+0.
+0.
+0.
+0.
+0.

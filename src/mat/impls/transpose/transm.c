@@ -53,6 +53,7 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
   PetscFunctionBegin;
   ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)N,"MatTransposeGetMat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)N,"MatProductSetFromOptions_anytype_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -102,10 +103,118 @@ PetscErrorCode MatHasOperation_Transpose(Mat mat,MatOperation op,PetscBool *has)
   PetscFunctionBegin;
 
   *has = PETSC_FALSE;
-  if (op == MATOP_MAT_MULT || op == MATOP_TRANSPOSE_MAT_MULT) {
-    ierr = MatHasOperation(X->A,op == MATOP_MAT_MULT ? MATOP_TRANSPOSE_MAT_MULT : MATOP_MAT_MULT,has);CHKERRQ(ierr);
+  if (op == MATOP_MULT) {
+    ierr = MatHasOperation(X->A,MATOP_MULT_TRANSPOSE,has);CHKERRQ(ierr);
+  } else if (op == MATOP_MULT_TRANSPOSE) {
+    ierr = MatHasOperation(X->A,MATOP_MULT,has);CHKERRQ(ierr);
+  } else if (op == MATOP_MULT_ADD) {
+    ierr = MatHasOperation(X->A,MATOP_MULT_TRANSPOSE_ADD,has);CHKERRQ(ierr);
+  } else if (op == MATOP_MULT_TRANSPOSE_ADD) {
+    ierr = MatHasOperation(X->A,MATOP_MULT_ADD,has);CHKERRQ(ierr);
+  } else if (((void**)mat->ops)[op]) *has = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/* used by hermitian transpose */
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
+{
+  Mat            A,B,C,Ain,Bin,Cin;
+  PetscBool      Aistrans,Bistrans,Cistrans;
+  PetscInt       Atrans,Btrans,Ctrans;
+  MatProductType ptype;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  MatCheckProduct(D,1);
+  A = D->product->A;
+  B = D->product->B;
+  C = D->product->C;
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&Aistrans);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&Bistrans);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)C,MATTRANSPOSEMAT,&Cistrans);CHKERRQ(ierr);
+  if (!Aistrans && !Bistrans && !Cistrans) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"This should not happen");
+  Atrans = 0;
+  Ain    = A;
+  while (Aistrans) {
+    Atrans++;
+    ierr = MatTransposeGetMat(Ain,&Ain);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)Ain,MATTRANSPOSEMAT,&Aistrans);CHKERRQ(ierr);
   }
-  else if (((void**)mat->ops)[op]) *has = PETSC_TRUE;
+  Btrans = 0;
+  Bin    = B;
+  while (Bistrans) {
+    Btrans++;
+    ierr = MatTransposeGetMat(Bin,&Bin);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)Bin,MATTRANSPOSEMAT,&Bistrans);CHKERRQ(ierr);
+  }
+  Ctrans = 0;
+  Cin    = C;
+  while (Cistrans) {
+    Ctrans++;
+    ierr = MatTransposeGetMat(Cin,&Cin);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)Cin,MATTRANSPOSEMAT,&Cistrans);CHKERRQ(ierr);
+  }
+  Atrans = Atrans%2;
+  Btrans = Btrans%2;
+  Ctrans = Ctrans%2;
+  ptype = D->product->type; /* same product type by default */
+  if (Ain->symmetric) Atrans = 0;
+  if (Bin->symmetric) Btrans = 0;
+  if (Cin && Cin->symmetric) Ctrans = 0;
+
+  if (Atrans || Btrans || Ctrans) {
+    ptype = MATPRODUCT_UNSPECIFIED;
+    switch (D->product->type) {
+    case MATPRODUCT_AB:
+      if (Atrans && Btrans) { /* At * Bt we do not have support for this */
+        /* TODO custom implementation ? */
+      } else if (Atrans) { /* At * B */
+        ptype = MATPRODUCT_AtB;
+      } else { /* A * Bt */
+        ptype = MATPRODUCT_ABt;
+      }
+      break;
+    case MATPRODUCT_AtB:
+      if (Atrans && Btrans) { /* A * Bt */
+        ptype = MATPRODUCT_ABt;
+      } else if (Atrans) { /* A * B */
+        ptype = MATPRODUCT_AB;
+      } else { /* At * Bt we do not have support for this */
+        /* TODO custom implementation ? */
+      }
+      break;
+    case MATPRODUCT_ABt:
+      if (Atrans && Btrans) { /* At * B */
+        ptype = MATPRODUCT_AtB;
+      } else if (Atrans) { /* At * Bt we do not have support for this */
+        /* TODO custom implementation ? */
+      } else {  /* A * B */
+        ptype = MATPRODUCT_AB;
+      }
+      break;
+    case MATPRODUCT_PtAP:
+      if (Atrans) { /* PtAtP */
+        /* TODO custom implementation ? */
+      } else { /* RARt */
+        ptype = MATPRODUCT_RARt;
+      }
+      break;
+    case MATPRODUCT_RARt:
+      if (Atrans) { /* RAtRt */
+        /* TODO custom implementation ? */
+      } else { /* PtAP */
+        ptype = MATPRODUCT_PtAP;
+      }
+      break;
+    case MATPRODUCT_ABC:
+      /* TODO custom implementation ? */
+      break;
+    default: SETERRQ1(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[D->product->type]);
+    }
+  }
+  ierr = MatProductReplaceMats(Ain,Bin,Cin,D);CHKERRQ(ierr);
+  ierr = MatProductSetType(D,ptype);CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions(D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -186,20 +295,21 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   Na->A      = A;
 
-  (*N)->ops->destroy          = MatDestroy_Transpose;
-  (*N)->ops->mult             = MatMult_Transpose;
-  (*N)->ops->multadd          = MatMultAdd_Transpose;
-  (*N)->ops->multtranspose    = MatMultTranspose_Transpose;
-  (*N)->ops->multtransposeadd = MatMultTransposeAdd_Transpose;
-  (*N)->ops->duplicate        = MatDuplicate_Transpose;
-  (*N)->ops->getvecs          = MatCreateVecs_Transpose;
-  (*N)->ops->axpy             = MatAXPY_Transpose;
-  (*N)->ops->hasoperation     = MatHasOperation_Transpose;
-  (*N)->assembled             = PETSC_TRUE;
+  (*N)->ops->destroy               = MatDestroy_Transpose;
+  (*N)->ops->mult                  = MatMult_Transpose;
+  (*N)->ops->multadd               = MatMultAdd_Transpose;
+  (*N)->ops->multtranspose         = MatMultTranspose_Transpose;
+  (*N)->ops->multtransposeadd      = MatMultTransposeAdd_Transpose;
+  (*N)->ops->duplicate             = MatDuplicate_Transpose;
+  (*N)->ops->getvecs               = MatCreateVecs_Transpose;
+  (*N)->ops->axpy                  = MatAXPY_Transpose;
+  (*N)->ops->hasoperation          = MatHasOperation_Transpose;
+  (*N)->ops->productsetfromoptions = MatProductSetFromOptions_Transpose;
+  (*N)->assembled                  = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatTransposeGetMat_C",MatTransposeGetMat_Transpose);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatProductSetFromOptions_anytype_C",MatProductSetFromOptions_Transpose);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

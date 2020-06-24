@@ -2921,9 +2921,9 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
   }
 
   /* Convert P from MAIJ to AIJ matrix since implementation not available for MAIJ */
-  ierr = PetscInfo((PetscObject)A,"Converting from MAIJ to AIJ matrix since implementation not available for MAIJ");
+  ierr = PetscInfo((PetscObject)A,"Converting from MAIJ to AIJ matrix since implementation not available for MAIJ\n");CHKERRQ(ierr);
   ierr = MatConvert(P,MATMPIAIJ,MAT_INPLACE_MATRIX,&P);CHKERRQ(ierr);
-  ierr = (C->ops->productsetfromoptions)(C);CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3039,7 +3039,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat C)
   ierr = PetscCalloc1(ci[cn]+1,&ca);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSetSeqAIJWithArrays_private(PetscObjectComm((PetscObject)A),cn,cn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatSetSeqAIJWithArrays_private(PetscObjectComm((PetscObject)A),cn,cn,ci,cj,ca,NULL,C);CHKERRQ(ierr);
   ierr = MatSetBlockSize(C,pp->dof);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
@@ -3435,6 +3435,8 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
   if (dof == 1) *maij = A;
   else {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    /* propagate vec type */
+    ierr = MatSetVecType(B,A->defaultvectype);CHKERRQ(ierr);
     ierr = MatSetSizes(B,dof*A->rmap->n,dof*A->cmap->n,dof*A->rmap->N,dof*A->cmap->N);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(B->rmap,dof);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(B->cmap,dof);CHKERRQ(ierr);

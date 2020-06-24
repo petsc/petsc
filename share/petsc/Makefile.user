@@ -10,12 +10,12 @@
 #  $ cd src/snes/tutorials/
 #  $ make -f $PETSC_DIR/share/petsc/Makefile.user ex17
 #
-# The following variable must either be a path to PETSc.pc or just "PETSc" if PETSc.pc
+# The following variable must either be a path to petsc.pc or just "petsc" if petsc.pc
 # has been installed to a system location or can be found in PKG_CONFIG_PATH.
-PETSc.pc := $(PETSC_DIR)/$(PETSC_ARCH)/lib/pkgconfig/PETSc.pc
+petsc.pc := $(PETSC_DIR)/$(PETSC_ARCH)/lib/pkgconfig/petsc.pc
 
 # Additional libraries that support pkg-config can be added to the list of PACKAGES below.
-PACKAGES := $(PETSc.pc)
+PACKAGES := $(petsc.pc)
 
 CC := $(shell pkg-config --variable=ccompiler $(PACKAGES))
 CXX := $(shell pkg-config --variable=cxxcompiler $(PACKAGES))

@@ -2,6 +2,7 @@ body {
   background-color: rgb(213, 234, 255);
   font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
   font-size: 14px;
+  z-index: 0; 
 }
 
 li {
@@ -42,11 +43,23 @@ li {
 #sidebar {
   float:left;
   width: 260px;
+  z-index: 0;  
+}
+
+#sidebardmnetwork {
+  float:left;
+  width: 200px;
+  z-index: 0;  
 }
 
 #main {
-  padding-bottom: 10px;
   padding-left: 270px; /* use #sidebar.width + extra padding */
+  padding-bottom: 10px;
+}
+
+#maindmnetwork {
+  padding-left: 210px; /* use #sidebar.width + extra padding */
+  padding-bottom: 30px;
 }
 
 #sidebar li, #footer li {
@@ -108,4 +121,9 @@ hr {
 #modified {
   font-size: 1em;
   float: right;
+}
+
+#below {
+  padding-left: 10px;     
+  background-color: rgba(256,256,256,0.5); /* Black background with opacity */
 }

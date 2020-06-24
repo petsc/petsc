@@ -1582,7 +1582,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ      *a   = (Mat_SeqSBAIJ*)A->data;
   IS                isrow=a->row;
   PetscErrorCode    ierr;
-  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag = a->diag;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag=a->diag;
   const MatScalar   *aa=a->a,*v;
   const PetscScalar *b;
   PetscScalar       *x,xk,*t;
@@ -1670,7 +1670,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ      *a   = (Mat_SeqSBAIJ*)A->data;
   IS                isrow=a->row;
   PetscErrorCode    ierr;
-  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag = a->diag;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag=a->diag;
   const MatScalar   *aa=a->a,*v;
   PetscReal         diagk;
   PetscScalar       *x,xk;
@@ -1744,7 +1744,7 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ      *a   = (Mat_SeqSBAIJ*)A->data;
   IS                isrow=a->row;
   PetscErrorCode    ierr;
-  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag = a->diag;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag=a->diag;
   const MatScalar   *aa=a->a,*v;
   PetscReal         diagk;
   PetscScalar       *x,*t;
@@ -1941,7 +1941,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode    ierr;
-  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*vj,*adiag = a->diag;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*vj,*adiag=a->diag;
   const MatScalar   *aa=a->a,*v;
   const PetscScalar *b;
   PetscScalar       *x,xi;
@@ -1950,7 +1950,6 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-
   /* solve U^T*D*y = b by forward substitution */
   ierr = PetscArraycpy(x,b,mbs);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
@@ -1958,10 +1957,9 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     vj = aj + ai[i];
     xi = x[i];
     nz = ai[i+1] - ai[i] - 1; /* exclude diag[i] */
-    for (j=0; j<nz; j++) x[vj[j]] += v[j]* xi;
+    for (j=0; j<nz; j++) x[vj[j]] += v[j]*xi;
     x[i] = xi*v[nz];  /* v[nz] = aa[diag[i]] = 1/D(i) */
   }
-
   /* solve U*x = y by backward substitution */
   for (i=mbs-2; i>=0; i--) {
     xi = x[i];
@@ -1971,10 +1969,61 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     for (j=0; j<nz; j++) xi += v[-j]*x[vj[-j]];
     x[i] = xi;
   }
-
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*a->nz - 3*mbs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat B,Mat X)
+{
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*vj,*adiag=a->diag;
+  const MatScalar   *aa=a->a,*v;
+  const PetscScalar *b;
+  PetscScalar       *x,xi;
+  PetscInt          nz,i,j,neq,ldb,ldx;
+  PetscBool         isdense;
+
+  PetscFunctionBegin;
+  if (!mbs) PetscFunctionReturn(0);
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSE,&isdense);CHKERRQ(ierr);
+  if (!isdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
+  if (X != B) {
+    ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&isdense);CHKERRQ(ierr);
+    if (!isdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
+  }
+  ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(B,&ldb);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(X,&ldx);CHKERRQ(ierr);
+  for (neq=0; neq<B->cmap->n; neq++) {
+    /* solve U^T*D*y = b by forward substitution */
+    ierr = PetscArraycpy(x,b,mbs);CHKERRQ(ierr);
+    for (i=0; i<mbs; i++) {
+      v  = aa + ai[i];
+      vj = aj + ai[i];
+      xi = x[i];
+      nz = ai[i+1] - ai[i] - 1; /* exclude diag[i] */
+      for (j=0; j<nz; j++) x[vj[j]] += v[j]*xi;
+      x[i] = xi*v[nz];  /* v[nz] = aa[diag[i]] = 1/D(i) */
+    }
+    /* solve U*x = y by backward substitution */
+    for (i=mbs-2; i>=0; i--) {
+      xi = x[i];
+      v  = aa + adiag[i] - 1; /* end of row i, excluding diag */
+      vj = aj + adiag[i] - 1;
+      nz = ai[i+1] - ai[i] - 1;
+      for (j=0; j<nz; j++) xi += v[-j]*x[vj[-j]];
+      x[i] = xi;
+    }
+    b += ldb;
+    x += ldx;
+  }
+  ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(B->cmap->n*(4.0*a->nz - 3*mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2025,7 +2074,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode    ierr;
-  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*adiag = a->diag,*vj;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*adiag=a->diag,*vj;
   const MatScalar   *aa=a->a,*v;
   PetscReal         diagk;
   PetscScalar       *x;
@@ -2087,7 +2136,7 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode    ierr;
-  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*adiag = a->diag,*vj;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*adiag=a->diag,*vj;
   const MatScalar   *aa=a->a,*v;
   PetscReal         diagk;
   PetscScalar       *x;
@@ -2387,7 +2436,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
       aj    = a->j + ai[i] + 1; /* 1st entry of U(i,:) without diagonal */
       ncols = ai[i+1] - ai[i] -1;
       for (j=0; j<ncols; j++) *cols++ = aj[j];
-      *cols++ = i; /* diagoanl is located as the last entry of U(i,:) */
+      *cols++ = i; /* diagonal is located as the last entry of U(i,:) */
     }
   } else { /* case: levels>0 */
     ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);

@@ -10,7 +10,7 @@ typedef struct {
   KSP          ksp;
 } PC_Exotic;
 
-const char *const PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0};
+const char *const PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",NULL};
 
 
 /*
@@ -36,10 +36,10 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   PetscTable             ht;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,&mp,&np,&pp,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   if (dof != 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only for single field problems");
   if (dim != 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only coded for 3d problems");
-  ierr   = DMDAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
+  ierr   = DMDAGetCorners(da,NULL,NULL,NULL,&m,&n,&p);CHKERRQ(ierr);
   ierr   = DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
   istart = istart ? -1 : 0;
   jstart = jstart ? -1 : 0;
@@ -200,9 +200,9 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
     PetscScalar *xint_tmp;
 
     ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&x);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&x);CHKERRQ(ierr);
     ierr = MatDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&b);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&b);CHKERRQ(ierr);
     ierr = KSPSetOperators(exotic->ksp,Aii,Aii);CHKERRQ(ierr);
     for (i=0; i<26; i++) {
       ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
@@ -346,10 +346,10 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   PetscTable             ht;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,&mp,&np,&pp,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   if (dof != 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only for single field problems");
   if (dim != 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only coded for 3d problems");
-  ierr   = DMDAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
+  ierr   = DMDAGetCorners(da,NULL,NULL,NULL,&m,&n,&p);CHKERRQ(ierr);
   ierr   = DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
   istart = istart ? -1 : 0;
   jstart = jstart ? -1 : 0;
@@ -483,9 +483,9 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
     PetscScalar *xint_tmp;
 
     ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&x);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&x);CHKERRQ(ierr);
     ierr = MatDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&b);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&b);CHKERRQ(ierr);
     ierr = KSPSetOperators(exotic->ksp,Aii,Aii);CHKERRQ(ierr);
     for (i=0; i<6; i++) {
       ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
@@ -811,10 +811,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
   /* if type was previously mg; must manually destroy it because call to PCSetType(pc,PCMG) will not destroy it */
   if (pc->ops->destroy) { 
     ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);
-    pc->data = 0;
+    pc->data = NULL;
   }
   ierr = PetscFree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
-  ((PetscObject)pc)->type_name = 0;
+  ((PetscObject)pc)->type_name = NULL;
 
   ierr         = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr         = PCMGSetLevels(pc,2,NULL);CHKERRQ(ierr);

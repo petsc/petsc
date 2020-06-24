@@ -149,8 +149,8 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  if (M > 0) PetscValidLogicalCollectiveInt(A,M,4);
-  if (N > 0) PetscValidLogicalCollectiveInt(A,N,5);
+  PetscValidLogicalCollectiveInt(A,M,4);
+  PetscValidLogicalCollectiveInt(A,N,5);
   if (M > 0 && m > M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",m,M);
   if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",n,N);
   if ((A->rmap->n >= 0 && A->rmap->N >= 0) && (A->rmap->n != m || (M > 0 && A->rmap->N != M))) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
@@ -337,6 +337,10 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   Mat_Product    *product;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(*C,MAT_CLASSID,2);
+  if (A == *C) PetscFunctionReturn(0);
+  PetscCheckSameComm(A,1,*C,2);
   /* save the parts of A we need */
   Abops = ((PetscObject)A)->bops[0];
   Aops  = A->ops[0];
@@ -431,6 +435,8 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(A,flg,2);
   if (A->boundtocpu == flg) PetscFunctionReturn(0);
   A->boundtocpu = flg;
   if (A->ops->bindtocpu) {
@@ -438,6 +444,9 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
   }
   PetscFunctionReturn(0);
 #else
-  return 0;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(A,flg,2);
+  PetscFunctionReturn(0);
 #endif
 }

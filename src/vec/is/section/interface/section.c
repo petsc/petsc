@@ -61,11 +61,9 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->useFieldOff        = PETSC_FALSE;
   (*s)->compNames          = NULL;
   (*s)->clObj              = NULL;
+  (*s)->clHash             = NULL;
   (*s)->clSection          = NULL;
   (*s)->clPoints           = NULL;
-  (*s)->clSize             = 0;
-  (*s)->clPerm             = NULL;
-  (*s)->clInvPerm          = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -541,7 +539,7 @@ PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, Pe
   PetscInt c;
   char name[64];
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
   if (s->compNames) {
@@ -2023,8 +2021,10 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
       PetscInt b;
 
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4D) dim %2D offset %3D constrained", p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
-      for (b = 0; b < s->bc->atlasDof[p]; ++b) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %D", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
+      if (s->bcIndices) {
+        for (b = 0; b < s->bc->atlasDof[p]; ++b) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %D", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
+        }
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
@@ -2103,6 +2103,22 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
+{
+  PetscErrorCode ierr;
+  PetscSectionClosurePermVal clVal;
+
+  PetscFunctionBegin;
+  if (!section->clHash) PetscFunctionReturn(0);
+  kh_foreach_value(section->clHash, clVal, {
+      ierr = PetscFree(clVal.perm);CHKERRQ(ierr);
+      ierr = PetscFree(clVal.invPerm);CHKERRQ(ierr);
+    });
+  kh_destroy(ClPerm, section->clHash);
+  section->clHash = NULL;
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscSectionReset - Frees all section data.
 
@@ -2139,8 +2155,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   ierr = PetscSectionDestroy(&s->clSection);CHKERRQ(ierr);
   ierr = ISDestroy(&s->clPoints);CHKERRQ(ierr);
   ierr = ISDestroy(&s->perm);CHKERRQ(ierr);
-  ierr = PetscFree(s->clPerm);CHKERRQ(ierr);
-  ierr = PetscFree(s->clInvPerm);CHKERRQ(ierr);
+  ierr = PetscSectionResetClosurePermutation(s);CHKERRQ(ierr);
   ierr = PetscSectionSymDestroy(&s->sym);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s->clSection);CHKERRQ(ierr);
   ierr = ISDestroy(&s->clPoints);CHKERRQ(ierr);
@@ -2782,7 +2797,7 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
   PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
   PetscValidHeaderSpecific(clSection,PETSC_SECTION_CLASSID,3);
   PetscValidHeaderSpecific(clPoints,IS_CLASSID,4);
-  if (section->clObj != obj) {ierr = PetscFree(section->clPerm);CHKERRQ(ierr);ierr = PetscFree(section->clInvPerm);CHKERRQ(ierr);}
+  if (section->clObj != obj) {ierr = PetscSectionResetClosurePermutation(section);CHKERRQ(ierr);}
   section->clObj     = obj;
   ierr = PetscObjectReference((PetscObject)clSection);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)clPoints);CHKERRQ(ierr);
@@ -2825,9 +2840,13 @@ PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt clSize, PetscCopyMode mode, PetscInt *clPerm)
+PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, PetscCopyMode mode, PetscInt *clPerm)
 {
   PetscInt       i;
+  khiter_t iter;
+  int new_entry;
+  PetscSectionClosurePermKey key = {depth, clSize};
+  PetscSectionClosurePermVal *val;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2835,40 +2854,50 @@ PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, 
     ierr = PetscSectionDestroy(&section->clSection);CHKERRQ(ierr);
     ierr = ISDestroy(&section->clPoints);CHKERRQ(ierr);
   }
-  section->clObj  = obj;
-  ierr = PetscFree(section->clPerm);CHKERRQ(ierr);
-  ierr = PetscFree(section->clInvPerm);CHKERRQ(ierr);
-  section->clSize = clSize;
+  section->clObj = obj;
+  if (!section->clHash) {ierr = PetscClPermCreate(&section->clHash);CHKERRQ(ierr);}
+  iter = kh_put(ClPerm, section->clHash, key, &new_entry);
+  val = &kh_val(section->clHash, iter);
+  if (!new_entry) {
+    ierr = PetscFree(val->perm);CHKERRQ(ierr);
+    ierr = PetscFree(val->invPerm);CHKERRQ(ierr);
+  }
   if (mode == PETSC_COPY_VALUES) {
-    ierr = PetscMalloc1(clSize, &section->clPerm);CHKERRQ(ierr);
+    ierr = PetscMalloc1(clSize, &val->perm);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject) obj, clSize*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscArraycpy(section->clPerm, clPerm, clSize);CHKERRQ(ierr);
+    ierr = PetscArraycpy(val->perm, clPerm, clSize);CHKERRQ(ierr);
   } else if (mode == PETSC_OWN_POINTER) {
-    section->clPerm = clPerm;
+    val->perm = clPerm;
   } else SETERRQ(PetscObjectComm(obj), PETSC_ERR_SUP, "Do not support borrowed arrays");
-  ierr = PetscMalloc1(clSize, &section->clInvPerm);CHKERRQ(ierr);
-  for (i = 0; i < clSize; ++i) section->clInvPerm[section->clPerm[i]] = i;
+  ierr = PetscMalloc1(clSize, &val->invPerm);CHKERRQ(ierr);
+  for (i = 0; i < clSize; ++i) val->invPerm[clPerm[i]] = i;
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscSectionSetClosurePermutation - Get the dof permutation for the closure of each cell in the section, meaning clPerm[newIndex] = oldIndex.
+  PetscSectionSetClosurePermutation - Set the dof permutation for the closure of each cell in the section, meaning clPerm[newIndex] = oldIndex.
 
   Not Collective
 
   Input Parameters:
 + section - The PetscSection
-. obj     - A PetscObject which serves as the key for this index
+. obj     - A PetscObject which serves as the key for this index (usually a DM)
+. depth   - Depth of points on which to apply the given permutation
 - perm    - Permutation of the cell dof closure
 
-  Note: This strategy only works when all cells have the same size dof closure, and no closures are retrieved for
-  other points (like faces).
+  Note:
+  The specified permutation will only be applied to points at depth whose closure size matches the length of perm.  In a
+  mixed-topology or variable-degree finite element space, this function can be called multiple times at each depth for
+  each topology and degree.
+
+  This approach assumes that (depth, len(perm)) uniquely identifies the desired permutation; this might not be true for
+  exotic/enriched spaces on mixed topology meshes.
 
   Level: intermediate
 
 .seealso: PetscSectionGetClosurePermutation(), PetscSectionGetClosureIndex(), DMPlexCreateClosureIndex(), PetscCopyMode
 @*/
-PetscErrorCode PetscSectionSetClosurePermutation(PetscSection section, PetscObject obj, IS perm)
+PetscErrorCode PetscSectionSetClosurePermutation(PetscSection section, PetscObject obj, PetscInt depth, IS perm)
 {
   const PetscInt *clPerm = NULL;
   PetscInt        clSize = 0;
@@ -2879,19 +2908,22 @@ PetscErrorCode PetscSectionSetClosurePermutation(PetscSection section, PetscObje
     ierr = ISGetLocalSize(perm, &clSize);CHKERRQ(ierr);
     ierr = ISGetIndices(perm, &clPerm);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetClosurePermutation_Internal(section, obj, clSize, PETSC_COPY_VALUES, (PetscInt *) clPerm);CHKERRQ(ierr);
+  ierr = PetscSectionSetClosurePermutation_Internal(section, obj, depth, clSize, PETSC_COPY_VALUES, (PetscInt *) clPerm);CHKERRQ(ierr);
   if (perm) {ierr = ISRestoreIndices(perm, &clPerm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt *size, const PetscInt *perm[])
+PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt size, const PetscInt *perm[])
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (section->clObj == obj) {
-    if (size) *size = section->clSize;
-    if (perm) *perm = section->clPerm;
+    PetscSectionClosurePermKey k = {depth, size};
+    PetscSectionClosurePermVal v;
+    ierr = PetscClPermGet(section->clHash, k, &v);CHKERRQ(ierr);
+    if (perm) *perm = v.perm;
   } else {
-    if (size) *size = 0;
     if (perm) *perm = NULL;
   }
   PetscFunctionReturn(0);
@@ -2904,40 +2936,42 @@ PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, 
 
   Input Parameters:
 + section   - The PetscSection
-- obj       - A PetscObject which serves as the key for this index
+. obj       - A PetscObject which serves as the key for this index (usually a DM)
+. depth     - Depth stratum on which to obtain closure permutation
+- clSize    - Closure size to be permuted (e.g., may vary with element topology and degree)
 
   Output Parameter:
 . perm - The dof closure permutation
 
-  Note: This strategy only works when all cells have the same size dof closure, and no closures are retrieved for
-  other points (like faces).
-
+  Note:
   The user must destroy the IS that is returned.
 
   Level: intermediate
 
 .seealso: PetscSectionSetClosurePermutation(), PetscSectionGetClosureInversePermutation(), PetscSectionGetClosureIndex(), PetscSectionSetClosureIndex(), DMPlexCreateClosureIndex()
 @*/
-PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObject obj, IS *perm)
+PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm)
 {
   const PetscInt *clPerm;
-  PetscInt        clSize;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetClosurePermutation_Internal(section, obj, &clSize, &clPerm);CHKERRQ(ierr);
+  ierr = PetscSectionGetClosurePermutation_Internal(section, obj, depth, clSize, &clPerm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, clSize, clPerm, PETSC_USE_POINTER, perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection section, PetscObject obj, PetscInt *size, const PetscInt *perm[])
+PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection section, PetscObject obj, PetscInt depth, PetscInt size, const PetscInt *perm[])
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  if (section->clObj == obj) {
-    if (size) *size = section->clSize;
-    if (perm) *perm = section->clInvPerm;
+  if (section->clObj == obj && section->clHash) {
+    PetscSectionClosurePermKey k = {depth, size};
+    PetscSectionClosurePermVal v;
+    ierr = PetscClPermGet(section->clHash, k, &v);CHKERRQ(ierr);
+    if (perm) *perm = v.invPerm;
   } else {
-    if (size) *size = 0;
     if (perm) *perm = NULL;
   }
   PetscFunctionReturn(0);
@@ -2950,29 +2984,27 @@ PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection se
 
   Input Parameters:
 + section   - The PetscSection
-- obj       - A PetscObject which serves as the key for this index
+. obj       - A PetscObject which serves as the key for this index (usually a DM)
+. depth     - Depth stratum on which to obtain closure permutation
+- clSize    - Closure size to be permuted (e.g., may vary with element topology and degree)
 
   Output Parameters:
-+ size - The dof closure size
-- perm - The dof closure permutation
+. perm - The dof closure permutation
 
-  Note: This strategy only works when all cells have the same size dof closure, and no closures are retrieved for
-  other points (like faces).
-
+  Note:
   The user must destroy the IS that is returned.
 
   Level: intermediate
 
 .seealso: PetscSectionSetClosurePermutation(), PetscSectionGetClosureIndex(), PetscSectionSetClosureIndex(), DMPlexCreateClosureIndex()
 @*/
-PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, PetscObject obj, IS *perm)
+PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm)
 {
   const PetscInt *clPerm;
-  PetscInt        clSize;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetClosureInversePermutation_Internal(section, obj, &clSize, &clPerm);CHKERRQ(ierr);
+  ierr = PetscSectionGetClosureInversePermutation_Internal(section, obj, depth, clSize, &clPerm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, clSize, clPerm, PETSC_USE_POINTER, perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

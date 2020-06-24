@@ -10,7 +10,7 @@ extern "C" {
    Microsoft Windows has its own time routines
 */
 #if defined (PETSC_USE_MICROSOFT_TIME)
-#include <Windows.h>
+#include <windows.h>
 #define FACTOR   4294967296.0 /* pow(2,32) */
 
 double MPI_Wtime(void)

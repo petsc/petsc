@@ -63,7 +63,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->extfilename[0]    = '\0';
   options->testPartition     = PETSC_FALSE;
   options->overlap           = 0;
-  options->extrude_layers    = 2;
+  options->extrude_layers    = 0;
   options->extrude_thickness = 0.1;
   options->testp4est[0]      = PETSC_FALSE;
   options->testp4est[1]      = PETSC_FALSE;
@@ -97,8 +97,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEList("-z_periodicity", "The z-boundary periodicity", "ex1.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[2]], &bd, NULL);CHKERRQ(ierr);
   options->periodicity[2] = (DMBoundaryType) bd;
   ierr = PetscOptionsString("-filename", "The mesh file", "ex1.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-bd_filename", "The mesh boundary file", "ex1.c", options->bdfilename, options->bdfilename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-ext_filename", "The 2D mesh file to be extruded", "ex1.c", options->extfilename, options->extfilename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-bd_filename", "The mesh boundary file", "ex1.c", options->bdfilename, options->bdfilename, sizeof(options->bdfilename), NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ext_filename", "The 2D mesh file to be extruded", "ex1.c", options->extfilename, options->extfilename, sizeof(options->extfilename), &flg);CHKERRQ(ierr);
+  if (flg) options->extrude_layers = 2;
   ierr = PetscOptionsBoundedInt("-ext_layers", "The number of layers to extrude", "ex1.c", options->extrude_layers, &options->extrude_layers, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ext_thickness", "The thickness of the layer to be extruded", "ex1.c", options->extrude_thickness, &options->extrude_thickness, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex1.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
@@ -245,6 +246,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
+  }
+  if (!extlen && user->extrude_layers > 0) {
+     DM edm;
+
+     ierr = DMPlexExtrude(*dm, user->extrude_layers, user->extrude_thickness, PETSC_TRUE, interpolate, &edm);CHKERRQ(ierr);
+     ierr = DMDestroy(dm);CHKERRQ(ierr);
+     *dm  = edm;
   }
   ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
   ierr = DMViewFromOptions(*dm,NULL,"-init_dm_view");CHKERRQ(ierr);
@@ -1075,4 +1083,24 @@ int main(int argc, char **argv)
   test:
     suffix: glvis_3d_hyb_s2t
     args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_3d_cube.msh -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple -dm_refine 1 -dm_plex_cell_refiner tobox -dm_plex_check_all
+
+  test:
+    suffix: ref_bl_1
+    args: -dim 1 -domain_shape box -cell_simplex 0 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner boundarylayer -ext_layers 2 -final_diagnostics
+  test:
+    suffix: ref_bl_2_tri
+    requires: triangle
+    args: -dim 2 -domain_shape box -cell_simplex 1 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner boundarylayer -ext_layers 3 -final_diagnostics
+  test:
+    suffix: ref_bl_3_quad
+    args: -dim 2 -domain_shape box -cell_simplex 0 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner boundarylayer -ext_layers 3 -final_diagnostics
+  test:
+    suffix: ref_alfeld2d_0
+    requires: triangle
+    args: -dim 2 -domain_shape box -cell_simplex 1 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner alfeld2d -final_diagnostics
+  test:
+    suffix: ref_alfeld3d_0
+    requires: ctetgen
+    args: -dim 3 -domain_shape box -cell_simplex 1 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner alfeld3d -final_diagnostics
+
 TEST*/

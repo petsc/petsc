@@ -6,6 +6,24 @@ Input arguments are:\n\
 #include <petscksp.h>
 #include <petsclog.h>
 
+static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, void* ctx)
+{
+  Vec            *t,*v;
+  PetscReal      err;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = KSPCreateVecs(ksp,2,&t,2,&v);CHKERRQ(ierr);
+  ierr = KSPBuildResidualDefault(ksp,t[0],v[0],&v[0]);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,t[1],v[1],&v[1]);CHKERRQ(ierr);
+  ierr = VecAXPY(v[1],-1.0,v[0]);CHKERRQ(ierr);
+  ierr = VecNorm(v[1],NORM_INFINITY,&err);CHKERRQ(ierr);
+  if (err > PETSC_SMALL) SETERRQ3(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Inconsistent residual computed at step %D: %g (KSP %g)\n",i,(double)err,(double)r);
+  ierr = VecDestroyVecs(2,&t);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(2,&v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
@@ -16,20 +34,27 @@ int main(int argc,char **args)
   Mat            A;
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
-  PetscBool      table = PETSC_FALSE,flg;
+  PetscBool      table = PETSC_FALSE,flg,test_residual = PETSC_FALSE,b_in_f = PETSC_TRUE;
   KSP            ksp;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_residual",&test_residual,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-b_in_f",&b_in_f,NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecLoad(b,fd);CHKERRQ(ierr);
+  if (b_in_f) {
+    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+    ierr = VecLoad(b,fd);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateVecs(A,NULL,&b);CHKERRQ(ierr);
+    ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
+  }
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /*
@@ -64,20 +89,23 @@ int main(int argc,char **args)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
-  PetscLogStageRegister("mystage 1",&stage1);
-  PetscLogStagePush(stage1);
-  ierr   = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr   = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr   = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-  PetscLogStagePop();
+  ierr = PetscLogStageRegister("mystage 1",&stage1);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  if (test_residual) {
+    ierr = KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL);CHKERRQ(ierr);
+  }
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
-  PetscLogStageRegister("mystage 2",&stage2);
-  PetscLogStagePush(stage2);
-  ierr   = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  PetscLogStagePop();
+  ierr = PetscLogStageRegister("mystage 2",&stage2);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage2);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* Show result */
   ierr = MatMult(A,x,u);CHKERRQ(ierr);
@@ -111,7 +139,7 @@ int main(int argc,char **args)
 /*TEST
 
     test:
-      args: -ksp_type preonly  -pc_type lu -options_left no  -f ${DATAFILESPATH}/matrices/arco1 
+      args: -ksp_type preonly  -pc_type lu -options_left no  -f ${DATAFILESPATH}/matrices/arco1
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
 
     test:
@@ -121,7 +149,26 @@ int main(int argc,char **args)
 
     test:
       suffix: 7
-      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 -f ${DATAFILESPATH}/matrices/small -matload_block_size 6  -ksp_monitor_short  
+      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 -f ${DATAFILESPATH}/matrices/small -matload_block_size 6  -ksp_monitor_short
       requires: datafilespath double  !complex !define(PETSC_USE_64BIT_INDICES)
+
+    test:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      suffix: 3
+      filter: sed -e "s/CONVERGED_RTOL/CONVERGED_ATOL/g"
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type {{cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr lsqr qcg bicg minres symmlq lcd gcr pipegcr cgls}} -ksp_max_it 20 -ksp_error_if_not_converged -ksp_converged_reason -test_residual
+
+    test:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      suffix: 3_maxits
+      output_file: output/ex6_maxits.out
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr qcg bicg minres symmlq lcd gcr pipegcr cgls richardson}} -ksp_max_it 3 -ksp_error_if_not_converged -ksp_converged_maxits -ksp_converged_reason -test_residual -ksp_norm_type none
+
+    # test CG shortcut for residual access
+    test:
+      suffix: 4
+      args: -ksp_converged_reason -ksp_max_it 20 -ksp_converged_maxits -ksp_type {{cg pipecg groppcg}} -ksp_norm_type {{preconditioned unpreconditioned natural}separate output} -pc_type {{bjacobi none}separate output} -f ${DATAFILESPATH}/matrices/poisson_2d13p -b_in_f 0 -test_residual
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+
 
 TEST*/

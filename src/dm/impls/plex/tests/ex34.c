@@ -18,7 +18,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->meshNum     = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Hybrid Output Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex8.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-mesh_num", "The mesh we should construct", "ex8.c", options->meshNum, &options->meshNum, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();

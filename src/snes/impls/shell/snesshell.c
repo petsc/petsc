@@ -100,7 +100,7 @@ PetscErrorCode  SNESShellGetContext(SNES snes,void **ctx)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(ctx,2);
   ierr = PetscObjectTypeCompare((PetscObject)snes,SNESSHELL,&flg);CHKERRQ(ierr);
-  if (!flg) *ctx = 0;
+  if (!flg) *ctx = NULL;
   else      *ctx = ((SNES_Shell*)(snes->data))->ctx;
   PetscFunctionReturn(0);
 }

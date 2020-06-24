@@ -23,8 +23,6 @@ void *MPIUNI_TMP = NULL;
 #define MAX_ATTR 256
 #define MAX_COMM 128
 
-static int MaxComm = 2;
-
 typedef struct {
   void *attribute_val;
   int  active;
@@ -33,13 +31,18 @@ typedef struct {
 typedef struct {
   void                *extra_state;
   MPI_Delete_function *del;
+  int                 active;  /* Is this keyval in use by some comm? */
 } MPI_Attr_keyval;
 
 static MPI_Attr_keyval attr_keyval[MAX_ATTR];
 static MPI_Attr        attr[MAX_COMM][MAX_ATTR];
-static int             comm_active[MAX_COMM];
-static int             num_attr = 1,mpi_tag_ub = 100000000;
+static int             comm_active[MAX_COMM];  /* Boolean array indicating which comms are in use */
+static int             mpi_tag_ub = 100000000;
+static int             num_attr = 1; /* Maximal number of keyvals/attributes ever created, including the predefined MPI_TAG_UB attribute. */
+static int             MaxComm  = 2; /* Maximal number of communicators ever created, including comm_self(1), comm_world(2), but not comm_null(0) */
 static void*           MPIUNIF_mpi_in_place = 0;
+
+#define CommIdx(comm)  ((comm)-1)  /* the communicator's internal index used in attr[idx][] and comm_active[idx]. comm_null does not occupy slots in attr[][] */
 
 #if defined(__cplusplus)
 extern "C" {
@@ -131,20 +134,31 @@ int MPI_Type_get_contents(MPI_Datatype datatype,int max_integers,int max_address
 */
 static int Keyval_setup(void)
 {
-  attr[MPI_COMM_WORLD-1][0].active        = 1;
-  attr[MPI_COMM_WORLD-1][0].attribute_val = &mpi_tag_ub;
-  attr[MPI_COMM_SELF-1][0].active         = 1;
-  attr[MPI_COMM_SELF-1][0].attribute_val  = &mpi_tag_ub;
+  attr[CommIdx(MPI_COMM_WORLD)][0].active        = 1;
+  attr[CommIdx(MPI_COMM_WORLD)][0].attribute_val = &mpi_tag_ub;
+  attr[CommIdx(MPI_COMM_SELF )][0].active        = 1;
+  attr[CommIdx(MPI_COMM_SELF )][0].attribute_val = &mpi_tag_ub;
+  attr_keyval[0].active                          = 1;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_create_keyval(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
 {
+  int i,keyid;
+  for (i=1; i<num_attr; i++) { /* the first attribute is always in use */
+    if (!attr_keyval[i].active) {
+      keyid = i;
+      goto found;
+    }
+  }
   if (num_attr >= MAX_ATTR) return MPIUni_Abort(MPI_COMM_WORLD,1);
+  keyid = num_attr++;
 
-  attr_keyval[num_attr].extra_state = extra_state;
-  attr_keyval[num_attr].del         = delete_fn;
-  *keyval                           = num_attr++;
+found:
+  attr_keyval[keyid].extra_state = extra_state;
+  attr_keyval[keyid].del         = delete_fn;
+  attr_keyval[keyid].active      = 1;
+  *keyval                        = keyid;
   return MPI_SUCCESS;
 }
 
@@ -152,26 +166,28 @@ int MPI_Comm_free_keyval(int *keyval)
 {
   attr_keyval[*keyval].extra_state = 0;
   attr_keyval[*keyval].del         = 0;
-
+  attr_keyval[*keyval].active      = 0;
   *keyval = 0;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_set_attr(MPI_Comm comm,int keyval,void *attribute_val)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
-  attr[comm-1][keyval].active        = 1;
-  attr[comm-1][keyval].attribute_val = attribute_val;
+  int idx = CommIdx(comm);
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
+  attr[idx][keyval].active        = 1;
+  attr[idx][keyval].attribute_val = attribute_val;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_delete_attr(MPI_Comm comm,int keyval)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
-  if (attr[comm-1][keyval].active && attr_keyval[keyval].del) {
-    void *save_attribute_val = attr[comm-1][keyval].attribute_val;
-    attr[comm-1][keyval].active        = 0;
-    attr[comm-1][keyval].attribute_val = 0;
+  int idx = CommIdx(comm);
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
+  if (attr[idx][keyval].active && attr_keyval[keyval].del) {
+    void *save_attribute_val        = attr[idx][keyval].attribute_val;
+    attr[idx][keyval].active        = 0;
+    attr[idx][keyval].attribute_val = 0;
     (*(attr_keyval[keyval].del))(comm,keyval,save_attribute_val,attr_keyval[keyval].extra_state);
   }
   return MPI_SUCCESS;
@@ -179,72 +195,74 @@ int MPI_Comm_delete_attr(MPI_Comm comm,int keyval)
 
 int MPI_Comm_get_attr(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
+  int idx = CommIdx(comm);
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
   if (!keyval) Keyval_setup();
-  *flag                  = attr[comm-1][keyval].active;
-  *(void**)attribute_val = attr[comm-1][keyval].attribute_val;
+  *flag                  = attr[idx][keyval].active;
+  *(void**)attribute_val = attr[idx][keyval].attribute_val;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 {
   int j;
-  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
-  for (j=3; j<MaxComm; j++) {
-    if (!comm_active[j-1]) {
-      comm_active[j-1] = 1;
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
+  for (j=3; j<=MaxComm; j++) {
+    if (!comm_active[CommIdx(j)]) {
+      comm_active[CommIdx(j)] = 1;
       *newcomm = j;
       return MPI_SUCCESS;
     }
   }
-  if (MaxComm > MAX_COMM) return MPI_FAILURE;
-  *newcomm =  MaxComm++;
-  comm_active[*newcomm-1] = 1;
+  if (MaxComm >= MAX_COMM) return MPI_FAILURE;
+  *newcomm = ++MaxComm;
+  comm_active[CommIdx(*newcomm)] = 1;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
 {
   int j;
-  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
-  for (j=3; j<MaxComm; j++) {
-    if (!comm_active[j-1]) {
-      comm_active[j-1] = 1;
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
+  for (j=3; j<=MaxComm; j++) {
+    if (!comm_active[CommIdx(j)]) {
+      comm_active[CommIdx(j)] = 1;
       *out = j;
       return MPI_SUCCESS;
     }
   }
-  if (MaxComm > MAX_COMM) return MPI_FAILURE;
-  *out = MaxComm++;
-  comm_active[*out-1] = 1;
+  if (MaxComm >= MAX_COMM) return MPI_FAILURE;
+  *out = ++MaxComm;
+  comm_active[CommIdx(*out)] = 1;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_free(MPI_Comm *comm)
 {
   int i;
+  int idx = CommIdx(*comm);
 
-  if (*comm-1 < 0 || *comm-1 > MaxComm) return MPI_FAILURE;
+  if (*comm < 1 || *comm > MaxComm) return MPI_FAILURE;
   for (i=0; i<num_attr; i++) {
-    if (attr[*comm-1][i].active && attr_keyval[i].del) (*attr_keyval[i].del)(*comm,i,attr[*comm-1][i].attribute_val,attr_keyval[i].extra_state);
-    attr[*comm-1][i].active        = 0;
-    attr[*comm-1][i].attribute_val = 0;
+    if (attr[idx][i].active && attr_keyval[i].del) (*attr_keyval[i].del)(*comm,i,attr[idx][i].attribute_val,attr_keyval[i].extra_state);
+    attr[idx][i].active        = 0;
+    attr[idx][i].attribute_val = 0;
   }
-  if (*comm >= 3) comm_active[*comm-1] = 0;
+  if (*comm >= 3) comm_active[idx] = 0;
   *comm = 0;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_size(MPI_Comm comm, int *size)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
   *size=1;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_rank(MPI_Comm comm, int *rank)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
   *rank=0;
   return MPI_SUCCESS;
 }
@@ -269,7 +287,7 @@ static int MPI_was_finalized   = 0;
 int MPI_Init(int *argc, char ***argv)
 {
   if (MPI_was_initialized) return MPI_FAILURE;
-  if (MPI_was_finalized) return MPI_FAILURE;
+  if (MPI_was_finalized) return MPI_FAILURE; /* MPI standard: once MPI_FINALIZE returns, no MPI routine (not even MPI_INIT) may be called, except ... */
   MPI_was_initialized = 1;
   return MPI_SUCCESS;
 }
@@ -283,6 +301,17 @@ int MPI_Finalize(void)
   MPI_Comm_free(&comm);
   comm = MPI_COMM_SELF;
   MPI_Comm_free(&comm);
+#if defined(PETSC_USE_DEBUG)
+  {
+    int i;
+    for (i=3; i<=MaxComm; i++) {
+      if (comm_active[CommIdx(i)]) printf("MPIUni warning: MPI communicator %d is not freed before MPI_Finalize()\n", i);
+    }
+  }
+#endif
+  /* reset counters */
+  MaxComm  = 2;
+  num_attr = 1;
   MPI_was_finalized = 1;
   return MPI_SUCCESS;
 }

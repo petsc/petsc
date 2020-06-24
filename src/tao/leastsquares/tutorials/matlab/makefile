@@ -1,4 +1,4 @@
--include ../petscdir.mk
+-include ../../../../../petscdir.mk
 # This directory contains access to matlab test problems for the derivative free
 # least squares solvers.
 CFLAGS           =

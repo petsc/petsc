@@ -235,6 +235,7 @@ typedef struct {
 
   /* Projection */
   PetscInt             maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
+  PetscInt             activePoint;         /* current active point in iteration */
 
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
@@ -275,6 +276,7 @@ PETSC_EXTERN PetscErrorCode DMPlexView_HDF5(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexLoad_HDF5(DM, PetscViewer);
 #endif
 
+PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM,PetscInt,const PetscInt[],IS*);
 PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *, DM);
 PETSC_INTERN PetscErrorCode DMCoarsen_Plex(DM, MPI_Comm, DM *);
@@ -320,7 +322,7 @@ PETSC_INTERN PetscErrorCode DMPlexRestoreRawFaces_Internal(DM,DMPolytopeType,con
 PETSC_INTERN PetscErrorCode CellRefinerInCellTest_Internal(DMPolytopeType, const PetscReal[], PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexComputeCellType_Internal(DM, PetscInt, PetscInt, DMPolytopeType *);
 PETSC_INTERN PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DMPolytopeType, PetscInt *[], PetscInt *[]);
-PETSC_INTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
+PETSC_INTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscScalar[], InsertMode);
 PETSC_INTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_SetTree(DM, PetscSection, PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM,DM,const char *,DM*);
@@ -373,7 +375,9 @@ PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, IS , PetscReal, Vec, Vec, PetscReal, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM, IS , PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
 
 /* Matvec with A in row-major storage, x and y can be aliased */
@@ -427,6 +431,20 @@ PETSC_STATIC_INLINE void DMPlex_Mult3DReal_Internal(const PetscReal A[], PetscIn
   y[ldx]   = A[3]*z[0] + A[4]*z[1] + A[5]*z[2];
   y[ldx*2] = A[6]*z[0] + A[7]*z[1] + A[8]*z[2];
   (void)PetscLogFlops(15.0);
+}
+PETSC_STATIC_INLINE void DMPlex_MultTransposeReal_Internal(const PetscReal A[], PetscInt m, PetscInt n, PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
+  PetscScalar z[3];
+  PetscInt    i, j;
+  for (i = 0; i < m; ++i) z[i] = x[i*ldx];
+  for (j = 0; j < n; ++j) {
+    const PetscInt l = j*ldx;
+    y[l] = 0;
+    for (i = 0; i < m; ++i) {
+      y[l] += A[j*n+i]*z[i];
+    }
+  }
+  (void)PetscLogFlops(2*m*n);
 }
 PETSC_STATIC_INLINE void DMPlex_MultTranspose2DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
 {

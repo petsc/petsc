@@ -38,10 +38,6 @@ static PetscErrorCode KSPSetFromOptions_PIPEPRCG(PetscOptionItems *PetscOptionsO
 
 /*
  KSPSolve_PIPEPRCG - This routine actually applies the pipelined predict and recompute conjugate gradient method
-
- Input Parameter:
- .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
-             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 */
 static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
 {
@@ -107,25 +103,24 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
 
   i = 0;
   do {
-
-   /* Compute appropriate norm */
-   switch (ksp->normtype) {
-     case KSP_NORM_PRECONDITIONED:
-        ierr = VecNormBegin(RT,NORM_2,&dp);CHKERRQ(ierr);
-        ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)RT));CHKERRQ(ierr);
-        ierr = VecNormEnd(RT,NORM_2,&dp);CHKERRQ(ierr);
-        break;
+    /* Compute appropriate norm */
+    switch (ksp->normtype) {
+    case KSP_NORM_PRECONDITIONED:
+      ierr = VecNormBegin(RT,NORM_2,&dp);CHKERRQ(ierr);
+      ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)RT));CHKERRQ(ierr);
+      ierr = VecNormEnd(RT,NORM_2,&dp);CHKERRQ(ierr);
+      break;
     case KSP_NORM_UNPRECONDITIONED:
-        ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);
-        ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R));CHKERRQ(ierr);
-        ierr = VecNormEnd(R,NORM_2,&dp);CHKERRQ(ierr);
-        break;
+      ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);
+      ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R));CHKERRQ(ierr);
+      ierr = VecNormEnd(R,NORM_2,&dp);CHKERRQ(ierr);
+      break;
     case KSP_NORM_NATURAL:
-        dp = PetscSqrtReal(PetscAbsScalar(nu));
-        break;
+      dp = PetscSqrtReal(PetscAbsScalar(nu));
+      break;
     case KSP_NORM_NONE:
-        dp   = 0.0;
-        break;
+      dp   = 0.0;
+      break;
     default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
     }
 
@@ -133,7 +128,7 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
     ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-    if (ksp->reason) break;
+    if (ksp->reason) PetscFunctionReturn(0);
 
     /* update scalars */
     alpha = nu / *mu_p;
@@ -164,9 +159,9 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
 
     /* predict-and-recompute */
     /* ideally this is combined with the previous matvec; i.e. equivalent of MDot */
-    if ( rc_w_q ) {
-        ierr = KSP_MatMult(ksp,Amat,RT,W);CHKERRQ(ierr);  /*   w  <- A rt             */
-        ierr = KSP_PCApply(ksp,W,WT);CHKERRQ(ierr);       /*   wt <- B w              */
+    if (rc_w_q) {
+      ierr = KSP_MatMult(ksp,Amat,RT,W);CHKERRQ(ierr);  /*   w  <- A rt             */
+      ierr = KSP_PCApply(ksp,W,WT);CHKERRQ(ierr);       /*   wt <- B w              */
     }
 
     ierr = VecDotEnd(RT,R,&nu);CHKERRQ(ierr);
@@ -175,8 +170,8 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
     i++;
     ksp->its = i;
 
-  } while (i<ksp->max_it);
-  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  } while (i<=ksp->max_it);
+  if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
@@ -225,7 +220,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp)
   ksp->ops->setup          = KSPSetUp_PIPEPRCG;
   ksp->ops->solve          = KSPSolve_PIPEPRCG;
   ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->view           = 0;
+  ksp->ops->view           = NULL;
   ksp->ops->setfromoptions = KSPSetFromOptions_PIPEPRCG;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;

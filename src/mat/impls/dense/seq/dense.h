@@ -2,6 +2,7 @@
 #if !defined(__DENSE_H)
 #define __DENSE_H
 #include <petsc/private/matimpl.h>
+/* TODO REMOVE */
 #include <../src/mat/impls/aij/seq/aij.h> /* Mat_MatTransMatMult is defined here */
 
 /*
@@ -17,13 +18,16 @@ typedef struct {
   PetscBLASInt lfwork;            /* length of work array in factorization */
   PetscScalar  *fwork;            /* work array in factorization */
   PetscBLASInt lda;               /* Lapack leading dimension of data */
-  PetscBool    changelda;         /* change lda on resize? Default unless user set lda */
-  PetscBLASInt Mmax,Nmax;         /* indicates the largest dimensions of data possible */
   PetscBool    user_alloc;        /* true if the user provided the dense data */
   PetscBool    unplaced_user_alloc;
   Mat          ptapwork;          /* workspace (SeqDense matrix) for PtAP */
 
-  Mat_MatTransMatMult *atb;       /* used by MatTransposeMatMultxxx_SeqAIJ_SeqDense */
+  /* Support for MatDenseGetColumnVec and MatDenseGetSubMatrix */
+  Mat               cmat;      /* matrix representation of a given subset of columns */
+  Vec               cvec;      /* vector representation of a given column */
+  const PetscScalar *ptrinuse; /* holds array to be restored (just a placeholder) */
+  PetscInt          vecinuse;  /* if cvec is in use (col = vecinuse-1) */
+  PetscInt          matinuse;  /* if cmat is in use (cbegin = matinuse-1) */
 } Mat_SeqDense;
 
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat,Mat,PetscReal,Mat);
@@ -67,6 +71,16 @@ PETSC_INTERN PetscErrorCode MatLUFactor_SeqDense(Mat,IS,IS,const MatFactorInfo*)
 PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat,Mat,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatSeqDenseSymmetrize_Private(Mat,PetscBool);
+PETSC_INTERN PetscErrorCode MatGetColumnVector_SeqDense(Mat,Vec,PetscInt);
+PETSC_INTERN PetscErrorCode MatScale_SeqDense(Mat,PetscScalar);
+PETSC_INTERN PetscErrorCode MatDenseGetColumnVec_SeqDense(Mat,PetscInt,Vec*);
+PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVec_SeqDense(Mat,PetscInt,Vec*);
+PETSC_INTERN PetscErrorCode MatDenseGetColumnVecRead_SeqDense(Mat,PetscInt,Vec*);
+PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVecRead_SeqDense(Mat,PetscInt,Vec*);
+PETSC_INTERN PetscErrorCode MatDenseGetColumnVecWrite_SeqDense(Mat,PetscInt,Vec*);
+PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDense(Mat,PetscInt,Vec*);
+PETSC_INTERN PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat,PetscInt,PetscInt,Mat*);
+PETSC_INTERN PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat,Mat*);
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat);
@@ -74,7 +88,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat,MatType,MatReus
 PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat,MatType,MatReuse,Mat*);
 #endif
 
-PETSC_INTERN PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(Mat);
 PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqDense(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);

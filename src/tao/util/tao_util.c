@@ -514,9 +514,9 @@ PetscErrorCode TaoSoftThreshold(Vec in, PetscReal lb, PetscReal ub, Vec out)
   ierr = VecGetLocalSize(in, &nlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in, &mlocal);CHKERRQ(ierr);
 
-  if (nlocal != mlocal) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Input and output vectors need to be of same size.");
-  if (lb == ub) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Lower bound and upper bound need to be different.");
-  if (lb > ub) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Lower bound needs to be lower than upper bound.");
+  if (nlocal != mlocal) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input and output vectors need to be of same size.");
+  if (lb == ub) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound and upper bound need to be different.");
+  if (lb > ub) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound needs to be lower than upper bound.");
 
   if (ub >= 0 && lb < 0){
     for (i=0; i<nlocal; i++) outarray[i] = ST_InternalPN(inarray[i], lb, ub);

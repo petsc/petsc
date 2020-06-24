@@ -982,7 +982,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
-          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
+          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead()
 @*/
 PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt num,PetscInt *count,PetscDataType dtype)
 {
@@ -1021,7 +1021,7 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt num,
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(), PetscDataType
-          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
+          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead()
 @*/
 PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,const void *data,PetscInt count,PetscDataType dtype)
 {
@@ -1159,7 +1159,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer,PetscBool
 
    Level: advanced
 
-.seealso: PetscViewerBinaryOpen(), PetscViewerBinarySetUseMPIIO(), PetscBinaryViewerRead(), PetscBinaryViewerWriteAll()
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryRead(), PetscViewerBinaryWriteAll()
 @*/
 PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer,void *data,PetscInt count,PetscInt start,PetscInt total,PetscDataType dtype)
 {
@@ -1184,7 +1184,7 @@ PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer,void *data,PetscInt c
 
    Level: advanced
 
-.seealso: PetscViewerBinaryOpen(), PetscViewerBinarySetUseMPIIO(), PetscBinaryViewerWriteAll(), PetscBinaryViewerReadAll()
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryWriteAll(), PetscViewerBinaryReadAll()
 @*/
 PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer,const void *data,PetscInt count,PetscInt start,PetscInt total,PetscDataType dtype)
 {
@@ -1211,7 +1211,7 @@ PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer,const void *data,Pet
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
-          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
+          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead()
 @*/
 PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer,const char * const *data)
 {
@@ -1256,7 +1256,7 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer,const char *
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
-          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
+          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead()
 @*/
 PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data)
 {
@@ -1542,7 +1542,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOp
   if (viewer->setupcalled) PetscFunctionReturn(0);
   ierr = PetscOptionsHead(PetscOptionsObject,"Binary PetscViewer Options");CHKERRQ(ierr);
   ierr = PetscSNPrintf(defaultname,PETSC_MAX_PATH_LEN-1,"binaryoutput");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-viewer_binary_filename","Specify filename","PetscViewerFileSetName",defaultname,defaultname,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-viewer_binary_filename","Specify filename","PetscViewerFileSetName",defaultname,defaultname,sizeof(defaultname),&flg);CHKERRQ(ierr);
   if (flg) { ierr = PetscViewerFileSetName_Binary(viewer,defaultname);CHKERRQ(ierr); }
   ierr = PetscOptionsBool("-viewer_binary_skip_info","Skip writing/reading .info file","PetscViewerBinarySetSkipInfo",binary->skipinfo,&binary->skipinfo,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_binary_skip_options","Skip parsing Vec/Mat load options","PetscViewerBinarySetSkipOptions",binary->skipoptions,&binary->skipoptions,NULL);CHKERRQ(ierr);

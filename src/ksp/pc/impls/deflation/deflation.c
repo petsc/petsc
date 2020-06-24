@@ -12,7 +12,7 @@ const char *const PCDeflationSpaceTypes[] = {
   "user",
   "PCDeflationSpaceType",
   "PC_DEFLATION_SPACE_",
-  0
+  NULL
 };
 
 static PetscErrorCode PCDeflationSetInitOnly_Deflation(PC pc,PetscBool flg)

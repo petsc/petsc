@@ -463,7 +463,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
     }
   } else {
     deluxe_ctx->n_simple = 0;
-    deluxe_ctx->idx_simple_B = 0;
+    deluxe_ctx->idx_simple_B = NULL;
   }
   PetscFunctionReturn(0);
 }

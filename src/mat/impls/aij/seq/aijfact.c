@@ -1016,30 +1016,26 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A,Mat B,Mat X)
   IS                iscol = a->col,isrow = a->row;
   PetscErrorCode    ierr;
   PetscInt          i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt          nz,neq;
+  PetscInt          nz,neq,ldb,ldx;
   const PetscInt    *rout,*cout,*r,*c;
-  PetscScalar       *x,*tmp,*tmps,sum;
-  const PetscScalar *aa = a->a,*v;
-  const PetscScalar *b;
-  PetscBool         bisdense,xisdense;
+  PetscScalar       *x,*tmp = a->solve_work,*tmps,sum;
+  const PetscScalar *b,*aa = a->a,*v;
+  PetscBool         isdense;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
-
-  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSE,&bisdense);CHKERRQ(ierr);
-  if (!bisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSE,&isdense);CHKERRQ(ierr);
+  if (!isdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
   if (X != B) {
-    ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&xisdense);CHKERRQ(ierr);
-    if (!xisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
+    ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&isdense);CHKERRQ(ierr);
+    if (!isdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
   }
-
   ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(B,&ldb);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
-
-  tmp  = a->solve_work;
+  ierr = MatDenseGetLDA(X,&ldx);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
-
   for (neq=0; neq<B->cmap->n; neq++) {
     /* forward solve the lower triangular */
     tmp[0] = b[r[0]];
@@ -1061,9 +1057,8 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A,Mat B,Mat X)
       PetscSparseDenseMinusDot(sum,tmps,v,vi,nz);
       x[c[i]] = tmp[i] = sum*aa[a->diag[i]];
     }
-
-    b += n;
-    x += n;
+    b += ldb;
+    x += ldx;
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
@@ -1079,30 +1074,26 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   IS                iscol = a->col,isrow = a->row;
   PetscErrorCode    ierr;
   PetscInt          i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j,*adiag = a->diag;
-  PetscInt          nz,neq;
+  PetscInt          nz,neq,ldb,ldx;
   const PetscInt    *rout,*cout,*r,*c;
-  PetscScalar       *x,*tmp,sum;
-  const PetscScalar *b;
-  const PetscScalar *aa = a->a,*v;
-  PetscBool         bisdense,xisdense;
+  PetscScalar       *x,*tmp = a->solve_work,sum;
+  const PetscScalar *b,*aa = a->a,*v;
+  PetscBool         isdense;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
-
-  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSE,&bisdense);CHKERRQ(ierr);
-  if (!bisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSE,&isdense);CHKERRQ(ierr);
+  if (!isdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
   if (X != B) {
-    ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&xisdense);CHKERRQ(ierr);
-    if (!xisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
+    ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&isdense);CHKERRQ(ierr);
+    if (!isdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
   }
-
   ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(B,&ldb);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
-
-  tmp  = a->solve_work;
+  ierr = MatDenseGetLDA(X,&ldx);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
-
   for (neq=0; neq<B->cmap->n; neq++) {
     /* forward solve the lower triangular */
     tmp[0] = b[r[0]];
@@ -1115,7 +1106,6 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
       tmp[i] = sum;
       v     += nz; vi += nz;
     }
-
     /* backward solve the upper triangular */
     for (i=n-1; i>=0; i--) {
       v   = aa + adiag[i+1]+1;
@@ -1125,9 +1115,8 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
       PetscSparseDenseMinusDot(sum,tmp,v,vi,nz);
       x[c[i]] = tmp[i] = sum*v[nz]; /* v[nz] = aa[adiag[i]] */
     }
-
-    b += n;
-    x += n;
+    b += ldb;
+    x += ldx;
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
@@ -2408,7 +2397,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
       aj    = a->j + a->diag[i] + 1; /* 1st entry of U(i,:) without diagonal */
       ncols = ai[i+1] - a->diag[i] -1;
       for (j=0; j<ncols; j++) *cols++ = aj[j];
-      *cols++ = i; /* diagoanl is located as the last entry of U(i,:) */
+      *cols++ = i; /* diagonal is located as the last entry of U(i,:) */
     }
   } else { /* case: levels>0 || (levels=0 && !perm_identity) */
     ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);

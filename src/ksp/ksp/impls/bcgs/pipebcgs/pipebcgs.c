@@ -70,7 +70,7 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-  }
+  } else dp = 0.0;
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
@@ -258,5 +258,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

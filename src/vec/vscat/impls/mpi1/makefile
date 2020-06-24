@@ -9,7 +9,7 @@ SOURCEH  = vpscat_mpi1.h
 DIRS     =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vscat/impls/mpi1
+LOCDIR   = src/vec/vscat/impls/mpi1/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

@@ -83,6 +83,7 @@ PETSC_EXTERN PetscErrorCode DMStagCreateCompatibleDMStag(DM,PetscInt,PetscInt,Pe
 PETSC_EXTERN PetscErrorCode DMStagGetBoundaryTypes(DM,DMBoundaryType*,DMBoundaryType*,DMBoundaryType*);
 PETSC_EXTERN PetscErrorCode DMStagGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetDOF(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMStagGetEntries(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetEntriesPerElement(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetGhostCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetGlobalSizes(DM,PetscInt*,PetscInt*,PetscInt*);

@@ -1,46 +1,10 @@
-#include <../src/mat/impls/elemental/matelemimpl.h> /*I "petscmat.h" I*/
+#include <petsc/private/petscelemental.h>
 
 /*
     The variable Petsc_Elemental_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a Mat_Elemental_Grid
 */
 static PetscMPIInt Petsc_Elemental_keyval = MPI_KEYVAL_INVALID;
-
-/*@C
-   PetscElementalInitializePackage - Initialize Elemental package
-
-   Logically Collective
-
-   Level: developer
-
-.seealso: MATELEMENTAL, PetscElementalFinalizePackage()
-@*/
-PetscErrorCode PetscElementalInitializePackage(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (El::Initialized()) PetscFunctionReturn(0);
-  El::Initialize();   /* called by the 1st call of MatCreate_Elemental */
-  ierr = PetscRegisterFinalize(PetscElementalFinalizePackage);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   PetscElementalFinalizePackage - Finalize Elemental package
-
-   Logically Collective
-
-   Level: developer
-
-.seealso: MATELEMENTAL, PetscElementalInitializePackage()
-@*/
-PetscErrorCode PetscElementalFinalizePackage(void)
-{
-  PetscFunctionBegin;
-  El::Finalize();  /* called by PetscFinalize() */
-  PetscFunctionReturn(0);
-}
 
 static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 {
@@ -409,7 +373,8 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Elemental(Mat C)
   case MATPRODUCT_ABt:
     ierr = MatProductSetFromOptions_Elemental_ABt(C);CHKERRQ(ierr);
     break;
-  default: SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for Elemental and Elemental matrices",MatProductTypes[product->type]);
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -1351,7 +1316,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   PetscInt           optv1;
 
   PetscFunctionBegin;
-  ierr = PetscElementalInitializePackage();CHKERRQ(ierr);
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->insertmode = NOT_SET_VALUES;
 

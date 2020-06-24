@@ -1,4 +1,3 @@
-
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1166,12 +1165,17 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(&a->coloring);CHKERRQ(ierr);
   ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);CHKERRQ(ierr);
-  ierr = PetscFree(a->matmult_abdense);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ_Inode(A);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
+
+  /* MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted may allocate this.
+     That function is so heavily used (sometimes in an hidden way through multnumeric function pointers)
+     that is hard to properly add this data to the MatProduct data. We free it here to avoid
+     users reusing the matrix object with different data to incur in obscure segmentation faults
+     due to different matrix sizes */
+  ierr = PetscObjectCompose((PetscObject)A,"__PETSc__ab_dense",NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJSetColumnIndices_C",NULL);CHKERRQ(ierr);
@@ -2505,7 +2509,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,
     ierr = PetscCalloc1(oldcols,&smap);CHKERRQ(ierr);
     ierr = PetscMalloc1(1+nrows,&lens);CHKERRQ(ierr);
     for (i=0; i<ncols; i++) {
-      if (PetscUnlikelyDebug(icol[i] >= oldcols)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Requesting column beyond largest column icol[%D] %D <= A->cmap->n %D",i,icol[i],oldcols);
+      if (PetscUnlikelyDebug(icol[i] >= oldcols)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Requesting column beyond largest column icol[%D] %D >= A->cmap->n %D",i,icol[i],oldcols);
       smap[icol[i]] = i+1;
     }
 
@@ -2915,7 +2919,7 @@ PetscErrorCode MatSetUp_SeqAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =  MatSeqAIJSetPreallocation_SeqAIJ(A,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(A,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4092,10 +4096,12 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqDense      *sub_a = (Mat_SeqDense*)A->data;
   Mat_SeqAIJ        *sub_b = (Mat_SeqAIJ*)B->data;
   Mat_SeqDense      *sub_c = (Mat_SeqDense*)C->data;
-  PetscInt          i,n,m,q,p;
+  PetscInt          i,j,n,m,q,p;
   const PetscInt    *ii,*idx;
   const PetscScalar *b,*a,*a_q;
   PetscScalar       *c,*c_q;
+  PetscInt          clda = sub_c->lda;
+  PetscInt          alda = sub_a->lda;
 
   PetscFunctionBegin;
   m    = A->rmap->n;
@@ -4104,15 +4110,20 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
   a    = sub_a->v;
   b    = sub_b->a;
   c    = sub_c->v;
-  ierr = PetscArrayzero(c,m*p);CHKERRQ(ierr);
-
+  if (clda == m) {
+    ierr = PetscArrayzero(c,m*p);CHKERRQ(ierr);
+  } else {
+    for (j=0;j<p;j++)
+      for (i=0;i<m;i++)
+        c[j*clda + i] = 0.0;
+  }
   ii  = sub_b->i;
   idx = sub_b->j;
   for (i=0; i<n; i++) {
     q = ii[i+1] - ii[i];
     while (q-->0) {
-      c_q = c + m*(*idx);
-      a_q = a + m*i;
+      c_q = c + clda*(*idx);
+      a_q = a + alda*i;
       PetscKernelAXPY(c_q,*b,a_q,m);
       idx++;
       b++;
@@ -4125,13 +4136,17 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat
 {
   PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=B->cmap->n;
+  PetscBool      cisdense;
 
   PetscFunctionBegin;
   if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"A->cmap->n %D != B->rmap->n %D\n",A->cmap->n,B->rmap->n);
   ierr = MatSetSizes(C,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(C,A,B);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(C,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATSEQDENSE,MATSEQDENSECUDA,"");CHKERRQ(ierr);
+  if (!cisdense) {
+    ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
+  }
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   C->ops->matmultnumeric = MatMatMultNumeric_SeqDense_SeqAIJ;
   PetscFunctionReturn(0);
@@ -4349,7 +4364,7 @@ PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
 }
 
 #if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat);
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
@@ -4429,8 +4444,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatResetPreallocation_C",MatResetPreallocation_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJSetPreallocationCSR_C",MatSeqAIJSetPreallocationCSR_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatReorderForNonzeroDiagonal_C",MatReorderForNonzeroDiagonal_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaij_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaij_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_is_seqaij_C",MatProductSetFromOptions_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqdense_seqaij_C",MatProductSetFromOptions_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqaij_seqaij_C",MatProductSetFromOptions_SeqAIJ);CHKERRQ(ierr);

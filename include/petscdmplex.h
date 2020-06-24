@@ -193,6 +193,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCheckGeometry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckInterfaceCones(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckCellShape(DM, PetscBool, PetscReal);
+PETSC_EXTERN PetscErrorCode DMPlexComputeOrthogonalQuality(DM, PetscFV, PetscReal, Vec *, DMLabel *);
 
 PETSC_EXTERN PetscErrorCode DMPlexTriangleSetOptions(DM, const char *);
 PETSC_EXTERN PetscErrorCode DMPlexTetgenSetOptions(DM, const char *);
@@ -353,8 +354,9 @@ PETSC_EXTERN PetscErrorCode DMPlexVecGetClosure(DM, PetscSection, Vec, PetscInt,
 PETSC_EXTERN PetscErrorCode DMPlexVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMPlexMatSetClosure(DM, PetscSection, PetscSection, Mat, PetscInt, const PetscScalar[], InsertMode);
-PETSC_EXTERN PetscErrorCode DMPlexGetClosureIndices(DM, PetscSection, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMPlexRestoreClosureIndices(DM, PetscSection, PetscSection, PetscInt, PetscInt *, PetscInt **,PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexMatSetClosureGeneral(DM, PetscSection, PetscSection, DM, PetscSection, PetscSection, Mat, PetscInt, const PetscScalar[], InsertMode);
+PETSC_EXTERN PetscErrorCode DMPlexGetClosureIndices(DM, PetscSection, PetscSection, PetscInt, PetscBool, PetscInt *, PetscInt *[], PetscInt *, PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode DMPlexRestoreClosureIndices(DM, PetscSection, PetscSection, PetscInt, PetscBool, PetscInt *, PetscInt *[], PetscInt *, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode DMPlexMatSetClosureRefined(DM, PetscSection, PetscSection, DM, PetscSection, PetscSection, Mat, PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM, PetscSection, PetscSection, DM, PetscSection, PetscSection, PetscInt, PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexCreateClosureIndex(DM, PetscSection);
@@ -389,6 +391,8 @@ typedef struct {
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesFEM(DM, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexSetMaxProjectionHeight(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexGetMaxProjectionHeight(DM, PetscInt*);
+PETSC_EXTERN PetscErrorCode DMPlexGetActivePoint(DM, PetscInt*);
+PETSC_EXTERN PetscErrorCode DMPlexSetActivePoint(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexProjectFieldLocal(DM, Vec,
                                                     void (**)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -405,7 +409,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeBdIntegral(DM, Vec, DMLabel, PetscInt, 
                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                              PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),
                                                     PetscScalar *, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorNested(DM, DM, Mat, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorNested(DM, DM, PetscBool, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorGeneral(DM, DM, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeGradientClementInterpolant(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorFEM(DM, DM, VecScatter *, void *);

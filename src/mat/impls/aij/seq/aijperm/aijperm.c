@@ -79,8 +79,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatR
   B->ops->multadd     = MatMultAdd_SeqAIJ;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijperm_seqaij_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijperm_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijperm_C",NULL);CHKERRQ(ierr);
 
   /* Free everything in the Mat_SeqAIJPERM data structure.*/
   ierr = PetscFree(aijperm->xgroup);CHKERRQ(ierr);
@@ -138,8 +136,6 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
     (*M)->spptr = (void*) aijperm_dest;
     ierr        = PetscObjectChangeTypeName((PetscObject)*M,MATSEQAIJPERM);CHKERRQ(ierr);
     ierr        = PetscObjectComposeFunction((PetscObject)*M,"MatConvert_seqaijperm_seqaij_C",MatConvert_SeqAIJPERM_SeqAIJ);CHKERRQ(ierr);
-    ierr        = PetscObjectComposeFunction((PetscObject)*M,"MatMatMultSymbolic_seqdense_seqaijperm_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
-    ierr        = PetscObjectComposeFunction((PetscObject)*M,"MatMatMultNumeric_seqdense_seqaijperm_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
   }
   ierr        = PetscArraycpy(aijperm_dest,aijperm,1);CHKERRQ(ierr);
   /* Allocate space for, and copy the grouping and permutation info.
@@ -667,8 +663,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
   }
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijperm_seqaij_C",MatConvert_SeqAIJPERM_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijperm_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijperm_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
 
   ierr    = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJPERM);CHKERRQ(ierr);
   *newmat = B;

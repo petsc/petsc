@@ -1287,6 +1287,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   mfqP->usegqt = PETSC_FALSE;
   mfqP->gqt_rtol = 0.001;
   mfqP->gqt_maxits = 50;
-  mfqP->workxvec = 0;
+  mfqP->workxvec = NULL;
   PetscFunctionReturn(0);
 }

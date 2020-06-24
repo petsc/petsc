@@ -3,7 +3,7 @@
 #include <petscdm.h>
 #include <petscblaslapack.h>
 
-static const char        *TSGLLEErrorDirections[] = {"FORWARD","BACKWARD","TSGLLEErrorDirection","TSGLLEERROR_",0};
+static const char        *TSGLLEErrorDirections[] = {"FORWARD","BACKWARD","TSGLLEErrorDirection","TSGLLEERROR_",NULL};
 static PetscFunctionList TSGLLEList;
 static PetscFunctionList TSGLLEAcceptList;
 static PetscBool         TSGLLEPackageInitialized;
@@ -127,7 +127,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
   if (r < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one item must be carried between steps");
   if (s < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one stage is required");
   PetscValidPointer(inscheme,4);
-  *inscheme = 0;
+  *inscheme = NULL;
   ierr      = PetscNew(&scheme);CHKERRQ(ierr);
   scheme->p = p;
   scheme->q = q;

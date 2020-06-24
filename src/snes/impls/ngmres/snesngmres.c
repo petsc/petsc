@@ -2,8 +2,8 @@
 #include <petscblaslapack.h>
 #include <petscdm.h>
 
-const char *const SNESNGMRESRestartTypes[] = {"NONE","PERIODIC","DIFFERENCE","SNESNGMRESRestartType","SNES_NGMRES_RESTART_",0};
-const char *const SNESNGMRESSelectTypes[] = {"NONE","DIFFERENCE","LINESEARCH","SNESNGMRESSelectType","SNES_NGMRES_SELECT_",0};
+const char *const SNESNGMRESRestartTypes[] = {"NONE","PERIODIC","DIFFERENCE","SNESNGMRESRestartType","SNES_NGMRES_RESTART_",NULL};
+const char *const SNESNGMRESSelectTypes[] = {"NONE","DIFFERENCE","LINESEARCH","SNESNGMRESSelectType","SNES_NGMRES_SELECT_",NULL};
 
 PetscErrorCode SNESReset_NGMRES(SNES snes)
 {

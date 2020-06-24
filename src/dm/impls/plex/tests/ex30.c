@@ -17,7 +17,7 @@ int main(int argc, char **argv)
   ierr = PetscViewerCreate(comm, &vwr);CHKERRQ(ierr);
   ierr = PetscViewerSetType(vwr, PETSCVIEWERHDF5);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(vwr, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL, NULL, "-f", datafile, PETSC_MAX_PATH_LEN, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, NULL, "-f", datafile, sizeof(datafile), &flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Must provide meshfile");
   ierr = PetscViewerFileSetName(vwr, datafile);CHKERRQ(ierr);
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);

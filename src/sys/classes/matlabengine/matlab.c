@@ -90,7 +90,7 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
 
    Level: advanced
 
-.seealso: PetscMatlabEnginCreate(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
+.seealso: PetscMatlabEngineCreate(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
@@ -217,7 +217,7 @@ PetscErrorCode  PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEngineCreate(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), MatlabEngineGetArray(), PetscMatlabEngine
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
 PetscErrorCode  PetscMatlabEnginePut(PetscMatlabEngine mengine,PetscObject obj)
 {
@@ -248,7 +248,7 @@ PetscErrorCode  PetscMatlabEnginePut(PetscMatlabEngine mengine,PetscObject obj)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineCreate(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), MatlabEngineGetArray(), PetscMatlabEngine
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
 PetscErrorCode  PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
 {
@@ -309,7 +309,7 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
   if (!flg) { /* viewer not yet created */
     char *machinename = 0,machine[64];
 
-    ierr = PetscOptionsGetString(NULL,NULL,"-matlab_engine_machine",machine,64,&flg);
+    ierr = PetscOptionsGetString(NULL,NULL,"-matlab_engine_machine",machine,sizeof(machine),&flg);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
     if (flg) machinename = machine;
     ierr = PetscMatlabEngineCreate(comm,machinename,&mengine);
@@ -338,7 +338,7 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEngineCreate(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePut(), MatlabEngineGetArray(), PetscMatlabEngine
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePut(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
 PetscErrorCode  PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,const PetscScalar *array,const char name[])
 {
@@ -385,10 +385,14 @@ PetscErrorCode  PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,
   ierr = PetscInfo1(0,"Getting MATLAB array %s\n",name);CHKERRQ(ierr);
   mat  = engGetVariable(mengine->ep,name);
   if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
+  if (mxGetM(mat) != (size_t) m) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"Array %s in matlab first dimension %d does not match requested size %d",name,(int)mxGetM(mat),m);
+  if (mxGetN(mat) != (size_t) n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"Array %s in matlab second dimension %d does not match requested size %d",name,(int)mxGetN(mat),m);
   ierr = PetscArraycpy(array,mxGetPr(mat),m*n);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Got MATLAB array %s\n",name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
 
 
 

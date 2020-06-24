@@ -50,6 +50,8 @@ const char FECitation[] = "@article{kirby2004,\n"
 
 PetscClassId PETSCFE_CLASSID = 0;
 
+PetscLogEvent PETSCFE_SetUp;
+
 PetscFunctionList PetscFEList              = NULL;
 PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
 
@@ -284,8 +286,10 @@ PetscErrorCode PetscFESetUp(PetscFE fem)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   if (fem->setupcalled) PetscFunctionReturn(0);
+  ierr = PetscLogEventBegin(PETSCFE_SetUp, fem, 0, 0, 0);CHKERRQ(ierr);
   fem->setupcalled = PETSC_TRUE;
   if (fem->ops->setup) {ierr = (*fem->ops->setup)(fem);CHKERRQ(ierr);}
+  ierr = PetscLogEventEnd(PETSCFE_SetUp, fem, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -657,14 +661,15 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (q == fem->quadrature) PetscFunctionReturn(0);
   ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
   ierr = PetscQuadratureGetNumComponents(q, &qNc);CHKERRQ(ierr);
   if ((qNc != 1) && (Nc != qNc)) SETERRQ2(PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
   ierr = PetscTabulationDestroy(&fem->T);CHKERRQ(ierr);
   ierr = PetscTabulationDestroy(&fem->Tc);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&fem->quadrature);CHKERRQ(ierr);
   fem->quadrature = q;
-  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1322,8 +1327,7 @@ __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients,
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Ne           - The number of elements in the chunk
 . cgeom        - The cell geometry for each cell in the chunk
@@ -1357,8 +1361,7 @@ PetscErrorCode PetscFEIntegrate(PetscDS prob, PetscInt field, PetscInt Ne, Petsc
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . obj_func     - The function to be integrated
 . Ne           - The number of elements in the chunk
@@ -1397,8 +1400,7 @@ PetscErrorCode PetscFEIntegrateBd(PetscDS prob, PetscInt field,
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Ne           - The number of elements in the chunk
 . cgeom        - The cell geometry for each cell in the chunk
@@ -1442,8 +1444,7 @@ PetscErrorCode PetscFEIntegrateResidual(PetscDS prob, PetscInt field, PetscInt N
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Ne           - The number of elements in the chunk
 . fgeom        - The face geometry for each cell in the chunk
@@ -1474,13 +1475,48 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS prob, PetscInt field, PetscInt
 }
 
 /*@C
+  PetscFEIntegrateHybridResidual - Produce the element residual vector for a chunk of hybrid element faces by quadrature integration
+
+  Not collective
+
+  Input Parameters:
++ prob         - The PetscDS specifying the discretizations and continuum functions
+. field        - The field being integrated
+. Ne           - The number of elements in the chunk
+. fgeom        - The face geometry for each cell in the chunk
+. coefficients - The array of FEM basis coefficients for the elements
+. coefficients_t - The array of FEM basis time derivative coefficients for the elements
+. probAux      - The PetscDS specifying the auxiliary discretizations
+. coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+- t            - The time
+
+  Output Parameter
+. elemVec      - the element residual vectors from each element
+
+  Level: developer
+
+.seealso: PetscFEIntegrateResidual()
+@*/
+PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS prob, PetscInt field, PetscInt Ne, PetscFEGeom *fgeom,
+                                              const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
+{
+  PetscFE        fe;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
+  if (fe->ops->integratehybridresidual) {ierr = (*fe->ops->integratehybridresidual)(prob, field, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscFEIntegrateJacobian - Produce the element Jacobian for a chunk of elements by quadrature integration
 
   Not collective
 
   Input Parameters:
-+ fem          - The PetscFE object for the field being integrated
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . jtype        - The type of matrix pointwise functions that should be used
 . fieldI       - The test field being integrated
 . fieldJ       - The basis field being integrated
@@ -1569,6 +1605,54 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS prob, PetscInt fieldI, PetscIn
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscFEIntegrateHybridJacobian - Produce the boundary element Jacobian for a chunk of hybrid elements by quadrature integration
+
+  Not collective
+
+  Input Parameters:
+. prob         - The PetscDS specifying the discretizations and continuum functions
+. jtype        - The type of matrix pointwise functions that should be used
+. fieldI       - The test field being integrated
+. fieldJ       - The basis field being integrated
+. Ne           - The number of elements in the chunk
+. fgeom        - The face geometry for each cell in the chunk
+. coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
+. coefficients_t - The array of FEM basis time derivative coefficients for the elements
+. probAux      - The PetscDS specifying the auxiliary discretizations
+. coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+. t            - The time
+- u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
+
+  Output Parameter
+. elemMat              - the element matrices for the Jacobian from each element
+
+  Note:
+$ Loop over batch of elements (e):
+$   Loop over element matrix entries (f,fc,g,gc --> i,j):
+$     Loop over quadrature points (q):
+$       Make u_q and gradU_q (loops over fields,Nb,Ncomp)
+$         elemMat[i,j] += \psi^{fc}_f(q) g0_{fc,gc}(u, \nabla u) \phi^{gc}_g(q)
+$                      + \psi^{fc}_f(q) \cdot g1_{fc,gc,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
+$                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \phi^{gc}_g(q)
+$                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
+  Level: developer
+
+.seealso: PetscFEIntegrateJacobian(), PetscFEIntegrateResidual()
+@*/
+PetscErrorCode PetscFEIntegrateHybridJacobian(PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFEGeom *fgeom,
+                                              const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
+{
+  PetscFE        fe;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  ierr = PetscDSGetDiscretization(prob, fieldI, (PetscObject *) &fe);CHKERRQ(ierr);
+  if (fe->ops->integratehybridjacobian) {ierr = (*fe->ops->integratehybridjacobian)(prob, jtype, fieldI, fieldJ, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscFEGetHeightSubspace - Get the subspace of this space for a mesh point of a given height
 
@@ -1610,21 +1694,23 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   if (!fe->subspaces) {ierr = PetscCalloc1(dim, &fe->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!fe->subspaces[height-1]) {
-      PetscFE     sub;
+      PetscFE     sub = NULL;
       const char *name;
 
       ierr = PetscSpaceGetHeightSubspace(P, height, &subP);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetHeightSubspace(Q, height, &subQ);CHKERRQ(ierr);
-      ierr = PetscFECreate(PetscObjectComm((PetscObject) fe), &sub);CHKERRQ(ierr);
-      ierr = PetscObjectGetName((PetscObject) fe,  &name);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) sub,  name);CHKERRQ(ierr);
-      ierr = PetscFEGetType(fe, &fetype);CHKERRQ(ierr);
-      ierr = PetscFESetType(sub, fetype);CHKERRQ(ierr);
-      ierr = PetscFESetBasisSpace(sub, subP);CHKERRQ(ierr);
-      ierr = PetscFESetDualSpace(sub, subQ);CHKERRQ(ierr);
-      ierr = PetscFESetNumComponents(sub, Nc);CHKERRQ(ierr);
-      ierr = PetscFESetUp(sub);CHKERRQ(ierr);
-      ierr = PetscFESetQuadrature(sub, subq);CHKERRQ(ierr);
+      if (subQ) {
+        ierr = PetscFECreate(PetscObjectComm((PetscObject) fe), &sub);CHKERRQ(ierr);
+        ierr = PetscObjectGetName((PetscObject) fe,  &name);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) sub,  name);CHKERRQ(ierr);
+        ierr = PetscFEGetType(fe, &fetype);CHKERRQ(ierr);
+        ierr = PetscFESetType(sub, fetype);CHKERRQ(ierr);
+        ierr = PetscFESetBasisSpace(sub, subP);CHKERRQ(ierr);
+        ierr = PetscFESetDualSpace(sub, subQ);CHKERRQ(ierr);
+        ierr = PetscFESetNumComponents(sub, Nc);CHKERRQ(ierr);
+        ierr = PetscFESetUp(sub);CHKERRQ(ierr);
+        ierr = PetscFESetQuadrature(sub, subq);CHKERRQ(ierr);
+      }
       fe->subspaces[height-1] = sub;
     }
     *subfe = fe->subspaces[height-1];
@@ -1942,6 +2028,55 @@ PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS ds, PetscInt Nf, PetscI
   return 0;
 }
 
+PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS ds, PetscInt Nf, PetscInt r, PetscInt q, PetscTabulation T[], PetscFEGeom *fegeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscScalar u[], PetscScalar u_x[], PetscScalar u_t[])
+{
+  PetscInt       dOffset = 0, fOffset = 0, g;
+  PetscErrorCode ierr;
+
+  for (g = 0; g < 2*Nf-1; ++g) {
+    if (!T[g/2]) continue;
+    {
+    PetscFE          fe;
+    const PetscInt   f   = g/2;
+    const PetscInt   cdim = T[f]->cdim;
+    const PetscInt   Nq   = T[f]->Np;
+    const PetscInt   Nbf  = T[f]->Nb;
+    const PetscInt   Ncf  = T[f]->Nc;
+    const PetscReal *Bq   = &T[f]->T[0][(r*Nq+q)*Nbf*Ncf];
+    const PetscReal *Dq   = &T[f]->T[1][(r*Nq+q)*Nbf*Ncf*cdim];
+    PetscInt         b, c, d;
+
+    fe = (PetscFE) ds->disc[f];
+    for (c = 0; c < Ncf; ++c)      u[fOffset+c] = 0.0;
+    for (d = 0; d < cdim*Ncf; ++d) u_x[fOffset*cdim+d] = 0.0;
+    for (b = 0; b < Nbf; ++b) {
+      for (c = 0; c < Ncf; ++c) {
+        const PetscInt cidx = b*Ncf+c;
+
+        u[fOffset+c] += Bq[cidx]*coefficients[dOffset+b];
+        for (d = 0; d < cdim; ++d) u_x[(fOffset+c)*cdim+d] += Dq[cidx*cdim+d]*coefficients[dOffset+b];
+      }
+    }
+    ierr = PetscFEPushforward(fe, fegeom, 1, &u[fOffset]);CHKERRQ(ierr);
+    ierr = PetscFEPushforwardGradient(fe, fegeom, 1, &u_x[fOffset*cdim]);CHKERRQ(ierr);
+    if (u_t) {
+      for (c = 0; c < Ncf; ++c) u_t[fOffset+c] = 0.0;
+      for (b = 0; b < Nbf; ++b) {
+        for (c = 0; c < Ncf; ++c) {
+          const PetscInt cidx = b*Ncf+c;
+
+          u_t[fOffset+c] += Bq[cidx]*coefficients_t[dOffset+b];
+        }
+      }
+      ierr = PetscFEPushforward(fe, fegeom, 1, &u_t[fOffset]);CHKERRQ(ierr);
+    }
+    fOffset += Ncf;
+    dOffset += Nbf;
+  }
+  }
+  return 0;
+}
+
 PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS prob, PetscInt field, PetscInt faceLoc, const PetscScalar coefficients[], PetscScalar u[])
 {
   PetscFE         fe;
@@ -1960,9 +2095,7 @@ PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS prob, PetscInt field, 
     for (c = 0; c < Nc; ++c) {u[c] = 0.0;}
     for (b = 0; b < Nb; ++b) {
       for (c = 0; c < Nc; ++c) {
-        const PetscInt cidx = b*Nc+c;
-
-        u[c] += coefficients[cidx]*faceBasis[faceLoc*Nb*Nc+cidx];
+        u[c] += coefficients[b] * faceBasis[(faceLoc*Nb + b)*Nc + c];
       }
     }
   }
@@ -1971,12 +2104,12 @@ PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS prob, PetscInt field, 
 
 PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, PetscInt r, PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
 {
-  const PetscInt   dim      = T->cdim;
+  const PetscInt   dE       = T->cdim; /* fegeom->dimEmbed */
   const PetscInt   Nq       = T->Np;
   const PetscInt   Nb       = T->Nb;
   const PetscInt   Nc       = T->Nc;
   const PetscReal *basis    = &T->T[0][r*Nq*Nb*Nc];
-  const PetscReal *basisDer = &T->T[1][r*Nq*Nb*Nc*dim];
+  const PetscReal *basisDer = &T->T[1][r*Nq*Nb*Nc*dE];
   PetscInt         q, b, c, d;
   PetscErrorCode   ierr;
 
@@ -1987,7 +2120,7 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
         const PetscInt bcidx = b*Nc+c;
 
         tmpBasis[bcidx] = basis[q*Nb*Nc+bcidx];
-        for (d = 0; d < dim; ++d) tmpBasisDer[bcidx*dim+d] = basisDer[q*Nb*Nc*dim+bcidx*dim+d];
+        for (d = 0; d < dE; ++d) tmpBasisDer[bcidx*dE+d] = basisDer[q*Nb*Nc*dE+bcidx*dE+d];
       }
     }
     ierr = PetscFEPushforward(fe, fegeom, Nb, tmpBasis);CHKERRQ(ierr);
@@ -1998,7 +2131,45 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
         const PetscInt qcidx = q*Nc+c;
 
         elemVec[b] += tmpBasis[bcidx]*f0[qcidx];
-        for (d = 0; d < dim; ++d) elemVec[b] += tmpBasisDer[bcidx*dim+d]*f1[qcidx*dim+d];
+        for (d = 0; d < dE; ++d) elemVec[b] += tmpBasisDer[bcidx*dE+d]*f1[qcidx*dE+d];
+      }
+    }
+  }
+  return(0);
+}
+
+PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulation T, PetscInt r, PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
+{
+  const PetscInt   dE       = T->cdim;
+  const PetscInt   Nq       = T->Np;
+  const PetscInt   Nb       = T->Nb;
+  const PetscInt   Nc       = T->Nc;
+  const PetscReal *basis    = &T->T[0][r*Nq*Nb*Nc];
+  const PetscReal *basisDer = &T->T[1][r*Nq*Nb*Nc*dE];
+  PetscInt         q, b, c, d, s;
+  PetscErrorCode   ierr;
+
+  for (b = 0; b < Nb*2; ++b) elemVec[b] = 0.0;
+  for (q = 0; q < Nq; ++q) {
+    for (b = 0; b < Nb; ++b) {
+      for (c = 0; c < Nc; ++c) {
+        const PetscInt bcidx = b*Nc+c;
+
+        tmpBasis[bcidx] = basis[q*Nb*Nc+bcidx];
+        for (d = 0; d < dE; ++d) tmpBasisDer[bcidx*dE+d] = basisDer[q*Nb*Nc*dE+bcidx*dE+d];
+      }
+    }
+    ierr = PetscFEPushforward(fe, fegeom, Nb, tmpBasis);CHKERRQ(ierr);
+    ierr = PetscFEPushforwardGradient(fe, fegeom, Nb, tmpBasisDer);CHKERRQ(ierr);
+    for (s = 0; s < 2; ++s) {
+      for (b = 0; b < Nb; ++b) {
+        for (c = 0; c < Nc; ++c) {
+          const PetscInt bcidx = b*Nc+c;
+          const PetscInt qcidx = (q*2+s)*Nc+c;
+
+          elemVec[Nb*s+b] += tmpBasis[bcidx]*f0[qcidx];
+          for (d = 0; d < dE; ++d) elemVec[Nb*s+b] += tmpBasisDer[bcidx*dE+d]*f1[qcidx*dE+d];
+        }
       }
     }
   }
@@ -2007,17 +2178,17 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
 
 PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscInt r, PetscInt q, PetscTabulation TI, PetscScalar tmpBasisI[], PetscScalar tmpBasisDerI[], PetscTabulation TJ, PetscScalar tmpBasisJ[], PetscScalar tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt eOffset, PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
 {
-  const PetscInt   dim       = TI->cdim;
+  const PetscInt   dE        = TI->cdim;
   const PetscInt   NqI       = TI->Np;
   const PetscInt   NbI       = TI->Nb;
   const PetscInt   NcI       = TI->Nc;
   const PetscReal *basisI    = &TI->T[0][(r*NqI+q)*NbI*NcI];
-  const PetscReal *basisDerI = &TI->T[1][(r*NqI+q)*NbI*NcI*dim];
+  const PetscReal *basisDerI = &TI->T[1][(r*NqI+q)*NbI*NcI*dE];
   const PetscInt   NqJ       = TJ->Np;
   const PetscInt   NbJ       = TJ->Nb;
   const PetscInt   NcJ       = TJ->Nc;
   const PetscReal *basisJ    = &TJ->T[0][(r*NqJ+q)*NbJ*NcJ];
-  const PetscReal *basisDerJ = &TJ->T[1][(r*NqJ+q)*NbJ*NcJ*dim];
+  const PetscReal *basisDerJ = &TJ->T[1][(r*NqJ+q)*NbJ*NcJ*dE];
   PetscInt         f, fc, g, gc, df, dg;
   PetscErrorCode   ierr;
 
@@ -2026,7 +2197,7 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
       const PetscInt fidx = f*NcI+fc; /* Test function basis index */
 
       tmpBasisI[fidx] = basisI[fidx];
-      for (df = 0; df < dim; ++df) tmpBasisDerI[fidx*dim+df] = basisDerI[fidx*dim+df];
+      for (df = 0; df < dE; ++df) tmpBasisDerI[fidx*dE+df] = basisDerI[fidx*dE+df];
     }
   }
   ierr = PetscFEPushforward(feI, fegeom, NbI, tmpBasisI);CHKERRQ(ierr);
@@ -2036,7 +2207,7 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
       const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
 
       tmpBasisJ[gidx] = basisJ[gidx];
-      for (dg = 0; dg < dim; ++dg) tmpBasisDerJ[gidx*dim+dg] = basisDerJ[gidx*dim+dg];
+      for (dg = 0; dg < dE; ++dg) tmpBasisDerJ[gidx*dE+dg] = basisDerJ[gidx*dE+dg];
     }
   }
   ierr = PetscFEPushforward(feJ, fegeom, NbJ, tmpBasisJ);CHKERRQ(ierr);
@@ -2052,11 +2223,80 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
           const PetscInt fOff = eOffset+i*totDim+j;
 
           elemMat[fOff] += tmpBasisI[fidx]*g0[fc*NcJ+gc]*tmpBasisJ[gidx];
-          for (df = 0; df < dim; ++df) {
-            elemMat[fOff] += tmpBasisI[fidx]*g1[(fc*NcJ+gc)*dim+df]*tmpBasisDerJ[gidx*dim+df];
-            elemMat[fOff] += tmpBasisDerI[fidx*dim+df]*g2[(fc*NcJ+gc)*dim+df]*tmpBasisJ[gidx];
-            for (dg = 0; dg < dim; ++dg) {
-              elemMat[fOff] += tmpBasisDerI[fidx*dim+df]*g3[((fc*NcJ+gc)*dim+df)*dim+dg]*tmpBasisDerJ[gidx*dim+dg];
+          for (df = 0; df < dE; ++df) {
+            elemMat[fOff] += tmpBasisI[fidx]*g1[(fc*NcJ+gc)*dE+df]*tmpBasisDerJ[gidx*dE+df];
+            elemMat[fOff] += tmpBasisDerI[fidx*dE+df]*g2[(fc*NcJ+gc)*dE+df]*tmpBasisJ[gidx];
+            for (dg = 0; dg < dE; ++dg) {
+              elemMat[fOff] += tmpBasisDerI[fidx*dE+df]*g3[((fc*NcJ+gc)*dE+df)*dE+dg]*tmpBasisDerJ[gidx*dE+dg];
+            }
+          }
+        }
+      }
+    }
+  }
+  return(0);
+}
+
+PetscErrorCode PetscFEUpdateElementMat_Hybrid_Internal(PetscFE feI, PetscBool isHybridI, PetscFE feJ, PetscBool isHybridJ, PetscInt r, PetscInt q, PetscTabulation TI, PetscScalar tmpBasisI[], PetscScalar tmpBasisDerI[], PetscTabulation TJ, PetscScalar tmpBasisJ[], PetscScalar tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt eOffset, PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
+{
+  const PetscInt   dE        = TI->cdim;
+  const PetscInt   NqI       = TI->Np;
+  const PetscInt   NbI       = TI->Nb;
+  const PetscInt   NcI       = TI->Nc;
+  const PetscReal *basisI    = &TI->T[0][(r*NqI+q)*NbI*NcI];
+  const PetscReal *basisDerI = &TI->T[1][(r*NqI+q)*NbI*NcI*dE];
+  const PetscInt   NqJ       = TJ->Np;
+  const PetscInt   NbJ       = TJ->Nb;
+  const PetscInt   NcJ       = TJ->Nc;
+  const PetscReal *basisJ    = &TJ->T[0][(r*NqJ+q)*NbJ*NcJ];
+  const PetscReal *basisDerJ = &TJ->T[1][(r*NqJ+q)*NbJ*NcJ*dE];
+  const PetscInt   Ns = isHybridI ? 1 : 2;
+  const PetscInt   Nt = isHybridJ ? 1 : 2;
+  PetscInt         f, fc, g, gc, df, dg, s, t;
+  PetscErrorCode   ierr;
+
+  for (f = 0; f < NbI; ++f) {
+    for (fc = 0; fc < NcI; ++fc) {
+      const PetscInt fidx = f*NcI+fc; /* Test function basis index */
+
+      tmpBasisI[fidx] = basisI[fidx];
+      for (df = 0; df < dE; ++df) tmpBasisDerI[fidx*dE+df] = basisDerI[fidx*dE+df];
+    }
+  }
+  ierr = PetscFEPushforward(feI, fegeom, NbI, tmpBasisI);CHKERRQ(ierr);
+  ierr = PetscFEPushforwardGradient(feI, fegeom, NbI, tmpBasisDerI);CHKERRQ(ierr);
+  for (g = 0; g < NbJ; ++g) {
+    for (gc = 0; gc < NcJ; ++gc) {
+      const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
+
+      tmpBasisJ[gidx] = basisJ[gidx];
+      for (dg = 0; dg < dE; ++dg) tmpBasisDerJ[gidx*dE+dg] = basisDerJ[gidx*dE+dg];
+    }
+  }
+  ierr = PetscFEPushforward(feJ, fegeom, NbJ, tmpBasisJ);CHKERRQ(ierr);
+  ierr = PetscFEPushforwardGradient(feJ, fegeom, NbJ, tmpBasisDerJ);CHKERRQ(ierr);
+  for (s = 0; s < Ns; ++s) {
+    for (f = 0; f < NbI; ++f) {
+      for (fc = 0; fc < NcI; ++fc) {
+        const PetscInt sc   = NcI*s+fc;  /* components from each side of the surface */
+        const PetscInt fidx = f*NcI+fc;  /* Test function basis index */
+        const PetscInt i    = offsetI+NbI*s+f; /* Element matrix row */
+        for (t = 0; t < Nt; ++t) {
+          for (g = 0; g < NbJ; ++g) {
+            for (gc = 0; gc < NcJ; ++gc) {
+              const PetscInt tc   = NcJ*t+gc;  /* components from each side of the surface */
+              const PetscInt gidx = g*NcJ+gc;  /* Trial function basis index */
+              const PetscInt j    = offsetJ+NbJ*t+g; /* Element matrix column */
+              const PetscInt fOff = eOffset+i*totDim+j;
+
+              elemMat[fOff] += tmpBasisI[fidx]*g0[sc*NcJ*Nt+tc]*tmpBasisJ[gidx];
+              for (df = 0; df < dE; ++df) {
+                elemMat[fOff] += tmpBasisI[fidx]*g1[(sc*NcJ*Nt+tc)*dE+df]*tmpBasisDerJ[gidx*dE+df];
+                elemMat[fOff] += tmpBasisDerI[fidx*dE+df]*g2[(sc*NcJ*Nt+tc)*dE+df]*tmpBasisJ[gidx];
+                for (dg = 0; dg < dE; ++dg) {
+                  elemMat[fOff] += tmpBasisDerI[fidx*dE+df]*g3[((sc*NcJ*Nt+tc)*dE+df)*dE+dg]*tmpBasisDerJ[gidx*dE+dg];
+                }
+              }
             }
           }
         }

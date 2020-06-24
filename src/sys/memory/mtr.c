@@ -540,7 +540,7 @@ PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
 
     Level: intermediate
 
-.seealso: PetscMallocDump(), PetscMallocLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
+.seealso: PetscMallocDump(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMemoryGetMaximumUsage()
  @*/
 PetscErrorCode  PetscMallocGetCurrentUsage(PetscLogDouble *space)

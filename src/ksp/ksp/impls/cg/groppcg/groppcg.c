@@ -130,7 +130,7 @@ static PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
     ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-    if (ksp->reason) break;
+    if (ksp->reason) PetscFunctionReturn(0);
 
     beta  = gammaNew / gamma;
     gamma = gammaNew;
@@ -142,6 +142,8 @@ static PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
+
+PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP,Vec,Vec,Vec*);
 
 /*MC
    KSPGROPPCG - A pipelined conjugate gradient method from Bill Gropp
@@ -179,9 +181,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
   ksp->ops->setup          = KSPSetUp_GROPPCG;
   ksp->ops->solve          = KSPSolve_GROPPCG;
   ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->view           = 0;
-  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = NULL;
+  ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
+  ksp->ops->buildresidual  = KSPBuildResidual_CG;
   PetscFunctionReturn(0);
 }

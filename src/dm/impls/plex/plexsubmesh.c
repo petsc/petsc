@@ -152,7 +152,6 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
     PetscInt        numValues, v;
     PetscErrorCode  ierr;
 
-    ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
     /* Pull point contributions from remote leaves into local roots */
     ierr = DMLabelGather(label, sfPoint, &lblLeaves);CHKERRQ(ierr);
     ierr = DMLabelGetValueIS(lblLeaves, &valueIS);CHKERRQ(ierr);

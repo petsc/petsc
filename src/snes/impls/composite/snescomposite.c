@@ -5,7 +5,7 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 #include <petscblaslapack.h>
 
-const char *const        SNESCompositeTypes[]   = {"ADDITIVE","MULTIPLICATIVE","ADDITIVEOPTIMAL","SNESCompositeType","SNES_COMPOSITE",0};
+const char *const        SNESCompositeTypes[]   = {"ADDITIVE","MULTIPLICATIVE","ADDITIVEOPTIMAL","SNESCompositeType","SNES_COMPOSITE",NULL};
 
 typedef struct _SNES_CompositeLink *SNES_CompositeLink;
 struct _SNES_CompositeLink {
@@ -518,7 +518,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
 
   PetscFunctionBegin;
   ierr        = PetscNewLog(snes,&ilink);CHKERRQ(ierr);
-  ilink->next = 0;
+  ilink->next = NULL;
   ierr        = SNESCreate(PetscObjectComm((PetscObject)snes),&ilink->snes);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)snes,(PetscObject)ilink->snes);CHKERRQ(ierr);
   ierr        = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -881,7 +881,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   jac->Xes   = NULL;
   jac->fnorms = NULL;
   jac->nsnes = 0;
-  jac->head  = 0;
+  jac->head  = NULL;
   jac->stol  = 0.1;
   jac->rtol  = 1.1;
 

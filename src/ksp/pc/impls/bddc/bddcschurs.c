@@ -1016,7 +1016,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     if (n_I) {
       IS        is_schur;
       char      stype[64];
-      PetscBool gpu;
+      PetscBool gpu = PETSC_FALSE;
 
       if (use_cholesky) {
         ierr = MatGetFactor(A,sub_schurs->mat_solver_type,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
@@ -1072,7 +1072,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       /* get explicit Schur Complement computed during numeric factorization */
       ierr = MatFactorGetSchurComplement(F,&S_all,NULL);CHKERRQ(ierr);
       ierr = PetscStrncpy(stype,MATSEQDENSE,sizeof(stype));CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
       ierr = PetscObjectTypeCompareAny((PetscObject)A,&gpu,MATSEQAIJVIENNACL,MATSEQAIJCUSPARSE,"");CHKERRQ(ierr);
+#endif
       if (gpu) {
         ierr = PetscStrncpy(stype,MATSEQDENSECUDA,sizeof(stype));CHKERRQ(ierr);
       }
@@ -1540,7 +1542,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
               ierr = PetscMalloc1(nd,&aux);CHKERRQ(ierr);
               for (i=0;i<nd;i++) aux[i] = 1.0/data[(i+size_active_schur)*(size_schur+1)];
               ierr = MatCreateSeqDense(PETSC_COMM_SELF,size_active_schur,size_active_schur,data,&M);CHKERRQ(ierr);
-              ierr = MatSeqDenseSetLDA(M,size_schur);CHKERRQ(ierr);
+              ierr = MatDenseSetLDA(M,size_schur);CHKERRQ(ierr);
               ierr = MatSetOption(M,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
               ierr = MatCholeskyFactor(M,NULL,NULL);CHKERRQ(ierr);
               ierr = MatSeqDenseInvertFactors_Private(M);CHKERRQ(ierr);
@@ -1549,7 +1551,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
               ierr = MatZeroEntries(M);CHKERRQ(ierr);
               ierr = MatDestroy(&M);CHKERRQ(ierr);
               ierr = MatCreateSeqDense(PETSC_COMM_SELF,nd,size_schur,data+size_active_schur,&M);CHKERRQ(ierr);
-              ierr = MatSeqDenseSetLDA(M,size_schur);CHKERRQ(ierr);
+              ierr = MatDenseSetLDA(M,size_schur);CHKERRQ(ierr);
               ierr = MatZeroEntries(M);CHKERRQ(ierr);
               ierr = MatDestroy(&M);CHKERRQ(ierr);
               for (i=0;i<nd;i++) data[(i+size_active_schur)*(size_schur+1)] = aux[i];
@@ -1911,11 +1913,11 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
   /* Determine if MatFactor can be used */
   ierr = PetscStrallocpy(prefix,&sub_schurs->prefix);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscStrncpy(sub_schurs->mat_solver_type,MATSOLVERMUMPS,64);CHKERRQ(ierr);
+  ierr = PetscStrncpy(sub_schurs->mat_solver_type,MATSOLVERMUMPS,sizeof(sub_schurs->mat_solver_type));CHKERRQ(ierr);
 #elif defined(PETSC_HAVE_MKL_PARDISO)
-  ierr = PetscStrncpy(sub_schurs->mat_solver_type,MATSOLVERMKL_PARDISO,64);CHKERRQ(ierr);
+  ierr = PetscStrncpy(sub_schurs->mat_solver_type,MATSOLVERMKL_PARDISO,sizeof(sub_schurs->mat_solver_type));CHKERRQ(ierr);
 #else
-  ierr = PetscStrncpy(sub_schurs->mat_solver_type,MATSOLVERPETSC,64);CHKERRQ(ierr);
+  ierr = PetscStrncpy(sub_schurs->mat_solver_type,MATSOLVERPETSC,sizeof(sub_schurs->mat_solver_type));CHKERRQ(ierr);
 #endif
 #if defined(PETSC_USE_COMPLEX)
   sub_schurs->is_hermitian  = PETSC_FALSE; /* Hermitian Cholesky is not supported by PETSc and external packages */
@@ -1927,7 +1929,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
   sub_schurs->debug         = PETSC_FALSE;
   sub_schurs->restrict_comm = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)graph->l2gmap),sub_schurs->prefix,"BDDC sub_schurs options","PC");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-sub_schurs_mat_solver_type","Specific direct solver to use",NULL,sub_schurs->mat_solver_type,sub_schurs->mat_solver_type,64,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-sub_schurs_mat_solver_type","Specific direct solver to use",NULL,sub_schurs->mat_solver_type,sub_schurs->mat_solver_type,sizeof(sub_schurs->mat_solver_type),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sub_schurs_symmetric","Symmetric problem",NULL,sub_schurs->is_symmetric,&sub_schurs->is_symmetric,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sub_schurs_hermitian","Hermitian problem",NULL,sub_schurs->is_hermitian,&sub_schurs->is_hermitian,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sub_schurs_posdef","Positive definite problem",NULL,sub_schurs->is_posdef,&sub_schurs->is_posdef,NULL);CHKERRQ(ierr);

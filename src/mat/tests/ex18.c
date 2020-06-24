@@ -32,8 +32,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = VecCreate(PETSC_COMM_WORLD, &rhs);CHKERRQ(ierr);
-  ierr = VecSetSizes(rhs, PETSC_DECIDE, m*n*bs);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, NULL, &rhs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(rhs);CHKERRQ(ierr);
   ierr = VecSetUp(rhs);CHKERRQ(ierr);
 
@@ -263,4 +262,17 @@ int main(int argc,char **args)
       suffix: full
       nsize: {{1 3}separate output}
       args: -diag {{0.12 -0.13}separate output} -convname {{aij shell baij}separate output} -zerorhs 0
+
+   test:
+      requires: cuda
+      suffix: cusparse_1
+      nsize: 1
+      args: -diag {{0.12 -0.13}separate output} -convname {{seqaijcusparse mpiaijcusparse}separate output} -zerorhs 0 -mat_type {{seqaijcusparse mpiaijcusparse}separate output}
+
+   test:
+      requires: cuda
+      suffix: cusparse_3
+      nsize: 3
+      args: -diag {{0.12 -0.13}separate output} -convname mpiaijcusparse -zerorhs 0 -mat_type mpiaijcusparse
+
 TEST*/

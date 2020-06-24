@@ -300,8 +300,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     allocated with zero space arrays because the actual array space is provided
     by Sundials and set using VecPlaceArray().
   */
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,NULL,&cvode->w1);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,NULL,&cvode->w2);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w2);CHKERRQ(ierr);
 
@@ -374,9 +374,9 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 }
 
 /* type of CVODE linear multistep method */
-const char *const TSSundialsLmmTypes[] = {"","ADAMS","BDF","TSSundialsLmmType","SUNDIALS_",0};
+const char *const TSSundialsLmmTypes[] = {"","ADAMS","BDF","TSSundialsLmmType","SUNDIALS_",NULL};
 /* type of G-S orthogonalization used by CVODE linear solver */
-const char *const TSSundialsGramSchmidtTypes[] = {"","MODIFIED","CLASSICAL","TSSundialsGramSchmidtType","SUNDIALS_",0};
+const char *const TSSundialsGramSchmidtTypes[] = {"","MODIFIED","CLASSICAL","TSSundialsGramSchmidtType","SUNDIALS_",NULL};
 
 PetscErrorCode TSSetFromOptions_Sundials(PetscOptionItems *PetscOptionsObject,TS ts)
 {

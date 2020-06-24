@@ -718,8 +718,8 @@ static PetscErrorCode TaoSetUp_NLS(Tao tao)
   if (!nlsP->D) {ierr = VecDuplicate(tao->solution,&nlsP->D);CHKERRQ(ierr);}
   if (!nlsP->Xold) {ierr = VecDuplicate(tao->solution,&nlsP->Xold);CHKERRQ(ierr);}
   if (!nlsP->Gold) {ierr = VecDuplicate(tao->solution,&nlsP->Gold);CHKERRQ(ierr);}
-  nlsP->M = 0;
-  nlsP->bfgs_pre = 0;
+  nlsP->M = NULL;
+  nlsP->bfgs_pre = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -748,8 +748,8 @@ static PetscErrorCode TaoSetFromOptions_NLS(PetscOptionItems *PetscOptionsObject
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton line search method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_nls_init_type", "radius initialization type", "", NLS_INIT, NLS_INIT_TYPES, NLS_INIT[nlsP->init_type], &nlsP->init_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_nls_update_type", "radius update type", "", NLS_UPDATE, NLS_UPDATE_TYPES, NLS_UPDATE[nlsP->update_type], &nlsP->update_type, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_nls_init_type", "radius initialization type", "", NLS_INIT, NLS_INIT_TYPES, NLS_INIT[nlsP->init_type], &nlsP->init_type, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_nls_update_type", "radius update type", "", NLS_UPDATE, NLS_UPDATE_TYPES, NLS_UPDATE[nlsP->update_type], &nlsP->update_type, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_sval", "perturbation starting value", "", nlsP->sval, &nlsP->sval,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_imin", "minimum initial perturbation", "", nlsP->imin, &nlsP->imin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_imax", "maximum initial perturbation", "", nlsP->imax, &nlsP->imax,NULL);CHKERRQ(ierr);

@@ -143,6 +143,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   PetscFunctionBegin;
   ierr = MatGetBlockSize(mat, &bs);CHKERRQ(ierr);
   ierr = MatXAIJSetPreallocation(A, bs, p->dnz, p->onz, p->dnzu, p->onzu);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
   if (fill) {
     PetscHashIter  hi;

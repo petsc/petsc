@@ -291,10 +291,9 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
   ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);
   ierr = PetscFree(gmres->orthogwork);CHKERRQ(ierr);
 
-  gmres->sol_temp       = 0;
   gmres->vv_allocated   = 0;
   gmres->vecs_allocated = 0;
-  gmres->sol_temp       = 0;
+  gmres->sol_temp       = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -899,12 +898,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   gmres->q_preallocate  = 0;
   gmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   gmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
-  gmres->nrs            = 0;
-  gmres->sol_temp       = 0;
+  gmres->nrs            = NULL;
+  gmres->sol_temp       = NULL;
   gmres->max_k          = GMRES_DEFAULT_MAXK;
-  gmres->Rsvd           = 0;
+  gmres->Rsvd           = NULL;
   gmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  gmres->orthogwork     = 0;
+  gmres->orthogwork     = NULL;
   PetscFunctionReturn(0);
 }
 

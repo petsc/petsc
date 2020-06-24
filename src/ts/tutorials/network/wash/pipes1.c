@@ -1,4 +1,4 @@
-static char help[] = "This example demonstrates the use of DMNetwork \n\\n";
+static char help[] = "This example demonstrates DMNetwork. It is used for testing parallel generation of dmnetwork, then redistribute. \n\\n";
 /*
   Example: mpiexec -n <np> ./pipes1 -ts_max_steps 10
 */
@@ -14,6 +14,8 @@ static char help[] = "This example demonstrates the use of DMNetwork \n\\n";
 
    Output Parameter:
 .  wash - wash context with nedge, nvertex and edgelist distributed
+
+   Note: The routine is used for testing parallel generation of dmnetwork, then redistribute.
 */
 PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
 {
@@ -23,9 +25,10 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   PetscInt       *edgelist = wash->edgelist,*nvtx=NULL,*vtxDone=NULL;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) PetscFunctionReturn(0);
 
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   numEdges    = wash->nedge;
   numVertices = wash->nvertex;
 
@@ -652,13 +655,6 @@ int main(int argc,char ** argv)
   junctions   = wash->junction;
   pipes       = wash->pipe;
 
-#if 0
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] after WashNetworkDistribute...ne %d, nv %d\n",rank,nedges,nvertices);CHKERRQ(ierr);
-  if (rank == 0) {
-    for (e=0; e<nedges; e++) ierr = PetscPrintf(PETSC_COMM_SELF," edge %d --> %d\n",edgelist[2*e],edgelist[2*e+1]);CHKERRQ(ierr);
-  }
-#endif
-
   /* Set up the network layout */
   ierr = DMNetworkSetSizes(networkdm,1,&nvertices,&nedges,0,NULL);CHKERRQ(ierr);
 
@@ -719,12 +715,13 @@ int main(int argc,char ** argv)
     ierr = DMNetworkGetPlex(networkdm,&plexdm);CHKERRQ(ierr);
     ierr = DMPlexGetPartitioner(plexdm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part,PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
+    ierr = PetscOptionsSetValue(NULL,"-dm_plex_csr_via_mat","true");CHKERRQ(ierr); /* for parmetis */
   }
 
   /* Set up DM for use */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
   if (viewdm) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAfter DMSetUp, DMView:\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nOriginal networkdm, DMView:\n");CHKERRQ(ierr);
     ierr = DMView(networkdm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -940,5 +937,13 @@ int main(int argc,char ** argv)
       args: -ts_monitor -case 2 -ts_max_steps 1 -petscpartitioner_type simple -options_left no -wash_distribute 0 -viewX -test
       localrunfiles: pOption
       output_file: output/pipes1_7.out
+
+   test:
+      suffix: 8
+      nsize: 2
+      requires: mumps parmetis
+      args: -ts_monitor -case 2 -ts_max_steps 1 -petscpartitioner_type parmetis -options_left no -wash_distribute 1
+      localrunfiles: pOption
+      output_file: output/pipes1_8.out
 
 TEST*/

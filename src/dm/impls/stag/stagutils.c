@@ -37,6 +37,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
   PetscInt       dim,d,dofCheck[DMSTAG_MAX_STRATA],s;
   DM             dmCoord;
   void*          arr[DMSTAG_MAX_DIM];
+  PetscBool      checkDof;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -53,12 +54,16 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
     if (!isProduct) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is not of type DMPRODUCT");
   }
   for (s=0; s<DMSTAG_MAX_STRATA; ++s) dofCheck[s] = 0;
+  checkDof = PETSC_FALSE;
   for (d=0; d<dim; ++d) {
     DM        subDM;
     DMType    dmType;
     PetscBool isStag;
     PetscInt  dof[DMSTAG_MAX_STRATA],subDim;
     Vec       coord1d_local;
+
+    /* Ignore unrequested arrays */
+    if (!arr[d]) continue;
 
     ierr = DMProductGetDM(dmCoord,d,&subDM);CHKERRQ(ierr);
     if (!subDM) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is missing sub DM %D",d);
@@ -68,8 +73,9 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
     ierr = PetscStrcmp(DMSTAG,dmType,&isStag);CHKERRQ(ierr);
     if (!isStag) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of type DMSTAG");
     ierr = DMStagGetDOF(subDM,&dof[0],&dof[1],&dof[2],&dof[3]);CHKERRQ(ierr);
-    if (d == 0) {
+    if (!checkDof) {
       for (s=0; s<DMSTAG_MAX_STRATA; ++s) dofCheck[s] = dof[s];
+      checkDof = PETSC_TRUE;
     } else {
       for (s=0; s<DMSTAG_MAX_STRATA; ++s) {
         if (dofCheck[s] != dof[s]) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DMs have different dofs");
@@ -476,6 +482,34 @@ PetscErrorCode DMStagGetNumRanks(DM dm,PetscInt *nRanks0,PetscInt *nRanks1,Petsc
 }
 
 /*@C
+  DMStagGetEntries - get number of native entries in the global representation
+
+  Not Collective
+
+  Input Parameter:
+. dm - the DMStag object
+
+  Output Parameters:
+. entries - number of rank-native entries in the global representation
+
+  Note:
+  This is the number of entries on this rank for a global vector associated with dm.
+
+  Level: developer
+
+.seealso: DMSTAG, DMStagGetDOF(), DMStagGetEntriesPerElement(), DMCreateLocalVector()
+@*/
+PetscErrorCode DMStagGetEntries(DM dm,PetscInt *entries)
+{
+  const DM_Stag * const stag = (DM_Stag*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (entries) *entries = stag->entries;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   DMStagGetEntriesPerElement - get number of entries per element in the local representation
 
   Not Collective
@@ -605,6 +639,9 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm,const PetscInt *lx[],const PetscIn
 
   Notes:
   Dof supplied for strata too big for the dimension are ignored; these may be set to 0.
+  For example, for a 2-dimensional DMStag, dof2 sets the number of dof per element,
+  and dof3 is unused. For a 3-dimensional DMStag, dof3 sets the number of dof per element.
+  
   In contrast to DMDACreateCompatibleDMDA(), coordinates are not reused.
 
   Level: intermediate
@@ -849,6 +886,9 @@ static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm,void *a
   for (d=0; d<dim; ++d) {
     DM  subDM;
     Vec coord1d_local;
+
+    /* Ignore unrequested arrays */
+    if (!arr[d]) continue;
 
     ierr = DMProductGetDM(dmCoord,d,&subDM);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(subDM,&coord1d_local);CHKERRQ(ierr);

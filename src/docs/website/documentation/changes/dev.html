@@ -106,18 +106,60 @@
 
       <!-- Please use Imperative with first letter cap, e.g. Add, Improve, Change etc. WITHOUT dot at the end -->
       <h4>General:</h4>
+        <ul>
+          <li>Add PETSC_MPI_THREAD_REQUIRED to control the requested threading level for MPI_Init</li>
+          <li>Change the default of -cuda_initialize from yes to no</li>
+          <li>Add PetscOptionsInsertStringYAML() and "-options_string_yaml" for YAML-formatted options on the command line</li>
+          <li>Add PETSC_OPTIONS_YAML environment variable for setting options in YAML format</li>
+          <li>Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS Fortran linker enables catching floating point divide by zero the trapping is disabled for LAPACK routines that generate divide by zero, for example, the reference implementation of ieeeck().</li>
+          <li>Add floating point exception handling support for freebsd and Windows.</li>
+          <li>Consistently set exception handling for divide by zero, invalid, underflow, and overflow for all systems when possible.</li>
+        </ul>
       <h4>Configure/Build:</h4>
+        <ul>
+          <li>Change --with-matlabengine-lib= to --with-matlab-engine-lib= to match --with-matlab-engine, print error message for deprecated form</li>
+        </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>PetscSF:</h4>
       <h4>PF:</h4>
       <h4>Vec:</h4>
+        <ul>
+          <li>Fix memory leaks when requesting -vec_type {standard|cuda|viennacl} when the vector is already of the desired type</li>
+        </ul>
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
+      <ul>
+        <li>PetscSectionGetClosurePermutation(), PetscSectionSetClosurePermutation(), and PetscSectionGetClosureInversePermutation() all require a new argument depth and the getters require closure size to be specified by the caller.
+          This allows multiple closure permutations to be specified, e.g., for mixed topology meshes and boundary faces and for variable-degree spaces.
+          The previous behavior only applied to points at height zero.
+        </li>
+      </ul>
       <h4>PetscPartitioner:</h4>
       <h4>Mat:</h4>
+        <ul>
+          <li>Fix few bugs for MATSEQSBAIJ when missing diagonal entries</li>
+          <li>Fix few bugs when trying to reuse matrices within MatMat operations</li>
+          <li>Deprecate MatFreeIntermediateDataStructures() in favor of MatProductClear()</li>
+          <li>Add MatShellSetMatProductOperation() to allow users specify symbolic and numeric phases for MatMat operations with MATSHELL matrices</li>
+          <li>Add support for distributed dense matrices on GPUs (MATMPIDENSECUDA)</li>
+          <li>Add few missing get/set/replace array operations for MATDENSE and MATDENSECUDA matrices</li>
+          <li>Add MatDense{Get|Restore}ColumnVec to access memory of a dense matrix as a Vec, together with read-only and write-only variants</li>
+          <li>Add MatDense{Get|Restore}SubMatrix to access memory of a contiguous subset of columns of a dense matrix as a Mat</li>
+          <li>Deprecate MatSeqDenseSetLDA in favor of MatDenseSetLDA</li>
+          <li>Add support for A*B and A^t*B operations with A = AIJCUSPARSE and B = DENSECUDA matrices</li>
+          <li>Add basic support for MATPRODUCT_AB (resp. MATPRODUCT_AtB) for any matrices with mult (multtranpose) operation defined and B dense</li>
+        </ul>
       <h4>PC:</h4>
+        <ul>
+          <li>Fix bugs related with reusing PCILU/PCICC/PCLU/PCCHOLESKY preconditioners with SEQAIJCUSPARSE matrices</li>
+        </ul>
       <h4>KSP:</h4>
+        <ul>
+          <li>Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence when the maximum number of iterations is reached</li>
+          <li>Fix many KSP implementations to actually perform the number of iterations requested</li>
+          <li>Add KSPMatSolve() for solving iteratively (currently only with KSPHPDDM) systems with multiple right-hand sides, and KSP{Set|Get}MatSolveBlockSize() to set a block size limit</li>
+        </ul>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
@@ -125,14 +167,25 @@
       <h4>DM/DA:</h4>
       <h4>DMPlex:</h4>
         <ul>
+          <li>Add DMPlexMatSetClosureGeneral() for different row and column layouts</li>
+          <li>DMPlexGet/RestoreClosureIndices() now take argument for ignoring the closure permutation and for modifying the input values for SetClosure()</li>
+          <li>DMPlexComputeInterpolatorNested() now takes a flag allowing nested interpolation between different spaces on the same mesh</li>
           <li>Add DMPlexInsertBoundaryValuesEssentialBdField() to insert boundary values using a field only supported on the boundary</li>
           <li>Change DMPlexCreateSubpointIS() to DMPlexGetSubpointIS()</li>
+          <li>Add PetscDSGet/SetBdJacobianPreconditioner() to assembly a PC for the boundary Jacobian</li>
+          <li>Add DMSetRegionNumDS() to directly set the DS for a given region</li>
+          <li>Add PetscDSGetQuadrature() to get the quadrature shared by all fields in the DS</li>
+          <li>Add several refinement methods for Plex</li>
+          <li>Add DMPlexGet/SetActivePoint() to allow user to see which mesh point is being handled by projection</li>
+          <li>Add DMPlexComputeOrthogonalQuality() to compute cell-wise orthogonality quality mesh statistic</li>
+          <li>DMPlexSetClosurePermutationTensor() now sets tensor permutations at every depth, instead of just height 0.</li>
         </ul>
       <h4>DT:</h4>
         <ul>
           <li>Add PetscDTJacobiNorm() for the weighted L2 norm of Jacobi polynomials</li>
           <li>Add PetscDTJacobiEvalJet() and PetscDTPKDEvalJet() for evaluating the derivatives of orthogonal polynomials on the segment (Jacobi) and simplex (PKD)</li>
           <li>Add PetscDTIndexToGradedOrder() and PetscDTGradedOrderToIndex() for indexing multivariate monomials and derivatives in a linear order</li>
+          <li>Add PetscSpaceType "sum" for constructing FE spaces as the sum or concatenation of other spaces.</li>
         </ul>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>

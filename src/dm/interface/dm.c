@@ -6,6 +6,10 @@
 #include <petscsf.h>
 #include <petscds.h>
 
+#if defined(PETSC_HAVE_VALGRIND)
+#  include <valgrind/memcheck.h>
+#endif
+
 PetscClassId  DM_CLASSID;
 PetscClassId  DMLABEL_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction, DM_CreateInjection, DM_CreateMatrix, DM_Load;
@@ -1460,6 +1464,10 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
   }
   link->next   = dm->workout;
   dm->workout  = link;
+#if defined(PETSC_HAVE_VALGRIND)
+  VALGRIND_MAKE_MEM_NOACCESS((char*)link->mem + (size_t)dsize*count, link->bytes - (size_t)dsize*count);
+  VALGRIND_MAKE_MEM_UNDEFINED(link->mem, (size_t)dsize*count);
+#endif
   *(void**)mem = link->mem;
   PetscFunctionReturn(0);
 }
@@ -2177,7 +2185,7 @@ PetscErrorCode DMGetBasisTransformVec_Internal(DM dm, Vec *tv)
 
   Level: developer
 
-.seealso: DMPlexGlobalToLocalBasis(), DMPlexLocalToGlobalBasis()()
+.seealso: DMPlexGlobalToLocalBasis(), DMPlexLocalToGlobalBasis(), DMPlexCreateBasisRotation()
 @*/
 PetscErrorCode DMHasBasisTransform(DM dm, PetscBool *flg)
 {
@@ -4652,6 +4660,22 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, DMLabel *label, PetscObject *field)
   PetscFunctionReturn(0);
 }
 
+/* Does not clear the DS */
+PetscErrorCode DMSetField_Internal(DM dm, PetscInt f, DMLabel label, PetscObject field)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMFieldEnlarge_Static(dm, f+1);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&dm->fields[f].label);CHKERRQ(ierr);
+  ierr = PetscObjectDestroy(&dm->fields[f].disc);CHKERRQ(ierr);
+  dm->fields[f].label = label;
+  dm->fields[f].disc  = field;
+  ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) field);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMSetField - Set the discretization object for a given DM field
 
@@ -4676,13 +4700,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject field)
   if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);
   PetscValidHeader(field, 4);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  ierr = DMFieldEnlarge_Static(dm, f+1);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&dm->fields[f].label);CHKERRQ(ierr);
-  ierr = PetscObjectDestroy(&dm->fields[f].disc);CHKERRQ(ierr);
-  dm->fields[f].label = label;
-  dm->fields[f].disc  = field;
-  ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject) field);CHKERRQ(ierr);
+  ierr = DMSetField_Internal(dm, f, label, field);CHKERRQ(ierr);
   ierr = DMSetDefaultAdjacency_Private(dm, f, field);CHKERRQ(ierr);
   ierr = DMClearDS(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5082,6 +5100,7 @@ PetscErrorCode DMGetCellDS(DM dm, PetscInt point, PetscDS *prob)
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(prob, 3);
+  if (point < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point cannot be negative: %D", point);
   *prob = NULL;
   for (s = 0; s < dm->Nds; ++s) {
     PetscInt val;
@@ -5135,48 +5154,6 @@ PetscErrorCode DMGetRegionDS(DM dm, DMLabel label, IS *fields, PetscDS *ds)
 }
 
 /*@
-  DMGetRegionNumDS - Get the PetscDS for a given mesh region, defined by the region number
-
-  Not collective
-
-  Input Parameters:
-+ dm  - The DM
-- num - The region number, in [0, Nds)
-
-  Output Parameters:
-+ label  - The region label, or NULL
-. fields - The IS containing the DM field numbers for the fields in this DS, or NULL
-- prob   - The PetscDS defined on the given region, or NULL
-
-  Level: advanced
-
-.seealso: DMGetRegionDS(), DMSetRegionDS(), DMGetDS(), DMGetCellDS()
-@*/
-PetscErrorCode DMGetRegionNumDS(DM dm, PetscInt num, DMLabel *label, IS *fields, PetscDS *ds)
-{
-  PetscInt       Nds;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
-  if ((num < 0) || (num >= Nds)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Region number %D is not in [0, %D)", num, Nds);
-  if (label) {
-    PetscValidPointer(label, 3);
-    *label = dm->probs[num].label;
-  }
-  if (fields) {
-    PetscValidPointer(fields, 4);
-    *fields = dm->probs[num].fields;
-  }
-  if (ds) {
-    PetscValidPointer(ds, 5);
-    *ds = dm->probs[num].ds;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
   DMSetRegionDS - Set the PetscDS for a given mesh region, defined by a DMLabel
 
   Collective on dm
@@ -5192,7 +5169,7 @@ PetscErrorCode DMGetRegionNumDS(DM dm, PetscInt num, DMLabel *label, IS *fields,
 
   Level: advanced
 
-.seealso: DMGetRegionDS(), DMGetDS(), DMGetCellDS()
+.seealso: DMGetRegionDS(), DMSetRegionNumDS(), DMGetDS(), DMGetCellDS()
 @*/
 PetscErrorCode DMSetRegionDS(DM dm, DMLabel label, IS fields, PetscDS ds)
 {
@@ -5226,6 +5203,124 @@ PetscErrorCode DMSetRegionDS(DM dm, DMLabel label, IS fields, PetscDS ds)
 }
 
 /*@
+  DMGetRegionNumDS - Get the PetscDS for a given mesh region, defined by the region number
+
+  Not collective
+
+  Input Parameters:
++ dm  - The DM
+- num - The region number, in [0, Nds)
+
+  Output Parameters:
++ label  - The region label, or NULL
+. fields - The IS containing the DM field numbers for the fields in this DS, or NULL
+- ds     - The PetscDS defined on the given region, or NULL
+
+  Level: advanced
+
+.seealso: DMGetRegionDS(), DMSetRegionDS(), DMGetDS(), DMGetCellDS()
+@*/
+PetscErrorCode DMGetRegionNumDS(DM dm, PetscInt num, DMLabel *label, IS *fields, PetscDS *ds)
+{
+  PetscInt       Nds;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  if ((num < 0) || (num >= Nds)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Region number %D is not in [0, %D)", num, Nds);
+  if (label) {
+    PetscValidPointer(label, 3);
+    *label = dm->probs[num].label;
+  }
+  if (fields) {
+    PetscValidPointer(fields, 4);
+    *fields = dm->probs[num].fields;
+  }
+  if (ds) {
+    PetscValidPointer(ds, 5);
+    *ds = dm->probs[num].ds;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSetRegionNumDS - Set the PetscDS for a given mesh region, defined by the region number
+
+  Not collective
+
+  Input Parameters:
++ dm     - The DM
+. num    - The region number, in [0, Nds)
+. label  - The region label, or NULL
+. fields - The IS containing the DM field numbers for the fields in this DS, or NULL to prevent setting
+- ds     - The PetscDS defined on the given region, or NULL to prevent setting
+
+  Level: advanced
+
+.seealso: DMGetRegionDS(), DMSetRegionDS(), DMGetDS(), DMGetCellDS()
+@*/
+PetscErrorCode DMSetRegionNumDS(DM dm, PetscInt num, DMLabel label, IS fields, PetscDS ds)
+{
+  PetscInt       Nds;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (label) {PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);}
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  if ((num < 0) || (num >= Nds)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Region number %D is not in [0, %D)", num, Nds);
+  ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&dm->probs[num].label);CHKERRQ(ierr);
+  dm->probs[num].label = label;
+  if (fields) {
+    PetscValidHeaderSpecific(fields, IS_CLASSID, 4);
+    ierr = PetscObjectReference((PetscObject) fields);CHKERRQ(ierr);
+    ierr = ISDestroy(&dm->probs[num].fields);CHKERRQ(ierr);
+    dm->probs[num].fields = fields;
+  }
+  if (ds) {
+    PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 5);
+    ierr = PetscObjectReference((PetscObject) ds);CHKERRQ(ierr);
+    ierr = PetscDSDestroy(&dm->probs[num].ds);CHKERRQ(ierr);
+    dm->probs[num].ds = ds;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMFindRegionNum - Find the region number for a given PetscDS, or -1 if it is not found.
+
+  Not collective
+
+  Input Parameters:
++ dm  - The DM
+- ds  - The PetscDS defined on the given region
+
+  Output Parameter:
+. num - The region number, in [0, Nds), or -1 if not found
+
+  Level: advanced
+
+.seealso: DMGetRegionNumDS(), DMGetRegionDS(), DMSetRegionDS(), DMGetDS(), DMGetCellDS()
+@*/
+PetscErrorCode DMFindRegionNum(DM dm, PetscDS ds, PetscInt *num)
+{
+  PetscInt       Nds, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 2);
+  PetscValidPointer(num, 3);
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  for (n = 0; n < Nds; ++n) if (ds == dm->probs[n].ds) break;
+  if (n >= Nds) *num = -1;
+  else          *num = n;
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMCreateDS - Create the discrete systems for the DM based upon the fields added to the DM
 
   Collective on dm
@@ -5242,106 +5337,168 @@ PetscErrorCode DMSetRegionDS(DM dm, DMLabel label, IS fields, PetscDS ds)
 PetscErrorCode DMCreateDS(DM dm)
 {
   MPI_Comm       comm;
-  PetscDS        prob, probh = NULL;
-  PetscInt       dimEmbed, Nf = dm->Nf, f, s, field = 0, fieldh = 0;
+  PetscDS        dsDef;
+  DMLabel       *labelSet;
+  PetscInt       dE, Nf = dm->Nf, f, s, Nl, l, Ndef;
   PetscBool      doSetup = PETSC_TRUE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->fields) PetscFunctionReturn(0);
-  /* Can only handle two label cases right now:
-   1) NULL
-   2) Hybrid cells
-  */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
-  /* Create default DS */
-  ierr = DMGetRegionDS(dm, NULL, NULL, &prob);CHKERRQ(ierr);
-  if (!prob) {
+  ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
+  /* Determine how many regions we have */
+  ierr = PetscMalloc1(Nf, &labelSet);CHKERRQ(ierr);
+  Nl   = 0;
+  Ndef = 0;
+  for (f = 0; f < Nf; ++f) {
+    DMLabel  label = dm->fields[f].label;
+    PetscInt l;
+
+    if (!label) {++Ndef; continue;}
+    for (l = 0; l < Nl; ++l) if (label == labelSet[l]) break;
+    if (l < Nl) continue;
+    labelSet[Nl++] = label;
+  }
+  /* Create default DS if there are no labels to intersect with */
+  ierr = DMGetRegionDS(dm, NULL, NULL, &dsDef);CHKERRQ(ierr);
+  if (!dsDef && Ndef && !Nl) {
     IS        fields;
     PetscInt *fld, nf;
 
     for (f = 0, nf = 0; f < Nf; ++f) if (!dm->fields[f].label) ++nf;
+    if (nf) {
+      ierr = PetscMalloc1(nf, &fld);CHKERRQ(ierr);
+      for (f = 0, nf = 0; f < Nf; ++f) if (!dm->fields[f].label) fld[nf++] = f;
+      ierr = ISCreate(PETSC_COMM_SELF, &fields);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) fields, "dm_fields_");CHKERRQ(ierr);
+      ierr = ISSetType(fields, ISGENERAL);CHKERRQ(ierr);
+      ierr = ISGeneralSetIndices(fields, nf, fld, PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+      ierr = PetscDSCreate(comm, &dsDef);CHKERRQ(ierr);
+      ierr = DMSetRegionDS(dm, NULL, fields, dsDef);CHKERRQ(ierr);
+      ierr = PetscDSDestroy(&dsDef);CHKERRQ(ierr);
+      ierr = ISDestroy(&fields);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMGetRegionDS(dm, NULL, NULL, &dsDef);CHKERRQ(ierr);
+  if (dsDef) {ierr = PetscDSSetCoordinateDimension(dsDef, dE);CHKERRQ(ierr);}
+  /* Intersect labels with default fields */
+  if (Ndef && Nl) {
+    DM              plex;
+    DMLabel         cellLabel;
+    IS              fieldIS, allcellIS, defcellIS = NULL;
+    PetscInt       *fields;
+    const PetscInt *cells;
+    PetscInt        depth, nf = 0, n, c;
+
+    ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
+    ierr = DMGetStratumIS(plex, "dim", depth, &allcellIS);CHKERRQ(ierr);
+    if (!allcellIS) {ierr = DMGetStratumIS(plex, "depth", depth, &allcellIS);CHKERRQ(ierr);}
+    for (l = 0; l < Nl; ++l) {
+      DMLabel label = labelSet[l];
+      IS      pointIS;
+
+      ierr = ISDestroy(&defcellIS);CHKERRQ(ierr);
+      ierr = DMLabelGetStratumIS(label, 1, &pointIS);CHKERRQ(ierr);
+      ierr = ISDifference(allcellIS, pointIS, &defcellIS);CHKERRQ(ierr);
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
+    ierr = ISDestroy(&allcellIS);CHKERRQ(ierr);
+
+    ierr = DMLabelCreate(PETSC_COMM_SELF, "defaultCells", &cellLabel);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(defcellIS, &n);CHKERRQ(ierr);
+    ierr = ISGetIndices(defcellIS, &cells);CHKERRQ(ierr);
+    for (c = 0; c < n; ++c) {ierr = DMLabelSetValue(cellLabel, cells[c], 1);CHKERRQ(ierr);}
+    ierr = ISRestoreIndices(defcellIS, &cells);CHKERRQ(ierr);
+    ierr = ISDestroy(&defcellIS);CHKERRQ(ierr);
+    ierr = DMPlexLabelComplete(plex, cellLabel);CHKERRQ(ierr);
+
+    ierr = PetscMalloc1(Ndef, &fields);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) if (!dm->fields[f].label) fields[nf++] = f;
+    ierr = ISCreate(PETSC_COMM_SELF, &fieldIS);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) fieldIS, "dm_fields_");CHKERRQ(ierr);
+    ierr = ISSetType(fieldIS, ISGENERAL);CHKERRQ(ierr);
+    ierr = ISGeneralSetIndices(fieldIS, nf, fields, PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+    ierr = PetscDSCreate(comm, &dsDef);CHKERRQ(ierr);
+    ierr = DMSetRegionDS(dm, cellLabel, fieldIS, dsDef);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&cellLabel);CHKERRQ(ierr);
+    ierr = PetscDSSetCoordinateDimension(dsDef, dE);CHKERRQ(ierr);
+    ierr = PetscDSDestroy(&dsDef);CHKERRQ(ierr);
+    ierr = ISDestroy(&fieldIS);CHKERRQ(ierr);
+    ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  }
+  /* Create label DSes
+     - WE ONLY SUPPORT IDENTICAL OR DISJOINT LABELS
+  */
+  /* TODO Should check that labels are disjoint */
+  for (l = 0; l < Nl; ++l) {
+    DMLabel   label = labelSet[l];
+    PetscDS   ds;
+    IS        fields;
+    PetscInt *fld, nf;
+
+    ierr = PetscDSCreate(comm, &ds);CHKERRQ(ierr);
+    for (f = 0, nf = 0; f < Nf; ++f) if (label == dm->fields[f].label || !dm->fields[f].label) ++nf;
     ierr = PetscMalloc1(nf, &fld);CHKERRQ(ierr);
-    for (f = 0, nf = 0; f < Nf; ++f) if (!dm->fields[f].label) fld[nf++] = f;
+    for (f = 0, nf = 0; f < Nf; ++f) if (label == dm->fields[f].label || !dm->fields[f].label) fld[nf++] = f;
     ierr = ISCreate(PETSC_COMM_SELF, &fields);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) fields, "dm_fields_");CHKERRQ(ierr);
     ierr = ISSetType(fields, ISGENERAL);CHKERRQ(ierr);
     ierr = ISGeneralSetIndices(fields, nf, fld, PETSC_OWN_POINTER);CHKERRQ(ierr);
-
-    ierr = PetscDSCreate(comm, &prob);CHKERRQ(ierr);
-    ierr = DMSetRegionDS(dm, NULL, fields, prob);CHKERRQ(ierr);
-    ierr = PetscDSDestroy(&prob);CHKERRQ(ierr);
+    ierr = DMSetRegionDS(dm, label, fields, ds);CHKERRQ(ierr);
     ierr = ISDestroy(&fields);CHKERRQ(ierr);
-    ierr = DMGetRegionDS(dm, NULL, NULL, &prob);CHKERRQ(ierr);
-  }
-  ierr = PetscDSSetCoordinateDimension(prob, dimEmbed);CHKERRQ(ierr);
-  /* Optionally create hybrid DS */
-  for (f = 0; f < Nf; ++f) {
-    DMLabel  label = dm->fields[f].label;
-    PetscInt lStart, lEnd;
-
-    if (label) {
-      DM             plex;
+    ierr = PetscDSSetCoordinateDimension(ds, dE);CHKERRQ(ierr);
+    {
       DMPolytopeType ct;
-      IS             fields;
-      PetscInt      *fld;
-      PetscInt       depth;
-
-      ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-      ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-      ierr = DMDestroy(&plex);CHKERRQ(ierr);
+      PetscInt       lStart, lEnd;
+      PetscBool      isHybridLocal = PETSC_FALSE, isHybrid;
 
       ierr = DMLabelGetBounds(label, &lStart, &lEnd);CHKERRQ(ierr);
-      ierr = DMPlexGetCellType(dm, lStart, &ct);CHKERRQ(ierr);
-      switch (ct) {
-        case DM_POLYTOPE_POINT_PRISM_TENSOR:
-        case DM_POLYTOPE_SEG_PRISM_TENSOR:
-        case DM_POLYTOPE_TRI_PRISM_TENSOR:
-        case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-          break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support labels over tensor prism cells right now");
+      if (lStart >= 0) {
+        ierr = DMPlexGetCellType(dm, lStart, &ct);CHKERRQ(ierr);
+        switch (ct) {
+          case DM_POLYTOPE_POINT_PRISM_TENSOR:
+          case DM_POLYTOPE_SEG_PRISM_TENSOR:
+          case DM_POLYTOPE_TRI_PRISM_TENSOR:
+          case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+            isHybridLocal = PETSC_TRUE;break;
+          default: break;
+        }
       }
-      ierr = PetscDSCreate(comm, &probh);CHKERRQ(ierr);
-      ierr = PetscMalloc1(1, &fld);CHKERRQ(ierr);
-      fld[0] = f;
-      ierr = ISCreate(PETSC_COMM_SELF, &fields);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject) fields, "dm_fields_");CHKERRQ(ierr);
-      ierr = ISSetType(fields, ISGENERAL);CHKERRQ(ierr);
-      ierr = ISGeneralSetIndices(fields, 1, fld, PETSC_OWN_POINTER);CHKERRQ(ierr);
-      ierr = DMSetRegionDS(dm, label, fields, probh);CHKERRQ(ierr);
-      ierr = ISDestroy(&fields);CHKERRQ(ierr);
-      ierr = PetscDSSetHybrid(probh, PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscDSSetCoordinateDimension(probh, dimEmbed);CHKERRQ(ierr);
-      break;
+      ierr = MPI_Allreduce(&isHybridLocal, &isHybrid, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
+      ierr = PetscDSSetHybrid(ds, isHybrid);CHKERRQ(ierr);
     }
+    ierr = PetscDSDestroy(&ds);CHKERRQ(ierr);
   }
+  ierr = PetscFree(labelSet);CHKERRQ(ierr);
   /* Set fields in DSes */
-  for (f = 0; f < Nf; ++f) {
-    DMLabel     label = dm->fields[f].label;
-    PetscObject disc  = dm->fields[f].disc;
+  for (s = 0; s < dm->Nds; ++s) {
+    PetscDS         ds     = dm->probs[s].ds;
+    IS              fields = dm->probs[s].fields;
+    const PetscInt *fld;
+    PetscInt        nf;
 
-    if (!label) {
-      ierr = PetscDSSetDiscretization(prob,  field++,  disc);CHKERRQ(ierr);
-      if (probh) {
-        PetscFE subfe;
-
-        ierr = PetscFEGetHeightSubspace((PetscFE) disc, 1, &subfe);CHKERRQ(ierr);
-        ierr = PetscDSSetDiscretization(probh, fieldh++, (PetscObject) subfe);CHKERRQ(ierr);
-      }
-    } else {
-      ierr = PetscDSSetDiscretization(probh, fieldh++, disc);CHKERRQ(ierr);
-    }
-    /* We allow people to have placeholder fields and construct the Section by hand */
-    {
+    ierr = ISGetLocalSize(fields, &nf);CHKERRQ(ierr);
+    ierr = ISGetIndices(fields, &fld);CHKERRQ(ierr);
+    for (f = 0; f < nf; ++f) {
+      PetscObject  disc  = dm->fields[fld[f]].disc;
+      PetscBool    isHybrid;
       PetscClassId id;
 
+      ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
+      /* If this is a cohesive cell, then it needs the lower dimensional discretization */
+      if (isHybrid && f < nf-1) {ierr = PetscFEGetHeightSubspace((PetscFE) disc, 1, (PetscFE *) &disc);CHKERRQ(ierr);}
+      ierr = PetscDSSetDiscretization(ds, f, disc);CHKERRQ(ierr);
+      /* We allow people to have placeholder fields and construct the Section by hand */
       ierr = PetscObjectGetClassId(disc, &id);CHKERRQ(ierr);
       if ((id != PETSCFE_CLASSID) && (id != PETSCFV_CLASSID)) doSetup = PETSC_FALSE;
     }
+    ierr = ISRestoreIndices(fields, &fld);CHKERRQ(ierr);
   }
-  ierr = PetscDSDestroy(&probh);CHKERRQ(ierr);
   /* Setup DSes */
   if (doSetup) {
     for (s = 0; s < dm->Nds; ++s) {ierr = PetscDSSetUp(dm->probs[s].ds);CHKERRQ(ierr);}

@@ -129,7 +129,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         IS       is1,is2;
         PetscInt *idx1,*idx2,i,j,k;
 
-        ierr = MatCreateVecs(pc->pmat,&x,0);CHKERRQ(ierr);
+        ierr = MatCreateVecs(pc->pmat,&x,NULL);CHKERRQ(ierr);
         ierr = VecGetSize(x,&M);CHKERRQ(ierr);
         ierr = VecGetOwnershipRange(x,&mstart,&mend);CHKERRQ(ierr);
         mlocal = mend - mstart;
@@ -302,7 +302,7 @@ static PetscErrorCode PCSetFromOptions_Redundant(PetscOptionItems *PetscOptionsO
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Redundant options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_redundant_number","Number of redundant pc","PCRedundantSetNumber",red->nsubcomm,&red->nsubcomm,0);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_redundant_number","Number of redundant pc","PCRedundantSetNumber",red->nsubcomm,&red->nsubcomm,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

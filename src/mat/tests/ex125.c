@@ -26,7 +26,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
@@ -67,10 +67,7 @@ int main(int argc,char **args)
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
 
   /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
   /* Test Factorization */
@@ -126,6 +123,17 @@ int main(int argc,char **args)
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD," MKL_PARDISO LU:\n");CHKERRQ(ierr);
       ierr = MatGetFactor(A,MATSOLVERMKL_PARDISO,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    }
+    break;
+#endif
+#if defined(PETSC_HAVE_CUDA)
+  case 4:
+    if (chol) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," CUSPARSE CHOLESKY:\n");CHKERRQ(ierr);
+      ierr = MatGetFactor(A,MATSOLVERCUSPARSE,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," CUSPARSE LU:\n");CHKERRQ(ierr);
+      ierr = MatGetFactor(A,MATSOLVERCUSPARSE,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     }
     break;
 #endif
@@ -326,5 +334,10 @@ int main(int argc,char **args)
       requires: datafilespath superlu_dist complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_type 1
       output_file: output/ex125_superlu_dist_complex.out
+
+   test:
+      suffix: cusparse
+      requires: cuda datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type 4 -cholesky {{0 1}separate output}
 
 TEST*/

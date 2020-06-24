@@ -16,6 +16,7 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
+    self.cuda            = framework.require('config.packages.cuda',self)
     return
 
   def setupHelp(self, help):
@@ -37,6 +38,8 @@ class Configure(config.package.GNUPackage):
       self.installDir = self.defaultInstallDir
       self.updateCompilers(self.installDir,'mpicc','mpicxx','mpif77','mpif90')
       return self.installDir
+    if self.cuda.found:
+      self.logPrintBox('***** WARNING: CUDA enabled! Its best to use --download-openmpi instead of --download-mpich as it provides CUDA enabled MPI! ****')
     if self.argDB['download-'+self.downloadname.lower()]:
       return self.getInstallDir()
     return ''
@@ -60,6 +63,8 @@ class Configure(config.package.GNUPackage):
       self.setCompilers.pushLanguage('FC')
       if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
         args = self.addArgStartsWith(args,'FFLAGS','-mismatch')
+      elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
+        args = self.addArgStartsWith(args,'FFLAGS','-fallow-argument-mismatch')
       self.setCompilers.popLanguage()
 
     # MPICH configure errors out on certain standard configure arguments

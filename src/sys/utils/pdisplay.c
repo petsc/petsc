@@ -42,9 +42,9 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
 
   ierr = PetscStrcpy(work,"-");CHKERRQ(ierr);
   if (spetsc) {
-    ierr = PetscStrcat(work,name+6);CHKERRQ(ierr);
+    ierr = PetscStrlcat(work,name+6,sizeof(work));CHKERRQ(ierr);
   } else {
-    ierr = PetscStrcat(work,name);CHKERRQ(ierr);
+    ierr = PetscStrlcat(work,name,sizeof(work));CHKERRQ(ierr);
   }
   ierr = PetscStrtolower(work);CHKERRQ(ierr);
   if (env) {

@@ -11,7 +11,7 @@
 PetscClassId  TS_CLASSID, DMTS_CLASSID;
 PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
-const char *const TSExactFinalTimeOptions[] = {"UNSPECIFIED","STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
+const char *const TSExactFinalTimeOptions[] = {"UNSPECIFIED","STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",NULL};
 
 
 /*@C
@@ -182,7 +182,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_extreme","Monitor extreme values of the solution","TSMonitorExtreme",TSMonitorExtreme,NULL);CHKERRQ(ierr);
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_solution","View the solution at each timestep","TSMonitorSolution",TSMonitorSolution,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",NULL,monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
 
   ierr = PetscOptionsName("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",&opt);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt       howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
 
@@ -201,7 +201,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt       howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_error","View the error at each timestep","TSMonitorError",TSMonitorError,NULL);CHKERRQ(ierr);
@@ -250,7 +250,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt          howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_sp_eig","Monitor eigenvalues of linearized operator graphically","TSMonitorSPEig",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorSPEigCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSPEigCtxCreate(PETSC_COMM_SELF,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorSPEig,ctx,(PetscErrorCode (*)(void**))TSMonitorSPEigCtxDestroy);CHKERRQ(ierr);
   }
   ierr = PetscOptionsName("-ts_monitor_sp_swarm","Display particle phase from the DMSwarm","TSMonitorSPSwarm",&opt);CHKERRQ(ierr);
@@ -268,7 +268,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,"Computed Solution",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),NULL,"Computed Solution",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
@@ -282,7 +282,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
     ierr = PetscOptionsRealArray("-ts_monitor_draw_solution_phase","Monitor solution graphically","TSMonitorDrawSolutionPhase",bounds,&n,NULL);CHKERRQ(ierr);
     if (n != 4) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Must provide bounding box of phase field");
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,1,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,1,&ctx);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDraw(ctx->viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDrawAxis(ctx->viewer,0,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLimits(axis,bounds[0],bounds[2],bounds[1],bounds[3]);CHKERRQ(ierr);
@@ -296,7 +296,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,"Error",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),NULL,"Error",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawError,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
@@ -306,12 +306,12 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_draw_solution_function","Monitor solution provided by TSMonitorSetSolutionFunction() graphically","TSMonitorDrawSolutionFunction",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,"Solution provided by user function",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),NULL,"Solution provided by user function",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolutionFunction,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
 
   opt  = PETSC_FALSE;
-  ierr = PetscOptionsString("-ts_monitor_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ts_monitor_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",NULL,monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
   if (flg) {
     const char *ptr,*ptr2;
     char       *filetemplate;
@@ -328,7 +328,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorSet(ts,TSMonitorSolutionVTK,filetemplate,(PetscErrorCode (*)(void**))TSMonitorSolutionVTKDestroy);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsString("-ts_monitor_dmda_ray","Display a ray of the solution","None","y=0",dir,16,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ts_monitor_dmda_ray","Display a ray of the solution","None","y=0",dir,sizeof(dir),&flg);CHKERRQ(ierr);
   if (flg) {
     TSMonitorDMDARayCtx *rayctx;
     int                  ray = 0;
@@ -348,12 +348,12 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = DMDAGetRay(da,ddir,ray,&rayctx->ray,&rayctx->scatter);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,600,300,&rayctx->viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,NULL,NULL,0,0,600,300,&rayctx->viewer);CHKERRQ(ierr);
     }
     rayctx->lgctx = NULL;
     ierr = TSMonitorSet(ts,TSMonitorDMDARay,rayctx,TSMonitorDMDARayDestroy);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsString("-ts_monitor_lg_dmda_ray","Display a ray of the solution","None","x=0",dir,16,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ts_monitor_lg_dmda_ray","Display a ray of the solution","None","x=0",dir,sizeof(dir),&flg);CHKERRQ(ierr);
   if (flg) {
     TSMonitorDMDARayCtx *rayctx;
     int                 ray = 0;
@@ -371,7 +371,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscNew(&rayctx);CHKERRQ(ierr);
     ierr = TSGetDM(ts, &da);CHKERRQ(ierr);
     ierr = DMDAGetRay(da, ddir, ray, &rayctx->ray, &rayctx->scatter);CHKERRQ(ierr);
-    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&rayctx->lgctx);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&rayctx->lgctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts, TSMonitorLGDMDARay, rayctx, TSMonitorDMDARayDestroy);CHKERRQ(ierr);
   }
 
@@ -392,7 +392,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
     ierr = DMGetDMTS(dm, &tdm);CHKERRQ(ierr);
     tdm->ijacobianctx = NULL;
-    ierr = TSSetIJacobian(ts, NULL, NULL, TSComputeIJacobianDefaultColor, 0);CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts, NULL, NULL, TSComputeIJacobianDefaultColor, NULL);CHKERRQ(ierr);
     ierr = PetscInfo(ts, "Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
 
@@ -566,7 +566,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,&rhsjacobianfunc,&ctx);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,&ijacobianfunc,NULL);CHKERRQ(ierr);
-  ierr = DMTSGetRHSFunction(dm,&rhsfunction,&ctx);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunction(dm,&rhsfunction,NULL);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
   ierr = PetscObjectGetId((PetscObject)U,&Uid);CHKERRQ(ierr);
 
@@ -618,20 +618,11 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   }
 
   if (rhsjacobianfunc) {
-    PetscBool missing;
     ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
     PetscStackPush("TS user Jacobian function");
     ierr = (*rhsjacobianfunc)(ts,t,U,A,B,ctx);CHKERRQ(ierr);
     PetscStackPop;
     ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
-    if (A) {
-      ierr = MatMissingDiagonal(A,&missing,NULL);CHKERRQ(ierr);
-      if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Amat passed to TSSetRHSJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
-    }
-    if (B && B != A) {
-      ierr = MatMissingDiagonal(B,&missing,NULL);CHKERRQ(ierr);
-      if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Bmat passed to TSSetRHSJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
-    }
   } else {
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
     if (B && A != B) {ierr = MatZeroEntries(B);CHKERRQ(ierr);}
@@ -968,16 +959,9 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 
   ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
   if (ijacobian) {
-    PetscBool missing;
     PetscStackPush("TS user implicit Jacobian");
     ierr = (*ijacobian)(ts,t,U,Udot,shift,A,B,ctx);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = MatMissingDiagonal(A,&missing,NULL);CHKERRQ(ierr);
-    if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Amat passed to TSSetIJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
-    if (B != A) {
-      ierr = MatMissingDiagonal(B,&missing,NULL);CHKERRQ(ierr);
-      if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Bmat passed to TSSetIJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
-    }
   }
   if (imex) {
     if (!ijacobian) {  /* system was written as Udot = G(t,U) */
@@ -2813,7 +2797,7 @@ PetscErrorCode  TSDestroy(TS *ts)
   PetscFunctionBegin;
   if (!*ts) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*ts,TS_CLASSID,1);
-  if (--((PetscObject)(*ts))->refct > 0) {*ts = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*ts))->refct > 0) {*ts = NULL; PetscFunctionReturn(0);}
 
   ierr = TSReset(*ts);CHKERRQ(ierr);
   ierr = TSAdjointReset(*ts);CHKERRQ(ierr);
@@ -3697,13 +3681,13 @@ PetscErrorCode  TSStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscCitationsRegister("@techreport{tspaper,\n"
-                                "  title       = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
-                                "  author      = {Shrirang Abhyankar and Jed Brown and Emil Constantinescu and Debojyoti Ghosh and Barry F. Smith},\n"
-                                "  type        = {Preprint},\n"
-                                "  number      = {ANL/MCS-P5061-0114},\n"
-                                "  institution = {Argonne National Laboratory},\n"
-                                "  year        = {2014}\n}\n",&cite);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@article{tspaper,\n"
+                                "  title         = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
+                                "  author        = {Abhyankar, Shrirang and Brown, Jed and Constantinescu, Emil and Ghosh, Debojyoti and Smith, Barry F. and Zhang, Hong},\n"
+                                "  journal       = {arXiv e-preprints},\n"
+                                "  eprint        = {1806.01437},\n"
+                                "  archivePrefix = {arXiv},\n"
+                                "  year          = {2018}\n}\n",&cite);CHKERRQ(ierr);
 
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
@@ -4132,10 +4116,14 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         ierr = TSRHSJacobianTestTranspose(ts,NULL);CHKERRQ(ierr);
       }
       if (ts->quadraturets && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
+        if (ts->reason >= 0) ts->steps--; /* Revert the step number changed by TSStep() */
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
+        if (ts->reason >= 0) ts->steps++;
       }
       if (ts->forward_solve) { /* compute forward sensitivities before event handling because postevent() may change RHS and jump conditions may have to be applied */
+        if (ts->reason >= 0) ts->steps--; /* Revert the step number changed by TSStep() */
         ierr = TSForwardStep(ts);CHKERRQ(ierr);
+        if (ts->reason >= 0) ts->steps++;
       }
       ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
       ierr = TSEventHandler(ts);CHKERRQ(ierr); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
@@ -5631,7 +5619,7 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 
    Level: beginner
 
-.seealso: TS, TSAdapt, TSVecNormWRMS(), TSGetTolerances()
+.seealso: TS, TSAdapt, TSErrorWeightedNorm(), TSGetTolerances()
 @*/
 PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec vrtol)
 {
@@ -5669,7 +5657,7 @@ PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec
 
    Level: beginner
 
-.seealso: TS, TSAdapt, TSVecNormWRMS(), TSSetTolerances()
+.seealso: TS, TSAdapt, TSErrorWeightedNorm(), TSSetTolerances()
 @*/
 PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,Vec *vrtol)
 {

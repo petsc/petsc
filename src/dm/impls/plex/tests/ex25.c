@@ -32,7 +32,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   if (options->dim > 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "dimension set to %d, must be <= 3", options->dim);
   ierr = PetscOptionsBool("-simplex", "Use simplices if true, otherwise hexes", FILENAME, options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", FILENAME, options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", FILENAME, options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-filename", "The mesh file", FILENAME, options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   options->faces[0] = 1; options->faces[1] = 1; options->faces[2] = 1;
   dim = options->dim;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, options->faces, &dim, NULL);CHKERRQ(ierr);

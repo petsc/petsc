@@ -3,9 +3,9 @@
 
 #define H(i,j)  qn->dXdFmat[i*qn->m + j]
 
-const char *const SNESQNScaleTypes[] =        {"DEFAULT","NONE","SCALAR","DIAGONAL","JACOBIAN","SNESQNScaleType","SNES_QN_SCALING_",0};
-const char *const SNESQNRestartTypes[] =      {"DEFAULT","NONE","POWELL","PERIODIC","SNESQNRestartType","SNES_QN_RESTART_",0};
-const char *const SNESQNTypes[] =             {"LBFGS","BROYDEN","BADBROYDEN","SNESQNType","SNES_QN_",0};
+const char *const SNESQNScaleTypes[] =        {"DEFAULT","NONE","SCALAR","DIAGONAL","JACOBIAN","SNESQNScaleType","SNES_QN_SCALING_",NULL};
+const char *const SNESQNRestartTypes[] =      {"DEFAULT","NONE","POWELL","PERIODIC","SNESQNRestartType","SNES_QN_RESTART_",NULL};
+const char *const SNESQNTypes[] =             {"LBFGS","BROYDEN","BADBROYDEN","SNESQNType","SNES_QN_",NULL};
 
 typedef struct {
   Mat               B;                    /* Quasi-Newton approximation Matrix (MATLMVM) */

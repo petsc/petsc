@@ -51,7 +51,6 @@ int main(int argc,char **args)
 
    test:
       nsize: 2
-      args: -vecscatter_type sf
       filter: grep -v alloced
 
 TEST*/

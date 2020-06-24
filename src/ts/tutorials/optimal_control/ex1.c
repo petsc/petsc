@@ -59,17 +59,17 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec U,Mat A,void *ctx)
   ierr = VecGetArrayRead(actx->V,&v);CHKERRQ(ierr);
   ierr = VecGetArrayRead(actx->W,&w);CHKERRQ(ierr);
 
-  Jp[0][0] = PetscCosReal(w[step-1]);
-  Jp[0][1] = -v[step-1]*PetscSinReal(w[step-1]);
-  Jp[1][0] = PetscSinReal(w[step-1]);
-  Jp[1][1] = v[step-1]*PetscCosReal(w[step-1]);
+  Jp[0][0] = PetscCosReal(w[step]);
+  Jp[0][1] = -v[step]*PetscSinReal(w[step]);
+  Jp[1][0] = PetscSinReal(w[step]);
+  Jp[1][1] = v[step]*PetscCosReal(w[step]);
 
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(actx->V,&v);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(actx->W,&w);CHKERRQ(ierr);
 
-  rowcol[0] = 2*(step-1);
-  rowcol[1] = 2*(step-1)+1;
+  rowcol[0] = 2*step;
+  rowcol[1] = 2*step+1;
   ierr      = MatSetValues(A,2,rows,2,rowcol,&Jp[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -114,18 +114,18 @@ static PetscErrorCode RHSHessianProductPP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr
   ierr = VecSet(VHV[0],0.0);CHKERRQ(ierr);
   ierr = VecGetArray(VHV[0],&vhv);CHKERRQ(ierr);
 
-  dJpdP[0][0][1] = -PetscSinReal(w[step-1]);
-  dJpdP[0][1][0] = -PetscSinReal(w[step-1]);
-  dJpdP[0][1][1] = -v[step-1]*PetscCosReal(w[step-1]);
-  dJpdP[1][0][1] = PetscCosReal(w[step-1]);
-  dJpdP[1][1][0] = PetscCosReal(w[step-1]);
-  dJpdP[1][1][1] = -v[step-1]*PetscSinReal(w[step-1]);
+  dJpdP[0][0][1] = -PetscSinReal(w[step]);
+  dJpdP[0][1][0] = -PetscSinReal(w[step]);
+  dJpdP[0][1][1] = -v[step]*PetscCosReal(w[step]);
+  dJpdP[1][0][1] = PetscCosReal(w[step]);
+  dJpdP[1][1][0] = PetscCosReal(w[step]);
+  dJpdP[1][1][1] = -v[step]*PetscSinReal(w[step]);
 
   for (j=0; j<2; j++) {
-    vhv[2*(step-1)+j] = 0;
+    vhv[2*step+j] = 0;
     for (k=0; k<2; k++)
       for (i=0; i<2; i++)
-        vhv[2*(step-1)+j] += vl[i]*dJpdP[i][j][k]*vr[2*(step-1)+k];
+        vhv[2*step+j] += vl[i]*dJpdP[i][j][k]*vr[2*step+k];
   }
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Vl[0],&vl);CHKERRQ(ierr);

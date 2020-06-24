@@ -257,10 +257,10 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
-  Mat_SeqAIJ     *matA_1, *matB_1=0;
+  Mat_SeqAIJ     *matA_1, *matB_1=NULL;
   MPI_Comm       comm;
   PetscInt       lid,*ii,*idx,ix,Iend,my0,kk,n,j;
-  Mat_MPIAIJ     *mpimat_2 = 0, *mpimat_1=0;
+  Mat_MPIAIJ     *mpimat_2 = NULL, *mpimat_1=NULL;
   const PetscInt nloc      = Gmat_2->rmap->n;
   PetscScalar    *cpcol_1_state,*cpcol_2_state,*cpcol_2_par_orig,*lid_parent_gid;
   PetscInt       *lid_cprowID_1;
@@ -338,7 +338,7 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
   if (isMPI) {
     Vec tempVec;
     /* get 'cpcol_1_state' */
-    ierr = MatCreateVecs(Gmat_1, &tempVec, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Gmat_1, &tempVec, NULL);CHKERRQ(ierr);
     for (kk=0,j=my0; kk<nloc; kk++,j++) {
       PetscScalar v = (PetscScalar)lid_state[kk];
       ierr = VecSetValues(tempVec, 1, &j, &v, INSERT_VALUES);CHKERRQ(ierr);
@@ -457,7 +457,7 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
     PCGAMGHashTable gid_cpid;
 
     ierr = VecGetSize(mpimat_2->lvec, &nghost_2);CHKERRQ(ierr);
-    ierr = MatCreateVecs(Gmat_2, &tempVec, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Gmat_2, &tempVec, NULL);CHKERRQ(ierr);
 
     /* get 'cpcol_2_parent' */
     for (kk=0,j=my0; kk<nloc; kk++,j++) {
@@ -1115,8 +1115,8 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       emin = pc_gamg->emin;
       emax = pc_gamg->emax;
     } else {
-      ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
-      ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(Amat, &bb, NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(Amat, &xx, NULL);CHKERRQ(ierr);
       ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
       ierr = VecSetRandom(bb,random);CHKERRQ(ierr);
       ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
@@ -1172,10 +1172,10 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 
     /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
     ierr  = MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat);CHKERRQ(ierr);
-    ierr  = MatCreateVecs(Amat, &diag, 0);CHKERRQ(ierr);
+    ierr  = MatCreateVecs(Amat, &diag, NULL);CHKERRQ(ierr);
     ierr  = MatGetDiagonal(Amat, diag);CHKERRQ(ierr); /* effectively PCJACOBI */
     ierr  = VecReciprocal(diag);CHKERRQ(ierr);
-    ierr  = MatDiagonalScale(tMat, diag, 0);CHKERRQ(ierr);
+    ierr  = MatDiagonalScale(tMat, diag, NULL);CHKERRQ(ierr);
     ierr  = VecDestroy(&diag);CHKERRQ(ierr);
     alpha = -1.4/emax;
     ierr  = MatAYPX(tMat, alpha, Prol, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);

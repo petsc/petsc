@@ -135,7 +135,7 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
   doprint  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,prefix,"-pc_gasm_print_subdomains",&doprint,NULL);CHKERRQ(ierr);
   if (!doprint) PetscFunctionReturn(0);
-  ierr = PetscOptionsGetString(NULL,prefix,"-pc_gasm_print_subdomains",fname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,prefix,"-pc_gasm_print_subdomains",fname,sizeof(fname),&found);CHKERRQ(ierr);
   if (!found) { ierr = PetscStrcpy(fname,"stdout");CHKERRQ(ierr); };
   ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc),fname,&viewer);CHKERRQ(ierr);
   /*
@@ -616,7 +616,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   if(osm->pcmat){
     ierr = MatDestroy(&pc->pmat);CHKERRQ(ierr);
     pc->pmat   = osm->pcmat;
-    osm->pcmat = 0;
+    osm->pcmat = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -1268,22 +1268,22 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   osm->n                        = PETSC_DECIDE;
   osm->nmax                     = PETSC_DETERMINE;
   osm->overlap                  = 0;
-  osm->ksp                      = 0;
-  osm->gorestriction            = 0;
-  osm->girestriction            = 0;
-  osm->pctoouter                = 0;
-  osm->gx                       = 0;
-  osm->gy                       = 0;
-  osm->x                        = 0;
-  osm->y                        = 0;
-  osm->pcx                      = 0;
-  osm->pcy                      = 0;
-  osm->permutationIS            = 0;
-  osm->permutationP             = 0;
-  osm->pcmat                    = 0;
-  osm->ois                      = 0;
-  osm->iis                      = 0;
-  osm->pmat                     = 0;
+  osm->ksp                      = NULL;
+  osm->gorestriction            = NULL;
+  osm->girestriction            = NULL;
+  osm->pctoouter                = NULL;
+  osm->gx                       = NULL;
+  osm->gy                       = NULL;
+  osm->x                        = NULL;
+  osm->y                        = NULL;
+  osm->pcx                      = NULL;
+  osm->pcy                      = NULL;
+  osm->permutationIS            = NULL;
+  osm->permutationP             = NULL;
+  osm->pcmat                    = NULL;
+  osm->ois                      = NULL;
+  osm->iis                      = NULL;
+  osm->pmat                     = NULL;
   osm->type                     = PC_GASM_RESTRICT;
   osm->same_subdomain_solvers   = PETSC_TRUE;
   osm->sort_indices             = PETSC_TRUE;
@@ -1299,7 +1299,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   pc->ops->setfromoptions  = PCSetFromOptions_GASM;
   pc->ops->setuponblocks   = PCSetUpOnBlocks_GASM;
   pc->ops->view            = PCView_GASM;
-  pc->ops->applyrichardson = 0;
+  pc->ops->applyrichardson = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetSubdomains_C",PCGASMSetSubdomains_GASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetOverlap_C",PCGASMSetOverlap_GASM);CHKERRQ(ierr);
@@ -1357,7 +1357,7 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
            MatConvert(Ad,MATMPIADJ,MAT_INITIAL_MATRIX,&adj) will
            remove the block-aij structure and we cannot expect
            MatPartitioning to split vertices as we need */
-        PetscInt       i,j,len,nnz,cnt,*iia=0,*jja=0;
+        PetscInt       i,j,len,nnz,cnt,*iia=NULL,*jja=NULL;
         const PetscInt *row;
         nnz = 0;
         for (i=0; i<na; i++) { /* count number of nonzeros */
@@ -1632,7 +1632,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
   PetscInt       k,kk;
   PetscMPIInt    color;
   MPI_Comm       comm, subcomm;
-  IS             **xis = 0, **is = ois, **is_local = iis;
+  IS             **xis = NULL, **is = ois, **is_local = iis;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc, &comm);CHKERRQ(ierr);

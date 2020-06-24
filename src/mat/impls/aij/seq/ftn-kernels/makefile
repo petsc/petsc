@@ -1,4 +1,4 @@
--include ../petscdir.mk
+-include ../../../../../../petscdir.mk
 # This directory contains some computational kernels written in
 # Fortran77.  These are mainly intended to provide high performance for
 # COMPLEX arithmetic (since most C++ compilers do not do a good job

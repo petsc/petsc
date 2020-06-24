@@ -764,12 +764,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   agmres->q_preallocate  = 0;
   agmres->delta_allocate = AGMRES_DELTA_DIRECTIONS;
   agmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
-  agmres->nrs            = 0;
-  agmres->sol_temp       = 0;
+  agmres->nrs            = NULL;
+  agmres->sol_temp       = NULL;
   agmres->max_k          = AGMRES_DEFAULT_MAXK;
-  agmres->Rsvd           = 0;
+  agmres->Rsvd           = NULL;
   agmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  agmres->orthogwork     = 0;
+  agmres->orthogwork     = NULL;
 
   /* Default values for the deflation */
   agmres->r           = 0;

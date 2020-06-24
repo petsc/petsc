@@ -50,14 +50,14 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   rnmax_computed = zeta0;
   rnmax_true     = zeta0;
 
-  ierr = (*ksp->converged)(ksp, 0, zeta0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) {
-    ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
-    ksp->its   = 0;
-    ksp->rnorm = zeta0;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ksp->its   = 0;
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta0;
+  else ksp->rnorm = 0.0;
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = (*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) PetscFunctionReturn(0);
 
   ierr  = VecSet(VVU[0],0.0);CHKERRQ(ierr);
   alpha = 0.;
@@ -78,15 +78,21 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   ierr = KSPGetTolerances(ksp, NULL, NULL, NULL, &maxit);CHKERRQ(ierr);
 
   for (k=0; k<maxit; k += bcgsl->ell) {
-    ksp->its   = k;
-    ksp->rnorm = zeta;
+    ksp->its = k;
+    if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta;
+    else ksp->rnorm = 0.0;
 
-    ierr = KSPLogResidualHistory(ksp, zeta);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp, ksp->its, zeta);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp, ksp->rnorm);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp, ksp->its, ksp->rnorm);CHKERRQ(ierr);
 
-    ierr = (*ksp->converged)(ksp, k, zeta, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason < 0) PetscFunctionReturn(0);
-    else if (ksp->reason) break;
+    if (ksp->reason) {
+      if (bcgsl->delta>0.0) {
+        ierr = VecAXPY(VX,1.0,VXR);CHKERRQ(ierr);
+      }
+      PetscFunctionReturn(0);
+    }
 
     /* BiCG part */
     rho0 = -omega*rho0;
@@ -593,6 +599,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_BCGSL;
   ksp->ops->solve          = KSPSolve_BCGSL;
@@ -615,4 +622,3 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
   bcgsl->delta = 0.0;
   PetscFunctionReturn(0);
 }
-

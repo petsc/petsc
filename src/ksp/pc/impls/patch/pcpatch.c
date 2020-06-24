@@ -3063,7 +3063,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   ierr = PetscFree(patch->precomputedTensorLocations);CHKERRQ(ierr);
   ierr = PetscFree(patch->precomputedIntFacetTensorLocations);CHKERRQ(ierr);
   
-  patch->bs          = 0;
+  patch->bs          = NULL;
   patch->cellNodeMap = NULL;
   patch->nsubspaces  = 0;
   ierr = ISDestroy(&patch->iterationSet);CHKERRQ(ierr);
@@ -3346,14 +3346,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
 
   pc->data                 = (void *) patch;
   pc->ops->apply           = PCApply_PATCH;
-  pc->ops->applytranspose  = 0; /* PCApplyTranspose_PATCH; */
+  pc->ops->applytranspose  = NULL; /* PCApplyTranspose_PATCH; */
   pc->ops->setup           = PCSetUp_PATCH;
   pc->ops->reset           = PCReset_PATCH;
   pc->ops->destroy         = PCDestroy_PATCH;
   pc->ops->setfromoptions  = PCSetFromOptions_PATCH;
   pc->ops->setuponblocks   = PCSetUpOnBlocks_PATCH;
   pc->ops->view            = PCView_PATCH;
-  pc->ops->applyrichardson = 0;
+  pc->ops->applyrichardson = NULL;
 
   PetscFunctionReturn(0);
 }

@@ -58,14 +58,14 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
   if (flg) {
     ierr    = PetscStrcpy(file[1],file[0]);CHKERRQ(ierr);
     preload = PETSC_FALSE;
   } else {
-    ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f0 or -f option");
-    ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
     if (!flg) preload = PETSC_FALSE;   /* don't bother with second system */
   }
 
@@ -101,7 +101,7 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetString(NULL,NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-rhs",file[2],sizeof(file[2]),&flg);CHKERRQ(ierr);
   if (flg) {   /* rhs is stored in a separate file */
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ int main(int argc,char **args)
   /* Add a shift to A */
   ierr = PetscOptionsGetScalar(NULL,NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscOptionsGetString(NULL,NULL,"-fB",file[2],PETSC_MAX_PATH_LEN,&flgB);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-fB",file[2],sizeof(file[2]),&flgB);CHKERRQ(ierr);
     if (flgB) {
       /* load B to get A = A + sigma*B */
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
@@ -339,7 +339,7 @@ int main(int argc,char **args)
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsGetString(NULL,NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-solution",file[3],sizeof(file[3]),&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       Vec         xstar;

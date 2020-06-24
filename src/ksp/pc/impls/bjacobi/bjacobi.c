@@ -286,7 +286,7 @@ static PetscErrorCode  PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,Pet
   PetscFunctionBegin;
   if (pc->setupcalled > 0 && jac->n!=blocks) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Cannot alter number of blocks after PCSetUp()/KSPSetUp() has been called");
   jac->n = blocks;
-  if (!lens) jac->g_lens = 0;
+  if (!lens) jac->g_lens = NULL;
   else {
     ierr = PetscMalloc1(blocks,&jac->g_lens);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)pc,blocks*sizeof(PetscInt));CHKERRQ(ierr);
@@ -314,7 +314,7 @@ static PetscErrorCode  PCBJacobiSetLocalBlocks_BJacobi(PC pc,PetscInt blocks,con
   jac = (PC_BJacobi*)pc->data;
 
   jac->n_local = blocks;
-  if (!lens) jac->l_lens = 0;
+  if (!lens) jac->l_lens = NULL;
   else {
     ierr = PetscMalloc1(blocks,&jac->l_lens);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)pc,blocks*sizeof(PetscInt));CHKERRQ(ierr);
@@ -542,23 +542,23 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
   ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
 
-  pc->ops->apply           = 0;
-  pc->ops->applytranspose  = 0;
+  pc->ops->apply           = NULL;
+  pc->ops->applytranspose  = NULL;
   pc->ops->setup           = PCSetUp_BJacobi;
   pc->ops->destroy         = PCDestroy_BJacobi;
   pc->ops->setfromoptions  = PCSetFromOptions_BJacobi;
   pc->ops->view            = PCView_BJacobi;
-  pc->ops->applyrichardson = 0;
+  pc->ops->applyrichardson = NULL;
 
   pc->data               = (void*)jac;
   jac->n                 = -1;
   jac->n_local           = -1;
   jac->first_local       = rank;
-  jac->ksp               = 0;
+  jac->ksp               = NULL;
   jac->same_local_solves = PETSC_TRUE;
-  jac->g_lens            = 0;
-  jac->l_lens            = 0;
-  jac->psubcomm          = 0;
+  jac->g_lens            = NULL;
+  jac->l_lens            = NULL;
+  jac->psubcomm          = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetSubKSP_C",PCBJacobiGetSubKSP_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",PCBJacobiSetTotalBlocks_BJacobi);CHKERRQ(ierr);
@@ -628,8 +628,8 @@ static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = VecGetLocalVectorRead(x, bjac->x);CHKERRQ(ierr);
   ierr = VecGetLocalVector(y, bjac->y);CHKERRQ(ierr);
  /* Since the inner KSP matrix may point directly to the diagonal block of an MPI matrix the inner
-     matrix may change even if the outter KSP/PC has not updated the preconditioner, this will trigger a rebuild
-     of the inner preconditioner automatically unless we pass down the outter preconditioners reuse flag.*/
+     matrix may change even if the outer KSP/PC has not updated the preconditioner, this will trigger a rebuild
+     of the inner preconditioner automatically unless we pass down the outer preconditioners reuse flag.*/
   ierr = KSPSetReusePreconditioner(jac->ksp[0],pc->reusepreconditioner);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
   ierr = KSPCheckSolve(jac->ksp[0],pc,bjac->y);CHKERRQ(ierr);

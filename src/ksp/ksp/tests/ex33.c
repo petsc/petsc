@@ -25,14 +25,14 @@ int main(int argc,char **args)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute the matrices that define the eigensystem, Ax=kBx
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,&loadA);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),&loadA);CHKERRQ(ierr);
   if (loadA) {
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatLoad(A,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-    ierr = PetscOptionsGetString(NULL,NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&loadB);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-fB",file[1],sizeof(file[1]),&loadB);CHKERRQ(ierr);
     if (loadB) {
       /* load B to get A = A + sigma*B */
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);

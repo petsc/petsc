@@ -25,7 +25,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex13.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex13.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex13.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-filename", "The mesh file", "ex13.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex13.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-test_num", "The test partition number", "ex13.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();

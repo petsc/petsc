@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,sizeof(typeName),&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrstr(typeName,"cuda",&tmp);CHKERRQ(ierr);
     if (tmp) useCUDA = PETSC_TRUE;
@@ -38,7 +38,6 @@ int main(int argc,char **argv)
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
-  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
@@ -188,7 +187,14 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat J,Mat B,void *ctx)
    build:
       requires: cuda
 
-   test:
-      args: -snes_monitor_short -dm_vec_type cuda
+   testset:
+      args: -snes_monitor_short -dm_mat_type aijcusparse -dm_vec_type cuda
+      output_file: output/ex47cu_1.out
+      test:
+        suffix: 1
+        nsize:  1
+      test:
+        suffix: 2
+        nsize:  2
 
 TEST*/

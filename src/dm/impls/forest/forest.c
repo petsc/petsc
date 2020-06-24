@@ -1460,7 +1460,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr                         = DMForestGetTopology(dm, &oldTopo);CHKERRQ(ierr);
   ierr                         = PetscOptionsHead(PetscOptionsObject,"DMForest Options");CHKERRQ(ierr);
-  ierr                         = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,256,&flg1);CHKERRQ(ierr);
+  ierr                         = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,sizeof(stringBuffer),&flg1);CHKERRQ(ierr);
   ierr                         = PetscOptionsViewer("-dm_forest_base_dm","load the base DM from a viewer specification","DMForestSetBaseDM",&viewer,&format,&flg2);CHKERRQ(ierr);
   ierr                         = PetscOptionsViewer("-dm_forest_coarse_forest","load the coarse forest from a viewer specification","DMForestSetCoarseForest",&viewer,&format,&flg3);CHKERRQ(ierr);
   ierr                         = PetscOptionsViewer("-dm_forest_fine_forest","load the fine forest from a viewer specification","DMForestSetFineForest",&viewer,&format,&flg4);CHKERRQ(ierr);
@@ -1550,7 +1550,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
     ierr = DMForestSetMaximumRefinement(dm,maxRefinement);CHKERRQ(ierr);
   }
   ierr = DMForestGetAdaptivityStrategy(dm,&adaptStrategy);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-dm_forest_adaptivity_strategy","the forest's adaptivity-flag resolution strategy","DMForestSetAdaptivityStrategy",adaptStrategy,stringBuffer,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_forest_adaptivity_strategy","the forest's adaptivity-flag resolution strategy","DMForestSetAdaptivityStrategy",adaptStrategy,stringBuffer,sizeof(stringBuffer),&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DMForestSetAdaptivityStrategy(dm,(DMForestAdaptivityStrategy)stringBuffer);CHKERRQ(ierr);
   }

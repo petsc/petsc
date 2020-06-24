@@ -12,9 +12,9 @@ int main(int argc,char **args)
   const PetscInt *idx;
   PetscMPIInt    rank,size;
   const char     *deft = MATAIJ;
-  PetscBool      flg;
-  char           dir[PETSC_MAX_PATH_LEN],name[PETSC_MAX_PATH_LEN],type[256];
   PetscViewer    viewer;
+  char           dir[PETSC_MAX_PATH_LEN],name[PETSC_MAX_PATH_LEN],type[256];
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;

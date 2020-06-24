@@ -52,6 +52,11 @@ PetscErrorCode MatDestroy_HT(Mat N)
 
   PetscFunctionBegin;
   ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)N,"MatHermitianTransposeGetMat_C",NULL);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  ierr = PetscObjectComposeFunction((PetscObject)N,"MatTransposeGetMat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)N,"MatProductSetFromOptions_anytype_C",NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -131,6 +136,8 @@ PetscErrorCode MatHermitianTransposeGetMat(Mat A,Mat *M)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat);
+
 /*@
       MatCreateHermitianTranspose - Creates a new matrix object that behaves like A'*
 
@@ -171,17 +178,24 @@ PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
   ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   Na->A      = A;
 
-  (*N)->ops->destroy                    = MatDestroy_HT;
-  (*N)->ops->mult                       = MatMult_HT;
-  (*N)->ops->multadd                    = MatMultAdd_HT;
-  (*N)->ops->multhermitiantranspose     = MatMultHermitianTranspose_HT;
-  (*N)->ops->multhermitiantransposeadd  = MatMultHermitianTransposeAdd_HT;
-  (*N)->ops->duplicate                  = MatDuplicate_HT;
-  (*N)->ops->getvecs                    = MatCreateVecs_HT;
-  (*N)->ops->axpy                       = MatAXPY_HT;
-  (*N)->assembled                       = PETSC_TRUE;
+  (*N)->ops->destroy                   = MatDestroy_HT;
+  (*N)->ops->mult                      = MatMult_HT;
+  (*N)->ops->multadd                   = MatMultAdd_HT;
+  (*N)->ops->multhermitiantranspose    = MatMultHermitianTranspose_HT;
+  (*N)->ops->multhermitiantransposeadd = MatMultHermitianTransposeAdd_HT;
+  (*N)->ops->duplicate                 = MatDuplicate_HT;
+  (*N)->ops->getvecs                   = MatCreateVecs_HT;
+  (*N)->ops->axpy                      = MatAXPY_HT;
+#if !defined(PETSC_USE_COMPLEX)
+  (*N)->ops->productsetfromoptions     = MatProductSetFromOptions_Transpose;
+#endif
+  (*N)->assembled                      = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatHermitianTransposeGetMat_C",MatHermitianTransposeGetMat_HT);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatTransposeGetMat_C",MatHermitianTransposeGetMat_HT);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatProductSetFromOptions_anytype_C",MatProductSetFromOptions_Transpose);CHKERRQ(ierr);
+#endif
   ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);

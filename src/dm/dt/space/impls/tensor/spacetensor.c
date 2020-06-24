@@ -269,7 +269,7 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
     }
   }
   if (H) {
-    for (i = 0; i < npoints*pdim*Nc*Nc*Nv*Nv; i++) D[i] = 0.;
+    for (i = 0; i < npoints*pdim*Nc*Nc*Nv*Nv; i++) H[i] = 0.;
     for (i = 0; i < npoints*pdim; i++) {
       for (l = 0; l < Nv*Nv; l++) {
         H[i * Nc*Nc*Nv*Nv + l] = 1.;

@@ -246,9 +246,6 @@ int main(int argc,char **args)
     ierr = PetscOptionsBool("-use_mat_nearnullspace","MatNearNullSpace API test","",use_nearnullspace,&use_nearnullspace,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-attach_mat_nearnullspace","MatNearNullSpace API test (via MatSetNearNullSpace)","",attach_nearnullspace,&attach_nearnullspace,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-run_type","0: twisting load on cantalever, 1: 3rd order accurate convergence test","",run_type,&run_type,NULL);CHKERRQ(ierr);
-    i = 3;
-    ierr = PetscOptionsInt("-mat_block_size","","",i,&i,&flg);CHKERRQ(ierr);
-    if (!flg || i!=3) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER, "'-mat_block_size 3' must be set (%D) and = 3 (%D)",flg,flg? i : 3);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Mesh Setup", &stage[16]);CHKERRQ(ierr);
@@ -376,9 +373,7 @@ int main(int argc,char **args)
     ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "ex56_");CHKERRQ(ierr);
     ierr = PetscObjectSetName( (PetscObject)dm,"Mesh");CHKERRQ(ierr);
     if (max_conv_its > 1) {
-      /* If max_conv_its == 1, then we are not doing a convergence study. In this case, do not overwrite the -ex56_dm_refine
-       * options with the values in the options[] array; instead, use the user-specified value. */
-      ierr = PetscOptionsClearValue(NULL,"-ex56_dm_refine");CHKERRQ(ierr);
+      /* If max_conv_its == 1, then we are not doing a convergence study. */
       ierr = PetscOptionsInsertString(NULL,options[iter]);CHKERRQ(ierr);
     }
     ierr = DMSetFromOptions(dm);CHKERRQ(ierr); /* refinement done here in Plex, p4est */
@@ -433,6 +428,8 @@ int main(int argc,char **args)
     ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
     ierr = MatSetOption(Amat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);        /* Some matrix kernels can take advantage of symmetry if we set this. */
     ierr = MatSetOption(Amat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr); /* Inform PETSc that Amat is always symmetric, so info set above isn't lost. */
+    ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
+    ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
     local_sizes[iter] = N;
     ierr = PetscInfo2(snes,"%D global equations, %D vertices\n",N,N/dim);CHKERRQ(ierr);
@@ -520,7 +517,7 @@ int main(int argc,char **args)
     suffix: 0
     nsize: 4
     requires: !single
-    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -mat_block_size 3 -matptap_via scalable -ex56_dm_view -run_type 1
+    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -matptap_via scalable -ex56_dm_view -run_type 1
     timeoutfactor: 2
 
   # HYPRE PtAP broken with complex numbers
@@ -528,38 +525,38 @@ int main(int argc,char **args)
     suffix: hypre
     requires: hypre !single !complex
     nsize: 4
-    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -ksp_converged_reason -use_mat_nearnullspace true -mat_block_size 3 -petscpartitioner_type simple
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -ksp_converged_reason -use_mat_nearnullspace true -petscpartitioner_type simple
 
   test:
     suffix: ml
     requires: ml !single
     nsize: 4
-    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_max_it 3 -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -mat_block_size 3 -petscpartitioner_type simple -use_mat_nearnullspace
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_max_it 3 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -petscpartitioner_type simple -use_mat_nearnullspace
 
   test:
     suffix: hpddm
     requires: hpddm slepc !single
     nsize: 4
-    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type fgmres -ksp_monitor_short -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type hpddm -mat_block_size 3 -petscpartitioner_type simple -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 6 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type svd
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type fgmres -ksp_monitor_short -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type hpddm -petscpartitioner_type simple -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 6 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type svd
 
   test:
     nsize: 4
     requires: parmetis !single
-    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -pc_gamg_mat_partitioning_type parmetis -mat_block_size 3 -run_type 1 -pc_gamg_repartition true
+    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -pc_gamg_mat_partitioning_type parmetis -run_type 1 -pc_gamg_repartition true
 
   test:
     suffix: bddc
     nsize: 4
     requires: !single
-    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -mat_block_size 3 -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type {{sbaij baij aij}} -pc_type bddc
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type {{sbaij baij aij}} -pc_type bddc
 
   testset:
     nsize: 4
     requires: !single
-    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-10 -ksp_converged_reason -mat_block_size 3 -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type aij -pc_type bddc -attach_mat_nearnullspace {{0 1}separate output}
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-10 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type aij -pc_type bddc -attach_mat_nearnullspace {{0 1}separate output}
     test:
       suffix: bddc_approx_gamg
-      args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -prefix_pop -prefix_push pc_bddc_neumann_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -prefix_pop
+      args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop -prefix_push pc_bddc_neumann_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop
     # HYPRE PtAP broken with complex numbers
     test:
       requires: hypre !complex
@@ -568,30 +565,30 @@ int main(int argc,char **args)
     test:
       requires: ml
       suffix: bddc_approx_ml
-      args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -approximate -pc_type ml -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -prefix_pop -prefix_push pc_bddc_neumann_ -approximate -pc_type ml -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -prefix_pop
+      args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -approximate -pc_type ml -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop -prefix_push pc_bddc_neumann_ -approximate -pc_type ml -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop
 
   test:
     suffix: fetidp
     nsize: 4
     requires: !single
-    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type fetidp -fetidp_ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -mat_block_size 3 -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type {{sbaij baij aij}}
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type fetidp -fetidp_ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type {{sbaij baij aij}}
 
   test:
     suffix: bddc_elast
     nsize: 4
     requires: !single
-    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -mat_block_size 3 -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type sbaij -pc_type bddc -pc_bddc_monolithic -attach_mat_nearnullspace
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type sbaij -pc_type bddc -pc_bddc_monolithic -attach_mat_nearnullspace
 
   test:
     suffix: fetidp_elast
     nsize: 4
     requires: !single
-    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_degree 2 -ksp_type fetidp -fetidp_ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -mat_block_size 3 -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type sbaij -fetidp_bddc_pc_bddc_monolithic -attach_mat_nearnullspace
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type fetidp -fetidp_ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type sbaij -fetidp_bddc_pc_bddc_monolithic -attach_mat_nearnullspace
 
   test:
     suffix: cuda
     nsize: 2
     requires: cuda !single
-    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -mat_block_size 3 -run_type 1 -ex56_dm_mat_type aijcusparse -ex56_dm_vec_type cuda -ksp_monitor_short
+    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -run_type 1 -ex56_dm_mat_type aijcusparse -ex56_dm_vec_type cuda -ksp_monitor_short
 
 TEST*/

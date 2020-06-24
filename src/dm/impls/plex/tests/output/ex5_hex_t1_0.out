@@ -60,3 +60,94 @@ Label 'subpoint_map':
 [0]: 113 (-101)
 [0]: 116 (-101)
 [0]: 119 (-101)
+Label 'subpoint_map split':
+[0]: 22 (100)
+[0]: 23 (100)
+[0]: 24 (100)
+[0]: 25 (100)
+[0]: 26 (100)
+[0]: 27 (100)
+[0]: 39 (-100)
+[0]: 40 (-100)
+[0]: 41 (-100)
+[0]: 42 (-100)
+[0]: 43 (-100)
+[0]: 44 (-100)
+[0]: 90 (101)
+[0]: 95 (101)
+[0]: 99 (101)
+[0]: 100 (101)
+[0]: 112 (101)
+[0]: 113 (101)
+[0]: 114 (101)
+[0]: 146 (-101)
+[0]: 147 (-101)
+[0]: 148 (-101)
+[0]: 149 (-101)
+[0]: 150 (-101)
+[0]: 151 (-101)
+[0]: 152 (-101)
+[0]: 48 (102)
+[0]: 57 (102)
+[0]: 80 (-102)
+[0]: 81 (-102)
+Label 'cohesive':
+[0]: 7 (1)
+[0]: 8 (1)
+[0]: 82 (1)
+[0]: 83 (1)
+[0]: 84 (1)
+[0]: 85 (1)
+[0]: 86 (1)
+[0]: 87 (1)
+[0]: 88 (1)
+[0]: 153 (1)
+[0]: 154 (1)
+[0]: 155 (1)
+[0]: 156 (1)
+[0]: 157 (1)
+[0]: 158 (1)
+Discrete System with 1 fields
+    cell total dim 24 total comp 3
+  Field displacement FEM3 components (implicit) (Nq 8 Nqc 1)
+    PetscFE Object: displacement (displacement_) 1 MPI processes
+      type: basic
+      Basic Finite Element in 3 dimensions with 3 components
+      PetscSpace Object: displacement (displacement_) 1 MPI processes
+        type: poly
+        Space in 3 variables with 3 components, size 24
+        Tensor polynomial space of degree 1
+      PetscDualSpace Object: displacement (displacement_) 1 MPI processes
+        type: lagrange
+        Dual space with 3 components, size 24
+        Continuous tensor Lagrange dual space
+        Quadrature of order 3 on 8 points (dim 3)
+Discrete System with 2 fields
+    cell total dim 36 total comp 6
+    hybrid cell
+  Field displacement FEM3 components (implicit) (Nq 4 Nqc 1)
+    PetscFE Object: displacement 1 MPI processes
+      type: basic
+      Basic Finite Element in 2 dimensions with 3 components
+      PetscSpace Object: displacement 1 MPI processes
+        type: poly
+        Space in 2 variables with 3 components, size 12
+        Tensor polynomial space of degree 1
+      PetscDualSpace Object: displacement 1 MPI processes
+        type: lagrange
+        Dual space with 3 components, size 12
+        Continuous tensor Lagrange dual space
+        Quadrature of order 3 on 4 points (dim 2)
+  Field fault traction FEM3 components (implicit) (Nq 4 Nqc 1)
+    PetscFE Object: fault traction (faulttraction_) 1 MPI processes
+      type: basic
+      Basic Finite Element in 2 dimensions with 3 components
+      PetscSpace Object: fault traction (faulttraction_) 1 MPI processes
+        type: poly
+        Space in 2 variables with 3 components, size 12
+        Tensor polynomial space of degree 1
+      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI processes
+        type: lagrange
+        Dual space with 3 components, size 12
+        Continuous tensor Lagrange dual space
+        Quadrature of order 3 on 4 points (dim 2)

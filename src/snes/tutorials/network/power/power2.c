@@ -468,7 +468,7 @@ int main(int argc,char ** argv)
     /* READ THE DATA */
     if (!crank) {
       /* Only rank 0 reads the data */
-      ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,sizeof(pfdata_file),NULL);CHKERRQ(ierr);
       /* HERE WE CREATE COPIES OF THE SAME NETWORK THAT WILL BE TREATED AS SUBNETWORKS */
 
       /*    READ DATA FOR THE FIRST SUBNETWORK */

@@ -35,7 +35,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-displayMat",&displayMat,NULL);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix.*/
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - -

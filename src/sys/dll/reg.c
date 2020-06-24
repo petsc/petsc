@@ -34,7 +34,6 @@ PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
   }
   PetscFunctionReturn(0);
 }
-
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
@@ -65,6 +64,9 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
   PetscInt       nmax,i;
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   PetscBool      preload;
+#endif
+#if defined(PETSC_HAVE_ELEMENTAL)
+  PetscBool      PetscInitialized = PetscInitializeCalled;
 #endif
 
   PetscFunctionBegin;
@@ -134,6 +136,13 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
   ierr = TSInitializePackage();CHKERRQ(ierr);
   ierr = PetscCommDuplicate(PETSC_COMM_SELF,&PETSC_COMM_SELF_INNER,NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&PETSC_COMM_WORLD_INNER,NULL);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_ELEMENTAL)
+  /* in Fortran, PetscInitializeCalled is set to PETSC_TRUE before PetscInitialize_DynamicLibraries() */
+  /* in C, it is not the case, but the value is forced to PETSC_TRUE so that PetscRegisterFinalize() is called */
+  PetscInitializeCalled = PETSC_TRUE;
+  ierr = PetscElementalInitializePackage();CHKERRQ(ierr);
+  PetscInitializeCalled = PetscInitialized;
 #endif
   PetscFunctionReturn(0);
 }

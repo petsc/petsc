@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(B,size,size,size,size);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(B,b);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(B,lda);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(B,lda);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

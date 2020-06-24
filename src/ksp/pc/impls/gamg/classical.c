@@ -859,13 +859,13 @@ PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc,Mat A,Mat *P)
     }
     ierr = MatRestoreRow(*P,i,&ncols,&pcols,&pvals);CHKERRQ(ierr);
   }
-  ierr = MatCreateVecs(A,&diag,0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&diag,NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(A,diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
   for (i=0;i<cls->nsmooths;i++) {
     ierr = MatMatMult(A,*P,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Pnew);CHKERRQ(ierr);
     ierr = MatZeroRows(Pnew,idx,coarserows,0.,NULL,NULL);CHKERRQ(ierr);
-    ierr = MatDiagonalScale(Pnew,diag,0);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(Pnew,diag,NULL);CHKERRQ(ierr);
     ierr = MatAYPX(Pnew,-1.0,*P,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatDestroy(P);CHKERRQ(ierr);
     *P  = Pnew;

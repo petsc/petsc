@@ -1,0 +1,29 @@
+
+ Solution of forward TS :
+Vec Object: 1 MPI processes
+  type: seq
+1.91376
+-0.716567
+
+ Forward TS solve successfull! Adjoint run begins!
+
+ sensitivity wrt  params: d[cost]/d[p], where p refers to 
+                    the interlaced vector made by combining mu1,mu2
+Vec Object: 1 MPI processes
+  type: seq
+-0.014817
+-9.58325e-07
+-0.0150106
+1.46139e-06
+-0.0145665
+-4.07735e-06
+-0.015545
+8.16917e-06
+-0.0133332
+-1.94822e-05
+
+ sensitivity wrt initial conditions: d[cost]/d[u(t=0)]
+Vec Object: 1 MPI processes
+  type: seq
+1.12807
+-0.0133608

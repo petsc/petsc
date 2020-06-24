@@ -15,7 +15,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
 
   PetscPreLoadBegin(preload,"Load system");
 

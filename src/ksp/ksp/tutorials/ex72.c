@@ -63,21 +63,21 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-trans",&trans,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-initialguess",&initialguess,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-output_solution",&outputSoln,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-initialguessfilename",initialguessfilename,PETSC_MAX_PATH_LEN,&initialguessfile);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-initialguessfilename",initialguessfilename,sizeof(initialguessfilename),&initialguessfile);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-nearnulldim",&nearnulldim,NULL);CHKERRQ(ierr);
 
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
   if (flg) {
     ierr    = PetscStrcpy(file[1],file[0]);CHKERRQ(ierr);
     preload = PETSC_FALSE;
   } else {
-    ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f0 or -f option");
-    ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
     if (!flg) preload = PETSC_FALSE;   /* don't bother with second system */
   }
 
@@ -133,7 +133,7 @@ int main(int argc,char **args)
     ierr = MatNullSpaceDestroy(&constant);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetString(NULL,NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-rhs",file[2],sizeof(file[2]),&flg);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   if (flg) {   /* rhs is stored in a separate file */
     if (file[2][0] == '0' || file[2][0] == 0) {
@@ -278,7 +278,7 @@ int main(int argc,char **args)
     PetscBool lsqr,isbddc,ismatis;
     char      str[32];
 
-    ierr = PetscOptionsGetString(NULL,NULL,"-ksp_type",str,32,&lsqr);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-ksp_type",str,sizeof(str),&lsqr);CHKERRQ(ierr);
     if (lsqr) {
       ierr = PetscStrcmp("lsqr",str,&lsqr);CHKERRQ(ierr);
     }
@@ -397,7 +397,7 @@ int main(int argc,char **args)
         }
       }
     }
-    ierr = PetscOptionsGetString(NULL,NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-solution",file[3],sizeof(file[3]),&flg);CHKERRQ(ierr);
     if (flg) {
       Vec         xstar;
       PetscReal   norm;

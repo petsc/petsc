@@ -692,7 +692,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 . -mat_superlu_dist_c <n> - number of columns in processor partition
 . -mat_superlu_dist_equil - equilibrate the matrix
 . -mat_superlu_dist_rowperm <NOROWPERM,LargeDiag_MC64,LargeDiag_AWPM,MY_PERMR> - row permutation
-. -mat_superlu_dist_colperm <MMD_AT_PLUS_A,MMD_ATA,NATURAL> - column permutation
+. -mat_superlu_dist_colperm <NATURAL,MMD_AT_PLUS_A,MMD_ATA,METIS_AT_PLUS_A,PARMETIS> - column permutation
 . -mat_superlu_dist_replacetinypivot - replace tiny pivots
 . -mat_superlu_dist_fact <SamePattern> - (choose one of) SamePattern SamePattern_SameRowPerm DOFACT
 . -mat_superlu_dist_iterrefine - use iterative refinement

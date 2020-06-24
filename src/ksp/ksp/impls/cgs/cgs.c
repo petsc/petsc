@@ -46,9 +46,12 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-  KSPCheckNorm(ksp,dp);
-  if (ksp->normtype == KSP_NORM_NATURAL) dp *= dp;
+  if (ksp->normtype != KSP_NORM_NONE) {
+    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,dp);
+    if (ksp->normtype == KSP_NORM_NATURAL) dp *= dp;
+  } else dp = 0.0;
+
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
@@ -67,8 +70,8 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   */
   if (ksp->normtype == KSP_NORM_NATURAL) {
     PetscReal   vr0max;
-    PetscScalar *tmp_RP=0;
-    PetscInt    numnp  =0, *max_pos=0;
+    PetscScalar *tmp_RP=NULL;
+    PetscInt    numnp  =0, *max_pos=NULL;
     ierr = VecMax(RP, max_pos, &vr0max);CHKERRQ(ierr);
     ierr = VecGetArray(RP, &tmp_RP);CHKERRQ(ierr);
     ierr = VecGetLocalSize(RP, &numnp);CHKERRQ(ierr);
@@ -100,10 +103,10 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     KSPCheckDot(ksp,rho);
     if (ksp->normtype == KSP_NORM_NATURAL) {
       dp = PetscAbsScalar(rho);
-    } else {
+    } else if (ksp->normtype != KSP_NORM_NONE) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
       KSPCheckNorm(ksp,dp);
-    }
+    } else dp = 0.0;
 
     ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
@@ -160,13 +163,15 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_CGS;
   ksp->ops->solve          = KSPSolve_CGS;
   ksp->ops->destroy        = KSPDestroyDefault;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  ksp->ops->setfromoptions = 0;
-  ksp->ops->view           = 0;
+  ksp->ops->setfromoptions = NULL;
+  ksp->ops->view           = NULL;
   PetscFunctionReturn(0);
 }

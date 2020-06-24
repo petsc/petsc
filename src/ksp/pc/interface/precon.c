@@ -103,7 +103,7 @@ PetscErrorCode  PCDestroy(PC *pc)
   PetscFunctionBegin;
   if (!*pc) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*pc),PC_CLASSID,1);
-  if (--((PetscObject)(*pc))->refct > 0) {*pc = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*pc))->refct > 0) {*pc = NULL; PetscFunctionReturn(0);}
 
   ierr = PCReset(*pc);CHKERRQ(ierr);
 
@@ -378,22 +378,22 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 
   PetscFunctionBegin;
   PetscValidPointer(newpc,1);
-  *newpc = 0;
+  *newpc = NULL;
   ierr = PCInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(pc,PC_CLASSID,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
 
-  pc->mat                  = 0;
-  pc->pmat                 = 0;
+  pc->mat                  = NULL;
+  pc->pmat                 = NULL;
   pc->setupcalled          = 0;
   pc->setfromoptionscalled = 0;
-  pc->data                 = 0;
+  pc->data                 = NULL;
   pc->diagonalscale        = PETSC_FALSE;
-  pc->diagonalscaleleft    = 0;
-  pc->diagonalscaleright   = 0;
+  pc->diagonalscaleleft    = NULL;
+  pc->diagonalscaleright   = NULL;
 
-  pc->modifysubmatrices  = 0;
-  pc->modifysubmatricesP = 0;
+  pc->modifysubmatrices  = NULL;
+  pc->modifysubmatricesP = NULL;
 
   *newpc = pc;
   PetscFunctionReturn(0);
@@ -624,9 +624,13 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(pc,side,2);
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
+  PetscCheckSameComm(pc,1,x,3);
+  PetscCheckSameComm(pc,1,y,4);
+  PetscCheckSameComm(pc,1,work,5);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
   if (pc->diagonalscale && side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
@@ -1100,6 +1104,7 @@ PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveBool(pc,flag,2);
   pc->reusepreconditioner = flag;
   PetscFunctionReturn(0);
 }
@@ -1123,6 +1128,7 @@ PetscErrorCode  PCGetReusePreconditioner(PC pc,PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(flag,2);
   *flag = pc->reusepreconditioner;
   PetscFunctionReturn(0);
 }

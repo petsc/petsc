@@ -1,0 +1,6 @@
+timestep 0 time 0. norm 2.
+timestep 1 time 0.0001 norm 1.99005
+timestep 2 time 0.0011 norm 1.89583
+timestep 3 time 0.00708982 norm 1.48883
+timestep 4 time 0.0149011 norm 1.18617
+timestep 5 time 0.0249059 norm 0.925402

@@ -141,6 +141,17 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isMINGW(compiler, log):
+    '''Returns true if the compiler is a MINGW GCC compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v',checkCommand = noCheck, log = log)
+      output = output + error
+      if output.find('w64-mingw32') >= 0:
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
   def isGNU(compiler, log):
     '''Returns true if the compiler is a GNU compiler'''
     try:
@@ -211,6 +222,21 @@ class Configure(config.base.Configure):
       if strmatch:
         VMAJOR,VMINOR = strmatch.groups()
         if (int(VMAJOR),int(VMINOR)) >= (4,7):
+          return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
+  def isGfortran100plus(compiler, log):
+    '''returns true if the compiler is gfortran-10.0.x or later'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output +  error
+      import re
+      strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      if strmatch:
+        VMAJOR,VMINOR = strmatch.groups()
+        if (int(VMAJOR),int(VMINOR)) >= (10,0):
           return 1
     except RuntimeError:
       pass
@@ -440,9 +466,14 @@ class Configure(config.base.Configure):
         else: setattr(self, flagsArg, '')
         self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
-    for flagsArg in ['CPPFLAGS', 'FPPFLAGS', 'CUDAPPFLAGS', 'CXXPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
+    for flagsArg in ['CPPFLAGS', 'FPPFLAGS', 'CUDAPPFLAGS', 'CXXPPFLAGS']:
       if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
       else: setattr(self, flagsArg, '')
+      self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
+    for flagsArg in ['CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
+      if isinstance(self.argDB[flagsArg],str): val = [self.argDB[flagsArg]]
+      else: val = self.argDB[flagsArg]
+      setattr(self, flagsArg, val)
       self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
     if 'LIBS' in self.argDB:
       self.LIBS = self.argDB['LIBS']
@@ -1714,7 +1745,7 @@ if (dlclose(handle)) {
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
           del os.environ[envVal]
 
-    ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
+    ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
     for envVal in ignoreEnv:
       if envVal in os.environ:
         if envVal in self.framework.clArgDB:

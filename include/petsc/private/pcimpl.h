@@ -13,7 +13,7 @@ typedef struct _PCOps *PCOps;
 struct _PCOps {
   PetscErrorCode (*setup)(PC);
   PetscErrorCode (*apply)(PC,Vec,Vec);
-  PetscErrorCode (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*);
+  PetscErrorCode (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*);
   PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec);
   PetscErrorCode (*applytranspose)(PC,Vec,Vec);
   PetscErrorCode (*applyBAtranspose)(PC,PetscInt,Vec,Vec,Vec);

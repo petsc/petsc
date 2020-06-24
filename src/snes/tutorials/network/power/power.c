@@ -109,7 +109,7 @@ int main(int argc,char ** argv)
     if (!crank) {
       /*    READ DATA */
       /* Only rank 0 reads the data */
-      ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,sizeof(pfdata_file),NULL);CHKERRQ(ierr);
       ierr = PetscNew(&pfdata);CHKERRQ(ierr);
       ierr = PFReadMatPowerData(pfdata,pfdata_file);CHKERRQ(ierr);
       User.Sbase = pfdata->sbase;

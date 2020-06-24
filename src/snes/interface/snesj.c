@@ -53,7 +53,7 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
   PetscFunctionBegin;
   /* Since this Jacobian will possibly have "extra" nonzero locations just turn off errors for these locations */
   ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

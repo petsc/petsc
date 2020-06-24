@@ -283,8 +283,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   ((PC_Factor*)dir)->factortype         = MAT_FACTOR_CHOLESKY;
   ((PC_Factor*)dir)->info.fill          = 5.0;
 
-  dir->col = 0;
-  dir->row = 0;
+  dir->col = NULL;
+  dir->row = NULL;
 
   /* MATORDERINGNATURAL_OR_ND allows selecting type based on matrix type sbaij or aij */
   ierr = PetscStrallocpy(MATORDERINGNATURAL_OR_ND,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
@@ -298,6 +298,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   pc->ops->setup               = PCSetUp_Cholesky;
   pc->ops->setfromoptions      = PCSetFromOptions_Cholesky;
   pc->ops->view                = PCView_Factor;
-  pc->ops->applyrichardson     = 0;
+  pc->ops->applyrichardson     = NULL;
   PetscFunctionReturn(0);
 }

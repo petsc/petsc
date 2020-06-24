@@ -2176,6 +2176,7 @@ PetscErrorCode DMView_Network(DM dm,PetscViewer viewer)
           ierr = DMNetworkGetConnectedVertices(dm,p,&cone);CHKERRQ(ierr);
           ierr = DMNetworkGetGlobalVertexIndex(dm,cone[0],&vfrom);CHKERRQ(ierr);
           ierr = DMNetworkGetGlobalVertexIndex(dm,cone[1],&vto);CHKERRQ(ierr);
+          ierr = DMNetworkGetGlobalEdgeIndex(dm,edges[j],&p);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(viewer, "       edge %D: %D----> %D\n",p,vfrom,vto);CHKERRQ(ierr);
         }
       }
@@ -2227,7 +2228,7 @@ PetscErrorCode DMLocalToGlobalEnd_Network(DM dm, Vec l, InsertMode mode, Vec g)
 }
 
 /*@
-  DMNetworkGetVertexLocalToGlobalOrdering - Get vertex globle index
+  DMNetworkGetVertexLocalToGlobalOrdering - Get vertex global index
 
   Not collective
 
@@ -2254,7 +2255,7 @@ PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm,PetscInt vloc,Petsc
 }
 
 /*@
-  DMNetworkSetVertexLocalToGlobalOrdering - Create and setup vertex local to globle map
+  DMNetworkSetVertexLocalToGlobalOrdering - Create and setup vertex local to global map
 
   Collective
 

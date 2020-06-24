@@ -50,9 +50,11 @@ class Configure(config.package.Package):
         for i in loutput:
           if i.startswith('opmv='):
             self.foundversion = i[5:]
+            self.ompflag = ompflag
             break
           if i.startswith('opmv ='):
             self.foundversion = i[6:]
+            self.ompflag = ompflag
             break
         self.compilers.CPPFLAGS = oldFlags
         break

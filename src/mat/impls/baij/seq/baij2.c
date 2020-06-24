@@ -2477,7 +2477,6 @@ PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Ma
 
   PetscFunctionBegin;
   ierr = MatMatMultSymbolic_SeqDense_SeqDense(A,B,0.0,C);CHKERRQ(ierr);
-
   C->ops->matmultnumeric = MatMatMultNumeric_SeqBAIJ_SeqDense;
   PetscFunctionReturn(0);
 }
@@ -2726,7 +2725,7 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqDense      *bd = (Mat_SeqDense*)B->data;
-  Mat_SeqDense      *cd = (Mat_SeqDense*)B->data;
+  Mat_SeqDense      *cd = (Mat_SeqDense*)C->data;
   PetscInt          cm=cd->lda,cn=B->cmap->n,bm=bd->lda;
   PetscInt          mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
   PetscBLASInt      bbs,bcn,bbm,bcm;
@@ -2795,8 +2794,6 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
     }
   }
   ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogFlops((2.0*a->nz*bs2 - bs*a->nonzerorowcnt)*cn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

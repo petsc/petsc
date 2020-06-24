@@ -24,7 +24,7 @@ int main(int argc, char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,sizeof(filein),&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewer view;
     ierr = PetscViewerBinaryOpen(comm,filein,FILE_MODE_READ,&view);CHKERRQ(ierr);

@@ -1,4 +1,3 @@
-
 /*
     Provides an interface to the FFT packages.
 */
@@ -41,6 +40,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 
    Level: intermediate
 
+.seealso: MatCreateVecsFFTW()
 @*/
 PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],MatType mattype,Mat *A)
 {

@@ -1203,11 +1203,6 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
 
   Level: beginner
 
-  Developer Note: This routine does not need to exist since the exact functionality is obtained with
-     VecSet(vec,0);  I guess someone added it to mirror the functionality of MatZeroEntries() but Mat is nothing
-     like a Vec (one is an operator and one is an element of a vector space, yeah yeah dual blah blah blah) so
-     this routine should not exist.
-
 .seealso: VecCreate(),  VecSetOptionsPrefix(), VecSet(), VecSetValues()
 @*/
 PetscErrorCode  VecZeroEntries(Vec vec)
@@ -1357,7 +1352,6 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  if (bs < 0 || bs == v->map->bs) PetscFunctionReturn(0);
   PetscValidLogicalCollectiveInt(v,bs,2);
   ierr = PetscLayoutSetBlockSize(v->map,bs);CHKERRQ(ierr);
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */

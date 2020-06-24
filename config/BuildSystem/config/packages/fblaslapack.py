@@ -58,6 +58,8 @@ class Configure(config.package.Package):
         line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')
         if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
           line = line + ' -dusty -dcfuns'
+        elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
+          line = line + ' -fallow-argument-mismatch'
         line = line + '\n'
         noopt = self.checkNoOptFlag()
         self.setCompilers.popLanguage()
@@ -66,6 +68,8 @@ class Configure(config.package.Package):
         line = 'FNOOPT = '+noopt+' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
         if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
           line = line + ' -dusty -dcfuns'
+        elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
+          line = line + ' -fallow-argument-mismatch'
         line = line + '\n'
         self.setCompilers.popLanguage()
       if line.startswith('AR  '):

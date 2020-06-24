@@ -15,12 +15,11 @@
       PetscScalar     one
       PetscInt, pointer :: idx(:)
       PetscMPIInt     rank,size
-      PetscBool       flg
-      character*(128) dir
-      character*(128) name
+      PetscViewer     viewer
+      character*(128) dir,name
       character*(8)   fmt
       character(1)    crank,csize
-      PetscViewer     viewer
+      PetscBool       flg
       PetscErrorCode  ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -80,7 +79,7 @@
       call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
       call MatCreateVecs(A,x,b,ierr);CHKERRA(ierr)
       one = 1.0
-      call VecSet(b,one,ierr);CHKERRA(ierr);
+      call VecSet(b,one,ierr);CHKERRA(ierr)
       call KSPSolve(ksp,b,x,ierr);CHKERRA(ierr)
       call VecDestroy(x,ierr);CHKERRA(ierr)
       call VecDestroy(b,ierr);CHKERRA(ierr)

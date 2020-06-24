@@ -1,4 +1,4 @@
--include ../petscdir.mk
+-include ../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_SUPERLU_DIST'
 
 ALL: lib

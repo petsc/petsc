@@ -63,7 +63,7 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
-  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0;
+  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b = 0,*e = NULL,*d = NULL;
   PetscReal      dp = 0.0;
   Vec            X,B,Z,R,P,T;
   KSP_CG         *cg;
@@ -169,9 +169,7 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     } else if (ksp->normtype == KSP_NORM_NATURAL) {
       dp = PetscSqrtReal(PetscAbsScalar(beta));
-    } else {
-      dp = 0.0;
-    }
+    } else dp = 0.0;
     ksp->rnorm = dp;
     ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     if (eigs) cg->ned = ksp->its;
@@ -251,6 +249,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
   ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   /*
        Sets the functions that are associated with this data structure
@@ -272,7 +271,3 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C",KSPCGSetType_CGNE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-

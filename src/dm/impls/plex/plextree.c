@@ -2409,7 +2409,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
 
         if (!numRowIndices) { /* don't need to calculate the mat, just the indices */
           PetscInt numIndices, *indices;
-          ierr = DMPlexGetClosureIndices(coarse,localCoarse,globalCoarse,p,&numIndices,&indices,offsets);CHKERRQ(ierr);
+          ierr = DMPlexGetClosureIndices(coarse,localCoarse,globalCoarse,p,PETSC_TRUE,&numIndices,&indices,offsets,NULL);CHKERRQ(ierr);
           if (numIndices != numColIndices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"mismatching constraint indices calculations");
           for (i = 0; i < numColIndices; i++) {
             pInd[i] = indices[i];
@@ -2418,7 +2418,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             pInd[numColIndices + i]             = offsets[i+1];
             pInd[numColIndices + numFields + i] = offsets[i+1];
           }
-          ierr = DMPlexRestoreClosureIndices(coarse,localCoarse,globalCoarse,p,&numIndices,&indices,offsets);CHKERRQ(ierr);
+          ierr = DMPlexRestoreClosureIndices(coarse,localCoarse,globalCoarse,p,PETSC_TRUE,&numIndices,&indices,offsets,NULL);CHKERRQ(ierr);
         }
         else {
           PetscInt closureSize, *closure = NULL, cl;
@@ -2653,7 +2653,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     ierr = PetscLayoutSetUp(colMap);CHKERRQ(ierr);
     ierr = PetscLayoutGetRange(rowMap,&rowStart,&rowEnd);CHKERRQ(ierr);
     ierr = PetscLayoutGetRange(colMap,&colStart,&colEnd);CHKERRQ(ierr);
-    ierr = PetscSectionGetMaxDof(globalFine,&maxDof);CHKERRQ(ierr);
+    ierr = PetscSectionGetMaxDof(localFine,&maxDof);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(leafIndicesSec,&leafStart,&leafEnd);CHKERRQ(ierr);
     ierr = DMGetWorkArray(fine,maxDof,MPIU_INT,&rowIndices);CHKERRQ(ierr);
     for (p = leafStart; p < leafEnd; p++) {

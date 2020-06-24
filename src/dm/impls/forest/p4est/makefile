@@ -1,4 +1,4 @@
--include ../petscdir.mk
+-include ../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_P4EST'
 
 ALL: lib

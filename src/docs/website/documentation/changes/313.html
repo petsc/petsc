@@ -158,6 +158,7 @@
           <li>Deprecate MatMatTransposeMultSymbolic(), MatMatTransposeMultNumeric()</li>
           <li>Deprecate MatPtAPSymbolic(), MatPtAPNumeric()</li>
           <li>Deprecate MatRARtSymbolic(), MatRARtNumeric()</li>
+          <li>Fix a deadlock with MATELEMENTAL; if one configures PETSc with Elemental <em>and</em> has PETSC_COMM_WORLD != MPI_COMM_WORLD, it is now one's responsability to explicitly call PetscElementalInitializePackage()/PetscElementalFinalizePackage() outside of PetscInitialize()/PetscFinalize(). PetscElementalInitializePackage()/PetscElementalFinalizePackage() are collective on MPI_COMM_WORLD.</li>
         </ul>
       <h4>PC:</h4>
         <ul>

@@ -31,6 +31,5 @@ Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
    18 KSP Residual norm 1.24324e-08 
    19 KSP Residual norm 3.19831e-09 
    20 KSP Residual norm 7.879e-10 
-   21 KSP Residual norm 2.136e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 [0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9

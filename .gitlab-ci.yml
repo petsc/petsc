@@ -32,6 +32,7 @@ variables:
     refs:
 #     Set with CI/CD Shedules - New Schedule
       - schedules
+      - api
 #     Set with CI/CD Pipelines - Run Pipeline
       - web
       - merge_requests
@@ -187,6 +188,12 @@ check-py-vermin:
   after_script:
     - date
     - ccache --show-stats
+
+.linux_test_nofflags:
+  extends: .linux_test_noflags
+  variables:
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
 
 .linux_test:
   extends: .linux_test_noflags
@@ -386,6 +393,16 @@ linux-c-exodus-dbg:
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
+
+linux-cuda-complex:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux, name:p1
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
+    TEST_ARCH: arch-ci-linux-cuda-complex
 
 linux-cuda-double-64idx:
   extends:
@@ -634,7 +651,7 @@ linux-analyzer:
 linux-intel:
   extends:
     - .stage-3
-    - .linux_test_noflags
+    - .linux_test_nofflags
   tags:
     - gce-nfs
   variables:
@@ -673,7 +690,7 @@ linux-64idx-i8:
 linux-gcc-ifc-cmplx:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_nofflags
   tags:
     - gce-nfs
   variables:
@@ -683,12 +700,11 @@ linux-gcc-ifc-cmplx:
 linux-nagfor:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_nofflags
   tags:
     - mcs-nfs
   variables:
     TEST_ARCH: arch-ci-linux-nagfor
-    MAKE_FFLAGS: -DNO_WERROR_FLAG
 
 linux-opt-cxx-quad:
   extends:

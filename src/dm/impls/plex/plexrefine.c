@@ -2,7 +2,7 @@
 #include <petsc/private/petscfeimpl.h>  /* For PetscFEInterpolate_Static() */
 #include <petscsf.h>
 
-const char * const DMPlexCellRefinerTypes[] = {"Regular", "ToBox", "ToSimplex", "DMPlexCellRefinerTypes", "DM_REFINER_", 0};
+const char * const DMPlexCellRefinerTypes[] = {"Regular", "ToBox", "ToSimplex", "Alfeld2D", "Alfeld3D", "PowellSabin", "BoundaryLayer", "DMPlexCellRefinerTypes", "DM_REFINER_", 0};
 
 /*
   Note that j and invj are non-square:
@@ -462,6 +462,30 @@ static PetscErrorCode DMPlexCellRefinerMapSubcells(DMPlexCellRefiner cr, DMPolyt
   PetscFunctionReturn(0);
 }
 
+/*
+  This is the group multiplication table for the dihedral group of the cell.
+*/
+static PetscErrorCode ComposeOrientation_Private(PetscInt n, PetscInt o1, PetscInt o2, PetscInt *o)
+{
+  PetscFunctionBeginHot;
+  if (!n)                      {*o = 0;}
+  else if (o1 >= 0 && o2 >= 0) {*o = ( o1 + o2) % n;}
+  else if (o1 <  0 && o2 <  0) {*o = (-o1 - o2) % n;}
+  else if (o1 < 0)             {*o = -((-(o1+1) + o2) % n + 1);}
+  else if (o2 < 0)             {*o = -((-(o2+1) + o1) % n + 1);}
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexCellRefinerMapSubcells_None(DMPlexCellRefiner cr, DMPolytopeType pct, PetscInt po, DMPolytopeType ct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  *rnew = r;
+  ierr  = ComposeOrientation_Private(DMPolytopeTypeGetConeSize(ct), po, o, onew);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexCellRefinerMapSubcells_Regular(DMPlexCellRefiner cr, DMPolytopeType pct, PetscInt po, DMPolytopeType ct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
 {
   /* We shift any input orientation in order to make it non-negative
@@ -686,6 +710,56 @@ static PetscErrorCode DMPlexCellRefinerMapSubcells_ToSimplex(DMPlexCellRefiner c
   return DMPlexCellRefinerMapSubcells_Regular(cr, pct, po, ct, r, o, rnew, onew);
 }
 
+static PetscErrorCode DMPlexCellRefinerMapSubcells_BL(DMPlexCellRefiner cr, DMPolytopeType pct, PetscInt po, DMPolytopeType ct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
+  /* We shift any input orientation in order to make it non-negative
+       The orientation array o[po][o] gives the orientation the new replica rnew has to have in order to reproduce the face sequence from (r, o)
+       The replica array r[po][r] gives the new replica number rnew given that the parent point has orientation po
+       Overall, replica (r, o) in a parent with orientation 0 matches replica (rnew, onew) in a parent with orientation po
+  */
+  PetscInt tquad_seg_o[]   = { 0,  1, -2, -1,
+                               0,  1, -2, -1,
+                              -2, -1,  0,  1,
+                              -2, -1,  0,  1};
+  PetscInt tquad_tquad_o[] = { 0,  1, -2, -1,
+                               1,  0, -1, -2,
+                              -2, -1,  0,  1,
+                              -1, -2,  1,  0};
+  PetscInt tquad_tquad_r[] = {1, 0,
+                              0, 1,
+                              0, 1,
+                              1, 0};
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  *rnew = r;
+  *onew = o;
+  switch (pct) {
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+      if (ct == DM_POLYTOPE_POINT_PRISM_TENSOR) {
+        if      (po == 0 || po == -1) {*rnew = r;       *onew = o;}
+        else if (po == 1 || po == -2) {*rnew = (r+1)%2; *onew = (o == 0 || o == -1) ? -2 : 0;}
+        else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid orientation %D for tensor segment", po);
+      }
+      break;
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
+      switch (ct) {
+        case DM_POLYTOPE_SEGMENT:
+          *onew = tquad_seg_o[(po+2)*4+o+2];
+          break;
+        case DM_POLYTOPE_SEG_PRISM_TENSOR:
+          *onew = tquad_tquad_o[(po+2)*4+o+2];
+          *rnew = tquad_tquad_r[(po+2)*2+r];
+          break;
+        default: break;
+      }
+      break;
+    default:
+      ierr = DMPlexCellRefinerMapSubcells_None(cr, pct, po, ct, r, o, rnew, onew);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexCellRefinerRefine - Return a description of the refinement for a given cell type
 
@@ -722,6 +796,75 @@ PetscErrorCode DMPlexCellRefinerRefine(DMPlexCellRefiner cr, DMPolytopeType sour
 
   PetscFunctionBeginHot;
   ierr = (*cr->ops->refine)(cr, source, Nt, target, size, cone, ornt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexCellRefinerRefine_None(DMPlexCellRefiner cr, DMPolytopeType source, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
+  static DMPolytopeType vertexT[] = {DM_POLYTOPE_POINT};
+  static PetscInt       vertexS[] = {1};
+  static PetscInt       vertexC[] = {0};
+  static PetscInt       vertexO[] = {0};
+  static DMPolytopeType edgeT[]   = {DM_POLYTOPE_SEGMENT};
+  static PetscInt       edgeS[]   = {1};
+  static PetscInt       edgeC[]   = {DM_POLYTOPE_POINT, 1, 0, 0, DM_POLYTOPE_POINT, 1, 1, 0};
+  static PetscInt       edgeO[]   = {0, 0};
+  static DMPolytopeType tedgeT[]  = {DM_POLYTOPE_POINT_PRISM_TENSOR};
+  static PetscInt       tedgeS[]  = {1};
+  static PetscInt       tedgeC[]  = {DM_POLYTOPE_POINT, 1, 0, 0, DM_POLYTOPE_POINT, 1, 1, 0};
+  static PetscInt       tedgeO[]  = {0, 0};
+  static DMPolytopeType triT[]    = {DM_POLYTOPE_TRIANGLE};
+  static PetscInt       triS[]    = {1};
+  static PetscInt       triC[]    = {DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 1, 2, 0};
+  static PetscInt       triO[]    = {0, 0, 0};
+  static DMPolytopeType quadT[]   = {DM_POLYTOPE_QUADRILATERAL};
+  static PetscInt       quadS[]   = {1};
+  static PetscInt       quadC[]   = {DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 1, 3, 0};
+  static PetscInt       quadO[]   = {0, 0, 0, 0};
+  static DMPolytopeType tquadT[]  = {DM_POLYTOPE_SEG_PRISM_TENSOR};
+  static PetscInt       tquadS[]  = {1};
+  static PetscInt       tquadC[]  = {DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 2, 0, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 3, 0};
+  static PetscInt       tquadO[]  = {0, 0, 0, 0};
+  static DMPolytopeType tetT[]    = {DM_POLYTOPE_TETRAHEDRON};
+  static PetscInt       tetS[]    = {1};
+  static PetscInt       tetC[]    = {DM_POLYTOPE_TRIANGLE, 1, 0, 0, DM_POLYTOPE_TRIANGLE, 1, 1, 0, DM_POLYTOPE_TRIANGLE, 1, 2, 0, DM_POLYTOPE_TRIANGLE, 1, 3, 0};
+  static PetscInt       tetO[]    = {0, 0, 0, 0};
+  static DMPolytopeType hexT[]    = {DM_POLYTOPE_HEXAHEDRON};
+  static PetscInt       hexS[]    = {1};
+  static PetscInt       hexC[]    = {DM_POLYTOPE_QUADRILATERAL, 1, 0, 0, DM_POLYTOPE_QUADRILATERAL, 1, 1, 0, DM_POLYTOPE_QUADRILATERAL, 1, 2, 0,
+                                     DM_POLYTOPE_QUADRILATERAL, 1, 3, 0, DM_POLYTOPE_QUADRILATERAL, 1, 4, 0, DM_POLYTOPE_QUADRILATERAL, 1, 5, 0};
+  static PetscInt       hexO[]    = {0, 0, 0, 0, 0, 0};
+  static DMPolytopeType tripT[]   = {DM_POLYTOPE_TRI_PRISM};
+  static PetscInt       tripS[]   = {1};
+  static PetscInt       tripC[]   = {DM_POLYTOPE_TRIANGLE, 1, 0, 0, DM_POLYTOPE_TRIANGLE, 1, 1, 0,
+                                     DM_POLYTOPE_QUADRILATERAL, 1, 2, 0, DM_POLYTOPE_QUADRILATERAL, 1, 3, 0, DM_POLYTOPE_QUADRILATERAL, 1, 4, 0};
+  static PetscInt       tripO[]   = {0, 0, 0, 0, 0};
+  static DMPolytopeType ttripT[]  = {DM_POLYTOPE_TRI_PRISM_TENSOR};
+  static PetscInt       ttripS[]  = {1};
+  static PetscInt       ttripC[]  = {DM_POLYTOPE_TRIANGLE, 1, 0, 0, DM_POLYTOPE_TRIANGLE, 1, 1, 0,
+                                     DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 0};
+  static PetscInt       ttripO[]  = {0, 0, 0, 0, 0};
+  static DMPolytopeType tquadpT[] = {DM_POLYTOPE_QUAD_PRISM_TENSOR};
+  static PetscInt       tquadpS[] = {1};
+  static PetscInt       tquadpC[] = {DM_POLYTOPE_QUADRILATERAL, 1, 0, 0, DM_POLYTOPE_QUADRILATERAL, 1, 1, 0,
+                                     DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 5, 0};
+  static PetscInt       tquadpO[] = {0, 0, 0, 0, 0, 0};
+
+  PetscFunctionBegin;
+  switch (source) {
+    case DM_POLYTOPE_POINT:              *Nt = 1; *target = vertexT; *size = vertexS; *cone = vertexC; *ornt = vertexO; break;
+    case DM_POLYTOPE_SEGMENT:            *Nt = 1; *target = edgeT;   *size = edgeS;   *cone = edgeC;   *ornt = edgeO;   break;
+    case DM_POLYTOPE_POINT_PRISM_TENSOR: *Nt = 1; *target = tedgeT;  *size = tedgeS;  *cone = tedgeC;  *ornt = tedgeO;  break;
+    case DM_POLYTOPE_TRIANGLE:           *Nt = 1; *target = triT;    *size = triS;    *cone = triC;    *ornt = triO;    break;
+    case DM_POLYTOPE_QUADRILATERAL:      *Nt = 1; *target = quadT;   *size = quadS;   *cone = quadC;   *ornt = quadO;   break;
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:   *Nt = 1; *target = tquadT;  *size = tquadS;  *cone = tquadC;  *ornt = tquadO;  break;
+    case DM_POLYTOPE_TETRAHEDRON:        *Nt = 1; *target = tetT;    *size = tetS;    *cone = tetC;    *ornt = tetO;    break;
+    case DM_POLYTOPE_HEXAHEDRON:         *Nt = 1; *target = hexT;    *size = hexS;    *cone = hexC;    *ornt = hexO;    break;
+    case DM_POLYTOPE_TRI_PRISM:          *Nt = 1; *target = tripT;   *size = tripS;   *cone = tripC;   *ornt = tripO;   break;
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:   *Nt = 1; *target = ttripT;  *size = ttripS;  *cone = ttripC;  *ornt = ttripO;  break;
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:  *Nt = 1; *target = tquadpT; *size = tquadpS; *cone = tquadpC; *ornt = tquadpO; break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1397,6 +1540,207 @@ static PetscErrorCode DMPlexCellRefinerRefine_ToSimplex(DMPlexCellRefiner cr, DM
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexCellRefinerRefine_Alfeld2D(DMPlexCellRefiner cr, DMPolytopeType source, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
+  PetscErrorCode ierr;
+  /* Add 1 vertex, 3 edges inside every triangle, making 3 new triangles.
+   2
+   |\
+   |\\
+   | |\
+   | \ \
+   | |  \
+   |  \  \
+   |   |  \
+   2   \   \
+   |   |    1
+   |   2    \
+   |   |    \
+   |   /\   \
+   |  0  1  |
+   | /    \ |
+   |/      \|
+   0---0----1
+  */
+  static DMPolytopeType triT[]    = {DM_POLYTOPE_POINT, DM_POLYTOPE_SEGMENT, DM_POLYTOPE_TRIANGLE};
+  static PetscInt       triS[]    = {1, 3, 3};
+  static PetscInt       triC[]    = {DM_POLYTOPE_POINT, 2, 0, 0, 0, DM_POLYTOPE_POINT, 0, 0,
+                                     DM_POLYTOPE_POINT, 2, 1, 0, 0, DM_POLYTOPE_POINT, 0, 0,
+                                     DM_POLYTOPE_POINT, 2, 2, 0, 0, DM_POLYTOPE_POINT, 0, 0,
+                                     DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 0, 0,
+                                     DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 1,
+                                     DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 2};
+  static PetscInt       triO[]    = {0, 0,
+                                     0, 0,
+                                     0, 0,
+                                     0,  0, -2,
+                                     0,  0, -2,
+                                     0,  0, -2};
+
+  PetscFunctionBeginHot;
+  switch (source) {
+    case DM_POLYTOPE_POINT:
+    case DM_POLYTOPE_SEGMENT:
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    case DM_POLYTOPE_QUADRILATERAL:
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    case DM_POLYTOPE_TETRAHEDRON:
+    case DM_POLYTOPE_HEXAHEDRON:
+    case DM_POLYTOPE_TRI_PRISM:
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      ierr = DMPlexCellRefinerRefine_None(cr, source, Nt, target, size, cone, ornt);CHKERRQ(ierr);
+      break;
+    case DM_POLYTOPE_TRIANGLE:           *Nt = 3; *target = triT;    *size = triS;    *cone = triC;    *ornt = triO;    break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexCellRefinerRefine_Alfeld3D(DMPlexCellRefiner cr, DMPolytopeType source, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
+  PetscErrorCode ierr;
+  /* Add 6 triangles inside every cell, making 4 new tets
+     The vertices of our reference tet are [(-1, -1, -1), (-1, 1, -1), (1, -1, -1), (-1, -1, 1)], which we call [v0, v1, v2, v3]. The first
+     three edges are [v0, v1], [v1, v2], [v2, v0] called e0, e1, and e2, and then three edges to the top point [v0, v3], [v1, v3], [v2, v3]
+     called e3, e4, and e5. The faces of a tet, given in DMPlexGetRawFaces_Internal() are
+       [v0, v1, v2], [v0, v3, v1], [v0, v2, v3], [v2, v1, v3]
+     We make a new tet on each face
+       [v0, v1, v2, (c0, 0)]
+       [v0, v3, v1, (c0, 0)]
+       [v0, v2, v3, (c0, 0)]
+       [v2, v1, v3, (c0, 0)]
+     We create a new face for each edge
+       [v0, (c0, 0), v1     ]
+       [v0, v2,      (c0, 0)]
+       [v2, v1,      (c0, 0)]
+       [v0, (c0, 0), v3     ]
+       [v1, v3,      (c0, 0)]
+       [v3, v2,      (c0, 0)]
+   */
+  static DMPolytopeType tetT[]    = {DM_POLYTOPE_POINT, DM_POLYTOPE_SEGMENT, DM_POLYTOPE_TRIANGLE, DM_POLYTOPE_TETRAHEDRON};
+  static PetscInt       tetS[]    = {1, 4, 6, 4};
+  static PetscInt       tetC[]    = {DM_POLYTOPE_POINT, 3, 0, 0, 0, 0, DM_POLYTOPE_POINT, 0, 0,
+                                     DM_POLYTOPE_POINT, 3, 0, 1, 0, 0, DM_POLYTOPE_POINT, 0, 0,
+                                     DM_POLYTOPE_POINT, 3, 0, 2, 0, 0, DM_POLYTOPE_POINT, 0, 0,
+                                     DM_POLYTOPE_POINT, 3, 1, 0, 1, 0, DM_POLYTOPE_POINT, 0, 0,
+                                     DM_POLYTOPE_SEGMENT, 0,       0, DM_POLYTOPE_SEGMENT, 0,    1, DM_POLYTOPE_SEGMENT, 2, 0, 0, 0,
+                                     DM_POLYTOPE_SEGMENT, 2, 0, 2, 0, DM_POLYTOPE_SEGMENT, 0,    2, DM_POLYTOPE_SEGMENT, 0,       0,
+                                     DM_POLYTOPE_SEGMENT, 2, 0, 1, 0, DM_POLYTOPE_SEGMENT, 0,    1, DM_POLYTOPE_SEGMENT, 0,       2,
+                                     DM_POLYTOPE_SEGMENT, 0,       0, DM_POLYTOPE_SEGMENT, 0,    3, DM_POLYTOPE_SEGMENT, 2, 1, 0, 0,
+                                     DM_POLYTOPE_SEGMENT, 2, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0,    3, DM_POLYTOPE_SEGMENT, 0,       1,
+                                     DM_POLYTOPE_SEGMENT, 2, 2, 1, 0, DM_POLYTOPE_SEGMENT, 0,    2, DM_POLYTOPE_SEGMENT, 0,       3,
+                                     DM_POLYTOPE_TRIANGLE, 1, 0, 0, DM_POLYTOPE_TRIANGLE, 0, 0, DM_POLYTOPE_TRIANGLE, 0, 1, DM_POLYTOPE_TRIANGLE, 0, 2,
+                                     DM_POLYTOPE_TRIANGLE, 1, 1, 0, DM_POLYTOPE_TRIANGLE, 0, 3, DM_POLYTOPE_TRIANGLE, 0, 0, DM_POLYTOPE_TRIANGLE, 0, 4,
+                                     DM_POLYTOPE_TRIANGLE, 1, 2, 0, DM_POLYTOPE_TRIANGLE, 0, 1, DM_POLYTOPE_TRIANGLE, 0, 3, DM_POLYTOPE_TRIANGLE, 0, 5,
+                                     DM_POLYTOPE_TRIANGLE, 1, 3, 0, DM_POLYTOPE_TRIANGLE, 0, 2, DM_POLYTOPE_TRIANGLE, 0, 5, DM_POLYTOPE_TRIANGLE, 0, 4};
+  static PetscInt       tetO[]    = {0, 0,
+                                     0, 0,
+                                     0, 0,
+                                     0, 0,
+                                     0, -2, -2,
+                                    -2,  0, -2,
+                                    -2,  0, -2,
+                                     0, -2, -2,
+                                    -2,  0, -2,
+                                    -2,  0, -2,
+                                     0,  0,  0,  0,
+                                     0,  0, -3,  0,
+                                     0, -3, -3,  0,
+                                     0, -3, -1, -1};
+
+  PetscFunctionBeginHot;
+  switch (source) {
+    case DM_POLYTOPE_POINT:
+    case DM_POLYTOPE_SEGMENT:
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    case DM_POLYTOPE_TRIANGLE:
+    case DM_POLYTOPE_QUADRILATERAL:
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    case DM_POLYTOPE_HEXAHEDRON:
+    case DM_POLYTOPE_TRI_PRISM:
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      ierr = DMPlexCellRefinerRefine_None(cr, source, Nt, target, size, cone, ornt);CHKERRQ(ierr);
+      break;
+    case DM_POLYTOPE_TETRAHEDRON:        *Nt = 4; *target = tetT;    *size = tetS;    *cone = tetC;    *ornt = tetO;    break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexCellRefinerRefine_BL(DMPlexCellRefiner cr, DMPolytopeType source, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
+  PetscErrorCode ierr;
+  /* Split all tensor edges with a new vertex, making two new 2 tensor edges
+     0--0--0--1--1
+  */
+  static DMPolytopeType tedgeT[]   = {DM_POLYTOPE_POINT, DM_POLYTOPE_POINT_PRISM_TENSOR};
+  static PetscInt       tedgeS[]   = {1, 2};
+  static PetscInt       tedgeC[]   = {DM_POLYTOPE_POINT, 1, 0, 0, DM_POLYTOPE_POINT, 0, 0,  DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 1, 1, 0};
+  static PetscInt       tedgeO[]   = {                         0,                       0,                        0,                          0};
+  /* Add 1 segment inside every tensor quad, making 2 new tensor quads
+     2---------1---------3
+     |                   |
+     |         B         |
+     |                   |
+     2---------2---------3
+     |                   |
+     |         A         |
+     |                   |
+     0---------0---------1
+  */
+  static DMPolytopeType tquadT[]  = {DM_POLYTOPE_SEGMENT, DM_POLYTOPE_SEG_PRISM_TENSOR};
+  static PetscInt       tquadS[]  = {1, 2};
+  static PetscInt       tquadC[]  = {DM_POLYTOPE_POINT, 1, 2, 0, DM_POLYTOPE_POINT, 1, 3, 0,
+                                     DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 0,    0, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 2, 0, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 3, 0,
+                                     DM_POLYTOPE_SEGMENT, 0,    0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 2, 1, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 3, 1};
+  static PetscInt       tquadO[]  = {0, 0,
+                                     0, 0, 0, 0,
+                                     0, 0, 0, 0};
+  /* Add 1 triangle and make 2 new tensor triangular prisms */
+  static DMPolytopeType ttripT[]  = {DM_POLYTOPE_TRIANGLE, DM_POLYTOPE_TRI_PRISM_TENSOR};
+  static PetscInt       ttripS[]  = {1, 2};
+  static PetscInt       ttripC[]  = {DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 1, 3, 0, DM_POLYTOPE_SEGMENT, 1, 4, 0,
+                                     DM_POLYTOPE_TRIANGLE, 1, 0, 0, DM_POLYTOPE_TRIANGLE, 0,    0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 0,
+                                     DM_POLYTOPE_TRIANGLE, 0,    0, DM_POLYTOPE_TRIANGLE, 1, 1, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 1};
+  static PetscInt       ttripO[]  = {0, 0, 0,
+                                     0, 0, 0, 0, 0,
+                                     0, 0, 0, 0, 0,
+                                     0, 0, 0, 0, 0,
+                                     0, 0, 0, 0, 0};
+  /* Add 1 quad and make 2 new tensor quad prisms */
+  static DMPolytopeType tquadpT[]  = {DM_POLYTOPE_QUADRILATERAL, DM_POLYTOPE_QUAD_PRISM_TENSOR};
+  static PetscInt       tquadpS[]  = {1, 2};
+  static PetscInt       tquadpC[]  = {DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 1, 3, 0, DM_POLYTOPE_SEGMENT, 1, 4, 0, DM_POLYTOPE_SEGMENT, 1, 5, 0,
+                                      DM_POLYTOPE_QUADRILATERAL, 1, 0, 0, DM_POLYTOPE_QUADRILATERAL, 0,    0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 5, 0,
+                                      DM_POLYTOPE_QUADRILATERAL, 0,    0, DM_POLYTOPE_QUADRILATERAL, 1, 1, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 5, 1};
+  static PetscInt       tquadpO[]  = {0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0};
+
+  PetscFunctionBeginHot;
+  switch (source) {
+    case DM_POLYTOPE_POINT:
+    case DM_POLYTOPE_SEGMENT:
+    case DM_POLYTOPE_TRIANGLE:
+    case DM_POLYTOPE_QUADRILATERAL:
+    case DM_POLYTOPE_TETRAHEDRON:
+    case DM_POLYTOPE_HEXAHEDRON:
+    case DM_POLYTOPE_TRI_PRISM:
+      ierr = DMPlexCellRefinerRefine_None(cr, source, Nt, target, size, cone, ornt);CHKERRQ(ierr);
+      break;
+    case DM_POLYTOPE_POINT_PRISM_TENSOR: *Nt = 2; *target = tedgeT;  *size = tedgeS;  *cone = tedgeC;  *ornt = tedgeO;  break;
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:   *Nt = 2; *target = tquadT;  *size = tquadS;  *cone = tquadC;  *ornt = tquadO;  break;
+    case DM_POLYTOPE_TRI_PRISM_TENSOR:   *Nt = 2; *target = ttripT;  *size = ttripS;  *cone = ttripC;  *ornt = ttripO;  break;
+    case DM_POLYTOPE_QUAD_PRISM_TENSOR:  *Nt = 2; *target = tquadpT; *size = tquadpS; *cone = tquadpC; *ornt = tquadpO; break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode CellRefinerCreateOffset_Internal(DMPlexCellRefiner cr, PetscInt ctOrder[], PetscInt ctStart[], PetscInt **offset)
 {
   PetscInt       c, cN, *off;
@@ -1635,6 +1979,18 @@ PetscErrorCode DMPlexCellRefinerCreate(DM dm, DMPlexCellRefiner *cr)
       tmp->ops->refine      = DMPlexCellRefinerRefine_ToSimplex;
       tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_ToSimplex;
       break;
+    case DM_REFINER_ALFELD2D:
+      tmp->ops->refine      = DMPlexCellRefinerRefine_Alfeld2D;
+      tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_None;
+      break;
+    case DM_REFINER_ALFELD3D:
+      tmp->ops->refine      = DMPlexCellRefinerRefine_Alfeld3D;
+      tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_None;
+      break;
+    case DM_REFINER_BL:
+      tmp->ops->refine      = DMPlexCellRefinerRefine_BL;
+      tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_BL;
+      break;
     default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid cell refiner type %s", DMPlexCellRefinerTypes[tmp->type]);
   }
   ierr = PetscCalloc2(DM_NUM_POLYTOPES, &tmp->coordFE, DM_NUM_POLYTOPES, &tmp->refGeom);CHKERRQ(ierr);
@@ -1834,7 +2190,15 @@ static PetscErrorCode DMPlexCellRefinerSetCones(DMPlexCellRefiner cr, DM rdm)
             ierr = DMPlexGetCellType(dm, pp, &pct);CHKERRQ(ierr);
             ierr = DMPlexGetCone(dm, pp, &pcone);CHKERRQ(ierr);
             ierr = DMPlexGetConeOrientation(dm, ppp, &ppornt);CHKERRQ(ierr);
-            po   = ppornt[pcp];
+            if (po <  0 && pct != DM_POLYTOPE_POINT) {
+              const PetscInt pornt   = ppornt[pcp];
+              const PetscInt pcsize  = DMPolytopeTypeGetConeSize(pct);
+              const PetscInt pcstart = pornt < 0 ? -(pornt+1) : pornt;
+              const PetscInt rcstart = (pcstart+pcsize-1)%pcsize;
+              po = pornt < 0 ? -(rcstart+1) : rcstart;
+            } else {
+              po = ppornt[pcp];
+            }
           }
           pr = rcone[coff++];
           /* Orientation po of pp maps (pr, fo) -> (pr', fo') */
@@ -2090,12 +2454,13 @@ static PetscErrorCode DMPlexCellRefinerSetCoordinates(DMPlexCellRefiner cr, DM r
       ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, p, &Nc, &pcoords);CHKERRQ(ierr);
       for (n = 0; n < Nct; ++n) {
         if (rct[n] != DM_POLYTOPE_POINT) continue;
+        if (rsize[n] > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Only support creating a single vertex in cell refinement, not %D", rsize[n]);
         for (r = 0; r < rsize[n]; ++r) {
           PetscInt vNew, off;
 
           ierr = DMPlexCellRefinerGetNewPoint(cr, ct, rct[n], p, r, &vNew);CHKERRQ(ierr);
           ierr = PetscSectionGetOffset(coordSectionNew, vNew, &off);CHKERRQ(ierr);
-          for (d = 0; d < dE; ++d) coordsNew[off+d] = vcoords[d];
+          ierr = DMPlexSnapToGeomModel(dm, p, vcoords, &coordsNew[off]);CHKERRQ(ierr);
         }
       }
     }
@@ -2322,11 +2687,59 @@ static PetscErrorCode DMPlexCellRefinerCreateSF(DMPlexCellRefiner cr, DM rdm)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode RefineLabel_Internal(DMPlexCellRefiner cr, DMLabel label, DMLabel labelNew)
+{
+  DM              dm = cr->dm;
+  IS              valueIS;
+  const PetscInt *values;
+  PetscInt        defVal, Nv, val;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetDefaultValue(label, &defVal);CHKERRQ(ierr);
+  ierr = DMLabelSetDefaultValue(labelNew, defVal);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(valueIS, &Nv);CHKERRQ(ierr);
+  ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+  for (val = 0; val < Nv; ++val) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        numPoints, p;
+
+    /* Ensure refined label is created with same number of strata as
+     * original (even if no entries here). */
+    ierr = DMLabelAddStratum(labelNew, values[val]);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, values[val], &pointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      const PetscInt  point = points[p];
+      DMPolytopeType  ct;
+      DMPolytopeType *rct;
+      PetscInt       *rsize, *rcone, *rornt;
+      PetscInt        Nct, n, r, pNew;
+
+      ierr = DMPlexGetCellType(dm, point, &ct);CHKERRQ(ierr);
+      ierr = DMPlexCellRefinerRefine(cr, ct, &Nct, &rct, &rsize, &rcone, &rornt);CHKERRQ(ierr);
+      for (n = 0; n < Nct; ++n) {
+        for (r = 0; r < rsize[n]; ++r) {
+          ierr = DMPlexCellRefinerGetNewPoint(cr, ct, rct[n], point, r, &pNew);CHKERRQ(ierr);
+          ierr = DMLabelSetValue(labelNew, pNew, values[val]);CHKERRQ(ierr);
+        }
+      }
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexCellRefinerCreateLabels(DMPlexCellRefiner cr, DM rdm)
 {
   DM             dm = cr->dm;
   PetscInt       numLabels, l;
-  PetscInt       pNew;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2335,10 +2748,6 @@ static PetscErrorCode DMPlexCellRefinerCreateLabels(DMPlexCellRefiner cr, DM rdm
     DMLabel         label, labelNew;
     const char     *lname;
     PetscBool       isDepth, isCellType;
-    IS              valueIS;
-    const PetscInt *values;
-    PetscInt        defVal;
-    PetscInt        numValues, val;
 
     ierr = DMGetLabelName(dm, l, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
@@ -2348,43 +2757,7 @@ static PetscErrorCode DMPlexCellRefinerCreateLabels(DMPlexCellRefiner cr, DM rdm
     ierr = DMCreateLabel(rdm, lname);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, lname, &label);CHKERRQ(ierr);
     ierr = DMGetLabel(rdm, lname, &labelNew);CHKERRQ(ierr);
-    ierr = DMLabelGetDefaultValue(label, &defVal);CHKERRQ(ierr);
-    ierr = DMLabelSetDefaultValue(labelNew, defVal);CHKERRQ(ierr);
-    ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
-    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
-    for (val = 0; val < numValues; ++val) {
-      IS              pointIS;
-      const PetscInt *points;
-      PetscInt        numPoints, p;
-
-      /* Ensure refined label is created with same number of strata as
-       * original (even if no entries here). */
-      ierr = DMLabelAddStratum(labelNew, values[val]);CHKERRQ(ierr);
-      ierr = DMLabelGetStratumIS(label, values[val], &pointIS);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
-      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-      for (p = 0; p < numPoints; ++p) {
-        const PetscInt  point = points[p];
-        DMPolytopeType  ct;
-        DMPolytopeType *rct;
-        PetscInt       *rsize, *rcone, *rornt;
-        PetscInt        Nct, n, r;
-
-        ierr = DMPlexGetCellType(dm, point, &ct);CHKERRQ(ierr);
-        ierr = DMPlexCellRefinerRefine(cr, ct, &Nct, &rct, &rsize, &rcone, &rornt);CHKERRQ(ierr);
-        for (n = 0; n < Nct; ++n) {
-          for (r = 0; r < rsize[n]; ++r) {
-            ierr = DMPlexCellRefinerGetNewPoint(cr, ct, rct[n], point, r, &pNew);CHKERRQ(ierr);
-            ierr = DMLabelSetValue(labelNew, pNew, values[val]);CHKERRQ(ierr);
-          }
-        }
-      }
-      ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
-      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
-    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+    ierr = RefineLabel_Internal(cr, label, labelNew);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2442,7 +2815,7 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 {
   DMPlexCellRefiner cr;
   PetscInt         *fpoints;
-  PetscInt          pStart, pEnd, p, vStart, vEnd, v, vNew;
+  PetscInt          pStart, pEnd, p, vStart, vEnd, v;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -2453,6 +2826,8 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
   ierr = PetscMalloc1(pEnd-pStart, &fpoints);CHKERRQ(ierr);
   for (p = 0; p < pEnd-pStart; ++p) fpoints[p] = -1;
   for (v = vStart; v < vEnd; ++v) {
+    PetscInt vNew = -1; /* silent overzelous may be used uninitialized */
+
     ierr = DMPlexCellRefinerGetNewPoint(cr, DM_POLYTOPE_POINT, DM_POLYTOPE_POINT, p, 0, &vNew);CHKERRQ(ierr);
     fpoints[v-pStart] = vNew;
   }
@@ -2605,6 +2980,43 @@ PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFu
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode RefineDiscLabels_Internal(DMPlexCellRefiner cr, DM rdm)
+{
+  DM             dm = cr->dm;
+  PetscInt       Nf, f, Nds, s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    DMLabel     label, labelNew;
+    PetscObject obj;
+    const char *lname;
+
+    ierr = DMGetField(rdm, f, &label, &obj);CHKERRQ(ierr);
+    if (!label) continue;
+    ierr = PetscObjectGetName((PetscObject) label, &lname);CHKERRQ(ierr);
+    ierr = DMLabelCreate(PETSC_COMM_SELF, lname, &labelNew);CHKERRQ(ierr);
+    ierr = RefineLabel_Internal(cr, label, labelNew);CHKERRQ(ierr);
+    ierr = DMSetField_Internal(rdm, f, labelNew, obj);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);
+  }
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  for (s = 0; s < Nds; ++s) {
+    DMLabel     label, labelNew;
+    const char *lname;
+
+    ierr = DMGetRegionNumDS(rdm, s, &label, NULL, NULL);CHKERRQ(ierr);
+    if (!label) continue;
+    ierr = PetscObjectGetName((PetscObject) label, &lname);CHKERRQ(ierr);
+    ierr = DMLabelCreate(PETSC_COMM_SELF, lname, &labelNew);CHKERRQ(ierr);
+    ierr = RefineLabel_Internal(cr, label, labelNew);CHKERRQ(ierr);
+    ierr = DMSetRegionNumDS(rdm, s, labelNew, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 {
   PetscBool         isUniform;
@@ -2622,8 +3034,9 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
     ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform(dm, cr, dmRefined);CHKERRQ(ierr);
     ierr = DMPlexSetRegularRefinement(*dmRefined, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dm, *dmRefined);CHKERRQ(ierr);
+    ierr = RefineDiscLabels_Internal(cr, *dmRefined);CHKERRQ(ierr);
     ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
-    if (localized) {ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);}
     ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
   } else {
     ierr = DMPlexRefine_Internal(dm, NULL, dmRefined);CHKERRQ(ierr);
@@ -2650,8 +3063,9 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
       ierr = DMPlexRefineUniform(cdm, cr, &dmRefined[r]);CHKERRQ(ierr);
       ierr = DMSetCoarsenLevel(dmRefined[r], cdm->leveldown);CHKERRQ(ierr);
       ierr = DMSetRefineLevel(dmRefined[r], cdm->levelup+1);CHKERRQ(ierr);
+      ierr = DMCopyDisc(cdm, dmRefined[r]);CHKERRQ(ierr);
+      ierr = RefineDiscLabels_Internal(cr, dmRefined[r]);CHKERRQ(ierr);
       ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
-      if (localized) {ierr = DMLocalizeCoordinates(dmRefined[r]);CHKERRQ(ierr);}
       ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
       ierr = DMPlexSetRegularRefinement(dmRefined[r], PETSC_TRUE);CHKERRQ(ierr);
       cdm  = dmRefined[r];
@@ -2660,6 +3074,7 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
   } else {
     for (r = 0; r < nlevels; ++r) {
       ierr = DMRefine(cdm, PetscObjectComm((PetscObject) dm), &dmRefined[r]);CHKERRQ(ierr);
+      ierr = DMCopyDisc(cdm, dmRefined[r]);CHKERRQ(ierr);
       ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
       if (localized) {ierr = DMLocalizeCoordinates(dmRefined[r]);CHKERRQ(ierr);}
       ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);

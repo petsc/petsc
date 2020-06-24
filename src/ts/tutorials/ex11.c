@@ -1640,7 +1640,7 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_vtk_monitor","Use VTKMonitor routine","",user->vtkmon,&user->vtkmon,NULL);CHKERRQ(ierr);
     vtkCellGeom = PETSC_FALSE;
     ierr = PetscStrcpy(user->outputBasename, "ex11");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-ufv_vtk_basename","VTK output basename","",user->outputBasename,user->outputBasename,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-ufv_vtk_basename","VTK output basename","",user->outputBasename,user->outputBasename,sizeof(user->outputBasename),NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_use_amr","use local adaptive mesh refinement","",useAMR,&useAMR,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ufv_adapt_interval","time steps between AMR","",adaptInterval,&adaptInterval,NULL);CHKERRQ(ierr);

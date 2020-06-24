@@ -362,7 +362,7 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
 
   PetscFunctionBegin;
   ierr = PetscOptionsDeprecated_Private(NULL,"-info_exclude", NULL, "3.13", "Use -info instead");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(options, NULL, "-info", optstring, PETSC_MAX_PATH_LEN, &set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(options, NULL, "-info", optstring, sizeof(optstring), &set);CHKERRQ(ierr);
   if (set) {
     PetscInfoClassesSet = PETSC_TRUE;
     ierr = PetscInfoAllow(PETSC_TRUE);CHKERRQ(ierr);

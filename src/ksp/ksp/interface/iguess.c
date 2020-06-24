@@ -1,6 +1,6 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h"  I*/
 
-PetscFunctionList KSPGuessList = 0;
+PetscFunctionList KSPGuessList = NULL;
 static PetscBool KSPGuessRegisterAllCalled;
 
 /*
@@ -102,7 +102,7 @@ PetscErrorCode  KSPGuessDestroy(KSPGuess *guess)
   PetscFunctionBegin;
   if (!*guess) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*guess),KSPGUESS_CLASSID,1);
-  if (--((PetscObject)(*guess))->refct > 0) {*guess = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*guess))->refct > 0) {*guess = NULL; PetscFunctionReturn(0);}
   if ((*guess)->ops->destroy) { ierr = (*(*guess)->ops->destroy)(*guess);CHKERRQ(ierr); }
   ierr = MatDestroy(&(*guess)->A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(guess);CHKERRQ(ierr);
@@ -173,7 +173,7 @@ PetscErrorCode  KSPGuessCreate(MPI_Comm comm,KSPGuess *guess)
 
   PetscFunctionBegin;
   PetscValidPointer(guess,2);
-  *guess = 0;
+  *guess = NULL;
   ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(tguess,KSPGUESS_CLASSID,"KSPGuess","Initial guess for Krylov Method","KSPGuess",comm,KSPGuessDestroy,KSPGuessView);CHKERRQ(ierr);
   tguess->omatstate = -1;

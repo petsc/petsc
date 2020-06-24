@@ -52,7 +52,8 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr = VecNormEnd  (RT,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
     KSPCheckNorm(ksp,dp);
   } else if (ksp->normtype == KSP_NORM_NONE) {
-      dp   = 0.0; /* meaningless value that is passed to monitor and convergence test */
+    dp   = 0.0; /* meaningless value that is passed to monitor and convergence test */
+    ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);           /*   (RT,ART)           */
   } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
     ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);         /*   dp <- R'*R         */
     ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);          /*   (RT,ART)           */
@@ -174,7 +175,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
   ksp->ops->destroy        = KSPDestroyDefault;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  ksp->ops->setfromoptions = 0;
-  ksp->ops->view           = 0;
+  ksp->ops->setfromoptions = NULL;
+  ksp->ops->view           = NULL;
   PetscFunctionReturn(0);
 }

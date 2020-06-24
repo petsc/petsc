@@ -2440,8 +2440,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
     }
   }
   /* clean up graph */
-  graph->xadj = 0;
-  graph->adjncy = 0;
+  graph->xadj = NULL;
+  graph->adjncy = NULL;
   ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3934,13 +3934,13 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   /* Subdomain contribution (Non-overlapping) to coarse matrix  */
   ierr = PetscCalloc1(pcbddc->local_primal_size*pcbddc->local_primal_size,&coarse_submat_vals);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_vertices,n_vertices,coarse_submat_vals,&S_VV);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(S_VV,pcbddc->local_primal_size);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(S_VV,pcbddc->local_primal_size);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_constraints,n_vertices,coarse_submat_vals+n_vertices,&S_CV);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(S_CV,pcbddc->local_primal_size);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(S_CV,pcbddc->local_primal_size);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_vertices,n_constraints,coarse_submat_vals+pcbddc->local_primal_size*n_vertices,&S_VC);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(S_VC,pcbddc->local_primal_size);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(S_VC,pcbddc->local_primal_size);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_constraints,n_constraints,coarse_submat_vals+(pcbddc->local_primal_size+1)*n_vertices,&S_CC);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetLDA(S_CC,pcbddc->local_primal_size);CHKERRQ(ierr);
+  ierr = MatDenseSetLDA(S_CC,pcbddc->local_primal_size);CHKERRQ(ierr);
 
   /* determine if can use MatSolve routines instead of calling KSPSolve on ksp_R */
   ierr = KSPGetPC(pcbddc->ksp_R,&pc_R);CHKERRQ(ierr);
@@ -4427,7 +4427,9 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = MatProductCreateWithMat(pcbddc->local_auxmat1,B,NULL,S_CV);CHKERRQ(ierr);
         ierr = MatProductSetType(S_CV,MATPRODUCT_AB);CHKERRQ(ierr);
         ierr = MatProductSetFromOptions(S_CV);CHKERRQ(ierr);
+        ierr = MatProductSymbolic(S_CV);CHKERRQ(ierr);
         ierr = MatProductNumeric(S_CV);CHKERRQ(ierr);
+        ierr = MatProductClear(S_CV);CHKERRQ(ierr);
 
         ierr = MatDestroy(&B);CHKERRQ(ierr);
         ierr = MatCreateSeqDense(PETSC_COMM_SELF,lda_rhs,n_vertices,work+lda_rhs*n_vertices,&B);CHKERRQ(ierr);
@@ -4435,6 +4437,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = MatProductCreateWithMat(local_auxmat2_R,S_CV,NULL,B);CHKERRQ(ierr);
         ierr = MatProductSetType(B,MATPRODUCT_AB);CHKERRQ(ierr);
         ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
+        ierr = MatProductSymbolic(B);CHKERRQ(ierr);
         ierr = MatProductNumeric(B);CHKERRQ(ierr);
 
         ierr = MatScale(S_CV,m_one);CHKERRQ(ierr);
@@ -4445,7 +4448,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       if (lda_rhs != n_R) {
         ierr = MatDestroy(&A_RRmA_RV);CHKERRQ(ierr);
         ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_vertices,work,&A_RRmA_RV);CHKERRQ(ierr);
-        ierr = MatSeqDenseSetLDA(A_RRmA_RV,lda_rhs);CHKERRQ(ierr);
+        ierr = MatDenseSetLDA(A_RRmA_RV,lda_rhs);CHKERRQ(ierr);
       }
       ierr = MatMatMult(A_VR,A_RRmA_RV,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&S_VVt);CHKERRQ(ierr);
       /* need A_VR * \Phi * A_RRmA_RV = A_VR * (I+L)^T * A_RRmA_RV, L given as before */
@@ -4532,7 +4535,12 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,lda_rhs,n_constraints,work,&B);CHKERRQ(ierr);
     ierr = MatScale(S_CC,m_one);CHKERRQ(ierr);
-    ierr = MatMatMult(local_auxmat2_R,S_CC,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+    ierr = MatProductCreateWithMat(local_auxmat2_R,S_CC,NULL,B);CHKERRQ(ierr);
+    ierr = MatProductSetType(B,MATPRODUCT_AB);CHKERRQ(ierr);
+    ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatProductSymbolic(B);CHKERRQ(ierr);
+    ierr = MatProductNumeric(B);CHKERRQ(ierr);
+
     ierr = MatScale(S_CC,m_one);CHKERRQ(ierr);
     if (n_vertices) {
       if (isCHOL || need_benign_correction) { /* if we can solve the interior problem with cholesky, we should also be fine with transposing here */
@@ -4543,7 +4551,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         if (lda_rhs != n_R) {
           ierr = MatDestroy(&B);CHKERRQ(ierr);
           ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_constraints,work,&B);CHKERRQ(ierr);
-          ierr = MatSeqDenseSetLDA(B,lda_rhs);CHKERRQ(ierr);
+          ierr = MatDenseSetLDA(B,lda_rhs);CHKERRQ(ierr);
         }
         ierr = MatMatMult(A_VR,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&S_VCt);CHKERRQ(ierr);
         ierr = MatCopy(S_VCt,S_VC,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -5423,7 +5431,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   PetscInt       n_D,n_R;
   PetscBool      issbaij,opts;
   PetscErrorCode ierr;
-  void           (*f)(void) = 0;
+  void           (*f)(void) = NULL;
   char           dir_prefix[256],neu_prefix[256],str_level[16];
   size_t         len;
 
@@ -5551,7 +5559,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   }
 
   /* NEUMANN PROBLEM */
-  A_RR = 0;
+  A_RR = NULL;
   if (neumann) {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     PetscInt        ibs,mbs;
@@ -7653,7 +7661,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   ierr = PetscFree(iflags);CHKERRQ(ierr);
 
   /* restrict comm if requested */
-  subcomm = 0;
+  subcomm = NULL;
   destroy_mat = PETSC_FALSE;
   if (restrict_comm) {
     PetscMPIInt color,subcommsize;
@@ -7914,7 +7922,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   /* set preallocation */
   ierr = PetscObjectTypeCompare((PetscObject)local_mat,MATSEQDENSE,&newisdense);CHKERRQ(ierr);
   if (!newisdense) {
-    PetscInt *new_local_nnz=0;
+    PetscInt *new_local_nnz=NULL;
 
     ptr_idxs = recv_buffer_idxs_local;
     if (n_recvs) {
@@ -9407,8 +9415,8 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
 
     b->donotstash      = a->donotstash;
     b->roworiented     = a->roworiented;
-    b->rowindices      = 0;
-    b->rowvalues       = 0;
+    b->rowindices      = NULL;
+    b->rowvalues       = NULL;
     b->getrowactive    = PETSC_FALSE;
 
     (*B)->rmap         = rmap;
@@ -9425,14 +9433,14 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
       ierr = PetscLogObjectMemory((PetscObject)*B,At->cmap->N*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscArraycpy(b->colmap,a->colmap,At->cmap->N);CHKERRQ(ierr);
 #endif
-    } else b->colmap = 0;
+    } else b->colmap = NULL;
     if (a->garray) {
       PetscInt len;
       len  = a->B->cmap->n;
       ierr = PetscMalloc1(len+1,&b->garray);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)(*B),len*sizeof(PetscInt));CHKERRQ(ierr);
       if (len) { ierr = PetscArraycpy(b->garray,a->garray,len);CHKERRQ(ierr); }
-    } else b->garray = 0;
+    } else b->garray = NULL;
 
     ierr    = PetscObjectReference((PetscObject)a->lvec);CHKERRQ(ierr);
     b->lvec = a->lvec;

@@ -1096,18 +1096,18 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
       ierr = PetscObjectReference((PetscObject)(tao->monitorcontext[i]));CHKERRQ(ierr);
     }
   }
-  bnk->X_inactive = 0;
-  bnk->G_inactive = 0;
-  bnk->inactive_work = 0;
-  bnk->active_work = 0;
-  bnk->inactive_idx = 0;
-  bnk->active_idx = 0;
-  bnk->active_lower = 0;
-  bnk->active_upper = 0;
-  bnk->active_fixed = 0;
-  bnk->M = 0;
-  bnk->H_inactive = 0;
-  bnk->Hpre_inactive = 0;
+  bnk->X_inactive = NULL;
+  bnk->G_inactive = NULL;
+  bnk->inactive_work = NULL;
+  bnk->active_work = NULL;
+  bnk->inactive_idx = NULL;
+  bnk->active_idx = NULL;
+  bnk->active_lower = NULL;
+  bnk->active_upper = NULL;
+  bnk->active_fixed = NULL;
+  bnk->M = NULL;
+  bnk->H_inactive = NULL;
+  bnk->Hpre_inactive = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1152,9 +1152,9 @@ PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao ta
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton-Krylov method for bound constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_bnk_init_type", "radius initialization type", "", BNK_INIT, BNK_INIT_TYPES, BNK_INIT[bnk->init_type], &bnk->init_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_bnk_update_type", "radius update type", "", BNK_UPDATE, BNK_UPDATE_TYPES, BNK_UPDATE[bnk->update_type], &bnk->update_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_bnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bnk_init_type", "radius initialization type", "", BNK_INIT, BNK_INIT_TYPES, BNK_INIT[bnk->init_type], &bnk->init_type, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bnk_update_type", "radius update type", "", BNK_UPDATE, BNK_UPDATE_TYPES, BNK_UPDATE[bnk->update_type], &bnk->update_type, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_sval", "(developer) Hessian perturbation starting value", "", bnk->sval, &bnk->sval,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_imin", "(developer) minimum initial Hessian perturbation", "", bnk->imin, &bnk->imin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_imax", "(developer) maximum initial Hessian perturbation", "", bnk->imax, &bnk->imax,NULL);CHKERRQ(ierr);
@@ -1407,13 +1407,13 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   bnk->as_step = 1.0e-3;
   bnk->dmin = 1.0e-6;
   bnk->dmax = 1.0e6;
-  
-  bnk->M               = 0;
-  bnk->bfgs_pre        = 0;
+
+  bnk->M               = NULL;
+  bnk->bfgs_pre        = NULL;
   bnk->init_type       = BNK_INIT_INTERPOLATION;
   bnk->update_type     = BNK_UPDATE_REDUCTION;
   bnk->as_type         = BNK_AS_BERTSEKAS;
-  
+
   /* Create the embedded BNCG solver */
   ierr = TaoCreate(PetscObjectComm((PetscObject)tao), &bnk->bncg);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)bnk->bncg, (PetscObject)tao, 1);CHKERRQ(ierr);

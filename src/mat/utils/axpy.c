@@ -82,12 +82,12 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   ierr = MatGetType(Y,&t2);CHKERRQ(ierr);
   ierr = PetscStrcmp(t1,t2,&sametype);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
-  if (Y->ops->axpy && sametype) {
+  if (Y->ops->axpy && (sametype || X->ops->axpy == Y->ops->axpy)) {
     ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcmp(t1,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
     if (transpose) {
-        ierr = MatTransposeAXPY_Private(Y,a,X,str,X);CHKERRQ(ierr);
+      ierr = MatTransposeAXPY_Private(Y,a,X,str,X);CHKERRQ(ierr);
     } else {
       ierr = PetscStrcmp(t2,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
       if (transpose) {
@@ -154,7 +154,7 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
 PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
-  PetscBool      isshell;
+  PetscBool      isshell,isdense;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)Y,MATSHELL,&isshell);CHKERRQ(ierr);
@@ -167,6 +167,9 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
       PetscFunctionReturn(0);
     }
   }
+  /* no need to preallocate if Y is dense */
+  ierr = PetscObjectBaseTypeCompareAny((PetscObject)Y,&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+  if (isdense && str == DIFFERENT_NONZERO_PATTERN) str = SUBSET_NONZERO_PATTERN;
   if (str != DIFFERENT_NONZERO_PATTERN) {
     PetscInt          i,start,end,j,ncols,m,n;
     const PetscInt    *row;
@@ -206,6 +209,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 
     ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
     ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+    /* TODO mat_tests-ex37_nsize-1_mat_type-baij_mat_block_size-2 fails with MatHeaderMerge */
     ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

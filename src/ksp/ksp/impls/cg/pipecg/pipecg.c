@@ -19,10 +19,6 @@ static PetscErrorCode KSPSetUp_PIPECG(KSP ksp)
 
 /*
  KSPSolve_PIPECG - This routine actually applies the pipelined conjugate gradient method
-
- Input Parameter:
- .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
-             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 */
 static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 {
@@ -40,14 +36,14 @@ static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 
   X = ksp->vec_sol;
   B = ksp->vec_rhs;
-  M = ksp->work[0];
+  R = ksp->work[0];
   Z = ksp->work[1];
   P = ksp->work[2];
   N = ksp->work[3];
   W = ksp->work[4];
   Q = ksp->work[5];
   U = ksp->work[6];
-  R = ksp->work[7];
+  M = ksp->work[7];
   S = ksp->work[8];
 
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
@@ -129,7 +125,7 @@ static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
       ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,dp);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-      if (ksp->reason) break;
+      if (ksp->reason) PetscFunctionReturn(0);
     }
 
     if (i == 0) {
@@ -161,11 +157,12 @@ static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
     /*   ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr); */
     /* } */
 
-  } while (i<ksp->max_it);
-  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  } while (i<=ksp->max_it);
+  if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP,Vec,Vec,Vec*);
 
 /*MC
    KSPPIPECG - Pipelined conjugate gradient method.
@@ -203,9 +200,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
   ksp->ops->setup          = KSPSetUp_PIPECG;
   ksp->ops->solve          = KSPSolve_PIPECG;
   ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->view           = 0;
-  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = NULL;
+  ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
+  ksp->ops->buildresidual  = KSPBuildResidual_CG;
   PetscFunctionReturn(0);
 }

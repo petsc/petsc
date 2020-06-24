@@ -222,12 +222,12 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
   neP->infoc              = 1;
   ls->data = (void*)neP;
 
-  ls->ops->setup = 0;
-  ls->ops->reset = 0;
-  ls->ops->apply=TaoLineSearchApply_GPCG;
-  ls->ops->view =TaoLineSearchView_GPCG;
-  ls->ops->destroy=TaoLineSearchDestroy_GPCG;
-  ls->ops->setfromoptions=0;
+  ls->ops->setup = NULL;
+  ls->ops->reset = NULL;
+  ls->ops->apply = TaoLineSearchApply_GPCG;
+  ls->ops->view  = TaoLineSearchView_GPCG;
+  ls->ops->destroy = TaoLineSearchDestroy_GPCG;
+  ls->ops->setfromoptions = NULL;
   PetscFunctionReturn(0);
 }
 

@@ -25,6 +25,7 @@ PetscErrorCode  CalculateRhs(Vec);
 PetscErrorCode  CalculateError(Vec,Vec,Vec,PetscReal*);
 PetscErrorCode  CalculateSolution(PetscInt,Vec*);
 PetscErrorCode  amult(Mat,Vec,Vec);
+PetscErrorCode  apply_pc(PC,Vec,Vec);
 
 int main(int Argc,char **Args)
 {
@@ -77,8 +78,10 @@ int main(int Argc,char **Args)
 
   /* zero is finest level */
   for (i=0; i<levels-1; i++) {
-    ierr = PCMGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);CHKERRQ(ierr);
-    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void*)0,&mat[i]);CHKERRQ(ierr);
+    Mat dummy;
+
+    ierr = PCMGSetResidual(pcmg,levels - 1 - i,residual,NULL);CHKERRQ(ierr);
+    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],NULL,&mat[i]);CHKERRQ(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void (*)(void))restrct);CHKERRQ(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void (*)(void))interpolate);CHKERRQ(ierr);
     ierr = PCMGSetInterpolation(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
@@ -93,13 +96,18 @@ int main(int Argc,char **Args)
     ierr = PCShellGetName(pc,&shellname);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%D, PCShell name is %s\n",i,shellname);CHKERRQ(ierr);
 
-    /* this is a dummy! since KSP requires a matrix passed in  */
-    ierr = KSPSetOperators(ksp[i],mat[i],mat[i]);CHKERRQ(ierr);
+    /* this is not used unless different options are passed to the solver */
+    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i],N[i],N[i],N[i],NULL,&dummy);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(dummy,MATOP_MULT,(void (*)(void))amult);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp[i],dummy,dummy);CHKERRQ(ierr);
+    ierr = MatDestroy(&dummy);CHKERRQ(ierr);
+
     /*
         We override the matrix passed in by forcing it to use Richardson with
         a user provided application. This is non-standard and this practice
         should be avoided.
     */
+    ierr = PCShellSetApply(pc,apply_pc);CHKERRQ(ierr);
     ierr = PCShellSetApplyRichardson(pc,gauss_seidel);CHKERRQ(ierr);
     if (use_jacobi) {
       ierr = PCShellSetApplyRichardson(pc,jacobi_smoother);CHKERRQ(ierr);
@@ -133,7 +141,7 @@ int main(int Argc,char **Args)
   ierr = PCMGSetRhs(pcmg,0,x);CHKERRQ(ierr); B[0] = x;
 
   /* create matrix multiply for finest level */
-  ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void*)0,&fmat);CHKERRQ(ierr);
+  ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],NULL,&fmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(fmat,MATOP_MULT,(void (*)(void))amult);CHKERRQ(ierr);
   ierr = KSPSetOperators(kspmg,fmat,fmat);CHKERRQ(ierr);
 
@@ -193,6 +201,7 @@ PetscErrorCode residual(Mat mat,Vec bb,Vec xx,Vec rr)
   ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 {
   PetscInt          i,n1;
@@ -212,7 +221,15 @@ PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* --------------------------------------------------------------------- */
+PetscErrorCode apply_pc(PC pc,Vec bb,Vec xx)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented");
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt          i,n1;
@@ -380,9 +397,6 @@ PetscErrorCode CalculateError(Vec solution,Vec u,Vec r,PetscReal *e)
   ierr = VecNorm(r,NORM_1,e+1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
 
 /*TEST
 

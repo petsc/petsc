@@ -1,31 +1,12 @@
-  0 SNES Function norm 33.3967
-    0 KSP Residual norm 60.6931 
-    1 KSP Residual norm 17.0775
-    2 KSP Residual norm 3.02313
-    3 KSP Residual norm 0.829536
-    4 KSP Residual norm 0.194913
-    5 KSP Residual norm 0.0639834
-    6 KSP Residual norm 0.0197329
-    7 KSP Residual norm 0.00771292
-    8 KSP Residual norm 0.00275753
-    9 KSP Residual norm 0.000600238
-   10 KSP Residual norm 0.000149587
-   11 KSP Residual norm 3.29519e-05
-   12 KSP Residual norm 8.72355e-06
-   13 KSP Residual norm 1.91575e-06
-   14 KSP Residual norm 4.64281e-07
-   15 KSP Residual norm 8.45902e-08
-   16 KSP Residual norm 1.55073e-08
-   17 KSP Residual norm 3.3689e-09
-  Linear solve converged due to CONVERGED_RTOL iterations 17
-  1 SNES Function norm 3.34156e-09
+  0 SNES Function norm 33.3967 
+  1 SNES Function norm 3.95646e-09 
 L_2 Error: 7.89093
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 4 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=17
+  total number of linear solver iterations=16
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 4 MPI processes
@@ -56,6 +37,16 @@ SNES Object: 4 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
+    PC Object: (pc_hpddm_levels_1_) 4 MPI processes
+      type: shell
+        no name
+      linear system matrix = precond matrix:
+      Mat Object: 4 MPI processes
+        type: mpiaij
+        rows=5468, cols=5468
+        total: nonzeros=37098, allocated nonzeros=37098
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node (on process 0) routines
     PC Object: (pc_hpddm_levels_1_) 4 MPI processes
       type: bjacobi
         number of blocks = 4

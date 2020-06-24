@@ -54,7 +54,7 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
 
   /* Open output file */
-  ierr = PetscOptionsGetString(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,sizeof(noise_file),&flg);CHKERRQ(ierr);
   if (flg) neP->fp = fopen(noise_file,"w");
   else     neP->fp = fopen("noise.out","w");
   if (!neP->fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file");

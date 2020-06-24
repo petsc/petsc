@@ -185,6 +185,10 @@ check_build:
          if test -s .ftn.log; then \
           cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; \
          fi; ${RM} .ftn.log;
+	+@egrep "^#define PETSC_HAVE_MATLAB_ENGINE 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
+         if test -s .ftn.log; then \
+          cd src/vec/vec/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex31; \
+         fi; ${RM} .ftn.log;
 	+@cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
 	-@echo "Completed test examples"
 checkx_build:
@@ -351,7 +355,7 @@ alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
 
 # Builds .html versions of the source
 # html overwrites some stuff created by update-docs - hence this is done later.
-alldoc2: chk_loc
+alldoc2: chk_loc allcite
 	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
 #

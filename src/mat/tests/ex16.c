@@ -35,14 +35,19 @@ int main(int argc,char **args)
   PetscInt       i,j,M = 4,N = 3,rstart,rend;
   PetscErrorCode ierr;
   PetscScalar    *array;
+  char           mattype[256];
   PetscViewer    view;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  ierr = PetscStrcpy(mattype,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-mat_type",mattype,sizeof(mattype),NULL);CHKERRQ(ierr);
   /*
       Create a parallel dense matrix shared by all processors
   */
   ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,N,NULL,&A);CHKERRQ(ierr);
-
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatConvert(A,mattype,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   /*
      Set values into the matrix
   */
@@ -54,6 +59,8 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatScale(A,2.0);CHKERRQ(ierr);
+  ierr = MatScale(A,1.0/2.0);CHKERRQ(ierr);
 
   /*
       Store the binary matrix to a file
@@ -73,7 +80,7 @@ int main(int argc,char **args)
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatSetType(A,mattype);CHKERRQ(ierr);
   for (i=0; i<4; i++) {
     if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
     ierr = MatLoad(A,view);CHKERRQ(ierr);
@@ -85,6 +92,8 @@ int main(int argc,char **args)
   ierr = PetscMalloc1((rend-rstart)*N,&array);CHKERRQ(ierr);
   for (i=0; i<(rend-rstart)*N; i++) array[i] = (PetscReal)1;
   ierr = MatDensePlaceArray(A,array);CHKERRQ(ierr);
+  ierr = MatScale(A,2.0);CHKERRQ(ierr);
+  ierr = MatScale(A,1.0/2.0);CHKERRQ(ierr);
   ierr = CheckValuesOne(A);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
@@ -98,7 +107,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatSetType(A,mattype);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatLoad(A,view);CHKERRQ(ierr);
   ierr = CheckValuesOne(A);CHKERRQ(ierr);
@@ -148,6 +157,7 @@ int main(int argc,char **args)
       test:
         suffix: stdio_1
         nsize: 1
+        args: -mat_type seqdense
       test:
         suffix: stdio_2
         nsize: 2
@@ -159,6 +169,31 @@ int main(int argc,char **args)
         nsize: 4
       test:
         suffix: stdio_5
+        nsize: 5
+      test:
+        requires: cuda
+        args: -mat_type seqdensecuda
+        suffix: stdio_cuda_1
+        nsize: 1
+      test:
+        requires: cuda
+        args: -mat_type mpidensecuda
+        suffix: stdio_cuda_2
+        nsize: 2
+      test:
+        requires: cuda
+        args: -mat_type mpidensecuda
+        suffix: stdio_cuda_3
+        nsize: 3
+      test:
+        requires: cuda
+        args: -mat_type mpidensecuda
+        suffix: stdio_cuda_4
+        nsize: 4
+      test:
+        requires: cuda
+        args: -mat_type mpidensecuda
+        suffix: stdio_cuda_5
         nsize: 5
 
    testset:
@@ -180,6 +215,30 @@ int main(int argc,char **args)
       test:
         suffix: mpiio_5
         nsize: 5
-
+      test:
+        requires: cuda
+        args: -mat_type mpidensecuda
+        suffix: mpiio_cuda_1
+        nsize: 1
+      test:
+        requires: cuda
+        args: -mat_type mpidensecuda
+        suffix: mpiio_cuda_2
+        nsize: 2
+      test:
+        requires: cuda
+        args: -mat_type mpidensecuda
+        suffix: mpiio_cuda_3
+        nsize: 3
+      test:
+        requires: cuda
+        args: -mat_type mpidensecuda
+        suffix: mpiio_cuda_4
+        nsize: 4
+      test:
+        requires: cuda
+        args: -mat_type mpidensecuda
+        suffix: mpiio_cuda_5
+        nsize: 5
 
 TEST*/
