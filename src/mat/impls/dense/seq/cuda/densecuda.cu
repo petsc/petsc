@@ -1153,6 +1153,20 @@ static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseCUDA(Mat A,Mat *v)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode  MatDenseSetLDA_SeqDenseCUDA(Mat A,PetscInt lda)
+{
+  Mat_SeqDense     *cA = (Mat_SeqDense*)A->data;
+  Mat_SeqDenseCUDA *dA = (Mat_SeqDenseCUDA*)A->spptr;
+  PetscBool        data;
+
+  PetscFunctionBegin;
+  data = (PetscBool)((A->rmap->n > 0 && A->cmap->n > 0) ? (dA->d_v ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE);
+  if (!dA->user_alloc && data && cA->lda!=lda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"LDA cannot be changed after allocation of internal storage");
+  if (lda < A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,A->rmap->n);
+  cA->lda = lda;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
 {
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
@@ -1184,6 +1198,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetSubMatrix_C",MatDenseGetSubMatrix_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_SeqDenseCUDA);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseSetLDA_C",MatDenseSetLDA_SeqDenseCUDA);CHKERRQ(ierr);
 
     A->ops->duplicate               = MatDuplicate_SeqDenseCUDA;
     A->ops->mult                    = MatMult_SeqDenseCUDA;
@@ -1213,6 +1228,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetSubMatrix_C",MatDenseGetSubMatrix_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_SeqDense);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseSetLDA_C",MatDenseSetLDA_SeqDense);CHKERRQ(ierr);
 
     A->ops->duplicate               = MatDuplicate_SeqDense;
     A->ops->mult                    = MatMult_SeqDense;

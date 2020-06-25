@@ -6523,7 +6523,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
    Not Collective
 
    Input Arguments:
-.  A - matrix of type Elemental
+.  A - matrix of type Elemental or ScaLAPACK
 
    Output Arguments:
 +  rows - rows in which this process owns elements

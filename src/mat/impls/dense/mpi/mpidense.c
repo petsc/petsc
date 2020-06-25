@@ -165,9 +165,20 @@ static PetscErrorCode MatDenseGetLDA_MPIDense(Mat A,PetscInt *lda)
 static PetscErrorCode MatDenseSetLDA_MPIDense(Mat A,PetscInt lda)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  PetscBool      iscuda;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!a->A) {
+    if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+    ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_SELF,&a->A);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)a->A);CHKERRQ(ierr);
+    ierr = MatSetSizes(a->A,A->rmap->n,A->cmap->N,A->rmap->n,A->cmap->N);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSECUDA,&iscuda);CHKERRQ(ierr);
+    ierr = MatSetType(a->A,iscuda ? MATSEQDENSECUDA : MATSEQDENSE);CHKERRQ(ierr);
+  }
   ierr = MatDenseSetLDA(a->A,lda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -576,6 +587,9 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseReplaceArray_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",NULL);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SCALAPACK)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_scalapack_C",NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIDenseSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
@@ -1881,6 +1895,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_MPIDense);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",MatConvert_MPIDense_Elemental);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SCALAPACK)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_scalapack_C",MatConvert_Dense_ScaLAPACK);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_mpidensecuda_C",MatConvert_MPIDense_MPIDenseCUDA);CHKERRQ(ierr);

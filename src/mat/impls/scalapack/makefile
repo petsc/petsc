@@ -1,16 +1,16 @@
 -include ../../../../petscdir.mk
-#requirespackage 'PETSC_HAVE_ELEMENTAL'
+#requirespackage 'PETSC_HAVE_SCALAPACK'
 
 ALL: lib
 
 FFLAGS   =
-SOURCECXX= matelem.cxx
+SOURCEC  = matscalapack.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat
 DIRS     =
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/elemental/
+LOCDIR   = src/mat/impls/scalapack/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

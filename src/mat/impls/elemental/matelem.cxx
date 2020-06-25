@@ -664,7 +664,7 @@ static PetscErrorCode  MatLUFactorNumeric_Elemental(Mat F,Mat A,const MatFactorI
 static PetscErrorCode  MatLUFactorSymbolic_Elemental(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  /* F is create and allocated by MatGetFactor_elemental_petsc(), skip this routine. */
+  /* F is created and allocated by MatGetFactor_elemental_petsc(), skip this routine. */
   PetscFunctionReturn(0);
 }
 
@@ -697,7 +697,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_Elemental(Mat F,Mat A,const MatFa
 static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  /* F is create and allocated by MatGetFactor_elemental_petsc(), skip this routine. */
+  /* F is created and allocated by MatGetFactor_elemental_petsc(), skip this routine. */
   PetscFunctionReturn(0);
 }
 
@@ -754,7 +754,7 @@ static PetscErrorCode MatNorm_Elemental(Mat A,NormType type,PetscReal *nrm)
     *nrm = El::InfinityNorm(*a->emat);
     break;
   default:
-    printf("Error: unsupported norm type!\n");
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Unsupported norm type");
   }
   PetscFunctionReturn(0);
 }
@@ -1076,10 +1076,10 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  /* Check if local row and clomun sizes are equally distributed.
+  /* Check if local row and column sizes are equally distributed.
      Jed: Elemental uses "element" cyclic ordering so the sizes need to match that
      exactly.  The strategy in MatElemental is for PETSc to implicitly permute to block ordering (like would be returned by
-     PetscSplitOwnership(comm,&n,&N)), at which point Elemental matrices can act on PETSc vectors without redistributing the vectors. */
+     PetscSplitOwnership(comm,&n,&N), at which point Elemental matrices can act on PETSc vectors without redistributing the vectors. */
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   n = PETSC_DECIDE;
   ierr = PetscSplitOwnership(comm,&n,&A->rmap->N);CHKERRQ(ierr);
@@ -1338,9 +1338,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
     /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until El::Grid() is called */
     ierr = PetscOptionsInt("-mat_elemental_grid_height","Grid Height","None",El::mpi::Size(cxxcomm),&optv1,&flg1);CHKERRQ(ierr);
     if (flg1) {
-      if (El::mpi::Size(cxxcomm) % optv1 != 0) {
-        SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %D must evenly divide CommSize %D",optv1,(PetscInt)El::mpi::Size(cxxcomm));
-      }
+      if (El::mpi::Size(cxxcomm) % optv1) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %D must evenly divide CommSize %D",optv1,(PetscInt)El::mpi::Size(cxxcomm));
       commgrid->grid = new El::Grid(cxxcomm,optv1); /* use user-provided grid height */
     } else {
       commgrid->grid = new El::Grid(cxxcomm); /* use Elemental default grid sizes */
