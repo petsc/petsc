@@ -7,7 +7,6 @@ cdef extern from * nogil:
     int PetscOptionsDestroy(PetscOptions*)
     int PetscOptionsView(PetscOptions,PetscViewer)
     int PetscOptionsClear(PetscOptions)
-    int PetscOptionsSetFromOptions(PetscOptions)
 
     int PetscOptionsPrefixPush(PetscOptions,char[])
     int PetscOptionsPrefixPop(PetscOptions)
