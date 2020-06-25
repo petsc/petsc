@@ -27,6 +27,10 @@
 #define VECMPIVIENNACL 'mpiviennacl'
 #define VECVIENNACL    'viennacl'
 #define VECNEST 'nest'
+#define VECSEQCUDA 'seqcuda'
+#define VECMPICUDA 'mpicuda'
+#define VECCUDA 'cuda'
+#define VECNODE 'node'
 
 #define VecScatterType character*(80)
 
