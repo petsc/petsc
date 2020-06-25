@@ -572,6 +572,17 @@ linux-pgi:
   variables:
     TEST_ARCH: arch-ci-linux-pgi
 
+linux-nagfor:
+  extends:
+    - .stage-3
+    - .linux_test_nofflags
+  tags:
+    - gce-nfs, linux-mcpu
+  variables:
+    PATH: /usr/lib/ccache:/home/svcpetsc/.local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/nfs/gce/projects/petsc/soft/nag/6.1/bin
+    NAG_KUSARI_FILE: licman1.mcs.anl.gov:7733
+    TEST_ARCH: arch-ci-linux-nagfor
+
 linux-intel-cmplx:
   extends:
     - .stage-3
@@ -649,15 +660,6 @@ linux-gcc-ifc-cmplx:
   variables:
     TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
     LOAD_MODULES: intel/19.0-nompilib
-
-linux-nagfor:
-  extends:
-    - .stage-3
-    - .linux_test_nofflags
-  tags:
-    - mcs-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-nagfor
 
 linux-opt-cxx-quad:
   extends:
