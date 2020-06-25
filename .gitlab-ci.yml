@@ -56,15 +56,14 @@ check-ci-settings:
 .stage-1:
   extends: .test
   stage: stage-1
-  image: jedbrown/mpich-ccache
   tags:
-    - docker
+    - stage1
   before_script:
     - date
+    - hostname
+    - grep PRETTY_NAME /etc/os-release
     - nproc
     - lscpu
-    - export CCACHE_COMPILERCHECK=content CCACHE_DIR=$(pwd)/.ccache
-    - ccache --show-stats
     - ccache --zero-stats
     - echo ${CONFIG_OPTS}
   script:
@@ -73,7 +72,7 @@ check-ci-settings:
     - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - date
-    - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
+    - ccache --show-stats
   artifacts:
     reports:
       junit: arch-*/tests/testresults.xml
@@ -86,10 +85,6 @@ check-ci-settings:
     - arch-*/tests/test_*_tap.log
     - arch-*/tests/test_*_err.log
     expire_in: 4 days
-  cache:
-    paths:
-      - .ccache/
-    key: "${CI_JOB_NAME}"
 
 #
 # The following tests run on the cloud as part of stage-1.
@@ -99,7 +94,7 @@ mpich-cxx-py3:
   extends: .stage-1
   variables:
     PYTHON: python3
-    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-clanguage=cxx --with-fc=0
+    CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-clanguage=cxx --with-fc=0
     TEST_SEARCH: snes_tutorials-ex48%
 
 uni-complex-float-int64:
@@ -111,26 +106,26 @@ uni-complex-float-int64:
 
 c89-mlib-static-py2:
   extends: .stage-1
-  image: jedbrown/mpich-ccache:python2
   variables:
     PYTHON: python2
-    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c89
+    CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c89
     TEST_SEARCH: snes_tutorials-ex19%
 
 checksource:
   extends: .test
-  image: jedbrown/mpich-ccache
   stage: stage-1
+  tags:
+    - stage1
   script:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - make checkbadSource SHELL=bash
-    - make check_output SHELL=bash
+    - make -f gmakefile check_output SHELL=bash
 
 check-py-vermin:
   extends: .test
   stage: stage-1
   tags:
-    - check-ci-settings
+    - stage1
   script:
     - vermin -vv  -t=2.6- -t=3.4- config
 #
