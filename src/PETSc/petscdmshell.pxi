@@ -277,6 +277,8 @@ cdef int DMSHELL_CreateInterpolation(
     mat, vec = interpolation(Dmc, Dmf, *args, **kargs)
     PetscINCREF(mat.obj)
     cmat[0] = mat.mat
+    if cvec == NULL:
+        return 0
     if vec is None:
         cvec[0] = NULL
     else:
