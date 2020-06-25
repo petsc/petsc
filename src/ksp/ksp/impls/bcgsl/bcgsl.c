@@ -144,7 +144,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       ierr = (*ksp->converged)(ksp, k+j, nrm0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) {
         ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
-
         ksp->its   = k+j;
         ksp->rnorm = nrm0;
 
@@ -304,7 +303,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     ierr = VecAXPY(VX,1.0,VXR);CHKERRQ(ierr);
   }
 
-  ierr = (*ksp->converged)(ksp, k, zeta, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
+  ksp->its = k;
+  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta;
+  else ksp->rnorm = 0.0;
+  ierr = KSPMonitor(ksp, ksp->its, ksp->rnorm);CHKERRQ(ierr);
+  ierr = KSPLogResidualHistory(ksp, ksp->rnorm);CHKERRQ(ierr);
+  ierr = (*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
   if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
