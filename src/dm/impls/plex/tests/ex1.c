@@ -28,6 +28,7 @@ typedef struct {
   PetscInt      overlap;                         /* The cell overlap to use during partitioning */
   PetscReal     extrude_thickness;               /* Thickness of extrusion */
   PetscInt      extrude_layers;                  /* Layers to be extruded */
+  PetscBool     extrude_hfirst;                  /* New numbering: height first? */
   PetscBool     testp4est[2];
   PetscBool     redistribute;
   PetscBool     final_ref;                       /* Run refinement at the end */
@@ -65,6 +66,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->overlap           = 0;
   options->extrude_layers    = 0;
   options->extrude_thickness = 0.1;
+  options->extrude_hfirst    = PETSC_TRUE;
   options->testp4est[0]      = PETSC_FALSE;
   options->testp4est[1]      = PETSC_FALSE;
   options->redistribute      = PETSC_FALSE;
@@ -102,6 +104,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   if (flg) options->extrude_layers = 2;
   ierr = PetscOptionsBoundedInt("-ext_layers", "The number of layers to extrude", "ex1.c", options->extrude_layers, &options->extrude_layers, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ext_thickness", "The thickness of the layer to be extruded", "ex1.c", options->extrude_thickness, &options->extrude_thickness, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ext_hfirst", "Order the cells in the height first", "ex1.c", options->extrude_hfirst, &options->extrude_hfirst, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex1.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex1.c", options->overlap, &options->overlap, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_p4est_seq", "Test p4est with sequential base DM", "ex1.c", options->testp4est[0], &options->testp4est[0], NULL);CHKERRQ(ierr);
@@ -186,7 +189,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM edm;
 
     ierr = DMPlexCreateFromFile(comm, extfilename, interpolate, &edm);CHKERRQ(ierr);
-    ierr = DMPlexExtrude(edm, user->extrude_layers, user->extrude_thickness, PETSC_TRUE, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexExtrude(edm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, interpolate, dm);CHKERRQ(ierr);
     ierr = DMDestroy(&edm);CHKERRQ(ierr);
   } else {
     switch (user->domainShape) {
@@ -248,11 +251,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   if (!extlen && user->extrude_layers > 0) {
-     DM edm;
+    DM edm;
 
-     ierr = DMPlexExtrude(*dm, user->extrude_layers, user->extrude_thickness, PETSC_TRUE, interpolate, &edm);CHKERRQ(ierr);
-     ierr = DMDestroy(dm);CHKERRQ(ierr);
-     *dm  = edm;
+    ierr = DMPlexExtrude(*dm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, interpolate, &edm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = edm;
   }
   ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
   ierr = DMViewFromOptions(*dm,NULL,"-init_dm_view");CHKERRQ(ierr);
@@ -1085,16 +1088,6 @@ int main(int argc, char **argv)
     args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_3d_cube.msh -interpolate -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -petscpartitioner_type simple -dm_refine 1 -dm_plex_cell_refiner tobox -dm_plex_check_all
 
   test:
-    suffix: ref_bl_1
-    args: -dim 1 -domain_shape box -cell_simplex 0 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner boundarylayer -ext_layers 2 -final_diagnostics
-  test:
-    suffix: ref_bl_2_tri
-    requires: triangle
-    args: -dim 2 -domain_shape box -cell_simplex 1 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner boundarylayer -ext_layers 3 -final_diagnostics
-  test:
-    suffix: ref_bl_3_quad
-    args: -dim 2 -domain_shape box -cell_simplex 0 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner boundarylayer -ext_layers 3 -final_diagnostics
-  test:
     suffix: ref_alfeld2d_0
     requires: triangle
     args: -dim 2 -domain_shape box -cell_simplex 1 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner alfeld2d -final_diagnostics
@@ -1103,4 +1096,23 @@ int main(int argc, char **argv)
     requires: ctetgen
     args: -dim 3 -domain_shape box -cell_simplex 1 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all -dm_refine 1 -dm_plex_cell_refiner alfeld3d -final_diagnostics
 
+  # Boundary layer refiners
+  test:
+    suffix: ref_bl_1
+    args: -dim 1 -domain_shape box -cell_simplex 0 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all 0 -dm_refine 1 -dm_plex_cell_refiner boundarylayer -ext_layers 2 -final_diagnostics -dm_plex_refine_boundarylayer_splits 3 -ext_hfirst {{0 1}}
+  test:
+    suffix: ref_bl_2_tri
+    requires: triangle
+    args: -dim 2 -domain_shape box -cell_simplex 1 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all 0 -dm_refine 1 -dm_plex_cell_refiner boundarylayer -ext_layers 3 -final_diagnostics -dm_plex_refine_boundarylayer_splits 4 -ext_hfirst {{0 1}}
+  test:
+    suffix: ref_bl_3_quad
+    args: -dim 2 -domain_shape box -cell_simplex 0 -domain_box_sizes 5 -dm_view -interpolate -dm_plex_check_all 0 -dm_refine 1 -dm_plex_cell_refiner boundarylayer -ext_layers 3 -final_diagnostics -dm_plex_refine_boundarylayer_splits 4 -ext_hfirst {{0 1}}
+  test:
+    suffix: ref_bl_spheresurface_extruded
+    nsize : 4
+    args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_plex_check_all -dm_view -interpolate -petscpartitioner_type simple -ext_hfirst {{0 1}separate output} -final_diagnostics -dm_refine 1 -dm_plex_cell_refiner boundarylayer -dm_plex_refine_boundarylayer_splits 2
+  test:
+    suffix: ref_bl_3d_hyb
+    nsize : 4
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_3d_cube.msh -dm_plex_check_all -dm_view -interpolate -petscpartitioner_type simple -final_diagnostics -dm_refine 1 -dm_plex_cell_refiner boundarylayer -dm_plex_refine_boundarylayer_splits 4 -dm_plex_refine_boundarylayer_progression 3.1
 TEST*/

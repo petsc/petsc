@@ -3,15 +3,15 @@
 #include <petsc/private/hashmapi.h>
 
 typedef struct {
-  PetscViewer    viewer;
-  int            fileFormat;
-  int            dataSize;
-  PetscBool      binary;
-  PetscBool      byteSwap;
-  size_t         wlen;
-  void           *wbuf;
-  size_t         slen;
-  void           *sbuf;
+  PetscViewer viewer;
+  int         fileFormat;
+  int         dataSize;
+  PetscBool   binary;
+  PetscBool   byteSwap;
+  size_t      wlen;
+  void        *wbuf;
+  size_t      slen;
+  void        *sbuf;
 } GmshFile;
 
 static PetscErrorCode GmshBufferGet(GmshFile *gmsh, size_t count, size_t eltsize, void *buf)
