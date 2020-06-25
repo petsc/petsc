@@ -579,7 +579,7 @@ linux-intel-cmplx:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-intel-cmplx
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0
+    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib
 
 linux-xsdk-dbg:
   extends:
@@ -608,7 +608,7 @@ linux-intel:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-intel
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0
+    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib
 
 linux-opt-misc:
   extends:
@@ -647,7 +647,7 @@ linux-gcc-ifc-cmplx:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
-    LOAD_MODULES: intel/19.0
+    LOAD_MODULES: intel/19.0-nompilib
 
 linux-nagfor:
   extends:
