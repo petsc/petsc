@@ -421,7 +421,7 @@ linux-without-fc:
     - .stage-3
     - .linux_test
   tags:
-    - name:si
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
@@ -475,16 +475,17 @@ linux-cxx-cmplx-pkgs-64idx:
     - .stage-3
     - .linux_test
   tags:
-    - name:pj01
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
+    LOAD_MODULES: llvm/9.0.0-7fyffox gcc/8.3.0-fjpc5ys cmake/3.14.2-rl3q676
 
 linux-pkgs-dbg-ftn-interfaces:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - name:pj02
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
 
@@ -493,7 +494,7 @@ linux-pkgs-cxx-mlib:
     - .stage-3
     - .linux_test
   tags:
-    - name:pj02
+    - gce-nfs
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
