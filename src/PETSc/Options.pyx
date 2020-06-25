@@ -54,10 +54,6 @@ cdef class Options:
         if viewer is not None: vwr = viewer.vwr
         CHKERR( PetscOptionsView(self.opt, vwr) )
 
-    def setFromOptions(self):
-        CHKERR( PetscOptionsSetFromOptions(self.opt) )
-    #
-
     def prefixPush(self, prefix):
         prefix = getprefix(prefix)
         cdef const char *cprefix = NULL
