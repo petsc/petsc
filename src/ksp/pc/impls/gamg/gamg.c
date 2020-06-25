@@ -1675,7 +1675,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->threshold_scale = 1.;
   pc_gamg->Nlevels          = PETSC_MG_MAXLEVELS;
   pc_gamg->current_level    = 0; /* don't need to init really */
-  ierr = PetscStrcpy(pc_gamg->esteig_type,KSPGMRES);CHKERRQ(ierr);
+  ierr = PetscStrcpy(pc_gamg->esteig_type,NULL);CHKERRQ(ierr);
   pc_gamg->esteig_max_it    = 10;
   pc_gamg->use_sa_esteig    = -1;
   pc_gamg->emin             = 0;

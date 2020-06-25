@@ -39,7 +39,8 @@ int main(int argc,char **args)
   /* create stiffness matrix (2) */
   ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
   ierr = MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(Amat,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Amat,81,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Amat,81,NULL,57,NULL);CHKERRQ(ierr);
@@ -218,7 +219,7 @@ int main(int argc,char **args)
 
    test:
       nsize: 4
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_pc_type sor -pc_gamg_use_sa_esteig
+      args: -ne 19 -alpha 1.e-3 -pc_type gamg -pc_gamg_agg_nsmooths 1  -mg_levels_ksp_max_it 3 -ksp_monitor -ksp_converged_reason -ksp_type cg 
 
    test:
       suffix: seqaijmkl
@@ -228,13 +229,13 @@ int main(int argc,char **args)
 
    test:
       suffix: Classical
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_converged_reason -mg_levels_esteig_ksp_type cg
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_converged_reason
       output_file: output/ex54_classical.out
 
    test:
       suffix: geo
       nsize: 4
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_levels_esteig_ksp_type cg  -mg_levels_ksp_max_it 3
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_levels_ksp_max_it 3
       requires: triangle
       output_file: output/ex54_0.out
 
