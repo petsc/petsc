@@ -1776,7 +1776,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_6","ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)","None",mumps->id.ICNTL(6),&icntl,&flg);CHKERRQ(ierr);
   if (flg) mumps->id.ICNTL(6) = icntl;
 
-  ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_7","ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 1=Petsc (sequential only), 3=Scotch, 4=PORD, 5=Metis","None",mumps->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_7","ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 1=Petsc (sequential only), 3=Scotch, 4=PORD, 5=Metis, 7=auto(default)","None",mumps->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
   if (flg) {
     if (icntl== 1 && mumps->petsc_size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported by the PETSc/MUMPS interface for parallel matrices\n");
     else mumps->id.ICNTL(7) = icntl;
@@ -1892,6 +1892,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   mumps->id.ICNTL(4) = 0;
   if (mumps->petsc_size == 1) {
     mumps->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
+    mumps->id.ICNTL(7)  = 7;   /* automatic choice of ordering done by the package */
   } else {
     mumps->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
     mumps->id.ICNTL(20) = 0;   /* rhs is in dense format */
