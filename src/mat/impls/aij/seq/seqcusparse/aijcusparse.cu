@@ -1926,9 +1926,7 @@ static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
 
   PetscFunctionBegin;
   if (A->factortype == MAT_FACTOR_NONE) {
-    if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) {
-      ierr = MatSeqAIJCUSPARSE_Destroy((Mat_SeqAIJCUSPARSE**)&A->spptr);CHKERRQ(ierr);
-    }
+    ierr = MatSeqAIJCUSPARSE_Destroy((Mat_SeqAIJCUSPARSE**)&A->spptr);CHKERRQ(ierr);
   } else {
     ierr = MatSeqAIJCUSPARSETriFactors_Destroy((Mat_SeqAIJCUSPARSETriFactors**)&A->spptr);CHKERRQ(ierr);
   }
@@ -1972,8 +1970,6 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
     A->ops->multtransposeadd          = MatMultTransposeAdd_SeqAIJ;
     A->ops->multhermitiantranspose    = NULL;
     A->ops->multhermitiantransposeadd = NULL;
-    A->ops->assemblyend               = MatAssemblyEnd_SeqAIJ;
-    A->ops->duplicate                 = MatDuplicate_SeqAIJ;
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdensecuda_C",NULL);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdense_C",NULL);CHKERRQ(ierr);
   } else {
@@ -1983,8 +1979,6 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
     A->ops->multtransposeadd          = MatMultTransposeAdd_SeqAIJCUSPARSE;
     A->ops->multhermitiantranspose    = MatMultHermitianTranspose_SeqAIJCUSPARSE;
     A->ops->multhermitiantransposeadd = MatMultHermitianTransposeAdd_SeqAIJCUSPARSE;
-    A->ops->assemblyend               = MatAssemblyEnd_SeqAIJCUSPARSE;
-    A->ops->duplicate                 = MatDuplicate_SeqAIJCUSPARSE;
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdensecuda_C",MatProductSetFromOptions_SeqAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdense_C",MatProductSetFromOptions_SeqAIJCUSPARSE);CHKERRQ(ierr);
   }
@@ -2026,13 +2020,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType mtyp
     }
     B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   }
+  B->ops->assemblyend    = MatAssemblyEnd_SeqAIJCUSPARSE;
   B->ops->destroy        = MatDestroy_SeqAIJCUSPARSE;
   B->ops->setfromoptions = MatSetFromOptions_SeqAIJCUSPARSE;
   B->ops->bindtocpu      = MatBindToCPU_SeqAIJCUSPARSE;
+  B->ops->duplicate      = MatDuplicate_SeqAIJCUSPARSE;
 
   ierr = MatBindToCPU_SeqAIJCUSPARSE(B,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
-
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPARSESetFormat_C",MatCUSPARSESetFormat_SeqAIJCUSPARSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
