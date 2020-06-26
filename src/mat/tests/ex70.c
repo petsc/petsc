@@ -217,6 +217,7 @@ int main(int argc,char **args)
   const char     *deft = MATAIJ;
   char           mattype[256];
   PetscBool      flg,symm = PETSC_FALSE,testtt = PETSC_TRUE, testnest = PETSC_TRUE, testtranspose = PETSC_TRUE, testcircular = PETSC_FALSE, local = PETSC_TRUE;
+  PetscBool      testhtranspose = PETSC_TRUE;
   PetscBool      xgpu = PETSC_FALSE, bgpu = PETSC_FALSE, testshellops = PETSC_FALSE, testproj = PETSC_TRUE, testrart = PETSC_TRUE, testmatmatt = PETSC_TRUE, testmattmat = PETSC_TRUE;
   PetscScalar    *dataX = NULL,*dataB = NULL, *dataR = NULL, *dataBt = NULL;
   PetscScalar    *aX,*aB,*aBt;
@@ -266,7 +267,6 @@ int main(int argc,char **args)
   if (flg) {
     Mat A2;
 
-    /* MATSEQAIJCUSPARSE does not support MAT_INITIAL_MATRIX */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
     ierr = MatConvert(A,mattype,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatMultEqual(A,A2,10,&flg);CHKERRQ(ierr);
@@ -640,6 +640,23 @@ int main(int argc,char **args)
     Mat TA;
 
     ierr = MatCreateTranspose(A,&TA);CHKERRQ(ierr);
+    ierr = MatMatMult(TA,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+    ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
+    ierr = MatMatMultEqual(TA,X,B,10,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with Transpose\n");CHKERRQ(ierr);
+      ierr = MatMatMult(TA,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
+      ierr = MatAXPY(T,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatView(T,NULL);CHKERRQ(ierr);
+      ierr = MatDestroy(&T);CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(&TA);CHKERRQ(ierr);
+  }
+
+  if (testhtranspose) { /* test with Hermitian Transpose */
+    Mat TA;
+
+    ierr = MatCreateHermitianTranspose(A,&TA);CHKERRQ(ierr);
     ierr = MatMatMult(TA,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
     ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
     ierr = MatMatMultEqual(TA,X,B,10,&flg);CHKERRQ(ierr);
