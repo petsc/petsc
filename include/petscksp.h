@@ -533,8 +533,9 @@ M*/
 
 /*MC
      KSP_DIVERGED_BREAKDOWN - A breakdown in the Krylov method was detected so the
-          method could not continue to enlarge the Krylov space. Could be due to a singlular matrix or
-          preconditioner.
+          method could not continue to enlarge the Krylov space. Could be due to a singular matrix or
+          preconditioner. In KSPHPDDM, this is also returned when some search directions within a block
+          are colinear.
 
    Level: beginner
 

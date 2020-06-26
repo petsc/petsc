@@ -459,9 +459,9 @@ PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
          args: -ksp_type cg -s2_ksp_type cg
       test:
          suffix: hpddm_cg_p_h
-         args: -ksp_type cg -s2_ksp_type hpddm -s2_ksp_hpddm_type cg
+         args: -ksp_type cg -s2_ksp_type hpddm -s2_ksp_hpddm_type {{cg bcg bfbcg}shared output}
       test:
          suffix: hpddm_cg_h_h
-         args: -ksp_type hpddm -ksp_hpddm_type cg -s2_ksp_type hpddm -s2_ksp_hpddm_type cg
+         args: -ksp_type hpddm -ksp_hpddm_type cg -s2_ksp_type hpddm -s2_ksp_hpddm_type {{cg bcg bfbcg}shared output}
 
 TEST*/

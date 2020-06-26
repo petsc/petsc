@@ -88,10 +88,15 @@ int main(int argc,char **args)
         suffix: 2_par
         output_file: output/ex75_2.out
 
-   test:
+   testset:
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      suffix: 2_icc
       nsize: 1
-      args: -nmat 3 -pc_type icc -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_type gcrodr -ksp_hpddm_recycle 20 -reset {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+      args: -nmat 3 -pc_type icc -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_type {{gcrodr bgcrodr}shared output} -ksp_hpddm_recycle 20 -reset {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+      test:
+        suffix: 2_icc
+        args:
+      test:
+        suffix: 2_icc_atol
+        args: -ksp_atol 1e-12
 
 TEST*/
