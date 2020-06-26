@@ -1174,17 +1174,15 @@ struct conjugate
 
 PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
 {
+#if defined(PETSC_USE_COMPLEX)
   PetscScalar                     *xarray;
   PetscErrorCode                  ierr;
-#if defined(PETSC_USE_COMPLEX)
   PetscInt                        n = xin->map->n;
   thrust::device_ptr<PetscScalar> xptr;
   cudaError_t                     err;
-#endif
 
   PetscFunctionBegin;
   ierr = VecCUDAGetArray(xin,&xarray);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   try {
     xptr = thrust::device_pointer_cast(xarray);
@@ -1194,8 +1192,10 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-#endif
   ierr = VecCUDARestoreArray(xin,&xarray);CHKERRQ(ierr);
+#else
+  PetscFunctionBegin;
+#endif
   PetscFunctionReturn(0);
 }
 
