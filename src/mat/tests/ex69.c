@@ -37,6 +37,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
@@ -148,6 +149,6 @@ int main(int argc,char **argv)
     requires: cuda
     suffix: 1
     nsize: {{1 2}}
-    args: -test {{0 1 2}} -k 6 -l {{0 5}} -use_shell {{0 1}}
+    args: -A_mat_type {{aij aijcusparse}} -test {{0 1 2}} -k 6 -l {{0 5}} -use_shell {{0 1}}
 
 TEST*/
