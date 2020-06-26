@@ -76,6 +76,7 @@ struct  _n_PetscOptions {
   char           *names[MAXOPTIONS];   /* option names */
   char           *values[MAXOPTIONS];  /* option values */
   PetscBool      used[MAXOPTIONS];     /* flag option use */
+  PetscBool      precedentProcessed;
 
   /* Hash table */
   khash_t(HO)    *ht;
@@ -94,6 +95,7 @@ struct  _n_PetscOptions {
   PetscBool      help; /* flag whether "-help" is in the database */
 
   /* Monitors */
+  PetscBool      monitorFromOptions, monitorCancel;
   PetscErrorCode (*monitor[MAXOPTIONSMONITORS])(const char[],const char[],void*); /* returns control to user after */
   PetscErrorCode (*monitordestroy[MAXOPTIONSMONITORS])(void**);         /* */
   void           *monitorcontext[MAXOPTIONSMONITORS];                  /* to pass arbitrary user data into monitor */
@@ -101,6 +103,12 @@ struct  _n_PetscOptions {
 };
 
 static PetscOptions defaultoptions = NULL;  /* the options database routines query this object for options */
+
+/* list of options which preceed others, i.e., are processed in PetscOptionsProcessPrecedentFlags() */
+static const char *precedentOptions[] = {"-options_monitor","-options_monitor_cancel","-h","-help","-skip_petscrc","-options_file_yaml","-options_string_yaml"};
+enum PetscPrecedentOption {PO_OPTIONS_MONITOR,PO_OPTIONS_MONITOR_CANCEL,PO_H,PO_HELP,PO_SKIP_PETSCRC,PO_OPTIONS_FILE_YAML,PO_OPTIONS_STRING_YAML,PO_NUM};
+
+static PetscErrorCode PetscOptionsSetValue_Private(PetscOptions,const char[],const char[],int*);
 
 /*
     Options events monitor
@@ -110,8 +118,12 @@ static PetscErrorCode PetscOptionsMonitor(PetscOptions options,const char name[]
   PetscInt       i;
   PetscErrorCode ierr;
 
-  if (!PetscInitializeCalled) return 0;
+  if (!PetscErrorHandlingInitialized) return 0;
   PetscFunctionBegin;
+  if (!value) value = "";
+  if (options->monitorFromOptions) {
+    ierr = PetscOptionsMonitorDefault(name,value,NULL);CHKERRQ(ierr);
+  }
   for (i=0; i<options->numbermonitors; i++) {
     ierr = (*options->monitor[i])(name,value,options->monitorcontext[i]);CHKERRQ(ierr);
   }
@@ -626,6 +638,94 @@ static PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char 
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscErrorCode PetscOptionsStringToBoolIfSet_Private(enum PetscPrecedentOption opt,const char *val[],PetscBool set[],PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (set[opt]) {
+    ierr = PetscOptionsStringToBool(val[opt],flg);CHKERRQ(ierr);
+  } else *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/* Process options with absolute precedence */
+static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int argc,char *args[],PetscBool *skip_petscrc,PetscBool *skip_petscrc_set)
+{
+  const char* const *opt = precedentOptions;
+  const size_t      n = PO_NUM;
+  size_t            o;
+  int               a;
+  const char        **val;
+  PetscBool         *set;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscCalloc2(n,&val,n,&set);CHKERRQ(ierr);
+
+  /* Look for options possibly set using PetscOptionsSetValue beforehand */
+  for (o=0; o<n; o++) {
+    ierr = PetscOptionsFindPair(options,NULL,opt[o],&val[o],&set[o]);CHKERRQ(ierr);
+  }
+
+  /* Loop through all args to collect last occuring value of each option */
+  for (a=1; a<argc; a++) {
+    PetscBool valid, eq;
+
+    ierr = PetscOptionsValidKey(args[a],&valid);CHKERRQ(ierr);
+    if (!valid) continue;
+    for (o=0; o<n; o++) {
+      ierr = PetscStrcasecmp(args[a],opt[o],&eq);CHKERRQ(ierr);
+      if (eq) {
+        set[o] = PETSC_TRUE;
+        if (a == argc-1 || !args[a+1] || !args[a+1][0] || args[a+1][0] == '-') val[o] = NULL;
+        else val[o] = args[a+1];
+        break;
+      }
+    }
+  }
+
+  /* Process flags */
+  /* -h and -help are equivalent (p4 does not like -help)*/
+  ierr = PetscOptionsStringToBoolIfSet_Private(PO_H,                     val,set,&options->help);CHKERRQ(ierr);
+  ierr = PetscOptionsStringToBoolIfSet_Private(PO_HELP,                  val,set,&options->help);CHKERRQ(ierr);
+  ierr = PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR_CANCEL,val,set,&options->monitorCancel);CHKERRQ(ierr);
+  ierr = PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR,       val,set,&options->monitorFromOptions);CHKERRQ(ierr);
+  ierr = PetscOptionsStringToBoolIfSet_Private(PO_SKIP_PETSCRC,          val,set,skip_petscrc);CHKERRQ(ierr);
+  *skip_petscrc_set = set[PO_SKIP_PETSCRC];
+
+  /* Store precedent options in database and mark them as used */
+  for (o=0; o<n; o++) {
+    if (set[o]) {
+      int pos;
+
+      ierr = PetscOptionsSetValue_Private(options,opt[o],val[o],&pos);CHKERRQ(ierr);
+      options->used[pos] = PETSC_TRUE;
+    }
+  }
+
+  ierr = PetscFree2(val,set);CHKERRQ(ierr);
+  options->precedentProcessed = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options,const char name[],PetscBool *flg)
+{
+  int i;
+  PetscErrorCode ierr;
+
+  *flg = PETSC_FALSE;
+  if (options->precedentProcessed) {
+    for (i=0; i<PO_NUM; i++) {
+      if (!PetscOptNameCmp(precedentOptions[i],name)) {
+        /* check if precedent option has been set already */
+        ierr = PetscOptionsFindPair(options,NULL,name,NULL,flg);CHKERRQ(ierr);
+        if (*flg) break;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 /*@C
    PetscOptionsInsert - Inserts into the options database from the command line,
@@ -637,7 +737,9 @@ static PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char 
 +  options - options database or NULL for the default global database
 .  argc - count of number of command line arguments
 .  args - the command line arguments
--  file - optional filename, defaults to ~username/.petscrc
+-  file - [optional] PETSc database file, also checks ~/.petscrc, .petscrc and petscrc.
+          Use NULL to not check for code specific file.
+          Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
 
    Note:
    Since PetscOptionsInsert() is automatically called by PetscInitialize(),
@@ -645,8 +747,9 @@ static PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char 
    can be called several times, adding additional entries into the database.
 
    Options Database Keys:
-+   -options_monitor <optional filename> - print options names and values as they are set
--   -options_file <filename> - read options from a file
+.   -options_file <filename> - read options from a file
+
+   See PetscInitialize() for options related to option database monitoring.
 
    Level: advanced
 
@@ -658,23 +761,29 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   char           filename[PETSC_MAX_PATH_LEN];
-  PetscBool      flag = PETSC_FALSE;
+  PetscBool      hasArgs = (argc && *argc) ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      skipPetscrc = PETSC_FALSE, skipPetscrcSet = PETSC_FALSE;
 
 
   PetscFunctionBegin;
+  if (hasArgs && !(args && *args)) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_NULL, "*argc > 1 but *args not given");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
+  if (!options) {
+    ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
+    options = defaultoptions;
+  }
+  if (hasArgs) {
+    /* process options with absolute precedence */
+    ierr = PetscOptionsProcessPrecedentFlags(options,*argc,*args,&skipPetscrc,&skipPetscrcSet);CHKERRQ(ierr);
+  }
   if (file && file[0]) {
     ierr = PetscStrreplace(PETSC_COMM_WORLD,file,filename,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,options,filename,PETSC_TRUE);CHKERRQ(ierr);
+    /* if -skip_petscrc has not been set from command line, check whether it has been set in the file */
+    if (!skipPetscrcSet) {ierr = PetscOptionsGetBool(options,NULL,"-skip_petscrc",&skipPetscrc,NULL);CHKERRQ(ierr);}
   }
-  /*
-     We want to be able to give -skip_petscrc on the command line, but need to parse it first.  Since the command line
-     should take precedence, we insert it twice.  It would be sufficient to just scan for -skip_petscrc.
-  */
-  if (argc && args && *argc) {ierr = PetscOptionsInsertArgs(options,*argc,*args);CHKERRQ(ierr);}
-  ierr = PetscOptionsGetBool(NULL,NULL,"-skip_petscrc",&flag,NULL);CHKERRQ(ierr);
-  if (!flag) {
+  if (!skipPetscrc) {
     ierr = PetscGetHomeDirectory(filename,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
     /* PetscOptionsInsertFile() does a fopen() on rank0 only - so only rank0 HomeDir value is relavent */
     if (filename[0]) { ierr = PetscStrcat(filename,"/.petscrc");CHKERRQ(ierr); }
@@ -741,8 +850,8 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
   }
 #endif
 
-  /* insert command line options again because they take precedence over arguments in petscrc/environment */
-  if (argc && args && *argc) {ierr = PetscOptionsInsertArgs(options,*argc,*args);CHKERRQ(ierr);}
+  /* insert command line options here because they take precedence over arguments in petscrc/environment */
+  if (hasArgs) {ierr = PetscOptionsInsertArgs(options,*argc,*args);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1026,10 +1135,16 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
 @*/
 PetscErrorCode PetscOptionsSetValue(PetscOptions options,const char name[],const char value[])
 {
+  return PetscOptionsSetValue_Private(options,name,value,NULL);
+}
+
+static PetscErrorCode PetscOptionsSetValue_Private(PetscOptions options,const char name[],const char value[],int *pos)
+{
   size_t         len;
   int            N,n,i;
   char           **names;
   char           fullname[MAXOPTNAME] = "";
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   if (!options) {
@@ -1039,9 +1154,8 @@ PetscErrorCode PetscOptionsSetValue(PetscOptions options,const char name[],const
 
   if (name[0] != '-') return PETSC_ERR_ARG_OUTOFRANGE;
 
-  /* this is so that -h and -help are equivalent (p4 does not like -help)*/
-  if (!PetscOptNameCmp(name,"-h")) name = "-help";
-  if (!PetscOptNameCmp(name,"-help")) options->help = PETSC_TRUE;
+  ierr = PetscOptionsSkipPrecedent(options,name,&flg);CHKERRQ(ierr);
+  if (flg) return 0;
 
   name++; /* skip starting dash */
 
@@ -1105,7 +1219,10 @@ setvalue:
     options->values[n] = NULL;
   }
 
-  ierr = PetscOptionsMonitor(options,name,value?value:"");if (ierr) return ierr;
+  if (PetscErrorHandlingInitialized) {
+    ierr = PetscOptionsMonitor(options,name,value);CHKERRQ(ierr);
+  }
+  if (pos) *pos = n;
   return 0;
 }
 
@@ -1749,64 +1866,19 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **n
 }
 
 /*@C
-   PetscOptionsSetFromOptions - Sets options related to the handling of options in PETSc
-
-   Collective on PETSC_COMM_WORLD
-
-   Input Parameter:
-.  options - options database, use NULL for default global database
-
-   Options Database Keys:
-+  -options_monitor <optional filename> - prints the names and values of all runtime options as they are set. The monitor functionality is not
-                available for options set through a file, environment variable, or on
-                the command line. Only options set after PetscInitialize() completes will
-                be monitored.
--  -options_monitor_cancel - cancel all options database monitors
-
-   Notes:
-   To see all options, run your program with the -help option
-
-   Level: intermediate
-
-@*/
-PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
-{
-  PetscBool      flgc = PETSC_FALSE,flgm;
-  PetscErrorCode ierr;
-  char           monfilename[PETSC_MAX_PATH_LEN];
-  PetscViewer    monviewer;
-
-  PetscFunctionBegin;
-  /*
-     The options argument is currently ignored since we currently maintain only a single options database
-
-     options = options ? options : defaultoptions;
-  */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for handling options","PetscOptions");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,sizeof(monfilename),&flgm);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",flgc,&flgc,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (flgm) {
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = PetscOptionsMonitorSet(PetscOptionsMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  }
-  if (flgc) { ierr = PetscOptionsMonitorCancel();CHKERRQ(ierr); }
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   PetscOptionsMonitorDefault - Print all options set value events.
+   PetscOptionsMonitorDefault - Print all options set value events using the supplied PetscViewer.
 
    Logically Collective on ctx
 
    Input Parameters:
 +  name  - option name string
 .  value - option value string
--  ctx - an ASCII viewer
+-  ctx - an ASCII viewer or NULL
 
    Level: intermediate
 
    Notes:
+     If ctx=NULL, PetscPrintf() is used.
      The first MPI rank in the PetscViewer viewer actually prints the values, other
      processes may have different values set
 
@@ -1815,15 +1887,26 @@ PetscErrorCode PetscOptionsSetFromOptions(PetscOptions options)
 PetscErrorCode PetscOptionsMonitorDefault(const char name[],const char value[],void *ctx)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
-  if (!value) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Removing option: %s\n",name,value);CHKERRQ(ierr);
-  } else if (!value[0]) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s (no value)\n",name);CHKERRQ(ierr);
+  if (ctx) {
+    PetscViewer viewer = (PetscViewer)ctx;
+    if (!value) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Removing option: %s\n",name,value);CHKERRQ(ierr);
+    } else if (!value[0]) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s (no value)\n",name);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
+    }
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
+    MPI_Comm comm = PETSC_COMM_WORLD;
+    if (!value) {
+      ierr = PetscPrintf(comm,"Removing option: %s\n",name,value);CHKERRQ(ierr);
+    } else if (!value[0]) {
+      ierr = PetscPrintf(comm,"Setting option: %s (no value)\n",name);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(comm,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1849,12 +1932,7 @@ $     monitor (const char name[], const char value[], void *mctx)
 -  mctx  - optional monitoring context, as set by PetscOptionsMonitorSet()
 
    Options Database Keys:
-+    -options_monitor    - sets PetscOptionsMonitorDefault()
--    -options_monitor_cancel - cancels all monitors that have
-                          been hardwired into a code by
-                          calls to PetscOptionsMonitorSet(), but
-                          does not cancel those set via
-                          the options database.
+   See PetscInitialize() for options related to option database monitoring.
 
    Notes:
    The default is to do nothing.  To print the name and value of options
@@ -1865,15 +1943,16 @@ $     monitor (const char name[], const char value[], void *mctx)
    PetscOptionsMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Level: beginner
+   Level: intermediate
 
-.seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorCancel()
+.seealso: PetscOptionsMonitorDefault(), PetscInitialize()
 @*/
 PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
   PetscOptions options = defaultoptions;
 
   PetscFunctionBegin;
+  if (options->monitorCancel) PetscFunctionReturn(0);
   if (options->numbermonitors >= MAXOPTIONSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptions monitors set");
   options->monitor[options->numbermonitors]          = monitor;
   options->monitordestroy[options->numbermonitors]   = monitordestroy;
@@ -1881,38 +1960,9 @@ PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[
   PetscFunctionReturn(0);
 }
 
-/*@
-   PetscOptionsMonitorCancel - Clears all monitors for a PetscOptions object.
-
-   Not Collective
-
-   Options Database Key:
-.  -options_monitor_cancel - Cancels all monitors that have
-    been hardwired into a code by calls to PetscOptionsMonitorSet(),
-    but does not cancel those set via the options database.
-
-   Level: intermediate
-
-.seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorSet()
-@*/
-PetscErrorCode PetscOptionsMonitorCancel(void)
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscOptions   options = defaultoptions;
-
-  PetscFunctionBegin;
-  for (i=0; i<options->numbermonitors; i++) {
-    if (options->monitordestroy[i]) {
-      ierr = (*options->monitordestroy[i])(&options->monitorcontext[i]);CHKERRQ(ierr);
-    }
-  }
-  options->numbermonitors = 0;
-  PetscFunctionReturn(0);
-}
-
 /*
-   PetscOptionsStringToBool - Converts string to PetscBool , handles cases like "yes", "no", "true", "false", "0", "1", "off", "on".
+   PetscOptionsStringToBool - Converts string to PetscBool, handles cases like "yes", "no", "true", "false", "0", "1", "off", "on".
+     Empty string is considered as true.
 */
 PetscErrorCode PetscOptionsStringToBool(const char value[],PetscBool *a)
 {
@@ -1921,8 +1971,9 @@ PetscErrorCode PetscOptionsStringToBool(const char value[],PetscBool *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* PetscStrlen() returns 0 for NULL or "" */
   ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
-  if (!len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Character string of length zero has no logical value");
+  if (!len)  {*a = PETSC_TRUE; PetscFunctionReturn(0);}
   ierr = PetscStrcasecmp(value,"TRUE",&istrue);CHKERRQ(ierr);
   if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
   ierr = PetscStrcasecmp(value,"YES",&istrue);CHKERRQ(ierr);
@@ -2145,12 +2196,8 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options,const char pre[],const c
   ierr = PetscOptionsFindPair(options,pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (set) *set = PETSC_TRUE;
-    if (!value) {
-      if (ivalue) *ivalue = PETSC_TRUE;
-    } else {
-      ierr = PetscOptionsStringToBool(value, &flag);CHKERRQ(ierr);
-      if (ivalue) *ivalue = flag;
-    }
+    ierr = PetscOptionsStringToBool(value, &flag);CHKERRQ(ierr);
+    if (ivalue) *ivalue = flag;
   } else {
     if (set) *set = PETSC_FALSE;
   }

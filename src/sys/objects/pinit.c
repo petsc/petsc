@@ -147,7 +147,7 @@ PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
   return 0;
 }
 
-PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
+PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char []);
 
 /*
        This function is the MPI reduction operation used to compute the sum of the
@@ -663,8 +663,9 @@ PetscInt PetscNumOMPThreads;
    Input Parameters:
 +  argc - count of number of command line arguments
 .  args - the command line arguments
-.  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use NULL to not check for
-          code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
+.  file - [optional] PETSc database file, also checks ~/.petscrc, .petscrc and petscrc.
+          Use NULL to not check for code specific file.
+          Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
 -  help - [optional] Help message to print, use NULL for no message
 
    If you wish PETSc code to run ONLY on a subcommunicator of MPI_COMM_WORLD, create that
@@ -700,6 +701,17 @@ PetscInt PetscNumOMPThreads;
 .  -tmp - alternative name of /tmp directory
 .  -get_total_flops - returns total flops done by all processors
 -  -memory_view - Print memory usage at end of run
+
+   Options Database Keys for Option Database:
++  -skip_petscrc - skip the default option files ~/.petscrc, .petscrc, petscrc
+.  -options_monitor - monitor all set options to standard output for the whole program run
+-  -options_monitor_cancel - cancel options monitoring hard-wired using PetscOptionsMonitorSet()
+
+   Options -options_monitor_{all,cancel} are
+   position-independent and apply to all options set since the PETSc start.
+   They can be used also in option files.
+
+   See PetscOptionsMonitorSet() to do monitoring programmatically.
 
    Options Database Keys for Profiling:
    See Users-Manual: ch_profiling for details.
@@ -750,8 +762,9 @@ PetscInt PetscNumOMPThreads;
 $       call PetscInitialize(file,ierr)
 
 +   ierr - error return code
--  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL_CHARACTER to not check for
-          code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
+-  file - [optional] PETSc database file, also checks ~/.petscrc, .petscrc and petscrc.
+          Use PETSC_NULL_CHARACTER to not check for code specific file.
+          Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
 
    Important Fortran Note:
    In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
@@ -857,6 +870,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /* these must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
+
+  /* CHKERRQ can be used from now */
+  PetscErrorHandlingInitialized = PETSC_TRUE;
 
   /* on Windows - set printf to default to printing 2 digit exponents */
 #if defined(PETSC_HAVE__SET_OUTPUT_FORMAT)
@@ -981,7 +997,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 #endif
 
-
   /*
      Attributes to be set on PETSc communicators
   */
@@ -999,14 +1014,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);
 
   /*
-     Print main application help message
+     Check system options and print help
   */
-  ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
-  if (help && flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"----------------------------------------\n");CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
+  ierr = PetscOptionsCheckInitial_Private(help);CHKERRQ(ierr);
 
   ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
@@ -1058,8 +1068,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     }
   }
 #endif
-  /* Check the options database for options related to the options database itself */
-  ierr = PetscOptionsSetFromOptions(NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
   /*
@@ -1108,7 +1116,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 
   /*
-      Once we are completedly initialized then we can set this variables
+      Set flag that we are completely initialized
   */
   PetscInitializeCalled = PETSC_TRUE;
 
@@ -1272,17 +1280,10 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscFree(buffs);CHKERRQ(ierr);
   }
 #endif
-  /*
-    It should be safe to cancel the options monitors, since we don't expect to be setting options
-    here (at least that are worth monitoring).  Monitors ought to be released so that they release
-    whatever memory was allocated there before -malloc_dump reports unfreed memory.
-  */
-  ierr = PetscOptionsMonitorCancel();CHKERRQ(ierr);
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   ierr = PetscFPTDestroy();CHKERRQ(ierr);
 #endif
-
 
 #if defined(PETSC_HAVE_SAWS)
   flg = PETSC_FALSE;
@@ -1610,6 +1611,7 @@ PetscErrorCode  PetscFinalize(void)
 */
   ierr = PetscMallocClear();CHKERRQ(ierr);
 
+  PetscErrorHandlingInitialized = PETSC_FALSE;
   PetscInitializeCalled = PETSC_FALSE;
   PetscFinalizeCalled   = PETSC_TRUE;
   PetscFunctionReturn(0);
