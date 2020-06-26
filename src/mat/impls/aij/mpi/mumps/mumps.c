@@ -2,7 +2,7 @@
 /*
     Provides an interface to the MUMPS sparse solver
 */
-
+#include <petscpkg_version.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h> /*I  "petscmat.h"  I*/
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 #include <../src/mat/impls/sell/mpi/mpisell.h>
@@ -49,13 +49,19 @@ EXTERN_C_END
 */
 typedef MUMPS_INT PetscMUMPSInt;
 
-#if defined(INTSIZE64)            /* INTSIZE64 is a macro one used to build MUMPS in full 64-bit mode */
-#error "Petsc has not been tested with full 64-bit MUMPS and we choose to error out"
+#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+  #if defined(MUMPS_INTSIZE64) /* MUMPS_INTSIZE64 is in MUMPS headers if it is built in full 64-bit mode, therefore the macro is more reliable */
+    #error "Petsc has not been tested with full 64-bit MUMPS and we choose to error out"
+  #endif
 #else
+  #if defined(INTSIZE64) /* INTSIZE64 is a command line macro one used to build MUMPS in full 64-bit mode */
+    #error "Petsc has not been tested with full 64-bit MUMPS and we choose to error out"
+  #endif
+#endif
+
 #define MPIU_MUMPSINT             MPI_INT
 #define PETSC_MUMPS_INT_MAX       2147483647
 #define PETSC_MUMPS_INT_MIN       -2147483648
-#endif
 
 /* Cast PetscInt to PetscMUMPSInt. Usually there is no overflow since <a> is row/col indices or some small integers*/
 PETSC_STATIC_INLINE PetscErrorCode PetscMUMPSIntCast(PetscInt a,PetscMUMPSInt *b)
@@ -153,6 +159,14 @@ struct Mat_MUMPS {
   MPI_Comm       mumps_comm;
   PetscMUMPSInt  ICNTL9_pre;            /* check if ICNTL(9) is changed from previous MatSolve */
   VecScatter     scat_rhs, scat_sol;    /* used by MatSolve() */
+#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+  PetscMUMPSInt  lrhs_loc,nloc_rhs,*irhs_loc;
+  #if defined(PETSC_HAVE_OPENMP_SUPPORT)
+  PetscInt       *rhs_nrow,max_nrhs;
+  PetscMPIInt    *rhs_recvcounts,*rhs_disps;
+  PetscScalar    *rhs_loc,*rhs_recvbuf;
+  #endif
+#endif
   Vec            b_seq,x_seq;
   PetscInt       ninfo,*info;           /* which INFO to display */
   PetscInt       sizeredrhs;
@@ -984,12 +998,21 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   PetscMUMPS_c(mumps);
   if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in MatDestroy_MUMPS: INFOG(1)=%d\n",mumps->id.INFOG(1));
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
-  if (mumps->use_petsc_omp_support) { ierr = PetscOmpCtrlDestroy(&mumps->omp_ctrl);CHKERRQ(ierr); }
+  if (mumps->use_petsc_omp_support) {
+    ierr = PetscOmpCtrlDestroy(&mumps->omp_ctrl);CHKERRQ(ierr);
+    #if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+    ierr = PetscFree2(mumps->rhs_loc,mumps->rhs_recvbuf);CHKERRQ(ierr);
+    ierr = PetscFree3(mumps->rhs_nrow,mumps->rhs_recvcounts,mumps->rhs_disps);CHKERRQ(ierr);
+    #endif
+  }
 #endif
   ierr = PetscFree(mumps->ia_alloc);CHKERRQ(ierr);
   ierr = PetscFree(mumps->ja_alloc);CHKERRQ(ierr);
   ierr = PetscFree(mumps->recvcount);CHKERRQ(ierr);
   ierr = PetscFree(mumps->reqs);CHKERRQ(ierr);
+#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+  ierr = PetscFree(mumps->irhs_loc);CHKERRQ(ierr);
+#endif
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -1009,16 +1032,119 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   PetscFunctionReturn(0);
 }
 
+#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+/* Set up the distributed RHS info for MUMPS. <nrhs> is the number of RHS. <array> points to start of RHS on the local processor. */
+static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A,PetscInt nrhs,const PetscScalar *array)
+{
+  PetscErrorCode     ierr;
+  Mat_MUMPS          *mumps=(Mat_MUMPS*)A->data;
+  const PetscMPIInt  ompsize=mumps->omp_comm_size;
+  PetscInt           i,m,M,rstart;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
+  if (M > PETSC_MUMPS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PetscInt too long for PetscMUMPSInt");
+  if (ompsize == 1) {
+    if (!mumps->irhs_loc) {
+      mumps->nloc_rhs = m;
+      ierr = PetscMalloc1(m,&mumps->irhs_loc);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
+      for (i=0; i<m; i++) mumps->irhs_loc[i] = rstart+i+1; /* use 1-based indices */
+    }
+    mumps->id.rhs_loc = (MumpsScalar*)array;
+  } else {
+  #if defined(PETSC_HAVE_OPENMP_SUPPORT)
+    const PetscInt  *ranges;
+    PetscMPIInt     j,k,sendcount,*petsc_ranks,*omp_ranks;
+    MPI_Group       petsc_group,omp_group;
+    PetscScalar     *recvbuf=NULL;
+
+    if (mumps->is_omp_master) {
+      /* Lazily initialize the omp stuff for distributed rhs */
+      if (!mumps->irhs_loc) {
+        ierr = PetscMalloc2(ompsize,&omp_ranks,ompsize,&petsc_ranks);CHKERRQ(ierr);
+        ierr = PetscMalloc3(ompsize,&mumps->rhs_nrow,ompsize,&mumps->rhs_recvcounts,ompsize,&mumps->rhs_disps);CHKERRQ(ierr);
+        ierr = MPI_Comm_group(mumps->petsc_comm,&petsc_group);CHKERRQ(ierr);
+        ierr = MPI_Comm_group(mumps->omp_comm,&omp_group);CHKERRQ(ierr);
+        for (j=0; j<ompsize; j++) omp_ranks[j] = j;
+        ierr = MPI_Group_translate_ranks(omp_group,ompsize,omp_ranks,petsc_group,petsc_ranks);CHKERRQ(ierr);
+
+        /* Populate mumps->irhs_loc[], rhs_nrow[] */
+        mumps->nloc_rhs = 0;
+        ierr = MatGetOwnershipRanges(A,&ranges);CHKERRQ(ierr);
+        for (j=0; j<ompsize; j++) {
+          mumps->rhs_nrow[j] = ranges[petsc_ranks[j]+1] - ranges[petsc_ranks[j]];
+          mumps->nloc_rhs   += mumps->rhs_nrow[j];
+        }
+        ierr = PetscMalloc1(mumps->nloc_rhs,&mumps->irhs_loc);CHKERRQ(ierr);
+        for (j=k=0; j<ompsize; j++) {
+          for (i=ranges[petsc_ranks[j]]; i<ranges[petsc_ranks[j]+1]; i++,k++) mumps->irhs_loc[k] = i+1; /* uses 1-based indices */
+        }
+
+        ierr = PetscFree2(omp_ranks,petsc_ranks);CHKERRQ(ierr);
+        ierr = MPI_Group_free(&petsc_group);CHKERRQ(ierr);
+        ierr = MPI_Group_free(&omp_group);CHKERRQ(ierr);
+      }
+
+      /* Realloc buffers when current nrhs is bigger than what we have met */
+      if (nrhs > mumps->max_nrhs) {
+        ierr = PetscFree2(mumps->rhs_loc,mumps->rhs_recvbuf);CHKERRQ(ierr);
+        ierr = PetscMalloc2(mumps->nloc_rhs*nrhs,&mumps->rhs_loc,mumps->nloc_rhs*nrhs,&mumps->rhs_recvbuf);CHKERRQ(ierr);
+        mumps->max_nrhs = nrhs;
+      }
+
+      /* Setup recvcounts[], disps[], recvbuf on omp rank 0 for the upcoming MPI_Gatherv */
+      for (j=0; j<ompsize; j++) {ierr = PetscMPIIntCast(mumps->rhs_nrow[j]*nrhs,&mumps->rhs_recvcounts[j]);CHKERRQ(ierr);}
+      mumps->rhs_disps[0] = 0;
+      for (j=1; j<ompsize; j++) {
+        mumps->rhs_disps[j] = mumps->rhs_disps[j-1] + mumps->rhs_recvcounts[j-1];
+        if (mumps->rhs_disps[j] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PetscMPIInt overflow!");
+      }
+      recvbuf = (nrhs == 1) ? mumps->rhs_loc : mumps->rhs_recvbuf; /* Directly use rhs_loc[] as recvbuf. Single rhs is common in Ax=b */
+    }
+
+    ierr = PetscMPIIntCast(m*nrhs,&sendcount);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(array,sendcount,MPIU_SCALAR,recvbuf,mumps->rhs_recvcounts,mumps->rhs_disps,MPIU_SCALAR,0,mumps->omp_comm);CHKERRQ(ierr);
+
+    if (mumps->is_omp_master) {
+      if (nrhs > 1) { /* Copy & re-arrange data from rhs_recvbuf[] to mumps->rhs_loc[] only when there are multiple rhs */
+        PetscScalar *dst,*dstbase = mumps->rhs_loc;
+        for (j=0; j<ompsize; j++) {
+          const PetscScalar *src = mumps->rhs_recvbuf + mumps->rhs_disps[j];
+          dst = dstbase;
+          for (i=0; i<nrhs; i++) {
+            ierr = PetscArraycpy(dst,src,mumps->rhs_nrow[j]);CHKERRQ(ierr);
+            src += mumps->rhs_nrow[j];
+            dst += mumps->nloc_rhs;
+          }
+          dstbase += mumps->rhs_nrow[j];
+        }
+      }
+      mumps->id.rhs_loc = (MumpsScalar*)mumps->rhs_loc;
+    }
+  #endif /* PETSC_HAVE_OPENMP_SUPPORT */
+  }
+  mumps->id.nrhs     = nrhs;
+  mumps->id.nloc_rhs = mumps->nloc_rhs;
+  mumps->id.lrhs_loc = mumps->nloc_rhs;
+  mumps->id.irhs_loc = mumps->irhs_loc;
+  PetscFunctionReturn(0);
+}
+#endif /* PETSC_PKG_MUMPS_VERSION_GE(5,3,0) */
+
 PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 {
-  Mat_MUMPS        *mumps=(Mat_MUMPS*)A->data;
-  PetscScalar      *array;
-  Vec              b_seq;
-  IS               is_iden,is_petsc;
-  PetscErrorCode   ierr;
-  PetscInt         i;
-  PetscBool        second_solve = PETSC_FALSE;
-  static PetscBool cite1 = PETSC_FALSE,cite2 = PETSC_FALSE;
+  Mat_MUMPS          *mumps=(Mat_MUMPS*)A->data;
+#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+  const PetscScalar  *rarray;
+#endif
+  PetscScalar        *array;
+  IS                 is_iden,is_petsc;
+  PetscErrorCode     ierr;
+  PetscInt           i;
+  PetscBool          second_solve = PETSC_FALSE;
+  static PetscBool   cite1 = PETSC_FALSE,cite2 = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister("@article{MUMPS01,\n  author = {P.~R. Amestoy and I.~S. Duff and J.-Y. L'Excellent and J. Koster},\n  title = {A fully asynchronous multifrontal solver using distributed dynamic scheduling},\n  journal = {SIAM Journal on Matrix Analysis and Applications},\n  volume = {23},\n  number = {1},\n  pages = {15--41},\n  year = {2001}\n}\n",&cite1);CHKERRQ(ierr);
@@ -1030,20 +1156,25 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
     PetscFunctionReturn(0);
   }
 
-  mumps->id.ICNTL(20) = 0; /* dense RHS */
-  mumps->id.nrhs      = 1;
-  b_seq               = mumps->b_seq;
+  mumps->id.nrhs = 1;
   if (mumps->petsc_size > 1) {
-    /* MUMPS only supports centralized rhs. Scatter b into a seqential rhs vector */
-    ierr = VecScatterBegin(mumps->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(mumps->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    if (!mumps->myid) {ierr = VecGetArray(b_seq,&array);CHKERRQ(ierr);}
+#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+    mumps->id.ICNTL(20) = 10; /* dense distributed RHS */
+    ierr = VecGetArrayRead(b,&rarray);CHKERRQ(ierr);
+    ierr = MatMumpsSetUpDistRHSInfo(A,1,rarray);CHKERRQ(ierr);
+#else
+    mumps->id.ICNTL(20) = 0; /* dense centralized RHS; Scatter b into a seqential rhs vector*/
+    ierr = VecScatterBegin(mumps->scat_rhs,b,mumps->b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(mumps->scat_rhs,b,mumps->b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    if (!mumps->myid) {
+      ierr = VecGetArray(mumps->b_seq,&array);CHKERRQ(ierr);
+      mumps->id.rhs = (MumpsScalar*)array;
+    }
+#endif
   } else {  /* petsc_size == 1 */
+    mumps->id.ICNTL(20) = 0; /* dense centralized RHS */
     ierr = VecCopy(b,x);CHKERRQ(ierr);
     ierr = VecGetArray(x,&array);CHKERRQ(ierr);
-  }
-  if (!mumps->myid) { /* define rhs on the host */
-    mumps->id.nrhs = 1;
     mumps->id.rhs = (MumpsScalar*)array;
   }
 
@@ -1091,8 +1222,13 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
     ierr = VecScatterEnd(mumps->scat_sol,mumps->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
 
-  if (mumps->petsc_size > 1) {if (!mumps->myid) {ierr = VecRestoreArray(b_seq,&array);CHKERRQ(ierr);}}
-  else {ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);}
+  if (mumps->petsc_size > 1) {
+#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+    ierr = VecRestoreArrayRead(b,&rarray);CHKERRQ(ierr);
+#else
+    if (!mumps->myid) {ierr = VecRestoreArray(mumps->b_seq,&array);CHKERRQ(ierr);}
+#endif
+  } else {ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);}
 
   ierr = PetscLogFlops(2.0*mumps->id.RINFO(3));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1125,8 +1261,12 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   IS                is_to,is_from;
   PetscInt          k,proc,j,m,myrstart;
   const PetscInt    *rstart;
-  Vec               v_mpi,b_seq,msol_loc;
-  VecScatter        scat_rhs,scat_sol;
+  Vec               v_mpi,msol_loc;
+  VecScatter        scat_sol;
+#if PETSC_PKG_MUMPS_VERSION_LT(5,3,0)
+  Vec               b_seq;
+  VecScatter        scat_rhs;
+#endif
   PetscScalar       *aa;
   PetscInt          spnr,*ia,*ja;
   Mat_MPIAIJ        *b = NULL;
@@ -1213,13 +1353,21 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,nlsol_loc,(PetscScalar*)sol_loc,&msol_loc);CHKERRQ(ierr);
 
-  if (denseB) { /* dense B */
+  if (denseB) {
+#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+    mumps->id.ICNTL(20) = 10; /* dense distributed RHS */
+    ierr = MatDenseGetArrayRead(B,&rbray);CHKERRQ(ierr);
+    ierr = MatMumpsSetUpDistRHSInfo(A,nrhs,rbray);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArrayRead(B,&rbray);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),1,nrhs*m,nrhs*M,NULL,&v_mpi);CHKERRQ(ierr);
+#else
     /* TODO: Because of non-contiguous indices, the created vecscatter scat_rhs is not done in MPI_Gather, resulting in
        very inefficient communication. An optimization is to use VecScatterCreateToZero to gather B to rank 0. Then on rank
        0, re-arrange B into desired order, which is a local operation.
      */
 
-    /* scatter v_mpi to b_seq because MUMPS only supports centralized rhs */
+    /* scatter v_mpi to b_seq because MUMPS before 5.3.0 only supports centralized rhs */
     /* wrap dense rhs matrix B into a vector v_mpi */
     ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);
     ierr = MatDenseGetArray(B,&bray);CHKERRQ(ierr);
@@ -1258,7 +1406,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       mumps->id.rhs = (MumpsScalar*)bray;
       ierr = VecRestoreArray(b_seq,&bray);CHKERRQ(ierr);
     }
-
+#endif
   } else { /* sparse B */
     b = (Mat_MPIAIJ*)Bt->data;
 
@@ -1337,8 +1485,10 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
     }
   } else {
+#if PETSC_PKG_MUMPS_VERSION_LT(5,3,0)
     ierr = VecDestroy(&b_seq);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&scat_rhs);CHKERRQ(ierr);
+#endif
   }
   ierr = VecScatterDestroy(&scat_sol);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*nrhs*mumps->id.RINFO(3));CHKERRQ(ierr);
