@@ -156,6 +156,8 @@
           <li>Add basic support for MATPRODUCT_AB (resp. MATPRODUCT_AtB) for any matrices with mult (multtranpose) operation defined and B dense</li>
           <li>Add MATSCALAPACK, a new Mat type that wraps a ScaLAPACK matrix</li>
           <li>Add support for MUMPS-5.3.0 distributed right hand side</li>
+          <li>Add support for MatMultHermitianTranspose with SEQAIJCUSPARSE</li>
+          <li>Remove default generation of explicit matrix for MatMultTranspose operations with SEQAIJCUSPARSE. Users can still require it via MatSeqAIJCUSPARSESetGenerateTranspose</li>
         </ul>
       <h4>PC:</h4>
         <ul>
