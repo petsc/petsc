@@ -134,6 +134,7 @@ struct Mat_SeqAIJCUSPARSE {
   cudaStream_t                 stream;   /* a stream for the parallel SpMV ... this is not owned and should not be deleted */
   cusparseHandle_t             handle;   /* a handle to the cusparse library ... this may not be owned (if we're working in parallel i.e. multiGPUs) */
   PetscObjectState             nonzerostate;
+  PetscBool                    transgen;
 };
 
 PETSC_INTERN PetscErrorCode MatCUSPARSECopyToGPU(Mat);
