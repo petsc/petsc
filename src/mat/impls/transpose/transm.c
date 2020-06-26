@@ -281,6 +281,7 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   PetscErrorCode ierr;
   PetscInt       m,n;
   Mat_Transpose  *Na;
+  VecType        vtype;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -310,6 +311,8 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatTransposeGetMat_C",MatTransposeGetMat_Transpose);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatProductSetFromOptions_anytype_C",MatProductSetFromOptions_Transpose);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
+  ierr = MatGetVecType(A,&vtype);CHKERRQ(ierr);
+  ierr = MatSetVecType(*N,vtype);CHKERRQ(ierr);
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
