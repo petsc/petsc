@@ -1,0 +1,9 @@
+Setting option: help (no value)
+Petsc Development GIT revision
+See docs/changes/index.html for recent updates.
+See docs/faq.html for problems.
+See docs/manualpages/index.html for help. 
+ -version: prints PETSc version
+ -help intro: prints example description and PETSc version, and exits
+ -help: prints example description, PETSc version, and available options for used routines
+-help
