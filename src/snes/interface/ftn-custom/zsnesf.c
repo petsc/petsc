@@ -4,6 +4,7 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define snessetpicard_                   SNESSETPICARD
 #define matmffdcomputejacobian_          MATMFFDCOMPUTEJACOBIAN
 #define snessolve_                       SNESSOLVE
 #define snescomputejacobiandefault_      SNESCOMPUTEJACOBIANDEFAULT
@@ -36,6 +37,7 @@
 #define snesnewtontrsetpostcheck_        SNESNEWTONTRSETPOSTCHECK
 #define snesviewfromoptions_             SNESVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define snessetpicard_                   snessetpicard
 #define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve
 #define snescomputejacobiandefault_      snescomputejacobiandefault
@@ -216,6 +218,31 @@ PETSC_EXTERN void snessetjacobian2_(SNES *snes,Mat *A,Mat *B,
                                     void *ctx,PetscErrorCode *ierr)
 {
   snessetjacobian_(snes,A,B,func,ctx,ierr);
+}
+/* -------------------------------------------------------------*/
+static PetscErrorCode oursnespicardfunction(SNES snes,Vec x,Vec f,void *ctx)
+{
+#if defined(PETSC_HAVE_F90_2PTR_ARG)
+  void* ptr;
+  PetscObjectGetFortranCallback((PetscObject)snes,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function_pgiptr,NULL,&ptr);
+#endif
+  PetscObjectUseFortranCallback(snes,_cb.function,(SNES*,Vec*,Vec*,void*,PetscErrorCode* PETSC_F90_2PTR_PROTO_NOVAR),(&snes,&x,&f,_ctx,&ierr PETSC_F90_2PTR_PARAM(ptr)));
+}
+
+static PetscErrorCode oursnespicardjacobian(SNES snes,Vec x,Mat m,Mat p,void *ctx)
+{
+  PetscObjectUseFortranCallback(snes,_cb.jacobian,(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),(&snes,&x,&m,&p,_ctx,&ierr));
+}
+
+PETSC_EXTERN void snessetpicard_(SNES *snes,Vec *r,void (*func)(SNES*,Vec*,Vec *,void*,PetscErrorCode*),Mat *A,Mat *B,
+                                 PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
+{
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.function,(PetscVoidFunction)func,ctx);
+#if defined(PETSC_HAVE_F90_2PTR_ARG)
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.function_pgiptr,NULL,ptr);if (*ierr) return;
+#endif
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.jacobian,(PetscVoidFunction)J,ctx);
+    if (!*ierr) *ierr = SNESSetPicard(*snes,*r,oursnespicardfunction,*A,*B,oursnespicardjacobian,NULL);
 }
 /* -------------------------------------------------------------*/
 
