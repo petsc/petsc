@@ -129,9 +129,6 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A, &n, NULL);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A, &bs);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)A, &match, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ, "");CHKERRQ(ierr);
-  /* for block formats, the actual size of the underlying arrays are needed */
-  if (match) n *= bs;
   ierr = PetscObjectTypeCompareAny((PetscObject)A, &match, MATSEQKAIJ, MATMPIKAIJ, "");CHKERRQ(ierr);
   if (match) n /= bs;
 #if defined(PETSC_PKG_HPDDM_VERSION_MAJOR)
@@ -252,6 +249,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscSc
     if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
     else ksp->reason = KSP_CONVERGED_RTOL; /* early exit by HPDDM, which only happens on breakdowns or convergence */
   }
+  ksp->its = PetscMin(ksp->its, ksp->max_it);
   PetscFunctionReturn(0);
 }
 

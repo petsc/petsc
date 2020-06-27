@@ -45,6 +45,10 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Ma
   ierr = PetscNew(&atb);CHKERRQ(ierr);
   if (B->cmap->N) {
     ierr = MatCreateMAIJ(A,B->cmap->N,&atb->mA);CHKERRQ(ierr);
+    if (!atb->mA->assembled) {
+      ierr = MatAssemblyBegin(atb->mA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(atb->mA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    }
     ierr = MatCreateVecs(atb->mA,&atb->ct,&atb->bt);CHKERRQ(ierr);
   }
   C->product->data    = atb;

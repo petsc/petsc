@@ -269,7 +269,20 @@ static PetscErrorCode PCApply_HPDDM(PC pc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-/*
+static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
+{
+  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscCitationsRegister(hpddmCitationPC, &citePC);CHKERRQ(ierr);
+  if (data->levels[0]->ksp) {
+    ierr = KSPMatSolve(data->levels[0]->ksp, X, Y);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "No KSP attached to PCHPDDM");
+  PetscFunctionReturn(0);
+}
+
+/*@C
      PCHPDDMGetComplexities - Computes the grid and operator complexities.
 
    Input Parameter:
@@ -277,7 +290,7 @@ static PetscErrorCode PCApply_HPDDM(PC pc, Vec x, Vec y)
 
    Output Parameters:
 +     gc - grid complexity = sum_i(m_i) / m_1
-.     oc - operator complexity = sum_i(nnz_i) / nnz_1
+-     oc - operator complexity = sum_i(nnz_i) / nnz_1
 
    Notes:
      PCGAMG does not follow the usual convention and names the grid complexity what is usually referred to as the operator complexity. PCHPDDM follows what is found in the literature, and in particular, what you get with PCHYPRE and -pc_hypre_boomeramg_print_statistics.
@@ -285,7 +298,7 @@ static PetscErrorCode PCApply_HPDDM(PC pc, Vec x, Vec y)
    Level: advanced
 
 .seealso:  PCMGGetGridComplexity(), PCHPDDM
-*/
+@*/
 static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
 {
   PC_HPDDM       *data = (PC_HPDDM*)pc->data;
@@ -405,7 +418,8 @@ static PetscErrorCode PCHPDDMShellSetUp(PC pc)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Vec x, Vec y)
+template<class Type, typename std::enable_if<std::is_same<Type, Vec>::value>::type* = nullptr>
+PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y)
 {
   PC_HPDDM_Level *ctx;
   PetscScalar    *out;
@@ -425,6 +439,47 @@ PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
+template<class Type, typename std::enable_if<std::is_same<Type, Mat>::value>::type* = nullptr>
+PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
+{
+  PC_HPDDM_Level *ctx;
+  Mat            C;
+  Vec            vX, vY, vC;
+  PetscScalar    *out;
+  PetscInt       i, m, N;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc, (void**)&ctx);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(ctx->v[0][0], &m);CHKERRQ(ierr);
+  ierr = MatGetSize(X, NULL, &N);CHKERRQ(ierr);
+  ierr = MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, &C);CHKERRQ(ierr);
+  /* going from PETSc to HPDDM numbering */
+  for (i = 0; i < N; ++i) {
+    ierr = MatDenseGetColumnVecRead(X, i, &vX);CHKERRQ(ierr);
+    ierr = MatDenseGetColumnVecWrite(C, i, &vC);CHKERRQ(ierr);
+    ierr = VecScatterBegin(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumnVecWrite(C, i, &vC);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumnVecRead(X, i, &vX);CHKERRQ(ierr);
+  }
+  ierr = MatDenseGetArrayWrite(C, &out);CHKERRQ(ierr);
+  ctx->P->start(N);
+  ctx->P->deflation<false>(NULL, out, N); /* Y = Q X */
+  ierr = MatDenseRestoreArrayWrite(C, &out);CHKERRQ(ierr);
+  /* going from HPDDM to PETSc numbering */
+  for (i = 0; i < N; ++i) {
+    ierr = MatDenseGetColumnVecRead(C, i, &vC);CHKERRQ(ierr);
+    ierr = MatDenseGetColumnVecWrite(Y, i, &vY);CHKERRQ(ierr);
+    ierr = VecScatterBegin(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumnVecWrite(Y, i, &vY);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumnVecRead(C, i, &vC);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
      PCHPDDMShellApply - Applies a (2) deflated, (1) additive, or (3) balanced coarse correction. In what follows, E = Z Pmat Z^T and Q = Z^T E^-1 Z.
 
@@ -436,8 +491,10 @@ PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Vec x, Vec y)
 
    Input Parameters:
 +     pc - preconditioner context
-.     x - input vector
--     y - output vector
+-     x - input vector
+
+   Output Parameter:
+.     y - output vector
 
    Application Interface Routine: PCApply()
 
@@ -475,6 +532,66 @@ static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
       ierr = PCApply(ctx->pc, x, ctx->v[1][0]);CHKERRQ(ierr);
       ierr = VecAXPY(y, 1.0, ctx->v[1][0]);CHKERRQ(ierr);                     /* y = M^-1 x + Q x                 */
     } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with no HPDDM object");
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     PCHPDDMShellMatApply - Variant of PCHPDDMShellApply() for blocks of vectors
+
+   Input Parameters:
++     pc - preconditioner context
+-     X - block of input vectors
+
+   Output Parameter:
+.     Y - block of output vectors
+
+   Application Interface Routine: PCApply()
+
+   Level: advanced
+
+.seealso:  PCHPDDM, PCHPDDMShellMatApply(), PCHPDDMCoarseCorrectionType
+@*/
+static PetscErrorCode PCHPDDMShellMatApply(PC pc, Mat X, Mat Y)
+{
+  PC_HPDDM_Level *ctx;
+  Mat            A, C, D;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc, (void**)&ctx);CHKERRQ(ierr);
+  if (ctx->P) {
+    ierr = KSPGetOperators(ctx->ksp, &A, NULL);CHKERRQ(ierr);
+    ierr = PCHPDDMDeflate_Private(pc, X, Y);CHKERRQ(ierr);
+    if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
+      ierr = MatMatMult(A, Y, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
+      ierr = MatDuplicate(C, MAT_COPY_VALUES, &D);CHKERRQ(ierr);
+      ierr = MatAYPX(D, -1.0, X, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = PCMatApply(ctx->pc, D, C);CHKERRQ(ierr);
+      if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
+#if 0 // TODO FIXME: there is a bug in MatTransposeMatMult(): results are inconsitent with a column-by-column product
+        ierr = MatTransposeMatMult(A, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &D);CHKERRQ(ierr);
+#else
+        PetscInt N;
+        ierr = MatGetSize(D, NULL, &N);
+        for (PetscInt i = 0; i < N; ++i) {
+          Vec cD, cC;
+          ierr = MatDenseGetColumnVecRead(C, i, &cC);CHKERRQ(ierr);
+          ierr = MatDenseGetColumnVecWrite(D, i, &cD);CHKERRQ(ierr);
+          ierr = MatMultTranspose(A, cC, cD);CHKERRQ(ierr);
+          ierr = MatDenseRestoreColumnVecWrite(D, i, &cD);CHKERRQ(ierr);
+          ierr = MatDenseRestoreColumnVecRead(C, i, &cC);CHKERRQ(ierr);
+        }
+#endif
+      }
+      ierr = MatAXPY(Y, 1.0, C, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatDestroy(&D);CHKERRQ(ierr);
+    } else if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE) {
+      ierr = MatDuplicate(X, MAT_DO_NOT_COPY_VALUES, &C);CHKERRQ(ierr);
+      ierr = PCMatApply(ctx->pc, X, C);CHKERRQ(ierr);
+      ierr = MatAXPY(Y, 1.0, C, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with no HPDDM object");
   PetscFunctionReturn(0);
 }
@@ -526,7 +643,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   ISLocalToGlobalMapping   l2g;
   char                     prefix[256];
   const char               *pcpre;
-  const PetscScalar* const *ev;
+  const PetscScalar *const *ev;
   PetscInt                 n, requested = data->N, reused = 0;
   PetscBool                subdomains = PETSC_FALSE, flag = PETSC_FALSE, ismatis;
   DM                       dm;
@@ -735,6 +852,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           ierr = PCShellSetContext(spc, data->levels[n]);CHKERRQ(ierr);
           ierr = PCShellSetSetUp(spc, PCHPDDMShellSetUp);CHKERRQ(ierr);
           ierr = PCShellSetApply(spc, PCHPDDMShellApply);CHKERRQ(ierr);
+          ierr = PCShellSetMatApply(spc, PCHPDDMShellMatApply);CHKERRQ(ierr);
           ierr = PCShellSetDestroy(spc, PCHPDDMShellDestroy);CHKERRQ(ierr);
           if (!data->levels[n]->pc) {
             ierr = PCCreate(PetscObjectComm((PetscObject)data->levels[n]->ksp), &data->levels[n]->pc);CHKERRQ(ierr);
@@ -829,7 +947,7 @@ PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
 .     pc - preconditioner context
 
    Output Parameter:
--     type - PC_HPDDM_COARSE_CORRECTION_DEFLATED, PC_HPDDM_COARSE_CORRECTION_ADDITIVE, or PC_HPDDM_COARSE_CORRECTION_BALANCED
+.     type - PC_HPDDM_COARSE_CORRECTION_DEFLATED, PC_HPDDM_COARSE_CORRECTION_ADDITIVE, or PC_HPDDM_COARSE_CORRECTION_BALANCED
 
    Level: intermediate
 
@@ -950,6 +1068,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   pc->ops->setfromoptions      = PCSetFromOptions_HPDDM;
   pc->ops->setup               = PCSetUp_HPDDM;
   pc->ops->apply               = PCApply_HPDDM;
+  pc->ops->matapply            = PCMatApply_HPDDM;
   pc->ops->view                = PCView_HPDDM;
   pc->ops->applytranspose      = 0;
   pc->ops->applysymmetricleft  = 0;
