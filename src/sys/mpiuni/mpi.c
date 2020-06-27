@@ -7,6 +7,11 @@
 #error "Wrong mpi.h included! require mpi.h from MPIUNI"
 #endif
 
+#if defined(PETSC_HAVE_CUDA)
+#include <cuda.h>
+#include <cuda_runtime.h>
+#endif
+
 #define MPI_SUCCESS 0
 #define MPI_FAILURE 1
 
@@ -51,15 +56,32 @@ extern "C" {
 /*
    To avoid problems with prototypes to the system memcpy() it is duplicated here
 */
-int MPIUNI_Memcpy(void *a,const void *b,int n)
+int MPIUNI_Memcpy(void *dst,const void *src,int n)
 {
-  int  i;
-  char *aa= (char*)a;
-  char *bb= (char*)b;
+  if (dst == MPI_IN_PLACE || dst == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
+  if (src == MPI_IN_PLACE || src == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
+  if (!n) return MPI_SUCCESS;
 
-  if (a == MPI_IN_PLACE || a == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
-  if (b == MPI_IN_PLACE || b == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
-  for (i=0; i<n; i++) aa[i] = bb[i];
+#if defined(PETSC_HAVE_CUDA) /* CUDA-aware MPIUNI */
+  {
+    cudaError_t         cudaerr;
+    CUresult            cuerr;
+    CUmemorytype        mtype;
+    int                 dstType=0,srcType=0; /* 0: host memory; 1: device memory */
+    enum cudaMemcpyKind kinds[2][2] = {{cudaMemcpyHostToHost,cudaMemcpyHostToDevice},{cudaMemcpyDeviceToHost,cudaMemcpyDeviceToDevice}};
+
+    /* CUDA driver API cuPointerGetAttribute() is faster than CUDA runtime API cudaPointerGetAttributes() */
+    cuerr = cuPointerGetAttribute(&mtype,CU_POINTER_ATTRIBUTE_MEMORY_TYPE,(CUdeviceptr)dst);
+    if (cuerr == CUDA_SUCCESS && mtype == CU_MEMORYTYPE_DEVICE) dstType = 1;
+    cuerr = cuPointerGetAttribute(&mtype,CU_POINTER_ATTRIBUTE_MEMORY_TYPE,(CUdeviceptr)src);
+    if (cuerr == CUDA_SUCCESS && mtype == CU_MEMORYTYPE_DEVICE) srcType = 1;
+
+    cudaerr = cudaMemcpy(dst,src,n,kinds[srcType][dstType]); /* Use synchronous copy per MPI semantics */
+    if (cudaerr != cudaSuccess) return MPI_FAILURE;
+  }
+#else
+  memcpy(dst,src,n);
+#endif
   return MPI_SUCCESS;
 }
 

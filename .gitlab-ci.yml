@@ -424,6 +424,16 @@ linux-cuda-single-cxx:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
 
+linux-cuda-uni-pkgs:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux, name:frog
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
+    TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
+
 linux-without-fc:
   extends:
     - .stage-3
@@ -724,16 +734,6 @@ linux-ILP64:
   variables:
     TEST_ARCH: arch-ci-linux-ILP64
     LOAD_MODULES: gcc/6.5.0-57usejd
-
-linux-uni-pkgs:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-uni-pkgs
-    LOAD_MODULES: llvm/9.0.0-7fyffox cmake/3.14.2-rl3q676
 
 linux-64idx-i8-uni:
   extends:
