@@ -40,10 +40,10 @@ struct PC_HPDDM {
 
 struct KSP_HPDDM {
   HPDDM::PETScOperator *op;
-  PetscReal            rcntl[2];
+  PetscReal            rcntl[1];
   int                  icntl[2];
-  unsigned short       scntl[3];
-  char                 cntl [6];
+  unsigned short       scntl[2];
+  char                 cntl [5];
 };
 
 #define PETSC_HPDDM_MAXLEVELS 10

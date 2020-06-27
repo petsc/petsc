@@ -4,26 +4,28 @@ static char help[] = "Solves a linear system with a block of right-hand sides us
 
 int main(int argc,char **args)
 {
-  Mat               X,B;         /* computed solutions and RHS */
-  Vec               cx,cb;       /* columns of X and B */
-  Mat               A,KA = NULL; /* linear system matrix */
-  KSP               ksp;         /* linear solver context */
-  PC                pc;          /* preconditioner context */
-  Mat               F;           /* factored matrix from the preconditioner context */
-  const PetscScalar *b;
-  PetscScalar       *x,*S = NULL,*T = NULL;
-  PetscReal         norm;
-  PetscInt          m,M,N = 5,i,j;
-  const char        *deft = MATAIJ;
-  PetscViewer       viewer;
-  char              dir[PETSC_MAX_PATH_LEN],name[256],type[256];
-  PetscBool         flg;
-  PetscErrorCode    ierr;
+  Mat                X,B;         /* computed solutions and RHS */
+  Vec                cx,cb;       /* columns of X and B */
+  Mat                A,KA = NULL; /* linear system matrix */
+  KSP                ksp;         /* linear solver context */
+  PC                 pc;          /* preconditioner context */
+  Mat                F;           /* factored matrix from the preconditioner context */
+  const PetscScalar  *b;
+  PetscScalar        *x,*S = NULL,*T = NULL;
+  PetscReal          norm;
+  PetscInt           m,M,N = 5,i,j;
+  const char         *deft = MATAIJ;
+  PetscViewer        viewer;
+  char               dir[PETSC_MAX_PATH_LEN],name[256],type[256];
+  PetscBool          breakdown = PETSC_FALSE,flg;
+  KSPConvergedReason reason;
+  PetscErrorCode     ierr;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
   ierr = PetscStrcpy(dir,".");CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-breakdown",&breakdown,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
@@ -54,24 +56,39 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   ierr = MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B);CHKERRQ(ierr);
   ierr = MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&X);CHKERRQ(ierr);
-  ierr = MatSetRandom(B,NULL);CHKERRQ(ierr);
+  if (!breakdown) {
+    ierr = MatSetRandom(B,NULL);CHKERRQ(ierr);
+  }
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   if (!flg) {
-    ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-    ierr = KSPGetMatSolveBlockSize(ksp,&M);CHKERRQ(ierr);
-    if (M != PETSC_DECIDE) {
-      ierr = KSPSetMatSolveBlockSize(ksp,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = MatZeroEntries(X);CHKERRQ(ierr);
+    if (!breakdown) {
       ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-    }
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)pc,PCLU,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorGetMatrix(pc,&F);
-      ierr = MatMatSolve(F,B,B);CHKERRQ(ierr);
-      ierr = MatAYPX(B,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatNorm(B,NORM_INFINITY,&norm);CHKERRQ(ierr);
-      if (norm > 100*PETSC_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
+      ierr = KSPGetMatSolveBlockSize(ksp,&M);CHKERRQ(ierr);
+      if (M != PETSC_DECIDE) {
+        ierr = KSPSetMatSolveBlockSize(ksp,PETSC_DECIDE);CHKERRQ(ierr);
+        ierr = MatZeroEntries(X);CHKERRQ(ierr);
+        ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
+      }
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc,PCLU,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PCFactorGetMatrix(pc,&F);
+        ierr = MatMatSolve(F,B,B);CHKERRQ(ierr);
+        ierr = MatAYPX(B,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatNorm(B,NORM_INFINITY,&norm);CHKERRQ(ierr);
+        if (norm > 100*PETSC_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
+      }
+    } else {
+      ierr = MatZeroEntries(B);CHKERRQ(ierr);
+      ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
+      ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+      if (reason != KSP_CONVERGED_HAPPY_BREAKDOWN) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_CONVERGED_HAPPY_BREAKDOWN",KSPConvergedReasons[reason]);
+      ierr = MatDenseGetArrayWrite(B,&x);CHKERRQ(ierr);
+      for (i=0; i<m*N; ++i) x[i] = 1.0;
+      ierr = MatDenseRestoreArrayWrite(B,&x);CHKERRQ(ierr);
+      ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
+      ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+      if (reason != KSP_DIVERGED_BREAKDOWN) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
     }
   } else {
     ierr = KSPSetOperators(ksp,KA,KA);CHKERRQ(ierr);
@@ -116,9 +133,10 @@ int main(int argc,char **args)
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type {{gcrodr bgcrodr}separate output}
       test:
+         nsize: 4
          suffix: 4
          requires: hpddm
-         args: -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5
+         args: -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5
 
    test:
       nsize: 1
@@ -126,9 +144,33 @@ int main(int argc,char **args)
       suffix: preonly
       args: -N 6 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -pc_type lu -ksp_type hpddm -ksp_hpddm_type preonly
 
+   # to avoid breakdown failures, use -ksp_hpddm_deflation_tol, cf. KSPHPDDM documentation
+   test:
+      nsize: 1
+      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      suffix: breakdown
+      output_file: output/ex77_preonly.out
+      args: -N 3 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -pc_type none -ksp_type hpddm -ksp_hpddm_type {{bcg bgmres bgcrodr bfbcg}shared output} -breakdown
+
    test:
       nsize: 2
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -N 12 -ksp_converged_reason -ksp_max_it 500 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -mat_type kaij -pc_type pbjacobi -ksp_type hpddm -ksp_hpddm_type {{gmres bgmres}separate output}
+
+   test:
+      nsize: 4
+      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc
+      suffix: 4_slepc
+      output_file: output/ex77_4.out
+      filter: sed "/^ksp_hpddm_recycle_ Linear eigensolve converged/d"
+      args: -ksp_converged_reason -ksp_max_it 500 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_mat_type {{aij dense}shared output} -ksp_hpddm_recycle_eps_converged_reason -ksp_hpddm_recycle_st_pc_type redundant
+
+   test:
+      nsize: 4
+      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc elemental
+      suffix: 4_elemental
+      output_file: output/ex77_4.out
+      filter: sed "/^ksp_hpddm_recycle_ Linear eigensolve converged/d"
+      args: -ksp_converged_reason -ksp_max_it 500 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_mat_type elemental -ksp_hpddm_recycle_eps_converged_reason
 
 TEST*/

@@ -95,7 +95,7 @@ struct _p_KSP {
                                       the solution and rhs, these are
                                       never touched by the code, only
                                       passed back to the user */
-  PetscReal     *res_hist;            /* If !0 stores residual at iterations*/
+  PetscReal     *res_hist;            /* If !0 stores residual at iterations */
   PetscReal     *res_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
   PetscInt      res_hist_len;         /* current size of residual history array */
   PetscInt      res_hist_max;         /* actual amount of data in residual_history */
@@ -167,8 +167,8 @@ typedef struct { /* dummy data structure used in KSPMonitorDynamicTolerance() */
 } KSPDynTolCtx;
 
 typedef struct {
-  PetscBool  initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
-  PetscBool  mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
+  PetscBool  initialrtol;    /* default relative residual decrease is computed from initial residual, not rhs */
+  PetscBool  mininitialrtol; /* default relative residual decrease is computed from min of initial residual and rhs */
   PetscBool  convmaxits;     /* if true, the convergence test returns KSP_CONVERGED_ITS if the maximum number of iterations is reached */
   Vec        work;
 } KSPConvergedDefaultCtx;
