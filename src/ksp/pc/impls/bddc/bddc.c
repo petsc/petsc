@@ -2946,7 +2946,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
    An experimental interface to the FETI-DP method is available. FETI-DP operators could be created using PCBDDCCreateFETIDPOperators(). A stand-alone class for the FETI-DP method will be provided in the next releases.
    Deluxe scaling is not supported yet for FETI-DP.
 
-   Options Database Keys (some of them, run with -h for a complete list):
+   Options Database Keys (some of them, run with -help for a complete list):
 
 +    -pc_bddc_use_vertices <true> - use or not vertices in primal space
 .    -pc_bddc_use_edges <true> - use or not edges in primal space

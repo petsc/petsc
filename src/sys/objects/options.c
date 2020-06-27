@@ -92,7 +92,8 @@ struct  _n_PetscOptions {
   char           *aliases2[MAXALIASES];      /* aliasee */
 
   /* Help */
-  PetscBool      help; /* flag whether "-help" is in the database */
+  PetscBool      help;       /* flag whether "-help" is in the database */
+  PetscBool      help_intro; /* flag whether "-help intro" is in the database */
 
   /* Monitors */
   PetscBool      monitorFromOptions, monitorCancel;
@@ -105,8 +106,8 @@ struct  _n_PetscOptions {
 static PetscOptions defaultoptions = NULL;  /* the options database routines query this object for options */
 
 /* list of options which preceed others, i.e., are processed in PetscOptionsProcessPrecedentFlags() */
-static const char *precedentOptions[] = {"-options_monitor","-options_monitor_cancel","-h","-help","-skip_petscrc","-options_file_yaml","-options_string_yaml"};
-enum PetscPrecedentOption {PO_OPTIONS_MONITOR,PO_OPTIONS_MONITOR_CANCEL,PO_H,PO_HELP,PO_SKIP_PETSCRC,PO_OPTIONS_FILE_YAML,PO_OPTIONS_STRING_YAML,PO_NUM};
+static const char *precedentOptions[] = {"-options_monitor","-options_monitor_cancel","-help","-skip_petscrc","-options_file_yaml","-options_string_yaml"};
+enum PetscPrecedentOption {PO_OPTIONS_MONITOR,PO_OPTIONS_MONITOR_CANCEL,PO_HELP,PO_SKIP_PETSCRC,PO_OPTIONS_FILE_YAML,PO_OPTIONS_STRING_YAML,PO_NUM};
 
 static PetscErrorCode PetscOptionsSetValue_Private(PetscOptions,const char[],const char[],int*);
 
@@ -686,9 +687,9 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
   }
 
   /* Process flags */
-  /* -h and -help are equivalent (p4 does not like -help)*/
-  ierr = PetscOptionsStringToBoolIfSet_Private(PO_H,                     val,set,&options->help);CHKERRQ(ierr);
-  ierr = PetscOptionsStringToBoolIfSet_Private(PO_HELP,                  val,set,&options->help);CHKERRQ(ierr);
+  ierr = PetscStrcasecmp(val[PO_HELP], "intro", &options->help_intro);CHKERRQ(ierr);
+  if (options->help_intro) options->help = PETSC_TRUE;
+  else {ierr = PetscOptionsStringToBoolIfSet_Private(PO_HELP,            val,set,&options->help);CHKERRQ(ierr);}
   ierr = PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR_CANCEL,val,set,&options->monitorCancel);CHKERRQ(ierr);
   ierr = PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR,       val,set,&options->monitorFromOptions);CHKERRQ(ierr);
   ierr = PetscOptionsStringToBoolIfSet_Private(PO_SKIP_PETSCRC,          val,set,skip_petscrc);CHKERRQ(ierr);
@@ -1255,8 +1256,6 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
   options = options ? options : defaultoptions;
   if (name[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
 
-  /* this is so that -h and -help are equivalent (p4 does not like -help)*/
-  if (!strcmp(name,"-h")) name = "-help";
   if (!PetscOptNameCmp(name,"-help")) options->help = PETSC_FALSE;
 
   name++; /* skip starting dash */
@@ -1563,6 +1562,15 @@ PetscErrorCode PetscOptionsHasHelp(PetscOptions options,PetscBool *set)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions options,PetscBool *set)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(set,2);
+  options = options ? options : defaultoptions;
+  *set = options->help_intro;
+  PetscFunctionReturn(0);
+}
+
 /*@C
    PetscOptionsHasName - Determines whether a certain option is given in the database. This returns true whether the option is a number, string or boolean, even
                       its value is set to false.
@@ -1580,8 +1588,6 @@ PetscErrorCode PetscOptionsHasHelp(PetscOptions options,PetscBool *set)
    Level: beginner
 
    Notes:
-   Name cannot be simply "-h".
-
    In many cases you probably want to use PetscOptionsGetBool() instead of calling this, to allowing toggling values.
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
