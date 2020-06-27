@@ -903,7 +903,6 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
   cusparseStatus_t             stat;
   cusparseIndexBase_t          indexBase;
   cudaError_t                  err;
-  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   if (!cusparsestruct->transgen) PetscFunctionReturn(0);
@@ -946,12 +945,12 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
                             matrixT->column_indices->data().get(),
                             matrixT->row_offsets->data().get(),
                             CUSPARSE_ACTION_NUMERIC, indexBase);CHKERRCUSPARSE(stat);
-    /* assign the pointer */
     matstructT->mat = matrixT;
-    ierr = PetscLogCpuToGpu(((A->rmap->n+1)+(a->nz))*sizeof(int)+(3+a->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
   } else if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
+    CsrMatrix *temp = new CsrMatrix;
+    CsrMatrix *tempT = new CsrMatrix;
+
     /* First convert HYB to CSR */
-    CsrMatrix *temp= new CsrMatrix;
     temp->num_rows = A->rmap->n;
     temp->num_cols = A->cmap->n;
     temp->num_entries = a->nz;
@@ -967,7 +966,6 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
                             temp->column_indices->data().get());CHKERRCUSPARSE(stat);
 
     /* Next, convert CSR to CSC (i.e. the matrix transpose) */
-    CsrMatrix *tempT= new CsrMatrix;
     tempT->num_rows = A->rmap->n;
     tempT->num_cols = A->cmap->n;
     tempT->num_entries = a->nz;
@@ -998,8 +996,6 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
 
     /* assign the pointer */
     matstructT->mat = hybMat;
-    ierr = PetscLogCpuToGpu((2*(((A->rmap->n+1)+(a->nz))*sizeof(int)+(a->nz)*sizeof(PetscScalar)))+3*sizeof(PetscScalar));CHKERRQ(ierr);
-
     /* delete temporaries */
     if (tempT) {
       if (tempT->values) delete (THRUSTARRAY*) tempT->values;
