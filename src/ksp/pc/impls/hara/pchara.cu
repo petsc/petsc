@@ -604,6 +604,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HARA(PC pc)
   pc->ops->destroy        = PCDestroy_HARA;
   pc->ops->setup          = PCSetUp_HARA;
   pc->ops->apply          = PCApply_HARA;
+  pc->ops->matapply       = PCApplyMat_HARA;
   pc->ops->applytranspose = PCApplyTranspose_HARA;
   pc->ops->reset          = PCReset_HARA;
   pc->ops->setfromoptions = PCSetFromOptions_HARA;

@@ -167,6 +167,20 @@ static PetscErrorCode PCApply_Cholesky(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCMatApply_Cholesky(PC pc,Mat X,Mat Y)
+{
+  PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dir->hdr.inplace) {
+    ierr = MatMatSolve(pc->pmat,X,Y);CHKERRQ(ierr);
+  } else {
+    ierr = MatMatSolve(((PC_Factor*)dir)->fact,X,Y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApplySymmetricLeft_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
@@ -292,6 +306,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   pc->ops->destroy             = PCDestroy_Cholesky;
   pc->ops->reset               = PCReset_Cholesky;
   pc->ops->apply               = PCApply_Cholesky;
+  pc->ops->matapply            = PCMatApply_Cholesky;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_Cholesky;
   pc->ops->applysymmetricright = PCApplySymmetricRight_Cholesky;
   pc->ops->applytranspose      = PCApplyTranspose_Cholesky;

@@ -179,6 +179,20 @@ static PetscErrorCode PCApply_LU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCMatApply_LU(PC pc,Mat X,Mat Y)
+{
+  PC_LU          *dir = (PC_LU*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dir->hdr.inplace) {
+    ierr = MatMatSolve(pc->pmat,X,Y);CHKERRQ(ierr);
+  } else {
+    ierr = MatMatSolve(((PC_Factor*)dir)->fact,X,Y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
   PC_LU          *dir = (PC_LU*)pc->data;
@@ -260,6 +274,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   pc->ops->reset             = PCReset_LU;
   pc->ops->destroy           = PCDestroy_LU;
   pc->ops->apply             = PCApply_LU;
+  pc->ops->matapply          = PCMatApply_LU;
   pc->ops->applytranspose    = PCApplyTranspose_LU;
   pc->ops->setup             = PCSetUp_LU;
   pc->ops->setfromoptions    = PCSetFromOptions_LU;
