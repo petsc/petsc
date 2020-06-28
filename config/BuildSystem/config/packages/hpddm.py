@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = '5d3baf4' # master june-27-2020
+    self.gitcommit              = '5f2a51b' # master june-28-2020
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
-    self.minversion             = '2.0.3' # prior versions are not handling KSPHPDDM options properly
+    self.minversion             = '2.0.7'
     self.versionname            = 'HPDDM_VERSION'
     self.versioninclude         = 'HPDDM_define.hpp'
     self.requirescxx11          = 1

@@ -161,12 +161,13 @@
         <ul>
           <li>Fix bugs related with reusing PCILU/PCICC/PCLU/PCCHOLESKY preconditioners with SEQAIJCUSPARSE matrices</li>
           <li>GAMG uses MAT_SPD to default to CG for the eigen estimate in Chebyshev smoothers</li>
+          <li>Add PCMatApply() for applying a preconditioner to a block of vectors
         </ul>
       <h4>KSP:</h4>
         <ul>
           <li>Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence when the maximum number of iterations is reached</li>
           <li>Fix many KSP implementations to actually perform the number of iterations requested</li>
-          <li>Add KSPMatSolve() for solving iteratively (currently only with KSPHPDDM) systems with multiple right-hand sides, and KSP{Set|Get}MatSolveBlockSize() to set a block size limit</li>
+          <li>Add KSPMatSolve() for solving iteratively (currently only with KSPHPDDM and KSPPREONLY) systems with multiple right-hand sides, and KSP{Set|Get}MatSolveBlockSize() to set a block size limit</li>
           <li>Chebyshev uses MAT_SPD to default to CG for the eigen estimate</li>
         </ul>
       <h4>SNES:</h4>
