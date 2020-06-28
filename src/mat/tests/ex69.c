@@ -13,6 +13,8 @@ static PetscErrorCode MatMult_S(Mat S,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscBool test_cusparse_transgen = PETSC_FALSE;
+
 static PetscErrorCode MatMultTranspose_S(Mat S,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -21,6 +23,10 @@ static PetscErrorCode MatMultTranspose_S(Mat S,Vec x,Vec y)
   PetscFunctionBeginUser;
   ierr = MatShellGetContext(S,(void**)&A);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
+
+  /* alternate transgen true and false to test code logic */
+  ierr = MatSeqAIJCUSPARSESetGenerateTranspose(A,test_cusparse_transgen);CHKERRQ(ierr);
+  test_cusparse_transgen = (PetscBool)!test_cusparse_transgen;
   PetscFunctionReturn(0);
 }
 
@@ -102,12 +108,13 @@ int main(int argc,char **argv)
 
   /* Test MatMatMult */
   if (use_shell) {
+    /* we could have called the general convertor below, but we explicit set the operations
+       ourselves to test MatProductSymbolic_X_Dense, MatProductNumeric_X_Dense code */
+    /* ierr = MatConvert(A,MATSHELL,MAT_INITIAL_MATRIX,&S);CHKERRQ(ierr); */
     ierr = MatCreateShell(PetscObjectComm((PetscObject)v),nloc,nloc,n,n,A,&S);CHKERRQ(ierr);
     ierr = MatShellSetOperation(S,MATOP_MULT,(void(*)(void))MatMult_S);CHKERRQ(ierr);
     ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_S);CHKERRQ(ierr);
     ierr = MatShellSetVecType(S,vtype);CHKERRQ(ierr);
-    /* we could have called the general convertor also */
-    /* ierr = MatConvert(A,MATSHELL,MAT_INITIAL_MATRIX,&S);CHKERRQ(ierr); */
   } else {
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     S    = A;

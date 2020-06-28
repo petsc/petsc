@@ -193,8 +193,12 @@ PetscErrorCode MatSeqAIJCUSPARSESetGenerateTranspose(Mat A,PetscBool transgen)
   ierr = PetscObjectTypeCompare(((PetscObject)A),MATSEQAIJCUSPARSE,&flg);CHKERRQ(ierr);
   if (flg) {
     Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
+
     if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
     cusp->transgen = transgen;
+    if (!transgen) { /* need to destroy the transpose matrix if present to prevent from logic errors if transgen is set to true later */
+      ierr = MatSeqAIJCUSPARSEMultStruct_Destroy(&cusp->matTranspose,cusp->format);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -209,7 +213,12 @@ static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionItems *PetscOp
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"SeqAIJCUSPARSE options");CHKERRQ(ierr);
   if (A->factortype == MAT_FACTOR_NONE) {
-    ierr = PetscOptionsBool("-mat_cusparse_transgen","Generate explicit transpose for MatMultTranspose","MatSeqAIJCUSPARSESetGenerateTranspose",cusparsestruct->transgen,&cusparsestruct->transgen,NULL);CHKERRQ(ierr);
+    PetscBool transgen = cusparsestruct->transgen;
+
+    ierr = PetscOptionsBool("-mat_cusparse_transgen","Generate explicit transpose for MatMultTranspose","MatSeqAIJCUSPARSESetGenerateTranspose",transgen,&transgen,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatSeqAIJCUSPARSESetGenerateTranspose(A,transgen);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsEnum("-mat_cusparse_mult_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV",
                             "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)cusparsestruct->format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
