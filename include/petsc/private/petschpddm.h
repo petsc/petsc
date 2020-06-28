@@ -17,6 +17,7 @@ namespace HPDDM {
 struct PC_HPDDM_Level {
   VecScatter                  scatter;   /* scattering from PETSc nonoverlapping numbering to HPDDM overlapping */
   Vec                         *v[2];     /* working vectors */
+  Mat                         V;         /* working matrix */
   KSP                         ksp;       /* KSP coupling the action of pc and P */
   PC                          pc;        /* inner fine-level PC, acting like a multigrid smoother */
   HPDDM::Schwarz<PetscScalar> *P;        /* coarse-level HPDDM solver */

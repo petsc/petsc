@@ -443,40 +443,47 @@ template<class Type, typename std::enable_if<std::is_same<Type, Mat>::value>::ty
 PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
 {
   PC_HPDDM_Level *ctx;
-  Mat            C;
   Vec            vX, vY, vC;
   PetscScalar    *out;
-  PetscInt       i, m, N;
+  PetscInt       i, m, N, prev = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc, (void**)&ctx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ctx->v[0][0], &m);CHKERRQ(ierr);
   ierr = MatGetSize(X, NULL, &N);CHKERRQ(ierr);
-  ierr = MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, &C);CHKERRQ(ierr);
+  if (ctx->V) {
+    ierr = MatGetSize(ctx->V, NULL, &prev);CHKERRQ(ierr);
+  }
+  if (N != prev) {
+    ierr = MatDestroy(&ctx->V);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, &ctx->V);CHKERRQ(ierr);
+  }
   /* going from PETSc to HPDDM numbering */
   for (i = 0; i < N; ++i) {
     ierr = MatDenseGetColumnVecRead(X, i, &vX);CHKERRQ(ierr);
-    ierr = MatDenseGetColumnVecWrite(C, i, &vC);CHKERRQ(ierr);
+    ierr = MatDenseGetColumnVecWrite(ctx->V, i, &vC);CHKERRQ(ierr);
     ierr = VecScatterBegin(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumnVecWrite(C, i, &vC);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumnVecWrite(ctx->V, i, &vC);CHKERRQ(ierr);
     ierr = MatDenseRestoreColumnVecRead(X, i, &vX);CHKERRQ(ierr);
   }
-  ierr = MatDenseGetArrayWrite(C, &out);CHKERRQ(ierr);
-  ctx->P->start(N);
+  ierr = MatDenseGetArrayWrite(ctx->V, &out);CHKERRQ(ierr);
+  if (N != prev) {
+    ctx->P->start(N);
+    prev = N;
+  }
   ctx->P->deflation<false>(NULL, out, N); /* Y = Q X */
-  ierr = MatDenseRestoreArrayWrite(C, &out);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayWrite(ctx->V, &out);CHKERRQ(ierr);
   /* going from HPDDM to PETSc numbering */
   for (i = 0; i < N; ++i) {
-    ierr = MatDenseGetColumnVecRead(C, i, &vC);CHKERRQ(ierr);
+    ierr = MatDenseGetColumnVecRead(ctx->V, i, &vC);CHKERRQ(ierr);
     ierr = MatDenseGetColumnVecWrite(Y, i, &vY);CHKERRQ(ierr);
     ierr = VecScatterBegin(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = MatDenseRestoreColumnVecWrite(Y, i, &vY);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumnVecRead(C, i, &vC);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumnVecRead(ctx->V, i, &vC);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -606,6 +613,7 @@ static PetscErrorCode PCHPDDMShellDestroy(PC pc)
   ierr = HPDDM::Schwarz<PetscScalar>::destroy(ctx, PETSC_TRUE);CHKERRQ(ierr);
   ierr = VecDestroyVecs(1, &ctx->v[0]);CHKERRQ(ierr);
   ierr = VecDestroyVecs(2, &ctx->v[1]);CHKERRQ(ierr);
+  ierr = MatDestroy(&ctx->V);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->D);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx->scatter);CHKERRQ(ierr);
   ierr = PCDestroy(&ctx->pc);CHKERRQ(ierr);
@@ -887,6 +895,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         ierr = HPDDM::Schwarz<PetscScalar>::destroy(data->levels[n], PETSC_TRUE);CHKERRQ(ierr);
         ierr = VecDestroyVecs(1, &data->levels[n]->v[0]);CHKERRQ(ierr);
         ierr = VecDestroyVecs(2, &data->levels[n]->v[1]);CHKERRQ(ierr);
+        ierr = MatDestroy(&data->levels[n]->V);CHKERRQ(ierr);
         ierr = VecDestroy(&data->levels[n]->D);CHKERRQ(ierr);
         ierr = VecScatterDestroy(&data->levels[n]->scatter);CHKERRQ(ierr);
       }
