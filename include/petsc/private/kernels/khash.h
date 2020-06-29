@@ -169,10 +169,10 @@ typedef khint_t khiter_t;
 #define __ac_isempty(flag, i) ((flag[i>>4]>>((i&0xfU)<<1))&2)
 #define __ac_isdel(flag, i) ((flag[i>>4]>>((i&0xfU)<<1))&1)
 #define __ac_iseither(flag, i) ((flag[i>>4]>>((i&0xfU)<<1))&3)
-#define __ac_set_isdel_false(flag, i) (flag[i>>4]&=~(1ul<<((i&0xfU)<<1)))
-#define __ac_set_isempty_false(flag, i) (flag[i>>4]&=~(2ul<<((i&0xfU)<<1)))
-#define __ac_set_isboth_false(flag, i) (flag[i>>4]&=~(3ul<<((i&0xfU)<<1)))
-#define __ac_set_isdel_true(flag, i) (flag[i>>4]|=1ul<<((i&0xfU)<<1))
+#define __ac_set_isdel_false(flag, i) (flag[i>>4]&=~(1U<<((i&0xfU)<<1)))
+#define __ac_set_isempty_false(flag, i) (flag[i>>4]&=~(2U<<((i&0xfU)<<1)))
+#define __ac_set_isboth_false(flag, i) (flag[i>>4]&=~(3U<<((i&0xfU)<<1)))
+#define __ac_set_isdel_true(flag, i) (flag[i>>4]|=1U<<((i&0xfU)<<1))
 
 #define __ac_fsize(m) ((m) < 16? 1 : (m)>>4)
 
@@ -399,7 +399,7 @@ static const double __ac_HASH_UPPER = 0.77;
 static kh_inline khint_t __ac_X31_hash_string(const char *s)
 {
 	khint_t h = (khint_t)*s;
-	if (h) for (++s ; *s; ++s) h = (h << 5) - h + (khint_t)*s;
+	if (h) for (++s ; *s; ++s) h = (khint_t)((h << 5) - h) + (khint_t)*s;
 	return h;
 }
 /*! @function
