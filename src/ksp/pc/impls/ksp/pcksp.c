@@ -48,6 +48,25 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCMatApply_KSP(PC pc,Mat X,Mat Y)
+{
+  PetscErrorCode     ierr;
+  PetscInt           its;
+  PC_KSP             *jac = (PC_KSP*)pc->data;
+
+  PetscFunctionBegin;
+  if (jac->ksp->presolve) {
+    ierr = MatCopy(X,Y,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPMatSolve(jac->ksp,Y,Y);CHKERRQ(ierr); /* TODO FIXME: this will fail since KSPMatSolve does not allow inplace solve yet */
+  } else {
+    ierr = KSPMatSolve(jac->ksp,X,Y);CHKERRQ(ierr);
+  }
+  ierr = KSPCheckSolve(jac->ksp,pc,NULL);CHKERRQ(ierr);
+  ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
+  jac->its += its;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 {
   PetscErrorCode     ierr;
@@ -271,6 +290,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
 
   ierr = PetscMemzero(pc->ops,sizeof(struct _PCOps));CHKERRQ(ierr);
   pc->ops->apply           = PCApply_KSP;
+  pc->ops->matapply        = PCMatApply_KSP;
   pc->ops->applytranspose  = PCApplyTranspose_KSP;
   pc->ops->setup           = PCSetUp_KSP;
   pc->ops->reset           = PCReset_KSP;

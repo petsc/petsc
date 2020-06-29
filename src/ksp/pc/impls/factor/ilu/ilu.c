@@ -203,6 +203,16 @@ static PetscErrorCode PCApply_ILU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCMatApply_ILU(PC pc,Mat X,Mat Y)
+{
+  PC_ILU         *ilu = (PC_ILU*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatSolve(((PC_Factor*)ilu)->fact,X,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
@@ -304,6 +314,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   pc->ops->reset               = PCReset_ILU;
   pc->ops->destroy             = PCDestroy_ILU;
   pc->ops->apply               = PCApply_ILU;
+  pc->ops->matapply            = PCMatApply_ILU;
   pc->ops->applytranspose      = PCApplyTranspose_ILU;
   pc->ops->setup               = PCSetUp_ILU;
   pc->ops->setfromoptions      = PCSetFromOptions_ILU;

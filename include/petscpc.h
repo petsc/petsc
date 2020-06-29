@@ -44,6 +44,7 @@ PETSC_EXTERN PetscErrorCode PCGetFailedReason(PC,PCFailedReason*);
 PETSC_DEPRECATED_FUNCTION("Use PCGetFailedReason() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode PCGetSetUpFailedReason(PC pc,PCFailedReason *reason) {return PCGetFailedReason(pc,reason);}
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
 PETSC_EXTERN PetscErrorCode PCApply(PC,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCMatApply(PC,Mat,Mat);
 PETSC_EXTERN PetscErrorCode PCApplySymmetricLeft(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplySymmetricRight(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
@@ -130,6 +131,7 @@ PETSC_EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,PetscInt,const PetscInt[]
 PETSC_EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,PetscInt*,const PetscInt*[]);
 
 PETSC_EXTERN PetscErrorCode PCShellSetApply(PC,PetscErrorCode (*)(PC,Vec,Vec));
+PETSC_EXTERN PetscErrorCode PCShellSetMatApply(PC,PetscErrorCode (*)(PC,Mat,Mat));
 PETSC_EXTERN PetscErrorCode PCShellSetApplySymmetricLeft(PC,PetscErrorCode (*)(PC,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplySymmetricRight(PC,PetscErrorCode (*)(PC,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyBA(PC,PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec));

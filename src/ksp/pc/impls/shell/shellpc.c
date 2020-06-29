@@ -12,6 +12,7 @@ typedef struct {
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*setup)(PC);
   PetscErrorCode (*apply)(PC,Vec,Vec);
+  PetscErrorCode (*matapply)(PC,Mat,Mat);
   PetscErrorCode (*applysymmetricleft)(PC,Vec,Vec);
   PetscErrorCode (*applysymmetricright)(PC,Vec,Vec);
   PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec);
@@ -117,6 +118,24 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   if (instate == outstate) {
     /* increase the state of the output vector since the user did not update its state themselve as should have been done */
     ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCMatApply_Shell(PC pc,Mat X,Mat Y)
+{
+  PC_Shell         *shell = (PC_Shell*)pc->data;
+  PetscErrorCode   ierr;
+  PetscObjectState instate,outstate;
+
+  PetscFunctionBegin;
+  if (!shell->matapply) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  ierr = PetscObjectStateGet((PetscObject)Y, &instate);CHKERRQ(ierr);
+  PetscStackCall("PCSHELL user function apply()",ierr = (*shell->matapply)(pc,X,Y);CHKERRQ(ierr));
+  ierr = PetscObjectStateGet((PetscObject)Y, &outstate);CHKERRQ(ierr);
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themselve as should have been done */
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -237,6 +256,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetDestroy_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetSetUp_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApply_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetMatApply_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplySymmetricLeft_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplySymmetricRight_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplyBA_C",NULL);CHKERRQ(ierr);
@@ -302,6 +322,15 @@ static PetscErrorCode  PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(PC,Ve
 
   PetscFunctionBegin;
   shell->apply = apply;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PCShellSetMatApply_Shell(PC pc,PetscErrorCode (*matapply)(PC,Mat,Mat))
+{
+  PC_Shell *shell = (PC_Shell*)pc->data;
+
+  PetscFunctionBegin;
+  shell->matapply = matapply;
   PetscFunctionReturn(0);
 }
 
@@ -551,6 +580,41 @@ PetscErrorCode  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscTryMethod(pc,"PCShellSetApply_C",(PC,PetscErrorCode (*)(PC,Vec,Vec)),(pc,apply));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PCShellSetApply - Sets routine to use as preconditioner on a block of vectors.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  apply - the application-provided preconditioning routine
+
+   Calling sequence of apply:
+.vb
+   PetscErrorCode apply (PC pc,Mat Xin,Mat Xout)
+.ve
+
++  pc - the preconditioner, get the application context with PCShellGetContext()
+.  Xin - input block of vectors
+-  Xout - output block of vectors
+
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
+
+   Level: developer
+
+.seealso: PCShellSetApply()
+@*/
+PetscErrorCode  PCShellSetMatApply(PC pc,PetscErrorCode (*matapply)(PC,Mat,Mat))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCShellSetMatApply_C",(PC,PetscErrorCode (*)(PC,Mat,Mat)),(pc,matapply));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -903,6 +967,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   pc->ops->destroy         = PCDestroy_Shell;
   pc->ops->view            = PCView_Shell;
   pc->ops->apply           = PCApply_Shell;
+  pc->ops->matapply        = PCMatApply_Shell;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_Shell;
   pc->ops->applysymmetricright = PCApplySymmetricRight_Shell;
   pc->ops->applytranspose  = NULL;
@@ -927,6 +992,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetDestroy_C",PCShellSetDestroy_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetSetUp_C",PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApply_C",PCShellSetApply_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetMatApply_C",PCShellSetMatApply_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplySymmetricLeft_C",PCShellSetApplySymmetricLeft_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplySymmetricRight_C",PCShellSetApplySymmetricRight_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplyBA_C",PCShellSetApplyBA_Shell);CHKERRQ(ierr);

@@ -85,6 +85,16 @@ static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCMatApply_ICC(PC pc,Mat X,Mat Y)
+{
+  PC_ICC         *icc = (PC_ICC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatSolve(((PC_Factor*)icc)->fact,X,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -184,6 +194,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   ((PC_Factor*)icc)->info.shifttype = (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE;
 
   pc->ops->apply               = PCApply_ICC;
+  pc->ops->matapply            = PCMatApply_ICC;
   pc->ops->applytranspose      = PCApply_ICC;
   pc->ops->setup               = PCSetUp_ICC;
   pc->ops->reset               = PCReset_ICC;

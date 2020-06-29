@@ -8,13 +8,14 @@
       use petscisdef
       implicit none
       Vec             x,b
-      Mat             A,aux
+      Mat             A,aux,Y,C
       KSP             ksp
       PC              pc
       IS              is,sizes
       PetscScalar     one
       PetscInt, pointer :: idx(:)
       PetscMPIInt     rank,size
+      PetscInt        m,N
       PetscViewer     viewer
       character*(128) dir,name
       character*(8)   fmt
@@ -32,6 +33,8 @@
         print *,'This example requires 4 processes'
         stop
       endif
+      N = 1
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-rhs',N,flg,ierr);CHKERRA(ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
       call MatCreate(PETSC_COMM_SELF,aux,ierr);CHKERRA(ierr)
@@ -81,8 +84,19 @@
       one = 1.0
       call VecSet(b,one,ierr);CHKERRA(ierr)
       call KSPSolve(ksp,b,x,ierr);CHKERRA(ierr)
+      call VecGetLocalSize(x,m,ierr);CHKERRA(ierr)
       call VecDestroy(x,ierr);CHKERRA(ierr)
       call VecDestroy(b,ierr);CHKERRA(ierr)
+      if (N .gt. 1) then
+        call PetscOptionsClearValue(PETSC_NULL_OPTIONS,'-ksp_converged_reason',ierr);CHKERRA(ierr)
+        call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
+        call MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,PETSC_NULL_SCALAR,C,ierr);CHKERRA(ierr)
+        call MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,PETSC_NULL_SCALAR,Y,ierr);CHKERRA(ierr)
+        call MatSetRandom(C,PETSC_NULL_RANDOM,ierr);CHKERRA(ierr)
+        call KSPMatSolve(ksp,C,Y,ierr);CHKERRA(ierr)
+        call MatDestroy(Y,ierr);CHKERRA(ierr)
+        call MatDestroy(C,ierr);CHKERRA(ierr)
+      endif
       call KSPDestroy(ksp,ierr);CHKERRA(ierr)
       call MatDestroy(A,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
@@ -116,5 +130,12 @@
 !      output_file: output/ex76_fgmres_geneo_20_p_2.out
 !      nsize: 4
 !      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_2_p 2 -pc_hpddm_levels_2_mat_type {{baij sbaij}shared output} -pc_hpddm_levels_2_eps_nev {{5 20}shared output} -pc_hpddm_levels_2_sub_pc_type cholesky -pc_hpddm_levels_2_ksp_type gmres -ksp_type fgmres -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
+!   # PCHPDDM + KSPHPDDM test to exercise multilevel + multiple RHS in one go
+!   test:
+!      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+!      suffix: fgmres_geneo_20_p_2_geneo_rhs
+!      output_file: output/ex76_fgmres_geneo_20_p_2.out
+!      nsize: 4
+!      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_2_p 2 -pc_hpddm_levels_2_mat_type baij -pc_hpddm_levels_2_eps_nev 5 -pc_hpddm_levels_2_sub_pc_type cholesky -pc_hpddm_levels_2_ksp_max_it 10 -pc_hpddm_levels_2_ksp_type hpddm -pc_hpddm_levels_2_ksp_hpddm_type gmres -ksp_type hpddm -ksp_hpddm_variant flexible -pc_hpddm_coarse_mat_type baij -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -rhs 4
 !
 !TEST*/
