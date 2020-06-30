@@ -1,6 +1,5 @@
 #include <petsc/private/petschpddm.h> /*I "petscksp.h" I*/
 /* access to same_local_solves */
-#include <../src/ksp/pc/impls/bjacobi/bjacobi.h>
 #include <../src/ksp/pc/impls/asm/asm.h>
 
 /* static array length */
@@ -140,8 +139,8 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
 #else
   data->op = new HPDDM::PETScOperator(ksp, n, 1);
 #endif
-  if (PetscUnlikely(!ksp->setfromoptionscalled)) { /* what follows is basically a copy/paste of KSPSetFromOptions_HPDDM, with no call to PetscOptions() */
-    ierr = PetscInfo(ksp, "KSPSetFromOptions() not called, hardwiring default KSPHPDDM options\n");CHKERRQ(ierr);
+  if (PetscUnlikely(!ksp->setfromoptionscalled || data->cntl[0] == static_cast<char>(PETSC_DECIDE))) { /* what follows is basically a copy/paste of KSPSetFromOptions_HPDDM, with no call to PetscOptions() */
+    ierr = PetscInfo(ksp, "KSPSetFromOptions() not called or uninitialized internal structure, hardwiring default KSPHPDDM options\n");CHKERRQ(ierr);
     if (data->cntl[0] == static_cast<char>(PETSC_DECIDE))
       data->cntl[0] = 0; /* GMRES by default */
     if (data->cntl[0] != 7) { /* following options do not matter with PREONLY */
@@ -242,6 +241,8 @@ PETSC_STATIC_INLINE PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscSc
       ierr = PetscInfo(ksp, "Using a special \"converged\" callback, be careful, it is used in KSPHPDDM to track blocks of residuals\n");CHKERRQ(ierr);
     }
   }
+  /* initial guess is always nonzero with recycling methods if there is a deflation subspace available */
+  if ((data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) && data->op->storage()) ksp->guess_zero = PETSC_FALSE;
   ksp->its = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   ierr = static_cast<PetscErrorCode>(HPDDM::IterativeMethod::solve(*data->op, b, x, n, PetscObjectComm((PetscObject)ksp)));CHKERRQ(ierr);
@@ -413,9 +414,9 @@ static PetscErrorCode KSPHPDDMGetDeflationSpace_HPDDM(KSP ksp, Mat *U)
     ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
     ierr = MatGetSize(A, &M1, NULL);CHKERRQ(ierr);
     ierr = MatCreateDense(PetscObjectComm((PetscObject)ksp), m1, PETSC_DECIDE, M1, N2, NULL, U);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(*U, &copy);CHKERRQ(ierr);
+    ierr = MatDenseGetArrayWrite(*U, &copy);CHKERRQ(ierr);
     ierr = PetscArraycpy(copy, array, m1 * N2);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(*U, &copy);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArrayWrite(*U, &copy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -424,7 +425,6 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
 {
   KSP_HPDDM            *data = (KSP_HPDDM*)ksp->data;
   PC                   pc;
-  PC_BJacobi           *bjacobi = NULL;
   PC_ASM               *osm = NULL;
   HPDDM::PETScOperator *op = data->op;
   Mat                  A;
@@ -447,30 +447,19 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   ierr = MatDenseGetLDA(X, &lda);CHKERRQ(ierr);
   if (n != lda) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Unhandled leading dimension lda = %D with n = %D", lda, n);
   ierr = MatDenseGetArrayRead(B, &b);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(X, &x);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayWrite(X, &x);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  /* in HPDDM, if BJacobi or ASM is used, a call to PC[BJacobi|ASM]GetSubKSP() is made   */
-  /* to know if there is a single subsolver and if it has a MatMatSolve() implementation */
-  ierr = PetscObjectTypeCompare((PetscObject)pc, PCBJACOBI, &same_local_solves);CHKERRQ(ierr);
+  /* in HPDDM, if PCASM is used, a call to PCASMGetSubKSP() is made to know if there is a single subsolver */
+  ierr = PetscObjectTypeCompare((PetscObject)pc, PCASM, &same_local_solves);CHKERRQ(ierr);
   if (same_local_solves) {
-    bjacobi = (PC_BJacobi*)pc->data;
-    same_local_solves = bjacobi->same_local_solves;
-  }
-  if (!bjacobi) {
-    ierr = PetscObjectTypeCompare((PetscObject)pc, PCASM, &same_local_solves);CHKERRQ(ierr);
-    if (same_local_solves) {
-      osm = (PC_ASM*)pc->data;
-      same_local_solves = osm->same_local_solves;
-    }
+    osm = (PC_ASM*)pc->data;
+    same_local_solves = osm->same_local_solves;
   }
   ierr = MatGetSize(X, NULL, &n);CHKERRQ(ierr);
   ierr = KSPSolve_HPDDM_Private(ksp, b, x, n);CHKERRQ(ierr);
   /* if the PetscBool same_local_solves is not reset after the solve, KSPView() is way too verbose */
-  if (same_local_solves) {
-    if (bjacobi) bjacobi->same_local_solves = PETSC_TRUE;
-    if (osm) osm->same_local_solves = PETSC_TRUE;
-  }
-  ierr = MatDenseRestoreArray(X, &x);CHKERRQ(ierr);
+  if (same_local_solves) osm->same_local_solves = PETSC_TRUE;
+  ierr = MatDenseRestoreArrayWrite(X, &x);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(B, &b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
