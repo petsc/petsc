@@ -930,7 +930,7 @@ static PetscErrorCode MatProductSymbolic_AtB_SeqAIJMKL_SeqAIJMKL(Mat C)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL(Mat A,Mat P,Mat C)
+PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A,Mat P,Mat C)
 {
   Mat                 Ct;
   Vec                 zeros;
@@ -944,7 +944,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   ierr = MatIsSymmetricKnown(A,&set,&flag);
-  if (!set || (set && !flag)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL() called on matrix A not marked as symmetric");
+  if (!set || (set && !flag)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal() called on matrix A not marked as symmetric");
 
   ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
   if (!a->sparse_optimized || a->state != state) {
@@ -1024,9 +1024,9 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat C)
 
   /* Update the I and J arrays of the PETSc AIJ representation for matrix C from contents of MKL handle.
    * Note that, because mkl_sparse_sypr() only computes one triangle of the symmetric matrix, this representation will only contain
-   * the upper triangle of the symmetric matrix. We fix this in MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL(). I believe that leaving things
-   * in this incomplete state is OK because the numeric product should follow soon after, but am not certain if this is
-   * guaranteed. */
+   * the upper triangle of the symmetric matrix. We fix this in MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(). I believe that
+   * leaving things in this incomplete state is OK because the numeric product should follow soon after, but am not certain if this
+   * is guaranteed. */
   ierr = MatSeqAIJMKL_setup_structure_from_mkl_handle(PETSC_COMM_SELF,csrC,P->cmap->N,P->cmap->N,C);CHKERRQ(ierr);
 
   C->ops->productnumeric = MatProductNumeric_PtAP;
@@ -1193,7 +1193,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->mattransposemultnumeric = MatMatTransposeMultNumeric_SeqAIJMKL_SeqAIJMKL;
   B->ops->transposematmultnumeric = MatTransposeMatMultNumeric_SeqAIJMKL_SeqAIJMKL;
 #   if !defined(PETSC_USE_COMPLEX)
-  B->ops->ptapnumeric             = MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL;
+  B->ops->ptapnumeric             = MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal;
 #   else
   B->ops->ptapnumeric             = NULL;
 #   endif
