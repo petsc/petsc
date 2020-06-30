@@ -222,4 +222,14 @@ int main(int argc,char **argv)
       requires: !single
       args: -mu 1e6
 
+    test:
+      requires: !single
+      suffix: 2
+      args: -implicitform false -ts_type rk -ts_rk_type 5dp -ts_adapt_type dsp
+
+    test:
+      requires: !single
+      suffix: 3
+      args: -implicitform false -ts_type rk -ts_rk_type 5dp -ts_adapt_type dsp -ts_adapt_dsp_filter H0312
+
 TEST*/
