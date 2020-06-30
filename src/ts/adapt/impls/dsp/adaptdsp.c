@@ -119,7 +119,7 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
     PetscReal b2 = dsp->kBeta[1];
     PetscReal b3 = dsp->kBeta[2];
     PetscReal a2 = dsp->Alpha[0];
-    PetscReal a3 = dsp->Alpha[0];
+    PetscReal a3 = dsp->Alpha[1];
 
     PetscReal ctr0;
     PetscReal ctr1 = dsp->cerror[0];
@@ -233,8 +233,8 @@ static struct FilterTab filterlist[] = {
   {"H312b",    8, {  1,  2,  1 }, {   3,  1 }},
   {"H312PID", 18, {  1,  2,  1 }, {   0,  0 }},
 
-  {"H0321",    4, {  5,  2,- 3 }, {  -1, -3 }},
-  {"H321",    18, {  6,  1,- 5 }, { -15, -3 }},
+  {"H0321",    4, {  5,  2, -3 }, {  -1, -3 }},
+  {"H321",    18, {  6,  1, -5 }, { -15, -3 }},
 };
 
 static PetscErrorCode TSAdaptDSPSetFilter_DSP(TSAdapt adapt,const char *name)
