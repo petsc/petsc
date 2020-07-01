@@ -187,7 +187,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
 #endif
 }
 
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 /* Take an already created but empty matrix and set up the nonzero structure from an MKL sparse matrix handle. */
 static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm,sparse_matrix_t csrA,PetscInt nrows,PetscInt ncols,Mat A)
 {
@@ -246,13 +246,12 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
   ierr = PetscObjectStateGet((PetscObject)A,&(aijmkl->state));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
-
+#endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
 
 /* MatSeqAIJMKL_update_from_mkl_handle() updates the matrix values array from the contents of the associated MKL sparse matrix handle.
  * This is needed after mkl_sparse_sp2m() with SPARSE_STAGE_FINALIZE_MULT has been used to compute new values of the matrix in 
  * MatMatMultNumeric(). */
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
 {
   PetscInt            i;
@@ -288,7 +287,7 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
   aijmkl->sparse_optimized = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
+#endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A,PetscViewer viewer)
