@@ -324,9 +324,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 
 /*TEST
 
-    build:
-      requires: c99
-
     test:
       args: -ts_exact_final_time INTERPOLATE -snes_rtol 1.e-3
 

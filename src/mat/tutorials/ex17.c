@@ -70,9 +70,6 @@ int main(int argc, char **args)
 
 /*TEST
 
-   build:
-      requires: c99
-
    test:
       nsize: 8
       args: -emptyranks 0,2,4 -bigranks 1,3,7 -mat_partitioning_type average

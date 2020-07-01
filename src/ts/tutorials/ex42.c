@@ -353,7 +353,7 @@ int main(int argc, char **argv)
 
 /*TEST
     build:
-      requires: !single !complex c99
+      requires: !single !complex
 
     test:
       args: -ts_max_steps 8

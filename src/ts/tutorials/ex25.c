@@ -298,9 +298,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 
 /*TEST
 
-    build:
-      requires: c99
-
     test:
       args: -nox -da_grid_x 20 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none
 
