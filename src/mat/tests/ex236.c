@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   ierr = VecSet(x,1.0);CHKERRQ(ierr);
 
   /*
-    Matirx A only has nonzeros in the diagonal block, which is of size 3x3.
+    Matrix A only has nonzeros in the diagonal block, which is of size 3x3.
     We do three successive assemblies on A. The first two have the same non-zero
     pattern but different values, and the third breaks the non-zero pattern. The
     first two assemblies have enough zero-rows that triggers compressed-row storage

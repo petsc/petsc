@@ -1760,6 +1760,7 @@ PETSC_EXTERN PetscLogEvent MAT_GetSequentialNonzeroStructure;
 PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyToGPU;
+PETSC_EXTERN PetscLogEvent MAT_CUSPARSEGenerateTranspose;
 PETSC_EXTERN PetscLogEvent MAT_SetValuesBatch;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_DenseCopyToGPU;
