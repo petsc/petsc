@@ -943,7 +943,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A,Mat P,Mat 
 
   PetscFunctionBegin;
   ierr = MatIsSymmetricKnown(A,&set,&flag);
-  if (!set || (set && !flag)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal() called on matrix A not marked as symmetric");
+  if (!set || (set && !flag)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal() called on matrix A not marked as symmetric");
 
   ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
   if (!a->sparse_optimized || a->state != state) {
