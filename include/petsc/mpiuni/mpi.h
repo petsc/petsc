@@ -861,7 +861,7 @@ typedef int MPI_Fint;
 #define MPI_Group_translate_ranks(group1,n,ranks1,group2,ranks2) \
      (MPIUNI_ARG(group1),\
       MPIUNI_ARG(group2),\
-      MPIUNI_Memcpy((ranks2),(ranks1),(n)*sizeof(int)))
+      MPIUNI_Memcpy((ranks2),(ranks1),(n)*MPI_sizeof(MPI_INT)))
 #define MPI_Group_compare(group1,group2,result) \
     (MPIUNI_ARG(group1),\
      MPIUNI_ARG(group2),\
@@ -919,7 +919,7 @@ typedef int MPI_Fint;
 #define MPI_Graph_map(comm,a,b,c,d) MPIUni_Abort(MPI_COMM_WORLD,0)
 
 #define MPI_Get_processor_name(name,result_len)                         \
-     (*(result_len) = 9,MPIUNI_Memcpy(name,"localhost",10*sizeof(char)))
+     (*(result_len) = 9,MPIUNI_Memcpy(name,"localhost",10*MPI_sizeof(MPI_CHAR)))
 #define MPI_Errhandler_create(function,errhandler) \
      (MPIUNI_ARG(function),\
       *(errhandler) = MPI_ERRORS_RETURN,\
@@ -938,7 +938,7 @@ typedef int MPI_Fint;
 #define MPI_Error_string(errorcode,string,result_len) \
      (MPIUNI_ARG(errorcode),\
       *(result_len) = 9,\
-      MPIUNI_Memcpy(string,"MPI error",10*sizeof(char)))
+      MPIUNI_Memcpy(string,"MPI error",10*MPI_sizeof(MPI_CHAR)))
 #define MPI_Error_class(errorcode,errorclass) \
      (*(errorclass) = errorcode, MPI_SUCCESS)
 #define MPI_Wtick() 1.0
