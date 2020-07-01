@@ -1522,7 +1522,7 @@ int main(int argc,char *argv[])
 /*TEST
 
     build:
-      requires: !complex c99
+      requires: !complex
 
     test:
       args: -da_grid_x 100 -initial 1 -xmin -2 -xmax 5 -exact -limit mc

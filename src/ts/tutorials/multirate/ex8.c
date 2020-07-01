@@ -1350,7 +1350,7 @@ int main(int argc,char *argv[])
 /*TEST
 
     build:
-      requires: !complex c99
+      requires: !complex
       depends: finitevolume1d.c
 
     test:

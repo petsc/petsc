@@ -131,7 +131,7 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
 /*TEST
 
    build:
-     requires: define(PETSC_USE_LOG) c99
+     requires: define(PETSC_USE_LOG)
 
    test:
      TODO: need to implement

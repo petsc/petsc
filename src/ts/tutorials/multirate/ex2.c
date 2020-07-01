@@ -203,7 +203,7 @@ int main(int argc,char **argv)
 
 /*TEST
     build:
-      requires: !complex c99
+      requires: !complex
 
     test:
 
