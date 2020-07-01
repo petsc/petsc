@@ -271,7 +271,8 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */
-  ierr = PetscFree6(gmres->hh_origin,gmres->hes_origin,gmres->rs_origin,gmres->cc_origin,gmres->ss_origin,gmres->hes_ritz);CHKERRQ(ierr);
+  ierr = PetscFree5(gmres->hh_origin,gmres->hes_origin,gmres->rs_origin,gmres->cc_origin,gmres->ss_origin);CHKERRQ(ierr);
+  ierr = PetscFree(gmres->hes_ritz);CHKERRQ(ierr);
 
   /* free work vectors */
   ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);
