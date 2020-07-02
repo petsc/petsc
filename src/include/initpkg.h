@@ -20,6 +20,7 @@ static PetscErrorCode PetscInitializePackageAll(void)
   ierr = SNESInitializePackage();CHKERRQ(ierr);
   ierr = TaoInitializePackage();CHKERRQ(ierr);
   ierr = TSInitializePackage();CHKERRQ(ierr);
+  ierr = PetscPartitionerInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscDSInitializePackage();CHKERRQ(ierr);
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);

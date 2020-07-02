@@ -1,11 +1,11 @@
 cdef extern from * nogil:
 
     ctypedef const char* PetscPartitionerType
-    PetscPartitionerType PETSCPARTITIONERCHACO
     PetscPartitionerType PETSCPARTITIONERPARMETIS
     PetscPartitionerType PETSCPARTITIONERPTSCOTCH
-    PetscPartitionerType PETSCPARTITIONERSHELL
+    PetscPartitionerType PETSCPARTITIONERCHACO
     PetscPartitionerType PETSCPARTITIONERSIMPLE
+    PetscPartitionerType PETSCPARTITIONERSHELL
     PetscPartitionerType PETSCPARTITIONERGATHER
     PetscPartitionerType PETSCPARTITIONERMATPARTITIONING
 
@@ -16,5 +16,6 @@ cdef extern from * nogil:
     int PetscPartitionerGetType(PetscPartitioner,PetscPartitionerType*)
     int PetscPartitionerSetFromOptions(PetscPartitioner)
     int PetscPartitionerSetUp(PetscPartitioner)
+    int PetscPartitionerReset(PetscPartitioner)
 
     int PetscPartitionerShellSetPartition(PetscPartitioner,PetscInt,PetscInt*,PetscInt*)

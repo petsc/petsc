@@ -1,11 +1,11 @@
 # --------------------------------------------------------------------
 
 class PartitionerType(object):
-    CHACO           = S_(PETSCPARTITIONERCHACO)
     PARMETIS        = S_(PETSCPARTITIONERPARMETIS)
     PTSCOTCH        = S_(PETSCPARTITIONERPTSCOTCH)
-    SHELL           = S_(PETSCPARTITIONERSHELL)
+    CHACO           = S_(PETSCPARTITIONERCHACO)
     SIMPLE          = S_(PETSCPARTITIONERSIMPLE)
+    SHELL           = S_(PETSCPARTITIONERSHELL)
     GATHER          = S_(PETSCPARTITIONERGATHER)
     MATPARTITIONING = S_(PETSCPARTITIONERMATPARTITIONING)
 
@@ -50,6 +50,9 @@ cdef class Partitioner(Object):
 
     def setUp(self):
         CHKERR( PetscPartitionerSetUp(self.part) )
+
+    def reset(self):
+        CHKERR( PetscPartitionerReset(self.part) )
 
     def setShellPartition(self, numProcs, sizes=None, points=None):
         cdef PetscInt cnumProcs = asInt(numProcs)
