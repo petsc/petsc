@@ -91,6 +91,11 @@ finally:
     args: -nparts {{1 2 3}separate output} -petscpartitioner_type simple -petscpartitioner_view -petscpartitioner_view_graph
 
   test:
+    suffix: gather
+    nsize: {{1 2 3}separate output}
+    args: -nparts {{1 2 3}separate output} -petscpartitioner_type gather -petscpartitioner_view -petscpartitioner_view_graph
+
+  test:
     requires: parmetis
     suffix: parmetis
     nsize: {{1 2 3}separate output}
