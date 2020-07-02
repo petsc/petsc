@@ -808,19 +808,27 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerGetDefaultType(const char *currentType, const char **defaultType)
+static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *currentType, const char **defaultType)
 {
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (!currentType) {
+    if (size == 1) {
+      *defaultType = PETSCPARTITIONERSIMPLE;
+    } else {
 #if defined(PETSC_HAVE_PARMETIS)
-    *defaultType = PETSCPARTITIONERPARMETIS;
+      *defaultType = PETSCPARTITIONERPARMETIS;
 #elif defined(PETSC_HAVE_PTSCOTCH)
-    *defaultType = PETSCPARTITIONERPTSCOTCH;
+      *defaultType = PETSCPARTITIONERPTSCOTCH;
 #elif defined(PETSC_HAVE_CHACO)
-    *defaultType = PETSCPARTITIONERCHACO;
+      *defaultType = PETSCPARTITIONERCHACO;
 #else
-    *defaultType = PETSCPARTITIONERSIMPLE;
+      *defaultType = PETSCPARTITIONERSIMPLE;
 #endif
+    }
   } else {
     *defaultType = currentType;
   }
@@ -853,7 +861,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  ierr = PetscPartitionerGetDefaultType(((PetscObject) part)->type_name,&defaultType);CHKERRQ(ierr);
+  ierr = PetscPartitionerGetDefaultType(((PetscObject) part)->comm, ((PetscObject) part)->type_name,&defaultType);CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, defaultType, name, sizeof(name), &flg);CHKERRQ(ierr);
   if (flg) {
@@ -1054,7 +1062,7 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   ierr = DMInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(p, PETSCPARTITIONER_CLASSID, "PetscPartitioner", "Graph Partitioner", "PetscPartitioner", comm, PetscPartitionerDestroy, PetscPartitionerView);CHKERRQ(ierr);
-  ierr = PetscPartitionerGetDefaultType(NULL,&partitionerType);CHKERRQ(ierr);
+  ierr = PetscPartitionerGetDefaultType(comm, NULL, &partitionerType);CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(p,partitionerType);CHKERRQ(ierr);
 
   p->edgeCut = 0;
