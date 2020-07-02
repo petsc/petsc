@@ -13,6 +13,7 @@ int main(int argc, char **argv)
   PetscInt         nv = 4;
   PetscInt         vv[5] = {0,2,4,6,8};
   PetscInt         vadj[8] = {3,1,0,2,1,3,2,0};
+  PetscBool        sequential;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -50,6 +51,9 @@ int main(int argc, char **argv)
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&partition);CHKERRQ(ierr);
 
+  ierr = PetscObjectTypeCompareAny((PetscObject)p,&sequential,PETSCPARTITIONERCHACO,NULL);CHKERRQ(ierr);
+  if (sequential) goto finally;
+
   /* test partitioning a graph on a subset of the processess only */
   if (rank%2) {
     ierr = PetscPartitionerPartition(p,npar,0,NULL,NULL,NULL,NULL,partSection,&partition);CHKERRQ(ierr);
@@ -72,6 +76,7 @@ int main(int argc, char **argv)
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&partition);CHKERRQ(ierr);
 
+finally:
   ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
   ierr = PetscPartitionerDestroy(&p);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -96,5 +101,12 @@ int main(int argc, char **argv)
     suffix: ptscotch
     nsize: {{1 2 3}separate output}
     args: -nparts {{1 2 3}separate output} -petscpartitioner_type ptscotch -petscpartitioner_view -petscpartitioner_view_graph
+
+  test:
+    TODO: broken
+    requires: chaco
+    suffix: chaco
+    nsize: {{1 2 3}separate output}
+    args: -nparts {{1 2 3}separate output} -petscpartitioner_type chaco -petscpartitioner_view -petscpartitioner_view_graph
 
 TEST*/
