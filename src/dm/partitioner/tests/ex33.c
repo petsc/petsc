@@ -1,6 +1,6 @@
 static char help[] = "Tests PetscPartitioner.\n\n";
 
-#include <petscdmplex.h>
+#include <petscpartitioner.h>
 
 int main(int argc, char **argv)
 {

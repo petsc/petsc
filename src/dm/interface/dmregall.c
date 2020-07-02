@@ -65,48 +65,9 @@ PetscErrorCode  DMRegisterAll(void)
 #endif
   ierr = DMRegister(DMPRODUCT,  DMCreate_Product);CHKERRQ(ierr);
   ierr = DMRegister(DMSTAG,     DMCreate_Stag);CHKERRQ(ierr);
-
-  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitioner);
-
-/*@C
-  PetscPartitionerRegisterAll - Registers all of the PetscPartitioner components in the DM package.
-
-  Not Collective
-
-  Input parameter:
-. path - The dynamic library path
-
-  Level: advanced
-
-.seealso:  PetscPartitionerRegister(), PetscPartitionerRegisterDestroy()
-@*/
-PetscErrorCode PetscPartitionerRegisterAll(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (PetscPartitionerRegisterAllCalled) PetscFunctionReturn(0);
-  PetscPartitionerRegisterAllCalled = PETSC_TRUE;
-
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERCHACO,    PetscPartitionerCreate_Chaco);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMetis);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERPTSCOTCH, PetscPartitionerCreate_PTScotch);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERSHELL,    PetscPartitionerCreate_Shell);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERSIMPLE,   PetscPartitionerCreate_Simple);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERGATHER,   PetscPartitionerCreate_Gather);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERMATPARTITIONING, PetscPartitionerCreate_MatPartitioning);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 #include <petscfe.h>     /*I  "petscfe.h"  I*/
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace);
