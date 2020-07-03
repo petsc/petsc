@@ -1477,28 +1477,52 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
-  PetscInt       k,j,m,n,M;
+  PetscInt       k,j,m = A->rmap->n, M = mat->lda, n = A->cmap->n;
   PetscScalar    *v,tmp;
 
   PetscFunctionBegin;
-  m = A->rmap->n; M = mat->lda; n = A->cmap->n;
-  if (reuse == MAT_INPLACE_MATRIX && m == n) { /* in place transpose */
-    ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
-    for (j=0; j<m; j++) {
-      for (k=0; k<j; k++) {
-        tmp        = v[j + k*M];
-        v[j + k*M] = v[k + j*M];
-        v[k + j*M] = tmp;
+  if (reuse == MAT_INPLACE_MATRIX) {
+    if (m == n) { /* in place transpose */
+      ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
+      for (j=0; j<m; j++) {
+        for (k=0; k<j; k++) {
+          tmp        = v[j + k*M];
+          v[j + k*M] = v[k + j*M];
+          v[k + j*M] = tmp;
+        }
       }
+      ierr = MatDenseRestoreArray(A,&v);CHKERRQ(ierr);
+    } else { /* reuse memory, temporary allocates new memory */
+      PetscScalar *v2;
+      PetscLayout tmplayout;
+
+      ierr = PetscMalloc1((size_t)m*n,&v2);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
+      for (j=0; j<n; j++) {
+        for (k=0; k<m; k++) v2[j + (size_t)k*n] = v[k + (size_t)j*M];
+      }
+      ierr = PetscArraycpy(v,v2,(size_t)m*n);CHKERRQ(ierr);
+      ierr = PetscFree(v2);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArray(A,&v);CHKERRQ(ierr);
+      /* cleanup size dependent quantities */
+      ierr = VecDestroy(&mat->cvec);CHKERRQ(ierr);
+      ierr = MatDestroy(&mat->cmat);CHKERRQ(ierr);
+      ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
+      ierr = PetscFree(mat->fwork);CHKERRQ(ierr);
+      ierr = MatDestroy(&mat->ptapwork);CHKERRQ(ierr);
+      /* swap row/col layouts */
+      mat->lda  = n;
+      tmplayout = A->rmap;
+      A->rmap   = A->cmap;
+      A->cmap   = tmplayout;
     }
-    ierr = MatDenseRestoreArray(A,&v);CHKERRQ(ierr);
   } else { /* out-of-place transpose */
     Mat          tmat;
     Mat_SeqDense *tmatd;
     PetscScalar  *v2;
     PetscInt     M2;
 
-    if (reuse != MAT_REUSE_MATRIX) {
+    if (reuse == MAT_INITIAL_MATRIX) {
       ierr = MatCreate(PetscObjectComm((PetscObject)A),&tmat);CHKERRQ(ierr);
       ierr = MatSetSizes(tmat,A->cmap->n,A->rmap->n,A->cmap->n,A->rmap->n);CHKERRQ(ierr);
       ierr = MatSetType(tmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -1516,10 +1540,7 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
     ierr = MatDenseRestoreArrayRead(A,(const PetscScalar**)&v);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) *matout = tmat;
-    else {
-      ierr = MatHeaderMerge(A,&tmat);CHKERRQ(ierr);
-    }
+    *matout = tmat;
   }
   PetscFunctionReturn(0);
 }
