@@ -406,7 +406,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def filterPreprocessOutput(self,output, log = None):
     if log is None: log = self.log
-    log.write("Preprocess stderr before filtering:"+output+":\n")
+    log.write("Preprocess stderr before filtering:\n"+output+":\n")
     # Another PGI license warning, multiline so have to discard all
     if output.find('your evaluation license will expire') > -1 and output.lower().find('error') == -1:
       output = ''
@@ -422,8 +422,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = [s for s in lines if s.find('INFO: linux target') < 0]
     # Lahey/Fujitsu
     lines = [s for s in lines if s.find('Encountered 0 errors') < 0]
-    output = reduce(lambda s, t: s+t, lines, '')
-    log.write("Preprocess stderr after filtering:"+output+":\n")
+    # Cray GPU system at Nersc
+    lines = [s for s in lines if s.find('No supported cpu target is set, CRAY_CPU_TARGET=x86-64 will be used.') < 0]
+    lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
+    # pgi dumps filename on stderr - but returns 0 errorcode'
+    lines = [s for s in lines if lines != 'conftest.c:']
+    if lines: output = reduce(lambda s, t: s+t, lines, '\n')
+    else: output = ''
+    log.write("Preprocess stderr after filtering:\n"+output+":\n")
     return output
 
   def filterCompileOutput(self, output):
@@ -438,6 +444,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     elif self.argDB['ignoreCompileOutput']:
       output = ''
     elif output:
+      log.write("Compiler stderr before filtering:\n"+output+":\n")
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
         # EXCEPT warnings that those bastards say we want
@@ -464,7 +471,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('Successful compile:') < 0]
       # Lahey/Fujitsu
       lines = [s for s in lines if s.find('Encountered 0 errors') < 0]
-      output = reduce(lambda s, t: s+t, lines, '')
+      # Cray GPU system at Nersc
+      lines = [s for s in lines if s.find('No supported cpu target is set, CRAY_CPU_TARGET=x86-64 will be used.') < 0]
+      lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
+      # pgi dumps filename on stderr - but returns 0 errorcode'
+      lines = [s for s in lines if lines != 'conftest.c:']
+      if lines: output = reduce(lambda s, t: s+t, lines, '\n')
+      else: output = ''
+      log.write("Compiler stderr after filtering:\n"+output+":\n")
     return output
 
   def filterLinkOutput(self, output):
@@ -472,9 +486,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     elif self.argDB['ignoreLinkOutput']:
       output = ''
     elif output:
-      hasIbmCrap = output.find('in statically linked applications requires at runtime the shared libraries from the glibc version used for linking') >= 0
+      log.write("Linker stderr before filtering:\n"+output+":\n")
+      hasIbmstuff = output.find('in statically linked applications requires at runtime the shared libraries from the glibc version used for linking') >= 0
       lines = output.splitlines()
-      if self.argDB['ignoreWarnings'] and not hasIbmCrap:
+      if self.argDB['ignoreWarnings'] and not hasIbmstuff:
         lines = [s for s in lines if not self.warningRE.search(s)]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
@@ -483,7 +498,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('INFO: linux target') < 0]
       # Lahey/Fujitsu
       lines = [s for s in lines if s.find('Encountered 0 errors') < 0]
-      output = reduce(lambda s, t: s+t, lines, '')
+      # Cray GPU system at Nersc
+      lines = [s for s in lines if s.find('No supported cpu target is set, CRAY_CPU_TARGET=x86-64 will be used.') < 0]
+      lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
+      # pgi dumps filename on stderr - but returns 0 errorcode'
+      lines = [s for s in lines if lines != 'conftest.c:']
+      if lines: output = reduce(lambda s, t: s+t, lines, '\n')
+      else: output = ''
+      log.write("Linker stderr after filtering:\n"+output+":\n")
     return output
 
   ###############################################

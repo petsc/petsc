@@ -661,8 +661,7 @@ PetscErrorCode  VecGetSize(Vec x,PetscInt *size)
 
 /*@
    VecGetLocalSize - Returns the number of elements of the vector stored
-   in local memory. This routine may be implementation dependent, so use
-   with care.
+   in local memory.
 
    Not Collective
 
