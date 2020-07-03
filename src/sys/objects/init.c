@@ -358,7 +358,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   PetscInt          intensity;
   int               i;
   PetscMPIInt       rank;
-  char              version[256],helpoptions[256];
+  char              version[256];
 #if defined(PETSC_USE_LOG)
   char              mname[PETSC_MAX_PATH_LEN];
   PetscViewerFormat format;
@@ -460,9 +460,8 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   /*
       Print the PETSc version information
   */
-  ierr = PetscOptionsHasName(NULL,NULL,"-v",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-version",&flg2);CHKERRQ(ierr);
-  if (flg1 || flg2 || hasHelp) {
+  ierr = PetscOptionsHasName(NULL,NULL,"-version",&flg1);CHKERRQ(ierr);
+  if (flg1 || hasHelp) {
     /*
        Print "higher-level" package version message
     */
@@ -484,15 +483,13 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
        Print "higher-level" package help message
   */
   if (hasHelp) {
+    PetscBool hasHelpIntro;
+
     if (PetscExternalHelpFunction) {
       ierr = (*PetscExternalHelpFunction)(comm);CHKERRQ(ierr);
     }
-  }
-
-  ierr = PetscOptionsGetString(NULL,NULL,"-help",helpoptions,sizeof(helpoptions),&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscStrcmp(helpoptions,"intro",&flg2);CHKERRQ(ierr);
-    if (flg2) {
+    ierr = PetscOptionsHasHelpIntro_Internal(NULL,&hasHelpIntro);CHKERRQ(ierr);
+    if (hasHelpIntro) {
       ierr = PetscOptionsDestroyDefault();CHKERRQ(ierr);
       ierr = PetscFreeMPIResources();CHKERRQ(ierr);
       ierr = MPI_Finalize();CHKERRQ(ierr);
@@ -715,7 +712,9 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   */
   if (hasHelp) {
     ierr = (*PetscHelpPrintf)(comm,"Options for all PETSc programs:\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -help: prints help method for each option\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -version: prints PETSc version\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -help intro: prints example description and PETSc version, and exits\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -help: prints example description, PETSc version, and available options for used routines\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -on_error_abort: cause an abort when an error is detected. Useful \n ");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"       only when run in the debugger\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]\n");CHKERRQ(ierr);
@@ -759,7 +758,6 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
 #if defined(PETSC_USE_INFO)
     ierr = (*PetscHelpPrintf)(comm," -info [filename][:[~]<list,of,classnames>[:[~]self]]: print verbose information\n");CHKERRQ(ierr);
 #endif
-    ierr = (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_monitor: monitor options to standard output, including that set previously e.g. in option files\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_monitor_cancel: cancels all hardwired option monitors\n");CHKERRQ(ierr);
