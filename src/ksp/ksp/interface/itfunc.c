@@ -997,6 +997,9 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of solutions not stored in a dense Mat");
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->ops->matsolve) {
+    if (ksp->guess_zero) {
+      ierr = MatZeroEntries(X);CHKERRQ(ierr);
+    }
     ierr = PetscLogEventBegin(KSP_MatSolve, ksp, B, X, 0);CHKERRQ(ierr);
     ierr = KSPGetMatSolveBlockSize(ksp, &Bbn);CHKERRQ(ierr);
     /* by default, do a single solve with all columns */
