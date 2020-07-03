@@ -291,10 +291,10 @@ int main(int argc,char **args)
   if (local) {
     PetscInt i;
 
-    ierr = PetscMalloc1(PetscMax((m+ldx)*K,1),&dataX);CHKERRQ(ierr);
-    ierr = PetscMalloc1(PetscMax((n+ldb)*K,1),&dataB);CHKERRQ(ierr);
-    for (i=0;i<PetscMax((m+ldx)*K,1);i++) dataX[i] = MAGIC_NUMBER;
-    for (i=0;i<PetscMax((n+ldb)*K,1);i++) dataB[i] = MAGIC_NUMBER;
+    ierr = PetscMalloc1((m+ldx)*K,&dataX);CHKERRQ(ierr);
+    ierr = PetscMalloc1((n+ldb)*K,&dataB);CHKERRQ(ierr);
+    for (i=0;i<(m+ldx)*K;i++) dataX[i] = MAGIC_NUMBER;
+    for (i=0;i<(n+ldb)*K;i++) dataB[i] = MAGIC_NUMBER;
   }
   ierr = MatCreateDense(PETSC_COMM_WORLD,n,PETSC_DECIDE,N,K,dataB,&B);CHKERRQ(ierr);
   ierr = MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,M,K,dataX,&X);CHKERRQ(ierr);
@@ -306,8 +306,8 @@ int main(int argc,char **args)
   if (local) {
     PetscInt i;
 
-    ierr = PetscMalloc1(PetscMax((k+ldr)*N,1),&dataBt);CHKERRQ(ierr);
-    for (i=0;i<PetscMax((k+ldr)*N,1);i++) dataBt[i] = MAGIC_NUMBER;
+    ierr = PetscMalloc1((k+ldr)*N,&dataBt);CHKERRQ(ierr);
+    for (i=0;i<(k+ldr)*N;i++) dataBt[i] = MAGIC_NUMBER;
   }
   ierr = MatCreateDense(PETSC_COMM_WORLD,k,n,K,N,dataBt,&Bt);CHKERRQ(ierr);
   if (local) {
@@ -423,7 +423,7 @@ int main(int argc,char **args)
       ierr = MatDestroy(&T2);CHKERRQ(ierr);
       ierr = MatDestroy(&T);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc1(PetscMax((k+ldr)*M,1),&dataR);CHKERRQ(ierr);
+    ierr = PetscMalloc1((k+ldr)*M,&dataR);CHKERRQ(ierr);
     ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,m,K,M,dataR,&R);CHKERRQ(ierr);
     ierr = MatDenseSetLDA(R,k+ldr);CHKERRQ(ierr);
     ierr = MatSetRandom(R,NULL);CHKERRQ(ierr);
@@ -792,14 +792,7 @@ int main(int argc,char **args)
     output_file: output/ex70_1.out
     suffix: 5
     nsize: {{2 4}}
-    args: -M 3 -N 3 -K 3 -local 1 -testcircular -testmatmatt 0
-
-  test:
-    TODO: MatCreateDense broken with some processors not having local rows
-    output_file: output/ex70_1.out
-    suffix: 5_broken
-    nsize: {{2 4}}
-    args: -M 3 -N 3 -K 3 -local 0 -testcircular -testtranspose 0
+    args: -M 3 -N 3 -K 3 -local {{0 1}} -testcircular -testmatmatt 0
 
   test:
     output_file: output/ex70_1.out
