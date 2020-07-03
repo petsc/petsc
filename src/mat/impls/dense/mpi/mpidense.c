@@ -1387,7 +1387,7 @@ M*/
 /*@C
    MatMPIDenseSetPreallocation - Sets the array used to store the matrix entries
 
-   Not collective
+   Collective
 
    Input Parameters:
 .  B - the matrix
@@ -1508,13 +1508,15 @@ PetscErrorCode  MatCreateDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  PetscValidLogicalCollectiveBool(*A,!!data,6);
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
+    PetscBool havedata = (PetscBool)!!data;
+
     ierr = MatSetType(*A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(*A,data);CHKERRQ(ierr);
-    if (data) {  /* user provided data array, so no need to assemble */
+    ierr = MPIU_Allreduce(MPI_IN_PLACE,&havedata,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+    if (havedata) {  /* user provided data array, so no need to assemble */
       ierr = MatSetUpMultiply_MPIDense(*A);CHKERRQ(ierr);
       (*A)->assembled = PETSC_TRUE;
     }
