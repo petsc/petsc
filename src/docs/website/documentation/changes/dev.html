@@ -192,6 +192,8 @@
           <li>Add DMPlexGet/SetActivePoint() to allow user to see which mesh point is being handled by projection</li>
           <li>Add DMPlexComputeOrthogonalQuality() to compute cell-wise orthogonality quality mesh statistic</li>
           <li>DMPlexSetClosurePermutationTensor() now sets tensor permutations at every depth, instead of just height 0.</li>
+          <li>Add DMComputeExactSolution() which uses PetscDS information</li>
+          <li>DMSNESCheckFromOptions() and DMTSCheckFromOptions() now gets exact solution from PetscDS</li>
         </ul>
       <h4>DT:</h4>
         <ul>

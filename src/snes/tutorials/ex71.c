@@ -394,7 +394,7 @@ int main(int argc, char **argv)
     ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
     ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
   }
-  ierr = DMSNESCheckFromOptions(snes, u, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions(snes, u);CHKERRQ(ierr);
   ierr = VecSet(u, 0.0);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Solution");CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);

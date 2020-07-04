@@ -55,7 +55,6 @@ typedef struct {
   char           filename[2048];    /* The optional ExodusII file */
   /* Problem definition */
   PetscBool      useFV;             /* Use a finite volume scheme for advection */
-  PetscErrorCode (*exactFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   VelocityDistribution velocityDist;
   PorosityDistribution porosityDist;
@@ -668,6 +667,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupBC(DM dm, AppCtx *user)
 {
+  PetscErrorCode (*exactFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   PetscDS        prob;
   DMLabel        label;
   PetscBool      check;
@@ -676,63 +676,72 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   /* Set initial guesses and exact solutions */
   switch (user->dim) {
-  case 2:
-    user->initialGuess[0] = initialVelocity;
-    switch(user->porosityDist) {
-    case ZERO:     user->initialGuess[1] = zero_phi;break;
-    case CONSTANT: user->initialGuess[1] = constant_phi;break;
-    case GAUSSIAN: user->initialGuess[1] = gaussian_phi_2d;break;
-    case DELTA:    user->initialGuess[1] = delta_phi_2d;break;
-    case TILTED:
-      if (user->velocityDist == VEL_ZERO) user->initialGuess[1] = tilted_phi_2d;
-      else                                user->initialGuess[1] = tilted_phi_coupled_2d;
-      break;
-    }
-    user->exactFuncs[1] = user->initialGuess[1];
-    switch (user->velocityDist) {
-    case VEL_ZERO:
-      user->exactFuncs[0] = zero_u_2d; break;
-    case VEL_CONSTANT:
-      user->exactFuncs[0] = constant_u_2d; break;
-    case VEL_HARMONIC:
-      switch (user->bd[0]) {
-      case DM_BOUNDARY_PERIODIC:
-        switch (user->bd[1]) {
-        case DM_BOUNDARY_PERIODIC:
-          user->exactFuncs[0] = doubly_periodic_u_2d; break;
-        default:
-          user->exactFuncs[0] = periodic_u_2d; break;
-        }
+    case 2:
+      user->initialGuess[0] = initialVelocity;
+      switch(user->porosityDist) {
+        case ZERO:     user->initialGuess[1] = zero_phi;break;
+        case CONSTANT: user->initialGuess[1] = constant_phi;break;
+        case GAUSSIAN: user->initialGuess[1] = gaussian_phi_2d;break;
+        case DELTA:    user->initialGuess[1] = delta_phi_2d;break;
+        case TILTED:
+        if (user->velocityDist == VEL_ZERO) user->initialGuess[1] = tilted_phi_2d;
+        else                                user->initialGuess[1] = tilted_phi_coupled_2d;
         break;
-      default:
-        user->exactFuncs[0] = quadratic_u_2d; break;
       }
       break;
-    case VEL_SHEAR:
-      user->exactFuncs[0] = shear_bc; break;
+    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", user->dim);
+  }
+  exactFuncs[0] = user->initialGuess[0];
+  exactFuncs[1] = user->initialGuess[1];
+  switch (user->dim) {
+    case 2:
+      switch (user->velocityDist) {
+        case VEL_ZERO:
+          exactFuncs[0] = zero_u_2d; break;
+        case VEL_CONSTANT:
+          exactFuncs[0] = constant_u_2d; break;
+        case VEL_HARMONIC:
+          switch (user->bd[0]) {
+            case DM_BOUNDARY_PERIODIC:
+              switch (user->bd[1]) {
+                case DM_BOUNDARY_PERIODIC:
+                  exactFuncs[0] = doubly_periodic_u_2d; break;
+                default:
+                  exactFuncs[0] = periodic_u_2d; break;
+              }
+              break;
+            default:
+              exactFuncs[0] = quadratic_u_2d; break;
+          }
+          break;
+        case VEL_SHEAR:
+          exactFuncs[0] = shear_bc; break;
+          break;
+        default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+      }
       break;
-    default:
-      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
-    }
+    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", user->dim);
   }
   {
     PetscBool isImplicit = PETSC_FALSE;
 
     ierr = PetscOptionsHasName(NULL,"", "-use_implicit", &isImplicit);CHKERRQ(ierr);
-    if (user->velocityDist == VEL_CONSTANT && !isImplicit) user->initialGuess[0] = user->exactFuncs[0];
+    if (user->velocityDist == VEL_CONSTANT && !isImplicit) user->initialGuess[0] = exactFuncs[0];
   }
   ierr = PetscOptionsHasName(NULL,NULL, "-dmts_check", &check);CHKERRQ(ierr);
   if (check) {
-    user->initialGuess[0] = user->exactFuncs[0];
-    user->initialGuess[1] = user->exactFuncs[1];
+    user->initialGuess[0] = exactFuncs[0];
+    user->initialGuess[1] = exactFuncs[1];
   }
   /* Set BC */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 0, exactFuncs[0], user);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 1, exactFuncs[1], user);CHKERRQ(ierr);
   if (label) {
     const PetscInt id = 1;
 
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   }
   ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (label && user->useFV) {
@@ -1114,16 +1123,15 @@ int main(int argc, char **argv)
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = DMProjectFunction(dm, 0.0, user.initialGuess, ctxs, INSERT_VALUES, u);CHKERRQ(ierr);
   if (user.useFV) {ierr = SetInitialConditionFVM(dm, u, 1, user.initialGuess[1], ctxs[1]);CHKERRQ(ierr);}
   ierr = VecViewFromOptions(u, NULL, "-init_vec_view");CHKERRQ(ierr);
   ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
   t0   = t;
-  ierr = DMTSCheckFromOptions(ts, u, user.exactFuncs, ctxs);CHKERRQ(ierr);
+  ierr = DMTSCheckFromOptions(ts, u);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
-  if (t > t0) {ierr = DMTSCheckFromOptions(ts, u, user.exactFuncs, ctxs);CHKERRQ(ierr);}
+  if (t > t0) {ierr = DMTSCheckFromOptions(ts, u);CHKERRQ(ierr);}
   ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
   {
     PetscReal ftime;

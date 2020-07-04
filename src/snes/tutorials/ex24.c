@@ -368,7 +368,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) u, "potential");CHKERRQ(ierr);
   ierr = DMPlexSetSNESLocalFEM(dm, &user, &user, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions(snes, u, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions(snes, u);CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-potential_view");CHKERRQ(ierr);

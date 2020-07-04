@@ -257,13 +257,13 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
 
   Input Parameters:
 + ts - the TS object
-. u    - representative TS vector
-. exactFuncs - pointwise functions of the exact solution for each field
-- ctxs - contexts for the functions
+- u  - representative TS vector
+
+  Note: The user must call PetscDSSetExactSolution() beforehand
 
   Level: developer
 @*/
-PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
+PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u)
 {
   DM             dm;
   SNES           snes;
@@ -281,7 +281,7 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
   ierr = SNESSetSolution(snes, u);CHKERRQ(ierr);
-  ierr = DMSNESCheck_Internal(snes, dm, sol, exactFuncs, ctxs);CHKERRQ(ierr);
+  ierr = DMSNESCheck_Internal(snes, dm, sol);CHKERRQ(ierr);
   ierr = VecDestroy(&sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
