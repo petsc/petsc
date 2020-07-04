@@ -1992,6 +1992,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       apa[col] = 0.0;
     }
   }
+  /* We have modified the contents of local matrix AP_loc and must increase its ObjectState, since we are not doing AssemblyBegin/End on it. */
+  ierr = PetscObjectStateIncrease((PetscObject)AP_loc);CHKERRQ(ierr);
 
   /* 3) C_loc = Rd*AP_loc, C_oth = Ro*AP_loc */
   ierr = ((ptap->C_loc)->ops->matmultnumeric)(ptap->Rd,AP_loc,ptap->C_loc);CHKERRQ(ierr);
