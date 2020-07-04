@@ -4,7 +4,7 @@
 static PetscErrorCode PCSetUp_ICC(PC pc)
 {
   PC_ICC                 *icc = (PC_ICC*)pc->data;
-  IS                     perm,cperm;
+  IS                     perm = NULL,cperm = NULL;
   PetscErrorCode         ierr;
   MatInfo                info;
   MatSolverType          stype;
@@ -12,17 +12,26 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
 
   PetscFunctionBegin;
   pc->failedreason = PC_NOERROR;
-  ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
 
   ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (!pc->setupcalled) {
     if (!((PC_Factor*)icc)->fact) {
+      PetscBool useordering;
       ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+      ierr = MatFactorGetUseOrdering(((PC_Factor*)icc)->fact,&useordering);CHKERRQ(ierr);
+      if (useordering) {
+        ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
+      }
     }
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
+    PetscBool useordering;
     ierr = MatDestroy(&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
     ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+    ierr = MatFactorGetUseOrdering(((PC_Factor*)icc)->fact,&useordering);CHKERRQ(ierr);
+    if (useordering) {
+      ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
+    }
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   }
   ierr                = MatGetInfo(((PC_Factor*)icc)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);

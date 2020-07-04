@@ -132,6 +132,7 @@ $      MATORDERINGND - Nested Dissection
 $      MATORDERING1WD - One-way Dissection
 $      MATORDERINGRCM - Reverse Cuthill-McKee
 $      MATORDERINGQMD - Quotient Minimum Degree
+$      MATORDERINGEXTERNAL - Use an ordering internal to the factorzation package and do not compute or use PETSc's
 
    Output Parameters:
 +  rperm - row permutation indices
@@ -152,9 +153,10 @@ $      MATORDERINGQMD - Quotient Minimum Degree
 
    These are generally only implemented for sequential sparse matrices.
 
-   The external packages that PETSc can use for direct factorization such as SuperLU do not accept orderings provided by
+   Some external packages that PETSc can use for direct factorization such as SuperLU do not accept orderings provided by
    this call.
 
+   If MATORDERINGEXTERNAL is used then PETSc does not compute an ordering and utilizes one built into the factorization package
 
            fill, reordering, natural, Nested Dissection,
            One-way Dissection, Cholesky, Reverse Cuthill-McKee,
@@ -175,6 +177,13 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   PetscValidPointer(cperm,4);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+
+  ierr = PetscStrcmp(type,MATORDERINGEXTERNAL,&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    *rperm = NULL;
+    *cperm = NULL;
+    PetscFunctionReturn(0);
+  }
 
   ierr = PetscStrcmp(type,MATORDERINGNATURAL_OR_ND,&flg1);CHKERRQ(ierr);
   if (flg1) {
