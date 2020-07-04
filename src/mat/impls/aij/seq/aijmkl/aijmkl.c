@@ -162,7 +162,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
   aa   = a->a;  /* Nonzero elements stored row-by-row. */
   ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
-  if ((a->nz!=0) & !(A->structure_only)) {
+  if ((a->nz!=0) && aa && !(A->structure_only)) {
     /* Create a new, optimized sparse matrix handle only if the matrix has nonzero entries.
      * The MKL sparse-inspector executor routines don't like being passed an empty matrix. */
     stat = mkl_sparse_x_create_csr(&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,m,n,ai,ai+1,aj,aa);
