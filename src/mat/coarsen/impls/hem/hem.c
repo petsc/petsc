@@ -214,7 +214,7 @@ PetscErrorCode PetscCDPrint(const PetscCoarsenData *ail, MPI_Comm comm)
     n  = ail->array[ii];
     if (n) {ierr = PetscPrintf(comm,"[%d]%s list %d:\n",rank,PETSC_FUNCTION_NAME,ii);CHKERRQ(ierr);}
     while (n) {
-      PetscPrintf(comm,"\t[%d] %D) id %D\n",rank,++kk,n->gid);
+      ierr = PetscPrintf(comm,"\t[%d] %D) id %D\n",rank,++kk,n->gid);CHKERRQ(ierr);
       n = n->next;
     }
   }

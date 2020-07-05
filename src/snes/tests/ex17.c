@@ -70,7 +70,7 @@ static PetscErrorCode assembled_system(void)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-  PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Assembled system =========================\n\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Assembled system =========================\n\n");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Create nonlinear solver context
@@ -160,7 +160,6 @@ static PetscErrorCode assembled_system(void)
     ierr = SNESGetFunction(snes,&f,0,0);CHKERRQ(ierr);
     ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -334,7 +333,7 @@ static PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   PetscFunctionReturn(0);
 }
 
-static int block_system(void)
+static PetscErrorCode block_system(void)
 {
   SNES           snes;         /* nonlinear solver context */
   KSP            ksp;         /* linear solver context */
@@ -346,14 +345,14 @@ static int block_system(void)
   PetscScalar    pfive = .5;
   PetscBool      flg;
 
-  Mat j11, j12, j21, j22;
-  Vec x1, x2, r1, r2;
-  Vec bv;
-  Vec bx[2];
-  Mat bA[2][2];
+  Mat            j11, j12, j21, j22;
+  Vec            x1, x2, r1, r2;
+  Vec            bv;
+  Vec            bx[2];
+  Mat            bA[2][2];
 
   PetscFunctionBeginUser;
-  PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Block system =========================\n\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Block system =========================\n\n");CHKERRQ(ierr);
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 

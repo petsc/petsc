@@ -162,7 +162,7 @@ int main(int argc,char **argv)
   PetscScalar    cloudTemp;      /* temperature at base of cloud */
   AppCtx         user;           /*  user-defined work context */
   MonitorCtx     usermonitor;    /* user-defined monitor context */
-  PetscMPIInt    rank,size;
+  PetscMPIInt    size;
   TS             ts;
   SNES           snes;
   DM             da;
@@ -176,7 +176,6 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Inputs */
   readinput(&put);
@@ -187,7 +186,7 @@ int main(int argc,char **argv)
   airtemp   = put.Ta;
   pwat      = put.pwt;
 
-  if (!rank) PetscPrintf(PETSC_COMM_SELF,"Initial Temperature = %g\n",(double)sfctemp); /* input surface temperature */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Initial Temperature = %g\n",(double)sfctemp);CHKERRQ(ierr); /* input surface temperature */
 
   deep_grnd_temp = sfctemp - 10;   /* set underlying ground layer temperature */
   emma           = emission(pwat); /* accounts for radiative effects of water vapor */
@@ -211,7 +210,7 @@ int main(int argc,char **argv)
   mixratio = calcmixingr(sfctemp,pressure1);
   rh       = (x/mixratio)*100;
 
-  if (!rank) printf("Initial RH = %.1f percent\n\n",(double)rh);   /* prints initial relative humidity */
+  ierr = PetscPrintf(MPI_COMM_WORLD,"Initial RH = %.1f percent\n\n",(double)rh);CHKERRQ(ierr);   /* prints initial relative humidity */
 
   time = 3600*put.time;                         /* sets amount of timesteps to run model */
 
@@ -294,7 +293,7 @@ int main(int argc,char **argv)
   ierr  = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP*time;
-  if (!rank) printf("time %d, ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt);
+  ierr = PetscPrintf(MPI_COMM_WORLD,"time %d, ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt);CHKERRQ(ierr);
 
   ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetMaxSteps(ts,time);CHKERRQ(ierr);
@@ -314,7 +313,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,T);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
-  if (!rank) PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",(double)(ftime/3600),steps);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",(double)(ftime/3600),steps);CHKERRQ(ierr);
 
 
   if (matfdcoloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
@@ -718,16 +717,14 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
   const PetscScalar *array;
   MonitorCtx        *user  = (MonitorCtx*)ctx;
   PetscViewer       viewer = user->drawviewer;
-  PetscMPIInt       rank;
   PetscReal         norm;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
   if (step%user->interval == 0) {
     ierr = VecGetArrayRead(T,&array);CHKERRQ(ierr);
-    if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",(int)step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]);
+    ierr = PetscPrintf(MPI_COMM_WORLD,"step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",(int)step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(T,&array);CHKERRQ(ierr);
   }
 

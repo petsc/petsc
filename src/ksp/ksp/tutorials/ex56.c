@@ -127,7 +127,7 @@ int main(int argc,char **args)
     {
       PetscBool hasData = PETSC_TRUE;
       if (!hasData) {
-        PetscPrintf(PETSC_COMM_WORLD,"\t No data is provided\n");
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"\t No data is provided\n");CHKERRQ(ierr);
         for (i=0; i<24; i++) {
           for (j=0; j<24; j++) {
             if (i==j) DD1[i][j] = 1.0;
