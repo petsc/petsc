@@ -21,7 +21,8 @@ if __name__ == '__main__':
     '--download-mumps',
     '--with-mumps-serial',
     'CUDAFLAGS=-ccbin clang++',
-    'CFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-unused-function', # should be CXXFLAGS
+    'CFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-unused-function', # should be CXXFLAGS
+    '--with-shared-libraries=1',
   ]
   configure.petsc_configure(configure_options)
 
