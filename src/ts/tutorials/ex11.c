@@ -43,7 +43,7 @@ F*/
 #define DIM 2                   /* Geometric dimension */
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
-static PetscFunctionList PhysicsList;
+static PetscFunctionList PhysicsList, PhysicsRiemannList_SW;
 
 /* Represents continuum physical equations. */
 typedef struct _n_Physics *Physics;
@@ -395,7 +395,62 @@ static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c
   PetscFunctionReturn(0);
 }
 
-static void PhysicsRiemann_SW(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, Physics phys)
+static void PhysicsRiemann_SW_HLL(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, Physics phys)
+{
+  Physics_SW *sw = (Physics_SW *) phys->data;
+  PetscReal aL, aR;
+  PetscReal nn[DIM];
+#if !defined(PETSC_USE_COMPLEX)
+  const SWNode *uL = (const SWNode *) xL, *uR = (const SWNode *) xR;
+#else
+  SWNodeUnion  uLreal, uRreal;
+  const SWNode *uL = &uLreal.swnode;
+  const SWNode *uR = &uRreal.swnode;
+#endif
+  SWNodeUnion fL, fR;
+  PetscInt i;
+  PetscReal zero = 0.;
+
+#if defined(PETSC_USE_COMPLEX)
+  uLreal.swnode.h = 0; uRreal.swnode.h = 0;
+  for (i = 0; i < 1+dim; i++) uLreal.vals[i] = PetscRealPart(xL[i]);
+  for (i = 0; i < 1+dim; i++) uRreal.vals[i] = PetscRealPart(xR[i]);
+#endif
+  if (uL->h <= 0 || uR->h <= 0) {
+    for (i = 0; i < 1 + dim; i++) flux[i] = zero;
+    return;
+  } /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
+  nn[0] = n[0];
+  nn[1] = n[1];
+  Normalize2Real(nn);
+  SWFlux(phys, nn, uL, &(fL.swnode));
+  SWFlux(phys, nn, uR, &(fR.swnode));
+  /* gravity wave speed */
+  aL = PetscSqrtReal(sw->gravity * uL->h);
+  aR = PetscSqrtReal(sw->gravity * uR->h);
+  // Defining u_tilda and v_tilda as u and v
+  PetscReal u_L, u_R;
+  u_L = Dot2Real(uL->uh,nn)/uL->h;
+  u_R = Dot2Real(uR->uh,nn)/uR->h;
+  PetscReal sL, sR;
+  sL = PetscMin(u_L - aL, u_R - aR);
+  sR = PetscMax(u_L + aL, u_R + aR);
+  if (sL > zero) {
+    for (i = 0; i < dim + 1; i++) {
+      flux[i] = fL.vals[i] * Norm2Real(n);
+    }
+  } else if (sR < zero) {
+    for (i = 0; i < dim + 1; i++) {
+      flux[i] = fR.vals[i] * Norm2Real(n);
+    }
+  } else {
+    for (i = 0; i < dim + 1; i++) {
+      flux[i] = ((sR * fL.vals[i] - sL * fR.vals[i] + sR * sL * (xR[i] - xL[i])) / (sR - sL)) * Norm2Real(n);
+    }
+  }
+}
+
+static void PhysicsRiemann_SW_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, Physics phys)
 {
   Physics_SW   *sw = (Physics_SW*)phys->data;
   PetscReal    cL,cR,speed;
@@ -473,19 +528,26 @@ static PetscErrorCode SetUpBC_SW(PetscDS prob,Physics phys)
 static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_SW     *sw;
+  char           sw_riemann[64] = "rusanov";
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
-  phys->riemann = (PetscRiemannFunc) PhysicsRiemann_SW;
   ierr          = PetscNew(&sw);CHKERRQ(ierr);
   phys->data    = sw;
   mod->setupbc  = SetUpBC_SW;
 
+  PetscFunctionListAdd(&PhysicsRiemannList_SW, "rusanov", PhysicsRiemann_SW_Rusanov);
+  PetscFunctionListAdd(&PhysicsRiemannList_SW, "hll", PhysicsRiemann_SW_HLL);
+
   ierr          = PetscOptionsHead(PetscOptionsObject,"SW options");CHKERRQ(ierr);
   {
+    void (*PhysicsRiemann_SW)(PetscInt, PetscInt, const PetscReal *, const PetscReal *, const PetscScalar *, const PetscScalar *, PetscInt, const PetscScalar, PetscScalar *, Physics);
     sw->gravity = 1.0;
     ierr = PetscOptionsReal("-sw_gravity","Gravitational constant","",sw->gravity,&sw->gravity,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-sw_riemann","Riemann solver","",PhysicsRiemannList_SW,sw_riemann,sw_riemann,sizeof sw_riemann,NULL);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(PhysicsRiemannList_SW,sw_riemann,&PhysicsRiemann_SW);CHKERRQ(ierr);
+    phys->riemann = (PetscRiemannFunc) PhysicsRiemann_SW;
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   phys->maxspeed = PetscSqrtReal(2.0*sw->gravity); /* Mach 1 for depth of 2 */
@@ -1629,6 +1691,7 @@ int main(int argc, char **argv)
   ierr = PetscFunctionListAdd(&PhysicsList,"sw"              ,PhysicsCreate_SW);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PhysicsList,"euler"           ,PhysicsCreate_Euler);CHKERRQ(ierr);
 
+
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Mesh Options","");CHKERRQ(ierr);
   {
     cfl  = 0.9 * 4; /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
@@ -1986,6 +2049,7 @@ int main(int argc, char **argv)
   ierr = VecTaggerDestroy(&refineTag);CHKERRQ(ierr);
   ierr = VecTaggerDestroy(&coarsenTag);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&PhysicsList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PhysicsRiemannList_SW);CHKERRQ(ierr);
   ierr = FunctionalLinkDestroy(&user->model->functionalRegistry);CHKERRQ(ierr);
   ierr = PetscFree(user->model->functionalMonitored);CHKERRQ(ierr);
   ierr = PetscFree(user->model->functionalCall);CHKERRQ(ierr);
@@ -2598,6 +2662,10 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     suffix: sw_0
     requires: exodusii
     args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy
+
+  test:
+    suffix: sw_hll
+    args: -ufv_vtk_interval 0 -bc_wall 1,2,3,4 -physics sw -ufv_cfl 3 -petscfv_type leastsquares -petsclimiter_type sin -ts_max_steps 5 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy -grid_bounds 0,5,0,5 -grid_size 25,25 -sw_riemann hll
 
   # 2D Advection: p4est
   test:
