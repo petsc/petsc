@@ -6,9 +6,9 @@ program main
       use petscsys
       
       implicit none
-      PetscErrorCode    :: ierr
-      PetscMPIInt       :: myRank,mySize
-      character(len=80) :: outputString
+      PetscErrorCode                    :: ierr
+      PetscMPIInt                       :: myRank,mySize
+      character(len=PETSC_MAX_PATH_LEN) :: outputString
       
       ! Every PETSc program should begin with the PetscInitialize() routine.
       

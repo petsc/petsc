@@ -7,21 +7,21 @@
       use petscksp
       use petscisdef
       implicit none
-      Vec             x,b
-      Mat             A,aux,Y,C
-      KSP             ksp
-      PC              pc
-      IS              is,sizes
-      PetscScalar     one
-      PetscInt, pointer :: idx(:)
-      PetscMPIInt     rank,size
-      PetscInt        m,N
-      PetscViewer     viewer
-      character*(128) dir,name
-      character*(8)   fmt
-      character(1)    crank,csize
-      PetscBool       flg
-      PetscErrorCode  ierr
+      Vec                            x,b
+      Mat                            A,aux,Y,C
+      KSP                            ksp
+      PC                             pc
+      IS                             is,sizes
+      PetscScalar                    one
+      PetscInt, pointer ::           idx(:)
+      PetscMPIInt                    rank,size
+      PetscInt                       m,N
+      PetscViewer                    viewer
+      character*(PETSC_MAX_PATH_LEN) dir,name
+      character*(8)                  fmt
+      character(1)                   crank,csize
+      PetscBool                      flg
+      PetscErrorCode                 ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then

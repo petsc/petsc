@@ -6,14 +6,14 @@
   use petscvec
   implicit none
 
-  Vec        ::   x 
+  Vec        ::   x
   PetscReal  :: norm
   PetscMPIInt :: rank
   PetscInt,parameter :: n = 20
   PetscErrorCode :: ierr
   PetscScalar,parameter :: sone = 1.0
   PetscBool :: flg
-  character(len=256) :: outputString
+  character(len=PETSC_MAX_PATH_LEN) :: outputString
   PetscInt,parameter :: zero = 0, one = 1, two = 2
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

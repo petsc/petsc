@@ -22,7 +22,7 @@ program main
   PetscScalar, pointer, dimension(:)  :: xarray
   PetscScalar :: myResult = 0
   Vec            x,xend
-  character(len=128) :: output
+  character(len=PETSC_MAX_PATH_LEN) :: output
   PetscInt,parameter :: zero = 0, one = 1, two = 2
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
