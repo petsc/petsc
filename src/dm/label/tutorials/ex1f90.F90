@@ -4,13 +4,12 @@ program  ex1f90
   use petscdmlabel
   implicit NONE
 
-  type(tDM)           :: dm, dmDist
-  character(len=2048) :: filename
-  integer,parameter   :: len=2048
-  PetscBool           :: interpolate = PETSC_FALSE
-  PetscBool           :: flg
-  PetscErrorCode      :: ierr
-  PetscInt            :: izero
+  type(tDM)                         :: dm, dmDist
+  character(len=PETSC_MAX_PATH_LEN) :: filename
+  PetscBool                         :: interpolate = PETSC_FALSE
+  PetscBool                         :: flg
+  PetscErrorCode                    :: ierr
+  PetscInt                          :: izero
   izero = 0
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -40,7 +39,7 @@ contains
 
     DMLabel                          :: label
     type(tIS)                        :: labelIS
-    character(len=2048)              :: labelName,IObuffer
+    character(len=PETSC_MAX_PATH_LEN):: labelName,IObuffer
     PetscInt                         :: numLabels,l
 
     call DMGetNumLabels(dm, numLabels, ierr);CHKERRQ(ierr);

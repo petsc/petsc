@@ -6,19 +6,19 @@
 #include <petsc/finclude/petscksp.h>
       use petscksp
       implicit none
-      Vec             x,b
-      Mat             A
+      Vec                            x,b
+      Mat                            A
 #if defined(PETSC_HAVE_HPDDM)
-      Mat             U
+      Mat                            U
 #endif
-      KSP             ksp
-      PetscInt        i,j,nmat
-      PetscViewer     viewer
-      character*(128) dir,name
-      character*(8)   fmt
-      character(3)    cmat
-      PetscBool       flg,reset
-      PetscErrorCode  ierr
+      KSP                            ksp
+      PetscInt                       i,j,nmat
+      PetscViewer                    viewer
+      character*(PETSC_MAX_PATH_LEN) dir,name
+      character*(8)                  fmt
+      character(3)                   cmat
+      PetscBool                      flg,reset
+      PetscErrorCode                 ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then

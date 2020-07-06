@@ -8,12 +8,12 @@
       use petscmat
       implicit none
 
-      Mat      A
-      PetscErrorCode ierr
-      PetscViewer   v
-      PetscScalar, pointer :: aa(:)
-      character*(256)  f
-      PetscBool flg
+      Mat                            A
+      PetscErrorCode                 ierr
+      PetscViewer                    v
+      PetscScalar, pointer ::        aa(:)
+      character*(PETSC_MAX_PATH_LEN) f
+      PetscBool                      flg
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then

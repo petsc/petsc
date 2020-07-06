@@ -32,7 +32,7 @@ program main
       PetscBool      :: flg
       PetscRandom    :: rctx
       PetscLogStage,dimension(0:1) :: stages
-      character(len=80)          :: outputString
+      character(len=PETSC_MAX_PATH_LEN) :: outputString
       PetscInt,parameter :: one = 1
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

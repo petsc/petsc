@@ -6,18 +6,18 @@
 #include <petsc/finclude/petscksp.h>
       use petscksp
       implicit none
-      Mat             X,B
-      Mat             A
-      KSP             ksp
-      PC              pc
-      Mat             F
-      PetscScalar     alpha
-      PetscReal       norm
-      PetscInt        m,K
-      PetscViewer     viewer
-      character*(128) name
-      PetscBool       flg
-      PetscErrorCode  ierr
+      Mat                            X,B
+      Mat                            A
+      KSP                            ksp
+      PC                             pc
+      Mat                            F
+      PetscScalar                    alpha
+      PetscReal                      norm
+      PetscInt                       m,K
+      PetscViewer                    viewer
+      character*(PETSC_MAX_PATH_LEN) name
+      PetscBool                      flg
+      PetscErrorCode                 ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then

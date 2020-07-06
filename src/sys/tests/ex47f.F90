@@ -6,9 +6,9 @@ program main
       use petscsys
       
       implicit none
-      PetscErrorCode      :: ierr
-      character(len=256)  :: filename
-      PetscBool           ::  flg
+      PetscErrorCode                    :: ierr
+      character(len=PETSC_MAX_PATH_LEN) :: filename
+      PetscBool                         ::  flg
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr /= 0) then
