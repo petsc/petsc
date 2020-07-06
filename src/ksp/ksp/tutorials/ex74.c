@@ -376,15 +376,39 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm,UserContext *user,Mat *J)
 }
 
 /*TEST
- test:
+ testset:
    suffix: 1
-   args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 2
+   args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -irk_type gauss -irk_nstages 2
+   test:
+     args: -ksp_atol 1e-6
+   test:
+     requires: hpddm !single
+     suffix: hpddm
+     output_file: output/ex74_1.out
+     args: -ksp_atol 1e-6 -ksp_type hpddm
+   test:
+     requires: hpddm
+     suffix: hpddm_gcrodr
+     output_file: output/ex74_1_hpddm.out
+     args: -ksp_atol 1e-4 -ksp_view_final_residual -ksp_type hpddm -ksp_hpddm_type gcrodr -ksp_hpddm_recycle 2
  test:
    suffix: 2
    args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100
- test:
+ testset:
    suffix: 3
    requires: !single
    args: -a 1 -dt .33 -niter 3 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100 -physics_type advection
+   test:
+     args:
+   test:
+     requires: hpddm
+     suffix: hpddm
+     output_file: output/ex74_3.out
+     args: -ksp_type hpddm
+   test:
+     requires: hpddm
+     suffix: hpddm_gcrodr
+     output_file: output/ex74_3_hpddm.out
+     args: -ksp_view_final_residual -ksp_type hpddm -ksp_hpddm_type gcrodr -ksp_hpddm_recycle 5
 
 TEST*/

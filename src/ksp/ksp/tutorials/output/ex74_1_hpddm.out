@@ -1,0 +1,14 @@
+  0 KSP Residual norm 0.474966 
+  1 KSP Residual norm 0.239063 
+  2 KSP Residual norm < 1.e-11
+KSP final norm of residual 9.21624e-12
+  0 KSP Residual norm < 1.e-11
+KSP final norm of residual 1.4352e-11
+  0 KSP Residual norm < 1.e-11
+KSP final norm of residual 2.14872e-11
+  0 KSP Residual norm < 1.e-11
+KSP final norm of residual 2.60798e-11
+  0 KSP Residual norm < 1.e-11
+KSP final norm of residual 2.9016e-11
+L2 norm of the numerical error = 0.000317053 (time=0.625)
+Number of time steps: 5 (2 Krylov iterations)

@@ -30,9 +30,13 @@ PetscErrorCode MatDenseGetLocalMatrix(Mat A,Mat *B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(B,2);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIDENSE,&flg);CHKERRQ(ierr);
   if (flg) *B = mat->A;
-  else *B = A;
+  else {
+    ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATSEQDENSE,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)A)->type_name);
+    *B = A;
+  }
   PetscFunctionReturn(0);
 }
 

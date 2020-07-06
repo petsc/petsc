@@ -15,7 +15,7 @@
       PetscReal       norm
       PetscInt        m,K
       PetscViewer     viewer
-      character*(128) dir,name
+      character*(128) name
       PetscBool       flg
       PetscErrorCode  ierr
 
@@ -24,14 +24,15 @@
         print *,'Unable to initialize PETSc'
         stop
       endif
-      dir = '.'
-      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-load_dir',dir,flg,ierr);CHKERRA(ierr)
+      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',name,flg,ierr);CHKERRA(ierr)
+      if (flg .eqv. PETSC_FALSE) then
+        SETERRA(PETSC_COMM_WORLD,PETSC_ERR_SUP,'Must provide a binary file for the matrix')
+      endif
       K = 5
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',K,flg,ierr);CHKERRA(ierr)
       call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr);CHKERRA(ierr)
       call KSPSetOperators(ksp,A,A,ierr);CHKERRA(ierr)
-      write (name,'(a)')trim(dir)//'/A_400.dat'
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
       call MatLoad(A,viewer,ierr);CHKERRA(ierr)
       call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
@@ -72,7 +73,7 @@
 !   testset:
 !      nsize: 2
 !      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-!      args: -ksp_converged_reason -ksp_max_it 1000 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+!      args: -ksp_converged_reason -ksp_max_it 1000 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat
 !      test:
 !         suffix: 1
 !         output_file: output/ex77_1.out
@@ -108,13 +109,13 @@
 !      suffix: preonly
 !      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
 !      output_file: output/ex77_preonly.out
-!      args: -N 6 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -pc_type lu -ksp_type hpddm -ksp_hpddm_type preonly
+!      args: -N 6 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -pc_type lu -ksp_type hpddm -ksp_hpddm_type preonly
 !   test:
 !      nsize: 4
 !      suffix: 4_slepc
 !      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc
 !      output_file: output/ex77_4.out
 !      filter: sed "/^ksp_hpddm_recycle_ Linear eigensolve converged/d"
-!      args: -ksp_converged_reason -ksp_max_it 500 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_mat_type dense -ksp_hpddm_recycle_eps_converged_reason -ksp_hpddm_recycle_st_pc_type redundant
+!      args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_mat_type dense -ksp_hpddm_recycle_eps_converged_reason -ksp_hpddm_recycle_st_pc_type redundant
 !
 !TEST*/
