@@ -2321,22 +2321,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 
 #define PETSC_BITS_PER_BYTE CHAR_BIT
 
-/*  For arrays that contain filenames or paths */
-
-#if defined(PETSC_HAVE_SYS_PARAM_H)
-#  include <sys/param.h>
-#endif
 #if defined(PETSC_HAVE_SYS_TYPES_H)
 #  include <sys/types.h>
-#endif
-#if defined(MAXPATHLEN)
-#  define PETSC_MAX_PATH_LEN MAXPATHLEN
-#elif defined(MAX_PATH)
-#  define PETSC_MAX_PATH_LEN MAX_PATH
-#elif defined(_MAX_PATH)
-#  define PETSC_MAX_PATH_LEN _MAX_PATH
-#else
-#  define PETSC_MAX_PATH_LEN 4096
 #endif
 
 /*MC
