@@ -1404,7 +1404,7 @@ PetscErrorCode  PetscFinalize(void)
 
   flg3 = PETSC_FALSE; /* default value is required */
   ierr = PetscOptionsGetBool(NULL,NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
-  if (PetscDefined(USE_DEBUG) && !flg1) flg3 = PETSC_TRUE;
+  if (PetscUnlikelyDebug(!flg1)) flg3 = PETSC_TRUE;
   if (flg3) {
     if (!flg2 && flg1) { /* have not yet printed the options */
       PetscViewer viewer;
