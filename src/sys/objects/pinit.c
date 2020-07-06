@@ -5,6 +5,11 @@
 #include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscvalgrind.h>
 #include <petscviewer.h>
+#if defined(PETSC_USE_GCOV)
+EXTERN_C_BEGIN
+void  __gcov_flush(void);
+EXTERN_C_END
+#endif
 
 #if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
@@ -1614,6 +1619,13 @@ PetscErrorCode  PetscFinalize(void)
   PetscErrorHandlingInitialized = PETSC_FALSE;
   PetscInitializeCalled = PETSC_FALSE;
   PetscFinalizeCalled   = PETSC_TRUE;
+#if defined(PETSC_USE_GCOV)
+  /*
+     flush gcov, otherwise during CI the flushing continues into the next pipeline resulting in git not being able to delete directories since the
+     gcov files are still being added to the directories as git tries to remove the directories.
+   */
+  __gcov_flush();
+#endif
   PetscFunctionReturn(0);
 }
 
