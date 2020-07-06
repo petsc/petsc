@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     ierr = PetscFinalize(); if (ierr) return ierr;
 #if defined(PETSC_HAVE_ELEMENTAL)
     ierr = PetscElementalInitialized(&initialized); if (ierr) return ierr;
-    if (!initialized) return 1;
+    if (!initialized) return PETSC_ERR_LIB;
 #endif
   }
 #if defined(PETSC_HAVE_ELEMENTAL)
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     if (!initialized) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_LIB, "Uninitialized Elemental");
     ierr = PetscFinalize(); if (ierr) return ierr;
     ierr = PetscElementalInitialized(&initialized); if (ierr) return ierr;
-    if (initialized) return 1;
+    if (initialized) return PETSC_ERR_LIB;
   }
 #endif
   MPI_Finalize();

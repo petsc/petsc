@@ -81,6 +81,7 @@ class Configure(config.base.Configure):
     # According to gcc doc, gcov does not require -g, so we do it alone
     if self.argDB['with-gcov']:
       bopts.append('gcov')
+      self.addDefine('USE_GCOV', 1)
 
     options = self.getOptionsObject()
     if not options:
