@@ -144,7 +144,7 @@ check-py-vermin:
     - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} check
     - make updatedatafiles
     - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
-    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov; fi
+    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov && bash <(curl -s https://codecov.io/bash) -c; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
