@@ -1,4 +1,5 @@
-#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petscmat.h>
+#include <petsc/private/partitionerimpl.h>   /*I      "petscpartitioner.h"   I*/
 
 typedef struct {
   MatPartitioning mp;
@@ -26,7 +27,7 @@ static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatParti
 
   Level: developer
 
-.seealso PetscPartitionerMatPartitioningSetMatPartitioning(), DMPlexDistribute(), PetscPartitionerCreate()
+.seealso DMPlexDistribute(), PetscPartitionerCreate()
 @*/
 PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner part, MatPartitioning *mp)
 {
@@ -46,11 +47,11 @@ static PetscErrorCode PetscPartitionerDestroy_MatPartitioning(PetscPartitioner p
 
   PetscFunctionBegin;
   ierr = MatPartitioningDestroy(&p->mp);CHKERRQ(ierr);
-  ierr = PetscFree(p);CHKERRQ(ierr);
+  ierr = PetscFree(part->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_MatPartitioning_Ascii(PetscPartitioner part, PetscViewer viewer)
+static PetscErrorCode PetscPartitionerView_MatPartitioning_ASCII(PetscPartitioner part, PetscViewer viewer)
 {
   PetscPartitioner_MatPartitioning  *p = (PetscPartitioner_MatPartitioning *) part->data;
   PetscViewerFormat                 format;
@@ -74,7 +75,7 @@ static PetscErrorCode PetscPartitionerView_MatPartitioning(PetscPartitioner part
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscPartitionerView_MatPartitioning_Ascii(part, viewer);CHKERRQ(ierr);}
+  if (iascii) {ierr = PetscPartitionerView_MatPartitioning_ASCII(part, viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

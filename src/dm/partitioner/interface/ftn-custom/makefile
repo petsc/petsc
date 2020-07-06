@@ -1,14 +1,16 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
+
 ALL: lib
+
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zplexcreate.c zplexdistribute.c zplexsubmesh.c zplexexodusii.c zplexgmsh.c zplexfluent.c
+SOURCEC  = zpartitioner.c
 SOURCEF  =
 SOURCEH  =
-DIRS     =
 LIBBASE  = libpetscdm
-LOCDIR   = src/dm/impls/plex/ftn-custom/
+MANSEC   = DM
+LOCDIR   = src/dm/partitioner/interface/ftn-custom/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
