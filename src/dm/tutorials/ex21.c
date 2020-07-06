@@ -162,7 +162,7 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
     PetscReal *s_coor;
     PetscInt npoints,p;
 
-    PetscPrintf(PETSC_COMM_WORLD,"[step %D]\n",tk);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[step %D]\n",tk);CHKERRQ(ierr);
     /* advect with analytic prescribed (constant) velocity field */
     ierr = DMSwarmGetLocalSize(swarm,&npoints);CHKERRQ(ierr);
     ierr = DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&s_coor);CHKERRQ(ierr);

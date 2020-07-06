@@ -188,7 +188,7 @@ int main(int argc,char **argv)
   ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);   /* Compute F(X)    */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);     /* fnorm = || F || */
   ttol = fnorm*rtol;
-  if (!no_output) PetscPrintf(comm,"Initial function norm = %g\n",(double)fnorm);
+  if (!no_output) {ierr = PetscPrintf(comm,"Initial function norm = %g\n",(double)fnorm);CHKERRQ(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system with a user-defined method

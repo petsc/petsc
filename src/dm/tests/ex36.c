@@ -379,11 +379,11 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"%D=>%D, interp err = %1.4e\n",mx,Mx,(double)(nrm/PetscSqrtReal((PetscReal)N)));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D=>%D, interp err = %1.4e\n",mx,Mx,(double)(nrm/PetscSqrtReal((PetscReal)N)));CHKERRQ(ierr);
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 
-  PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
   if (output) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_1D.vtk", &vv);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -474,11 +474,11 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D]=>[%D x %D], interp err = %1.4e\n",mx,my,Mx,My,(double)(nrm/PetscSqrtReal((PetscReal)N)));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D x %D]=>[%D x %D], interp err = %1.4e\n",mx,my,Mx,My,(double)(nrm/PetscSqrtReal((PetscReal)N)));CHKERRQ(ierr);
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 
-  PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
   if (output) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_2D.vtk", &vv);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -574,7 +574,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,(double)(nrm/PetscSqrtReal((PetscReal)N)));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,(double)(nrm/PetscSqrtReal((PetscReal)N)));CHKERRQ(ierr);
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 
@@ -609,18 +609,22 @@ int main(int argc,char **argv)
   PetscInt       mx = 2,my = 2,mz = 2,l,nl,dim;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0);
-  PetscOptionsGetInt(NULL,NULL,"-my", &my, 0);
-  PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my", &my, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0);CHKERRQ(ierr);
   nl = 1;
-  PetscOptionsGetInt(NULL,NULL,"-nl", &nl, 0);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nl", &nl, 0);CHKERRQ(ierr);
   dim = 2;
-  PetscOptionsGetInt(NULL,NULL,"-dim", &dim, 0);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dim", &dim, 0);CHKERRQ(ierr);
 
   for (l=0; l<nl; l++) {
-    if      (dim==1) da_test_RefineCoords1D(mx);
-    else if (dim==2) da_test_RefineCoords2D(mx,my);
-    else if (dim==3) da_test_RefineCoords3D(mx,my,mz);
+    if (dim==1) {
+      ierr = da_test_RefineCoords1D(mx);CHKERRQ(ierr);
+    } else if (dim==2) {
+      ierr = da_test_RefineCoords2D(mx,my);CHKERRQ(ierr);
+    } else if (dim==3) {
+      ierr = da_test_RefineCoords3D(mx,my,mz);CHKERRQ(ierr);
+    }
     mx = mx * 2;
     my = my * 2;
     mz = mz * 2;
