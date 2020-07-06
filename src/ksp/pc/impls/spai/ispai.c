@@ -123,6 +123,17 @@ static PetscErrorCode PCApply_SPAI(PC pc,Vec xx,Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCMatApply_SPAI(PC pc,Mat X,Mat Y)
+{
+  PC_SPAI        *ispai = (PC_SPAI*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Now using PETSc's multiply */
+  ierr = MatMatMult(ispai->PM,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /**********************************************************************/
 
 static PetscErrorCode PCDestroy_SPAI(PC pc)
@@ -569,6 +580,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
 
   pc->ops->destroy         = PCDestroy_SPAI;
   pc->ops->apply           = PCApply_SPAI;
+  pc->ops->matapply        = PCMatApply_SPAI;
   pc->ops->applyrichardson = 0;
   pc->ops->setup           = PCSetUp_SPAI;
   pc->ops->view            = PCView_SPAI;
@@ -833,7 +845,3 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
   ierr = PetscFree(global_indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
