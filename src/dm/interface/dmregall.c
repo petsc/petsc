@@ -130,7 +130,7 @@ PetscErrorCode PetscDualSpaceRegisterAll(void)
   PetscDualSpaceRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
-  ierr = PetscDualSpaceRegister("bdm",                  PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
+  ierr = PetscDualSpaceRegister(PETSCDUALSPACEBDM,      PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
   ierr = PetscDualSpaceRegister(PETSCDUALSPACESIMPLE,   PetscDualSpaceCreate_Simple);CHKERRQ(ierr);
   ierr = PetscDualSpaceRegister(PETSCDUALSPACEREFINED,  PetscDualSpaceCreate_Refined);CHKERRQ(ierr);
   PetscFunctionReturn(0);
