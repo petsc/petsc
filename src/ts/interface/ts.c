@@ -1219,10 +1219,6 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat Amat,Mat Pmat,TSRHSJacobian f,void *c
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSSetRHSJacobian(dm,f,ctx);CHKERRQ(ierr);
-  if (f == TSComputeRHSJacobianConstant) {
-    /* Handle this case automatically for the user; otherwise user should call themselves. */
-    ierr = TSRHSJacobianSetReuse(ts,PETSC_TRUE);CHKERRQ(ierr);
-  }
   ierr = DMTSGetIJacobian(dm,&ijacobian,NULL);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!ijacobian) {
@@ -2684,7 +2680,7 @@ PetscErrorCode  TSSetUp(TS ts)
   }
 
   ierr = TSGetRHSJacobian(ts,NULL,NULL,&rhsjac,NULL);CHKERRQ(ierr);
-  if (ts->rhsjacobian.reuse && rhsjac == TSComputeRHSJacobianConstant) {
+  if (rhsjac == TSComputeRHSJacobianConstant) {
     Mat Amat,Pmat;
     SNES snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
