@@ -4,7 +4,7 @@ cdef extern from * nogil:
 
     int DMPlexCreate(MPI_Comm,PetscDM*)
     int DMPlexCreateCohesiveSubmesh(PetscDM,PetscBool,const char[],PetscInt,PetscDM*)
-    int DMPlexCreateFromCellList(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool,int[],PetscInt,double[],PetscDM*)
+    int DMPlexCreateFromCellListPetsc(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool,PetscInt[],PetscInt,PetscReal[],PetscDM*)
     #int DMPlexCreateFromDAG(PetscDM,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],const PetscInt[],const PetscScalar[])
 
     int DMPlexGetChart(PetscDM,PetscInt*,PetscInt*)
