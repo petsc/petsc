@@ -42,20 +42,21 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
           ierr = PetscDualSpaceGetNumDof(dspace,&numDof);CHKERRQ(ierr);
           if (perms || flips) {
             DM              K;
-            PetscInt        h;
+            PetscInt        sph, spdepth;
             PetscSectionSym sym;
 
             ierr = PetscDualSpaceGetDM(dspace,&K);CHKERRQ(ierr);
+            ierr = DMPlexGetDepth(K, &spdepth);CHKERRQ(ierr);
             ierr = PetscSectionSymCreateLabel(PetscObjectComm((PetscObject)*section),depthLabel,&sym);CHKERRQ(ierr);
-            for (h = 0; h <= depth; h++) {
+            for (sph = 0; sph <= spdepth; sph++) {
               PetscDualSpace    hspace;
               PetscInt          kStart, kEnd;
-              PetscInt          kConeSize;
+              PetscInt          kConeSize, h = sph + (depth - spdepth);
               const PetscInt    **perms0 = NULL;
               const PetscScalar **flips0 = NULL;
 
-              ierr = PetscDualSpaceGetHeightSubspace(dspace,h,&hspace);CHKERRQ(ierr);
-              ierr = DMPlexGetHeightStratum(K,h,&kStart,&kEnd);CHKERRQ(ierr);
+              ierr = PetscDualSpaceGetHeightSubspace(dspace, sph, &hspace);CHKERRQ(ierr);
+              ierr = DMPlexGetHeightStratum(K, h, &kStart, &kEnd);CHKERRQ(ierr);
               if (!hspace) continue;
               ierr = PetscDualSpaceGetSymmetries(hspace,&perms,&flips);CHKERRQ(ierr);
               if (perms) perms0 = perms[0];
