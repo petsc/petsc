@@ -213,7 +213,9 @@ $                         with DMDA and if you call MatFDColoringSetFunction() w
 E*/
 typedef enum {IS_COLORING_GLOBAL,IS_COLORING_LOCAL} ISColoringType;
 PETSC_EXTERN const char *const ISColoringTypes[];
-typedef unsigned PETSC_IS_COLOR_VALUE_TYPE ISColoringValue;
+typedef unsigned PETSC_IS_COLORING_VALUE_TYPE ISColoringValue;
+#define IS_COLORING_MAX PETSC_IS_COLORING_MAX
+#define MPIU_COLORING_VALUE PETSC_MPIU_IS_COLORING_VALUE_TYPE
 PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);
 
 PETSC_EXTERN PetscErrorCode ISColoringCreate(MPI_Comm,PetscInt,PetscInt,const ISColoringValue[],PetscCopyMode,ISColoring*);
