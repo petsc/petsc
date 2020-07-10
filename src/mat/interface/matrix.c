@@ -31,7 +31,7 @@ PetscLogEvent MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_GetBrowsOfAcols;
 PetscLogEvent MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
 PetscLogEvent MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
 PetscLogEvent MAT_GetMultiProcBlock;
-PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch;
+PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_CUSPARSEGenerateTranspose, MAT_SetValuesBatch;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
 PetscLogEvent MAT_DenseCopyToGPU, MAT_DenseCopyFromGPU;
 PetscLogEvent MAT_Merge,MAT_Residual,MAT_SetRandom;
@@ -117,7 +117,7 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 
    This can be called on non-factored matrices that come from, for example, matrices used in SOR.
 
-.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatLUFactorSymbolic(), MatCholeskyFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
 @*/
 PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat,PetscReal *pivot,PetscInt *row)
 {
@@ -144,7 +144,7 @@ PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat,PetscReal *pivot,PetscInt *row
    Notes:
     This can be called on non-factored matrices that come from, for example, matrices used in SOR.
 
-.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatLUFactorSymbolic(), MatCholeskyFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
 @*/
 PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
 {
@@ -167,7 +167,7 @@ PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
    Notes:
     This can be called on non-factored matrices that come from, for example, matrices used in SOR.
 
-.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorGetError(), MatFactorGetErrorZeroPivot()
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatLUFactorSymbolic(), MatCholeskyFactorSymbolic(), MatFactorGetError(), MatFactorGetErrorZeroPivot()
 @*/
 PetscErrorCode MatFactorClearError(Mat mat)
 {
@@ -2480,7 +2480,6 @@ PetscErrorCode MatMultTranspose(Mat mat,Vec x,Vec y)
 PetscErrorCode MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  Vec            w;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -2498,6 +2497,7 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_MultHermitianTranspose,mat,x,y,0);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
   if (mat->ops->multhermitiantranspose || (mat->hermitian && mat->ops->mult)) {
     ierr = VecLockReadPush(x);CHKERRQ(ierr);
     if (mat->ops->multhermitiantranspose) {
@@ -2507,6 +2507,7 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
     }
     ierr = VecLockReadPop(x);CHKERRQ(ierr);
   } else {
+    Vec w;
     ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
     ierr = VecCopy(x,w);CHKERRQ(ierr);
     ierr = VecConjugate(w);CHKERRQ(ierr);
@@ -2514,8 +2515,11 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
     ierr = VecDestroy(&w);CHKERRQ(ierr);
     ierr = VecConjugate(y);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(MAT_MultHermitianTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+#else
+  ierr = MatMultTranspose(mat,x,y);CHKERRQ(ierr);
+#endif
+  ierr = PetscLogEventEnd(MAT_MultHermitianTranspose,mat,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4451,6 +4455,32 @@ PetscErrorCode MatSolverTypeDestroy(void)
 }
 
 /*@C
+   MatFactorGetUseOrdering - Indicates if the factorization uses the ordering provided in MatLUFactorSymbolic(), MatCholeskyFactorSymbolic()
+
+   Logically Collective on Mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
+.  flg - PETSC_TRUE if uses the ordering
+
+   Notes:
+      Most internal PETSc factorizations use the ordering past to the factorization routine but external 
+      packages do no, thus we want to skip the ordering when it is not needed.
+
+   Level: developer
+
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatGetFactor(), MatLUFactorSymbolic(), MatCholeskyFactorSymbolic()
+@*/
+PetscErrorCode MatFactorGetUseOrdering(Mat mat, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  *flg = mat->useordering;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    MatGetFactor - Returns a matrix suitable to calls to MatXXFactorSymbolic()
 
    Collective on Mat
@@ -4471,7 +4501,7 @@ PetscErrorCode MatSolverTypeDestroy(void)
 
    Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable()
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatFactorGetUseOrdering()
 @*/
 PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat *f)
 {
@@ -6357,9 +6387,8 @@ PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt *n)
 }
 
 /*@C
-   MatGetLocalSize - Returns the number of rows and columns in a matrix
-   stored locally.  This information may be implementation dependent, so
-   use with care.
+   MatGetLocalSize - Returns the number of local rows and local columns
+   of a matrix, that is the local size of the left and right vectors as returned by MatCreateVecs().
 
    Not Collective
 
@@ -6523,7 +6552,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
    Not Collective
 
    Input Arguments:
-.  A - matrix of type Elemental
+.  A - matrix of type Elemental or ScaLAPACK
 
    Output Arguments:
 +  rows - rows in which this process owns elements
@@ -6596,8 +6625,8 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFact
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(row,IS_CLASSID,2);
-  PetscValidHeaderSpecific(col,IS_CLASSID,3);
+  if (row) PetscValidHeaderSpecific(row,IS_CLASSID,2);
+  if (col) PetscValidHeaderSpecific(col,IS_CLASSID,3);
   PetscValidPointer(info,4);
   PetscValidPointer(fact,5);
   if (info->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %D",(PetscInt)info->levels);
@@ -6658,7 +6687,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(perm,IS_CLASSID,2);
+  if (perm) PetscValidHeaderSpecific(perm,IS_CLASSID,2);
   PetscValidPointer(info,3);
   PetscValidPointer(fact,4);
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");

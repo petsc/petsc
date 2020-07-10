@@ -8,9 +8,9 @@
       use petscsys
       implicit none
 
-      PetscErrorCode ierr
-      PetscObject    o1, o2, o3
-      character*(80) name
+      PetscErrorCode                 ierr
+      PetscObject                    o1, o2, o3
+      character*(PETSC_MAX_PATH_LEN) name
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then

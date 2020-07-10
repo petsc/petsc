@@ -275,11 +275,11 @@ PetscErrorCode CellRefinerInCellTest_Internal(DMPolytopeType ct, const PetscReal
 /*
   Input Parameters:
 + ct - The type of the input cell
-. co - The orientation of this cell in it parent
+. co - The orientation of this cell in its parent
 - cp - The requested cone point of this cell assuming orientation 0
 
   Output Parameters:
-. cpnew - The new cone point, taking inout account the orientation co
+. cpnew - The new cone point, taking into account the orientation co
 */
 PETSC_STATIC_INLINE PetscErrorCode DMPolytopeMapCell(DMPolytopeType ct, PetscInt co, PetscInt cp, PetscInt *cpnew)
 {
@@ -364,6 +364,7 @@ static PetscErrorCode DMPlexCellRefinerGetCellVertices(DMPlexCellRefiner cr, DMP
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!cr->ops->getcellvertices) SETERRQ1(PetscObjectComm((PetscObject)cr),PETSC_ERR_SUP,"Not for refiner type %s",DMPlexCellRefinerTypes[cr->type]);
   ierr = (*cr->ops->getcellvertices)(cr, ct, Nv, subcellV);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -436,7 +437,44 @@ static PetscErrorCode DMPlexCellRefinerGetSubcellVertices(DMPlexCellRefiner cr, 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!cr->ops->getsubcellvertices) SETERRQ1(PetscObjectComm((PetscObject)cr),PETSC_ERR_SUP,"Not for refiner type %s",DMPlexCellRefinerTypes[cr->type]);
   ierr = (*cr->ops->getsubcellvertices)(cr, ct, rct, r, Nv, subcellV);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+  Input Parameters:
++ cr   - The DMPlexCellRefiner
+. pct  - The cell type of the parent, from whom the new cell is being produced
+. ct   - The type being produced
+. r    - The replica number requested for the produced cell type
+. Nv   - Number of vertices in the closure of the parent cell
+. dE   - Spatial dimension
+- in   - array of size Nv*dE, holding coordinates of the vertices in the closure of the parent cell
+
+  Output Parameters:
+. out - The coordinates of the new vertices
+*/
+static PetscErrorCode DMPlexCellRefinerMapCoordinates(DMPlexCellRefiner cr, DMPolytopeType pct, DMPolytopeType ct, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  if (!cr->ops->mapcoords) SETERRQ1(PetscObjectComm((PetscObject)cr),PETSC_ERR_SUP,"Not for refiner type %s",DMPlexCellRefinerTypes[cr->type]);
+  ierr = (*cr->ops->mapcoords)(cr, pct, ct, r, Nv, dE, in, out);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Computes new vertex as the barycenter */
+static PetscErrorCode DMPlexCellRefinerMapCoordinates_Barycenter(DMPlexCellRefiner cr, DMPolytopeType pct, DMPolytopeType ct, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+{
+  PetscInt v,d;
+
+  PetscFunctionBeginHot;
+  if (ct != DM_POLYTOPE_POINT) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for refined point type %s",DMPolytopeTypes[ct]);
+  for (d = 0; d < dE; ++d) out[d] = 0.0;
+  for (v = 0; v < Nv; ++v) for (d = 0; d < dE; ++d) out[d] += in[v*dE+d];
+  for (d = 0; d < dE; ++d) out[d] /= Nv;
   PetscFunctionReturn(0);
 }
 
@@ -450,7 +488,7 @@ static PetscErrorCode DMPlexCellRefinerGetSubcellVertices(DMPlexCellRefiner cr, 
 - o   - The relative orientation of the replica
 
   Output Parameters:
-+ rnew - The replica number, given the orientation of of the parent
++ rnew - The replica number, given the orientation of the parent
 - onew - The replica orientation, given the orientation of the parent
 */
 static PetscErrorCode DMPlexCellRefinerMapSubcells(DMPlexCellRefiner cr, DMPolytopeType pct, PetscInt po, DMPolytopeType ct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
@@ -458,6 +496,7 @@ static PetscErrorCode DMPlexCellRefinerMapSubcells(DMPlexCellRefiner cr, DMPolyt
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
+  if (!cr->ops->mapsubcells) SETERRQ1(PetscObjectComm((PetscObject)cr),PETSC_ERR_SUP,"Not for refiner type %s",DMPlexCellRefinerTypes[cr->type]);
   ierr = (*cr->ops->mapsubcells)(cr, pct, po, ct, r, o, rnew, onew);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -710,56 +749,6 @@ static PetscErrorCode DMPlexCellRefinerMapSubcells_ToSimplex(DMPlexCellRefiner c
   return DMPlexCellRefinerMapSubcells_Regular(cr, pct, po, ct, r, o, rnew, onew);
 }
 
-static PetscErrorCode DMPlexCellRefinerMapSubcells_BL(DMPlexCellRefiner cr, DMPolytopeType pct, PetscInt po, DMPolytopeType ct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
-{
-  /* We shift any input orientation in order to make it non-negative
-       The orientation array o[po][o] gives the orientation the new replica rnew has to have in order to reproduce the face sequence from (r, o)
-       The replica array r[po][r] gives the new replica number rnew given that the parent point has orientation po
-       Overall, replica (r, o) in a parent with orientation 0 matches replica (rnew, onew) in a parent with orientation po
-  */
-  PetscInt tquad_seg_o[]   = { 0,  1, -2, -1,
-                               0,  1, -2, -1,
-                              -2, -1,  0,  1,
-                              -2, -1,  0,  1};
-  PetscInt tquad_tquad_o[] = { 0,  1, -2, -1,
-                               1,  0, -1, -2,
-                              -2, -1,  0,  1,
-                              -1, -2,  1,  0};
-  PetscInt tquad_tquad_r[] = {1, 0,
-                              0, 1,
-                              0, 1,
-                              1, 0};
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginHot;
-  *rnew = r;
-  *onew = o;
-  switch (pct) {
-    case DM_POLYTOPE_POINT_PRISM_TENSOR:
-      if (ct == DM_POLYTOPE_POINT_PRISM_TENSOR) {
-        if      (po == 0 || po == -1) {*rnew = r;       *onew = o;}
-        else if (po == 1 || po == -2) {*rnew = (r+1)%2; *onew = (o == 0 || o == -1) ? -2 : 0;}
-        else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid orientation %D for tensor segment", po);
-      }
-      break;
-    case DM_POLYTOPE_SEG_PRISM_TENSOR:
-      switch (ct) {
-        case DM_POLYTOPE_SEGMENT:
-          *onew = tquad_seg_o[(po+2)*4+o+2];
-          break;
-        case DM_POLYTOPE_SEG_PRISM_TENSOR:
-          *onew = tquad_tquad_o[(po+2)*4+o+2];
-          *rnew = tquad_tquad_r[(po+2)*2+r];
-          break;
-        default: break;
-      }
-      break;
-    default:
-      ierr = DMPlexCellRefinerMapSubcells_None(cr, pct, po, ct, r, o, rnew, onew);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 /*@
   DMPlexCellRefinerRefine - Return a description of the refinement for a given cell type
 
@@ -773,7 +762,7 @@ static PetscErrorCode DMPlexCellRefinerMapSubcells_BL(DMPlexCellRefiner cr, DMPo
 . cone   - A list of the faces for each subcell of the same type as source
 - ornt   - A list of the face orientations for each subcell of the same type as source
 
-  Note: The cone array gives the cone of each subcell listed by the first three outputs. For the each cone point, we
+  Note: The cone array gives the cone of each subcell listed by the first three outputs. For each cone point, we
   need the cell type, point identifier, and orientation within the subcell. The orientation is with respect to the canonical
   division (described in these outputs) of the cell in the original mesh. The point identifier is given by
 $   the number of cones to be taken, or 0 for the current cell
@@ -795,6 +784,7 @@ PetscErrorCode DMPlexCellRefinerRefine(DMPlexCellRefiner cr, DMPolytopeType sour
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
+  if (!cr->ops->refine) SETERRQ1(PetscObjectComm((PetscObject)cr),PETSC_ERR_SUP,"Not for refiner type %s",DMPlexCellRefinerTypes[cr->type]);
   ierr = (*cr->ops->refine)(cr, source, Nt, target, size, cone, ornt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1669,74 +1659,493 @@ static PetscErrorCode DMPlexCellRefinerRefine_Alfeld3D(DMPlexCellRefiner cr, DMP
   PetscFunctionReturn(0);
 }
 
+typedef struct {
+  PetscInt       n;
+  PetscReal      r;
+  PetscScalar    *h;
+  PetscInt       *Nt;
+  DMPolytopeType **target;
+  PetscInt       **size;
+  PetscInt       **cone;
+  PetscInt       **ornt;
+} PlexRefiner_BL;
+
+static PetscErrorCode DMPlexCellRefinerSetUp_BL(DMPlexCellRefiner cr)
+{
+  PlexRefiner_BL *crbl;
+  PetscErrorCode ierr;
+  PetscInt       i,n;
+  PetscReal      r;
+  PetscInt       c1,c2,o1,o2;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(&crbl);CHKERRQ(ierr);
+  cr->data = crbl;
+  crbl->n = 1; /* 1 split -> 2 new cells */
+  crbl->r = 1; /* linear progression */
+
+  /* TODO: add setfromoptions to the refiners? */
+  ierr = PetscOptionsGetInt(((PetscObject) cr->dm)->options,((PetscObject) cr->dm)->prefix, "-dm_plex_refine_boundarylayer_splits", &crbl->n, NULL);CHKERRQ(ierr);
+  if (crbl->n < 1) SETERRQ1(PetscObjectComm((PetscObject)cr),PETSC_ERR_SUP,"Number of splits %D must be positive",crbl->n);
+  ierr = PetscOptionsGetReal(((PetscObject) cr->dm)->options,((PetscObject) cr->dm)->prefix, "-dm_plex_refine_boundarylayer_progression", &crbl->r, NULL);CHKERRQ(ierr);
+  n = crbl->n;
+  r = crbl->r;
+
+  /* we only split DM_POLYTOPE_POINT_PRISM_TENSOR, DM_POLYTOPE_SEG_PRISM_TENSOR, DM_POLYTOPE_TRI_PRISM_TENSOR and DM_POLYTOPE_QUAD_PRISM_TENSOR */
+  ierr = PetscMalloc5(4,&crbl->Nt,4,&crbl->target,4,&crbl->size,4,&crbl->cone,4,&crbl->ornt);CHKERRQ(ierr);
+
+  /* progression */
+  ierr = PetscMalloc1(n,&crbl->h);CHKERRQ(ierr);
+  if (r > 1) {
+    PetscReal d = (r-1.)/(PetscPowRealInt(r,n+1)-1.);
+
+    crbl->h[0] = d;
+    for (i = 1; i < n; i++) {
+      d *= r;
+      crbl->h[i] = crbl->h[i-1] + d;
+    }
+  } else { /* linear */
+    for (i = 0; i < n; i++) crbl->h[i] = (i + 1.)/(n+1); /* linear */
+  }
+
+  /* DM_POLYTOPE_POINT_PRISM_TENSOR produces n points and n+1 tensor segments */
+  c1 = 14+6*(n-1);
+  o1 = 2*(n+1);
+  crbl->Nt[0] = 2;
+
+  ierr = PetscMalloc4(crbl->Nt[0],&crbl->target[0],crbl->Nt[0],&crbl->size[0],c1,&crbl->cone[0],o1,&crbl->ornt[0]);CHKERRQ(ierr);
+
+  crbl->target[0][0] = DM_POLYTOPE_POINT;
+  crbl->target[0][1] = DM_POLYTOPE_POINT_PRISM_TENSOR;
+
+  crbl->size[0][0] = n;
+  crbl->size[0][1] = n+1;
+
+  /* the tensor segments */
+  crbl->cone[0][0] = DM_POLYTOPE_POINT;
+  crbl->cone[0][1] = 1;
+  crbl->cone[0][2] = 0;
+  crbl->cone[0][3] = 0;
+  crbl->cone[0][4] = DM_POLYTOPE_POINT;
+  crbl->cone[0][5] = 0;
+  crbl->cone[0][6] = 0;
+  for (i = 0; i < n-1; i++) {
+    crbl->cone[0][7+6*i+0] = DM_POLYTOPE_POINT;
+    crbl->cone[0][7+6*i+1] = 0;
+    crbl->cone[0][7+6*i+2] = i;
+    crbl->cone[0][7+6*i+3] = DM_POLYTOPE_POINT;
+    crbl->cone[0][7+6*i+4] = 0;
+    crbl->cone[0][7+6*i+5] = i+1;
+  }
+  crbl->cone[0][7+6*(n-1)+0] = DM_POLYTOPE_POINT;
+  crbl->cone[0][7+6*(n-1)+1] = 0;
+  crbl->cone[0][7+6*(n-1)+2] = n-1;
+  crbl->cone[0][7+6*(n-1)+3] = DM_POLYTOPE_POINT;
+  crbl->cone[0][7+6*(n-1)+4] = 1;
+  crbl->cone[0][7+6*(n-1)+5] = 1;
+  crbl->cone[0][7+6*(n-1)+6] = 0;
+  for (i = 0; i < o1; i++) crbl->ornt[0][i] = 0;
+
+  /* DM_POLYTOPE_SEG_PRISM_TENSOR produces n segments and n+1 tensor quads */
+  c1 = 8*n;
+  c2 = 30+14*(n-1);
+  o1 = 2*n;
+  o2 = 4*(n+1);
+  crbl->Nt[1] = 2;
+
+  ierr = PetscMalloc4(crbl->Nt[1],&crbl->target[1],crbl->Nt[1],&crbl->size[1],c1+c2,&crbl->cone[1],o1+o2,&crbl->ornt[1]);CHKERRQ(ierr);
+
+  crbl->target[1][0] = DM_POLYTOPE_SEGMENT;
+  crbl->target[1][1] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+
+  crbl->size[1][0] = n;
+  crbl->size[1][1] = n+1;
+
+  /* the segments */
+  for (i = 0; i < n; i++) {
+    crbl->cone[1][8*i+0] = DM_POLYTOPE_POINT;
+    crbl->cone[1][8*i+1] = 1;
+    crbl->cone[1][8*i+2] = 2;
+    crbl->cone[1][8*i+3] = i;
+    crbl->cone[1][8*i+4] = DM_POLYTOPE_POINT;
+    crbl->cone[1][8*i+5] = 1;
+    crbl->cone[1][8*i+6] = 3;
+    crbl->cone[1][8*i+7] = i;
+  }
+
+  /* the tensor quads */
+  crbl->cone[1][c1+ 0] = DM_POLYTOPE_SEGMENT;
+  crbl->cone[1][c1+ 1] = 1;
+  crbl->cone[1][c1+ 2] = 0;
+  crbl->cone[1][c1+ 3] = 0;
+  crbl->cone[1][c1+ 4] = DM_POLYTOPE_SEGMENT;
+  crbl->cone[1][c1+ 5] = 0;
+  crbl->cone[1][c1+ 6] = 0;
+  crbl->cone[1][c1+ 7] = DM_POLYTOPE_POINT_PRISM_TENSOR;
+  crbl->cone[1][c1+ 8] = 1;
+  crbl->cone[1][c1+ 9] = 2;
+  crbl->cone[1][c1+10] = 0;
+  crbl->cone[1][c1+11] = DM_POLYTOPE_POINT_PRISM_TENSOR;
+  crbl->cone[1][c1+12] = 1;
+  crbl->cone[1][c1+13] = 3;
+  crbl->cone[1][c1+14] = 0;
+  for (i = 0; i < n-1; i++) {
+    crbl->cone[1][c1+15+14*i+ 0] = DM_POLYTOPE_SEGMENT;
+    crbl->cone[1][c1+15+14*i+ 1] = 0;
+    crbl->cone[1][c1+15+14*i+ 2] = i;
+    crbl->cone[1][c1+15+14*i+ 3] = DM_POLYTOPE_SEGMENT;
+    crbl->cone[1][c1+15+14*i+ 4] = 0;
+    crbl->cone[1][c1+15+14*i+ 5] = i+1;
+    crbl->cone[1][c1+15+14*i+ 6] = DM_POLYTOPE_POINT_PRISM_TENSOR;
+    crbl->cone[1][c1+15+14*i+ 7] = 1;
+    crbl->cone[1][c1+15+14*i+ 8] = 2;
+    crbl->cone[1][c1+15+14*i+ 9] = i+1;
+    crbl->cone[1][c1+15+14*i+10] = DM_POLYTOPE_POINT_PRISM_TENSOR;
+    crbl->cone[1][c1+15+14*i+11] = 1;
+    crbl->cone[1][c1+15+14*i+12] = 3;
+    crbl->cone[1][c1+15+14*i+13] = i+1;
+  }
+  crbl->cone[1][c1+15+14*(n-1)+ 0] = DM_POLYTOPE_SEGMENT;
+  crbl->cone[1][c1+15+14*(n-1)+ 1] = 0;
+  crbl->cone[1][c1+15+14*(n-1)+ 2] = n-1;
+  crbl->cone[1][c1+15+14*(n-1)+ 3] = DM_POLYTOPE_SEGMENT;
+  crbl->cone[1][c1+15+14*(n-1)+ 4] = 1;
+  crbl->cone[1][c1+15+14*(n-1)+ 5] = 1;
+  crbl->cone[1][c1+15+14*(n-1)+ 6] = 0;
+  crbl->cone[1][c1+15+14*(n-1)+ 7] = DM_POLYTOPE_POINT_PRISM_TENSOR;
+  crbl->cone[1][c1+15+14*(n-1)+ 8] = 1;
+  crbl->cone[1][c1+15+14*(n-1)+ 9] = 2;
+  crbl->cone[1][c1+15+14*(n-1)+10] = n;
+  crbl->cone[1][c1+15+14*(n-1)+11] = DM_POLYTOPE_POINT_PRISM_TENSOR;
+  crbl->cone[1][c1+15+14*(n-1)+12] = 1;
+  crbl->cone[1][c1+15+14*(n-1)+13] = 3;
+  crbl->cone[1][c1+15+14*(n-1)+14] = n;
+  for (i = 0; i < o1+o2; i++) crbl->ornt[1][i] = 0;
+
+  /* DM_POLYTOPE_TRI_PRISM_TENSOR produces n triangles and n+1 tensor triangular prisms */
+  c1 = 12*n;
+  c2 = 38+18*(n-1);
+  o1 = 3*n;
+  o2 = 5*(n+1);
+  crbl->Nt[2] = 2;
+
+  ierr = PetscMalloc4(crbl->Nt[2],&crbl->target[2],crbl->Nt[2],&crbl->size[2],c1+c2,&crbl->cone[2],o1+o2,&crbl->ornt[2]);CHKERRQ(ierr);
+
+  crbl->target[2][0] = DM_POLYTOPE_TRIANGLE;
+  crbl->target[2][1] = DM_POLYTOPE_TRI_PRISM_TENSOR;
+
+  crbl->size[2][0] = n;
+  crbl->size[2][1] = n+1;
+
+  /* the triangles */
+  for (i = 0; i < n; i++) {
+    crbl->cone[2][12*i+ 0] = DM_POLYTOPE_SEGMENT;
+    crbl->cone[2][12*i+ 1] = 1;
+    crbl->cone[2][12*i+ 2] = 2;
+    crbl->cone[2][12*i+ 3] = i;
+    crbl->cone[2][12*i+ 4] = DM_POLYTOPE_SEGMENT;
+    crbl->cone[2][12*i+ 5] = 1;
+    crbl->cone[2][12*i+ 6] = 3;
+    crbl->cone[2][12*i+ 7] = i;
+    crbl->cone[2][12*i+ 8] = DM_POLYTOPE_SEGMENT;
+    crbl->cone[2][12*i+ 9] = 1;
+    crbl->cone[2][12*i+10] = 4;
+    crbl->cone[2][12*i+11] = i;
+  }
+
+  /* the triangular prisms */
+  crbl->cone[2][c1+ 0] = DM_POLYTOPE_TRIANGLE;
+  crbl->cone[2][c1+ 1] = 1;
+  crbl->cone[2][c1+ 2] = 0;
+  crbl->cone[2][c1+ 3] = 0;
+  crbl->cone[2][c1+ 4] = DM_POLYTOPE_TRIANGLE;
+  crbl->cone[2][c1+ 5] = 0;
+  crbl->cone[2][c1+ 6] = 0;
+  crbl->cone[2][c1+ 7] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[2][c1+ 8] = 1;
+  crbl->cone[2][c1+ 9] = 2;
+  crbl->cone[2][c1+10] = 0;
+  crbl->cone[2][c1+11] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[2][c1+12] = 1;
+  crbl->cone[2][c1+13] = 3;
+  crbl->cone[2][c1+14] = 0;
+  crbl->cone[2][c1+15] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[2][c1+16] = 1;
+  crbl->cone[2][c1+17] = 4;
+  crbl->cone[2][c1+18] = 0;
+  for (i = 0; i < n-1; i++) {
+    crbl->cone[2][c1+19+18*i+ 0] = DM_POLYTOPE_TRIANGLE;
+    crbl->cone[2][c1+19+18*i+ 1] = 0;
+    crbl->cone[2][c1+19+18*i+ 2] = i;
+    crbl->cone[2][c1+19+18*i+ 3] = DM_POLYTOPE_TRIANGLE;
+    crbl->cone[2][c1+19+18*i+ 4] = 0;
+    crbl->cone[2][c1+19+18*i+ 5] = i+1;
+    crbl->cone[2][c1+19+18*i+ 6] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+    crbl->cone[2][c1+19+18*i+ 7] = 1;
+    crbl->cone[2][c1+19+18*i+ 8] = 2;
+    crbl->cone[2][c1+19+18*i+ 9] = i+1;
+    crbl->cone[2][c1+19+18*i+10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+    crbl->cone[2][c1+19+18*i+11] = 1;
+    crbl->cone[2][c1+19+18*i+12] = 3;
+    crbl->cone[2][c1+19+18*i+13] = i+1;
+    crbl->cone[2][c1+19+18*i+14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+    crbl->cone[2][c1+19+18*i+15] = 1;
+    crbl->cone[2][c1+19+18*i+16] = 4;
+    crbl->cone[2][c1+19+18*i+17] = i+1;
+  }
+  crbl->cone[2][c1+19+18*(n-1)+ 0] = DM_POLYTOPE_TRIANGLE;
+  crbl->cone[2][c1+19+18*(n-1)+ 1] = 0;
+  crbl->cone[2][c1+19+18*(n-1)+ 2] = n-1;
+  crbl->cone[2][c1+19+18*(n-1)+ 3] = DM_POLYTOPE_TRIANGLE;
+  crbl->cone[2][c1+19+18*(n-1)+ 4] = 1;
+  crbl->cone[2][c1+19+18*(n-1)+ 5] = 1;
+  crbl->cone[2][c1+19+18*(n-1)+ 6] = 0;
+  crbl->cone[2][c1+19+18*(n-1)+ 7] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[2][c1+19+18*(n-1)+ 8] = 1;
+  crbl->cone[2][c1+19+18*(n-1)+ 9] = 2;
+  crbl->cone[2][c1+19+18*(n-1)+10] = n;
+  crbl->cone[2][c1+19+18*(n-1)+11] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[2][c1+19+18*(n-1)+12] = 1;
+  crbl->cone[2][c1+19+18*(n-1)+13] = 3;
+  crbl->cone[2][c1+19+18*(n-1)+14] = n;
+  crbl->cone[2][c1+19+18*(n-1)+15] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[2][c1+19+18*(n-1)+16] = 1;
+  crbl->cone[2][c1+19+18*(n-1)+17] = 4;
+  crbl->cone[2][c1+19+18*(n-1)+18] = n;
+  for (i = 0; i < o1+o2; i++) crbl->ornt[2][i] = 0;
+
+  /* DM_POLYTOPE_QUAD_PRISM_TENSOR produces n quads and n+1 tensor quad prisms */
+  c1 = 16*n;
+  c2 = 46+22*(n-1);
+  o1 = 4*n;
+  o2 = 6*(n+1);
+  crbl->Nt[3] = 2;
+
+  ierr = PetscMalloc4(crbl->Nt[3],&crbl->target[3],crbl->Nt[3],&crbl->size[3],c1+c2,&crbl->cone[3],o1+o2,&crbl->ornt[3]);CHKERRQ(ierr);
+
+  crbl->target[3][0] = DM_POLYTOPE_QUADRILATERAL;
+  crbl->target[3][1] = DM_POLYTOPE_QUAD_PRISM_TENSOR;
+
+  crbl->size[3][0] = n;
+  crbl->size[3][1] = n+1;
+
+  /* the quads */
+  for (i = 0; i < n; i++) {
+    crbl->cone[3][16*i+ 0] = DM_POLYTOPE_SEGMENT;
+    crbl->cone[3][16*i+ 1] = 1;
+    crbl->cone[3][16*i+ 2] = 2;
+    crbl->cone[3][16*i+ 3] = i;
+    crbl->cone[3][16*i+ 4] = DM_POLYTOPE_SEGMENT;
+    crbl->cone[3][16*i+ 5] = 1;
+    crbl->cone[3][16*i+ 6] = 3;
+    crbl->cone[3][16*i+ 7] = i;
+    crbl->cone[3][16*i+ 8] = DM_POLYTOPE_SEGMENT;
+    crbl->cone[3][16*i+ 9] = 1;
+    crbl->cone[3][16*i+10] = 4;
+    crbl->cone[3][16*i+11] = i;
+    crbl->cone[3][16*i+12] = DM_POLYTOPE_SEGMENT;
+    crbl->cone[3][16*i+13] = 1;
+    crbl->cone[3][16*i+14] = 5;
+    crbl->cone[3][16*i+15] = i;
+  }
+
+  /* the quad prisms */
+  crbl->cone[3][c1+ 0] = DM_POLYTOPE_QUADRILATERAL;
+  crbl->cone[3][c1+ 1] = 1;
+  crbl->cone[3][c1+ 2] = 0;
+  crbl->cone[3][c1+ 3] = 0;
+  crbl->cone[3][c1+ 4] = DM_POLYTOPE_QUADRILATERAL;
+  crbl->cone[3][c1+ 5] = 0;
+  crbl->cone[3][c1+ 6] = 0;
+  crbl->cone[3][c1+ 7] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[3][c1+ 8] = 1;
+  crbl->cone[3][c1+ 9] = 2;
+  crbl->cone[3][c1+10] = 0;
+  crbl->cone[3][c1+11] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[3][c1+12] = 1;
+  crbl->cone[3][c1+13] = 3;
+  crbl->cone[3][c1+14] = 0;
+  crbl->cone[3][c1+15] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[3][c1+16] = 1;
+  crbl->cone[3][c1+17] = 4;
+  crbl->cone[3][c1+18] = 0;
+  crbl->cone[3][c1+19] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[3][c1+20] = 1;
+  crbl->cone[3][c1+21] = 5;
+  crbl->cone[3][c1+22] = 0;
+  for (i = 0; i < n-1; i++) {
+    crbl->cone[3][c1+23+22*i+ 0] = DM_POLYTOPE_QUADRILATERAL;
+    crbl->cone[3][c1+23+22*i+ 1] = 0;
+    crbl->cone[3][c1+23+22*i+ 2] = i;
+    crbl->cone[3][c1+23+22*i+ 3] = DM_POLYTOPE_QUADRILATERAL;
+    crbl->cone[3][c1+23+22*i+ 4] = 0;
+    crbl->cone[3][c1+23+22*i+ 5] = i+1;
+    crbl->cone[3][c1+23+22*i+ 6] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+    crbl->cone[3][c1+23+22*i+ 7] = 1;
+    crbl->cone[3][c1+23+22*i+ 8] = 2;
+    crbl->cone[3][c1+23+22*i+ 9] = i+1;
+    crbl->cone[3][c1+23+22*i+10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+    crbl->cone[3][c1+23+22*i+11] = 1;
+    crbl->cone[3][c1+23+22*i+12] = 3;
+    crbl->cone[3][c1+23+22*i+13] = i+1;
+    crbl->cone[3][c1+23+22*i+14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+    crbl->cone[3][c1+23+22*i+15] = 1;
+    crbl->cone[3][c1+23+22*i+16] = 4;
+    crbl->cone[3][c1+23+22*i+17] = i+1;
+    crbl->cone[3][c1+23+22*i+18] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+    crbl->cone[3][c1+23+22*i+19] = 1;
+    crbl->cone[3][c1+23+22*i+20] = 5;
+    crbl->cone[3][c1+23+22*i+21] = i+1;
+  }
+  crbl->cone[3][c1+23+22*(n-1)+ 0] = DM_POLYTOPE_QUADRILATERAL;
+  crbl->cone[3][c1+23+22*(n-1)+ 1] = 0;
+  crbl->cone[3][c1+23+22*(n-1)+ 2] = n-1;
+  crbl->cone[3][c1+23+22*(n-1)+ 3] = DM_POLYTOPE_QUADRILATERAL;
+  crbl->cone[3][c1+23+22*(n-1)+ 4] = 1;
+  crbl->cone[3][c1+23+22*(n-1)+ 5] = 1;
+  crbl->cone[3][c1+23+22*(n-1)+ 6] = 0;
+  crbl->cone[3][c1+23+22*(n-1)+ 7] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[3][c1+23+22*(n-1)+ 8] = 1;
+  crbl->cone[3][c1+23+22*(n-1)+ 9] = 2;
+  crbl->cone[3][c1+23+22*(n-1)+10] = n;
+  crbl->cone[3][c1+23+22*(n-1)+11] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[3][c1+23+22*(n-1)+12] = 1;
+  crbl->cone[3][c1+23+22*(n-1)+13] = 3;
+  crbl->cone[3][c1+23+22*(n-1)+14] = n;
+  crbl->cone[3][c1+23+22*(n-1)+15] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[3][c1+23+22*(n-1)+16] = 1;
+  crbl->cone[3][c1+23+22*(n-1)+17] = 4;
+  crbl->cone[3][c1+23+22*(n-1)+18] = n;
+  crbl->cone[3][c1+23+22*(n-1)+19] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+  crbl->cone[3][c1+23+22*(n-1)+20] = 1;
+  crbl->cone[3][c1+23+22*(n-1)+21] = 5;
+  crbl->cone[3][c1+23+22*(n-1)+22] = n;
+  for (i = 0; i < o1+o2; i++) crbl->ornt[3][i] = 0;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexCellRefinerDestroy_BL(DMPlexCellRefiner cr)
+{
+  PlexRefiner_BL *crbl = (PlexRefiner_BL *)cr->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree4(crbl->target[0],crbl->size[0],crbl->cone[0],crbl->ornt[0]);CHKERRQ(ierr);
+  ierr = PetscFree4(crbl->target[1],crbl->size[1],crbl->cone[1],crbl->ornt[1]);CHKERRQ(ierr);
+  ierr = PetscFree4(crbl->target[2],crbl->size[2],crbl->cone[2],crbl->ornt[2]);CHKERRQ(ierr);
+  ierr = PetscFree4(crbl->target[3],crbl->size[3],crbl->cone[3],crbl->ornt[3]);CHKERRQ(ierr);
+  ierr = PetscFree5(crbl->Nt,crbl->target,crbl->size,crbl->cone,crbl->ornt);CHKERRQ(ierr);
+  ierr = PetscFree(crbl->h);CHKERRQ(ierr);
+  ierr = PetscFree(cr->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexCellRefinerRefine_BL(DMPlexCellRefiner cr, DMPolytopeType source, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
-  PetscErrorCode ierr;
-  /* Split all tensor edges with a new vertex, making two new 2 tensor edges
-     0--0--0--1--1
-  */
-  static DMPolytopeType tedgeT[]   = {DM_POLYTOPE_POINT, DM_POLYTOPE_POINT_PRISM_TENSOR};
-  static PetscInt       tedgeS[]   = {1, 2};
-  static PetscInt       tedgeC[]   = {DM_POLYTOPE_POINT, 1, 0, 0, DM_POLYTOPE_POINT, 0, 0,  DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 1, 1, 0};
-  static PetscInt       tedgeO[]   = {                         0,                       0,                        0,                          0};
-  /* Add 1 segment inside every tensor quad, making 2 new tensor quads
-     2---------1---------3
-     |                   |
-     |         B         |
-     |                   |
-     2---------2---------3
-     |                   |
-     |         A         |
-     |                   |
-     0---------0---------1
-  */
-  static DMPolytopeType tquadT[]  = {DM_POLYTOPE_SEGMENT, DM_POLYTOPE_SEG_PRISM_TENSOR};
-  static PetscInt       tquadS[]  = {1, 2};
-  static PetscInt       tquadC[]  = {DM_POLYTOPE_POINT, 1, 2, 0, DM_POLYTOPE_POINT, 1, 3, 0,
-                                     DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 0,    0, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 2, 0, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 3, 0,
-                                     DM_POLYTOPE_SEGMENT, 0,    0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 2, 1, DM_POLYTOPE_POINT_PRISM_TENSOR, 1, 3, 1};
-  static PetscInt       tquadO[]  = {0, 0,
-                                     0, 0, 0, 0,
-                                     0, 0, 0, 0};
-  /* Add 1 triangle and make 2 new tensor triangular prisms */
-  static DMPolytopeType ttripT[]  = {DM_POLYTOPE_TRIANGLE, DM_POLYTOPE_TRI_PRISM_TENSOR};
-  static PetscInt       ttripS[]  = {1, 2};
-  static PetscInt       ttripC[]  = {DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 1, 3, 0, DM_POLYTOPE_SEGMENT, 1, 4, 0,
-                                     DM_POLYTOPE_TRIANGLE, 1, 0, 0, DM_POLYTOPE_TRIANGLE, 0,    0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 0,
-                                     DM_POLYTOPE_TRIANGLE, 0,    0, DM_POLYTOPE_TRIANGLE, 1, 1, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 1};
-  static PetscInt       ttripO[]  = {0, 0, 0,
-                                     0, 0, 0, 0, 0,
-                                     0, 0, 0, 0, 0,
-                                     0, 0, 0, 0, 0,
-                                     0, 0, 0, 0, 0};
-  /* Add 1 quad and make 2 new tensor quad prisms */
-  static DMPolytopeType tquadpT[]  = {DM_POLYTOPE_QUADRILATERAL, DM_POLYTOPE_QUAD_PRISM_TENSOR};
-  static PetscInt       tquadpS[]  = {1, 2};
-  static PetscInt       tquadpC[]  = {DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 1, 3, 0, DM_POLYTOPE_SEGMENT, 1, 4, 0, DM_POLYTOPE_SEGMENT, 1, 5, 0,
-                                      DM_POLYTOPE_QUADRILATERAL, 1, 0, 0, DM_POLYTOPE_QUADRILATERAL, 0,    0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 5, 0,
-                                      DM_POLYTOPE_QUADRILATERAL, 0,    0, DM_POLYTOPE_QUADRILATERAL, 1, 1, 0, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 2, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 3, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 4, 1, DM_POLYTOPE_SEG_PRISM_TENSOR, 1, 5, 1};
-  static PetscInt       tquadpO[]  = {0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0};
+  PlexRefiner_BL  *crbl = (PlexRefiner_BL *)cr->data;
+  PetscErrorCode  ierr;
 
   PetscFunctionBeginHot;
   switch (source) {
-    case DM_POLYTOPE_POINT:
-    case DM_POLYTOPE_SEGMENT:
-    case DM_POLYTOPE_TRIANGLE:
-    case DM_POLYTOPE_QUADRILATERAL:
-    case DM_POLYTOPE_TETRAHEDRON:
-    case DM_POLYTOPE_HEXAHEDRON:
-    case DM_POLYTOPE_TRI_PRISM:
-      ierr = DMPlexCellRefinerRefine_None(cr, source, Nt, target, size, cone, ornt);CHKERRQ(ierr);
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    *Nt     = crbl->Nt[0];
+    *target = crbl->target[0];
+    *size   = crbl->size[0];
+    *cone   = crbl->cone[0];
+    *ornt   = crbl->ornt[0];
+    break;
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    *Nt     = crbl->Nt[1];
+    *target = crbl->target[1];
+    *size   = crbl->size[1];
+    *cone   = crbl->cone[1];
+    *ornt   = crbl->ornt[1];
+    break;
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    *Nt     = crbl->Nt[2];
+    *target = crbl->target[2];
+    *size   = crbl->size[2];
+    *cone   = crbl->cone[2];
+    *ornt   = crbl->ornt[2];
+    break;
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    *Nt     = crbl->Nt[3];
+    *target = crbl->target[3];
+    *size   = crbl->size[3];
+    *cone   = crbl->cone[3];
+    *ornt   = crbl->ornt[3];
+    break;
+  default:
+    ierr = DMPlexCellRefinerRefine_None(cr,source,Nt,target,size,cone,ornt);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexCellRefinerMapSubcells_BL(DMPlexCellRefiner cr, DMPolytopeType pct, PetscInt po, DMPolytopeType ct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
+  /* We shift any input orientation in order to make it non-negative
+       The orientation array o[po][o] gives the orientation the new replica rnew has to have in order to reproduce the face sequence from (r, o)
+       The replica array r[po][r] gives the new replica number rnew given that the parent point has orientation po
+       Overall, replica (r, o) in a parent with orientation 0 matches replica (rnew, onew) in a parent with orientation po
+  */
+  PetscInt       tquad_seg_o[]   = { 0,  1, -2, -1,
+                                     0,  1, -2, -1,
+                                    -2, -1,  0,  1,
+                                    -2, -1,  0,  1};
+  PetscInt       tquad_tquad_o[] = { 0,  1, -2, -1,
+                                     1,  0, -1, -2,
+                                    -2, -1,  0,  1,
+                                    -1, -2,  1,  0};
+  PlexRefiner_BL *crbl = (PlexRefiner_BL *)cr->data;
+  const PetscInt n = crbl->n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  *rnew = r;
+  *onew = o;
+  switch (pct) {
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+      if (ct == DM_POLYTOPE_POINT_PRISM_TENSOR) {
+        if      (po == 0 || po == -1) {*rnew = r;     *onew = o;}
+        else if (po == 1 || po == -2) {*rnew = n - r; *onew = (o == 0 || o == -1) ? -2 : 0;}
+        else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid orientation %D for tensor segment", po);
+      }
       break;
-    case DM_POLYTOPE_POINT_PRISM_TENSOR: *Nt = 2; *target = tedgeT;  *size = tedgeS;  *cone = tedgeC;  *ornt = tedgeO;  break;
-    case DM_POLYTOPE_SEG_PRISM_TENSOR:   *Nt = 2; *target = tquadT;  *size = tquadS;  *cone = tquadC;  *ornt = tquadO;  break;
-    case DM_POLYTOPE_TRI_PRISM_TENSOR:   *Nt = 2; *target = ttripT;  *size = ttripS;  *cone = ttripC;  *ornt = ttripO;  break;
-    case DM_POLYTOPE_QUAD_PRISM_TENSOR:  *Nt = 2; *target = tquadpT; *size = tquadpS; *cone = tquadpC; *ornt = tquadpO; break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+    case DM_POLYTOPE_SEG_PRISM_TENSOR:
+      switch (ct) {
+        case DM_POLYTOPE_SEGMENT:
+          *onew = tquad_seg_o[(po+2)*4+o+2];
+          *rnew = r;
+          break;
+        case DM_POLYTOPE_SEG_PRISM_TENSOR:
+          *onew = tquad_tquad_o[(po+2)*4+o+2];
+          *rnew = r;
+          break;
+        default: break;
+      }
+      break;
+    default:
+      ierr = DMPlexCellRefinerMapSubcells_None(cr, pct, po, ct, r, o, rnew, onew);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexCellRefinerMapCoordinates_BL(DMPlexCellRefiner cr, DMPolytopeType pct, DMPolytopeType ct, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+{
+  PlexRefiner_BL  *crbl = (PlexRefiner_BL *)cr->data;
+  PetscInt        d;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBeginHot;
+  switch (pct) {
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    if (ct != DM_POLYTOPE_POINT) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for refined point type %s",DMPolytopeTypes[ct]);
+    if (Nv != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parent vertices %D",Nv);
+    if (r >= crbl->n || r < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Invalid replica %D, must be in [0,%D)",r,crbl->n);
+    for (d = 0; d < dE; d++) out[d] = in[d] + crbl->h[r] * (in[d + dE] - in[d]);
+    break;
+  default:
+    ierr = DMPlexCellRefinerMapCoordinates_Barycenter(cr,pct,ct,r,Nv,dE,in,out);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1839,17 +2248,21 @@ PetscErrorCode DMPlexCellRefinerSetUp(DMPlexCellRefiner cr)
   PetscFunctionBegin;
   PetscValidHeader(cr, 1);
   if (cr->setupcalled) PetscFunctionReturn(0);
+  if (cr->ops->setup) {
+    ierr = (*cr->ops->setup)(cr);CHKERRQ(ierr);
+  }
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  if (pEnd > pStart) {ierr = DMPlexGetCellType(dm, 0, &ctCell);CHKERRQ(ierr);}
-  else               {
+  if (pEnd > pStart) {
+    ierr = DMPlexGetCellType(dm, 0, &ctCell);CHKERRQ(ierr);
+  } else {
     PetscInt dim;
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     switch (dim) {
-      case 0: ctCell = DM_POLYTOPE_POINT;break;
-      case 1: ctCell = DM_POLYTOPE_SEGMENT;break;
-      case 2: ctCell = DM_POLYTOPE_TRIANGLE;break;
-      case 3: ctCell = DM_POLYTOPE_TETRAHEDRON;break;
-      default: ctCell = DM_POLYTOPE_TETRAHEDRON;
+    case 0: ctCell = DM_POLYTOPE_POINT;break;
+    case 1: ctCell = DM_POLYTOPE_SEGMENT;break;
+    case 2: ctCell = DM_POLYTOPE_TRIANGLE;break;
+    case 3: ctCell = DM_POLYTOPE_TETRAHEDRON;break;
+    default: ctCell = DM_POLYTOPE_UNKNOWN;
     }
   }
   ierr = DMPlexCreateCellTypeOrder_Internal(ctCell, &cr->ctOrder, &cr->ctOrderInv);CHKERRQ(ierr);
@@ -1933,6 +2346,9 @@ PetscErrorCode DMPlexCellRefinerDestroy(DMPlexCellRefiner *cr)
   PetscFunctionBegin;
   if (!*cr) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*cr, DM_CLASSID, 1);
+  if ((*cr)->ops->destroy) {
+    ierr = ((*cr)->ops->destroy)(*cr);CHKERRQ(ierr);
+  }
   ierr = PetscObjectDereference((PetscObject) (*cr)->dm);CHKERRQ(ierr);
   ierr = PetscFree2((*cr)->ctOrder, (*cr)->ctOrderInv);CHKERRQ(ierr);
   ierr = PetscFree2((*cr)->ctStart, (*cr)->ctStartNew);CHKERRQ(ierr);
@@ -1961,37 +2377,45 @@ PetscErrorCode DMPlexCellRefinerCreate(DM dm, DMPlexCellRefiner *cr)
   ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
   ierr = DMPlexGetCellRefinerType(dm, &tmp->type);CHKERRQ(ierr);
   switch (tmp->type) {
-    case DM_REFINER_REGULAR:
-      tmp->ops->refine                  = DMPlexCellRefinerRefine_Regular;
-      tmp->ops->mapsubcells             = DMPlexCellRefinerMapSubcells_Regular;
-      tmp->ops->getcellvertices         = DMPlexCellRefinerGetCellVertices_Regular;
-      tmp->ops->getsubcellvertices      = DMPlexCellRefinerGetSubcellVertices_Regular;
-      tmp->ops->getaffinetransforms     = DMPlexCellRefinerGetAffineTransforms_Regular;
-      tmp->ops->getaffinefacetransforms = DMPlexCellRefinerGetAffineFaceTransforms_Regular;
-      break;
-    case DM_REFINER_TO_BOX:
-      tmp->ops->refine             = DMPlexCellRefinerRefine_ToBox;
-      tmp->ops->mapsubcells        = DMPlexCellRefinerMapSubcells_ToBox;
-      tmp->ops->getcellvertices    = DMPlexCellRefinerGetCellVertices_ToBox;
-      tmp->ops->getsubcellvertices = DMPlexCellRefinerGetSubcellVertices_ToBox;
-      break;
-    case DM_REFINER_TO_SIMPLEX:
-      tmp->ops->refine      = DMPlexCellRefinerRefine_ToSimplex;
-      tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_ToSimplex;
-      break;
-    case DM_REFINER_ALFELD2D:
-      tmp->ops->refine      = DMPlexCellRefinerRefine_Alfeld2D;
-      tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_None;
-      break;
-    case DM_REFINER_ALFELD3D:
-      tmp->ops->refine      = DMPlexCellRefinerRefine_Alfeld3D;
-      tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_None;
-      break;
-    case DM_REFINER_BL:
-      tmp->ops->refine      = DMPlexCellRefinerRefine_BL;
-      tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_BL;
-      break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid cell refiner type %s", DMPlexCellRefinerTypes[tmp->type]);
+  case DM_REFINER_REGULAR:
+    tmp->ops->refine                  = DMPlexCellRefinerRefine_Regular;
+    tmp->ops->mapsubcells             = DMPlexCellRefinerMapSubcells_Regular;
+    tmp->ops->getcellvertices         = DMPlexCellRefinerGetCellVertices_Regular;
+    tmp->ops->getsubcellvertices      = DMPlexCellRefinerGetSubcellVertices_Regular;
+    tmp->ops->mapcoords               = DMPlexCellRefinerMapCoordinates_Barycenter;
+    tmp->ops->getaffinetransforms     = DMPlexCellRefinerGetAffineTransforms_Regular;
+    tmp->ops->getaffinefacetransforms = DMPlexCellRefinerGetAffineFaceTransforms_Regular;
+    break;
+  case DM_REFINER_TO_BOX:
+    tmp->ops->refine             = DMPlexCellRefinerRefine_ToBox;
+    tmp->ops->mapsubcells        = DMPlexCellRefinerMapSubcells_ToBox;
+    tmp->ops->getcellvertices    = DMPlexCellRefinerGetCellVertices_ToBox;
+    tmp->ops->getsubcellvertices = DMPlexCellRefinerGetSubcellVertices_ToBox;
+    tmp->ops->mapcoords          = DMPlexCellRefinerMapCoordinates_Barycenter;
+    break;
+  case DM_REFINER_TO_SIMPLEX:
+    tmp->ops->refine      = DMPlexCellRefinerRefine_ToSimplex;
+    tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_ToSimplex;
+    tmp->ops->mapcoords   = DMPlexCellRefinerMapCoordinates_Barycenter;
+    break;
+  case DM_REFINER_ALFELD2D:
+    tmp->ops->refine      = DMPlexCellRefinerRefine_Alfeld2D;
+    tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_None;
+    tmp->ops->mapcoords   = DMPlexCellRefinerMapCoordinates_Barycenter;
+    break;
+  case DM_REFINER_ALFELD3D:
+    tmp->ops->refine      = DMPlexCellRefinerRefine_Alfeld3D;
+    tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_None;
+    tmp->ops->mapcoords   = DMPlexCellRefinerMapCoordinates_Barycenter;
+    break;
+  case DM_REFINER_BOUNDARYLAYER:
+    tmp->ops->setup       = DMPlexCellRefinerSetUp_BL;
+    tmp->ops->destroy     = DMPlexCellRefinerDestroy_BL;
+    tmp->ops->refine      = DMPlexCellRefinerRefine_BL;
+    tmp->ops->mapsubcells = DMPlexCellRefinerMapSubcells_BL;
+    tmp->ops->mapcoords   = DMPlexCellRefinerMapCoordinates_BL;
+    break;
+  default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid cell refiner type %s", DMPlexCellRefinerTypes[tmp->type]);
   }
   ierr = PetscCalloc2(DM_NUM_POLYTOPES, &tmp->coordFE, DM_NUM_POLYTOPES, &tmp->refGeom);CHKERRQ(ierr);
   *cr = tmp;
@@ -2072,14 +2496,14 @@ PetscErrorCode DMPlexCellRefinerGetAffineFaceTransforms(DMPlexCellRefiner cr, DM
 */
 PetscErrorCode DMPlexCellRefinerGetNewPoint(DMPlexCellRefiner cr, DMPolytopeType ct, DMPolytopeType ctNew, PetscInt p, PetscInt r, PetscInt *pNew)
 {
-  DMPolytopeType  *rct;
-  PetscInt        *rsize, *cone, *ornt;
-  PetscInt         Nct, n;
-  PetscInt         off  = cr->offset[ct*DM_NUM_POLYTOPES+ctNew];
-  PetscInt         ctS  = cr->ctStart[ct],       ctE  = cr->ctStart[cr->ctOrder[cr->ctOrderInv[ct]+1]];
-  PetscInt         ctSN = cr->ctStartNew[ctNew], ctEN = cr->ctStartNew[cr->ctOrder[cr->ctOrderInv[ctNew]+1]];
-  PetscInt         newp = ctSN;
-  PetscErrorCode   ierr;
+  DMPolytopeType *rct;
+  PetscInt       *rsize, *cone, *ornt;
+  PetscInt       Nct, n;
+  PetscInt       off  = cr->offset[ct*DM_NUM_POLYTOPES+ctNew];
+  PetscInt       ctS  = cr->ctStart[ct],       ctE  = cr->ctStart[cr->ctOrder[cr->ctOrderInv[ct]+1]];
+  PetscInt       ctSN = cr->ctStartNew[ctNew], ctEN = cr->ctStartNew[cr->ctOrder[cr->ctOrderInv[ctNew]+1]];
+  PetscInt       newp = ctSN;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
   if ((p < ctS) || (p >= ctE)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D is not a %s [%D, %D)", p, DMPolytopeTypes[ct], ctS, ctE);
@@ -2155,7 +2579,6 @@ static PetscErrorCode DMPlexCellRefinerSetCones(DMPlexCellRefiner cr, DM rdm)
     DMPolytopeType *rct;
     PetscInt       *rsize, *rcone, *rornt;
     PetscInt        Nct, n, r;
-
     ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
     ierr = DMPlexGetConeOrientation(dm, p, &ornt);CHKERRQ(ierr);
@@ -2171,7 +2594,7 @@ static PetscErrorCode DMPlexCellRefinerSetCones(DMPlexCellRefiner cr, DM rdm)
           PetscInt             ppp   = -1;                             /* Parent Parent point: Parent of point pp */
           PetscInt             pp    = p;                              /* Parent point: Point in the original mesh producing new cone point */
           PetscInt             po    = 0;                              /* Orientation of parent point pp in parent parent point ppp */
-          DMPolytopeType       pct   = ct;                             /* Parent type:  Cell type for parent of new cone point */
+          DMPolytopeType       pct   = ct;                             /* Parent type: Cell type for parent of new cone point */
           const PetscInt      *pcone = cone;                           /* Parent cone: Cone of parent point pp */
           PetscInt             pr    = -1;                             /* Replica number of pp that produces new cone point  */
           const DMPolytopeType ft    = (DMPolytopeType) rcone[coff++]; /* Cell type for new cone point of pNew */
@@ -2426,43 +2849,41 @@ static PetscErrorCode DMPlexCellRefinerSetCoordinates(DMPlexCellRefiner cr, DM r
       if (dof) isLocalized = PETSC_TRUE;
     }
     if (hasVertex) {
-      PetscScalar *pcoords = NULL;
-      PetscScalar  vcoords[3] = {0., 0., 0.};
-      PetscInt     Nc, Nv, v, d;
+      const PetscScalar *icoords = NULL;
+      PetscScalar       *pcoords = NULL;
+      PetscInt          Nc, Nv, v, d;
 
       ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, p, &Nc, &pcoords);CHKERRQ(ierr);
-      if (ct == DM_POLYTOPE_POINT) {
-        for (d = 0; d < dE; ++d) vcoords[d] = pcoords[d];
-      } else {
+
+      icoords = pcoords;
+      Nv      = Nc/dE;
+      if (ct != DM_POLYTOPE_POINT) {
         if (localizeVertices) {
           PetscScalar anchor[3];
 
           for (d = 0; d < dE; ++d) anchor[d] = pcoords[d];
           if (!isLocalized) {
-            Nv = Nc/dE;
-            for (v = 0; v < Nv; ++v) {ierr = DMLocalizeAddCoordinate_Internal(dm, dE, anchor, &pcoords[v*dE], vcoords);CHKERRQ(ierr);}
+            for (v = 0; v < Nv; ++v) {ierr = DMLocalizeCoordinate_Internal(dm, dE, anchor, &pcoords[v*dE], &pcoords[v*dE]);CHKERRQ(ierr);}
           } else {
             Nv = Nc/(2*dE);
-            for (v = Nv; v < Nv*2; ++v) {ierr = DMLocalizeAddCoordinate_Internal(dm, dE, anchor, &pcoords[v*dE], vcoords);CHKERRQ(ierr);}
+            icoords = pcoords + Nv*dE;
+            for (v = Nv; v < Nv*2; ++v) {ierr = DMLocalizeCoordinate_Internal(dm, dE, anchor, &pcoords[v*dE], &pcoords[v*dE]);CHKERRQ(ierr);}
           }
-        } else {
-          Nv = Nc/dE;
-          for (v = 0; v < Nv; ++v) for (d = 0; d < dE; ++d) vcoords[d] += pcoords[v*dE+d];
         }
-        for (d = 0; d < dE; ++d) vcoords[d] /= Nv;
       }
-      ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, p, &Nc, &pcoords);CHKERRQ(ierr);
       for (n = 0; n < Nct; ++n) {
         if (rct[n] != DM_POLYTOPE_POINT) continue;
-        if (rsize[n] > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Only support creating a single vertex in cell refinement, not %D", rsize[n]);
         for (r = 0; r < rsize[n]; ++r) {
-          PetscInt vNew, off;
+          PetscScalar vcoords[3];
+          PetscInt    vNew, off;
 
           ierr = DMPlexCellRefinerGetNewPoint(cr, ct, rct[n], p, r, &vNew);CHKERRQ(ierr);
           ierr = PetscSectionGetOffset(coordSectionNew, vNew, &off);CHKERRQ(ierr);
+          ierr = DMPlexCellRefinerMapCoordinates(cr, ct, rct[n], r, Nv, dE, icoords, vcoords);CHKERRQ(ierr);
           ierr = DMPlexSnapToGeomModel(dm, p, vcoords, &coordsNew[off]);CHKERRQ(ierr);
         }
       }
+      ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, p, &Nc, &pcoords);CHKERRQ(ierr);
     }
   }
   /* Then set coordinates for cells by localizing */

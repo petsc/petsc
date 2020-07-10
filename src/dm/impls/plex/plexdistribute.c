@@ -1331,7 +1331,7 @@ typedef struct {
 } Petsc3Int;
 
 /* MaxLoc, but carry a third piece of information around */
-static void MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_Datatype *dtype)
+static void MPIAPI MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_Datatype *dtype)
 {
   Petsc3Int *a = (Petsc3Int *)inout_;
   Petsc3Int *b = (Petsc3Int *)in_;

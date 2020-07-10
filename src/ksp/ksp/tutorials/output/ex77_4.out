@@ -1,28 +1,28 @@
-KSP final norm of residual #0 0.00161223
-                           #1 0.00158176
-                           #2 0.00162264
-                           #3 0.00161878
-                           #4 0.00157251
-Linear solve converged due to CONVERGED_RTOL iterations 38
-KSP final norm of residual #5 0.000740603
-                           #6 0.000786781
-                           #7 0.00101645
-                           #8 0.000908404
-                           #9 0.000758601
-Linear solve converged due to CONVERGED_RTOL iterations 16
-KSP final norm of residual #10 0.00080299
-                           #11 0.000738958
-Linear solve converged due to CONVERGED_RTOL iterations 28
-KSP final norm of residual #0 0.0021021
-                           #1 0.00205853
-                           #2 0.00205022
-                           #3 0.00210511
-                           #4 0.00181657
-                           #5 0.00194302
-                           #6 0.00176241
-                           #7 0.00203301
-                           #8 0.00203205
-                           #9 0.0020283
-                           #10 0.00211052
-                           #11 0.00204929
-Linear solve converged due to CONVERGED_RTOL iterations 13
+KSP final norm of residual #0 0.0137829
+                           #1 0.0134165
+                           #2 0.0131568
+                           #3 0.0138471
+                           #4 0.0135441
+Linear solve converged due to CONVERGED_RTOL iterations 40
+KSP final norm of residual #5 0.00937364
+                           #6 0.0102428
+                           #7 0.00973037
+                           #8 0.00859883
+                           #9 0.00892537
+Linear solve converged due to CONVERGED_RTOL iterations 15
+KSP final norm of residual #10 0.0151039
+                           #11 0.0126786
+Linear solve converged due to CONVERGED_RTOL iterations 24
+KSP final norm of residual #0 0.010665
+                           #1 0.0107089
+                           #2 0.0103285
+                           #3 0.0109493
+                           #4 0.0106839
+                           #5 0.0115357
+                           #6 0.0111254
+                           #7 0.0108654
+                           #8 0.0105694
+                           #9 0.0110965
+                           #10 0.00982081
+                           #11 0.0106104
+Linear solve converged due to CONVERGED_RTOL iterations 14

@@ -1299,7 +1299,9 @@ PetscErrorCode KSPCheckSolve(KSP ksp,PC pc,Vec vec)
     else {
       ierr = PetscInfo2(ksp,"Detected not converged in KSP inner solve: KSP reason %s PC reason %s\n",KSPConvergedReasons[ksp->reason],PCFailedReasons[pcreason]);CHKERRQ(ierr);
       pc->failedreason = PC_SUBPC_ERROR;
-      ierr = VecSetInf(vec);CHKERRQ(ierr);
+      if (vec) {
+        ierr = VecSetInf(vec);CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);

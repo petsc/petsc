@@ -105,7 +105,7 @@ SNES Object: 5 MPI processes
                   type: lu
                     out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
-                    matrix ordering: nd
+                    matrix ordering: external
                     factor fill ratio given 0., needed 0.
                       Factored matrix follows:
                         Mat Object: 1 MPI processes
@@ -245,7 +245,7 @@ SNES Object: 5 MPI processes
                           type: lu
                             out-of-place factorization
                             tolerance for zero pivot 2.22045e-14
-                            matrix ordering: nd
+                            matrix ordering: external
                             factor fill ratio given 0., needed 0.
                               Factored matrix follows:
                                 Mat Object: 1 MPI processes

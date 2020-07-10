@@ -708,7 +708,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
-  if (!H5Lexists(group, vecname, H5P_DEFAULT)) {
+  if (H5Lexists(group, vecname, H5P_DEFAULT) < 1) {
     /* Create chunk */
     PetscStackCallHDF5Return(chunkspace,H5Pcreate,(H5P_DATASET_CREATE));
     PetscStackCallHDF5(H5Pset_chunk,(chunkspace, dim, chunkDims));

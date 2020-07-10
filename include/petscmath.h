@@ -835,6 +835,17 @@ PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power)
   return result;
 }
 
+PETSC_STATIC_INLINE PetscInt64 PetscPowInt64(PetscInt base,PetscInt power)
+{
+  PetscInt64 result = 1;
+  while (power) {
+    if (power & 1) result *= base;
+    power >>= 1;
+    base *= base;
+  }
+  return result;
+}
+
 PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
 {
   PetscReal result = 1;

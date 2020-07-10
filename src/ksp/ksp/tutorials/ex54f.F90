@@ -92,6 +92,8 @@
 !  be specified at runtime.
       call MatCreate(PETSC_COMM_WORLD,Amat,ierr)
       call MatSetSizes( Amat,PETSC_DECIDE, PETSC_DECIDE, M, M, ierr )
+      call MatSetType( Amat, MATAIJ, ierr)
+      call MatSetOption(Amat,MAT_SPD,PETSC_TRUE,ierr)
       if ( size == 1 ) then
          call MatSetType( Amat, MATAIJ, ierr )
       else
@@ -449,7 +451,7 @@
 !
 !   test:
 !      nsize: 4
-!      args: -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 5
+!      args: -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -pc_gamg_esteig_ksp_max_it 5
 !      requires: !single
 !
 !TEST*/

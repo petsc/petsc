@@ -777,7 +777,7 @@ PetscErrorCode MatMultTranspose_SeqDenseCUDA(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDenseGetArrayRead_SeqDenseCUDA(Mat A,const PetscScalar **array)
+static PetscErrorCode MatDenseGetArrayRead_SeqDenseCUDA(Mat A,const PetscScalar **array)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
@@ -788,7 +788,21 @@ PetscErrorCode MatDenseGetArrayRead_SeqDenseCUDA(Mat A,const PetscScalar **array
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDenseGetArray_SeqDenseCUDA(Mat A,PetscScalar **array)
+static PetscErrorCode MatDenseGetArrayWrite_SeqDenseCUDA(Mat A,PetscScalar **array)
+{
+  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!mat->v) { /* MatCreateSeqDenseCUDA may not allocate CPU memory. Allocate if needed */
+    ierr = MatSeqDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
+  }
+  *array = mat->v;
+  A->offloadmask = PETSC_OFFLOAD_CPU;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseGetArray_SeqDenseCUDA(Mat A,PetscScalar **array)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
@@ -797,13 +811,6 @@ PetscErrorCode MatDenseGetArray_SeqDenseCUDA(Mat A,PetscScalar **array)
   ierr = MatSeqDenseCUDACopyFromGPU(A);CHKERRQ(ierr);
   *array = mat->v;
   A->offloadmask = PETSC_OFFLOAD_CPU;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatDenseRestoreArray_SeqDenseCUDA(Mat A,PetscScalar **array)
-{
-  PetscFunctionBegin;
-  *array = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1153,6 +1160,20 @@ static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseCUDA(Mat A,Mat *v)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode  MatDenseSetLDA_SeqDenseCUDA(Mat A,PetscInt lda)
+{
+  Mat_SeqDense     *cA = (Mat_SeqDense*)A->data;
+  Mat_SeqDenseCUDA *dA = (Mat_SeqDenseCUDA*)A->spptr;
+  PetscBool        data;
+
+  PetscFunctionBegin;
+  data = (PetscBool)((A->rmap->n > 0 && A->cmap->n > 0) ? (dA->d_v ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE);
+  if (!dA->user_alloc && data && cA->lda!=lda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"LDA cannot be changed after allocation of internal storage");
+  if (lda < A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,A->rmap->n);
+  cA->lda = lda;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
 {
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
@@ -1175,7 +1196,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     }
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetArray_C",MatDenseGetArray_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetArrayRead_C",MatDenseGetArrayRead_SeqDenseCUDA);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreArray_C",MatDenseRestoreArray_SeqDenseCUDA);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetArrayWrite_C",MatDenseGetArrayWrite_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetColumnVec_C",MatDenseGetColumnVec_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreColumnVec_C",MatDenseRestoreColumnVec_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetColumnVecRead_C",MatDenseGetColumnVecRead_SeqDenseCUDA);CHKERRQ(ierr);
@@ -1184,6 +1205,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetSubMatrix_C",MatDenseGetSubMatrix_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_SeqDenseCUDA);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseSetLDA_C",MatDenseSetLDA_SeqDenseCUDA);CHKERRQ(ierr);
 
     A->ops->duplicate               = MatDuplicate_SeqDenseCUDA;
     A->ops->mult                    = MatMult_SeqDenseCUDA;
@@ -1204,7 +1226,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     ierr = MatSeqDenseCUDACopyFromGPU(A);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetArray_C",MatDenseGetArray_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetArrayRead_C",MatDenseGetArray_SeqDense);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreArray_C",MatDenseRestoreArray_SeqDense);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetArrayWrite_C",MatDenseGetArray_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetColumnVec_C",MatDenseGetColumnVec_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreColumnVec_C",MatDenseRestoreColumnVec_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetColumnVecRead_C",MatDenseGetColumnVecRead_SeqDense);CHKERRQ(ierr);
@@ -1213,6 +1235,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetSubMatrix_C",MatDenseGetSubMatrix_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_SeqDense);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseSetLDA_C",MatDenseSetLDA_SeqDense);CHKERRQ(ierr);
 
     A->ops->duplicate               = MatDuplicate_SeqDense;
     A->ops->mult                    = MatMult_SeqDense;

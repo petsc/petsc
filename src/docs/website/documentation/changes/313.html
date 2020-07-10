@@ -76,6 +76,8 @@
             <li><a href="../faq.html">FAQ</a></li>
             <li><a href="../license.html">License</a></li>
             <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
+            <li><a href="../nonlinearsolvertable.html">Nonlinear Solver Table</a></li>
+	    <li><a href="../taosolvertable.html">TAO Solver Table</a></li>
           </ul>
         </li>
         <li><a href="../../publications/index.html">Applications/Publications</a></li>
@@ -228,7 +230,7 @@
         <li>PetscDualSpace now has PetscDualSpaceSetFormDegree() and PetscDualSpaceGetFormDegree() for governing functional pushforward/pullback behavior</li>
         <li>PETSCDUALSPACELAGRANGE now has PetscDualSpaceGetTrimmed() and PetscDualSpaceSetTrimmed() for creating degrees of freedom for trimmed polynomial spaces</li>
         <li>PETSCDUALSPACELAGRANGE now has PetscDualSpaceGetNodeType() and PetscDualSpaceSetNodType() for controlling the placement of interpolation nodes</li>
-        <li>PETSCDUALSPACEBDM was removed: its functionality is now a part of PETSCDUALSPACELAGRANGE</li>
+        <li>PETSCDUALSPACEBDM is no longer a standalone type of PetscDualSpace: it is now a constructor alias for PETSCDUALSPACELAGRANGE</li>
       </ul>
       <h4>PetscViewer:</h4>
         <ul>

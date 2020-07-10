@@ -46,13 +46,7 @@ int main(int argc,char **args)
   /*
       Create a parallel SBAIJ matrix shared by all processors
   */
-  ierr = MatCreateSBAIJ(PETSC_COMM_WORLD,
-                        bs,
-                        PETSC_DECIDE,PETSC_DECIDE,
-                        M,N,
-                        PETSC_DECIDE,NULL,
-                        PETSC_DECIDE,NULL,
-                        &A);CHKERRQ(ierr);
+  ierr = MatCreateSBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,N,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&A);CHKERRQ(ierr);
 
   /*
       Set values into the matrix

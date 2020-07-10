@@ -76,6 +76,8 @@
             <li><a href="../faq.html">FAQ</a></li>
             <li><a href="../license.html">License</a></li>
             <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
+            <li><a href="../nonlinearsolvertable.html">Nonlinear Solver Table</a></li>
+	    <li><a href="../taosolvertable.html">TAO Solver Table</a></li>
           </ul>
         </li>
         <li><a href="../../publications/index.html">Applications/Publications</a></li>
@@ -114,6 +116,10 @@
           <li>Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS Fortran linker enables catching floating point divide by zero the trapping is disabled for LAPACK routines that generate divide by zero, for example, the reference implementation of ieeeck().</li>
           <li>Add floating point exception handling support for freebsd and Windows.</li>
           <li>Consistently set exception handling for divide by zero, invalid, underflow, and overflow for all systems when possible.</li>
+          <li>-options_monitor and -options_monitor_cancel have immediate global effect, see PetscInitialize() for details</li>
+          <li>Remove PetscOptionsSetFromOptions()</li>
+          <li>Remove PetscOptionsMonitorCancel()</li>
+          <li>Remove -h and -v options. Use -help and -version instead. The short options -h and -v can now be used within user codes.</li>
         </ul>
       <h4>Configure/Build:</h4>
         <ul>
@@ -138,6 +144,7 @@
       <h4>PetscPartitioner:</h4>
       <h4>Mat:</h4>
         <ul>
+          <li>Add full support for MKL sparse matrix-matrix products in MATSEQAIJMKL</li>
           <li>Fix few bugs for MATSEQSBAIJ when missing diagonal entries</li>
           <li>Fix few bugs when trying to reuse matrices within MatMat operations</li>
           <li>Deprecate MatFreeIntermediateDataStructures() in favor of MatProductClear()</li>
@@ -149,16 +156,26 @@
           <li>Deprecate MatSeqDenseSetLDA in favor of MatDenseSetLDA</li>
           <li>Add support for A*B and A^t*B operations with A = AIJCUSPARSE and B = DENSECUDA matrices</li>
           <li>Add basic support for MATPRODUCT_AB (resp. MATPRODUCT_AtB) for any matrices with mult (multtranpose) operation defined and B dense</li>
+          <li>Add MATSCALAPACK, a new Mat type that wraps a ScaLAPACK matrix</li>
+          <li>Add support for MUMPS-5.3.0 distributed right hand side</li>
+          <li>Add support for MatMultHermitianTranspose with SEQAIJCUSPARSE</li>
+          <li>Remove default generation of explicit matrix for MatMultTranspose operations with SEQAIJCUSPARSE. Users can still require it via MatSeqAIJCUSPARSESetGenerateTranspose</li>
+          <li>Add MatOrderingType external returns a NULL ordering to allow solver types  MATSOLVERUMFPACK and MATSOLVERCHOLMOD to use their orderings
         </ul>
       <h4>PC:</h4>
         <ul>
           <li>Fix bugs related with reusing PCILU/PCICC/PCLU/PCCHOLESKY preconditioners with SEQAIJCUSPARSE matrices</li>
+          <li>GAMG uses MAT_SPD to default to CG for the eigen estimate in Chebyshev smoothers</li>
+          <li>Add PCMatApply() for applying a preconditioner to a block of vectors
+          <li>Add -pc_factor_mat_ordering_type external to use ordering methods of MATSOLVERUMFPACK and MATSOLVERCHOLMOD
+          <li>PCSetUp_LU,ILU,Cholesky,ICC() no longer compute an ordering if it is not to be used by the factorization (optimization)
         </ul>
       <h4>KSP:</h4>
         <ul>
           <li>Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence when the maximum number of iterations is reached</li>
           <li>Fix many KSP implementations to actually perform the number of iterations requested</li>
-          <li>Add KSPMatSolve() for solving iteratively (currently only with KSPHPDDM) systems with multiple right-hand sides, and KSP{Set|Get}MatSolveBlockSize() to set a block size limit</li>
+          <li>Add KSPMatSolve() for solving iteratively (currently only with KSPHPDDM and KSPPREONLY) systems with multiple right-hand sides, and KSP{Set|Get}MatSolveBlockSize() to set a block size limit</li>
+          <li>Chebyshev uses MAT_SPD to default to CG for the eigen estimate</li>
         </ul>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
@@ -179,6 +196,8 @@
           <li>Add DMPlexGet/SetActivePoint() to allow user to see which mesh point is being handled by projection</li>
           <li>Add DMPlexComputeOrthogonalQuality() to compute cell-wise orthogonality quality mesh statistic</li>
           <li>DMPlexSetClosurePermutationTensor() now sets tensor permutations at every depth, instead of just height 0.</li>
+          <li>Add DMComputeExactSolution() which uses PetscDS information</li>
+          <li>DMSNESCheckFromOptions() and DMTSCheckFromOptions() now gets exact solution from PetscDS</li>
         </ul>
       <h4>DT:</h4>
         <ul>
@@ -189,6 +208,9 @@
         </ul>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
+        <ul>
+          <li>Add PetscPowInt64 returning a 64bit integer result for cases where PetscPowInt result overflows 32bit representations</li>
+        </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>

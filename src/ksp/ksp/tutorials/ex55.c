@@ -51,6 +51,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Amat,2);CHKERRQ(ierr);
   ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Amat,18,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Amat,18,NULL,18,NULL);CHKERRQ(ierr);
@@ -276,24 +277,24 @@ int main(int argc,char **args)
 
    test:
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 5 -ksp_rtol 1.e-3 -ksp_monitor_short -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -ksp_rtol 1.e-3 -ksp_monitor_short -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2
       output_file: output/ex55_sa.out
 
    test:
       suffix: Classical
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -mg_levels_esteig_ksp_type cg
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason
       output_file: output/ex55_classical.out
 
    test:
       suffix: NC
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2
 
    test:
       suffix: geo
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -mg_levels_esteig_ksp_type cg -ksp_type cg -ksp_norm_type unpreconditioned  -mg_levels_ksp_max_it 3
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned  -mg_levels_ksp_max_it 3
       output_file: output/ex55_0.out
       requires: triangle
 

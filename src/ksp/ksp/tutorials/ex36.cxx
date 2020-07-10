@@ -117,8 +117,7 @@ int main(int argc, char **argv)
   /* Create the DM object from either a mesh file or from in-memory structured grid */
   if (user.use_extfile) {
     ierr = DMMoabLoadFromFile(PETSC_COMM_WORLD, user.dim, 1, user.filename, "", &dm);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, user.usetet, NULL, user.n, 1, &dm);CHKERRQ(ierr);
   }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
@@ -133,13 +132,12 @@ int main(int argc, char **argv)
   ierr = KSPSetComputeRHS(ksp, ComputeRHS_MOAB, &user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp, ComputeMatrix_MOAB, &user);CHKERRQ(ierr);
 
-  if (user.nlevels)
-  {
-    KSPGetPC(ksp, &pc);
+  if (user.nlevels) {
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(DM) * (user.nlevels + 1), &dmhierarchy);
     for (k = 0; k <= user.nlevels; k++) dmhierarchy[k] = NULL;
 
-    PetscPrintf(PETSC_COMM_WORLD, "Number of mesh hierarchy levels: %d\n", user.nlevels);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of mesh hierarchy levels: %d\n", user.nlevels);CHKERRQ(ierr);
     ierr = DMMoabGenerateHierarchy(dm, user.nlevels, PETSC_NULL);CHKERRQ(ierr);
 
     // coarsest grid = 0
@@ -148,8 +146,7 @@ int main(int argc, char **argv)
     PetscBool usehierarchy = PETSC_FALSE;
     if (usehierarchy) {
       ierr = DMRefineHierarchy(dm, user.nlevels, &dmhierarchy[1]);CHKERRQ(ierr);
-    }
-    else {
+    } else {
       for (k = 1; k <= user.nlevels; k++) {
         ierr = DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k]);CHKERRQ(ierr);
       }
@@ -176,8 +173,7 @@ int main(int argc, char **argv)
       ierr = DMDestroy(&dmhierarchy[k]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dmhierarchy);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     dmref = dm;
     PetscObjectReference((PetscObject)dm);
   }
@@ -223,30 +219,17 @@ int main(int argc, char **argv)
 PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)
 {
   if (user->problem == 2) {
-    if ((coords[0] > 1.0 / 3.0) && (coords[0] < 2.0 / 3.0) &&
-        (coords[1] > 1.0 / 3.0) && (coords[1] < 2.0 / 3.0) &&
-        (coords[2] > 1.0 / 3.0) && (coords[2] < 2.0 / 3.0))
-    {
-      return user->rho;
-    }
-    else
-      return 1.0;
-  }
-  else return 1.0; /* problem = 1 */
+    if ((coords[0] > 1.0 / 3.0) && (coords[0] < 2.0 / 3.0) && (coords[1] > 1.0 / 3.0) && (coords[1] < 2.0 / 3.0) && (coords[2] > 1.0 / 3.0) && (coords[2] < 2.0 / 3.0)) return user->rho;
+    else  return 1.0;
+  } else return 1.0; /* problem = 1 */
 }
 
 
 PetscReal ComputeReactionCoefficient(PetscReal coords[3], UserContext* user)
 {
   if (user->problem == 2) {
-    if ((coords[0] > 1.0 / 3.0) && (coords[0] < 2.0 / 3.0) &&
-        (coords[1] > 1.0 / 3.0) && (coords[1] < 2.0 / 3.0) &&
-        (coords[2] > 1.0 / 3.0) && (coords[2] < 2.0 / 3.0))
-    {
-      return 10.0;
-    }
-    else
-      return 0.0;
+    if ((coords[0] > 1.0 / 3.0) && (coords[0] < 2.0 / 3.0) && (coords[1] > 1.0 / 3.0) && (coords[1] < 2.0 / 3.0) && (coords[2] > 1.0 / 3.0) && (coords[2] < 2.0 / 3.0)) return 10.0;
+    else return 0.0;
   }
   else return 5.0; /* problem = 1 */
 }
@@ -259,9 +242,7 @@ double ExactSolution(PetscReal coords[3], UserContext* user)
     const PetscScalar yy = (coords[1] - user->xyzref[1]) * (coords[1] - user->xyzref[1]);
     const PetscScalar zz = (coords[2] - user->xyzref[2]) * (coords[2] - user->xyzref[2]);
     return PetscExpScalar(-(xx + yy + zz) / user->nu);
-  }
-  else
-    return sin(PETSC_PI * coords[0]) * sin(PETSC_PI * coords[1]) * sin(PETSC_PI * coords[2]);
+  } else return sin(PETSC_PI * coords[0]) * sin(PETSC_PI * coords[1]) * sin(PETSC_PI * coords[2]);
 }
 
 
@@ -278,8 +259,7 @@ double ForcingFunction(PetscReal coords[3], UserContext* user)
   if (user->problem == 2) {
     const PetscReal duxyz = ( (coords[0] - user->xyzref[0]) + (coords[1] - user->xyzref[1]) + (coords[2] - user->xyzref[2]) );
     return (4.0 / user->nu * duxyz * duxyz - 6.0) * exact / user->nu;
-  }
-  else {
+  } else {
     const PetscReal reac = ComputeReactionCoefficient(coords, user);
     return (3.0 * PETSC_PI * PETSC_PI + reac) * exact;
   }
@@ -411,7 +391,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
   ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
   ierr = DMMoabGetSize(dm, &nglobale, &nglobalv);CHKERRQ(ierr);
   ierr = DMMoabGetHierarchyLevel(dm, &hlevel);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv);CHKERRQ(ierr);
 
   ierr = DMMoabFEMCreateQuadratureDefault ( user->dim, user->VPERE, &quadratureObj );CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL);CHKERRQ(ierr);
@@ -540,8 +520,7 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
     /* compute the discrete L2 error against the exact solution */
     const PetscScalar lerr = (ExactSolution(vpos, user) - x[dof_index]);
     l2err += lerr * lerr;
-    if (linferr < fabs(lerr))
-      linferr = fabs(lerr);
+    if (linferr < fabs(lerr)) linferr = fabs(lerr);
 
     if (err) {
       /* set the discrete L2 error against the exact solution */

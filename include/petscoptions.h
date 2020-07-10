@@ -66,7 +66,6 @@ PETSC_EXTERN PetscErrorCode PetscOptionsStringToReal(const char[],PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscOptionsStringToScalar(const char[],PetscScalar*);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*)(const char[], const char[], void*), void*, PetscErrorCode (*)(void**));
-PETSC_EXTERN PetscErrorCode PetscOptionsMonitorCancel(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsMonitorDefault(const char[], const char[], void*);
 
 PETSC_EXTERN PetscErrorCode PetscObjectSetOptions(PetscObject,PetscOptions);
@@ -308,8 +307,6 @@ PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems*,cons
 PETSC_EXTERN PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems*,const char[],const char[],const char[],const char *const*,PetscEnum[],PetscInt*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems*,const char[],const char[],const char[],const char[]);
 
-
-PETSC_EXTERN PetscErrorCode PetscOptionsSetFromOptions(PetscOptions);
 PETSC_EXTERN PetscErrorCode PetscOptionsSAWsDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscOptionItems*,PetscObject,void*),PetscErrorCode (*)(PetscObject,void*),void*);

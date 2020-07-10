@@ -56,15 +56,14 @@ check-ci-settings:
 .stage-1:
   extends: .test
   stage: stage-1
-  image: jedbrown/mpich-ccache
   tags:
-    - docker
+    - stage1
   before_script:
     - date
+    - hostname
+    - grep PRETTY_NAME /etc/os-release
     - nproc
     - lscpu
-    - export CCACHE_COMPILERCHECK=content CCACHE_DIR=$(pwd)/.ccache
-    - ccache --show-stats
     - ccache --zero-stats
     - echo ${CONFIG_OPTS}
   script:
@@ -73,7 +72,7 @@ check-ci-settings:
     - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - date
-    - CCACHE_DIR=$(pwd)/.ccache ccache --show-stats
+    - ccache --show-stats
   artifacts:
     reports:
       junit: arch-*/tests/testresults.xml
@@ -86,10 +85,6 @@ check-ci-settings:
     - arch-*/tests/test_*_tap.log
     - arch-*/tests/test_*_err.log
     expire_in: 4 days
-  cache:
-    paths:
-      - .ccache/
-    key: "${CI_JOB_NAME}"
 
 #
 # The following tests run on the cloud as part of stage-1.
@@ -99,7 +94,7 @@ mpich-cxx-py3:
   extends: .stage-1
   variables:
     PYTHON: python3
-    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-clanguage=cxx --with-fc=0
+    CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-clanguage=cxx --with-fc=0
     TEST_SEARCH: snes_tutorials-ex48%
 
 uni-complex-float-int64:
@@ -111,26 +106,26 @@ uni-complex-float-int64:
 
 c99-mlib-static-py2:
   extends: .stage-1
-  image: jedbrown/mpich-ccache:python2
   variables:
     PYTHON: python2
-    CONFIG_OPTS: --with-mpi-dir=/usr/local --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
+    CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
     TEST_SEARCH: snes_tutorials-ex19%
 
 checksource:
   extends: .test
-  image: jedbrown/mpich-ccache
   stage: stage-1
+  tags:
+    - stage1
   script:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - make checkbadSource SHELL=bash
-    - make check_output SHELL=bash
+    - make -f gmakefile check_output SHELL=bash
 
 check-py-vermin:
   extends: .test
   stage: stage-1
   tags:
-    - check-ci-settings
+    - stage1
   script:
     - vermin -vv  -t=2.6- -t=3.4- config
 #
@@ -149,6 +144,7 @@ check-py-vermin:
     - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} check
     - make updatedatafiles
     - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
+    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov && bash <(curl -s https://codecov.io/bash) -c; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -160,6 +156,7 @@ check-py-vermin:
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
+    - ${TEST_ARCH}/gcov.tar.gz
     expire_in: 4 days
   variables:
     OPENBLAS_NUM_THREADS: 1
@@ -424,12 +421,22 @@ linux-cuda-single-cxx:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
 
+linux-cuda-uni-pkgs:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux, name:frog
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
+    TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
+
 linux-without-fc:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - name:si
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
@@ -483,16 +490,17 @@ linux-cxx-cmplx-pkgs-64idx:
     - .stage-3
     - .linux_test
   tags:
-    - name:pj01
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
+    LOAD_MODULES: llvm/9.0.0-7fyffox gcc/8.3.0-fjpc5ys cmake/3.14.2-rl3q676
 
 linux-pkgs-dbg-ftn-interfaces:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - name:pj02
+    - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
 
@@ -501,7 +509,7 @@ linux-pkgs-cxx-mlib:
     - .stage-3
     - .linux_test
   tags:
-    - name:pj02
+    - gce-nfs
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
@@ -534,17 +542,7 @@ linux-pkgs-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
+    RUN_GCOV: 1
 
 linux-cmplx-gcov:
   extends:
@@ -556,17 +554,7 @@ linux-cmplx-gcov:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-linux-cmplx-gcov
     LOAD_MODULES: gcc/8.3.0-fjpc5ys
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
+    RUN_GCOV: 1
 
 linux-matlab-ilp64-gcov:
   extends:
@@ -577,17 +565,7 @@ linux-matlab-ilp64-gcov:
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
     LOAD_MODULES: matlab/R2018a
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
+    RUN_GCOV: 1
   allow_failure: true
 
 linux-gcov:
@@ -598,17 +576,7 @@ linux-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcov
-  after_script:
-    - make gcov
-  artifacts:
-    when: always
-    paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
-    expire_in: 4 days
+    RUN_GCOV: 1
 
 linux-pgi:
   extends:
@@ -619,6 +587,17 @@ linux-pgi:
   variables:
     TEST_ARCH: arch-ci-linux-pgi
 
+linux-nagfor:
+  extends:
+    - .stage-3
+    - .linux_test_nofflags
+  tags:
+    - gce-nfs, linux-mcpu
+  variables:
+    PATH: /usr/lib/ccache:/home/svcpetsc/.local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/nfs/gce/projects/petsc/soft/nag/6.1/bin
+    NAG_KUSARI_FILE: licman1.mcs.anl.gov:7733
+    TEST_ARCH: arch-ci-linux-nagfor
+
 linux-intel-cmplx:
   extends:
     - .stage-3
@@ -627,7 +606,7 @@ linux-intel-cmplx:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-intel-cmplx
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0
+    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib
 
 linux-xsdk-dbg:
   extends:
@@ -656,7 +635,7 @@ linux-intel:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-intel
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0
+    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib
 
 linux-opt-misc:
   extends:
@@ -695,16 +674,7 @@ linux-gcc-ifc-cmplx:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
-    LOAD_MODULES: intel/19.0
-
-linux-nagfor:
-  extends:
-    - .stage-3
-    - .linux_test_nofflags
-  tags:
-    - mcs-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-nagfor
+    LOAD_MODULES: intel/19.0-nompilib
 
 linux-opt-cxx-quad:
   extends:
@@ -724,16 +694,6 @@ linux-ILP64:
   variables:
     TEST_ARCH: arch-ci-linux-ILP64
     LOAD_MODULES: gcc/6.5.0-57usejd
-
-linux-uni-pkgs:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs
-  variables:
-    TEST_ARCH: arch-ci-linux-uni-pkgs
-    LOAD_MODULES: llvm/9.0.0-7fyffox cmake/3.14.2-rl3q676
 
 linux-64idx-i8-uni:
   extends:

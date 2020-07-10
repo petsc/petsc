@@ -162,7 +162,32 @@ int main(int argc,char **args)
       requires: double !complex !define(PETSC_USE_64BIT_INDICES)
       suffix: 3_maxits
       output_file: output/ex6_maxits.out
-      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr qcg bicg minres symmlq lcd gcr pipegcr cgls richardson}} -ksp_max_it 3 -ksp_error_if_not_converged -ksp_converged_maxits -ksp_converged_reason -test_residual -ksp_norm_type none
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr qcg bicg minres symmlq lcd gcr pipegcr cgls richardson}} -ksp_max_it 4 -ksp_error_if_not_converged -ksp_converged_maxits -ksp_converged_reason -test_residual -ksp_norm_type none
+
+    testset:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex6_skip.out
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_max_it 8 -ksp_error_if_not_converged -ksp_convergence_test skip -ksp_converged_reason -test_residual
+      #SYMMLQ converges in 4 iterations and then generate nans
+      test:
+        suffix: 3_skip
+        args: -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr qcg bicg minres lcd gcr cgls richardson}}
+      #PIPEGCR generates nans on linux-knl
+      test:
+        requires: !define(PETSC_USE_AVX512_KERNELS)
+        suffix: 3_skip_pipegcr
+        args: -ksp_type pipegcr
+      test:
+        requires: hpddm
+        suffix: 3_skip_hpddm
+        args: -ksp_type hpddm -ksp_hpddm_type {{cg gmres bgmres bcg bfbcg gcrodr bgcrodr}}
+
+    test:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES) hpddm
+      suffix: 3_hpddm
+      output_file: output/ex6_3.out
+      filter: sed -e "s/CONVERGED_RTOL/CONVERGED_ATOL/g"
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type hpddm -ksp_hpddm_type {{cg gmres bgmres bcg bfbcg gcrodr bgcrodr}} -ksp_max_it 20 -ksp_error_if_not_converged -ksp_converged_reason -test_residual
 
     # test CG shortcut for residual access
     test:

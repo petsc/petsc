@@ -6,19 +6,19 @@
 #include <petsc/finclude/petscksp.h>
       use petscksp
       implicit none
-      Vec             x,b
-      Mat             A
+      Vec                            x,b
+      Mat                            A
 #if defined(PETSC_HAVE_HPDDM)
-      Mat             U
+      Mat                            U
 #endif
-      KSP             ksp
-      PetscInt        i,j,nmat
-      PetscViewer     viewer
-      character*(128) dir,name
-      character*(8)   fmt
-      character(3)    cmat
-      PetscBool       flg,reset
-      PetscErrorCode  ierr
+      KSP                            ksp
+      PetscInt                       i,j,nmat
+      PetscViewer                    viewer
+      character*(PETSC_MAX_PATH_LEN) dir,name
+      character*(8)                  fmt
+      character(3)                   cmat
+      PetscBool                      flg,reset
+      PetscErrorCode                 ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
@@ -100,11 +100,17 @@
 !        suffix: 2_par
 !        output_file: output/ex75_2.out
 !
-!   test:
+!   testset:
 !      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-!      suffix: 2_icc
 !      output_file: output/ex75_2_icc.out
 !      nsize: 1
 !      args: -nmat 3 -pc_type icc -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_type gcrodr -ksp_hpddm_recycle 20 -reset {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+!      test:
+!        suffix: 2_icc
+!        args:
+!      test:
+!        suffix: 2_icc_atol
+!        output_file: output/ex75_2_icc_atol.out
+!        args: -ksp_atol 1e-12
 !
 !TEST*/

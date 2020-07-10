@@ -1,9 +1,9 @@
-
 /*
       Interface KSP routines that the user calls.
 */
 
 #include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petsc/private/matimpl.h>   /*I "petscmat.h" I*/
 #include <petscdm.h>
 
 PETSC_STATIC_INLINE PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, PetscViewerFormat format)
@@ -929,13 +929,6 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCGetOperators(ksp->pc, &A, NULL);CHKERRQ(ierr);
-    ierr = MatAssembled(X, &flg);CHKERRQ(ierr);
-    if (!flg) {
-      ierr = MatSetOption(X, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatAssemblyBegin(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    }
-    /* A and X must be assembled */
     ierr = MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &R);CHKERRQ(ierr);
     ierr = MatAYPX(R, -1.0, B, SAME_NONZERO_PATTERN);
     ierr = MatGetSize(R, NULL, &N);
@@ -981,6 +974,13 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
   PetscCheckSameComm(ksp, 1, B, 2);
   PetscCheckSameComm(ksp, 1, X, 3);
+  if (!B->assembled) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
+  MatCheckPreallocated(X, 3);
+  if (!X->assembled) {
+    ierr = MatSetOption(X, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   if (B == X) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_IDN, "B and X must be different matrices");
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
@@ -997,6 +997,9 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of solutions not stored in a dense Mat");
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->ops->matsolve) {
+    if (ksp->guess_zero) {
+      ierr = MatZeroEntries(X);CHKERRQ(ierr);
+    }
     ierr = PetscLogEventBegin(KSP_MatSolve, ksp, B, X, 0);CHKERRQ(ierr);
     ierr = KSPGetMatSolveBlockSize(ksp, &Bbn);CHKERRQ(ierr);
     /* by default, do a single solve with all columns */

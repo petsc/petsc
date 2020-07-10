@@ -554,6 +554,8 @@ PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A,MatSolverType *type)
    Notes:
     Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
 
+    Cannot currently use ordering provided by PETSc.
+
    Level: beginner
 
 .seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverType(), MatSolverType

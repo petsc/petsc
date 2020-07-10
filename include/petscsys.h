@@ -494,6 +494,7 @@ M*/
 PETSC_EXTERN PetscMPIInt PETSC_MPI_THREAD_REQUIRED;
 
 PETSC_EXTERN PetscBool PetscBeganMPI;
+PETSC_EXTERN PetscBool PetscErrorHandlingInitialized;
 PETSC_EXTERN PetscBool PetscInitializeCalled;
 PETSC_EXTERN PetscBool PetscFinalizeCalled;
 PETSC_EXTERN PetscBool PetscViennaCLSynchronize;
@@ -1506,6 +1507,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryClose(PetscDLLibrary);
 */
 PETSC_EXTERN PetscErrorCode PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSplitOwnershipEqual(MPI_Comm,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm,PetscMPIInt);
 PETSC_EXTERN PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm,PetscMPIInt);
 PETSC_EXTERN PetscErrorCode PetscBarrier(PetscObject);
@@ -1763,7 +1765,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
 {
   if (n > 0) {
 #if defined(PETSC_USE_DEBUG)
-    if (!a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to zero at a null pointer");
+    if (!a) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to zero at a null pointer with %zu bytes",n);
 #endif
 #if defined(PETSC_PREFER_ZERO_FOR_MEMZERO)
     if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
@@ -2319,22 +2321,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 
 #define PETSC_BITS_PER_BYTE CHAR_BIT
 
-/*  For arrays that contain filenames or paths */
-
-#if defined(PETSC_HAVE_SYS_PARAM_H)
-#  include <sys/param.h>
-#endif
 #if defined(PETSC_HAVE_SYS_TYPES_H)
 #  include <sys/types.h>
-#endif
-#if defined(MAXPATHLEN)
-#  define PETSC_MAX_PATH_LEN MAXPATHLEN
-#elif defined(MAX_PATH)
-#  define PETSC_MAX_PATH_LEN MAX_PATH
-#elif defined(_MAX_PATH)
-#  define PETSC_MAX_PATH_LEN _MAX_PATH
-#else
-#  define PETSC_MAX_PATH_LEN 4096
 #endif
 
 /*MC

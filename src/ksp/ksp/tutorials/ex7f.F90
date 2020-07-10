@@ -37,9 +37,9 @@ program main
         myNone = -1.0, &
         sone   = 1.0
       PetscBool       :: isbjacobi,flg
-      KSP,allocatable,dimension(:) ::   subksp     ! array of local KSP contexts on this processor 
+      KSP,allocatable,dimension(:)      ::   subksp     ! array of local KSP contexts on this processor 
       PetscInt,allocatable,dimension(:) :: blks
-      character(len=80)    :: outputString
+      character(len=PETSC_MAX_PATH_LEN) :: outputString
       PetscInt,parameter :: one = 1, five = 5
    
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

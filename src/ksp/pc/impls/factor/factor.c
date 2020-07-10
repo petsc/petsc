@@ -553,7 +553,7 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
 
 /*@C
     PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to
-    be used in the LU factorization.
+    be used in the LU, ILU, Cholesky, and ICC factorizations.
 
     Logically Collective on PC
 
@@ -562,7 +562,7 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
 -   ordering - the matrix ordering name, for example, MATORDERINGND or MATORDERINGRCM
 
     Options Database Key:
-.   -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
+.   -pc_factor_mat_ordering_type <nd,rcm,...,external> - Sets ordering routine
 
     Level: intermediate
 
@@ -573,6 +573,8 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
     and reordering this matrix is very expensive.
 
     You can use SeqAIJ matrix with Cholesky and ICC and use any ordering
+
+    external means PETSc will not compute an ordering and the package will use its own ordering, for MATSOLVERCHOLMOD and MATSOLVERUMFPACK
 
 .seealso: MatOrderingType
 

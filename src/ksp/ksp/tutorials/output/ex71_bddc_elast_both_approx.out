@@ -124,13 +124,11 @@ PC Object: 8 MPI processes
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI processes
           type: chebyshev
-            eigenvalue estimates used:  min = 0.0999974, max = 1.09997
-            eigenvalues estimate via gmres min 0.505865, max 0.999974
-            eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+            eigenvalue estimates used:  min = 0.099995, max = 1.09995
+            eigenvalues estimate via cg min 0.505856, max 0.99995
+            eigenvalues estimated using cg with translations  [0. 0.1; 0. 1.1]
             KSP Object: (pc_bddc_dirichlet_mg_levels_1_esteig_) 1 MPI processes
-              type: gmres
-                restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                happy breakdown tolerance 1e-30
+              type: cg
               maximum iterations=10, initial guess is zero
               tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
               left preconditioning
@@ -229,13 +227,11 @@ PC Object: 8 MPI processes
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI processes
           type: chebyshev
-            eigenvalue estimates used:  min = 0.0999698, max = 1.09967
-            eigenvalues estimate via gmres min 0.133945, max 0.999698
-            eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+            eigenvalue estimates used:  min = 0.0999428, max = 1.09937
+            eigenvalues estimate via cg min 0.133777, max 0.999428
+            eigenvalues estimated using cg with translations  [0. 0.1; 0. 1.1]
             KSP Object: (pc_bddc_neumann_mg_levels_1_esteig_) 1 MPI processes
-              type: gmres
-                restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                happy breakdown tolerance 1e-30
+              type: cg
               maximum iterations=10, initial guess is zero
               tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
               left preconditioning

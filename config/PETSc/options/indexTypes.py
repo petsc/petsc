@@ -12,7 +12,7 @@ class Configure(config.base.Configure):
   def __str1__(self):
     desc = []
     if hasattr(self, 'integerSize'):
-      desc.append('  Integer size: ' + str(self.integerSize/8) + ' bytes')
+      desc.append('  Integer size: ' + str(self.integerSize//8) + ' bytes')
     return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):

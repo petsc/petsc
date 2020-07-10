@@ -38,6 +38,7 @@
             <li><a href="license.html">License</a></li>
             <li><a href="linearsolvertable.html">Linear Solver Table</a></li>
             <li><a href="nonlinearsolvertable.html">Nonlinear Solver Table</a></li>
+	    <li><a href="taosolvertable.html">TAO Solver Table</a></li>
           </ul>
         </li>
         <li><a href="../publications/index.html">Applications/Publications</a></li>
@@ -126,11 +127,12 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <li><a href="#mpi">MPI problems / I don't want MPI</a></li>
         <li><a href="#windows">Microsoft Windows installation</a></li>
         <li><a href="#root">Installing PETSc in system directories where sudo or root privileges are required / For package managers</a></li>
-        <li><a href="#pkgconfig">PETSc ./configure automatically generates Pkgconfig and module files for each install</a></li>
-        <li><a href="#SP">Installing on machine requiring cross compiler or a job scheduler, such as IBM SP or IBM Blue Gene</a></li>
+        <li><a href="#module">Installing on machines that use modules</a></li>
+        <li><a href="#cross">Installing on machine requiring cross compiler or a job scheduler</a></li>        
         <li><a href="#usingtau">Installing with TAU instrumentation package</a></li>
         <li><a href="#CUDA">Installing PETSc to use NVIDIA GPUs (aka CUDA)</a></li>
         <li><a href="#OpenCL">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></li>
+        <li><a href="#pkgconfig">PETSc ./configure automatically generates Pkgconfig and module files for each install</a></li>
         <li><a href="#doemachines">Installing on large scale DOE systems</a></li>
         <li><a href="#iosandroid">Installing PETSc on an iOS or Android platform</a></li>
       </ul>
@@ -576,9 +578,10 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
         <ul>
           <li> <h4> Intel MKL</h4>
-            Intel provides blas/lapack via  <a href="https://software.intel.com/en-us/mkl">MKL</a> library.
+            Intel provides blas/lapack via  the <a href="https://software.intel.com/en-us/mkl">MKL</a> library.
             It usually works from GNU/Intel compilers on Linux and MS/Intel compilers on Windows.
-            One can specify it to PETSc configure with for eg: <code>--with-blaslapack-dir=/soft/com/packages/intel/13/079/mkl</code>
+            One can specify it to PETSc configure with for eg: <code>--with-blaslapack-dir=$MKLROOT</code> or, for example,
+            <code>--with-blaslapack-dir=/soft/com/packages/intel/13/079/mkl</code>
             <br>
             If the above option does not work - one could determine the correct library list for your compilers using
             <a href="https://software.intel.com/sites/products/mkl/">Intel MKL Link Line Advisor</a>
@@ -1040,8 +1043,30 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
       <hr>
 
+      <div id="module">
+        <h3><a name="module">Installing on machines that use the module command:</a></h3>
+
+        <p>
+          On systems where you can use modules to load packages such as HDF5, the locations of the include files and libraries are known
+          by the compiler. Hence you simply load the appropriate module for the package and run <code>./configure</code> with the option <code>--with-package</code>.
+          For example.
+           <ul>
+          <li>
+            module load hdf5
+          </li>
+          <li>
+            ./configure --with-hdf5 
+          </li>
+        </p>
+
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div> <!-- #module -->
+
+      <hr>
+
       <div id="cross">
-        <h3><a name="SP">Installing on machine requiring cross compiler or a job scheduler (Batch systems):</a></h3>
+        <h3><a name="cross">Installing on machine requiring cross compiler or a job scheduler (Batch systems):</a></h3>
 
         <p>
           On systems where you need to use a job scheduler or batch submission to run jobs

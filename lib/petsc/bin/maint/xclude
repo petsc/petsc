@@ -1,6 +1,5 @@
 petsc-dist/.readthedocs.yml
 petsc-dist/.travis.yml
-petsc-dist/Jenkinsfile
 petsc-dist/.gitmessage
 petsc-dist/.gitlab-ci.yml
 petsc-dist/.gitlab

@@ -854,7 +854,7 @@ int main(int argc,char *argv[])
 /*TEST
 
     build:
-      requires: !complex c99
+      requires: !complex
 
     test:
       args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate -ts_use_splitrhsfunction 0

@@ -235,6 +235,9 @@ PETSC_INTERN PetscErrorCode MatConvert_Shell(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvertFrom_Shell(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 PETSC_INTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
+#if defined(PETSC_HAVE_SCALAPACK)
+PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat,MatType,MatReuse,Mat*);
+#endif
 
 PETSC_INTERN PetscErrorCode MatProductSymbolic_AB(Mat);
 PETSC_INTERN PetscErrorCode MatProductNumeric_AB(Mat);
@@ -418,6 +421,7 @@ struct _p_Mat {
   PetscLayout            rmap,cmap;
   void                   *data;            /* implementation-specific data */
   MatFactorType          factortype;       /* MAT_FACTOR_LU, ILU, CHOLESKY or ICC */
+  PetscBool              useordering;      /* factorization using ordering provide to routine (most PETSc implementations) */
   PetscBool              assembled;        /* is the matrix assembled? */
   PetscBool              was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */
@@ -1757,6 +1761,7 @@ PETSC_EXTERN PetscLogEvent MAT_GetSequentialNonzeroStructure;
 PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyToGPU;
+PETSC_EXTERN PetscLogEvent MAT_CUSPARSEGenerateTranspose;
 PETSC_EXTERN PetscLogEvent MAT_SetValuesBatch;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_DenseCopyToGPU;

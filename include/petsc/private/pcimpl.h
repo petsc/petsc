@@ -13,6 +13,7 @@ typedef struct _PCOps *PCOps;
 struct _PCOps {
   PetscErrorCode (*setup)(PC);
   PetscErrorCode (*apply)(PC,Vec,Vec);
+  PetscErrorCode (*matapply)(PC,Mat,Mat);
   PetscErrorCode (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*);
   PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec);
   PetscErrorCode (*applytranspose)(PC,Vec,Vec);
@@ -58,6 +59,7 @@ struct _p_PC {
 PETSC_EXTERN PetscLogEvent PC_SetUp;
 PETSC_EXTERN PetscLogEvent PC_SetUpOnBlocks;
 PETSC_EXTERN PetscLogEvent PC_Apply;
+PETSC_EXTERN PetscLogEvent PC_MatApply;
 PETSC_EXTERN PetscLogEvent PC_ApplyCoarse;
 PETSC_EXTERN PetscLogEvent PC_ApplyMultiple;
 PETSC_EXTERN PetscLogEvent PC_ApplySymmetricLeft;

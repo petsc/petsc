@@ -19,6 +19,7 @@
 #define KSPGMRESCGSRefinementType PetscEnum
 #define MatSchurComplementAinvType PetscEnum
 #define MatLMVMSymBroydenScaleType PetscEnum
+#define KSPHPDDMType PetscEnum
 
 !
 !  Various Krylov subspace methods

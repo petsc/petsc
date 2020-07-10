@@ -17,17 +17,17 @@
 !     -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
 !                       use the file petsc/src/mat/examples/mat.ex.binary
 
-      PetscErrorCode  ierr
-      PetscInt its,ione,ifive,izero
-      PetscBool flg
-      PetscScalar      none,five
-      PetscReal        norm
-      Vec              x,b,u
-      Mat              A
-      KSP             ksp1,ksp2
-      character*(128)  f
-      PetscViewer      fd
-      IS               isrow
+      PetscErrorCode                 ierr
+      PetscInt                       its,ione,ifive,izero
+      PetscBool                      flg
+      PetscScalar                    none,five
+      PetscReal                      norm
+      Vec                            x,b,u
+      Mat                            A
+      KSP                            ksp1,ksp2
+      character*(PETSC_MAX_PATH_LEN) f
+      PetscViewer                    fd
+      IS                             isrow
       none  = -1.0
       five  = 5.0
       ifive = 5

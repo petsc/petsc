@@ -1976,7 +1976,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   /* step 1: sanitize input */
   ierr = PetscObjectGetComm((PetscObject) sp, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)sp, "bdm", &isbdm);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)sp, PETSCDUALSPACEBDM, &isbdm);CHKERRQ(ierr);
   if (isbdm) {
     sp->k = -(dim-1); /* form degree of H-div */
     ierr = PetscObjectChangeTypeName((PetscObject)sp, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);

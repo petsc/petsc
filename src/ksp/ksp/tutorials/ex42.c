@@ -1599,7 +1599,7 @@ PetscErrorCode KSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *d
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   ierr = VecDestroy(&w);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"%3D KSP Component U,V,W,P residual norm [ %1.12e, %1.12e, %1.12e, %1.12e ]\n",n,norms[0],norms[1],norms[2],norms[3]);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%3D KSP Component U,V,W,P residual norm [ %1.12e, %1.12e, %1.12e, %1.12e ]\n",n,norms[0],norms[1],norms[2],norms[3]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

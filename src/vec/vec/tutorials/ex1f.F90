@@ -35,7 +35,7 @@
         three = 3.0
       PetscScalar :: dot
       PetscScalar, dimension(3) :: dots
-      character(len=40) ::  name
+      character(len=PETSC_MAX_PATH_LEN) ::  name
       PetscReal    :: nfloat
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

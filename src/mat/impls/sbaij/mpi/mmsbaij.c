@@ -9,18 +9,59 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   Mat_MPISBAIJ   *sbaij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ    *B     = (Mat_SeqBAIJ*)(sbaij->B->data);
   PetscErrorCode ierr;
-  PetscInt       Nbs = sbaij->Nbs,i,j,*indices,*aj = B->j,ec = 0,*garray,*sgarray;
+  PetscInt       Nbs = sbaij->Nbs,i,j,*aj = B->j,ec = 0,*garray,*sgarray;
   PetscInt       bs  = mat->rmap->bs,*stmp,mbs=sbaij->mbs, vec_size,nt;
   IS             from,to;
   Vec            gvec;
-  PetscMPIInt    rank   =sbaij->rank,lsize,size=sbaij->size;
-  PetscInt       *owners=sbaij->rangebs,*ec_owner,k;
+  PetscMPIInt    rank = sbaij->rank,lsize;
+  PetscInt       *owners = sbaij->rangebs,*ec_owner,k;
   const PetscInt *sowners;
   PetscScalar    *ptr;
+#if defined(PETSC_USE_CTABLE)
+  PetscTable         gid1_lid1; /* one-based gid to lid table */
+  PetscTablePosition tpos;
+  PetscInt           gid,lid;
+#else
+  PetscInt           *indices;
+#endif
 
   PetscFunctionBegin;
-  ierr = VecScatterDestroy(&sbaij->sMvctx);CHKERRQ(ierr);
-
+#if defined(PETSC_USE_CTABLE)
+  ierr = PetscTableCreate(mbs,Nbs+1,&gid1_lid1);CHKERRQ(ierr);
+  for (i=0; i<B->mbs; i++) {
+    for (j=0; j<B->ilen[i]; j++) {
+      PetscInt data,gid1 = aj[B->i[i]+j] + 1;
+      ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
+      if (!data) {ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr);}
+    }
+  }
+  /* form array of columns we need */
+  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
+  ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
+  while (tpos) {
+    ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
+    gid--; lid--;
+    garray[lid] = gid;
+  }
+  ierr = PetscSortInt(ec,garray);CHKERRQ(ierr);
+  ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
+  for (i=0; i<ec; i++) {ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr);}
+  /* compact out the extra columns in B */
+  for (i=0; i<B->mbs; i++) {
+    for (j=0; j<B->ilen[i]; j++) {
+      PetscInt gid1 = aj[B->i[i] + j] + 1;
+      ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
+      lid--;
+      aj[B->i[i]+j] = lid;
+    }
+  }
+  ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscMalloc2(2*ec,&sgarray,ec,&ec_owner);CHKERRQ(ierr);
+  for (i=j=0; i<ec; i++) {
+    while (garray[i]>=owners[j+1]) j++;
+    ec_owner[i] = j;
+  }
+#else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in sbaij->B */
   ierr = PetscCalloc1(Nbs,&indices);CHKERRQ(ierr);
@@ -36,7 +77,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = PetscMalloc2(2*ec,&sgarray,ec,&ec_owner);CHKERRQ(ierr);
 
   ec = 0;
-  for (j=0; j<size; j++) {
+  for (j=0; j<sbaij->size; j++) {
     for (i=owners[j]; i<owners[j+1]; i++) {
       if (indices[i]) {
         garray[ec]   = i;
@@ -53,11 +94,13 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   for (i=0; i<mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
   }
+  ierr = PetscFree(indices);CHKERRQ(ierr);
+#endif
   B->nbs = ec;
   ierr = PetscLayoutDestroy(&sbaij->B->cmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)sbaij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&sbaij->B->cmap);CHKERRQ(ierr);
-  ierr = PetscFree(indices);CHKERRQ(ierr);
 
+  ierr = VecScatterDestroy(&sbaij->sMvctx);CHKERRQ(ierr);
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&sbaij->lvec);CHKERRQ(ierr);
 
@@ -68,7 +111,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
 
   /* generate the scatter context
-     -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefull for some applications */
+     -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but have other uses, such as in MatDiagonalScale_MPISBAIJ */
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
@@ -137,127 +180,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = PetscFree2(sgarray,ec_owner);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
-{
-  Mat_MPISBAIJ   *baij = (Mat_MPISBAIJ*)mat->data;
-  Mat_SeqBAIJ    *B    = (Mat_SeqBAIJ*)(baij->B->data);
-  PetscErrorCode ierr;
-  PetscInt       i,j,*aj = B->j,ec = 0,*garray;
-  PetscInt       bs = mat->rmap->bs,*stmp;
-  IS             from,to;
-  Vec            gvec;
-#if defined(PETSC_USE_CTABLE)
-  PetscTable         gid1_lid1;
-  PetscTablePosition tpos;
-  PetscInt           gid,lid;
-#else
-  PetscInt Nbs = baij->Nbs,*indices;
-#endif
-
-  PetscFunctionBegin;
-#if defined(PETSC_USE_CTABLE)
-  /* use a table - Mark Adams */
-  PetscTableCreate(B->mbs,baij->Nbs+1,&gid1_lid1);
-  for (i=0; i<B->mbs; i++) {
-    for (j=0; j<B->ilen[i]; j++) {
-      PetscInt data,gid1 = aj[B->i[i]+j] + 1;
-      ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
-      if (!data) {
-        /* one based table */
-        ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr);
-      }
-    }
-  }
-  /* form array of columns we need */
-  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
-  ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
-  while (tpos) {
-    ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
-    gid--; lid--;
-    garray[lid] = gid;
-  }
-  ierr = PetscSortInt(ec,garray);CHKERRQ(ierr);
-  ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
-  for (i=0; i<ec; i++) {
-    ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  /* compact out the extra columns in B */
-  for (i=0; i<B->mbs; i++) {
-    for (j=0; j<B->ilen[i]; j++) {
-      PetscInt gid1 = aj[B->i[i] + j] + 1;
-      ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
-      lid--;
-      aj[B->i[i]+j] = lid;
-    }
-  }
-  B->nbs = ec;
-  ierr = PetscLayoutDestroy(&baij->B->cmap);CHKERRQ(ierr);
-  ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)baij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&baij->B->cmap);CHKERRQ(ierr);
-  ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
-#else
-  /* For the first stab we make an array as long as the number of columns */
-  /* mark those columns that are in baij->B */
-  ierr = PetscCalloc1(Nbs,&indices);CHKERRQ(ierr);
-  for (i=0; i<B->mbs; i++) {
-    for (j=0; j<B->ilen[i]; j++) {
-      if (!indices[aj[B->i[i] + j]]) ec++;
-      indices[aj[B->i[i] + j]] = 1;
-    }
-  }
-
-  /* form array of columns we need */
-  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
-  ec = 0;
-  for (i=0; i<Nbs; i++) {
-    if (indices[i]) {
-      garray[ec++] = i;
-    }
-  }
-
-  /* make indices now point into garray */
-  for (i=0; i<ec; i++) indices[garray[i]] = i;
-
-  /* compact out the extra columns in B */
-  for (i=0; i<B->mbs; i++) {
-    for (j=0; j<B->ilen[i]; j++) {
-      aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
-    }
-  }
-  B->nbs = ec;
-
-  baij->B->cmap->n = ec*mat->rmap->bs;
-
-  ierr = PetscFree(indices);CHKERRQ(ierr);
-#endif
-
-  /* create local vector that is used to scatter into */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec);CHKERRQ(ierr);
-
-  /* create two temporary index sets for building scatter-gather */
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
-
-  ierr = PetscMalloc1(ec,&stmp);CHKERRQ(ierr);
-  for (i=0; i<ec; i++) stmp[i] = i;
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
-
-  /* create temporary global vector to generate scatter context */
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
-  ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
-  ierr = VecDestroy(&gvec);CHKERRQ(ierr);
-
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->lvec);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)to);CHKERRQ(ierr);
-
-  baij->garray = garray;
-
-  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

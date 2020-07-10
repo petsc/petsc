@@ -92,6 +92,9 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Elemental(void);
 #endif
+#if defined(PETSC_HAVE_SCALAPACK)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void);
+#endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void);
 #endif
@@ -262,6 +265,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetSymTrans",MAT_CLASSID,&MAT_Getsymtranspose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSymTransR",MAT_CLASSID,&MAT_Getsymtransreduced);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPARSCopyTo",MAT_CLASSID,&MAT_CUSPARSECopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCUSPARSGenT",MAT_CLASSID,&MAT_CUSPARSEGenerateTranspose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatVCLCopyTo",  MAT_CLASSID,&MAT_ViennaCLCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatDenseCopyTo",MAT_CLASSID,&MAT_DenseCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatDenseCopyFrom",MAT_CLASSID,&MAT_DenseCopyFromGPU);CHKERRQ(ierr);
@@ -379,6 +383,9 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = MatSolverTypeRegister_Elemental();CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_SCALAPACK)
+  ierr = MatSolverTypeRegister_ScaLAPACK();CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = MatSolverTypeRegister_Matlab();CHKERRQ(ierr);
 #endif
@@ -411,9 +418,6 @@ PetscErrorCode  MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_LUSOL)
   ierr = MatSolverTypeRegister_Lusol();CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_ELEMENTAL)
-  ierr = MatSolverTypeRegister_SparseElemental();CHKERRQ(ierr);
 #endif
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(MatFinalizePackage);CHKERRQ(ierr);

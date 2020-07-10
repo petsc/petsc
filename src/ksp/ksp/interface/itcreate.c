@@ -1,4 +1,3 @@
-
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -790,10 +789,11 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
   ierr                    = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
+  ksp->setupnewmatrix     = PETSC_FALSE; // restore default (setup not called in case of new matrix)
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupstage = KSP_SETUP_NEW;
-  ierr            = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   ierr            = (*r)(ksp);CHKERRQ(ierr);
+  ierr            = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

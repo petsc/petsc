@@ -1,0 +1,6 @@
+ Create ScaLAPACK matrix A
+ Create rhs matrix B
+ Create solution matrix X
+ Create ScaLAPACK matrix Aher
+ Test Cholesky Solver 
+ Test LU Solver 

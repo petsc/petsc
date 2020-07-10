@@ -97,7 +97,6 @@ PetscInt main(PetscInt argc,char **args)
     for (i = 0; i < N; ++i) {
       /* PetscInt checkInd = (i > N/2-1)? i-N/2: i+N/2;*/
 
-      /*if (!(i%100)) PetscPrintf(PETSC_COMM_WORLD, "Finished convolution row %d\n", i);*/
       a3[i] = 0.0;
       for (j = -N/2+1; j < N/2; ++j) {
         PetscInt xpInd   = (j < 0) ? N+j : j;
@@ -105,7 +104,6 @@ PetscInt main(PetscInt argc,char **args)
 
         a3[i] += a[xpInd]*a2[diffInd];
       }
-      /*if (PetscAbsScalar(a3[i]) > PetscAbsScalar(a[checkInd])+0.1) PetscPrintf(PETSC_COMM_WORLD, "Invalid convolution at row %d\n", i);*/
     }
     ierr = VecRestoreArray(x, &a);CHKERRQ(ierr);
     ierr = VecRestoreArray(w, &a2);CHKERRQ(ierr);

@@ -148,15 +148,6 @@ E*/
 typedef enum {DM_POLYTOPE_POINT, DM_POLYTOPE_SEGMENT, DM_POLYTOPE_POINT_PRISM_TENSOR, DM_POLYTOPE_TRIANGLE, DM_POLYTOPE_QUADRILATERAL, DM_POLYTOPE_SEG_PRISM_TENSOR, DM_POLYTOPE_TETRAHEDRON, DM_POLYTOPE_HEXAHEDRON, DM_POLYTOPE_TRI_PRISM, DM_POLYTOPE_TRI_PRISM_TENSOR, DM_POLYTOPE_QUAD_PRISM_TENSOR, DM_POLYTOPE_FV_GHOST, DM_POLYTOPE_INTERIOR_GHOST, DM_POLYTOPE_UNKNOWN, DM_NUM_POLYTOPES} DMPolytopeType;
 PETSC_EXTERN const char *const DMPolytopeTypes[];
 
-/*S
-  PetscPartitioner - PETSc object that manages a graph partitioner
-
-  Level: intermediate
-
-.seealso: PetscPartitionerCreate(), PetscPartitionerSetType(), PetscPartitionerType
-S*/
-typedef struct _p_PetscPartitioner *PetscPartitioner;
-
 /*E
   PetscUnit - The seven fundamental SI units
 

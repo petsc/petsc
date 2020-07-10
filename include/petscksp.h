@@ -236,6 +236,36 @@ PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperator(KSP,Mat);
 PETSC_EXTERN PetscErrorCode KSPHPDDMSetDeflationSpace(KSP,Mat);
 PETSC_EXTERN PetscErrorCode KSPHPDDMGetDeflationSpace(KSP,Mat*);
 PETSC_DEPRECATED_FUNCTION("Use KSPMatSolve() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode KSPHPDDMMatSolve(KSP ksp, Mat B, Mat X) { return KSPMatSolve(ksp, B, X); }
+/*E
+    KSPHPDDMType - Type of Krylov method used by KSPHPDDM
+
+    Level: intermediate
+
+    Values:
++   KSP_HPDDM_TYPE_GMRES (default)
+.   KSP_HPDDM_TYPE_BGMRES
+.   KSP_HPDDM_TYPE_CG
+.   KSP_HPDDM_TYPE_BCG
+.   KSP_HPDDM_TYPE_GCRODR
+.   KSP_HPDDM_TYPE_BGCRODR
+.   KSP_HPDDM_TYPE_BFBCG
+-   KSP_HPDDM_TYPE_PREONLY
+
+.seealso: KSPHPDDM, KSPHPDDMSetType()
+E*/
+typedef enum {
+  KSP_HPDDM_TYPE_GMRES = 0,
+  KSP_HPDDM_TYPE_BGMRES = 1,
+  KSP_HPDDM_TYPE_CG = 2,
+  KSP_HPDDM_TYPE_BCG = 3,
+  KSP_HPDDM_TYPE_GCRODR = 4,
+  KSP_HPDDM_TYPE_BGCRODR = 5,
+  KSP_HPDDM_TYPE_BFBCG = 6,
+  KSP_HPDDM_TYPE_PREONLY = 7
+} KSPHPDDMType;
+PETSC_EXTERN const char *const KSPHPDDMTypes[];
+PETSC_EXTERN PetscErrorCode KSPHPDDMSetType(KSP,KSPHPDDMType);
+PETSC_EXTERN PetscErrorCode KSPHPDDMGetType(KSP,KSPHPDDMType*);
 
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
@@ -533,8 +563,9 @@ M*/
 
 /*MC
      KSP_DIVERGED_BREAKDOWN - A breakdown in the Krylov method was detected so the
-          method could not continue to enlarge the Krylov space. Could be due to a singlular matrix or
-          preconditioner.
+          method could not continue to enlarge the Krylov space. Could be due to a singular matrix or
+          preconditioner. In KSPHPDDM, this is also returned when some search directions within a block
+          are colinear.
 
    Level: beginner
 

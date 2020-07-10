@@ -1446,6 +1446,9 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_seqdense_elemental_C",NULL);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_SCALAPACK)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_seqdense_scalapack_C",NULL);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_seqdense_seqdensecuda_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_seqdensecuda_seqdensecuda_C",NULL);CHKERRQ(ierr);
@@ -1474,28 +1477,52 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
-  PetscInt       k,j,m,n,M;
+  PetscInt       k,j,m = A->rmap->n, M = mat->lda, n = A->cmap->n;
   PetscScalar    *v,tmp;
 
   PetscFunctionBegin;
-  m = A->rmap->n; M = mat->lda; n = A->cmap->n;
-  if (reuse == MAT_INPLACE_MATRIX && m == n) { /* in place transpose */
-    ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
-    for (j=0; j<m; j++) {
-      for (k=0; k<j; k++) {
-        tmp        = v[j + k*M];
-        v[j + k*M] = v[k + j*M];
-        v[k + j*M] = tmp;
+  if (reuse == MAT_INPLACE_MATRIX) {
+    if (m == n) { /* in place transpose */
+      ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
+      for (j=0; j<m; j++) {
+        for (k=0; k<j; k++) {
+          tmp        = v[j + k*M];
+          v[j + k*M] = v[k + j*M];
+          v[k + j*M] = tmp;
+        }
       }
+      ierr = MatDenseRestoreArray(A,&v);CHKERRQ(ierr);
+    } else { /* reuse memory, temporary allocates new memory */
+      PetscScalar *v2;
+      PetscLayout tmplayout;
+
+      ierr = PetscMalloc1((size_t)m*n,&v2);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
+      for (j=0; j<n; j++) {
+        for (k=0; k<m; k++) v2[j + (size_t)k*n] = v[k + (size_t)j*M];
+      }
+      ierr = PetscArraycpy(v,v2,(size_t)m*n);CHKERRQ(ierr);
+      ierr = PetscFree(v2);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArray(A,&v);CHKERRQ(ierr);
+      /* cleanup size dependent quantities */
+      ierr = VecDestroy(&mat->cvec);CHKERRQ(ierr);
+      ierr = MatDestroy(&mat->cmat);CHKERRQ(ierr);
+      ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
+      ierr = PetscFree(mat->fwork);CHKERRQ(ierr);
+      ierr = MatDestroy(&mat->ptapwork);CHKERRQ(ierr);
+      /* swap row/col layouts */
+      mat->lda  = n;
+      tmplayout = A->rmap;
+      A->rmap   = A->cmap;
+      A->cmap   = tmplayout;
     }
-    ierr = MatDenseRestoreArray(A,&v);CHKERRQ(ierr);
   } else { /* out-of-place transpose */
     Mat          tmat;
     Mat_SeqDense *tmatd;
     PetscScalar  *v2;
     PetscInt     M2;
 
-    if (reuse != MAT_REUSE_MATRIX) {
+    if (reuse == MAT_INITIAL_MATRIX) {
       ierr = MatCreate(PetscObjectComm((PetscObject)A),&tmat);CHKERRQ(ierr);
       ierr = MatSetSizes(tmat,A->cmap->n,A->rmap->n,A->cmap->n,A->rmap->n);CHKERRQ(ierr);
       ierr = MatSetType(tmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -1513,10 +1540,7 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
     ierr = MatDenseRestoreArrayRead(A,(const PetscScalar**)&v);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) *matout = tmat;
-    else {
-      ierr = MatHeaderMerge(A,&tmat);CHKERRQ(ierr);
-    }
+    *matout = tmat;
   }
   PetscFunctionReturn(0);
 }
@@ -2818,11 +2842,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDense_Elemental(Mat A, MatType newtype
 }
 #endif
 
-static PetscErrorCode  MatDenseSetLDA_SeqDense(Mat B,PetscInt lda)
+PetscErrorCode  MatDenseSetLDA_SeqDense(Mat B,PetscInt lda)
 {
   Mat_SeqDense *b = (Mat_SeqDense*)B->data;
+  PetscBool    data;
 
   PetscFunctionBegin;
+  data = (PetscBool)((B->rmap->n > 0 && B->cmap->n > 0) ? (b->v ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE);
+  if (!b->user_alloc && data && b->lda!=lda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"LDA cannot be changed after allocation of internal storage");
   if (lda < B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,B->rmap->n);
   b->lda = lda;
   PetscFunctionReturn(0);
@@ -3030,6 +3057,9 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_seqaij_C",MatConvert_SeqDense_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_elemental_C",MatConvert_SeqDense_Elemental);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SCALAPACK)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_scalapack_C",MatConvert_Dense_ScaLAPACK);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_seqdensecuda_C",MatConvert_SeqDense_SeqDenseCUDA);CHKERRQ(ierr);

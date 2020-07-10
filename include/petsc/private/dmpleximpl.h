@@ -41,74 +41,6 @@ PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromFile;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromCellList_Coordinates;
 
-PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
-
-typedef struct _PetscPartitionerOps *PetscPartitionerOps;
-struct _PetscPartitionerOps {
-  PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscPartitioner);
-  PetscErrorCode (*setup)(PetscPartitioner);
-  PetscErrorCode (*view)(PetscPartitioner,PetscViewer);
-  PetscErrorCode (*destroy)(PetscPartitioner);
-  PetscErrorCode (*partition)(PetscPartitioner, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscSection, PetscSection, PetscSection, IS *);
-};
-
-struct _p_PetscPartitioner {
-  PETSCHEADER(struct _PetscPartitionerOps);
-  void        *data;            /* Implementation object */
-  PetscInt    height;           /* Height of points to partition into non-overlapping subsets */
-  PetscInt    edgeCut;          /* The number of edge cut by the partition */
-  PetscReal   balance;          /* The maximum partition size divided by the minimum size */
-  PetscViewer viewer;
-  PetscViewer viewerGraph;
-  PetscBool   viewGraph;
-  PetscBool   noGraph;          /* if true, the partitioner does not need the connectivity graph, only the number of local vertices */
-  PetscBool   usevwgt;          /* if true, the partitioner looks at the local section vertSection to weight the vertices of the graph */
-};
-
-typedef struct {
-  PetscInt dummy;
-} PetscPartitioner_Chaco;
-
-typedef struct {
-  MPI_Comm  pcomm;
-  PetscInt  ptype;
-  PetscReal imbalanceRatio;
-  PetscInt  debugFlag;
-  PetscInt  randomSeed;
-} PetscPartitioner_ParMetis;
-
-typedef struct {
-  MPI_Comm  pcomm;
-  PetscInt  strategy;
-  PetscReal imbalance;
-} PetscPartitioner_PTScotch;
-
-static const char *const
-PTScotchStrategyList[] = {
-  "DEFAULT",
-  "QUALITY",
-  "SPEED",
-  "BALANCE",
-  "SAFETY",
-  "SCALABILITY",
-  "RECURSIVE",
-  "REMAP"
-};
-
-typedef struct {
-  PetscSection section;   /* Sizes for each partition */
-  IS           partition; /* Points in each partition */
-  PetscBool    random;    /* Flag for a random partition */
-} PetscPartitioner_Shell;
-
-typedef struct {
-  PetscInt dummy;
-} PetscPartitioner_Simple;
-
-typedef struct {
-  PetscInt dummy;
-} PetscPartitioner_Gather;
 
 typedef struct _DMPlexCellRefinerOps *DMPlexCellRefinerOps;
 struct _DMPlexCellRefinerOps {
@@ -118,20 +50,24 @@ struct _DMPlexCellRefinerOps {
   PetscErrorCode (*getaffinefacetransforms)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[], PetscReal *[]);
   PetscErrorCode (*getcellvertices)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[]);
   PetscErrorCode (*getsubcellvertices)(DMPlexCellRefiner, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt *, PetscInt *[]);
+  PetscErrorCode (*mapcoords)(DMPlexCellRefiner, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*setup)(DMPlexCellRefiner);
+  PetscErrorCode (*destroy)(DMPlexCellRefiner);
 };
 
 struct _p_DMPlexCellRefiner {
   PETSCHEADER(struct _DMPlexCellRefinerOps);
-  DM        dm;         /* The original DM */
-  PetscBool setupcalled;
+  DM                    dm;          /* The original DM */
+  PetscBool             setupcalled;
   DMPlexCellRefinerType type;
-  PetscInt *ctOrder;    /* [i] = ct: An array with cell types in depth order */
-  PetscInt *ctOrderInv; /* [ct] = i: An array with the ordinal numbers for each cell type */
-  PetscInt *ctStart;    /* The number for the first cell of each polytope type in the original mesh, indexed by cell type */
-  PetscInt *ctStartNew; /* The number for the first cell of each polytope type in the new mesh, indexed by cell type */
-  PetscInt *offset;     /* [ct][ctNew]: The offset in the new point numbering of a point of type ctNew produced from an old point of type ct */
-  PetscFE      *coordFE; /* Finite element for each cell type, used for localized coordinate interpolation */
-  PetscFEGeom **refGeom; /* Geometry of the reference cell for each cell type */
+  PetscInt              *ctOrder;    /* [i] = ct: An array with cell types in depth order */
+  PetscInt              *ctOrderInv; /* [ct] = i: An array with the ordinal numbers for each cell type */
+  PetscInt              *ctStart;    /* The number for the first cell of each polytope type in the original mesh, indexed by cell type */
+  PetscInt              *ctStartNew; /* The number for the first cell of each polytope type in the new mesh, indexed by cell type */
+  PetscInt              *offset;     /* [ct][ctNew]: The offset in the new point numbering of a point of type ctNew produced from an old point of type ct */
+  PetscFE               *coordFE;    /* Finite element for each cell type, used for localized coordinate interpolation */
+  PetscFEGeom           **refGeom;   /* Geometry of the reference cell for each cell type */
+  void                  *data;       /* refiner private data */
 };
 
 /* Utility struct to store the contents of a Fluent file in memory */

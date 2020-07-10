@@ -272,7 +272,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject)u,"solution");CHKERRQ(ierr);
   ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions(snes,u,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions(snes,u);CHKERRQ(ierr);
   ierr = SNESSolve(snes,NULL,u);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u,NULL,"-solution_view");CHKERRQ(ierr);
@@ -283,7 +283,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject)u_sum,"solution_sum");CHKERRQ(ierr);
   ierr = DMPlexSetSNESLocalFEM(dm_sum,&user,&user,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes_sum);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions(snes_sum,u_sum,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions(snes_sum,u_sum);CHKERRQ(ierr);
   ierr = SNESSolve(snes_sum,NULL,u_sum);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes_sum,&u_sum);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u_sum,NULL,"-solution_sum_view");CHKERRQ(ierr);

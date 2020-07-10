@@ -64,7 +64,8 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
   if (subclass) {
     ierr = MatConvert(mat,matype,MAT_INPLACE_MATRIX,&mat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } if (mat->ops->destroy) {
+  }
+  if (mat->ops->destroy) {
     /* free the old data structure if it existed */
     ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
     mat->ops->destroy = NULL;
@@ -72,23 +73,16 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
     /* should these null spaces be removed? */
     ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&mat->nearnullsp);CHKERRQ(ierr);
-    mat->preallocated = PETSC_FALSE;
-    mat->assembled = PETSC_FALSE;
-    mat->was_assembled = PETSC_FALSE;
-
-    /*
-     Increment, rather than reset these: the object is logically the same, so its logging and
-     state is inherited.  Furthermore, resetting makes it possible for the same state to be
-     obtained with a different structure, confusing the PC.
-    */
-    ++mat->nonzerostate;
-    ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   }
   mat->preallocated  = PETSC_FALSE;
   mat->assembled     = PETSC_FALSE;
   mat->was_assembled = PETSC_FALSE;
 
-  /* increase the state so that any code holding the current state knows the matrix has been changed */
+  /*
+   Increment, rather than reset these: the object is logically the same, so its logging and
+   state is inherited.  Furthermore, resetting makes it possible for the same state to be
+   obtained with a different structure, confusing the PC.
+  */
   mat->nonzerostate++;
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 

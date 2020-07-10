@@ -248,11 +248,11 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
 
   /* Olivine diffusion creep */
   if (param->ivisc >= VISC_DIFN && !param->stop_solve) {
-    if (!q) PetscPrintf(PETSC_COMM_WORLD,"Computing Variable Viscosity Solution\n");
+    if (!q) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Computing Variable Viscosity Solution\n");CHKERRQ(ierr);}
 
     /* continuation method on viscosity cutoff */
     for (param->continuation=0.0;; param->continuation+=cont_incr) {
-      if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %g\n", (double)param->continuation);
+      if (!q) {ierr = PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %g\n", (double)param->continuation);CHKERRQ(ierr);}
 
       /* solve the non-linear system */
       ierr   = VecCopy(user->Xguess,user->x);CHKERRQ(ierr);
@@ -260,7 +260,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
       ierr   = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
       ierr   = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
       *nits += its;
-      if (!q) PetscPrintf(PETSC_COMM_WORLD," SNES iterations: %D, Cumulative: %D\n", its, *nits);
+      if (!q) {ierr = PetscPrintf(PETSC_COMM_WORLD," SNES iterations: %D, Cumulative: %D\n", its, *nits);CHKERRQ(ierr);}
       if (param->stop_solve) goto done;
 
       if (reason<0) {

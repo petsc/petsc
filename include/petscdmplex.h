@@ -5,6 +5,7 @@
 #define PETSCDMPLEX_H
 
 #include <petscsection.h>
+#include <petscpartitioner.h>
 #include <petscdm.h>
 #include <petscdmplextypes.h>
 #include <petscdt.h>
@@ -13,44 +14,7 @@
 #include <petscsftypes.h>
 #include <petscdmfield.h>
 
-PETSC_EXTERN PetscClassId PETSCPARTITIONER_CLASSID;
-
-/*J
-  PetscPartitionerType - String with the name of a PETSc graph partitioner
-
-  Level: beginner
-
-.seealso: PetscPartitionerSetType(), PetscPartitioner
-J*/
-typedef const char *PetscPartitionerType;
-#define PETSCPARTITIONERCHACO    "chaco"
-#define PETSCPARTITIONERPARMETIS "parmetis"
-#define PETSCPARTITIONERPTSCOTCH "ptscotch"
-#define PETSCPARTITIONERSHELL    "shell"
-#define PETSCPARTITIONERSIMPLE   "simple"
-#define PETSCPARTITIONERGATHER   "gather"
-#define PETSCPARTITIONERMATPARTITIONING "matpartitioning"
-
-PETSC_EXTERN PetscFunctionList PetscPartitionerList;
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate(MPI_Comm, PetscPartitioner *);
-PETSC_EXTERN PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *);
-PETSC_EXTERN PetscErrorCode PetscPartitionerSetType(PetscPartitioner, PetscPartitionerType);
-PETSC_EXTERN PetscErrorCode PetscPartitionerGetType(PetscPartitioner, PetscPartitionerType *);
-PETSC_EXTERN PetscErrorCode PetscPartitionerSetUp(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner,PetscObject,const char[]);
-PETSC_EXTERN PetscErrorCode PetscPartitionerView(PetscPartitioner, PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscPartitionerRegister(const char [], PetscErrorCode (*)(PetscPartitioner));
-PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscSection, PetscSection, PetscSection, IS*);
-
 PETSC_EXTERN PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner, DM, PetscSection, PetscSection, IS *);
-
-PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner, PetscInt, const PetscInt[], const PetscInt[]);
-PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner, PetscBool);
-PETSC_EXTERN PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner, PetscBool *);
-
-PETSC_EXTERN PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner part, MatPartitioning *mp);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char [], PetscInt, DM *);

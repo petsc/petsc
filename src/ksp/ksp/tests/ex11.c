@@ -200,7 +200,7 @@ PetscErrorCode port_lsd_bfbt(void)
     ierr = VecScatterBegin(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-    PetscPrintf(PETSC_COMM_WORLD,"-- vector vector values --\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"-- vector vector values --\n");CHKERRQ(ierr);
     ierr = VecMin(uvec,&loc,&max);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
     ierr = VecMax(uvec,&loc,&max);CHKERRQ(ierr);
@@ -210,7 +210,7 @@ PetscErrorCode port_lsd_bfbt(void)
     ierr = VecSum(uvec,&sum);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
 
-    PetscPrintf(PETSC_COMM_WORLD,"-- pressure vector values --\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"-- pressure vector values --\n");CHKERRQ(ierr);
     ierr = VecMin(pvec,&loc,&max);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
     ierr = VecMax(pvec,&loc,&max);CHKERRQ(ierr);
@@ -220,7 +220,7 @@ PetscErrorCode port_lsd_bfbt(void)
     ierr = VecSum(pvec,&sum);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(p)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
 
-    PetscPrintf(PETSC_COMM_WORLD,"-- Full vector values --\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"-- Full vector values --\n");CHKERRQ(ierr);
     ierr = VecMin(x,&loc,&max);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u,p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
     ierr = VecMax(x,&loc,&max);CHKERRQ(ierr);

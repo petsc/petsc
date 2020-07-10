@@ -45,7 +45,7 @@ typedef struct {
 #define COARSE_LEVEL 0
 #define FINE_LEVEL   1
 
-extern int FormJacobian_Grid(AppCtx*,GridCtx*,Mat*);
+extern PetscErrorCode FormJacobian_Grid(AppCtx*,GridCtx*,Mat*);
 
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
@@ -70,12 +70,12 @@ int main(int argc,char **argv)
 
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
-  PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %D by %D\n",user.coarse.mx,user.coarse.my);
-  PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",user.fine.mx,user.fine.my);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %D by %D\n",user.coarse.mx,user.coarse.my);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",user.fine.mx,user.fine.my);CHKERRQ(ierr);
 
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
 
@@ -167,7 +167,7 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
+PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
 {
   Mat                    jac = *J;
   PetscErrorCode         ierr;

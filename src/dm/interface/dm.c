@@ -5507,6 +5507,62 @@ PetscErrorCode DMCreateDS(DM dm)
 }
 
 /*@
+  DMComputeExactSolution - Compute the exact solution for a given DM, using the PetscDS information.
+
+  Input Parameters:
++ dm   - The DM
+- time - The time
+
+  Output Parameters:
+. u    - The vector will be filled with exact solution values
+
+  Note: The user must call PetscDSSetExactSolution() beforehand
+
+  Level: developer
+
+.seealso: PetscDSSetExactSolution()
+@*/
+PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u)
+{
+  PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
+  void            **ectxs;
+  PetscInt          Nf, Nds, s;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nf, &exacts, Nf, &ectxs);CHKERRQ(ierr);
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  for (s = 0; s < Nds; ++s) {
+    PetscDS         ds;
+    DMLabel         label;
+    IS              fieldIS;
+    const PetscInt *fields, id = 1;
+    PetscInt        dsNf, f;
+
+    ierr = DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields(ds, &dsNf);CHKERRQ(ierr);
+    ierr = ISGetIndices(fieldIS, &fields);CHKERRQ(ierr);
+    ierr = PetscArrayzero(exacts, Nf);CHKERRQ(ierr);
+    ierr = PetscArrayzero(ectxs, Nf);CHKERRQ(ierr);
+    for (f = 0; f < dsNf; ++f) {
+      const PetscInt field = fields[f];
+      ierr = PetscDSGetExactSolution(ds, field, &exacts[field], &ectxs[field]);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);
+    if (label) {
+      ierr = DMProjectFunctionLabel(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    } else {
+      ierr = DMProjectFunction(dm, time, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) u, "exact_");CHKERRQ(ierr);
+  ierr = PetscFree2(exacts, ectxs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMCopyDS - Copy the discrete systems for the DM into another DM
 
   Collective on dm
@@ -6361,6 +6417,7 @@ PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscSca
   }
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const PetscReal anchor[], const PetscReal in[], PetscReal out[])
 {
   PetscInt d;

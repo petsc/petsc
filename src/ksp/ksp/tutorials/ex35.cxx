@@ -151,11 +151,11 @@ int main(int argc, char **argv)
 
   if (user.nlevels)
   {
-    KSPGetPC(ksp, &pc);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(DM) * (user.nlevels + 1), &dmhierarchy);
     for (k = 0; k <= user.nlevels; k++) dmhierarchy[k] = NULL;
 
-    PetscPrintf(PETSC_COMM_WORLD, "Number of mesh hierarchy levels: %d\n", user.nlevels);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of mesh hierarchy levels: %d\n", user.nlevels);CHKERRQ(ierr);
     ierr = DMMoabGenerateHierarchy(dm, user.nlevels, PETSC_NULL);CHKERRQ(ierr);
 
     /* coarsest grid = 0, finest grid = nlevels */
@@ -428,7 +428,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
   ierr = DMMoabGetSize(dm, &nglobale, &nglobalv);CHKERRQ(ierr);
   ierr = DMMoabGetHierarchyLevel(dm, &hlevel);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv);CHKERRQ(ierr);
 
   ierr = DMMoabFEMCreateQuadratureDefault ( 2, user->VPERE, &quadratureObj );CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL);CHKERRQ(ierr);

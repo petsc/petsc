@@ -6,9 +6,9 @@ program main
       use petscsys
       
       implicit none
-      PetscErrorCode     :: ierr
-      PetscInt           :: major,minor,subminor
-      character(len=256) :: outputString
+      PetscErrorCode                    :: ierr
+      PetscInt                          :: major,minor,subminor
+      character(len=PETSC_MAX_PATH_LEN) :: outputString
       
       ! Every PETSc routine should begin with the PetscInitialize() routine.
 

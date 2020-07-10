@@ -447,11 +447,11 @@ PETSC_INTERN PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS pe
     const PetscInt *ip;
     ierr         = ISGetIndices(perm,&ip);CHKERRQ(ierr);
     chol->factor = cholmod_X_analyze_p(&cholA,(PetscInt*)ip,fset,fsize,chol->common);
-    if (!chol->factor) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
+    if (!chol->factor) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed using PETSc ordering with status %d",chol->common->status);
     ierr = ISRestoreIndices(perm,&ip);CHKERRQ(ierr);
   } else {
     chol->factor = cholmod_X_analyze(&cholA,chol->common);
-    if (!chol->factor) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
+    if (!chol->factor) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed using internal ordering with status %d",chol->common->status);
   }
 
   if (aijalloc) {ierr = PetscFree2(cholA.p,cholA.i);CHKERRQ(ierr);}
@@ -510,7 +510,8 @@ PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F,MatInfoType flag,MatInfo *i
 . -mat_cholmod_zrelax <0.8>        - 3 real supernodal relaxed amalgamation parameters (None)
 . -mat_cholmod_nrelax <4>          - 3 size_t supernodal relaxed amalgamation parameters (None)
 . -mat_cholmod_prefer_upper <TRUE> - Work with upper triangular form (faster when using fill-reducing ordering, slower in natural ordering) (None)
-- -mat_cholmod_print <3>           - Verbosity level (None)
+. -mat_cholmod_print <3>           - Verbosity level (None)
+. -mat_ordering_type internal      - Use the ordering provided by Cholmod
 
    Level: beginner
 
@@ -531,7 +532,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   if (bs != 1) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"CHOLMOD only supports block size=1, given %D",bs);
 #if defined(PETSC_USE_COMPLEX)
-  if (!A->hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only for hermitian matrices");
+  if (!A->hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only for Hermitian matrices");
 #endif
   /* Create the factorization matrix F */
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
@@ -558,7 +559,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
 
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERCHOLMOD,&B->solvertype);CHKERRQ(ierr);
-
+  B->useordering = PETSC_TRUE;
   *F   = B;
   PetscFunctionReturn(0);
 }

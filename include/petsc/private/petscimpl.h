@@ -178,7 +178,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortr
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
-
+PETSC_INTERN PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions,PetscBool*);
 
 
 PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);

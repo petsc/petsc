@@ -30,9 +30,13 @@ PetscErrorCode MatDenseGetLocalMatrix(Mat A,Mat *B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(B,2);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIDENSE,&flg);CHKERRQ(ierr);
   if (flg) *B = mat->A;
-  else *B = A;
+  else {
+    ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATSEQDENSE,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)A)->type_name);
+    *B = A;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -165,9 +169,20 @@ static PetscErrorCode MatDenseGetLDA_MPIDense(Mat A,PetscInt *lda)
 static PetscErrorCode MatDenseSetLDA_MPIDense(Mat A,PetscInt lda)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  PetscBool      iscuda;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!a->A) {
+    if (a->matinuse) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
+    ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_SELF,&a->A);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)a->A);CHKERRQ(ierr);
+    ierr = MatSetSizes(a->A,A->rmap->n,A->cmap->N,A->rmap->n,A->cmap->N);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSECUDA,&iscuda);CHKERRQ(ierr);
+    ierr = MatSetType(a->A,iscuda ? MATSEQDENSECUDA : MATSEQDENSE);CHKERRQ(ierr);
+  }
   ierr = MatDenseSetLDA(a->A,lda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -576,6 +591,9 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseReplaceArray_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",NULL);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SCALAPACK)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_scalapack_C",NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIDenseSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
@@ -1882,6 +1900,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",MatConvert_MPIDense_Elemental);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_SCALAPACK)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_scalapack_C",MatConvert_Dense_ScaLAPACK);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_mpidensecuda_C",MatConvert_MPIDense_MPIDenseCUDA);CHKERRQ(ierr);
 #endif
@@ -1954,7 +1975,7 @@ M*/
 /*@C
    MatMPIDenseSetPreallocation - Sets the array used to store the matrix entries
 
-   Not collective
+   Collective
 
    Input Parameters:
 .  B - the matrix
@@ -2373,13 +2394,15 @@ PetscErrorCode  MatCreateDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  PetscValidLogicalCollectiveBool(*A,!!data,6);
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
+    PetscBool havedata = (PetscBool)!!data;
+
     ierr = MatSetType(*A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(*A,data);CHKERRQ(ierr);
-    if (data) {  /* user provided data array, so no need to assemble */
+    ierr = MPIU_Allreduce(MPI_IN_PLACE,&havedata,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+    if (havedata) {  /* user provided data array, so no need to assemble */
       ierr = MatSetUpMultiply_MPIDense(*A);CHKERRQ(ierr);
       (*A)->assembled = PETSC_TRUE;
     }

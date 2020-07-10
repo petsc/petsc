@@ -204,6 +204,7 @@ static PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscIn
     ierr = PetscDSGetComponentDerivativeOffsets(dsAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetTabulation(dsAux, &TAux);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(dsAux, &a, NULL, &a_x);CHKERRQ(ierr);
+    if (T[0]->Np != TAux[0]->Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
   }
   ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
   if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
@@ -296,6 +297,7 @@ static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
     auxOnBd = dimAux < dim ? PETSC_TRUE : PETSC_FALSE;
     if (auxOnBd) {ierr = PetscDSGetTabulation(dsAux, &TfAux);CHKERRQ(ierr);}
     else         {ierr = PetscDSGetFaceTabulation(dsAux, &TfAux);CHKERRQ(ierr);}
+    if (Tf[0]->Np != TfAux[0]->Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
   }
   ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
   if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
@@ -405,6 +407,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscInt field, PetscI
     ierr = PetscDSGetComponentDerivativeOffsets(dsAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(dsAux, &a, NULL, &a_x);CHKERRQ(ierr);
     ierr = PetscDSGetTabulation(dsAux, &TAux);CHKERRQ(ierr);
+    if (T[0]->Np != TAux[0]->Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
   }
   ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
   if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
@@ -508,6 +511,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscInt field, Pets
     auxOnBd = dimAux < dim ? PETSC_TRUE : PETSC_FALSE;
     if (auxOnBd) {ierr = PetscDSGetTabulation(dsAux, &TfAux);CHKERRQ(ierr);}
     else         {ierr = PetscDSGetFaceTabulation(dsAux, &TfAux);CHKERRQ(ierr);}
+    if (Tf[0]->Np != TfAux[0]->Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
   }
   NcI = Tf[field]->Nc;
   ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
@@ -636,9 +640,10 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscInt 
     ierr = PetscDSGetComponentOffsets(dsAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(dsAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(dsAux, &a, NULL, &a_x);CHKERRQ(ierr);
-    auxOnBd = dimAux < dim ? PETSC_TRUE : PETSC_FALSE;
+    auxOnBd = dimAux == dim ? PETSC_TRUE : PETSC_FALSE;
     if (auxOnBd) {ierr = PetscDSGetTabulation(dsAux, &TfAux);CHKERRQ(ierr);}
     else         {ierr = PetscDSGetFaceTabulation(dsAux, &TfAux);CHKERRQ(ierr);}
+    if (Tf[0]->Np != TfAux[0]->Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
   }
   isCohesiveField = field == Nf-1 ? PETSC_TRUE : PETSC_FALSE;
   NcI = Tf[field]->Nc;
@@ -759,6 +764,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
     ierr = PetscDSGetComponentDerivativeOffsets(dsAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(dsAux, &a, NULL, &a_x);CHKERRQ(ierr);
     ierr = PetscDSGetTabulation(dsAux, &TAux);CHKERRQ(ierr);
+    if (T[0]->Np != TAux[0]->Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
   }
   NcI = T[fieldI]->Nc;
   NcJ = T[fieldJ]->Nc;
@@ -1053,9 +1059,10 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
     ierr = PetscDSGetComponentOffsets(dsAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(dsAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(dsAux, &a, NULL, &a_x);CHKERRQ(ierr);
-    auxOnBd = dimAux < dim ? PETSC_TRUE : PETSC_FALSE;
+    auxOnBd = dimAux == dim ? PETSC_TRUE : PETSC_FALSE;
     if (auxOnBd) {ierr = PetscDSGetTabulation(dsAux, &TAux);CHKERRQ(ierr);}
     else         {ierr = PetscDSGetFaceTabulation(dsAux, &TAux);CHKERRQ(ierr);}
+    if (T[0]->Np != TAux[0]->Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
   }
   isCohesiveFieldI = fieldI == Nf-1 ? PETSC_TRUE : PETSC_FALSE;
   isCohesiveFieldJ = fieldJ == Nf-1 ? PETSC_TRUE : PETSC_FALSE;

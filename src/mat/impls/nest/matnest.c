@@ -1602,7 +1602,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     for (i=0; i<vs->nr; i++) {
       ierr    = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
       ierr    = MatGetLocalSize(sub,&n,NULL);CHKERRQ(ierr);
-      ierr    = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
+      ierr    = MatGetBlockSizes(sub,&bs,NULL);CHKERRQ(ierr);
       ierr    = ISCreateStride(PetscObjectComm((PetscObject)sub),n,offset,1,&vs->isglobal.row[i]);CHKERRQ(ierr);
       ierr    = ISSetBlockSize(vs->isglobal.row[i],bs);CHKERRQ(ierr);
       offset += n;
@@ -1631,7 +1631,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     for (j=0; j<vs->nc; j++) {
       ierr    = MatNestFindNonzeroSubMatCol(A,j,&sub);CHKERRQ(ierr);
       ierr    = MatGetLocalSize(sub,NULL,&n);CHKERRQ(ierr);
-      ierr    = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
+      ierr    = MatGetBlockSizes(sub,NULL,&bs);CHKERRQ(ierr);
       ierr    = ISCreateStride(PetscObjectComm((PetscObject)sub),n,offset,1,&vs->isglobal.col[j]);CHKERRQ(ierr);
       ierr    = ISSetBlockSize(vs->isglobal.col[j],bs);CHKERRQ(ierr);
       offset += n;
@@ -1648,7 +1648,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     ierr = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
     if (sub) {ierr = MatGetLocalToGlobalMapping(sub,&rmap,NULL);CHKERRQ(ierr);}
     if (rmap) {
-      ierr = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
+      ierr = MatGetBlockSizes(sub,&bs,NULL);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingGetSize(rmap,&nlocal);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,nlocal,offset,1,&isloc);CHKERRQ(ierr);
       ierr = ISSetBlockSize(isloc,bs);CHKERRQ(ierr);
@@ -1666,7 +1666,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     ierr = MatNestFindNonzeroSubMatCol(A,i,&sub);CHKERRQ(ierr);
     if (sub) {ierr = MatGetLocalToGlobalMapping(sub,NULL,&cmap);CHKERRQ(ierr);}
     if (cmap) {
-      ierr = MatGetBlockSize(sub,&bs);CHKERRQ(ierr);
+      ierr = MatGetBlockSizes(sub,NULL,&bs);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingGetSize(cmap,&nlocal);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,nlocal,offset,1,&isloc);CHKERRQ(ierr);
       ierr = ISSetBlockSize(isloc,bs);CHKERRQ(ierr);

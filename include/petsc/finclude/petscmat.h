@@ -72,6 +72,7 @@
 #define MATORDERINGWBM       'wbm'
 #define MATORDERINGSPECTRAL  'spectral'
 #define MATORDERINGAMD       'amd'
+#define MATORDERINGEXTERNAL  'external'
 !
 !  Matrix types
 !
@@ -110,6 +111,7 @@
 #define MATSEQDENSECUDA    'seqdensecuda'
 #define MATMPIDENSE        'mpidense'
 #define MATELEMENTAL       'elemental'
+#define MATSCALAPACK       'scalapack'
 #define MATBAIJ            'baij'
 #define MATSEQBAIJ         'seqbaij'
 #define MATMPIBAIJ         'mpibaij'
@@ -117,7 +119,6 @@
 #define MATSBAIJ           'sbaij'
 #define MATSEQSBAIJ        'seqsbaij'
 #define MATMPISBAIJ        'mpisbaij'
-
 #define MATDAAD            'daad'
 #define MATMFFD            'mffd'
 #define MATNORMAL          'normal'
@@ -142,16 +143,15 @@
 #define MATSEQSELL         'seqsell'
 #define MATMPISELL         'mpisell'
 #define MATDUMMY           'dummy'
-
 #define MATLMVM            'lmvm'
+#define MATLMVMDFP         'lmvmdfp'
+#define MATLMVMBFGS        'lmvmbfgs'
+#define MATLMVMSR1         'lmvmsr1'
 #define MATLMVMBROYDEN     'lmvmbroyden'
 #define MATLMVMBADBROYDEN  'lmvmbadbroyden'
 #define MATLMVMSYMBROYDEN  'lmvmsymbroyden'
 #define MATLMVMSYMBADBROYDEN 'lmvmsymbadbroyden'
 #define MATLMVMDIAGBROYDEN 'lmvmdiagbroyden'
-#define MATLMVMSR1         'lmvmsr1'
-#define MATLMVMDFP         'lmvmdfp'
-#define MATLMVMBFGS        'lmvmbfgs'
 #define MATHARA            'hara'
 
 !
@@ -171,6 +171,7 @@
 #define MATSOLVERSPARSEELEMENTAL 'sparseelemental'
 #define MATSOLVERKLU             'klu'
 #define MATSOLVERELEMENTAL       'elemental'
+#define MATSOLVERSCALAPACK       'scalapack'
 #define MATSOLVERESSL            'essl'
 #define MATSOLVERLUSOL           'lusol'
 #define MATSOLVERMUMPS           'mumps'

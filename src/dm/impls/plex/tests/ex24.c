@@ -155,7 +155,7 @@ int main(int argc, char **argv)
   /* compare the two ISs */
   if (user.compare_is) {
     ierr = ISEqualUnsorted(is1g, is2g, &flg);CHKERRQ(ierr);
-    if (!flg) PetscPrintf(comm, "ISs are not equal with type %s with size %d.\n",user.partitioning,size);
+    if (!flg) {ierr = PetscPrintf(comm, "ISs are not equal with type %s with size %d.\n",user.partitioning,size);CHKERRQ(ierr);}
   }
   ierr = ISDestroy(&is1g);CHKERRQ(ierr);
   ierr = ISDestroy(&is2g);CHKERRQ(ierr);
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
   ierr = PetscSectionViewFromOptions(s2, NULL, "-seq_s2_view");CHKERRQ(ierr);
   if (user.compare_is) {
     ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-    if (!flg) PetscPrintf(comm, "PetscSections are not equal with %s with size %d.\n",user.partitioning,size);
+    if (!flg) {ierr = PetscPrintf(comm, "PetscSections are not equal with %s with size %d.\n",user.partitioning,size);CHKERRQ(ierr);}
   }
 
   /* distribute both DMs */
@@ -192,7 +192,7 @@ int main(int argc, char **argv)
   /* compare the two distributed DMs */
   if (user.compare_dm) {
     ierr = DMPlexEqual(dmdist1, dmdist2, &flg);CHKERRQ(ierr);
-    if (!flg) PetscPrintf(comm, "Distributed DMs are not equal %s with size %d.\n",user.partitioning,size);
+    if (!flg) {ierr = PetscPrintf(comm, "Distributed DMs are not equal %s with size %d.\n",user.partitioning,size);CHKERRQ(ierr);}
   }
 
   /* if repartitioning is disabled, then quit */
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
   ierr = ISViewFromOptions(is2g, NULL, "-dist_is2_view");CHKERRQ(ierr);
   if (user.compare_is) {
     ierr = ISEqualUnsorted(is1g, is2g, &flg);CHKERRQ(ierr);
-    if (!flg) PetscPrintf(comm, "Distributed ISs are not equal, with %s with size %d.\n",user.repartitioning,size);
+    if (!flg) {ierr = PetscPrintf(comm, "Distributed ISs are not equal, with %s with size %d.\n",user.repartitioning,size);CHKERRQ(ierr);}
   }
   ierr = ISDestroy(&is1g);CHKERRQ(ierr);
   ierr = ISDestroy(&is2g);CHKERRQ(ierr);
@@ -245,7 +245,7 @@ int main(int argc, char **argv)
   ierr = PetscSectionViewFromOptions(s2, NULL, "-dist_s2_view");CHKERRQ(ierr);
   if (user.compare_is) {
     ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-    if (!flg) PetscPrintf(comm, "Distributed PetscSections are not equal, with %s with size %d.\n",user.repartitioning,size);
+    if (!flg) {ierr = PetscPrintf(comm, "Distributed PetscSections are not equal, with %s with size %d.\n",user.repartitioning,size);CHKERRQ(ierr);}
   }
 
   /* redistribute both distributed DMs */
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
   /* compare the two distributed DMs */
   if (!user.interpolate) {
     ierr = DMPlexEqual(dm1, dm2, &flg);CHKERRQ(ierr);
-    if (!flg) PetscPrintf(comm, "Redistributed DMs are not equal, with %s with size %d.\n",user.repartitioning,size);
+    if (!flg) {ierr = PetscPrintf(comm, "Redistributed DMs are not equal, with %s with size %d.\n",user.repartitioning,size);CHKERRQ(ierr);}
   }
 
   /* cleanup */

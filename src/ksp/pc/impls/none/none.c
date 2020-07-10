@@ -13,6 +13,15 @@ PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PCMatApply_None(PC pc,Mat X,Mat Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCopy(X,Y,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
      PCNONE - This is used when you wish to employ a nonpreconditioned
              Krylov method.
@@ -29,6 +38,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_None;
+  pc->ops->matapply            = PCMatApply_None;
   pc->ops->applytranspose      = PCApply_None;
   pc->ops->destroy             = NULL;
   pc->ops->setup               = NULL;
