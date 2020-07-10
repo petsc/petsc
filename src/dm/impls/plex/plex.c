@@ -8112,6 +8112,14 @@ PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat)
   PetscFunctionReturn(0);
 }
 
+static void g0_identity_private(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  g0[0] = 1.0;
+}
+
 PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
 {
   PetscSection   gsc, gsf;
@@ -8122,20 +8130,42 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
-  ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
-  ierr = DMGetGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
-  ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
+  if (dmFine == dmCoarse) {
+    DM       dmc;
+    PetscDS  ds;
+    Vec      u;
+    IS       cellIS;
+    PetscInt depth;
 
-  ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), mass);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mass, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*mass, dmCoarse->mattype);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
+    ierr = DMClone(dmFine, &dmc);CHKERRQ(ierr);
+    ierr = DMCopyDisc(dmFine, dmc);CHKERRQ(ierr);
+    ierr = DMGetDS(dmc, &ds);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, g0_identity_private, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dmc, mass);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dmc, &u);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(dmc, &depth);CHKERRQ(ierr);
+    ierr = DMGetStratumIS(dmc, "depth", depth, &cellIS);CHKERRQ(ierr);
+    ierr = MatZeroEntries(*mass);CHKERRQ(ierr);
+    ierr = DMPlexComputeJacobian_Internal(dmc, cellIS, 0.0, 0.0, u, NULL, *mass, *mass, NULL);CHKERRQ(ierr);
+    ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dmc, &u);CHKERRQ(ierr);
+    ierr = DMDestroy(&dmc);CHKERRQ(ierr);
+  } else {
+    ierr = DMGetGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
 
-  ierr = DMGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
-  ierr = DMPlexGetRegularRefinement(dmFine, &regular);CHKERRQ(ierr);
-  if (regular && cdm == dmCoarse) {ierr = DMPlexComputeMassMatrixNested(dmCoarse, dmFine, *mass, ctx);CHKERRQ(ierr);}
-  else                            {ierr = DMPlexComputeMassMatrixGeneral(dmCoarse, dmFine, *mass, ctx);CHKERRQ(ierr);}
+    ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), mass);CHKERRQ(ierr);
+    ierr = MatSetSizes(*mass, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatSetType(*mass, dmCoarse->mattype);CHKERRQ(ierr);
+    ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
+
+    ierr = DMGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
+    ierr = DMPlexGetRegularRefinement(dmFine, &regular);CHKERRQ(ierr);
+    if (regular && cdm == dmCoarse) {ierr = DMPlexComputeMassMatrixNested(dmCoarse, dmFine, *mass, ctx);CHKERRQ(ierr);}
+    else                            {ierr = DMPlexComputeMassMatrixGeneral(dmCoarse, dmFine, *mass, ctx);CHKERRQ(ierr);}
+  }
   ierr = MatViewFromOptions(*mass, NULL, "-mass_mat_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

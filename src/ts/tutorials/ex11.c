@@ -1147,7 +1147,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
 
 PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
 {
-  DM                dmMass, dmFace, dmCell, dmCoord;
+  DM                plex, dmMass, dmFace, dmCell, dmCoord;
   PetscSection      coordSection;
   Vec               coordinates, facegeom, cellgeom;
   PetscSection      sectionMass;
@@ -1157,6 +1157,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMClone(dm, &dmMass);CHKERRQ(ierr);
@@ -1176,7 +1177,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = PetscSectionDestroy(&sectionMass);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
   ierr = VecGetArray(*massMatrix, &m);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGeometryFVM(dm, &facegeom, &cellgeom, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetGeometryFVM(plex, &facegeom, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(facegeom, &dmFace);CHKERRQ(ierr);
   ierr = VecGetArrayRead(facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
@@ -1217,6 +1218,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(*massMatrix, &m);CHKERRQ(ierr);
   ierr = DMDestroy(&dmMass);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1348,8 +1350,7 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
 static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
 {
   User           user = (User)ctx;
-  DM             dm;
-  Vec            cellgeom;
+  DM             dm, plex;
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN],*ftable = NULL;
   PetscReal      xnorm;
@@ -1358,7 +1359,6 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   PetscFunctionBeginUser;
   ierr = PetscObjectSetName((PetscObject) X, "u");CHKERRQ(ierr);
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
 
   if (stepnum >= 0) {
@@ -1366,12 +1366,16 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   }
   if (stepnum >= 0) {           /* No summary for final time */
     Model             mod = user->model;
+    Vec               cellgeom;
     PetscInt          c,cStart,cEnd,fcount,i;
     size_t            ftableused,ftablealloc;
     const PetscScalar *cgeom,*x;
     DM                dmCell;
     DMLabel           vtkLabel;
     PetscReal         *fmin,*fmax,*fintegral,*ftmp;
+
+    ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+    ierr = DMPlexGetGeometryFVM(plex, NULL, &cellgeom, NULL);CHKERRQ(ierr);
     fcount = mod->maxComputed+1;
     ierr   = PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fintegral,fcount,&ftmp);CHKERRQ(ierr);
     for (i=0; i<fcount; i++) {
@@ -1407,6 +1411,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     }
     ierr = VecRestoreArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+    ierr = DMDestroy(&plex);CHKERRQ(ierr);
     ierr = MPI_Allreduce(MPI_IN_PLACE,fmin,fcount,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
     ierr = MPI_Allreduce(MPI_IN_PLACE,fmax,fcount,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
     ierr = MPI_Allreduce(MPI_IN_PLACE,fintegral,fcount,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
@@ -1593,7 +1598,7 @@ int main(int argc, char **argv)
   User              user;
   Model             mod;
   Physics           phys;
-  DM                dm;
+  DM                dm, plex;
   PetscReal         ftime, cfl, dt, minRadius;
   PetscInt          dim, nsteps;
   TS                ts;
@@ -1898,11 +1903,12 @@ int main(int argc, char **argv)
     ierr = PetscFVSetLimiter(fvm, limiter);CHKERRQ(ierr);
   }
 
+  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
   if (vtkCellGeom) {
     DM  dmCell;
     Vec cellgeom, partition;
 
-    ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetGeometryFVM(plex, NULL, &cellgeom, NULL);CHKERRQ(ierr);
     ierr = OutputVTK(dm, "ex11-cellgeom.vtk", &viewer);CHKERRQ(ierr);
     ierr = VecView(cellgeom, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -1913,9 +1919,9 @@ int main(int argc, char **argv)
     ierr = VecDestroy(&partition);CHKERRQ(ierr);
     ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
   }
-
   /* collect max maxspeed from all processes -- todo */
-  ierr = DMPlexTSGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
+  ierr = DMPlexGetGeometryFVM(plex, NULL, NULL, &minRadius);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
   dt   = cfl * minRadius / mod->maxspeed;
@@ -1954,7 +1960,9 @@ int main(int argc, char **argv)
         ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
         ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-        ierr = DMPlexTSGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
+        ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+        ierr = DMPlexGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
+        ierr = DMDestroy(&plex);CHKERRQ(ierr);
         ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
         if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
         dt   = cfl * minRadius / mod->maxspeed;
