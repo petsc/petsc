@@ -648,13 +648,24 @@ static PetscErrorCode MatSolveAdd_Elemental(Mat A,Vec B,Vec Y,Vec X)
 
 static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 {
-  Mat_Elemental *a=(Mat_Elemental*)A->data;
-  Mat_Elemental *b=(Mat_Elemental*)B->data;
-  Mat_Elemental *x=(Mat_Elemental*)X->data;
-  PetscInt      pivoting = a->pivoting;
+  Mat_Elemental  *a = (Mat_Elemental*)A->data;
+  Mat_Elemental  *x;
+  Mat            C;
+  PetscInt       pivoting = a->pivoting;
+  PetscBool      flg;
+  MatType        type;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  El::Copy(*b->emat,*x->emat);
+  ierr = MatGetType(X,&type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,MATELEMENTAL,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+    x = (Mat_Elemental*)C->data;
+  } else {
+    x = (Mat_Elemental*)X->data;
+    El::Copy(*((Mat_Elemental*)B->data)->emat,*x->emat);
+  }
   switch (A->factortype) {
   case MAT_FACTOR_LU:
     if (pivoting == 0) {
@@ -671,6 +682,10 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType");
     break;
+  }
+  if (!flg) {
+    ierr = MatConvert(C,type,MAT_REUSE_MATRIX,&X);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
