@@ -194,18 +194,6 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,Mat *J)
     } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
   }
   A = shell->A;
-  /* the check below is tacky and incomplete */
-  if (dm->mattype) {
-    PetscBool flg,aij,seqaij,mpiaij;
-    ierr = PetscObjectTypeCompare((PetscObject)A,dm->mattype,&flg);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&mpiaij);CHKERRQ(ierr);
-    ierr = PetscStrcmp(dm->mattype,MATAIJ,&aij);CHKERRQ(ierr);
-    if (!flg) {
-      if (!(aij && (seqaij || mpiaij))) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",dm->mattype,((PetscObject)A)->type_name);
-    }
-  }
-  /* Need to create a copy in order to attach the DM to the matrix */
   ierr = MatDuplicate(A,MAT_SHARE_NONZERO_PATTERN,J);CHKERRQ(ierr);
   ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1124,6 +1112,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->localtolocalbegin  = DMLocalToLocalBeginDefaultShell;
   dm->ops->localtolocalend    = DMLocalToLocalEndDefaultShell;
   dm->ops->createsubdm        = DMCreateSubDM_Shell;
+  ierr = DMSetMatType(dm,MATDENSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

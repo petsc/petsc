@@ -148,7 +148,7 @@ typedef const char* MatSolverType;
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-.seealso: MatSolverType, MatGetFactor()
+.seealso: MatSolverType, MatGetFactor(), MatGetFactorAvailable(), MatSolverTypeRegister()
 E*/
 typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT} MatFactorType;
 PETSC_EXTERN const char *const MatFactorTypes[];

@@ -45,7 +45,7 @@ static PetscBool MatPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: PetscFinalize(), MatInitializePackage()
 @*/
 PetscErrorCode  MatFinalizePackage(void)
 {
@@ -146,7 +146,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: PetscInitialize(), MatFinalizePackage()
 @*/
 PetscErrorCode  MatInitializePackage(void)
 {
@@ -357,6 +357,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQSBAIJ,      MAT_FACTOR_ICC,MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
 
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_LU,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_ILU,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
   ierr = MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSE,       MAT_FACTOR_LU,MatGetFactor_seqdense_cuda);CHKERRQ(ierr);
