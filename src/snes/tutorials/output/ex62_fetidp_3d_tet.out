@@ -78,7 +78,6 @@ SNES Object: 5 MPI processes
                                   rows=105, cols=105
                                   package used to perform factorization: petsc
                                   total: nonzeros=2469, allocated nonzeros=2469
-                                  total number of mallocs used during MatSetValues calls=0
                                       block size is 1
                           linear system matrix = precond matrix:
                           Mat Object: 1 MPI processes
@@ -113,7 +112,6 @@ SNES Object: 5 MPI processes
                           rows=210, cols=210
                           package used to perform factorization: umfpack
                           total: nonzeros=0, allocated nonzeros=0
-                          total number of mallocs used during MatSetValues calls=0
                             UMFPACK run parameters:
                               Control[UMFPACK_PRL]: 1.
                               Control[UMFPACK_STRATEGY]: 0.
@@ -218,7 +216,6 @@ SNES Object: 5 MPI processes
                                           rows=105, cols=105
                                           package used to perform factorization: petsc
                                           total: nonzeros=2469, allocated nonzeros=2469
-                                          total number of mallocs used during MatSetValues calls=0
                                               block size is 1
                                   linear system matrix = precond matrix:
                                   Mat Object: 1 MPI processes
@@ -253,7 +250,6 @@ SNES Object: 5 MPI processes
                                   rows=210, cols=210
                                   package used to perform factorization: umfpack
                                   total: nonzeros=0, allocated nonzeros=0
-                                  total number of mallocs used during MatSetValues calls=0
                                     UMFPACK run parameters:
                                       Control[UMFPACK_PRL]: 1.
                                       Control[UMFPACK_STRATEGY]: 0.
@@ -367,7 +363,6 @@ SNES Object: 5 MPI processes
                 rows=287, cols=287
                 package used to perform factorization: mumps
                 total: nonzeros=14790, allocated nonzeros=14790
-                total number of mallocs used during MatSetValues calls=0
                   MUMPS run parameters:
                     SYM (matrix type):                   2 
                     PAR (host participation):            1 
@@ -517,7 +512,6 @@ SNES Object: 5 MPI processes
                                 rows=0, cols=0
                                 package used to perform factorization: petsc
                                 total: nonzeros=1, allocated nonzeros=1
-                                total number of mallocs used during MatSetValues calls=0
                                   not using I-node routines
                         linear system matrix = precond matrix:
                         Mat Object:         1 MPI processes

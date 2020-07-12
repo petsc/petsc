@@ -93,7 +93,6 @@ SNES Object: 3 MPI processes
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
-                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (fieldsplit_x_velocity_) 1 MPI processes
@@ -139,7 +138,6 @@ SNES Object: 3 MPI processes
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
-                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (fieldsplit_y_velocity_) 1 MPI processes
@@ -185,7 +183,6 @@ SNES Object: 3 MPI processes
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
-                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (fieldsplit_Omega_) 1 MPI processes
@@ -231,7 +228,6 @@ SNES Object: 3 MPI processes
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
-                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (fieldsplit_temperature_) 1 MPI processes
