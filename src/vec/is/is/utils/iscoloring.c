@@ -341,8 +341,8 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 
   PetscFunctionBegin;
   if (ncolors != PETSC_DECIDE && ncolors > IS_COLORING_MAX) {
-    if (ncolors > 65535) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds 65535 limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
-    else                 SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
+    if (ncolors > PETSC_MAX_UINT16) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user requested: %D",PETSC_MAX_UINT16,PETSC_IS_COLORING_MAX,ncolors);
+    else                 SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user requested: %D",PETSC_IS_COLORING_MAX,ncolors);
   }
   ierr = PetscNew(iscoloring);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);

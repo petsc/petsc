@@ -24,7 +24,7 @@
 #define ISGlobalToLocalMappingMode PetscEnum
 #define ISColoringType PetscEnum
 
-#define ISColoringValue PETSC_IS_COLOR_VALUE_TYPE_F
+#define ISColoringValue PETSC_IS_COLORING_VALUE_TYPE_F
 
 #define ISGENERAL 'general'
 #define ISSTRIDE 'stride'
