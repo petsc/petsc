@@ -743,8 +743,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->ops->computejacobian) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"DMSNES not properly configured");
-  else if (!snes->jacobian && snes->mf) {
+  if (!snes->jacobian && snes->mf) {
     Mat  J;
     void *functx;
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
@@ -3021,6 +3020,31 @@ PetscErrorCode SNESGetJacobian(SNES snes,Mat *Amat,Mat *Pmat,PetscErrorCode (**J
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode SNESSetDefaultComputeJacobian(SNES snes)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+  DMSNES         sdm;
+
+  PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+  if (!sdm->ops->computejacobian && snes->jacobian_pre) {
+    DM        dm;
+    PetscBool isdense,ismf;
+
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompareAny((PetscObject)snes->jacobian_pre,&isdense,MATSEQDENSE,MATMPIDENSE,MATDENSE,NULL);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompareAny((PetscObject)snes->jacobian_pre,&ismf,MATMFFD,MATSHELL,NULL);CHKERRQ(ierr);
+    if (isdense) {
+      ierr = DMSNESSetJacobian(dm,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
+    } else if (!ismf) {
+      ierr = DMSNESSetJacobian(dm,SNESComputeJacobianDefaultColor,NULL);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
    SNESSetUp - Sets up the internal data structures for the later use
    of a nonlinear solver.
@@ -3071,9 +3095,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->ops->computefunction) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
-  if (!sdm->ops->computejacobian) {
-    ierr = DMSNESSetJacobian(dm,SNESComputeJacobianDefaultColor,NULL);CHKERRQ(ierr);
-  }
+  ierr = SNESSetDefaultComputeJacobian(snes);CHKERRQ(ierr);
+
   if (!snes->vec_func) {
     ierr = DMCreateGlobalVector(dm,&snes->vec_func);CHKERRQ(ierr);
   }
@@ -3142,6 +3165,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
   }
+
+  ierr = SNESSetDefaultComputeJacobian(snes);CHKERRQ(ierr);
 
   if (snes->npc && (snes->npcside== PC_LEFT)) {
     if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
