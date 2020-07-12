@@ -78,7 +78,6 @@ TS Object: 1 MPI processes
     total number of linear solver iterations=1
     total number of function evaluations=1
     norm schedule ALWAYS
-    Jacobian is never rebuilt
     Jacobian is built using finite differences with coloring
     KSP Object: 1 MPI processes
       type: gmres

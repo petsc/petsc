@@ -968,6 +968,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
   PetscBool       stageok,accept = PETSC_TRUE;
   PetscReal       next_time_step = ts->time_step;
   PetscErrorCode  ierr;
+  PetscInt        lag;
 
   PetscFunctionBegin;
   if (!ts->steprollback) {
@@ -1002,9 +1003,15 @@ static PetscErrorCode TSStep_RosW(TS ts)
       if (!ros->stage_explicit) {
         ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
         if (!ros->recompute_jacobian && !i) {
-          ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
+          ierr = SNESGetLagJacobian(snes,&lag);CHKERRQ(ierr);
+          if (lag == 1) {  /* use did not set a nontrival lag, so lag over all stages */
+            ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again for the rest of the stages */
+          }
         }
         ierr = SNESSolve(snes,NULL,Y[i]);CHKERRQ(ierr);
+        if (!ros->recompute_jacobian && i == s-1 && lag == 1) {
+          ierr = SNESSetLagJacobian(snes,lag);CHKERRQ(ierr); /* Set lag back to 1 so we know user did not set it */
+        }
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;

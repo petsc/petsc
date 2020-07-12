@@ -3,12 +3,11 @@ TS Object: 1 MPI processes
     Rosenbrock-W ra34pw2
     Abscissa of A       =  0.000000  0.871733  0.731580  1.000000 
     Abscissa of A+Gamma =  0.435867  0.871733  0.731580  1.000000 
-  maximum steps=1000
-  maximum time=20.
-  total number of nonlinear solver iterations=108
-  total number of linear solver iterations=108
+  maximum time=1.
+  total number of nonlinear solver iterations=64
+  total number of linear solver iterations=64
   total number of linear solve failures=0
-  total number of rejected steps=0
+  total number of rejected steps=1
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
   TSAdapt Object: 1 MPI processes
     type: basic
@@ -24,8 +23,10 @@ TS Object: 1 MPI processes
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=1
-    total number of function evaluations=1
+    total number of function evaluations=4
     norm schedule ALWAYS
+    Jacobian is rebuilt every 2 SNES iterations
+    Jacobian is built using finite differences one column at a time
     KSP Object: 1 MPI processes
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -39,19 +40,17 @@ TS Object: 1 MPI processes
         out-of-place factorization
         0 levels of fill
         tolerance for zero pivot 2.22045e-14
-        matrix ordering: natural
-        factor fill ratio given 1., needed 1.
+        matrix ordering: external
+        factor fill ratio given 0., needed 0.
           Factored matrix follows:
             Mat Object: 1 MPI processes
-              type: seqaij
-              rows=3, cols=3
+              type: seqdense
+              rows=2, cols=2
               package used to perform factorization: petsc
-              total: nonzeros=9, allocated nonzeros=9
-                using I-node routines: found 1 nodes, limit used is 5
+              total: nonzeros=4, allocated nonzeros=4
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
-        type: seqaij
-        rows=3, cols=3
-        total: nonzeros=9, allocated nonzeros=9
+        type: seqdense
+        rows=2, cols=2
+        total: nonzeros=4, allocated nonzeros=4
         total number of mallocs used during MatSetValues calls=0
-          using I-node routines: found 1 nodes, limit used is 5
