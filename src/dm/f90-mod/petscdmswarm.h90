@@ -1,0 +1,43 @@
+      Interface
+        Subroutine DMSwarmGetField(dm,fieldname,blocksize,dtype,data,ierr)
+          use petscdmdef
+          DM dm
+          character(len=*) :: fieldname
+          PetscInt blocksize
+          PetscDataType dtype
+          PetscScalar, pointer :: data(:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMSwarmRestoreField(dm,fieldname,blocksize,dtype,data,ierr)
+          use petscdmdef
+          DM dm
+          character(len=*) :: fieldname
+          PetscInt blocksize
+          PetscDataType dtype
+          PetscScalar, pointer :: data(:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMSwarmCreateGlobalVectorFromField(dm,fieldname,vec,ierr)
+          use petscdmdef
+          DM dm
+          character(len=*) :: fieldname
+          Vec vec
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMSwarmDestroyGlobalVectorFromField(dm,fieldname,vec,ierr)
+          use petscdmdef
+          DM dm
+          character(len=*) :: fieldname
+          Vec vec
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface

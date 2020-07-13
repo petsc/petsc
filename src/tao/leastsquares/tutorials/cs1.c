@@ -278,4 +278,9 @@ PetscErrorCode InitializeUserData(AppCtx *user)
       localrunfiles: cs1Data_A_b_xGT
       args: -tao_monitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type l2pure -tao_brgn_regularizer_weight 1e-8 -tao_gatol 1.e-6
 
+   test:
+      suffix: 5
+      localrunfiles: cs1Data_A_b_xGT
+      args: -tao_monitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type lm -tao_gatol 1.e-6 -tao_brgn_subsolver_tao_type bnls
+
 TEST*/

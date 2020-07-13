@@ -763,6 +763,7 @@ M*/
 #define PETSC_MAX_INT            9223372036854775807L
 #define PETSC_MIN_INT            (-PETSC_MAX_INT - 1)
 #endif
+#define PETSC_MAX_UINT16         65535
 
 #if defined(PETSC_USE_REAL_SINGLE)
 #  define PETSC_MAX_REAL                3.40282346638528860e+38F

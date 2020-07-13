@@ -346,6 +346,7 @@ PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao,Mat,PetscErr
 PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizerWeight(Tao,PetscReal);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao,PetscReal);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao,Mat);
+PETSC_EXTERN PetscErrorCode TaoBRGNGetDampingVector(Tao,Vec *);
 
 PETSC_EXTERN PetscErrorCode TaoADMMGetMisfitSubsolver(Tao,Tao *);
 PETSC_EXTERN PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao,Tao *);

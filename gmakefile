@@ -197,6 +197,7 @@ $(OBJDIR)/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/vec/f90-mod/petscvecmod.o
 $(OBJDIR)/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/mat/f90-mod/petscmatmod.o
 $(OBJDIR)/dm/f90-mod/petscdmdamod.o   : $(OBJDIR)/dm/f90-mod/petscdmmod.o
 $(OBJDIR)/dm/f90-mod/petscdmplexmod.o : $(OBJDIR)/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/dm/f90-mod/petscdmswarmmod.o : $(OBJDIR)/dm/f90-mod/petscdmmod.o
 $(OBJDIR)/ksp/f90-mod/petsckspdefmod.o : $(OBJDIR)/dm/f90-mod/petscdmplexmod.o
 $(OBJDIR)/ksp/f90-mod/petscpcmod.o    : $(OBJDIR)/ksp/f90-mod/petsckspdefmod.o
 $(OBJDIR)/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/ksp/f90-mod/petscpcmod.o

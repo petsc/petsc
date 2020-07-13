@@ -181,6 +181,9 @@
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>TAO:</h4>
+        <ul>
+          <li>Add lm regularizer to TAOBRGN. This regularizer turns BRGN into a Levenberg-Marquardt algorithm. TAOBRGNGetDamping() vector returns the damping vector used by this regularizer.</li>
+        </ul>
       <h4>DM/DA:</h4>
       <h4>DMPlex:</h4>
         <ul>
@@ -195,9 +198,11 @@
           <li>Add several refinement methods for Plex</li>
           <li>Add DMPlexGet/SetActivePoint() to allow user to see which mesh point is being handled by projection</li>
           <li>Add DMPlexComputeOrthogonalQuality() to compute cell-wise orthogonality quality mesh statistic</li>
-          <li>DMPlexSetClosurePermutationTensor() now sets tensor permutations at every depth, instead of just height 0.</li>
+          <li>Change DMPlexSetClosurePermutationTensor() to set tensor permutations at every depth, instead of just height 0.</li>
           <li>Add DMComputeExactSolution() which uses PetscDS information</li>
-          <li>DMSNESCheckFromOptions() and DMTSCheckFromOptions() now gets exact solution from PetscDS</li>
+          <li>Change DMSNESCheckFromOptions() and DMTSCheckFromOptions() to get exact solution from PetscDS</li>
+          <li>Change DMPlexSNESGetGeometryFVM() to DMPlexGetGeometryFVM()</li>
+          <li>Change DMPlexSNESGetGradientDM() to DMPlexGetGradientDM()</li>
         </ul>
       <h4>DT:</h4>
         <ul>
