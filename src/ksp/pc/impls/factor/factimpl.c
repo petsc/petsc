@@ -281,7 +281,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
 {
   PC_Factor       *factor = (PC_Factor*)pc->data;
   PetscErrorCode  ierr;
-  PetscBool       isstring,iascii,flg,useordering;
+  PetscBool       isstring,iascii,flg;
   MatOrderingType ordering;
 
   PetscFunctionBegin;
@@ -325,12 +325,14 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     } else {
       ordering = factor->ordering;
     }
-    ierr = MatFactorGetUseOrdering(factor->fact,&useordering);CHKERRQ(ierr);
-    if (!useordering) ordering = "external";
-    ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",ordering);CHKERRQ(ierr);
-
-    if (factor->fact) {
-      MatInfo info;
+    if (!factor->fact) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s (may be overridden during setup)\n",ordering);CHKERRQ(ierr);
+    } else {
+      PetscBool useordering;
+      MatInfo   info;
+      ierr = MatFactorGetUseOrdering(factor->fact,&useordering);CHKERRQ(ierr);
+      if (!useordering) ordering = "external";
+      ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",ordering);CHKERRQ(ierr);
       ierr = MatGetInfo(factor->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %g, needed %g\n",(double)info.fill_ratio_given,(double)info.fill_ratio_needed);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"    Factored matrix follows:\n");CHKERRQ(ierr);
