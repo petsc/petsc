@@ -182,6 +182,7 @@ check-py-vermin:
     - lscpu
     - ccache --zero-stats
     - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
   after_script:
     - date
     - ccache --show-stats
@@ -370,6 +371,27 @@ freebsd-pkgs-opt:
     - os:fbsd
   variables:
     TEST_ARCH: arch-ci-freebsd-pkgs-opt
+
+linux-hiphcc-double:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - os:linux, name:frog
+  variables:
+    TEST_ARCH: arch-ci-linux-hip-double
+    DISABLE_TESTS: 1
+
+linux-sycl-double:
+  extends:
+    - .stage-3
+    - .linux_test_nofflags
+  tags:
+    - os:linux, name:pj01
+  variables:
+    TEST_ARCH: arch-ci-linux-sycl-double
+    INIT_SCRIPT: /home/glci/bin/ci-inteloneapi.sh
+    DISABLE_TESTS: 1
 
 linux-viennacl:
   extends:

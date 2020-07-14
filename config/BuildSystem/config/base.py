@@ -440,7 +440,7 @@ class Configure(script.Script):
     language = self.language[-1]
     if includes and not includes[-1] == '\n':
       includes += '\n'
-    if language in ['C', 'CUDA', 'Cxx']:
+    if language in ['C', 'CUDA', 'Cxx', 'HIP', 'SYCL']:
       codeStr = ''
       if self.compilerDefines: codeStr = '#include "'+os.path.basename(self.compilerDefines)+'"\n'
       codeStr += '#include "conffix.h"\n'+includes
@@ -507,6 +507,10 @@ class Configure(script.Script):
       flagsArg = 'CXXPPFLAGS'
     elif language == 'FC':
       flagsArg = 'FPPFLAGS'
+    elif language == 'HIP':
+      flagsArg = 'HIPPPFLAGS'
+    elif language == 'SYCL':
+      flagsArg = 'SYCLPPFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
@@ -558,6 +562,10 @@ class Configure(script.Script):
         flagsArg = 'CXX_CXXFLAGS'
       else:
         flagsArg = 'CXXFLAGS'
+    elif language == 'HIP':
+      flagsArg = 'HIPCCFLAGS'
+    elif language == 'SYCL':
+      flagsArg = 'SYCLCXXFLAGS'
     elif language == 'FC':
       flagsArg = 'FFLAGS'
     else:
@@ -619,7 +627,7 @@ class Configure(script.Script):
     return not (returnCode or len(output))
 
   def getLinkerFlagsName(language):
-    if language in ['C', 'CUDA', 'Cxx', 'FC']:
+    if language in ['C', 'CUDA', 'Cxx', 'FC', 'HIP', 'SYCL']:
       flagsArg = 'LDFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)

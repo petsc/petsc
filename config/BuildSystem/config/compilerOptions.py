@@ -267,7 +267,7 @@ class CompilerOptions(config.base.Configure):
     flags = ''
     if language == 'C' or language == 'CUDA':
       flags = self.getCFlags(compiler, bopt, language)
-    elif language == 'Cxx':
+    elif language == 'Cxx' or language == 'HIP' or language == 'SYCL':
       flags = self.getCxxFlags(compiler, bopt)
     elif language in ['Fortran', 'FC']:
       flags = self.getFortranFlags(compiler, bopt)
@@ -283,7 +283,7 @@ class CompilerOptions(config.base.Configure):
           flags = "lslpp -L vac.C | grep vac.C | awk '{print $2}'"
         else:
           flags = compiler+' --version'
-      elif language == 'Cxx':
+      elif language == 'Cxx' or language == 'HIP' or language == 'SYCL':
         if compiler.endswith('xlC') or compiler.endswith('mpCC'):
           flags = "lslpp -L vacpp.cmp.core  | grep vacpp.cmp.core  | awk '{print $2}'"
         else:

@@ -68,7 +68,8 @@ def stripsplit(line):
   return line[len('#requires'):].replace("'","").split()
 
 PetscPKGS = 'sys vec mat dm ksp snes ts tao'.split()
-LANGS = dict(c='C', cxx='CXX', cpp='CPP', cu='CU', F='F', F90='F90')
+LANGS = dict(c='C', cxx='CXX', cpp='CPP', cu='CU', F='F', F90='F90',
+             hip='HIP.CPP', sycl='SYCL.CXX')
 
 class debuglogger(object):
     def __init__(self, log):

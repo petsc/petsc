@@ -73,11 +73,18 @@ $(OBJDIR)/%.o : CCPPFLAGS+=-Dpetsc_EXPORTS
 $(OBJDIR)/%.o : CXXCPPFLAGS+=-Dpetsc_EXPORTS
 endif
 
-ifneq ($(CUDAC),)
-langs := F F90 cu cxx c
-else
 langs := F F90 cxx c
+ifneq ($(CUDAC),)
+langs += cu
 endif
+ifneq ($(HIPCC),)
+langs += hip.cpp
+endif
+ifneq ($(SYCLCPP),)
+langs += sycl.cxx
+endif
+
+
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):src/%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 
@@ -164,6 +171,12 @@ $(OBJDIR)/%.o : src/%.c | $$(@D)/.DIR
 
 $(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
+
+$(OBJDIR)/%.o : src/%.hip.cpp | $$(@D)/.DIR
+	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
+
+$(OBJDIR)/%.o : src/%.sycl.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o : src/%.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
