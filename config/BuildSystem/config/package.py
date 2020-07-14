@@ -1163,6 +1163,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
 
   def rmArgsStartsWith(self,args,rejectstarts):
     rejects = []
+    if not isinstance(rejectstarts, list): rejectstarts = [rejectstarts]
     for i in rejectstarts:
       rejects.extend([arg for arg in args if arg.startswith(i)])
     return self.rmArgs(args,rejects)
@@ -1707,7 +1708,7 @@ class CMakePackage(Package):
   def Install(self):
     import os
     args = self.formCMakeConfigureArgs()
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
+    if self.download and 'download-'+self.downloadname.lower()+'-cmake-arguments' in self.framework.clArgDB:
        args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
