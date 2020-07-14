@@ -847,8 +847,8 @@ PetscErrorCode DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offse
 
   Input Parameters:
 + dm     - The DMNetwork object
-. compnum - component number
-- p      - the edge/vertex point
+. p      - the edge/vertex point
+- compnum - component number
 
   Output Parameters:
 . offset - the offset
@@ -879,8 +879,8 @@ PetscErrorCode DMNetworkGetComponentVariableOffset(DM dm,PetscInt p,PetscInt com
 
   Input Parameters:
 + dm     - The DMNetwork object
-. compnum - component number
-- p      - the edge/vertex point
+. p      - the edge/vertex point
+- compnum - component number
 
   Output Parameters:
 . offsetg - the global offset
@@ -1331,8 +1331,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
 
   Output Parameters:
 . subSF    - a subset of the masterSF for the desired subset.
-*/
-
+@*/
 PetscErrorCode PetscSFGetSubSF(PetscSF mastersf, ISLocalToGlobalMapping map, PetscSF *subSF) {
 
   PetscErrorCode        ierr;

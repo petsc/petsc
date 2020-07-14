@@ -533,6 +533,7 @@ linux-pkgs-opt:
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-opt
+    LOAD_MODULES: gcc/10.1.0-5hiqhdh
 
 linux-pkgs-gcov:
   extends:
