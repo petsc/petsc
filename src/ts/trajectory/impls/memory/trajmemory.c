@@ -635,6 +635,8 @@ static PetscErrorCode GetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* If TSTrajectoryGet() is called after TSAdjointSolve() converges (e.g. outside the while loop in TSAdjointSolve()), skip getting the checkpoint. */
+  if (ts->reason) PetscFunctionReturn(0);
   if (stepnum == tjsch->total_steps) {
     ierr = TurnBackward(ts);CHKERRQ(ierr);
     PetscFunctionReturn(0);
