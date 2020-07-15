@@ -3448,6 +3448,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-initref_dm_view");CHKERRQ(ierr);
   if (isUniform) {
+    DM        cdm, rcdm;
     PetscBool localized;
 
     ierr = DMPlexCellRefinerCreate(dm, &cr);CHKERRQ(ierr);
@@ -3456,6 +3457,9 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
     ierr = DMPlexRefineUniform(dm, cr, dmRefined);CHKERRQ(ierr);
     ierr = DMPlexSetRegularRefinement(*dmRefined, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMCopyDisc(dm, *dmRefined);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(*dmRefined, &rcdm);CHKERRQ(ierr);
+    ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
     ierr = RefineDiscLabels_Internal(cr, *dmRefined);CHKERRQ(ierr);
     ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
     ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
@@ -3478,6 +3482,7 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
   if (isUniform) {
     for (r = 0; r < nlevels; ++r) {
       DMPlexCellRefiner cr;
+      DM                codm, rcodm;
 
       ierr = DMPlexCellRefinerCreate(cdm, &cr);CHKERRQ(ierr);
       ierr = DMPlexCellRefinerSetUp(cr);CHKERRQ(ierr);
@@ -3485,6 +3490,9 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
       ierr = DMSetCoarsenLevel(dmRefined[r], cdm->leveldown);CHKERRQ(ierr);
       ierr = DMSetRefineLevel(dmRefined[r], cdm->levelup+1);CHKERRQ(ierr);
       ierr = DMCopyDisc(cdm, dmRefined[r]);CHKERRQ(ierr);
+      ierr = DMGetCoordinateDM(dm, &codm);CHKERRQ(ierr);
+      ierr = DMGetCoordinateDM(dmRefined[r], &rcodm);CHKERRQ(ierr);
+      ierr = DMCopyDisc(codm, rcodm);CHKERRQ(ierr);
       ierr = RefineDiscLabels_Internal(cr, dmRefined[r]);CHKERRQ(ierr);
       ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
