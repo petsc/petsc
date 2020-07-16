@@ -12,6 +12,8 @@ typedef struct {
   void        *wbuf;
   size_t      slen;
   void        *sbuf;
+  PetscInt     nodeTagMin, nodeTagMax;
+  PetscInt    *nodeMap;
 } GmshFile;
 
 static PetscErrorCode GmshBufferGet(GmshFile *gmsh, size_t count, size_t eltsize, void *buf)
@@ -718,7 +720,7 @@ static PetscErrorCode DMPlexCreateGmsh_ReadEntities_v41(GmshFile *gmsh, GmshEnti
   PetscFunctionReturn(0);
 }
 
-/*
+/* http://gmsh.info/dev/doc/texinfo/gmsh.html#MSH-file-format
 $Nodes
   numEntityBlocks(size_t) numNodes(size_t)
     minNodeTag(size_t) maxNodeTag(size_t)
@@ -731,18 +733,22 @@ $Nodes
     ...
   ...
 $EndNodes
+
+We need to allow holes in the node numbering, so we must have a map between the file numbering and a contiguous numbering.
 */
 static PetscErrorCode DMPlexCreateGmsh_ReadNodes_v41(GmshFile *gmsh, int shift, PetscInt *numVertices, double **gmsh_nodes)
 {
   int            info[3];
-  PetscInt       sizes[4], numEntityBlocks, numNodes, numNodesBlock = 0, *nodeTag = NULL, block, node, i;
+  PetscInt       sizes[4], numEntityBlocks, numNodes, numNodesBlock = 0, block, *nodeTag = NULL, node, i;
   double         *coordinates;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = GmshReadSize(gmsh, sizes, 4);CHKERRQ(ierr);
-  numEntityBlocks = sizes[0]; numNodes = sizes[1];
+  numEntityBlocks = sizes[0]; numNodes = sizes[1]; gmsh->nodeTagMin = sizes[2]; gmsh->nodeTagMax = sizes[3]+1;
   ierr = PetscMalloc1(numNodes*3, &coordinates);CHKERRQ(ierr);
+  ierr = PetscMalloc1(gmsh->nodeTagMax-gmsh->nodeTagMin, &gmsh->nodeMap);CHKERRQ(ierr);
+  for (i = 0; i < gmsh->nodeTagMax-gmsh->nodeTagMin; ++i) gmsh->nodeMap[i] = -1;
   *numVertices = numNodes;
   *gmsh_nodes = coordinates;
   for (block = 0, node = 0; block < numEntityBlocks; ++block, node += numNodesBlock) {
@@ -750,14 +756,19 @@ static PetscErrorCode DMPlexCreateGmsh_ReadNodes_v41(GmshFile *gmsh, int shift, 
     ierr = GmshReadSize(gmsh, &numNodesBlock, 1);CHKERRQ(ierr);
     ierr = GmshBufferGet(gmsh, numNodesBlock, sizeof(PetscInt), &nodeTag);CHKERRQ(ierr);
     ierr = GmshReadSize(gmsh, nodeTag, numNodesBlock);CHKERRQ(ierr);
-    for (i = 0; i < numNodesBlock; ++i) if (nodeTag[i] != node+i+shift) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unexpected node number %d should be %d", nodeTag[i], node+i+shift);
+    for (i = 0; i < numNodesBlock; ++i) {
+      const PetscInt off = nodeTag[i] - gmsh->nodeTagMin;
+
+      if (gmsh->nodeMap[off] != -1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Repeated node tag %D", nodeTag[i]);
+      gmsh->nodeMap[off] = node+i+shift;
+    }
     if (info[2] != 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Parametric coordinates not supported");
     ierr = GmshReadDouble(gmsh, coordinates+node*3, numNodesBlock*3);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-/*
+/* http://gmsh.info/dev/doc/texinfo/gmsh.html#MSH-file-format
 $Elements
   numEntityBlocks(size_t) numElements(size_t)
     minElementTag(size_t) maxElementTag(size_t)
@@ -770,7 +781,8 @@ $EndElements
 static PetscErrorCode DMPlexCreateGmsh_ReadElements_v41(GmshFile *gmsh, PETSC_UNUSED int shift, GmshEntities *entities, PetscInt *numCells, GmshElement **gmsh_elems)
 {
   int            info[3], eid, dim, cellType, *tags;
-  PetscInt       sizes[4], *ibuf = NULL, numEntityBlocks, numElements, numBlockElements, numNodes, numTags, block, elem, c, p;
+  PetscInt       nodeTagMin = gmsh->nodeTagMin, *nodeMap = gmsh->nodeMap, numNodes;
+  PetscInt       sizes[4], *ibuf = NULL, numEntityBlocks, numElements, numBlockElements, numTags, block, elem, c, p;
   GmshEntity     *entity = NULL;
   GmshElement    *elements;
   PetscErrorCode ierr;
@@ -823,7 +835,7 @@ static PetscErrorCode DMPlexCreateGmsh_ReadElements_v41(GmshFile *gmsh, PETSC_UN
       element->cellType = cellType;
       element->numNodes = numNodes;
       element->numTags  = numTags;
-      for (p = 0; p < numNodes; p++) element->nodes[p] = nodes[p];
+      for (p = 0; p < numNodes; p++) element->nodes[p] = nodeMap[nodes[p]-nodeTagMin];
       for (p = 0; p < numTags;  p++) element->tags[p]  = tags[p];
     }
   }
@@ -1202,6 +1214,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = GmshEntitiesDestroy(&entities);CHKERRQ(ierr);
     ierr = PetscFree(gmsh->wbuf);CHKERRQ(ierr);
     ierr = PetscFree(gmsh->sbuf);CHKERRQ(ierr);
+    ierr = PetscFree(gmsh->nodeMap);CHKERRQ(ierr);
   }
 
   if (parentviewer) {
