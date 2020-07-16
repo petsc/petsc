@@ -22,32 +22,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ProjectToUnitSphere(DM dm)
-{
-  Vec            coordinates;
-  PetscScalar   *coords;
-  PetscInt       Nv, v, bs, dim, d;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(coordinates, &Nv);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
-  if (dim != bs) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate bs %D does not match dim %D",bs,dim);
-  Nv  /= dim;
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  for (v = 0; v < Nv; ++v) {
-    PetscReal r = 0.0;
-
-    for (d = 0; d < dim; ++d) r += PetscSqr(PetscRealPart(coords[v*dim+d]));
-    r = PetscSqrtReal(r);
-    for (d = 0; d < dim; ++d) coords[v*dim+d] /= r;
-  }
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode SetupSection(DM dm)
 {
   PetscSection   s;
@@ -79,7 +53,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
-  ierr = DMPlexCreateSphereMesh(PETSC_COMM_WORLD, ctx.dim, ctx.simplex, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateSphereMesh(PETSC_COMM_WORLD, ctx.dim, ctx.simplex, 1.0, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "Sphere");CHKERRQ(ierr);
   /* Distribute mesh over processes */
   {
@@ -94,7 +68,6 @@ int main(int argc, char **argv)
      }
   }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = ProjectToUnitSphere(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = SetupSection(dm);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);

@@ -1757,24 +1757,40 @@ PETSC_STATIC_INLINE PetscReal DotReal(PetscInt dim, const PetscReal x[], const P
   return prod;
 }
 
+/* The first constant is the sphere radius */
+static void snapToSphere(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscReal r = PetscRealPart(constants[0]);
+  PetscReal norm2 = 0.0, fac;
+  PetscInt  n = uOff[1] - uOff[0], d;
+
+  for (d = 0; d < n; ++d) norm2 += PetscSqr(PetscRealPart(u[d]));
+  fac = r/PetscSqrtReal(norm2);
+  for (d = 0; d < n; ++d) f0[d] = u[d]*fac;
+}
+
 /*@
   DMPlexCreateSphereMesh - Creates a mesh on the d-dimensional sphere, S^d.
 
   Collective
 
   Input Parameters:
-+ comm  - The communicator for the DM object
-. dim   - The dimension
-- simplex - Use simplices, or tensor product cells
++ comm    - The communicator for the DM object
+. dim     - The dimension
+. simplex - Use simplices, or tensor product cells
+- R       - The radius
 
   Output Parameter:
 . dm  - The DM object
 
   Level: beginner
 
-.seealso: DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
+.seealso: DMPlexCreateBallMesh(), DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
 @*/
-PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *dm)
+PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, PetscReal R, DM *dm)
 {
   const PetscInt  embedDim = dim+1;
   PetscSection    coordSection;
@@ -1796,22 +1812,24 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
   case 2:
     if (simplex) {
       DM              idm;
-      const PetscReal edgeLen     = 2.0/(1.0 + PETSC_PHI);
-      const PetscReal vertex[3]   = {0.0, 1.0/(1.0 + PETSC_PHI), PETSC_PHI/(1.0 + PETSC_PHI)};
-      const PetscInt  degree      = 5;
-      PetscInt        s[3]        = {1, 1, 1};
+      const PetscReal radius    = PetscSqrtReal(1 + PETSC_PHI*PETSC_PHI)/(1.0 + PETSC_PHI);
+      const PetscReal edgeLen   = 2.0/(1.0 + PETSC_PHI) * (R/radius);
+      const PetscInt  degree    = 5;
+      PetscReal       vertex[3] = {0.0, 1.0/(1.0 + PETSC_PHI), PETSC_PHI/(1.0 + PETSC_PHI)};
+      PetscInt        s[3]      = {1, 1, 1};
       PetscInt        cone[3];
       PetscInt       *graph, p, i, j, k;
 
+      vertex[0] *= R/radius; vertex[1] *= R/radius; vertex[2] *= R/radius;
       numCells    = !rank ? 20 : 0;
       numVerts    = !rank ? 12 : 0;
       firstVertex = numCells;
-      /* Use icosahedron, which for a unit sphere has coordinates which are all cyclic permutations of
+      /* Use icosahedron, which for a R-sphere has coordinates which are all cyclic permutations of
 
            (0, \pm 1/\phi+1, \pm \phi/\phi+1)
 
          where \phi^2 - \phi - 1 = 0, meaning \phi is the golden ratio \frac{1 + \sqrt{5}}{2}. The edge
-         length is then given by 2/\phi = 2 * 0.61803 = 1.23606.
+         length is then given by 2/(1+\phi) = 2 * 0.38197 = 0.76393.
       */
       /* Construct vertices */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
@@ -1893,8 +1911,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
          |     |
         12-21--13
        */
-      const PetscReal dist = 1.0/PetscSqrtReal(3.0);
-      PetscInt        cone[4], ornt[4];
+      PetscInt cone[4], ornt[4];
 
       numCells    = !rank ?  6 : 0;
       numEdges    = !rank ? 12 : 0;
@@ -1972,14 +1989,14 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
       /* Build coordinates */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
       if (!rank) {
-        coordsIn[0*embedDim+0] = -dist; coordsIn[0*embedDim+1] =  dist; coordsIn[0*embedDim+2] = -dist;
-        coordsIn[1*embedDim+0] =  dist; coordsIn[1*embedDim+1] =  dist; coordsIn[1*embedDim+2] = -dist;
-        coordsIn[2*embedDim+0] =  dist; coordsIn[2*embedDim+1] = -dist; coordsIn[2*embedDim+2] = -dist;
-        coordsIn[3*embedDim+0] = -dist; coordsIn[3*embedDim+1] = -dist; coordsIn[3*embedDim+2] = -dist;
-        coordsIn[4*embedDim+0] = -dist; coordsIn[4*embedDim+1] =  dist; coordsIn[4*embedDim+2] =  dist;
-        coordsIn[5*embedDim+0] =  dist; coordsIn[5*embedDim+1] =  dist; coordsIn[5*embedDim+2] =  dist;
-        coordsIn[6*embedDim+0] = -dist; coordsIn[6*embedDim+1] = -dist; coordsIn[6*embedDim+2] =  dist;
-        coordsIn[7*embedDim+0] =  dist; coordsIn[7*embedDim+1] = -dist; coordsIn[7*embedDim+2] =  dist;
+        coordsIn[0*embedDim+0] = -R; coordsIn[0*embedDim+1] =  R; coordsIn[0*embedDim+2] = -R;
+        coordsIn[1*embedDim+0] =  R; coordsIn[1*embedDim+1] =  R; coordsIn[1*embedDim+2] = -R;
+        coordsIn[2*embedDim+0] =  R; coordsIn[2*embedDim+1] = -R; coordsIn[2*embedDim+2] = -R;
+        coordsIn[3*embedDim+0] = -R; coordsIn[3*embedDim+1] = -R; coordsIn[3*embedDim+2] = -R;
+        coordsIn[4*embedDim+0] = -R; coordsIn[4*embedDim+1] =  R; coordsIn[4*embedDim+2] =  R;
+        coordsIn[5*embedDim+0] =  R; coordsIn[5*embedDim+1] =  R; coordsIn[5*embedDim+2] =  R;
+        coordsIn[6*embedDim+0] = -R; coordsIn[6*embedDim+1] = -R; coordsIn[6*embedDim+2] =  R;
+        coordsIn[7*embedDim+0] =  R; coordsIn[7*embedDim+1] = -R; coordsIn[7*embedDim+2] =  R;
       }
     }
     break;
@@ -1987,9 +2004,9 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
     if (simplex) {
       DM              idm;
       const PetscReal edgeLen         = 1.0/PETSC_PHI;
-      const PetscReal vertexA[4]      = {0.5, 0.5, 0.5, 0.5};
-      const PetscReal vertexB[4]      = {1.0, 0.0, 0.0, 0.0};
-      const PetscReal vertexC[4]      = {0.5, 0.5*PETSC_PHI, 0.5/PETSC_PHI, 0.0};
+      PetscReal       vertexA[4]      = {0.5, 0.5, 0.5, 0.5};
+      PetscReal       vertexB[4]      = {1.0, 0.0, 0.0, 0.0};
+      PetscReal       vertexC[4]      = {0.5, 0.5*PETSC_PHI, 0.5/PETSC_PHI, 0.0};
       const PetscInt  degree          = 12;
       PetscInt        s[4]            = {1, 1, 1};
       PetscInt        evenPerm[12][4] = {{0, 1, 2, 3}, {0, 2, 3, 1}, {0, 3, 1, 2}, {1, 0, 3, 2}, {1, 2, 0, 3}, {1, 3, 2, 0},
@@ -1997,6 +2014,9 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
       PetscInt        cone[4];
       PetscInt       *graph, p, i, j, k, l;
 
+      vertexA[0] *= R; vertexA[1] *= R; vertexA[2] *= R; vertexA[3] *= R;
+      vertexB[0] *= R; vertexB[1] *= R; vertexB[2] *= R; vertexB[3] *= R;
+      vertexC[0] *= R; vertexC[1] *= R; vertexC[2] *= R; vertexC[3] *= R;
       numCells    = !rank ? 600 : 0;
       numVerts    = !rank ? 120 : 0;
       firstVertex = numCells;
@@ -2145,6 +2165,60 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   ierr = PetscFree(coordsIn);CHKERRQ(ierr);
+  /* Create coordinate function space */
+  {
+    DM          cdm;
+    PetscDS     cds;
+    PetscFE     fe;
+    PetscScalar radius = R;
+    PetscInt    dT, dE;
+
+    ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetDimension(*dm, &dT);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(*dm, &dE);CHKERRQ(ierr);
+    ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dT, dE, PETSC_TRUE, 1, -1, &fe);CHKERRQ(ierr);
+    ierr = DMSetField(cdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+    ierr = DMCreateDS(cdm);CHKERRQ(ierr);
+
+    ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
+    ierr = PetscDSSetConstants(cds, 1, &radius);CHKERRQ(ierr);
+  }
+  ((DM_Plex *) (*dm)->data)->coordFunc = snapToSphere;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexCreateBallMesh - Creates a simplex mesh on the d-dimensional ball, B^d.
+
+  Collective
+
+  Input Parameters:
++ comm  - The communicator for the DM object
+. dim   - The dimension
+- R     - The radius
+
+  Output Parameter:
+. dm  - The DM object
+
+  Options Database Keys:
+- bd_dm_refine - This will refine the surface mesh preserving the sphere geometry
+
+  Level: beginner
+
+.seealso: DMPlexCreateSphereMesh(), DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
+@*/
+PetscErrorCode DMPlexCreateBallMesh(MPI_Comm comm, PetscInt dim, PetscReal R, DM *dm)
+{
+  DM             sdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexCreateSphereMesh(comm, dim-1, PETSC_TRUE, R, &sdm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) sdm, "bd_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(sdm);CHKERRQ(ierr);
+  ierr = DMPlexGenerate(sdm, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+  ierr = DMDestroy(&sdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2175,6 +2249,7 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 {
   PetscSF               sf;
   DM                    coordDM, coarseDM;
+  DMField               coordField;
   Vec                   coords;
   PetscBool             isper;
   const PetscReal      *maxCell, *L;
@@ -2186,8 +2261,10 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dmNew, &coordDM);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmNew, &coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateField(dmNew, &coordField);CHKERRQ(ierr);
   ierr = DMSetCoordinateDM(dm, coordDM);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinateField(dm, coordField);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
   ierr = DMSetPeriodicity(dmNew, isper, maxCell, L, bd);CHKERRQ(ierr);
   ierr = DMDestroy_Plex(dm);CHKERRQ(ierr);
@@ -2348,12 +2425,17 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   } else {
     for (r = 0; r < refine; ++r) {
       DM refinedMesh;
+      PetscPointFunc coordFunc = ((DM_Plex*) dm->data)->coordFunc;
 
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
       ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &refinedMesh);CHKERRQ(ierr);
       /* Total hack since we do not pass in a pointer */
       ierr = DMPlexReplace_Static(dm, refinedMesh);CHKERRQ(ierr);
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+      if (coordFunc) {
+        ierr = DMPlexRemapGeometry(dm, 0.0, coordFunc);CHKERRQ(ierr);
+        ((DM_Plex*) dm->data)->coordFunc = coordFunc;
+      }
       ierr = DMDestroy(&refinedMesh);CHKERRQ(ierr);
     }
   }
