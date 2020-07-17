@@ -1195,7 +1195,7 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   PetscBool       diag    = PETSC_FALSE;
   PetscErrorCode  ierr;
   const PetscInt  rstart=A->rmap->rstart,rend=A->rmap->rend,p=b->p,q=b->q,*garray;
-  PetscInt        nz,*idx,ncolsaij,ncolsoaij,*colsaij,*colsoaij,r,s,c,i,j,lrow;
+  PetscInt        nz,*idx,ncolsaij = 0,ncolsoaij = 0,*colsaij,*colsoaij,r,s,c,i,j,lrow;
   PetscScalar     *v,*vals,*ovals,*S=b->S,*T=b->T;
 
   PetscFunctionBegin;
