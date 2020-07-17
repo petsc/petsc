@@ -157,9 +157,10 @@ int main(int argc,char **args)
 /*TEST
 
    build:
-      requires:  !define(PETSC_USE_64BIT_INDICES) double !complex datafilespath
+      requires:  !define(PETSC_USE_64BIT_INDICES) double !complex
 
    test:
+      requires: datafilespath
       args: -Ain ${DATAFILESPATH}/matrices/indefinite/afiro_A.dat
 
 TEST*/
