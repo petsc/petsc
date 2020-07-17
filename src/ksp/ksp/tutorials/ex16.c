@@ -6,7 +6,7 @@ Input parameters include:\n\
   -ntimes <ntimes>  : number of linear systems to solve\n\
   -view_exact_sol   : write exact solution vector to stdout\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
-  -n <mesh_n>       : number of mesh points in y-direction\n\n";
+  -n <mesh_y>       : number of mesh points in y-direction\n\n";
 
 /*T
    Concepts: KSP^repeatedly solving linear systems;
