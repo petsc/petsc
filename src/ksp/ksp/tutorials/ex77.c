@@ -196,13 +196,18 @@ int main(int argc,char **args)
       filter: sed "/^ksp_hpddm_recycle_ Linear eigensolve converged/d"
       args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_mat_type {{aij dense}shared output} -ksp_hpddm_recycle_eps_converged_reason -ksp_hpddm_recycle_st_pc_type redundant
 
-   test:
+   testset:
       nsize: 4
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc elemental
-      suffix: 4_elemental
-      output_file: output/ex77_4.out
       filter: sed "/^ksp_hpddm_recycle_ Linear eigensolve converged/d"
       args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_mat_type elemental -ksp_hpddm_recycle_eps_converged_reason
+      test:
+         suffix: 4_elemental
+         output_file: output/ex77_4.out
+      test:
+         suffix: 4_elemental_matmat
+         output_file: output/ex77_4.out
+         args: -ksp_hpddm_recycle_eps_type subspace -ksp_hpddm_recycle_eps_target 0 -ksp_hpddm_recycle_eps_target_magnitude -ksp_hpddm_recycle_st_type sinvert -ksp_hpddm_recycle_bv_type mat -ksp_hpddm_recycle_bv_orthog_block svqb
 
    test:
       nsize: 5
