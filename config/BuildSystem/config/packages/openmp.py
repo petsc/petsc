@@ -10,6 +10,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.function     = framework.require('config.functions',self)
     self.mpi          = framework.require('config.packages.MPI',self)
     self.pthread      = framework.require('config.packages.pthread',self)
     self.hwloc        = framework.require('config.packages.hwloc',self)
@@ -111,4 +112,6 @@ class Configure(config.package.Package):
     # this is different from HAVE_OPENMP. HAVE_OPENMP_SUPPORT checks if we have facilities to support
     # running PETSc in flat-MPI mode and third party libraries in MPI+OpenMP hybrid mode
     if self.mpi.found and self.mpi.support_mpi3_shm and self.pthread.found and self.hwloc.found:
-      self.addDefine('HAVE_OPENMP_SUPPORT', 1)
+      #  Apple pthread does not provide this functionality
+      if self.function.check('pthread_barrier_init', libraries = 'pthread'):
+        self.addDefine('HAVE_OPENMP_SUPPORT', 1)
