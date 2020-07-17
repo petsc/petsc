@@ -179,10 +179,11 @@ class generateExamples(Petsc):
     Can we just return srcext[1:\] now?
     """
     langReq=None
-    srcext=os.path.splitext(srcfile)[-1]
+    srcext = getlangext(srcfile)
     if srcext in ".F90".split(): langReq="F90"
     if srcext in ".F".split(): langReq="F"
     if srcext in ".cxx".split(): langReq="cxx"
+    if srcext in ".kokkos.cxx".split(): langReq="kokkos_cxx"
     if srcext in ".cpp".split(): langReq="cpp"
     if srcext == ".cu": langReq="cu"
     if srcext == ".c": langReq="c"
@@ -194,7 +195,7 @@ class generateExamples(Petsc):
        src/snes/tutorials/output/ex22*.out
     '''
     altlist=[output_file]
-    basefile,ext = os.path.splitext(output_file)
+    basefile = getlangsplit(output_file)
     for i in range(1,9):
       altroot=basefile+"_alt"
       if i > 1: altroot=altroot+"_"+str(i)
@@ -303,12 +304,12 @@ class generateExamples(Petsc):
     if 'depends' in srcDict:
       depSrcList=srcDict['depends'].split()
       for depSrc in depSrcList:
-        depObj=os.path.splitext(depSrc)[0]+".o"
+        depObj = getlangsplit(depSrc)+'.o'
         self.sources[pkg][lang][relpfile].append(os.path.join(rpath,depObj))
 
     # In gmakefile, ${TESTDIR} var specifies the object compilation
     testsdir=rpath+"/"
-    objfile="${TESTDIR}/"+testsdir+os.path.splitext(exfile)[0]+".o"
+    objfile="${TESTDIR}/"+testsdir+getlangsplit(exfile)+'.o'
     self.objects[pkg].append(objfile)
     return
 
@@ -336,7 +337,7 @@ class generateExamples(Petsc):
     if self.single_ex:
       execname=rpath.split("/")[1]+"-ex"
     else:
-      execname=os.path.splitext(exfile)[0]
+      execname=getlangsplit(exfile)
     return execname
 
   def getSubstVars(self,testDict,rpath,testname):
@@ -658,6 +659,8 @@ class generateExamples(Petsc):
       srcDict["SKIP"].append("HIP required for this test")
     if lang=="sycl" and 'PETSC_HAVE_SYCL' not in self.conf:
       srcDict["SKIP"].append("SYCL required for this test")
+    if lang=="kokkos_cxx" and 'PETSC_HAVE_KOKKOS' not in self.conf:
+      srcDict["SKIP"].append("KOKKOS required for this test")
     if lang=="cxx" and 'PETSC_HAVE_CXX' not in self.conf:
       srcDict["SKIP"].append("C++ required for this test")
     if lang=="cpp" and 'PETSC_HAVE_CXX' not in self.conf:
@@ -796,7 +799,7 @@ class generateExamples(Petsc):
 
   def  checkOutput(self,exfile,root,srcDict):
     """
-     Check and make sure the output files are in the output director
+     Check and make sure the output files are in the output directory
     """
     debug=False
     rpath=self.srcrelpath(root)
@@ -872,7 +875,7 @@ class generateExamples(Petsc):
       if exfile.startswith("#"): continue
       if exfile.endswith("~"): continue
       # Only parse source files
-      ext=os.path.splitext(exfile)[-1].lstrip('.')
+      ext=getlangext(exfile).lstrip('.').replace('.','_')
       if ext not in LANGS: continue
 
       # Convenience
@@ -924,7 +927,7 @@ class generateExamples(Petsc):
     def write(stem, srcs):
       for lang in LANGS:
         if srcs[lang]['srcs']:
-          fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang, srcs=' '.join(srcs[lang]['srcs'])))
+          fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang.replace('_','.'), srcs=' '.join(srcs[lang]['srcs'])))
     for pkg in self.pkg_pkgs:
         srcs = self.gen_pkg(pkg)
         write('testsrcs-' + pkg, srcs)
@@ -932,8 +935,8 @@ class generateExamples(Petsc):
         for lang in LANGS:
             for exfile in srcs[lang]['srcs']:
                 if exfile in srcs[lang]:
-                    ex='$(TESTDIR)/'+os.path.splitext(exfile)[0]
-                    exfo='$(TESTDIR)/'+os.path.splitext(exfile)[0]+'.o'
+                    ex='$(TESTDIR)/'+getlangsplit(exfile)
+                    exfo=ex+'.o'
                     deps = [os.path.join('$(TESTDIR)', dep) for dep in srcs[lang][exfile]]
                     if deps:
                         # The executable literally depends on the object file because it is linked
@@ -980,8 +983,8 @@ class generateExamples(Petsc):
             test=os.path.basename(ftest)
             basedir=os.path.dirname(ftest)
             testdeps.append(nameSpace(test,basedir))
-          fd.write("test-"+pkg+"."+lang+" := "+' '.join(testdeps)+"\n")
-          fd.write('test-%s.%s : $(test-%s.%s)\n' % (pkg, lang, pkg, lang))
+          fd.write("test-"+pkg+"."+lang.replace('_','.')+" := "+' '.join(testdeps)+"\n")
+          fd.write('test-%s.%s : $(test-%s.%s)\n' % (pkg, lang.replace('_','.'), pkg, lang.replace('_','.')))
 
           # test targets
           for ftest in self.tests[pkg][lang]:

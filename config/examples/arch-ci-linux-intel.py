@@ -26,5 +26,6 @@ if __name__ == '__main__':
     '--download-zlib=1',
     '--download-codipack=1',
     '--download-adblaslapack=1',
+    '--download-kokkos',
   ]
   configure.petsc_configure(configure_options)

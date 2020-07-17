@@ -83,7 +83,9 @@ endif
 ifneq ($(SYCLCPP),)
 langs += sycl.cxx
 endif
-
+ifneq ($(KOKKOS_LIB),)
+langs += kokkos.cxx
+endif
 
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):src/%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
@@ -168,6 +170,9 @@ $(call soname_function,%) : $(call libname_function,%)
 
 $(OBJDIR)/%.o : src/%.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
+
+$(OBJDIR)/%.o : src/%.kokkos.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.kokkos.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@

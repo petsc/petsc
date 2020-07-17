@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       its,N = 5,i,maxit,maxf,xs,xm;
   PetscReal      abstol,rtol,stol,norm;
-  PetscBool      flg;
+  PetscBool      flg,viewinitial = PETSC_FALSE;
 
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -104,6 +104,7 @@ int main(int argc,char **argv)
   ctx.h = 1.0/(N-1);
   ctx.sjerr = PETSC_FALSE;
   ierr  = PetscOptionsGetBool(NULL,NULL,"-test_jacobian_domain_error",&ctx.sjerr,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(NULL,NULL,"-view_initial",&viewinitial,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -266,6 +267,10 @@ int main(int argc,char **argv)
   */
   ierr = DMDAVecRestoreArray(ctx.da,F,&FF);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(ctx.da,U,&UU);CHKERRQ(ierr);
+  if (viewinitial) {
+    ierr = VecView(U,0);CHKERRQ(ierr);
+    ierr = VecView(F,0);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -753,4 +758,9 @@ PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
       nsize: 4
       args: -test_jacobian_domain_error -snes_converged_reason -snes_type ms -snes_ms_type m62 -snes_ms_damping 0.9 -snes_check_jacobian_domain_error 1
 
+   test:
+      suffix: 12
+      args: -view_initial
+      filter: grep -v "type:"
+ 
 TEST*/
