@@ -169,7 +169,7 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
 @*/
 PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 {
-  const char    *defaultType;
+  const char    *defaultType = NULL;
   char           name[256];
   PetscBool      flg;
   PetscErrorCode ierr;
