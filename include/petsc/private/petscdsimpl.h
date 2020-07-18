@@ -56,6 +56,8 @@ struct _p_PetscDS {
   PetscPointFunc       *update;        /* Direct update of field coefficients */
   PetscSimplePointFunc *exactSol;      /* Exact solutions for each field */
   void                **exactCtx;      /* Contexts for the exact solution functions */
+  PetscSimplePointFunc *exactSol_t;    /* Time derivative of the exact solutions for each field */
+  void                **exactCtx_t;    /* Contexts for the time derivative of the exact solution functions */
   PetscInt              numConstants;  /* Number of constants passed to point functions */
   PetscScalar          *constants;     /* Array of constants passed to point functions */
   void                 **ctx;          /* User contexts for each field */

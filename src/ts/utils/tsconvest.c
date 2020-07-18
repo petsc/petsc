@@ -1,5 +1,6 @@
 #include <petscconvest.h>            /*I "petscconvest.h" I*/
 #include <petscts.h>
+#include <petscdm.h>
 
 #include <petsc/private/petscconvestimpl.h>
 
@@ -26,14 +27,27 @@ static PetscErrorCode PetscConvEstInitGuessTS_Private(PetscConvEst ce, PetscInt 
 
 static PetscErrorCode PetscConvEstComputeErrorTS_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[])
 {
-  Vec            e;
-  PetscErrorCode ierr;
+  TS               ts = (TS) ce->solver;
+  PetscErrorCode (*exactError)(TS, Vec, Vec);
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(u, &e);CHKERRQ(ierr);
-  ierr = TSComputeExactError((TS) ce->solver, u, e);CHKERRQ(ierr);
-  ierr = VecNorm(e, NORM_2, errors);CHKERRQ(ierr);
-  ierr = VecDestroy(&e);CHKERRQ(ierr);
+  ierr = TSGetComputeExactError(ts, &exactError);CHKERRQ(ierr);
+  if (exactError) {
+    Vec      e;
+    PetscInt f;
+
+    ierr = VecDuplicate(u, &e);CHKERRQ(ierr);
+    ierr = TSComputeExactError(ts, u, e);CHKERRQ(ierr);
+    ierr = VecNorm(e, NORM_2, errors);CHKERRQ(ierr);
+    for (f = 1; f < ce->Nf; ++f) errors[f] = errors[0];
+    ierr = VecDestroy(&e);CHKERRQ(ierr);
+  } else {
+    PetscReal t;
+
+    ierr = TSGetSolveTime(ts, &t);CHKERRQ(ierr);
+    ierr = DMComputeL2FieldDiff(dm, t, ce->exactSol, ce->ctxs, u, errors);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -63,19 +77,21 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Private(PetscConvEst ce, PetscRe
     ierr = PetscConvEstComputeInitialGuess(ce, r, NULL, u);CHKERRQ(ierr);
     ierr = TSSolve(ts, u);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(ce->event, ce, 0, 0, 0);CHKERRQ(ierr);
-    ierr = PetscConvEstComputeError(ce, r, NULL, u, &ce->errors[r*Nf]);CHKERRQ(ierr);
+    ierr = PetscConvEstComputeError(ce, r, ce->idm, u, &ce->errors[r*Nf]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(ce->event, ce, 0, 0, 0);CHKERRQ(ierr);
     for (f = 0; f < ce->Nf; ++f) {
       ierr = PetscLogEventSetDof(ce->event, f, 1.0/dt[r]);CHKERRQ(ierr);
       ierr = PetscLogEventSetError(ce->event, f, ce->errors[r*Nf+f]);CHKERRQ(ierr);
     }
+    /* Monitor */
+    ierr = PetscConvEstMonitorDefault(ce, r);CHKERRQ(ierr);
   }
   /* Fit convergence rate */
   if (Nr) {
     ierr = PetscMalloc2(Nr+1, &x, Nr+1, &y);CHKERRQ(ierr);
     for (f = 0; f < Nf; ++f) {
       for (r = 0; r <= Nr; ++r) {
-        x[r] = PetscLog10Real(dt[r*Nf+f]);
+        x[r] = PetscLog10Real(dt[r]);
         y[r] = PetscLog10Real(ce->errors[r*Nf+f]);
       }
       ierr = PetscLinearRegression(Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
