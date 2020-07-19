@@ -281,7 +281,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *fcn,Vec G,void *use
   /* Restore vectors */
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);
-  ierr = PetscLogFlops(67*mx*my);CHKERRQ(ierr);
+  ierr = PetscLogFlops(67.0*mx*my);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -462,7 +462,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   ierr = MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(199*mx*my);CHKERRQ(ierr);
+  ierr = PetscLogFlops(199.0*mx*my);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

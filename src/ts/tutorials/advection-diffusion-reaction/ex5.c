@@ -194,7 +194,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec U,Vec F,void *ptr)
       f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc;
     }
   }
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
 
   /*
      Restore access to vectors and return no longer needed work vector
@@ -358,7 +358,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
   /*
      Restore vectors
   */
-  ierr = PetscLogFlops(19*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(19.0*xm*ym);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

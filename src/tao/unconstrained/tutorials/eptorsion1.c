@@ -306,7 +306,7 @@ PetscErrorCode FormFunction(Tao tao,Vec X,PetscReal *f,void *ptr)
   area = p5*hx*hy;
   *f = area*(p5*fquad+flin);
 
-  ierr = PetscLogFlops(nx*ny*24);CHKERRQ(ierr);
+  ierr = PetscLogFlops(24.0*nx*ny);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -402,7 +402,7 @@ PetscErrorCode FormGradient(Tao tao,Vec X,Vec G,void *ptr)
   /* Scale the gradient */
   area = p5*hx*hy;
   ierr = VecScale(G, area);CHKERRQ(ierr);
-  ierr = PetscLogFlops(nx*ny*24);CHKERRQ(ierr);
+  ierr = PetscLogFlops(24.0*nx*ny);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -611,7 +611,7 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
   /* Scale resulting vector by area */
   area = p5*hx*hy;
   ierr = VecScale(y, area);CHKERRQ(ierr);
-  ierr = PetscLogFlops(nx*ny*18);CHKERRQ(ierr);
+  ierr = PetscLogFlops(18.0*nx*ny);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

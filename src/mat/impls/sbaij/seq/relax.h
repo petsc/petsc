@@ -191,7 +191,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         v  += nz + 1;
         vj += nz + 1;
       }
-      ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
     }
 
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
@@ -220,7 +220,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
           v   -= nz + 1;
           vj  -= nz + 1;
         }
-        ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
       } else {
         v  = aa + ai[m-1] + 1;
         vj = aj + ai[m-1] + 1;
@@ -236,7 +236,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
           v   -= nz + 1;
           vj  -= nz + 1;
         }
-        ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
       }
     }
     its--;

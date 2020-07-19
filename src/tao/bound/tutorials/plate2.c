@@ -392,7 +392,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G,void *
   ierr = DMLocalToGlobalBegin(user->dm,localG,INSERT_VALUES,G);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(user->dm,localG,INSERT_VALUES,G);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(70*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(70.0*xm*ym);CHKERRQ(ierr);
 
   return 0;
 }
@@ -605,7 +605,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat Hptr, Mat Hessian, void *ptr)
   ierr = MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(199*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(199.0*xm*ym);CHKERRQ(ierr);
   return 0;
 }
 

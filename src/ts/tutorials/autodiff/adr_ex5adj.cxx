@@ -395,7 +395,7 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info,PetscReal t,Field**u,Fi
       f[j][i].v = udot[j][i].v - appctx->D2*(vxx + vyy) - uc*vc*vc + (appctx->gamma + appctx->kappa)*vc;
     }
   }
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -504,7 +504,7 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
     }
   }
   trace_off();  /* End of active section */
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
 
   /* Restore vectors */
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
@@ -597,7 +597,7 @@ PetscErrorCode RHSFunctionPassive(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localF);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -732,7 +732,7 @@ PetscErrorCode RHSFunctionActive(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localF);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
 
   /* Destroy AFields appropriately */
   f_a += gys;
@@ -882,7 +882,7 @@ PetscErrorCode IJacobianByHand(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat 
   /*
      Restore vectors
   */
-  ierr = PetscLogFlops(19*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(19.0*xm*ym);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -993,7 +993,7 @@ PetscErrorCode RHSJacobianByHand(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
   /*
      Restore vectors
   */
-  ierr = PetscLogFlops(19*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(19.0*xm*ym);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

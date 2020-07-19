@@ -279,7 +279,7 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info,PetscReal t,Field**u,Fi
       f[j][i].v = udot[j][i].v - appctx->D2*(vxx + vyy) - uc*vc*vc + (appctx->gamma + appctx->kappa)*vc;
     }
   }
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -388,7 +388,7 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
     }
   }
   trace_off();  /* End of active section */
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
 
   /* Restore vectors */
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);

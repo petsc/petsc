@@ -233,7 +233,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
       f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc;
     }
   }
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
 
   /*
      Restore vectors
@@ -390,7 +390,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
   /*
      Restore vectors
   */
-  ierr = PetscLogFlops(19*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(19.0*xm*ym);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -471,7 +471,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
       f[j][i].v = udot[j][i].v - ( appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc );
     }
   }
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
 
   /*
      Restore vectors
@@ -584,7 +584,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   /*
      Restore vectors
   */
-  ierr = PetscLogFlops(19*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(19.0*xm*ym);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
