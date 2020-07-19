@@ -493,7 +493,7 @@ static PetscErrorCode KSPGetMatSolveBlockSize_HPDDM(KSP ksp, PetscInt *bs)
      Unlike KSPReset(), this function does not destroy any deflation space attached to the KSP.
      As an example, in the following sequence: KSPHPDDMSetType(ksp, KSPGCRODR); KSPSolve(ksp, b, x); KSPHPDDMSetType(ksp, KSPGMRES); KSPHPDDMSetType(ksp, KSPGCRODR); KSPSolve(ksp, b, x); the recycled space is reused in the second KSPSolve().
 
-.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMGetType()
+.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMType, KSPHPDDMGetType()
 @*/
 PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type)
 {
@@ -516,7 +516,7 @@ PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type)
 
    Level: intermediate
 
-.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMSetType()
+.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMType, KSPHPDDMSetType()
 @*/
 PetscErrorCode KSPHPDDMGetType(KSP ksp, KSPHPDDMType *type)
 {
@@ -567,7 +567,7 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart, default=30> - see KSPGMRES
-.   -ksp_hpddm_type <type, default=gmres> - any of gmres, bgmres, cg, bcg, gcrodr, bgcrodr, bfbcg, or preonly
+.   -ksp_hpddm_type <type, default=gmres> - any of gmres, bgmres, cg, bcg, gcrodr, bgcrodr, bfbcg, or preonly, see KSPHPDDMType
 .   -ksp_hpddm_deflation_tol <eps, default=\-1.0> - tolerance when deflating right-hand sides inside block methods (no deflation by default, only relevant with block methods)
 .   -ksp_hpddm_enlarge_krylov_subspace <p, default=1> - split the initial right-hand side into multiple vectors (only relevant with nonblock methods)
 .   -ksp_hpddm_orthogonalization <type, default=cgs> - any of cgs or mgs, see KSPGMRES
@@ -575,7 +575,8 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
 .   -ksp_hpddm_variant <type, default=left> - any of left, right, or flexible (this option is superseded by KSPSetPCSide())
 .   -ksp_hpddm_recycle <n, default=0> - number of harmonic Ritz vectors to compute (only relevant with GCRODR or BGCRODR)
 .   -ksp_hpddm_recycle_target <type, default=SM> - criterion to select harmonic Ritz vectors using either SM, LM, SR, LR, SI, or LI (only relevant with GCRODR or BGCRODR). For BGCRODR, if PETSc is compiled with SLEPc, this option is not relevant, since SLEPc is used instead. Options are set with the prefix -ksp_hpddm_recycle_eps_
--   -ksp_hpddm_recycle_strategy <type, default=A> - generalized eigenvalue problem A or B to solve for recycling (only relevant with flexible GCRODR or BGCRODR)
+.   -ksp_hpddm_recycle_strategy <type, default=A> - generalized eigenvalue problem A or B to solve for recycling (only relevant with flexible GCRODR or BGCRODR)
+-   -ksp_hpddm_recycle_symmetric <true, default=false> - symmetric generalized eigenproblems in BGCRODR, useful to switch to distributed solvers like EPSELEMENTAL (only relevant when PETSc is compiled with SLEPc)
 
    References:
 +   1980 - The Block Conjugate Gradient Algorithm and Related Methods. O'Leary. Linear Algebra and its Applications.
