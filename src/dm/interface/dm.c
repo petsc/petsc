@@ -5509,12 +5509,15 @@ PetscErrorCode DMCreateDS(DM dm)
 /*@
   DMComputeExactSolution - Compute the exact solution for a given DM, using the PetscDS information.
 
+  Collective on DM
+
   Input Parameters:
 + dm   - The DM
 - time - The time
 
   Output Parameters:
-. u    - The vector will be filled with exact solution values
++ u    - The vector will be filled with exact solution values, or NULL
+- u_t  - The vector will be filled with the time derivative of exact solution values, or NULL
 
   Note: The user must call PetscDSSetExactSolution() beforehand
 
@@ -5522,7 +5525,7 @@ PetscErrorCode DMCreateDS(DM dm)
 
 .seealso: PetscDSSetExactSolution()
 @*/
-PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u)
+PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u, Vec u_t)
 {
   PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
   void            **ectxs;
@@ -5530,6 +5533,9 @@ PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (u)   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
+  if (u_t) PetscValidHeaderSpecific(u_t, VEC_CLASSID, 4);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &exacts, Nf, &ectxs);CHKERRQ(ierr);
   ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
@@ -5545,19 +5551,41 @@ PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u)
     ierr = ISGetIndices(fieldIS, &fields);CHKERRQ(ierr);
     ierr = PetscArrayzero(exacts, Nf);CHKERRQ(ierr);
     ierr = PetscArrayzero(ectxs, Nf);CHKERRQ(ierr);
-    for (f = 0; f < dsNf; ++f) {
-      const PetscInt field = fields[f];
-      ierr = PetscDSGetExactSolution(ds, field, &exacts[field], &ectxs[field]);CHKERRQ(ierr);
+    if (u) {
+      for (f = 0; f < dsNf; ++f) {
+        const PetscInt field = fields[f];
+        ierr = PetscDSGetExactSolution(ds, field, &exacts[field], &ectxs[field]);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);
+      if (label) {
+        ierr = DMProjectFunctionLabel(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+      } else {
+        ierr = DMProjectFunction(dm, time, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+      }
     }
-    ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);
-    if (label) {
-      ierr = DMProjectFunctionLabel(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-    } else {
-      ierr = DMProjectFunction(dm, time, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    if (u_t) {
+      ierr = PetscArrayzero(exacts, Nf);CHKERRQ(ierr);
+      ierr = PetscArrayzero(ectxs, Nf);CHKERRQ(ierr);
+      for (f = 0; f < dsNf; ++f) {
+        const PetscInt field = fields[f];
+        ierr = PetscDSGetExactSolutionTimeDerivative(ds, field, &exacts[field], &ectxs[field]);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);
+      if (label) {
+        ierr = DMProjectFunctionLabel(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, u_t);CHKERRQ(ierr);
+      } else {
+        ierr = DMProjectFunction(dm, time, exacts, ectxs, INSERT_ALL_VALUES, u_t);CHKERRQ(ierr);
+      }
     }
   }
-  ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) u, "exact_");CHKERRQ(ierr);
+  if (u) {
+    ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) u, "exact_");CHKERRQ(ierr);
+  }
+  if (u_t) {
+    ierr = PetscObjectSetName((PetscObject) u, "Exact Solution Time Derivative");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) u_t, "exact_t_");CHKERRQ(ierr);
+  }
   ierr = PetscFree2(exacts, ectxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

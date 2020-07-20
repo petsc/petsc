@@ -185,6 +185,9 @@
           <li>Add lm regularizer to TAOBRGN. This regularizer turns BRGN into a Levenberg-Marquardt algorithm. TAOBRGNGetDamping() vector returns the damping vector used by this regularizer.</li>
         </ul>
       <h4>DM/DA:</h4>
+        <ul>
+          <li>Change DMComputeExactSolution() to also compute the time derivative of the exact solution</li>
+        </ul>
       <h4>DMPlex:</h4>
         <ul>
           <li>Deprecate DMPlexCreateFromCellList[Parallel]() in favor of DMPlexCreateFromCellList[Parallel]Petsc() which accepts PETSc datatypes</li>
@@ -206,6 +209,7 @@
           <li>Change DMPlexSNESGetGradientDM() to DMPlexGetGradientDM()</li>
           <li>Change DMPlexCreateSphereMesh() to take a radius</li>
           <li>Add DMPlexCreateBallMesh()</li>
+          <li>Change DMSNESCheckDiscretization() to also take the time</li>
         </ul>
       <h4>DT:</h4>
         <ul>
@@ -213,6 +217,7 @@
           <li>Add PetscDTJacobiEvalJet() and PetscDTPKDEvalJet() for evaluating the derivatives of orthogonal polynomials on the segment (Jacobi) and simplex (PKD)</li>
           <li>Add PetscDTIndexToGradedOrder() and PetscDTGradedOrderToIndex() for indexing multivariate monomials and derivatives in a linear order</li>
           <li>Add PetscSpaceType "sum" for constructing FE spaces as the sum or concatenation of other spaces.</li>
+          <li>Add PetscDSGet/SetExactSolutionTimeDerivative()</li>
         </ul>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>

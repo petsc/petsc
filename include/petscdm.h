@@ -260,7 +260,7 @@ PETSC_EXTERN PetscErrorCode DMCreateDS(DM);
 PETSC_EXTERN PetscErrorCode DMClearDS(DM);
 PETSC_EXTERN PetscErrorCode DMCopyDS(DM, DM);
 PETSC_EXTERN PetscErrorCode DMCopyDisc(DM, DM);
-PETSC_EXTERN PetscErrorCode DMComputeExactSolution(DM, PetscReal, Vec);
+PETSC_EXTERN PetscErrorCode DMComputeExactSolution(DM, PetscReal, Vec, Vec);
 
 /*MC
   DMInterpolationInfo - Structure for holding information about interpolation on a mesh

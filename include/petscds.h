@@ -323,6 +323,8 @@ PETSC_EXTERN PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS, PetscInt
                                                                         PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetExactSolution(PetscDS, PetscInt, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void **);
 PETSC_EXTERN PetscErrorCode PetscDSSetExactSolution(PetscDS, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void *);
+PETSC_EXTERN PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS, PetscInt, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void **);
+PETSC_EXTERN PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTabulation(PetscDS, PetscTabulation *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetFaceTabulation(PetscDS, PetscTabulation *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **);

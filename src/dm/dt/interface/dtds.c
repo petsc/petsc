@@ -458,8 +458,8 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscBdPointFunc *tmpfbd;
   PetscBdPointJac  *tmpgbd, *tmpgpbd;
   PetscRiemannFunc *tmpr;
-  PetscSimplePointFunc *tmpexactSol;
-  void                **tmpexactCtx;
+  PetscSimplePointFunc *tmpexactSol,  *tmpexactSol_t;
+  void                **tmpexactCtx, **tmpexactCtx_t;
   void            **tmpctx;
   PetscInt          Nf = prob->Nf, f;
   PetscErrorCode    ierr;
@@ -502,23 +502,29 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   prob->r   = tmpr;
   prob->update = tmpup;
   prob->ctx = tmpctx;
-  ierr = PetscCalloc5(NfNew*2, &tmpfbd, NfNew*NfNew*4, &tmpgbd, NfNew*NfNew*4, &tmpgpbd, NfNew, &tmpexactSol, NfNew, &tmpexactCtx);CHKERRQ(ierr);
+  ierr = PetscCalloc7(NfNew*2, &tmpfbd, NfNew*NfNew*4, &tmpgbd, NfNew*NfNew*4, &tmpgpbd, NfNew, &tmpexactSol, NfNew, &tmpexactCtx, NfNew, &tmpexactSol_t, NfNew, &tmpexactCtx_t);CHKERRQ(ierr);
   for (f = 0; f < Nf*2; ++f) tmpfbd[f] = prob->fBd[f];
   for (f = 0; f < Nf*Nf*4; ++f) tmpgbd[f] = prob->gBd[f];
   for (f = 0; f < Nf*Nf*4; ++f) tmpgpbd[f] = prob->gpBd[f];
   for (f = 0; f < Nf; ++f) tmpexactSol[f] = prob->exactSol[f];
   for (f = 0; f < Nf; ++f) tmpexactCtx[f] = prob->exactCtx[f];
+  for (f = 0; f < Nf; ++f) tmpexactSol_t[f] = prob->exactSol_t[f];
+  for (f = 0; f < Nf; ++f) tmpexactCtx_t[f] = prob->exactCtx_t[f];
   for (f = Nf*2; f < NfNew*2; ++f) tmpfbd[f] = NULL;
   for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpgbd[f] = NULL;
   for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpgpbd[f] = NULL;
   for (f = Nf; f < NfNew; ++f) tmpexactSol[f] = NULL;
   for (f = Nf; f < NfNew; ++f) tmpexactCtx[f] = NULL;
-  ierr = PetscFree5(prob->fBd, prob->gBd, prob->gpBd, prob->exactSol, prob->exactCtx);CHKERRQ(ierr);
+  for (f = Nf; f < NfNew; ++f) tmpexactSol_t[f] = NULL;
+  for (f = Nf; f < NfNew; ++f) tmpexactCtx_t[f] = NULL;
+  ierr = PetscFree7(prob->fBd, prob->gBd, prob->gpBd, prob->exactSol, prob->exactCtx, prob->exactSol_t, prob->exactCtx_t);CHKERRQ(ierr);
   prob->fBd = tmpfbd;
   prob->gBd = tmpgbd;
   prob->gpBd = tmpgpbd;
   prob->exactSol = tmpexactSol;
   prob->exactCtx = tmpexactCtx;
+  prob->exactSol_t = tmpexactSol_t;
+  prob->exactCtx_t = tmpexactCtx_t;
   PetscFunctionReturn(0);
 }
 
@@ -560,7 +566,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   ierr = PetscFree2((*prob)->disc, (*prob)->implicit);CHKERRQ(ierr);
   ierr = PetscFree7((*prob)->obj,(*prob)->f,(*prob)->g,(*prob)->gp,(*prob)->gt,(*prob)->r,(*prob)->ctx);CHKERRQ(ierr);
   ierr = PetscFree((*prob)->update);CHKERRQ(ierr);
-  ierr = PetscFree5((*prob)->fBd,(*prob)->gBd,(*prob)->gpBd,(*prob)->exactSol,(*prob)->exactCtx);CHKERRQ(ierr);
+  ierr = PetscFree7((*prob)->fBd,(*prob)->gBd,(*prob)->gpBd,(*prob)->exactSol,(*prob)->exactCtx,(*prob)->exactSol_t,(*prob)->exactCtx_t);CHKERRQ(ierr);
   if ((*prob)->ops->destroy) {ierr = (*(*prob)->ops->destroy)(*prob);CHKERRQ(ierr);}
   next = (*prob)->boundary;
   while (next) {
@@ -2531,7 +2537,7 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
   Level: intermediate
 
-.seealso: PetscDSSetExactSolution()
+.seealso: PetscDSSetExactSolution(), PetscDSGetExactSolutionTimeDerivative()
 @*/
 PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void **ctx)
 {
@@ -2579,6 +2585,83 @@ PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
   ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   if (sol) {PetscValidFunction(sol, 3); prob->exactSol[f] = sol;}
   if (ctx) {PetscValidFunction(ctx, 4); prob->exactCtx[f] = ctx;}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDSGetExactSolutionTimeDerivative - Get the pointwise time derivative of the exact solution function for a given test field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS
+- f    - The test field number
+
+  Output Parameter:
++ exactSol - time derivative of the exact solution for the test field
+- exactCtx - time derivative of the exact solution context
+
+  Note: The calling sequence for the solution functions is given by:
+
+$ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
+
++ dim - the spatial dimension
+. t - current time
+. x - coordinates of the current point
+. Nc - the number of field components
+. u - the solution field evaluated at the current point
+- ctx - a user context
+
+  Level: intermediate
+
+.seealso: PetscDSSetExactSolutionTimeDerivative(), PetscDSGetExactSolution()
+@*/
+PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void **ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  if (sol) {PetscValidPointer(sol, 3); *sol = prob->exactSol_t[f];}
+  if (ctx) {PetscValidPointer(ctx, 4); *ctx = prob->exactCtx_t[f];}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDSSetExactSolutionTimeDerivative - Set the pointwise time derivative of the exact solution function for a given test field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS
+. f    - The test field number
+. sol  - time derivative of the solution function for the test fields
+- ctx  - time derivative of the solution context or NULL
+
+  Note: The calling sequence for solution functions is given by:
+
+$ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
+
++ dim - the spatial dimension
+. t - current time
+. x - coordinates of the current point
+. Nc - the number of field components
+. u - the solution field evaluated at the current point
+- ctx - a user context
+
+  Level: intermediate
+
+.seealso: PetscDSGetExactSolutionTimeDerivative(), PetscDSSetExactSolution()
+@*/
+PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscErrorCode (*sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
+  if (sol) {PetscValidFunction(sol, 3); prob->exactSol_t[f] = sol;}
+  if (ctx) {PetscValidFunction(ctx, 4); prob->exactCtx_t[f] = ctx;}
   PetscFunctionReturn(0);
 }
 
