@@ -4,7 +4,7 @@ Input parameters include:\n\
   -random_exact_sol : use a random exact solution vector\n\
   -view_exact_sol   : write exact solution vector to stdout\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
-  -n <mesh_n>       : number of mesh points in y-direction\n\n";
+  -n <mesh_y>       : number of mesh points in y-direction\n\n";
 
 /*T
    Concepts: KSP^basic parallel example;
