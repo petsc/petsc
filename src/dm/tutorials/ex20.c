@@ -91,12 +91,12 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
   PetscFunctionBegin;
   /* Create the background cell DM */
   if (dim == 2) {
-    PetscInt cells_per_dim[2],nx[2];
-    PetscInt n_tricells;
-    PetscInt n_trivert;
-    int      *tricells;
-    double   *trivert,dx,dy;
-    PetscInt ii,jj,cnt;
+    PetscInt   cells_per_dim[2],nx[2];
+    PetscInt   n_tricells;
+    PetscInt   n_trivert;
+    PetscInt   *tricells;
+    PetscReal  *trivert,dx,dy;
+    PetscInt   ii,jj,cnt;
 
     cells_per_dim[0] = 4;
     cells_per_dim[1] = 4;
@@ -143,7 +143,7 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
         cnt++;
       }
     }
-    ierr = DMPlexCreateFromCellList(PETSC_COMM_WORLD,dim,n_tricells,n_trivert,3,PETSC_TRUE,tricells,dim,trivert,&celldm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD,dim,n_tricells,n_trivert,3,PETSC_TRUE,tricells,dim,trivert,&celldm);CHKERRQ(ierr);
     ierr = PetscFree(trivert);CHKERRQ(ierr);
     ierr = PetscFree(tricells);CHKERRQ(ierr);
   }

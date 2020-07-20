@@ -120,7 +120,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
 
     /* Now create the DM */
-    ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, vertices_per_cell, PETSC_TRUE, cells, dim, coords, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, vertices_per_cell, PETSC_TRUE, cells, dim, coords, dm);CHKERRQ(ierr);
     /* Check for flipped first cell */
     {
       PetscReal v0[3], J[9], invJ[9], detJ;
