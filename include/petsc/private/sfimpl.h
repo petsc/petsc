@@ -138,7 +138,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType
   PetscValidPointer(mtype,2);
   *mtype = PETSC_MEMTYPE_HOST;
 #if defined(PETSC_HAVE_CUDA)
-  if (data) {
+  if (PetscCUDAInitialized && data) {
     /* Use CUDA driver API cuPointerGetAttribute() directly since it is lighter and faster than CUDA runtime API cudaPointerGetAttributes() */
     CUmemorytype  cumtype = CU_MEMORYTYPE_HOST;
     CUresult      cuerr;

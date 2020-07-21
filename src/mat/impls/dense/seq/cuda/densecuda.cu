@@ -1384,6 +1384,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDenseCUDA(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!PetscCUDAInitialized) {ierr = PetscCUDAInitializeLazily();CHKERRQ(ierr);}
   ierr = MatCreate_SeqDense(B);CHKERRQ(ierr);
   ierr = MatConvert_SeqDense_SeqDenseCUDA(B,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
   PetscFunctionReturn(0);

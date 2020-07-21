@@ -25,9 +25,9 @@
 /* ---------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN void petsccudainitialize_(MPI_Fint *comm, PetscErrorCode *ierr)
+PETSC_EXTERN void petsccudainitialize_(MPI_Fint *comm, PetscInt *dev,PetscErrorCode *ierr)
 {
-  *ierr = PetscCUDAInitialize(MPI_Comm_f2c(*(comm)));
+  *ierr = PetscCUDAInitialize(MPI_Comm_f2c(*(comm)),*dev);
 }
 #endif
 

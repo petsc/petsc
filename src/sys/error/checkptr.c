@@ -149,7 +149,7 @@ PetscBool PetscCheckMpiGpuAwareness(void)
     /* If a segv was triggered in the MPI_Allreduce below, it is very likely due to the MPI is not GPU-aware */
     awareness = PETSC_FALSE;
   } else {
-    ierr = MPI_Allreduce(dbuf,dbuf+1,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
+    ierr = MPI_Allreduce(dbuf,dbuf+1,1,MPI_INT,MPI_SUM,PETSC_COMM_SELF);
     if (!ierr) awareness = PETSC_TRUE;
   }
   PetscSegvJumpBuf_set = PETSC_FALSE;
