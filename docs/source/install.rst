@@ -56,7 +56,7 @@ Python Package Index. You can use
 
 * Using :program:`curl`::
 
-    $ curl -O https://pypi.io/packages/source/p/petsc4py/petsc4py-X.Y.Z.tar.gz
+    $ curl -LO https://pypi.io/packages/source/p/petsc4py/petsc4py-X.Y.Z.tar.gz
 
 * Using :program:`wget`::
 

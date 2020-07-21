@@ -29,8 +29,8 @@ You can also install the in-development version of petsc4py with::
 or::
 
   $ pip install Cython numpy mpi4py
-  $ pip install --no-deps https://gitlab.com/petsc/petsc/-/archive/master/petsc-master.tar.gz
-  $ pip install --no-deps https://gitlab.com/petsc/petsc4py/-/archive/master/petsc4py-master.tar.gz
+  $ pip install --no-deps https://gitlab.com/petsc/petsc/-/archive/master.tar.gz
+  $ pip install --no-deps https://gitlab.com/petsc/petsc4py/-/archive/master.tar.gz
 
 
 Citations
