@@ -30,10 +30,10 @@ Discussion and Support
 Downloads and Development
 -------------------------
 
-+ Project Site:    https://bitbucket.org/petsc/petsc4py
-+ Source Releases: https://bitbucket.org/petsc/petsc4py/downloads
-+ Issue Tracker:   https://bitbucket.org/petsc/petsc4py/issues
-+ Git Repository:  https://bitbucket.org/petsc/petsc4py.git
++ Project Site:    https://gitlab.com/petsc/petsc4py
++ Source Releases: https://gitlab.com/petsc/petsc4py/-/releases
++ Issue Tracker:   https://gitlab.com/petsc/petsc4py/-/issues
++ Git Repository:  https://gitlab.com/petsc/petsc4py.git
 
 
 Citations

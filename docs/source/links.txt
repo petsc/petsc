@@ -12,8 +12,8 @@
 
 .. _NumPy:        http://www.numpy.org
 
-.. _mpi4py:       http://bitbucket.org/mpi4py/mpi4py
+.. _mpi4py:       http://github.com/mpi4py/mpi4py
 
-.. _petsc4py:     http://bitbucket.org/petsc/petsc4py
+.. _petsc4py:     http://gitlab.com/petsc/petsc4py
 
-.. _slepc4py:     http://bitbucket.org/slepc/slepc4py
+.. _slepc4py:     http://gitlab.com/slepc/slepc4py
