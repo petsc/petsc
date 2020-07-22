@@ -256,7 +256,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
   ierr = DMDAVecRestoreArray(da,localX, &x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,G, &g);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = PetscLogFlops(67*mx*my);CHKERRQ(ierr);
+  ierr = PetscLogFlops(67.0*mx*my);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -432,7 +432,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(199*mx*my);CHKERRQ(ierr);
+  ierr = PetscLogFlops(199.0*mx*my);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

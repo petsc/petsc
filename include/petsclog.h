@@ -258,6 +258,21 @@ PETSC_EXTERN PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog,int,Petsc
 #define PETSC_FLOPS_PER_OP 1.0
 #endif
 
+/*@
+       PetscLogFlops - Log how many flops are performed in a calculation
+
+   Input Paramters:
+    flops - the number of flops
+
+   Notes:
+     To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double, 
+     not an integer. Use PetscLogFlops(4.0*n) not PetscLogFlops(4*n)
+
+   Level: intermediate
+
+.seealso: PetscLogView()
+@*/
+
 PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
 {
   PetscFunctionBegin;

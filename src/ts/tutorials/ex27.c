@@ -291,7 +291,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
       }
     }
   }
-  ierr = PetscLogFlops((N_SPECIES*(28 + 13*N_REACTIONS))*info->ym*info->xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops((N_SPECIES*(28.0 + 13.0*N_REACTIONS))*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
