@@ -378,7 +378,7 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
   ierr = DMLocalToGlobalEnd(user->dm,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->dm,&localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->dm,&localF);CHKERRQ(ierr);
-  ierr = PetscLogFlops(24*(gxm-2));CHKERRQ(ierr);
+  ierr = PetscLogFlops(24.0*(gxm-2));CHKERRQ(ierr);
   /*
   info=VecView(F,PETSC_VIEWER_STDOUT_WORLD);
   */
@@ -443,7 +443,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
   /* Assemble the Jacobian matrix */
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogFlops(18*(gxm)+5);CHKERRQ(ierr);
+  ierr = PetscLogFlops(18.0*(gxm)+5);CHKERRQ(ierr);
   return 0;
 }
 

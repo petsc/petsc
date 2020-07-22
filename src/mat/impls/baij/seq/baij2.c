@@ -2274,7 +2274,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
     }
 #endif
     *norm = PetscSqrtReal(sum);
-    ierr = PetscLogFlops(2*bs2*nz);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*bs2*nz);CHKERRQ(ierr);
   } else if (type == NORM_1) { /* maximum column sum */
     PetscReal *tmp;
     PetscInt  *bcol = a->j;

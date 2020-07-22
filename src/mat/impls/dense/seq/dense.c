@@ -296,7 +296,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   }
   ierr = MatDenseRestoreArrayRead(X,&xv);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(Y,&yv);CHKERRQ(ierr);
-  ierr = PetscLogFlops(PetscMax(2*N-1,0));CHKERRQ(ierr);
+  ierr = PetscLogFlops(PetscMax(2.0*N-1,0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

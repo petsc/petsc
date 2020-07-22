@@ -138,7 +138,11 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = KSPView(jac->kspL,viewer);CHKERRQ(ierr);
+    if (jac->kspL) {
+      ierr = KSPView(jac->kspL,viewer);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"PCLSC KSP object not yet created, hence cannot display");CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

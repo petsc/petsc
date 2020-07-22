@@ -2193,7 +2193,7 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
     }
     *nrm = PetscSqrtReal(sum);
 #endif
-    ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     PetscReal *tmp;
     PetscInt  *jj = a->j;

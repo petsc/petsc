@@ -365,7 +365,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *u
 
   /* Scatter values to global vector */
   ierr = DMRestoreLocalVector(user->dm,&localX);CHKERRQ(ierr);
-  ierr = PetscLogFlops(67*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(67.0*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -580,7 +580,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   ierr = MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(199*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(199.0*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -756,7 +756,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
       }
     }
     ierr = DMDAVecRestoreArray(user->dm,X,(void**)&x);CHKERRQ(ierr);
-    ierr = PetscLogFlops(9*xm*ym);CHKERRQ(ierr);
+    ierr = PetscLogFlops(9.0*xm*ym);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

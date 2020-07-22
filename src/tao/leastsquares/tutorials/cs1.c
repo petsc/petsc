@@ -159,7 +159,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   }
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  PetscLogFlops(M*N*2);
+  PetscLogFlops(2.0*M*N);
   PetscFunctionReturn(0);
 }
 
