@@ -236,6 +236,7 @@ PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
 {
   DM             dm;
   Vec            locv;
+  PetscObject    isZero;
   const char    *name;
   PetscReal      time;
   PetscErrorCode ierr;
@@ -245,6 +246,8 @@ PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
   ierr = DMGetLocalVector(dm, &locv);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) v, "__Vec_bc_zero__", &isZero);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) locv, "__Vec_bc_zero__", isZero);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, NULL, &time);CHKERRQ(ierr);
@@ -254,6 +257,7 @@ PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
   ierr = VecView_Plex_Local_HDF5_Internal(locv, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) locv, "__Vec_bc_zero__", NULL);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

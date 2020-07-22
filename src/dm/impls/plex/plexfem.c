@@ -984,8 +984,16 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt c;
+  for (c = 0; c < Nc; ++c) u[c] = 0.0;
+  return 0;
+}
+
 PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential, Vec locX, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
 {
+  PetscObject    isZero;
   PetscDS        prob;
   PetscInt       numBd, b;
   PetscErrorCode ierr;
@@ -993,6 +1001,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
   PetscFunctionBegin;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumBoundary(prob, &numBd);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) locX, "__Vec_bc_zero__", &isZero);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
     DMBoundaryConditionType type;
     const char             *name, *labelname;
@@ -1016,6 +1025,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
       switch (type) {
         /* for FEM, there is no insertion to be done for non-essential boundary conditions */
       case DM_BC_ESSENTIAL:
+        if (isZero) func = (void (*)(void)) zero;
         ierr = DMPlexLabelAddCells(dm,label);CHKERRQ(ierr);
         ierr = DMPlexInsertBoundaryValuesEssential(dm, time, field, Nc, comps, label, numids, ids, (PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
         ierr = DMPlexLabelClearCells(dm,label);CHKERRQ(ierr);
