@@ -2234,6 +2234,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
 PetscErrorCode DMPlexCreateBallMesh(MPI_Comm comm, PetscInt dim, PetscReal R, DM *dm)
 {
   DM             sdm;
+  DMLabel        bdlabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2242,6 +2243,10 @@ PetscErrorCode DMPlexCreateBallMesh(MPI_Comm comm, PetscInt dim, PetscReal R, DM
   ierr = DMSetFromOptions(sdm);CHKERRQ(ierr);
   ierr = DMPlexGenerate(sdm, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   ierr = DMDestroy(&sdm);CHKERRQ(ierr);
+  ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
+  ierr = DMGetLabel(*dm, "marker", &bdlabel);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(*dm, PETSC_DETERMINE, bdlabel);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete(*dm, bdlabel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
