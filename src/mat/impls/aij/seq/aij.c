@@ -4030,9 +4030,19 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 
    Level: developer
 
-   The i,j,v values are COPIED with this routine; to avoid the copy use MatCreateSeqAIJWithArrays()
+   Notes:
+      The i,j,v values are COPIED with this routine; to avoid the copy use MatCreateSeqAIJWithArrays()
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatSeqAIJSetPreallocation(), MatCreateSeqAIJ(), MATSEQAIJ
+      This routine may be called multiple times with different nonzero patterns (or the same nonzero pattern). The nonzero
+      structure will be the union of all the previous nonzero structures.
+
+    Developer Notes:
+      An optimization could be added to the implementation where it checks if the i, and j are identical to the current i and j and 
+      then just copies the v values directly with PetscMemcpy().
+
+      This routine could also take a PetscCopyMode argument to allow sharing the values instead of always copying them.
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatSeqAIJSetPreallocation(), MatCreateSeqAIJ(), MATSEQAIJ, MatResetPreallocation()
 @*/
 PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[],const PetscScalar v[])
 {
@@ -4050,7 +4060,7 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
   PetscInt       i;
   PetscInt       m,n;
   PetscInt       nz;
-  PetscInt       *nnz, nz_max = 0;
+  PetscInt       *nnz;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4063,7 +4073,6 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
   ierr = PetscMalloc1(m+1, &nnz);CHKERRQ(ierr);
   for (i = 0; i < m; i++) {
     nz     = Ii[i+1]- Ii[i];
-    nz_max = PetscMax(nz_max, nz);
     if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Local row %D has a negative number of columns %D", i, nnz);
     nnz[i] = nz;
   }

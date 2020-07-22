@@ -445,7 +445,7 @@ PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char prefix[]
 
 .seealso: MatFDColoringDestroy(),SNESComputeJacobianDefaultColor(), ISColoringCreate(),
           MatFDColoringSetFunction(), MatFDColoringSetFromOptions(), MatFDColoringApply(),
-          MatFDColoringView(), MatFDColoringSetParameters(), MatColoringCreate(), DMCreateColoring()
+          MatFDColoringView(), MatFDColoringSetParameters(), MatColoringCreate(), DMCreateColoring(), MatFDColoringSetValues()
 @*/
 PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 {
@@ -599,7 +599,7 @@ PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt
 
     Level: intermediate
 
-.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringSetFunction()
+.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringSetFunction(), MatFDColoringSetValues()
 
 @*/
 PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
