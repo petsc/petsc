@@ -320,6 +320,24 @@ prepend-path PATH "%s"
       self.addMakeMacro('CUDAC_FLAGS',self.setCompilers.getCompilerFlags())
       self.setCompilers.popLanguage()
 
+    if hasattr(self.compilers, 'HIPCC'):
+      self.setCompilers.pushLanguage('HIP')
+      self.addMakeMacro('HIPCC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
+
+    if hasattr(self.compilers, 'SYCLCXX'):
+      self.setCompilers.pushLanguage('SYCL')
+      self.addMakeMacro('SYCLCXX_FLAGS',self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
+
+    # Define superset of includes for simplicity.  
+    # BACKACC = BACKend ACCeleration
+    hasbackacc = False
+    for pkg in "cuda hip sycl viennacl".split():
+      if pkg in self.framework.packages:
+        if self.framework[pkg].required: hasbackacc = True
+    if hasbackacc: self.addDefine('HAVE_BACKACC','1')
+
     # shared library linker values
     self.setCompilers.pushLanguage(self.languages.clanguage)
     # need to fix BuildSystem to collect these separately

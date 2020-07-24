@@ -101,10 +101,12 @@ endif
 PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(PFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
 PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(CXX_DEPFLAGS)
 PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) $(CUFLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
+PETSC_COMPILE.hip.cpp = $(call quiet,HIPCC) -c $(HIPCC_FLAGS) $(HIPCCFLAGS) $(HIPCCPPFLAGS) $(HIPCC_DEPFLAGS)
+PETSC_COMPILE.sycl.cpp = $(call quiet,SYCLCPP) -c $(SYCLCPP_FLAGS) $(SYCLCPPFLAGS) $(SYCLCPPCPPFLAGS) $(SYCLCPP_DEPFLAGS)
 PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) $(CUFLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
 
-testlangs := c cu cxx F F90
+testlangs := c cu cxx F F90 hip.cpp sycl.cpp
 $(foreach lang, $(testlangs), $(eval \
   testexe.$(lang) = $(foreach pkg, $(pkgs), $(testsrcs-$(pkg).$(lang):%.$(lang)=$(TESTDIR)/%))))
 concattestlang = $(foreach lang, $(2), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))

@@ -23,10 +23,15 @@ class Configure(config.base.Configure):
     help.addArgument('Compiler Flags', '-CXX_VERSION=<string>', nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
     help.addArgument('Compiler Flags', '-FC_VERSION=<string>',  nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
     help.addArgument('Compiler Flags', '-CUDA_VERSION=<string>',nargs.Arg(None, 'Unknown', 'The version of the CUDA compiler'))
+    help.addArgument('Compiler Flags', '-HIP_VERSION=<string>',nargs.Arg(None, 'Unknown', 'The version of the HIP compiler'))
+    help.addArgument('Compiler Flags', '-SYCL_VERSION=<string>',nargs.Arg(None, 'Unknown', 'The version of the SYCL compiler'))
     help.addArgument('Compiler Flags', '-COPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the C compiler'))
     help.addArgument('Compiler Flags', '-CXXOPTFLAGS=<string>', nargs.Arg(None, None, 'Override the debugging/optimization flags for the C++ compiler'))
     help.addArgument('Compiler Flags', '-FOPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the Fortran compiler'))
     help.addArgument('Compiler Flags', '-CUDAOPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the CUDA compiler'))
+    help.addArgument('Compiler Flags', '-HIPOPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the HIP compiler'))
+    help.addArgument('Compiler Flags', '-SYCLOPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the SYCL compiler'))
+    # not sure where to put this, currently gcov is handled in ../compilerOptions.py
     # not sure where to put this, currently gcov is handled in ../compilerOptions.py
     help.addArgument('Compiler Flags', '-with-gcov=<bool>', nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
     return
@@ -48,6 +53,10 @@ class Configure(config.base.Configure):
       flagsArg = 'FOPTFLAGS'
     elif language == 'CUDA':
       flagsArg = 'CUDAOPTFLAGS'
+    elif language == 'HIP':
+      flagsArg = 'HIPOPTFLAGS'
+    elif language == 'SYCL':
+      flagsArg = 'SYCLOPTFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
@@ -87,7 +96,7 @@ class Configure(config.base.Configure):
     if not options:
       return
     options.saveLog()
-    for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC'), ('CUDA', 'CUDAC')]:
+    for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC'), ('CUDA', 'CUDAC'), ('HIP', 'HIPCC'), ('SYCL', 'SYCLCXX')]:
       if not hasattr(self.setCompilers, compiler):
         continue
       self.setCompilers.pushLanguage(language)

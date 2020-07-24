@@ -60,6 +60,10 @@ class Configure(config.base.Configure):
     names['CPP'] = 'No C preprocessor found.'
     names['CUDAC'] = 'No CUDA compiler found.'
     names['CUDAPP'] = 'No CUDA preprocessor found.'
+    names['HIPCC'] = 'No HIP compiler found.'
+    names['HIPPP'] = 'No HIP preprocessor found.'
+    names['SYCLCXX'] = 'No SYCL compiler found.'
+    names['SYCLPP'] = 'No SYCL preprocessor found.'
     names['CXX'] = 'No C++ compiler found.'
     names['CXXPP'] = 'No C++ preprocessor found.'
     names['FC'] = 'No Fortran compiler found.'
@@ -68,7 +72,7 @@ class Configure(config.base.Configure):
     names['LD_SHARED'] = 'No shared linker found.'
     names['CC_LD'] = 'No C linker found.'
     names['dynamicLinker'] = 'No dynamic linker found.'
-    for language in ['C', 'CUDA', 'Cxx', 'FC']:
+    for language in ['C', 'CUDA', 'HIP', 'SYCL', 'Cxx', 'FC']:
       self.pushLanguage(language)
       key = self.getCompilerFlagsName(language, 0)
       names[key] = 'No '+language+' compiler flags found.'
@@ -80,6 +84,8 @@ class Configure(config.base.Configure):
     names['CPPFLAGS'] = 'No preprocessor flags found.'
     names['FPPFLAGS'] = 'No Fortran preprocessor flags found.'
     names['CUDAPPFLAGS'] = 'No CUDA preprocessor flags found.'
+    names['HIPPPFLAGS'] = 'No HIP preprocessor flags found.'
+    names['SYCLPPFLAGS'] = 'No SYCL preprocessor flags found.'
     names['CXXPPFLAGS'] = 'No C++ preprocessor flags found.'
     names['AR_FLAGS'] = 'No archiver flags found.'
     names['AR_LIB_SUFFIX'] = 'No static library suffix found.'
@@ -100,7 +106,7 @@ class Configure(config.base.Configure):
         if not hasattr(self.setCompilers, name):
           raise MissingProcessor(self.dispatchNames[name])
         return getattr(self.setCompilers, name)
-      if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
+      if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPCC_LINKER_FLAGS', 'SYCLCXX_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
         flags = getattr(self.setCompilers, name)
         if not isinstance(flags, list): flags = [flags]
         return ' '.join(flags)
@@ -1373,6 +1379,10 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     # Fortran is handled in compilersfortran.py
     if hasattr(self, 'CUDAC'):
       languages.append('CUDA')
+    if hasattr(self, 'HIPCC'):
+      languages.append('HIP')
+    if hasattr(self, 'SYCLCXX'):
+      languages.append('SYCL')
     for language in languages:
       self.generateDependencies[language] = 0
       self.setCompilers.saveLog()
@@ -1467,6 +1477,12 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         self.executeTest(self.checkFortranLibraries)
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
+    if hasattr(self.setCompilers, 'HIP'):
+        #Placeholder in case further checks are needed
+        pass
+    if hasattr(self.setCompilers, 'SYCL'):
+        #Placeholder in case further checks are needed
+        pass
     self.no_configure()
     return
 

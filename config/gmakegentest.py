@@ -124,7 +124,7 @@ class generateExamples(Petsc):
     # For help in setting the requirements
     self.precision_types="single double __float128 int32".split()
     self.integer_types="int32 int64 long32 long64".split()
-    self.languages="fortran cuda cxx cpp".split()    # Always requires C so do not list
+    self.languages="fortran cuda hip sycl cxx cpp".split()    # Always requires C so do not list
 
     # Things that are not test
     self.buildkeys=testparse.buildkeys
@@ -654,6 +654,10 @@ class generateExamples(Petsc):
         srcDict["SKIP"].append("Fortran f90freeform required for this test")
     if lang=="cu" and 'PETSC_HAVE_CUDA' not in self.conf:
       srcDict["SKIP"].append("CUDA required for this test")
+    if lang=="hip" and 'PETSC_HAVE_HIP' not in self.conf:
+      srcDict["SKIP"].append("HIP required for this test")
+    if lang=="sycl" and 'PETSC_HAVE_SYCL' not in self.conf:
+      srcDict["SKIP"].append("SYCL required for this test")
     if lang=="cxx" and 'PETSC_HAVE_CXX' not in self.conf:
       srcDict["SKIP"].append("C++ required for this test")
     if lang=="cpp" and 'PETSC_HAVE_CXX' not in self.conf:
