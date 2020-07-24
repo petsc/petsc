@@ -8,6 +8,7 @@ configure_options = [
   '--download-xsdk',
   '--download-triangle', # for TRIANGLE_HDF5 test (with trilinos chaco)
   '--download-mpich=1',
+  '--download-mpich-device=ch3:sock',
   '--download-cmake=1',
   '--with-debugging=0',
   '--download-metis=1',

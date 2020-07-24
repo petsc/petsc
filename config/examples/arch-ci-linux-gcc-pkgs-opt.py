@@ -9,6 +9,7 @@ configure_options = [
   '--with-shared-libraries=yes',
   '--with-debugging=no',
   '--download-mpich',
+  '--download-mpich-device=ch3:sock',
   '--download-metis',
   '--download-parmetis',
   '--download-scalapack',
