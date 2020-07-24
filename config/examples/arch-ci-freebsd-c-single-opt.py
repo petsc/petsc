@@ -9,6 +9,7 @@ configure_options = [
   '--with-precision=single',
   '--with-debugging=0',
   '--download-mpich',
+  '--download-mpich-device=ch3:sock',
   ]
 
 if __name__ == '__main__':

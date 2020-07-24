@@ -9,6 +9,7 @@ configure_options = [
   '--prefix=petsc-install',
   '--with-serialize-functions=1',
   '--download-mpich=1',
+  '--download-mpich-device=ch3:sock',
   '--download-mpich-configure-arguments=--enable-error-messages=all --enable-g', # note --enable-g=memit - used by --with-debugging=1 does not help
   '--download-openblas=1',
   '--download-openblas-make-options=TARGET=GENERIC',

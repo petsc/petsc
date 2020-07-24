@@ -20,6 +20,7 @@ configure_options = [
 
   #'-download-fblaslapack=1',
   '--download-mpich=1',
+  '--download-mpich-device=ch3:sock',
   '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
