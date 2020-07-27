@@ -24,7 +24,8 @@ checklinks:
 rebuild:
 	@$(SPHINXBUILD) -E "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
 
-# TODO still trying to figure out how to properly exclude everything but manual - globbing is supposed to work..
+# Generate a PDF version of the users manual, by using the latexpdf "make mode",
+# and excluding everything except the manual.
 manual_latexpdf:
 	@$(SPHINXBUILD) -M latexpdf  "$(SOURCEDIR)" "$(BUILDDIR)" '-Dexclude_patterns=developers'
 
