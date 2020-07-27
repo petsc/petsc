@@ -1,7 +1,7 @@
 SNES: Nonlinear Solvers
 -----------------------
 
-[chapter_snes]
+.. include:: temp_edit_needed_banner.inc
 
 The solution of large-scale nonlinear problems pervades many facets of
 computational science and demands robust and flexible solution

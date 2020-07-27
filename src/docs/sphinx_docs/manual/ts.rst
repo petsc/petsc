@@ -3,6 +3,8 @@
 TS: Scalable ODE and DAE Solvers
 --------------------------------
 
+.. include:: temp_edit_needed_banner.inc
+
 The ``TS`` library provides a framework for the scalable solution of
 ODEs and DAEs arising from the discretization of time-dependent PDEs.
 

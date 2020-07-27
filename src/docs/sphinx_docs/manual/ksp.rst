@@ -1,7 +1,7 @@
 KSP: Linear System Solvers
 --------------------------
 
-[ch_ksp]
+.. include:: temp_edit_needed_banner.inc
 
 The object ``KSP`` is the heart of PETSc, because it provides uniform
 and efficient access to all of the package’s linear system solvers,

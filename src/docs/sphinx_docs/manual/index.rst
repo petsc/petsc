@@ -8,6 +8,8 @@ PETSc Users Manual
     see the current manual `here <https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf>`__.
     If you are a PETSc contributor, please help with the migration!
 
+.. include:: temp_edit_needed_banner.inc
+
 .. role:: raw-latex(raw)
    :format: latex
 ..

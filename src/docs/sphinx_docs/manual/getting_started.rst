@@ -1,6 +1,8 @@
 Getting Started
 ---------------
 
+.. include:: temp_edit_needed_banner.inc
+
 PETSc consists of a variety of libraries (similar to classes in C++),
 which are discussed in detail in Parts II and III of the users manual.
 Each library manipulates a particular family of objects (for instance,

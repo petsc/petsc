@@ -3,6 +3,8 @@
 Performing sensitivity analysis
 -------------------------------
 
+.. include:: temp_edit_needed_banner.inc
+
 The ``TS`` library provides a framework based on discrete adjoint models
 for sensitivity analysis for ODEs and DAEs. The ODE/DAE solution process
 (henceforth called the forward run) can be obtained by using either

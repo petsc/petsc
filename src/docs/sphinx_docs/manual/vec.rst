@@ -3,6 +3,8 @@
 Vectors and Parallel Data
 -------------------------
 
+.. include:: temp_edit_needed_banner.inc
+
 The vector (denoted by ``Vec``) is one of the simplest PETSc objects.
 Vectors are used to store discrete PDE solutions, right-hand sides for
 linear systems, etc. This chapter is organized as follows:

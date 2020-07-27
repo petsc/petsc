@@ -3,6 +3,8 @@
 Profiling
 ---------
 
+.. include:: temp_edit_needed_banner.inc
+
 PETSc includes a consistent, lightweight scheme to allow the profiling
 of application programs. The PETSc routines automatically log
 performance data if certain options are specified at runtime. The user

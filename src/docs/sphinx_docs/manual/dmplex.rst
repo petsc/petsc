@@ -3,6 +3,8 @@
 DMPlex: Unstructured Grids in PETSc
 -----------------------------------
 
+.. include:: temp_edit_needed_banner.inc
+
 This chapter introduces the ``DMPLEX`` subclass of ``DM``, which allows
 the user to handle unstructured grids using the generic ``DM`` interface
 for hierarchy and multi-physics. ``DMPlex`` was created to remedy a huge

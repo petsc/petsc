@@ -3,6 +3,8 @@
 Hints for Performance Tuning
 ----------------------------
 
+.. include:: temp_edit_needed_banner.inc
+
 This chapter provides hints on how to get to achieve best performance
 with PETSc, particularly on distributed-memory machines with multiple
 CPU sockets per node. We focus on machine-related performance

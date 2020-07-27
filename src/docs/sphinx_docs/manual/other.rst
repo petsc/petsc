@@ -1,6 +1,8 @@
 Other PETSc Features
 --------------------
 
+.. include:: temp_edit_needed_banner.inc
+
 PETSc on a process subset
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

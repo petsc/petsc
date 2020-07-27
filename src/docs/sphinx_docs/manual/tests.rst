@@ -3,6 +3,8 @@
 Running PETSc Tests
 -------------------
 
+.. include:: temp_edit_needed_banner.inc
+
 Quick start with the tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

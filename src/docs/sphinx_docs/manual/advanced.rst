@@ -2,6 +2,7 @@
 
 Unimportant and Advanced Features of Matrices and Solvers
 ---------------------------------------------------------
+.. include:: temp_edit_needed_banner.inc
 
 This chapter introduces additional features of the PETSc matrices and
 solvers. Since most PETSc users should not need to use these features,

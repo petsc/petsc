@@ -2,6 +2,7 @@
 
 BuildSystem
 -----------
+.. include:: temp_edit_needed_banner.inc
 
 This chapter describes the system used by PETSc for configuration
 testing, named BuildSystem. The system is written solely in Python, and

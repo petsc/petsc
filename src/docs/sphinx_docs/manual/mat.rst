@@ -3,6 +3,8 @@
 Matrices
 --------
 
+.. include:: temp_edit_needed_banner.inc
+
 PETSc provides a variety of matrix implementations because no single
 matrix format is appropriate for all problems. Currently, we support
 dense storage and compressed sparse row storage (both sequential and

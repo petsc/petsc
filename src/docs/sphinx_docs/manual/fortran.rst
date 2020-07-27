@@ -3,6 +3,8 @@
 PETSc for Fortran Users
 -----------------------
 
+.. include:: temp_edit_needed_banner.inc
+
 Most of the functionality of PETSc can be obtained by people who program
 purely in Fortran.
 
