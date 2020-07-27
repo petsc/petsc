@@ -49,11 +49,16 @@ To get a quick preview of manual pages from a single source directory (mainly to
 Sphinx Documentation
 ====================
 
+`Sphinx <https://www.sphinx-doc.org/en/master/>`__ is a well-documented and widely-used set of Python-based tools
+for building documentation. Most content is written using `reStructuredText <https://docutils.sourceforge.io/rst.html>`__, a simple markup language.
+
 The Sphinx documentation is currently not integrated into the main docs build as described
 in :ref:`docs_build`.
 
 `ReadTheDocs <readthedocs.org>`__ generates the documentation at
 https://docs.petsc.org from the `PETSc Git repository <https://gitlab.com/petsc/petsc>`__.
+A version of the documentation can be built there, corresponding to any
+Git branch, which is useful if developing a large set of documentation changes.
 
 Building the Sphinx docs locally
 --------------------------------
