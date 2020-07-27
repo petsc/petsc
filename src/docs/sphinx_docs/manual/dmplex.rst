@@ -29,7 +29,7 @@ particular specifying a “covering” relation among the points. For
 example, an edge is defined by being covered by two vertices, and a
 triangle can be defined by being covered by three edges (or even by
 three vertices). In fact, this structure has been known for a long time.
-It is a Hasse Diagram :raw-latex:`\cite{HasseDiagram}`, which is a
+It is a Hasse Diagram `Hasse Diagram <http://en.wikipedia.org/wiki/Hasse_diagram>`__, which is a
 Directed Acyclic Graph (DAG) representing a cell complex using the
 covering relation. The graph edges represent the relation, which also
 encodes a partially ordered set (poset).

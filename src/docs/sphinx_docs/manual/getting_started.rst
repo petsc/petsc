@@ -148,10 +148,10 @@ there are subdirectories beginning with ``arch`` then those
 subdirectories give the possible values for ``PETSC_ARCH``.
 
 All PETSc programs use the MPI (Message Passing Interface) standard for
-message-passing communication :raw-latex:`\cite{MPI-final}`. Thus, to
+message-passing communication :cite:`MPI-final`. Thus, to
 execute PETSc programs, users must know the procedure for beginning MPI
 jobs on their selected computer system(s). For instance, when using the
-MPICH implementation of MPI :raw-latex:`\cite{mpich-web-page}` and many
+`MPICH <https://www.mpich.org/>`__ implementation of MPI and many
 others, the following command initiates a program that uses eight
 processors:
 
@@ -244,7 +244,7 @@ calculation or communication. Communicators have the variable type
 MPI provides routines for generating new communicators consisting of
 subsets of processors, though most users rarely need to use these. The
 book *Using MPI*, by Lusk, Gropp, and Skjellum
-:raw-latex:`\cite{using-mpi}` provides an excellent introduction to the
+:cite:`using-mpi` provides an excellent introduction to the
 concepts in MPI. See also the MPI homepage
 https://www.mcs.anl.gov/research/projects/mpi/. Note that PETSc users
 need not program much message passing directly with MPI, but they must

@@ -12,14 +12,12 @@ PETSc Users Manual
    :format: latex
 ..
 
-|image|
 
 --------------
 
-| 
+|
 | **Mathematics and Computer Science Division**
 
-|image|
 
 --------------
 

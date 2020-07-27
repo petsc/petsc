@@ -3,9 +3,6 @@
 Hints for Performance Tuning
 ----------------------------
 
-.. container::
-   :name: ch_performance
-
 This chapter provides hints on how to get to achieve best performance
 with PETSc, particularly on distributed-memory machines with multiple
 CPU sockets per node. We focus on machine-related performance
@@ -45,9 +42,7 @@ third vector. Because there are no dependencies across the different
 entries of each vector, the operation is embarrasingly parallel.
 
 .. figure:: stream-results-intel.pdf
-   :alt: Memory bandwidth obtained on Intel hardware (dual socket except
-   KNL) over the number of processes used. One can get close to peak
-   memory bandwidth with only a few processes.
+   :alt: Memory bandwidth obtained on Intel hardware (dual socket except KNL) over the number of processes used. One can get close to peak memory bandwidth with only a few processes.
    :name: fig_stream_intel
    :width: 80.0%
 
@@ -123,8 +118,7 @@ only possible if the data is distributed across the different memory
 channels.
 
 .. figure:: numa.pdf
-   :alt: Schematic of a two-socket NUMA system. Processes should be
-   spread across both CPUs to obtain full bandwidth.
+   :alt: Schematic of a two-socket NUMA system. Processes should be spread across both CPUs to obtain full bandwidth.
    :name: fig_numa
    :width: 90.0%
 
