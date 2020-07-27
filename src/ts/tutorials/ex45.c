@@ -143,7 +143,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   ierr = PetscDSSetResidual(prob, 0, f0_temp, f1_temp);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, g0_temp, NULL, NULL, g3_temp);CHKERRQ(ierr);
   ctx->exactFuncs[0] = analytic_temp;
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], NULL, 1, &id, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

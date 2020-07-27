@@ -212,7 +212,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
     break;
   }
   ctx->exactFuncs[0] = analytic_phi;
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], NULL, 1, &id, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -477,8 +477,8 @@ PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user)
   ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr);
 
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", "Faces", 0, 0, NULL, (void (*)(void)) coordinates, 0, NULL, user);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_NATURAL, "pressure", "Faces", 0, 0, NULL, NULL, 0, NULL, user);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", "Faces", 0, 0, NULL, (void (*)(void)) coordinates, NULL, 0, NULL, user);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_NATURAL, "pressure", "Faces", 0, 0, NULL, NULL, NULL, 0, NULL, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -509,7 +509,7 @@ PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
-  ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
+  ierr = DMPlexCreateRigidBody(subdm, 0, &nearNullSpace);CHKERRQ(ierr);
   ierr = DMGetField(dm, 0, NULL, &deformation);CHKERRQ(ierr);
   ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
   ierr = DMDestroy(&subdm);CHKERRQ(ierr);

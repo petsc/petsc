@@ -3045,7 +3045,7 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 }
 
 /*@C
-  PetscDSAddBoundary - Add a boundary condition to the model
+  PetscDSAddBoundary - Add a boundary condition to the model. The pointwise functions are used to provide boundary values for essential boundary conditions. In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that boundary integrals should be performaed, using the kernels from PetscDSSetBdResidual().
 
   Collective on ds
 
@@ -3058,6 +3058,7 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 . numcomps    - The number of constrained field components (0 will constrain all fields)
 . comps       - An array of constrained component numbers
 . bcFunc      - A pointwise function giving boundary values
+. bcFunc_t    - A pointwise function giving the time derviative of the boundary values, or NULL
 . numids      - The number of DMLabel ids for constrained points
 . ids         - An array of ids for constrained points
 - ctx         - An optional user context for bcFunc
@@ -3066,11 +3067,41 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 + -bc_<boundary name> <num> - Overrides the boundary ids
 - -bc_<boundary name>_comp <num> - Overrides the boundary components
 
+  Note:
+  Both bcFunc abd bcFunc_t will depend on the boundary condition type. If the type if DM_BC_ESSENTIAL, Then the calling sequence is:
+
+$ bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
+
+  If the type is DM_BC_ESSENTIAL_FIELD or other _FIELD value, then the calling sequence is:
+
+$ bcFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$        PetscReal time, const PetscReal x[], PetscScalar bcval[])
+
++ dim - the spatial dimension
+. Nf - the number of fields
+. uOff - the offset into u[] and u_t[] for each field
+. uOff_x - the offset into u_x[] for each field
+. u - each field evaluated at the current point
+. u_t - the time derivative of each field evaluated at the current point
+. u_x - the gradient of each field evaluated at the current point
+. aOff - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x - the offset into a_x[] for each auxiliary field
+. a - each auxiliary field evaluated at the current point
+. a_t - the time derivative of each auxiliary field evaluated at the current point
+. a_x - the gradient of auxiliary each field evaluated at the current point
+. t - current time
+. x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
+- bcval - output values at the current point
+
   Level: developer
 
-.seealso: PetscDSGetBoundary()
+.seealso: PetscDSGetBoundary(), PetscDSSetResidual(), PetscDSSetBdResidual()
 @*/
-PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), void (*bcFunc_t)(void), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   DSBoundary     b;
   PetscErrorCode ierr;
@@ -3092,6 +3123,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
   b->field           = field;
   b->numcomps        = numcomps;
   b->func            = bcFunc;
+  b->func_t          = bcFunc_t;
   b->numids          = numids;
   b->ctx             = ctx;
   b->next            = ds->boundary;
@@ -3100,7 +3132,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 }
 
 /*@C
-  PetscDSUpdateBoundary - Change a boundary condition for the model
+  PetscDSUpdateBoundary - Change a boundary condition for the model. The pointwise functions are used to provide boundary values for essential boundary conditions. In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that boundary integrals should be performaed, using the kernels from PetscDSSetBdResidual().
 
   Input Parameters:
 + ds          - The PetscDS object
@@ -3112,17 +3144,19 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 . numcomps    - The number of constrained field components
 . comps       - An array of constrained component numbers
 . bcFunc      - A pointwise function giving boundary values
+. bcFunc_t    - A pointwise function giving the time derviative of the boundary values, or NULL
 . numids      - The number of DMLabel ids for constrained points
 . ids         - An array of ids for constrained points
 - ctx         - An optional user context for bcFunc
 
-  Note: The boundary condition number is the order in which it was registered. The user can get the number of boundary conditions from PetscDSGetNumBoundary().
+  Note:
+  The boundary condition number is the order in which it was registered. The user can get the number of boundary conditions from PetscDSGetNumBoundary(). See PetscDSAddBoundary() for a description of the calling sequences for the callbacks.
 
   Level: developer
 
 .seealso: PetscDSAddBoundary(), PetscDSGetBoundary(), PetscDSGetNumBoundary()
 @*/
-PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), void (*bcFunc_t)(void), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   DSBoundary     b = ds->boundary;
   PetscInt       n = 0;
@@ -3159,6 +3193,7 @@ PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditio
   b->type = type;
   if (field >= 0) {b->field  = field;}
   if (bcFunc)     {b->func   = bcFunc;}
+  if (bcFunc_t)   {b->func_t = bcFunc_t;}
   if (ctx)        {b->ctx    = ctx;}
   PetscFunctionReturn(0);
 }
@@ -3203,6 +3238,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 . numcomps    - The number of constrained field components
 . comps       - An array of constrained component numbers
 . bcFunc      - A pointwise function giving boundary values
+. bcFunc_t    - A pointwise function giving the time derviative of the boundary values
 . numids      - The number of DMLabel ids for constrained points
 . ids         - An array of ids for constrained points
 - ctx         - An optional user context for bcFunc
@@ -3215,7 +3251,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 
 .seealso: PetscDSAddBoundary()
 @*/
-PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(void), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(void), void (**func_t)(void), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   DSBoundary b    = ds->boundary;
   PetscInt   n    = 0;
@@ -3256,16 +3292,20 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionTy
     PetscValidPointer(func, 9);
     *func = b->func;
   }
+  if (func_t) {
+    PetscValidPointer(func_t, 10);
+    *func_t = b->func_t;
+  }
   if (numids) {
-    PetscValidPointer(numids, 10);
+    PetscValidPointer(numids, 11);
     *numids = b->numids;
   }
   if (ids) {
-    PetscValidPointer(ids, 11);
+    PetscValidPointer(ids, 12);
     *ids = b->ids;
   }
   if (ctx) {
-    PetscValidPointer(ctx, 12);
+    PetscValidPointer(ctx, 13);
     *ctx = b->ctx;
   }
   PetscFunctionReturn(0);

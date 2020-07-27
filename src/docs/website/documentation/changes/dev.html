@@ -189,6 +189,7 @@
       <h4>DM/DA:</h4>
         <ul>
           <li>Change DMComputeExactSolution() to also compute the time derivative of the exact solution</li>
+          <li>Add time derivative of the solution argument to DMAddBoundary(), DMGetBoundary(), PetscDSAddBoundary(), PetscDSUpdateBoundary(), PetscDSGetBoundary()</li>
         </ul>
       <h4>DMPlex:</h4>
         <ul>
@@ -213,6 +214,8 @@
           <li>Add DMPlexCreateBallMesh()</li>
           <li>Change DMSNESCheckDiscretization() to also take the time</li>
           <li>Add argument to DMPlexExtrude() to allow setting normal and add options for inputs</li>
+          <li>Add DMPlexInsertTimeDerivativeBoundaryValues()</li>
+          <li>Add field number argument to DMPlexCreateRigidBody()</li>
         </ul>
       <h4>DT:</h4>
         <ul>

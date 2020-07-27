@@ -215,9 +215,9 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   ierr = PetscDSSetExactSolution(prob, 0, quadratic_u_2d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 1, linear_a_2d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 2, zero, NULL);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) quadratic_u_2d, 1, &id, user);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 1, 0, NULL, (void (*)(void)) linear_a_2d, 1, &id, user);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 2, 0, NULL, (void (*)(void)) zero, 1, &id, user);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) quadratic_u_2d, NULL, 1, &id, user);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 1, 0, NULL, (void (*)(void)) linear_a_2d, NULL, 1, &id, user);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 2, 0, NULL, (void (*)(void)) zero, NULL, 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

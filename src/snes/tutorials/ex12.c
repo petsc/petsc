@@ -708,7 +708,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   if (user->bcType != NONE) {
     ierr = DMAddBoundary(dm, user->bcType == DIRICHLET ? (user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL) : DM_BC_NATURAL,
                          "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL,
-                         user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+                         user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], NULL, 1, &id, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
