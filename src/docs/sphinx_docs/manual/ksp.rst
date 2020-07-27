@@ -328,7 +328,7 @@ can be used by the options database command
       | Chebyshev                     | ``KSPCHEBYSHEV``  | ``chebyshev``  |
       +-------------------------------+-------------------+----------------+
       | Conjugate Gradient            | ``KSPCG``         | ``cg``         |
-      | :raw-latex:`\cite{hs:52}`     |                   |                |
+      | :cite:`hs:52`                 |                   |                |
       +-------------------------------+-------------------+----------------+
       |  Pipelined Conjugate          | ``KSPPIPECG``     | ``pipecg``     |
       | Gradients                     |                   |                |
@@ -402,8 +402,8 @@ can be used by the options database command
       | with Accelerated Restart      |                   |                |
       +-------------------------------+-------------------+----------------+
       | Conjugate Residual            | ``KSPCR``         | ``cr``         |
-      | :raw-latex:`\ci               |                   |                |
-      | te{eisenstat1983variational}` |                   |                |
+      | :cite:                        |                   |                |
+      | `eisenstat1983variational`    |                   |                |
       +-------------------------------+-------------------+----------------+
       |  Generalized Conjugate        | ``KSPGCR``        | ``gcr``        |
       | Residual                      |                   |                |
