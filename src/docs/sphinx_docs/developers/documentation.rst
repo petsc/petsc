@@ -89,6 +89,15 @@ Sphinx Documentation Guidelines
   This does not currently work perfectly, but its `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__
   promises to support our use case, so we're delaying to see if it's ever released.
 
+* Note that you can provide images in more than one format. In particular, it might be useful to include a PNG image for use on the web, and a PDF image to use in the latex manual. This can be done with a wildcard extension, as in the following example, which uses ``ghost.png`` for the web but ``ghost.pdf`` when building a PDF with LaTeX.
+
+.. code-block:: rst
+
+  .. figure:: ghost.*
+     :alt: Ghost Points
+
+     Ghost Points
+
 Porting LaTeX to Sphinx
 -----------------------
 
