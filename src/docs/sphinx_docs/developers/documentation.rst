@@ -58,7 +58,7 @@ https://docs.petsc.org from the `PETSc Git repository <https://gitlab.com/petsc/
 Building the Sphinx docs locally
 --------------------------------
 
-* Make sure that you have a recent version of Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/master/.readthedocs.yml>`__ and `requirements file for ReadTheDocs <https://github.com/petsc/petsc/blob/master/src/docs/sphinx_docs/requirements.txt>`__ (we use a precise version of Sphinx to avoid issues with our custom extension to create inline links).
+* Make sure that you have a recent version of Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/master/.readthedocs.yml>`__ and `requirements file for ReadTheDocs <https://github.com/petsc/petsc/blob/master/src/docs/sphinx_docs/requirements.txt>`__ (we use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/master/src/docs/sphinx_docs/ext/html5_petsc.py>`__).
 * Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``src/docs/sphinx_docs``).
 * ``make html``
 * Open ``_build/html/index.html`` with your browser.
