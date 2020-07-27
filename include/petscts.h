@@ -1022,5 +1022,5 @@ PETSC_EXTERN PetscErrorCode TSComputeInitialCondition(TS, Vec);
 PETSC_EXTERN PetscErrorCode TSGetComputeExactError(TS, PetscErrorCode (**)(TS, Vec, Vec));
 PETSC_EXTERN PetscErrorCode TSSetComputeExactError(TS, PetscErrorCode (*)(TS, Vec, Vec));
 PETSC_EXTERN PetscErrorCode TSComputeExactError(TS, Vec, Vec);
-PETSC_EXTERN PetscErrorCode PetscConvEstUseTS(PetscConvEst);
+PETSC_EXTERN PetscErrorCode PetscConvEstUseTS(PetscConvEst, PetscBool);
 #endif

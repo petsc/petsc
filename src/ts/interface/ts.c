@@ -4065,13 +4065,15 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         DM           dm;
         PetscReal   *alpha; /* Convergence rate of the solution error for each field in the L_2 norm */
         PetscInt     Nf;
+        PetscBool    checkTemporal = PETSC_TRUE;
 
         incall = PETSC_TRUE;
+        ierr = PetscOptionsGetBool(((PetscObject)ts)->options, ((PetscObject) ts)->prefix, "-ts_convergence_temporal", &checkTemporal, &flg);CHKERRQ(ierr);
         ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
         ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
         ierr = PetscCalloc1(PetscMax(Nf, 1), &alpha);CHKERRQ(ierr);
         ierr = PetscConvEstCreate(PetscObjectComm((PetscObject) ts), &conv);CHKERRQ(ierr);
-        ierr = PetscConvEstUseTS(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstUseTS(conv, checkTemporal);CHKERRQ(ierr);
         ierr = PetscConvEstSetSolver(conv, (PetscObject) ts);CHKERRQ(ierr);
         ierr = PetscConvEstSetFromOptions(conv);CHKERRQ(ierr);
         ierr = PetscConvEstSetUp(conv);CHKERRQ(ierr);
