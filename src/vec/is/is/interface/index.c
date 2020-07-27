@@ -527,7 +527,7 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
       ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
       ierr = PetscMalloc1(n, &idx);CHKERRQ(ierr);
       ierr = ISGetIndicesCopy(is, idx);CHKERRQ(ierr);
-      ierr = PetscSortInt(n, idx);CHKERRQ(ierr);
+      ierr = PetscIntSortSemiOrdered(n, idx);CHKERRQ(ierr);
       for (i = 1; i < n; i++) if (idx[i] == idx[i-1]) break;
       if (i < n) uniqueLocal = PETSC_FALSE;
     }
@@ -589,7 +589,7 @@ static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *f
       ierr = PetscParallelSortInt(is->map, is->map, idx, idx);CHKERRQ(ierr);
       ierr = PetscLayoutGetRange(is->map, &rStart, NULL);CHKERRQ(ierr);
     } else {
-      ierr = PetscSortInt(n, idx);CHKERRQ(ierr);
+      ierr = PetscIntSortSemiOrdered(n, idx);CHKERRQ(ierr);
       rStart = 0;
     }
     permLocal = PETSC_TRUE;
@@ -978,7 +978,7 @@ PetscErrorCode  ISSetPermutation(IS is)
       ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
       ierr = ISGetIndices(is,&iidx);CHKERRQ(ierr);
       ierr = PetscArraycpy(idx,iidx,n);CHKERRQ(ierr);
-      ierr = PetscSortInt(n,idx);CHKERRQ(ierr);
+      ierr = PetscIntSortSemiOrdered(n,idx);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         if (idx[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set is not a permutation");
       }
