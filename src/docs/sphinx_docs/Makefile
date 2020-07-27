@@ -24,6 +24,10 @@ checklinks:
 rebuild:
 	@$(SPHINXBUILD) -E "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
 
+# TODO still trying to figure out how to properly exclude everything but manual - globbing is supposed to work..
+manual_latexpdf:
+	@$(SPHINXBUILD) -M latexpdf  "$(SOURCEDIR)" "$(BUILDDIR)" '-Dexclude_patterns=developers'
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile

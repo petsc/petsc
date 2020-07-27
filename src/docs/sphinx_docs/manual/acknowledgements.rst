@@ -11,88 +11,88 @@ the PETSc git repository, for example at
 Earlier contributors to PETSc include:
 
 -  Asbjorn Hoiland Aarrestad - the explicit Runge-Kutta implementations
-   (````\ ```TSRK`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/TS/TSRK.html#TSRK>`__\ ````);
+   (``TSRK``)
 
 -  G. Anciaux and J. Roman - the interfaces to the partitioning packages
    PTScotch, Chaco, and Party;
 
 -  Allison Baker - the flexible GMRES
-   (````\ ```KSPFGMRES`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPFGMRES.html#KSPFGMRES>`__\ ````)
+   (``KSPFGMRES``)
    and LGMRES
-   (````\ ```KSPLGMRES`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPLGMRES.html#KSPLGMRES>`__\ ````)
+   (``KSPLGMRES``)
    code;
 
 -  Chad Carroll - Win32 graphics;
 
 -  Ethan Coon - the
-   ````\ ```PetscBag`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Sys/PetscBag.html#PetscBag>`__\ ````
+   ``PetscBag``
    and many bug fixes;
 
 -  Cameron Cooper - portions of the
-   ````\ ```VecScatter`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Vec/VecScatter.html#VecScatter>`__\ ````
+   ``VecScatter``
    routines;
 
 -  Patrick Farrell -
-   ````\ ```PCPATCH`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPATCH.html#PCPATCH>`__\ ````
+   ``PCPATCH``
    and
-   ````\ ```SNESPATCH`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESPATCH.html#SNESPATCH>`__\ ````;
+   ``SNESPATCH``;
 
 -  Paulo Goldfeld - the balancing Neumann-Neumann preconditioner
-   (````\ ```PCNN`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCNN.html#PCNN>`__\ ````);
+   (```PCNN``);
 
 -  Matt Hille;
 
 -  Joel Malard - the BICGStab(l) implementation
-   (````\ ```KSPBCGSL`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPBCGSL.html#KSPBCGSL>`__\ ````);
+   (``KSPBCGSL``);
 
--  Paul Mullowney, enhancements to portions of the Nvidia GPU interface;
+-  Paul Mullowney, enhancements to portions of the NVIDIA GPU interface;
 
 -  Dave May - the GCR implementation
-   (````\ ```KSPGCR`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPGCR.html#KSPGCR>`__\ ````);
+   (``KSPGCR``);
 
 -  Peter Mell - portions of the
-   ````\ ```DMDA`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/DMDA/DMDA.html#DMDA>`__\ ````
+   ``DMDA``
    routines;
 
 -  Richard Mills - the ``AIJPERM`` matrix format
-   (````\ ```MATAIJPERM`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATAIJPERM.html#MATAIJPERM>`__\ ````)
+   (``MATAIJPERM``)
    for the Cray X1 and universal F90 array interface;
 
 -  Victor Minden - the NVIDIA GPU interface;
 
 -  Lawrence Mitchell -
-   ````\ ```PCPATCH`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPATCH.html#PCPATCH>`__\ ````
+   ``PCPATCH``
    and
-   ````\ ```SNESPATCH`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESPATCH.html#SNESPATCH>`__\ ````;
+   ``SNESPATCH``;
 
 -  Todd Munson - the LUSOL (sparse solver in MINOS) interface
-   (````\ ```MATSOLVERLUSOL`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/MATSOLVERLUSOL.html#MATSOLVERLUSOL>`__\ ````)
+   (``MATSOLVERLUSOL``)
    and several Krylov methods;
 
 -  Adam Powell - the PETSc Debian package;
 
 -  Robert Scheichl - the MINRES implementation
-   (````\ ```KSPMINRES`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPMINRES.html#KSPMINRES>`__\ ````);
+   (``KSPMINRES``);
 
 -  Kerry Stevens - the pthread-based
-   ````\ ```Vec`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Vec/Vec.html#Vec>`__\ ````
+   ``Vec``
    and
-   ````\ ```Mat`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Mat/Mat.html#Mat>`__\ ````
+   ``Mat``
    classes plus the various thread pools (no longer available);
 
 -  Karen Toonen - design and implementation of much of the PETSc web
    pages;
 
 -  Desire Nuentsa Wakam - the deflated GMRES implementation
-   (````\ ```KSPDGMRES`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/KSP/KSPDGMRES.html#KSPDGMRES>`__\ ````);
+   (``KSPDGMRES``);
 
 -  Florian Wechsung -
-   ````\ ```PCPATCH`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/PC/PCPATCH.html#PCPATCH>`__\ ````
+   ``PCPATCH``
    and
-   ````\ ```SNESPATCH`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESPATCH.html#SNESPATCH>`__\ ````;
+   ``SNESPATCH``;
 
 -  Liyang Xu - the interface to PVODE, now SUNDIALS/CVODE
-   (````\ ```TSSUNDIALS`` <https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/TS/TSSUNDIALS.html#TSSUNDIALS>`__\ ````);
+   (``TSSUNDIALS``).
 
 PETSc source code contains modified routines from the following public
 domain software packages:
@@ -185,27 +185,11 @@ PETSc.
 
 PETSc software is developed and maintained using
 
-Emacs editor
-
-`Git <https://git-scm.com/>`__ revision control system
-
-Python
+* Emacs editor
+* `Git <https://git-scm.com/>`__ revision control system
+* Python
 
 PETSc documentation has been generated using
 
-| Sowing text processing tools developed by Bill Gropp
-| http://wgropp.cs.illinois.edu/projects/software/sowing/
-
-c2html
-
-pdflatex
-
-python
-
- 
-
-[ch_index]
-
-[sec:bib]
-
-|image|
+* `Sowing text processing tools developed by Bill Gropp <http://wgropp.cs.illinois.edu/projects/software/sowing/>`__
+* c2html
