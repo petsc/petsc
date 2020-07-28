@@ -24,6 +24,11 @@ checklinks:
 rebuild:
 	@$(SPHINXBUILD) -E "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
 
+# Generate a PDF version of the users manual, by using the latexpdf "make mode",
+# and excluding everything except the manual.
+manual_latexpdf:
+	@$(SPHINXBUILD) -M latexpdf  "$(SOURCEDIR)" "$(BUILDDIR)" '-Dexclude_patterns=developers'
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
