@@ -47,11 +47,12 @@ with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as ve
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = []
-extensions.append('sphinx.ext.graphviz')
-extensions.append('sphinx.ext.mathjax')
-extensions.append('sphinxcontrib.bibtex')
-extensions.append('html5_petsc')          # Overrides HTML5Translator
+extensions = [
+    'sphinx.ext.graphviz',
+    'sphinxcontrib.bibtex',
+    'sphinxcontrib.katex',
+    'html5_petsc',  # Overrides HTML5Translator
+]
 
 master_doc = 'index'
 # Add any paths that contain templates here, relative to this directory.

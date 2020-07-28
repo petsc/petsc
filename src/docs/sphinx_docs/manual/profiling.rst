@@ -169,9 +169,8 @@ various phases of computation then follow (as shown separately here in
 Figure `[fig_exparprof2] <#fig_exparprof2>`__). Finally, a summary of
 memory usage and object creation and destruction is presented.
 
-::
+.. code-block:: none
 
-   [\tiny\ttfamily]
    mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_view -mat_type baij \
                -matload_block_size 3 -pc_type bjacobi -options_left
 
@@ -241,9 +240,8 @@ this column of the phase summary table. Additional statistics for each
 phase include the total number of messages sent, the average message
 length, and the number of global reductions.
 
-::
+.. code-block:: none
 
-   [\tiny\ttfamily]
    mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_view -mat_type baij \
                -matload_block_size 3 -pc_type bjacobi -options_left
 
@@ -323,11 +321,11 @@ Using ``-log_mpe`` with Jumpshot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is also possible to use the *Jumpshot* package
-:raw-latex:`\cite{upshot}` to visualize PETSc events. This package comes
+:cite:`upshot` to visualize PETSc events. This package comes
 with the MPE software, which is part of the MPICH
-:raw-latex:`\cite{mpich-web-page}` implementation of MPI. The option
+:cite:`mpich-web-page` implementation of MPI. The option
 
-::
+.. code-block:: none
 
    -log_mpe [logfile]
 
@@ -641,3 +639,12 @@ can be used to easily convert a regular PETSc program to one that uses
 preloading. The command line options ``-preload`` ``true`` and
 ``-preload`` ``false`` may be used to turn on and off preloading at run
 time for PETSc programs that use these macros.
+
+References
+~~~~~~~~~~
+
+.. bibliography:: ../../tex/petsc.bib
+   :filter: docname in docnames
+
+.. bibliography:: ../../tex/petscapp.bib
+   :filter: docname in docnames

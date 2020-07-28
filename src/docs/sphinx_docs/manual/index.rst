@@ -10,11 +10,6 @@ PETSc Users Manual
 
 .. include:: temp_edit_needed_banner.inc
 
-.. role:: raw-latex(raw)
-   :format: latex
-..
-
-
 --------------
 
 |

@@ -10,20 +10,20 @@ Quick start with the tests
 
 For testing builds, the general invocation from the ``PETSC_DIR`` is:
 
-::
+.. code-block:: bash
 
    make [-j <n>] -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
 
 For testing ``./configure`` that used the ``--prefix`` option, the
 general invocation from the installation (prefix) directory is:
 
-::
+.. code-block:: bash
 
    make [-j <n>] -f share/petsc/examples/gmakefile test
 
 For a full list of options, use
 
-::
+.. code-block:: bash
 
    make -f gmakefile help-test
 
@@ -36,19 +36,19 @@ provide them on the command line as below.
 
 To check if the libraries are working do:
 
-::
+.. code-block:: bash
 
    make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> test
 
 A comprehensive set of tests can be run with
 
-::
+.. code-block:: bash
 
    make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> alltests
 
 or
 
-::
+.. code-block:: bash
 
    make [-j <n>] -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
 
@@ -82,13 +82,13 @@ with the ``TESTDIR`` location. (See Section `1.7 <#sec_directory>`__). A
 label is used to denote where it can be found within the source tree.
 For example, test ``vec_vec_tutorials-ex6``, which can be run e.g. with
 
-::
+.. code-block:: bash
 
    make -f gmakefile test search='vec_vec_tutorials-ex6'
 
 (see the discussion of ``search`` below), denotes the shell script:
 
-::
+.. code-block:: bash
 
    ${PETSC_DIR}/${PETSC_ARCH}/tests/vec/vec/tutorials/runex6.sh
 
@@ -108,7 +108,7 @@ string is within the arguments.
 
 Some examples are:
 
-::
+.. code-block:: bash
 
    make -f gmakefile test search='ts%'                      # Run all TS examples
    make -f gmakefile test searchin='tutorials'              # Run all tutorials
@@ -120,26 +120,26 @@ Some examples are:
 It is useful before invoking the tests to see what targets will be run.
 The ``print-test`` target helps with this:
 
-::
+.. code-block:: bash
 
    make -f gmakefile print-test argsearch='cuda'
 
 To see all of the test targets which would be run, this command can be
 used:
 
-::
+.. code-block:: bash
 
    make -f gmakefile print-test
 
 For testing in install directories, some examples are:
 
-::
+.. code-block:: bash
 
    cd ${PREFIX_DIR}; make -f share/petsc/examples/gmakefile.test test TESTDIR=mytests
 
 or
 
-::
+.. code-block:: bash
 
    cd ${PREFIX_DIR}/share/petsc/examples; make -f gmakefile test TESTDIR=$PWD/mytests
 

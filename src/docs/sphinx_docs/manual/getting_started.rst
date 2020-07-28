@@ -133,7 +133,7 @@ Before using PETSc, the user must first set the environmental variable
 ``PETSC_DIR``, indicating the full path of the PETSc home directory. For
 example, under the UNIX bash shell a command of the form
 
-::
+.. code-block:: bash
 
    export PETSC_DIR=$HOME/petsc
 
@@ -157,14 +157,14 @@ jobs on their selected computer system(s). For instance, when using the
 others, the following command initiates a program that uses eight
 processors:
 
-::
+.. code-block:: bash
 
    mpiexec -n 8 ./petsc_program_name petsc_options
 
 PETSc also comes with a script that automatically uses the correct
 ``mpiexec`` for your configuration.
 
-::
+.. code-block:: bash
 
    ${PETSC_DIR}/lib/petsc/bin/petscmpiexec -n 8 ./petsc_program_name petsc_options
 
@@ -223,9 +223,8 @@ for runtime customization. The final argument, ``help``, is an optional
 character string that will be printed if the program is run with the
 ``-help`` option. In Fortran the initialization command has the form
 
-::
+.. code-block:: fortran
 
-   [language=fortran]
    call PetscInitialize(character(*) file,integer ierr)
 
 ``PetscInitialize()`` automatically calls ``MPI_Init()`` if MPI has not
@@ -265,9 +264,12 @@ All PETSc programs should call ``PetscFinalize()`` as their final (or
 nearly final) statement, as given below in the C/C++ and Fortran
 formats, respectively:
 
-::
+.. code-block:: c
 
    PetscFinalize();
+
+.. code-block:: fortran
+
    call PetscFinalize(ierr)
 
 This routine handles options to be called at the conclusion of the
@@ -472,7 +474,7 @@ program ``ex3.c`` on line 66. See Section
 `1.1.2 <#sec_fortran_errors>`__ for details regarding error checking
 when using the PETSc Fortran interface.
 
-::
+.. code-block:: none
 
     $ cd $PETSC_DIR/src/ksp/ksp/tutorials
     $ make ex3
@@ -562,7 +564,7 @@ experiencing difficulties linking PETSc programs should refer to the FAQ
 on the PETSc website https://www.mcs.anl.gov/petsc or given in the file
 ``$PETSC_DIR/docs/faq.html``.
 
-::
+.. code-block:: none
 
     $ cd $PETSC_DIR/src/ksp/ksp/tutorials
     $ make ex2
@@ -585,9 +587,8 @@ The low floating point operation (flop) rates in this example are due to
 the fact that the code solved a tiny system. We include this example
 merely to demonstrate the ease of extracting performance information.
 
-::
+.. code-block:: none
 
-   [\fontsize{7.5pt}{8pt}\ttfamily]
    $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_view
    ...
    ------------------------------------------------------------------------------------------------------------------------
@@ -683,7 +684,7 @@ not wish to include any PETSc utilities in your makefile, you can use
 the following commands in the PETSc root directory to get the
 information needed by your makefile:
 
-::
+.. code-block:: bash
 
    make getlinklibs getincludedirs getcflags getcxxflags getfortranflags getccompiler getfortrancompiler getcxxcompiler
 
@@ -697,7 +698,7 @@ Citing PETSc
 
 If you use the TS component of PETSc please cite the following:
 
-::
+.. code-block:: none
 
    @article{abhyankar2018petsc,
      title={PETSc/TS: A Modern Scalable ODE/DAE Solver Library},
@@ -708,7 +709,7 @@ If you use the TS component of PETSc please cite the following:
 
 When citing PETSc in a publication please cite the following:
 
-::
+.. code-block:: none
 
    @Misc{petsc-web-page,
       Author = "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown
@@ -829,3 +830,12 @@ subdirectories:
 -  ``utils`` - Utility routines. Source here may know about the
    implementations, but ideally will not know about implementations for
    other components.
+
+References
+~~~~~~~~~~
+
+.. bibliography:: ../../tex/petsc.bib
+   :filter: docname in docnames
+
+.. bibliography:: ../../tex/petscapp.bib
+   :filter: docname in docnames

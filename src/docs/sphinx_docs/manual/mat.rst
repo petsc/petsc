@@ -472,48 +472,41 @@ applications based on a fixed number of stored update vectors.
 
    .. table:: PETSc LMVM matrix implementations.
 
-      +----------------+----------------+----------------+--------------+
-      | **Method**     | **PETSc Type** | **Name**       | **Property** |
-      +================+================+================+==============+
-      | “Good” Broyden | `              | ``lmvmbrdn``   | Square       |
-      | :raw-latex:    | `MATLMVMBrdn`` |                |              |
-      | `\cite{griewan |                |                |              |
-      | k2012broyden}` |                |                |              |
-      +----------------+----------------+----------------+--------------+
-      | “Bad” Broyden  | ``MA           | `              | Square       |
-      | :raw-latex:    | TLMVMBadBrdn`` | `lmvmbadbrdn`` |              |
-      | `\cite{griewan |                |                |              |
-      | k2012broyden}` |                |                |              |
-      +----------------+----------------+----------------+--------------+
-      | Symmetric      | ``MATLMVMSR1`` | ``lmvmsr1``    | Symmetric    |
-      | Rank-1         |                |                |              |
-      | :raw-latex     |                |                |              |
-      | :`\cite{NW99}` |                |                |              |
-      +----------------+----------------+----------------+--------------+
-      | Davidon-F      | ``MATLMVMDFP`` | ``lmvmdfp``    | SPD          |
-      | letcher-Powell |                |                |              |
-      | (DFP)          |                |                |              |
-      | :raw-latex     |                |                |              |
-      | :`\cite{NW99}` |                |                |              |
-      +----------------+----------------+----------------+--------------+
-      | Broy           | `              | ``lmvmbfgs``   | SPD          |
-      | den-Fletcher-G | `MATLMVMBFGS`` |                |              |
-      | oldfarb-Shanno |                |                |              |
-      | (BFGS)         |                |                |              |
-      | :raw-latex     |                |                |              |
-      | :`\cite{NW99}` |                |                |              |
-      +----------------+----------------+----------------+--------------+
-      | Restricted     | ``MA           | `              | SPD          |
-      | Broyden Family | TLMVMSymBrdn`` | `lmvmsymbrdn`` |              |
-      | :raw-lat       |                |                |              |
-      | ex:`\cite{erwa |                |                |              |
-      | y2017solving}` |                |                |              |
-      +----------------+----------------+----------------+--------------+
-      | Restricted     | ``MAT          | ``             | SPD          |
-      | Broyden Family | LMVMDiagBrdn`` | lmvmdiagbrdn`` |              |
-      | (full-memory   |                |                |              |
-      | diagonal)      |                |                |              |
-      +----------------+----------------+----------------+--------------+
+      +-----------------------------------------+----------------+----------------+--------------+
+      | **Method**                              | **PETSc Type** | **Name**       | **Property** |
+      +=========================================+================+================+==============+
+      | "Good" Broyden                          | `              | ``lmvmbrdn``   | Square       |
+      |                                         | `MATLMVMBrdn`` |                |              |
+      | :cite:`griewank2012broyden`             |                |                |              |
+      +-----------------------------------------+----------------+----------------+--------------+
+      | "Bad" Broyden                           | ``MA           | `              | Square       |
+      |                                         | TLMVMBadBrdn`` | `lmvmbadbrdn`` |              |
+      | :cite:`griewank2012broyden`             |                |                |              |
+      +-----------------------------------------+----------------+----------------+--------------+
+      | Symmetric                               | ``MATLMVMSR1`` | ``lmvmsr1``    | Symmetric    |
+      | Rank-1                                  |                |                |              |
+      | :cite:`NW99`                            |                |                |              |
+      +-----------------------------------------+----------------+----------------+--------------+
+      | Davidon-F                               | ``MATLMVMDFP`` | ``lmvmdfp``    | SPD          |
+      | letcher-Powell                          |                |                |              |
+      | (DFP)                                   |                |                |              |
+      | :cite:`NW99`                            |                |                |              |
+      +-----------------------------------------+----------------+----------------+--------------+
+      | Broy                                    | `              | ``lmvmbfgs``   | SPD          |
+      | den-Fletcher-G                          | `MATLMVMBFGS`` |                |              |
+      | oldfarb-Shanno                          |                |                |              |
+      | (BFGS)                                  |                |                |              |
+      | :cite:`NW99`                            |                |                |              |
+      +-----------------------------------------+----------------+----------------+--------------+
+      | Restricted                              | ``MA           | `              | SPD          |
+      | Broyden Family                          | TLMVMSymBrdn`` | `lmvmsymbrdn`` |              |
+      | :cite:`erway2017solving`                |                |                |              |
+      +-----------------------------------------+----------------+----------------+--------------+
+      | Restricted                              | ``MAT          | ``             | SPD          |
+      | Broyden Family                          | LMVMDiagBrdn`` | lmvmdiagbrdn`` |              |
+      | (full-memory                            |                |                |              |
+      | diagonal)                               |                |                |              |
+      +-----------------------------------------+----------------+----------------+--------------+
 
 PETSc implements seven different LMVM matrices listed in the
 Table `2.1 <#tab_matlmvmimpl>`__. They can be created using the
@@ -576,7 +569,7 @@ choices below:
    The number of updates to be used in the :math:`S` and :math:`Y`
    matrices is 1 by default (i.e.: the latest update only) and can be
    changed via ``-mat_lmvm_scalar_hist``. This technique is inspired by
-   Gilbert and Lemarechal :raw-latex:`\cite{gilbert-lemarechal}`.
+   Gilbert and Lemarechal :cite:`gilbert-lemarechal`.
 
 -  ``diagonal`` – Uses a full-memory restricted Broyden update formula
    to construct a diagonal matrix for the Jacobian initialization.
@@ -584,7 +577,7 @@ choices below:
    footprint is restricted to only the vector representing the diagonal
    and some additional work vectors used in its construction. The
    diagonal terms are also re-scaled with every update as suggested in
-   :raw-latex:`\cite{gilbert-lemarechal}`. This initialization requires
+   :cite:`gilbert-lemarechal`. This initialization requires
    the most computational effort of the available choices but typically
    results in a significant reduction in the number of function
    evaluations taken to compute a solution.
@@ -1176,3 +1169,12 @@ to include more support for this in the future, but designing the
 appropriate general user interface and providing a scalable
 implementation that can be used for a wide variety of different grids
 requires a great deal of time.
+
+References
+~~~~~~~~~~
+
+.. bibliography:: ../../tex/petsc.bib
+   :filter: docname in docnames
+
+.. bibliography:: ../../tex/petscapp.bib
+   :filter: docname in docnames

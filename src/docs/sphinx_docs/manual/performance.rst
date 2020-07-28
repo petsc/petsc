@@ -71,7 +71,7 @@ system). For example, the following is the most relevant output obtained
 on a dual-socket system equipped with two six-core-CPUs with
 hyperthreading:
 
-::
+.. code-block:: none
 
    np  speedup
    1 1.0
@@ -146,7 +146,7 @@ know the enumeration of cores and pass the requested information to
 machine, in which each CPU consists of six cores and supports
 hyperthreading:
 
-::
+.. code-block:: none
 
    Machine (126GB total)
      NUMANode L#0 (P#0 63GB)
@@ -203,9 +203,8 @@ implementation. The following discussion is based on how processor
 placement is done with MPICH and OpenMPI, where one needs to pass
 ``--bind-to core --map-by socket`` to ``mpirun``:
 
-::
+.. code-block:: none
 
-   [escapechar=\#]
    $> mpirun -n 6 --bind-to core --map-by socket ./stream
    process 0 binding: 100000000000100000000000
    process 1 binding: 000000100000000000100000
@@ -223,10 +222,9 @@ practical peak of about 50 GB/sec available on the machine. If, however,
 all MPI processes are located on the same socket, memory bandwidth drops
 significantly:
 
-::
+.. code-block:: none
 
-   [escapechar=\#]
-   \$> mpirun -n 6 --bind-to core --map-by core ./stream
+   $> mpirun -n 6 --bind-to core --map-by core ./stream
    process 0 binding: 100000000000100000000000
    process 1 binding: 010000000000010000000000
    process 2 binding: 001000000000001000000000
@@ -244,9 +242,8 @@ only the first memory channel is fully saturated at 25.5 GB/sec.
   the results on the right obtained by passing
   ``--bind-to core --map-by socket``:
 
-::
+.. code-block:: none
 
-   [escapechar=\#]
    $> make streams
    np  speedup
    1 1.0
@@ -274,9 +271,8 @@ only the first memory channel is fully saturated at 25.5 GB/sec.
    23 3.79
    24 3.71
 
-::
+.. code-block:: none
 
-   [escapechar=\#]
    $> make streams MPI_BINDING="--bind-to core --map-by socket"
    np  speedup
    1 1.0
@@ -407,7 +403,7 @@ reliable way of knowing whether a particular run is a production or
 debug run. In the case that a user requests profiling information via
 ``-log_view``, a debug build of PETSc issues the following warning:
 
-::
+.. code-block:: none
 
          ##########################################################
          #                                                        #
@@ -566,7 +562,7 @@ factorization. One way to determine a good value for the fill parameter
 is to run a program with the option ``-info``. The symbolic
 factorization phase will then print information such as
 
-::
+.. code-block:: none
 
    Info:MatILUFactorSymbolic_AIJ:Realloc 12 Fill ratio:given 1 needed 2.16423
 
@@ -574,7 +570,7 @@ This indicates that the user should have used a fill estimate factor of
 about 2.17 (instead of 1) to prevent the 12 required mallocs and copies.
 The command line option
 
-::
+.. code-block:: none
 
    -pc_ilu_fill 2.17
 
@@ -694,7 +690,7 @@ One should experiment to determine alternatives that may be better for
 various applications. Recall that one can specify the ``KSP`` methods
 and preconditioners at runtime via the options:
 
-::
+.. code-block:: none
 
    -ksp_type <ksp_name> -pc_type <pc_name>
 

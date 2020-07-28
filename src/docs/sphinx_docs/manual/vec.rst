@@ -945,8 +945,7 @@ In Figure `1.2 <#fig_daao>`__ we indicate the orderings for a
 two-dimensional distributed array, divided among four processes.
 
 .. figure:: images/danumbering.*
-   :alt: Natural Ordering and PETSc Ordering for a 2D Distributed Array
-   (Four Processes)
+   :alt: Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processes)
    :name: fig_daao
 
    Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four
