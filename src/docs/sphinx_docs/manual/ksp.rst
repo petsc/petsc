@@ -20,7 +20,7 @@ techniques and their associated options can be selected at runtime.
 
 The combination of a Krylov subspace method and a preconditioner is at
 the center of most modern numerical codes for the iterative solution of
-linear systems. See, for example, :raw-latex:`\cite{fgn}` for an
+linear systems. See, for example, :cite`fgn` for an
 overview of the theory of such methods. ``KSP`` creates a simplified
 interface to the lower-level ``KSP`` and ``PC`` modules within the PETSc
 package. The ``KSP`` package, discussed in
@@ -342,8 +342,7 @@ can be used by the options database command
       | Normal Equations              |                   |                |
       +-------------------------------+-------------------+----------------+
       |  Flexible Conjugate Gradients | ``KSPFCG``        | ``fcg``        |
-      | :                             |                   |                |
-      | raw-latex:`\cite{flexibleCG}` |                   |                |
+      | :cite`flexibleCG`             |                   |                |
       +-------------------------------+-------------------+----------------+
       |  Pipelined, Flexible          | ``KSPPIPEFCG``    | ``pipefcg``    |
       | Conjugate Gradient            |                   |                |
@@ -366,7 +365,7 @@ can be used by the options database command
       | BiConjugate Gradient          | ``KSPBICG``       | ``bicg``       |
       +-------------------------------+-------------------+----------------+
       | BiCGSTAB                      | ``KSPBCGS``       | ``bcgs``       |
-      | :raw-latex:`\cite{v:92}`      |                   |                |
+      | :cite`v:92`                   |                   |                |
       +-------------------------------+-------------------+----------------+
       |  Improved BiCGSTAB            | ``KSPIBCGS``      | ``ibcgs``      |
       +-------------------------------+-------------------+----------------+
@@ -377,15 +376,14 @@ can be used by the options database command
       |  Enhanced BiCGSTAB(L)         | ``KSPBCGSL``      | ``bcgsl``      |
       +-------------------------------+-------------------+----------------+
       | Minimal Residual Method       | ``KSPMINRES``     | ``minres``     |
-      | :raw-lat                      |                   |                |
-      | ex:`\cite{PaigeSaunders1975}` |                   |                |
+      | :cite:`PaigeSaunders1975`     |                   |                |
       +-------------------------------+-------------------+----------------+
       | Generalized Minimal Residual  | ``KSPGMRES``      | ``gmres``      |
-      | :raw-latex:`\cite{ss:86}`     |                   |                |
+      | :cite`ss:86`                  |                   |                |
       +-------------------------------+-------------------+----------------+
       |  Flexible Generalized Minimal | ``KSPFGMRES``     | ``fgmres``     |
       | Residual                      |                   |                |
-      | :raw-latex:`\cite{Saad1993}`  |                   |                |
+      | :cite`Saad1993`               |                   |                |
       +-------------------------------+-------------------+----------------+
       |  Deflated Generalized Minimal | ``KSPDGMRES``     | ``dgmres``     |
       | Residual                      |                   |                |
@@ -414,11 +412,11 @@ can be used by the options database command
       | FETI-DP                       | ``KSPFETIDP``     | ``fetidp``     |
       +-------------------------------+-------------------+----------------+
       | Conjugate Gradient Squared    | ``KSPCGS``        | ``cgs``        |
-      | :raw-latex:`\cite{so:89}`     |                   |                |
+      | :cite:`so:89`                 |                   |                |
       +-------------------------------+-------------------+----------------+
       | Transpose-Free Quasi-Minimal  | ``KSPTFQMR``      | ``tfqmr``      |
       | Residual (1)                  |                   |                |
-      | :raw-latex:`\cite{f:93}`      |                   |                |
+      | :cite:`f:93`                  |                   |                |
       +-------------------------------+-------------------+----------------+
       | Transpose-Free Quasi-Minimal  | ``KSPTCQMR``      | ``tcqmr``      |
       | Residual (2)                  |                   |                |
@@ -426,8 +424,7 @@ can be used by the options database command
       | Least Squares Method          | ``KSPLSQR``       | ``lsqr``       |
       +-------------------------------+-------------------+----------------+
       | Symmetric LQ Method           | ``KSPSYMMLQ``     | ``symmlq``     |
-      | :raw-lat                      |                   |                |
-      | ex:`\cite{PaigeSaunders1975}` |                   |                |
+      | :cite:`PaigeSaunders1975`     |                   |                |
       +-------------------------------+-------------------+----------------+
       | TSIRM                         | ``KSPTSIRM``      | ``tsirm``      |
       +-------------------------------+-------------------+----------------+
@@ -817,7 +814,7 @@ variants can also be set with the options ``-pc_sor_omega <omega>``,
 ``-pc_sor_symmetric``, ``-pc_sor_local_forward``,
 ``-pc_sor_local_backward``, and ``-pc_sor_local_symmetric``.
 
-The Eisenstat trick :raw-latex:`\cite{eisenstat81}` for SSOR
+The Eisenstat trick :cite`eisenstat81` for SSOR
 preconditioning can be employed with the method ``PCEISENSTAT``
 (``-pc_type`` ``eisenstat``). By using both left and right
 preconditioning of the linear system, this variant of SSOR requires
@@ -948,7 +945,7 @@ conjunction with a full interpolation, while ``PC_ASM_NONE`` (or
 ``-pc_asm_type`` ``none``) ignores off-process values for both
 restriction and interpolation. The ASM types with limited restriction or
 interpolation were suggested by Xiao-Chuan Cai and Marcus Sarkis
-:raw-latex:`\cite{cs97a}`. ``PC_ASM_RESTRICT`` is the PETSc default, as
+:cite:`cs97a`. ``PC_ASM_RESTRICT`` is the PETSc default, as
 it saves substantial communication and for many problems has the added
 benefit of requiring fewer iterations for convergence than the standard
 additive Schwarz method.
@@ -1060,7 +1057,7 @@ used. PETSc provides a fully supported (smoothed) aggregation AMG,
 ``PCGAMGSetType(pc,PCGAMGAGG)``, as well as reference implementations of
 a classical AMG method (``-pc_gamg_type classical``), a hybrid geometric
 AMG method (``-pc_gamg_type geo``), and a 2.5D AMG method DofColumns
-:raw-latex:`\cite{IsaacStadlerGhattas2015}`. GAMG does require the use
+:cite:`IsaacStadlerGhattas2015`. GAMG does require the use
 of (MPI)AIJ matrices. For instance, BAIJ matrices are not supported. One
 can use AIJ instead of BAIJ without changing any code other than the
 constructor (or the ``-mat_type`` from the command line). For instance,
@@ -1544,7 +1541,7 @@ A large number of parameters affect the multigrid behavior. The command
 
    PCMGSetType(PC pc,PCMGType mode);
 
-indicates which form of multigrid to apply :raw-latex:`\cite{1sbg}`.
+indicates which form of multigrid to apply :cite:`1sbg`.
 
 For standard V or W-cycle multigrids, one sets the ``mode`` to be
 ``PC_MG_MULTIPLICATIVE``; for the additive form (which in certain cases
@@ -2256,3 +2253,11 @@ or message.
    way is that this approach works for any number of blocks that may
    overlap.
 
+References
+~~~~~~~~~~
+
+.. bibliography:: ../../tex/petsc.bib
+   :filter: docname in docnames
+
+.. bibliography:: ../../tex/petscapp.bib
+   :filter: docname in docnames

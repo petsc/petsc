@@ -313,7 +313,7 @@ Line Search Newton
 The method ``SNESNEWTONLS`` (``-snes_type`` ``newtonls``) provides a
 line search Newton method for solving systems of nonlinear equations. By
 default, this technique employs cubic backtracking
-:raw-latex:`\cite{dennis:83}`. Alternative line search techniques are
+:cite:`dennis:83`. Alternative line search techniques are
 listed in Table `4.2 <#tab_linesearches>`__.
 
 .. container::
@@ -389,7 +389,7 @@ Trust Region Methods
 
 The trust region method in ``SNES`` for solving systems of nonlinear
 equations, ``SNESNEWTONTR`` (``-snes_type newtontr``), is taken from the
-MINPACK project :raw-latex:`\cite{more84}`. Several parameters can be
+MINPACK project :cite:`more84`. Several parameters can be
 set to control the variation of the trust region size during the
 solution process. In particular, the user can control the initial trust
 region radius, computed by
@@ -768,7 +768,7 @@ Here :math:`\mathbf{x}_0` is an initial approximation of the solution, and
 By default a constant relative convergence tolerance is used for solving
 the subsidiary linear systems within the Newton-like methods of
 ``SNES``. When solving a system of nonlinear equations, one can instead
-employ the techniques of Eisenstat and Walker :raw-latex:`\cite{EW96}`
+employ the techniques of Eisenstat and Walker :cite:`EW96`
 to compute :math:`\eta_k` at each step of the nonlinear solver by using
 the option ``-snes_ksp_ew_conv`` . In addition, by adding one’s own
 ``KSP`` convergence test (see Section
@@ -801,7 +801,7 @@ the routine
 
 This routine creates the data structures needed for the matrix-vector
 products that arise within Krylov space iterative
-methods :raw-latex:`\cite{brownsaad:90}` by employing the matrix type
+methods :cite:`brownsaad:90` by employing the matrix type
 ``MATSHELL``, discussed in
 Section `[sec_matrixfree] <#sec_matrixfree>`__. The default ``SNES``
 matrix-free approximations can also be invoked with the command
@@ -856,11 +856,11 @@ where :math:`h` is computed via
      = e_{rel}*u_{min}*\text{sign}(u^{T}a)*||a||_{1}/||a||^2_2  & \hbox{otherwise}.\end{aligned}
 
 This approach is taken from Brown and Saad
-:raw-latex:`\cite{brownsaad:90}`. The parameter can also be set from the
+:cite:`brownsaad:90`. The parameter can also be set from the
 options database with ``-snes_mf_umin <umin>``
 
 The second approach, taken from Walker and Pernice,
-:raw-latex:`\cite{pw98}`, computes :math:`h` via
+:cite:`pw98`, computes :math:`h` via
 
 .. math::
 
@@ -1033,7 +1033,7 @@ nonzero structure in the matrix regardless of which coloring routine is
 used.
 
 For sequential matrices PETSc provides three matrix coloring routines on
-from the MINPACK package :raw-latex:`\cite{more84}`: smallest-last
+from the MINPACK package :cite:`more84`: smallest-last
 (``sl``), largest-first (``lf``), and incidence-degree (``id``). In
 addition, two implementations of parallel colorings are in PETSc, greedy
 (``greedy``) and Jones-Plassmann (``jp``). These colorings, as well as
@@ -1184,3 +1184,12 @@ and accessed with
 ::
 
    SNESCompositeGetSNES(SNES,PetscInt,SNES *);
+
+References
+~~~~~~~~~~
+
+.. bibliography:: ../../tex/petsc.bib
+   :filter: docname in docnames
+
+.. bibliography:: ../../tex/petscapp.bib
+   :filter: docname in docnames

@@ -830,3 +830,12 @@ subdirectories:
 -  ``utils`` - Utility routines. Source here may know about the
    implementations, but ideally will not know about implementations for
    other components.
+
+References
+~~~~~~~~~~
+
+.. bibliography:: ../../tex/petsc.bib
+   :filter: docname in docnames
+
+.. bibliography:: ../../tex/petscapp.bib
+   :filter: docname in docnames
