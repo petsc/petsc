@@ -25,6 +25,7 @@ configure_options = [
   '--download-elemental=1',
   #'--download-spai=1',
   '--download-parms=1',
+  '--download-libceed',
   '--download-chaco=1'
   ]
 
