@@ -169,9 +169,8 @@ various phases of computation then follow (as shown separately here in
 Figure `[fig_exparprof2] <#fig_exparprof2>`__). Finally, a summary of
 memory usage and object creation and destruction is presented.
 
-::
+.. code-block:: none
 
-   [\tiny\ttfamily]
    mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_view -mat_type baij \
                -matload_block_size 3 -pc_type bjacobi -options_left
 
@@ -241,9 +240,8 @@ this column of the phase summary table. Additional statistics for each
 phase include the total number of messages sent, the average message
 length, and the number of global reductions.
 
-::
+.. code-block:: none
 
-   [\tiny\ttfamily]
    mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_view -mat_type baij \
                -matload_block_size 3 -pc_type bjacobi -options_left
 
@@ -327,7 +325,7 @@ It is also possible to use the *Jumpshot* package
 with the MPE software, which is part of the MPICH
 :raw-latex:`\cite{mpich-web-page}` implementation of MPI. The option
 
-::
+.. code-block:: none
 
    -log_mpe [logfile]
 

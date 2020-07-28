@@ -216,7 +216,7 @@ module for the package itself. For example, PETSc contains
 ``configure`` file to execute the configure, as this looks like
 Autotools,
 
-::
+.. code-block:: python
 
    #!/usr/bin/env python
    import os
@@ -226,7 +226,7 @@ The ``configure.py`` script constructs a tree of configure modules and
 executes the configure process over it. A minimal version of this would
 be
 
-::
+.. code-block:: python
 
    package = 'PETSc'
 
@@ -255,7 +255,7 @@ The ``configure`` method of the nodule will be run by the ``framework``
 object created at the top level. A minimal configure method would look
 like
 
-::
+.. code-block:: python
 
    def configure(self):
      self.framework.header          = self.arch.arch+'/include/'+self.project+'conf.h'
@@ -274,7 +274,7 @@ framework object, and set at the beginning of this ``configure()``
 method. There is also some simple information that is often used, which
 we define in the constructor,
 
-::
+.. code-block:: python
 
    def __init__(self, framework):
      config.base.Configure.__init__(self, framework)
@@ -293,7 +293,7 @@ process, and a script to recreate the configure run.
 The package configure module has two other main functions. First, top
 level options can be defined in the ``setupHelp()`` method,
 
-::
+.. code-block:: python
 
    def setupHelp(self, help):
      import nargs
@@ -309,7 +309,7 @@ a section named for the package. The second task is to build the tree of
 modules for the configure run, using the ``setupDependencies()`` method.
 A simple way to do this is by explicitly declaring dependencies,
 
-::
+.. code-block:: python
 
    def setupDependencies(self, framework):
        config.base.Configure.setupDependencies(self, framework)
@@ -337,7 +337,7 @@ Setting the header prefix routes all the defines made inside those
 modules to our package configure header. We can also automatically
 create configure modules based upon what we see on the filesystem,
 
-::
+.. code-block:: python
 
    for utility in os.listdir(os.path.join('config', self.Project, 'utilities')):
      (utilityName, ext) = os.path.splitext(utility)
@@ -430,7 +430,7 @@ provide the status and complete output of the command. The second, or
 "check" form will return a success or failure indication based upon the
 status and output. The routines are
 
-::
+.. code-block:: python
 
      outputPreprocess(), checkPreprocess(), preprocess()
      outputCompile(),    checkCompile()
@@ -442,7 +442,7 @@ to autoconf, using ``pushLanguage()`` and ``popLanguage()``. We also
 provide special forms used to check for valid compiler and linker flags,
 optionally adding them to the defaults.
 
-::
+.. code-block:: python
 
      checkCompilerFlag(), addCompilerFlag()
      checkLinkerFlag(),   addLinkerFlag()

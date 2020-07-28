@@ -30,25 +30,25 @@ The Fortran include files for PETSc are located in the directory
 ``${PETSC_DIR}/include/petsc/finclude`` and should be used via
 statements such as the following:
 
-::
+.. code-block:: fortran
 
    #include <petsc/finclude/petscXXX.h>
 
 for example,
 
-::
+.. code-block:: fortran
 
    #include <petsc/finclude/petscksp.h>
 
 You must also use the appropriate Fortran module which is done with
 
-::
+.. code-block:: fortran
 
    use petscXXX
 
 for example,
 
-::
+.. code-block:: fortran
 
    use petscksp
 
@@ -64,7 +64,7 @@ be nonzero if an error has been detected; otherwise, it is zero. For
 example, the Fortran and C variants of ``KSPSolve()`` are given,
 respectively, below, where ``ierr`` denotes the error variable:
 
-::
+.. code-block:: fortran
 
    call KSPSolve(ksp,b,x,ierr) ! Fortran
    ierr = KSPSolve(ksp,b,x);   /* C */
@@ -80,7 +80,7 @@ Fortran routines; however, Fortran programmers can easily use the error
 codes in writing their own tracebacks. For example, one could use code
 such as the following:
 
-::
+.. code-block:: fortran
 
    call KSPSolve(ksp,b,x,ierr)
    if (ierr .ne. 0) then
@@ -105,7 +105,7 @@ and ``PETSC_HAVE_FORTRAN_CAPS`` , which are defined in the file
 ``${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h``. The macros are used,
 for example, as follows:
 
-::
+.. code-block:: fortran
 
    #if defined(PETSC_HAVE_FORTRAN_CAPS)
    #define dabsc_ DMDABSC
@@ -128,9 +128,8 @@ Fortran will crash the code. Note that the C convention of passing NULL
 in the routine ``PetscOptionsGetInt()``, one must use the following
 command in Fortran:
 
-::
+.. code-block:: fortran
 
-   [breakatwhitespace=false]
    call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
 
 This Fortran requirement is inconsistent with C, where the user can
@@ -152,7 +151,7 @@ calling ``VecDestroyVecs()``. For example, the following code fragment
 duplicates ``v_old`` to form two new vectors, ``v_new(1)`` and
 ``v_new(2)``.
 
-::
+.. code-block:: fortran
 
    Vec          v_old, v_new(2)
    PetscInt     ierr
@@ -197,7 +196,7 @@ debugging version of the Fortran program ``ex3.F90`` with the actions
 ``make`` ``ex3`` and ``make`` ``runex3``, respectively. The compilation
 command is restated below:
 
-::
+.. code-block:: make
 
    ex3: ex3.o
           -${FLINKER}} -o ex3 ex3.o ${PETSC_LIB}
@@ -212,7 +211,7 @@ The following Fortran routines differ slightly from their C
 counterparts; see the manual pages and previous discussion in this
 chapter for details:
 
-::
+.. code-block:: fortran
 
    PetscInitialize(char *filename,int ierr)
    PetscError(MPI_COMM,int err,char *message,int ierr)
@@ -223,7 +222,7 @@ chapter for details:
 
 The following functions are not supported in Fortran:
 
-::
+.. code-block:: fortran
 
    PetscFClose(), PetscFOpen(), PetscFPrintf(), PetscPrintf()
    PetscPopErrorHandler(), PetscPushErrorHandler()
@@ -237,7 +236,7 @@ The following functions are not supported in Fortran:
 PETSc includes some support for direct use of Fortran90 pointers.
 Current routines include:
 
-::
+.. code-block:: fortran
 
    VecGetArrayF90(), VecRestoreArrayF90()
    VecGetArrayReadF90(), VecRestoreArrayReadF90()
@@ -285,7 +284,7 @@ of dimension one and return an integer index to the actual array used
 for data storage within PETSc. The Fortran interface for several
 routines is as follows:
 
-::
+.. code-block:: fortran
 
    PetscScalar    xx_v(1), aa_v(1)
    PetscErrorCode ierr
@@ -307,7 +306,7 @@ vector array instead of using ``VecSetValues()``. Note the (optional)
 use of the preprocessor ``#define`` statement to enable array
 manipulations in the conventional Fortran manner.
 
-::
+.. code-block:: fortran
 
    #define xx_a(ib)  xx_v(xx_i + (ib))
 

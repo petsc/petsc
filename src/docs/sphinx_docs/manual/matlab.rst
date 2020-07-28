@@ -75,9 +75,8 @@ more complex cases, such as using a ``DMDA``. For an example, see
 In MATLAB (R2015b), one may then generate a useful structure. For
 example:
 
-::
+.. code-block:: bash
 
-   [\normalsize\ttfamily]
    setenv('PETSC_DIR','~/petsc');
    setenv('PETSC_ARCH','arch-darwin-double-debug');
    addpath('~/petsc/share/petsc/matlab');
