@@ -11,7 +11,6 @@ intended for solving nonsingular systems of the form
 .. math::
 
    A x = b,
-   \label{eq_Ax=b}
 
 where :math:`A` denotes the matrix representation of a linear operator,
 :math:`b` is the right-hand-side vector, and :math:`x` is the solution
@@ -266,7 +265,6 @@ can be applied to the system (`[eq_Ax=b] <#eq_Ax=b>`__) by
 .. math::
 
    (M_L^{-1} A M_R^{-1}) \, (M_R x) = M_L^{-1} b,
-   \label{eq_prec}
 
 where :math:`M_L` and :math:`M_R` indicate preconditioning matrices (or,
 matrices from which the preconditioner is to be constructed). If

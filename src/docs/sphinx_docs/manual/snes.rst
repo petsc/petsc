@@ -19,10 +19,9 @@ equations of the form
 
 .. math::
 
-   \boldmath{F}(\boldmath{x}) = 0,
-   \label{eq_F=0}
+   \mathbf{F}(\mathbf{x}) = 0,
 
-where :math:`\boldmath{F}: \, \Re^n \to \Re^n`. Newton-like methods provide the
+where :math:`\mathbf{F}: \, \Re^n \to \Re^n`. Newton-like methods provide the
 core of the package, including both line search and trust region
 techniques. A suite of nonlinear Krylov methods and methods based upon
 problem decomposition are also included. The solvers are discussed
@@ -37,22 +36,21 @@ for solving (`[eq_F=0] <#eq_F=0>`__) is
 
 .. math::
 
-   \boldmath{x}_{k+1} = \boldmath{x}_k - \boldmath{J}(\boldmath{x}_k)^{-1} \boldmath{F}(\boldmath{x}_k), \;\; k=0,1, \ldots,
-   \label{eq_n1}
+   \mathbf{x}_{k+1} = \mathbf{x}_k - \mathbf{J}(\mathbf{x}_k)^{-1} \mathbf{F}(\mathbf{x}_k), \;\; k=0,1, \ldots,
 
-where :math:`\boldmath{x}_0` is an initial approximation to the solution and
-:math:`\boldmath{J}(\boldmath{x}_k) = \boldmath{F}'(\boldmath{x}_k)`, the Jacobian, is nonsingular at each
+where :math:`\mathbf{x}_0` is an initial approximation to the solution and
+:math:`\mathbf{J}(\mathbf{x}_k) = \mathbf{F}'(\mathbf{x}_k)`, the Jacobian, is nonsingular at each
 iteration. In practice, the Newton iteration (`[eq_n1] <#eq_n1>`__) is
 implemented by the following two steps:
 
 .. math::
 
    \begin{aligned}
-     1. & {\rm (Approximately) \;solve\;\;\;} \boldmath{J}(\boldmath{x}_k) \Delta \boldmath{x}_k = -\boldmath{F}(\boldmath{x}_k).\\
-     2. & {\rm Update\;\;\;} \boldmath{x}_{k+1} = \boldmath{x}_k + \Delta \boldmath{x}_k. \hspace{.225in}\end{aligned}
+     1. & {\rm (Approximately) \;solve\;\;\;} \mathbf{J}(\mathbf{x}_k) \Delta \mathbf{x}_k = -\mathbf{F}(\mathbf{x}_k).\\
+     2. & {\rm Update\;\;\;} \mathbf{x}_{k+1} = \mathbf{x}_k + \Delta \mathbf{x}_k. \hspace{.225in}\end{aligned}
 
 Other defect-correction algorithms can be implemented by using different
-choices for :math:`J(\boldmath{x}_k)`.
+choices for :math:`J(\mathbf{x}_k)`.
 
 .. _sec_snesusage:
 
@@ -194,9 +192,9 @@ the Jacobian approximation has been transferred to the preconditioner.
 One such approximate Jacobian comes from “Picard linearization” which
 writes the nonlinear system as
 
-.. math:: \boldmath{F}(\boldmath{x}) = \boldmath{A}(\boldmath{x}) \boldmath{x} - \boldmath{b} = 0
+.. math:: \mathbf{F}(\mathbf{x}) = \mathbf{A}(\mathbf{x}) \mathbf{x} - \mathbf{b} = 0
 
-where :math:`\boldmath{A}(\boldmath{x})` usually contains the lower-derivative parts of the
+where :math:`\mathbf{A}(\mathbf{x})` usually contains the lower-derivative parts of the
 equation. For example, the nonlinear diffusion problem
 
 .. math:: - \nabla\cdot(\kappa(u) \nabla u) = 0
@@ -208,8 +206,8 @@ would be linearized as
 Usually this linearization is simpler to implement than Newton and the
 linear problems are somewhat easier to solve. In addition to using
 ``-snes_mf_operator`` with this approximation to the Jacobian, the
-Picard iterative procedure can be performed by defining :math:`\boldmath{J}(\boldmath{x})`
-to be :math:`\boldmath{A}(\boldmath{x})`. Sometimes this iteration exhibits better global
+Picard iterative procedure can be performed by defining :math:`\mathbf{J}(\mathbf{x})`
+to be :math:`\mathbf{A}(\mathbf{x})`. Sometimes this iteration exhibits better global
 convergence than Newton linearization.
 
 During successive calls to ``FormJacobian()``, the user can either
@@ -413,8 +411,7 @@ takes the form of a line search-damped fixed-point iteration of the form
 
 .. math::
 
-   \boldmath{x}_{k+1} = \boldmath{x}_k - \lambda \boldmath{F}(\boldmath{x}_k), \;\; k=0,1, \ldots,
-   \label{eq_nrich}
+   \mathbf{x}_{k+1} = \mathbf{x}_k - \lambda \mathbf{F}(\mathbf{x}_k), \;\; k=0,1, \ldots,
 
 where the default linesearch is ``SNESLINESEARCHL2``. This simple solver
 is mostly useful as a nonlinear smoother, or to provide line search
@@ -748,7 +745,7 @@ system at each global iteration is critical, since these inner
 iterations determine the asymptotic convergence rate for inexact Newton
 techniques. While the Newton systems must be solved well enough to
 retain fast local convergence of the Newton’s iterates, use of excessive
-inner iterations, particularly when :math:`\| \boldmath{x}_k - \boldmath{x}_* \|` is large,
+inner iterations, particularly when :math:`\| \mathbf{x}_k - \mathbf{x}_* \|` is large,
 is neither necessary nor economical. Thus, the number of required inner
 iterations typically increases as the Newton process progresses, so that
 the truncated iterates approach the true Newton iterates.
@@ -759,13 +756,13 @@ a system of nonlinear equations, the update step of the Newton process
 remains unchanged, and direct solution of the linear system is replaced
 by iteration on the system until the residuals
 
-.. math:: \boldmath{r}_k^{(i)} =  \boldmath{F}'(\boldmath{x}_k) \Delta \boldmath{x}_k + \boldmath{F}(\boldmath{x}_k)
+.. math:: \mathbf{r}_k^{(i)} =  \mathbf{F}'(\mathbf{x}_k) \Delta \mathbf{x}_k + \mathbf{F}(\mathbf{x}_k)
 
 satisfy
 
-.. math:: \frac{ \| \boldmath{r}_k^{(i)} \| }{ \| \boldmath{F}(\boldmath{x}_k) \| } \leq \eta_k \leq \eta < 1.
+.. math:: \frac{ \| \mathbf{r}_k^{(i)} \| }{ \| \mathbf{F}(\mathbf{x}_k) \| } \leq \eta_k \leq \eta < 1.
 
-Here :math:`\boldmath{x}_0` is an initial approximation of the solution, and
+Here :math:`\mathbf{x}_0` is an initial approximation of the solution, and
 :math:`\| \cdot \|` denotes an arbitrary norm in :math:`\Re^n` .
 
 By default a constant relative convergence tolerance is used for solving
@@ -1153,12 +1150,12 @@ changed using ``-snes_npc_side`` or ``SNESSetNPCSide()``. Left nonlinear
 preconditioning redefines the nonlinear function as the action of the
 nonlinear preconditioner :math:`\mathbf{M}`;
 
-.. math:: \boldmath{F}_{M}(x) = \mathbf{M}(\boldmath{x},\mathbf{b}) - \boldmath{x}.
+.. math:: \mathbf{F}_{M}(x) = \mathbf{M}(\mathbf{x},\mathbf{b}) - \mathbf{x}.
 
 Right nonlinear preconditioning redefines the nonlinear function as the
 function on the action of the nonlinear preconditioner;
 
-.. math:: \boldmath{F}(\mathbf{M}(\boldmath{x},\mathbf{b})) = \mathbf{b},
+.. math:: \mathbf{F}(\mathbf{M}(\mathbf{x},\mathbf{b})) = \mathbf{b},
 
 which can be interpreted as putting the preconditioner into “striking
 distance” of the solution by outer acceleration.

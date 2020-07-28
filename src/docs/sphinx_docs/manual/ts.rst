@@ -934,7 +934,6 @@ The next step size is based on this error estimate, and determined by
 .. math::
 
    \begin{aligned}
-     \label{eq:hnew}
     \Delta t_{\rm new}(t)&=&\Delta t_{\rm{old}} \min(\alpha_{\max},
     \max(\alpha_{\min}, \beta (1/\rm wlte)^\frac{1}{\widehat{p}+1}))\,,\end{aligned}
 
