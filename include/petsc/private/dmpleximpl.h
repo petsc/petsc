@@ -40,7 +40,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_RebalanceSharedPoints;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromFile;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromCellList_Coordinates;
-
+PETSC_EXTERN PetscLogEvent DMPLEX_LocatePoints;
 
 typedef struct _DMPlexCellRefinerOps *DMPlexCellRefinerOps;
 struct _DMPlexCellRefinerOps {
