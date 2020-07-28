@@ -1,4 +1,4 @@
-static char help[] = "Test combinatations of scalings, shifts and get diagonal of MATSHELL\n\n";
+static char help[] = "Test combinations of scalings, shifts and get diagonal of MATSHELL\n\n";
 
 #include <petscmat.h>
 
