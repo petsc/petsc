@@ -450,6 +450,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
 
 /*@
    PCMatApply - Applies the preconditioner to multiple vectors stored as a MATDENSE. Like PCApply(), Y and X must be different matrices.
+
    Collective on PC
 
    Input Parameters:

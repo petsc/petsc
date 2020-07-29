@@ -17,9 +17,7 @@ int main(int argc,char **args)
   Mat                A;           /* linear system matrix */
   KSP                ksp;         /* linear solver context */
   PC                 pc;          /* preconditioner context */
-  PCType             type;
   PetscInt           m = 10;
-  PetscBool          flg;
   PetscLogEvent      event;
   PetscEventPerfInfo info;
   PetscErrorCode     ierr;
@@ -40,11 +38,7 @@ int main(int argc,char **args)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCShellSetMatApply(pc,MatApply);CHKERRQ(ierr);
   ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-  ierr = PCGetType(pc,&type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,PCASM,&flg);CHKERRQ(ierr);
-  if (!flg) {
-    ierr = PCMatApply(pc,B,X);CHKERRQ(ierr);
-  }
+  ierr = PCMatApply(pc,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -63,7 +57,7 @@ int main(int argc,char **args)
    # KSPHPDDM does either pseudo-blocking or "true" blocking, all tests should succeed with other -ksp_hpddm_type
    testset:
       nsize: 1
-      args: -pc_type {{bjacobi lu ilu mat cholesky icc none shell}shared output}
+      args: -pc_type {{bjacobi lu ilu mat cholesky icc none shell asm gasm}shared output}
       test:
          suffix: 1
          output_file: output/ex77_preonly.out
@@ -100,25 +94,46 @@ int main(int argc,char **args)
          output_file: output/ex77_preonly.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
-   # special code path in PCApplyMat for PCBJACOBI when a block is shared by multiple processes
+
    testset:
-      nsize: 2
-      args: -pc_type bjacobi -pc_bjacobi_blocks 1 -sub_pc_type none
+      nsize: 1
+      requires: spai
+      args: -pc_type spai
       test:
          suffix: 4
          output_file: output/ex77_preonly.out
-         args: -ksp_type preonly -sub_ksp_type preonly
+         args: -ksp_type preonly
       test:
          suffix: 4_hpddm
          output_file: output/ex77_preonly.out
          requires: hpddm
-         args: -ksp_type hpddm -ksp_hpddm_type preonly -sub_ksp_type hpddm -sub_ksp_hpddm_type preonly
-   # special code path in KSPHPDDM for PCASM
-   test:
+         args: -ksp_type hpddm -ksp_hpddm_type preonly
+   # special code path in PCApplyMat() for PCBJACOBI when a block is shared by multiple processes
+   testset:
       nsize: 2
-      args: -ksp_type hpddm -ksp_hpddm_type preonly -pc_type asm -sub_pc_type none -sub_ksp_type preonly
-      suffix: 5
-      output_file: output/ex77_preonly.out
-      requires: hpddm
+      args: -pc_type bjacobi -pc_bjacobi_blocks 1 -sub_pc_type none
+      test:
+         suffix: 5
+         output_file: output/ex77_preonly.out
+         args: -ksp_type preonly -sub_ksp_type preonly
+      test:
+         suffix: 5_hpddm
+         output_file: output/ex77_preonly.out
+         requires: hpddm
+         args: -ksp_type hpddm -ksp_hpddm_type preonly -sub_ksp_type hpddm
+   # special code path in PCApplyMat() for PCGASM when a block is shared by multiple processes
+   testset:
+      nsize: 2
+      args: -pc_type gasm -pc_gasm_total_subdomains 1 -sub_pc_type none
+      test:
+         suffix: 6
+         output_file: output/ex77_preonly.out
+         args: -ksp_type preonly -sub_ksp_type preonly
+      test:
+         suffix: 6_hpddm
+         output_file: output/ex77_preonly.out
+         requires: hpddm
+         args: -ksp_type hpddm -ksp_hpddm_type preonly -sub_ksp_type hpddm
+
 
 TEST*/

@@ -163,7 +163,6 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -258,8 +257,6 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
 
 PETSC_INTERN PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[]);
 
-
-
 PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
 {
    PC_GASM              *osm = (PC_GASM*)pc->data;
@@ -312,8 +309,6 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
    osm->n           = PETSC_DETERMINE;
    PetscFunctionReturn(0);
 }
-
-
 
 static PetscErrorCode PCSetUp_GASM(PC pc)
 {
@@ -643,17 +638,17 @@ static PetscErrorCode PCApply_GASM(PC pc,Vec xin,Vec yout)
   ScatterMode    forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;
-  if(osm->pctoouter){
+  if (osm->pctoouter) {
     ierr = VecScatterBegin(osm->pctoouter,xin,osm->pcx,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(osm->pctoouter,xin,osm->pcx,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     x = osm->pcx;
     y = osm->pcy;
-  }else{
-	x = xin;
-	y = yout;
+  } else {
+    x = xin;
+    y = yout;
   }
   /*
-     Support for limiting the restriction or interpolation only to the inner
+     support for limiting the restriction or interpolation only to the inner
      subdomain values (leaving the other values 0).
   */
   if (!(osm->type & PC_GASM_RESTRICT)) {
@@ -674,7 +669,7 @@ static PetscErrorCode PCApply_GASM(PC pc,Vec xin,Vec yout)
     ierr = KSPSolve(osm->ksp[i],osm->x[i],osm->y[i]);CHKERRQ(ierr);
     ierr = KSPCheckSolve(osm->ksp[i],pc,osm->y[i]);CHKERRQ(ierr);
   }
-  /* Do we need to zero y ?? */
+  /* do we need to zero y? */
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
   if (!(osm->type & PC_GASM_INTERPOLATE)) {
     ierr = VecScatterBegin(osm->girestriction,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
@@ -683,10 +678,95 @@ static PetscErrorCode PCApply_GASM(PC pc,Vec xin,Vec yout)
     ierr = VecScatterBegin(osm->gorestriction,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
     ierr = VecScatterEnd(osm->gorestriction,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
   }
-  if(osm->pctoouter){
+  if (osm->pctoouter) {
     ierr = VecScatterBegin(osm->pctoouter,y,yout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(osm->pctoouter,y,yout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCMatApply_GASM(PC pc,Mat Xin,Mat Yout)
+{
+  PC_GASM        *osm = (PC_GASM*)pc->data;
+  Mat            X,Y,O=NULL,Z,W;
+  Vec            x,y;
+  PetscInt       i,m,M,N;
+  ScatterMode    forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (osm->n != 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not yet implemented");
+  ierr = MatGetSize(Xin,NULL,&N);CHKERRQ(ierr);
+  if (osm->pctoouter) {
+    ierr = VecGetLocalSize(osm->pcx,&m);CHKERRQ(ierr);
+    ierr = VecGetSize(osm->pcx,&M);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)osm->ois[0]),m,PETSC_DECIDE,M,N,NULL,&O);CHKERRQ(ierr);
+    for (i = 0; i < N; ++i) {
+      ierr = MatDenseGetColumnVecRead(Xin,i,&x);
+      ierr = MatDenseGetColumnVecWrite(O,i,&y);
+      ierr = VecScatterBegin(osm->pctoouter,x,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->pctoouter,x,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = MatDenseRestoreColumnVecWrite(O,i,&y);
+      ierr = MatDenseRestoreColumnVecRead(Xin,i,&x);
+    }
+    X = Y = O;
+  } else {
+    X = Xin;
+    Y = Yout;
+  }
+  /*
+     support for limiting the restriction or interpolation only to the inner
+     subdomain values (leaving the other values 0).
+  */
+  ierr = VecGetLocalSize(osm->x[0],&m);CHKERRQ(ierr);
+  ierr = VecGetSize(osm->x[0],&M);CHKERRQ(ierr);
+  ierr = MatCreateDense(PetscObjectComm((PetscObject)osm->ois[0]),m,PETSC_DECIDE,M,N,NULL,&Z);CHKERRQ(ierr);
+  for (i = 0; i < N; ++i) {
+    ierr = MatDenseGetColumnVecRead(X,i,&x);
+    ierr = MatDenseGetColumnVecWrite(Z,i,&y);
+    if (!(osm->type & PC_GASM_RESTRICT)) {
+      /* have to zero the work RHS since scatter may leave some slots empty */
+      ierr = VecZeroEntries(y);CHKERRQ(ierr);
+      ierr = VecScatterBegin(osm->girestriction,x,y,INSERT_VALUES,forward);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->girestriction,x,y,INSERT_VALUES,forward);CHKERRQ(ierr);
+    } else {
+      ierr = VecScatterBegin(osm->gorestriction,x,y,INSERT_VALUES,forward);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->gorestriction,x,y,INSERT_VALUES,forward);CHKERRQ(ierr);
+    }
+    ierr = MatDenseRestoreColumnVecWrite(Z,i,&y);
+    ierr = MatDenseRestoreColumnVecRead(X,i,&x);
+  }
+  ierr = MatCreateDense(PetscObjectComm((PetscObject)osm->ois[0]),m,PETSC_DECIDE,M,N,NULL,&W);CHKERRQ(ierr);
+  ierr = MatSetOption(Z,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Z,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Z,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  /* do the subdomain solve */
+  ierr = KSPMatSolve(osm->ksp[0],Z,W);CHKERRQ(ierr);
+  ierr = KSPCheckSolve(osm->ksp[0],pc,NULL);CHKERRQ(ierr);
+  ierr = MatDestroy(&Z);CHKERRQ(ierr);
+  /* do we need to zero y? */
+  ierr = MatZeroEntries(Y);CHKERRQ(ierr);
+  for (i = 0; i < N; ++i) {
+    ierr = MatDenseGetColumnVecWrite(Y,i,&y);
+    ierr = MatDenseGetColumnVecRead(W,i,&x);
+    if (!(osm->type & PC_GASM_INTERPOLATE)) {
+      ierr = VecScatterBegin(osm->girestriction,x,y,ADD_VALUES,reverse);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->girestriction,x,y,ADD_VALUES,reverse);CHKERRQ(ierr);
+    } else {
+      ierr = VecScatterBegin(osm->gorestriction,x,y,ADD_VALUES,reverse);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->gorestriction,x,y,ADD_VALUES,reverse);CHKERRQ(ierr);
+    }
+    ierr = MatDenseRestoreColumnVecRead(W,i,&x);
+    if (osm->pctoouter) {
+      ierr = MatDenseGetColumnVecWrite(Yout,i,&x);
+      ierr = VecScatterBegin(osm->pctoouter,y,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->pctoouter,y,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = MatDenseRestoreColumnVecRead(Yout,i,&x);
+    }
+    ierr = MatDenseRestoreColumnVecWrite(Y,i,&y);
+  }
+  ierr = MatDestroy(&W);CHKERRQ(ierr);
+  ierr = MatDestroy(&O);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -898,7 +978,6 @@ PetscErrorCode  PCGASMSetTotalSubdomains(PC pc,PetscInt N)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois[])
 {
   PC_GASM         *osm = (PC_GASM*)pc->data;
@@ -965,7 +1044,6 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
   if (iis)  osm->user_subdomains = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode  PCGASMSetOverlap_GASM(PC pc,PetscInt ovl)
 {
@@ -1067,7 +1145,6 @@ PetscErrorCode  PCGASMSetSubdomains(PC pc,PetscInt n,IS iis[],IS ois[])
   osm->dm_subdomains = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-
 
 /*@
     PCGASMSetOverlap - Sets the overlap between a pair of subdomains for the
@@ -1292,6 +1369,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
 
   pc->data                 = (void*)osm;
   pc->ops->apply           = PCApply_GASM;
+  pc->ops->matapply        = PCMatApply_GASM;
   pc->ops->applytranspose  = PCApplyTranspose_GASM;
   pc->ops->setup           = PCSetUp_GASM;
   pc->ops->reset           = PCReset_GASM;
@@ -1308,7 +1386,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMGetSubKSP_C",PCGASMGetSubKSP_GASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
 {
@@ -1466,8 +1543,6 @@ PETSC_INTERN PetscErrorCode  PCGASMCreateStraddlingSubdomains(Mat A,PetscInt N,P
   PetscFunctionReturn(0);
 }
 
-
-
 /*@C
    PCGASMCreateSubdomains - Creates n index sets defining n nonoverlapping subdomains for the additive
    Schwarz preconditioner for a any problem based on its matrix.
@@ -1564,7 +1639,6 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
   PetscFunctionReturn(0);
 }
 
-
 #define PCGASMLocalSubdomainBounds2D(M,N,xleft,ylow,xright,yhigh,first,last,xleft_loc,ylow_loc,xright_loc,yhigh_loc,n) \
   {                                                                                                       \
     PetscInt first_row = first/M, last_row = last/M+1;                                                     \
@@ -1592,8 +1666,6 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
       *n -= PetscMin(PetscMax(*xleft_loc-xleft,0), width); \
     } \
   }
-
-
 
 /*@
    PCGASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz
