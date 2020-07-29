@@ -87,9 +87,14 @@ Sphinx Documentation Guidelines
        :end-at: PetscFunctionReturn(0)
        :append: }
 
-* We use the `sphinxcontrib-biblatex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__.
-  This does not currently work perfectly, but its `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__
-  promises to support our use case, so we're delaying to see if it's ever released.
+* We use the `sphinxcontrib-biblatex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
+  to include citations from BibTeX files.
+  This currently generates a "duplicate label" warning when the same reference is used in two different documents.
+  The recommended `workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#section-key-prefixing>`__ could be used,
+  but requires prefixing reference labels in the rendered text.
+  The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__
+  promises to support our use case better with "foot" citations, which can be investigated
+  when a new release is available.
 
 * Note that you can provide images in more than one format. In particular, it might be useful to include a PNG image for use on the web, and a PDF image to use in the latex manual. This can be done with a wildcard extension, as in the following example, which uses ``ghost.png`` for the web but ``ghost.pdf`` when building a PDF with LaTeX.
 
