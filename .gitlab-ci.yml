@@ -21,7 +21,7 @@ variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
   PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-  TIMEOUT: 1000
+  TIMEOUT: 450
 
 #
 # The most basic template that most tests will expand upon. In particular merge requests and branch pushes DO NOT trigger testing
@@ -753,7 +753,7 @@ mswin-opt-impi:
     - name:ps4
   variables:
     TEST_ARCH: arch-ci-mswin-opt-impi
-  allow_failure: true
+    DISABLE_TESTS: 1
 
 opensolaris-pkgs-opt:
   extends:
