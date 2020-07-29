@@ -25,7 +25,7 @@ where :math:`\mathbf{F}: \, \Re^n \to \Re^n`. Newton-like methods provide the
 core of the package, including both line search and trust region
 techniques. A suite of nonlinear Krylov methods and methods based upon
 problem decomposition are also included. The solvers are discussed
-further in Section `4.2 <#sec_nlsolvers>`__. Following the PETSc design
+further in :any:`sec_nlsolvers`. Following the PETSc design
 philosophy, the interfaces to the various solvers are all virtually
 identical. In addition, the ``SNES`` software is completely flexible, so
 that the user can at runtime change any facet of the solution process.
@@ -86,7 +86,7 @@ To choose a nonlinear solution method, the user can either call
    SNESSetType(SNES snes,SNESType method);
 
 or use the option ``-snes_type <method>``, where details regarding the
-available methods are presented in Section `4.2 <#sec_nlsolvers>`__. The
+available methods are presented in :any:`sec_nlsolvers`. The
 application code can take complete control of the linear and nonlinear
 techniques used in the Newton-like method by calling
 
@@ -229,7 +229,7 @@ examples.
 The Nonlinear Solvers
 ~~~~~~~~~~~~~~~~~~~~~
 
-As summarized in Table `4.1 <#tab_snesdefaults>`__, ``SNES`` includes
+As summarized in Table :any:`tab-snesdefaults`, ``SNES`` includes
 several Newton-like nonlinear solvers based on line search techniques
 and trust region methods. Also provided are several nonlinear Krylov
 methods, as well as nonlinear methods involving decompositions of the
@@ -241,76 +241,92 @@ purpose. A complete list can be found by consulting the manual pages or
 by running a program with the ``-help`` option; we discuss just a few in
 the sections below.
 
-.. container::
-   :name: tab_snesdefaults
+.. list-table:: PETSc Nonlinear Solvers
+   :name: tab-snesdefaults
+   :header-rows: 1
 
-   .. table:: PETSc Nonlinear Solvers
+   * - Method
+     - SNESType
+     - Options Name
+     - Default Line Search
+   * - Line Search Newton
+     - ``SNESNEWTONLS``
+     - ``newtonls``
+     - ``SNESLINESEARCHBT``
+   * - Trust region Newton
+     - ``SNESNEWTONTR``
+     - ``newtontr``
+     - —
+   * - Nonlinear Richardson
+     - ``SNESNRICHARDSON``
+     - ``nrichardson``
+     - ``SNESLINESEARCHL2``
+   * - Nonlinear CG
+     - ``SNESNCG``
+     - ``ncg``
+     - ``SNESLINESEARCHCP``
+   * - Nonlinear GMRES
+     - ``SNESNGMRES``
+     - ``ngmres``
+     - ``SNESLINESEARCHL2``
+   * - Quasi-Newton
+     - ``SNESQN``
+     - ``qn``
+     - see :any:`tab-qndefaults`
+   * - Full Approximation Scheme
+     - ``SNESFAS``
+     - ``fas``
+     - —
+   * - Nonlinear ASM
+     - ``SNESNASM``
+     - ``nasm``
+     - –
+   * - ASPIN
+     - ``SNESASPIN``
+     - ``aspin``
+     - ``SNESLINESEARCHBT``
+   * - Nonlinear Gauss-Seidel
+     - ``SNESNGS``
+     - ``ngs``
+     - –
+   * - Anderson Mixing
+     - ``SNESANDERSON``
+     - ``anderson``
+     - –
+   * -  Newton with constraints (1)
+     - ``SNESVINEWTONRSLS``
+     - ``vinewtonrsls``
+     - ``SNESLINESEARCHBT``
+   * -  Newton with constraints (2)
+     - ``SNESVINEWTONSSLS``
+     - ``vinewtonssls``
+     - ``SNESLINESEARCHBT``
+   * - Multi-stage Smoothers
+     - ``SNESMS``
+     - ``ms``
+     - –
+   * - Composite
+     - ``SNESCOMPOSITE``
+     - ``composite``
+     - –
+   * - Linear solve only
+     - ``SNESKSPONLY``
+     - ``ksponly``
+     - –
+   * - Python Shell
+     - ``SNESPYTHON``
+     - ``python``
+     - –
+   * - Shell (user-defined)
+     - ``SNESSHELL``
+     - ``shell``
+     - –
 
-      +---------------+---------------+---------------+---------------+---+
-      | **Method**    | **SNESType**  | **Options     | **Default     |   |
-      |               |               | Name**        | Line Search** |   |
-      +===============+===============+===============+===============+===+
-      | Line search   | ``S           | ``newtonls``  | ``SNESL       |   |
-      | Newton        | NESNEWTONLS`` |               | INESEARCHBT`` |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Trust region  | ``S           | ``newtontr``  | –             |   |
-      | Newton        | NESNEWTONTR`` |               |               |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Nonlinear     | ``SNES        | ``            | ``SNESL       |   |
-      | Richardson    | NRICHARDSON`` | nrichardson`` | INESEARCHL2`` |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Nonlinear CG  | ``SNESNCG``   | ``ncg``       | ``SNESL       |   |
-      |               |               |               | INESEARCHCP`` |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Nonlinear     | `             | ``ngmres``    | ``SNESL       |   |
-      | GMRES         | `SNESNGMRES`` |               | INESEARCHL2`` |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Quasi-Newton  | ``SNESQN``    | ``qn``        | see           |   |
-      |               |               |               | Table         |   |
-      |               |               |               |  `4.3 <#tab_q |   |
-      |               |               |               | ndefaults>`__ |   |
-      +---------------+---------------+---------------+---------------+---+
-      | FAS           | ``SNESFAS``   | ``fas``       | –             |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Nonlinear ASM | ``SNESNASM``  | ``nasm``      | –             |   |
-      +---------------+---------------+---------------+---------------+---+
-      | ASPIN         | ``SNESASPIN`` | ``aspin``     | ``SNESL       |   |
-      |               |               |               | INESEARCHBT`` |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Nonlinear     | ``SNESNGS``   | ``ngs``       | –             |   |
-      | Gauss-Seidel  |               |               |               |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Anderson      | ``S           | ``anderson``  | –             |   |
-      | Mixing        | NESANDERSON`` |               |               |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Newton with   | ``SNESV       | ``v           | ``SNESL       |   |
-      | constraints   | INEWTONRSLS`` | inewtonrsls`` | INESEARCHBT`` |   |
-      | (1)           |               |               |               |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Newton with   | ``SNESV       | ``v           | ``SNESL       |   |
-      | constraints   | INEWTONSSLS`` | inewtonssls`` | INESEARCHBT`` |   |
-      | (2)           |               |               |               |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Multi-stage   | ``SNESMS``    | ``ms``        | –             |   |
-      | Smoothers     |               |               |               |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Composite     | ``SN          | ``composite`` | –             |   |
-      |               | ESCOMPOSITE`` |               |               |   |
-      +---------------+---------------+---------------+---------------+---+
-      | ``KSP`` only  | ``            | ``ksponly``   | –             |   |
-      | (linear       | SNESKSPONLY`` |               |               |   |
-      | solver)       |               |               |               |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Python Shell  | `             | ``python``    | –             |   |
-      |               | `SNESPYTHON`` |               |               |   |
-      +---------------+---------------+---------------+---------------+---+
-      | Shell         | ``SNESSHELL`` | ``shell``     | –             |   |
-      +---------------+---------------+---------------+---------------+---+
 
 Line Search Newton
 ^^^^^^^^^^^^^^^^^^
 
-The method ``SNESNEWTONLS`` (``-snes_type`` ``newtonls``) provides a
+The method ``SNESNEWTONLS`` (``-snes_type newtonls``) provides a
 line search Newton method for solving systems of nonlinear equations. By
 default, this technique employs cubic backtracking
 :cite:`dennis:83`. Alternative line search techniques are
@@ -437,29 +453,31 @@ Quasi-Newton Methods
 Quasi-Newton methods store iterative rank-one updates to the Jacobian
 instead of computing it directly. Three limited-memory quasi-Newton
 methods are provided, L-BFGS, which are described in
-Table `4.3 <#tab_qndefaults>`__. These all are encapsulated under
+Table :any:`tab-qndefaults`. These all are encapsulated under
 ``-snes_type qn`` and may be changed with ``snes_qn_type``. The default
 is L-BFGS, which provides symmetric updates to an approximate Jacobian.
 This iteration is similar to the line search Newton methods.
 
-.. container::
-   :name: tab_qndefaults
+.. list-table:: PETSc quasi-Newton solvers
+   :name: tab-qndefaults
+   :header-rows: 1
 
-   .. table:: PETSc quasi-Newton solvers
-
-      +----------------+----------------+----------------+----------------+
-      | **QN Method**  | **SNESQNType** | **Options      | **Default Line |
-      |                |                | Name**         | Search**       |
-      +================+================+================+================+
-      | L-BFGS         | ``S            | ``lbfgs``      | ``SNES         |
-      |                | NES_QN_LBFGS`` |                | LINESEARCHCP`` |
-      +----------------+----------------+----------------+----------------+
-      | “Good” Broyden | ``SNE          | ``broyden``    | ``SNESLIN      |
-      |                | S_QN_BROYDEN`` |                | ESEARCHBASIC`` |
-      +----------------+----------------+----------------+----------------+
-      | “Bad” Broyden  | ``SNES_        | ``badbroyden`` | ``SNES         |
-      |                | QN_BADBROYEN`` |                | LINESEARCHL2`` |
-      +----------------+----------------+----------------+----------------+
+   * - QN Method
+     - ``SNESQNType``
+     - Options Name
+     - Default Line Search
+   * - L-BFGS
+     - ``SNES_QN_LBFGS``
+     - ``lbfgs``
+     - ``SNESLINESEARCHCP``
+   * - “Good” Broyden
+     - ``SNES_QN_BROYDEN``
+     - ``broyden``
+     - ``SNESLINESEARCHBASIC``
+   * - “Bad” Broyden
+     - ``SNES_QN_BADBROYEN``
+     - ``badbroyden``
+     - ``SNESLINESEARCHL2``
 
 One may also control the form of the initial Jacobian approximation with
 
@@ -851,9 +869,10 @@ where :math:`h` is computed via
 
 .. math::
 
-   \begin{aligned}
-   h = e_{rel}*u^{T}a/||a||^2_2                                 & \hbox{if}  |u'a| > u_{min}*||a||_{1} \\
-     = e_{rel}*u_{min}*\text{sign}(u^{T}a)*||a||_{1}/||a||^2_2  & \hbox{otherwise}.\end{aligned}
+   h = e_{\text{rel}} \cdot \begin{cases}
+   u^{T}a/\lVert a \rVert^2_2                                 & \text{if $|u^T a| > u_{\min} \lVert a \rVert_{1}$} \\
+   u_{\min} \operatorname{sign}(u^{T}a) \lVert a \rVert_{1}/\lVert a\rVert^2_2  & \text{otherwise}.
+   \end{cases}
 
 This approach is taken from Brown and Saad
 :cite:`brownsaad:90`. The parameter can also be set from the
@@ -899,7 +918,7 @@ method without a preconditioner. As shown in this example,
 enable runtime switching between the user-specified Jacobian and the
 default ``SNES`` matrix-free form.
 
-Table `4.4 <#tab_jacobians>`__ summarizes the various matrix situations
+Table :any:`tab-jacobians` summarizes the various matrix situations
 that ``SNES`` supports. In particular, different linear system matrices
 and preconditioning matrices are allowed, as well as both matrix-free
 and application-provided preconditioners. If
@@ -909,50 +928,21 @@ the options ``-snes_mf`` and ``-user_precond`` then it uses a
 matrix-free application of the matrix-vector multiple and a user
 provided matrix free Jacobian.
 
-.. container::
-   :name: tab_jacobians
+.. list-table:: Jacobian Options
+   :name: tab-jacobians
 
-   .. table:: Jacobian Options
+   * - Matrix Use
+     - Conventional Matrix Formats
+     - Matrix-free versions
+   * - Jacobian Matrix
+     - Create matrix with ``MatCreate()``:math:`^*`.  Assemble matrix with user-defined routine :math:`^\dagger`
+     - Create matrix with ``MatCreateShell()``.  Use ``MatShellSetOperation()`` to set various matrix actions, or use ``MatCreateMFFD()`` or ``MatCreateSNESMF()``.
+   * - Preconditioning Matrix
+     - Create matrix with ``MatCreate()``:math:`^*`.  Assemble matrix with user-defined routine :math:`^\dagger`
+     - Use ``SNESGetKSP()`` and ``KSPGetPC()`` to access the ``PC``, then use ``PCSetType(pc, PCSHELL)`` followed by ``PCShellSetApply()``.
 
-      +-----------------+------------------------+------------------------+
-      | **Matrix Use**  | **Conventional Matrix  | **Matrix-Free          |
-      |                 | Formats**              | Versions**             |
-      +=================+========================+========================+
-      | Jacobian        | Create matrix with     | Create matrix with     |
-      |                 | ``MatCreate()``.       | ``MatCreateShell()``.  |
-      |                 | :math:`^*`             |                        |
-      +-----------------+------------------------+------------------------+
-      | Matrix          | Assemble matrix with   | Use                    |
-      |                 | user-defined           | ``Ma                   |
-      |                 |                        | tShellSetOperation()`` |
-      |                 |                        | to set                 |
-      +-----------------+------------------------+------------------------+
-      |                 | routine.               | various matrix         |
-      |                 | :math:`^\dagger`       | actions, or use        |
-      +-----------------+------------------------+------------------------+
-      |                 |                        | ``MatCreateMFFD()`` or |
-      |                 |                        | ``MatCreateSNESMF()``. |
-      +-----------------+------------------------+------------------------+
-      | Preconditioning | Create matrix with     | Use ``SNESGetKSP()``   |
-      |                 | ``MatCreate()``.       | and ``KSPGetPC()``     |
-      |                 | :math:`^*`             |                        |
-      +-----------------+------------------------+------------------------+
-      | Matrix          | Assemble matrix with   | to access the ``PC``,  |
-      |                 | user-defined           | then use               |
-      +-----------------+------------------------+------------------------+
-      |                 | routine.               | ``P                    |
-      |                 | :math:`^\dagger`       | CSetType(pc,PCSHELL)`` |
-      +-----------------+------------------------+------------------------+
-      |                 |                        | followed by            |
-      |                 |                        | ``PCShellSetApply()``. |
-      +-----------------+------------------------+------------------------+
-      |                 |                        |                        |
-      +-----------------+------------------------+------------------------+
-
-| :math:`^*` Use either the generic ``MatCreate()`` or a format-specific
-  variant such as ``MatCreateAIJ()``.
-| :math:`^\dagger` Set user-defined matrix formation routine with
-  ``SNESSetJacobian()``.
+| :math:`^*` Use either the generic ``MatCreate()`` or a format-specific variant such as ``MatCreateAIJ()``.
+| :math:`^\dagger` Set user-defined matrix formation routine with ``SNESSetJacobian()`` or with a ``DM`` variant such as ``DMDASNESSetJacobianLocal()``
 
 .. _sec_fdmatrix:
 
@@ -1072,16 +1062,16 @@ where :math:`h` is computed via:
 
 .. math::
 
-   \begin{aligned}
-           h = e_{rel}*u_{i}             &    \hbox{if }  |u_{i}| > u_{min} \\
-           h = e_{rel}*u_{min}*sign(u_{i})  &    \hbox{otherwise}.\end{aligned}
+   h = e_{\text{rel}} \cdot \begin{cases}
+   u_{i}             &    \text{if $|u_{i}| > u_{\min}$} \\
+   u_{\min} \cdot \operatorname{sign}(u_{i})  & \text{otherwise}.
+   \end{cases}
 
 for MATMFFD_DS or:
 
 .. math::
 
-   \begin{aligned}
-           h = e_{rel}*sqrt(\|u\|)\end{aligned}
+   h = e_{\text{rel}} \sqrt(\|u\|)
 
 for MATMFFD_WP (default). These parameters may be set from the options
 database with
@@ -1136,6 +1126,7 @@ several VI solvers, the default is preferred.
 Nonlinear Preconditioning
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The mathematical framework of nonlinear preconditioning is explained in detail in :cite:`BruneKnepleySmithTu15`.
 Nonlinear preconditioning in PETSc involves the use of an inner ``SNES``
 instance to define the step for an outer ``SNES`` instance. The inner
 instance may be extracted using
