@@ -39,6 +39,15 @@ class Configure(config.package.GNUPackage):
       args.append(self.argDB['download-cmake-configure-options'])
     return args
 
+  def Install(self):
+    save_path = os.environ['PATH']
+    make_loc = os.path.dirname(self.make.make)
+    self.log.write('CMAKE build - adding MAKE location to PATH: '+make_loc+'\n')
+    os.environ['PATH'] += ':'+make_loc
+    retdir = config.package.GNUPackage.Install(self)
+    os.environ['PATH'] = save_path
+    return retdir
+
   def locateCMake(self):
     if 'with-cmake-exec' in self.argDB:
       self.log.write('Looking for specified CMake executable '+self.argDB['with-cmake-exec']+'\n')
