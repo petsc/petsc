@@ -2770,14 +2770,14 @@ static PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorner
   This takes as input the common mesh generator output, a list of the vertices for each cell, but vertex numbers are global and an SF is built for them
 */
 /* TODO: invertCells and spaceDim arguments could be added also to to DMPlexCreateFromCellListParallelPetsc(), DMPlexBuildFromCellList_Internal() and DMPlexCreateFromCellListPetsc() */
-PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscBool invertCells, PetscSF *sfVert)
+PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscBool invertCells, PetscSF *sfVert)
 {
   PetscSF         sfPoint;
   PetscLayout     vLayout;
   PetscHSetI      vhash;
   PetscSFNode    *remoteVerticesAdj, *vertexLocal, *vertexOwner, *remoteVertex;
   const PetscInt *vrange;
-  PetscInt        numVerticesAdj, off = 0, *verticesAdj, numVerticesGhost = 0, *localVertex, *cone, c, p, v, g;
+  PetscInt        numVerticesAdj, off = 0, *verticesAdj, numVerticesGhost = 0, *localVertex, *cone, c, p, v, g, dim;
   PetscMPIInt     rank, size;
   PetscErrorCode  ierr;
 
@@ -2785,6 +2785,7 @@ PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDi
   ierr = PetscLogEventBegin(DMPLEX_CreateFromCellList,dm,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Partition vertices */
   ierr = PetscLayoutCreate(PetscObjectComm((PetscObject) dm), &vLayout);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(vLayout, numVertices);CHKERRQ(ierr);
@@ -2828,7 +2829,7 @@ PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDi
       if (lv < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not find global vertex %D in local connectivity", gv);
       cone[p] = lv+numCells;
     }
-    if (invertCells) { ierr = DMPlexInvertCell_Internal(spaceDim, numCorners, cone);CHKERRQ(ierr); }
+    if (invertCells) {ierr = DMPlexInvertCell_Internal(dim, numCorners, cone);CHKERRQ(ierr);}
     ierr = DMPlexSetCone(dm, c, cone);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
@@ -2991,7 +2992,7 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   PetscValidLogicalCollectiveInt(*dm, dim, 2);
   PetscValidLogicalCollectiveInt(*dm, spaceDim, 8);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexBuildFromCellList_Parallel_Internal(*dm, spaceDim, numCells, numVertices, numCorners, cells, PETSC_FALSE, &sfVert);CHKERRQ(ierr);
+  ierr = DMPlexBuildFromCellList_Parallel_Internal(*dm, numCells, numVertices, numCorners, cells, PETSC_FALSE, &sfVert);CHKERRQ(ierr);
   if (interpolate) {
     DM idm;
 
@@ -3039,13 +3040,14 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell
 */
-PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscBool invertCells)
+PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscBool invertCells)
 {
-  PetscInt      *cone, c, p;
+  PetscInt      *cone, c, p, dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_CreateFromCellList,dm,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(dm, 0, numCells+numVertices);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {
     ierr = DMPlexSetConeSize(dm, c, numCorners);CHKERRQ(ierr);
@@ -3056,7 +3058,7 @@ PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt spaceDim, PetscI
     for (p = 0; p < numCorners; ++p) {
       cone[p] = cells[c*numCorners+p]+numCells;
     }
-    if (invertCells) { ierr = DMPlexInvertCell_Internal(spaceDim, numCorners, cone);CHKERRQ(ierr); }
+    if (invertCells) {ierr = DMPlexInvertCell_Internal(dim, numCorners, cone);CHKERRQ(ierr); }
     ierr = DMPlexSetCone(dm, c, cone);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
@@ -3165,7 +3167,7 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexBuildFromCellList_Internal(*dm, spaceDim, numCells, numVertices, numCorners, cells, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMPlexBuildFromCellList_Internal(*dm, numCells, numVertices, numCorners, cells, PETSC_FALSE);CHKERRQ(ierr);
   if (interpolate) {
     DM idm;
 
