@@ -77,8 +77,8 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMCreateMat",            DM_CLASSID,&DM_CreateMatrix);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMLoad",                 DM_CLASSID,&DM_Load);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("DMPlexCrFrCeLi",         DM_CLASSID,&DMPLEX_CreateFromCellList);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexCrFrCeLiCo",       DM_CLASSID,&DMPLEX_CreateFromCellList_Coordinates);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexBuFrCeLi",         DM_CLASSID,&DMPLEX_BuildFromCellList);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexBuCoFrCeLi",       DM_CLASSID,&DMPLEX_BuildCoordinatesFromCellList);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexCreateGmsh",       DM_CLASSID,&DMPLEX_CreateGmsh);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexCrFromFile",       DM_CLASSID,&DMPLEX_CreateFromFile);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("Mesh Partition",         DM_CLASSID,&DMPLEX_Partition);CHKERRQ(ierr);
