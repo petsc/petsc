@@ -638,7 +638,7 @@ class Package(config.base.Configure):
   def matchExcludeDir(self,dir):
     '''Check is the dir matches something in the excluded directory list'''
     for exdir in self.excludedDirs:
-      if dir.startswith(exdir):
+      if dir.lower().startswith(exdir.lower()):
         return 1
     return 0
 
@@ -718,7 +718,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       Dir.append(hgpkg)
     for d in pkgdirs:
       for j in self.downloaddirnames:
-        if d.startswith(j) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+        if d.lower().startswith(j.lower()) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
           Dir.append(d)
 
     if len(Dir) > 1:
