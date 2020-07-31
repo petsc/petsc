@@ -398,6 +398,28 @@ docsetdate: chk_petscdir
           -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
         echo "Done fixing version number, date, canonical URL info"
 
+# Build the Sphinx HTML documentation.  This uses Python's venv, which should
+# behave similarly to what happens on e.g. ReadTheDocs. You may prefer to use
+# your own Python environment and directly build the Sphinx docs by using
+# the makefile in ${PETSC_SPHINX_ROOT}, paying attention to the requirements.txt
+# there.
+PETSC_SPHINX_ROOT=src/docs/sphinx_docs
+PETSC_SPHINX_ENV=sphinx_docs_env
+
+sphinx-docs-html:
+	@${PYTHON} -c 'import sys; sys.exit(sys.version_info[:2] < (3,3))' || \
+    (printf 'Working Python 3.3 or later is required to build the Sphinx docs in a virtual environment\nTry e.g.\n  make sphinx-docs-html PYTHON=python3\n' && false)
+	@if [ ! -d  "${PETSC_SPHINX_ENV}" ]; then \
+        ${PYTHON} -m venv ${PETSC_SPHINX_ENV}; \
+        . ${PETSC_SPHINX_ENV}/bin/activate; \
+        pip install -r src/docs/sphinx_docs/requirements.txt; \
+      fi
+	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} html
+
+sphinx-docs-clean:
+	${OMAKE} -C ${PETSC_SPHINX_ROOT} clean
+	${RM} -rf ${PETSC_SPHINX_ENV}
+
 alldocclean: deletemanualpages allcleanhtml
 
 # Deletes man pages (HTML version)
