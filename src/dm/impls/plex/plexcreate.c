@@ -1086,7 +1086,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
 . lower       - The lower left corner, or NULL for (0, 0, 0)
 . upper       - The upper right corner, or NULL for (1, 1, 1)
 . periodicity - The boundary type for the X,Y,Z direction, or NULL for DM_BOUNDARY_NONE
-. ordExt      - If PETSC_TRUE, orders the extruded cells in the height first. Otherwise, orders the cell on the layers first
+. orderHeight - If PETSC_TRUE, orders the extruded cells in the height first. Otherwise, orders the cell on the layers first
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
@@ -1096,7 +1096,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
 
 .seealso: DMPlexCreateHexCylinderMesh(), DMPlexCreateWedgeCylinderMesh(), DMPlexExtrude(), DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
 @*/
-PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool ordExt, PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool orderHeight, PetscBool interpolate, DM *dm)
 {
   DM             bdm, botdm;
   PetscInt       i;
@@ -1120,7 +1120,7 @@ PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], c
   ierr = DMPlexCreateSquareBoundary(bdm, low, upp, fac);CHKERRQ(ierr);
   ierr = DMPlexGenerate(bdm, NULL, PETSC_FALSE, &botdm);CHKERRQ(ierr);
   ierr = DMDestroy(&bdm);CHKERRQ(ierr);
-  ierr = DMPlexExtrude(botdm, fac[2], upp[2] - low[2], ordExt, interpolate, dm);CHKERRQ(ierr);
+  ierr = DMPlexExtrude(botdm, fac[2], upp[2] - low[2], orderHeight, NULL, interpolate, dm);CHKERRQ(ierr);
   if (low[2] != 0.0) {
     Vec         v;
     PetscScalar *x;
@@ -1139,36 +1139,47 @@ PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], c
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMPlexExtrude - Creates a (d+1)-D mesh by extruding a d-D mesh in the normal direction using prismatic cells.
 
   Collective on idm
 
   Input Parameters:
-+ idm - The mesh to be extruted
-. layers - The number of layers
-. height - The height of the extruded layer
-. ordExt - If PETSC_TRUE, orders the extruded cells in the height first. Otherwise, orders the cell on the layers first
++ idm         - The mesh to be extruded
+. layers      - The number of layers, or PETSC_DETERMINE to use the default
+. height      - The height of the extruded layer, or PETSC_DETERMINE to use the default
+. orderHeight - If PETSC_TRUE, orders the extruded cells in the height first. Otherwise, orders the cell on the layers first
+. extNormal   - The normal direction in which the mesh should be extruded, or NULL to extrude using the surface normal
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
 . dm  - The DM object
 
-  Notes: The mesh created has prismatic cells, and the vertex ordering in the cone of the cell is that of the tensor prismatic cells.
+  Notes:
+  The mesh created has prismatic cells, and the vertex ordering in the cone of the cell is that of the tensor prismatic cells. Not currently supported in Fortran.
+
+  Options Database Keys:
+-dm_plex_extrude_layers <k> - Sets the nubmer of layers k
+-dm_plex_extrude_height <h> - Sets the height h of each layer
+-dm_plex_extrude_order_height - If true, order cells by height first
+-dm_plex_extrude_normal <n0,...,nd> - Sets the normal vector along which to extrude
 
   Level: advanced
 
 .seealso: DMPlexCreateWedgeCylinderMesh(), DMPlexCreateWedgeBoxMesh(), DMSetType(), DMCreate()
 @*/
-PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBool ordExt, PetscBool interpolate, DM* dm)
+PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBool orderHeight, const PetscReal extNormal[], PetscBool interpolate, DM* dm)
 {
   PetscScalar       *coordsB;
   const PetscScalar *coordsA;
   PetscReal         *normals = NULL;
+  PetscReal         clNormal[3];
   Vec               coordinatesA, coordinatesB;
   PetscSection      coordSectionA, coordSectionB;
   PetscInt          dim, cDim, cDimB, c, l, v, coordSize, *newCone;
   PetscInt          cStart, cEnd, vStart, vEnd, cellV, numCells, numVertices;
+  const char       *prefix;
+  PetscBool         haveCLNormal;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -1177,7 +1188,21 @@ PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBoo
   PetscValidLogicalCollectiveReal(idm, height, 3);
   PetscValidLogicalCollectiveBool(idm, interpolate, 4);
   ierr = DMGetDimension(idm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(idm, &cDim);CHKERRQ(ierr);
+  cDimB = cDim == dim ? cDim+1 : cDim;
   if (dim < 1 || dim > 3) SETERRQ1(PetscObjectComm((PetscObject)idm), PETSC_ERR_SUP, "Support for dimension %D not coded", dim);
+
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) idm, &prefix);CHKERRQ(ierr);
+  if (layers < 0) layers = 1;
+  ierr = PetscOptionsGetInt(NULL, prefix, "-dm_plex_extrude_layers", &layers, NULL);CHKERRQ(ierr);
+  if (layers <= 0) SETERRQ1(PetscObjectComm((PetscObject) idm), PETSC_ERR_ARG_OUTOFRANGE, "Number of layers %D must be positive", layers);
+  if (height < 0.) height = 1.;
+  ierr = PetscOptionsGetReal(NULL, prefix, "-dm_plex_extrude_height", &height, NULL);CHKERRQ(ierr);
+  if (height <= 0.) SETERRQ1(PetscObjectComm((PetscObject) idm), PETSC_ERR_ARG_OUTOFRANGE, "Height of layers %g must be positive", (double) height);
+  ierr = PetscOptionsGetBool(NULL, prefix, "-dm_plex_extrude_order_height", &orderHeight, NULL);CHKERRQ(ierr);
+  c = 3;
+  ierr = PetscOptionsGetRealArray(NULL, prefix, "-dm_plex_extrude_normal", clNormal, &c, &haveCLNormal);CHKERRQ(ierr);
+  if (haveCLNormal && c != cDimB) SETERRQ2(PetscObjectComm((PetscObject)idm), PETSC_ERR_ARG_SIZ, "Input normal has size %D != %D extruded coordinate dimension", c, cDimB);
 
   ierr = DMPlexGetHeightStratum(idm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(idm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -1205,7 +1230,7 @@ PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBoo
     for (v = 0; v < closureSize*2; v += 2) if ((closure[v] >= vStart) && (closure[v] < vEnd)) numCorners++;
     ierr = DMPlexRestoreTransitiveClosure(idm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (l = 0; l < layers; ++l) {
-      const PetscInt cell = ordExt ? layers*(c - cStart) + l : l*(cEnd - cStart) + c - cStart;
+      const PetscInt cell = orderHeight ? layers*(c - cStart) + l : l*(cEnd - cStart) + c - cStart;
 
       ierr = DMPlexSetConeSize(*dm, cell, 2*numCorners);CHKERRQ(ierr);
       ierr = DMPlexSetCellType(*dm, cell, nct);CHKERRQ(ierr);
@@ -1214,26 +1239,21 @@ PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBoo
   }
   ierr = DMSetUp(*dm);CHKERRQ(ierr);
 
-  ierr = DMGetCoordinateDim(idm, &cDim);CHKERRQ(ierr);
-  if (dim != cDim) {
-    ierr = PetscCalloc1(cDim*(vEnd - vStart), &normals);CHKERRQ(ierr);
-  }
+  if (dim != cDim && !(extNormal || haveCLNormal)) {ierr = PetscCalloc1(cDim*(vEnd - vStart), &normals);CHKERRQ(ierr);}
   ierr = PetscMalloc1(3*cellV,&newCone);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL;
     PetscInt closureSize, numCorners = 0, l;
     PetscReal normal[3] = {0, 0, 0};
 
-    if (normals) {
-      ierr = DMPlexComputeCellGeometryFVM(idm, c, NULL, NULL, normal);CHKERRQ(ierr);
-    }
+    if (normals) {ierr = DMPlexComputeCellGeometryFVM(idm, c, NULL, NULL, normal);CHKERRQ(ierr);}
     ierr = DMPlexGetTransitiveClosure(idm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (v = 0; v < closureSize*2; v += 2) {
       if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
         PetscInt d;
 
         newCone[numCorners++] = closure[v] - vStart;
-        if (normals) { for (d = 0; d < cDim; ++d) normals[cDim*(closure[v]-vStart)+d] += normal[d]; }
+        if (normals) {for (d = 0; d < cDim; ++d) normals[cDim*(closure[v]-vStart)+d] += normal[d];}
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(idm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -1241,17 +1261,16 @@ PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBoo
       PetscInt i;
 
       for (i = 0; i < numCorners; ++i) {
-        newCone[  numCorners + i] = ordExt ? (layers+1)*newCone[i] + l     + numCells :     l*(vEnd - vStart) + newCone[i] + numCells;
-        newCone[2*numCorners + i] = ordExt ? (layers+1)*newCone[i] + l + 1 + numCells : (l+1)*(vEnd - vStart) + newCone[i] + numCells;
+        newCone[  numCorners + i] = orderHeight ? (layers+1)*newCone[i] + l     + numCells :     l*(vEnd - vStart) + newCone[i] + numCells;
+        newCone[2*numCorners + i] = orderHeight ? (layers+1)*newCone[i] + l + 1 + numCells : (l+1)*(vEnd - vStart) + newCone[i] + numCells;
       }
-      ierr = DMPlexSetCone(*dm, ordExt ? layers*(c - cStart) + l : l*(cEnd - cStart) + c - cStart, newCone + numCorners);CHKERRQ(ierr);
+      ierr = DMPlexSetCone(*dm, orderHeight ? layers*(c - cStart) + l : l*(cEnd - cStart) + c - cStart, newCone + numCorners);CHKERRQ(ierr);
     }
   }
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   ierr = PetscFree(newCone);CHKERRQ(ierr);
 
-  cDimB = cDim == dim ? cDim+1 : cDim;
   ierr = DMGetCoordinateSection(*dm, &coordSectionB);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSectionB, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSectionB, 0, cDimB);CHKERRQ(ierr);
@@ -1276,21 +1295,25 @@ PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBoo
   for (v = vStart; v < vEnd; ++v) {
     const PetscScalar *cptr;
     PetscReal         ones2[2] = { 0., 1.}, ones3[3] = { 0., 0., 1.};
-    PetscReal         *normal, norm, h = height/layers;
+    PetscReal         normal[3];
+    PetscReal         norm, h = height/layers;
     PetscInt          offA, d, cDimA = cDim;
 
-    normal = normals ? normals + cDimB*(v - vStart) : (cDim > 1 ? ones3 : ones2);
-    if (normals) {
-      for (d = 0, norm = 0.0; d < cDimB; ++d) norm += normal[d]*normal[d];
-      for (d = 0; d < cDimB; ++d) normal[d] *= 1./PetscSqrtReal(norm);
-    }
+    if (normals)           {for (d = 0; d < cDimB; ++d) normal[d] = normals[cDimB*(v - vStart)+d];}
+    else if (haveCLNormal) {for (d = 0; d < cDimB; ++d) normal[d] = clNormal[d];}
+    else if (extNormal)    {for (d = 0; d < cDimB; ++d) normal[d] = extNormal[d];}
+    else if (cDimB == 2)   {for (d = 0; d < cDimB; ++d) normal[d] = ones2[d];}
+    else if (cDimB == 3)   {for (d = 0; d < cDimB; ++d) normal[d] = ones3[d];}
+    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to determine normal for extrusion");
+    for (d = 0, norm = 0.0; d < cDimB; ++d) norm += normal[d]*normal[d];
+    for (d = 0; d < cDimB; ++d) normal[d] *= 1./PetscSqrtReal(norm);
 
     ierr = PetscSectionGetOffset(coordSectionA, v, &offA);CHKERRQ(ierr);
     cptr = coordsA + offA;
     for (l = 0; l < layers+1; ++l) {
       PetscInt offB, d, newV;
 
-      newV = ordExt ? (layers+1)*(v -vStart) + l + numCells : (vEnd -vStart)*l + (v -vStart) + numCells;
+      newV = orderHeight ? (layers+1)*(v -vStart) + l + numCells : (vEnd -vStart)*l + (v -vStart) + numCells;
       ierr = PetscSectionGetOffset(coordSectionB, newV, &offB);CHKERRQ(ierr);
       for (d = 0; d < cDimA; ++d) { coordsB[offB+d]  = cptr[d]; }
       for (d = 0; d < cDimB; ++d) { coordsB[offB+d] += l ? normal[d]*h : 0.0; }

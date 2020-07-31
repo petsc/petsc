@@ -150,7 +150,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateBallMesh(MPI_Comm, PetscInt, PetscReal, 
 PETSC_EXTERN PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm, PetscInt, DMBoundaryType, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm, PetscInt, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool, PetscBool, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexExtrude(DM, PetscInt, PetscReal, PetscBool, PetscBool, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexExtrude(DM, PetscInt, PetscReal, PetscBool, const PetscReal[], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateConeSection(DM, PetscSection *);
 
 PETSC_EXTERN PetscErrorCode DMPlexCheckSymmetry(DM);

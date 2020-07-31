@@ -175,7 +175,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM edm;
 
     ierr = DMPlexCreateFromFile(comm, extfilename, interpolate, &edm);CHKERRQ(ierr);
-    ierr = DMPlexExtrude(edm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexExtrude(edm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, NULL, interpolate, dm);CHKERRQ(ierr);
     ierr = DMDestroy(&edm);CHKERRQ(ierr);
   } else {
     switch (user->domainShape) {
@@ -208,7 +208,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (!extlen && user->extrude_layers > 0) {
     DM edm;
 
-    ierr = DMPlexExtrude(*dm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, interpolate, &edm);CHKERRQ(ierr);
+    ierr = DMPlexExtrude(*dm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, NULL, interpolate, &edm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = edm;
   }
