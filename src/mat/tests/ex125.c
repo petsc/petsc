@@ -371,7 +371,7 @@ int main(int argc,char **args)
    test:
       suffix: superlu_dist
       nsize: {{1 3}}
-      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES) superlu_dist
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) superlu_dist
       args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1 -mat_superlu_dist_rowperm NOROWPERM
 
    test:
@@ -384,7 +384,7 @@ int main(int argc,char **args)
    test:
       suffix: superlu_dist_complex
       nsize: 3
-      requires: datafilespath superlu_dist complex double !defined(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double superlu_dist complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_type 1
       output_file: output/ex125_superlu_dist_complex.out
 

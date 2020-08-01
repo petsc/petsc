@@ -10,6 +10,10 @@ configure_options = [
   '--with-debugging=0',
   '--download-mpich',
   '--download-mpich-device=ch3:sock',
+  '--download-superlu_dist',
+  '--download-metis',
+  '--download-parmetis',
+  '--download-cmake'  # needed by metis/parmetis
   ]
 
 if __name__ == '__main__':

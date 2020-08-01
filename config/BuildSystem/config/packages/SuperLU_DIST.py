@@ -17,7 +17,7 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows= 1
     self.hastests         = 1
     self.hastestsdatafiles= 1
-    self.precisions       = ['double']
+    self.precisions       = ['double','single']
     self.buildLanguages   = ['Cxx']
     self.minCmakeVersion  = (3,18,1)
     return
