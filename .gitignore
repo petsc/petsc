@@ -192,3 +192,4 @@ src/docs/tao_tex/manual/*.dvi
 **/f90module*.f90
 compile_commands.json
 .clangd/
+sphinx_docs_env
