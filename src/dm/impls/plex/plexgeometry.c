@@ -3124,6 +3124,7 @@ PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time,
   ierr = DMProjectFieldLocal(cdm, time, tmpCoords, &func, INSERT_VALUES, lCoords);CHKERRQ(ierr);
   cdm->coordinateField = NULL;
   ierr = DMRestoreLocalVector(cdm, &tmpCoords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm, lCoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3176,7 +3177,7 @@ PetscErrorCode DMPlexShearGeometry(DM dm, DMDirection direction, PetscReal multi
   ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
   ierr = PetscMalloc1(dE+1, &moduli);CHKERRQ(ierr);
   moduli[0] = dir;
-  for (d = 0, e = 0; d < dE; ++d) moduli[d] = d == dir ? 0.0 : (multipliers ? multipliers[e++] : 1.0);
+  for (d = 0, e = 0; d < dE; ++d) moduli[d+1] = d == dir ? 0.0 : (multipliers ? multipliers[e++] : 1.0);
   ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
   ierr = PetscDSGetDiscretization(cds, 0, &obj);CHKERRQ(ierr);
   ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
