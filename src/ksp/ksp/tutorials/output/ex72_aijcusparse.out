@@ -32,7 +32,6 @@ PC Object: 1 MPI processes
           rows=181, cols=181
           package used to perform factorization: cusparse
           total: nonzeros=2245, allocated nonzeros=2245
-          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
   linear system matrix = precond matrix:
   Mat Object: 1 MPI processes

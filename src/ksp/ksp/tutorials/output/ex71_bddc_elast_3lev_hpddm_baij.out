@@ -72,7 +72,6 @@ PC Object: 8 MPI processes
               rows=144, cols=144, bs=3
               package used to perform factorization: petsc
               total: nonzeros=9774, allocated nonzeros=9774
-              total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 45 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
@@ -98,7 +97,6 @@ PC Object: 8 MPI processes
               rows=279, cols=279, bs=3
               package used to perform factorization: petsc
               total: nonzeros=30915, allocated nonzeros=30915
-              total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 85 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: (pc_bddc_neumann_) 1 MPI processes
@@ -173,7 +171,6 @@ PC Object: 8 MPI processes
                     rows=20, cols=20
                     package used to perform factorization: petsc
                     total: nonzeros=210, allocated nonzeros=210
-                    total number of mallocs used during MatSetValues calls=0
                         block size is 1
             linear system matrix = precond matrix:
             Mat Object:   1 MPI processes
@@ -198,7 +195,6 @@ PC Object: 8 MPI processes
                     rows=48, cols=48, bs=6
                     package used to perform factorization: petsc
                     total: nonzeros=2304, allocated nonzeros=2304
-                    total number of mallocs used during MatSetValues calls=0
                         block size is 6
             linear system matrix = precond matrix:
             Mat Object:   (pc_bddc_coarse_pc_hpddm_coarse_)   1 MPI processes

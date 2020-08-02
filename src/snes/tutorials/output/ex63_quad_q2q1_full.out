@@ -116,7 +116,6 @@ SNES Object: 1 MPI processes
                           rows=1058, cols=1058, bs=2
                           package used to perform factorization: petsc
                           total: nonzeros=70540, allocated nonzeros=70540
-                          total number of mallocs used during MatSetValues calls=0
                             using I-node routines: found 529 nodes, limit used is 5
                   linear system matrix = precond matrix:
                   Mat Object: (fieldsplit_velocity_) 1 MPI processes

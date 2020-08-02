@@ -90,7 +90,6 @@ PC Object: 8 MPI processes
                 rows=135, cols=135
                 package used to perform factorization: petsc
                 total: nonzeros=8217, allocated nonzeros=8217
-                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 45 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
@@ -209,7 +208,6 @@ PC Object: 8 MPI processes
                 rows=135, cols=135
                 package used to perform factorization: petsc
                 total: nonzeros=8217, allocated nonzeros=8217
-                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 45 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
@@ -328,7 +326,6 @@ PC Object: 8 MPI processes
                 rows=135, cols=135
                 package used to perform factorization: petsc
                 total: nonzeros=8217, allocated nonzeros=8217
-                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 45 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes

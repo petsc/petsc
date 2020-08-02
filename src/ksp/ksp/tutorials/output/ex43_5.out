@@ -78,7 +78,6 @@ PC Object: (stokes_) 4 MPI processes
                 rows=242, cols=242, bs=2
                 package used to perform factorization: petsc
                 total: nonzeros=3844, allocated nonzeros=3844
-                total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 121 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: (stokes_fieldsplit_0_) 1 MPI processes
@@ -124,7 +123,6 @@ PC Object: (stokes_) 4 MPI processes
                 rows=121, cols=121
                 package used to perform factorization: petsc
                 total: nonzeros=961, allocated nonzeros=961
-                total number of mallocs used during MatSetValues calls=0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: (stokes_fieldsplit_1_) 1 MPI processes

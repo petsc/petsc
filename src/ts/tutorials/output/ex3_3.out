@@ -65,7 +65,6 @@ TS Object: 1 MPI processes
               rows=60, cols=60
               package used to perform factorization: petsc
               total: nonzeros=176, allocated nonzeros=176
-              total number of mallocs used during MatSetValues calls=0
                 not using I-node routines
       linear system matrix followed by preconditioner matrix:
       Mat Object: 1 MPI processes

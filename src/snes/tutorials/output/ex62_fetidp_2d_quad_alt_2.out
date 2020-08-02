@@ -78,7 +78,6 @@ SNES Object: 5 MPI processes
                                   rows=242, cols=242
                                   package used to perform factorization: mumps
                                   total: nonzeros=10386, allocated nonzeros=10386
-                                  total number of mallocs used during MatSetValues calls=0
                                     MUMPS run parameters:
                                       SYM (matrix type):                   0 
                                       PAR (host participation):            1 
@@ -258,7 +257,6 @@ SNES Object: 5 MPI processes
                                           rows=242, cols=242
                                           package used to perform factorization: mumps
                                           total: nonzeros=10386, allocated nonzeros=10386
-                                          total number of mallocs used during MatSetValues calls=0
                                             MUMPS run parameters:
                                               SYM (matrix type):                   0 
                                               PAR (host participation):            1 
@@ -451,7 +449,6 @@ SNES Object: 5 MPI processes
                     rows=242, cols=242
                     package used to perform factorization: mumps
                     total: nonzeros=10386, allocated nonzeros=10386
-                    total number of mallocs used during MatSetValues calls=0
                       MUMPS run parameters:
                         SYM (matrix type):                   0 
                         PAR (host participation):            1 
@@ -568,7 +565,6 @@ SNES Object: 5 MPI processes
                     rows=297, cols=297
                     package used to perform factorization: mumps
                     total: nonzeros=14041, allocated nonzeros=14041
-                    total number of mallocs used during MatSetValues calls=0
                       MUMPS run parameters:
                         SYM (matrix type):                   0 
                         PAR (host participation):            1 
@@ -701,7 +697,6 @@ SNES Object: 5 MPI processes
                                 rows=8, cols=8
                                 package used to perform factorization: petsc
                                 total: nonzeros=64, allocated nonzeros=64
-                                total number of mallocs used during MatSetValues calls=0
                                   using I-node routines: found 2 nodes, limit used is 5
                         linear system matrix = precond matrix:
                         Mat Object:         1 MPI processes

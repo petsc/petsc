@@ -49,7 +49,6 @@ Tao Object: 2 MPI processes
               rows=50, cols=50
               package used to perform factorization: petsc
               total: nonzeros=364, allocated nonzeros=364
-              total number of mallocs used during MatSetValues calls=0
                 not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
