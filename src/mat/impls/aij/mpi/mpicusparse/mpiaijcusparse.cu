@@ -249,6 +249,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!PetscCUDAInitialized) {ierr = PetscCUDAInitializeLazily();CHKERRQ(ierr);}
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
   ierr = MatConvert_MPIAIJ_MPIAIJCUSPARSE(A,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

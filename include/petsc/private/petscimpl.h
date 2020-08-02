@@ -939,4 +939,11 @@ PETSC_EXTERN PetscBool     use_gpu_aware_mpi;
 PETSC_EXTERN int64_t Petsc_adios_group;
 #endif
 
+#if defined(PETSC_HAVE_CUDA)
+/* Has petsc initialized CUDA? One can use this flag to guard some CUDA calls, which may initialize CUDA runtime and incur a cost. */
+PETSC_EXTERN PetscBool      PetscCUDAInitialized;
+/* Initialize the CUDA device lazily just before creating the first CUDA object. */
+PETSC_EXTERN PetscErrorCode PetscCUDAInitializeLazily(void);
+#endif
+
 #endif /* PETSCIMPL_H */

@@ -194,6 +194,7 @@ PetscErrorCode VecCreate_MPICUDA(Vec vv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!PetscCUDAInitialized) {ierr = PetscCUDAInitializeLazily();CHKERRQ(ierr);}
   ierr = PetscLayoutSetUp(vv->map);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(vv);CHKERRQ(ierr);
   ierr = VecCreate_MPICUDA_Private(vv,PETSC_FALSE,0,((Vec_CUDA*)vv->spptr)->GPUarray_allocated);CHKERRQ(ierr);
@@ -258,6 +259,7 @@ PetscErrorCode  VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,P
 
   PetscFunctionBegin;
   if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
+  if (!PetscCUDAInitialized) {ierr = PetscCUDAInitializeLazily();CHKERRQ(ierr);}
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
@@ -385,6 +387,5 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
     veccuda = (Vec_CUDA*)vv->spptr;
     veccuda->GPUarray = (PetscScalar*)array;
   }
-
   PetscFunctionReturn(0);
 }

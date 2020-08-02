@@ -10,6 +10,7 @@
 #if defined(PETSC_HAVE_CUDA)
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <petsc/private/petscimpl.h> /* for PetscCUDAInitialized */
 #endif
 
 #define MPI_SUCCESS 0
@@ -63,25 +64,32 @@ int MPIUNI_Memcpy(void *dst,const void *src,int n)
   if (!n) return MPI_SUCCESS;
 
 #if defined(PETSC_HAVE_CUDA) /* CUDA-aware MPIUNI */
-  {
-    cudaError_t         cudaerr;
-    CUresult            cuerr;
-    CUmemorytype        mtype;
-    int                 dstType=0,srcType=0; /* 0: host memory; 1: device memory */
-    enum cudaMemcpyKind kinds[2][2] = {{cudaMemcpyHostToHost,cudaMemcpyHostToDevice},{cudaMemcpyDeviceToHost,cudaMemcpyDeviceToDevice}};
+  if (PetscCUDAInitialized) {
+    int                          dstType=0,srcType=0; /* 0: host memory; 1: device memory */
+    cudaError_t                  dstCerr,srcCerr,cerr;
+    struct cudaPointerAttributes dstAttr,srcAttr;
+    enum cudaMemoryType          dstMtype,srcMtype;
+    enum cudaMemcpyKind          kinds[2][2] = {{cudaMemcpyHostToHost,cudaMemcpyHostToDevice},{cudaMemcpyDeviceToHost,cudaMemcpyDeviceToDevice}};
 
-    /* CUDA driver API cuPointerGetAttribute() is faster than CUDA runtime API cudaPointerGetAttributes() */
-    cuerr = cuPointerGetAttribute(&mtype,CU_POINTER_ATTRIBUTE_MEMORY_TYPE,(CUdeviceptr)dst);
-    if (cuerr == CUDA_SUCCESS && mtype == CU_MEMORYTYPE_DEVICE) dstType = 1;
-    cuerr = cuPointerGetAttribute(&mtype,CU_POINTER_ATTRIBUTE_MEMORY_TYPE,(CUdeviceptr)src);
-    if (cuerr == CUDA_SUCCESS && mtype == CU_MEMORYTYPE_DEVICE) srcType = 1;
-
-    cudaerr = cudaMemcpy(dst,src,n,kinds[srcType][dstType]); /* Use synchronous copy per MPI semantics */
-    if (cudaerr != cudaSuccess) return MPI_FAILURE;
-  }
-#else
-  memcpy(dst,src,n);
+    dstCerr = cudaPointerGetAttributes(&dstAttr,dst); /* Do not check error since before CUDA 11.0, passing a host pointers returns cudaErrorInvalidValue */
+    cudaGetLastError(); /* Get and then clear the last error */
+    srcCerr = cudaPointerGetAttributes(&srcAttr,src);
+    cudaGetLastError();
+    #if (CUDART_VERSION < 10000)
+      dstMtype = dstAttr.memoryType;
+      srcMtype = srcAttr.memoryType;
+    #else
+      dstMtype = dstAttr.type;
+      srcMtype = srcAttr.type;
+    #endif
+    if (dstCerr == cudaSuccess && dstMtype == cudaMemoryTypeDevice) dstType = 1;
+    if (srcCerr == cudaSuccess && srcMtype == cudaMemoryTypeDevice) srcType = 1;
+    cerr = cudaMemcpy(dst,src,n,kinds[srcType][dstType]); /* Use synchronous copy per MPI semantics */
+    if (cerr != cudaSuccess) return MPI_FAILURE;
+  } else
 #endif
+  {memcpy(dst,src,n);}
+
   return MPI_SUCCESS;
 }
 
