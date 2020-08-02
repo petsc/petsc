@@ -117,8 +117,8 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     } else coordinates_arr_real = (PetscReal*)coordinates_arr;
 
     ierr = DMSetDimension(dm, spatialDim);CHKERRQ(ierr);
-    ierr = DMPlexBuildFromCellList_Parallel_Internal(dm, spatialDim, numCells, numVertices, numCorners, cells_arr, PETSC_TRUE, &sfVert);CHKERRQ(ierr);
-    ierr = DMPlexBuildCoordinates_Parallel_Internal( dm, spatialDim, numCells, numVertices, sfVert, coordinates_arr_real);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellListParallel(dm, numCells, numVertices, numCorners, cells_arr, PETSC_TRUE, &sfVert);CHKERRQ(ierr);
+    ierr = DMPlexBuildCoordinatesFromCellListParallel( dm, spatialDim, numCells, sfVert, coordinates_arr_real);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISRestoreIndices(cells, &cells_arr);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);

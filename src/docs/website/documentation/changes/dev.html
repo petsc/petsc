@@ -192,7 +192,8 @@
         </ul>
       <h4>DMPlex:</h4>
         <ul>
-          <li>Deprecate DMPlexCreateFromCellList[Parallel]() in favor of DMPlexCreateFromCellList[Parallel]Petsc() which accepts PETSc datatypes</li>
+          <li>Deprecate DMPlexCreateFromCellList[Parallel]() in favor of DMPlexCreateFromCellList[Parallel]Petsc() which accept PETSc datatypes (PetscInt, PetscReal)</li>
+          <li>Expose DMPlexBuildFromCellList(), DMPlexBuildFromCellListParallel(), DMPlexBuildCoordinatesFromCellList(), DMPlexBuildCoordinatesFromCellListParallel(). They now accept PETSc datatypes.</li>
           <li>Add DMPlexMatSetClosureGeneral() for different row and column layouts</li>
           <li>DMPlexGet/RestoreClosureIndices() now take argument for ignoring the closure permutation and for modifying the input values for SetClosure()</li>
           <li>DMPlexComputeInterpolatorNested() now takes a flag allowing nested interpolation between different spaces on the same mesh</li>
