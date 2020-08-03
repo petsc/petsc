@@ -201,8 +201,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       numCorners=2,spacedim=2,dim = 1; /* One dimensional network */
-  PetscReal      *vertexcoords=NULL;
+  PetscInt       numCorners=2,dim = 1; /* One dimensional network */
   PetscInt       i,j,ctr,nsubnet,*eowners,np,*edges,*subnetvtx,vStart;
   PetscInt       k,netid,vid, *vidxlTog,*edgelist_couple=NULL;
   const PetscInt *cone;
@@ -215,7 +214,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* Create the local edgelist for the network by concatenating local input edgelists of the subnetworks */
-  ierr = PetscCalloc2(numCorners*network->nVertices,&vertexcoords,2*network->nEdges,&edges);CHKERRQ(ierr);
+  ierr = PetscCalloc1(2*network->nEdges,&edges);CHKERRQ(ierr);
   nsubnet = network->nsubnet - network->ncsubnet;
   ctr = 0;
   for (i=0; i < nsubnet; i++) {
@@ -254,10 +253,13 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
    */
 
   /* Create network->plex */
+  ierr = DMCreate(comm,&network->plex);CHKERRQ(ierr);
+  ierr = DMSetType(network->plex,DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetDimension(network->plex,dim);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = DMPlexCreateFromCellListPetsc(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,edges,spacedim,vertexcoords,&network->plex);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellList(network->plex,network->nEdges,network->nVertices,numCorners,edges,PETSC_FALSE);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexCreateFromCellListParallelPetsc(comm,dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,edges,spacedim,vertexcoords,NULL,&network->plex);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellListParallel(network->plex,network->nEdges,network->nVertices,numCorners,edges,PETSC_FALSE,NULL);CHKERRQ(ierr);
   }
 
   ierr = DMPlexGetChart(network->plex,&network->pStart,&network->pEnd);CHKERRQ(ierr);
@@ -284,7 +286,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     vidxlTog[cone[1] - vStart] = edges[2*ctr+1];
     ctr++;
   }
-  ierr = PetscFree2(vertexcoords,edges);CHKERRQ(ierr);
+  ierr = PetscFree(edges);CHKERRQ(ierr);
 
   /* Create vertices and edges array for the subnetworks */
   for (j=0; j < network->nsubnet; j++) {
