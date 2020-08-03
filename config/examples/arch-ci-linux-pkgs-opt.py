@@ -42,7 +42,8 @@ configure_options = [
   '--download-libpng=1',
   '--download-libjpeg=1',
   '--download-slepc=1',
-  '--download-hpddm=1'
+  '--download-hpddm=1',
+  '--download-bamg=1',
   ]
 
 if __name__ == '__main__':
