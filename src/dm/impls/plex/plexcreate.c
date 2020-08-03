@@ -2830,7 +2830,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   PetscHSetI      vhash;
   PetscSFNode    *remoteVerticesAdj, *vertexLocal, *vertexOwner, *remoteVertex;
   const PetscInt *vrange;
-  PetscInt        numVerticesAdj, off = 0, *verticesAdj, numVerticesGhost = 0, *localVertex, *cone, c, p, v, g, dim;
+  PetscInt        numVerticesAdj, off = 0, *verticesAdj, numVerticesGhost = 0, *localVertex, *cones, c, p, v, g, dim;
   PetscMPIInt     rank, size;
   PetscErrorCode  ierr;
 
@@ -2872,7 +2872,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   ierr = DMPlexSetChart(dm, 0, numCells+numVerticesAdj);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {ierr = DMPlexSetConeSize(dm, c, numCorners);CHKERRQ(ierr);}
   ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
+  ierr = DMPlexGetCones(dm,&cones);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {
     for (p = 0; p < numCorners; ++p) {
       const PetscInt gv = cells[c*numCorners+p];
@@ -2880,12 +2880,10 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
 
       ierr = PetscFindInt(gv, numVerticesAdj, verticesAdj, &lv);CHKERRQ(ierr);
       if (lv < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not find global vertex %D in local connectivity", gv);
-      cone[p] = lv+numCells;
+      cones[c*numCorners+p] = lv+numCells;
     }
-    if (invertCells) {ierr = DMPlexInvertCell_Internal(dim, numCorners, cone);CHKERRQ(ierr);}
-    ierr = DMPlexSetCone(dm, c, cone);CHKERRQ(ierr);
+    if (invertCells) {ierr = DMPlexInvertCell_Internal(dim, numCorners, &cones[c*numCorners]);CHKERRQ(ierr);}
   }
-  ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
   /* Create SF for vertices */
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), &sfVert);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) sfVert, "Vertex Ownership SF");CHKERRQ(ierr);
@@ -3131,7 +3129,7 @@ $        3
 @*/
 PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscBool invertCells)
 {
-  PetscInt      *cone, c, p, dim;
+  PetscInt      *cones, c, p, dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3142,15 +3140,13 @@ PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVer
     ierr = DMPlexSetConeSize(dm, c, numCorners);CHKERRQ(ierr);
   }
   ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
+  ierr = DMPlexGetCones(dm,&cones);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {
     for (p = 0; p < numCorners; ++p) {
-      cone[p] = cells[c*numCorners+p]+numCells;
+      cones[c*numCorners+p] = cells[c*numCorners+p]+numCells;
     }
-    if (invertCells) {ierr = DMPlexInvertCell_Internal(dim, numCorners, cone);CHKERRQ(ierr); }
-    ierr = DMPlexSetCone(dm, c, cone);CHKERRQ(ierr);
+    if (invertCells) {ierr = DMPlexInvertCell_Internal(dim, numCorners, &cones[c*numCorners]);CHKERRQ(ierr);}
   }
-  ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_BuildFromCellList,dm,0,0,0);CHKERRQ(ierr);
