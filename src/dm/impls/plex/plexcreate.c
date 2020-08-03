@@ -2779,7 +2779,7 @@ static PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorner
 - invertCells - Flag indicating that cells should be inverted (e.g. XDMF format)
 
   Output Parameter:
-. sfVert - SF describing complete vertex ownership
+. vertexSF - (Optional) SF describing complete vertex ownership
 
   Notes:
   Two triangles sharing a face
@@ -2817,9 +2817,9 @@ $        3
 
 .seealso: DMPlexBuildFromCellList(), DMPlexCreateFromCellListParallelPetsc(), DMPlexBuildCoordinatesFromCellListParallel()
 @*/
-PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscBool invertCells, PetscSF *sfVert)
+PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscBool invertCells, PetscSF *vertexSF)
 {
-  PetscSF         sfPoint;
+  PetscSF         sfPoint, sfVert;
   PetscLayout     vLayout;
   PetscHSetI      vhash;
   PetscSFNode    *remoteVerticesAdj, *vertexLocal, *vertexOwner, *remoteVertex;
@@ -2881,20 +2881,20 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   }
   ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
   /* Create SF for vertices */
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfVert);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *sfVert, "Vertex Ownership SF");CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(*sfVert);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sfVert, numVertices, numVerticesAdj, NULL, PETSC_OWN_POINTER, remoteVerticesAdj, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), &sfVert);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) sfVert, "Vertex Ownership SF");CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfVert);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sfVert, numVertices, numVerticesAdj, NULL, PETSC_OWN_POINTER, remoteVerticesAdj, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree(verticesAdj);CHKERRQ(ierr);
   /* Build pointSF */
   ierr = PetscMalloc2(numVerticesAdj, &vertexLocal, numVertices, &vertexOwner);CHKERRQ(ierr);
   for (v = 0; v < numVerticesAdj; ++v) {vertexLocal[v].index = v+numCells; vertexLocal[v].rank = rank;}
   for (v = 0; v < numVertices;    ++v) {vertexOwner[v].index = -1;         vertexOwner[v].rank = -1;}
-  ierr = PetscSFReduceBegin(*sfVert, MPIU_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(*sfVert, MPIU_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sfVert, MPIU_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sfVert, MPIU_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
   for (v = 0; v < numVertices;    ++v) if (vertexOwner[v].rank < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global vertex %d on rank %d was unclaimed", v + vrange[rank], rank);
-  ierr = PetscSFBcastBegin(*sfVert, MPIU_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(*sfVert, MPIU_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfVert, MPIU_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfVert, MPIU_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
   for (v = 0; v < numVerticesAdj; ++v) if (vertexLocal[v].rank != rank) ++numVerticesGhost;
   ierr = PetscMalloc1(numVerticesGhost, &localVertex);CHKERRQ(ierr);
   ierr = PetscMalloc1(numVerticesGhost, &remoteVertex);CHKERRQ(ierr);
@@ -2916,6 +2916,8 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_BuildFromCellList,dm,0,0,0);CHKERRQ(ierr);
+  if (vertexSF) *vertexSF = sfVert;
+  else {ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
