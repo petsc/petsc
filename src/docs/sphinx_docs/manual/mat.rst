@@ -837,10 +837,12 @@ Section `5.3 <#sec_viewers>`__.
 The ``NormType`` argument to ``MatNorm()`` is one of ``NORM_1``,
 ``NORM_INFINITY``, and ``NORM_FROBENIUS``.
 
+.. _sec_matrixfree:
+
 Matrix-Free Matrices
 ~~~~~~~~~~~~~~~~~~~~
 
-[sec_matrixfree] Some people like to use matrix-free methods, which do
+Some people like to use matrix-free methods, which do
 not require explicit storage of the matrix, for the numerical solution
 of partial differential equations. To support matrix-free methods in
 PETSc, one can use the following command to create a ``Mat`` structure
