@@ -1,0 +1,9 @@
+L_2 Error: [0.108536, 2.46979, 0.]
+L_2 Residual: 2.33554
+Function appears to be linear
+0 TS dt 0.1 time 0. max 18.8496 min -20.8496
+1 TS dt 0.1 time 0.000175 max 25.4009 min -22.8845
+2 TS dt 0.1 time 0.100175 max 25.3626 min -23.9003
+L_2 Error: [0.108536, 2.46979, 0.0393767]
+L_2 Residual: 2.75366
+Function appears to be linear

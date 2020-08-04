@@ -175,7 +175,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   ierr = PetscDSSetJacobian(ds, 1, 1, g0_pp, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(ds, 0, quad_u, user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(ds, 1, quad_p, user);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) quad_u, 1, &id, user);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) quad_u, NULL, 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

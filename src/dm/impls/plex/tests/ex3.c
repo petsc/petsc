@@ -528,7 +528,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
     ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
     ierr = DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL);CHKERRQ(ierr);
-    ierr = DMPlexCreateRigidBody(dm,&sp);CHKERRQ(ierr);
+    ierr = DMPlexCreateRigidBody(dm,0,&sp);CHKERRQ(ierr);
     ierr = MatNullSpaceGetVecs(sp,&hasConst,&n,&vecs);CHKERRQ(ierr);
     if (n) {ierr = VecDuplicate(vecs[0],&res);CHKERRQ(ierr);}
     ierr = DMCreateLocalVector(dm,&localX);CHKERRQ(ierr);

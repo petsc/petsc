@@ -8,3 +8,4 @@ Simplicial Mesh in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (0 (12), 6 (15), 3 (40), 1 (36))
   depth: 4 strata with value/size (0 (12), 1 (36), 2 (40), 3 (15))
+  marker: 1 strata with value/size (1 (62))

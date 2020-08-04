@@ -409,7 +409,7 @@ static PetscErrorCode SetupProblem(DM dm,UserCtx * user)
     PetscFunctionReturn(-1);
   }
 
-  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral","marker",0,0,NULL,(void (*)(void))NULL,1,&id,user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral","marker",0,0,NULL,(void (*)(void))NULL,NULL,1,&id,user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

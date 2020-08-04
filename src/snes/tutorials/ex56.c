@@ -409,10 +409,10 @@ int main(int argc,char **args)
       /* bcs */
       if (run_type==1) {
         PetscInt id = 1;
-        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)(void)) zero, 1, &id, NULL);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)(void)) zero, NULL, 1, &id, NULL);CHKERRQ(ierr);
       } else {
-        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", "Faces", 0, Ncomp, components, (void (*)(void)) zero, Nfid, fid, NULL);CHKERRQ(ierr);
-        ierr = DMAddBoundary(dm, DM_BC_NATURAL, "traction", "Faces", 0, Ncomp, components, NULL, Npid, pid, NULL);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", "Faces", 0, Ncomp, components, (void (*)(void)) zero, NULL, Nfid, fid, NULL);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_NATURAL, "traction", "Faces", 0, Ncomp, components, NULL, NULL, Npid, pid, NULL);CHKERRQ(ierr);
       }
       while (cdm) {
         ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
@@ -440,7 +440,7 @@ int main(int argc,char **args)
       PetscInt     fields = 0;
       PetscObject  deformation;
       ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
-      ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
+      ierr = DMPlexCreateRigidBody(subdm, 0, &nearNullSpace);CHKERRQ(ierr);
       ierr = DMGetField(dm, 0, NULL, &deformation);CHKERRQ(ierr);
       ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
       ierr = DMDestroy(&subdm);CHKERRQ(ierr);

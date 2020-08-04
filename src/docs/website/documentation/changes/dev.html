@@ -189,6 +189,7 @@
       <h4>DM/DA:</h4>
         <ul>
           <li>Change DMComputeExactSolution() to also compute the time derivative of the exact solution</li>
+          <li>Add time derivative of the solution argument to DMAddBoundary(), DMGetBoundary(), PetscDSAddBoundary(), PetscDSUpdateBoundary(), PetscDSGetBoundary()</li>
         </ul>
       <h4>DMPlex:</h4>
         <ul>
@@ -214,6 +215,8 @@
           <li>Add DMPlexCreateBallMesh()</li>
           <li>Change DMSNESCheckDiscretization() to also take the time</li>
           <li>Add argument to DMPlexExtrude() to allow setting normal and add options for inputs</li>
+          <li>Add DMPlexInsertTimeDerivativeBoundaryValues()</li>
+          <li>Add field number argument to DMPlexCreateRigidBody()</li>
         </ul>
       <h4>DT:</h4>
         <ul>
@@ -229,7 +232,10 @@
           <li>Add PetscPowInt64 returning a 64bit integer result for cases where PetscPowInt result overflows 32bit representations</li>
         </ul>
       <h4>AO:</h4>
-      <h4>Sieve:</h4>
+      <h4>Convest:</h4>
+        <ul>
+          <li>Add argument to PetscConvEstUseTS(), so you can use -ts_convergence_temporal 0 to check spatial convergence of a TS model</li>
+        </ul>
       <h4>Fortran:</h4>
     </div>
 

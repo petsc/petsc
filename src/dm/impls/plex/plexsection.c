@@ -457,7 +457,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
       const char             *labelName;
       DMLabel                 label;
 
-      ierr = PetscDSGetBoundary(dsBC, bd, &type, NULL, &labelName, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(dsBC, bd, &type, NULL, &labelName, &field, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = DMGetLabel(dm, labelName, &label);CHKERRQ(ierr);
       if (label && isFE[field] && (type & DM_BC_ESSENTIAL)) ++numBC;
     }
@@ -493,13 +493,13 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
       DMBoundaryConditionType type;
       PetscBool               duplicate = PETSC_FALSE;
 
-      ierr = PetscDSGetBoundary(dsBC, bd, &type, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(dsBC, bd, &type, NULL, &bdLabel, &field, &numComps, &comps, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
       ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
       if (!isFE[field] || !label) continue;
       /* Only want to modify label once */
       for (bd2 = 0; bd2 < bd; ++bd2) {
         const char *bdname;
-        ierr = PetscDSGetBoundary(dsBC, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+        ierr = PetscDSGetBoundary(dsBC, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
         ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
         if (duplicate) break;
       }
