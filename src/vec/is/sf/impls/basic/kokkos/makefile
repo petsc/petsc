@@ -1,11 +1,12 @@
+#requirespackage 'PETSC_HAVE_KOKKOS'
 ALL: lib
 
 SOURCEH       =
-SOURCEC       = sfbasic.c sfpack.c
-SOURCECU      =
+SOURCEC       =
+SOURCEKOKKOS  = sfkok.kokkos.cxx
 LIBBASE       = libpetscvec
-DIRS          = allgatherv allgather gatherv gather alltoall neighbor cuda kokkos
-LOCDIR        = src/vec/is/sf/impls/basic/
+DIRS          =
+LOCDIR        = src/vec/is/sf/impls/basic/kokkos
 MANSEC        = Vec
 SUBMANSEC     = PetscSF
 
