@@ -214,9 +214,9 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
    */
   bas = (PetscSF_Basic*)sf->data;
   for (i=0; i<bas->ioffset[bas->niranks]; i++) bas->irootloc[i] = tomap[bas->irootloc[i]*bs]/bs;
-#if defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   /* Free the irootloc copy on device. We allocate a new copy and get the updated value on demand. See PetscSFLinkGetRootPackOptAndIndices() */
-  for (i=0; i<2; i++) {if (bas->irootloc_d[i]) {cudaError_t err = cudaFree(bas->irootloc_d[i]);CHKERRCUDA(err);bas->irootloc_d[i]=NULL;}}
+  for (i=0; i<2; i++) {ierr = PetscSFFree(PETSC_MEMTYPE_DEVICE,bas->irootloc_d[i]);CHKERRQ(ierr);}
 #endif
   /* Destroy and then rebuild root packing optimizations since indices are changed */
   ierr = PetscSFResetPackFields(sf);CHKERRQ(ierr);

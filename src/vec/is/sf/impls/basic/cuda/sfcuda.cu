@@ -1,6 +1,8 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <cuda_runtime.h>
+#include <petsccublas.h> /* For CHKERRCUDA */
 
+#if !defined(PETSC_HAVE_KOKKOS)
 /* Map a thread id to an index in root/leaf space through a series of 3D subdomains. See PetscSFPackOpt. */
 __device__ static inline PetscInt MapTidToIndex(const PetscInt *opt,PetscInt tid)
 {
@@ -845,6 +847,56 @@ static void PackInit_DumbType(PetscSFLink link)
   /* Atomics for dumb types are not implemented yet */
 }
 
+/* Some device-specific utilities */
+PetscErrorCode PetscSFLinkSyncDevice(PetscSF sf,PetscSFLink link)
+{
+  cudaError_t cerr;
+  PetscFunctionBegin;
+  cerr = cudaDeviceSynchronize();CHKERRCUDA(cerr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscSFLinkSyncStream(PetscSF sf,PetscSFLink link)
+{
+  cudaError_t cerr;
+  PetscFunctionBegin;
+  cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscSFLinkMemcpy(PetscSF sf,PetscSFLink link,PetscMemType dstmtype,void* dst,PetscMemType srcmtype,const void*src,size_t n)
+{
+  PetscFunctionBegin;
+  enum cudaMemcpyKind kinds[2][2] = {{cudaMemcpyHostToHost,cudaMemcpyHostToDevice},{cudaMemcpyDeviceToHost,cudaMemcpyDeviceToDevice}};
+
+  if (n) {
+    if (dstmtype == PETSC_MEMTYPE_HOST && srcmtype == PETSC_MEMTYPE_HOST) { /* Separate HostToHost so that pure-cpu code won't call cuda runtime */
+      PetscErrorCode ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);
+    } else { /* Assume PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE=1 */
+      cudaError_t err = cudaMemcpyAsync(dst,src,n,kinds[srcmtype][dstmtype],link->stream);CHKERRCUDA(err);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode PetscSFMalloc(PetscMemType mtype,size_t size,void** ptr)
+{
+  PetscFunctionBegin;
+  if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
+  else if (mtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaMalloc(ptr,size);CHKERRCUDA(err);}
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode PetscSFFree_Private(PetscMemType mtype,void* ptr)
+{
+  PetscFunctionBegin;
+  if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
+  else if (mtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaFree(ptr);CHKERRCUDA(err);}
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
+  PetscFunctionReturn(0);
+}
+
 /*====================================================================================*/
 /*                Main driver to init MPI datatype on device                          */
 /*====================================================================================*/
@@ -941,3 +993,4 @@ PetscErrorCode PetscSFLinkSetUp_Device(PetscSF sf,PetscSFLink link,MPI_Datatype 
   link->deviceinited             = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+#endif

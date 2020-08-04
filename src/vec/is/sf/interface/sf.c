@@ -2,6 +2,14 @@
 #include <petsc/private/hashseti.h>
 #include <petscctable.h>
 
+#if defined(PETSC_HAVE_CUDA)
+  #include <cuda_runtime.h>
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  #include <hip/hip_runtime.h>
+#endif
+
 #if defined(PETSC_USE_DEBUG)
 #  define PetscSFCheckGraphSet(sf,arg) do {                          \
     if (PetscUnlikely(!(sf)->graphset))                              \
@@ -12,6 +20,41 @@
 #endif
 
 const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","PetscSFDuplicateOption","PETSCSF_DUPLICATE_",NULL};
+
+PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType *type)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(type,2);
+  *type = PETSC_MEMTYPE_HOST;
+#if defined(PETSC_HAVE_CUDA)
+  if (PetscCUDAInitialized && data) {
+    cudaError_t                  cerr;
+    struct cudaPointerAttributes attr;
+    enum cudaMemoryType          mtype;
+    cerr = cudaPointerGetAttributes(&attr,data); /* Do not check error since before CUDA 11.0, passing a host pointer returns cudaErrorInvalidValue */
+    cudaGetLastError(); /* Reset the last error */
+    #if (CUDART_VERSION < 10000)
+      mtype = attr.memoryType;
+    #else
+      mtype = attr.type;
+    #endif
+    if (cerr == cudaSuccess && mtype == cudaMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
+  }
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  if (PetscHIPInitialized && data) {
+    hipError_t                   cerr;
+    struct hipPointerAttribute_t attr;
+    enum hipMemoryType           mtype;
+    cerr = hipPointerGetAttributes(&attr,data); /* Do not check error since before CUDA 11.0, passing a host pointer returns cudaErrorInvalidValue */
+    hipGetLastError(); /* Reset the last error */
+    mtype = attr.memoryType;
+    if (cerr == hipSuccess && mtype == hipMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
+  }
+#endif
+  PetscFunctionReturn(0);
+}
 
 /*@
    PetscSFCreate - create a star forest communication context
@@ -93,11 +136,8 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   ierr = PetscFree(sf->remote_alloc);CHKERRQ(ierr);
   sf->nranks = -1;
   ierr = PetscFree4(sf->ranks,sf->roffset,sf->rmine,sf->rremote);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-  {
-  PetscInt  i;
-  for (i=0; i<2; i++) {if (sf->rmine_d[i]) {cudaError_t err = cudaFree(sf->rmine_d[i]);CHKERRCUDA(err);sf->rmine_d[i]=NULL;}}
-  }
+#if defined(PETSC_HAVE_DEVICE)
+  for (PetscInt i=0; i<2; i++) {ierr = PetscSFFree(PETSC_MEMTYPE_DEVICE,sf->rmine_d[i]);CHKERRQ(ierr);}
 #endif
   sf->degreeknown = PETSC_FALSE;
   ierr = PetscFree(sf->degree);CHKERRQ(ierr);
@@ -290,7 +330,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   ierr = PetscSFSetType(sf,flg ? type : deft);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sf_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",sf->rankorder,&sf->rankorder,NULL);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   sf->use_default_stream = PETSC_TRUE; /* The assumption is true for PETSc internal use of SF */
   ierr = PetscOptionsBool("-sf_use_default_stream","Assume SF's input and output root/leafdata is computed on the default stream","PetscSFSetFromOptions",sf->use_default_stream,&sf->use_default_stream,NULL);CHKERRQ(ierr);
   sf->use_stream_aware_mpi = PETSC_FALSE;
