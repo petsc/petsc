@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCECU = sfpackcuda.cu
+SOURCECU = sfcuda.cu
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscvec
