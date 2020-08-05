@@ -1,9 +1,11 @@
 KSP: Linear System Solvers
 --------------------------
 
-.. include:: temp_edit_needed_banner.inc
+.. note::
+  
+  This chapter is being cleaned up by Patrick Sanan. 
 
-The object ``KSP`` is the heart of PETSc, because it provides uniform
+The ``KSP`` object is the heart of PETSc, because it provides uniform
 and efficient access to all of the package’s linear system solvers,
 including parallel and sequential, direct and iterative. ``KSP`` is
 intended for solving nonsingular systems of the form
@@ -20,17 +22,14 @@ techniques and their associated options can be selected at runtime.
 
 The combination of a Krylov subspace method and a preconditioner is at
 the center of most modern numerical codes for the iterative solution of
-linear systems. See, for example, :cite`fgn` for an
-overview of the theory of such methods. ``KSP`` creates a simplified
-interface to the lower-level ``KSP`` and ``PC`` modules within the PETSc
-package. The ``KSP`` package, discussed in
+linear systems. See, for example, :cite:`fgn` for an
+overview of the theory of such methods. 
+The ``KSP`` package, discussed in
 Section `[sec_ksp] <#sec_ksp>`__, provides many popular Krylov subspace
 iterative methods; the ``PC`` module, described in
 Section `[sec_pc] <#sec_pc>`__, includes a variety of preconditioners.
-Although both ``KSP`` and ``PC`` can be used directly, users should
-employ the interface of ``KSP``.
 
-.. _sec_usingsles:
+.. _sec_usingksp:
 
 Using KSP
 ~~~~~~~~~
@@ -42,7 +41,7 @@ context with the command
 
    KSPCreate(MPI_Comm comm,KSP *ksp);
 
-Here ``comm`` is the MPI communicator, and ``ksp`` is the newly formed
+Here ``comm`` is the MPI communicator and ``ksp`` is the newly formed
 solver context. Before actually solving a linear system with ``KSP``,
 the user must call the following routine to set the matrices associated
 with the linear system:
@@ -52,9 +51,9 @@ with the linear system:
    KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);
 
 The argument ``Amat``, representing the matrix that defines the linear
-system, is a symbolic place holder for any kind of matrix. In
+system, is a symbolic placeholder for any kind of matrix or operator. In
 particular, ``KSP`` *does* support matrix-free methods. The routine
-``MatCreateShell()`` in Section `[sec_matrixfree] <#sec_matrixfree>`__
+``MatCreateShell()`` in :any:`sec_matrixfree`
 provides further information regarding matrix-free methods. Typically,
 the matrix from which the preconditioner is to be constructed, ``Pmat``,
 is the same as the matrix that defines the linear system, ``Amat``;
@@ -89,7 +88,7 @@ Note that this does not state that the method converged at this
 iteration: it can also have reached the maximum number of iterations, or
 have diverged.
 
-Section `3.3.2 <#section_convergencetests>`__ gives more details
+:any:`sec_convergencetests` gives more details
 regarding convergence testing. Note that multiple linear solves can be
 performed by the same ``KSP`` context. Once the ``KSP`` context is no
 longer needed, it should be destroyed with the command
@@ -100,14 +99,14 @@ longer needed, it should be destroyed with the command
 
 The above procedure is sufficient for general use of the ``KSP``
 package. One additional step is required for users who wish to customize
-certain preconditioners (e.g., see Section `3.4.4 <#sec_bjacobi>`__) or
+certain preconditioners (e.g., see :any:`sec_bjacobi`) or
 to log certain performance data using the PETSc profiling facilities (as
-discussed in Chapter `3 <#ch_profiling>`__). In this case, the user can
+discussed in :any:`ch_profiling`). In this case, the user can
 optionally explicitly call
 
 ::
 
-   KSPSetUp(KSP ksp)
+   KSPSetUp(KSP ksp);
 
 before calling ``KSPSolve()`` to perform any setup required for the
 linear solvers. The explicit call of this routine enables the separate
@@ -131,7 +130,7 @@ The application programmer can then directly call any of the ``PC`` or
 
 To solve a linear system with a direct solver (currently supported by
 PETSc for sequential matrices, and by several external solvers through
-PETSc interfaces (see Section `3.7 <#sec_externalsol>`__)) one may use
+PETSc interfaces (see Section :any:`sec_externalsol`)) one may use
 the options ``-ksp_type`` ``preonly`` ``-pc_type`` ``lu`` (see below).
 
 By default, if a direct solver is used, the factorization is *not* done
@@ -155,14 +154,14 @@ operations will *not* be repeated for successive solves.
 To solve successive linear systems that have *different* preconditioner
 matrices (i.e., the matrix elements and/or the matrix data structure
 change), the user *must* call ``KSPSetOperators()`` and ``KSPSolve()``
-for each solve. See Section `3.1 <#sec_usingsles>`__ for a description
+for each solve. See Section :any:`sec_usingksp` for a description
 of various flags for ``KSPSetOperators()`` that can save work for such
 cases.
 
+.. _sec_ksp:
+
 Krylov Methods
 ~~~~~~~~~~~~~~
-
-[sec_ksp]
 
 The Krylov subspace methods accept a number of options, many of which
 are discussed below. First, to set the Krylov subspace method that is to
@@ -175,12 +174,12 @@ be used, one calls the command
 The type can be one of ``KSPRICHARDSON``, ``KSPCHEBYSHEV``, ``KSPCG``,
 ``KSPGMRES``, ``KSPTCQMR``, ``KSPBCGS``, ``KSPCGS``, ``KSPTFQMR``,
 ``KSPCR``, ``KSPLSQR``, ``KSPBICG``, ``KSPPREONLY``. or others; see
-Table `3.1 <#tab_kspdefaults>`__ or the ``KSPType`` man page for more.
+:any:`tab_kspdefaults` or the ``KSPType`` man page for more.
 The ``KSP`` method can also be set with the options database command
 ``-ksp_type``, followed by one of the options ``richardson``,
 ``chebyshev``, ``cg``, ``gmres``, ``tcqmr``, ``bcgs``, ``cgs``,
 ``tfqmr``, ``cr``, ``lsqr``, ``bicg``, ``preonly.``, or others (see
-Table `3.1 <#tab_kspdefaults>`__ or the ``KSPType`` man page) There are
+:any:`tab_kspdefaults` or the ``KSPType`` man page) There are
 method-specific options:for instance, for the Richardson, Chebyshev, and
 GMRES methods:
 
@@ -297,7 +296,7 @@ currently support it results in an error message of the form
    KSPSetUp_Richardson:No right preconditioning for KSPRICHARDSON
 
 We summarize the defaults for the residuals used in KSP convergence
-monitoring within Table `3.1 <#tab_kspdefaults>`__. Details regarding
+monitoring within :any:`tab_kspdefaults`. Details regarding
 specific convergence tests and monitoring routines are presented in the
 following sections. The preconditioned residual is used by default for
 convergence testing of all left-preconditioned ``KSP`` methods. For the
@@ -309,10 +308,11 @@ can be used by the options database command
 
    KSPSetNormType(KSP ksp,KSP_NORM_UNPRECONDITIONED);
 
-.. container::
-   :name: tab_kspdefaults
 
-   .. table:: KSP Objects.
+.. container::
+
+   .. table:: KSP Objects
+      :name: tab_kspdefaults
 
       +-------------------------------+-------------------+----------------+
       |                               |                   | **Options**    |
@@ -445,7 +445,7 @@ multipliers. The only matrix type supported is ``MATIS``. Support for
 saddle point problems is provided. Consult the online documentation for
 further details.
 
-.. _section_convergencetests:
+.. _sec_convergencetests:
 
 Convergence Tests
 ^^^^^^^^^^^^^^^^^
@@ -653,12 +653,12 @@ Access to the residual is done in a similar way with the command
 Again, for GMRES and certain other methods this is an expensive
 operation.
 
+.. _sec_pc:
+
 Preconditioners
 ~~~~~~~~~~~~~~~
 
-[sec_pc]
-
-As discussed in Section `3.3.1 <#sec_ksppc>`__, Krylov subspace methods
+As discussed in :any:`sec_ksppc`, Krylov subspace methods
 are typically used in conjunction with a preconditioner. To employ a
 particular preconditioning method, the user can either select it from
 the options database using input of the form ``-pc_type <methodname>``
