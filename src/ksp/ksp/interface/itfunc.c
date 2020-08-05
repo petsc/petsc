@@ -430,13 +430,13 @@ static PetscErrorCode KSPReasonView_Internal(KSP ksp, PetscViewer viewer, PetscV
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isAscii);CHKERRQ(ierr);
   if (isAscii) {
     ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
-    if (ksp->reason > 0) {
+    if (ksp->reason > 0 && format != PETSC_VIEWER_FAILED) {
       if (((PetscObject) ksp)->prefix) {
         ierr = PetscViewerASCIIPrintf(viewer,"Linear %s solve converged due to %s iterations %D\n",((PetscObject) ksp)->prefix,KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
       }
-    } else {
+    } else if (ksp->reason <= 0) {
       if (((PetscObject) ksp)->prefix) {
         ierr = PetscViewerASCIIPrintf(viewer,"Linear %s solve did not converge due to %s iterations %D\n",((PetscObject) ksp)->prefix,KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
       } else {
@@ -466,6 +466,7 @@ static PetscErrorCode KSPReasonView_Internal(KSP ksp, PetscViewer viewer, PetscV
 
    Options Database Keys:
 .  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
+.  -ksp_converged_reason ::failed - only print reason and number of iterations when diverged
 
    Level: beginner
 
