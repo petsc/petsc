@@ -3177,13 +3177,13 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
   ierr = DMCreateLocalVector(cdm, &coordinates);CHKERRQ(ierr);
   ierr = VecSetBlockSize(coordinates, spaceDim);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(coordinates, &coords);CHKERRQ(ierr);
   for (v = 0; v < vEnd-vStart; ++v) {
     for (d = 0; d < spaceDim; ++d) {
       coords[v*spaceDim+d] = vertexCoords[v*spaceDim+d];
     }
   }
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_BuildCoordinatesFromCellList,dm,0,0,0);CHKERRQ(ierr);
