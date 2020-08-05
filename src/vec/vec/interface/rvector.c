@@ -1285,6 +1285,8 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
         ierr = VecPlaceArray(Z,(PetscScalar*)x+start);CHKERRQ(ierr);
         ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
       }
+      Z->ops->placearray = NULL;
+      Z->ops->replacearray = NULL;
     } else { /* Have to create a scatter and do a copy */
       VecScatter scatter;
       PetscInt   n,N;
