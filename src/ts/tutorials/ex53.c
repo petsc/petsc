@@ -2174,7 +2174,7 @@ static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt dummy, MatNullSp
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupFE(DM dm, PetscBool simplex, PetscInt Nf, PetscInt Nc[], const char *name[], PetscErrorCode (*setup)(DM, AppCtx *), void *ctx)
+static PetscErrorCode SetupFE(DM dm, PetscBool simplex, PetscInt Nf, PetscInt Nc[], const char *name[], PetscErrorCode (*setup)(DM, AppCtx *), void *ctx)
 {
   AppCtx         *user = (AppCtx *) ctx;
   DM              cdm  = dm;
@@ -2189,7 +2189,7 @@ PetscErrorCode SetupFE(DM dm, PetscBool simplex, PetscInt Nf, PetscInt Nc[], con
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name[f]);CHKERRQ(ierr);
-    ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, Nc[f], simplex, name[f] ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc[f], simplex, name[f] ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) fe, name[f]);CHKERRQ(ierr);
     if (!q) {ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);}
     ierr = PetscFESetQuadrature(fe, q);CHKERRQ(ierr);
