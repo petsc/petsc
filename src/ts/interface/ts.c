@@ -1044,10 +1044,11 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 -   ctx - [optional] user-defined context for private data for the
           function evaluation routine (may be NULL)
 
-    Calling sequence of func:
-$     PetscErrorCode func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
+    Calling sequence of f:
+$     PetscErrorCode f(TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
-+   t - current timestep
++   ts - timestep context
+.   t - current timestep
 .   u - input vector
 .   F - function vector
 -   ctx - [optional] user-defined function context
@@ -1093,8 +1094,8 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 -   ctx - [optional] user-defined context for private data for the
           function evaluation routine (may be NULL)
 
-    Calling sequence of func:
-$     PetscErrorCode func (TS ts,PetscReal t,Vec u,void *ctx);
+    Calling sequence of f:
+$     PetscErrorCode f(TS ts,PetscReal t,Vec u,void *ctx);
 
 +   t - current timestep
 .   u - output vector
@@ -1188,7 +1189,7 @@ PetscErrorCode  TSSetForcingFunction(TS ts,TSForcingFunction func,void *ctx)
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of f:
-$     PetscErrorCode func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
+$     PetscErrorCode f(TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 
 +  t - current timestep
 .  u - input vector
@@ -1474,7 +1475,7 @@ $     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
 
    Level: beginner
 
-.seealso: TSSetI2Jacobian()
+.seealso: TSSetI2Jacobian(), TSSetIFunction(), TSCreate(), TSSetRHSFunction()
 @*/
 PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
 {
@@ -1505,7 +1506,7 @@ PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
 
   Level: advanced
 
-.seealso: TSSetI2Function(), SNESGetFunction()
+.seealso: TSSetIFunction(), SNESGetFunction(), TSCreate()
 @*/
 PetscErrorCode TSGetI2Function(TS ts,Vec *r,TSI2Function *fun,void **ctx)
 {
@@ -1558,7 +1559,7 @@ $    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,Pet
 
    Level: beginner
 
-.seealso: TSSetI2Function()
+.seealso: TSSetI2Function(), TSGetI2Jacobian()
 @*/
 PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
 {
@@ -1594,7 +1595,7 @@ PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
 
   Level: advanced
 
-.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
+.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber(), TSSetI2Jacobian(), TSGetI2Function(), TSCreate() 
 
 @*/
 PetscErrorCode  TSGetI2Jacobian(TS ts,Mat *J,Mat *P,TSI2Jacobian *jac,void **ctx)
@@ -1633,7 +1634,7 @@ PetscErrorCode  TSGetI2Jacobian(TS ts,Mat *J,Mat *P,TSI2Jacobian *jac,void **ctx
 
   Level: developer
 
-.seealso: TSSetI2Function()
+.seealso: TSSetI2Function(), TSGetI2Function()
 @*/
 PetscErrorCode TSComputeI2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F)
 {
@@ -1756,8 +1757,16 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
 
    Input Arguments:
 +  ts - time stepping context on which to change the transient variable
-.  tvar - a function that transforms in-place to transient variables
+.  tvar - a function that transforms to transient variables
 -  ctx - a context for tvar
+
+    Calling sequence of tvar:
+$     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
+
++   ts - timestep context
+.   p - input vector (primative form)
+.   c - output vector, transient variables (conservative form)
+-   ctx - [optional] user-defined function context
 
    Level: advanced
 
@@ -3838,11 +3847,11 @@ PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initConditi
 
   Level: advanced
 
-  Notes:
-  The calling sequence for the function is
-$ initCondition(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The input vector in which the initial condition is stored
+  Calling sequence for initCondition:
+$ PetscErrorCode initCondition(TS ts, Vec u)
+
++ ts - The timestepping context
+- u  - The input vector in which the initial condition is to be stored
 
 .seealso: TSGetComputeInitialCondition(), TSComputeInitialCondition()
 @*/
@@ -3865,12 +3874,6 @@ PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initConditio
 - u  - The Vec to store the condition in which will be used in TSSolve()
 
   Level: advanced
-
-  Notes:
-  The calling sequence for the function is
-$ initCondition(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The input vector in which the initial condition is stored
 
 .seealso: TSGetComputeInitialCondition(), TSSetComputeInitialCondition(), TSSolve()
 @*/
@@ -3898,12 +3901,12 @@ PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
 
   Level: advanced
 
-  Notes:
-  The calling sequence for the function is
-$ exactError(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The approximate solution vector
-$ e  - The input vector in which the error is stored
+  Calling sequence for exactError:
+$ PetscErrorCode exactError(TS ts, Vec u)
+
++ ts - The timestepping context
+. u  - The approximate solution vector
+- e  - The input vector in which the error is stored
 
 .seealso: TSGetComputeExactError(), TSComputeExactError()
 @*/
@@ -3927,12 +3930,12 @@ PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, V
 
   Level: advanced
 
-  Notes:
-  The calling sequence for the function is
-$ exactError(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The approximate solution vector
-$ e  - The input vector in which the error is stored
+  Calling sequence for exactError:
+$ PetscErrorCode exactError(TS ts, Vec u)
+
++ ts - The timestepping context
+. u  - The approximate solution vector
+- e  - The input vector in which the error is stored
 
 .seealso: TSGetComputeExactError(), TSComputeExactError()
 @*/
@@ -3956,13 +3959,6 @@ PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Ve
 - e  - The Vec used to store the error
 
   Level: advanced
-
-  Notes:
-  The calling sequence for the function is
-$ exactError(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The approximate solution vector
-$ e  - The input vector in which the error is stored
 
 .seealso: TSGetComputeInitialCondition(), TSSetComputeInitialCondition(), TSSolve()
 @*/
