@@ -24,6 +24,37 @@ static PetscErrorCode SplitPath_Private(char path[], char name[])
   PetscFunctionReturn(0);
 }
 
+/*
+  - invert (involute) cells of some types according to XDMF/VTK numbering of vertices in a cells
+  - cell type is identified using the number of vertices
+*/
+static PetscErrorCode DMPlexInvertCells_XDMF_Private(DM dm)
+{
+  PetscInt       dim, *cones, cHeight, cStart, cEnd, p;
+  PetscSection   cs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim != 3) PetscFunctionReturn(0);
+  ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSection(dm, &cs);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  for (p=cStart; p<cEnd; p++) {
+    PetscInt numCorners, o;
+
+    ierr = PetscSectionGetDof(cs, p, &numCorners);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(cs, p, &o);CHKERRQ(ierr);
+    switch (numCorners) {
+      case 4: ierr = DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON,&cones[o]);CHKERRQ(ierr); break;
+      case 6: ierr = DMPlexInvertCell(DM_POLYTOPE_TRI_PRISM,&cones[o]);CHKERRQ(ierr); break;
+      case 8: ierr = DMPlexInvertCell(DM_POLYTOPE_HEXAHEDRON,&cones[o]);CHKERRQ(ierr); break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 {
   Vec             coordinates;
@@ -117,7 +148,8 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     } else coordinates_arr_real = (PetscReal*)coordinates_arr;
 
     ierr = DMSetDimension(dm, spatialDim);CHKERRQ(ierr);
-    ierr = DMPlexBuildFromCellListParallel(dm, numCells, numVertices, numCorners, cells_arr, PETSC_TRUE, &sfVert);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellListParallel(dm, numCells, numVertices, numCorners, cells_arr, &sfVert);CHKERRQ(ierr);
+    ierr = DMPlexInvertCells_XDMF_Private(dm);CHKERRQ(ierr);
     ierr = DMPlexBuildCoordinatesFromCellListParallel( dm, spatialDim, sfVert, coordinates_arr_real);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISRestoreIndices(cells, &cells_arr);CHKERRQ(ierr);
