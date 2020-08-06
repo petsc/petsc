@@ -157,6 +157,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->viewconstraints = PETSC_FALSE;
 
   tao->bounded = PETSC_FALSE;
+  tao->constrained = PETSC_FALSE;
 
   tao->header_printed = PETSC_FALSE;
 
@@ -650,7 +651,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer," gttol=%g\n",(double)tao->gttol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Residual in Function/Gradient:=%g\n",(double)tao->residual);CHKERRQ(ierr);
 
-    if (tao->cnorm>0 || tao->catol>0 || tao->crtol>0){
+    if (tao->constrained){
       ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances:");CHKERRQ(ierr);
       ierr=PetscViewerASCIIPrintf(viewer," catol=%g,",(double)tao->catol);CHKERRQ(ierr);
       ierr=PetscViewerASCIIPrintf(viewer," crtol=%g\n",(double)tao->crtol);CHKERRQ(ierr);

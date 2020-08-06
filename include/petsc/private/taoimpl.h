@@ -169,6 +169,7 @@ struct _p_Tao {
     PetscBool viewhessian;
     PetscBool viewjacobian;
     PetscBool bounded;
+    PetscBool constrained;
     PetscBool header_printed;
 
     TaoSubsetType subset_type;
