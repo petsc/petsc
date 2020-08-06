@@ -281,9 +281,10 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscObjectStateGet((PetscObject)A,&(aijmkl->state));CHKERRQ(ierr);
-  /* We mark our matrix as having a valid, optimized MKL handle.
-   * TODO: It is valid, but I am not sure if it is optimized. Need to ask MKL developers. */
-  aijmkl->sparse_optimized = PETSC_TRUE;
+  /* At this point our matrix has a valid MKL handle, the contents of which match the PETSc AIJ representation.
+   * The MKL handle has *not* had mkl_sparse_optimize() called on it, though -- the MKL developers have confirmed
+   * that the matrix inspection/optimization step is not performed when matrix-matrix multiplication is finalized. */
+  aijmkl->sparse_optimized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
