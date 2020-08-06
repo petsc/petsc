@@ -128,12 +128,14 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 #if defined(PETSC_USE_REAL_SINGLE)
   tao->gatol       = 1e-5;
   tao->grtol       = 1e-5;
+  tao->crtol       = 1e-5;
+  tao->catol       = 1e-5;
 #else
   tao->gatol       = 1e-8;
   tao->grtol       = 1e-8;
+  tao->crtol       = 1e-8;
+  tao->catol       = 1e-8;
 #endif
-  tao->crtol       = 0.0;
-  tao->catol       = 0.0;
   tao->gttol       = 0.0;
   tao->steptol     = 0.0;
   tao->trust0      = PETSC_INFINITY;
