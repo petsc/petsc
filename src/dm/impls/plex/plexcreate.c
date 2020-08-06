@@ -2763,7 +2763,8 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
   Input Parameters:
 + dm - The DM
 . numCells - The number of cells owned by this process
-. numVertices - The number of vertices owned by this process
+. numVertices - The number of vertices owned by this process, or PETSC_DECIDE
+. NVertices - The global number of vertices, or PETSC_DECIDE
 . numCorners - The number of vertices for each cell
 - cells - An array of numCells*numCorners numbers, the global vertex numbers for each cell
 
@@ -2798,6 +2799,12 @@ $     \  |  /
 $      \ | /
 $        3
 
+  Vertices are implicitly numbered consecutively 0,...,NVertices.
+  Each rank owns a chunk of numVertices consecutive vertices.
+  If numVertices is PETSC_DECIDE, PETSc will distribute them as evenly as possible using PetscLayout.
+  If both NVertices and numVertices are PETSC_DECIDE, NVertices is computed by PETSc as the maximum vertex index in cells + 1.
+  If only NVertices is PETSC_DECIDE, it is computed as the sum of numVertices over all ranks.
+
   The cell distribution is arbitrary non-overlapping, independent of the vertex distribution.
 
   Not currently supported in Fortran.
@@ -2806,7 +2813,7 @@ $        3
 
 .seealso: DMPlexBuildFromCellList(), DMPlexCreateFromCellListParallelPetsc(), DMPlexBuildCoordinatesFromCellListParallel()
 @*/
-PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[], PetscSF *vertexSF)
+PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, const PetscInt cells[], PetscSF *vertexSF)
 {
   PetscSF         sfPoint, sfVert;
   PetscLayout     vLayout;
@@ -2818,13 +2825,29 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(dm,NVertices,4);
   ierr = PetscLogEventBegin(DMPLEX_BuildFromCellList,dm,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  /* Get/check global number of vertices */
+  {
+    PetscInt NVerticesInCells, i;
+    const PetscInt len = numCells * numCorners;
+
+    /* NVerticesInCells = max(cells) + 1 */
+    NVerticesInCells = PETSC_MIN_INT;
+    for (i=0; i<len; i++) if (cells[i] > NVerticesInCells) NVerticesInCells = cells[i];
+    ++NVerticesInCells;
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+
+    if (numVertices == PETSC_DECIDE && NVertices == PETSC_DECIDE) NVertices = NVerticesInCells;
+    else if (NVertices != PETSC_DECIDE && NVertices < NVerticesInCells) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Specified global number of vertices %D must be greater than or equal to the number of vertices in cells %D",NVertices,NVerticesInCells);
+  }
   /* Partition vertices */
   ierr = PetscLayoutCreate(PetscObjectComm((PetscObject) dm), &vLayout);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(vLayout, numVertices);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(vLayout, NVertices);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(vLayout, 1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(vLayout);CHKERRQ(ierr);
   ierr = PetscLayoutGetRanges(vLayout, &vrange);CHKERRQ(ierr);
@@ -2990,7 +3013,8 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
 + comm - The communicator
 . dim - The topological dimension of the mesh
 . numCells - The number of cells owned by this process
-. numVertices - The number of vertices owned by this process
+. numVertices - The number of vertices owned by this process, or PETSC_DECIDE
+. NVertices - The global number of vertices, or PETSC_DECIDE
 . numCorners - The number of vertices for each cell
 . interpolate - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
 . cells - An array of numCells*numCorners numbers, the global vertex numbers for each cell
@@ -3005,11 +3029,14 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
   This function is just a convenient sequence of DMCreate(), DMSetType(), DMSetDimension(),
   DMPlexBuildFromCellListParallel(), DMPlexInterpolate(), DMPlexBuildCoordinatesFromCellListParallel()
 
+  See DMPlexBuildFromCellListParallel() for an example and details about the topology-related parameters.
+  See DMPlexBuildCoordinatesFromCellListParallel() for details about the geometry-related parameters.
+
   Level: intermediate
 
 .seealso: DMPlexCreateFromCellListPetsc(), DMPlexBuildFromCellListParallel(), DMPlexBuildCoordinatesFromCellListParallel(), DMPlexCreateFromDAG(), DMPlexCreate()
 @*/
-PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, DM *dm)
+PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, DM *dm)
 {
   PetscSF        sfVert;
   PetscErrorCode ierr;
@@ -3020,7 +3047,7 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   PetscValidLogicalCollectiveInt(*dm, dim, 2);
   PetscValidLogicalCollectiveInt(*dm, spaceDim, 8);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexBuildFromCellListParallel(*dm, numCells, numVertices, numCorners, cells, &sfVert);CHKERRQ(ierr);
+  ierr = DMPlexBuildFromCellListParallel(*dm, numCells, numVertices, NVertices, numCorners, cells, &sfVert);CHKERRQ(ierr);
   if (interpolate) {
     DM idm;
 
@@ -3058,7 +3085,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
       pintCells[i] = (PetscInt) cells[i];
     }
   }
-  ierr = DMPlexCreateFromCellListParallelPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, pintCells, spaceDim, vertexCoords, vertexSF, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromCellListParallelPetsc(comm, dim, numCells, numVertices, PETSC_DECIDE, numCorners, interpolate, pintCells, spaceDim, vertexCoords, vertexSF, dm);CHKERRQ(ierr);
   if (sizeof(int) != sizeof(PetscInt)) {
     ierr = PetscFree(pintCells);CHKERRQ(ierr);
   }
@@ -3071,7 +3098,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
   Input Parameters:
 + dm - The DM
 . numCells - The number of cells owned by this process
-. numVertices - The number of vertices owned by this process
+. numVertices - The number of vertices owned by this process, or PETSC_DECIDE
 . numCorners - The number of vertices for each cell
 - cells - An array of numCells*numCorners numbers, the global vertex numbers for each cell
 
@@ -3105,6 +3132,8 @@ $     \  |  /
 $      \ | /
 $        3
 
+  If numVertices is PETSC_DECIDE, it is computed by PETSc as the maximum vertex index in cells + 1.
+
   Not currently supported in Fortran.
 
 .seealso: DMPlexBuildFromCellListParallel(), DMPlexBuildCoordinatesFromCellList(), DMPlexCreateFromCellListPetsc()
@@ -3117,6 +3146,19 @@ PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVer
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_BuildFromCellList,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  /* Get/check global number of vertices */
+  {
+    PetscInt NVerticesInCells, i;
+    const PetscInt len = numCells * numCorners;
+
+    /* NVerticesInCells = max(cells) + 1 */
+    NVerticesInCells = PETSC_MIN_INT;
+    for (i=0; i<len; i++) if (cells[i] > NVerticesInCells) NVerticesInCells = cells[i];
+    ++NVerticesInCells;
+
+    if (numVertices == PETSC_DECIDE) numVertices = NVerticesInCells;
+    else if (numVertices < NVerticesInCells) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Specified number of vertices %D must be greater than or equal to the number of vertices in cells %D",numVertices,NVerticesInCells);
+  }
   ierr = DMPlexSetChart(dm, 0, numCells+numVertices);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {
     ierr = DMPlexSetConeSize(dm, c, numCorners);CHKERRQ(ierr);
@@ -3197,7 +3239,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
 + comm - The communicator
 . dim - The topological dimension of the mesh
 . numCells - The number of cells
-. numVertices - The number of vertices
+. numVertices - The number of vertices owned by this process, or PETSC_DECIDE
 . numCorners - The number of vertices for each cell
 . interpolate - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
 . cells - An array of numCells*numCorners numbers, the vertices for each cell
@@ -3210,6 +3252,9 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
   Notes:
   This function is just a convenient sequence of DMCreate(), DMSetType(), DMSetDimension(), DMPlexBuildFromCellList(),
   DMPlexInterpolate(), DMPlexBuildCoordinatesFromCellList()
+
+  See DMPlexBuildFromCellList() for an example and details about the topology-related parameters.
+  See DMPlexBuildCoordinatesFromCellList() for details about the geometry-related parameters.
 
   Level: intermediate
 

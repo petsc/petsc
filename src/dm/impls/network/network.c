@@ -259,7 +259,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   if (size == 1) {
     ierr = DMPlexBuildFromCellList(network->plex,network->nEdges,network->nVertices,numCorners,edges);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexBuildFromCellListParallel(network->plex,network->nEdges,network->nVertices,numCorners,edges,NULL);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellListParallel(network->plex,network->nEdges,network->nVertices,network->NVertices,numCorners,edges,NULL);CHKERRQ(ierr);
   }
 
   ierr = DMPlexGetChart(network->plex,&network->pStart,&network->pEnd);CHKERRQ(ierr);
