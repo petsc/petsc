@@ -1,0 +1,15 @@
+DM Object: box 1 MPI processes
+  type: plex
+box in 1 dimension:
+  Number of 0-cells per rank: 2
+  Number of 1-cells per rank: 2
+Periodic mesh (PERIODIC) coordinates not localized
+Labels:
+  marker: 0 strata with value/size ()
+  Face Sets: 0 strata with value/size ()
+  depth: 2 strata with value/size (0 (2), 1 (2))
+  celltype: 2 strata with value/size (1 (2), 0 (2))
+Element #0
+0: 0 1
+Element #1
+0: 1 0
