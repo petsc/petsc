@@ -462,6 +462,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   tao->ksp_its = 0;
   ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
   ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
+  ierr = KSPResetFromOptions(tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(tao->ksp,bnk->H_inactive,bnk->Hpre_inactive);CHKERRQ(ierr);
   ierr = VecCopy(bnk->unprojected_gradient, bnk->Gwork);CHKERRQ(ierr);
   if (bnk->active_idx) {
