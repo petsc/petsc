@@ -235,6 +235,7 @@ PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(T
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+    tao->constrained = PETSC_TRUE;
     tao->constraints = c;
     tao->user_conP = ctx;
     tao->ops->computeconstraints = func;
