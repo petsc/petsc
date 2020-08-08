@@ -1080,6 +1080,14 @@ int main(int argc, char **argv)
     args: -dim 2 -domain_shape sphere -dm_plex_check_all -dm_refine 2 -dm_view
 
   test:
+    suffix: sphere_2
+    args: -dim 2 -cell_simplex 0 -domain_shape sphere -dm_plex_check_all -dm_view ::ascii_info_detail
+
+  test:
+    suffix: sphere_3
+    args: -dim 2 -cell_simplex 0 -domain_shape sphere -dm_plex_check_all -dm_refine 2 -dm_view
+
+  test:
     suffix: ball_0
     requires: ctetgen
     args: -dim 3 -domain_shape ball -dm_plex_check_all -dm_view

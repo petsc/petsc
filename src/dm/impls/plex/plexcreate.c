@@ -2199,7 +2199,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
     ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
     ierr = DMGetDimension(*dm, &dT);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(*dm, &dE);CHKERRQ(ierr);
-    ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dT, dE, PETSC_TRUE, 1, -1, &fe);CHKERRQ(ierr);
+    ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dT, dE, simplex, 1, -1, &fe);CHKERRQ(ierr);
     ierr = DMSetField(cdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
     ierr = DMCreateDS(cdm);CHKERRQ(ierr);
