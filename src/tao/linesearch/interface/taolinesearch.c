@@ -423,19 +423,17 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
 
    Input Parameters:
 +  ls - the TaoLineSearch context
--  type - a known method
+-  type - the TaoLineSearchType selection
 
   Available methods include:
-+ more-thuente
-. gpcg
-- unit - Do not perform any line search
-
++  more-thuente - line search with a cubic model enforcing the strong Wolfe/curvature condition
+.  armijo - simple backtracking line search enforcing only the sufficient decrease condition
+-  unit - do not perform a line search and always accept unit step length
 
   Options Database Keys:
-.   -tao_ls_type - select which method TAO should use
+.  -tao_ls_type <more-thuente, armijo, unit> - select which method TAO should use at runtime
 
   Level: beginner
-
 
 .seealso: TaoLineSearchCreate(), TaoLineSearchGetType(), TaoLineSearchApply()
 
