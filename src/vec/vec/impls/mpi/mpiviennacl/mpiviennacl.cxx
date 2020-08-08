@@ -24,7 +24,7 @@ PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
   PetscFunctionBegin;
   try {
     if (v->spptr) {
-      delete ((Vec_ViennaCL*)v->spptr)->GPUarray;
+      delete ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated;
       delete (Vec_ViennaCL*) v->spptr;
     }
   } catch(std::exception const & ex) {

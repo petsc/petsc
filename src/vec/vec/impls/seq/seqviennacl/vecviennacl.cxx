@@ -219,7 +219,8 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
   if (!v->spptr) {
     try {
       v->spptr                            = new Vec_ViennaCL;
-      ((Vec_ViennaCL*)v->spptr)->GPUarray = new ViennaCLVector((PetscBLASInt)v->map->n);
+      ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated = new ViennaCLVector((PetscBLASInt)v->map->n);
+      ((Vec_ViennaCL*)v->spptr)->GPUarray = ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated;
 
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
@@ -1024,7 +1025,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
-PetscErrorCode  VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
+PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
 {
   PetscErrorCode ierr;
 
@@ -1071,7 +1072,7 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
   PetscFunctionBegin;
   try {
     if (v->spptr) {
-      delete ((Vec_ViennaCL*)v->spptr)->GPUarray;
+      delete ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated;
       delete (Vec_ViennaCL*) v->spptr;
     }
   } catch(char *ex) {
