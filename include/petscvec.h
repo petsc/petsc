@@ -408,6 +408,14 @@ PETSC_EXTERN PetscErrorCode VecCUDAPlaceArray(Vec,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecCUDAReplaceArray(Vec,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecCUDAResetArray(Vec);
 
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec);
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
+
 /*MC
    VecSetValueLocal - Set a single entry into a vector using the local numbering
 
