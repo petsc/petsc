@@ -15,5 +15,6 @@ these are typically sparsely documented and will only be useful to advanced user
   :maxdepth: 2
 
   guide_to_examples_by_physics
+  physics/guide_to_stokes
   guide_to_examples_by_discretization
   guide_to_examples_by_solver
