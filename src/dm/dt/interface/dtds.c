@@ -3370,7 +3370,47 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
+  PetscDSSelectDiscretizations - Copy discretizations to the new problem with different field layout
+
+  Not collective
+
+  Input Parameter:
++ prob - The PetscDS object
+. numFields - Number of new fields
+- fields - Old field number for each new field
+
+  Output Parameter:
+. newprob - The PetscDS copy
+
+  Level: intermediate
+
+.seealso: PetscDSSelectEquations(), PetscDSCopyBoundary(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob)
+{
+  PetscInt       Nf, Nfn, fn;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if (fields) PetscValidPointer(fields, 3);
+  PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 4);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(newprob, &Nfn);CHKERRQ(ierr);
+  if (numFields > Nfn) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields %D to transfer must not be greater then the total number of fields %D", numFields, Nfn);
+  for (fn = 0; fn < numFields; ++fn) {
+    const PetscInt f = fields ? fields[fn] : fn;
+    PetscObject    disc;
+
+    if (f >= Nf) continue;
+    ierr = PetscDSGetDiscretization(prob, f, &disc);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(newprob, fn, disc);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
   PetscDSSelectEquations - Copy pointwise function pointers to the new problem with different field layout
 
   Not collective
@@ -3385,7 +3425,7 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
 
   Level: intermediate
 
-.seealso: PetscDSCopyBoundary(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+.seealso: PetscDSSelectDiscretizations(), PetscDSCopyBoundary(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob)
 {
@@ -3426,7 +3466,7 @@ PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const Pe
       ierr = PetscDSGetJacobianPreconditioner(prob, f, g, &g0p, &g1p, &g2p, &g3p);CHKERRQ(ierr);
       ierr = PetscDSGetBdJacobian(prob, f, g, &g0Bd, &g1Bd, &g2Bd, &g3Bd);CHKERRQ(ierr);
       ierr = PetscDSSetJacobian(newprob, fn, gn, g0, g1, g2, g3);CHKERRQ(ierr);
-      ierr = PetscDSSetJacobianPreconditioner(prob, fn, gn, g0p, g1p, g2p, g3p);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobianPreconditioner(newprob, fn, gn, g0p, g1p, g2p, g3p);CHKERRQ(ierr);
       ierr = PetscDSSetBdJacobian(newprob, fn, gn, g0Bd, g1Bd, g2Bd, g3Bd);CHKERRQ(ierr);
     }
   }
