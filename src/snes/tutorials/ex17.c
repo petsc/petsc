@@ -460,12 +460,12 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt dummy, MatNullSpace *nullspace)
+static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexCreateRigidBody(dm, 0, nullspace);CHKERRQ(ierr);
+  ierr = DMPlexCreateRigidBody(dm, origField, nullspace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

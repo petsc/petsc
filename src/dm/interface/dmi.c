@@ -190,7 +190,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
   if (subdm) {
     PetscSection subsection;
     PetscBool    haveNull = PETSC_FALSE;
-    PetscInt     f, nf = 0;
+    PetscInt     f, nf = 0, of = 0;
 
     ierr = PetscSectionCreateSubsection(section, numFields, fields, &subsection);CHKERRQ(ierr);
     ierr = DMSetLocalSection(*subdm, subsection);CHKERRQ(ierr);
@@ -200,14 +200,8 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
       if ((*subdm)->nullspaceConstructors[f]) {
         haveNull = PETSC_TRUE;
         nf       = f;
+        of       = fields[f];
       }
-    }
-    if (haveNull && is) {
-      MatNullSpace nullSpace;
-
-      ierr = (*(*subdm)->nullspaceConstructors[nf])(*subdm, nf, &nullSpace);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
-      ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
     }
     if (dm->probs) {
       ierr = DMSetNumFields(*subdm, numFields);CHKERRQ(ierr);
@@ -280,6 +274,13 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
         ierr = PetscDSSelectEquations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds);CHKERRQ(ierr);
       }
     }
+    if (haveNull && is) {
+      MatNullSpace nullSpace;
+
+      ierr = (*(*subdm)->nullspaceConstructors[nf])(*subdm, of, nf, &nullSpace);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+    }
     if (dm->coarseMesh) {
       ierr = DMCreateSubDM(dm->coarseMesh, numFields, fields, NULL, &(*subdm)->coarseMesh);CHKERRQ(ierr);
     }
@@ -311,7 +312,7 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *super
 {
   MPI_Comm       comm;
   PetscSection   supersection, *sections, *sectionGlobals;
-  PetscInt      *Nfs, Nf = 0, f, supf, nullf = -1, i;
+  PetscInt      *Nfs, Nf = 0, f, supf, oldf = -1, nullf = -1, i;
   PetscBool      haveNull = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -392,6 +393,7 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *super
       if ((*superdm)->nullspaceConstructors[supf]) {
         haveNull = PETSC_TRUE;
         nullf    = supf;
+        oldf     = f;
       }
     }
   }
@@ -399,7 +401,7 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *super
   if (haveNull && is) {
     MatNullSpace nullSpace;
 
-    ierr = (*(*superdm)->nullspaceConstructors[nullf])(*superdm, nullf, &nullSpace);CHKERRQ(ierr);
+    ierr = (*(*superdm)->nullspaceConstructors[nullf])(*superdm, oldf, nullf, &nullSpace);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) (*is)[nullf], "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   }

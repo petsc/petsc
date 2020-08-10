@@ -764,7 +764,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   } else if (!snes->jacobian_pre) {
-    PetscErrorCode (*nspconstr)(DM, PetscInt, MatNullSpace *);
+    PetscErrorCode (*nspconstr)(DM, PetscInt, PetscInt, MatNullSpace *);
     PetscDS          prob;
     Mat              J, B;
     MatNullSpace     nullspace = NULL;
@@ -779,7 +779,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = DMCreateMatrix(snes->dm, &B);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
     ierr = DMGetNullSpaceConstructor(snes->dm, Nf, &nspconstr);CHKERRQ(ierr);
-    if (nspconstr) (*nspconstr)(snes->dm, -1, &nullspace);
+    if (nspconstr) (*nspconstr)(snes->dm, Nf, Nf, &nullspace);
     ierr = MatSetNullSpace(B, nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes, J ? J : B, B, NULL, NULL);CHKERRQ(ierr);
