@@ -277,7 +277,7 @@ static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
    Reference:
    S. Cools, E.F. Yetkin, E. Agullo, L. Giraud, W. Vanroose, "Analyzing the effect of local rounding error
    propagation on the maximal attainable accuracy of the pipelined Conjugate Gradients method",
-   SIAM Journal on Matrix Analysis and Applications (SIMAX), 39(1):426–450, 2018.
+   SIAM Journal on Matrix Analysis and Applications (SIMAX), 39(1):426--450, 2018.
 
 .seealso: KSPCreate(), KSPSetType(), KSPPIPECR, KSPGROPPCG, KSPPIPECG, KSPPGMRES, KSPCG, KSPPIPEBCGS, KSPCGUseSingleReduction()
 M*/
