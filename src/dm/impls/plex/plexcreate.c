@@ -1055,6 +1055,9 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetInt(NULL, NULL, "-dm_plex_box_dim", &dim, &flg);CHKERRQ(ierr);
+  if ((dim < 0) || (dim > 3)) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D should be in [1, 3]", dim);
+  ierr = PetscOptionsGetBool(NULL, NULL, "-dm_plex_box_simplex", &simplex, &flg);CHKERRQ(ierr);
   n    = 3;
   ierr = PetscOptionsGetIntArray(NULL, NULL, "-dm_plex_box_faces", fac, &n, &flg);CHKERRQ(ierr);
   for (i = 0; i < dim; ++i) fac[i] = faces ? faces[i] : (flg && i < n ? fac[i] : (dim == 1 ? 1 : 4-dim));
@@ -2413,13 +2416,46 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
 
 static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
-  PetscInt       refine = 0, coarsen = 0, r;
-  PetscBool      isHierarchy;
+  PetscInt       prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0;
+  PetscBool      distribute = PETSC_FALSE, isHierarchy;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Options");CHKERRQ(ierr);
+  /* Handle DMPlex refinement before distribution */
+  ierr = PetscOptionsBoundedInt("-dm_refine_pre", "The number of uniform refinements before distribution", "DMCreate", prerefine, &prerefine, NULL,0);CHKERRQ(ierr);
+  if (prerefine) {ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);}
+  for (r = 0; r < prerefine; ++r) {
+    DM             rdm;
+    PetscPointFunc coordFunc = ((DM_Plex*) dm->data)->coordFunc;
+
+    ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+    ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
+    /* Total hack since we do not pass in a pointer */
+    ierr = DMPlexReplace_Static(dm, rdm);CHKERRQ(ierr);
+    ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+    if (coordFunc) {
+      ierr = DMPlexRemapGeometry(dm, 0.0, coordFunc);CHKERRQ(ierr);
+      ((DM_Plex*) dm->data)->coordFunc = coordFunc;
+    }
+    ierr = DMDestroy(&rdm);CHKERRQ(ierr);
+  }
+  /* Handle DMPlex distribution */
+  ierr = PetscOptionsBool("-dm_distribute", "Flag to redistribute a mesh among processes", "DMCreate", distribute, &distribute, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-dm_distribute_overlap", "The size of the overlap halo", "DMCreate", overlap, &overlap, NULL, 0);CHKERRQ(ierr);
+  if (distribute) {
+    DM               pdm = NULL;
+    PetscPartitioner part;
+
+    ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(dm, overlap, NULL, &pdm);CHKERRQ(ierr);
+    if (pdm) {
+      ierr = DMPlexReplace_Static(dm, pdm);CHKERRQ(ierr);
+      ierr = DMDestroy(&pdm);CHKERRQ(ierr);
+    }
+  }
   /* Handle DMPlex refinement */
   ierr = PetscOptionsBoundedInt("-dm_refine", "The number of uniform refinements", "DMCreate", refine, &refine, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy,0);CHKERRQ(ierr);
