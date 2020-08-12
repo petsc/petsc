@@ -4,7 +4,7 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 
 #if defined(PETSC_HAVE_CUDA)
-#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h>
 #endif
 
 typedef struct {
