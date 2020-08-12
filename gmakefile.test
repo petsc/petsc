@@ -283,11 +283,11 @@ else ifdef searchin
 else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
 else ifdef globsearch
-  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py 'name' '$(globsearch)')
+  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) 'name' '$(globsearch)')
 else ifdef test-fail
   TESTTARGETS := $(shell $(PETSC_ARCH)/tests/echofailures.sh)
 else ifdef query
-  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py '$(query)' '$(queryval)')
+  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) '$(query)' '$(queryval)')
 else                            # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
 endif
