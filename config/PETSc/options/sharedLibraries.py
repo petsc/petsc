@@ -11,13 +11,8 @@ class Configure(config.base.Configure):
     return
 
   def __str1__(self):
-    if not hasattr(self, 'useShared'):
-      return ''
-    txt = ''
-    if self.useShared:
-      txt += '  shared libraries: enabled\n'
-    else:
-      txt += '  shared libraries: disabled\n'
+    txt =  '  Single library: %s\n' % ('yes' if self.framework.argDB['with-single-library'] else 'no')
+    txt += '  Shared libraries: %s\n' % ('yes' if self.useShared else 'no')
     return txt
 
   def setupHelp(self, help):

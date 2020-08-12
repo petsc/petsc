@@ -932,10 +932,10 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureUnused)
     self.executeTest(self.configureDeprecated)
     self.executeTest(self.configureIsatty)
-    self.executeTest(self.configureExpect);
-    self.executeTest(self.configureAlign);
-    self.executeTest(self.configureFunctionName);
-    self.executeTest(self.configureIntptrt);
+    self.executeTest(self.configureExpect)
+    self.executeTest(self.configureAlign)
+    self.executeTest(self.configureFunctionName)
+    self.executeTest(self.configureIntptrt)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
