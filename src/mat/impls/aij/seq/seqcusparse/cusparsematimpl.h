@@ -1,7 +1,7 @@
 #if !defined(__CUSPARSEMATIMPL)
 #define __CUSPARSEMATIMPL
 
-#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h>
 
 #include <cusparse_v2.h>
 

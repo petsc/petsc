@@ -11,7 +11,7 @@
 #include <petscconf.h>
 #include <petsc/private/vecimpl.h>          /*I <petscvec.h> I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
-#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h>
 
 /*
     Allocates space for the vector array on the Host if it does not exist.
@@ -317,6 +317,7 @@ PetscErrorCode  VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,c
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   ierr = VecCreate_SeqCUDA_Private(*V,array);CHKERRQ(ierr);
+  (*V)->offloadmask = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
 }
 

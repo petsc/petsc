@@ -1,6 +1,6 @@
 #include <petsc/private/vecscatterimpl.h> /*I   "petscvec.h"    I*/
 #if defined(PETSC_HAVE_CUDA)
-#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h>
 #endif
 /* ------------------------------------------------------------------*/
 /*@
