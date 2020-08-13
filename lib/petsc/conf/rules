@@ -662,6 +662,13 @@ checkbadSource:
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
          fi
+	-@git --no-pager grep  -P  -n "[\x00-\x08\x0E-\x1F\x80-\xFF]"  -- '*.[chF]' '*.F90' '*.cxx' > badSourceChar.out;\
+         w=`cat badSourceChar.out | wc -l`;\
+         if [ $$w -gt 0 ] ; then \
+           echo " source files with non-ASCII characters" ;\
+           cat badSourceChar.out ;\
+         fi
+	@test ! -s badSourceChar.out
 
 checkTestCoverage:
 	-@for filename in ex*.c; do \

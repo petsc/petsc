@@ -783,7 +783,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       break;
 
     case CG_KouDai:
-      /* Kou, Cai-Xia, and Yu-Hong Dai. "A modified self-scaling memoryless Broyden–Fletcher–Goldfarb–Shanno method for unconstrained optimization."
+      /* Kou, Cai-Xia, and Yu-Hong Dai. "A modified self-scaling memoryless Broyden-Fletcher-Goldfarb-Shanno method for unconstrained optimization."
          Journal of Optimization Theory and Applications 165, no. 1 (2015): 209-224. */
       ierr = VecDot(tao->gradient, tao->stepdirection, &gd);CHKERRQ(ierr);
       ierr = VecDot(cg->G_old, tao->stepdirection, &gd_old);CHKERRQ(ierr);

@@ -67,10 +67,10 @@ def get_inverse_dictionary(dataDict,field,srcdir):
     for root in dataDict:
       for exfile in dataDict[root]:
         for test in dataDict[root][exfile]:
+          if test in testparse.buildkeys: continue
           defroot = testparse.getDefaultOutputFileRoot(test)
           name=nameSpace(defroot,os.path.relpath(root,srcdir))
           if field == 'name':
-              if 'SKIP' in name: continue
               invDict['name'].append(name)
               continue
           if field not in dataDict[root][exfile][test]: continue
@@ -151,8 +151,8 @@ def main():
     parser.add_option('-s', '--startdir', dest='startdir',
                       help='Where to start the recursion if not srcdir',
                       default='')
-    parser.add_option('-p', '--petsc_dir', dest='petsc_dir',
-                      help='Set PETSC_ARCH different from environment',
+    parser.add_option('-p', '--petsc-dir', dest='petsc_dir',
+                      help='Set PETSC_DIR different from environment',
                       default=os.environ.get('PETSC_DIR'))
     parser.add_option('-a', '--petsc-arch', dest='petsc_arch',
                       help='Set PETSC_ARCH different from environment',

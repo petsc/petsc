@@ -796,7 +796,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       https://wiki.mpich.org/mpich/index.php/ABI_Compatibility_Initiative which started with
         MPICH v3.1 (Released Feburary 2014)
         IBM MPI v2.1 (December 2014)
-        Intel® MPI Library v5.0 (2014)
+        Intel MPI Library v5.0 (2014)
         Cray MPT v7.0.0 (June 2014)
       As of July 31, 2017 the ABI number still appears to be 12, that is all of the versions
       listed above and since that time are compatible.
