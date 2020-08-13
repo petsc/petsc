@@ -255,12 +255,12 @@ PETSC_EXTERN PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog,int,Petsc
     flops - the number of flops
 
    Notes:
-     To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double, 
+     To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
      not an integer. Use PetscLogFlops(4.0*n) not PetscLogFlops(4*n)
 
    Level: intermediate
 
-.seealso: PetscLogView()
+.seealso: PetscLogView(), PetscLogGpuFlops()
 @*/
 
 PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
@@ -301,6 +301,20 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpu(PetscLogDouble size)
   PetscFunctionReturn(0);
 }
 
+/*@
+       PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
+
+   Input Paramters:
+    flops - the number of flops
+
+   Notes:
+     To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
+     not an integer. Use PetscLogFlops(4.0*n) not PetscLogFlops(4*n)
+
+   Level: intermediate
+
+.seealso: PetscLogView(), PetscLogFlops(), PetscLogGpuTimeBegin(), PetscLogGpuTimeEnd()
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
 {
   PetscFunctionBegin;
@@ -312,6 +326,15 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
   PetscFunctionReturn(0);
 }
 
+/*@
+       PetscLogGpuTimeBegin - Start timer for device
+
+   Level: intermediate
+
+      Notes:
+        The timer is run on the CPU, it is just logged separately as time devoted to GPU computations (including kernel launch times). It is used to compute the flop rate on the GPU.
+.seealso:  PetscLogView(), PetscLogGpuFlops(), PetscLogGpuTimeEnd()
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeBegin()
 {
   PetscErrorCode ierr;
@@ -323,7 +346,13 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeBegin()
   ierr = PetscTimeSubtract(&petsc_gtime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+/*@
+       PetscLogGpuTimeEnd - Stop timer for device
 
+   Level: intermediate
+
+.seealso:  PetscLogView(), PetscLogGpuFlops(), PetscLogGpuTimeBegin()
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeEnd()
 {
   PetscErrorCode ierr;
