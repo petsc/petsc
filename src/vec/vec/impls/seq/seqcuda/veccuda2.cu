@@ -8,7 +8,7 @@
 #include <petscconf.h>
 #include <petsc/private/vecimpl.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
-#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h>
 
 #include <cuda_runtime.h>
 #include <thrust/device_ptr.h>

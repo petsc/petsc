@@ -2,7 +2,7 @@
 #define __MPICUSPARSEMATIMPL
 
 #include <cusparse_v2.h>
-#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h>
 
 typedef struct {
   /* The following are used by GPU capabilities to store matrix storage formats on the device */
