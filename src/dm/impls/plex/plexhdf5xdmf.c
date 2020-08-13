@@ -59,7 +59,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 {
   Vec             coordinates;
   IS              cells;
-  PetscInt        spatialDim, numCells, numVertices, numCorners;
+  PetscInt        spatialDim, numCells, numVertices, NVertices, numCorners;
   PetscMPIInt     rank;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
@@ -110,20 +110,13 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   }
   ierr = VecLoad(coordinates, viewer);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coordinates, &numVertices);CHKERRQ(ierr);
+  ierr = VecGetSize(coordinates, &NVertices);CHKERRQ(ierr);
   ierr = VecGetBlockSize(coordinates, &spatialDim);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   numVertices /= spatialDim;
+  NVertices /= spatialDim;
 
   ierr = PetscInfo4(NULL, "Loaded mesh dimensions: numCells %d numCorners %d numVertices %d spatialDim %d\n", numCells, numCorners, numVertices, spatialDim);CHKERRQ(ierr);
-
-  if (PetscDefined(USE_DEBUG)) {
-    /* Check that maximum index referred in cells is in line with global number of vertices */
-    PetscInt max1, max2;
-    ierr = ISGetMinMax(cells, NULL, &max1);CHKERRQ(ierr);
-    ierr = VecGetSize(coordinates, &max2);CHKERRQ(ierr);
-    max2 /= spatialDim; max2--;
-    if (max1 > max2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "maximum index in cells = %d > %d = total number of vertices - 1", max1, max2);
-  }
 
   {
     const PetscScalar *coordinates_arr;
@@ -148,7 +141,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     } else coordinates_arr_real = (PetscReal*)coordinates_arr;
 
     ierr = DMSetDimension(dm, spatialDim);CHKERRQ(ierr);
-    ierr = DMPlexBuildFromCellListParallel(dm, numCells, numVertices, numCorners, cells_arr, &sfVert);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellListParallel(dm, numCells, numVertices, NVertices, numCorners, cells_arr, &sfVert);CHKERRQ(ierr);
     ierr = DMPlexInvertCells_XDMF_Private(dm);CHKERRQ(ierr);
     ierr = DMPlexBuildCoordinatesFromCellListParallel( dm, spatialDim, sfVert, coordinates_arr_real);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
