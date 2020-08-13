@@ -96,7 +96,7 @@ lapack_qlib:\n\
         self.withSudo('cp', '-f', 'libf2clapack.' + self.setCompilers.AR_LIB_SUFFIX, 'libf2cblas.' + self.setCompilers.AR_LIB_SUFFIX, libdir),
         ], cwd=self.packageDir, timeout=60, log = self.log)
     except RuntimeError as e:
-      self.printLog('Error moving '+blasDir+' libraries: '+str(e))
+      self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
       raise RuntimeError('Error moving '+blasDir+' libraries')
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir
