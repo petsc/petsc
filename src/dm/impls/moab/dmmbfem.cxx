@@ -365,9 +365,9 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal ( const PetscInt nverts, const
         phypts[offset + 1] = phipts_y;
       }
 
-      /* \phi_0 = (b.y − c.y) x + (b.x − c.x) y + c.x b.y − b.x c.y */
+      /* \phi_0 = (b.y - c.y) x + (b.x - c.x) y + c.x b.y - b.x c.y */
       phi[0 + offset] = (  ijacobian[0] * (phipts_x - x2) + ijacobian[1] * (phipts_y - y2) );
-      /* \phi_1 = (c.y − a.y) x + (a.x − c.x) y + c.x a.y − a.x c.y */
+      /* \phi_1 = (c.y - a.y) x + (a.x - c.x) y + c.x a.y - a.x c.y */
       phi[1 + offset] = (  ijacobian[2] * (phipts_x - x2) + ijacobian[3] * (phipts_y - y2) );
       phi[2 + offset] = 1.0 - phi[0 + offset] - phi[1 + offset];
 
