@@ -41,10 +41,13 @@ PETSC_INTERN PetscErrorCode VecViennaCLCopyToGPU(Vec);
 PETSC_INTERN PetscErrorCode VecViennaCLAllocateCheck(Vec);
 PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_SeqViennaCL_Private(Vec,const ViennaCLVector *);
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqViennaCL(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqViennaCL(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqViennaCL(Vec,PetscRandom);
+
+PETSC_INTERN PetscErrorCode VecCreate_MPIViennaCL_Private(Vec,PetscBool,PetscInt,const ViennaCLVector *);
 
 PETSC_INTERN PetscErrorCode VecViennaCLCopyToGPU_Public(Vec);
 PETSC_INTERN PetscErrorCode VecViennaCLAllocateCheck_Public(Vec);

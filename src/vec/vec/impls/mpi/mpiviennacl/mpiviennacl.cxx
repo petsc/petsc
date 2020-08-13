@@ -173,45 +173,90 @@ PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s,Vec t,PetscScalar *dp,PetscScalar *
   PetscFunctionReturn(0);
 }
 
+
+PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool pin)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  vv->boundtocpu = pin;
+
+  if (pin) {
+    ierr = VecViennaCLCopyFromGPU(vv);CHKERRQ(ierr);
+    vv->offloadmask = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
+    vv->ops->dotnorm2               = NULL;
+    vv->ops->waxpy                  = VecWAXPY_Seq;
+    vv->ops->dot                    = VecDot_MPI;
+    vv->ops->mdot                   = VecMDot_MPI;
+    vv->ops->tdot                   = VecTDot_MPI;
+    vv->ops->norm                   = VecNorm_MPI;
+    vv->ops->scale                  = VecScale_Seq;
+    vv->ops->copy                   = VecCopy_Seq;
+    vv->ops->set                    = VecSet_Seq;
+    vv->ops->swap                   = VecSwap_Seq;
+    vv->ops->axpy                   = VecAXPY_Seq;
+    vv->ops->axpby                  = VecAXPBY_Seq;
+    vv->ops->maxpy                  = VecMAXPY_Seq;
+    vv->ops->aypx                   = VecAYPX_Seq;
+    vv->ops->axpbypcz               = VecAXPBYPCZ_Seq;
+    vv->ops->pointwisemult          = VecPointwiseMult_Seq;
+    vv->ops->setrandom              = VecSetRandom_Seq;
+    vv->ops->placearray             = VecPlaceArray_Seq;
+    vv->ops->replacearray           = VecReplaceArray_Seq;
+    vv->ops->resetarray             = VecResetArray_Seq;
+    vv->ops->dot_local              = VecDot_Seq;
+    vv->ops->tdot_local             = VecTDot_Seq;
+    vv->ops->norm_local             = VecNorm_Seq;
+    vv->ops->mdot_local             = VecMDot_Seq;
+    vv->ops->pointwisedivide        = VecPointwiseDivide_Seq;
+    vv->ops->getlocalvector         = NULL;
+    vv->ops->restorelocalvector     = NULL;
+    vv->ops->getlocalvectorread     = NULL;
+    vv->ops->restorelocalvectorread = NULL;
+    vv->ops->getarraywrite          = NULL;
+  } else {
+    vv->ops->dotnorm2        = VecDotNorm2_MPIViennaCL;
+    vv->ops->waxpy           = VecWAXPY_SeqViennaCL;
+    vv->ops->duplicate       = VecDuplicate_MPIViennaCL;
+    vv->ops->dot             = VecDot_MPIViennaCL;
+    vv->ops->mdot            = VecMDot_MPIViennaCL;
+    vv->ops->tdot            = VecTDot_MPIViennaCL;
+    vv->ops->norm            = VecNorm_MPIViennaCL;
+    vv->ops->scale           = VecScale_SeqViennaCL;
+    vv->ops->copy            = VecCopy_SeqViennaCL;
+    vv->ops->set             = VecSet_SeqViennaCL;
+    vv->ops->swap            = VecSwap_SeqViennaCL;
+    vv->ops->axpy            = VecAXPY_SeqViennaCL;
+    vv->ops->axpby           = VecAXPBY_SeqViennaCL;
+    vv->ops->maxpy           = VecMAXPY_SeqViennaCL;
+    vv->ops->aypx            = VecAYPX_SeqViennaCL;
+    vv->ops->axpbypcz        = VecAXPBYPCZ_SeqViennaCL;
+    vv->ops->pointwisemult   = VecPointwiseMult_SeqViennaCL;
+    vv->ops->setrandom       = VecSetRandom_SeqViennaCL;
+    vv->ops->dot_local       = VecDot_SeqViennaCL;
+    vv->ops->tdot_local      = VecTDot_SeqViennaCL;
+    vv->ops->norm_local      = VecNorm_SeqViennaCL;
+    vv->ops->mdot_local      = VecMDot_SeqViennaCL;
+    vv->ops->destroy         = VecDestroy_MPIViennaCL;
+    vv->ops->pointwisedivide = VecPointwiseDivide_SeqViennaCL;
+    vv->ops->placearray      = VecPlaceArray_SeqViennaCL;
+    vv->ops->replacearray    = VecReplaceArray_SeqViennaCL;
+    vv->ops->resetarray      = VecResetArray_SeqViennaCL;
+    /*
+       get values?
+    */
+  }
+  PetscFunctionReturn(0);
+}
+
+
 PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPIVIENNACL);CHKERRQ(ierr);
-
-  vv->ops->dotnorm2        = VecDotNorm2_MPIViennaCL;
-  vv->ops->waxpy           = VecWAXPY_SeqViennaCL;
-  vv->ops->duplicate       = VecDuplicate_MPIViennaCL;
-  vv->ops->dot             = VecDot_MPIViennaCL;
-  vv->ops->mdot            = VecMDot_MPIViennaCL;
-  vv->ops->tdot            = VecTDot_MPIViennaCL;
-  vv->ops->norm            = VecNorm_MPIViennaCL;
-  vv->ops->scale           = VecScale_SeqViennaCL;
-  vv->ops->copy            = VecCopy_SeqViennaCL;
-  vv->ops->set             = VecSet_SeqViennaCL;
-  vv->ops->swap            = VecSwap_SeqViennaCL;
-  vv->ops->axpy            = VecAXPY_SeqViennaCL;
-  vv->ops->axpby           = VecAXPBY_SeqViennaCL;
-  vv->ops->maxpy           = VecMAXPY_SeqViennaCL;
-  vv->ops->aypx            = VecAYPX_SeqViennaCL;
-  vv->ops->axpbypcz        = VecAXPBYPCZ_SeqViennaCL;
-  vv->ops->pointwisemult   = VecPointwiseMult_SeqViennaCL;
-  vv->ops->setrandom       = VecSetRandom_SeqViennaCL;
-  vv->ops->dot_local       = VecDot_SeqViennaCL;
-  vv->ops->tdot_local      = VecTDot_SeqViennaCL;
-  vv->ops->norm_local      = VecNorm_SeqViennaCL;
-  vv->ops->mdot_local      = VecMDot_SeqViennaCL;
-  vv->ops->destroy         = VecDestroy_MPIViennaCL;
-  vv->ops->pointwisedivide = VecPointwiseDivide_SeqViennaCL;
-  vv->ops->placearray      = VecPlaceArray_SeqViennaCL;
-  vv->ops->replacearray    = VecReplaceArray_SeqViennaCL;
-  vv->ops->resetarray      = VecResetArray_SeqViennaCL;
-  /*
-     get values?
-  */
+  ierr = PetscLayoutSetUp(vv->map);CHKERRQ(ierr);
   ierr = VecViennaCLAllocateCheck(vv);CHKERRQ(ierr);
+  ierr = VecCreate_MPIViennaCL_Private(vv,PETSC_FALSE,0,((Vec_ViennaCL*)(vv->spptr))->GPUarray);CHKERRQ(ierr);
   ierr = VecViennaCLAllocateCheckHost(vv);CHKERRQ(ierr);
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);
   ierr = VecSet_Seq(vv,0.0);CHKERRQ(ierr);
@@ -232,6 +277,83 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
   } else {
     ierr = VecSetType(v,VECMPIVIENNACL);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCreateMPIViennaCLWithArray - Creates a parallel, array-style vector,
+   where the user provides the viennacl vector to store the vector values.
+
+   Collective
+
+   Input Parameters:
++  comm  - the MPI communicator to use
+.  bs    - block size, same meaning as VecSetBlockSize()
+.  n     - local vector length, cannot be PETSC_DECIDE
+.  N     - global vector length (or PETSC_DECIDE to have calculated)
+-  array - the user provided GPU array to store the vector values
+
+   Output Parameter:
+.  vv - the vector
+
+   Notes:
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   same type as an existing vector.
+
+   If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
+   at a later stage to SET the array for storing the vector values.
+
+   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+   The user should not free the array until the vector is destroyed.
+
+   Level: intermediate
+
+.seealso: VecCreateSeqViennaCLWithArray(), VecCreateMPIWithArray(), VecCreateSeqWithArray(),
+          VecCreate(), VecCreateMPI(), VecCreateGhostWithArray(), VecViennaCLPlaceArray()
+
+@*/
+PetscErrorCode  VecCreateMPIViennaCLWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const ViennaCLVector *array,Vec *vv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
+  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
+  ierr = VecCreate(comm,vv);CHKERRQ(ierr);
+  ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
+  ierr = VecCreate_MPIViennaCL_Private(*vv,PETSC_FALSE,0,array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecCreate_MPIViennaCL_Private(Vec vv,PetscBool alloc,PetscInt nghost,const ViennaCLVector *array)
+{
+  PetscErrorCode ierr;
+  Vec_ViennaCL   *vecviennacl;
+
+  PetscFunctionBegin;
+  ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPIVIENNACL);CHKERRQ(ierr);
+
+  ierr = VecBindToCPU_MPIViennaCL(vv,PETSC_FALSE);CHKERRQ(ierr);
+  vv->ops->bindtocpu = VecBindToCPU_MPIViennaCL;
+
+  if (alloc && !array) {
+    ierr = VecViennaCLAllocateCheck(vv);CHKERRQ(ierr);
+    ierr = VecViennaCLAllocateCheckHost(vv);CHKERRQ(ierr);
+    ierr = VecSet(vv,0.0);CHKERRQ(ierr);
+    ierr = VecSet_Seq(vv,0.0);CHKERRQ(ierr);
+    vv->offloadmask = PETSC_OFFLOAD_BOTH;
+  }
+  if (array) {
+    if (!vv->spptr)
+      vv->spptr = new Vec_ViennaCL;
+    vecviennacl = (Vec_ViennaCL*)vv->spptr;
+    vecviennacl->GPUarray_allocated = 0;
+    vecviennacl->GPUarray = (ViennaCLVector*)array;
+    vv->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
+  }
+
   PetscFunctionReturn(0);
 }
 
