@@ -958,7 +958,7 @@ PetscErrorCode  MatViewFromOptions(Mat A,PetscObject obj,const char name[])
       viewer is used.
 
       See share/petsc/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
-      viewer is used.
+      viewer is used and lib/petsc/bin/PetscBinaryIO.py for loading them into Python.
 
       One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure,
       and then use the following mouse functions.
