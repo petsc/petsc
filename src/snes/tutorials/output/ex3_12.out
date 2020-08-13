@@ -1,0 +1,19 @@
+atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
+Vec Object: Exact Solution 1 MPI processes
+0.
+0.015625
+0.125
+0.421875
+1.
+Vec Object: 1 MPI processes
+1e-72
+1.50024
+3.01563
+4.67798
+7.
+iter = 0,SNES Function norm 5.41468
+iter = 1,SNES Function norm 0.295258
+iter = 2,SNES Function norm 0.000450229
+iter = 3,SNES Function norm 1.38967e-09
+Number of SNES iterations = 3
+Norm of error 1.49751e-10 Iterations 3

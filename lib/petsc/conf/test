@@ -8,11 +8,19 @@ endif
 LINK.c = $(PCC_LINKER) $(PCC_LINKER_FLAGS) $(PCC_FLAGS) $(PETSC_CCPPFLAGS) $(PFLAGS) $(LDFLAGS)
 LINK.F = $(FC_LINKER) $(FC_LINKER_FLAGS) $(FFLAGS) $(PETSC_FCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
 LINK.cc = $(CXXLINKER) $(CXX_LINKER_FLAGS) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
+ifneq ($(KOKKOS_BIN),)
+# Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
+LINK.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CXX_LINKER) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda  $(CXX_LINKER_FLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
+else
+LINK.kokkos.cxx = $(CXXLINKER) $(CXX_LINKER_FLAGS) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
+endif
 
 LDLIBS += $(PETSC_LIB)
 
 % : %.F90
 	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
+% : %.kokkos.cxx
+	$(LINK.kokkos.cxx) $^ $(LOADLIBES) $(LDLIBS) -o $@
 % : %.cxx
 	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
