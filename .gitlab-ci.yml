@@ -400,8 +400,17 @@ linux-viennacl:
   tags:
     - gpu:nvidia, os:linux, name:frog
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-viennacl
+
+linux-viennacl-cuda:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux, name:frog
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
+    TEST_ARCH: arch-ci-linux-viennacl-cuda
 
 linux-c-exodus-dbg:
   extends:
