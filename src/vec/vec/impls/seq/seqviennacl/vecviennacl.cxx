@@ -219,7 +219,8 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
   if (!v->spptr) {
     try {
       v->spptr                            = new Vec_ViennaCL;
-      ((Vec_ViennaCL*)v->spptr)->GPUarray = new ViennaCLVector((PetscBLASInt)v->map->n);
+      ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated = new ViennaCLVector((PetscBLASInt)v->map->n);
+      ((Vec_ViennaCL*)v->spptr)->GPUarray = ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated;
 
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
@@ -1024,7 +1025,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
-PetscErrorCode  VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
+PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
 {
   PetscErrorCode ierr;
 
@@ -1032,6 +1033,116 @@ PetscErrorCode  VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
   ierr = VecCreate(comm,v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,n,n);CHKERRQ(ierr);
   ierr = VecSetType(*v,VECSEQVIENNACL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+   VecCreateSeqViennaCLWithArray - Creates a viennacl sequential array-style vector,
+   where the user provides the array space to store the vector values.
+
+   Collective
+
+   Input Parameter:
++  comm - the communicator, should be PETSC_COMM_SELF
+.  bs - the block size
+.  n - the vector length
+-  array - viennacl array where the vector elements are to be stored.
+
+   Output Parameter:
+.  V - the vector
+
+   Notes:
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   same type as an existing vector.
+
+   If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
+   at a later stage to SET the array for storing the vector values.
+
+   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+   The user should not free the array until the vector is destroyed.
+
+   Level: intermediate
+
+.seealso: VecCreateMPIViennaCLWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
+          VecCreateGhost(), VecCreateSeq(), VecCUDAPlaceArray(), VecCreateSeqWithArray(),
+          VecCreateMPIWithArray()
+@*/
+PETSC_EXTERN PetscErrorCode  VecCreateSeqViennaCLWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const ViennaCLVector* array,Vec *V)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = VecCreate(comm,V);CHKERRQ(ierr);
+  ierr = VecSetSizes(*V,n,n);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*V,bs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
+  ierr = VecCreate_SeqViennaCL_Private(*V,array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecViennaCLPlaceArray - Replace the viennacl vector in a Vec with
+   the one provided by the user. This is useful to avoid a copy.
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the ViennaCL vector
+
+   Notes:
+   You can return to the original viennacl vector with a call to
+   VecViennaCLResetArray() It is not possible to use VecViennaCLPlaceArray()
+   and VecPlaceArray() at the same time on the same vector.
+
+   Level: intermediate
+
+.seealso: VecPlaceArray(), VecSetValues(), VecViennaCLResetArray(),
+          VecCUDAPlaceArray(),
+
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec vin,const ViennaCLVector* a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
+  ierr = VecViennaCLCopyToGPU(vin);CHKERRQ(ierr);
+  if (((Vec_Seq*)vin->data)->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecViennaCLPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecViennaCLResetArray()/VecResetArray()");
+  ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_ViennaCL*)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
+  ((Vec_ViennaCL*)vin->spptr)->GPUarray = (ViennaCLVector*)a;
+  vin->offloadmask = PETSC_OFFLOAD_GPU;
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecViennaCLResetArray - Resets a vector to use its default memory. Call this
+   after the use of VecViennaCLPlaceArray().
+
+   Not Collective
+
+   Input Parameters:
+.  vec - the vector
+
+   Level: developer
+
+.seealso: VecViennaCLPlaceArray(), VecResetArray(), VecCUDAResetArray(), VecPlaceArray()
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLResetArray(Vec vin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
+  ierr = VecViennaCLCopyToGPU(vin);CHKERRQ(ierr);
+  ((Vec_ViennaCL*)vin->spptr)->GPUarray = (ViennaCLVector *) ((Vec_Seq*)vin->data)->unplacedarray;
+  ((Vec_Seq*)vin->data)->unplacedarray = 0;
+  vin->offloadmask = PETSC_OFFLOAD_GPU;
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1071,7 +1182,7 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
   PetscFunctionBegin;
   try {
     if (v->spptr) {
-      delete ((Vec_ViennaCL*)v->spptr)->GPUarray;
+      delete ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated;
       delete (Vec_ViennaCL*) v->spptr;
     }
   } catch(char *ex) {
@@ -1443,4 +1554,30 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec v)
 
   PetscFunctionReturn(0);
 #endif
+}
+
+PetscErrorCode VecCreate_SeqViennaCL_Private(Vec V,const ViennaCLVector *array)
+{
+  PetscErrorCode ierr;
+  Vec_ViennaCL   *vecviennacl;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQVIENNACL on more than one process");
+  ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQVIENNACL);CHKERRQ(ierr);
+  ierr = VecBindToCPU_SeqAIJViennaCL(V,PETSC_FALSE);CHKERRQ(ierr);
+  V->ops->bindtocpu = VecBindToCPU_SeqAIJViennaCL;
+
+  if (array) {
+    if (!V->spptr)
+      V->spptr = new Vec_ViennaCL;
+    vecviennacl = (Vec_ViennaCL*)V->spptr;
+    vecviennacl->GPUarray_allocated = 0;
+    vecviennacl->GPUarray           = (ViennaCLVector*)array;
+    V->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
+  }
+
+  PetscFunctionReturn(0);
 }

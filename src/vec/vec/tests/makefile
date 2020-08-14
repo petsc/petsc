@@ -9,6 +9,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                   ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c ex35.c \
                   ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex45.c ex46.c \
 		  ex47.c ex49.c ex50.c ex51.c ex55.c ex56.c
+EXAMPLESCXX     = ex57.cxx
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F ex40f90.F90
 MANSEC          = Vec
 
