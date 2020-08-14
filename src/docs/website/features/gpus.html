@@ -41,14 +41,43 @@
     <div id="main">
 
       <p>
-        PETSc algebraic solvers now run on GPU systems from NVIDIA, AMD, and Intel. This sometimes provides an
-        alternative high-performance, low-cost solution technique.
+        PETSc algebraic solvers run on GPU systems from NVIDIA using CUDA, and AMD and Intel using OpenCL via ViennaCL. This sometimes provides an
+        alternative high-performance, low-cost solution technique. 
       </p>
 
       <p>
-        We recommend
-        working with <a href="https://docs.petsc.org/en/latest/developers/index.html">petsc master (git branch)</a> if you wish
-        to work with this feature.
+        Quick overview of GPU usage and roadmap in PETSc
+      </p>
+
+      <ul>
+        <li>PETSc code will include full implementations of vector and matrix operations (as well as other select operations) using each of </li>
+          <ul>
+            <li>CUDA with cuBLAS and cuSparse - supported </li>
+            <li>HIP with Rocm - in development </li>
+            <li>SYCL with MKL - in development </li>
+            <li>OpenCL with ViennaCL - supported </li>
+          </ul>
+          User code is identical, independent of the support utilized above.
+
+        <li>User code may be written in</li>
+          <ul>
+            <li>CUDA - supported </li>
+            <li>HIP - coming soon</li>
+            <li>SYCL - comming soon</li>
+            <li>OpenCL - supported, but no examples</li>
+            <li>Kokkos - supported</li>
+            <li>Raja</li>
+          </ul>
+          For each of these programming models we will provide examples demonstrating use of the model in the user application.
+      </ul>
+
+     We could use your help in further developing PETSc for GPUs; see
+     <a href="https://docs.petsc.org/en/latest/developers/index.html"> PETSc Developers site</a>.
+     The label GPU is used at gitlab.com/petsc/petsc for all activity involving GPUs.
+
+      <p>
+        You must
+        use <a href="https://docs.petsc.org/en/latest/developers/index.html">petsc master (git branch)</a> for GPUs, do not install the current release.
       </p>
 
       <span class="warning">
@@ -60,9 +89,12 @@
       <ul>
         <li><a href="https://www.mcs.anl.gov/petsc/documentation/installation.html#CUDA">Installing PETSc to use NVIDIA GPUs (CUDA)</a></li>
         <li><a href="https://www.mcs.anl.gov/petsc/documentation/installation.html#OpenCL">Installing PETSc to use GPUs independent of the vendor (OpenCL)</a></li>
-        <li><a href="gpus.pdf">How the GPU solvers are implemented in PETSc</a></li>
+        <li><a href="gpus.pdf">Very out-dated document on how the GPU solvers are implemented in PETSc</a></li>
         <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex47cu.cu.html">Example that uses CUDA directly in the user function evaluation</a></li>
         <li><a href="https://vimeo.com/18768859">Presentation on some aspects of GPU usage from PETSc</a></li>
+
+
+      </p>
 
         <li>
           Quick summary of usage with CUDA:
@@ -125,10 +157,7 @@
             </li>
 
             <li>
-              The only preconditioners to run directly on the GPU are <code>PCJACOBI</code>,
-              <code>PCSAViennaCL</code>, <code>PCCHOWILUViennaCL</code>, and <code>PCRowScalingViennaCL</code>.
-              The <code>PCBJACOBI</code> and <code>PCASM</code> are just containers,
-              so if the subsolver runs on the GPU, they can also be considered to run on the GPU.
+              Parts of most preconditioners run directly on the GPU. After setup, PCGAMG runs fully on GPUs, without any memory copies between the CPU and GPU.
             </li>
           </ul>
         </li>
@@ -139,10 +168,7 @@
           <code>./configure option --with-precision=single</code>
         </li>
 
-        <li>
-          We could use your help in further developing PETSc for GPUs; see
-          <a href="https://docs.petsc.org/en/latest/developers/index.html"> PETSc Developers site</a>.
-        </li>
+
       </ul>
       </ul>
 
