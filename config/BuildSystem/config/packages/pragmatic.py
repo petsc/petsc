@@ -30,7 +30,7 @@ class Configure(config.package.CMakePackage):
       raise RuntimeError('CMake > 2.5 is needed to build Pragmatic')
 
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    args.append('-DMETIS_DIR='+self.metis.getInstallDir())
+    args.append('-DMETIS_DIR='+self.metis.directory)
     args.append('-DENABLE_VTK=OFF')
     args.append('-DENABLE_OPENMP=OFF')
     args.append('-DEIGEN_INCLUDE_DIR='+self.eigen.include[0])
