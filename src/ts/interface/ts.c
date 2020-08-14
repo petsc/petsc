@@ -2610,9 +2610,30 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
   PetscFunctionReturn(0);
 }
 
+/*
+    Attempt to check/preset a default value for the exact final time option. This is needed at the beginning of TSSolve() and in TSSetUp()
+*/
+static PetscErrorCode TSSetExactFinalTimeDefault(TS ts)
+{
+  PetscErrorCode ierr;
+  PetscBool      isnone;
+
+  PetscFunctionBegin;
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetDefaultType(ts->adapt,ts->default_adapt_type);CHKERRQ(ierr);
+
+  ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
+  if (!isnone && ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) {
+    ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
+  } else if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) {
+    ts->exact_final_time = TS_EXACTFINALTIME_INTERPOLATE;
+  }
+  PetscFunctionReturn(0);
+}
+
+
 /*@
-   TSSetUp - Sets up the internal data structures for the later use
-   of a timestepper.
+   TSSetUp - Sets up the internal data structures for the later use of a timestepper.
 
    Collective on TS
 
@@ -2640,7 +2661,6 @@ PetscErrorCode  TSSetUp(TS ts)
   TSIJacobian    ijac;
   TSI2Jacobian   i2jac;
   TSRHSJacobian  rhsjac;
-  PetscBool      isnone;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2696,10 +2716,7 @@ PetscErrorCode  TSSetUp(TS ts)
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
 
-  /* Attempt to check/preset a default value for the exact final time option */
-  ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
-  if (!isnone && ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
-    ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
+  ierr = TSSetExactFinalTimeDefault(ts);CHKERRQ(ierr);
 
   /* In the case where we've set a DMTSFunction or what have you, we need the default SNESFunction
      to be set right but can't do it elsewhere due to the overreliance on ctx=ts.
@@ -4001,6 +4018,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+
+  ierr = TSSetExactFinalTimeDefault(ts);CHKERRQ(ierr);
   if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && u) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     if (!ts->vec_sol || u == ts->vec_sol) {
       ierr = VecDuplicate(u,&solution);CHKERRQ(ierr);

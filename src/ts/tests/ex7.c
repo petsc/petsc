@@ -26,16 +26,15 @@ PetscErrorCode f(PetscReal t,Vec UV,Vec F)
   n    = n/2;
   ierr = VecGetArrayRead(UV,&u);CHKERRQ(ierr);
   v    = u + n;
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
   for (i=0; i<n; i++) f[i] = u[i] + v[i];
   ierr = VecRestoreArrayRead(UV,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
    F(U,V) = U - V
-
 */
 PetscErrorCode F(PetscReal t,Vec UV,Vec F)
 {
@@ -49,10 +48,10 @@ PetscErrorCode F(PetscReal t,Vec UV,Vec F)
   n    = n/2;
   ierr = VecGetArrayRead(UV,&u);CHKERRQ(ierr);
   v    = u + n;
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
   for (i=0; i<n; i++) f[i] = u[i] - v[i];
   ierr = VecRestoreArrayRead(UV,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -75,7 +74,7 @@ int main(int argc,char **argv)
   TS             ts;
   Vec            tsrhs,U;
   IS             is;
-  PetscInt       I;
+  PetscInt       i;
   PetscMPIInt    rank;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -85,8 +84,9 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&tsrhs);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&U);CHKERRQ(ierr);
+  ierr = VecDuplicate(tsrhs,&U);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,tsrhs,TSFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
   ctx.f = f;
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&ctx.snes);CHKERRQ(ierr);
@@ -98,12 +98,12 @@ int main(int argc,char **argv)
 
   /* Create scatters to move between separate U and V representation and UV representation of solution */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&ctx.UV);CHKERRQ(ierr);
-  I    = 2*rank;
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  i    = 2*rank;
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&i,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(U,NULL,ctx.UV,is,&ctx.scatterU);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
-  I    = 2*rank + 1;
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  i    = 2*rank + 1;
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&i,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(ctx.V,NULL,ctx.UV,is,&ctx.scatterV);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
@@ -126,7 +126,6 @@ int main(int argc,char **argv)
    Defines the RHS function that is passed to the time-integrator. 
 
    Solves F(U,V) for V and then computes f(U,V)
-
 */
 PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
 {
@@ -160,4 +159,10 @@ PetscErrorCode SNESFunction(SNES snes,Vec V,Vec F,void *actx)
   PetscFunctionReturn(0);
 }
 
+/*TEST
+
+    test:
+      args: -ts_monitor -ts_view
+
+TEST*/
 

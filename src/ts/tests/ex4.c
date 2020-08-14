@@ -38,7 +38,6 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       time_steps=100,iout,NOUT=1;
-  PetscMPIInt    size;
   Vec            global;
   PetscReal      dt,ftime,ftime_original;
   TS             ts;
@@ -57,7 +56,6 @@ int main(int argc,char **argv)
   PC             pc;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* set data */
   data.m       = 9;
@@ -80,7 +78,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,Monitor,&data,NULL);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
-  dt             = 0.1;
+  dt   = 0.1;
   ftime_original = data.tfinal = 1.0;
 
   ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
@@ -219,7 +217,7 @@ PetscErrorCode Initial(Vec global,void *ctx)
   ierr = VecGetLocalSize(global,&locsize);CHKERRQ(ierr);
 
   /* Initialize the array */
-  ierr = VecGetArray(global,&localptr);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(global,&localptr);CHKERRQ(ierr);
 
   for (i=0; i<locsize; i++) {
     row         = 1+(mybase+i)-((mybase+i)/m)*m;
@@ -229,7 +227,7 @@ PetscErrorCode Initial(Vec global,void *ctx)
     localptr[i] = f_ini(x,y);
   }
 
-  ierr = VecRestoreArray(global,&localptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(global,&localptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -416,7 +414,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecGetArrayRead(tmp_in,&inptr);CHKERRQ(ierr);
 
   /* Extract outcome array*/
-  ierr = VecGetArray(tmp_out,&outptr);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(tmp_out,&outptr);CHKERRQ(ierr);
 
   outptr[0]   = xc*inptr[0]+xr*inptr[1]+yr*inptr[m];
   outptr[m-1] = 2.0*xl*inptr[m-2]+xc*inptr[m-1]+yr*inptr[m-1+m];
@@ -439,7 +437,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   }
 
   ierr = VecRestoreArrayRead(tmp_in,&inptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(tmp_out,&outptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(tmp_out,&outptr);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

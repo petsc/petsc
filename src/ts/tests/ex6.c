@@ -10,7 +10,6 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
 
 /*
    f(U,V) = U + V
-
 */
 PetscErrorCode f(PetscReal t,Vec U,Vec V,Vec F)
 {
@@ -23,7 +22,6 @@ PetscErrorCode f(PetscReal t,Vec U,Vec V,Vec F)
 
 /*
    F(U,V) = U - V
-
 */
 PetscErrorCode F(PetscReal t,Vec U,Vec V,Vec F)
 {
@@ -60,6 +58,7 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&tsrhs);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&U);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,tsrhs,TSFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);  
   ctx.f = f;
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&ctx.snes);CHKERRQ(ierr);
@@ -85,7 +84,6 @@ int main(int argc,char **argv)
    Defines the RHS function that is passed to the time-integrator. 
 
    Solves F(U,V) for V and then computes f(U,V)
-
 */
 PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
 {
@@ -102,7 +100,6 @@ PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
 
 /*
    Defines the nonlinear function that is passed to the nonlinear solver
-
 */
 PetscErrorCode SNESFunction(SNES snes,Vec V,Vec F,void *actx)
 {
@@ -114,4 +111,9 @@ PetscErrorCode SNESFunction(SNES snes,Vec V,Vec F,void *actx)
   PetscFunctionReturn(0);
 }
 
+/*TEST
 
+    test:
+      args:  -ts_monitor -ts_view 
+
+TEST*/

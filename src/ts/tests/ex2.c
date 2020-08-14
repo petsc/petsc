@@ -31,15 +31,12 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       time_steps = 100,steps;
-  PetscMPIInt    size;
   Vec            global;
   PetscReal      dt,ftime;
   TS             ts;
   Mat            A = 0,S;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-
   ierr = PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
 
   /* set initial conditions */
@@ -52,7 +49,6 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,Monitor,NULL,NULL);CHKERRQ(ierr);
-
   dt = 0.001;
 
   /*
@@ -82,7 +78,6 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
 
-
   /* free the memories */
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
@@ -102,19 +97,17 @@ PetscErrorCode MyMatMult(Mat S,Vec x,Vec y)
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(x,&inptr);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&outptr);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(y,&outptr);CHKERRQ(ierr);
 
   outptr[0] = 2.0*inptr[0]+inptr[1];
   outptr[1] = inptr[0]+2.0*inptr[1]+inptr[2];
   outptr[2] = inptr[1]+2.0*inptr[2];
 
   ierr = VecRestoreArrayRead(x,&inptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&outptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(y,&outptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-
-/* -------------------------------------------------------------------*/
 /* this test problem has initial values (1,1,1).                      */
 PetscErrorCode Initial(Vec global,void *ctx)
 {
@@ -127,12 +120,12 @@ PetscErrorCode Initial(Vec global,void *ctx)
   ierr = VecGetLocalSize(global,&locsize);CHKERRQ(ierr);
 
   /* Initialize the array */
-  ierr = VecGetArray(global,&localptr);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(global,&localptr);CHKERRQ(ierr);
   for (i=0; i<locsize; i++) localptr[i] = 1.0;
 
   if (mybase == 0) localptr[0]=1.0;
 
-  ierr = VecRestoreArray(global,&localptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(global,&localptr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -209,14 +202,14 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecGetArrayRead(tmp_in,&inptr);CHKERRQ(ierr);
 
   /* Extract outcome array*/
-  ierr = VecGetArray(tmp_out,&outptr);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(tmp_out,&outptr);CHKERRQ(ierr);
 
   outptr[0] = 2.0*inptr[0]+inptr[1];
   outptr[1] = inptr[0]+2.0*inptr[1]+inptr[2];
   outptr[2] = inptr[1]+2.0*inptr[2];
 
   ierr = VecRestoreArrayRead(tmp_in,&inptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(tmp_out,&outptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(tmp_out,&outptr);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

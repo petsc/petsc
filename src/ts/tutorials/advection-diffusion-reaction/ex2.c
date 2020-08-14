@@ -50,14 +50,14 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
   f[0] = udot[0] - k1(ctx,t)*u[2] + ctx->k2*u[0];
   f[1] = udot[1] - k1(ctx,t)*u[2] + ctx->k3*u[1]*u[3] - ctx->sigma2;
   f[2] = udot[2] - ctx->k3*u[1]*u[3] + k1(ctx,t)*u[2];
   f[3] = udot[3] - ctx->k2*u[0] + ctx->k3*u[1]*u[3];
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -132,12 +132,12 @@ int main(int argc,char **argv)
   ctx.sigma2 = 1.0e6;
 
   ierr = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
-  ierr = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(ctx.initialsolution,&u);CHKERRQ(ierr);
   u[0] = 0.0;
   u[1] = 1.3e8;
   u[2] = 5.0e11;
   u[3] = 8.0e11;
-  ierr = VecRestoreArray(ctx.initialsolution,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(ctx.initialsolution,&u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
