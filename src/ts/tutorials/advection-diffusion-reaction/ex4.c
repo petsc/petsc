@@ -166,7 +166,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   */
   ierr = DMDAVecGetArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayRead(da,Udot,&udot);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayWrite(da,F,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -211,7 +211,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   */
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,Udot,&udot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayWrite(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -232,7 +232,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayWrite(da,U,&u);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -252,7 +252,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayWrite(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

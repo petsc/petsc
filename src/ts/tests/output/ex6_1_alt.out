@@ -1,0 +1,19 @@
+0 TS dt 0.1 time 0.
+1 TS dt 0.1 time 0.1
+2 TS dt 0.1 time 0.2
+3 TS dt 0.1 time 0.3
+4 TS dt 0.1 time 0.4
+5 TS dt 0.1 time 0.5
+6 TS dt 0.1 time 0.6
+7 TS dt 0.1 time 0.7
+8 TS dt 0.1 time 0.8
+9 TS dt 0.1 time 0.9
+10 TS dt 0.1 time 1.
+Interpolated solution at time 1. between steps 9 and 10
+TS Object: 1 MPI processes
+  type: euler
+  maximum time=1.
+  total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
+  TSAdapt Object: 1 MPI processes
+    type: none
