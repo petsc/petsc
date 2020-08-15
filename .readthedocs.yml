@@ -1,6 +1,7 @@
 version: 2
 
 sphinx:
+  builder: dirhtml
   configuration: src/docs/sphinx_docs/conf.py
 
 python:
