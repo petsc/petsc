@@ -53,10 +53,28 @@ Finite Element
   :3D: `SNES example 17 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex17.c.html>`_
   :3D: `SNES example 56 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex56.c.html>`_
 
-A constitutive relationship for finite-deformation elasticity can be introduced to relate stress to a nonlinear strain.
+If we allow finite strains in the body, we can express the stress-strain relation in terms of the Jacobian of the deformation gradient
 
-Finite Element
-  :3D: `SNES example 77 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex77.c.html>`_
+.. math::
+
+  J = \mathrm{det}(F) = \mathrm{det}\left(\nabla u\right)
+
+and the right Cauchy-Green deformation tensor
+
+.. math::
+
+  C = F^T F
+
+so that
+
+.. math::
+
+  \frac{\mu}{2} \left( \mathrm{Tr}(C) - 3 \right) + J p + \frac{\kappa}{2} (J - 1) = 0
+
+In the example itself, everything can be expressed in terms of determinants and cofactors of :math:`F`.
+
+  Finite Element
+    :3D: `SNES example 77 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex77.c.html>`_
 
 
 Stokes

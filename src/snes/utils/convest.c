@@ -317,7 +317,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
       ierr = PetscObjectGetName((PetscObject) dm[r-1], &dmname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);
       for (f = 0; f <= ce->Nf; ++f) {
-        PetscErrorCode (*nspconstr)(DM, PetscInt, MatNullSpace *);
+        PetscErrorCode (*nspconstr)(DM, PetscInt, PetscInt, MatNullSpace *);
 
         ierr = DMGetNullSpaceConstructor(dm[r-1], f, &nspconstr);CHKERRQ(ierr);
         ierr = DMSetNullSpaceConstructor(dm[r],   f,  nspconstr);CHKERRQ(ierr);
