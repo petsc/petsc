@@ -1,7 +1,9 @@
 SNES: Nonlinear Solvers
 -----------------------
 
-.. include:: temp_edit_needed_banner.inc
+.. note::
+
+  This chapter is being cleaned up by Jed Brown.  Contributions are welcome.
 
 The solution of large-scale nonlinear problems pervades many facets of
 computational science and demands robust and flexible solution
@@ -18,6 +20,7 @@ The ``SNES`` class includes methods for solving systems of nonlinear
 equations of the form
 
 .. math::
+   :label: fx0
 
    \mathbf{F}(\mathbf{x}) = 0,
 
@@ -32,22 +35,24 @@ that the user can at runtime change any facet of the solution process.
 
 PETSc’s default method for solving the nonlinear equation is Newton’s
 method. The general form of the :math:`n`-dimensional Newton’s method
-for solving (`[eq_F=0] <#eq_F=0>`__) is
+for solving :math:numref:`fx0` is
 
 .. math::
+   :label: newton
 
    \mathbf{x}_{k+1} = \mathbf{x}_k - \mathbf{J}(\mathbf{x}_k)^{-1} \mathbf{F}(\mathbf{x}_k), \;\; k=0,1, \ldots,
 
 where :math:`\mathbf{x}_0` is an initial approximation to the solution and
 :math:`\mathbf{J}(\mathbf{x}_k) = \mathbf{F}'(\mathbf{x}_k)`, the Jacobian, is nonsingular at each
-iteration. In practice, the Newton iteration (`[eq_n1] <#eq_n1>`__) is
+iteration. In practice, the Newton iteration :math:numref:`newton` is
 implemented by the following two steps:
 
 .. math::
 
    \begin{aligned}
-     1. & {\rm (Approximately) \;solve\;\;\;} \mathbf{J}(\mathbf{x}_k) \Delta \mathbf{x}_k = -\mathbf{F}(\mathbf{x}_k).\\
-     2. & {\rm Update\;\;\;} \mathbf{x}_{k+1} = \mathbf{x}_k + \Delta \mathbf{x}_k. \hspace{.225in}\end{aligned}
+   1. & \text{(Approximately) solve} & \mathbf{J}(\mathbf{x}_k) \Delta \mathbf{x}_k &= -\mathbf{F}(\mathbf{x}_k). \\
+   2. & \text{Update} & \mathbf{x}_{k+1} &\gets \mathbf{x}_k + \Delta \mathbf{x}_k.
+   \end{aligned}
 
 Other defect-correction algorithms can be implemented by using different
 choices for :math:`J(\mathbf{x}_k)`.
@@ -59,14 +64,18 @@ Basic SNES Usage
 
 In the simplest usage of the nonlinear solvers, the user must merely
 provide a C, C++, or Fortran routine to evaluate the nonlinear function
-of Equation (`[eq_F=0] <#eq_F=0>`__). The corresponding Jacobian matrix
+:math:numref:`fx0`. The corresponding Jacobian matrix
 can be approximated with finite differences. For codes that are
 typically more efficient and accurate, the user can provide a routine to
 compute the Jacobian; details regarding these application-provided
 routines are discussed below. To provide an overview of the use of the
-nonlinear solvers, we first introduce a complete and simple example in
-Figure `[fig_snesexample] <#fig_snesexample>`__, corresponding to
-```$PETSC_DIR/src/snes/tutorials/ex1.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex1.c.html>`__.
+nonlinear solvers, browse the concrete example in `ex1.c <#snes-ex1>`_ or skip ahead to the discussion.
+
+.. admonition:: Listing: ``src/snes/tutorials/ex1.c``
+   :name: snes-ex1
+
+   .. literalinclude:: ../../../snes/tutorials/ex1.c
+      :end-before: /*TEST
 
 To create a ``SNES`` solver, one must first call ``SNESCreate()`` as
 follows:
@@ -75,8 +84,7 @@ follows:
 
    SNESCreate(MPI_Comm comm,SNES *snes);
 
-The user must then set routines for evaluating the function of
-equation (`[eq_F=0] <#eq_F=0>`__) and its associated Jacobian matrix, as
+The user must then set routines for evaluating the residual function :math:numref:`fx0` and its associated Jacobian matrix, as
 discussed in the following sections.
 
 To choose a nonlinear solution method, the user can either call
@@ -100,7 +108,7 @@ various parameters and customized routines (e.g., specialized line
 search variants), prescribe the convergence tolerance, and set
 monitoring routines. With this routine the user can also control all
 linear solver options in the ``KSP``, and ``PC`` modules, as discussed
-in Chapter `[ch_ksp] <#ch_ksp>`__.
+in :any:`chapter_ksp`.
 
 After having set these routines and options, the user solves the problem
 by calling
@@ -109,11 +117,10 @@ by calling
 
    SNESSolve(SNES snes,Vec b,Vec x);
 
-where ``x`` indicates the solution vector. The user should initialize
-this vector to the initial guess for the nonlinear solver prior to
-calling ``SNESSolve()``. In particular, to employ an initial guess of
+where ``x`` should be initialized to the initial guess before calling and contains the solution on return.
+In particular, to employ an initial guess of
 zero, the user should explicitly set this vector to zero by calling
-``VecSet()``. Finally, after solving the nonlinear system (or several
+``VecZeroEntries(x)``. Finally, after solving the nonlinear system (or several
 systems), the user should destroy the ``SNES`` context with
 
 ::
@@ -126,15 +133,13 @@ Nonlinear Function Evaluation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When solving a system of nonlinear equations, the user must provide a
-vector, ``f``, for storing the function of
-Equation (`[eq_F=0] <#eq_F=0>`__), as well as a routine that evaluates
-this function at the vector ``x``. This information should be set with
-the command
+a residual function :math:numref:`fx0`, which is set using
 
 ::
 
    SNESSetFunction(SNES snes,Vec f,PetscErrorCode (*FormFunction)(SNES snes,Vec x,Vec f,void *ctx),void *ctx);
 
+The argument ``f`` is an optional vector for storing the solution; pass ``NULL`` to have the ``SNES`` allocate it for you.
 The argument ``ctx`` is an optional user-defined context, which can
 store any private, application-specific data required by the function
 evaluation routine; ``NULL`` should be used if such information is not
@@ -142,9 +147,9 @@ needed. In C and C++, a user-defined context is merely a structure in
 which various objects can be stashed; in Fortran a user context can be
 an integer array that contains both parameters and pointers to PETSc
 objects.
-```${PETSC_DIR}/src/snes/tutorials/ex5.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`__
+`${PETSC_DIR}/src/snes/tutorials/ex5.c <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`_
 and
-```${PETSC_DIR}/src/snes/tutorials/ex5f.F90`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`__
+`${PETSC_DIR}/src/snes/tutorials/ex5f.F90 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`_
 give examples of user-defined application contexts in C and Fortran,
 respectively.
 
@@ -159,7 +164,7 @@ done with
 
 ::
 
-   SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes, Vec x,Mat A,Mat B,void *ctx),void *ctx);
+   SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes,Vec x,Mat A,Mat B,void *ctx),void *ctx);
 
 The arguments of the routine ``FormJacobian()`` are the current iterate,
 ``x``; the (approximate) Jacobian matrix, ``Amat``; the matrix from
@@ -168,9 +173,8 @@ same as ``Amat``); and an optional user-defined Jacobian context,
 ``ctx``, for application-specific data. Note that the ``SNES`` solvers
 are all data-structure neutral, so the full range of PETSc matrix
 formats (including “matrix-free” methods) can be used.
-Chapter `2 <#chapter_matrices>`__ discusses information regarding
-available matrix formats and options, while
-Section `4.5 <#sec_nlmatrixfree>`__ focuses on matrix-free methods in
+:any:`chapter_matrices` discusses information regarding
+available matrix formats and options, while :any:`sec_nlmatrixfree` focuses on matrix-free methods in
 ``SNES``. We briefly touch on a few details of matrix usage that are
 particularly important for efficient use of the nonlinear solvers.
 
@@ -180,7 +184,7 @@ are identical, as in many simulations, this makes no difference.
 However, it allows us to check the analytic Jacobian we construct in
 ``FormJacobian()`` by passing the ``-snes_mf_operator`` flag. This
 causes PETSc to approximate the Jacobian using finite differencing of
-the function evaluation (discussed in section `4.6 <#sec_fdmatrix>`__),
+the function evaluation (discussed in :any:`sec_fdmatrix`),
 and the analytic Jacobian becomes merely the preconditioner. Even if the
 analytic Jacobian is incorrect, it is likely that the finite difference
 approximation will converge, and thus this is an excellent method to
@@ -192,7 +196,7 @@ the Jacobian approximation has been transferred to the preconditioner.
 One such approximate Jacobian comes from “Picard linearization” which
 writes the nonlinear system as
 
-.. math:: \mathbf{F}(\mathbf{x}) = \mathbf{A}(\mathbf{x}) \mathbf{x} - \mathbf{b} = 0
+.. math:: \mathbf{F}(\mathbf{x}) := \mathbf{A}(\mathbf{x}) \mathbf{x} - \mathbf{b} = 0
 
 where :math:`\mathbf{A}(\mathbf{x})` usually contains the lower-derivative parts of the
 equation. For example, the nonlinear diffusion problem
@@ -218,7 +222,7 @@ however, if the matrix structure completely changes, creating an
 entirely new matrix context may be preferable. Upon subsequent calls to
 the ``FormJacobian()`` routine, the user may wish to reinitialize the
 matrix entries to zero by calling ``MatZeroEntries()``. See
-Section `2.4 <#sec_othermat>`__ for details on the reuse of the matrix
+:any:`sec_othermat` for details on the reuse of the matrix
 context.
 
 The directory ``${PETSC_DIR}/src/snes/tutorials`` provides a variety of
@@ -330,22 +334,20 @@ The method ``SNESNEWTONLS`` (``-snes_type newtonls``) provides a
 line search Newton method for solving systems of nonlinear equations. By
 default, this technique employs cubic backtracking
 :cite:`dennis:83`. Alternative line search techniques are
-listed in Table `4.2 <#tab_linesearches>`__.
+listed in Table :any:`tab-linesearches`.
 
-.. container::
-   :name: tab_linesearches
+.. table:: PETSc Line Search Methods
+   :name: tab-linesearches
 
-   .. table:: PETSc Line Search Methods
-
-      ==================== ======================= ================
-      **Line Search**      **SNESLineSearchType**  **Options Name**
-      ==================== ======================= ================
-      Backtracking         ``SNESLINESEARCHBT``    ``bt``
-      (damped) step        ``SNESLINESEARCHBASIC`` ``basic``
-      L2-norm Minimization ``SNESLINESEARCHL2``    ``l2``
-      Critical point       ``SNESLINESEARCHCP``    ``cp``
-      Shell                ``SNESLINESEARCHSHELL`` ``shell``
-      ==================== ======================= ================
+   ==================== ======================= ================
+   **Line Search**      **SNESLineSearchType**  **Options Name**
+   ==================== ======================= ================
+   Backtracking         ``SNESLINESEARCHBT``    ``bt``
+   (damped) step        ``SNESLINESEARCHBASIC`` ``basic``
+   L2-norm Minimization ``SNESLINESEARCHL2``    ``l2``
+   Critical point       ``SNESLINESEARCHCP``    ``cp``
+   Shell                ``SNESLINESEARCHSHELL`` ``shell``
+   ==================== ======================= ================
 
 Every ``SNES`` has a line search context of type ``SNESLineSearch`` that
 may be retrieved using
@@ -375,10 +377,11 @@ the end of the linesearch.
 The default line search for the line search Newton method,
 ``SNESLINESEARCHBT`` involves several parameters, which are set to
 defaults that are reasonable for many applications. The user can
-override the defaults by using the options
+override the defaults by using the following options:
 
-``-snes_linesearch_alpha <alpha>``, ``-snes_linesearch_maxstep <max>``,
-and ``-snes_linesearch_minlambda <tol>``.
+* ``-snes_linesearch_alpha <alpha>``
+* ``-snes_linesearch_maxstep <max>``
+* ``-snes_linesearch_minlambda <tol>``
 
 Besides the backtracking linesearch, there are ``SNESLINESEARCHL2``,
 which uses a polynomial secant minimization of :math:`||F(x)||_2`, and
@@ -522,8 +525,7 @@ and the cycle type, 1 for V, 2 for W, may be set with
 
    SNESFASSetCycles(SNES snes, PetscInt cycles);.
 
-Much like the interface to ``PCMG`` described in
-Section `[sec_mg] <#sec_mg>`__, there are interfaces to recover the
+Much like the interface to ``PCMG`` described in :any:`sec_mg`, there are interfaces to recover the
 various levels’ cycles and smoothers. The level smoothers may be
 accessed with
 
@@ -621,10 +623,15 @@ used in many of the default ``SNES`` convergence tests:
 
 This routine also sets the maximum numbers of allowable nonlinear
 iterations, ``its``, and function evaluations, ``fcts``. The
-corresponding options database commands for setting these parameters are
-``-snes_atol <atol>``, ``-snes_rtol <rtol>``, ``-snes_stol <stol>``,
-``-snes_max_it <its>``, and ``-snes_max_funcs <fcts>``. A related
-routine is ``SNESGetTolerances()``.
+corresponding options database commands for setting these parameters are:
+
+* ``-snes_atol <atol>``
+* ``-snes_rtol <rtol>``
+* ``-snes_stol <stol>``
+* ``-snes_max_it <its>``
+* ``-snes_max_funcs <fcts>``
+
+A related routine is ``SNESGetTolerances()``.
 
 Convergence tests for trust regions methods often use an additional
 parameter that indicates the minimum allowable trust region radius. The
@@ -717,29 +724,31 @@ causes the two matrices to be printed to the screen.
 
 Another means for verifying the correctness of a code for Jacobian
 computation is running the problem with either the finite difference or
-matrix-free variant, ``-snes_fd`` or ``-snes_mf``. see Section
-`4.6 <#sec_fdmatrix>`__ or Section `4.5 <#sec_nlmatrixfree>`__). If a
+matrix-free variant, ``-snes_fd`` or ``-snes_mf``; see :any:`sec_fdmatrix` or :any:`sec_nlmatrixfree`.
+If a
 problem converges well with these matrix approximations but not with a
 user-provided routine, the problem probably lies with the hand-coded
-matrix. See the note in Section `4.1.2 <#sec_snesjacobian>`__ about
-assembling your Jabobian in the “preconditioner” slot ``B``.
+matrix. See the note in :any:`sec_snesjacobian` about
+assembling your Jabobian in the "preconditioner" slot ``Pmat``.
 
-The correctness of user provided MATSHELL Jacobians in general can be
-checked with MatShellTestMultTranspose and MatShellTestMult.
+The correctness of user provided ``MATSHELL`` Jacobians in general can be
+checked with ``MatShellTestMultTranspose()`` and ``MatShellTestMult()``.
 
-The correctness of user provided MATSHELL Jacobians via TSSetRHSJacobian
-can be checked with TSRHSJacobianTestTranspose and TSRHSJacobianTest
+The correctness of user provided ``MATSHELL`` Jacobians via ``TSSetRHSJacobian()``
+can be checked with ``TSRHSJacobianTestTranspose()`` and ``TSRHSJacobianTest()``
 that check the correction of the matrix-transpose vector product and the
-matrix-product. From the command line these can be checked with
-``-ts_rhs_jacobian_test_mult_transpose``
-``-mat_shell_test_mult_transpose_view`` and
-``-ts_rhs_jacobian_test_mult`` ``-mat_shell_test_mult_view``.
+matrix-product. From the command line, these can be checked with
+
+* ``-ts_rhs_jacobian_test_mult_transpose``
+* ``-mat_shell_test_mult_transpose_view``
+* ``-ts_rhs_jacobian_test_mult``
+* ``-mat_shell_test_mult_view``
 
 Inexact Newton-like Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Since exact solution of the linear Newton systems within
-(`[eq_n1] <#eq_n1>`__) at each iteration can be costly, modifications
+Since exact solution of the linear Newton systems within :math:numref:`newton`
+at each iteration can be costly, modifications
 are often introduced that significantly reduce these expenses and yet
 retain the rapid convergence of Newton’s method. Inexact or truncated
 Newton techniques approximately solve the linear systems using an
@@ -750,8 +759,8 @@ computational work. Within the class of inexact Newton methods, of
 particular interest are Newton-Krylov methods, where the subsidiary
 iterative technique for solving the Newton system is chosen from the
 class of Krylov subspace projection methods. Note that at runtime the
-user can set any of the linear solver options discussed in
-Chapter `[ch_ksp] <#ch_ksp>`__, such as ``-ksp_type <ksp_method>`` and
+user can set any of the linear solver options discussed in :any:`chapter_ksp`,
+such as ``-ksp_type <ksp_method>`` and
 ``-pc_type <pc_method>``, to set the Krylov subspace and preconditioner
 methods.
 
@@ -789,8 +798,7 @@ the subsidiary linear systems within the Newton-like methods of
 employ the techniques of Eisenstat and Walker :cite:`EW96`
 to compute :math:`\eta_k` at each step of the nonlinear solver by using
 the option ``-snes_ksp_ew_conv`` . In addition, by adding one’s own
-``KSP`` convergence test (see Section
-`3.3.2 <#section_convergencetests>`__), one can easily create one’s own,
+``KSP`` convergence test (see :any:`sec_convergencetests`), one can easily create one’s own,
 problem-dependent, inner convergence tests.
 
 .. _sec_nlmatrixfree:
@@ -805,7 +813,7 @@ particular matrix-free method. The matrix-free variant is allowed *only*
 when the linear systems are solved by an iterative method in combination
 with no preconditioning (``PCNONE`` or ``-pc_type`` ``none``), a
 user-provided preconditioner matrix, or a user-provided preconditioner
-shell (``PCSHELL``, discussed in Section `[sec_pc] <#sec_pc>`__); that
+shell (``PCSHELL``, discussed in :any:`sec_pc`); that
 is, obviously matrix-free methods cannot be used with a direct solver,
 approximate factorization, or other preconditioner which requires access
 to explicit matrix entries.
@@ -820,8 +828,8 @@ the routine
 This routine creates the data structures needed for the matrix-vector
 products that arise within Krylov space iterative
 methods :cite:`brownsaad:90` by employing the matrix type
-``MATSHELL``, discussed in
-Section `[sec_matrixfree] <#sec_matrixfree>`__. The default ``SNES``
+``MATSHELL``, discussed in :any:`sec_matrixfree`.
+The default ``SNES``
 matrix-free approximations can also be invoked with the command
 ``-snes_mf``. Or, one can retain the user-provided Jacobian
 preconditioner, but replace the user-provided Jacobian matrix with the
@@ -909,21 +917,24 @@ computed via the routines
    MatMFFDResetHHistory(Mat,PetscScalar *,int);
    MatMFFDGetH(Mat,PetscScalar *);
 
-We include an example in
-Figure `[fig_snesexample2] <#fig_snesexample2>`__ that explicitly uses a
-matrix-free approach. Note that by using the option ``-snes_mf`` one can
+We include an explicit example of using matrix-free methods in `ex3.c <#snes-ex3>`_.
+Note that by using the option ``-snes_mf`` one can
 easily convert any ``SNES`` code to use a matrix-free Newton-Krylov
 method without a preconditioner. As shown in this example,
 ``SNESSetFromOptions()`` must be called *after* ``SNESSetJacobian()`` to
 enable runtime switching between the user-specified Jacobian and the
 default ``SNES`` matrix-free form.
 
+.. admonition:: Listing: ``src/snes/tutorials/ex3.c``
+   :name: snes-ex3
+
+   .. literalinclude:: ../../../snes/tutorials/ex3.c
+      :end-before: /*TEST
+
 Table :any:`tab-jacobians` summarizes the various matrix situations
 that ``SNES`` supports. In particular, different linear system matrices
 and preconditioning matrices are allowed, as well as both matrix-free
-and application-provided preconditioners. If
-```${PETSC_DIR}/src/snes/tutorials/ex3.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex3.c.html>`__,
-listed in Figure `[fig_snesexample2] <#fig_snesexample2>`__, is run with
+and application-provided preconditioners. If `ex3.c <#snes-ex3>`_ is run with
 the options ``-snes_mf`` and ``-user_precond`` then it uses a
 matrix-free application of the matrix-vector multiple and a user
 provided matrix free Jacobian.
@@ -989,13 +1000,13 @@ A code fragment that demonstrates this process is given below.
    MatColoringSetType(coloring,MATCOLORINGSL);
    MatColoringSetFromOptions(coloring);
    MatColoringApply(coloring, &iscoloring);
-   MatColoringDestroy( &coloring);
+   MatColoringDestroy(&coloring);
    /*
       Create the data structure that SNESComputeJacobianDefaultColor() uses
       to compute the actual Jacobians via finite differences.
    */
    MatFDColoringCreate(J,iscoloring, &fdcoloring);
-   ISColoringDestroy( &iscoloring);
+   ISColoringDestroy(&iscoloring);
    MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction, &user);
    MatFDColoringSetFromOptions(fdcoloring);
 
@@ -1012,8 +1023,9 @@ problem dependent, but fortunately, for most structured grid problems
 (the class of problems for which PETSc was originally designed) if one
 knows the stencil used for the nonlinear function one can usually fairly
 easily obtain an estimate of the location of nonzeros in the matrix.
-This is harder in the unstructured case, and has not yet been
-implemented in general.
+This is harder in the unstructured case, but one typically knows where the nonzero entries are from the mesh topology and distribution of degrees of freedom.
+If using ``DMPlex`` (:any:`chapter_unstructured`) for unstructured meshes, the nonzero locations will be identified in ``DMCreateMatrix()`` and the procedure above can be used.
+Most external packages for unstructured meshes have similar functionality.
 
 One need not necessarily use a ``MatColoring`` object to determine a
 coloring. For example, if a grid can be colored directly (without using
@@ -1022,25 +1034,45 @@ the associated matrix), then that coloring can be provided to
 nonzero structure in the matrix regardless of which coloring routine is
 used.
 
-For sequential matrices PETSc provides three matrix coloring routines on
-from the MINPACK package :cite:`more84`: smallest-last
-(``sl``), largest-first (``lf``), and incidence-degree (``id``). In
-addition, two implementations of parallel colorings are in PETSc, greedy
-(``greedy``) and Jones-Plassmann (``jp``). These colorings, as well as
-the “natural” coloring for which each column has its own unique color,
-may be accessed with the command line options
+PETSc provides the following coloring algorithms, which can be selected using ``MatColoringSetType()`` or via the command line argument ``-mat_coloring_type``.
 
-::
+.. list-table::
+   :header-rows: 1
 
-   -mat_coloring_type <l,id,lf,natural,greedy,jp>
+   * - Algorithm
+     - ``MatColoringType``
+     - ``-mat_coloring_type``
+     - Parallel
+   * - smallest-last :cite:`more84`
+     - ``MATCOLORINGSL``
+     - ``sl``
+     - No
+   * - largest-first :cite:`more84`
+     - ``MATCOLORINGLF``
+     - ``lf``
+     - No
+   * - incidence-degree :cite:`more84`
+     - ``MATCOLORINGID``
+     - ``id``
+     - No
+   * - Jones-Plassmann :cite:`jp:pcolor`
+     - ``MATCOLORINGJP``
+     - ``jp``
+     - Yes
+   * - Greedy
+     - ``MATCOLORINGGREEDY``
+     - ``greedy``
+     - Yes
+   * - Natural (1 color per column)
+     - ``MATCOLORINGNATURAL``
+     - ``natural``
+     - Yes
+   * - Power (:math:`A^k` followed by 1-coloring)
+     - ``MATCOLORINGPOWER``
+     - ``power``
+     - Yes
 
-Alternatively, one can set a coloring type of ``MATCOLORINGGREEDY`` or
-``MATCOLORINGJP`` for parallel algorithms, or ``MATCOLORINGSL``,
-``MATCOLORINGID``, ``MATCOLORINGLF``, ``MATCOLORINGNATURAL`` for
-sequential algorithms when calling ``MatColoringSetType()``.
-
-As for the matrix-free computation of Jacobians (see Section
-`4.5 <#sec_nlmatrixfree>`__), two parameters affect the accuracy of the
+As for the matrix-free computation of Jacobians (:any:`sec_nlmatrixfree`), two parameters affect the accuracy of the
 finite difference Jacobian approximation. These are set with the command
 
 ::
@@ -1067,13 +1099,13 @@ where :math:`h` is computed via:
    u_{\min} \cdot \operatorname{sign}(u_{i})  & \text{otherwise}.
    \end{cases}
 
-for MATMFFD_DS or:
+for ``MATMFFD_DS`` or:
 
 .. math::
 
    h = e_{\text{rel}} \sqrt(\|u\|)
 
-for MATMFFD_WP (default). These parameters may be set from the options
+for ``MATMFFD_WP`` (default). These parameters may be set from the options
 database with
 
 ::

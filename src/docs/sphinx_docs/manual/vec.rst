@@ -1240,7 +1240,6 @@ Section `2.5 <#sec_partitioning>`__ discusses the important topic of
 partitioning an unstructured grid.
 
 .. [1]
-   Also see Chapter `9 <#ch_unstructured>`__ which describes ``DMPlex``,
-   an abstraction for working with unstructured grids.
+   Also see ``DMPlex`` (:any:`chapter_unstructured`), an abstraction for working with unstructured grids.
 
 

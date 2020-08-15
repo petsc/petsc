@@ -1,3 +1,5 @@
+.. _chapter_ksp:
+
 KSP: Linear System Solvers
 --------------------------
 
@@ -1513,10 +1515,10 @@ uses two preconditioners: ILU(0) and 10 iterations of GMRES with Jacobi
 preconditioning. However, it is not clear whether one would ever wish to
 do such a thing.
 
+.. _sec_mg:
+
 Multigrid Preconditioners
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-
-[sec_mg]
 
 A large suite of routines is available for using geometric multigrid as
 a preconditioner [2]_. In the ``PC`` framework, the user is required to
