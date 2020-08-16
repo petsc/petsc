@@ -1927,10 +1927,8 @@ PetscErrorCode PetscFECreateLagrange(MPI_Comm comm, PetscInt dim, PetscInt Nc, P
   ierr = PetscDualSpaceSetOrder(Q, k);CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeSetTensor(Q, tensor);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
-  /* Create element */
+  /* Create finite element */
   ierr = PetscFECreate(comm, fem);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(name, 64, "P%d", (int) k);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *fem, name);CHKERRQ(ierr);
   ierr = PetscFESetType(*fem, PETSCFEBASIC);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
@@ -1952,6 +1950,9 @@ PetscErrorCode PetscFECreateLagrange(MPI_Comm comm, PetscInt dim, PetscInt Nc, P
   ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
+  /* Set finite element name */
+  ierr = PetscSNPrintf(name, sizeof(name), "%s%D", isSimplex? "P" : "Q", k);CHKERRQ(ierr);
+  ierr = PetscFESetName(*fem, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
