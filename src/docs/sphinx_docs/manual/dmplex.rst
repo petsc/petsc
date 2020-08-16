@@ -1,4 +1,4 @@
-.. _ch_unstructured:
+.. _chapter_unstructured:
 
 DMPlex: Unstructured Grids in PETSc
 -----------------------------------

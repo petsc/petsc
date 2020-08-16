@@ -51,6 +51,7 @@ extensions = [
     'sphinx.ext.graphviz',
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
+    'sphinxcontrib.rsvgconverter',
     'html5_petsc',  # Overrides HTML5Translator
 ]
 

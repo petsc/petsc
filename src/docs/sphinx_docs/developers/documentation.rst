@@ -79,13 +79,13 @@ Sphinx Documentation Guidelines
   the following example. Note that an "absolute" path has been used, which means
   relative to the root for the Sphinx docs (where ``conf.py`` is found).
 
-.. code-block:: rst
+  .. code-block:: rst
 
-    .. literalinclude:: /../../../src/sys/error/err.c
-       :language: c
-       :start-at: PetscErrorCode PetscError(
-       :end-at: PetscFunctionReturn(0)
-       :append: }
+      .. literalinclude:: /../../../src/sys/error/err.c
+         :language: c
+         :start-at: PetscErrorCode PetscError(
+         :end-at: PetscFunctionReturn(0)
+         :append: }
 
 * We use the `sphinxcontrib-biblatex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
@@ -96,14 +96,55 @@ Sphinx Documentation Guidelines
   promises to support our use case better with "foot" citations, which can be investigated
   when a new release is available.
 
-* Note that you can provide images in more than one format. In particular, it might be useful to include a PNG image for use on the web, and a PDF image to use in the latex manual. This can be done with a wildcard extension, as in the following example, which uses ``ghost.png`` for the web but ``ghost.pdf`` when building a PDF with LaTeX.
+* When possible, please use SVG for images.  SVG is web-friendly and will be automatically converted to PDF using ``rsvg-convert`` (installable with your package manager, e.g., ``librsvg2-bin`` on Debian/Ubuntu systems).  If SVG originals are not available, it is useful to provide images in both web-friedly (such as PNG) and PDF formats.  This can be done with a wildcard extension, as in the following example, which uses ``ghost.png`` for the web but ``ghost.pdf`` when building a PDF with LaTeX.
 
-.. code-block:: rst
+  .. code-block:: rst
 
-  .. figure:: ghost.*
-     :alt: Ghost Points
+     .. figure:: ghost.*
+        :alt: Ghost Points
 
-     Ghost Points
+        Ghost Points
+
+* Prefer formatting styles that are easy to modify and maintain.  In particular, use of `list-table <https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table>`_ is recommended.
+
+  .. code-block:: rst
+
+     .. list-table::
+        :header-rows: 1
+
+        * - Treat
+          - Quantity
+          - Description
+        * - Albatross
+          - 2.99
+          - On a stick!
+        * - Crunchy Frog
+          - 1.49
+          - If we took the bones out, it wouldn't be
+            crunchy, now would it?
+        * - Gannet Ripple
+          - 1.99
+          - On a stick!
+
+which renders as
+
+.. list-table::
+   :header-rows: 1
+
+   * - Treat
+     - Quantity
+     - Description
+   * - Albatross
+     - 2.99
+     - On a stick!
+   * - Crunchy Frog
+     - 1.49
+     - If we took the bones out, it wouldn't be
+       crunchy, now would it?
+   * - Gannet Ripple
+     - 1.99
+     - On a stick!
+
 
 Porting LaTeX to Sphinx
 -----------------------
