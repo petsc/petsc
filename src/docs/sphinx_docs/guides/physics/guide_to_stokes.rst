@@ -1,6 +1,6 @@
-===========================================================
+============================================================
 Guide to the Stokes Equations using Finite Elements in PETSc
-===========================================================
+============================================================
 
 This guide accompanies `SNES Example 62 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex62.c.html>`__.
 
