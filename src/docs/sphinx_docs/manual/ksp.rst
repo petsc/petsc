@@ -3,16 +3,13 @@
 KSP: Linear System Solvers
 --------------------------
 
-.. note::
-  
-  This chapter is being cleaned up by Patrick Sanan. 
-
 The ``KSP`` object is the heart of PETSc, because it provides uniform
 and efficient access to all of the package’s linear system solvers,
 including parallel and sequential, direct and iterative. ``KSP`` is
-intended for solving nonsingular systems of the form
+intended for solving systems of the form
 
 .. math::
+  :label: eq_axeqb
 
    A x = b,
 
@@ -24,12 +21,12 @@ techniques and their associated options can be selected at runtime.
 
 The combination of a Krylov subspace method and a preconditioner is at
 the center of most modern numerical codes for the iterative solution of
-linear systems. See, for example, :cite:`fgn` for an
-overview of the theory of such methods. 
+linear systems. Many textbooks (e.g. :cite:`fgn` :cite:`VanDerVorst2003`, or :cite:`saad2003`) provide an
+overview of the theory of such methods.
 The ``KSP`` package, discussed in
-Section `[sec_ksp] <#sec_ksp>`__, provides many popular Krylov subspace
+:any:`sec_ksp`, provides many popular Krylov subspace
 iterative methods; the ``PC`` module, described in
-Section `[sec_pc] <#sec_pc>`__, includes a variety of preconditioners.
+:any:`sec_pc`, includes a variety of preconditioners.
 
 .. _sec_usingksp:
 
@@ -132,7 +129,7 @@ The application programmer can then directly call any of the ``PC`` or
 
 To solve a linear system with a direct solver (currently supported by
 PETSc for sequential matrices, and by several external solvers through
-PETSc interfaces (see Section :any:`sec_externalsol`)) one may use
+PETSc interfaces (see :any:`sec_externalsol`)) one may use
 the options ``-ksp_type`` ``preonly`` ``-pc_type`` ``lu`` (see below).
 
 By default, if a direct solver is used, the factorization is *not* done
@@ -156,7 +153,7 @@ operations will *not* be repeated for successive solves.
 To solve successive linear systems that have *different* preconditioner
 matrices (i.e., the matrix elements and/or the matrix data structure
 change), the user *must* call ``KSPSetOperators()`` and ``KSPSolve()``
-for each solve. See Section :any:`sec_usingksp` for a description
+for each solve. See :any:`sec_usingksp` for a description
 of various flags for ``KSPSetOperators()`` that can save work for such
 cases.
 
@@ -176,13 +173,13 @@ be used, one calls the command
 The type can be one of ``KSPRICHARDSON``, ``KSPCHEBYSHEV``, ``KSPCG``,
 ``KSPGMRES``, ``KSPTCQMR``, ``KSPBCGS``, ``KSPCGS``, ``KSPTFQMR``,
 ``KSPCR``, ``KSPLSQR``, ``KSPBICG``, ``KSPPREONLY``. or others; see
-:any:`tab_kspdefaults` or the ``KSPType`` man page for more.
+:any:`tab-kspdefaults` or the ``KSPType`` man page for more.
 The ``KSP`` method can also be set with the options database command
 ``-ksp_type``, followed by one of the options ``richardson``,
 ``chebyshev``, ``cg``, ``gmres``, ``tcqmr``, ``bcgs``, ``cgs``,
 ``tfqmr``, ``cr``, ``lsqr``, ``bicg``, ``preonly.``, or others (see
-:any:`tab_kspdefaults` or the ``KSPType`` man page) There are
-method-specific options:for instance, for the Richardson, Chebyshev, and
+:any:`tab-kspdefaults` or the ``KSPType`` man page) There are
+method-specific options. For instance, for the Richardson, Chebyshev, and
 GMRES methods:
 
 ::
@@ -261,16 +258,17 @@ Since the rate of convergence of Krylov projection methods for a
 particular linear system is strongly dependent on its spectrum,
 preconditioning is typically used to alter the spectrum and hence
 accelerate the convergence rate of iterative techniques. Preconditioning
-can be applied to the system (`[eq_Ax=b] <#eq_Ax=b>`__) by
+can be applied to the system :any:`eq_axeqb` by
 
 .. math::
+  :label: eq_prec
 
    (M_L^{-1} A M_R^{-1}) \, (M_R x) = M_L^{-1} b,
 
 where :math:`M_L` and :math:`M_R` indicate preconditioning matrices (or,
 matrices from which the preconditioner is to be constructed). If
-:math:`M_L = I` in (`[eq_prec] <#eq_prec>`__), right preconditioning
-results, and the residual of (`[eq_Ax=b] <#eq_Ax=b>`__),
+:math:`M_L = I` in :any:`eq_prec`, right preconditioning
+results, and the residual of :any:`eq_axeqb`,
 
 .. math:: r \equiv b - Ax = b - A M_R^{-1} \, M_R x,
 
@@ -293,12 +291,12 @@ some methods by using the options database command
 Attempting to use right preconditioning for a method that does not
 currently support it results in an error message of the form
 
-::
+.. code-block:: none
 
    KSPSetUp_Richardson:No right preconditioning for KSPRICHARDSON
 
 We summarize the defaults for the residuals used in KSP convergence
-monitoring within :any:`tab_kspdefaults`. Details regarding
+monitoring within :any:`tab-kspdefaults`. Details regarding
 specific convergence tests and monitoring routines are presented in the
 following sections. The preconditioned residual is used by default for
 convergence testing of all left-preconditioned ``KSP`` methods. For the
@@ -311,129 +309,134 @@ can be used by the options database command
    KSPSetNormType(KSP ksp,KSP_NORM_UNPRECONDITIONED);
 
 
-.. container::
+.. list-table:: KSP Objects
+  :name: tab-kspdefaults
+  :header-rows: 1
 
-   .. table:: KSP Objects
-      :name: tab_kspdefaults
+  * - Method
+    - KSPType
+    - Options Database Name
+  * - Richardson
+    - ``KSPRICHARDSON``
+    - ``richardson``
+  * - Chebyshev
+    - ``KSPCHEBYSHEV``
+    - ``chebyshev``
+  * - Conjugate Gradient :cite:`hs:52`
+    - ``KSPCG``
+    - ``cg``
+  * - Pipelined Conjugate Gradients :cite:`GhyselsVanroose2014`
+    - ``KSPPIPECG``
+    - ``pipecg``
+  * - Pipelined Conjugate Gradients (Gropp)
+    - ``KSPGROPPCG``
+    - ``groppcg``
+  * - Pipelined Conjugate Gradients with Residual Replacement
+    - ``KSPPIPECGRR``
+    - ``pipecgrr``
+  * - Conjugate Gradients for the Normal Equations
+    - ``KSPCGNE``
+    - ``cgne``
+  * - Flexible Conjugate Gradients :cite:`flexibleCG`
+    - ``KSPFCG``
+    - ``fcg``
+  * -  Pipelined, Flexible Conjugate Gradients :cite:`SananSchneppMay2016`
+    - ``KSPPIPEFCG``
+    - ``pipefcg``
+  * - Conjugate Gradients for Least Squares
+    - ``KSPCGLS``
+    - ``cgls``
+  * - Conjugate Gradients with Constraint (1)
+    - ``KSPNASH``
+    - ``nash``
+  * - Conjugate Gradients with Constraint (2)
+    - ``KSPSTCG``
+    - ``stcg``
+  * - Conjugate Gradients with Constraint (3)
+    - ``KSPGLTR``
+    - ``gltr``
+  * - Conjugate Gradients with Constraint (4)
+    - ``KSPQCG``
+    - ``qcg``
+  * - BiConjugate Gradient
+    - ``KSPBICG``
+    - ``bicg``
+  * - BiCGSTAB :cite:`v:92`
+    - ``KSPBCGS``
+    - ``bcgs``
+  * - Improved BiCGSTAB
+    - ``KSPIBCGS``
+    - ``ibcgs``
+  * - Flexible BiCGSTAB
+    - ``KSPFBCGS``
+    - ``fbcgs``
+  * - Flexible BiCGSTAB (variant)
+    - ``KSPFBCGSR``
+    - ``fbcgsr``
+  * - Enhanced BiCGSTAB(L)
+    - ``KSPBCGSL``
+    - ``bcgsl``
+  * - Minimal Residual Method :cite:`PaigeSaunders1975`
+    - ``KSPMINRES``
+    - ``minres``
+  * - Generalized Minimal Residual :cite:`ss:86`
+    - ``KSPGMRES``
+    - ``gmres``
+  * - Flexible Generalized Minimal Residual :cite:`Saad1993`
+    - ``KSPFGMRES``
+    - ``fgmres``
+  * - Deflated Generalized Minimal Residual
+    - ``KSPDGMRES``
+    - ``dgmres``
+  * - Pipelined Generalized Minimal Residual :cite:`Ghysels_Ashby_Meerbergen_Vanroose_2012`
+    - ``KSPPGMRES``
+    - ``pgmres``
+  * - Pipelined, Flexible Generalized Minimal Residual :cite:`SananSchneppMay2016`
+    - ``KSPPIPEFGMRES``
+    - ``pipefgmres``
+  * - Generalized Minimal Residual with Accelerated Restart
+    - ``KSPLGMRES``
+    - ``lgmres``
+  * - Conjugate Residual :cite:`eisenstat1983variational`
+    - ``KSPCR``
+    - ``cr``
+  * - Generalized Conjugate Residual
+    - ``KSPGCR``
+    - ``gcr``
+  * - Pipelined Conjugate Residual
+    - ``KSPPIPECR``
+    - ``pipecr``
+  * - Pipelined, Flexible Conjugate Residual :cite:`SananSchneppMay2016`
+    - ``KSPPIPEGCR``
+    - ``pipegcr``
+  * - FETI-DP
+    - ``KSPFETIDP``
+    - ``fetidp``
+  * - Conjugate Gradient Squared :cite:`so:89`
+    - ``KSPCGS``
+    - ``cgs``
+  * - Transpose-Free Quasi-Minimal Residual (1) :cite:`f:93`
+    - ``KSPTFQMR``
+    - ``tfqmr``
+  * - Transpose-Free Quasi-Minimal Residual (2)
+    - ``KSPTCQMR``
+    - ``tcqmr``
+  * - Least Squares Method
+    - ``KSPLSQR``
+    - ``lsqr``
+  * - Symmetric LQ Method :cite:`PaigeSaunders1975`
+    - ``KSPSYMMLQ``
+    - ``symmlq``
+  * - TSIRM
+    - ``KSPTSIRM``
+    - ``tsirm``
+  * - Python Shell
+    - ``KSPPYTHON``
+    - ``python``
+  * - Shell for no ``KSP`` method
+    - ``KSPPREONLY``
+    - ``preonly``
 
-      +-------------------------------+-------------------+----------------+
-      |                               |                   | **Options**    |
-      +-------------------------------+-------------------+----------------+
-      |                               |                   | **Database**   |
-      +-------------------------------+-------------------+----------------+
-      | **Method**                    | **KSPType**       | **Name**       |
-      +-------------------------------+-------------------+----------------+
-      | Richardson                    | ``KSPRICHARDSON`` | ``richardson`` |
-      +-------------------------------+-------------------+----------------+
-      | Chebyshev                     | ``KSPCHEBYSHEV``  | ``chebyshev``  |
-      +-------------------------------+-------------------+----------------+
-      | Conjugate Gradient            | ``KSPCG``         | ``cg``         |
-      | :cite:`hs:52`                 |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Pipelined Conjugate          | ``KSPPIPECG``     | ``pipecg``     |
-      | Gradients                     |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Pipelined Conjugate          | ``KSPGROPPCG``    | ``cgne``       |
-      | Gradients (Gropp)             |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Pipelined Conjugate          | ``KSPPIPECGRR``   | ``pipecgrr``   |
-      | Gradients with Residual       |                   |                |
-      | Replacement                   |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Conjugate Gradients for the  | ``KSPCGNE``       | ``cgne``       |
-      | Normal Equations              |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Flexible Conjugate Gradients | ``KSPFCG``        | ``fcg``        |
-      | :cite`flexibleCG`             |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Pipelined, Flexible          | ``KSPPIPEFCG``    | ``pipefcg``    |
-      | Conjugate Gradient            |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Conjugate Gradients for      | ``KSPCGLS``       | ``cgls``       |
-      | Least Squares                 |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Conjugate Gradients with     | ``KSPNASH``       | ``nash``       |
-      | Constraint (1)                |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Conjugate Gradients with     | ``KSPSTCG``       | ``stcg``       |
-      | Constraint (2)                |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Conjugate Gradients with     | ``KSPGLTR``       | ``gltr``       |
-      | Constraint (3)                |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Conjugate Gradients with     | ``KSPQCG``        | ``qcg``        |
-      | Constraint (4)                |                   |                |
-      +-------------------------------+-------------------+----------------+
-      | BiConjugate Gradient          | ``KSPBICG``       | ``bicg``       |
-      +-------------------------------+-------------------+----------------+
-      | BiCGSTAB                      | ``KSPBCGS``       | ``bcgs``       |
-      | :cite`v:92`                   |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Improved BiCGSTAB            | ``KSPIBCGS``      | ``ibcgs``      |
-      +-------------------------------+-------------------+----------------+
-      |  Flexible BiCGSTAB            | ``KSPFBCGS``      | ``fbcgs``      |
-      +-------------------------------+-------------------+----------------+
-      |  Flexible BiCGSTAB (variant)  | ``KSPFBCGSR``     | ``fbcgsr``     |
-      +-------------------------------+-------------------+----------------+
-      |  Enhanced BiCGSTAB(L)         | ``KSPBCGSL``      | ``bcgsl``      |
-      +-------------------------------+-------------------+----------------+
-      | Minimal Residual Method       | ``KSPMINRES``     | ``minres``     |
-      | :cite:`PaigeSaunders1975`     |                   |                |
-      +-------------------------------+-------------------+----------------+
-      | Generalized Minimal Residual  | ``KSPGMRES``      | ``gmres``      |
-      | :cite`ss:86`                  |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Flexible Generalized Minimal | ``KSPFGMRES``     | ``fgmres``     |
-      | Residual                      |                   |                |
-      | :cite`Saad1993`               |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Deflated Generalized Minimal | ``KSPDGMRES``     | ``dgmres``     |
-      | Residual                      |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Pipelined Generalized        | ``KSPPGMRES``     | ``pgmres``     |
-      | Minimal Residual              |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Pipelined, Flexible          | ``KSPPIPEFGMRES`` | ``pipefgmres`` |
-      | Generalized Minimal Residual  |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Generalized Minimal Residual | ``KSPLGMRES``     | ``lgmres``     |
-      | with Accelerated Restart      |                   |                |
-      +-------------------------------+-------------------+----------------+
-      | Conjugate Residual            | ``KSPCR``         | ``cr``         |
-      | :cite:                        |                   |                |
-      | `eisenstat1983variational`    |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Generalized Conjugate        | ``KSPGCR``        | ``gcr``        |
-      | Residual                      |                   |                |
-      +-------------------------------+-------------------+----------------+
-      |  Pipelined Conjugate Residual | ``KSPPIPECR``     | ``pipecr``     |
-      +-------------------------------+-------------------+----------------+
-      |  Pipelined, Flexible          | ``KSPPIPEGCR``    | ``pipegcr``    |
-      | Conjugate Residual            |                   |                |
-      +-------------------------------+-------------------+----------------+
-      | FETI-DP                       | ``KSPFETIDP``     | ``fetidp``     |
-      +-------------------------------+-------------------+----------------+
-      | Conjugate Gradient Squared    | ``KSPCGS``        | ``cgs``        |
-      | :cite:`so:89`                 |                   |                |
-      +-------------------------------+-------------------+----------------+
-      | Transpose-Free Quasi-Minimal  | ``KSPTFQMR``      | ``tfqmr``      |
-      | Residual (1)                  |                   |                |
-      | :cite:`f:93`                  |                   |                |
-      +-------------------------------+-------------------+----------------+
-      | Transpose-Free Quasi-Minimal  | ``KSPTCQMR``      | ``tcqmr``      |
-      | Residual (2)                  |                   |                |
-      +-------------------------------+-------------------+----------------+
-      | Least Squares Method          | ``KSPLSQR``       | ``lsqr``       |
-      +-------------------------------+-------------------+----------------+
-      | Symmetric LQ Method           | ``KSPSYMMLQ``     | ``symmlq``     |
-      | :cite:`PaigeSaunders1975`     |                   |                |
-      +-------------------------------+-------------------+----------------+
-      | TSIRM                         | ``KSPTSIRM``      | ``tsirm``      |
-      +-------------------------------+-------------------+----------------+
-      | Python Shell                  | ``KSPPYTHON``     | ``python``     |
-      +-------------------------------+-------------------+----------------+
-      | Shell for no ``KSP`` method   | ``KSPPREONLY``    | ``preonly``    |
-      +-------------------------------+-------------------+----------------+
 
 Note: the bi-conjugate gradient method requires application of both the
 matrix and its transpose plus the preconditioner and its transpose.
@@ -441,10 +444,10 @@ Currently not all matrices and preconditioners provide this support and
 thus the ``KSPBICG`` cannot always be used.
 
 Note: PETSc implements the FETI-DP (Finite Element Tearing and
-Interconnecting Dual-Primal) method as a KSP since it recasts the
+Interconnecting Dual-Primal) method as an implementation of ``KSP`` since it recasts the
 original problem into a contstrained minimization one with Lagrange
 multipliers. The only matrix type supported is ``MATIS``. Support for
-saddle point problems is provided. Consult the online documentation for
+saddle point problems is provided. See the man page for ``KSPFETIDP`` for
 further details.
 
 .. _sec_convergencetests:
@@ -523,7 +526,7 @@ routine arguments are the iteration number (``it``) and the residual’s
 :math:`l_2` norm (``rnorm``). A helpful routine within user-defined
 monitors is ``PetscObjectGetComm((PetscObject)ksp,MPI_Comm *comm)``,
 which returns in ``comm`` the MPI communicator for the ``KSP`` context.
-See section  `1.3 <#sec_writing>`__ for more discussion of the use of
+See :any:`sec_writing` for more discussion of the use of
 MPI communicators within PETSc.
 
 Several monitoring routines are supplied with PETSc, including
@@ -670,7 +673,7 @@ or set the method with the command
 
    PCSetType(PC pc,PCType method);
 
-In Table `3.2 <#tab_pcdefaults>`__ we summarize the basic
+In :any:`tab-pcdefaults` we summarize the basic
 preconditioning methods supported in PETSc. See the ``PCType`` manual
 page for a complete list. The ``PCSHELL`` preconditioner uses a
 specific, application-provided preconditioner. The direct
@@ -679,53 +682,61 @@ system that uses LU factorization. ``PCLU`` is included as a
 preconditioner so that PETSc has a consistent interface among direct and
 iterative linear solvers.
 
-.. container::
-   :name: tab_pcdefaults
+.. list-table:: PETSc Preconditioners (partial list)
+   :name: tab-pcdefaults
+   :header-rows: 1
 
-   .. table:: PETSc Preconditioners (partial list)
-
-      +------------------------+-----------------+------------------------+
-      | **Method**             | **PCType**      | **Options Database     |
-      |                        |                 | Name**                 |
-      +========================+=================+========================+
-      | Jacobi                 | ``PCJACOBI``    | ``jacobi``             |
-      +------------------------+-----------------+------------------------+
-      | Block Jacobi           | ``PCBJACOBI``   | ``bjacobi``            |
-      +------------------------+-----------------+------------------------+
-      | SOR (and SSOR)         | ``PCSOR``       | ``sor``                |
-      +------------------------+-----------------+------------------------+
-      | SOR with Eisenstat     | ``PCEISENSTAT`` | ``eisenstat``          |
-      | trick                  |                 |                        |
-      +------------------------+-----------------+------------------------+
-      | Incomplete Cholesky    | ``PCICC``       | ``icc``                |
-      +------------------------+-----------------+------------------------+
-      | Incomplete LU          | ``PCILU``       | ``ilu``                |
-      +------------------------+-----------------+------------------------+
-      | Additive Schwarz       | ``PCASM``       | ``asm``                |
-      +------------------------+-----------------+------------------------+
-      | Generalized Additive   | ``PCGASM``      | ``gasm``               |
-      | Schwarz                |                 |                        |
-      +------------------------+-----------------+------------------------+
-      | Algebraic Multigrid    | ``PCGAMG``      | ``gamg``               |
-      +------------------------+-----------------+------------------------+
-      | Balancing Domain       | ``PCBDDC``      | ``bddc``               |
-      | Decomposition by       |                 |                        |
-      | Constraints            |                 |                        |
-      +------------------------+-----------------+------------------------+
-      | Linear solver          | ``PCKSP``       | ``ksp``                |
-      +------------------------+-----------------+------------------------+
-      | Combination of         | ``PCCOMPOSITE`` | ``composite``          |
-      | preconditioners        |                 |                        |
-      +------------------------+-----------------+------------------------+
-      | LU                     | ``PCLU``        | ``lu``                 |
-      +------------------------+-----------------+------------------------+
-      | Cholesky               | ``PCCHOLESKY``  | ``cholesky``           |
-      +------------------------+-----------------+------------------------+
-      | No preconditioning     | ``PCNONE``      | ``none``               |
-      +------------------------+-----------------+------------------------+
-      | Shell for user-defined | ``PCSHELL``     | ``shell``              |
-      | ``PC``                 |                 |                        |
-      +------------------------+-----------------+------------------------+
+   * - Method
+     - PCType
+     - Options Database Name
+   * - Jacobi
+     - ``PCJACOBI``
+     - ``jacobi``
+   * - Block Jacobi
+     - ``PCBJACOBI``
+     - ``bjacobi``
+   * - SOR (and SSOR)
+     - ``PCSOR``
+     - ``sor``
+   * - SOR with Eisenstat trick
+     - ``PCEISENSTAT``
+     - ``eisenstat``
+   * - Incomplete Cholesky
+     - ``PCICC``
+     - ``icc``
+   * - Incomplete LU
+     - ``PCILU``
+     - ``ilu``
+   * - Additive Schwarz
+     - ``PCASM``
+     - ``asm``
+   * - Generalized Additive Schwarz
+     - ``PCGASM``
+     - ``gasm``
+   * - Algebraic Multigrid
+     - ``PCGAMG``
+     - ``gamg``
+   * - Balancing Domain Decomposition by Constraints
+     - ``PCBDDC``
+     - ``bddc``
+   * - Linear solver
+     - ``PCKSP``
+     - ``ksp``
+   * - Combination of preconditioners
+     - ``PCCOMPOSITE``
+     - ``composite``
+   * - LU
+     - ``PCLU``
+     - ``lu``
+   * - Cholesky
+     - ``PCCHOLESKY``
+     - ``cholesky``
+   * - No preconditioning
+     - ``PCNONE``
+     - ``none``
+   * - Shell for user-defined ``PC``
+     - ``PCSHELL``
+     - ``shell``
 
 Each preconditioner may have associated with it a set of options, which
 can be set with routines and options database commands provided for this
@@ -774,12 +785,12 @@ factorization. These options may be set in the database with
 
 -  ``-pc_factor_diagonal_fill``
 
-See Section `4.2.5 <#sec_symbolfactor>`__ for information on
+See :any:`sec_symbolfactor` for information on
 preallocation of memory for anticipated fill during factorization. By
 alleviating the considerable overhead for dynamic memory allocation,
 such tuning can significantly enhance performance.
 
-[sec_pcfactor] PETSc supports incomplete factorization preconditioners
+PETSc supports incomplete factorization preconditioners
 for several matrix types for sequential matrices (for example
 ``MATSEQAIJ``, ``MATSEQBAIJ``, and ``MATSEQSBAIJ``).
 
@@ -816,7 +827,7 @@ variants can also be set with the options ``-pc_sor_omega <omega>``,
 ``-pc_sor_symmetric``, ``-pc_sor_local_forward``,
 ``-pc_sor_local_backward``, and ``-pc_sor_local_symmetric``.
 
-The Eisenstat trick :cite`eisenstat81` for SSOR
+The Eisenstat trick :cite:`eisenstat81` for SSOR
 preconditioning can be employed with the method ``PCEISENSTAT``
 (``-pc_type`` ``eisenstat``). By using both left and right
 preconditioning of the linear system, this variant of SSOR requires
@@ -859,8 +870,7 @@ selecting the ordering of equations with the command
 These orderings can also be set through the options database by
 specifying one of the following: ``-pc_factor_mat_ordering_type``
 ``natural``, or ``nd``, or ``1wd``, or ``rcm``, or ``qmd``. In addition,
-see ``MatGetOrdering()``, discussed in
-Section `[sec_matfactor] <#sec_matfactor>`__.
+see ``MatGetOrdering()``, discussed in :any:`sec_matfactor`.
 
 The sparse LU factorization provided in PETSc does not perform pivoting
 for numerical stability (since they are designed to preserve nonzero
@@ -871,7 +881,7 @@ the zero pivot, by preprocessing the column ordering to remove small
 values from the diagonal. Here, ``tol`` is an optional tolerance to
 decide if a value is nonzero; by default it is ``1.e-10``.
 
-In addition, Section `4.2.5 <#sec_symbolfactor>`__ provides information
+In addition, :any:`sec_symbolfactor` provides information
 on preallocation of memory for anticipated fill during factorization.
 Such tuning can significantly enhance performance, since it eliminates
 the considerable overhead for dynamic memory allocation.
@@ -909,10 +919,10 @@ The array of ``KSP`` contexts for the local blocks is given by
 the various blocks. To set the appropriate data structures, the user
 *must* explicitly call ``KSPSetUp()`` before calling
 ``PCBJacobiGetSubKSP()`` or ``PCASMGetSubKSP(``). For further details,
-see the examples
-```$PETSC_DIR/src/ksp/ksp/tutorials/ex7.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex7.c.html>`__
+see
+`KSP Example 7 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex7.c.html>`__
 or
-```$PETSC_DIR/src/ksp/ksp/tutorials/ex8.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex7.c.html>`__.
+`KSP Example 8 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex8.c.html>`__.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz
 preconditioners allow the user to set the number of blocks into which
@@ -1033,7 +1043,7 @@ for subdomains that fit within a single MPI rank, exactly as in
 ``PCASM``.
 
 Examples of the described PCGASM usage can be found in
-```${PETSC_DIR}/src/ksp/ksp/tutorials/ex62.c`` <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGASM.html>`__.
+`KSP Example 62 <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGASM.html>`__.
 In particular, ``runex62_superlu_dist`` illustrates the use of
 ``SuperLU_DIST`` as the subdomain solver on coalesced multi-rank
 subdomains. The ``runex62_2D_*`` examples illustrate the use of
@@ -1349,7 +1359,7 @@ the number of subdomains that will be generated at the next level; the
 larger the coarsening ratio, the lower the number of coarser subdomains.
 
 For further details, see the example
-```${PETSC_DIR}/src/ksp/ksp/tutorials/ex59.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex59.c>`__
+`KSP Example 59 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex59.c>`__
 and the online documentation for ``PCBDDC``.
 
 Shell Preconditioners
@@ -1392,8 +1402,10 @@ can be used to obtain the operators with ``PCGetOperators()`` and the
 application-provided data structure that was set with
 ``PCShellSetContext()``.
 
-Combining Preconditioners[sec:combining-pcs]
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _sec_combining-pcs:
+
+Combining Preconditioners
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``PC`` type ``PCCOMPOSITE`` allows one to form new preconditioners
 by combining already-defined preconditioners and solvers. Combining
@@ -1403,8 +1415,7 @@ It is a tricky business and is not recommended until your application
 code is complete and running and you are trying to improve performance.
 In many cases using a single preconditioner is better than a
 combination; an exception is the multigrid/multilevel preconditioners
-(solvers) that are always combinations of some sort, see Section
-`[sec_mg] <#sec_mg>`__.
+(solvers) that are always combinations of some sort, see :any:`sec_mg`.
 
 Let :math:`B_1` and :math:`B_2` represent the application of two
 preconditioners of type ``type1`` and ``type2``. The preconditioner
@@ -1628,7 +1639,7 @@ to define the intergrid transfer operations. If only one of these is
 set, its transpose will be used for the other.
 
 It is possible for these interpolation operations to be matrix free (see
-Section `[sec_matrixfree] <#sec_matrixfree>`__); One should then make
+:any:`sec_matrixfree`); One should then make
 sure that these operations are defined for the (matrix-free) matrices
 passed in. Note that this system is arranged so that if the
 interpolation is the transpose of the restriction, you can pass the same
@@ -1734,7 +1745,7 @@ distributed in parallel. It is more efficient to use ``MATNEST`` with
 the methods described in this section because there are fewer copies and
 better formats (e.g. ``BAIJ`` or ``SBAIJ``) can be used for the
 components, but it is not possible to use many other methods with
-``MATNEST``. See Section `2.1.3 <#sec_matnest>`__ for more on assembling
+``MATNEST``. See :any:`sec_matnest` for more on assembling
 block matrices without depending on a specific matrix format.
 
 The PETSc ``PCFIELDSPLIT`` preconditioner is used to implement the
@@ -1864,7 +1875,7 @@ internal KSPs are given by ``-fieldsplit_name_``.
 By default blocks :math:`A_{00}, A_{01}` and so on are extracted out of
 ``Pmat``, the matrix that the ``KSP`` uses to build the preconditioner,
 and not out of ``Amat`` (i.e., :math:`A` itself). As discussed above in
-Sec. `[sec:combining-pcs] <#sec:combining-pcs>`__, however, it is
+:any:`sec_combining-pcs`, however, it is
 possible to use ``Amat`` instead of ``Pmat`` by calling
 ``PCSetUseAmat(pc)`` or using ``-pc_use_amat`` on the command line.
 Alternatively, you can have ``PCFieldSplit`` extract the diagonal blocks
@@ -2096,7 +2107,7 @@ A good choice for the ``dampingfactor`` is 1.e-10.
 Using External Linear Solvers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PETSc interfaces to several external linear solvers (see Acknowledgment
+PETSc interfaces to several external linear solvers (also see :any:`chapter_acknowledgements`)
 at the beginning of this manual). To use these solvers, one may:
 
 #. Run ``./configure`` with the additional options
@@ -2112,97 +2123,134 @@ at the beginning of this manual). To use these solvers, one may:
    ``-ksp_type preonly`` ``-pc_type lu``
    ``-pc_factor_mat_solver_type superlu_dist``.
 
-.. container::
-   :name: tab_externaloptions
+.. list-table:: Options for External Solvers
+   :name: tab-externaloptions
+   :header-rows: 1
 
-   .. table:: Options for External Solvers
-
-      +----------------+--------------+----------------+----------------+
-      | **MatType**    | **PCType**   | **M            | **Package**    |
-      |                |              | atSolverType** |                |
-      +----------------+--------------+----------------+----------------+
-      |                |              |                | (``-           |
-      |                |              |                | pc_factor_mat_ |
-      |                |              |                | solver_type)`` |
-      +----------------+--------------+----------------+----------------+
-      | ``seqaij``     | ``lu``       | ``M            | ``essl``       |
-      |                |              | ATSOLVERESSL`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``seqaij``     | ``lu``       | ``MA           | ``lusol``      |
-      |                |              | TSOLVERLUSOL`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``seqaij``     | ``lu``       | ``MAT          | ``matlab``     |
-      |                |              | SOLVERMATLAB`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aij``        | ``lu``       | ``MA           | ``mumps``      |
-      |                |              | TSOLVERMUMPS`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aij``        | ``cholesky`` |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``sbaij``      | ``cholesky`` |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``seqaij``     | ``lu``       | ``MATS         | ``superlu``    |
-      |                |              | OLVERSUPERLU`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aij``        | ``lu``       | ``MATSOLVER    | ``             |
-      |                |              | SUPERLU_DIST`` | superlu_dist`` |
-      +----------------+--------------+----------------+----------------+
-      | ``seqaij``     | ``lu``       | ``MATS         | ``umfpack``    |
-      |                |              | OLVERUMFPACK`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``seqaij``     | ``cholesky`` | ``MATS         | ``cholmod``    |
-      |                |              | OLVERCHOLMOD`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aij``        | ``lu``       | ``MAT          | ``clique``     |
-      |                |              | SOLVERCLIQUE`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``seqaij``     | ``lu``       | ``             | ``klu``        |
-      |                |              | MATSOLVERKLU`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``dense``      | ``lu``       | ``MATSOL       | ``elemental``  |
-      |                |              | VERELEMENTAL`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``dense``      | ``cholesky`` |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``seqaij``     | ``lu``       | ``MATSOLVE     | `              |
-      |                |              | RMKL_PARDISO`` | `mkl_pardiso`` |
-      +----------------+--------------+----------------+----------------+
-      | ``aij``        | ``lu``       | ``MATSOLVER    | ``             |
-      |                |              | MKL_CPARDISO`` | mkl_cpardiso`` |
-      +----------------+--------------+----------------+----------------+
-      | ``aij``        | ``lu``       | ``MAT          | ``pastix``     |
-      |                |              | SOLVERPASTIX`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aij``        | ``cholesky`` | ``             | ``bas``        |
-      |                |              | MATSOLVERBAS`` |                |
-      +----------------+--------------+----------------+----------------+
-      | `              | ``lu``       | ``MATSO        | ``cusparse``   |
-      | `aijcusparse`` |              | LVERCUSPARSE`` |                |
-      +----------------+--------------+----------------+----------------+
-      | `              | ``cholesky`` |                |                |
-      | `aijcusparse`` |              |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aij``        | ``lu``       | ``MA           | ``petsc``      |
-      |                |              | TSOLVERPETSC`` |                |
-      +----------------+--------------+----------------+----------------+
-      | ``baij``       |              |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aijcrl``     |              |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aijperm``    |              |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``seqdense``   |              |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aij``        | ``cholesky`` |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``baij``       |              |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aijcrl``     |              |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``aijperm``    |              |                |                |
-      +----------------+--------------+----------------+----------------+
-      | ``seqdense``   |              |                |                |
-      +----------------+--------------+----------------+----------------+
+   * - MatType
+     - PCType
+     - MatSolverType
+     - Package (``-pc_factor_mat_solver_type``)
+   * - ``seqaij``
+     - ``lu``
+     - ``MATSOLVERESSL``
+     - ``essl``
+   * - ``seqaij``
+     - ``lu``
+     - ``MATSOLVERLUSOL``
+     -  ``lusol``
+   * - ``seqaij``
+     - ``lu``
+     - ``MATSOLVERMATLAB``
+     - ``matlab``
+   * - ``aij``
+     - ``lu``
+     - ``MATSOLVERMUMPS``
+     - ``mumps``
+   * - ``aij``
+     - ``cholesky``
+     - -
+     - -
+   * - ``sbaij``
+     - ``cholesky``
+     - -
+     - -
+   * - ``seqaij``
+     - ``lu``
+     - ``MATSOLVERSUPERLU``
+     - ``superlu``
+   * - ``aij``
+     - ``lu``
+     - ``MATSOLVERSUPERLU_DIST``
+     - ``superlu_dist``
+   * - ``seqaij``
+     - ``lu``
+     - ``MATSOLVERUMFPACK``
+     - ``umfpack``
+   * - ``seqaij``
+     - ``cholesky``
+     - ``MATSOLVERCHOLMOD``
+     - ``cholmod``
+   * - ``aij``
+     - ``lu``
+     - ``MATSOLVERCLIQUE``
+     -  ``clique``
+   * - ``seqaij``
+     - ``lu``
+     - ``MATSOLVERKLU``
+     -  ``klu``
+   * - ``dense``
+     - ``lu``
+     - ``MATSOLVERELEMENTAL``
+     -  ``elemental``
+   * - ``dense``
+     - ``cholesky``
+     - -
+     - -
+   * - ``seqaij``
+     - ``lu``
+     - ``MATSOLVERMKL_PARDISO``
+     - ``mkl_pardiso``
+   * - ``aij``
+     - ``lu``
+     - ``MATSOLVERMKL_CPARDISO``
+     - ``mkl_cpardiso``
+   * - ``aij``
+     - ``lu``
+     - ``MATSOLVERPASTIX``
+     -  ``pastix``
+   * - ``aij``
+     - ``cholesky``
+     - ``MATSOLVERBAS``
+     -  ``bas``
+   * - ``aijcusparse``
+     - ``lu``
+     - ``MATSOLVERCUSPARSE``
+     - ``cusparse``
+   * - ``aijcusparse``
+     - ``cholesky``
+     -  -
+     -  -
+   * - ``aij``
+     - ``lu``, ``cholesky``
+     - ``MATSOLVERPETSC``
+     - ``petsc``
+   * - ``baij``
+     - -
+     - -
+     - -
+   * - ``aijcrl``
+     - -
+     - -
+     - -
+   * - ``aijperm``
+     - -
+     - -
+     - -
+   * - ``seqdense``
+     - -
+     - -
+     - -
+   * - ``aij``
+     - -
+     - -
+     - -
+   * - ``baij``
+     - -
+     - -
+     - -
+   * - ``aijcrl``
+     - -
+     - -
+     - -
+   * - ``aijperm``
+     - -
+     - -
+     - -
+   * - ``seqdense``
+     - -
+     - -
+     - -
 
 The default and available input options for each external software can
 be found by specifying ``-help`` (or ``-h``) at runtime.
@@ -2225,7 +2273,7 @@ the following procedural calls are equivalent to runtime options
 
 One can also create matrices with the appropriate capabilities by
 calling ``MatCreate()`` followed by ``MatSetType()`` specifying the
-desired matrix type from Table `3.3 <#tab_externaloptions>`__. These
+desired matrix type from :any:`tab-externaloptions`. These
 matrix types inherit capabilities from their PETSc matrix parents:
 ``seqaij``, ``mpiaij``, etc. As a result, the preallocation routines
 ``MatSeqAIJSetPreallocation()``, ``MatMPIAIJSetPreallocation()``, etc.
@@ -2235,7 +2283,7 @@ from its base class without performing an expensive data copy.
 ``MatConvert()`` cannot be called on matrices that have already been
 factored.
 
-In Table `3.3 <#tab_externaloptions>`__, the base class ``aij`` refers
+In :any:`tab-externaloptions`, the base class ``aij`` refers
 to the fact that inheritance is based on ``MATSEQAIJ`` when constructed
 with a single process communicator, and from ``MATMPIAIJ`` otherwise.
 The same holds for ``baij`` and ``sbaij``. For codes that are intended
@@ -2246,8 +2294,7 @@ The call for the incorrect type will simply be ignored without any harm
 or message.
 
 .. [2]
-   See Section `3.4.5 <#sec_amg>`__ for information on using algebraic
-   multigrid.
+   See :any:`sec_amg` for information on using algebraic multigrid.
 
 .. [3]
    This may seem an odd way to implement since it involves the “extra”

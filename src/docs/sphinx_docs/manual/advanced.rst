@@ -22,13 +22,13 @@ This extracts the ``rows`` and ``col``\ umns of the matrix ``A`` into
 ``B``. If call is ``MAT_REUSE_MATRIX`` it will reuse the ``B`` created
 with a previous call.
 
+.. _sec_matfactor:
+
 Matrix Factorization
 ~~~~~~~~~~~~~~~~~~~~
 
-[sec_matfactor]
-
 Normally, PETSc users will access the matrix solvers through the ``KSP``
-interface, as discussed in Chapter `[ch_ksp] <#ch_ksp>`__, but the
+interface, as discussed in :any:`chapter_ksp`, but the
 underlying factorization and triangular solve routines are also directly
 accessible to the user.
 

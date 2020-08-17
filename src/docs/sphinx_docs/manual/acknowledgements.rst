@@ -1,3 +1,5 @@
+.. _chapter_acknowledgements:
+
 Acknowledgments
 ---------------
 .. include:: temp_edit_needed_banner.inc
