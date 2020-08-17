@@ -1,9 +1,10 @@
 ===========================================================
-Guide to the Stokes Equation using Finite Elements in PETSc
+Guide to the Stokes Equations using Finite Elements in PETSc
 ===========================================================
-.. stokes:: none
 
-The Stokes equation for a fluid, a steady-state form of the Navier-Stokes equation, starts with the balance of momentum, just as in elastostatics,
+This guide accompanies `SNES Example 62 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex62.c.html>`__.
+
+The Stokes equations for a fluid, a steady-state form of the Navier-Stokes equations, start with the balance of momentum, just as in elastostatics,
 
 .. math::
 
@@ -44,14 +45,14 @@ The test functions :math:`v, q` and their derivatives are determined by the disc
 
 For example, the kernel for the continuity equation, paired with the pressure test function, is called ``f0_p`` and can be seen here
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: static void f0_p(
    :end-at: }
 
 We use the components of the Jacobian of :math:`u` to build up its divergence. For the balance of momentum excluding body force, we test against the gradient of the test function, as seen in ``f1_u``,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :lines: 46-61
 
@@ -66,7 +67,7 @@ An MMS solution is chosen to elucidate some property of the problem, and to chec
 
    u = \begin{pmatrix} x^2 + y^2 \\ 2 x^2 - 2 x y \end{pmatrix} \quad \mathrm{or} \quad \begin{pmatrix} 2 x^2 + y^2 + z^2 \\ 2 x^2 - 2xy \\ 2 x^2 - 2xz \end{pmatrix}
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: static PetscErrorCode quadratic_u
    :end-at: return 0;
@@ -76,7 +77,7 @@ An MMS solution is chosen to elucidate some property of the problem, and to chec
 
    p = x + y - 1 \quad \mathrm{or} \quad x + y + z - \frac{3}{2}
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: static PetscErrorCode quadratic_p
    :end-at: return 0;
@@ -90,32 +91,32 @@ By plugging these solutions into our equations, assuming that the velocity we ch
 
 which is implemented in our ``f0_u`` pointwise function
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: static void f0_quadratic_u
    :end-at: }
 
 We let PETSc now about these solutions
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: ierr = PetscDSSetExactSolution(ds, 0
    :end-at: ierr = PetscDSSetExactSolution(ds, 1
 
 These solutions will be captured exactly by the :math:`P_2-P_1` finite element space. We can use the ``-dmsnes_check`` option to activate function space checks. It gives the :math:`L_2` error, or *discretizaton* error, of the exact solution, the residual computed using the interpolation of the exact solution into our finite element space, and uses a Taylor test to check that our Jacobian matches the residual. It should converge at order 2, or be exact in the case of linear equations like Stokes. Our :math:`P_2-P_1` runs in the PETSc test section at the bottom of the source file
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :lines: 475-483
 
 verify these claims, as we can see from the output files
 
-.. literalinclude:: /../../../src/snes/tutorials/output/ex64_2d_p2_p1_check.out
+.. literalinclude:: /../../../src/snes/tutorials/output/ex62_2d_p2_p1_check.out
 
-.. literalinclude:: /../../../src/snes/tutorials/output/ex64_3d_p2_p1_check.out
+.. literalinclude:: /../../../src/snes/tutorials/output/ex62_3d_p2_p1_check.out
 
 We can carry out the same tests for the :math:`Q_2-Q_1` element,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :lines: 510-516
 
 The quadratic solution, however, cannot tell us whether our discretization is attaining the correct order of convergence, especially for higher order elements. Thus, we will define another solution based on trigonometric functions.
@@ -125,7 +126,7 @@ The quadratic solution, however, cannot tell us whether our discretization is at
   u = \begin{pmatrix} \sin(\pi x) + \sin(\pi y) \\ -\pi \cos(\pi x) y \end{pmatrix} \quad \mathrm{or} \quad
       \begin{pmatrix} 2 \sin(\pi x) + \sin(\pi y) + \sin(\pi z) \\ -\pi \cos(\pi x) y \\ -\pi \cos(\pi x) z \end{pmatrix}
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: static PetscErrorCode trig_u
    :end-at: return 0;
@@ -135,7 +136,7 @@ The quadratic solution, however, cannot tell us whether our discretization is at
 
   p = \sin(2 \pi x) + \sin(2 \pi y) \quad \mathrm{or} \quad \sin(2 \pi x) + \sin(2 \pi y) + \sin(2 \pi z)
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: static PetscErrorCode trig_p
    :end-at: return 0;
@@ -146,7 +147,7 @@ The quadratic solution, however, cannot tell us whether our discretization is at
   f = \begin{pmatrix} 2 \pi \cos(2 \pi x) + \mu \pi^2 \sin(\pi x) + \mu \pi^2 \sin(\pi y) \\ 2 \pi \cos(2 \pi y) - \mu \pi^3 \cos(\pi x) y \end{pmatrix} \quad \mathrm{or} \quad
   \begin{pmatrix} 2 \pi \cos(2 \pi x) + 2\mu \pi^2 \sin(\pi x) + \mu \pi^2 \sin(\pi y) + \mu \pi^2 \sin(\pi z) \\ 2 \pi \cos(2 \pi y) - \mu \pi^3 cos(\pi x) y \\ 2 \pi \cos(2 \pi z) - \mu \pi^3 \cos(\pi x) z \end{pmatrix}
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: static void f0_quadratic_u
    :end-at: }
@@ -154,24 +155,24 @@ The quadratic solution, however, cannot tell us whether our discretization is at
 
 We can now use ``-snes_convergence_estimate`` to determine the convergence exponent for the discretization. This options solves the problem on a series of refined meshes, calculates the error on each mesh, and determines the slope on a logarithmic scale. For example, we do this in two dimensions, refining our mesh twice using ``-convest_num_refine 2`` in the following test.
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :lines: 485-492
 
 However, the test needs an accurate linear solver. Sparse LU factorizations do not, in general, do full pivoting. Thus we must deal with the zero pressure block explicitly. We use the ``PCFIELDSPLIT`` preconditioner and the full Schur complement factorization, but we still need a preconditioner for the Schur complement :math:`B^T A^{-1} B`. We can have PETSc construct that matrix automatically, but the cost rises steeply as the problem size increases. Instead, we use the fact that the Schur complement is spectrally equivalent to the pressure mass matrix :math:`M_p`. We can make a preconditioning matrix, which has the diagonal blocks we will use to build the preconditioners, letting PETSc know that we get the off-diagonal blocks from the original system with ``-pc_fieldsplit_off_diag_use_amat`` and to build the Schur complement from the original matrix using ``-pc_use_amat``,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: ierr = PetscDSSetJacobianPreconditioner(ds, 0
    :end-at: ierr = PetscDSSetJacobianPreconditioner(ds, 1
 
 Putting this all together, and using exact solvers on the subblocks, we have
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :lines: 491-492
 
 and we see it converges, however it is superconverging in the pressure,
 
-.. literalinclude:: /../../../src/snes/tutorials/output/ex64_2d_p2_p1_conv.out
+.. literalinclude:: /../../../src/snes/tutorials/output/ex62_2d_p2_p1_conv.out
 
 If we refine the mesh using ``-dm_refine 3``, the convergence rates become ``[3.0, 2.1]``.
 
@@ -180,14 +181,14 @@ Dealing with Parameters
 
 Like most physical problems, the Stokes problem has a parameter, the dynamic shear viscosity, which determines what solution regime we are in. To handle these parameters in PETSc, we first define a C struct to hold them,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: typedef struct {
    :end-at: } Parameter;
 
 and then add a ``PetscBag`` object to our application context. We then setup the parameter object,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :start-at: static PetscErrorCode SetupParameters
    :end-at: PetscFunctionReturn(0);
@@ -195,10 +196,14 @@ and then add a ``PetscBag`` object to our application context. We then setup the
 
 which will allow us to set the value from the command line using ``-mu``. The ``PetscBag`` can also be persisted to disk with ``PetscBagLoad/View()``. We can make these values available as constant to our pointwise functions through the ``PetscDS`` object.
 
-.. literalinclude:: /../../../src/snes/tutorials/ex64.c
+.. literalinclude:: /../../../src/snes/tutorials/ex62.c
    :language: c
    :lines: 347-354
 
 Bibliography
 ------------
+.. bibliography:: /../tex/petsc.bib
+   :filter: docname in docnames
+
 .. bibliography:: /../tex/petscapp.bib
+   :filter: docname in docnames
