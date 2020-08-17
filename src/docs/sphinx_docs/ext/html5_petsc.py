@@ -16,11 +16,13 @@ from sphinx.application import Sphinx
 def setup(app: Sphinx) -> None:
     _check_version(app)
     app.set_translator('html', HTML5PETScTranslator, override=True)
+    app.set_translator('dirhtml', HTML5PETScTranslator, override=True)
 
-    # Also set the translator for ReadTheDocs's custom builder
+    # Also set the translator for ReadTheDocs's custom builders
     # This is dangerous, since they could change the name and silently
     # deactivate our translator
     app.set_translator('readthedocs', HTML5PETScTranslator, override=True)
+    app.set_translator('readthedocsdirhtml', HTML5PETScTranslator, override=True)
 
 
 def _check_version(app: Sphinx) -> None:
