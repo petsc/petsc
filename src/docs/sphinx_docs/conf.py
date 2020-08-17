@@ -77,6 +77,9 @@ html_theme = 'sphinxdoc'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_logo = os.path.join('..','website','images','PETSc-TAO_RGB.svg')
+html_favicon = os.path.join('..','website','images','PETSc_RGB-logo.png')
+
 # -- General Config Options ---------------------------------------------------
 
 # Graphviz config which searches for correct installation of a DOT language parser
