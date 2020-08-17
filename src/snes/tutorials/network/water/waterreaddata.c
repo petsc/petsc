@@ -16,7 +16,7 @@ PetscErrorCode PumpHeadCurveResidual(SNES snes,Vec X, Vec F,void *ctx)
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   f[0] = f[1] = f[2] = 0;
-  for(i=0; i < pump->headcurve.npt;i++) {
+  for (i=0; i < pump->headcurve.npt;i++) {
     f[0] +=   x[0] - x[1]*PetscPowScalar(flow[i],x[2]) - head[i]; /* Partial w.r.t x[0] */
     f[1] +=  (x[0] - x[1]*PetscPowScalar(flow[i],x[2]) - head[i])*-1*PetscPowScalar(flow[i],x[2]); /*Partial w.r.t x[1] */
     f[2] +=  (x[0] - x[1]*PetscPowScalar(flow[i],x[2]) - head[i])*-1*x[1]*x[2]*PetscPowScalar(flow[i],x[2]-1); /*Partial w.r.t x[2] */
@@ -39,7 +39,7 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
   PetscFunctionBegin;
   head = pump->headcurve.head;
   flow = pump->headcurve.flow;
-  if(pump->headcurve.npt == 1) {
+  if (pump->headcurve.npt == 1) {
     /* Single point head curve, set the other two data points */
     flow[1] = 0;
     head[1] = 1.33*head[0]; /* 133% of design head -- From EPANET manual */
@@ -66,7 +66,7 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
-  if(reason < 0) {
+  if (reason < 0) {
     SETERRQ(PETSC_COMM_SELF,0,"Pump head curve did not converge\n");
   }
 
@@ -84,13 +84,13 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
 
 int LineStartsWith(const char *a, const char *b)
 {
-  if(strncmp(a, b, strlen(b)) == 0) return 1;
+  if (strncmp(a, b, strlen(b)) == 0) return 1;
   return 0;
 }
 
 int CheckDataSegmentEnd(const char *line)
 {
-  if(LineStartsWith(line,"[JUNCTIONS]") || \
+  if (LineStartsWith(line,"[JUNCTIONS]") || \
      LineStartsWith(line,"[RESERVOIRS]") || \
      LineStartsWith(line,"[TANKS]") || \
      LineStartsWith(line,"[PIPES]") || \
@@ -106,7 +106,7 @@ int CheckDataSegmentEnd(const char *line)
   return 0;
 }
 
-/* Gets the file pointer positiion for the start of the data segment and the 
+/* Gets the file pointer positiion for the start of the data segment and the
    number of data segments (lines) read
 */
 PetscErrorCode GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos,PetscInt *ndatalines)
@@ -118,11 +118,11 @@ PetscErrorCode GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos
   data_segment_end = 0;
   fgetpos(fp,data_segment_start_pos);
   if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
-  while(LineStartsWith(line,";")) {
+  while (LineStartsWith(line,";")) {
     fgetpos(fp,data_segment_start_pos);
     if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
   }
-  while(!data_segment_end) {
+  while (!data_segment_end) {
     if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
     nlines++;
     data_segment_end = CheckDataSegmentEnd(line);
@@ -157,7 +157,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open EPANET data file %s",filename);
 
   /* Read file and get line numbers for different data segments */
-  while(fgets(line,MAXLINE,fp)) {
+  while (fgets(line,MAXLINE,fp)) {
 
     if (strstr(line,"[TITLE]")) {
       GetDataSegment(fp,line,&title_start_pos,&ntitle);
@@ -230,7 +230,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     reservoir = &vert[nv].res;
     ndata = sscanf(line,"%d %lf %d",&id,&v1,&pattern);if (ndata < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read reservoir data");
     vert[nv].id            = id;
-    reservoir->headpattern = pattern; 
+    reservoir->headpattern = pattern;
     reservoir->head = (PetscScalar)v1;
     reservoir->id   = vert[nv].id;
     nv++;
@@ -310,15 +310,15 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     curve_y  = (PetscScalar)v2;
     /* Check for pump with the curve_id */
     for (j=water->npipe;j < water->npipe+water->npump;j++) {
-      if(water->edge[j].pump.paramid == curve_id) {
-	if(pump->headcurve.npt == 3) {
-	  SETERRQ3(PETSC_COMM_SELF,0,"Pump %d [%d --> %d]: No support for more than 3-pt head-flow curve",pump->id,pump->node1,pump->node2);
-	}
-	pump = &water->edge[j].pump;
-	pump->headcurve.flow[pump->headcurve.npt] = curve_x*GPM_CFS;
-	pump->headcurve.head[pump->headcurve.npt] = curve_y;
-	pump->headcurve.npt++;
-	break;
+      if (water->edge[j].pump.paramid == curve_id) {
+        if (pump->headcurve.npt == 3) {
+          SETERRQ3(PETSC_COMM_SELF,0,"Pump %d [%d --> %d]: No support for more than 3-pt head-flow curve",pump->id,pump->node1,pump->node2);
+        }
+        pump = &water->edge[j].pump;
+        pump->headcurve.flow[pump->headcurve.npt] = curve_x*GPM_CFS;
+        pump->headcurve.head[pump->headcurve.npt] = curve_y;
+        pump->headcurve.npt++;
+        break;
       }
     }
   }
@@ -326,7 +326,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   fclose(fp);
 
   /* Get pump curve parameters */
-  for(j=water->npipe;j < water->npipe+water->npump;j++) {
+  for (j=water->npipe;j < water->npipe+water->npump;j++) {
     pump = &water->edge[j].pump;
     if (strcmp(pump->param,"HEAD") == 0) {
       /* Head-flow curve */

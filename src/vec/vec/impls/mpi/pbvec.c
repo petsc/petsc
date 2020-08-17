@@ -231,13 +231,13 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
     if (X->stash.n) {
       x->sendptrs[i].ints    = &X->stash.idx[j];
       x->sendptrs[i].scalars = &X->stash.array[j];
-      for ( ; j<X->stash.n && X->stash.idx[j] < X->map->range[rank+1]; j++) x->sendhdr[i].count++;
+      for (; j<X->stash.n && X->stash.idx[j] < X->map->range[rank+1]; j++) x->sendhdr[i].count++;
     }
     x->sendhdr[i].bcount = 0;
     if (X->bstash.n) {
       x->sendptrs[i].intb    = &X->bstash.idx[jb];
       x->sendptrs[i].scalarb = &X->bstash.array[jb*bs];
-      for ( ; jb<X->bstash.n && X->bstash.idx[jb]*bs < X->map->range[rank+1]; jb++) x->sendhdr[i].bcount++;
+      for (; jb<X->bstash.n && X->bstash.idx[jb]*bs < X->map->range[rank+1]; jb++) x->sendhdr[i].bcount++;
     }
   }
 
@@ -291,7 +291,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
     PetscFunctionReturn(0);
   }
 
-  if (!x->segrecvframe) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing segrecvframe! Probably you forgot to call VecAssemblyBegin first"); 
+  if (!x->segrecvframe) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing segrecvframe! Probably you forgot to call VecAssemblyBegin first");
   ierr = VecGetArray(X,&xarray);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(x->segrecvframe,&frame);CHKERRQ(ierr);
   ierr = PetscMalloc2(4*x->nrecvranks,&some_indices,x->use_status?4*x->nrecvranks:0,&some_statuses);CHKERRQ(ierr);

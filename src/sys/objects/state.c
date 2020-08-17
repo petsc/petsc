@@ -82,7 +82,7 @@ PetscInt PetscObjectComposedDataMax = 10;
    Level: developer
 
    Notes:
-    You must keep this value (for example in a global variable) in order to attach the data to an object or 
+    You must keep this value (for example in a global variable) in order to attach the data to an object or
           access in an object.
 
    seealso: PetscObjectComposedDataSetInt()

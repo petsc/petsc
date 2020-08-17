@@ -87,11 +87,11 @@
       KSP, pointer :: col_f_ksp
       PC, pointer :: pc
 
-      PetscInt :: ith, nthreads 
+      PetscInt :: ith, nthreads
       PetscErrorCode ierr
 
       integer, parameter :: nz_per_row = 9
-      integer, parameter :: n =100 
+      integer, parameter :: n =100
       integer :: i,j,ij,ij2,ii,jj,nz,ip, dx,dy,icase
       integer, allocatable :: ilist(:),jlist(:)
       PetscScalar :: aij

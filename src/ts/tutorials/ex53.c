@@ -786,11 +786,11 @@ static PetscErrorCode mandel_initial_u(PetscInt dim, PetscReal time, const Petsc
 
     for (n = 1; n < N+1; ++n) {
       alpha_n = user->zeroArray[n-1];
-      A_s += ((PetscSinReal(alpha_n) * PetscCosReal(alpha_n)) / (alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n)) ) * PetscExpReal(-1*(alpha_n*alpha_n*c*time)/(a*a));
-      B_s += (PetscCosReal(alpha_n) / (alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n))) * PetscSinReal( (alpha_n * x[0])/a ) * PetscExpReal(-1*(alpha_n*alpha_n*c*time)/(a*a));
+      A_s += ((PetscSinReal(alpha_n) * PetscCosReal(alpha_n)) / (alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n))) * PetscExpReal(-1*(alpha_n*alpha_n*c*time)/(a*a));
+      B_s += (PetscCosReal(alpha_n) / (alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n))) * PetscSinReal( (alpha_n * x[0])/a) * PetscExpReal(-1*(alpha_n*alpha_n*c*time)/(a*a));
     }
     u[0] = ((P_0*nu)/(2.0*G*a) - (P_0*nu_u)/(G*a) * A_s)* x[0] + P_0/G * B_s;
-    u[1] = (-1*(P_0*(1.0-nu))/(2*G*a) + (P_0*(1-nu_u))/(G*a) * A_s )*x[1];
+    u[1] = (-1*(P_0*(1.0-nu))/(2*G*a) + (P_0*(1-nu_u))/(G*a) * A_s)*x[1];
   }
   return 0;
 }
@@ -825,11 +825,11 @@ static PetscErrorCode mandel_initial_eps(PetscInt dim, PetscReal time, const Pet
 
     for (n = 1; n < N+1; ++n) {
       aa     = user->zeroArray[n-1];
-      eps_A += (aa * PetscExpReal( (-1.0*aa*aa*c*time)/(a*a) )*PetscCosReal(aa)*PetscCosReal( (aa*x[0])/a )) / (a * (aa - PetscSinReal(aa)*PetscCosReal(aa)));
-      eps_B += ( PetscExpReal( (-1.0*aa*aa*c*time)/(a*a) )*PetscSinReal(aa)*PetscCosReal(aa) ) / (aa - PetscSinReal(aa)*PetscCosReal(aa));
-      eps_C += ( PetscExpReal( (-1.0*aa*aa*c*time)/(aa*aa) )*PetscSinReal(aa)*PetscCosReal(aa) ) / (aa - PetscSinReal(aa)*PetscCosReal(aa));
+      eps_A += (aa * PetscExpReal( (-1.0*aa*aa*c*time)/(a*a))*PetscCosReal(aa)*PetscCosReal( (aa*x[0])/a)) / (a * (aa - PetscSinReal(aa)*PetscCosReal(aa)));
+      eps_B += ( PetscExpReal( (-1.0*aa*aa*c*time)/(a*a))*PetscSinReal(aa)*PetscCosReal(aa)) / (aa - PetscSinReal(aa)*PetscCosReal(aa));
+      eps_C += ( PetscExpReal( (-1.0*aa*aa*c*time)/(aa*aa))*PetscSinReal(aa)*PetscCosReal(aa)) / (aa - PetscSinReal(aa)*PetscCosReal(aa));
     }
-    u[0] = (P_0/G)*eps_A + ( (P_0*nu)/(2.0*G*a) ) - eps_B/(G*a) - (P_0*(1-nu))/(2*G*a) + eps_C/(G*a);
+    u[0] = (P_0/G)*eps_A + ( (P_0*nu)/(2.0*G*a)) - eps_B/(G*a) - (P_0*(1-nu))/(2*G*a) + eps_C/(G*a);
   }
   return 0;
 }
@@ -857,11 +857,11 @@ static PetscErrorCode mandel_2d_u(PetscInt dim, PetscReal time, const PetscReal 
     PetscScalar F = param->P_0;
 
     PetscScalar K_d = K_u - alpha*alpha*M;
-    PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G ));
-    PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G ));
+    PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
+    PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
     PetscScalar kappa = k / mu_f;
     PetscReal   a = (param->xmax - param->xmin) / 2.0;
-    PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu) ) / ( alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
+    PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / ( alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
 
     // Series term
     PetscScalar A_x = 0.0;
@@ -870,11 +870,11 @@ static PetscErrorCode mandel_2d_u(PetscInt dim, PetscReal time, const PetscReal 
     for (PetscInt n=1; n < NITER+1; n++) {
       PetscReal alpha_n = user->zeroArray[n-1];
 
-      A_x += ( (PetscSinReal(alpha_n) * PetscCosReal(alpha_n)) / (alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n)) ) * PetscExpReal( -1*(alpha_n*alpha_n*c*time)/(a*a) );
-      B_x += ( PetscCosReal(alpha_n) / (alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)) ) * PetscSinReal( (alpha_n * x[0])/a ) * PetscExpReal( -1*(alpha_n*alpha_n*c*time)/(a*a) );
+      A_x += ( (PetscSinReal(alpha_n) * PetscCosReal(alpha_n)) / (alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n))) * PetscExpReal( -1*(alpha_n*alpha_n*c*time)/(a*a));
+      B_x += ( PetscCosReal(alpha_n) / (alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n))) * PetscSinReal( (alpha_n * x[0])/a) * PetscExpReal( -1*(alpha_n*alpha_n*c*time)/(a*a));
     }
     u[0] = ((F*nu)/(2.0*G*a) - (F*nu_u)/(G*a) * A_x)* x[0] + F/G * B_x;
-    u[1] = (-1*(F*(1.0-nu))/(2*G*a) + (F*(1-nu_u))/(G*a) * A_x )*x[1];
+    u[1] = (-1*(F*(1.0-nu))/(2*G*a) + (F*(1-nu_u))/(G*a) * A_x)*x[1];
   }
   return 0;
 }
@@ -902,8 +902,8 @@ static PetscErrorCode mandel_2d_eps(PetscInt dim, PetscReal time, const PetscRea
     PetscScalar F = param->P_0;
 
     PetscScalar K_d = K_u - alpha*alpha*M;
-    PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G ));
-    PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G ));
+    PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
+    PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
     PetscScalar kappa = k / mu_f;
     //const PetscScalar B = (alpha*M)/(K_d + alpha*alpha * M);
 
@@ -920,14 +920,14 @@ static PetscErrorCode mandel_2d_eps(PetscInt dim, PetscReal time, const PetscRea
     {
       PetscReal aa = user->zeroArray[n-1];
 
-      eps_A += (aa * PetscExpReal( (-1.0*aa*aa*c*time)/(a*a) )*PetscCosReal(aa)*PetscCosReal( (aa*x[0])/a )) / (a * (aa - PetscSinReal(aa)*PetscCosReal(aa)));
+      eps_A += (aa * PetscExpReal( (-1.0*aa*aa*c*time)/(a*a))*PetscCosReal(aa)*PetscCosReal( (aa*x[0])/a)) / (a * (aa - PetscSinReal(aa)*PetscCosReal(aa)));
 
-      eps_B += ( PetscExpReal( (-1.0*aa*aa*c*time)/(a*a) )*PetscSinReal(aa)*PetscCosReal(aa) ) / (aa - PetscSinReal(aa)*PetscCosReal(aa));
+      eps_B += ( PetscExpReal( (-1.0*aa*aa*c*time)/(a*a))*PetscSinReal(aa)*PetscCosReal(aa)) / (aa - PetscSinReal(aa)*PetscCosReal(aa));
 
-      eps_C += ( PetscExpReal( (-1.0*aa*aa*c*time)/(aa*aa) )*PetscSinReal(aa)*PetscCosReal(aa) ) / (aa - PetscSinReal(aa)*PetscCosReal(aa));
+      eps_C += ( PetscExpReal( (-1.0*aa*aa*c*time)/(aa*aa))*PetscSinReal(aa)*PetscCosReal(aa)) / (aa - PetscSinReal(aa)*PetscCosReal(aa));
     }
 
-    u[0] = (F/G)*eps_A + ( (F*nu)/(2.0*G*a) ) - eps_B/(G*a) - (F*(1-nu))/(2*G*a) + eps_C/(G*a);
+    u[0] = (F/G)*eps_A + ( (F*nu)/(2.0*G*a)) - eps_B/(G*a) - (F*(1-nu))/(2*G*a) + eps_C/(G*a);
   }
   return 0;
 
@@ -957,8 +957,8 @@ static PetscErrorCode mandel_2d_p(PetscInt dim, PetscReal time, const PetscReal 
     PetscScalar F = param->P_0;
 
     PetscScalar K_d = K_u - alpha*alpha*M;
-    PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G ));
-    PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G ));
+    PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
+    PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
     PetscScalar kappa = k / mu_f;
     PetscScalar B = (alpha*M)/(K_d + alpha*alpha * M);
 
@@ -976,7 +976,7 @@ static PetscErrorCode mandel_2d_p(PetscInt dim, PetscReal time, const PetscReal 
       aa = user->zeroArray[n-1];
       p += (PetscSinReal(aa)/ (aa - PetscSinReal(aa)*PetscCosReal(aa))) * (PetscCosReal( (aa*x[0]) / a) - PetscCosReal(aa)) * PetscExpReal(-1.0*(aa*aa * c * time)/(a*a));
     }
-    u[0] = ((2.0 * F) / (a*A1) ) * p;
+    u[0] = ((2.0 * F) / (a*A1)) * p;
   }
   return 0;
 }
@@ -1000,8 +1000,8 @@ static PetscErrorCode mandel_2d_u_t(PetscInt dim, PetscReal time, const PetscRea
   PetscScalar F = param->P_0;
 
   PetscScalar K_d = K_u - alpha*alpha*M;
-  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G ));
-  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G ));
+  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
+  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
   PetscScalar kappa = param->k / param->mu_f;
   PetscReal   a = (param->xmax - param->xmin) / 2.0;
   PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / (alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
@@ -1014,12 +1014,12 @@ static PetscErrorCode mandel_2d_u_t(PetscInt dim, PetscReal time, const PetscRea
   {
     PetscReal alpha_n = user->zeroArray[n-1];
 
-    A_s_t += (-1.0*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*time)/(a*a))*PetscSinReal( (alpha_n*x[0])/a ) * PetscCosReal(alpha_n) ) / ( a*a*(alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)) );
-    B_s_t += (-1.0*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*time)/(a*a))*PetscSinReal(  alpha_n         ) * PetscCosReal(alpha_n) ) / ( a*a*(alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)) );
+    A_s_t += (-1.0*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*time)/(a*a))*PetscSinReal( (alpha_n*x[0])/a) * PetscCosReal(alpha_n)) / ( a*a*(alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)));
+    B_s_t += (-1.0*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*time)/(a*a))*PetscSinReal(  alpha_n) * PetscCosReal(alpha_n)) / ( a*a*(alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)));
   }
 
-  u[0] = (F/G)*A_s_t - ( (F*nu_u*x[0])/(G*a) )*B_s_t;
-  u[1] = ( (F*x[1]*(1 - nu_u)) / (G*a) )*B_s_t;
+  u[0] = (F/G)*A_s_t - ( (F*nu_u*x[0])/(G*a))*B_s_t;
+  u[1] = ( (F*x[1]*(1 - nu_u)) / (G*a))*B_s_t;
 
   return 0;
 }
@@ -1045,8 +1045,8 @@ static PetscErrorCode mandel_2d_eps_t(PetscInt dim, PetscReal time, const PetscR
   PetscScalar F = param->P_0;
 
   PetscScalar K_d = K_u - alpha*alpha*M;
-  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G ));
-  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G ));
+  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
+  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
   PetscScalar kappa = k / mu_f;
   //const PetscScalar B = (alpha*M)/(K_d + alpha*alpha * M);
 
@@ -1063,12 +1063,12 @@ static PetscErrorCode mandel_2d_eps_t(PetscInt dim, PetscReal time, const PetscR
   {
     PetscReal alpha_n = user->zeroArray[n-1];
 
-    eps_As += (-1.0*alpha_n*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*c*time)/(a*a) )*PetscCosReal(alpha_n)*PetscCosReal( (alpha_n*x[0])/a ) ) / ( alpha_n*alpha_n*alpha_n*(alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)) );
-    eps_Bs += (-1.0*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*c*time)/(a*a) )*PetscSinReal(alpha_n)*PetscCosReal(alpha_n) ) / (alpha_n*alpha_n * (alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)) );
-    eps_Cs += (-1.0*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*c*time)/(a*a) )*PetscSinReal(alpha_n)*PetscCosReal(alpha_n) ) / (alpha_n*alpha_n * (alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)) );
+    eps_As += (-1.0*alpha_n*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*c*time)/(a*a))*PetscCosReal(alpha_n)*PetscCosReal( (alpha_n*x[0])/a)) / ( alpha_n*alpha_n*alpha_n*(alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)));
+    eps_Bs += (-1.0*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*c*time)/(a*a))*PetscSinReal(alpha_n)*PetscCosReal(alpha_n)) / (alpha_n*alpha_n * (alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)));
+    eps_Cs += (-1.0*alpha_n*alpha_n*c*PetscExpReal( (-1.0*alpha_n*alpha_n*c*time)/(a*a))*PetscSinReal(alpha_n)*PetscCosReal(alpha_n)) / (alpha_n*alpha_n * (alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)));
   }
 
-  u[0] = (F/G)*eps_As - ( (F*nu_u)/(G*a) )*eps_Bs + ( (F*(1-nu_u))/(G*a) )*eps_Cs;
+  u[0] = (F/G)*eps_As - ( (F*nu_u)/(G*a))*eps_Bs + ( (F*(1-nu_u))/(G*a))*eps_Cs;
   return 0;
 
 }
@@ -1095,8 +1095,8 @@ static PetscErrorCode mandel_2d_p_t(PetscInt dim, PetscReal time, const PetscRea
   PetscScalar F = param->P_0;
 
   PetscScalar K_d = K_u - alpha*alpha*M;
-  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G ));
-  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G ));
+  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
+  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
   PetscScalar kappa = k / mu_f;
 
   PetscReal   a = (param->xmax - param->xmin) / 2.0;
@@ -1111,9 +1111,9 @@ static PetscErrorCode mandel_2d_p_t(PetscInt dim, PetscReal time, const PetscRea
   {
     PetscReal alpha_n = user->zeroArray[n-1];
 
-    P_s += (-1.0*alpha_n*alpha_n*c*( -1.0*PetscCosReal(alpha_n) + PetscCosReal( (alpha_n*x[0])/a ) )*PetscExpReal( (-1.0*alpha_n*alpha_n*c*time)/(a*a) )*PetscSinReal(alpha_n) ) / ( a*a*(alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n) ) );
+    P_s += (-1.0*alpha_n*alpha_n*c*( -1.0*PetscCosReal(alpha_n) + PetscCosReal( (alpha_n*x[0])/a))*PetscExpReal( (-1.0*alpha_n*alpha_n*c*time)/(a*a))*PetscSinReal(alpha_n)) / ( a*a*(alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)));
   }
-  u[0] = ( (2.0*F*(-2.0*nu + 3.0*nu_u))/(3.0*a*alpha*(1.0 - 2.0*nu) ) );
+  u[0] = ( (2.0*F*(-2.0*nu + 3.0*nu_u))/(3.0*a*alpha*(1.0 - 2.0*nu)));
 
   return 0;
 }
@@ -1399,18 +1399,18 @@ static void f0_mandel_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscScalar F     = constants[5];
 
   PetscScalar K_d = K_u - alpha*alpha*M;
-  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G ));
-  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G ));
+  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
+  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
   PetscReal   aL = (xmax - xmin) / 2.0;
   PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / (alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
-  PetscScalar B = (3.0 * (nu_u - nu) ) / ( alpha * (1.0 - 2.0*nu) * (1.0 + nu_u));
+  PetscScalar B = (3.0 * (nu_u - nu)) / ( alpha * (1.0 - 2.0*nu) * (1.0 + nu_u));
   PetscScalar A1 = 3.0 / (B * (1.0 + nu_u));
   PetscScalar A2 = (alpha * (1.0 - 2.0*nu)) / (1.0 - nu);
 
   // Generate zero values
   for (PetscInt i=1; i < NITER+1; i++)
   {
-    a1 = ((PetscReal) i - 1.0 ) * PETSC_PI * PETSC_PI / 4.0 + EPS;
+    a1 = ((PetscReal) i - 1.0) * PETSC_PI * PETSC_PI / 4.0 + EPS;
     a2 = a1 + PETSC_PI/2;
     for (PetscInt j=0; j<NITER; j++)
     {
@@ -1440,8 +1440,8 @@ static void f0_mandel_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   {
     PetscReal alpha_n = zeroArray[n-1];
 
-    A_x += ( PetscSinReal(alpha_n) / (alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n))) * PetscCosReal( (alpha_n * x[0]) / aL) * PetscExpReal( -1.0*( (alpha_n*alpha_n*c*t)/(aL*aL) ) );
-    B_x += ( (PetscSinReal(alpha_n) * PetscCosReal(alpha_n) )/(alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n)) ) * PetscExpReal( -1.0*( (alpha_n*alpha_n*c*t)/(aL*aL) ) );
+    A_x += ( PetscSinReal(alpha_n) / (alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n))) * PetscCosReal( (alpha_n * x[0]) / aL) * PetscExpReal( -1.0*( (alpha_n*alpha_n*c*t)/(aL*aL)));
+    B_x += ( (PetscSinReal(alpha_n) * PetscCosReal(alpha_n))/(alpha_n - PetscSinReal(alpha_n) * PetscCosReal(alpha_n))) * PetscExpReal( -1.0*( (alpha_n*alpha_n*c*t)/(aL*aL)));
   }
 
   PetscScalar sigma_zz = -1.0*(F/aL) - ((2.0*F)/aL) * (A2/A1) * A_x + ((2.0*F)/aL) * B_x;
@@ -1704,14 +1704,14 @@ static PetscErrorCode mandelZeros(MPI_Comm comm, AppCtx *ctx, Parameter *param)
   //const PetscScalar P_0 = param->P_0;
 
   PetscScalar K_d = K_u - alpha*alpha*M;
-  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G ));
-  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G ));
+  PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
+  PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
   //const PetscScalar kappa = k / mu_f;
 
   // Generate zero values
   for (PetscInt i=1; i < NITER+1; i++)
   {
-    a1 = ((PetscReal) i - 1.0 ) * PETSC_PI * PETSC_PI / 4.0 + EPS;
+    a1 = ((PetscReal) i - 1.0) * PETSC_PI * PETSC_PI / 4.0 + EPS;
     a2 = a1 + PETSC_PI/2;
     am = a1;
     for (PetscInt j=0; j<NITER; j++)
@@ -2416,7 +2416,7 @@ int main(int argc, char **argv)
 
     ierr = TSSetUp(ts);CHKERRQ(ierr);
     ierr = TSGetIJacobian(ts, &J, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMPlexCreateRigidBody(dm, 0, &sp); CHKERRQ(ierr);
+    ierr = DMPlexCreateRigidBody(dm, 0, &sp);CHKERRQ(ierr);
     ierr = MatSetNullSpace(J, sp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&sp);CHKERRQ(ierr);
   }

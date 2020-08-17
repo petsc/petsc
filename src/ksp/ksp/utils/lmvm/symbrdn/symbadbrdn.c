@@ -9,8 +9,8 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
-  PetscScalar       yjtqi, sjtyi, wtyi, ytx, stf, wtf, ytq; 
-  
+  PetscScalar       yjtqi, sjtyi, wtyi, ytx, stf, wtf, ytq;
+
   PetscFunctionBegin;
   /* Efficient shortcuts for pure BFGS and pure DFP configurations */
   if (lsb->phi == 0.0) {
@@ -21,10 +21,10 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
     ierr = MatSolve_LMVMDFP(B, F, dX);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  
+
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
-  
+
   if (lsb->needQ) {
     /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
     for (i = 0; i <= lmvm->k; ++i) {
@@ -49,7 +49,7 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
     }
     lsb->needQ = PETSC_FALSE;
   }
-  
+
   /* Start the outer iterations for ((B^{-1}) * dX) */
   ierr = MatSymBrdnApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
@@ -79,22 +79,22 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
   PetscInt          i, j;
   PetscReal         numer;
   PetscScalar       sjtpi, sjtyi, yjtsi, yjtqi, wtsi, wtyi, stz, ytx, ytq, wtx, stp;
-  
-  
+
+
   PetscFunctionBegin;
   /* Efficient shortcuts for pure BFGS and pure DFP configurations */
   if (lsb->phi == 0.0) {
     ierr = MatMult_LMVMBFGS(B, X, Z);CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } 
+  }
   if (lsb->phi == 1.0) {
     ierr = MatMult_LMVMDFP(B, X, Z);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  
+
   VecCheckSameSize(X, 2, Z, 3);
   VecCheckMatCompatible(B, X, 2, Z, 3);
-  
+
   if (lsb->needQ) {
     /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
     for (i = 0; i <= lmvm->k; ++i) {
@@ -151,7 +151,7 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
     }
     lsb->needP = PETSC_FALSE;
   }
-  
+
   /* Start the outer iterations for (B * X) */
   ierr = MatSymBrdnApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
@@ -202,7 +202,7 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBADBROYDEN);CHKERRQ(ierr);
   B->ops->setfromoptions = MatSetFromOptions_LMVMSymBadBrdn;
   B->ops->solve = MatSolve_LMVMSymBadBrdn;
-  
+
   lmvm = (Mat_LMVM*)B->data;
   lmvm->ops->mult = MatMult_LMVMSymBadBrdn;
   PetscFunctionReturn(0);

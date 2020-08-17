@@ -243,7 +243,7 @@ int main(int argc, char **argv)
   for (i = 1; i < user.mt; i++) {
 
     /* Solve the current version */
-    ierr = TaoSolve(tao); CHKERRQ(ierr);
+    ierr = TaoSolve(tao);CHKERRQ(ierr);
 
     /* Update Vt1 with the solution */
     ierr = DMGetLocalVector(user.dm,&localX);CHKERRQ(ierr);
@@ -414,7 +414,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
   /* Set various matrix options */
   ierr = MatSetOption(J,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(J); CHKERRQ(ierr);}
+  if (assembled){ierr = MatZeroEntries(J);CHKERRQ(ierr);}
 
   ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL);CHKERRQ(ierr);
 

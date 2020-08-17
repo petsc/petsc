@@ -180,5 +180,5 @@ int main(int argc,char **argv)
       args: -vec_type cuda
       requires: cuda
       output_file: output/ex28_1.out
- 
+
 TEST*/

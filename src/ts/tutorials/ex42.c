@@ -49,7 +49,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void* ptr)
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
   ierr = VecGetArray(DXDT, &dxdt);CHKERRQ(ierr);
 
-  for(i = 0 ; i < nb_cells ; i++) {
+  for (i = 0 ; i < nb_cells ; i++) {
     a = x[2*i];
     h = x[2*i+1];
     // Reaction:
@@ -57,11 +57,11 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void* ptr)
     dh = alpha * a*a + rho_h - mu_h*h;
     // Diffusion:
     d2a = d2h = 0.;
-    if(i > 0) {
+    if (i > 0) {
       d2a += (x[2*(i-1)] - a);
       d2h += (x[2*(i-1)+1] - h);
     }
-    if(i < nb_cells-1) {
+    if (i < nb_cells-1) {
       d2a += (x[2*(i+1)] - a);
       d2h += (x[2*(i+1)+1] - h);
     }
@@ -96,7 +96,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
   D_h      = user->D_h;
 
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
-  for(i = 0; i < nb_cells ; ++i) {
+  for (i = 0; i < nb_cells ; ++i) {
     rowa = 2*i;
     rowh = 2*i+1;
     a = x[2*i];
@@ -108,7 +108,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
     va[1] = -beta*alpha*a*a / ((1.+beta*h)*(1.+beta*h));
     vh[0] = -mu_h;
     idx = 2;
-    if(i > 0) {
+    if (i > 0) {
       ca[idx] = 2*(i-1);
       ch[idx] = 2*(i-1)+1;
       va[idx] = D_a;
@@ -117,7 +117,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
       vh[0] -= D_h;
       idx++;
     }
-    if(i < nb_cells-1) {
+    if (i < nb_cells-1) {
       ca[idx] = 2*(i+1);
       ch[idx] = 2*(i+1)+1;
       va[idx] = D_a;
@@ -150,8 +150,8 @@ PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
   ierr = TSGetApplicationContext(ts, &user);CHKERRQ(ierr);
   nb_cells = user->nb_cells;
   ierr = VecGetArrayRead(Y, &x);CHKERRQ(ierr);
-  for(i = 0 ; i < 2*nb_cells ; ++i) {
-    if(PetscRealPart(x[i]) < 0) {
+  for (i = 0 ; i < 2*nb_cells ; ++i) {
+    if (PetscRealPart(x[i]) < 0) {
       ierr = TSGetTimeStep(ts, &dt);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, " ** Domain Error at time %g\n", (double)t);CHKERRQ(ierr);
       *accept = PETSC_FALSE;
@@ -190,7 +190,7 @@ PetscErrorCode PrintSolution(Vec X, AppCtx *user)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Activator,Inhibitor\n");CHKERRQ(ierr);
-  for(i = 0 ; i < nb_cells ; i++) {
+  for (i = 0 ; i < nb_cells ; i++) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "%5.6e,%5.6e\n", (double)x[2*i], (double)x[2*i+1]);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
@@ -210,7 +210,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  if(size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only");
 
   /*
    * Allow user to set the grid dimensions and the equations parameters

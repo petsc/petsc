@@ -949,11 +949,11 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
   }
 
   /* Partition ranks[] into distinguished (first sf->ndranks) followed by non-distinguished */
-  for (sf->ndranks=0,i=sf->nranks; sf->ndranks<i; ) {
+  for (sf->ndranks=0,i=sf->nranks; sf->ndranks<i;) {
     for (i--; sf->ndranks<i; i--) { /* Scan i backward looking for distinguished rank */
       if (InList(ranks[i],groupsize,groupranks)) break;
     }
-    for ( ; sf->ndranks<=i; sf->ndranks++) { /* Scan sf->ndranks forward looking for non-distinguished rank */
+    for (; sf->ndranks<=i; sf->ndranks++) { /* Scan sf->ndranks forward looking for non-distinguished rank */
       if (!InList(ranks[sf->ndranks],groupsize,groupranks)) break;
     }
     if (sf->ndranks < i) {                         /* Swap ranks[sf->ndranks] with ranks[i] */

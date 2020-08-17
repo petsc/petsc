@@ -125,7 +125,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   }
 
   ierr = PetscCalloc2(nvertex,&node,nedges,&branch);CHKERRQ(ierr);
-  
+
   for (i = 0; i < nvertex; i++) {
     node[i].id  = i;
     node[i].inj = 0;
@@ -137,12 +137,12 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
     branch[i].r   = 1.0;
     branch[i].bat = 0;
   }
-  
+
   /* Chose random node as ground voltage */
   ierr = PetscRandomSetInterval(rnd,0.0,nvertex);CHKERRQ(ierr);
   ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
   node[(int)value].gr = PETSC_TRUE;
-  
+
   /* Create random current and battery injectionsa */
   for (i=0; i<ncurr; i++) {
     ierr = PetscRandomSetInterval(rnd,0.0,nvertex);CHKERRQ(ierr);
@@ -356,7 +356,7 @@ int main(int argc,char ** argv)
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
 
   ierr = PetscLogStagePop();CHKERRQ(ierr);
-  
+
   /* Free work space */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);

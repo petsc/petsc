@@ -168,8 +168,8 @@ PetscErrorCode  PetscStrlen(const char s[],size_t *len)
       Null string returns a new null string
 
       Not for use in Fortran
-      
-      Warning: If t has previously been allocated then that memory is lost, you may need to PetscFree() 
+
+      Warning: If t has previously been allocated then that memory is lost, you may need to PetscFree()
       the array before calling this routine.
 
 .seealso: PetscStrArrayallocpy(), PetscStrcpy(), PetscStrNArrayallocpy()
@@ -207,9 +207,9 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
    Note:
       Not for use in Fortran
 
-      Warning: If t has previously been allocated then that memory is lost, you may need to PetscStrArrayDestroy() 
+      Warning: If t has previously been allocated then that memory is lost, you may need to PetscStrArrayDestroy()
       the array before calling this routine.
-      
+
 .seealso: PetscStrallocpy(), PetscStrArrayDestroy(), PetscStrNArrayallocpy()
 
 @*/
@@ -340,7 +340,7 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n,char ***list)
      Null string returns a string starting with zero
 
      Not for use in Fortran
-     
+
      It is recommended you use PetscStrncpy() instead of this routine
 
 .seealso: PetscStrncpy(), PetscStrcat(), PetscStrlcat()
@@ -374,7 +374,7 @@ PetscErrorCode  PetscStrcpy(char s[],const char t[])
      Null string returns a string starting with zero
 
      If the string that is being copied is of length n or larger then the entire string is not
-     copied and the final location of s is set to NULL. This is different then the behavior of 
+     copied and the final location of s is set to NULL. This is different then the behavior of
      strncpy() which leaves s non-terminated if there is not room for the entire string.
 
   Developers Note: Should this be PetscStrlcpy() to reflect its behavior which is like strlcpy() not strncpy()
@@ -411,7 +411,7 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
 
    Notes:
     Not for use in Fortran
-    
+
     It is recommended you use PetscStrlcat() instead of this routine
 
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrlcat()
@@ -915,7 +915,7 @@ struct _p_PetscToken {char token;char *array;char *current;};
      This version also treats all characters etc. inside a double quote "
    as a single token.
 
-     For example if the separator character is + and the string is xxxx+y then the first fine will return a pointer to a null terminated xxxx and the 
+     For example if the separator character is + and the string is xxxx+y then the first fine will return a pointer to a null terminated xxxx and the
    second will return a null terminated y
 
      If the separator character is + and the string is xxxx then the first and only token found will be a pointer to a null terminated xxxx

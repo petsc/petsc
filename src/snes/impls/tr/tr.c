@@ -68,7 +68,7 @@ static PetscErrorCode SNESTR_Converged_Private(SNES snes,PetscInt it,PetscReal x
 }
 
 /*@C
-   SNESNewtonTRSetPreCheck - Sets a user function that is called before the search step has been determined. 
+   SNESNewtonTRSetPreCheck - Sets a user function that is called before the search step has been determined.
        Allows the user a chance to change or override the decision of the line search routine.
 
    Logically Collective on snes
@@ -123,7 +123,7 @@ PetscErrorCode  SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES,
 }
 
 /*@C
-   SNESNewtonTRSetPostCheck - Sets a user function that is called after the search step has been determined but before the next 
+   SNESNewtonTRSetPostCheck - Sets a user function that is called after the search step has been determined but before the next
        function evaluation. Allows the user a chance to change or override the decision of the line search routine
 
    Logically Collective on snes
@@ -179,7 +179,7 @@ PetscErrorCode  SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES
 }
 
 /*@C
-   SNESNewtonTRPreCheck - Called before the step has been determined in SNESNEWTONTR 
+   SNESNewtonTRPreCheck - Called before the step has been determined in SNESNEWTONTR
 
    Logically Collective on snes
 
@@ -541,4 +541,3 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   neP->ttol   = 0.0;
   PetscFunctionReturn(0);
 }
-

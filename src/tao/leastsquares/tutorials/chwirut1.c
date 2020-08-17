@@ -412,7 +412,7 @@ PetscErrorCode InitializeData(AppCtx *user)
 
    test:
       args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-5
-      
+
    test:
       suffix: 2
       args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type l2prox -tao_brgn_regularizer_weight 1e-4 -tao_gatol 1.e-5

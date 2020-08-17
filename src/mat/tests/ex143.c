@@ -43,7 +43,7 @@ int main(int argc,char **args)
     fftw_plan    fplan,bplan;
     fftw_complex *data_in,*data_out,*data_out2;
     ptrdiff_t    alloc_local,local_n0,local_0_start;
-    
+
     DIM = 2;
     if (!rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Use FFTW without PETSc-FFTW interface, DIM %D\n",DIM);CHKERRQ(ierr);

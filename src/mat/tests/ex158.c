@@ -130,7 +130,7 @@ int main(int argc,char **args)
       ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);/* buggy for dim = 3, 4... */
 
       /* Apply FFTW_FORWARD and FFTW_BACKWARD */
-      ierr = MatMult(A,x,y);CHKERRQ(ierr); 
+      ierr = MatMult(A,x,y);CHKERRQ(ierr);
       if (view) {ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 

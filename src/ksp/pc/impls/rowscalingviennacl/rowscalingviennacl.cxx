@@ -61,7 +61,7 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
 #else
     ierr      = MatViennaCLCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct = (Mat_SeqAIJViennaCL*)(pc->pmat->spptr);
-    
+
     viennacl::linalg::row_scaling_tag pc_tag(1);
     ViennaCLAIJMatrix *mat = (ViennaCLAIJMatrix*)gpustruct->mat;
     rowscaling->ROWSCALINGVIENNACL = new viennacl::linalg::row_scaling<viennacl::compressed_matrix<PetscScalar> >(*mat, pc_tag);
@@ -209,4 +209,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_ROWSCALINGVIENNACL(PC pc)
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
-

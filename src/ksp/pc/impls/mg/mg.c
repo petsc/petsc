@@ -655,19 +655,19 @@ PetscErrorCode PCSetUp_MG(PC pc)
    Skipping for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs?
   */
   if (missinginterpolate && pc->dm && mg->galerkin != PC_MG_GALERKIN_EXTERNAL && !pc->setupcalled) {
-	/* construct the interpolation from the DMs */
+        /* construct the interpolation from the DMs */
     Mat p;
     Vec rscale;
     ierr     = PetscMalloc1(n,&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
     /* Separately create them so we do not get DMKSP interference between levels */
     for (i=n-2; i>-1; i--) {ierr = DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]);CHKERRQ(ierr);}
-	/*
-	   Force the mat type of coarse level operator to be AIJ because usually we want to use LU for coarse level.
-	   Notice that it can be overwritten by -mat_type because KSPSetUp() reads command line options.
-	   But it is safe to use -dm_mat_type.
+        /*
+           Force the mat type of coarse level operator to be AIJ because usually we want to use LU for coarse level.
+           Notice that it can be overwritten by -mat_type because KSPSetUp() reads command line options.
+           But it is safe to use -dm_mat_type.
 
-	   The mat type should not be hardcoded like this, we need to find a better way.
+           The mat type should not be hardcoded like this, we need to find a better way.
     ierr = DMSetMatType(dms[0],MATAIJ);CHKERRQ(ierr);
     */
     for (i=n-2; i>-1; i--) {
@@ -748,7 +748,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (!doA && dAeqdB) {
         if (reuse == MAT_INITIAL_MATRIX) {ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);}
         A = B;
-      } else if (!doA && reuse == MAT_INITIAL_MATRIX ) {
+      } else if (!doA && reuse == MAT_INITIAL_MATRIX) {
         ierr = KSPGetOperators(mglevels[i]->smoothd,&A,NULL);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
       }

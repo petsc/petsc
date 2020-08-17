@@ -904,25 +904,25 @@ static void Merge3SortedArrays(PetscInt  size1, PetscInt *in1,
     if (in1[i] < in2[j] && in1[i] < in3[k]) {
       out[l++] = in1[i++];
     }
-    else if(in2[j] < in1[i] && in2[j] < in3[k]) {
+    else if (in2[j] < in1[i] && in2[j] < in3[k]) {
       out[l++] = in2[j++];
     }
-    else if(in3[k] < in1[i] && in3[k] < in2[j]) {
+    else if (in3[k] < in1[i] && in3[k] < in2[j]) {
       out[l++] = in3[k++];
     }
-    else if(in1[i] == in2[j] && in1[i] < in3[k]) {
+    else if (in1[i] == in2[j] && in1[i] < in3[k]) {
       out[l++] = in1[i];
       i++, j++;
     }
-    else if(in1[i] == in3[k] && in1[i] < in2[j]) {
+    else if (in1[i] == in3[k] && in1[i] < in2[j]) {
       out[l++] = in1[i];
       i++, k++;
     }
-    else if(in3[k] == in2[j] && in2[j] < in1[i])  {
+    else if (in3[k] == in2[j] && in2[j] < in1[i])  {
       out[l++] = in2[j];
       k++, j++;
     }
-    else if(in1[i] == in2[j] && in1[i] == in3[k]) {
+    else if (in1[i] == in2[j] && in1[i] == in3[k]) {
       out[l++] = in1[i];
       i++, j++, k++;
     }
@@ -933,7 +933,7 @@ static void Merge3SortedArrays(PetscInt  size1, PetscInt *in1,
     if (in1[i] < in2[j]) {
       out[l++] = in1[i++];
     }
-    else if(in1[i] > in2[j]) {
+    else if (in1[i] > in2[j]) {
       out[l++] = in2[j++];
     }
     else {
@@ -946,7 +946,7 @@ static void Merge3SortedArrays(PetscInt  size1, PetscInt *in1,
     if (in1[i] < in3[k]) {
       out[l++] = in1[i++];
     }
-    else if(in1[i] > in3[k]) {
+    else if (in1[i] > in3[k]) {
       out[l++] = in3[k++];
     }
     else {
@@ -959,7 +959,7 @@ static void Merge3SortedArrays(PetscInt  size1, PetscInt *in1,
     if (in3[k] < in2[j]) {
       out[l++] = in3[k++];
     }
-    else if(in3[k] > in2[j]) {
+    else if (in3[k] > in2[j]) {
       out[l++] = in2[j++];
     }
     else {
@@ -1009,7 +1009,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRangeColumn(P, &p_colstart, &p_colend); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(P, &p_colstart, &p_colend);CHKERRQ(ierr);
 
   /* create struct Mat_APMPI and attached it to C later */
   ierr = PetscNew(&ptap);CHKERRQ(ierr);
@@ -1070,7 +1070,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
       row  = *adj++;
       pnz  = poff_i[row+1] - poff_i[row];
       Jptr = poff_j + poff_i[row];
-      for(i1 = 0; i1 < pnz; i1++) {
+      for (i1 = 0; i1 < pnz; i1++) {
         j_temp[i1] = p->garray[Jptr[i1]];
       }
       /* add non-zero cols of P into the sorted linked list lnk */
@@ -1126,12 +1126,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
     adpdnz = adpdi[i+1] - adpdi[i];
 
     /* Correct indices from A_diag*P_diag */
-    for(i1 = 0; i1 < adpdnz; i1++) {
+    for (i1 = 0; i1 < adpdnz; i1++) {
       adpdJ[i1] += p_colstart;
     }
     /* Merge j-arrays of A_diag * P_loc_off and A_diag * P_loc_diag and A_off * P_oth */
     Merge3SortedArrays(adponz, adpoJ, adpdnz, adpdJ, aopnz, aopJ, &apnz, apJ);
-    ierr = MatPreallocateSet(i+rstart, apnz, apJ, dnz, onz); CHKERRQ(ierr);
+    ierr = MatPreallocateSet(i+rstart, apnz, apJ, dnz, onz);CHKERRQ(ierr);
 
     aopJ += aopnz;
     adpoJ += adponz;

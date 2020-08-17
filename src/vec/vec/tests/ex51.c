@@ -55,7 +55,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   }
   ierr = VecView(writevec,viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&writevec); CHKERRQ(ierr);
+  ierr = VecDestroy(&writevec);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* Create index sets on each mpi rank to select the last 50 elements of parent vec */
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   if (low>=skipuntil) {
     isstart = low;
     issize = high - low;
-  } else if (low<=skipuntil && high>=skipuntil ) {
+  } else if (low<=skipuntil && high>=skipuntil) {
     isstart = skipuntil;
     issize = high - skipuntil;
   } else {
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
 
   /* Create subvector using the index set created above */
   ierr = VecGetSubVector(testvec, loadis, &loadvec);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)loadvec,"temp"); CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)loadvec,"temp");CHKERRQ(ierr);
 
   /* Load the previously saved vector into the subvector, destroy viewer */
   if (usehdf5) {

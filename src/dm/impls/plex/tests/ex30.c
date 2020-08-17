@@ -11,8 +11,7 @@ int main(int argc, char **argv)
   char           datafile[PETSC_MAX_PATH_LEN];
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);
-  if (ierr) return ierr;
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscViewerCreate(comm, &vwr);CHKERRQ(ierr);
   ierr = PetscViewerSetType(vwr, PETSCVIEWERHDF5);CHKERRQ(ierr);

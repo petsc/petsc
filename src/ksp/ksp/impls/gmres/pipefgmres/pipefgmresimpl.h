@@ -43,7 +43,7 @@ typedef struct {
 #define VEC_Q          pipefgmres->vecs[2]               /* work space - Q pipelining var */
 #define VEC_W          pipefgmres->vecs[3]               /* work space - W pipelining var */
 
-#define VEC_VV(i)      pipefgmres->vecs[VEC_OFFSET+i]    /* use to access othog basis vectors 
+#define VEC_VV(i)      pipefgmres->vecs[VEC_OFFSET+i]    /* use to access othog basis vectors
                                                             Note the offset, since we use
                                                             the first few as workspace */
 

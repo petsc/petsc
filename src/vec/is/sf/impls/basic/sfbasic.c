@@ -48,7 +48,7 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
     bas->ioffset[i+1] = bas->ioffset[i] + rlengths[i];
   }
   if (bas->ndiranks > 1 || (bas->ndiranks == 1 && bas->iranks[0] != rank)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Broken setup for shared ranks");
-  for ( ; i<bas->niranks; i++) {
+  for (; i<bas->niranks; i++) {
     bas->iranks[i] = iranks[i-bas->ndiranks];
     bas->ioffset[i+1] = bas->ioffset[i] + ilengths[i-bas->ndiranks];
   }

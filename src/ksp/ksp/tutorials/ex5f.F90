@@ -12,12 +12,12 @@
 program main
 #include <petsc/finclude/petscksp.h>
       use petscksp
-      
+
       implicit none
-      KSP            :: myKsp            ! linear solver context 
-      Mat            :: C,Ctmp           ! matrix 
-      Vec            :: x,u,b            ! approx solution, RHS, exact solution 
-      PetscReal      :: norm             ! norm of solution error 
+      KSP            :: myKsp            ! linear solver context
+      Mat            :: C,Ctmp           ! matrix
+      Vec            :: x,u,b            ! approx solution, RHS, exact solution
+      PetscReal      :: norm             ! norm of solution error
       PetscScalar    :: v
       PetscScalar, parameter :: myNone = -1.0
       PetscInt       :: Ii,JJ,ldim,low,high,iglobal,Istart,Iend
@@ -40,7 +40,7 @@ program main
         write(6,*)'Unable to initialize PETSc'
         stop
       endif
-      
+
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       CHKERRA(ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,myRank,ierr)
@@ -49,14 +49,14 @@ program main
       CHKERRA(ierr)
       n=2*mySize
 
-      
+
       ! Set flag if we are doing a nonsymmetric problem; the default is symmetric.
-      
+
       call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-mat_nonsym",mat_nonsymmetric,flg,ierr)
       CHKERRA(ierr)
       call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-test_scaledMat",testscaledMat,flg,ierr)
       CHKERRA(ierr)
-      
+
       ! Register two stages for separate profiling of the two linear solves.
       ! Use the runtime option -log_view for a printout of performance
       ! statistics at the program's conlusion.
@@ -65,18 +65,18 @@ program main
       CHKERRA(ierr)
       call PetscLogStageRegister("Second Solve",stages(1),ierr)
       CHKERRA(ierr)
-      
-      ! -------------- Stage 0: Solve Original System ---------------------- 
+
+      ! -------------- Stage 0: Solve Original System ----------------------
       ! Indicate to PETSc profiling that we're beginning the first stage
-      
+
       call PetscLogStagePush(stages(0),ierr)
       CHKERRA(ierr)
-      
+
       ! Create parallel matrix, specifying only its global dimensions.
       ! When using MatCreate(), the matrix format can be specified at
       ! runtime. Also, the parallel partitioning of the matrix is
       ! determined by PETSc at runtime.
-      
+
       call MatCreate(PETSC_COMM_WORLD,C,ierr)
       CHKERRA(ierr)
       call MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
@@ -89,9 +89,9 @@ program main
       ! Currently, all PETSc parallel matrix formats are partitioned by
       ! contiguous chunks of rows across the processors.  Determine which
       ! rows of the matrix are locally owned.
-      
+
       call MatGetOwnershipRange(C,Istart,Iend,ierr)
-      
+
       ! Set matrix entries matrix in parallel.
       ! - Each processor needs to insert only elements that it owns
       ! locally (but any non-local elements will be sent to the
@@ -105,31 +105,31 @@ program main
             call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
-          
+
           if (i<m-1) then
             JJ = Ii + n
             call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
-      
+
           if (j>0) then
             JJ = Ii - 1
             call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
-      
+
           if (j<n-1) then
             JJ = Ii + 1
             call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
-          
+
           v=4.0
           call MatSetValues(C,one,Ii,one,Ii,v,ADD_VALUES,ierr)
           CHKERRA(ierr)
-          
+
       enddo intitializeC
-      
+
       ! Make the matrix nonsymmetric if desired
       if (mat_nonsymmetric) then
         do Ii=Istart,Iend-1
@@ -146,12 +146,12 @@ program main
         call MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE,ierr)
         CHKERRA(ierr)
       endif
-      
+
       ! Assemble matrix, using the 2-step process:
       ! MatAssemblyBegin(), MatAssemblyEnd()
       ! Computations can be done while messages are in transition
       ! by placing code between these two statements.
-      
+
       call MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY,ierr)
       CHKERRA(ierr)
       call MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY,ierr)
@@ -161,7 +161,7 @@ program main
       ! - When using VecSetSizes(), we specify only the vector's global
       !   dimension; the parallel partitioning is determined at runtime.
       ! - Note: We form 1 vector from scratch and then duplicate as needed.
-      
+
       call  VecCreate(PETSC_COMM_WORLD,u,ierr)
       call  VecSetSizes(u,PETSC_DECIDE,m*n,ierr)
       call  VecSetFromOptions(u,ierr)
@@ -171,7 +171,7 @@ program main
       ! Currently, all parallel PETSc vectors are partitioned by
       ! contiguous chunks across the processors.  Determine which
       ! range of entries are locally owned.
-      
+
       call  VecGetOwnershipRange(x,low,high,ierr)
       CHKERRA(ierr)
 
@@ -181,7 +181,7 @@ program main
       ! appropriate processor during vector assembly).
       ! - Always specify global locations of vector entries.
 
-      call VecGetLocalSize(x,ldim,ierr) 
+      call VecGetLocalSize(x,ldim,ierr)
       CHKERRA(ierr)
       do i=0,ldim-1
         iglobal = i + low
@@ -193,19 +193,19 @@ program main
       ! Assemble vector, using the 2-step process:
       ! VecAssemblyBegin(), VecAssemblyEnd()
       ! Computations can be done while messages are in transition,
-      ! by placing code between these two statements.      
-      
+      ! by placing code between these two statements.
+
       call  VecAssemblyBegin(u,ierr)
       CHKERRA(ierr)
       call  VecAssemblyEnd(u,ierr)
       CHKERRA(ierr)
-      
+
       ! Compute right-hand-side vector
-      
+
       call  MatMult(C,u,b,ierr)
 
       CHKERRA(ierr)
-      
+
       ! Create linear solver context
 
       call  KSPCreate(PETSC_COMM_WORLD,myKsp,ierr)
@@ -232,7 +232,7 @@ program main
       CHKERRA(ierr)
 
       ! Check the error
-      
+
       call VecAXPY(x,myNone,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
 
@@ -241,9 +241,9 @@ program main
         write(outputString,'(a,f11.9,a,i2.2,a)') 'Norm of error ',norm,', Iterations ',its,'\n'
         call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr)
       endif
-      
-      ! -------------- Stage 1: Solve Second System ---------------------- 
-      
+
+      ! -------------- Stage 1: Solve Second System ----------------------
+
       ! Solve another linear system with the same method.  We reuse the KSP
       ! context, matrix and vector data structures, and hence save the
       ! overhead of creating new ones.
@@ -251,22 +251,22 @@ program main
       ! Indicate to PETSc profiling that we're concluding the first
       ! stage with PetscLogStagePop(), and beginning the second stage with
       ! PetscLogStagePush().
-      
+
       call PetscLogStagePop(ierr)
-      CHKERRA(ierr)      
+      CHKERRA(ierr)
       call PetscLogStagePush(stages(1),ierr)
       CHKERRA(ierr)
-      
+
       ! Initialize all matrix entries to zero.  MatZeroEntries() retains the
       ! nonzero structure of the matrix for sparse formats.
-      
+
       call MatZeroEntries(C,ierr)
       CHKERRA(ierr)
-      
+
       ! Assemble matrix again.  Note that we retain the same matrix data
       ! structure and the same nonzero pattern; we just change the values
       ! of the matrix entries.
-      
+
       do i=0,m-1
         do j=2*myRank,2*myRank+1
           v =-1.0; Ii=j + n*i
@@ -275,34 +275,34 @@ program main
             call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
-          
+
           if (i<m-1) then
             JJ = Ii + n
             call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
-      
+
           if (j>0) then
             JJ = Ii - 1
             call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
-      
+
           if (j<n-1) then
             JJ = Ii + 1
             call MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr)
             CHKERRA(ierr)
           endif
-          
+
           v=6.0
           call MatSetValues(C,one,Ii,one,Ii,v,ADD_VALUES,ierr)
           CHKERRA(ierr)
-          
+
         enddo
       enddo
-        
+
       ! Make the matrix nonsymmetric if desired
-      
+
       if (mat_nonsymmetric) then
         do Ii=Istart,Iend-1
           v=-1.5;  i=Ii/n
@@ -313,17 +313,17 @@ program main
           endif
         enddo
       endif
-      
+
       ! Assemble matrix, using the 2-step process:
       ! MatAssemblyBegin(), MatAssemblyEnd()
       ! Computations can be done while messages are in transition
       ! by placing code between these two statements.
-      
+
       call MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY,ierr)
       CHKERRA(ierr)
       call MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY,ierr)
       CHKERRA(ierr)
-      
+
       if (testscaledMat) then
         ! Scale a(0,0) and a(M-1,M-1)
 
@@ -334,14 +334,14 @@ program main
         elseif (myRank == mySize -1) then
           v = 6.0*0.00001; Ii = m*n-1; JJ = m*n-1
           call MatSetValues(C,one,Ii,one,JJ,v,INSERT_VALUES,ierr)
-          
+
         endif
-        
+
         call MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY,ierr)
         call MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY,ierr)
-        
+
         ! Compute a new right-hand-side vector
-        
+
         call  VecDestroy(u,ierr)
         call  VecCreate(PETSC_COMM_WORLD,u,ierr)
         call  VecSetSizes(u,PETSC_DECIDE,m*n,ierr)
@@ -353,12 +353,12 @@ program main
         call  PetscRandomDestroy(rctx,ierr)
         call  VecAssemblyBegin(u,ierr)
         call  VecAssemblyEnd(u,ierr)
-        
+
       endif
-      
+
       call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-test_newMat",testnewC,flg,ierr)
       CHKERRA(ierr)
-      
+
       if (testnewC) then
       ! User may use a new matrix C with same nonzero pattern, e.g.
       ! ex5 -ksp_monitor -mat_type sbaij -pc_type cholesky -pc_factor_mat_solver_type mumps -test_newMat
@@ -368,21 +368,21 @@ program main
         call  MatDuplicate(Ctmp,MAT_COPY_VALUES,C,ierr)
         call  MatDestroy(Ctmp,ierr)
       endif
-      
+
       call MatMult(C,u,b,ierr);CHKERRA(ierr)
 
       ! Set operators. Here the matrix that defines the linear system
       ! also serves as the preconditioning matrix.
-      
+
       call KSPSetOperators(myKsp,C,C,ierr);CHKERRA(ierr)
-      
+
       ! Solve linear system
-       
+
       call  KSPSetUp(myKsp,ierr); CHKERRA(ierr)
       call  KSPSolve(myKsp,b,x,ierr); CHKERRA(ierr)
-      
+
       ! Check the error
-      
+
       call VecAXPY(x,myNone,u,ierr); CHKERRA(ierr)
       call VecNorm(x,NORM_2,norm,ierr); CHKERRA(ierr)
       call KSPGetIterationNumber(myKsp,its,ierr); CHKERRA(ierr)
@@ -390,23 +390,23 @@ program main
         write(outputString,'(a,f11.9,a,i2.2,a)') 'Norm of error ',norm,', Iterations ',its,'\n'
         call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr)
       endif
-      
+
       ! Free work space.  All PETSc objects should be destroyed when they
       ! are no longer needed.
-      
+
       call  KSPDestroy(myKsp,ierr); CHKERRA(ierr)
       call  VecDestroy(u,ierr); CHKERRA(ierr)
-      call  VecDestroy(x,ierr); CHKERRA(ierr) 
+      call  VecDestroy(x,ierr); CHKERRA(ierr)
       call  VecDestroy(b,ierr); CHKERRA(ierr)
       call  MatDestroy(C,ierr); CHKERRA(ierr)
-      
+
       ! Indicate to PETSc profiling that we're concluding the second stage
-      
-      call PetscLogStagePop(ierr) 
+
+      call PetscLogStagePop(ierr)
       CHKERRA(ierr)
-      
+
       call PetscFinalize(ierr)
-      
+
 !/*TEST
 !
 !   test:

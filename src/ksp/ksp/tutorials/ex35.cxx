@@ -55,7 +55,7 @@ Usage:
     mpiexec -n $NP ./ex35 -problem 2 -n 80 -nu 0.01 -rho 0.005 -io -ksp_monitor -pc_type hypre
     mpiexec -n $NP ./ex35 -problem 2 -n 160 -bc neumann -nu 0.005 -rho 0.01 -io
     mpiexec -n $NP ./ex35 -problem 2 -n 320 -bc neumann -nu 0.001 -rho 1 -io
-  
+
   Or with an external mesh file representing [0, 1]^2,
 
     mpiexec -n $NP ./ex35 -problem 2 -file ./external_mesh.h5m -levels 1 -pc_type gamg
@@ -268,10 +268,10 @@ PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext* user)
   case 3:
     return user->nu * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
   case 2:
-    return PetscExpScalar(- ( (coords[0] - user->xref) * (coords[0] - user->xref) + (coords[1] - user->yref) * (coords[1] - user->yref) ) / user->nu);
+    return PetscExpScalar(- ( (coords[0] - user->xref) * (coords[0] - user->xref) + (coords[1] - user->yref) * (coords[1] - user->yref)) / user->nu);
   case 1:
   default:
-    return PETSC_PI * PETSC_PI * ComputeDiffusionCoefficient(coords, user) * 
+    return PETSC_PI * PETSC_PI * ComputeDiffusionCoefficient(coords, user) *
             (1.0 / user->bounds[1] / user->bounds[1] + 1.0 / user->bounds[3] / user->bounds[3]) * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
   }
 }
@@ -284,9 +284,9 @@ PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext* u
 {
   switch (user->problem) {
   case 3:
-    if ( BCHECK(coords[0], user->bounds[0]) || BCHECK(coords[0], user->bounds[1]) || BCHECK(coords[1], user->bounds[2]) || BCHECK(coords[1], user->bounds[3]) )
+    if (BCHECK(coords[0], user->bounds[0]) || BCHECK(coords[0], user->bounds[1]) || BCHECK(coords[1], user->bounds[2]) || BCHECK(coords[1], user->bounds[3]))
       return 0.0;
-    else // ( coords[0]*coords[0] + coords[1]*coords[1] < 0.04 + BCHECKEPS )
+    else // ( coords[0]*coords[0] + coords[1]*coords[1] < 0.04 + BCHECKEPS)
       return 1.0;
   case 2:
     return ComputeForcingFunction(coords, user);
@@ -430,7 +430,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   ierr = DMMoabGetHierarchyLevel(dm, &hlevel);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv);CHKERRQ(ierr);
 
-  ierr = DMMoabFEMCreateQuadratureDefault ( 2, user->VPERE, &quadratureObj );CHKERRQ(ierr);
+  ierr = DMMoabFEMCreateQuadratureDefault ( 2, user->VPERE, &quadratureObj);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscMalloc5(user->VPERE * npoints, &phi, user->VPERE * npoints, &dphi[0], user->VPERE * npoints, &dphi[1], npoints * 3, &phypts, npoints, &jxw);CHKERRQ(ierr);
 
@@ -461,14 +461,14 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
     /* Compute function over the locally owned part of the grid */
     for (q = 0; q < npoints; ++q) {
       /* compute the inhomogeneous (piece-wise constant) diffusion coefficient at the quadrature point
-        -- for large spatial variations (within an element), embed this property evaluation inside the quadrature loop 
+        -- for large spatial variations (within an element), embed this property evaluation inside the quadrature loop
       */
       rho = ComputeDiffusionCoefficient(&phypts[q * 3], user);
 
       for (i = 0; i < nconn; ++i) {
         for (j = 0; j < nconn; ++j) {
           array[i * nconn + j] += jxw[q] * rho * ( dphi[0][q * nconn + i] * dphi[0][q * nconn + j] +
-                                                   dphi[1][q * nconn + i] * dphi[1][q * nconn + j] );
+                                                   dphi[1][q * nconn + i] * dphi[1][q * nconn + j]);
         }
       }
     }

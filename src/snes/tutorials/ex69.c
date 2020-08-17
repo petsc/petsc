@@ -268,7 +268,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   /* rho = -sin(km*z)*cos(kn*x) */
   x = pos[0];
   z = pos[1];
-  Z = PetscExpReal( 2.0 * B * x );
+  Z = PetscExpReal( 2.0 * B * x);
   km = m*PETSC_PI; /* solution valid for km not zero -- should get trivial solution if km=0 */
   kn = (PetscReal) n*PETSC_PI;
   /*************************************************************************/
@@ -276,8 +276,8 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   a = B*B + km*km;
   b = 2.0*km*B;
   r = PetscSqrtReal(a*a + b*b);
-  Rp = PetscSqrtReal( (r+a)/2.0 );
-  Rm  = PetscSqrtReal( (r-a)/2.0 );
+  Rp = PetscSqrtReal( (r+a)/2.0);
+  Rm  = PetscSqrtReal( (r-a)/2.0);
   UU  = Rp - B;
   VV = Rp + B;
 
@@ -2790,7 +2790,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   /****************************************************************************************/
   /****************************************************************************************/
 
-  if(x>xc) {
+  if (x>xc) {
     _PC1=_PC1B; _PC2=_PC2B; _PC3=_PC3B; _PC4=_PC4B; Z=ZB;
   }
   else {

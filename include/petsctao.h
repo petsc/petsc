@@ -37,20 +37,20 @@ S*/
 /*E
      TaoADMMUpdateType - Determine spectral penalty update routine for lagrange augmented term for ADMM.
 
-  Level: advanced  
+  Level: advanced
 
 .seealso TaoADMMSetUpdateType()
 E*/
 typedef enum {TAO_ADMM_UPDATE_BASIC,TAO_ADMM_UPDATE_ADAPTIVE,TAO_ADMM_UPDATE_ADAPTIVE_RELAXED} TaoADMMUpdateType;
 PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
 /*MC
-     TAO_ADMM_UPDATE_BASIC - Use same spectral penalty set at the beginning. No update 
+     TAO_ADMM_UPDATE_BASIC - Use same spectral penalty set at the beginning. No update
 
   Level: advanced
 
   Note: Most basic implementation. Generally slower than adaptive or adaptive relaxed version.
 
-.seealso: TaoADMMSetUpdateType(), TAO_ADMM_UPDATE_ADAPTIVE, TAO_ADMM_UPDATE_ADAPTIVE_RELAXED   
+.seealso: TaoADMMSetUpdateType(), TAO_ADMM_UPDATE_ADAPTIVE, TAO_ADMM_UPDATE_ADAPTIVE_RELAXED
 M*/
 
 /*MC
@@ -60,11 +60,11 @@ M*/
 
   Note: Adaptively updates spectral penalty, using both steepest descent and minimum gradient.
 
-.seealso: TaoADMMSetUpdateType(), TAO_ADMM_UPDATE_BASIC, TAO_ADMM_UPDATE_ADAPTIVE_RELAXED   
+.seealso: TaoADMMSetUpdateType(), TAO_ADMM_UPDATE_BASIC, TAO_ADMM_UPDATE_ADAPTIVE_RELAXED
 M*/
 
 /*MC
-     ADMM_UPDATE_ADAPTIVE_RELAXED - Adaptively update spectral penalty, and relaxes parameter update 
+     ADMM_UPDATE_ADAPTIVE_RELAXED - Adaptively update spectral penalty, and relaxes parameter update
 
   Level: advanced
 
@@ -77,7 +77,7 @@ M*/
 /*E
      TaoADMMRegularizerType - Determine regularizer routine - either user provided or soft threshold
 
-  Level: advanced  
+  Level: advanced
 
 .seealso TaoADMMSetRegularizerType()
 E*/

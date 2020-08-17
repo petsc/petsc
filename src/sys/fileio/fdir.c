@@ -42,7 +42,7 @@ PetscErrorCode PetscMkdir(const char dir[])
 #else
   err = mkdir(dir,S_IRWXU|S_IRGRP|S_IXGRP);
 #endif
-  if(err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not create dir: %s",dir);
+  if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not create dir: %s",dir);
   PetscFunctionReturn(0);
 }
 
@@ -82,7 +82,7 @@ PetscErrorCode PetscMkdtemp(char dir[])
   }
 #else
   dir = mkdtemp(dir);
-  if(!dir) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not create temporary dir using the template: %s",dir);
+  if (!dir) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not create temporary dir using the template: %s",dir);
 #endif
   PetscFunctionReturn(0);
 }
@@ -140,7 +140,7 @@ PetscErrorCode PetscRMTree(const char dir[])
 
   PetscFunctionBegin;
   dirp = opendir(dir);
-  if(!dirp) {
+  if (!dirp) {
     PetscBool flg;
     ierr = PetscTestDirectory(dir,'r',&flg);CHKERRQ(ierr);
     if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Cannot access directory to delete: %s",dir);
@@ -148,7 +148,7 @@ PetscErrorCode PetscRMTree(const char dir[])
     if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Specified path is a file - not a dir: %s",dir);
     PetscFunctionReturn(0); /* perhaps the dir was not yet created */
   }
-  while((data = readdir(dirp))) {
+  while ((data = readdir(dirp))) {
     ierr = PetscStrcmp(data->d_name, ".",&flg1);CHKERRQ(ierr);
     ierr = PetscStrcmp(data->d_name, "..",&flg2);CHKERRQ(ierr);
     if (flg1 || flg2) continue;

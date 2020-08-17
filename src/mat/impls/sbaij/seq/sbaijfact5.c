@@ -13,7 +13,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C,Mat A,c
   PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
-  PetscBool      pivotinblocks = b->pivotinblocks; 
+  PetscBool      pivotinblocks = b->pivotinblocks;
   PetscReal      shift         = info->shiftamount;
   PetscBool      allowzeropivot,zeropivotdetected=PETSC_FALSE;
 
@@ -23,8 +23,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C,Mat A,c
   ierr = PetscCalloc1(16*mbs,&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   il[0] = 0;
-  for (i=0; i<mbs; i++) jl[i] = mbs; 
-  
+  for (i=0; i<mbs; i++) jl[i] = mbs;
+
   ierr = PetscMalloc2(16,&dk,16,&uik);CHKERRQ(ierr);
   ai   = a->i; aj = a->j; aa = a->a;
 

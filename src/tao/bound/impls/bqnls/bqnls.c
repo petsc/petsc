@@ -8,7 +8,7 @@ static PetscErrorCode TaoBQNLSComputeHessian(Tao tao)
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscErrorCode ierr;
   PetscReal      gnorm2, delta;
-  
+
   PetscFunctionBegin;
   /* Compute the initial scaling and update the approximation */
   gnorm2 = bnk->gnorm*bnk->gnorm;
@@ -72,9 +72,9 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
 }
 
 /*MC
-  TAOBQNLS - Bounded Quasi-Newton Line Search method for nonlinear minimization with bound 
-             constraints. This method approximates the action of the inverse-Hessian with a 
-             limited memory quasi-Newton formula. The quasi-Newton matrix and its options are 
+  TAOBQNLS - Bounded Quasi-Newton Line Search method for nonlinear minimization with bound
+             constraints. This method approximates the action of the inverse-Hessian with a
+             limited memory quasi-Newton formula. The quasi-Newton matrix and its options are
              accessible via the prefix `-tao_bqnls_`
 
   Options Database Keys:
@@ -88,18 +88,18 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)
   TAO_BNK        *bnk;
   TAO_BQNK       *bqnk;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = TaoCreate_BQNK(tao);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, "unused");CHKERRQ(ierr);
   tao->ops->solve = TaoSolve_BNLS;
   tao->ops->setfromoptions = TaoSetFromOptions_BQNLS;
-  
+
   bnk = (TAO_BNK*)tao->data;
   bnk->update_type = BNK_UPDATE_STEP;
   bnk->computehessian = TaoBQNLSComputeHessian;
   bnk->computestep = TaoBQNLSComputeStep;
-  
+
   bqnk = (TAO_BQNK*)bnk->ctx;
   ierr = MatSetOptionsPrefix(bqnk->B, "tao_bqnls_");CHKERRQ(ierr);
   ierr = MatSetType(bqnk->B, MATLMVMBFGS);CHKERRQ(ierr);

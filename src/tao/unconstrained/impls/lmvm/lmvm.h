@@ -21,7 +21,7 @@ typedef struct {
   PetscInt bfgs;
   PetscInt grad;
   Mat      H0;
-  
+
   PetscBool recycle;
 } TAO_LMVM;
 

@@ -141,7 +141,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     ierr = TaoBNCGResetUpdate(tao, gnorm2);CHKERRQ(ierr);
   }
   /* Initial gradient descent step. Scaling by 1.0 also does a decent job for some problems. */
-  while(1) {
+  while (1) {
     /* Call general purpose update function */
     if (tao->ops->update) {
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
@@ -554,20 +554,20 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
    must be derived as a preconditioned CG method rather than as
    a Hessian initialization like in the Broyden methods. */
 
-  /* In that case, one writes the objective function as 
-   f(x) \equiv f(Ay). Gradient evaluations yield g(x_k) = A g(Ay_k) = A g(x_k). 
-   Furthermore, the direction d_k \equiv (x_k - x_{k-1})/step according to 
-   HZ (2006) becomes A^{-1} d_k, such that d_k^T g_k remains the 
+  /* In that case, one writes the objective function as
+   f(x) \equiv f(Ay). Gradient evaluations yield g(x_k) = A g(Ay_k) = A g(x_k).
+   Furthermore, the direction d_k \equiv (x_k - x_{k-1})/step according to
+   HZ (2006) becomes A^{-1} d_k, such that d_k^T g_k remains the
    same under preconditioning. Note that A is diagonal, such that A^T = A. */
 
-  /* This yields questions like what the dot product d_k^T y_k 
-   should look like. HZ mistakenly treats that as the same under 
+  /* This yields questions like what the dot product d_k^T y_k
+   should look like. HZ mistakenly treats that as the same under
    preconditioning, but that is not necessarily true. */
 
-  /* Observe y_k \equiv g_k - g_{k-1}, and under the P.C. transformation, 
-   we get d_k^T y_k = (d_k^T A_k^{-T} A_k g_k - d_k^T A_k^{-T} A_{k-1} g_{k-1}), 
-   yielding d_k^T y_k = d_k^T g_k - d_k^T (A_k^{-T} A_{k-1} g_{k-1}), which is 
-   NOT the same if our preconditioning matrix is updated between iterations. 
+  /* Observe y_k \equiv g_k - g_{k-1}, and under the P.C. transformation,
+   we get d_k^T y_k = (d_k^T A_k^{-T} A_k g_k - d_k^T A_k^{-T} A_{k-1} g_{k-1}),
+   yielding d_k^T y_k = d_k^T g_k - d_k^T (A_k^{-T} A_{k-1} g_{k-1}), which is
+   NOT the same if our preconditioning matrix is updated between iterations.
    This same issue is found when considering dot products of the form g_{k+1}^T y_k. */
 
   /* Compute CG step direction */
@@ -741,7 +741,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       break;
 
     case CG_DaiKou:
-      /* Dai, Yu-Hong, and Cai-Xia Kou. "A nonlinear conjugate gradient algorithm with an optimal property and an improved Wolfe line search." 
+      /* Dai, Yu-Hong, and Cai-Xia Kou. "A nonlinear conjugate gradient algorithm with an optimal property and an improved Wolfe line search."
          SIAM Journal on Optimization 23, no. 1 (2013): 296-320. */
       ierr = VecDot(tao->gradient, tao->stepdirection, &gd);CHKERRQ(ierr);
       ierr = VecDot(cg->G_old, tao->stepdirection, &gd_old);CHKERRQ(ierr);
@@ -806,7 +806,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
             gamma = 0.0;
           } else {
             if (gkp1_yk < 0 && cg->neg_xi) gamma = -1.0*gd/dk_yk;
-            /* This seems to be very effective when there's no tau_k scaling. 
+            /* This seems to be very effective when there's no tau_k scaling.
                This guarantees a large descent step every iteration, going through DK 2015 Lemma 3.1's proof but allowing for negative xi */
             else {
               gamma = cg->xi*gd/dk_yk;

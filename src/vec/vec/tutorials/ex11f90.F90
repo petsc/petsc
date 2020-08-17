@@ -1,6 +1,6 @@
    !Concepts: vectors^norms of sub-vectors
    !Processors: n
-   
+
   program main
 #include <petsc/finclude/petscvec.h>
   use petscvec
@@ -21,9 +21,9 @@
    print*,'PetscInitialize failed'
    stop
   endif
-      
+
   call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      
+
   call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-n",n,flg,ierr);CHKERRA(ierr)
 
 
@@ -46,7 +46,7 @@
      !particular type of vector to be formed.
 
   call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRA(ierr)
-  
+
   call VecSetSizes(x,PETSC_DECIDE,n,ierr);CHKERRA(ierr)
   !
   call VecSetBlockSize(x,two,ierr);CHKERRA(ierr)
@@ -54,21 +54,21 @@
 
 
      !Set the vectors to entries to a constant value.
-  
+
   call VecSet(x,sone,ierr);CHKERRA(ierr)
 
   call VecNorm(x,NORM_2,norm,ierr);CHKERRA(ierr)
   write(outputString,*) norm
   call PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of entire vector: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
-  
+
   call VecNorm(x,NORM_1,norm,ierr);CHKERRA(ierr)
   write(outputString,*) norm
   call PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of entire vector: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
-  
+
   call VecNorm(x,NORM_INFINITY,norm,ierr);CHKERRA(ierr)
   write(outputString,*) norm
   call PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of entire vector: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
-  
+
   call VecStrideNorm(x,zero,NORM_2,norm,ierr);CHKERRA(ierr)
   write(outputString,*) norm
   call PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 0: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
@@ -92,13 +92,13 @@
   call VecStrideNorm(x,one,NORM_INFINITY,norm,ierr);CHKERRA(ierr)
   write(outputString,*) norm
   call PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 1: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
-   
-   
+
+
      !Free work space.  All PETSc objects should be destroyed when they
      !are no longer needed.
   call VecDestroy(x,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)
-  
+
 end program
 
 

@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
     args: -petscpartitioner_type parmetis
-    args: -format hdf5_petsc -new_dm_view ascii::ascii_info_detail 
+    args: -format hdf5_petsc -new_dm_view ascii::ascii_info_detail
   testset:
     requires: exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo

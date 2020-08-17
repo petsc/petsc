@@ -10,7 +10,7 @@
 /*
   DMNetworkComponentGenericDataType - This is the data type that PETSc uses for storing the component data.
             For compatibility with PetscSF, which is used for data distribution, its declared as PetscInt.
-	    To get the user-specific data type, one needs to cast it to the appropriate type.
+            To get the user-specific data type, one needs to cast it to the appropriate type.
 */
 typedef PetscInt DMNetworkComponentGenericDataType;
 

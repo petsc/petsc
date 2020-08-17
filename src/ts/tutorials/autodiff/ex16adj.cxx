@@ -65,7 +65,7 @@ static PetscErrorCode RHSFunctionActive(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   User              user = (User)ctx;
   PetscScalar       *f;
   const PetscScalar *x;
- 
+
   adouble           f_a[2]; /* 'active' double for dependent variables */
   adouble           x_a[2]; /* 'active' double for independent variables */
 
@@ -97,7 +97,7 @@ static PetscErrorCode RHSFunctionActiveP(TS ts,PetscReal t,Vec X,Vec F,void *ctx
   User              user = (User)ctx;
   PetscScalar       *f;
   const PetscScalar *x;
- 
+
   adouble           f_a[2];      /* 'active' double for dependent variables */
   adouble           x_a[2],mu_a; /* 'active' double for independent variables */
 

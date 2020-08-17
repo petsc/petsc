@@ -482,9 +482,9 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
       sum[7] += aval[j+7] * x[acolidx[j+7]];
     }
     if (i == totalslices-1 && (A->rmap->n & 0x07)) { /* if last slice has padding rows */
-      for(j=0; j<(A->rmap->n & 0x07); j++) y[8*i+j] = sum[j];
+      for (j=0; j<(A->rmap->n & 0x07); j++) y[8*i+j] = sum[j];
     } else {
-      for(j=0; j<8; j++) y[8*i+j] = sum[j];
+      for (j=0; j<8; j++) y[8*i+j] = sum[j];
     }
   }
 #endif

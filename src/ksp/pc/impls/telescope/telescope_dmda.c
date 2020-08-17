@@ -46,7 +46,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,Pe
   pi = pj = pk = -1;
   if (_pi) {
     for (n=0; n<Mp; n++) {
-      if ( (i >= start_i[n]) && (i < start_i[n]+span_i[n]) ) {
+      if ((i >= start_i[n]) && (i < start_i[n]+span_i[n])) {
         pi = n;
         break;
       }
@@ -57,7 +57,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,Pe
 
   if (_pj) {
     for (n=0; n<Np; n++) {
-      if ( (j >= start_j[n]) && (j < start_j[n]+span_j[n]) ) {
+      if ((j >= start_j[n]) && (j < start_j[n]+span_j[n])) {
         pj = n;
         break;
       }
@@ -68,7 +68,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,Pe
 
   if (_pk) {
     for (n=0; n<Pp; n++) {
-      if ( (k >= start_k[n]) && (k < start_k[n]+span_k[n]) ) {
+      if ((k >= start_k[n]) && (k < start_k[n]+span_k[n])) {
         pk = n;
         break;
       }
@@ -1079,7 +1079,7 @@ PetscErrorCode DMView_DA_Short_2d(DM dm,PetscViewer v)
   ierr = DMGetOptionsPrefix(dm,&prefix);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,&m,&n,NULL,&ndof,&nsw,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   if (prefix) {PetscViewerASCIIPrintf(v,"DMDA Object:    (%s)    %d MPI processes\n",prefix,size);CHKERRQ(ierr);}
-  else {ierr = PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",size);CHKERRQ(ierr);} 
+  else {ierr = PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",size);CHKERRQ(ierr);}
   ierr = PetscViewerASCIIPrintf(v,"  M %D N %D m %D n %D dof %D overlap %D\n",M,N,m,n,ndof,nsw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1099,4 +1099,3 @@ PetscErrorCode DMView_DA_Short(DM dm,PetscViewer v)
   }
   PetscFunctionReturn(0);
 }
-

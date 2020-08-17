@@ -13,7 +13,7 @@ implicit none
   Vec ::         u
   PetscViewer :: viewer
   PetscClassId classid
-  
+
   PetscBool :: flg
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ
@@ -24,17 +24,17 @@ implicit none
    print*,'PetscInitialize failed'
    stop
   endif
-  
-  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr) 
-  
-  call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr);CHKERRA(ierr)  !gives number of processes in the group of comm (integer) 
-  call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr);CHKERRA(ierr) !gives the integer value for a particular option in the database. 
+
+  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+
+  call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr);CHKERRA(ierr)  !gives number of processes in the group of comm (integer)
+  call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr);CHKERRA(ierr) !gives the integer value for a particular option in the database.
 
   ! PART 1:  Generate vector, then write it in binary format */
 
   call PetscLogEventRegister("Generate Vector",classid,VECTOR_GENERATE,ierr);CHKERRA(ierr)
   call PetscLogEventBegin(VECTOR_GENERATE,ierr);CHKERRA(ierr)
-  ! Generate vector 
+  ! Generate vector
   call VecCreate(PETSC_COMM_WORLD,u,ierr);CHKERRA(ierr)
   call VecSetSizes(u,PETSC_DECIDE,m,ierr);CHKERRA(ierr)
   call VecSetFromOptions(u,ierr);CHKERRA(ierr)
@@ -58,9 +58,9 @@ implicit none
 
   call PetscLogEventEnd(VECTOR_GENERATE,ierr);CHKERRA(ierr)
 
-  ! PART 2:  Read in vector in binary format 
+  ! PART 2:  Read in vector in binary format
 
-  ! Read new vector in binary format 
+  ! Read new vector in binary format
   call PetscLogEventRegister("Read Vector",classid,VECTOR_READ,ierr);CHKERRA(ierr)
   call PetscLogEventBegin(VECTOR_READ,ierr);CHKERRA(ierr)
   call PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n",ierr);CHKERRA(ierr)
@@ -72,10 +72,10 @@ implicit none
   call PetscLogEventEnd(VECTOR_READ,ierr);CHKERRA(ierr)
   call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
 
-  ! Free data structures 
+  ! Free data structures
   call VecDestroy(u,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)
-  
+
 end program
 
 

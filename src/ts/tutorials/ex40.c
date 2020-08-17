@@ -300,37 +300,37 @@ int main(int argc,char **argv)
     test:
       suffix: a
       args: -snes_stol 1e-4 -ts_trajectory_dirname ex40_a_dir
-      output_file: output/ex40.out 
+      output_file: output/ex40.out
 
     test:
       suffix: b
       args: -ts_type arkimex -snes_stol 1e-4 -ts_trajectory_dirname ex40_b_dir
-      output_file: output/ex40.out 
+      output_file: output/ex40.out
 
     test:
       suffix: c
       args: -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 -ts_trajectory_dirname ex40_c_dir
-      output_file: output/ex40.out 
+      output_file: output/ex40.out
 
     test:
       suffix: d
       args: -ts_type alpha -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 -ts_trajectory_dirname ex40_d_dir
-      output_file: output/ex40.out 
+      output_file: output/ex40.out
 
     test:
       suffix: e
       args:  -ts_type bdf -ts_adapt_dt_max 0.025 -ts_max_steps 1500 -ts_trajectory_dirname ex40_e_dir
-      output_file: output/ex40.out 
+      output_file: output/ex40.out
 
     test:
       suffix: f
       args: -rhs-form -ts_type rk -ts_rk_type 3bs -ts_trajectory_dirname ex40_f_dir
-      output_file: output/ex40.out 
+      output_file: output/ex40.out
 
     test:
       suffix: g
       args: -rhs-form -ts_type rk -ts_rk_type 5bs -ts_trajectory_dirname ex40_g_dir
-      output_file: output/ex40.out 
+      output_file: output/ex40.out
 
     test:
       suffix: h

@@ -133,7 +133,7 @@ int main(int argc, char **argv)
             ierr = MatView(R,0);CHKERRQ(ierr);
           }
         }
-        /* Solvers could now set operator "R" to the multigrid PC object for level i 
+        /* Solvers could now set operator "R" to the multigrid PC object for level i
             PCMGSetInterpolation(pc,i,R)
         */
         if (createR) {

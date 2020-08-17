@@ -177,7 +177,7 @@ static PetscErrorCode MatADAComputeDiagonal(Mat mat)
   ierr = MatGetOwnershipRange(mat, &low, &high);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(n,&dtemp );CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&dtemp);CHKERRQ(ierr);
   for (i=0; i<n; i++){
     ierr = MatGetColumnVector(ctx->A, ctx->W, i);CHKERRQ(ierr);
     ierr = VecPointwiseMult(ctx->W,ctx->W,ctx->W);CHKERRQ(ierr);
@@ -271,7 +271,7 @@ static PetscErrorCode MatCreateSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *ic
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscCalloc1(n+1,B);CHKERRQ(ierr);
   }
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ierr = MatCreateSubMatrix_ADA(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -382,7 +382,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
    Input Parameters:
 +  mat - matrix of arbitrary type
 .  d1 - A vector defining a diagonal matrix
--  d2 - A vector defining a diagonal matrix 
+-  d2 - A vector defining a diagonal matrix
 
    Output Parameters:
 .  J - New matrix whose operations are defined in terms of mat, D1, and D2.

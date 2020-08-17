@@ -523,7 +523,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 
     Example usage:
     [*] KSP ex2, no preconditioner, pipel = 2, lmin = 0.0, lmax = 8.0 :
-	    $mpirun -ppn 14 ./ex2 -m 1000 -n 1000 -ksp_type pipelcg -pc_type none -ksp_norm_type UNPRECONDITIONED
+            $mpirun -ppn 14 ./ex2 -m 1000 -n 1000 -ksp_type pipelcg -pc_type none -ksp_norm_type UNPRECONDITIONED
         -ksp_rtol 1e-10 -ksp_max_it 1000 -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 8.0 -log_summary
     [*] SNES ex48, bjacobi preconditioner, pipel = 3, lmin = 0.0, lmax = 2.0, show restart information :
         $mpirun -ppn 14 ./ex48 -M 150 -P 100 -ksp_type pipelcg -pc_type bjacobi -ksp_rtol 1e-10 -ksp_pipelcg_pipel 3

@@ -128,7 +128,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Hash(ISLocalToGlobalMapping ma
   PetscFunctionBegin;
   ierr = PetscNew(&map);CHKERRQ(ierr);
   ierr = PetscHMapICreate(&map->globalht);CHKERRQ(ierr);
-  for (i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (idx[i] < 0) continue;
     ierr = PetscHMapISet(map->globalht,idx[i],i);CHKERRQ(ierr);
   }

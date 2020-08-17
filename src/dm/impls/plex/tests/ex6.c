@@ -43,7 +43,7 @@ PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
   ierr = PetscRandomSetSeed(r, 123456789L);CHKERRQ(ierr);
   ierr = PetscRandomSeed(r);CHKERRQ(ierr);
   user->size = 0;
-  for(i = 0; i < n; ++i) {
+  for (i = 0; i < n; ++i) {
     PetscReal p;
     PetscInt  val;
 
@@ -68,7 +68,7 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for(p = pStart; p < pEnd; ++p) {
+  for (p = pStart; p < pEnd; ++p) {
     PetscInt  val;
     PetscBool has;
 

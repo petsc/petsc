@@ -1313,7 +1313,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T* ctx)
 
   PetscErrorCode ierr;
   const ViennaCLVector *v_vcl;
-  ierr = VecViennaCLGetArrayRead(v, &v_vcl); CHKERRQ(ierr);
+  ierr = VecViennaCLGetArrayRead(v, &v_vcl);CHKERRQ(ierr);
   try{
     viennacl::ocl::context vcl_ctx = v_vcl->handle().opencl_handle().context();
     const cl_context ocl_ctx = vcl_ctx.handle().get();
@@ -1354,7 +1354,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T* queue)
 
   PetscErrorCode ierr;
   const ViennaCLVector *v_vcl;
-  ierr = VecViennaCLGetArrayRead(v, &v_vcl); CHKERRQ(ierr);
+  ierr = VecViennaCLGetArrayRead(v, &v_vcl);CHKERRQ(ierr);
   try{
     viennacl::ocl::context vcl_ctx = v_vcl->handle().opencl_handle().context();
     const viennacl::ocl::command_queue& vcl_queue = vcl_ctx.current_queue();
@@ -1395,7 +1395,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T* mem)
 
   PetscErrorCode ierr;
   const ViennaCLVector *v_vcl;
-  ierr = VecViennaCLGetArrayRead(v, &v_vcl); CHKERRQ(ierr);
+  ierr = VecViennaCLGetArrayRead(v, &v_vcl);CHKERRQ(ierr);
   try{
     const cl_mem ocl_mem = v_vcl->handle().opencl_handle().get();
     clRetainMemObject(ocl_mem);
@@ -1438,7 +1438,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T* mem
 
   PetscErrorCode ierr;
   ViennaCLVector *v_vcl;
-  ierr = VecViennaCLGetArrayWrite(v, &v_vcl); CHKERRQ(ierr);
+  ierr = VecViennaCLGetArrayWrite(v, &v_vcl);CHKERRQ(ierr);
   try{
     const cl_mem ocl_mem = v_vcl->handle().opencl_handle().get();
     clRetainMemObject(ocl_mem);
@@ -1475,7 +1475,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
   PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
 
   PetscErrorCode ierr;
-  ierr = VecViennaCLRestoreArrayWrite(v, PETSC_NULL); CHKERRQ(ierr);
+  ierr = VecViennaCLRestoreArrayWrite(v, PETSC_NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 #endif
@@ -1513,7 +1513,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T* mem)
 
   PetscErrorCode ierr;
   ViennaCLVector *v_vcl;
-  ierr = VecViennaCLGetArray(v, &v_vcl); CHKERRQ(ierr);
+  ierr = VecViennaCLGetArray(v, &v_vcl);CHKERRQ(ierr);
   try{
     const cl_mem ocl_mem = v_vcl->handle().opencl_handle().get();
     clRetainMemObject(ocl_mem);
@@ -1550,7 +1550,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec v)
   PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
 
   PetscErrorCode ierr;
-  ierr = VecViennaCLRestoreArray(v, PETSC_NULL); CHKERRQ(ierr);
+  ierr = VecViennaCLRestoreArray(v, PETSC_NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 #endif

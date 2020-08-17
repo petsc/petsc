@@ -30,7 +30,7 @@ static char help[] = "Performs adjoint sensitivity analysis for the van der Pol 
    J(G) = a * -- + --
               du'  du
 
-   and the JacobianP of the explicit right-hand side of (2) f(u,t) ( which is equivalent to -G(0,u,t) ).
+   and the JacobianP of the explicit right-hand side of (2) f(u,t) ( which is equivalent to -G(0,u,t)).
    df   [       0               ]
    -- = [                       ]
    dp   [ (1 - u_1^2) u_2 - u_1 ].

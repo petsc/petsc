@@ -193,7 +193,7 @@ typedef struct {
   PetscInt bfgs_scale_type;     /*  Scaling matrix to used for the bfgs preconditioner */
   PetscInt init_type;           /*  Trust-region initialization method */
   PetscInt update_type;         /*  Trust-region update method */
-  
+
   /* Trackers for KSP solution type and convergence reasons */
   PetscInt ksp_atol;
   PetscInt ksp_rtol;

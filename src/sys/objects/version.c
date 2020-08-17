@@ -51,7 +51,7 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
     Level: developer
 
     Notes:
-    The C macros PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, PETSC_VERSION_RELEASE provide the information at 
+    The C macros PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, PETSC_VERSION_RELEASE provide the information at
        compile time. This can be used to confirm that the shared library being loaded at runtime has the appropriate version updates.
 
        This function can be called before PetscInitialize()
@@ -67,4 +67,3 @@ PetscErrorCode PetscGetVersionNumber(PetscInt *major, PetscInt *minor, PetscInt 
   if (release) *release = PETSC_VERSION_RELEASE;
   return 0;
 }
-

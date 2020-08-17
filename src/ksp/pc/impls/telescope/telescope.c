@@ -34,7 +34,7 @@ static const char citation[] =
  x(comm) -> xtmp(comm)
  [1b] local copy (to) ranks with color = 0
  xred(subcomm) <- xtmp
- 
+
  [2] solve on sub KSP to obtain yred(subcomm)
 
  [3a] local copy (from) ranks with color = 0
@@ -84,8 +84,8 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f,MPI_Comm comm_c,Petsc
 
   /*
    MPI_Group_translate_ranks() returns a non-zero exit code if any rank cannot be translated.
-   I do not want the code to terminate immediately if this occurs, rather I want to throw 
-   the error later (during PCSetUp_Telescope()) via SETERRQ() with a message indicating 
+   I do not want the code to terminate immediately if this occurs, rather I want to throw
+   the error later (during PCSetUp_Telescope()) via SETERRQ() with a message indicating
    that comm_c is not a valid sub-communicator.
    Hence I purposefully do not call CHKERRQ() after MPI_Group_translate_ranks().
   */
@@ -420,7 +420,7 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
         } else {
           ierr = PetscViewerASCIIPrintf(subviewer,"Sub DM object: NULL\n");CHKERRQ(ierr);
         }
-        
+
         ierr = KSPView(sred->ksp,subviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(subviewer);CHKERRQ(ierr);
       }
@@ -1296,7 +1296,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    Within PCApply, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
    Then, KSPSolve() is executed on the c' communicator.
 
-   The communicator used within the telescoping preconditioner is defined by a PetscSubcomm using the INTERLACED 
+   The communicator used within the telescoping preconditioner is defined by a PetscSubcomm using the INTERLACED
    creation routine by default (this can be changed with -pc_telescope_subcomm_type). We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
 
    The telescoping preconditioner is aware of nullspaces and near nullspaces which are attached to the B operator.
@@ -1321,7 +1321,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 
    The symmetric permutation used when a DMDA is encountered is performed via explicitly assmbleming a permutation matrix P,
    and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). We opted to use P^T.A.P as it appears
-   VecPermute() does not supported for the use case required here. By computing P, one can permute both the operator and RHS in a 
+   VecPermute() does not supported for the use case required here. By computing P, one can permute both the operator and RHS in a
    consistent manner.
 
    Mapping of vectors (default setup mode) is performed in the following way.

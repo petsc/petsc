@@ -2,11 +2,11 @@
 #include <petscksp.h>
 
 /*
- Implements Newton's Method with a line search approach for 
+ Implements Newton's Method with a line search approach for
  solving bound constrained minimization problems.
- 
+
  ------------------------------------------------------------
- 
+
  x_0 = VecMedian(x_0)
  f_0, g_0 = TaoComputeObjectiveAndGradient(x_0)
  pg_0 = project(g_0)
@@ -14,10 +14,10 @@
  needH = TaoBNKInitialize(default:BNK_INIT_DIRECTION)
  niter = 0
  step_accepted = true
- 
+
  while niter < max_it
     niter += 1
-    
+
     if needH
       If max_cg_steps > 0
         x_k, g_k, pg_k = TaoSolve(BNCG)
@@ -33,7 +33,7 @@
       end
       needH = False
     end
-    
+
     if pc_type = BNK_PC_BFGS
       B_k = BFGS
     else
@@ -48,7 +48,7 @@
       F = {i : l_i = (x_k)_i = u_i}
       A = {L + U + F}
       IA = {i : i not in A}
-    
+
     generate the reduced system Hr_k dr_k = -gr_k for variables in IA
     if p > 0
       Hr_k += p*
@@ -59,7 +59,7 @@
     end
     solve Hr_k dr_k = -gr_k
     set d_k to (l - x) for variables in L, (u - x) for variables in U, and 0 for variables in F
-    
+
     if dot(d_k, pg_k)) >= 0 || norm(d_k) == NaN || norm(d_k) == Inf
       dr_k = -BFGS*gr_k for variables in I
       if dot(d_k, pg_k)) >= 0 || norm(d_k) == NaN || norm(d_k) == Inf
@@ -71,7 +71,7 @@
         end
       end
     end
-    
+
     x_{k+1}, f_{k+1}, g_{k+1}, ls_failed = TaoBNKPerformLineSearch()
     if ls_failed
       f_{k+1} = f_k
@@ -82,8 +82,8 @@
     else
       pg_{k+1} = project(g_{k+1})
       count the accepted step type (Newton, BFGS, scaled grad or grad)
-    end 
-    
+    end
+
     check convergence at pg_{k+1}
  end
 */
@@ -98,7 +98,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
   PetscReal                    steplen = 1.0, resnorm;
   PetscBool                    cgTerminate, needH = PETSC_TRUE, stepAccepted, shift = PETSC_TRUE;
   PetscInt                     stepType;
-  
+
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
@@ -112,7 +112,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     ++tao->niter;
-    
+
     if (needH && bnk->inactive_idx) {
       /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
       ierr = TaoBNKTakeCGSteps(tao, &cgTerminate);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
       ierr = (*bnk->computehessian)(tao);CHKERRQ(ierr);
       needH = PETSC_FALSE;
     }
-    
+
     /* Use the common BNK kernel to compute the safeguarded Newton step (for inactive variables only) */
     ierr = (*bnk->computestep)(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
     ierr = TaoBNKSafeguardStep(tao, ksp_reason, &stepType);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
     ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, bnk->Gold);CHKERRQ(ierr);
     ierr = VecCopy(bnk->unprojected_gradient, bnk->unprojected_gradient_old);CHKERRQ(ierr);
-    
+
     /* Trigger the line search */
     ierr = TaoBNKPerformLineSearch(tao, &stepType, &steplen, &ls_reason);CHKERRQ(ierr);
 
@@ -190,11 +190,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
 {
   TAO_BNK        *bnk;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
   tao->ops->solve = TaoSolve_BNLS;
-  
+
   bnk = (TAO_BNK *)tao->data;
   bnk->init_type = BNK_INIT_DIRECTION;
   bnk->update_type = BNK_UPDATE_STEP; /* trust region updates based on line search step length */

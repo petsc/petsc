@@ -228,7 +228,7 @@
 !  Set fake B and C
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       one    = 1.0
-      if( N2 .gt. 0 ) then
+      if (N2 .gt. 0) then
          bval(1) = -one/(solver%mx-2)
 !     cval = -one/(solver%my*solver%mx)
          cval(1) = -one
@@ -237,7 +237,7 @@
             i = mod(irow,solver%mx)
             row(1) = irow
             col(1) = j
-            if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
+            if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1) then
                !     no op
             else
                call MatSetValues(Bmat,ione,row,ione,col,bval,INSERT_VALUES,ierr);CHKERRA(ierr)
@@ -366,7 +366,7 @@
       call DMDestroy(dalam,ierr);CHKERRA(ierr)
 
       call PetscFinalize(ierr)
-      end 
+      end
 
 ! ---------------------------------------------------------------------
 !
@@ -464,7 +464,7 @@
          j = row/solver%mx
          i = mod(row,solver%mx)
          temp = min(j,solver%my-j+1)*hy
-         if (i .eq. 0 .or. j .eq. 0  .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
+         if (i .eq. 0 .or. j .eq. 0  .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1) then
             v = 0.0
          else
             v = temp1 * sqrt(min(min(i,solver%mx-i+1)*hx,temp))
@@ -533,7 +533,7 @@
 
       return
       end subroutine FormJacobian
-      
+
 ! ---------------------------------------------------------------------
 !
 !  FormJacobianLocal - Computes Jacobian preconditioner matrix,
@@ -596,15 +596,15 @@
 !     interior grid points
          else
             v(1) = -hy2inv
-            if(j-1==0) v(1) = 0.0
+            if (j-1==0) v(1) = 0.0
             v(2) = -hx2inv
-            if(i-1==0) v(2) = 0.0
-            v(3) = two*(hx2inv + hy2inv) 
-            if(add_nl_term) v(3) = v(3) - sc*exp(lx_v(ii))
+            if (i-1==0) v(2) = 0.0
+            v(3) = two*(hx2inv + hy2inv)
+            if (add_nl_term) v(3) = v(3) - sc*exp(lx_v(ii))
             v(4) = -hx2inv
-            if(i+1==solver%mx-1) v(4) = 0.0
+            if (i+1==solver%mx-1) v(4) = 0.0
             v(5) = -hy2inv
-            if(j+1==solver%my-1) v(5) = 0.0
+            if (j+1==solver%my-1) v(5) = 0.0
             col(1) = irow - solver%mx
             col(2) = irow - 1
             col(3) = irow
@@ -653,14 +653,14 @@
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
- 
+
       izero = 0
       ione = 1
       itwo = 2
       call DMCompositeGetAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
       call DMCompositeGetAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr);CHKERRQ(ierr)
 
-      call FormFunctionNLTerm( Xsub(1), Fsub(1), solver, ierr );CHKERRQ(ierr)
+      call FormFunctionNLTerm( Xsub(1), Fsub(1), solver, ierr);CHKERRQ(ierr)
       call MatMultAdd( solver%AmatLin, Xsub(1), Fsub(1), Fsub(1), ierr);CHKERRQ(ierr)
 
 !     do rest of operator (linear)
@@ -718,7 +718,7 @@
          i = mod(irow,solver%mx)
          ii = ii + 1            ! one based local index
          row(1) = irow
-         if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
+         if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1) then
             v(1) = 0.0
          else
             u = lx_v(ii)

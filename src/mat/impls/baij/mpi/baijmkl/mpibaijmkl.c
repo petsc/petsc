@@ -32,17 +32,17 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,MatReuse 
 
 /*@C
    MatCreateBAIJMKL - Creates a sparse parallel matrix in block AIJ format
-   (block compressed row).  
-   This type inherits from BAIJ and is largely identical, but uses sparse BLAS 
+   (block compressed row).
+   This type inherits from BAIJ and is largely identical, but uses sparse BLAS
    routines from Intel MKL whenever possible.
-   MatMult, MatMultAdd, MatMultTranspose, and MatMultTransposeAdd 
+   MatMult, MatMultAdd, MatMultTranspose, and MatMultTransposeAdd
    operations are currently supported.
-   If the installed version of MKL supports the "SpMV2" sparse 
-   inspector-executor routines, then those are used by default. 
-   Default PETSc kernels are used otherwise. 
-   For good matrix assembly performance the user should preallocate the matrix 
-   storage by setting the parameters d_nz (or d_nnz) and o_nz (or o_nnz). 
-   By setting these parameters accurately, performance can be increased by more 
+   If the installed version of MKL supports the "SpMV2" sparse
+   inspector-executor routines, then those are used by default.
+   Default PETSc kernels are used otherwise.
+   For good matrix assembly performance the user should preallocate the matrix
+   storage by setting the parameters d_nz (or d_nnz) and o_nz (or o_nnz).
+   By setting these parameters accurately, performance can be increased by more
    than a factor of 50.
 
    Collective
@@ -179,4 +179,3 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A)
 
 .seealso: MatCreateBAIJMKL(), MATSEQBAIJMKL, MATMPIBAIJMKL
 M*/
-

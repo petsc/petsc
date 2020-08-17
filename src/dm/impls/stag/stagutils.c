@@ -25,7 +25,7 @@ PetscErrorCode DMStagGetBoundaryTypes(DM dm,DMBoundaryType *boundaryTypeX,DMBoun
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  if (boundaryTypeX           ) *boundaryTypeX = stag->boundaryType[0];
+  if (boundaryTypeX) *boundaryTypeX = stag->boundaryType[0];
   if (boundaryTypeY && dim > 1) *boundaryTypeY = stag->boundaryType[1];
   if (boundaryTypeZ && dim > 2) *boundaryTypeZ = stag->boundaryType[2];
   PetscFunctionReturn(0);
@@ -641,7 +641,7 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm,const PetscInt *lx[],const PetscIn
   Dof supplied for strata too big for the dimension are ignored; these may be set to 0.
   For example, for a 2-dimensional DMStag, dof2 sets the number of dof per element,
   and dof3 is unused. For a 3-dimensional DMStag, dof3 sets the number of dof per element.
-  
+
   In contrast to DMDACreateCompatibleDMDA(), coordinates are not reused.
 
   Level: intermediate

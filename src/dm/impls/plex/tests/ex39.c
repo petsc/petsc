@@ -507,7 +507,7 @@ int main(int argc,char **argv)
    * this vector which should be zero if the H(div) spaces are implemented
    * correctly. */
   ierr           = VecGetSubVector(computed,fieldIS[2],&divErr);CHKERRQ(ierr);
-  ierr           = VecNorm(divErr,NORM_2,&divErrNorm); CHKERRQ(ierr);
+  ierr           = VecNorm(divErr,NORM_2,&divErrNorm);CHKERRQ(ierr);
   ierr           = VecRestoreSubVector(computed,fieldIS[2],&divErr);CHKERRQ(ierr);
   exampleSuccess = (PetscBool)(divErrNorm <= errTol);
 

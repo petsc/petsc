@@ -519,7 +519,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   }
 
   /* Update sensitivities, and evaluate integrals if there is any */
-  if(th->endpoint) { /* two-stage Theta methods with th->Theta!=1, th->Theta==1 leads to BEuler */
+  if (th->endpoint) { /* two-stage Theta methods with th->Theta!=1, th->Theta==1 leads to BEuler */
     th->shift      = 1./((th->Theta-1.)*adjoint_time_step);
     th->stage_time = adjoint_ptime;
     ierr           = TSComputeSNESJacobian(ts,th->X0,J,Jpre);CHKERRQ(ierr);

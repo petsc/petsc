@@ -67,7 +67,7 @@ M*/
    The options database command  -log_view activates
    PETSc library timing.  See Users-Manual: ch_profiling for more details, also
    see PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd() for how to register
-   stages and events in application codes. 
+   stages and events in application codes.
 
 .seealso:  PetscTime(), PetscTimeAdd(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 
@@ -119,6 +119,3 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
 }
 
 #endif
-
-
-

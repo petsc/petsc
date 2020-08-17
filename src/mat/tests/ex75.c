@@ -154,7 +154,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test MatGetSize(), MatGetLocalSize() */
-  ierr = MatGetSize(sA, &i,&j); CHKERRQ(ierr);
+  ierr = MatGetSize(sA, &i,&j);CHKERRQ(ierr);
   ierr = MatGetSize(A, &i2,&j2);CHKERRQ(ierr);
   i   -= i2; j -= j2;
   if (i || j) {

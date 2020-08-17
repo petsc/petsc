@@ -415,7 +415,7 @@
 
 #include "ex5f.h"
       DM da
-      
+
 !  Input/output variables:
       PetscScalar x(gxs:gxe,gys:gye)
       Mat         A,jac

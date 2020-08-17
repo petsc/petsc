@@ -1,7 +1,7 @@
 #include <petsc/private/matimpl.h>
 #include <petscsf.h>
 
-/* this function maps rows to locally owned rows */ 
+/* this function maps rows to locally owned rows */
 PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat A,PetscInt N,const PetscInt *rows,PetscInt *nr,PetscInt **olrows)
 {
   PetscInt      *owners = A->rmap->range;
@@ -47,4 +47,3 @@ PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat A,PetscInt N,const P
   if (olrows) *olrows = lrows;
   PetscFunctionReturn(0);
 }
-

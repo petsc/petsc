@@ -25,7 +25,7 @@ int main(int argc,char **argv)
     Since when PetscInitialize() returns with an error the PETSc data structures
     may not be set up hence we cannot call CHKERRQ() hence directly return the error code.
 
-    Since PetscOptionsSetValue() is called before the PetscInitialize() we cannot call 
+    Since PetscOptionsSetValue() is called before the PetscInitialize() we cannot call
     CHKERRQ() on the error code and just return it directly.
   */
   ierr = PetscOptionsSetValue(NULL,"-no_signal_handler","true");if (ierr) return ierr;

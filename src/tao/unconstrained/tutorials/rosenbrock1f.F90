@@ -3,7 +3,7 @@
 !  Description:  This example demonstrates use of the TAO package to solve an
 !  unconstrained minimization problem on a single processor.  We minimize the
 !  extended Rosenbrock function:
-!       sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 )
+!       sum_{i=0}^{n/2-1} (alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2)
 !
 !  The C version of this code is rosenbrock1.c
 !

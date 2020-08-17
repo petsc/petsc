@@ -208,7 +208,7 @@ static PetscErrorCode TSStep_SSP(TS ts)
   ierr = (*ssp->onestep)(ts,ts->ptime,ts->time_step,sol);CHKERRQ(ierr);
   ierr = TSPostStage(ts,ts->ptime,0,&sol);CHKERRQ(ierr);
   ierr = TSAdaptCheckStage(ts->adapt,ts,ts->ptime+ts->time_step,sol,&stageok);CHKERRQ(ierr);
-  if(!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
+  if (!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
 
   ierr = TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
   if (!accept) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}

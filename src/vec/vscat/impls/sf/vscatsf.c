@@ -407,7 +407,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
   if (ixid == IS_BLOCK)       {ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);}
   else if (ixid == IS_STRIDE) {ierr = ISStrideGetInfo(ix,&ixfirst,&ixstep);CHKERRQ(ierr);}
 
-  if ( iyid == IS_BLOCK)      {ierr = ISGetBlockSize(iy,&bsy);CHKERRQ(ierr);}
+  if (iyid == IS_BLOCK)      {ierr = ISGetBlockSize(iy,&bsy);CHKERRQ(ierr);}
   else if (iyid == IS_STRIDE) {ierr = ISStrideGetInfo(iy,&iyfirst,&iystep);CHKERRQ(ierr);}
 
   /* Check if a PtoS is special ToAll/ToZero scatters, which can be results of VecScatterCreateToAll/Zero.
@@ -741,7 +741,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
 
 functionend:
   if (!vscat->from_is) {ierr = ISDestroy(&ix);CHKERRQ(ierr);}
-  if (!vscat->to_is  ) {ierr = ISDestroy(&iy);CHKERRQ(ierr);}
+  if (!vscat->to_is) {ierr = ISDestroy(&iy);CHKERRQ(ierr);}
 
   /* vecscatter uses eager setup */
   ierr = PetscSFSetUp(data->sf);CHKERRQ(ierr);

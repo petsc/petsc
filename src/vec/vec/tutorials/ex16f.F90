@@ -13,12 +13,12 @@ implicit none
   PetscBool :: flg
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  
+
   if (ierr /= 0) then
     print*,'PetscInitialize failed'
     stop
   endif
-      
+
   call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-n",n,flg,ierr);CHKERRA(ierr)
 
 
@@ -40,7 +40,7 @@ implicit none
 
   vecs(0) = s
   vecs(1) = r
- 
+
   !Set the vector values
 
   call VecGetOwnershipRange(v,start,endd,ierr);CHKERRA(ierr)
@@ -49,9 +49,9 @@ implicit none
      call VecSetValues(v,one,i,myValue,INSERT_VALUES,ierr);CHKERRA(ierr)
   end do
 
-  
+
   ! Get the components from the multi-component vector to the other vectors
- 
+
   call VecStrideGatherAll(v,vecs,INSERT_VALUES,ierr);CHKERRA(ierr)
 
   call VecView(s,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
@@ -61,7 +61,7 @@ implicit none
 
   call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
 
- 
+
   !Free work space.All PETSc objects should be destroyed when they are no longer needed.
 
   deallocate(vecs)
@@ -69,7 +69,7 @@ implicit none
   call VecDestroy(s,ierr);CHKERRA(ierr)
   call VecDestroy(r,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)
-  
+
 end program
 
 !/*TEST

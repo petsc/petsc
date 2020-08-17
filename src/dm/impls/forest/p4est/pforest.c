@@ -535,7 +535,7 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
     PetscStackCallP4estReturn(comp,p4est_quadrant_is_equal,(firstFrom,firstTo));
     if (!comp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"non-matching partitions");
 
-    for (currentFrom = 0, currentTo = 0; currentFrom < numFrom && currentTo < numTo; ) {
+    for (currentFrom = 0, currentTo = 0; currentFrom < numFrom && currentTo < numTo;) {
       p4est_quadrant_t *quadFrom = &quadsFrom[currentFrom];
       p4est_quadrant_t *quadTo   = &quadsTo[currentTo];
 
@@ -2091,7 +2091,7 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   { /* [-1,1]^d geometry */
     PetscInt i, j;
 
-    for(i = 0; i < P4EST_CHILDREN; i++) {
+    for (i = 0; i < P4EST_CHILDREN; i++) {
       for (j = 0; j < 3; j++) {
         refcube->vertices[3 * i + j] *= 2.;
         refcube->vertices[3 * i + j] -= 1.;

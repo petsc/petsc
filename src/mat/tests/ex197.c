@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatMultHermitianTransposeAdd(A,x,y,ys);CHKERRQ(ierr);
   ierr = VecView(ys,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);

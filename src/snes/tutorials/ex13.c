@@ -138,7 +138,7 @@ static PetscErrorCode CreateSpectralPlanes(DM dm, PetscInt numPlanes, const Pets
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       if (PetscAbsReal(planeCoord[p] - PetscRealPart(coords[off+planeDir[p]])) < PETSC_SMALL) {
-	ierr = DMLabelSetValue(label, v, 1);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(label, v, 1);CHKERRQ(ierr);
       }
     }
   }

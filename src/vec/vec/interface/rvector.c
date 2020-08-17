@@ -33,10 +33,10 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
     }
     ierr = VecRestoreArrayRead(vec,&x);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
 #else
-  return 0;
+  PetscFunctionBegin;
 #endif
+  PetscFunctionReturn(0);
 }
 
 /*@

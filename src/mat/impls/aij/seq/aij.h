@@ -529,7 +529,7 @@ PETSC_STATIC_INLINE void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum
   }
   if (n>2) *sum += _mm512_reduce_add_pd(vec_y);
 /*
-  for(j=0;j<(n&0x07);j++) *sum += aa[j]*x[aj[j]];
+  for (j=0;j<(n&0x07);j++) *sum += aa[j]*x[aj[j]];
 */
 }
 #endif

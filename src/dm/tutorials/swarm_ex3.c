@@ -40,8 +40,8 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
     coorx = PetscRealPart(coor[2*p]);
     coory = PetscRealPart(coor[2*p+1]);
 
-    mi = (PetscInt)( (coorx - (-1.0))/dx );
-    mj = (PetscInt)( (coory - (-1.0))/dy );
+    mi = (PetscInt)( (coorx - (-1.0))/dx);
+    mj = (PetscInt)( (coory - (-1.0))/dy);
 
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
 

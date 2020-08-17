@@ -25,7 +25,7 @@ static char help[] ="Solves a simple data assimilation problem with one dimensio
    The operators are discretized with the spectral element method
 
    See the paper PDE-CONSTRAINED OPTIMIZATION WITH SPECTRAL ELEMENTS USING PETSC AND TAO
-   by OANA MARIN, EMIL CONSTANTINESCU, AND BARRY SMITH for details on the exact solution 
+   by OANA MARIN, EMIL CONSTANTINESCU, AND BARRY SMITH for details on the exact solution
    used
 
   ------------------------------------------------------------------------- */
@@ -54,14 +54,14 @@ typedef struct {
   PetscInt    steps;          /* number of timesteps */
   PetscReal   Tend;           /* endtime */
   PetscReal   mu;             /* viscosity */
-  PetscReal   L;              /* total length of domain */   
-  PetscReal   Le; 
+  PetscReal   L;              /* total length of domain */
+  PetscReal   Le;
   PetscReal   Tadj;
 } PetscParam;
 
 typedef struct {
   Vec         obj;               /* desired end state */
-  Vec         grid;              /* total grid */   
+  Vec         grid;              /* total grid */
   Vec         grad;
   Vec         ic;
   Vec         curr_sol;
@@ -69,7 +69,7 @@ typedef struct {
 } PetscData;
 
 typedef struct {
-  Vec         grid;              /* total grid */   
+  Vec         grid;              /* total grid */
   Vec         mass;              /* mass matrix for total integration */
   Mat         stiff;             /* stifness matrix */
   Mat         keptstiff;
@@ -153,7 +153,7 @@ int main(int argc,char **argv)
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,lenglob,1,1,NULL,&appctx.da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(appctx.da);CHKERRQ(ierr);
   ierr = DMSetUp(appctx.da);CHKERRQ(ierr);
- 
+
   /*
      Extract global and local vectors from DMDA; we use these to store the
      approximate solution.  Then duplicate these for remaining vectors that
@@ -167,28 +167,28 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(u,&appctx.SEMop.grid);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&appctx.SEMop.mass);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&appctx.dat.curr_sol);CHKERRQ(ierr);
- 
+
   ierr = DMDAGetCorners(appctx.da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2);CHKERRQ(ierr);
-  
+
   /* Compute function over the locally owned part of the grid */
-  
+
     xs=xs/(appctx.param.N-1);
     xm=xm/(appctx.param.N-1);
-  
-  /* 
-     Build total grid and mass over entire mesh (multi-elemental) 
-  */ 
+
+  /*
+     Build total grid and mass over entire mesh (multi-elemental)
+  */
 
   for (i=xs; i<xs+xm; i++) {
     for (j=0; j<appctx.param.N-1; j++) {
-      x = (appctx.param.Le/2.0)*(appctx.SEMop.gll.nodes[j]+1.0)+appctx.param.Le*i; 
+      x = (appctx.param.Le/2.0)*(appctx.SEMop.gll.nodes[j]+1.0)+appctx.param.Le*i;
       ind=i*(appctx.param.N-1)+j;
       wrk_ptr1[ind]=x;
       wrk_ptr2[ind]=.5*appctx.param.Le*appctx.SEMop.gll.weights[j];
       if (j==0) wrk_ptr2[ind]+=.5*appctx.param.Le*appctx.SEMop.gll.weights[j];
-    } 
+    }
   }
   ierr = DMDAVecRestoreArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2);CHKERRQ(ierr);
@@ -212,13 +212,13 @@ int main(int argc,char **argv)
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-  
+
   ierr = MatDuplicate(appctx.SEMop.stiff,MAT_COPY_VALUES,&appctx.SEMop.keptstiff);CHKERRQ(ierr);
 
   /* attach the null space to the matrix, this probably is not needed but does no harm */
   ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
   ierr = MatSetNullSpace(appctx.SEMop.stiff,nsp);CHKERRQ(ierr);
-  ierr = MatSetNullSpace(appctx.SEMop.keptstiff,nsp);CHKERRQ(ierr);  
+  ierr = MatSetNullSpace(appctx.SEMop.keptstiff,nsp);CHKERRQ(ierr);
   ierr = MatNullSpaceTest(nsp,appctx.SEMop.stiff,NULL);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
   /* attach the null space to the matrix, this probably is not needed but does no harm */
@@ -322,7 +322,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
 }
 
 /*
-   TrueSolution() computes the true solution for the Tao optimization solve which means they are the initial conditions for the objective function. 
+   TrueSolution() computes the true solution for the Tao optimization solve which means they are the initial conditions for the objective function.
 
              InitialConditions() computes the initial conditions for the begining of the Tao iterations
 
@@ -346,7 +346,7 @@ PetscErrorCode TrueSolution(Vec u,AppCtx *appctx)
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
   for (i=xs; i<xs+xn; i++) {
     s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])/(2.0+PetscCosScalar(PETSC_PI*xg[i]));
-  } 
+  }
   ierr = DMDAVecRestoreArray(appctx->da,u,&s);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -375,7 +375,7 @@ PetscErrorCode ComputeObjective(PetscReal t,Vec obj,AppCtx *appctx)
   for (i=xs; i<xs+xn; i++) {
     s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])*PetscExpScalar(-PETSC_PI*PETSC_PI*t*appctx->param.mu)\
               /(2.0+PetscExpScalar(-PETSC_PI*PETSC_PI*t*appctx->param.mu)*PetscCosScalar(PETSC_PI*xg[i]));
-  } 
+  }
   ierr = DMDAVecRestoreArray(appctx->da,obj,&s);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -384,7 +384,7 @@ PetscErrorCode ComputeObjective(PetscReal t,Vec obj,AppCtx *appctx)
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   PetscErrorCode ierr;
-  AppCtx          *appctx = (AppCtx*)ctx;  
+  AppCtx          *appctx = (AppCtx*)ctx;
 
   PetscFunctionBegin;
   ierr = MatMult(appctx->SEMop.grad,globalin,globalout);CHKERRQ(ierr); /* grad u */
@@ -570,7 +570,7 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
                  M^{-1} J
           where J is the Jacobian of F. Now the adjoint equation is
                 M v_t = J^T v
-          but TSAdjoint does not solve this since it can only solve the transposed system for the 
+          but TSAdjoint does not solve this since it can only solve the transposed system for the
           Jacobian the user provided. Hence TSAdjoint solves
                  w_t = J^T M^{-1} w  (where w = M v)
           since there is no way to indicate the mass matrix as a separate entitity to TS. Thus one

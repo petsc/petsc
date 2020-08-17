@@ -6,7 +6,7 @@
 static  char help[] = "This example demonstrates use of the TAO package to \n\
 solve an unconstrained minimization problem on a single processor.  We \n\
 minimize the extended Rosenbrock function: \n\
-   sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 ) \n\
+   sum_{i=0}^{n/2-1} (alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2) \n\
 or the chained Rosenbrock function:\n\
    sum_{i=0}^{n-1} alpha*(x_{i+1} - x_i^2)^2 + (1 - x_i)^2\n";
 
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   /* Set routines for function, gradient, hessian evaluation */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,&user);CHKERRQ(ierr);
-  
+
   /* Test the LMVM matrix */
   if (test_lmvm) {
     ierr = PetscOptionsSetValue(NULL, "-tao_type", "bqnktr");CHKERRQ(ierr);
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
-  
+
   /* Test the LMVM matrix */
   if (test_lmvm) {
     ierr = TaoGetKSP(tao, &ksp);CHKERRQ(ierr);
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
     ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
     if (mult_solve_dist < 1.e-11) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: < 1.e-11\n");CHKERRQ(ierr);
-    } else if(mult_solve_dist < 1.e-6) {
+    } else if (mult_solve_dist < 1.e-6) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: < 1.e-6\n");CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: %e\n", (double)mult_solve_dist);CHKERRQ(ierr);
@@ -218,7 +218,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
   PetscFunctionBeginUser;
   /* Zero existing matrix entries */
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(H); CHKERRQ(ierr);}
+  if (assembled){ierr = MatZeroEntries(H);CHKERRQ(ierr);}
 
   /* Get a pointer to vector data */
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
@@ -275,39 +275,39 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
    test:
       suffix: 4
       args: -tao_smonitor -tao_type ntr -tao_mf_hessian -tao_ntr_pc_type none -tao_gatol 1.e-4
-      
+
    test:
       suffix: 5
       args: -tao_smonitor -tao_type bntr -tao_gatol 1.e-4
-      
+
    test:
       suffix: 6
       args: -tao_smonitor -tao_type bntl -tao_gatol 1.e-4
-   
+
    test:
       suffix: 7
       args: -tao_smonitor -tao_type bnls -tao_gatol 1.e-4
-   
+
    test:
       suffix: 8
       args: -tao_smonitor -tao_type bntr -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
-   
+
    test:
       suffix: 9
       args: -tao_smonitor -tao_type bntl -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
-   
+
    test:
       suffix: 10
       args: -tao_smonitor -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
-      
+
    test:
       suffix: 11
       args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmbroyden
-      
+
    test:
       suffix: 12
       args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmbadbroyden
-      
+
    test:
      suffix: 13
      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbroyden
@@ -315,31 +315,31 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
    test:
      suffix: 14
      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmbfgs
-     
+
    test:
      suffix: 15
      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmdfp
-     
+
    test:
      suffix: 16
      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsr1
-     
+
    test:
      suffix: 17
      args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnls
-     
+
    test:
      suffix: 18
      args: -tao_smonitor -tao_gatol 1e-4 -tao_type blmvm
-     
+
    test:
      suffix: 19
      args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
-     
+
    test:
      suffix: 20
      args: -tao_monitor -tao_gatol 1e-4 -tao_type blmvm -tao_ls_monitor
-     
+
    test:
      suffix: 21
      args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbadbroyden

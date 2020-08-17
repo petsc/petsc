@@ -4,12 +4,12 @@
 program main
 #include <petsc/finclude/petscsys.h>
       use petscsys
-      
+
       implicit none
       PetscErrorCode                    :: ierr
       PetscInt                          :: major,minor,subminor
       character(len=PETSC_MAX_PATH_LEN) :: outputString
-      
+
       ! Every PETSc routine should begin with the PetscInitialize() routine.
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -17,7 +17,7 @@ program main
         write(6,*)'Unable to initialize PETSc'
         stop
       endif
-      
+
       call PetscGetVersionNumber(major,minor,subminor,PETSC_NULL_INTEGER,ierr)
       CHKERRA(ierr)
 
@@ -35,9 +35,9 @@ program main
         write(outputString,*)'Library subminor',subminor,'does not equal include',PETSC_VERSION_SUBMINOR
         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,trim(outputString))
       endif
-      
+
       call PetscFinalize(ierr)
-      
+
 
 end program main
 
@@ -46,7 +46,3 @@ end program main
 !   test:
 !
 !TEST*/
-
-
-
-

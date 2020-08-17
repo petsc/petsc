@@ -83,82 +83,82 @@
 #define vecstashviewfromoptions_  vecstashviewfromoptions
 #endif
 
-PETSC_EXTERN void vecsetvalueslocal_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void vecsetvalueslocal_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   *ierr = VecSetValuesLocal(*x,*ni,ix,y,*iora);
 }
 
-PETSC_EXTERN void vecsetvalueslocal0_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void vecsetvalueslocal0_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   vecsetvalueslocal_(x,ni,ix,y,iora,ierr);
 }
 
-PETSC_EXTERN void vecsetvalueslocal1_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void vecsetvalueslocal1_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   vecsetvalueslocal_(x,ni,ix,y,iora,ierr);
 }
 
-PETSC_EXTERN void vecsetvalueslocal11_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void vecsetvalueslocal11_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   vecsetvalueslocal_(x,ni,ix,y,iora,ierr);
 }
 
-PETSC_EXTERN void vecgetvalues_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],int *ierr )
+PETSC_EXTERN void vecgetvalues_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],int *ierr)
 {
   *ierr = VecGetValues(*x,*ni,ix,y);
 }
 
-PETSC_EXTERN void vecgetvalues0_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],int *ierr )
+PETSC_EXTERN void vecgetvalues0_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],int *ierr)
 {
   vecgetvalues_(x,ni,ix,y,ierr);
 }
 
-PETSC_EXTERN void vecgetvalues1_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],int *ierr )
+PETSC_EXTERN void vecgetvalues1_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],int *ierr)
 {
   vecgetvalues_(x,ni,ix,y,ierr);
 }
 
-PETSC_EXTERN void vecgetvalues11_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],int *ierr )
+PETSC_EXTERN void vecgetvalues11_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],int *ierr)
 {
   vecgetvalues_(x,ni,ix,y,ierr);
 }
 
-PETSC_EXTERN void  vecsetvalues_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void  vecsetvalues_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   *ierr = VecSetValues(*x,*ni,ix,y,*iora);
 }
 
-PETSC_EXTERN void  vecsetvalues0_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void  vecsetvalues0_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   vecsetvalues_(x,ni,ix,y,iora,ierr);
 }
 
-PETSC_EXTERN void  vecsetvalues1_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void  vecsetvalues1_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   vecsetvalues_(x,ni,ix,y,iora,ierr);
 }
 
-PETSC_EXTERN void  vecsetvalues11_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void  vecsetvalues11_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   vecsetvalues_(x,ni,ix,y,iora,ierr);
 }
 
-PETSC_EXTERN void  vecsetvaluesblocked_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void  vecsetvaluesblocked_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   *ierr = VecSetValuesBlocked(*x,*ni,ix,y,*iora);
 }
 
-PETSC_EXTERN void  vecsetvaluesblocked0_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void  vecsetvaluesblocked0_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   vecsetvaluesblocked_(x,ni,ix,y,iora,ierr);
 }
 
-PETSC_EXTERN void  vecsetvaluesblocked1_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void  vecsetvaluesblocked1_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   vecsetvaluesblocked_(x,ni,ix,y,iora,ierr);
 }
 
-PETSC_EXTERN void  vecsetvaluesblocked11_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+PETSC_EXTERN void  vecsetvaluesblocked11_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr)
 {
   vecsetvaluesblocked_(x,ni,ix,y,iora,ierr);
 }

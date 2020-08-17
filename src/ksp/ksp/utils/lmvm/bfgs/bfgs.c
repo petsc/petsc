@@ -2,18 +2,18 @@
 #include <../src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.h>
 
 /*
-  Limited-memory Broyden-Fletcher-Goldfarb-Shano method for approximating both 
+  Limited-memory Broyden-Fletcher-Goldfarb-Shano method for approximating both
   the forward product and inverse application of a Jacobian.
 */
 
 /*------------------------------------------------------------*/
 
 /*
-  The solution method (approximate inverse Jacobian application) is adapted 
-   from Algorithm 7.4 on page 178 of Nocedal and Wright "Numerical Optimization" 
-   2nd edition (https://doi.org/10.1007/978-0-387-40065-5). The initial inverse 
-   Jacobian application falls back onto the gamma scaling recommended in equation 
-   (7.20) if the user has not provided any estimation of the initial Jacobian or 
+  The solution method (approximate inverse Jacobian application) is adapted
+   from Algorithm 7.4 on page 178 of Nocedal and Wright "Numerical Optimization"
+   2nd edition (https://doi.org/10.1007/978-0-387-40065-5). The initial inverse
+   Jacobian application falls back onto the gamma scaling recommended in equation
+   (7.20) if the user has not provided any estimation of the initial Jacobian or
    its inverse.
 
    work <- F
@@ -39,14 +39,14 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   PetscInt          i;
   PetscReal         *alpha, beta;
   PetscScalar       stf, ytx;
-  
+
   PetscFunctionBegin;
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
-  
+
   /* Copy the function into the work vector for the first loop */
   ierr = VecCopy(F, lbfgs->work);CHKERRQ(ierr);
-  
+
   /* Start the first loop */
   ierr = PetscMalloc1(lmvm->k+1, &alpha);CHKERRQ(ierr);
   for (i = lmvm->k; i >= 0; --i) {
@@ -54,10 +54,10 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
     alpha[i] = PetscRealPart(stf)/lbfgs->yts[i];
     ierr = VecAXPY(lbfgs->work, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
-  
+
   /* Invert the initial Jacobian onto the work vector (or apply scaling) */
   ierr = MatSymBrdnApplyJ0Inv(B, lbfgs->work, dX);CHKERRQ(ierr);
-  
+
   /* Start the second loop */
   for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
@@ -71,17 +71,17 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
 /*------------------------------------------------------------*/
 
 /*
-  The forward product for the approximate Jacobian is the matrix-free 
-  implementation of Equation (6.19) in Nocedal and Wright "Numerical 
+  The forward product for the approximate Jacobian is the matrix-free
+  implementation of Equation (6.19) in Nocedal and Wright "Numerical
   Optimization" 2nd Edition, pg 140.
-  
-  This forward product has the same structure as the inverse Jacobian 
-  application in the DFP formulation, except with S and Y exchanging 
+
+  This forward product has the same structure as the inverse Jacobian
+  application in the DFP formulation, except with S and Y exchanging
   roles.
-  
-  Note: P[i] = (B_i)*S[i] terms are computed ahead of time whenever 
-  the matrix is updated with a new (S[i], Y[i]) pair. This allows 
-  repeated calls of MatMult inside KSP solvers without unnecessarily 
+
+  Note: P[i] = (B_i)*S[i] terms are computed ahead of time whenever
+  the matrix is updated with a new (S[i], Y[i]) pair. This allows
+  repeated calls of MatMult inside KSP solvers without unnecessarily
   recomputing P[i] terms in expensive nested-loops.
 
   Z <- J0 * X
@@ -105,11 +105,11 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
   PetscErrorCode    ierr;
   PetscInt          i, j;
   PetscScalar       sjtpi, yjtsi, ytx, stz, stp;
-  
+
   PetscFunctionBegin;
   VecCheckSameSize(X, 2, Z, 3);
   VecCheckMatCompatible(B, X, 2, Z, 3);
-  
+
   if (lbfgs->needP) {
     /* Pre-compute (P[i] = B_i * S[i]) */
     for (i = 0; i <= lmvm->k; ++i) {
@@ -128,7 +128,7 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
     }
     lbfgs->needP = PETSC_FALSE;
   }
-  
+
   /* Start the outer loop (i) for the recursive formula */
   ierr = MatSymBrdnApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
@@ -217,12 +217,12 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
       break;
     }
   }
-  
+
   /* Update the scaling */
   if (lbfgs->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) {
     ierr = MatLMVMUpdate(lbfgs->D, X, F);CHKERRQ(ierr);
   }
-  
+
   if (lbfgs->watchdog > lbfgs->max_seq_rejects) {
     ierr = MatLMVMReset(B, PETSC_FALSE);CHKERRQ(ierr);
     if (lbfgs->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) {
@@ -288,7 +288,7 @@ static PetscErrorCode MatReset_LMVMBFGS(Mat B, PetscBool destructive)
   Mat_LMVM          *dbase;
   Mat_DiagBrdn      *dctx;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   lbfgs->watchdog = 0;
   lbfgs->needP = PETSC_TRUE;
@@ -335,7 +335,7 @@ static PetscErrorCode MatAllocate_LMVMBFGS(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lbfgs = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!lbfgs->allocated) {
@@ -385,7 +385,7 @@ static PetscErrorCode MatSetUp_LMVMBFGS(Mat B)
   Mat_SymBrdn       *lbfgs = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          n, N;
-  
+
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   lbfgs->max_seq_rejects = lmvm->m/2;
@@ -457,16 +457,16 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B)
 
 /*@
    MatCreateLMVMBFGS - Creates a limited-memory Broyden-Fletcher-Goldfarb-Shano (BFGS)
-   matrix used for approximating Jacobians. L-BFGS is symmetric positive-definite by 
-   construction, and is commonly used to approximate Hessians in optimization 
+   matrix used for approximating Jacobians. L-BFGS is symmetric positive-definite by
+   construction, and is commonly used to approximate Hessians in optimization
    problems.
-   
-   The provided local and global sizes must match the solution and function vectors 
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-BFGS matrix will have 
-   storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in 
-   parallel. To use the L-BFGS matrix with other vector types, the matrix must be 
-   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate(). 
-   This ensures that the internal storage and work vectors are duplicated from the 
+
+   The provided local and global sizes must match the solution and function vectors
+   used with MatLMVMUpdate() and MatSolve(). The resulting L-BFGS matrix will have
+   storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in
+   parallel. To use the L-BFGS matrix with other vector types, the matrix must be
+   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
+   This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
 
    Collective
@@ -493,13 +493,13 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B)
 
    Level: intermediate
 
-.seealso: MatCreate(), MATLMVM, MATLMVMBFGS, MatCreateLMVMDFP(), MatCreateLMVMSR1(), 
+.seealso: MatCreate(), MATLMVM, MATLMVMBFGS, MatCreateLMVMDFP(), MatCreateLMVMSR1(),
           MatCreateLMVMBrdn(), MatCreateLMVMBadBrdn(), MatCreateLMVMSymBrdn()
 @*/
 PetscErrorCode MatCreateLMVMBFGS(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);

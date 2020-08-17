@@ -6,7 +6,7 @@ static char help[] = "Tests 1D Gauss-Lobatto-Legendre discretization on [-1, 1].
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  
+
   PetscInt       n = 3,i;
   PetscReal      *la_nodes,*la_weights,*n_nodes,*n_weights;
 

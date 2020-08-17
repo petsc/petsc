@@ -190,7 +190,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr
   PetscScalar       *f;
   const PetscScalar *x,*xdot;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
@@ -247,4 +247,3 @@ static PetscErrorCode IJacobian(TS  ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Ma
      requires: x
 
  TEST*/
-

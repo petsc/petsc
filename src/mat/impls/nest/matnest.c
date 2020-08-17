@@ -2015,8 +2015,8 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
       ierr = PetscMalloc1(bm,&sub_dnnz);CHKERRQ(ierr);
       ierr = PetscMalloc1(bm,&sub_onnz);CHKERRQ(ierr);
       for (k = 0; k < bm; ++k){
-    	sub_dnnz[k] = 0;
-    	sub_onnz[k] = 0;
+        sub_dnnz[k] = 0;
+        sub_onnz[k] = 0;
       }
       /*
        Locate the owners for all of the locally-owned global row indices for this row block.

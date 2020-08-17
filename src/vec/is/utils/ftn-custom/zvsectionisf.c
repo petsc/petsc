@@ -23,16 +23,16 @@
 #define petscsfdistributesection_          petscsfdistributesection
 #endif
 
-PETSC_EXTERN void  petscsectiongetpointsyms_(PetscSection section,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr ){
+PETSC_EXTERN void  petscsectiongetpointsyms_(PetscSection section,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr){
 *__ierr = PetscSectionGetPointSyms(section,*numPoints,points,(const PetscInt ***)perms,(const PetscScalar ***)rots);
 }
-PETSC_EXTERN void  petscsectionrestorepointsyms_(PetscSection section,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr ){
+PETSC_EXTERN void  petscsectionrestorepointsyms_(PetscSection section,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr){
 *__ierr = PetscSectionRestorePointSyms(section,*numPoints,points,(const PetscInt ***)perms,(const PetscScalar ***)rots);
 }
-PETSC_EXTERN void  petscsectiongetfieldpointsyms_(PetscSection section,PetscInt *field,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr ){
+PETSC_EXTERN void  petscsectiongetfieldpointsyms_(PetscSection section,PetscInt *field,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr){
 *__ierr = PetscSectionGetFieldPointSyms(section,*field,*numPoints,points,(const PetscInt ***)perms,(const PetscScalar ***)rots);
 }
-PETSC_EXTERN void  petscsectionrestorefieldpointsyms_(PetscSection section,PetscInt *field,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr ){
+PETSC_EXTERN void  petscsectionrestorefieldpointsyms_(PetscSection section,PetscInt *field,PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr){
 *__ierr = PetscSectionRestoreFieldPointSyms(section,*field,*numPoints,points,(const PetscInt ***)perms,(const PetscScalar ***)rots);
 }
 
@@ -62,7 +62,7 @@ PETSC_EXTERN void petscsectionsetfieldname_(PetscSection *s, PetscInt *field, ch
   FREECHAR(name, f);
 }
 
-PETSC_EXTERN void  petscsfdistributesection_(PetscSF sf,PetscSection rootSection,PetscInt **remoteOffsets,PetscSection leafSection, int *__ierr ){
+PETSC_EXTERN void  petscsfdistributesection_(PetscSF sf,PetscSection rootSection,PetscInt **remoteOffsets,PetscSection leafSection, int *__ierr){
   if (remoteOffsets != PETSC_NULL_INTEGER_Fortran) {
     PetscError(PETSC_COMM_SELF, __LINE__, "PetscSFDistributeSection_Fortran", __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL,
                "The remoteOffsets argument must be PETSC_NULL_INTEGER in Fortran");

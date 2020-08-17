@@ -1628,7 +1628,7 @@ int main(int argc, char **argv)
     args: -dm_plex_check_all
     test:
       suffix: 2
-      args: -dm_view ascii::ascii_info_detail 
+      args: -dm_view ascii::ascii_info_detail
     test:
       suffix: 2a
       args: -dm_plex_check_cones_conform_on_interfaces_verbose

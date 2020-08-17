@@ -45,7 +45,7 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
   ierr = MatView(A,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS) || defined(PETSC_HAVE_MKL_CPARDISO)
   ierr = PetscStrcmp(mtype,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
-  if(!issbaij) {
+  if (!issbaij) {
     ierr = MatShift(A,10);CHKERRQ(ierr);
   }
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);

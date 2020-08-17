@@ -46,7 +46,7 @@ static PetscErrorCode QuadraticH(AppCtx*,Vec,Mat);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
   PetscErrorCode     ierr;              /* used to check for functions returning nonzeros */
   PetscInt           N;                 /* Size of vector */
@@ -58,7 +58,7 @@ int main( int argc, char **argv )
   AppCtx             user;              /* user-defined work context */
 
   /* Initialize TAO,PETSc */
-  ierr = PetscInitialize( &argc, &argv,(char *)0,help );if (ierr) return ierr;
+  ierr = PetscInitialize(&argc, &argv,(char *)0,help);if (ierr) return ierr;
 
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size >1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
@@ -207,9 +207,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *fcn,Vec G,void *use
       d8 = (xt-xlt);
 
       df1dxc = d1*hydhx;
-      df2dxc = ( d1*hydhx + d4*hxdhy );
+      df2dxc = (d1*hydhx + d4*hxdhy);
       df3dxc = d3*hxdhy;
-      df4dxc = ( d2*hydhx + d3*hxdhy );
+      df4dxc = (d2*hydhx + d3*hxdhy);
       df5dxc = d2*hydhx;
       df6dxc = d4*hxdhy;
 
@@ -222,12 +222,12 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *fcn,Vec G,void *use
       d7 *= rhy;
       d8 *= rhx;
 
-      f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtScalar(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtScalar(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtScalar(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtScalar(1.0 + d4*d4 + d6*d6);
 
       ft = ft + (f2 + f4);
 
@@ -238,43 +238,43 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *fcn,Vec G,void *use
       df5dxc /= f5;
       df6dxc /= f6;
 
-      g[row] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc )/2.0;
+      g[row] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc)/2.0;
     }
   }
 
   for (j=0; j<my; j++){   /* left side */
     d3 = (user->left[j+1] - user->left[j+2])*rhy;
     d2 = (user->left[j+1] - x[j*mx])*rhx;
-    ft = ft+PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
+    ft = ft+PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
   }
 
   for (i=0; i<mx; i++){ /* bottom */
     d2 = (user->bottom[i+1]-user->bottom[i+2])*rhx;
     d3 = (user->bottom[i+1]-x[i])*rhy;
-    ft = ft+PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
+    ft = ft+PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
   }
 
   for (j=0; j< my; j++){ /* right side */
     d1 = (x[(j+1)*mx-1]-user->right[j+1])*rhx;
     d4 = (user->right[j]-user->right[j+1])*rhy;
-    ft = ft+PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
+    ft = ft+PetscSqrtScalar(1.0 + d1*d1 + d4*d4);
   }
 
   for (i=0; i<mx; i++){ /* top side */
     d1 = (x[(my-1)*mx + i] - user->top[i+1])*rhy;
     d4 = (user->top[i+1] - user->top[i])*rhx;
-    ft = ft+PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
+    ft = ft+PetscSqrtScalar(1.0 + d1*d1 + d4*d4);
   }
 
   /* Bottom left corner */
   d1  = (user->left[0]-user->left[1])*rhy;
   d2  = (user->bottom[0]-user->bottom[1])*rhx;
-  ft += PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
+  ft += PetscSqrtScalar(1.0 + d1*d1 + d2*d2);
 
   /* Top right corner */
   d1  = (user->right[my+1] - user->right[my])*rhy;
   d2  = (user->top[mx+1] - user->top[mx])*rhx;
-  ft += PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
+  ft += PetscSqrtScalar(1.0 + d1*d1 + d2*d2);
 
   (*fcn)=ft*area;
 
@@ -339,7 +339,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Initialize matrix entries to zero */
-  ierr = MatZeroEntries(Hessian); CHKERRQ(ierr);
+  ierr = MatZeroEntries(Hessian);CHKERRQ(ierr);
 
   /* Set various matrix options */
   ierr = MatSetOption(Hessian,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
@@ -399,12 +399,12 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
       d7 = (xlt-xl)*rhy;
       d8 = (xlt-xt)*rhx;
 
-      f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtScalar(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtScalar(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtScalar(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtScalar(1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+(-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
@@ -435,15 +435,15 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
 
       v[k]= hc; col[k]=row; k++;
 
-      if (i < mx-1 ){
+      if (i < mx-1){
         v[k]= hr; col[k]=row+1; k++;
       }
 
-      if (i>0 && j < my-1 ){
+      if (i>0 && j < my-1){
         v[k]= htl; col[k] = row+mx-1; k++;
       }
 
-      if (j < my-1 ){
+      if (j < my-1){
         v[k]= ht; col[k] = row+mx; k++;
       }
 
@@ -586,7 +586,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     for (j=0; j<my; j++){
       for (i=0; i< mx; i++){
         row=(j)*mx + (i);
-        x[row] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+ ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
+        x[row] = (((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+ ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
       }
     }
     /* Restore vectors */
@@ -614,7 +614,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
       suffix: 3
       args: -tao_smonitor -tao_type lmvm -mx 10 -my 8 -tao_gatol 1.e-3
       requires: !single
-      
+
    test:
       suffix: 4
       args: -tao_smonitor -tao_type bntr -mx 10 -my 8 -tao_gatol 1.e-4

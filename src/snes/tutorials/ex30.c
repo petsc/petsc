@@ -388,7 +388,7 @@ PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, Pe
     wN = x[j][i].w; wS = x[j-1][i].w;
     wE = WInterp(x,i,j-1);
     if (i==j) {
-      uN = param->cb; wW = param->sb; 
+      uN = param->cb; wW = param->sb;
     } else {
       uN = UInterp(x,i-1,j); wW = WInterp(x,i-1,j-1);
     }

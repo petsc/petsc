@@ -20,11 +20,11 @@ int main(int argc, char **argv)
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
-  ierr = VecSetSizes(v,PETSC_DECIDE,n);CHKERRQ(ierr);  
+  ierr = VecSetSizes(v,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
   ierr = VecDuplicate(v,&w);CHKERRQ(ierr);
   ierr = VecSetRandom(v,rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(w,rctx);CHKERRQ(ierr); 
+  ierr = VecSetRandom(w,rctx);CHKERRQ(ierr);
 
   /* create dummy vector to clear cache */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -41,15 +41,15 @@ int main(int argc, char **argv)
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   ierr = VecNorm(w,NORM_1,&norm1);CHKERRQ(ierr); /* send w to GPU */
   ierr = VecNorm(x,NORM_1,&norm1);CHKERRQ(ierr); /* clear cache */
-  ierr = PetscBarrier(NULL);CHKERRQ(ierr); 
-  ierr = VecAXPY(w,1.0,v);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_INFINITY,&norm1);CHKERRQ(ierr); 
   ierr = PetscBarrier(NULL);CHKERRQ(ierr);
-  ierr = VecDot(w,v,&val);CHKERRQ(ierr); 
+  ierr = VecAXPY(w,1.0,v);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_INFINITY,&norm1);CHKERRQ(ierr);
+  ierr = PetscBarrier(NULL);CHKERRQ(ierr);
+  ierr = VecDot(w,v,&val);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = PetscBarrier(NULL);CHKERRQ(ierr);
   ierr = VecSet(v,0.0);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm2);CHKERRQ(ierr); 
+  ierr = VecNorm(x,NORM_2,&norm2);CHKERRQ(ierr);
   ierr = PetscBarrier(NULL);CHKERRQ(ierr);
   ierr = VecCopy(v,w);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);

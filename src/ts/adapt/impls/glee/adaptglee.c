@@ -25,7 +25,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   if (bGTEMethod){/* the method is of GLEE type */
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
     if (!glee->Y && adapt->glee_use_local) {
-      ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);/*create vector to store previous step global error*/ 
+      ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);/*create vector to store previous step global error*/
       ierr = VecZeroEntries(glee->Y);CHKERRQ(ierr); /*set error to zero on the first step - may not work if error is not zero initially*/
     }
     if (!glee->E) {ierr = VecDuplicate(X,&glee->E);CHKERRQ(ierr);}

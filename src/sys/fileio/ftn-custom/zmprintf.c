@@ -22,7 +22,7 @@ PETSC_EXTERN void petscsynchronizedflush_(MPI_Fint * comm, FILE **file,int *ierr
 {
   FILE *f = *file;
   if (!f) f = PETSC_STDOUT; /* support for PETSC_STDOUT in Fortran */
-  *ierr = PetscSynchronizedFlush(MPI_Comm_f2c( *(comm) ),f);
+  *ierr = PetscSynchronizedFlush(MPI_Comm_f2c( *(comm)),f);
 }
 
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)

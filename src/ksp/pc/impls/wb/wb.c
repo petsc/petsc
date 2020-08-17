@@ -769,7 +769,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC p
 +  1. - These coarse grid spaces originate in the work of Bramble, Pasciak  and Schatz, "The Construction
    of Preconditioners for Elliptic Problems by Substructing IV", Mathematics of Computation, volume 53, 1989.
 .  2. - They were generalized slightly in "Domain Decomposition Method for Linear Elasticity", Ph. D. thesis, Barry Smith,
-   New York University, 1990. 
+   New York University, 1990.
 .  3. - They were then explored in great detail in Dryja, Smith, Widlund, "Schwarz Analysis
    of Iterative Substructuring Methods for Elliptic Problems in Three Dimensions, SIAM Journal on Numerical
    Analysis, volume 31. 1994. These were developed in the context of iterative substructuring preconditioners.
@@ -809,7 +809,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
 
   PetscFunctionBegin;
   /* if type was previously mg; must manually destroy it because call to PCSetType(pc,PCMG) will not destroy it */
-  if (pc->ops->destroy) { 
+  if (pc->ops->destroy) {
     ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);
     pc->data = NULL;
   }

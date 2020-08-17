@@ -60,7 +60,7 @@ PetscErrorCode ex1_nonsquare_bs1(void)
   ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* 
+  /*
      Push the non-zero pattern defined within preallocator into A.
      Internally this will call MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE).
      The arg fill = PETSC_TRUE will insert zeros in the matrix A automatically.

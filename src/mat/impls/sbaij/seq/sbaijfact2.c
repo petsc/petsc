@@ -1458,7 +1458,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_2_NaturalOrdering(const PetscInt *ai,con
   PetscScalar     x0,x1;
   PetscInt        nz,k,k2;
   const PetscInt  *vj;
-  
+
   PetscFunctionBegin;
   for (k=0; k<mbs; k++) {
     v  = aa + 4*ai[k];
@@ -2792,4 +2792,3 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   }
   PetscFunctionReturn(0);
 }
-

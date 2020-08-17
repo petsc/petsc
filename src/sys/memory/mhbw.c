@@ -36,8 +36,8 @@ static PetscErrorCode PetscHBWMalloc(size_t a,PetscBool clear,int lineno,const c
     and the allocated pointer is set to NULL if there is not enough HWB memory available.
   */
   {
-    int ierr = hbw_posix_memalign(result,PETSC_MEMALIGN,a);
-    if (ierr || !*result) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"HBW Memory requested %.0f",(PetscLogDouble)a);
+    int err = hbw_posix_memalign(result,PETSC_MEMALIGN,a);
+    if (err || !*result) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"HBW Memory requested %.0f",(PetscLogDouble)a);
   }
   return 0;
 #endif
@@ -59,8 +59,8 @@ static PetscErrorCode PetscHBWRealloc(size_t a,int lineno,const char function[],
   return PetscReallocAlign(a,lineno,function,filename,result);
 #else
   if (!a) {
-    int ierr = PetscFreeAlign(*result,lineno,function,filename);
-    if (ierr) return ierr;
+    int err = PetscFreeAlign(*result,lineno,function,filename);
+    if (err) return err;
     *result = NULL;
     return 0;
   }

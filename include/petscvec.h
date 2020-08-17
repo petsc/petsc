@@ -259,7 +259,7 @@ PETSC_EXTERN PetscErrorCode VecPointwiseDivide(Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecMaxPointwiseDivide(Vec,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode VecShift(Vec,PetscScalar);
 PETSC_EXTERN PetscErrorCode VecReciprocal(Vec);
-PETSC_EXTERN PetscErrorCode VecPermute(Vec, IS, PetscBool );
+PETSC_EXTERN PetscErrorCode VecPermute(Vec, IS, PetscBool);
 PETSC_EXTERN PetscErrorCode VecSqrtAbs(Vec);
 PETSC_EXTERN PetscErrorCode VecLog(Vec);
 PETSC_EXTERN PetscErrorCode VecExp(Vec);
@@ -468,7 +468,7 @@ PETSC_EXTERN PetscErrorCode VecSetPinnedMemoryMin(Vec,size_t);
 PETSC_EXTERN PetscErrorCode VecGetPinnedMemoryMin(Vec,size_t *);
 
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES,VEC_SUBSET_OFF_PROC_ENTRIES} VecOption;
-PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool );
+PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool);
 
 PETSC_EXTERN PetscErrorCode VecGetArray(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetArrayWrite(Vec,PetscScalar**);
@@ -619,7 +619,7 @@ PETSC_EXTERN PetscErrorCode VecMedian(Vec, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecWhichInactive(Vec, Vec, Vec, Vec, PetscBool, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichBetween(Vec, Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichBetweenOrEqual(Vec, Vec, Vec, IS *);
-PETSC_EXTERN PetscErrorCode VecWhichGreaterThan(Vec, Vec, IS * );
+PETSC_EXTERN PetscErrorCode VecWhichGreaterThan(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichLessThan(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichEqual(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecISAXPY(Vec, IS, PetscScalar,Vec);

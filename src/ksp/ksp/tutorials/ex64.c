@@ -1,5 +1,4 @@
 /*
- * ex64.c
  *
  *  Created on: Aug 10, 2015
  *      Author: Fande Kong  <fdkong.jd@gmail.com>
@@ -7,8 +6,8 @@
 
 static char help[] = "Illustrates use of the preconditioner GASM.\n \
    using hierarchical partitioning and MatIncreaseOverlapSplit \
-	-pc_gasm_total_subdomains\n \
-	-pc_gasm_print_subdomains\n \n";
+        -pc_gasm_total_subdomains\n \
+        -pc_gasm_print_subdomains\n \n";
 
 /*
    Note:  This example focuses on setting the subdomains for the GASM

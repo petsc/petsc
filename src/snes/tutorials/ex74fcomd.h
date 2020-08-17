@@ -14,7 +14,7 @@
 
       common /func/ pi,zero, theta, dx, xl0, damfac, kappa0, kappaa, kappab, visc0, erg0
 
-      common /gudnov/ eigval(neq), eigvec(neq,neq), rinv(neq,neq), roestt(neq), fl(neq), fr(neq), deltau(neq), alpha(neq), xnumdif(neq), froe(neq)
+      common /gudnov/ eigval(neq), eigvec(neq,neq), rinv(neq,neq), roestt(neq), fl(neq), fr(neq), deltau(neq), alpha(neq), xnumdif (neq), froe(neq)
 
       common /flags/ debug, dampit, wilson, dtcon, pcnew
 

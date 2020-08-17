@@ -102,7 +102,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,int *dummy, PetscDataType ty
     pp += err;
   }
 
-  if(!PetscBinaryBigEndian()) {
+  if (!PetscBinaryBigEndian()) {
     if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
     else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
     else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
@@ -138,7 +138,7 @@ PetscErrorCode PetscBinaryWrite(int fd,const void *p,int n,PetscDataType type)
   else if (type == PETSC_CHAR)   n *= sizeof(char);
   else PETSC_MEX_ERROR("PetscBinaryRead: Unknown type");
 
-  if(!PetscBinaryBigEndian()) {
+  if (!PetscBinaryBigEndian()) {
     /* make sure data is in correct byte ordering before sending  */
     if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
     else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
@@ -157,7 +157,7 @@ PetscErrorCode PetscBinaryWrite(int fd,const void *p,int n,PetscDataType type)
     pp += err;
   }
 
-  if(!PetscBinaryBigEndian()) {
+  if (!PetscBinaryBigEndian()) {
     /* swap the data back if we swapped it before sending it */
     if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
     else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);

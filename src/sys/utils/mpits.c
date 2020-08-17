@@ -107,7 +107,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   /* MPICH-3.2 sometimes does not create a request in some "optimized" cases.  This is arguably a standard violation,
    * but we need to work around it. */
   barrier_started = PETSC_FALSE;
-  for (done=0; !done; ) {
+  for (done=0; !done;) {
     PetscMPIInt flag;
     MPI_Status  status;
     ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag,comm,&flag,&status);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
   /* MPICH-3.2 sometimes does not create a request in some "optimized" cases.  This is arguably a standard violation,
    * but we need to work around it. */
   barrier_started = PETSC_FALSE;
-  for (done=0; !done; ) {
+  for (done=0; !done;) {
     PetscMPIInt flag;
     MPI_Status  status;
     ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag,comm,&flag,&status);CHKERRQ(ierr);

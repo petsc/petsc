@@ -13,14 +13,14 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A); CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSize(A, 2);CHKERRQ(ierr);
   ierr = MatSetType(A, MATBAIJ);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(A, &diag, NULL);CHKERRQ(ierr);
-  ierr = VecSet(diag, 1.0); CHKERRQ(ierr);
+  ierr = VecSet(diag, 1.0);CHKERRQ(ierr);
   ierr = MatDiagonalSet(A, diag, INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

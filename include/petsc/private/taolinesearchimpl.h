@@ -27,7 +27,7 @@ struct _p_TaoLineSearch {
     void *userctx_funcgts;
     PetscBool usemonitor;
     PetscViewer viewer;
-    
+
     PetscBool setupcalled;
     PetscBool usegts;
     PetscBool usetaoroutines;

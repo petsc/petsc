@@ -23,9 +23,9 @@ do { \
       const char *descr = cusparseGetErrorString(stat); \
       SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"cuSPARSE error %d (%s) : %s",(int)stat,name,descr); \
    } \
-} while(0)
+} while (0)
 #else
-#define CHKERRCUSPARSE(stat) do {if (PetscUnlikely(stat)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusparse error %d",(int)stat);} while(0)
+#define CHKERRCUSPARSE(stat) do {if (PetscUnlikely(stat)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusparse error %d",(int)stat);} while (0)
 #endif
 
 #if defined(PETSC_USE_COMPLEX)

@@ -95,7 +95,7 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
     if (coor_p[1] > gmax_l[1]) { continue; }
 
     for (d=0; d<2; d++) {
-      mi[d] = (PetscInt)( (coor_p[d] - gmin[d])/dx[d] );
+      mi[d] = (PetscInt)((coor_p[d] - gmin[d])/dx[d]);
     }
 
     if (mi[0] < xs)     { continue; }
@@ -183,7 +183,7 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
     if (coor_p[2] > gmax_l[2]) { continue; }
 
     for (d=0; d<3; d++) {
-      mi[d] = (PetscInt)( (coor_p[d] - gmin[d])/dx[d] );
+      mi[d] = (PetscInt)((coor_p[d] - gmin[d])/dx[d]);
     }
 
     if (mi[0] < xs)     { continue; }

@@ -103,20 +103,20 @@ int main(int argc,char **argv)
 
   /* solve nonlinear system */
   ierr = SNESSolve(snes,NULL,u);CHKERRQ(ierr);
-  ierr = VecDestroy(&u); CHKERRQ(ierr);
-  ierr = DMDestroy(&da); CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   /* DMDA after solve may be different, e.g. with -snes_grid_sequence */
-  ierr = SNESGetDM(snes,&da_after); CHKERRQ(ierr);
-  ierr = SNESGetSolution(snes,&u); CHKERRQ(ierr); /* do not destroy u */
-  ierr = DMDAGetLocalInfo(da_after,&info); CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&u_exact); CHKERRQ(ierr);
-  ierr = FormExactSolution(&info,u_exact); CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&da_after);CHKERRQ(ierr);
+  ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr); /* do not destroy u */
+  ierr = DMDAGetLocalInfo(da_after,&info);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&u_exact);CHKERRQ(ierr);
+  ierr = FormExactSolution(&info,u_exact);CHKERRQ(ierr);
   ierr = VecAXPY(u,-1.0,u_exact);CHKERRQ(ierr); /* u <-- u - u_exact */
   ierr = VecNorm(u,NORM_1,&error1);CHKERRQ(ierr);
   error1 /= (PetscReal)info.mx * (PetscReal)info.my; /* average error */
   ierr = VecNorm(u,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"errors on %D x %D grid:  av |u-uexact|  = %.3e,  |u-uexact|_inf = %.3e\n",info.mx,info.my,(double)error1,(double)errorinf);CHKERRQ(ierr);
-  ierr = VecDestroy(&u_exact); CHKERRQ(ierr);
+  ierr = VecDestroy(&u_exact);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -151,7 +151,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
   PetscReal      **aXl, dx, dy, x, y;
 
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info); CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   dx = 4.0 / (PetscReal)(info.mx-1);
   dy = 4.0 / (PetscReal)(info.my-1);
   ierr = DMDAVecGetArray(da, Xl, &aXl);CHKERRQ(ierr);

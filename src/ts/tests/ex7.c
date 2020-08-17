@@ -6,7 +6,7 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
         \dot{U} = f(U,V)
         F(U,V)  = 0
 
-    Same as ex6.c except the user provided functions take input values as a single vector instead of two vectors 
+    Same as ex6.c except the user provided functions take input values as a single vector instead of two vectors
 */
 
 
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
 }
 
 /*
-   Defines the RHS function that is passed to the time-integrator. 
+   Defines the RHS function that is passed to the time-integrator.
 
    Solves F(U,V) for V and then computes f(U,V)
 */
@@ -165,4 +165,3 @@ PetscErrorCode SNESFunction(SNES snes,Vec V,Vec F,void *actx)
       args: -ts_monitor -ts_view
 
 TEST*/
-

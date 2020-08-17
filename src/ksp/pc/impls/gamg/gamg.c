@@ -280,37 +280,37 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       ierr = VecSetSizes(dest_crd, node_data_sz*ncrs_new, PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetType(dest_crd,VECSTANDARD);CHKERRQ(ierr); /* this is needed! */
       /*
-	There are 'ndata_rows*ndata_cols' data items per node, (one can think of the vectors of having
-	a block size of ...).  Note, ISs are expanded into equation space by 'cr_bs'.
+        There are 'ndata_rows*ndata_cols' data items per node, (one can think of the vectors of having
+        a block size of ...).  Note, ISs are expanded into equation space by 'cr_bs'.
       */
       ierr = PetscMalloc1(ncrs*node_data_sz, &tidx);CHKERRQ(ierr);
       ierr = ISGetIndices(is_eq_num_prim, &idx);CHKERRQ(ierr);
       for (ii=0,jj=0; ii<ncrs; ii++) {
-	PetscInt id = idx[ii*cr_bs]/cr_bs; /* get node back */
-	for (kk=0; kk<node_data_sz; kk++, jj++) tidx[jj] = id*node_data_sz + kk;
+        PetscInt id = idx[ii*cr_bs]/cr_bs; /* get node back */
+        for (kk=0; kk<node_data_sz; kk++, jj++) tidx[jj] = id*node_data_sz + kk;
       }
       ierr = ISRestoreIndices(is_eq_num_prim, &idx);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm, node_data_sz*ncrs, tidx, PETSC_COPY_VALUES, &isscat);CHKERRQ(ierr);
       ierr = PetscFree(tidx);CHKERRQ(ierr);
       /*
-	Create a vector to contain the original vertex information for each element
+        Create a vector to contain the original vertex information for each element
       */
       ierr = VecCreateSeq(PETSC_COMM_SELF, node_data_sz*ncrs, &src_crd);CHKERRQ(ierr);
       for (jj=0; jj<ndata_cols; jj++) {
-	const PetscInt stride0=ncrs*pc_gamg->data_cell_rows;
-	for (ii=0; ii<ncrs; ii++) {
-	  for (kk=0; kk<ndata_rows; kk++) {
-	    PetscInt    ix = ii*ndata_rows + kk + jj*stride0, jx = ii*node_data_sz + kk*ndata_cols + jj;
-	    PetscScalar tt = (PetscScalar)pc_gamg->data[ix];
-	    ierr = VecSetValues(src_crd, 1, &jx, &tt, INSERT_VALUES);CHKERRQ(ierr);
-	  }
-	}
+        const PetscInt stride0=ncrs*pc_gamg->data_cell_rows;
+        for (ii=0; ii<ncrs; ii++) {
+          for (kk=0; kk<ndata_rows; kk++) {
+            PetscInt    ix = ii*ndata_rows + kk + jj*stride0, jx = ii*node_data_sz + kk*ndata_cols + jj;
+            PetscScalar tt = (PetscScalar)pc_gamg->data[ix];
+            ierr = VecSetValues(src_crd, 1, &jx, &tt, INSERT_VALUES);CHKERRQ(ierr);
+          }
+        }
       }
       ierr = VecAssemblyBegin(src_crd);CHKERRQ(ierr);
       ierr = VecAssemblyEnd(src_crd);CHKERRQ(ierr);
       /*
-	Scatter the element vertex information (still in the original vertex ordering)
-	to the correct processor
+        Scatter the element vertex information (still in the original vertex ordering)
+        to the correct processor
       */
       ierr = VecScatterCreate(src_crd, NULL, dest_crd, isscat, &vecscat);CHKERRQ(ierr);
       ierr = ISDestroy(&isscat);CHKERRQ(ierr);
@@ -319,7 +319,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
       ierr = VecDestroy(&src_crd);CHKERRQ(ierr);
       /*
-	Put the element vertex data into a new allocation of the gdata->ele
+        Put the element vertex data into a new allocation of the gdata->ele
       */
       ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
       ierr = PetscMalloc1(node_data_sz*ncrs_new, &pc_gamg->data);CHKERRQ(ierr);
@@ -329,12 +329,12 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 
       ierr = VecGetArray(dest_crd, &array);CHKERRQ(ierr);
       for (jj=0; jj<ndata_cols; jj++) {
-	for (ii=0; ii<ncrs_new; ii++) {
-	  for (kk=0; kk<ndata_rows; kk++) {
-	    PetscInt ix = ii*ndata_rows + kk + jj*strideNew, jx = ii*node_data_sz + kk*ndata_cols + jj;
-	    pc_gamg->data[ix] = PetscRealPart(array[jx]);
-	  }
-	}
+        for (ii=0; ii<ncrs_new; ii++) {
+          for (kk=0; kk<ndata_rows; kk++) {
+            PetscInt ix = ii*ndata_rows + kk + jj*strideNew, jx = ii*node_data_sz + kk*ndata_cols + jj;
+            pc_gamg->data[ix] = PetscRealPart(array[jx]);
+          }
+        }
       }
       ierr = VecRestoreArray(dest_crd, &array);CHKERRQ(ierr);
       ierr = VecDestroy(&dest_crd);CHKERRQ(ierr);
@@ -601,7 +601,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 #endif
     /* stop if one node or one proc -- could pull back for singular problems */
-    if ( (pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M/bs < 2) ) {
+    if ((pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M/bs < 2)) {
       ierr =  PetscInfo2(pc,"HARD stop of coarsening on level %D.  Grid too small: %D block nodes\n",level,M/bs);CHKERRQ(ierr);
       level++;
       break;
@@ -706,7 +706,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           PetscBool isjac;
           ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
           ierr = PetscObjectTypeCompare((PetscObject)subpc,PCJACOBI,&isjac);CHKERRQ(ierr);
-          if ( (isjac && pc_gamg->use_sa_esteig==-1) || pc_gamg->use_sa_esteig==1) {
+          if ((isjac && pc_gamg->use_sa_esteig==-1) || pc_gamg->use_sa_esteig==1) {
             PetscReal       emax,emin;
             emin = mg->min_eigen_DinvA[level];
             emax = mg->max_eigen_DinvA[level];
@@ -1301,7 +1301,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
   PetscInt i;
   PetscFunctionBegin;
   for (i=0; i<PetscMin(n,PETSC_MG_MAXLEVELS); i++) pc_gamg->threshold[i] = v[i];
-  for ( ; i<PETSC_MG_MAXLEVELS; i++) pc_gamg->threshold[i] = pc_gamg->threshold[i-1]*pc_gamg->threshold_scale;
+  for (; i<PETSC_MG_MAXLEVELS; i++) pc_gamg->threshold[i] = pc_gamg->threshold[i-1]*pc_gamg->threshold_scale;
   PetscFunctionReturn(0);
 }
 

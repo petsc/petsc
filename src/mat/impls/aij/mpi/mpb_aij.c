@@ -5,15 +5,16 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   PetscErrorCode ierr;
   Mat_MPIAIJ     *aij  = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ     *aijB = (Mat_SeqAIJ*)aij->B->data;
-  PetscMPIInt    commRank,subCommSize,subCommRank;
-  PetscMPIInt    *commRankMap,subRank,rank,commsize;
+  PetscMPIInt    subCommSize,subCommRank;
+  PetscMPIInt    *commRankMap,subRank,rank,commRank;
   PetscInt       *garrayCMap,col,i,j,*nnz,newRow,newCol;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&commRank);CHKERRQ(ierr);
 
-  /* create subMat object with the relavent layout */
+  /* create subMat object with the relevant layout */
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(subComm,subMat);CHKERRQ(ierr);
     ierr = MatSetType(*subMat,MATMPIAIJ);CHKERRQ(ierr);
@@ -26,8 +27,6 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   }
 
   /* create a map of comm_rank from subComm to comm - should commRankMap and garrayCMap be kept for reused? */
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&commRank);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRQ(ierr);
   ierr = PetscMalloc1(subCommSize,&commRankMap);CHKERRQ(ierr);
   ierr = MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm);CHKERRQ(ierr);
 
@@ -47,7 +46,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   }
 
   if (scall == MAT_INITIAL_MATRIX) {
-    /* Now compute preallocation for the offdiag mat */
+    /* Compute preallocation for the offdiag mat */
     ierr = PetscCalloc1(aij->B->rmap->n,&nnz);CHKERRQ(ierr);
     for (i=0; i<aij->B->rmap->n; i++) {
       for (j=aijB->i[i]; j<aijB->i[i+1]; j++) {
@@ -58,33 +57,30 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
 
     /* reuse diag block with the new submat */
     ierr = MatDestroy(&((Mat_MPIAIJ*)((*subMat)->data))->A);CHKERRQ(ierr);
-
     ((Mat_MPIAIJ*)((*subMat)->data))->A = aij->A;
-
     ierr = PetscObjectReference((PetscObject)aij->A);CHKERRQ(ierr);
   } else if (((Mat_MPIAIJ*)(*subMat)->data)->A != aij->A) {
     PetscObject obj = (PetscObject)((Mat_MPIAIJ*)((*subMat)->data))->A;
-
     ierr = PetscObjectReference((PetscObject)obj);CHKERRQ(ierr);
-
     ((Mat_MPIAIJ*)((*subMat)->data))->A = aij->A;
-
     ierr = PetscObjectReference((PetscObject)aij->A);CHKERRQ(ierr);
   }
 
-  /* Now traverse aij->B and insert values into subMat */
+  /* Traverse aij->B and insert values into subMat */
+  if ((*subMat)->assembled) {
+    (*subMat)->was_assembled = PETSC_TRUE;
+    (*subMat)->assembled     = PETSC_FALSE;
+  }
   for (i=0; i<aij->B->rmap->n; i++) {
     newRow = (*subMat)->rmap->range[subCommRank] + i;
     for (j=aijB->i[i]; j<aijB->i[i+1]; j++) {
       newCol = garrayCMap[aijB->j[j]];
       if (newCol) {
         newCol--; /* remove the increment */
-        ierr = MatSetValues(*subMat,1,&newRow,1,&newCol,(aijB->a+j),INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues_MPIAIJ(*subMat,1,&newRow,1,&newCol,(aijB->a+j),INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
-
-  /* assemble the submat */
   ierr = MatAssemblyBegin(*subMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*subMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

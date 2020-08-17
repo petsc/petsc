@@ -360,13 +360,12 @@ PetscErrorCode FormInitialSolution(Vec U,void *ptr)
       suffix: 4
       requires: !single
       nsize: 2
-      args: -da_grid_x 20 -da_grid_y 20 -boundary 1 -ts_max_steps 10 -ts_monitor 
+      args: -da_grid_x 20 -da_grid_y 20 -boundary 1 -ts_max_steps 10 -ts_monitor
 
     test:
       suffix: 5
       nsize: 1
-      args: -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 -Jtype 1 -ts_monitor 
+      args: -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 -Jtype 1 -ts_monitor
 
 
 TEST*/
-

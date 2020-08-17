@@ -90,7 +90,7 @@ static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscRe
   J[5][5]=a;
 
   ierr    = MatSetValues(B,6,rowcol,6,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  
+
   ierr    = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(Ydot,&ydot);CHKERRQ(ierr);
 
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscInt       n = 6;
   PetscScalar    *y;
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
   y[4] = 0.0;
   y[5] = 0.0;
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -168,7 +168,7 @@ int main(int argc,char **argv)
      Do Time stepping
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

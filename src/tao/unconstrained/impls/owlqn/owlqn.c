@@ -19,7 +19,7 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
   ierr = VecGetArrayRead(g,&gptr);CHKERRQ(ierr);
   ierr = VecGetArray(d,&dptr);CHKERRQ(ierr);
   for (i = 0; i < high-low; i++) {
-    if (dptr[i] * gptr[i] <= 0.0 ) {
+    if (dptr[i] * gptr[i] <= 0.0) {
       dptr[i] = 0.0;
     }
   }
@@ -278,7 +278,7 @@ static PetscErrorCode TaoSetFromOptions_OWLQN(PetscOptionItems *PetscOptionsObje
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Orthant-Wise Limited-memory method for Quasi-Newton unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_owlqn_lambda", "regulariser weight","", 100,&lmP->lambda,NULL); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_owlqn_lambda", "regulariser weight","", 100,&lmP->lambda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);

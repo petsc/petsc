@@ -129,7 +129,7 @@ PetscErrorCode  MatLRCGetMats(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
    Input Parameters:
 +  A    - the (sparse) matrix (can be NULL)
 .  U, V - two dense rectangular (tall and skinny) matrices
--  c    - a sequential vector containing the diagonal of C (can be NULL) 
+-  c    - a sequential vector containing the diagonal of C (can be NULL)
 
    Output Parameter:
 .  N    - the matrix that represents A + U*C*V'
@@ -227,4 +227,3 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
   ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatLRCGetMats_C",MatLRCGetMats_LRC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

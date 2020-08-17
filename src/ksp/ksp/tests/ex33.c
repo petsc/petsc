@@ -2,7 +2,7 @@ static char help[] = "Test MatGetInertia().\n\n";
 
 /*
   Examples of command line options:
-  ./ex33 -sigma 2.0 -pc_factor_mat_solver_type mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1 
+  ./ex33 -sigma 2.0 -pc_factor_mat_solver_type mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1
   ./ex33 -sigma <shift> -fA <matrix_file>
 */
 

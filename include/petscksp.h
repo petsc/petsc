@@ -137,7 +137,7 @@ PETSC_EXTERN PetscErrorCode KSPMonitorSet(KSP,PetscErrorCode (*)(KSP,PetscInt,Pe
 PETSC_EXTERN PetscErrorCode KSPMonitorCancel(KSP);
 PETSC_EXTERN PetscErrorCode KSPGetMonitorContext(KSP,void**);
 PETSC_EXTERN PetscErrorCode KSPGetResidualHistory(KSP,PetscReal*[],PetscInt*);
-PETSC_EXTERN PetscErrorCode KSPSetResidualHistory(KSP,PetscReal[],PetscInt,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPSetResidualHistory(KSP,PetscReal[],PetscInt,PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPBuildSolutionDefault(KSP,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode KSPBuildResidualDefault(KSP,Vec,Vec,Vec*);
@@ -162,7 +162,7 @@ PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP,Vec,Vec,Vec*);
 
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetScale(KSP,PetscReal);
-PETSC_EXTERN PetscErrorCode KSPRichardsonSetSelfScale(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPRichardsonSetSelfScale(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSet(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP,PetscBool);
@@ -332,7 +332,7 @@ PETSC_EXTERN PetscErrorCode KSPQCGGetQuadratic(KSP,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPQCGGetTrialStepNorm(KSP,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode KSPBCGSLSetXRes(KSP,PetscReal);
-PETSC_EXTERN PetscErrorCode KSPBCGSLSetPol(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPBCGSLSetPol(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPBCGSLSetEll(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP,PetscBool);
 
@@ -366,9 +366,9 @@ PETSC_EXTERN PetscErrorCode KSPSetOptionsPrefix(KSP,const char[]);
 PETSC_EXTERN PetscErrorCode KSPAppendOptionsPrefix(KSP,const char[]);
 PETSC_EXTERN PetscErrorCode KSPGetOptionsPrefix(KSP,const char*[]);
 
-PETSC_EXTERN PetscErrorCode KSPSetDiagonalScale(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPSetDiagonalScale(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetDiagonalScale(KSP,PetscBool*);
-PETSC_EXTERN PetscErrorCode KSPSetDiagonalScaleFix(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPSetDiagonalScaleFix(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
@@ -609,7 +609,7 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_PC_FAILED - It was not possible to build or use the requested preconditioner. This is usually due to a 
+     KSP_DIVERGED_PC_FAILED - It was not possible to build or use the requested preconditioner. This is usually due to a
      zero pivot in a factorization. It can also result from a failure in a subpreconditioner inside a nested preconditioner
      such as PCFIELDSPLIT.
 
@@ -674,7 +674,7 @@ typedef enum {KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1} KSPCGType;
 PETSC_EXTERN const char *const KSPCGTypes[];
 
 PETSC_EXTERN PetscErrorCode KSPCGSetType(KSP,KSPCGType);
-PETSC_EXTERN PetscErrorCode KSPCGUseSingleReduction(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPCGUseSingleReduction(KSP,PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPCGSetRadius(KSP,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPCGGetNormD(KSP,PetscReal*);
@@ -796,7 +796,7 @@ PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetDelta(Mat, PetscScalar);
 PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat, MatLMVMSymBroydenScaleType);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
-PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetDM(KSP,DM*);
 PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP,void*);
 PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP,void*);

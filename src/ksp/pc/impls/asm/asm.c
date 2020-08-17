@@ -316,7 +316,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     /* Create the local work vectors (from the local matrices) and scatter contexts */
     ierr = MatCreateVecs(pc->pmat,&vec,NULL);CHKERRQ(ierr);
 
-    if (osm->is_local && (osm->type == PC_ASM_INTERPOLATE || osm->type == PC_ASM_NONE )) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains()");
+    if (osm->is_local && (osm->type == PC_ASM_INTERPOLATE || osm->type == PC_ASM_NONE)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains()");
     if (osm->is_local && osm->type == PC_ASM_RESTRICT && osm->loctype == PC_COMPOSITE_ADDITIVE) {
       ierr = PetscMalloc1(osm->n_local_true,&osm->lprolongation);CHKERRQ(ierr);
     }
@@ -490,7 +490,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
         if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
           /* update the overlapping (i+1)-block RHS using the current local solution */
           ierr = MatMult(osm->lmats[i+1], osm->ly, osm->y[i+1]);CHKERRQ(ierr);
-          ierr = VecAXPBY(osm->x[i+1],-1.,1., osm->y[i+1]); CHKERRQ(ierr);
+          ierr = VecAXPBY(osm->x[i+1],-1.,1., osm->y[i+1]);CHKERRQ(ierr);
         }
       }
     }

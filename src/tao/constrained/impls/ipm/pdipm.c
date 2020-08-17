@@ -70,8 +70,8 @@ PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao,Vec x)
   /* (1) Update ce vector */
   ierr = VecGetArray(pdipm->ce,&carr);CHKERRQ(ierr);
 
-  /* (1.a) Inserting updated g(x) */
   if (pdipm->Ng) {
+    /* (1.a) Inserting updated g(x) */
     ierr = VecGetArrayRead(tao->constraints_equality,&garr);CHKERRQ(ierr);
     ierr = PetscMemcpy(carr,garr,pdipm->ng*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(tao->constraints_equality,&garr);CHKERRQ(ierr);
@@ -328,7 +328,7 @@ PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, void *ctx
     ierr = MatGetOwnershipRange(tao->jacobian_equality,&rjstart,NULL);CHKERRQ(ierr);
     for (i=0; i<pdipm->ng; i++){
       row = Jrstart + pdipm->off_lambdae + i;
-      
+
       ierr = MatGetRow(tao->jacobian_equality,i+rjstart,&nc,&aj,&aa);CHKERRQ(ierr);
       proc = 0;
       for (j=0; j < nc; j++) {
@@ -345,7 +345,7 @@ PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, void *ctx
     ierr = MatGetOwnershipRange(tao->jacobian_inequality,&rjstart,NULL);CHKERRQ(ierr);
     for (i=0; i < pdipm->nh; i++){
       row = Jrstart + pdipm->off_lambdai + i;
-      
+
       ierr = MatGetRow(tao->jacobian_inequality,i+rjstart,&nc,&aj,&aa);CHKERRQ(ierr);
       proc = 0;
       for (j=0; j < nc; j++) {
@@ -551,7 +551,7 @@ PetscErrorCode TaoSNESFunction_PDIPM(SNES snes,Vec X,Vec F,void *ctx)
    PDIPMLineSearch employs a simple backtracking line-search to keep
    the slack variables (z) and inequality constraints lagrange multipliers
    (lambdai) positive, i.e., z,lambdai >=0. It does this by calculating scalars
-   alpha_p and alpha_d to keep z,lambdai non-negative. The decision (x), and the 
+   alpha_p and alpha_d to keep z,lambdai non-negative. The decision (x), and the
    slack variables are updated as X = X + alpha_d*dx. The constraint multipliers
    are updated as Lambdai = Lambdai + alpha_p*dLambdai. The barrier parameter mu
    is also updated as mu = mu + z'lambdai/Nci
@@ -921,8 +921,8 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   /* (6) Set up ISs for PC Fieldsplit */
   if (pdipm->solve_reduced_kkt) {
     ierr = PetscMalloc2(pdipm->nx+pdipm->nce,&xa,2*pdipm->nci,&xb);CHKERRQ(ierr);
-    for(i=0; i < pdipm->nx + pdipm->nce; i++) xa[i] = i;
-    for(i=0; i < 2*pdipm->nci; i++) xb[i] = pdipm->off_lambdai + i;
+    for (i=0; i < pdipm->nx + pdipm->nce; i++) xa[i] = i;
+    for (i=0; i < 2*pdipm->nci; i++) xb[i] = pdipm->off_lambdai + i;
 
     ierr = ISCreateGeneral(comm,pdipm->nx+pdipm->nce,xa,PETSC_OWN_POINTER,&pdipm->is1);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,2*pdipm->nci,xb,PETSC_OWN_POINTER,&pdipm->is2);CHKERRQ(ierr);
@@ -1062,7 +1062,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   /* Jce_xfixed */
   if (pdipm->Nxfixed) {
     ierr = MatGetOwnershipRange(pdipm->Jce_xfixed,&Jcrstart,NULL);CHKERRQ(ierr);
-    for (i=0; i < (pdipm->nce - pdipm->ng); i++ ){
+    for (i=0; i < (pdipm->nce - pdipm->ng); i++){
       row = rstart + pdipm->off_lambdae + pdipm->ng + i;
 
       ierr = MatGetRow(pdipm->Jce_xfixed,i+Jcrstart,&nc,&cols,NULL);CHKERRQ(ierr);
@@ -1102,7 +1102,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
 
   /* Jci_xb */
   ierr = MatGetOwnershipRange(pdipm->Jci_xb,&Jcrstart,NULL);CHKERRQ(ierr);
-  for (i=0; i < (pdipm->nci - pdipm->nh); i++ ){
+  for (i=0; i < (pdipm->nci - pdipm->nh); i++){
     row = rstart + pdipm->off_lambdai + pdipm->nh + i;
 
     ierr = MatGetRow(pdipm->Jci_xb,i+Jcrstart,&nc,&cols,NULL);CHKERRQ(ierr);
@@ -1164,7 +1164,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   /* Row block of K: [ grad Ce, 0, 0, 0] */
   if (pdipm->Nxfixed) {
     ierr = MatGetOwnershipRange(pdipm->Jce_xfixed,&Jcrstart,NULL);CHKERRQ(ierr);
-    for (i=0; i < (pdipm->nce - pdipm->ng); i++ ){
+    for (i=0; i < (pdipm->nce - pdipm->ng); i++){
       row = rstart + pdipm->off_lambdae + pdipm->ng + i;
 
       ierr = MatGetRow(pdipm->Jce_xfixed,i+Jcrstart,&nc,&cols,&aa);CHKERRQ(ierr);
@@ -1181,7 +1181,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
 
   /* Row block of K: [ grad Ci, 0, 0, -I] */
   ierr = MatGetOwnershipRange(pdipm->Jci_xb,&Jcrstart,NULL);CHKERRQ(ierr);
-  for (i=0; i < (pdipm->nci - pdipm->nh); i++ ){
+  for (i=0; i < pdipm->nci - pdipm->nh; i++){
     row = rstart + pdipm->off_lambdai + pdipm->nh + i;
 
     ierr = MatGetRow(pdipm->Jci_xb,i+Jcrstart,&nc,&cols,&aa);CHKERRQ(ierr);

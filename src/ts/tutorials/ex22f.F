@@ -111,7 +111,7 @@
       ftime = 1.0
       call TSSetMaxTime(ts,ftime,ierr)
       call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr)
-      
+
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set initial conditions
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -412,6 +412,6 @@
 !
 !    test:
 !      args: -da_grid_x 200 -ts_arkimex_type 4
-!      requires: !single 
+!      requires: !single
 !
 !TEST*/

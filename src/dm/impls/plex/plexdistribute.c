@@ -366,11 +366,11 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
   for (l = 0; l < numLeaves; ++l) {PetscBTSet(neighbors, remotePoints[l].rank);}
   /* Calculate edges */
   PetscBTClear(neighbors, rank);
-  for(proc = 0, numNeighbors = 0; proc < size; ++proc) {if (PetscBTLookup(neighbors, proc)) ++numNeighbors;}
+  for (proc = 0, numNeighbors = 0; proc < size; ++proc) {if (PetscBTLookup(neighbors, proc)) ++numNeighbors;}
   ierr = PetscMalloc1(numNeighbors, &ranksNew);CHKERRQ(ierr);
   ierr = PetscMalloc1(numNeighbors, &localPointsNew);CHKERRQ(ierr);
   ierr = PetscMalloc1(numNeighbors, &remotePointsNew);CHKERRQ(ierr);
-  for(proc = 0, n = 0; proc < size; ++proc) {
+  for (proc = 0, n = 0; proc < size; ++proc) {
     if (PetscBTLookup(neighbors, proc)) {
       ranksNew[n]              = proc;
       localPointsNew[n]        = proc;

@@ -45,7 +45,7 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void 
       dx = xx[col];
       if (PetscAbsScalar(dx) < umin) {
         if (PetscRealPart(dx) >= 0.0)      dx = umin;
-        else if (PetscRealPart(dx) < 0.0 ) dx = -umin;
+        else if (PetscRealPart(dx) < 0.0) dx = -umin;
       }
       dx               *= epsilon;
       vscale_array[col] = 1.0/dx;
@@ -202,7 +202,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
       dx = xx[col];
       if (PetscAbsScalar(dx) < umin) {
         if (PetscRealPart(dx) >= 0.0)      dx = umin;
-        else if (PetscRealPart(dx) < 0.0 ) dx = -umin;
+        else if (PetscRealPart(dx) < 0.0) dx = -umin;
       }
       dx               *= epsilon;
       vscale_array[col] = 1.0/dx;

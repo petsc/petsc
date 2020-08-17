@@ -226,13 +226,13 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
   merr = iface->get_node_coords(3, nnodes, 0, startv, arrays);MBERR("Can't get node coords.", merr);
 
   /* will start with the lower corner: */
-  /* x = ( m * genCtx.A + a ) * genCtx.q * genCtx.blockSizeElementXYZ[0]; */
-  /* y = ( n * genCtx.B + b ) * genCtx.q * genCtx.blockSizeElementXYZ[1]; */
-  /* z = ( k * genCtx.C + c ) * genCtx.q * genCtx.blockSizeElementXYZ[2]; */
+  /* x = ( m * genCtx.A + a) * genCtx.q * genCtx.blockSizeElementXYZ[0]; */
+  /* y = ( n * genCtx.B + b) * genCtx.q * genCtx.blockSizeElementXYZ[1]; */
+  /* z = ( k * genCtx.C + c) * genCtx.q * genCtx.blockSizeElementXYZ[2]; */
 
-  x = ( m * genCtx.A + a ) * genCtx.q;
-  y = ( n * genCtx.B + b ) * genCtx.q;
-  z = ( k * genCtx.C + c ) * genCtx.q;
+  x = ( m * genCtx.A + a) * genCtx.q;
+  y = ( n * genCtx.B + b) * genCtx.q;
+  z = ( k * genCtx.C + c) * genCtx.q;
   PetscInfo3(NULL, "Starting offset for coordinates := %d, %d, %d\n", x, y, z);
   ix = 0;
   moab::Range verts(startv, startv + nnodes - 1);
@@ -361,7 +361,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
 
     genCtx.fraction = nelems / nprocs; /* partition only by the largest dimension */
     genCtx.remainder = nelems % nprocs; /* remainder after partition which gets evenly distributed by round-robin */
-    genCtx.cumfraction = (rank > 0 ? (genCtx.fraction) * (rank) + (rank - 1 < genCtx.remainder ? rank : genCtx.remainder ) : 0);
+    genCtx.cumfraction = (rank > 0 ? (genCtx.fraction) * (rank) + (rank - 1 < genCtx.remainder ? rank : genCtx.remainder) : 0);
     if (rank < genCtx.remainder)    /* This process gets "fraction+1" elements */
       genCtx.fraction++;
 
@@ -592,7 +592,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
   ierr = DMMBUtil_InitializeOptions(genCtx, dim, useSimplex, global_rank, global_size, bounds, nele);CHKERRQ(ierr);
 
-  //if(nele<nprocs) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
+  //if (nele<nprocs) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
 
   if (genCtx.adjEnts) genCtx.keep_skins = true; /* do not delete anything - consumes more memory */
 
@@ -615,8 +615,8 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
    * so there are a total of N * B * blockSizeElement elements in y direction (so N * B * blockSizeElement + 1 verts in y direction)
    * so there are a total of K * C * blockSizeElement elements in z direction (so K * C * blockSizeElement + 1 verts in z direction)
 
-   * there are ( M * A blockSizeElement )      *  ( N * B * blockSizeElement)      * (K * C * blockSizeElement )    hexas
-   * there are ( M * A * blockSizeElement + 1) *  ( N * B * blockSizeElement + 1 ) * (K * C * blockSizeElement + 1) vertices
+   * there are ( M * A blockSizeElement)      *  ( N * B * blockSizeElement)      * (K * C * blockSizeElement)    hexas
+   * there are ( M * A * blockSizeElement + 1) *  ( N * B * blockSizeElement + 1) * (K * C * blockSizeElement + 1) vertices
    * x is the first dimension that varies
    */
 

@@ -161,7 +161,7 @@ static PetscErrorCode  MatSNESMFSetReuseBase_SNESMF(Mat J,PetscBool use)
 
     Input Parameters:
 +   J - the MatMFFD matrix
--   use - if true always reuse the base vector instead of recomputing f(u) even if the function in the MatSNESMF is 
+-   use - if true always reuse the base vector instead of recomputing f(u) even if the function in the MatSNESMF is
           not SNESComputeFunction()
 
     Notes:
@@ -205,7 +205,7 @@ static PetscErrorCode  MatSNESMFGetReuseBase_SNESMF(Mat J,PetscBool *use)
 .   J - the MatMFFD matrix
 
     Output Parameter:
-.   use - if true always reuse the base vector instead of recomputing f(u) even if the function in the MatSNESMF is 
+.   use - if true always reuse the base vector instead of recomputing f(u) even if the function in the MatSNESMF is
           not SNESComputeFunction()
 
     Notes:

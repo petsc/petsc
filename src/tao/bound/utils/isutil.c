@@ -158,7 +158,7 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
 }
 
 /*@C
-  TaoEstimateActiveBounds - Generates index sets for variables at the lower and upper 
+  TaoEstimateActiveBounds - Generates index sets for variables at the lower and upper
   bounds, as well as fixed variables where lower and upper bounds equal each other.
 
   Input Parameters:
@@ -180,10 +180,10 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
 
   Notes:
   This estimation is based on Bertsekas' method, with a built in diagonal scaling value of 1.0e-3.
-  
+
   Level: developer
 @*/
-PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec W, PetscReal steplen, PetscReal *bound_tol, 
+PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec W, PetscReal steplen, PetscReal *bound_tol,
                                        IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive)
 {
   PetscErrorCode               ierr;
@@ -203,7 +203,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   PetscValidHeaderSpecific(G,VEC_CLASSID,4);
   PetscValidHeaderSpecific(S,VEC_CLASSID,5);
   PetscValidHeaderSpecific(W,VEC_CLASSID,6);
-  
+
   PetscValidType(X,1);
   PetscValidType(XL,2);
   PetscValidType(XU,3);
@@ -225,7 +225,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   VecCheckSameSize(X,1,G,4);
   VecCheckSameSize(X,1,S,5);
   VecCheckSameSize(X,1,W,6);
-    
+
   /* Update the tolerance for bound detection (this is based on Bertsekas' method) */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPBY(W, steplen, 1.0, S);CHKERRQ(ierr);
@@ -233,7 +233,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   ierr = VecAXPBY(W, 1.0, -1.0, X);CHKERRQ(ierr);
   ierr = VecNorm(W, NORM_2, &wnorm);CHKERRQ(ierr);
   *bound_tol = PetscMin(*bound_tol, wnorm);
-  
+
   ierr = VecGetOwnershipRange(X, &low, &high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
   if (n>0){
@@ -241,7 +241,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
     ierr = VecGetArrayRead(XL, &xl);CHKERRQ(ierr);
     ierr = VecGetArrayRead(XU, &xu);CHKERRQ(ierr);
     ierr = VecGetArrayRead(G, &g);CHKERRQ(ierr);
-    
+
     /* Loop over variables and categorize the indexes */
     ierr = PetscMalloc1(n, &isl);CHKERRQ(ierr);
     ierr = PetscMalloc1(n, &isu);CHKERRQ(ierr);
@@ -266,27 +266,27 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
         isi[n_isi]=low+i; ++n_isi;
       }
     }
-    
+
     ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(XL, &xl);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(XU, &xu);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(G, &g);CHKERRQ(ierr);
   }
-  
+
   /* Clear all index sets */
   ierr = ISDestroy(active_lower);CHKERRQ(ierr);
   ierr = ISDestroy(active_upper);CHKERRQ(ierr);
   ierr = ISDestroy(active_fixed);CHKERRQ(ierr);
   ierr = ISDestroy(active);CHKERRQ(ierr);
   ierr = ISDestroy(inactive);CHKERRQ(ierr);
-  
+
   /* Collect global sizes */
   ierr = MPIU_Allreduce(&n_isl, &N_isl, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&n_isu, &N_isu, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&n_isf, &N_isf, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&n_isa, &N_isa, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&n_isi, &N_isi, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  
+
   /* Create index set for lower bounded variables */
   if (N_isl > 0) {
     ierr = ISCreateGeneral(comm, n_isl, isl, PETSC_OWN_POINTER, active_lower);CHKERRQ(ierr);
@@ -323,7 +323,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
 }
 
 /*@C
-  TaoBoundStep - Ensures the correct zero or adjusted step direction 
+  TaoBoundStep - Ensures the correct zero or adjusted step direction
   values for active variables.
 
   Input Parameters:
@@ -340,14 +340,14 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
 
   Level: developer
 @*/
-PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, PetscReal scale, Vec S) 
+PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, PetscReal scale, Vec S)
 {
   PetscErrorCode               ierr;
-  
+
   Vec                          step_lower, step_upper, step_fixed;
   Vec                          x_lower, x_upper;
   Vec                          bound_lower, bound_upper;
-  
+
   PetscFunctionBegin;
   /* Adjust step for variables at the estimated lower bound */
   if (active_lower) {
@@ -361,7 +361,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
     ierr = VecRestoreSubVector(X, active_lower, &x_lower);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(XL, active_lower, &bound_lower);CHKERRQ(ierr);
   }
-  
+
   /* Adjust step for the variables at the estimated upper bound */
   if (active_upper) {
     ierr = VecGetSubVector(S, active_upper, &step_upper);CHKERRQ(ierr);
@@ -374,7 +374,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
     ierr = VecRestoreSubVector(X, active_upper, &x_upper);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(XU, active_upper, &bound_upper);CHKERRQ(ierr);
   }
-  
+
   /* Zero out step for fixed variables */
   if (active_fixed) {
     ierr = VecGetSubVector(S, active_fixed, &step_fixed);CHKERRQ(ierr);

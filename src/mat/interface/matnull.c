@@ -76,7 +76,7 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt
    Level: advanced
 
    Notes:
-     If you are solving an elasticity problem you should likely use this, in conjunction with MatSetNearNullspace(), to provide information that 
+     If you are solving an elasticity problem you should likely use this, in conjunction with MatSetNearNullspace(), to provide information that
      the PCGAMG preconditioner can use to construct a much more efficient preconditioner.
 
      If you are solving an elasticity problem with pure Neumann boundary conditions you can use this in conjunction with MatSetNullspace() to
@@ -470,4 +470,3 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   if (isNull) *isNull = consistent;
   PetscFunctionReturn(0);
 }
-

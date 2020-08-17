@@ -665,10 +665,10 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
     for (fz = 0; fz < numZEdges; ++fz) {
       for (fy = 0; fy < numYEdges; ++fy) {
         for (fx = 0; fx < numXVertices; ++fx) {
-          PetscInt face    = firstXFace + (fz*numYEdges+fy)*numXVertices + fx;
-          PetscInt edgeL   = firstZEdge + (  fy*                 numXVertices+fx)*numZEdges + fz;
+          PetscInt face    = firstXFace + (fz*numYEdges+fy)     *numXVertices+fx;
+          PetscInt edgeL   = firstZEdge + (fy                   *numXVertices+fx)*numZEdges + fz;
           PetscInt edgeR   = firstZEdge + (((fy+1)%numYVertices)*numXVertices+fx)*numZEdges + fz;
-          PetscInt edgeB   = firstYEdge + (  fz*                 numXVertices+fx)*numYEdges + fy;
+          PetscInt edgeB   = firstYEdge + (fz                   *numXVertices+fx)*numYEdges + fy;
           PetscInt edgeT   = firstYEdge + (((fz+1)%numZVertices)*numXVertices+fx)*numYEdges + fy;
           PetscInt ornt[4] = {0, 0, -2, -2};
           PetscInt cone[4];
@@ -697,9 +697,9 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
       for (fx = 0; fx < numXEdges; ++fx) {
         for (fy = 0; fy < numYVertices; ++fy) {
           PetscInt face    = firstYFace + (fz*numXEdges+fx)*numYVertices + fy;
-          PetscInt edgeL   = firstZEdge + (fy*numXVertices+  fx                 )*numZEdges + fz;
+          PetscInt edgeL   = firstZEdge + (fy*numXVertices+  fx)*numZEdges + fz;
           PetscInt edgeR   = firstZEdge + (fy*numXVertices+((fx+1)%numXVertices))*numZEdges + fz;
-          PetscInt edgeB   = firstXEdge + (  fz                 *numYVertices+fy)*numXEdges + fx;
+          PetscInt edgeB   = firstXEdge + (fz                   *numYVertices+fy)*numXEdges + fx;
           PetscInt edgeT   = firstXEdge + (((fz+1)%numZVertices)*numYVertices+fy)*numXEdges + fx;
           PetscInt ornt[4] = {0, 0, -2, -2};
           PetscInt cone[4];
@@ -728,9 +728,9 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
       for (fx = 0; fx < numXEdges; ++fx) {
         for (fz = 0; fz < numZVertices; fz++) {
           PetscInt face    = firstZFace + (fy*numXEdges+fx)*numZVertices + fz;
-          PetscInt edgeL   = firstYEdge + (fz*numXVertices+  fx                 )*numYEdges + fy;
+          PetscInt edgeL   = firstYEdge + (fz*numXVertices+  fx)*numYEdges + fy;
           PetscInt edgeR   = firstYEdge + (fz*numXVertices+((fx+1)%numXVertices))*numYEdges + fy;
-          PetscInt edgeB   = firstXEdge + (fz*numYVertices+  fy                 )*numXEdges + fx;
+          PetscInt edgeB   = firstXEdge + (fz*numYVertices+  fy)*numXEdges + fx;
           PetscInt edgeT   = firstXEdge + (fz*numYVertices+((fy+1)%numYVertices))*numXEdges + fx;
           PetscInt ornt[4] = {0, 0, -2, -2};
           PetscInt cone[4];
@@ -764,7 +764,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
       for (vx = 0; vx < numXVertices; vx++) {
         for (ez = 0; ez < numZEdges; ez++) {
           const PetscInt edge    = firstZEdge  + (vy*numXVertices+vx)*numZEdges + ez;
-          const PetscInt vertexB = firstVertex + (  ez                 *numYVertices+vy)*numXVertices + vx;
+          const PetscInt vertexB = firstVertex + (ez                   *numYVertices+vy)*numXVertices + vx;
           const PetscInt vertexT = firstVertex + (((ez+1)%numZVertices)*numYVertices+vy)*numXVertices + vx;
           PetscInt       cone[2];
 

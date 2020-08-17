@@ -87,7 +87,7 @@ PetscErrorCode MatUpdateKernel_LMVM(Mat B, Vec S, Vec Y)
 
   PetscFunctionBegin;
   if (lmvm->k == lmvm->m-1) {
-    /* We hit the memory limit, so shift all the vectors back one spot 
+    /* We hit the memory limit, so shift all the vectors back one spot
        and shift the oldest to the front to receive the latest update. */
     Stmp = lmvm->S[0];
     Ytmp = lmvm->Y[0];
@@ -180,7 +180,7 @@ static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
     if (!allocatedM) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Target matrix must be allocated first");
     MatCheckSameSize(B, 1, M, 2);
   }
-  
+
   mctx = (Mat_LMVM*)M->data;
   if (bctx->user_pc) {
     ierr = MatLMVMSetJ0PC(M, bctx->J0pc);CHKERRQ(ierr);
@@ -259,7 +259,7 @@ static PetscErrorCode MatGetVecs_LMVM(Mat B, Vec *L, Vec *R)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   if (!lmvm->allocated) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   ierr = VecDuplicate(lmvm->Xprev, L);CHKERRQ(ierr);
@@ -321,7 +321,7 @@ PetscErrorCode MatSetUp_LMVM(Mat B)
   PetscInt          m, n, M, N;
   PetscMPIInt       size;
   MPI_Comm          comm = PetscObjectComm((PetscObject)B);
-  
+
   PetscFunctionBegin;
   ierr = MatGetSize(B, &M, &N);CHKERRQ(ierr);
   if (M == 0 && N == 0) SETERRQ(comm, PETSC_ERR_ORDER, "MatSetSizes() must be called before MatSetUp()");
@@ -377,20 +377,20 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   PetscFunctionBegin;
   ierr = PetscNewLog(B, &lmvm);CHKERRQ(ierr);
   B->data = (void*)lmvm;
-  
+
   lmvm->m_old = 0;
   lmvm->m = 5;
   lmvm->k = -1;
   lmvm->nupdates = 0;
   lmvm->nrejects = 0;
   lmvm->nresets = 0;
-  
+
   lmvm->ksp_max_it = 20;
   lmvm->ksp_rtol = 0.0;
   lmvm->ksp_atol = 0.0;
-  
+
   lmvm->shift = 0.0;
-  
+
   lmvm->eps = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
   lmvm->allocated = PETSC_FALSE;
   lmvm->prev_set = PETSC_FALSE;
@@ -398,7 +398,7 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   lmvm->user_pc = PETSC_FALSE;
   lmvm->user_ksp = PETSC_FALSE;
   lmvm->square = PETSC_FALSE;
-  
+
   B->ops->destroy = MatDestroy_LMVM;
   B->ops->setfromoptions = MatSetFromOptions_LMVM;
   B->ops->view = MatView_LMVM;
@@ -409,11 +409,11 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   B->ops->mult = MatMult_LMVM;
   B->ops->multadd = MatMultAdd_LMVM;
   B->ops->copy = MatCopy_LMVM;
-  
+
   lmvm->ops->update = MatUpdate_LMVM;
   lmvm->ops->allocate = MatAllocate_LMVM;
   lmvm->ops->reset = MatReset_LMVM;
-  
+
   ierr = KSPCreate(PetscObjectComm((PetscObject)B), &lmvm->J0ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)lmvm->J0ksp, (PetscObject)B, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(lmvm->J0ksp, "mat_lmvm_");CHKERRQ(ierr);

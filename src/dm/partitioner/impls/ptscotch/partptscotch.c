@@ -27,7 +27,7 @@ typedef struct {
 
 #if defined(PETSC_HAVE_PTSCOTCH)
 
-#define CHKERRPTSCOTCH(ierr) do { if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error calling PT-Scotch library"); } while(0)
+#define CHKERRPTSCOTCH(ierr) do { if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error calling PT-Scotch library"); } while (0)
 
 static int PTScotch_Strategy(PetscInt strategy)
 {

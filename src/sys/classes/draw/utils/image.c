@@ -148,7 +148,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveGIF(const char filename[],unsigned
   ColorMapObject *GifCMap = NULL;
   GifFileType    *GifFile = NULL;
 # define         SETERRGIF(msg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,msg", GIF file: %s",filename)
-# define         CHKERRGIF(msg) do {if (Error != GIF_OK) SETERRGIF(msg);} while(0)
+# define         CHKERRGIF(msg) do {if (Error != GIF_OK) SETERRGIF(msg);} while (0)
 
   PetscFunctionBegin;
   PetscValidCharPointer(filename,1);

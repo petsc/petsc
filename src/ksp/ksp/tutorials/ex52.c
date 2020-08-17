@@ -12,7 +12,7 @@ Input parameters include:\n\
 int main(int argc,char **args)
 {
   Vec            x,b,u;    /* approx solution, RHS, exact solution */
-  Mat            A,F;        
+  Mat            A,F;
   KSP            ksp;      /* linear solver context */
   PC             pc;
   PetscRandom    rctx;     /* random number generator context */
@@ -318,7 +318,7 @@ int main(int argc,char **args)
     ierr = PCFactorSetMatSolverType(pc,MATSOLVERPETSC);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
- 
+
     /* Test MatGetDiagonal() */
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
@@ -338,7 +338,7 @@ int main(int argc,char **args)
     PetscReal cntl,rinfo12,rinfo13;
     icntl = 3;
     ierr = MatMumpsGetCntl(F,icntl,&cntl);CHKERRQ(ierr);
-  
+
     /* compute determinant */
     if (!rank) {
       ierr = MatMumpsGetInfog(F,34,&infog34);CHKERRQ(ierr);
@@ -446,7 +446,7 @@ int main(int argc,char **args)
    test:
       suffix: strumpack
       requires: strumpack
-      args: -use_strumpack_lu 
+      args: -use_strumpack_lu
       output_file: output/ex52_3.out
 
    test:

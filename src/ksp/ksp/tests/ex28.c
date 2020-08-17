@@ -113,7 +113,7 @@ int main(int argc,char **args)
     ierr = PCRedundantGetKSP(pc,&innerksp);CHKERRQ(ierr);
     ierr = KSPGetPC(innerksp,&innerpc);CHKERRQ(ierr);
     ierr = PCGetOperators(innerpc,NULL,&A_redundant);CHKERRQ(ierr);
-    ierr = PetscObjectGetComm((PetscObject)A_redundant,&subcomm);CHKERRQ(ierr); 
+    ierr = PetscObjectGetComm((PetscObject)A_redundant,&subcomm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
     if (subsize==1 && !rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"A_redundant:\n");CHKERRQ(ierr);
@@ -122,7 +122,7 @@ int main(int argc,char **args)
   } else {
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
-  
+
   /*  Solve linear system */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
