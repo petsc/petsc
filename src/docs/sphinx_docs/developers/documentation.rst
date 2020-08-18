@@ -75,19 +75,20 @@ Building the Sphinx docs locally
 Sphinx Documentation Guidelines
 -------------------------------
 
-* Use the ``includeliteral`` directive to directly include pieces of source code, as in
+* Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code, as in
   the following example. Note that an "absolute" path has been used, which means
   relative to the root for the Sphinx docs (where ``conf.py`` is found).
 
   .. code-block:: rst
 
       .. literalinclude:: /../../../src/sys/error/err.c
-         :language: c
          :start-at: PetscErrorCode PetscError(
          :end-at: PetscFunctionReturn(0)
          :append: }
 
-* We use the `sphinxcontrib-biblatex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
+  For robustness to changes in the source files, Use `:start-at:` and related options when possible, noting that you can also use (positive) values of `:lines:` relative to this. For languages other than C, use the `:language:` option to appropriately highlight.
+
+* We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
   This currently generates a "duplicate label" warning when the same reference is used in two different documents.
   The recommended `workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#section-key-prefixing>`__ could be used,
