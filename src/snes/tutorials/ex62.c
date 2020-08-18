@@ -344,6 +344,7 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
 
   ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, 1, &id, user);CHKERRQ(ierr);
 
+  /* Make constant values available to pointwise functions */
   {
     Parameter  *param;
     PetscScalar constants[1];
