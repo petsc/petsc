@@ -261,7 +261,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   sol  = options->sol;
-  ierr = PetscOptionsEList("-sol", "The MMS solution", "ex64.c", SolTypes, (sizeof(SolTypes)/sizeof(SolTypes[0]))-3, SolTypes[options->sol], &sol, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-sol", "The MMS solution", "ex62.c", SolTypes, (sizeof(SolTypes)/sizeof(SolTypes[0]))-3, SolTypes[options->sol], &sol, NULL);CHKERRQ(ierr);
   options->sol = (SolType) sol;
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -344,6 +344,7 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
 
   ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, 1, &id, user);CHKERRQ(ierr);
 
+  /* Make constant values available to pointwise functions */
   {
     Parameter  *param;
     PetscScalar constants[1];

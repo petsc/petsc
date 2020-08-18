@@ -96,6 +96,8 @@ describe slow flow of an incompressible fluid with velocity :math:`u`, pressure 
     :2D: `SNES example 62 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex62.c.html>`_
     :3D: `SNES example 62 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex62.c.html>`_
 
+    See :doc:`physics/guide_to_stokes` for more.
+
 Euler
 =====
 
