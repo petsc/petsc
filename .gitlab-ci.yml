@@ -36,9 +36,6 @@ variables:
 #     Set with CI/CD Pipelines - Run Pipeline
       - web
       - merge_requests
-    variables:
-      - $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
-      - $CI_MERGE_REQUEST_EVENT_TYPE == null
   dependencies: []
 
 check-ci-settings:
@@ -113,7 +110,7 @@ c89-mlib-static-py2:
 
 checksource:
   extends: .test
-  stage: stage-1
+  stage: .pre
   tags:
     - stage1
   script:
@@ -121,9 +118,27 @@ checksource:
     - make checkbadSource SHELL=bash
     - make -f gmakefile check_output SHELL=bash
 
+pause-for-approval:
+  extends: .test
+  stage: .pre
+  tags:
+    - stage1
+  only:
+    refs:
+      - merge_requests
+    variables:
+      - $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
+      - $CI_MERGE_REQUEST_EVENT_TYPE == "detached"
+  script:
+    - echo "pause-for-approval has no script to run"
+  variables:
+    GIT_STRATEGY: none
+  when: manual
+  allow_failure: false
+
 check-py-vermin:
   extends: .test
-  stage: stage-1
+  stage: .pre
   tags:
     - stage1
   script:
