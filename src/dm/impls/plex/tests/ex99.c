@@ -90,5 +90,6 @@ finish:
     args: -fmt {{msh22 msh40 msh41}} -bin {{0 1}}
     args: -dm_view ::ascii_info_detail
     args: -dm_plex_check_all
+    args: -dm_plex_gmsh_highorder false
 
 TEST*/
