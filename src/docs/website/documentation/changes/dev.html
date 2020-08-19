@@ -110,8 +110,10 @@
       <h4>General:</h4>
         <ul>
           <li>Add PETSC_MPI_THREAD_REQUIRED to control the requested threading level for MPI_Init</li>
-          <li>Remove option -cuda_initialize and change PetscCUDAInitialize(comm) to PetscCUDAInitialize(comm,dev)</li>
-          <li>Option -cuda_set_device can now accept NONE, PETSC_DEFAULT, PETSC_DECIDE in additon to non-negative integers</li>
+          <li>Remove option -cuda_initialize, whose functionality is succeeded by -cuda_set_device xxx</li>
+          <li>Enhance -cuda_set_device, which can now accept NONE, PETSC_DEFAULT, PETSC_DECIDE in additon to non-negative integers</li>
+          <li>Change PetscCUDAInitialize(comm) to PetscCUDAInitialize(comm,dev)</li>
+          <li>Add -hip_set_device, -hip_view, -hip_synchronize, PetscHIPInitialize(comm,dev). The usage is similar to their CUDA counterpart</li>
           <li>Add PetscOptionsInsertStringYAML() and "-options_string_yaml" for YAML-formatted options on the command line</li>
           <li>Add PETSC_OPTIONS_YAML environment variable for setting options in YAML format</li>
           <li>Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS Fortran linker enables catching floating point divide by zero the trapping is disabled for LAPACK routines that generate divide by zero, for example, the reference implementation of ieeeck().</li>

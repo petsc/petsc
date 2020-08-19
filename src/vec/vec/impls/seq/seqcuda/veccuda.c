@@ -261,7 +261,7 @@ PetscErrorCode VecCreate_SeqCUDA(Vec V)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!PetscCUDAInitialized) {ierr = PetscCUDAInitializeLazily();CHKERRQ(ierr);}
+  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(V->map);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(V);CHKERRQ(ierr);
   ierr = VecCreate_SeqCUDA_Private(V,((Vec_CUDA*)V->spptr)->GPUarray_allocated);CHKERRQ(ierr);
@@ -310,7 +310,7 @@ PetscErrorCode  VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,c
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  if (!PetscCUDAInitialized) {ierr = PetscCUDAInitializeLazily();CHKERRQ(ierr);}
+  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
   ierr = VecCreate(comm,V);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,n,n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*V,bs);CHKERRQ(ierr);

@@ -13,6 +13,7 @@
 #define petscobjectdereference_    PETSCOBJECTDEREFERENCE
 #define petscobjectgetreference_   PETSCOBJECTGETREFERENCE
 #define petsccudainitialize_       PETSCCUDAINITIALIZE
+#define petschipinitialize_        PETSCHIPINITIALIZE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscobjectcompose_        petscobjectcompose
 #define petscobjectquery_          petscobjectquery
@@ -20,6 +21,7 @@
 #define petscobjectdereference_    petscobjectdereference
 #define petscobjectgetreference_   petscobjectgetreference
 #define petsccudainitialize_       petsccudainitialize
+#define petschipinitialize_        petschipinitialize
 #endif
 
 /* ---------------------------------------------------------------------*/
@@ -28,6 +30,13 @@
 PETSC_EXTERN void petsccudainitialize_(MPI_Fint *comm, PetscInt *dev,PetscErrorCode *ierr)
 {
   *ierr = PetscCUDAInitialize(MPI_Comm_f2c(*(comm)),*dev);
+}
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN void petschipinitialize_(MPI_Fint *comm, PetscInt *dev,PetscErrorCode *ierr)
+{
+  *ierr = PetscHIPInitialize(MPI_Comm_f2c(*(comm)),*dev);
 }
 #endif
 

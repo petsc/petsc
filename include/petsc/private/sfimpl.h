@@ -6,7 +6,12 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_CUDA)
-#include <petsc/private/cudavecimpl.h>
+  #include <cuda_runtime.h>
+  #include <petsc/private/cudavecimpl.h>
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  #include <hip/hip_runtime.h>
 #endif
 
 PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;
@@ -132,24 +137,42 @@ PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype,MPI_Dataty
 #define MPIU_Ialltoall(a,b,c,d,e,f,g,req)      MPI_Alltoall(a,b,c,d,e,f,g)
 #endif
 
-PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType *mtype)
+PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType *type)
 {
   PetscFunctionBegin;
-  PetscValidPointer(mtype,2);
-  *mtype = PETSC_MEMTYPE_HOST;
+  PetscValidPointer(type,2);
+  *type = PETSC_MEMTYPE_HOST;
 #if defined(PETSC_HAVE_CUDA)
   if (PetscCUDAInitialized && data) {
     cudaError_t                  cerr;
     struct cudaPointerAttributes attr;
-    enum cudaMemoryType          cumtype;
+    enum cudaMemoryType          mtype;
     cerr = cudaPointerGetAttributes(&attr,data); /* Do not check error since before CUDA 11.0, passing a host pointer returns cudaErrorInvalidValue */
     cudaGetLastError(); /* Reset the last error */
     #if (CUDART_VERSION < 10000)
-      cumtype = attr.memoryType;
+      mtype = attr.memoryType;
     #else
-      cumtype = attr.type;
+      mtype = attr.type;
     #endif
-    if (cerr == cudaSuccess && cumtype == cudaMemoryTypeDevice) *mtype = PETSC_MEMTYPE_DEVICE;
+    if (cerr == cudaSuccess && mtype == cudaMemoryTypeDevice) {
+      *type = PETSC_MEMTYPE_DEVICE;
+      PetscFunctionReturn(0);
+    }
+  }
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  if (PetscHIPInitialized && data) {
+    hipError_t                   cerr;
+    struct hipPointerAttribute_t attr;
+    enum hipMemoryType           mtype;
+    cerr = hipPointerGetAttributes(&attr,data);
+    hipGetLastError(); /* Reset the last error */
+    mtype = attr.memoryType;
+    if (cerr == hipSuccess && mtype == hipMemoryTypeDevice) {
+      *type = PETSC_MEMTYPE_DEVICE;
+      PetscFunctionReturn(0);
+    }
   }
 #endif
   PetscFunctionReturn(0);
@@ -161,6 +184,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMallocWithMemType(PetscMemType mtype,siz
   if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_CUDA)
   else if (mtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaMalloc(ptr,size);CHKERRCUDA(err);}
+#elif defined(PETSC_HAVE_HIP)
+  else if (mtype == PETSC_MEMTYPE_DEVICE) {hipError_t  err = hipMalloc(ptr,size);CHKERRQ(err==hipSuccess?0:PETSC_ERR_LIB);}
 #endif
   else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
@@ -172,6 +197,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mty
   if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_CUDA)
   else if (mtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaFree(ptr);CHKERRCUDA(err);}
+#elif defined(PETSC_HAVE_HIP)
+  else if (mtype == PETSC_MEMTYPE_DEVICE) {hipError_t  err = hipFree(ptr);CHKERRQ(err==hipSuccess?0:PETSC_ERR_LIB);}
 #endif
   else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
   PetscFunctionReturn(0);

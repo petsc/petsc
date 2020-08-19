@@ -7,10 +7,14 @@
 #error "Wrong mpi.h included! require mpi.h from MPIUNI"
 #endif
 
+#include <petsc/private/petscimpl.h> /* for PetscCUPMInitialized */
+
 #if defined(PETSC_HAVE_CUDA)
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <petsc/private/petscimpl.h> /* for PetscCUDAInitialized */
+  #include <cuda_runtime.h>
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  #include <hip/hip_runtime.h>
 #endif
 
 #define MPI_SUCCESS 0
@@ -63,33 +67,13 @@ int MPIUNI_Memcpy(void *dst,const void *src,int n)
   if (src == MPI_IN_PLACE || src == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
   if (!n) return MPI_SUCCESS;
 
-#if defined(PETSC_HAVE_CUDA) /* CUDA-aware MPIUNI */
-  if (PetscCUDAInitialized) {
-    int                          dstType=0,srcType=0; /* 0: host memory; 1: device memory */
-    cudaError_t                  dstCerr,srcCerr,cerr;
-    struct cudaPointerAttributes dstAttr,srcAttr;
-    enum cudaMemoryType          dstMtype,srcMtype;
-    enum cudaMemcpyKind          kinds[2][2] = {{cudaMemcpyHostToHost,cudaMemcpyHostToDevice},{cudaMemcpyDeviceToHost,cudaMemcpyDeviceToDevice}};
-
-    dstCerr = cudaPointerGetAttributes(&dstAttr,dst); /* Do not check error since before CUDA 11.0, passing a host pointers returns cudaErrorInvalidValue */
-    cudaGetLastError(); /* Get and then clear the last error */
-    srcCerr = cudaPointerGetAttributes(&srcAttr,src);
-    cudaGetLastError();
-    #if (CUDART_VERSION < 10000)
-      dstMtype = dstAttr.memoryType;
-      srcMtype = srcAttr.memoryType;
-    #else
-      dstMtype = dstAttr.type;
-      srcMtype = srcAttr.type;
-    #endif
-    if (dstCerr == cudaSuccess && dstMtype == cudaMemoryTypeDevice) dstType = 1;
-    if (srcCerr == cudaSuccess && srcMtype == cudaMemoryTypeDevice) srcType = 1;
-    cerr = cudaMemcpy(dst,src,n,kinds[srcType][dstType]); /* Use synchronous copy per MPI semantics */
-    if (cerr != cudaSuccess) return MPI_FAILURE;
-  } else
+  /* GPU-aware MPIUNI. Use synchronous copy per MPI semantics */
+#if defined(PETSC_HAVE_CUDA)
+  if (PetscCUDAInitialized) {cudaError_t cerr = cudaMemcpy(dst,src,n,cudaMemcpyDefault);if (cerr != cudaSuccess) return MPI_FAILURE;} else
+#elif defined(PETSC_HAVE_HIP)
+  if (PetscHIPInitialized)  {hipError_t  cerr = hipMemcpy(dst,src,n,hipMemcpyDefault);  if (cerr != hipSuccess)  return MPI_FAILURE;} else
 #endif
   {memcpy(dst,src,n);}
-
   return MPI_SUCCESS;
 }
 

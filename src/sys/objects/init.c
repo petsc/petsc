@@ -20,31 +20,39 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
+
 #if defined(PETSC_HAVE_CUDA)
-#include <cuda_runtime.h>
-#include <petsccublas.h>
-#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
-#include "mpi-ext.h" /* Needed for OpenMPI CUDA-aware check */
+  #include <cuda_runtime.h>
+  #include <petsccublas.h>
 #endif
+
+#if defined(PETSC_HAVE_HIP)
+  #include <hip/hip_runtime.h>
+#endif
+
+#if defined(PETSC_HAVE_DEVICE)
+  #if defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+    #include "mpi-ext.h" /* Needed for OpenMPI CUDA-aware check */
+  #endif
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
 #endif
 
+
 /* ------------------------Nasty global variables -------------------------------*/
 /*
      Indicates if PETSc started up MPI, or it was
    already started before PETSc was initialized.
 */
-PetscBool   PetscBeganMPI         = PETSC_FALSE;
+PetscBool   PetscBeganMPI                 = PETSC_FALSE;
 PetscBool   PetscErrorHandlingInitialized = PETSC_FALSE;
-PetscBool   PetscInitializeCalled = PETSC_FALSE;
-PetscBool   PetscFinalizeCalled   = PETSC_FALSE;
-PetscBool   PetscCUDAInitialized  = PETSC_FALSE;
+PetscBool   PetscInitializeCalled         = PETSC_FALSE;
+PetscBool   PetscFinalizeCalled           = PETSC_FALSE;
 
-PetscMPIInt PetscGlobalRank       = -1;
-PetscMPIInt PetscGlobalSize       = -1;
+PetscMPIInt PetscGlobalRank               = -1;
+PetscMPIInt PetscGlobalSize               = -1;
 
 PetscBool   use_gpu_aware_mpi     = PETSC_TRUE;
 
@@ -100,7 +108,6 @@ PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDe
   This is needed to turn on/off GPU synchronization
 */
 PetscBool PetscViennaCLSynchronize = PETSC_FALSE;
-PetscBool PetscCUDASynchronize = PETSC_FALSE;
 
 /* ------------------------------------------------------------------------------*/
 /*
@@ -199,139 +206,6 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
   if (ierr) PETSCABORT(*comm,*flag); /* hopeless so get out */
 }
 
-#if defined(PETSC_HAVE_CUDA)
-/* CUDA validation after it is lazily initialized */
-static PetscErrorCode PetscCUDAValidate(void)
-{
-  PetscBool             mpi_gpu_awareness;
-
-  PetscFunctionBegin;
-  if (use_gpu_aware_mpi) {
-#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT
-    /* Trust OpenMPI's compile time cuda query interface */
-    mpi_gpu_awareness = PETSC_TRUE;
-#else
-    /* For other MPI implementations without cuda query API, we do a GPU MPI call to see if it segfaults.
-      Note that Spectrum MPI sets OMPI_MAJOR_VERSION and is CUDA-aware, but does not have MPIX_CUDA_AWARE_SUPPORT.
-    */
-    mpi_gpu_awareness = PetscCheckMpiGpuAwareness();
-#endif
-    if (!mpi_gpu_awareness) {
-      (*PetscErrorPrintf)("PETSc is configured with GPU support, but your MPI is not GPU-aware. For better performance, please use a GPU-aware MPI.\n");
-      (*PetscErrorPrintf)("If you do not care, add option -use_gpu_aware_mpi 0. To not see the message again, add the option to your .petscrc, OR add it to the env var PETSC_OPTIONS.\n");
-      (*PetscErrorPrintf)("If you do care, for IBM Spectrum MPI on OLCF Summit, you may need jsrun --smpiargs=-gpu.\n");
-      (*PetscErrorPrintf)("For OpenMPI, you need to configure it --with-cuda (https://www.open-mpi.org/faq/?category=buildcuda)\n");
-      (*PetscErrorPrintf)("For MVAPICH2-GDR, you need to set MV2_USE_CUDA=1 (http://mvapich.cse.ohio-state.edu/userguide/gdr/)\n");
-      (*PetscErrorPrintf)("For Cray-MPICH, you need to set MPICH_RDMA_ENABLED_CUDA=1 (https://www.olcf.ornl.gov/tutorials/gpudirect-mpich-enabled-cuda/)\n");
-      PETSCABORT(PETSC_COMM_SELF,PETSC_ERR_LIB);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-/* Initialize the CUDA device lazily just before creating the first CUDA object. */
-static PetscBool PetscNotUseGpu = PETSC_FALSE; /* Assert the code will not use GPUs */
-PetscErrorCode PetscCUDAInitializeLazily(void)
-{
-  PetscErrorCode        ierr;
-  cudaError_t           cerr;
-  int                   devId,devCount;
-  PetscMPIInt           rank;
-  static PetscBool      cudaValdidateChecked = PETSC_FALSE;
-
-  PetscFunctionBegin;
-  if (PetscNotUseGpu) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You asserted the code won't use GPUs with -cuda_set_device none, but it is trying to create a cuda object. Remove this option or see manpage of PetscCUDAInitialize().");
-  if (!PetscCUDAInitialized) {
-    cerr = cudaGetDeviceCount(&devCount);CHKERRCUDA(cerr);
-    if (devCount > 1) {
-      cerr = cudaSetDeviceFlags(cudaDeviceMapHost);
-      cudaGetLastError(); /* Reset the last error */
-      if (cerr == cudaSuccess) { /* It implies cuda runtime has not been initialized? */
-        ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-        devId = rank % devCount;
-        cerr  = cudaSetDevice(devId);CHKERRCUDA(cerr);
-      } else if (cerr == cudaErrorSetOnActiveProcess) {
-        /* It implies user has initialized cuda runtime outside of petsc. We do nothing to respect the device choice. */
-      }
-    }
-    PetscCUDAInitialized = PETSC_TRUE;
-  }
-  if (!cudaValdidateChecked) {
-    ierr = PetscCUDAValidate();CHKERRQ(ierr);
-    cudaValdidateChecked = PETSC_TRUE;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@C
-     PetscCUDAInitialize - Initializes the CUDA device (eagerly in PetscInitialize()) and cuBLAS/cuSPARSE on the device
-
-     Logically collective
-
-  Input Parameter:
-  comm   - the MPI communicator that will utilize the CUDA devices
-  device - the device assigned to current MPI process. Special values like PETSC_DECIDE/DEFAULT have special meanings (see details below)
-
-  Options Database:
-+  -cuda_set_device <device> - the device assigned to current MPI rank. <device> is case-insensitive and can be:
-       NONE (or none, or -3) : the code will not use GPUs, otherwise it will error out;
-       PETSC_DEFAULT(or DEFAULT, or -2) : do not explicitly set device, i.e., use whatever device already set by user (probably before PetscInitialize()). Init cuda runtime etc;
-       PETSC_DECIDE (or DECIDE, or -1) : assign MPI ranks in comm to available devices in round-robin, and init cuda runtime etc on the selected device;
-       >= 0 integer  : assign the device with this id to current MPI process. Error out if <device> is invalid. Init cuda runtime etc on this device;
-     With PETSC_{DECIDE, DEFAULT}, if there are actually no GPUs, the code can still run, but it will error out when trying to create cuda objects.
-.  -cuda_view                - view information about the CUDA devices.
-.  -cuda_synchronize         - wait at the end of asynchronize CUDA calls so that their time gets credited to the current event; default with -log_view.
-.  -log_view                 - logging, however if alone or combined with `-cuda_set_device DEFAULT | DECIDE | >=0 int`, will int cuda; if combined with `-cuda_set_device none`, won't init cuda.
--  -use_gpu_aware_mpi        - assume the MPI is GPU-aware when communicating data on GPUs.
-
-  Level: beginner
-
-  Notes:
-   Initializing cuBLAS takes about 1/2 second therefore it is done by default in PetscCUDAInitialize() before logging begins.
-
-@*/
-PetscErrorCode PetscCUDAInitialize(MPI_Comm comm,PetscInt device)
-{
-  PetscErrorCode        ierr;
-  cudaError_t           cerr;
-  int                   devId,devCount=0;
-  const PetscInt        PETSC_NONE=-3; /* Unlike PETSC_DECIDE, we don't have a macro PETSC_NONE in petsc headers */
-  PetscMPIInt           rank;
-
-  PetscFunctionBegin;
-  if (!PetscCUDAInitialized) {
-    cerr = cudaGetDeviceCount(&devCount);
-    cudaGetLastError(); /* Reset the last error */
-    if (cerr != cudaSuccess) devCount = 0;
-    if (device >= 0) { /* User wants to use this specific device */
-      cerr = cudaSetDeviceFlags(cudaDeviceMapHost); /* Allow it to fail since user might have already initialized the device. */
-      cudaGetLastError(); /* Reset the last error */
-      cerr = cudaSetDevice((int)device);CHKERRCUDA(cerr);
-    } else if (device == PETSC_DECIDE) { /* Assign MPI ranks to available devices in round-robin */
-      if (devCount > 0) { /* Allow no-GPU as long as user does not use GPUs */
-        /* Set the device flags so that it can map host memory */
-        cerr  = cudaSetDeviceFlags(cudaDeviceMapHost);CHKERRCUDA(cerr);
-        ierr  = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-        devId = rank % devCount;
-        cerr  = cudaSetDevice(devId);CHKERRCUDA(cerr);
-      }
-    } else if (device == PETSC_DEFAULT) {
-      /* Do nothing, i.e., use whatever device set by user before PetscInitialize() */
-    } else if (device == PETSC_NONE) {
-      PetscNotUseGpu = PETSC_TRUE; /* Assert the code won't use GPUs even there are */
-    } else SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Wrong device (%D) passed to -cuda_set_device <dev>. Must be NONE(-3),PETSC_DEFAULT(-2),PETSC_DECIDE(-1) or a non-negative integer.",device);
-
-    if (devCount > 0 && device != PETSC_NONE) {
-      /* Do costly CUDA handles initialization here to not to distort petsc logging later */
-      ierr = PetscCUBLASInitializeHandle();CHKERRQ(ierr);
-      ierr = PetscCUSOLVERDnInitializeHandle();CHKERRQ(ierr);
-      PetscCUDAInitialized = PETSC_TRUE;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-#endif
-
 /*@C
    PetscEnd - Calls PetscFinalize() and then ends the program. This is useful if one
      wishes a clean exit somewhere deep in the program.
@@ -399,11 +273,76 @@ void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
   return;
 }
 
+/* CUPM stands for 'CUDA Programming Model', which is implemented in either CUDA or HIP.
+   Use the following macros to define CUDA/HIP initialization related vars/routines.
+ */
+#if defined(PETSC_HAVE_CUDA)
+  typedef cudaError_t                             cupmError_t;
+  typedef struct cudaDeviceProp                   cupmDeviceProp;
+  #define cupmGetDeviceCount(x)                   cudaGetDeviceCount(x)
+  #define cupmGetDevice(x)                        cudaGetDevice(x)
+  #define cupmSetDevice(x)                        cudaSetDevice(x)
+  #define cupmSetDeviceFlags(x)                   cudaSetDeviceFlags(x)
+  #define cupmGetDeviceProperties(x,y)            cudaGetDeviceProperties(x,y)
+  #define cupmGetLastError()                      cudaGetLastError()
+  #define cupmDeviceMapHost                       cudaDeviceMapHost
+  #define cupmSuccess                             cudaSuccess
+  #define cupmErrorSetOnActiveProcess             cudaErrorSetOnActiveProcess
+  #define CHKERRCUPM(x)                           CHKERRCUDA(x)
+  #define PetscCUPMBLASInitializeHandle()         PetscCUBLASInitializeHandle()
+  #define PetscCUPMSOLVERDnInitializeHandle()     PetscCUSOLVERDnInitializeHandle()
+  #define PetscCUPMInitialize                     PetscCUDAInitialize
+  #define PetscCUPMInitialized                    PetscCUDAInitialized
+  #define PetscCUPMInitializeCheck                PetscCUDAInitializeCheck
+  #define PetscCUPMInitializeAndView              PetscCUDAInitializeAndView
+  #define PetscCUPMSynchronize                    PetscCUDASynchronize
+  #define PetscNotUseCUPM                         PetscNotUseCUDA
+  #define cupmOptionsStr                          "CUDA options"
+  #define cupmSetDeviceStr                        "-cuda_set_device"
+  #define cupmViewStr                             "-cuda_view"
+  #define cupmSynchronizeStr                      "-cuda_synchronize"
+  #define PetscCUPMInitializeStr                  "PetscCUDAInitialize"
+  #define PetscOptionsCheckCUPM                   PetscOptionsCheckCUDA
+  #define PetscMPICUPMAwarenessCheck              PetscMPICUDAAwarenessCheck
+  #include "cupminit.inc"
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  typedef hipError_t                              cupmError_t;
+  typedef hipDeviceProp_t                         cupmDeviceProp;
+  #define cupmGetDeviceCount(x)                   hipGetDeviceCount(x)
+  #define cupmGetDevice(x)                        hipGetDevice(x)
+  #define cupmSetDevice(x)                        hipSetDevice(x)
+  #define cupmSetDeviceFlags(x)                   hipSetDeviceFlags(x)
+  #define cupmGetDeviceProperties(x,y)            hipGetDeviceProperties(x,y)
+  #define cupmGetLastError()                      hipGetLastError()
+  #define cupmDeviceMapHost                       hipDeviceMapHost
+  #define cupmSuccess                             hipSuccess
+  #define cupmErrorSetOnActiveProcess             hipErrorSetOnActiveProcess
+  #define CHKERRCUPM(x)                           CHKERRQ((x)==hipSuccess? 0:PETSC_ERR_LIB)
+  #define PetscCUPMBLASInitializeHandle()         0
+  #define PetscCUPMSOLVERDnInitializeHandle()     0
+  #define PetscCUPMInitialize                     PetscHIPInitialize
+  #define PetscCUPMInitialized                    PetscHIPInitialized
+  #define PetscCUPMInitializeCheck                PetscHIPInitializeCheck
+  #define PetscCUPMInitializeAndView              PetscHIPInitializeAndView
+  #define PetscCUPMSynchronize                    PetscHIPSynchronize
+  #define PetscNotUseCUPM                         PetscNotUseHIP
+  #define cupmOptionsStr                          "HIP options"
+  #define cupmSetDeviceStr                        "-hip_set_device"
+  #define cupmViewStr                             "-hip_view"
+  #define cupmSynchronizeStr                      "-hip_synchronize"
+  #define PetscCUPMInitializeStr                  "PetscHIPInitialize"
+  #define PetscOptionsCheckCUPM                   PetscOptionsCheckHIP
+  #define PetscMPICUPMAwarenessCheck              PetscMPIHIPAwarenessCheck
+  #include "cupminit.inc"
+#endif
+
 PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
 {
   char              string[64];
   MPI_Comm          comm = PETSC_COMM_WORLD;
-  PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag,hasHelp;
+  PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag,hasHelp,logView;
   PetscErrorCode    ierr;
   PetscReal         si;
   PetscInt          intensity;
@@ -710,72 +649,20 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
 #endif
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_gpu_aware_mpi",&use_gpu_aware_mpi,NULL);CHKERRQ(ierr);
+  /*
+    If collecting logging information, by default, wait for device to complete its operations
+    before returning to the CPU in order to get accurate timings of each event
+  */
+  ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&logView);CHKERRQ(ierr);
+  if (!logView) {ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&logView);CHKERRQ(ierr);}
 
 #if defined(PETSC_HAVE_CUDA)
-  {
-    cudaError_t           cerr;
-    PetscBool             initCUDA = PETSC_FALSE,cudaView = PETSC_FALSE,logView = PETSC_FALSE,devNone = PETSC_FALSE;
-    struct cudaDeviceProp prop;
-    PetscInt              device;
-    char                  devStr[16]={0};
-    int                   devId,devCount;
-    /*
-      If collecting logging information, by default, wait for GPU to complete its operations
-      before returning to the CPU in order to get accurate timings of each event
-    */
-    ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&logView);CHKERRQ(ierr);
-    if (!logView) {
-      ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&logView);CHKERRQ(ierr);
-    }
-    PetscCUDASynchronize = logView;
+  ierr = PetscOptionsCheckCUDA(logView);CHKERRQ(ierr);
+#endif
 
-    ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"CUDA options","Sys");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-cuda_set_device","Set which MPI ranks to use which CUDA devices","PetscCUDAInitialize",devStr,devStr,sizeof(devStr),&initCUDA);CHKERRQ(ierr);
-    ierr = PetscStrcasecmp("none",devStr,&devNone);CHKERRQ(ierr);
-    if (devNone) device = -3; /* -3 is the locally used PETSC_NONE in PetscCUDAInitialize() */
-    else {ierr = PetscOptionsInt("-cuda_set_device","Set which MPI ranks to use which CUDA devices","PetscCUDAInitialize",device,&device,&initCUDA);CHKERRQ(ierr);}
-    ierr = PetscOptionsBool("-cuda_synchronize","Wait for the GPU to complete operations before returning to the CPU (on by default with -log_summary or -log_view)",NULL,PetscCUDASynchronize,&PetscCUDASynchronize,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsDeprecated("-cuda_show_devices","-cuda_view","3.12",NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-cuda_view","Display CUDA device information and assignments",NULL,&cudaView);CHKERRQ(ierr);
-    /* Get use_gpu_aware_mpi ASAP since it might be accessed even before lazy CUDA initialization */
-    ierr = PetscOptionsBool("-use_gpu_aware_mpi","Use GPU-aware MPI",NULL,use_gpu_aware_mpi,&use_gpu_aware_mpi,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-    if (initCUDA) {ierr = PetscCUDAInitialize(PETSC_COMM_WORLD,device);CHKERRQ(ierr);}
-    else if (logView) { /* With -log_view, we want to do costly cuda runtime initialization early so that not to distort the timing later. */
-      devCount = 0;
-      cerr = cudaGetDeviceCount(&devCount);
-      cudaGetLastError(); /* Reset the last error */
-      if (cerr == cudaSuccess && devCount >= 1) { /* There are GPU(s) */
-        devId = 0;
-        if (devCount > 1) { /* Decide which GPU to init when there are multiple GPUs */
-          cerr = cudaSetDeviceFlags(cudaDeviceMapHost);
-          cudaGetLastError(); /* Reset the last error */
-          if (cerr == cudaSuccess) { /* It implies cuda runtime has not been initialized */
-            ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-            devId = rank % devCount;
-            cerr  = cudaSetDevice(devId);CHKERRCUDA(cerr);
-          } else if (cerr == cudaErrorSetOnActiveProcess) {
-            /* It means user initialized cuda runtime outside of petsc. We respect the device choice. */
-            cerr = cudaGetDevice(&devId);CHKERRCUDA(cerr);
-          }
-        }
-        ierr = PetscCUDAInitialize(PETSC_COMM_WORLD,(PetscInt)devId);CHKERRQ(ierr);
-      }
-    }
-
-    if (cudaView) {
-      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-      cerr = cudaGetDeviceCount(&devCount);CHKERRCUDA(cerr);
-      for (devId = 0; devId < devCount; ++devId) {
-        cerr = cudaGetDeviceProperties(&prop,devId);CHKERRCUDA(cerr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %d: %s\n", devId, prop.name);CHKERRQ(ierr);
-      }
-      cerr = cudaGetDevice(&devId);CHKERRCUDA(cerr);
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Using CUDA device %d.\n",rank,devId);CHKERRQ(ierr);
-      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-    }
-  }
+#if defined(PETSC_HAVE_HIP)
+  ierr = PetscOptionsCheckHIP(logView);CHKERRQ(ierr);
 #endif
 
   /*
