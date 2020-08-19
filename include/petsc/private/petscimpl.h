@@ -936,6 +936,12 @@ PETSC_EXTERN PetscBool     use_gpu_aware_mpi;
 PETSC_EXTERN int64_t Petsc_adios_group;
 #endif
 
+#if defined(PETSC_HAVE_KOKKOS)
+PETSC_INTERN PetscBool      PetscBeganKokkos;
+PETSC_INTERN PetscErrorCode PetscKokkosInitialize_Private(void); /* C bindings for the Kokkos C++ routines */
+PETSC_INTERN PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool*);
+PETSC_INTERN PetscErrorCode PetscKokkosFinalize_Private(void);
+#endif
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscBool      PetscCUDAInitialized;  /* Has petsc initialized CUDA? One can use this flag to guard CUDA calls. */

@@ -54,7 +54,11 @@ PetscBool   PetscFinalizeCalled           = PETSC_FALSE;
 PetscMPIInt PetscGlobalRank               = -1;
 PetscMPIInt PetscGlobalSize               = -1;
 
-PetscBool   use_gpu_aware_mpi     = PETSC_TRUE;
+#if defined(PETSC_HAVE_KOKKOS)
+PetscBool   PetscBeganKokkos              = PETSC_FALSE;
+#endif
+
+PetscBool   use_gpu_aware_mpi             = PETSC_TRUE;
 
 #if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)

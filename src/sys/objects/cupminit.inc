@@ -59,6 +59,10 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
       }
     }
     PetscCUPMInitialized = PETSC_TRUE;
+#if defined(PETSC_HAVE_KOKKOS)
+    ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
+    PetscBeganKokkos = PETSC_TRUE;
+#endif
   }
 
   if (!cupmValdidateChecked) {
@@ -204,8 +208,25 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
   PetscBool      initDevice = PETSC_FALSE,devView = PETSC_FALSE,devNone = PETSC_FALSE;
   PetscInt       device;
   char           devStr[32]={0};
+#if defined(PETSC_HAVE_KOKKOS)
+  PetscBool      set,kinited,devDefault;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_KOKKOS)
+  ierr = PetscKokkosIsInitialized_Private(&kinited);CHKERRQ(ierr);
+  if (kinited) { /* Check if Petsc device options conform with Kokkos' device */
+    ierr = PetscOptionsGetString(NULL,NULL,cupmSetDeviceStr,devStr,sizeof(devStr),&set);CHKERRQ(ierr);
+    if (set) { /* If users have initialized Kokkos themselves, but also had e.g., -cuda_set_device XXX, for simplicity, make sure XXX is DEFAULT */
+      ierr = PetscStrcasecmp("DEFAULT",devStr,&devDefault);CHKERRQ(ierr);
+      if (!devDefault) {ierr = PetscStrcasecmp("PETSC_DEFAULT",devStr,&devDefault);CHKERRQ(ierr);}
+      if (!devDefault)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Kokkos was initialized before PetscInitialize(), but you have "cupmSetDeviceStr" %s. Remove the option or use "cupmSetDeviceStr" default.",devStr);
+    } else { /* If users did not have e.g., '-cuda_set_device XXX', insert one here so that petsc can continue its own device initialization */
+      ierr = PetscOptionsSetValue(NULL,cupmSetDeviceStr,"DEFAULT");CHKERRQ(ierr);
+    }
+  }
+#endif
+
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,cupmOptionsStr,"Sys");CHKERRQ(ierr);
   ierr = PetscOptionsString(cupmSetDeviceStr,NULL,PetscCUPMInitializeStr,devStr,devStr,sizeof(devStr),&initDevice);CHKERRQ(ierr);
   ierr = PetscStrcasecmp("none",devStr,&devNone);CHKERRQ(ierr);
@@ -215,5 +236,12 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
   ierr = PetscOptionsName(cupmViewStr,"Display device information and assignments",NULL,&devView);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscCUPMInitializeAndView(initDevice,device,logView,devView);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_KOKKOS)
+  if (PetscCUDAInitialized && !kinited) {
+    ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
+    PetscBeganKokkos = PETSC_TRUE;
+  }
+#endif
   PetscFunctionReturn(0);
 }
