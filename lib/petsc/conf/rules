@@ -274,7 +274,7 @@ getautoconfargs:
 	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 
 .F.o .F90.o .F95.o:
-	${PETSC_FCOMPILE} -o $@ $<
+	${PETSC_FCOMPILE_SINGLE} `pwd`/$<
 
 .f.o .f90.o .f95.o:
 	${FC} -c ${FC_FLAGS} ${FFLAGS} -o $@ $<
