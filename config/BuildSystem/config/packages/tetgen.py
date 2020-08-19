@@ -171,7 +171,6 @@ class Configure(config.package.Package):
     g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
     g.write('CFLAGS         = '+cflags+'\n')
     g.write('PREDCXXFLAGS   = '+predcflags+'\n')
-    self.setCompilers.popLanguage()
     g.close()
 
     # I'd rather have this than to completely fork TetGen
@@ -196,4 +195,5 @@ class Configure(config.package.Package):
       output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=60, log = self.log)
       self.postInstall(output1+err1+output2+err2,'make.inc')
 
+    self.setCompilers.popLanguage()
     return self.installDir
