@@ -12,7 +12,8 @@ const char *const        PCPARMSGlobalTypes[] = {"RAS","SCHUR","BJ","PCPARMSGlob
 const char *const        PCPARMSLocalTypes[]  = {"ILU0","ILUK","ILUT","ARMS","PCPARMSLocalType","PC_PARMS_",NULL};
 const char *const        PCPatchConstructTypes[] = {"star", "vanka", "pardecomp", "user", "python", "PCPatchSetConstructType", "PC_PATCH_", NULL};
 
-const char *const        PCFailedReasons[]    = {"FACTOR_NOERROR","FACTOR_STRUCT_ZEROPIVOT","FACTOR_NUMERIC_ZEROPIVOT","FACTOR_OUTMEMORY","FACTOR_OTHER","SUBPC_ERROR",NULL};
+const char *const        PCFailedReasons_Shifted[] = {"SETUP_ERROR","FACTOR_NOERROR","FACTOR_STRUCT_ZEROPIVOT","FACTOR_NUMERIC_ZEROPIVOT","FACTOR_OUTMEMORY","FACTOR_OTHER","SUBPC_ERROR",NULL};
+const char *const *const PCFailedReasons       = PCFailedReasons_Shifted + 1;
 
 static PetscBool PCPackageInitialized = PETSC_FALSE;
 /*@C

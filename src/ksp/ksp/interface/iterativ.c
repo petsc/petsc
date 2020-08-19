@@ -770,13 +770,13 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
 
   if (PetscIsInfOrNanReal(rnorm)) {
     PCFailedReason pcreason;
-    PetscInt       sendbuf,pcreason_max;
-    ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
+    PetscInt       sendbuf,recvbuf;
+    ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);
     sendbuf = (PetscInt)pcreason;
-    ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-    if (pcreason_max) {
+    ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    if (recvbuf) {
       *reason = KSP_DIVERGED_PC_FAILED;
-      ierr    = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
+      ierr = PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf);CHKERRQ(ierr);
       ierr    = PetscInfo(ksp,"Linear solver pcsetup fails, declaring divergence \n");CHKERRQ(ierr);
     } else {
       *reason = KSP_DIVERGED_NANORINF;
@@ -1092,7 +1092,8 @@ $  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned
 
    Level: intermediate
 
-.seealso: KSPSetConvergenceTest(), KSPConvergedDefault(), KSPSetTolerances(), KSPConvergedReason
+.seealso: KSPSetConvergenceTest(), KSPConvergedDefault(), KSPSetTolerances(), KSPConvergedReason,
+          KSPConvergedReasonView()
 @*/
 PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 {

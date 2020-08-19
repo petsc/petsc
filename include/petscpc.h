@@ -34,14 +34,18 @@ PETSC_EXTERN const char *const PCMGGalerkinTypes[];
 PETSC_EXTERN const char *const PCExoticTypes[];
 PETSC_EXTERN const char *const PCPatchConstructTypes[];
 PETSC_EXTERN const char *const PCDeflationTypes[];
-PETSC_EXTERN const char *const PCFailedReasons[];
+PETSC_EXTERN const char *const *const PCFailedReasons;
 
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
 PETSC_EXTERN PetscErrorCode PCSetType(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCGetType(PC,PCType*);
 PETSC_EXTERN PetscErrorCode PCSetUp(PC);
+
+PETSC_EXTERN PetscErrorCode PCSetFailedReason(PC,PCFailedReason);
 PETSC_EXTERN PetscErrorCode PCGetFailedReason(PC,PCFailedReason*);
 PETSC_DEPRECATED_FUNCTION("Use PCGetFailedReason() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode PCGetSetUpFailedReason(PC pc,PCFailedReason *reason) {return PCGetFailedReason(pc,reason);}
+PETSC_EXTERN PetscErrorCode PCGetFailedReasonRank(PC,PCFailedReason*);
+
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
 PETSC_EXTERN PetscErrorCode PCApply(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCMatApply(PC,Mat,Mat);

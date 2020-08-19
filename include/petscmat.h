@@ -620,6 +620,7 @@ PETSC_EXTERN PetscErrorCode MatIsLinear(Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatGetColumnNorms(Mat,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatZeroEntries(Mat);
+PETSC_EXTERN PetscErrorCode MatSetInf(Mat);
 PETSC_EXTERN PetscErrorCode MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsIS(Mat,IS,PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsStencil(Mat,PetscInt,const MatStencil [],PetscScalar,Vec,Vec);

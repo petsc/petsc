@@ -1,0 +1,103 @@
+      Linear solve converged due to CONVERGED_RTOL iterations 12
+      Linear solve converged due to CONVERGED_RTOL iterations 12
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+    Linear solve converged due to CONVERGED_RTOL iterations 8
+    Linear solve converged due to CONVERGED_RTOL iterations 8
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+  Linear solve converged due to CONVERGED_RTOL iterations 8
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+SNES Object: 2 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=18
+  total number of function evaluations=819
+  norm schedule ALWAYS
+  total number of grid sequence refinements=2
+  SNESLineSearch Object: 2 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 2 MPI processes
+    type: fgmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    right preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: 2 MPI processes
+    type: mg
+      type is FULL, levels=3 cycles=v
+        Not using Galerkin computed coarse grid matrices
+    Coarse grid solver -- level -------------------------------
+      KSP Object: (mg_coarse_) 2 MPI processes
+        type: gmres
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
+        maximum iterations=6, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object: (mg_coarse_) 2 MPI processes
+        type: none
+        linear system matrix = precond matrix:
+        Mat Object: 2 MPI processes
+          type: mffd
+          rows=21, cols=21
+            Matrix-free approximation:
+              err=1.49012e-08 (relative error in function evaluation)
+              Using wp compute h routine
+                  Does not compute normU
+    Down solver (pre-smoother) on level 1 -------------------------------
+      KSP Object: (mg_levels_1_) 2 MPI processes
+        type: gmres
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
+        maximum iterations=3, nonzero initial guess
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_1_) 2 MPI processes
+        type: none
+        linear system matrix = precond matrix:
+        Mat Object: 2 MPI processes
+          type: mffd
+          rows=39, cols=39
+            Matrix-free approximation:
+              err=1.49012e-08 (relative error in function evaluation)
+              Using wp compute h routine
+                  Does not compute normU
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 2 -------------------------------
+      KSP Object: (mg_levels_2_) 2 MPI processes
+        type: gmres
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
+        maximum iterations=3, nonzero initial guess
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_2_) 2 MPI processes
+        type: none
+        linear system matrix = precond matrix:
+        Mat Object: 2 MPI processes
+          type: mffd
+          rows=75, cols=75
+            Matrix-free approximation:
+              err=1.49012e-08 (relative error in function evaluation)
+              Using wp compute h routine
+                  Does not compute normU
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    linear system matrix = precond matrix:
+    Mat Object: 2 MPI processes
+      type: mffd
+      rows=75, cols=75
+        Matrix-free approximation:
+          err=1.49012e-08 (relative error in function evaluation)
+          Using wp compute h routine
+              Does not compute normU

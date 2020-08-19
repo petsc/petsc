@@ -175,7 +175,10 @@
           <li>PCSetUp_LU,ILU,Cholesky,ICC() no longer compute an ordering if it is not to be used by the factorization (optimization)
         </ul>
       <h4>KSP:</h4>
-        <ul>
+      <ul>
+        <li>Change KSPReasonView() to  KSPConvergenceReasonView()</li>
+        <li>Add viewer format argument to KSPReasonView() to  KSPConvergenceReasonView()</li>
+        <li>Change KSPReasonViewFromOptions() to KSPConvergedReasonViewFromOptions()</li>
           <li>Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence when the maximum number of iterations is reached</li>
           <li>Fix many KSP implementations to actually perform the number of iterations requested</li>
           <li>Add KSPMatSolve() for solving iteratively (currently only with KSPHPDDM and KSPPREONLY) systems with multiple right-hand sides, and KSP{Set|Get}MatSolveBlockSize() to set a block size limit</li>

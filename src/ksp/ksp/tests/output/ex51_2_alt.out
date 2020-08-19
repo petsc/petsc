@@ -1,6 +1,6 @@
 First matrix
-KSPSetUp() failed due to DIVERGED_PC_FAILED
-PC reason is FACTOR_NUMERIC_ZEROPIVOT
+Linear solve did not converge due to DIVERGED_PC_FAILED iterations 0
+               PC failed due to FACTOR_NUMERIC_ZEROPIVOT 
 Second matrix
 Success!
-PC reason is FACTOR_NOERROR
+PC failed reason is FACTOR_NOERROR

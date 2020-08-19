@@ -371,11 +371,12 @@ M*/
     else {\
       PetscErrorCode ierr;\
       PCFailedReason pcreason;\
-      PetscInt       sendbuf,pcreason_max; \
-      ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
+      PetscInt       sendbuf,recvbuf; \
+      ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
-      if (pcreason_max) {\
+      ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      if (recvbuf) {                                                           \
+        ierr = PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf);CHKERRQ(ierr); \
         ksp->reason = KSP_DIVERGED_PC_FAILED;\
         ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
       } else {\
@@ -410,14 +411,16 @@ M*/
     else {\
       PetscErrorCode ierr;\
       PCFailedReason pcreason;\
-      PetscInt       sendbuf,pcreason_max; \
-      ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
+      PetscInt       sendbuf,recvbuf; \
+      ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
-      if (pcreason_max) {\
-        ksp->reason = KSP_DIVERGED_PC_FAILED;\
+      ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      if (recvbuf) {                                                           \
+        ierr = PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf);CHKERRQ(ierr); \
+        ksp->reason = KSP_DIVERGED_PC_FAILED;                         \
         ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
       } else {\
+        ierr = PCSetFailedReason(ksp->pc,PC_NOERROR);CHKERRQ(ierr); \
         ksp->reason = KSP_DIVERGED_NANORINF;\
       }\
       PetscFunctionReturn(0);\

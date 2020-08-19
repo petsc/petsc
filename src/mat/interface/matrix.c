@@ -10444,3 +10444,13 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat,PetscBool *cong)
   } else *cong = mat->congruentlayouts ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode MatSetInf(Mat A)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!A->ops->setinf) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for this operation for this matrix type");
+  ierr = (*A->ops->setinf)(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
