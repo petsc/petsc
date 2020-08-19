@@ -204,6 +204,12 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
       self.logPrint('configure hash file: '+hashfile+' matches; no need to run configure.')
       print('Your configure options and state has not changed; no need to run configure')
       print('However you can force a configure run using the option: --force')
+
+      from config.packages.make import getMakeUserPath
+      print('xxx=========================================================================xxx')
+      print(' Build PETSc libraries with:')
+      print('   %s PETSC_DIR=%s PETSC_ARCH=%s all' % (getMakeUserPath(self.arch), self.petscdir.dir, self.arch))
+      print('xxx=========================================================================xxx')
       sys.exit()
     self.logPrint('configure hash file: '+hashfile+' does not match\n'+a+'\n---\n'+hash+'\n need to run configure')
     self.makeDependency(hash,hashfile,hashfilepackages)

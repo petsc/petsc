@@ -381,13 +381,14 @@ for file in files:
 
 
   def outputInstallDone(self):
+    from config.packages.make import getMakeUserPath
     print('''\
 ====================================
 Install complete.
 Now to check if the libraries are working do (in current directory):
-make PETSC_DIR=%s PETSC_ARCH="" check
+%s PETSC_DIR=%s PETSC_ARCH="" check
 ====================================\
-''' % (self.installDir))
+''' % (getMakeUserPath(self.arch), self.installDir))
     return
 
   def outputDestDirDone(self):

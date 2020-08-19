@@ -1,6 +1,15 @@
 import config.package
 import os
 
+def getMakeUserPath(arch):
+  import re
+  file = os.path.join(arch, 'lib', 'petsc', 'conf', 'petscvariables')
+  try:
+    with open(file, 'r') as f:
+      return next(line for line in f if re.match(r'\AMAKE_USER\s*=',line)).split('=')[1].strip()
+  except:
+    return 'make'
+
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
@@ -67,37 +76,65 @@ class Configure(config.package.GNUPackage):
     return self.installDir
 
   def generateGMakeGuesses(self):
+    if self.argDB['download-make']:
+      self.log.write('Checking downloaded make\n')
+      yield os.path.join(self.installDir,'bin','make')
+      raise RuntimeError('Error! --download-make does not work on this system')
+
     if 'with-make-exec' in self.argDB:
       self.log.write('Looking for user provided Make executable '+self.argDB['with-make-exec']+'\n')
       yield self.argDB['with-make-exec']
-      raise RuntimeError('Error! User provided with-make-exec is not GNU make : '+self.argDB['with-make-exec'])
+      raise RuntimeError('Error! User provided with-make-exec is not GNU make: '+self.argDB['with-make-exec'])
 
-    if os.path.exists('/usr/bin/cygcheck.exe'):
-      if os.path.exists('/usr/bin/make'):
-        yield '/usr/bin/make'
-      else:
-        raise RuntimeError('''\
-*** Incomplete cygwin install detected . /usr/bin/make is missing. **************
-*** Please rerun cygwin-setup and select module "make" for install.**************''')
+    if 'with-make-dir' in self.argDB:
+      d = self.argDB['with-make-dir']
+      self.log.write('Looking in user provided directory '+d+'\n')
+      yield os.path.join(d,'bin','gmake')
+      yield os.path.join(d,'bin','make')
+      raise RuntimeError('Error! User provided --with-make-dir=%s but %s/bin does not contain GNU make' % (d, d))
+
     yield 'gmake'
     yield 'make'
-    raise RuntimeError('Could not locate the GNU make utility (version greater than or equal to '+self.minversion+') on your system, specify with --with-make-exec=gmake or try --download-make')
-    return
 
   def configureMake(self):
     '''Check Guesses for GNU make'''
+
+    # Check internal make (found in PATH or specified with --download-make, --with-make-exec, --with-make-dir)
+    # Store in self.make
     for gmake in self.generateGMakeGuesses():
-      self.haveGNUMake, self.haveGNUMake4 = self.checkGNUMake(gmake)
+      self.foundversion, self.haveGNUMake, self.haveGNUMake4 = self.checkGNUMake(gmake)
       if self.haveGNUMake:
         self.getExecutable(gmake,getFullPath = 1,resultName = 'make')
-        self.found = 1
-        return
-    raise RuntimeError('Could not locate the GNU make utility (version greater than or equal to '+self.minversion+') on your system, specify with --with-make-exec=gmake or try --download-make')
+        break
+
+    if self.haveGNUMake:
+      # Set user-facing make (self.make_user) to 'make' if found in PATH, otherwise use the internal make (self.make)
+      found = self.getExecutable('make',getFullPath = 0,resultName = 'make_user')
+      if not found:
+        self.getExecutable(self.make,getFullPath = 0,resultName = 'make_user')
+
+      if not self.haveGNUMake4:
+        self.logPrintBox('***** WARNING: You have a version of GNU make older than 4.0. It will work,\n\
+but may not support all the parallel testing options. You can install the \n\
+latest GNU make with your package manager, such as brew or macports, or use\n\
+the --download-make option to get the latest GNU make *****')
+      return
+
+    if os.path.exists('/usr/bin/cygcheck.exe'):
+      raise RuntimeError('''\
+Incomplete cygwin install detected: the make utility is missing.
+Please rerun cygwin-setup and select module "make" for install, or try --download-make''')
+    else:
+      raise RuntimeError('''\
+Could not locate the GNU make utility (version greater than or equal to %s) on your system.
+If it is already installed, specify --with-make-exec=<executable> or --with-make-dir=<directory>, or add it to PATH.
+Otherwise try --download-make or install "make" with a package manager.''' % self.minversion)
 
   def checkGNUMake(self,make):
     '''Check for GNU make'''
-    haveGNUMake  = 0
-    haveGNUMake4 = 0
+    foundVersion = None
+    haveGNUMake  = False
+    haveGNUMake4 = False
     try:
       import re
       # accept gnumake version >= self.minversion only [as older version break with gmakefile]
@@ -106,17 +143,12 @@ class Configure(config.package.GNUPackage):
       if not status and gver:
         major = int(gver.group(1))
         minor = int(gver.group(2))
-        if (major,minor) >= self.versionToTuple(self.minversion): haveGNUMake = 1
-        if (major > 3): haveGNUMake4 = 1
-        else:
-          self.logPrintBox('***** WARNING: You have an older version of Gnu make, it will work,\n\
-but may not support all the parallel testing options. You can install the \n\
-latest Gnu make with your package manager, such as brew or macports, or use\n\
-the --download-make option to get the latest Gnu make *****')
-        self.foundversion = ".".join([str(major),str(minor)])
+        if (major,minor) >= self.versionToTuple(self.minversion): haveGNUMake = True
+        if (major > 3): haveGNUMake4 = True
+        foundVersion = ".".join([str(major),str(minor)])
     except RuntimeError as e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
-    return haveGNUMake, haveGNUMake4
+    return foundVersion, haveGNUMake, haveGNUMake4
 
   def setupGNUMake(self):
     '''Setup other GNU make stuff'''
@@ -212,12 +244,8 @@ the --download-make option to get the latest Gnu make *****')
     return
 
   def configure(self):
-    if (self.argDB['download-make']):
-      config.package.GNUPackage.configure(self)
-      self.getExecutable('make', path=os.path.join(self.installDir,'bin'), getFullPath = 1)
-      self.haveGNUMake, self.haveGNUMake4 = self.checkGNUMake(self.make)
-    else:
-      self.executeTest(self.configureMake)
+    config.package.GNUPackage.configure(self)
+    self.executeTest(self.configureMake)
     self.executeTest(self.setupGNUMake)
     self.executeTest(self.configureMakeNP)
     return

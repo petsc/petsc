@@ -14,11 +14,11 @@ class Configure(config.base.Configure):
     return
 
   def __str2__(self):
-    desc = []
+    desc = ['  Using GNU make: ' + self.make.make]
     if not self.installed:
       desc.append('xxx=========================================================================xxx')
       desc.append(' Configure stage complete. Now build PETSc libraries with:')
-      desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
+      desc.append('   %s PETSC_DIR=%s PETSC_ARCH=%s all' % (self.make.make_user, self.petscdir.dir, self.arch.arch))
       desc.append('xxx=========================================================================xxx')
     else:
       desc.append('xxx=========================================================================xxx')
@@ -865,13 +865,17 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
   def configureInstall(self):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
-      self.addMakeRule('print_mesg_after_build','',['-@echo "Now to install the libraries do:"',\
-                                              '-@echo "'+self.installdir.installSudo+'make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
-                                              '-@echo "========================================="'])
+      self.addMakeRule('print_mesg_after_build','',
+       ['-@echo "========================================="',
+        '-@echo "Now to install the libraries do:"',
+        '-@echo "%s${MAKE_USER} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"' % self.installdir.installSudo,
+        '-@echo "========================================="'])
     else:
-      self.addMakeRule('print_mesg_after_build','',['-@echo "Now to check if the libraries are working do:"',\
-                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} check"',\
-                                              '-@echo "========================================="'])
+      self.addMakeRule('print_mesg_after_build','',
+       ['-@echo "========================================="',
+        '-@echo "Now to check if the libraries are working do:"',
+        '-@echo "${MAKE_USER} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} check"',
+        '-@echo "========================================="'])
       return
 
   def configureGCOV(self):
