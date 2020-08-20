@@ -6390,6 +6390,54 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMProjectCoordinates - Project coordinates to a different space
+
+  Input Parameters:
++ dm      - The DM object
+- disc    - The new coordinate discretization
+
+  Level: intermediate
+
+.seealso: DMGetCoordinateField()
+@*/
+PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
+{
+  PetscObject    discOld;
+  PetscClassId   classid;
+  DM             cdmOld,cdmNew;
+  Vec            coordsOld,coordsNew;
+  Mat            matInterp;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(disc,PETSCFE_CLASSID,2);
+
+  ierr = DMGetCoordinateDM(dm, &cdmOld);CHKERRQ(ierr);
+  /* Check current discretization is compatible */
+  ierr = DMGetField(cdmOld, 0, NULL, &discOld);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(discOld, &classid);CHKERRQ(ierr);
+  if (classid != PETSCFE_CLASSID) SETERRQ(PetscObjectComm(discOld), PETSC_ERR_SUP, "Discretization type not supported");
+  /* Make a fresh clone of the coordinate DM */
+  ierr = DMClone(cdmOld, &cdmNew);CHKERRQ(ierr);
+  ierr = DMSetField(cdmNew, 0, NULL, (PetscObject) disc);CHKERRQ(ierr);
+  ierr = DMCreateDS(cdmNew);CHKERRQ(ierr);
+  /* Project the coordinate vector from old to new space  */
+  ierr = DMGetCoordinates(dm, &coordsOld);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(cdmNew, &coordsNew);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(cdmOld, cdmNew, &matInterp, NULL);CHKERRQ(ierr);
+  ierr = MatInterpolate(matInterp, coordsOld, coordsNew);CHKERRQ(ierr);
+  ierr = MatDestroy(&matInterp);CHKERRQ(ierr);
+  /* Set new coordinate structures */
+  ierr = DMSetCoordinateField(dm, NULL);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(dm, cdmNew);CHKERRQ(ierr);
+  ierr = DMSetCoordinates(dm, coordsNew);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordsNew);CHKERRQ(ierr);
+  ierr = DMDestroy(&cdmNew);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMGetPeriodicity - Get the description of mesh periodicity
 
