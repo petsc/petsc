@@ -171,7 +171,7 @@ typedef struct {
   PetscLogDouble mallocIncrease;/* How much the maximum malloced space has increased in this event */
   PetscLogDouble mallocSpace;   /* How much the space was malloced and kept during this event */
   PetscLogDouble mallocIncreaseEvent;  /* Maximum of the high water mark with in event minus memory available at the end of the event */
-  #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  #if defined(PETSC_HAVE_DEVICE)
   PetscLogDouble CpuToGpuCount; /* The total number of CPU to GPU copies */
   PetscLogDouble GpuToCpuCount; /* The total number of GPU to CPU copies */
   PetscLogDouble CpuToGpuSize;  /* The total size of CPU to GPU copies */
@@ -273,7 +273,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
 /* Global GPU counters */
 PETSC_EXTERN PetscLogDouble petsc_ctog_ct;
 PETSC_EXTERN PetscLogDouble petsc_gtoc_ct;
@@ -701,7 +701,7 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...);
 #define PetscLogEventBegin(e,o1,o2,o3,o4)  0
 #define PetscLogEventEnd(e,o1,o2,o3,o4)    0
 
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
 #define PetscLogCpuToGpu(a)                0
 #define PetscLogGpuToCpu(a)                0
 #define PetscLogGpuFlops(a)                0
