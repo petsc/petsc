@@ -1,0 +1,24 @@
+PetscFE Object: Q1 1 MPI processes
+  type: basic
+  Basic Finite Element in 3 dimensions with 3 components
+  PetscSpace Object: Q1 1 MPI processes
+    type: poly
+    Space in 3 variables with 3 components, size 24
+    Tensor polynomial space of degree 1
+  PetscDualSpace Object: Q1 1 MPI processes
+    type: lagrange
+    Dual space with 3 components, size 24
+    Continuous tensor Lagrange dual space
+    Quadrature of order 3 on 8 points (dim 3)
+PetscFE Object: Q1 1 MPI processes
+  type: basic
+  Basic Finite Element in 3 dimensions with 3 components
+  PetscSpace Object: Q1 1 MPI processes
+    type: poly
+    Space in 3 variables with 3 components, size 24
+    Tensor polynomial space of degree 1
+  PetscDualSpace Object: Q1 1 MPI processes
+    type: lagrange
+    Dual space with 3 components, size 24
+    Continuous tensor Lagrange dual space
+    Quadrature of order 3 on 8 points (dim 3)
