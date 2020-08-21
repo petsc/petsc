@@ -17,7 +17,7 @@ Input parameters include:\n\
    and computes the sensitivities of the final solution w.r.t. initial conditions and parameter \mu with an explicit Runge-Kutta method and its discrete tangent linear model.
 
    Notes:
-   This code demonstrates the TSForward interface to a system of ordinary differential equations (ODEs) in the form of u_t = F(u,t).
+   This code demonstrates the TSForward interface to a system of ordinary differential equations (ODEs) in the form of u_t = f(u,t).
 
    (1) can be turned into a system of first order ODEs
    [ y' ] = [          z          ]
@@ -32,18 +32,18 @@ Input parameters include:\n\
 
    The user provides the right-hand-side function
 
-   [ F(u,t) ] = [ u_2                       ]
+   [ f(u,t) ] = [ u_2                       ]
                 [ \mu (1 - u_1^2) u_2 - u_1 ]
 
    the Jacobian function
 
-   dF   [       0           ;         1        ]
+   df   [       0           ;         1        ]
    -- = [                                      ]
    du   [ -2 \mu u_1*u_2 - 1;  \mu (1 - u_1^2) ]
 
    and the JacobainP (the Jacobian w.r.t. parameter) function
 
-   dF      [  0;   0;     0             ]
+   df      [  0;   0;     0             ]
    ---   = [                            ]
    d\mu    [  0;   0;  (1 - u_1^2) u_2  ]
 
