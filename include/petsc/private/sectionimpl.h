@@ -17,7 +17,7 @@ PETSC_STATIC_INLINE PetscHash_t PetscSectionClosurePermHash(PetscSectionClosureP
 PETSC_STATIC_INLINE int PetscSectionClosurePermEqual(PetscSectionClosurePermKey k1, PetscSectionClosurePermKey k2) {
   return k1.depth == k2.depth && k1.size == k2.size;
 }
-static const PetscSectionClosurePermVal PetscSectionClosurePermVal_Empty = {NULL, NULL};
+static PetscSectionClosurePermVal PetscSectionClosurePermVal_Empty = {NULL, NULL};
 PETSC_HASH_MAP(ClPerm, PetscSectionClosurePermKey, PetscSectionClosurePermVal, PetscSectionClosurePermHash, PetscSectionClosurePermEqual, PetscSectionClosurePermVal_Empty)
 
 struct _p_PetscSection {
