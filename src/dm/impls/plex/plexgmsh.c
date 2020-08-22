@@ -2,101 +2,152 @@
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <petsc/private/hashmapi.h>
 
+#include <../src/dm/impls/plex/gmshlex.h>
+
+#define GMSH_LEXORDER_ITEM(T, p)                                   \
+static int *GmshLexOrder_##T##_##p(void)                           \
+{                                                                  \
+  static int Gmsh_LexOrder_##T##_##p[GmshNumNodes_##T(p)] = {-1};  \
+  int *lex = Gmsh_LexOrder_##T##_##p;                              \
+  if (lex[0] == -1) (void)GmshLexOrder_##T(p, lex, 0);             \
+  return lex;                                                      \
+}
+
+#define GMSH_LEXORDER_LIST(T) \
+GMSH_LEXORDER_ITEM(T,  1)     \
+GMSH_LEXORDER_ITEM(T,  2)     \
+GMSH_LEXORDER_ITEM(T,  3)     \
+GMSH_LEXORDER_ITEM(T,  4)     \
+GMSH_LEXORDER_ITEM(T,  5)     \
+GMSH_LEXORDER_ITEM(T,  6)     \
+GMSH_LEXORDER_ITEM(T,  7)     \
+GMSH_LEXORDER_ITEM(T,  8)     \
+GMSH_LEXORDER_ITEM(T,  9)     \
+GMSH_LEXORDER_ITEM(T, 10)
+
+GMSH_LEXORDER_ITEM(VTX, 0)
+GMSH_LEXORDER_LIST(SEG)
+GMSH_LEXORDER_LIST(TRI)
+GMSH_LEXORDER_LIST(QUA)
+GMSH_LEXORDER_LIST(TET)
+GMSH_LEXORDER_LIST(HEX)
+GMSH_LEXORDER_LIST(PRI)
+GMSH_LEXORDER_LIST(PYR)
+
+typedef enum {
+  GMSH_VTX = 0,
+  GMSH_SEG = 1,
+  GMSH_TRI = 2,
+  GMSH_QUA = 3,
+  GMSH_TET = 4,
+  GMSH_HEX = 5,
+  GMSH_PRI = 6,
+  GMSH_PYR = 7,
+  GMSH_NUM_POLYTOPES = 8
+} GmshPolytopeType;
+
 typedef struct {
-  int            cellType;
-  DMPolytopeType polytope;
-  int            dim;
-  int            numVerts;
-  int            order;
-  int            numNodes;
+  int   cellType;
+  int   polytope;
+  int   dim;
+  int   order;
+  int   numVerts;
+  int   numNodes;
+  int* (*lexorder)(void);
 } GmshCellInfo;
 
-#define DM_POLYTOPE_VERTEX  DM_POLYTOPE_POINT
-#define DM_POLYTOPE_PYRAMID DM_POLYTOPE_UNKNOWN
+#define GmshCellEntry(cellType, polytope, dim, order) \
+  {cellType, GMSH_##polytope, dim, order, \
+   GmshNumNodes_##polytope(1), \
+   GmshNumNodes_##polytope(order), \
+   GmshLexOrder_##polytope##_##order}
 
 static const GmshCellInfo GmshCellTable[] = {
-  { 15, DM_POLYTOPE_VERTEX,         0,  1,   0,    1},
+  GmshCellEntry(  15, VTX, 0,  0),
 
-  {  1, DM_POLYTOPE_SEGMENT,        1,  2,   1,    2},
-  {  8, DM_POLYTOPE_SEGMENT,        1,  2,   2,    3},
-  { 26, DM_POLYTOPE_SEGMENT,        1,  2,   3,    4},
-  { 27, DM_POLYTOPE_SEGMENT,        1,  2,   4,    5},
-  { 28, DM_POLYTOPE_SEGMENT,        1,  2,   5,    6},
-  { 62, DM_POLYTOPE_SEGMENT,        1,  2,   6,    7},
-  { 63, DM_POLYTOPE_SEGMENT,        1,  2,   7,    8},
-  { 64, DM_POLYTOPE_SEGMENT,        1,  2,   8,    9},
-  { 65, DM_POLYTOPE_SEGMENT,        1,  2,   9,   10},
-  { 66, DM_POLYTOPE_SEGMENT,        1,  2,  10,   11},
+  GmshCellEntry(   1, SEG, 1,  1),
+  GmshCellEntry(   8, SEG, 1,  2),
+  GmshCellEntry(  26, SEG, 1,  3),
+  GmshCellEntry(  27, SEG, 1,  4),
+  GmshCellEntry(  28, SEG, 1,  5),
+  GmshCellEntry(  62, SEG, 1,  6),
+  GmshCellEntry(  63, SEG, 1,  7),
+  GmshCellEntry(  64, SEG, 1,  8),
+  GmshCellEntry(  65, SEG, 1,  9),
+  GmshCellEntry(  66, SEG, 1, 10),
 
-  {  2, DM_POLYTOPE_TRIANGLE,       2,  3,   1,    3},
-  {  9, DM_POLYTOPE_TRIANGLE,       2,  3,   2,    6},
-  { 21, DM_POLYTOPE_TRIANGLE,       2,  3,   3,   10},
-  { 23, DM_POLYTOPE_TRIANGLE,       2,  3,   4,   15},
-  { 25, DM_POLYTOPE_TRIANGLE,       2,  3,   5,   21},
-  { 42, DM_POLYTOPE_TRIANGLE,       2,  3,   6,   28},
-  { 43, DM_POLYTOPE_TRIANGLE,       2,  3,   7,   36},
-  { 44, DM_POLYTOPE_TRIANGLE,       2,  3,   8,   45},
-  { 45, DM_POLYTOPE_TRIANGLE,       2,  3,   9,   55},
-  { 46, DM_POLYTOPE_TRIANGLE,       2,  3,  10,   66},
+  GmshCellEntry(   2, TRI, 2,  1),
+  GmshCellEntry(   9, TRI, 2,  2),
+  GmshCellEntry(  21, TRI, 2,  3),
+  GmshCellEntry(  23, TRI, 2,  4),
+  GmshCellEntry(  25, TRI, 2,  5),
+  GmshCellEntry(  42, TRI, 2,  6),
+  GmshCellEntry(  43, TRI, 2,  7),
+  GmshCellEntry(  44, TRI, 2,  8),
+  GmshCellEntry(  45, TRI, 2,  9),
+  GmshCellEntry(  46, TRI, 2, 10),
 
-  {  3, DM_POLYTOPE_QUADRILATERAL,  2,  4,   1,    4},
-  { 10, DM_POLYTOPE_QUADRILATERAL,  2,  4,   2,    9},
-  { 36, DM_POLYTOPE_QUADRILATERAL,  2,  4,   3,   16},
-  { 37, DM_POLYTOPE_QUADRILATERAL,  2,  4,   4,   25},
-  { 38, DM_POLYTOPE_QUADRILATERAL,  2,  4,   5,   36},
-  { 47, DM_POLYTOPE_QUADRILATERAL,  2,  4,   6,   49},
-  { 48, DM_POLYTOPE_QUADRILATERAL,  2,  4,   7,   64},
-  { 49, DM_POLYTOPE_QUADRILATERAL,  2,  4,   8,   81},
-  { 50, DM_POLYTOPE_QUADRILATERAL,  2,  4,   9,  100},
-  { 51, DM_POLYTOPE_QUADRILATERAL,  2,  4,  10,  121},
+  GmshCellEntry(   3, QUA, 2,  1),
+  GmshCellEntry(  10, QUA, 2,  2),
+  GmshCellEntry(  36, QUA, 2,  3),
+  GmshCellEntry(  37, QUA, 2,  4),
+  GmshCellEntry(  38, QUA, 2,  5),
+  GmshCellEntry(  47, QUA, 2,  6),
+  GmshCellEntry(  48, QUA, 2,  7),
+  GmshCellEntry(  49, QUA, 2,  8),
+  GmshCellEntry(  50, QUA, 2,  9),
+  GmshCellEntry(  51, QUA, 2, 10),
 
-  {  4, DM_POLYTOPE_TETRAHEDRON,    3,  4,   1,    4},
-  { 11, DM_POLYTOPE_TETRAHEDRON,    3,  4,   2,   10},
-  { 29, DM_POLYTOPE_TETRAHEDRON,    3,  4,   3,   20},
-  { 30, DM_POLYTOPE_TETRAHEDRON,    3,  4,   4,   35},
-  { 31, DM_POLYTOPE_TETRAHEDRON,    3,  4,   5,   56},
-  { 71, DM_POLYTOPE_TETRAHEDRON,    3,  4,   6,   84},
-  { 72, DM_POLYTOPE_TETRAHEDRON,    3,  4,   7,  120},
-  { 73, DM_POLYTOPE_TETRAHEDRON,    3,  4,   8,  165},
-  { 74, DM_POLYTOPE_TETRAHEDRON,    3,  4,   9,  220},
-  { 75, DM_POLYTOPE_TETRAHEDRON,    3,  4,  10,  286},
+  GmshCellEntry(   4, TET, 3,  1),
+  GmshCellEntry(  11, TET, 3,  2),
+  GmshCellEntry(  29, TET, 3,  3),
+  GmshCellEntry(  30, TET, 3,  4),
+  GmshCellEntry(  31, TET, 3,  5),
+  GmshCellEntry(  71, TET, 3,  6),
+  GmshCellEntry(  72, TET, 3,  7),
+  GmshCellEntry(  73, TET, 3,  8),
+  GmshCellEntry(  74, TET, 3,  9),
+  GmshCellEntry(  75, TET, 3, 10),
 
-  {  5, DM_POLYTOPE_HEXAHEDRON,     3,  8,   1,    8},
-  { 12, DM_POLYTOPE_HEXAHEDRON,     3,  8,   2,   27},
-  { 92, DM_POLYTOPE_HEXAHEDRON,     3,  8,   3,   64},
-  { 93, DM_POLYTOPE_HEXAHEDRON,     3,  8,   4,  125},
-  { 94, DM_POLYTOPE_HEXAHEDRON,     3,  8,   5,  216},
-  { 95, DM_POLYTOPE_HEXAHEDRON,     3,  8,   6,  343},
-  { 96, DM_POLYTOPE_HEXAHEDRON,     3,  8,   7,  512},
-  { 97, DM_POLYTOPE_HEXAHEDRON,     3,  8,   8,  729},
-  { 98, DM_POLYTOPE_HEXAHEDRON,     3,  8,   9, 1000},
+  GmshCellEntry(   5, HEX, 3,  1),
+  GmshCellEntry(  12, HEX, 3,  2),
+  GmshCellEntry(  92, HEX, 3,  3),
+  GmshCellEntry(  93, HEX, 3,  4),
+  GmshCellEntry(  94, HEX, 3,  5),
+  GmshCellEntry(  95, HEX, 3,  6),
+  GmshCellEntry(  96, HEX, 3,  7),
+  GmshCellEntry(  97, HEX, 3,  8),
+  GmshCellEntry(  98, HEX, 3,  9),
+  GmshCellEntry(  -1, HEX, 3, 10),
 
-  {  6, DM_POLYTOPE_TRI_PRISM,      3,  6,   1,    6},
-  { 13, DM_POLYTOPE_TRI_PRISM,      3,  6,   2,   18},
-  { 90, DM_POLYTOPE_TRI_PRISM,      3,  6,   3,   40},
-  { 91, DM_POLYTOPE_TRI_PRISM,      3,  6,   4,   75},
-  {106, DM_POLYTOPE_TRI_PRISM,      3,  6,   5,  126},
-  {107, DM_POLYTOPE_TRI_PRISM,      3,  6,   6,  196},
-  {108, DM_POLYTOPE_TRI_PRISM,      3,  6,   7,  288},
-  {109, DM_POLYTOPE_TRI_PRISM,      3,  6,   8,  405},
-  {110, DM_POLYTOPE_TRI_PRISM,      3,  6,   9,  550},
+  GmshCellEntry(   6, PRI, 3,  1),
+  GmshCellEntry(  13, PRI, 3,  2),
+  GmshCellEntry(  90, PRI, 3,  3),
+  GmshCellEntry(  91, PRI, 3,  4),
+  GmshCellEntry( 106, PRI, 3,  5),
+  GmshCellEntry( 107, PRI, 3,  6),
+  GmshCellEntry( 108, PRI, 3,  7),
+  GmshCellEntry( 109, PRI, 3,  8),
+  GmshCellEntry( 110, PRI, 3,  9),
+  GmshCellEntry(  -1, PRI, 3, 10),
 
-  {  7, DM_POLYTOPE_PYRAMID,        3,  5,   1,    5},
-  { 14, DM_POLYTOPE_PYRAMID,        3,  5,   2,   14},
-  {118, DM_POLYTOPE_PYRAMID,        3,  5,   3,   30},
-  {119, DM_POLYTOPE_PYRAMID,        3,  5,   4,   55},
-  {120, DM_POLYTOPE_PYRAMID,        3,  5,   5,   91},
-  {121, DM_POLYTOPE_PYRAMID,        3,  5,   6,  140},
-  {122, DM_POLYTOPE_PYRAMID,        3,  5,   7,  204},
-  {123, DM_POLYTOPE_PYRAMID,        3,  5,   8,  285},
-  {124, DM_POLYTOPE_PYRAMID,        3,  5,   9,  385},
+  GmshCellEntry(   7, PYR, 3,  1),
+  GmshCellEntry(  14, PYR, 3,  2),
+  GmshCellEntry( 118, PYR, 3,  3),
+  GmshCellEntry( 119, PYR, 3,  4),
+  GmshCellEntry( 120, PYR, 3,  5),
+  GmshCellEntry( 121, PYR, 3,  6),
+  GmshCellEntry( 122, PYR, 3,  7),
+  GmshCellEntry( 123, PYR, 3,  8),
+  GmshCellEntry( 124, PYR, 3,  9),
+  GmshCellEntry(  -1, PYR, 3, 10)
 
 #if 0
-  { 20, DM_POLYTOPE_TRIANGLE,       2,  3,   3,    9},
-  { 16, DM_POLYTOPE_QUADRILATERAL,  2,  4,   2,    8},
-  { 17, DM_POLYTOPE_HEXAHEDRON,     3,  8,   2,   20},
-  { 18, DM_POLYTOPE_TRI_PRISM,      3,  6,   2,   15},
-  { 19, DM_POLYTOPE_PYRAMID,        3,  5,   2,   13},
+  { 20, GMSH_TRI, 2, 3, 3,  9, NULL},
+  { 16, GMSH_QUA, 2, 2, 4,  8, NULL},
+  { 17, GMSH_HEX, 3, 2, 8, 20, NULL},
+  { 18, GMSH_PRI, 3, 2, 6, 15, NULL},
+  { 19, GMSH_PYR, 3, 2, 5, 13, NULL},
 #endif
 };
 
@@ -113,10 +164,13 @@ static PetscErrorCode GmshCellInfoSetUp(void)
   n = sizeof(GmshCellMap)/sizeof(GmshCellMap[0]);
   for (i = 0; i < n; ++i) {
     GmshCellMap[i].cellType = -1;
-    GmshCellMap[i].polytope = DM_POLYTOPE_UNKNOWN;
+    GmshCellMap[i].polytope = -1;
   }
   n = sizeof(GmshCellTable)/sizeof(GmshCellTable[0]);
-  for (i = 0; i < n; ++i) GmshCellMap[GmshCellTable[i].cellType] = GmshCellTable[i];
+  for (i = 0; i < n; ++i) {
+    if (GmshCellTable[i].cellType <= 0) continue;
+    GmshCellMap[GmshCellTable[i].cellType] = GmshCellTable[i];
+  }
   PetscFunctionReturn(0);
 }
 
@@ -126,7 +180,7 @@ static PetscErrorCode GmshCellInfoSetUp(void)
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid Gmsh element type %d", _ct_); \
     if (GmshCellMap[_ct_].cellType != _ct_) \
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported Gmsh element type %d", _ct_); \
-    if (GmshCellMap[_ct_].polytope == DM_POLYTOPE_UNKNOWN) \
+    if (GmshCellMap[_ct_].polytope == -1) \
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported Gmsh element type %d", _ct_); \
   } while(0)
 
@@ -410,6 +464,7 @@ static PetscErrorCode GmshElementsDestroy(GmshElement **elements)
 
 typedef struct {
   PetscInt       dim;
+  PetscInt       order;
   GmshEntities  *entities;
   PetscInt       numNodes;
   GmshNodes     *nodelist;
@@ -1112,21 +1167,20 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
   { /* Reorder elements by codimension and polytope type */
     PetscInt    ne = mesh->numElems;
     GmshElement *elements = mesh->elements;
-    PetscInt    keymap[DM_NUM_POLYTOPES], nk = 0;
-    PetscInt    offset[DM_NUM_POLYTOPES+1], e, k;
+    PetscInt    keymap[GMSH_NUM_POLYTOPES], nk = 0;
+    PetscInt    offset[GMSH_NUM_POLYTOPES+1], e, k;
 
-    for (k = 0; k < DM_NUM_POLYTOPES; ++k) keymap[k] = PETSC_MIN_INT;
+    for (k = 0; k < GMSH_NUM_POLYTOPES; ++k) keymap[k] = PETSC_MIN_INT;
     ierr = PetscMemzero(offset,sizeof(offset));CHKERRQ(ierr);
 
-    keymap[DM_POLYTOPE_TETRAHEDRON]   = nk++;
-    keymap[DM_POLYTOPE_HEXAHEDRON]    = nk++;
-    keymap[DM_POLYTOPE_TRI_PRISM]     = nk++;
-    keymap[DM_POLYTOPE_PYRAMID]       = nk++;
-    keymap[DM_POLYTOPE_TRIANGLE]      = nk++;
-    keymap[DM_POLYTOPE_QUADRILATERAL] = nk++;
-    keymap[DM_POLYTOPE_SEGMENT]       = nk++;
-    keymap[DM_POLYTOPE_VERTEX]        = nk++;
-    keymap[DM_POLYTOPE_UNKNOWN]       = nk++;
+    keymap[GMSH_TET] = nk++;
+    keymap[GMSH_HEX] = nk++;
+    keymap[GMSH_PRI] = nk++;
+    keymap[GMSH_PYR] = nk++;
+    keymap[GMSH_TRI] = nk++;
+    keymap[GMSH_QUA] = nk++;
+    keymap[GMSH_SEG] = nk++;
+    keymap[GMSH_VTX] = nk++;
 
     ierr = GmshElementsCreate(mesh->numElems, &mesh->elements);CHKERRQ(ierr);
 #define key(eid) keymap[GmshCellMap[elements[(eid)].cellType].polytope]
@@ -1135,8 +1189,12 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
     for (e = 0; e < ne; ++e) mesh->elements[offset[key(e)]++] = elements[e];
 #undef key
     ierr = GmshElementsDestroy(&elements);CHKERRQ(ierr);
+  }
 
-    mesh->dim = mesh->numElems ? mesh->elements[0].dim : 0;
+  { /* Mesh dimension and order */
+    GmshElement *elem = mesh->numElems ? mesh->elements : NULL;
+    mesh->dim   = elem ? GmshCellMap[elem->cellType].dim   : 0;
+    mesh->order = elem ? GmshCellMap[elem->cellType].order : 0;
   }
 
   {
@@ -1197,10 +1255,99 @@ static PetscErrorCode GmshReadPeriodic(GmshFile *gmsh, GmshMesh *mesh)
   PetscFunctionReturn(0);
 }
 
+#define DM_POLYTOPE_VERTEX  DM_POLYTOPE_POINT
+#define DM_POLYTOPE_PYRAMID DM_POLYTOPE_UNKNOWN
+static const DMPolytopeType DMPolytopeMap[] = {
+  /* GMSH_VTX */ DM_POLYTOPE_VERTEX,
+  /* GMSH_SEG */ DM_POLYTOPE_SEGMENT,
+  /* GMSH_TRI */ DM_POLYTOPE_TRIANGLE,
+  /* GMSH_QUA */ DM_POLYTOPE_QUADRILATERAL,
+  /* GMSH_TET */ DM_POLYTOPE_TETRAHEDRON,
+  /* GMSH_HEX */ DM_POLYTOPE_HEXAHEDRON,
+  /* GMSH_PRI */ DM_POLYTOPE_TRI_PRISM,
+  /* GMSH_PYR */ DM_POLYTOPE_PYRAMID,
+  DM_POLYTOPE_UNKNOWN
+};
 
 PETSC_STATIC_INLINE DMPolytopeType DMPolytopeTypeFromGmsh(PetscInt cellType)
 {
-  return GmshCellMap[cellType].polytope;
+  return DMPolytopeMap[GmshCellMap[cellType].polytope];
+}
+
+static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool isSimplex, PetscBool continuity, PetscDTNodeType nodeType, PetscInt dim, PetscInt Nc, PetscInt k, PetscFE *fem)
+{
+  DM              K;
+  PetscSpace      P;
+  PetscDualSpace  Q;
+  PetscQuadrature q, fq;
+  PetscBool       isTensor = isSimplex ? PETSC_FALSE : PETSC_TRUE;
+  PetscBool       endpoint = PETSC_TRUE;
+  char            name[32];
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Create space */
+  ierr = PetscSpaceCreate(comm, &P);CHKERRQ(ierr);
+  ierr = PetscSpaceSetType(P, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetTensor(P, isTensor);CHKERRQ(ierr);
+  ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
+  ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
+  ierr = PetscSpaceSetDegree(P, k, PETSC_DETERMINE);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
+    ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) P, NULL);CHKERRQ(ierr);
+    ierr = PetscSpaceGetDegree(P, &k, NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
+  /* Create dual space */
+  ierr = PetscDualSpaceCreate(comm, &Q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(Q, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetTensor(Q, isTensor);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetContinuity(Q, continuity);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetNodeType(Q, nodeType, endpoint, 0);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetNumComponents(Q, Nc);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetOrder(Q, k);CHKERRQ(ierr);
+  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
+  ierr = DMDestroy(&K);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
+  /* Create quadrature */
+  if (isSimplex) {
+    ierr = PetscDTStroudConicalQuadrature(dim,   1, k+1, -1, +1, &q);CHKERRQ(ierr);
+    ierr = PetscDTStroudConicalQuadrature(dim-1, 1, k+1, -1, +1, &fq);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDTGaussTensorQuadrature(dim,   1, k+1, -1, +1, &q);CHKERRQ(ierr);
+    ierr = PetscDTGaussTensorQuadrature(dim-1, 1, k+1, -1, +1, &fq);CHKERRQ(ierr);
+  }
+  /* Create finite element */
+  ierr = PetscFECreate(comm, fem);CHKERRQ(ierr);
+  ierr = PetscFESetType(*fem, PETSCFEBASIC);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(*fem, Nc);CHKERRQ(ierr);
+  ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
+  ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix);CHKERRQ(ierr);
+    ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *fem, NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscFESetUp(*fem);CHKERRQ(ierr);
+  /* Cleanup */
+  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
+  /* Set finite element name */
+  ierr = PetscSNPrintf(name, sizeof(name), "%s%D", isSimplex? "P" : "Q", k);CHKERRQ(ierr);
+  ierr = PetscFESetName(*fem, name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -1289,16 +1436,16 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscViewer    parentviewer = NULL;
   PetscBT        periodicVerts = NULL;
   PetscBT        periodicCells = NULL;
+  DM             cdm;
   PetscSection   coordSection;
   Vec            coordinates;
-  double        *coordsIn;
-  PetscScalar   *coords;
-  PetscInt       dim = 0, coordDim = -1;
+  PetscInt       dim = 0, coordDim = -1, order = 0;
   PetscInt       numNodes = 0, numElems = 0, numVerts = 0, numCells = 0;
-  PetscInt       coordSize, *vertexMapInv, cell, cone[8], e, n, v, d;
+  PetscInt       cell, cone[8], e, n, v, d;
   PetscBool      binary, usemarker = PETSC_FALSE;
   PetscBool      hybrid = interpolate, periodic = PETSC_TRUE;
-  PetscBool      hasTetra = PETSC_FALSE;
+  PetscBool      highOrder = PETSC_TRUE, highOrderSet, project = PETSC_FALSE;
+  PetscBool      isSimplex = PETSC_FALSE, isHybrid = PETSC_FALSE, hasTetra = PETSC_FALSE;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -1308,8 +1455,10 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Gmsh options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_gmsh_hybrid", "Generate hybrid cell bounds", "DMPlexCreateGmsh", hybrid, &hybrid, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_gmsh_periodic","Read Gmsh periodic section", "DMPlexCreateGmsh", periodic, &periodic, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_highorder","Generate high-order coordinates", "DMPlexCreateGmsh", highOrder, &highOrder, &highOrderSet);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_project", "Project high-order coordinates to a different space", "DMPlexCreateGmsh", project, &project, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_gmsh_use_marker", "Generate marker label", "DMPlexCreateGmsh", usemarker, &usemarker, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", coordDim, &coordDim, NULL,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", coordDim, &coordDim, NULL, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1391,25 +1540,49 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscFree(gmsh->nbuf);CHKERRQ(ierr);
 
     dim       = mesh->dim;
+    order     = mesh->order;
     numNodes  = mesh->numNodes;
     numElems  = mesh->numElems;
     numVerts  = mesh->numVerts;
     numCells  = mesh->numCells;
+
+    {
+      GmshElement *elemA = mesh->numCells > 0 ? mesh->elements : NULL;
+      GmshElement *elemB = elemA ? elemA + mesh->numCells - 1  : NULL;
+      int ptA = elemA ? GmshCellMap[elemA->cellType].polytope : -1;
+      int ptB = elemB ? GmshCellMap[elemB->cellType].polytope : -1;
+      isSimplex = (ptA == GMSH_QUA || ptA == GMSH_HEX) ? PETSC_FALSE : PETSC_TRUE;
+      isHybrid  = (ptA == ptB) ? PETSC_FALSE : PETSC_TRUE;
+      hasTetra  = (ptA == GMSH_TET) ? PETSC_TRUE : PETSC_FALSE;
+    }
   }
 
   if (parentviewer) {
     ierr = PetscViewerRestoreSubViewer(parentviewer, PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Bcast(&dim, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&periodic, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+  {
+    int buf[6];
 
-  /* Flag presence of tetrahedra to special case wedges */
-  for (cell = 0; cell < numCells; ++cell) {
-    GmshElement *elem = mesh->elements + cell;
-    DMPolytopeType ctype = DMPolytopeTypeFromGmsh(elem->cellType);
-    if (ctype == DM_POLYTOPE_TETRAHEDRON) hasTetra = PETSC_TRUE;
+    buf[0] = (int)dim;
+    buf[1] = (int)order;
+    buf[2] = periodic;
+    buf[3] = isSimplex;
+    buf[4] = isHybrid;
+    buf[5] = hasTetra;
+
+    ierr = MPI_Bcast(buf, 6, MPI_INT, 0, comm);CHKERRQ(ierr);
+
+    dim       = buf[0];
+    order     = buf[1];
+    periodic  = buf[2] ? PETSC_TRUE : PETSC_FALSE;
+    isSimplex = buf[3] ? PETSC_TRUE : PETSC_FALSE;
+    isHybrid  = buf[4] ? PETSC_TRUE : PETSC_FALSE;
+    hasTetra  = buf[5] ? PETSC_TRUE : PETSC_FALSE;
   }
+
+  if (!highOrderSet) highOrder = (order > 1) ? PETSC_TRUE : PETSC_FALSE;
+  if (highOrder && isHybrid) SETERRQ(comm, PETSC_ERR_SUP, "No support for discretization on hybrid meshes yet");
 
   /* We do not want this label automatically computed, instead we fill it here */
   ierr = DMCreateLabel(*dm, "celltype");CHKERRQ(ierr);
@@ -1539,67 +1712,116 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     }
   }
 
-  /* Create coordinates */
+  /* Setup coordinate DM */
   if (coordDim < 0) coordDim = dim;
   ierr = DMSetCoordinateDim(*dm, coordDim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSection, 0, coordDim);CHKERRQ(ierr);
-  if (periodic) { /* we need to localize coordinates on cells */
-    ierr = PetscSectionSetChart(coordSection, 0, numCells+numVerts);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
+  if (highOrder) {
+    PetscFE         fe;
+    PetscBool       continuity = periodic ? PETSC_FALSE : PETSC_TRUE;
+    PetscDTNodeType nodeType   = PETSCDTNODES_EQUISPACED;
+
+    if (isSimplex) continuity = PETSC_FALSE; /* XXX FIXME Requires DMPlexSetClosurePermutationLexicographic() */
+
+    ierr = GmshCreateFE(comm, NULL, isSimplex, continuity, nodeType, dim, coordDim, order, &fe);CHKERRQ(ierr);
+    ierr = PetscFEViewFromOptions(fe, NULL, "-dm_plex_gmsh_fe_view");CHKERRQ(ierr);
+    ierr = DMSetField(cdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+    ierr = DMCreateDS(cdm);CHKERRQ(ierr);
+  }
+
+  /* Create coordinates */
+  if (highOrder) {
+
+    PetscInt     maxDof = GmshNumNodes_HEX(order)*coordDim;
+    double       *coords = mesh ? mesh->nodelist->xyz : NULL;
+    PetscSection section;
+    PetscScalar  *cellCoords;
+
+    ierr = DMSetLocalSection(cdm, NULL);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionClone(coordSection, &section);CHKERRQ(ierr);
+    ierr = DMPlexSetClosurePermutationTensor(cdm, 0, section);CHKERRQ(ierr); /* XXX Implement DMPlexSetClosurePermutationLexicographic() */
+
+    ierr = DMCreateLocalVector(cdm, &coordinates);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxDof, &cellCoords);CHKERRQ(ierr);
+    for (cell = 0; cell < numCells; ++cell) {
+      GmshElement *elem = mesh->elements + cell;
+      const int *lexorder = GmshCellMap[elem->cellType].lexorder();
+      for (n = 0; n < elem->numNodes; ++n) {
+        const PetscInt node = elem->nodes[lexorder[n]];
+        for (d = 0; d < coordDim; ++d)
+          cellCoords[n*coordDim+d] = (PetscReal) coords[node*3+d];
+      }
+      ierr = DMPlexVecSetClosure(cdm, section, coordinates, cell, cellCoords, INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+    ierr = PetscFree(cellCoords);CHKERRQ(ierr);
+
   } else {
-    ierr = PetscSectionSetChart(coordSection, numCells, numCells+numVerts);CHKERRQ(ierr);
-  }
-  if (periodic) {
-    for (cell = 0; cell < numCells; ++cell) {
-      if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
-        GmshElement *elem = mesh->elements + cell;
-        PetscInt dof = elem->numVerts * coordDim;
-        ierr = PetscSectionSetDof(coordSection, cell, dof);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(coordSection, cell, 0, dof);CHKERRQ(ierr);
+
+    PetscInt    *nodeMap;
+    double      *coords = mesh ? mesh->nodelist->xyz : NULL;
+    PetscScalar *pointCoords;
+
+    ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(coordSection, 0, coordDim);CHKERRQ(ierr);
+    if (periodic) { /* we need to localize coordinates on cells */
+      ierr = PetscSectionSetChart(coordSection, 0, numCells+numVerts);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSectionSetChart(coordSection, numCells, numCells+numVerts);CHKERRQ(ierr);
+    }
+    if (periodic) {
+      for (cell = 0; cell < numCells; ++cell) {
+        if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
+          GmshElement *elem = mesh->elements + cell;
+          PetscInt dof = elem->numVerts * coordDim;
+          ierr = PetscSectionSetDof(coordSection, cell, dof);CHKERRQ(ierr);
+          ierr = PetscSectionSetFieldDof(coordSection, cell, 0, dof);CHKERRQ(ierr);
+        }
       }
     }
+    for (v = numCells; v < numCells+numVerts; ++v) {
+      ierr = PetscSectionSetDof(coordSection, v, coordDim);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(coordSection, v, 0, coordDim);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+
+    ierr = DMCreateLocalVector(cdm, &coordinates);CHKERRQ(ierr);
+    ierr = VecGetArray(coordinates, &pointCoords);CHKERRQ(ierr);
+    if (periodic) {
+      for (cell = 0; cell < numCells; ++cell) {
+        if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
+          GmshElement *elem = mesh->elements + cell;
+          PetscInt off, node;
+          for (v = 0; v < elem->numVerts; ++v)
+            cone[v] = elem->nodes[v];
+          ierr = DMPlexReorderCell(cdm, cell, cone);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(coordSection, cell, &off);CHKERRQ(ierr);
+          for (v = 0; v < elem->numVerts; ++v)
+            for (node = cone[v], d = 0; d < coordDim; ++d)
+              pointCoords[off++] = (PetscReal) coords[node*3+d];
+        }
+      }
+    }
+    ierr = PetscMalloc1(numVerts, &nodeMap);CHKERRQ(ierr);
+    for (n = 0; n < numNodes; n++)
+      if (mesh->vertexMap[n] >= 0)
+        nodeMap[mesh->vertexMap[n]] = n;
+    for (v = 0; v < numVerts; ++v) {
+      PetscInt off, node = nodeMap[v];
+      ierr = PetscSectionGetOffset(coordSection, numCells + v, &off);CHKERRQ(ierr);
+      for (d = 0; d < coordDim; ++d)
+        pointCoords[off+d] = (PetscReal) coords[node*3+d];
+    }
+    ierr = PetscFree(nodeMap);CHKERRQ(ierr);
+    ierr = VecRestoreArray(coordinates, &pointCoords);CHKERRQ(ierr);
+
   }
-  for (v = numCells; v < numCells+numVerts; ++v) {
-    ierr = PetscSectionSetDof(coordSection, v, coordDim);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(coordSection, v, 0, coordDim);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_SELF, &coordinates);CHKERRQ(ierr);
+
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
-  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(coordinates, coordDim);CHKERRQ(ierr);
-  ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  coordsIn = mesh ? mesh->nodelist->xyz : NULL;
-  if (periodic) {
-    for (cell = 0; cell < numCells; ++cell) {
-      if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
-        GmshElement *elem = mesh->elements + cell;
-        PetscInt off, node;
-        for (v = 0; v < elem->numVerts; ++v)
-          cone[v] = elem->nodes[v];
-        ierr = DMPlexReorderCell(*dm, cell, cone);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(coordSection, cell, &off);CHKERRQ(ierr);
-        for (v = 0; v < elem->numVerts; ++v)
-          for (node = cone[v], d = 0; d < coordDim; ++d)
-            coords[off++] = (PetscReal) coordsIn[node*3+d];
-      }
-    }
-  }
-  ierr = PetscMalloc1(numVerts, &vertexMapInv);CHKERRQ(ierr);
-  for (n = 0; n < numNodes; n++)
-    if (mesh->vertexMap[n] >= 0)
-      vertexMapInv[mesh->vertexMap[n]] = n;
-  for (v = 0; v < numVerts; ++v) {
-    PetscInt off, node = vertexMapInv[v];
-    ierr = PetscSectionGetOffset(coordSection, numCells + v, &off);CHKERRQ(ierr);
-    for (d = 0; d < coordDim; ++d)
-      coords[off+d] = (PetscReal) coordsIn[node*3+d];
-  }
-  ierr = PetscFree(vertexMapInv);CHKERRQ(ierr);
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   ierr = DMSetPeriodicity(*dm, periodic, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -1607,6 +1829,20 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = GmshMeshDestroy(&mesh);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&periodicVerts);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&periodicCells);CHKERRQ(ierr);
+
+  if (highOrder && project)  {
+    PetscFE         fe;
+    const char      prefix[]   = "dm_plex_gmsh_project_";
+    PetscBool       continuity = periodic ? PETSC_FALSE : PETSC_TRUE;
+    PetscDTNodeType nodeType   = PETSCDTNODES_GAUSSJACOBI;
+
+    if (isSimplex) continuity = PETSC_FALSE; /* XXX FIXME Requires DMPlexSetClosurePermutationLexicographic() */
+
+    ierr = GmshCreateFE(comm, prefix, isSimplex, continuity, nodeType, dim, coordDim, order, &fe);CHKERRQ(ierr);
+    ierr = PetscFEViewFromOptions(fe, NULL, "-dm_plex_gmsh_project_fe_view");CHKERRQ(ierr);
+    ierr = DMProjectCoordinates(*dm, fe);CHKERRQ(ierr);
+    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  }
 
   ierr = PetscLogEventEnd(DMPLEX_CreateGmsh,*dm,NULL,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
