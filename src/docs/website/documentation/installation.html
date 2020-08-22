@@ -128,10 +128,11 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <li><a href="#windows">Microsoft Windows installation</a></li>
         <li><a href="#root">Installing PETSc in system directories where sudo or root privileges are required / For package managers</a></li>
         <li><a href="#module">Installing on machines that use modules</a></li>
-        <li><a href="#cross">Installing on machine requiring cross compiler or a job scheduler</a></li>        
+        <li><a href="#cross">Installing on machine requiring cross compiler or a job scheduler</a></li>
         <li><a href="#usingtau">Installing with TAU instrumentation package</a></li>
         <li><a href="#CUDA">Installing PETSc to use NVIDIA GPUs (aka CUDA)</a></li>
-        <li><a href="#OpenCL">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></li>
+        <li><a href="#Kokkos">Installing PETSc with Kokkos</a></li>
+        <li><a href="#OpenCL">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, and Intel)</a></li>
         <li><a href="#pkgconfig">PETSc ./configure automatically generates Pkgconfig and module files for each install</a></li>
         <li><a href="#doemachines">Installing on large scale DOE systems</a></li>
         <li><a href="#iosandroid">Installing PETSc on an iOS or Android platform</a></li>
@@ -1138,10 +1139,28 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           CUDA build of PETSc currently works on Mac OS X, Linux, Microsoft Windows.
         </p>
 
+        <p>
+        Examples that use CUDA have the suffix .cu; see see src/snes/tutorials/ex47.cu
+        </p>
+
         <a href="#" target="_top">Return to Installation Instructions</a>
       </div> <!-- #CUDA -->
 
       <hr>
+      <h3><a name="Kokkos">Installing PETSc with Kokkos</a></h3>
+
+       <p>
+       In most cases you need only pass the configure option --download-kokkos and one of --with-cuda --with-openmp --with-pthread (or nothing to use sequential Kokkos)
+       </p>
+
+       <p>
+          Examples that use Kokkos have the suffix .kokkos.cxx; see src/snes/tutorials/ex3k.kokkos.cxx
+      </p>
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+    </div>
+
+    <hr>
 
       <div>
         <h3><a name="OpenCL">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></h3>
