@@ -328,7 +328,7 @@ class Package(config.base.Configure):
     '''Special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
-    if not self.packageDir: self.packageDir = self.downLoad()
+    if not self.packageDir or (self.download[0].find('dir://') >= 0) or (self.download[0].find('link://') >= 0): self.packageDir = self.downLoad()
     self.updateGitDir()
     self.updatehgDir()
     if (self.publicInstall or 'package-prefix-hash' in self.argDB) and not ('package-prefix-hash' in self.argDB and (hasattr(self,'postProcess') or self.builtafterpetsc)):
