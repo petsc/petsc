@@ -703,7 +703,7 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
 
    Level: intermediate
 
-   Notes: the matrix in compressed color format may come from an AD code
+   Notes: the matrix in compressed color format may come from an Automatic Differentiation code
 
    The code will be slightly faster if MatFDColoringSetBlockSize(coloring,PETSC_DEFAULT,nc); is called immediately after creating the coloring
 
