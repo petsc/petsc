@@ -50,7 +50,7 @@ class Configure(config.package.Package):
       extra_fcflags = '-dusty -dcfuns '
     elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
       extra_fcflags = '-fallow-argument-mismatch '
-    g.write('FCFLAGS      = '+extra_fcflags+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
+    g.write('FCFLAGS      = '+extra_fcflags+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.write('FCLOADER     = '+self.setCompilers.getLinker()+'\n')
     g.write('FCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()

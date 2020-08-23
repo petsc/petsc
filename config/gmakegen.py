@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from collections import defaultdict
 
 AUTODIRS = set('ftn-auto ftn-custom f90-custom'.split()) # Automatically recurse into these, if they exist
-SKIPDIRS = set('benchmarks'.split())                     # Skip these during the build
+SKIPDIRS = set('benchmarks build'.split())               # Skip these during the build
 NOWARNDIRS = set('tests tutorials'.split())              # Do not warn about mismatch in these
 
 def pathsplit(path):
