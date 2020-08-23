@@ -61,7 +61,7 @@ check-ci-settings:
     - echo ${CONFIG_OPTS}
   script:
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
-    - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror
+    - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
     - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - date
