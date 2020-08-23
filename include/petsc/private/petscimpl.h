@@ -182,9 +182,6 @@ PETSC_INTERN PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions,Petsc
 
 
 PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
-#if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscBool PetscCheckMpiGpuAwareness(void);
-#endif
 /*
     Macros to test if a PETSc object is valid and if pointers are valid
 */
@@ -939,11 +936,23 @@ PETSC_EXTERN PetscBool     use_gpu_aware_mpi;
 PETSC_EXTERN int64_t Petsc_adios_group;
 #endif
 
+#if defined(PETSC_HAVE_KOKKOS)
+PETSC_INTERN PetscBool      PetscBeganKokkos;
+PETSC_INTERN PetscErrorCode PetscKokkosInitialize_Private(void); /* C bindings for the Kokkos C++ routines */
+PETSC_INTERN PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool*);
+PETSC_INTERN PetscErrorCode PetscKokkosFinalize_Private(void);
+#endif
+
 #if defined(PETSC_HAVE_CUDA)
-/* Has petsc initialized CUDA? One can use this flag to guard some CUDA calls, which may initialize CUDA runtime and incur a cost. */
-PETSC_EXTERN PetscBool      PetscCUDAInitialized;
-/* Initialize the CUDA device lazily just before creating the first CUDA object. */
-PETSC_EXTERN PetscErrorCode PetscCUDAInitializeLazily(void);
+PETSC_EXTERN PetscBool      PetscCUDAInitialized;  /* Has petsc initialized CUDA? One can use this flag to guard CUDA calls. */
+PETSC_EXTERN PetscErrorCode PetscCUDAInitializeCheck(void);  /* Check if CUDA is initialized and init CUDA if not yet. */
+PETSC_EXTERN PetscBool      PetscMPICUDAAwarenessCheck(void);
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscBool      PetscHIPInitialized;
+PETSC_EXTERN PetscErrorCode PetscHIPInitializeCheck(void);
+PETSC_EXTERN PetscBool      PetscMPIHIPAwarenessCheck(void);
 #endif
 
 #endif /* PETSCIMPL_H */
