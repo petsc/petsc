@@ -215,8 +215,8 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
 
 /*      ugly stuff added for Glenn someday we should fix this up */
 
-static PetscInt *auglyrmapd = 0,*auglyrmapo = 0; /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
-static Vec auglydd          = 0,auglyoo     = 0; /* work vectors used to scale the two parts of the local matrix */
+static PetscInt *auglyrmapd = NULL,*auglyrmapo = NULL; /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
+static Vec auglydd          = NULL,auglyoo     = NULL; /* work vectors used to scale the two parts of the local matrix */
 
 
 PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)

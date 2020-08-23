@@ -349,23 +349,23 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
   /* count BCs */
   ierr = MatGetOwnershipRange(mat, &s, &e);CHKERRQ(ierr);
   for (gid=s,lsz=0; gid<e; gid++) {
-    ierr = MatGetRow(mat,gid,&jj,0,0);CHKERRQ(ierr);
+    ierr = MatGetRow(mat,gid,&jj,NULL,NULL);CHKERRQ(ierr);
     if (jj<2) lsz++;
-    ierr = MatRestoreRow(mat,gid,&jj,0,0);CHKERRQ(ierr);
+    ierr = MatRestoreRow(mat,gid,&jj,NULL,NULL);CHKERRQ(ierr);
   }
   if (lsz) {
     ierr = PetscMalloc1(a_bs*lsz, &idxs);CHKERRQ(ierr);
     for (gid=s,lsz=0; gid<e; gid++) {
-      ierr = MatGetRow(mat,gid,&jj,0,0);CHKERRQ(ierr);
+      ierr = MatGetRow(mat,gid,&jj,NULL,NULL);CHKERRQ(ierr);
       if (jj<2) {
         for (jj=0; jj<a_bs; lsz++,jj++) idxs[lsz] = a_bs*gid + jj;
       }
-      ierr = MatRestoreRow(mat,gid,&jj,0,0);CHKERRQ(ierr);
+      ierr = MatRestoreRow(mat,gid,&jj,NULL,NULL);CHKERRQ(ierr);
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_bcs);CHKERRQ(ierr);
     *a_sz = kk + 1; /* out */
   } else {
-    is_bcs=0;
+    is_bcs=NULL;
     *a_sz = kk; /* out */
   }
   ierr = PetscMalloc1(*a_sz, &is_loc);CHKERRQ(ierr);
@@ -424,8 +424,8 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
   const PetscInt   nloc = a_Gmat->rmap->n,n_iter=6; /* need to figure out how to stop this */
   PetscInt         *lid_cprowID,*lid_gid;
   PetscBool        *lid_matched;
-  Mat_SeqAIJ       *matA, *matB=0;
-  Mat_MPIAIJ       *mpimat     =0;
+  Mat_SeqAIJ       *matA, *matB=NULL;
+  Mat_MPIAIJ       *mpimat     =NULL;
   PetscScalar      one         =1.;
   PetscCoarsenData *agg_llists = NULL,*deleted_list = NULL;
   Mat              cMat,tMat,P;
@@ -483,15 +483,15 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
     }
 
     /* set max edge on nodes */
-    ierr = MatCreateVecs(cMat, &locMaxEdge, 0);CHKERRQ(ierr);
-    ierr = MatCreateVecs(cMat, &locMaxPE, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(cMat, &locMaxEdge, NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(cMat, &locMaxPE, NULL);CHKERRQ(ierr);
 
     /* get 'cpcol_pe' & 'cpcol_gid' & init. 'cpcol_matched' using 'mpimat->lvec' */
     if (mpimat) {
       Vec         vec;
       PetscScalar vval;
 
-      ierr = MatCreateVecs(cMat, &vec, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(cMat, &vec, NULL);CHKERRQ(ierr);
       /* cpcol_pe */
       vval = (PetscScalar)(rank);
       for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
@@ -623,7 +623,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
     qsort(Edges, nEdges, sizeof(Edge), gamg_hem_compare);
 
     /* projection matrix */
-    ierr = MatCreateAIJ(comm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE, 1, 0, 1, 0, &P);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(comm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &P);CHKERRQ(ierr);
 
     /* clear matched flags */
     for (kk=0; kk<nloc; kk++) lid_matched[kk] = PETSC_FALSE;
@@ -988,11 +988,11 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
       for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
         if (!lid_matched[kk]) {
           gid  = kk+my0;
-          ierr = MatGetRow(cMat,gid,&n,0,0);CHKERRQ(ierr);
+          ierr = MatGetRow(cMat,gid,&n,NULL,NULL);CHKERRQ(ierr);
           if (n>1) {
             ierr = MatSetValues(P,1,&gid,1,&gid,&one,INSERT_VALUES);CHKERRQ(ierr);
           }
-          ierr = MatRestoreRow(cMat,gid,&n,0,0);CHKERRQ(ierr);
+          ierr = MatRestoreRow(cMat,gid,&n,NULL,NULL);CHKERRQ(ierr);
         }
       }
       ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1003,7 +1003,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
       ierr = MatDestroy(&P);CHKERRQ(ierr);
       ierr = MatDestroy(&cMat);CHKERRQ(ierr);
       cMat = tMat;
-      ierr = MatCreateVecs(cMat, &diag, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(cMat, &diag, NULL);CHKERRQ(ierr);
       ierr = MatGetDiagonal(cMat, diag);CHKERRQ(ierr); /* effectively PCJACOBI */
       ierr = VecReciprocal(diag);CHKERRQ(ierr);
       ierr = VecSqrtAbs(diag);CHKERRQ(ierr);
@@ -1025,7 +1025,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
     ierr = MatGetSize(a_Gmat, &MM, &NN);CHKERRQ(ierr);
     if (mxsz > MM-nloc) mxsz = MM-nloc;
 
-    ierr = MatCreateAIJ(comm, nloc, nloc,PETSC_DETERMINE, PETSC_DETERMINE,0, 0, mxsz, 0, &mat);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(comm, nloc, nloc,PETSC_DETERMINE, PETSC_DETERMINE,0, NULL, mxsz, NULL, &mat);CHKERRQ(ierr);
 
     for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
       /* for (pos=PetscCDGetHeadPos(agg_llists,kk) ; pos ; pos=PetscCDGetNextPos(agg_llists,kk,pos)) { */

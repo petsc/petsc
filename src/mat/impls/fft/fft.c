@@ -15,7 +15,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
   }
   ierr = PetscFree(fft->dim);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

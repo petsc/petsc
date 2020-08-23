@@ -195,7 +195,7 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
   PetscErrorCode           ierr;
   PetscBool                isascii;
-  const char               *str=0;
+  const char               *str=NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);

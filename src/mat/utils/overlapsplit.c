@@ -128,8 +128,8 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
    /* Allocate a 'zero' pointer to avoid using uninitialized variable  */
    ierr = PetscCalloc1(0,&remote);CHKERRQ(ierr);
    nleaves       = 0;
-   indices_ov_rd = 0;
-   sources_sc_rd = 0;
+   indices_ov_rd = NULL;
+   sources_sc_rd = NULL;
   }
   /* scatter sizes to everybody */
   ierr = MPI_Scatter(localsizes_sc,1, MPIU_INT,&nroots,1, MPIU_INT,0,scomm);CHKERRQ(ierr);

@@ -42,7 +42,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   PetscReal                    *part_weights;
   PetscBool                     flg;
   PetscInt                      bs     = 1;
-  PetscInt                     *coarse_vertex_weights = 0;
+  PetscInt                     *coarse_vertex_weights = NULL;
   PetscMPIInt                   size,rank;
   MPI_Comm                      comm,scomm;
   IS                            destination,fineparts_temp, vweights, svweights;
@@ -572,14 +572,14 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning p
   ierr       = PetscNewLog(part,&hpart);CHKERRQ(ierr);
   part->data = (void*)hpart;
 
-  hpart->fineparttype       = 0; /* fine level (second) partitioner */
-  hpart->coarseparttype     = 0; /* coarse level (first) partitioner */
-  hpart->nfineparts         = 1; /* we do not further partition coarse partition any more by default */
-  hpart->ncoarseparts       = 0; /* number of coarse parts (first level) */
-  hpart->coarseparts        = 0;
-  hpart->fineparts          = 0;
-  hpart->coarseMatPart      = 0;
-  hpart->fineMatPart        = 0;
+  hpart->fineparttype       = NULL; /* fine level (second) partitioner */
+  hpart->coarseparttype     = NULL; /* coarse level (first) partitioner */
+  hpart->nfineparts         = 1;    /* we do not further partition coarse partition any more by default */
+  hpart->ncoarseparts       = 0;    /* number of coarse parts (first level) */
+  hpart->coarseparts        = NULL;
+  hpart->fineparts          = NULL;
+  hpart->coarseMatPart      = NULL;
+  hpart->fineMatPart        = NULL;
 
   part->ops->apply          = MatPartitioningApply_Hierarchical;
   part->ops->view           = MatPartitioningView_Hierarchical;

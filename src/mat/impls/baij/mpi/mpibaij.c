@@ -12,7 +12,7 @@ PetscErrorCode MatGetRowMaxAbs_MPIBAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,*idxb = 0;
+  PetscInt       i,*idxb = NULL;
   PetscScalar    *va,*vb;
   Vec            vtmp;
 
@@ -957,7 +957,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
 
   ierr = PetscFree2(baij->rowvalues,baij->rowindices);CHKERRQ(ierr);
 
-  baij->rowvalues = 0;
+  baij->rowvalues = NULL;
 
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */
   if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
@@ -1215,7 +1215,7 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   ierr = PetscFree(baij->rangebs);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)mat,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
@@ -1349,8 +1349,8 @@ PetscErrorCode MatGetRow_MPIBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **
   lrow = row - brstart;
 
   pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
-  if (!v)   {pvA = 0; pvB = 0;}
-  if (!idx) {pcA = 0; if (!v) pcB = 0;}
+  if (!v)   {pvA = NULL; pvB = NULL;}
+  if (!idx) {pcA = NULL; if (!v) pcB = NULL;}
   ierr  = (*mat->A->ops->getrow)(mat->A,lrow,&nzA,pcA,pvA);CHKERRQ(ierr);
   ierr  = (*mat->B->ops->getrow)(mat->B,lrow,&nzB,pcB,pvB);CHKERRQ(ierr);
   nztot = nzA + nzB;
@@ -1387,8 +1387,8 @@ PetscErrorCode MatGetRow_MPIBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **
         for (i=imark; i<nzB; i++) idx_p[nzA+i]   = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs ;
       }
     } else {
-      if (idx) *idx = 0;
-      if (v)   *v   = 0;
+      if (idx) *idx = NULL;
+      if (v)   *v   = NULL;
     }
   }
   *nz  = nztot;
@@ -1647,7 +1647,7 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
   if ((diag != 0.0) && cong) {
     ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,diag,NULL,NULL);CHKERRQ(ierr);
   } else if (diag != 0.0) {
-    ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,0.0,0,0);CHKERRQ(ierr);
+    ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,0.0,NULL,NULL);CHKERRQ(ierr);
     if (((Mat_SeqBAIJ*)l->A->data)->nonew) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatZeroRows() on rectangular matrices cannot be used with the Mat options \n\
        MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
     for (r = 0; r < len; ++r) {
@@ -1819,7 +1819,7 @@ PetscErrorCode MatSetUp_MPIBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMPIBAIJSetPreallocation(A,A->rmap->bs,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A,A->rmap->bs,PETSC_DEFAULT,NULL,PETSC_DEFAULT,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2116,7 +2116,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A,Mat *newmat)
   Mat_SeqBAIJ    *ad = (Mat_SeqBAIJ*)a->A->data,*bd = (Mat_SeqBAIJ*)a->B->data;
   Mat_SeqAIJ     *b;
   PetscErrorCode ierr;
-  PetscMPIInt    size,rank,*recvcounts = 0,*displs = 0;
+  PetscMPIInt    size,rank,*recvcounts = NULL,*displs = NULL;
   PetscInt       sendcount,i,*rstarts = A->rmap->range,n,cnt,j,bs = A->rmap->bs;
   PetscInt       m,*garray = a->garray,*lens,*jsendbuf,*a_jsendbuf,*b_jsendbuf;
 
@@ -2232,7 +2232,7 @@ PetscErrorCode MatSOR_MPIBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,P
 {
   Mat_MPIBAIJ    *mat = (Mat_MPIBAIJ*)matin->data;
   PetscErrorCode ierr;
-  Vec            bb1 = 0;
+  Vec            bb1 = NULL;
 
   PetscFunctionBegin;
   if (flag == SOR_APPLY_UPPER) {
@@ -2443,12 +2443,12 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                 /* 4*/ MatMultAdd_MPIBAIJ,
                                        MatMultTranspose_MPIBAIJ,
                                        MatMultTransposeAdd_MPIBAIJ,
-                                       0,
-                                       0,
-                                       0,
-                                /*10*/ 0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                /*10*/ NULL,
+                                       NULL,
+                                       NULL,
                                        MatSOR_MPIBAIJ,
                                        MatTranspose_MPIBAIJ,
                                 /*15*/ MatGetInfo_MPIBAIJ,
@@ -2461,125 +2461,125 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        MatSetOption_MPIBAIJ,
                                        MatZeroEntries_MPIBAIJ,
                                 /*24*/ MatZeroRows_MPIBAIJ,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                 /*29*/ MatSetUp_MPIBAIJ,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
                                        MatGetDiagonalBlock_MPIBAIJ,
-                                       0,
+                                       NULL,
                                 /*34*/ MatDuplicate_MPIBAIJ,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                 /*39*/ MatAXPY_MPIBAIJ,
                                        MatCreateSubMatrices_MPIBAIJ,
                                        MatIncreaseOverlap_MPIBAIJ,
                                        MatGetValues_MPIBAIJ,
                                        MatCopy_MPIBAIJ,
-                                /*44*/ 0,
+                                /*44*/ NULL,
                                        MatScale_MPIBAIJ,
                                        MatShift_MPIBAIJ,
-                                       0,
+                                       NULL,
                                        MatZeroRowsColumns_MPIBAIJ,
-                                /*49*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                /*49*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                 /*54*/ MatFDColoringCreate_MPIXAIJ,
-                                       0,
+                                       NULL,
                                        MatSetUnfactored_MPIBAIJ,
                                        MatPermute_MPIBAIJ,
                                        MatSetValuesBlocked_MPIBAIJ,
                                 /*59*/ MatCreateSubMatrix_MPIBAIJ,
                                        MatDestroy_MPIBAIJ,
                                        MatView_MPIBAIJ,
-                                       0,
-                                       0,
-                                /*64*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                /*64*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                 /*69*/ MatGetRowMaxAbs_MPIBAIJ,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                /*74*/ 0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                /*74*/ NULL,
                                        MatFDColoringApply_BAIJ,
-                                       0,
-                                       0,
-                                       0,
-                                /*79*/ 0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                /*79*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                        MatLoad_MPIBAIJ,
-                                /*84*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                /*89*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                /*94*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                /*99*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                /*104*/0,
+                                /*84*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                /*89*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                /*94*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                /*99*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                /*104*/NULL,
                                        MatRealPart_MPIBAIJ,
                                        MatImaginaryPart_MPIBAIJ,
-                                       0,
-                                       0,
-                                /*109*/0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                /*109*/NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                        MatMissingDiagonal_MPIBAIJ,
                                 /*114*/MatGetSeqNonzeroStructure_MPIBAIJ,
-                                       0,
+                                       NULL,
                                        MatGetGhosts_MPIBAIJ,
-                                       0,
-                                       0,
-                                /*119*/0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                /*119*/NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                        MatGetMultiProcBlock_MPIBAIJ,
-                                /*124*/0,
+                                /*124*/NULL,
                                        MatGetColumnNorms_MPIBAIJ,
                                        MatInvertBlockDiagonal_MPIBAIJ,
-                                       0,
-                                       0,
-                               /*129*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*134*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                               /*129*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*134*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                /*139*/ MatSetBlockSizes_Default,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
                                        MatFDColoringSetUp_MPIXAIJ,
-                                       0,
+                                       NULL,
                                 /*144*/MatCreateMPIMatConcatenateSeqMat_MPIBAIJ
 };
 
@@ -2590,9 +2590,9 @@ PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat,MatType,MatReuse,Mat*);
 PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[],const PetscScalar V[])
 {
   PetscInt       m,rstart,cstart,cend;
-  PetscInt       i,j,dlen,olen,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
-  const PetscInt *JJ    =0;
-  PetscScalar    *values=0;
+  PetscInt       i,j,dlen,olen,nz,nz_max=0,*d_nnz=NULL,*o_nnz=NULL;
+  const PetscInt *JJ    =NULL;
+  PetscScalar    *values=NULL;
   PetscBool      roworiented = ((Mat_MPIBAIJ*)B->data)->roworiented;
   PetscErrorCode ierr;
   PetscBool      nooffprocentries;
@@ -2908,20 +2908,20 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   b->roworiented = PETSC_TRUE;
 
   /* stuff used in block assembly */
-  b->barray = 0;
+  b->barray = NULL;
 
   /* stuff used for matrix vector multiply */
-  b->lvec  = 0;
-  b->Mvctx = 0;
+  b->lvec  = NULL;
+  b->Mvctx = NULL;
 
   /* stuff for MatGetRow() */
-  b->rowindices   = 0;
-  b->rowvalues    = 0;
+  b->rowindices   = NULL;
+  b->rowvalues    = NULL;
   b->getrowactive = PETSC_FALSE;
 
   /* hash table stuff */
-  b->ht           = 0;
-  b->hd           = 0;
+  b->ht           = NULL;
+  b->hd           = NULL;
   b->ht_size      = 0;
   b->ht_flag      = PETSC_FALSE;
   b->ht_fact      = 0;
@@ -3189,7 +3189,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
   PetscInt       len=0;
 
   PetscFunctionBegin;
-  *newmat = 0;
+  *newmat = NULL;
   ierr    = MatCreate(PetscObjectComm((PetscObject)matin),&mat);CHKERRQ(ierr);
   ierr    = MatSetSizes(mat,matin->rmap->n,matin->cmap->n,matin->rmap->N,matin->cmap->N);CHKERRQ(ierr);
   ierr    = MatSetType(mat,((PetscObject)matin)->type_name);CHKERRQ(ierr);
@@ -3214,18 +3214,18 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
   a->rank         = oldmat->rank;
   a->donotstash   = oldmat->donotstash;
   a->roworiented  = oldmat->roworiented;
-  a->rowindices   = 0;
-  a->rowvalues    = 0;
+  a->rowindices   = NULL;
+  a->rowvalues    = NULL;
   a->getrowactive = PETSC_FALSE;
-  a->barray       = 0;
+  a->barray       = NULL;
   a->rstartbs     = oldmat->rstartbs;
   a->rendbs       = oldmat->rendbs;
   a->cstartbs     = oldmat->cstartbs;
   a->cendbs       = oldmat->cendbs;
 
   /* hash table stuff */
-  a->ht           = 0;
-  a->hd           = 0;
+  a->ht           = NULL;
+  a->hd           = NULL;
   a->ht_size      = 0;
   a->ht_flag      = oldmat->ht_flag;
   a->ht_fact      = oldmat->ht_fact;
@@ -3241,13 +3241,13 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
     ierr = PetscLogObjectMemory((PetscObject)mat,(a->Nbs)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscArraycpy(a->colmap,oldmat->colmap,a->Nbs);CHKERRQ(ierr);
 #endif
-  } else a->colmap = 0;
+  } else a->colmap = NULL;
 
   if (oldmat->garray && (len = ((Mat_SeqBAIJ*)(oldmat->B->data))->nbs)) {
     ierr = PetscMalloc1(len,&a->garray);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)mat,len*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscArraycpy(a->garray,oldmat->garray,len);CHKERRQ(ierr);
-  } else a->garray = 0;
+  } else a->garray = NULL;
 
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)matin),matin->rmap->bs,&mat->bstash);CHKERRQ(ierr);
   ierr = VecDuplicate(oldmat->lvec,&a->lvec);CHKERRQ(ierr);

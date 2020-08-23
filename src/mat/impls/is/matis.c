@@ -413,7 +413,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
   const PetscInt          *garray,*ndmapi;
   PetscInt                bs,i,cnt,nl,*ncount,*ndmapc;
   PetscBool               ismpiaij,ismpibaij;
-  const char *const       MatISDisassemblel2gTypes[] = {"NATURAL","MAT","ND","MatISDisassemblel2gType","MAT_IS_DISASSEMBLE_L2G_",0};
+  const char *const       MatISDisassemblel2gTypes[] = {"NATURAL","MAT","ND","MatISDisassemblel2gType","MAT_IS_DISASSEMBLE_L2G_",NULL};
   MatISDisassemblel2gType mode = MAT_IS_DISASSEMBLE_L2G_NATURAL;
   MatPartitioning         part;
   PetscSF                 sf;
@@ -2224,7 +2224,7 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   ierr = PetscSFDestroy(&b->sf);CHKERRQ(ierr);
   ierr = PetscFree2(b->sf_rootdata,b->sf_leafdata);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMatType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",NULL);CHKERRQ(ierr);
@@ -2606,9 +2606,9 @@ static PetscErrorCode MatISZeroRowsColumnsLocal_Private(Mat A,PetscInt n,const P
     is->pure_neumann = PETSC_FALSE;
 
     if (columns) {
-      ierr = MatZeroRowsColumns(is->A,n,rows,diag,0,0);CHKERRQ(ierr);
+      ierr = MatZeroRowsColumns(is->A,n,rows,diag,NULL,NULL);CHKERRQ(ierr);
     } else {
-      ierr = MatZeroRows(is->A,n,rows,diag,0,0);CHKERRQ(ierr);
+      ierr = MatZeroRows(is->A,n,rows,diag,NULL,NULL);CHKERRQ(ierr);
     }
     if (diag != 0.) {
       const PetscScalar *array;

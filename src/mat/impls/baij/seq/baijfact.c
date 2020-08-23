@@ -1144,9 +1144,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
 
   b->j             = uj;
   b->i             = ui;
-  b->diag          = 0;
-  b->ilen          = 0;
-  b->imax          = 0;
+  b->diag          = NULL;
+  b->ilen          = NULL;
+  b->imax          = NULL;
   b->row           = perm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 
@@ -1326,9 +1326,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
 
   b->j             = uj;
   b->i             = ui;
-  b->diag          = 0;
-  b->ilen          = 0;
-  b->imax          = 0;
+  b->diag          = NULL;
+  b->ilen          = NULL;
+  b->imax          = NULL;
   b->row           = perm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 
@@ -1555,8 +1555,8 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   b->j    = bj;
   b->i    = bi;
   b->diag = bdiag;
-  b->ilen = 0;
-  b->imax = 0;
+  b->ilen = NULL;
+  b->imax = NULL;
   b->row  = isrow;
   b->col  = iscol;
 
@@ -1731,10 +1731,10 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     B->ops->solve = MatSolve_SeqBAIJ_N;
   }
 
-  B->ops->solveadd          = 0;
-  B->ops->solvetranspose    = 0;
-  B->ops->solvetransposeadd = 0;
-  B->ops->matsolve          = 0;
+  B->ops->solveadd          = NULL;
+  B->ops->solvetranspose    = NULL;
+  B->ops->solvetransposeadd = NULL;
+  B->ops->matsolve          = NULL;
   B->assembled              = PETSC_TRUE;
   B->preallocated           = PETSC_TRUE;
   PetscFunctionReturn(0);

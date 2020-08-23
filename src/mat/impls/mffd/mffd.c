@@ -2,7 +2,7 @@
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/mffd/mffdimpl.h>   /*I  "petscmat.h"   I*/
 
-PetscFunctionList MatMFFDList              = 0;
+PetscFunctionList MatMFFDList              = NULL;
 PetscBool         MatMFFDRegisterAllCalled = PETSC_FALSE;
 
 PetscClassId  MATMFFD_CLASSID;
@@ -546,13 +546,13 @@ static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObje
     ierr = MatMFFDSetType(mat,ftype);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsReal("-mat_mffd_err","set sqrt relative error in function","MatMFFDSetFunctionError",mfctx->error_rel,&mfctx->error_rel,0);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mffd_period","how often h is recomputed","MatMFFDSetPeriod",mfctx->recomputeperiod,&mfctx->recomputeperiod,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mffd_err","set sqrt relative error in function","MatMFFDSetFunctionError",mfctx->error_rel,&mfctx->error_rel,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mffd_period","how often h is recomputed","MatMFFDSetPeriod",mfctx->recomputeperiod,&mfctx->recomputeperiod,NULL);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-mat_mffd_check_positivity","Insure that U + h*a is nonnegative","MatMFFDSetCheckh",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatMFFDSetCheckh(mat,MatMFFDCheckPositivity,0);CHKERRQ(ierr);
+    ierr = MatMFFDSetCheckh(mat,MatMFFDCheckPositivity,NULL);CHKERRQ(ierr);
   }
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscOptionsBool("-mat_mffd_complex","Use Lyness complex number trick to compute the matrix-vector product","None",mfctx->usecomplex,&mfctx->usecomplex,NULL);CHKERRQ(ierr);
@@ -640,7 +640,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   mfctx->historyh                 = NULL;
   mfctx->ncurrenth                = 0;
   mfctx->maxcurrenth              = 0;
-  ((PetscObject)mfctx)->type_name = 0;
+  ((PetscObject)mfctx)->type_name = NULL;
 
   /*
      Create the empty data structure to contain compute-h routines.
@@ -648,14 +648,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
      a later call with MatMFFDSetType() or if that is not called
      then it will default in the first use of MatMult_MFFD()
   */
-  mfctx->ops->compute        = 0;
-  mfctx->ops->destroy        = 0;
-  mfctx->ops->view           = 0;
-  mfctx->ops->setfromoptions = 0;
-  mfctx->hctx                = 0;
+  mfctx->ops->compute        = NULL;
+  mfctx->ops->destroy        = NULL;
+  mfctx->ops->view           = NULL;
+  mfctx->ops->setfromoptions = NULL;
+  mfctx->hctx                = NULL;
 
-  mfctx->func    = 0;
-  mfctx->funcctx = 0;
+  mfctx->func    = NULL;
+  mfctx->funcctx = NULL;
   mfctx->w       = NULL;
   mfctx->mat     = A;
 

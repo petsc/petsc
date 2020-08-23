@@ -1744,7 +1744,7 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *B   = 0;
+  *B   = NULL;
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATNEST);CHKERRQ(ierr);
   A->preallocated = PETSC_TRUE;
@@ -2182,7 +2182,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->createsubmatrix       = MatCreateSubMatrix_Nest;
   A->ops->destroy               = MatDestroy_Nest;
   A->ops->view                  = MatView_Nest;
-  A->ops->getvecs               = 0; /* Use VECNEST by calling MatNestSetVecType(A,VECNEST) */
+  A->ops->getvecs               = NULL; /* Use VECNEST by calling MatNestSetVecType(A,VECNEST) */
   A->ops->getlocalsubmatrix     = MatGetLocalSubMatrix_Nest;
   A->ops->restorelocalsubmatrix = MatRestoreLocalSubMatrix_Nest;
   A->ops->getdiagonal           = MatGetDiagonal_Nest;
@@ -2194,7 +2194,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->hasoperation          = MatHasOperation_Nest;
   A->ops->missingdiagonal       = MatMissingDiagonal_Nest;
 
-  A->spptr        = 0;
+  A->spptr        = NULL;
   A->assembled    = PETSC_FALSE;
 
   /* expose Nest api's */
