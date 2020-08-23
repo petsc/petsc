@@ -76,18 +76,18 @@ registers the ordering routine with the command
 
 ::
 
-   MatOrderingRegister(MatOrderingType inname,char *path,char *sname,PetscErrorCode (*reorder)(Mat,MatOrderingType,IS*,IS*)));
+   MatOrderingRegister(MatOrderingType ordname,char *path,char *sname,PetscErrorCode (*reorder)(Mat,MatOrderingType,IS*,IS*)));
 
-The input argument ``inname`` is a string of the user’s choice,
-``iname`` is either an ordering defined in ``petscmat.h`` or a users
-string, to indicate one is introducing a new ordering, while the output
-See the code in ``src/mat/impls/order/sorder.c`` and other files in that
+The input argument ``ordname`` is a string of the user’s choice,
+either an ordering defined in ``petscmat.h`` or the name
+of a new ordering introduced by the user. See the code in
+``src/mat/impls/order/sorder.c`` and other files in that
 directory for examples on how the reordering routines may be written.
 
 Once the reordering routine has been registered, it can be selected for
 use at runtime with the command line option
-``-pc_factor_mat_ordering_type`` ``sname``. If reordering directly, the
-user should provide the ``name`` as the second input argument of
+``-pc_factor_mat_ordering_type`` ``ordname``. If reordering from the API, the
+user should provide the ``ordname`` as the second input argument of
 ``MatGetOrdering()``.
 
 The following routines perform complete, in-place, symbolic, and
