@@ -11,7 +11,10 @@ if __name__ == "__main__":
   root = os.path.relpath(os.path.realpath(petscdir),os.path.realpath(os.getcwd()))
   froot = os.path.relpath(os.path.realpath(petscdir),os.path.dirname(os.path.realpath(filename)))
 
-  for line in sys.stdin:
+  fd = open(0, 'rb')
+  # avoid errors of the type: UnicodeDecodeError: 'utf-8' codec can't decode byte 0x88 in position 7892: invalid start byte
+  lines = fd.read().decode(encoding='UTF-8',errors='replace')
+  for line in lines:
     if 'include' in line:
       ins = re.search('#include [ ]*&lt;',line)
       if ins:

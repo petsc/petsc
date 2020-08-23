@@ -89,6 +89,10 @@ endif
 
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):src/%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
+concatlangsrc = $(foreach lang, $(langs), $(srcs-$(1).$(lang)))
+csrc := $(foreach pkg, $(pkgs),  $(srcs-$(pkg).c))
+showcsrc:
+	-@echo $(csrc)
 
 define SHARED_RECIPE_DLL
   @$(RM) $@ dllcmd.${PETSC_ARCH}
