@@ -267,7 +267,10 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
          t_nsrc_lines = 0
          t_nsrc_lines_not_tested = 0
          ii = file.replace(os.sep,'__')
-         diff = str(subprocess.check_output('git blame origin/master.. '+file+' | grep -v "\^"', shell=True).decode(encoding='UTF-8',errors='replace')).split('\n')
+         try:
+             diff = str(subprocess.check_output('git blame origin/master.. '+file+' | grep -v "\^"', shell=True).decode(encoding='UTF-8',errors='replace')).split('\n')
+         except:
+             pass
          lines_not_tested = {}
          for line in diff:
              if len(line) > 0:
