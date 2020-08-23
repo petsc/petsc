@@ -203,7 +203,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       }
       fl = fl->next;
     }
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid refiner %g not registered",name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid refiner %s not registered",name);
   } else {
     while (fl) {
       if (dim-1 == fl->dim) {
@@ -253,7 +253,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %d is not supported.", dim);
+    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %D is not supported.", dim);
   }
   ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
   if (localized) {ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);}

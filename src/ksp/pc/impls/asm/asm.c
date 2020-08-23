@@ -497,9 +497,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
     /* add the local solution to the global solution including the ghost nodes */
     ierr = VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse);CHKERRQ(ierr);
     ierr = VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
-  }
+  } else SETERRQ1(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
   PetscFunctionReturn(0);
 }
 
@@ -574,9 +572,7 @@ static PetscErrorCode PCMatApply_ASM(PC pc,Mat X,Mat Y)
       ierr = MatDenseRestoreColumnVecWrite(Y, i, &x);
     }
     ierr = MatDestroy(&W);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
-  }
+  } else SETERRQ1(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
   PetscFunctionReturn(0);
 }
 
