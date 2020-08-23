@@ -11,10 +11,10 @@ PetscLogEvent DMSWARM_Migrate, DMSWARM_SetSizes, DMSWARM_AddPoints, DMSWARM_Remo
 PetscLogEvent DMSWARM_DataExchangerTopologySetup, DMSWARM_DataExchangerBegin, DMSWARM_DataExchangerEnd;
 PetscLogEvent DMSWARM_DataExchangerSendCount, DMSWARM_DataExchangerPack;
 
-const char* DMSwarmTypeNames[] = { "basic", "pic", 0 };
-const char* DMSwarmMigrateTypeNames[] = { "basic", "dmcellnscatter", "dmcellexact", "user", 0 };
-const char* DMSwarmCollectTypeNames[] = { "basic", "boundingbox", "general", "user", 0 };
-const char* DMSwarmPICLayoutTypeNames[] = { "regular", "gauss", "subdivision", 0 };
+const char* DMSwarmTypeNames[] = { "basic", "pic", NULL };
+const char* DMSwarmMigrateTypeNames[] = { "basic", "dmcellnscatter", "dmcellexact", "user", NULL };
+const char* DMSwarmCollectTypeNames[] = { "basic", "boundingbox", "general", "user", NULL  };
+const char* DMSwarmPICLayoutTypeNames[] = { "regular", "gauss", "subdivision", NULL  };
 
 const char DMSwarmField_pid[] = "DMSwarm_pid";
 const char DMSwarmField_rank[] = "DMSwarm_rank";

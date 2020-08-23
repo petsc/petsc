@@ -50,7 +50,7 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   PetscValidPointer(array, 3);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
   PetscValidPointer(array, 3);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -181,7 +181,7 @@ PetscErrorCode  DMDAVecGetArrayWrite(DM da,Vec vec,void *array)
   }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -238,7 +238,7 @@ PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
   }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -296,7 +296,7 @@ PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
   PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -343,7 +343,7 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
   PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -415,7 +415,7 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
   PetscValidPointer(array, 3);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -469,7 +469,7 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
   PetscValidPointer(array, 3);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -527,7 +527,7 @@ PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
   PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -574,7 +574,7 @@ PetscErrorCode  DMDAVecRestoreArrayDOFRead(DM da,Vec vec,void *array)
   PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);

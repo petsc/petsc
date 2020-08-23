@@ -149,7 +149,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&zctx.rank);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da,0,&M,&N,0,&zctx.m,&zctx.n,0,&w,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,NULL,&M,&N,NULL,&zctx.m,&zctx.n,NULL,&w,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,NULL);CHKERRQ(ierr);
 
   /*
@@ -668,7 +668,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 #endif
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis);CHKERRQ(ierr);
   if (isdraw) {
-    ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
     if (dim == 1) {
       ierr = VecView_MPI_Draw_DA1d(xin,viewer);CHKERRQ(ierr);
     } else if (dim == 2) {
@@ -743,7 +743,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
       ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
       ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
       ierr = PetscFPrintf(comm,info,"#$$ tmp = PetscBinaryRead(fd); \n");CHKERRQ(ierr);
       if (dim == 1) { ierr = PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d);\n",dof,ni);CHKERRQ(ierr); }

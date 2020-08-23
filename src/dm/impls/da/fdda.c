@@ -232,7 +232,7 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,0,0,0,&m,&n,&p,&nc,0,&bx,&by,&bz,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,&m,&n,&p,&nc,NULL,&bx,&by,&bz,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -300,10 +300,10 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,0,&M,&N,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,NULL,&M,&N,NULL,&nc,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&nx,&ny,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gnx,&gny,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   /* special case as taught to us by Paul Hovland */
@@ -447,14 +447,14 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColori
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,0,0,&M,0,0,&nc,&s,&bx,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,NULL,NULL,&M,NULL,NULL,&nc,&s,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
   col  = 2*s + 1;
 
   if (bx == DM_BOUNDARY_PERIODIC && (m % col)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points %d is divisible\n\
                                                           by 2*stencil_width + 1 %d\n",(int)m,(int)col);
 
-  ierr = DMDAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&nx,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,NULL,NULL,&gnx,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   /* create the coloring */
@@ -523,9 +523,9 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&bx,&by,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,NULL,NULL,NULL,NULL,&nc,&s,&bx,&by,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&nx,&ny,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gnx,&gny,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   if (bx == DM_BOUNDARY_PERIODIC && (m % 5)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible by 5\n");
@@ -728,8 +728,8 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   P   = dd->P;
   dim = da->dim;
   dof = dd->w;
-  /* ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr); */
-  ierr = DMDAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
+  /* ierr = DMDAGetInfo(da,&dim,&M,&N,&P,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr); */
+  ierr = DMDAGetCorners(da,NULL,NULL,NULL,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,dof*M*N*P,dof*M*N*P);CHKERRQ(ierr);
@@ -940,10 +940,10 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da,Mat J)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,NULL,NULL,NULL,NULL,&nc,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&nx,&ny,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gnx,&gny,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(nc,&rows,col*col*nc*nc,&cols);CHKERRQ(ierr);
@@ -1158,7 +1158,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J,PetscBool isIS)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,&M,&N,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&M,&N,NULL,NULL,&nc,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
   if (!isIS && bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) {
     ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -1169,8 +1169,8 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J,PetscBool isIS)
   */
   if (M == 1 && 2*s >= m) removedups = PETSC_TRUE;
   if (N == 1 && 2*s >= n) removedups = PETSC_TRUE;
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&nx,&ny,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gnx,&gny,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(nc,&rows,col*col*nc*nc,&cols);CHKERRQ(ierr);
@@ -1283,7 +1283,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,&M,&N,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&M,&N,NULL,NULL,&nc,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
   /*
        With one processor in periodic domains in a skinny dimension the code will label nonzero columns multiple times
@@ -1291,8 +1291,8 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
   */
   if (M == 1 && 2*s >= m) removedups = PETSC_TRUE;
   if (N == 1 && 2*s >= n) removedups = PETSC_TRUE;
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&nx,&ny,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gnx,&gny,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(col*col*nc,&cols);CHKERRQ(ierr);
@@ -1551,10 +1551,10 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
          nc - number of components per grid point
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&bx,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,NULL,NULL,NULL,NULL,NULL,&nc,&s,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
   if (s > 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Matrix creation for 1d not implemented correctly for stencil width larger than 1");
-  ierr = DMDAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&nx,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,NULL,NULL,&gnx,NULL,NULL);CHKERRQ(ierr);
 
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = PetscCalloc2(nx*nc,&cols,nx*nc,&ocols);CHKERRQ(ierr);
@@ -1723,18 +1723,18 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J,PetscBool isIS)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&bx,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,NULL,NULL,NULL,NULL,NULL,&nc,&s,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
   if (!isIS && bx == DM_BOUNDARY_NONE) {
     ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr);
   }
   col  = 2*s + 1;
 
-  ierr = DMDAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&nx,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,NULL,NULL,&gnx,NULL,NULL);CHKERRQ(ierr);
 
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(J,col*nc,0);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(J,col*nc,0,col*nc,0);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,col*nc,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(J,col*nc,NULL,col*nc,NULL);CHKERRQ(ierr);
 
   ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
   ierr = MatGetLocalToGlobalMapping(J,&mltog,NULL);CHKERRQ(ierr);
@@ -1795,11 +1795,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
      nc - number of components per grid point
      col - number of colors needed in one direction for single component problem
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,NULL,NULL,NULL,NULL,&nc,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
 
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&nx,&ny,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gnx,&gny,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(col*col*nc*nc,&cols);CHKERRQ(ierr);
@@ -1889,7 +1889,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,NULL,NULL,NULL,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
 
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -2016,11 +2016,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
      nc - number of components per grid point
      col - number of colors needed in one direction for single component problem
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,NULL,NULL,NULL,NULL,&nc,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
 
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&nx,&ny,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gnx,&gny,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(col*col*nc*nc,&cols);CHKERRQ(ierr);
@@ -2113,7 +2113,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
      nc - number of components per grid point
      col - number of colors needed in one direction for single component problem
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,NULL,NULL,NULL,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
 
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);

@@ -434,7 +434,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->createinjection             = DMCreateInjection_DA;
   da->ops->hascreateinjection          = DMHasCreateInjection_DA;
   da->ops->destroy                     = DMDestroy_DA;
-  da->ops->view                        = 0;
+  da->ops->view                        = NULL;
   da->ops->setfromoptions              = DMSetFromOptions_DA;
   da->ops->setup                       = DMSetUp_DA;
   da->ops->clone                       = DMClone_DA;

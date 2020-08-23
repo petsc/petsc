@@ -36,7 +36,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (!dd->gtol) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set coordinates until after DMDA has been setup");
-  ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&M,&N,&P,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL);CHKERRQ(ierr);
   if (xmax < xmin) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %g %g",(double)xmin,(double)xmax);
   if ((dim > 1) && (ymax < ymin)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %g %g",(double)ymin,(double)ymax);
   if ((dim > 2) && (zmax < zmin)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %g %g",(double)zmin,(double)zmax);
@@ -102,7 +102,7 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&step,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&step,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscMalloc1(step,&displayfields);CHKERRQ(ierr);
   for (k=0; k<step; k++) displayfields[k] = k;
   ndisplayfields = step;

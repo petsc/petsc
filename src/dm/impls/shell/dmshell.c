@@ -220,7 +220,7 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm,Vec *gvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
-  *gvec = 0;
+  *gvec = NULL;
   X     = shell->Xglobal;
   if (!X) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetGlobalVector() or DMShellSetCreateGlobalVector()");
   /* Need to create a copy in order to attach the DM to the vector */
@@ -239,7 +239,7 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
-  *gvec = 0;
+  *gvec = NULL;
   X     = shell->Xlocal;
   if (!X) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetLocalVector() or DMShellSetCreateLocalVector()");
   /* Need to create a copy in order to attach the DM to the vector */

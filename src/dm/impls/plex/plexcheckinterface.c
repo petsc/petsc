@@ -190,7 +190,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   PetscInt            *mine_orig_numbering;
   Vec                 *sntCoordinatesPerRank;
   Vec                 *refCoordinatesPerRank;
-  Vec                 *recCoordinatesPerRank=0;
+  Vec                 *recCoordinatesPerRank=NULL;
   PetscInt            r;
   PetscMPIInt         commsize, myrank;
   PetscBool           same;

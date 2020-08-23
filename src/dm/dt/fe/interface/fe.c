@@ -313,7 +313,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   if (!*fem) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*fem), PETSCFE_CLASSID, 1);
 
-  if (--((PetscObject)(*fem))->refct > 0) {*fem = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*fem))->refct > 0) {*fem = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*fem))->refct = 0;
 
   if ((*fem)->subspaces) {

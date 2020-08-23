@@ -8,7 +8,7 @@ PetscLogEvent PETSCDUALSPACE_SetUp;
 PetscFunctionList PetscDualSpaceList              = NULL;
 PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
 
-const char *const PetscDualSpaceReferenceCells[] = {"SIMPLEX", "TENSOR", "PetscDualSpaceReferenceCell", "PETSCDUALSPACE_REFCELL_",0};
+const char *const PetscDualSpaceReferenceCells[] = {"SIMPLEX", "TENSOR", "PetscDualSpaceReferenceCell", "PETSCDUALSPACE_REFCELL_", NULL};
 
 /*
   PetscDualSpaceLatticePointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to at most 'max'.
@@ -420,7 +420,7 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   if (!*sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*sp), PETSCDUALSPACE_CLASSID, 1);
 
-  if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*sp))->refct > 0) {*sp = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*sp))->refct = 0;
 
   ierr = PetscDualSpaceGetDimension(*sp, &dim);CHKERRQ(ierr);
