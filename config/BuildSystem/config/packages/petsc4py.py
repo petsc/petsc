@@ -86,10 +86,14 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
-    if not self.python.cython:
-        raise RuntimeError('petsc4py requires Python with Cython module installed')
-    if not self.python.numpy:
-        raise RuntimeError('petsc4py requires Python with numpy module installed')
+    chkpkgs = ['cython','numpy']
+    npkgs  = []
+    for pkg in chkpkgs:
+      if not getattr(self.python,pkg): npkgs.append(pkg)
+    if npkgs:
+      raise RuntimeError('PETSc4py requires Python with "%s" module(s) installed!\n'
+                         'Please install using package managers - for ex: "apt" or "dnf" (on linux),\n'
+                         'or with "pip" using: %s -m pip install %s' % (" ".join(npkgs), self.python.pyexe, " ".join(npkgs)))
     self.checkDownload()
 
   def alternateConfigureLibrary(self):
