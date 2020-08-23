@@ -242,7 +242,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
 
   PetscFunctionBegin;
   PetscValidPointer(aoout,5);
-  *aoout = 0;
+  *aoout = NULL;
   ierr = AOInitializePackage();CHKERRQ(ierr);
 
   ierr     = PetscHeaderCreate(ao, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);

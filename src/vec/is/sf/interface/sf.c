@@ -11,7 +11,7 @@
 #  define PetscSFCheckGraphSet(sf,arg) do {} while (0)
 #endif
 
-const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","PetscSFDuplicateOption","PETSCSF_DUPLICATE_",0};
+const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","PetscSFDuplicateOption","PETSCSF_DUPLICATE_",NULL};
 
 /*@
    PetscSFCreate - create a star forest communication context

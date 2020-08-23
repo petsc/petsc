@@ -98,7 +98,7 @@ static PetscErrorCode PFSetFromOptions_String(PetscOptionItems *PetscOptionsObje
   PetscErrorCode ierr;
   PetscBool      flag;
   char           value[PETSC_MAX_PATH_LEN];
-  PetscErrorCode (*f)(void*,PetscInt,const PetscScalar*,PetscScalar*) = 0;
+  PetscErrorCode (*f)(void*,PetscInt,const PetscScalar*,PetscScalar*) = NULL;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"String function options");CHKERRQ(ierr);
@@ -116,7 +116,7 @@ typedef PetscErrorCode (*FCN)(void*,PetscInt,const PetscScalar*,PetscScalar*); /
 PETSC_EXTERN PetscErrorCode PFCreate_String(PF pf,void *value)
 {
   PetscErrorCode ierr;
-  FCN            f = 0;
+  FCN            f = NULL;
 
   PetscFunctionBegin;
   if (value) {

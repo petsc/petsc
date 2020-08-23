@@ -56,7 +56,7 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   ierr = VecCreate(PetscObjectComm((PetscObject)win),v);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
-  ierr = VecCreate_MPI_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*v,PETSC_TRUE,w->nghost,NULL);CHKERRQ(ierr);
   vw   = (Vec_MPI*)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
 
@@ -118,7 +118,7 @@ static PetscErrorCode VecResetArray_MPI(Vec vin)
 
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
-  v->unplacedarray = 0;
+  v->unplacedarray = NULL;
   if (v->localrep) {
     ierr = VecResetArray(v->localrep);CHKERRQ(ierr);
   }
@@ -435,10 +435,10 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecSetValues_MPI, /* 20 */
                                 VecAssemblyBegin_MPI_BTS,
                                 VecAssemblyEnd_MPI_BTS,
-                                0,
+                                NULL,
                                 VecGetSize_MPI,
                                 VecGetSize_Seq,
-                                0,
+                                NULL,
                                 VecMax_MPI,
                                 VecMin_MPI,
                                 VecSetRandom_Seq,
@@ -456,8 +456,8 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecLoad_Default,
                                 VecReciprocal_Default,
                                 VecConjugate_Seq,
-                                0,
-                                0,
+                                NULL,
+                                NULL,
                                 VecResetArray_MPI,
                                 VecSetFromOptions_MPI,/*set from options */
                                 VecMaxPointwiseDivide_Seq,
@@ -465,23 +465,23 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecPointwiseMaxAbs_Seq,
                                 VecPointwiseMin_Seq,
                                 VecGetValues_MPI,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
                                 VecStrideGather_Default,
                                 VecStrideScatter_Default,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
                                 VecStrideSubSetGather_Default,
                                 VecStrideSubSetScatter_Default,
-                                0,
-                                0
+                                NULL,
+                                NULL
 };
 
 /*
@@ -507,7 +507,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
 
   s->array           = (PetscScalar*)array;
-  s->array_allocated = 0;
+  s->array_allocated = NULL;
   if (alloc && !array) {
     PetscInt n = v->map->n+nghost;
     ierr               = PetscCalloc1(n,&s->array);CHKERRQ(ierr);
@@ -516,8 +516,8 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   }
 
   /* By default parallel vectors do not have local representation */
-  s->localrep    = 0;
-  s->localupdate = 0;
+  s->localrep    = NULL;
+  s->localupdate = NULL;
 
   v->stash.insertmode = NOT_SET_VALUES;
   v->bstash.insertmode = NOT_SET_VALUES;
@@ -551,7 +551,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec vv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreate_MPI_Private(vv,PETSC_TRUE,0,0);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(vv,PETSC_TRUE,0,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -668,7 +668,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   PetscInt               rstart,i,*indices;
 
   PetscFunctionBegin;
-  *vv = 0;
+  *vv = NULL;
 
   if (n == PETSC_DECIDE)      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
   if (nghost == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
@@ -744,7 +744,7 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreateGhostWithArray(comm,n,N,nghost,ghosts,0,vv);CHKERRQ(ierr);
+  ierr = VecCreateGhostWithArray(comm,n,N,nghost,ghosts,NULL,vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -876,7 +876,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   PetscInt               rstart,i,nb,*indices;
 
   PetscFunctionBegin;
-  *vv = 0;
+  *vv = NULL;
 
   if (n == PETSC_DECIDE)      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
   if (nghost == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
@@ -957,6 +957,6 @@ PetscErrorCode  VecCreateGhostBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreateGhostBlockWithArray(comm,bs,n,N,nghost,ghosts,0,vv);CHKERRQ(ierr);
+  ierr = VecCreateGhostBlockWithArray(comm,bs,n,N,nghost,ghosts,NULL,vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

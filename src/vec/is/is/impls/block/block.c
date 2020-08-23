@@ -401,7 +401,7 @@ static struct _ISOps myops = { ISGetIndices_Block,
                                ISToGeneral_Block,
                                ISOnComm_Block,
                                ISSetBlockSize_Block,
-                               0,
+                               NULL,
                                ISLocate_Block,
                                /* we can have specialized local routines for determining properties,
                                 * but unless the block size is the same on each process (which is not guaranteed at

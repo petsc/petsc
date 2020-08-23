@@ -8,7 +8,7 @@
 
 static PetscBool         ISPackageInitialized = PETSC_FALSE;
 extern PetscFunctionList ISLocalToGlobalMappingList;
-const char       *ISInfos[] = {"SORTED", "UNIQUE", "PERMUTATION", "INTERVAL", "IDENTITY", "ISInfo", "IS_",0};
+const char       *ISInfos[] = {"SORTED", "UNIQUE", "PERMUTATION", "INTERVAL", "IDENTITY", "ISInfo", "IS_",NULL};
 
 /*@C
   ISFinalizePackage - This function destroys everything in the IS package. It is
@@ -135,7 +135,7 @@ static void MPIAPI MPIU_MinIndex_Local(void *in,void *out,PetscMPIInt *cnt,MPI_D
 
 PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
-const char *const NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
+const char *const NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",NULL};
 PetscInt          NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
 
 static PetscBool  VecPackageInitialized = PETSC_FALSE;

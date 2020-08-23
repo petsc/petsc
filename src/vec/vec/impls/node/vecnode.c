@@ -223,8 +223,8 @@ static struct _VecOps DvOps = { VecDuplicate_Node, /* 1 */
                                 VecAYPX_Node,
                                 VecWAXPY_Node,
                                 VecAXPBYPCZ_Node,
-                                0,
-                                0,
+                                NULL,
+                                NULL,
                                 VecSetValues_Node, /* 20 */
                                 VecAssemblyBegin_Node,
                                 VecAssemblyEnd_Node,
@@ -235,7 +235,7 @@ static struct _VecOps DvOps = { VecDuplicate_Node, /* 1 */
                                 VecMax_Node,
                                 VecMin_Node,
                                 VecSetRandom_Seq,
-                                0,
+                                NULL,
                                 VecSetValuesBlocked_Seq,
                                 VecDestroy_Node,
                                 VecView_Node,
@@ -249,36 +249,36 @@ static struct _VecOps DvOps = { VecDuplicate_Node, /* 1 */
                                 VecLoad_Default,
                                 VecReciprocal_Default,
                                 VecConjugate_Node,
-                                0,
-                                0,
+                                NULL,
+                                NULL,
                                 VecResetArray_Seq,
-                                0,/*set from options */
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
+                                NULL,/*set from options */
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
                                 VecGetArrayRead_Node,
                                 VecRestoreArrayRead_Node,
                                 VecStrideSubSetGather_Default,
                                 VecStrideSubSetScatter_Default,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL
 };
 
 /*@C
@@ -338,7 +338,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Node(Vec v)
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
 
   s->array           = (PetscScalar*)array;
-  s->array_allocated = 0;
+  s->array_allocated = NULL;
 
   if (alloc && !array) {
     PetscInt n = v->map->n;
