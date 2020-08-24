@@ -86,10 +86,13 @@ def import_package(options, pkgname):
     return package
 
 def getprocessorinfo():
-    from platform import uname
+    try:
+        name = os.uname()[1]
+    except:
+        import platform
+        name = platform.uname()[1]
     from petsc4py.PETSc import COMM_WORLD
     rank = COMM_WORLD.getRank()
-    name = uname()[1]
     return (rank, name)
 
 def getlibraryinfo():
