@@ -372,7 +372,7 @@ static PetscErrorCode one(PetscInt dim, PetscReal time, const PetscReal x[], Pet
 static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace)
 {
   Vec              vec;
-  PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero, zero};
+  PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero, one};
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;

@@ -768,7 +768,10 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
 + obj   - the object
 . bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
 - optionname - option to activate viewing
+
   Level: intermediate
+
+.seealso: PetscBagCreate(), PetscBag, PetscViewer
 @*/
 PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const char optionname[])
 {
