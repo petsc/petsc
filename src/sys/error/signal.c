@@ -157,6 +157,17 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
     (*PetscErrorPrintf)("to get more information on the crash.\n");
   }
   ierr =  PetscError(PETSC_COMM_SELF,0,"User provided function"," unknown file",PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
+  if (sig == SIGSEGV || sig == SIGBUS) {
+    PetscBool debug;
+
+    PetscMallocGetDebug(&debug,NULL,NULL);
+    if (debug) {
+      (*PetscErrorPrintf)("Checking the memory for corruption.\n");
+      PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__);
+    } else {
+      (*PetscErrorPrintf)("Run with -malloc_debug to check if memory corruption is causing the crash.\n");
+    }
+  }
   atexit(MyExit);
   PETSCABORT(PETSC_COMM_WORLD,(int)ierr);
   PetscFunctionReturn(0);

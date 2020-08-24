@@ -2114,7 +2114,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
 
    Notes:
       Not available from Fortran
-      Errors if the integer is negative since BLAS/LAPACK never take negative integer inputs
+      Errors if the integer is negative since PETSc calls to BLAS/LAPACK never need to cast negative integer inputs
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscIntCast()
 @*/

@@ -708,7 +708,7 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
 
      PetscMallocView() prints a list of all memory ever allocated
 
-.seealso:  PetscMallocGetCurrentUsage(), PetscMallocView(), PetscMallocViewSet()
+.seealso:  PetscMallocGetCurrentUsage(), PetscMallocView(), PetscMallocViewSet(), PetscMallocValidate()
 @*/
 PetscErrorCode  PetscMallocDump(FILE *fp)
 {
@@ -761,7 +761,7 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
 
     Uses MPI_COMM_WORLD to determine rank because PETSc communicators may not be available
 
-.seealso: PetscMallocDump(), PetscMallocView(), PetscMallocViewSet(), PetscMallocTraceSet()
+.seealso: PetscMallocDump(), PetscMallocView(), PetscMallocViewSet(), PetscMallocTraceSet(), PetscMallocValidate()
 @*/
 PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 {
