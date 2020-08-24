@@ -275,7 +275,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   Mat_SeqDense      *x = (Mat_SeqDense*)X->data,*y = (Mat_SeqDense*)Y->data;
   const PetscScalar *xv;
   PetscScalar       *yv;
-  PetscBLASInt      N,m,ldax,lday,one = 1;
+  PetscBLASInt      N,m,ldax = 0,lday = 0,one = 1;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -323,7 +323,7 @@ PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
   PetscScalar    *v;
   PetscErrorCode ierr;
-  PetscBLASInt   one = 1,j,nz,lda;
+  PetscBLASInt   one = 1,j,nz,lda = 0;
 
   PetscFunctionBegin;
   ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
@@ -766,7 +766,7 @@ static PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType fl
   const PetscScalar *b;
   PetscErrorCode    ierr;
   PetscInt          m = A->rmap->n,i;
-  PetscBLASInt      o = 1,bm;
+  PetscBLASInt      o = 1,bm = 0;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA)

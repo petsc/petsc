@@ -157,7 +157,11 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
     (*PetscErrorPrintf)("to get more information on the crash.\n");
   }
   ierr =  PetscError(PETSC_COMM_SELF,0,"User provided function"," unknown file",PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
+#if !defined(PETSC_MISSING_SIGBUS)
   if (sig == SIGSEGV || sig == SIGBUS) {
+#else
+  if (sig == SIGSEGV) {
+#endif
     PetscBool debug;
 
     PetscMallocGetDebug(&debug,NULL,NULL);

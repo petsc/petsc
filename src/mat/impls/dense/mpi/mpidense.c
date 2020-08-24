@@ -2709,7 +2709,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(Mat A,
   PetscInt              i,cK=A->cmap->N,k,j,bn;
   PetscScalar           _DOne=1.0,_DZero=0.0;
   const PetscScalar     *av,*bv;
-  PetscBLASInt          cm, cn, ck, alda, blda, clda;
+  PetscBLASInt          cm, cn, ck, alda, blda = 0, clda;
   MPI_Request           reqs[2];
   const PetscInt        *ranges;
 
