@@ -8,7 +8,7 @@ def noCheck(command, status, output, error):
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.minversion        = '1.1.25'
+    self.minversion        = '1.1.26'
     self.gitcommit         = 'v'+self.minversion+'-p1'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-sowing']
