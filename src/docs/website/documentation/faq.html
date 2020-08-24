@@ -951,10 +951,10 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <h3><a name="cmake">Can I use CMake to build my own project that depends on PETSc?</a></h3>
 
-      Use the FindPETSc.cmake module from <a
-        href="https://github.com/jedbrown/cmake-modules/">this repository</a>.
-      See the CMakeLists.txt from <a
-        href="https://github.com/jedbrown/dohp">Dohp</a> for example usage.
+      Use <a href="https://cmake.org/cmake/help/latest/module/FindPkgConfig.html">FindPkgConfig.cmake</a>, which is installed by default with CMake.
+      PETSc installs <code>${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig/petsc.pc</code>, which can be be read by <code>FindPkgConfig.cmake</code>.
+      If you must use a very old version of CMake and/or PETSc, you can use the <code>FindPETSc.cmake</code> module from <a href="https://github.com/jedbrown/cmake-modules/">this repository</a>.
+      See the CMakeLists.txt from <a href="https://github.com/jedbrown/dohp">Dohp</a> for (very dated) example usage.
 
       <h3><a name="carriagereturns">How can I put carriage returns in PetscPrintf() statements from Fortran?</a></h3>
 
