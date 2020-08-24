@@ -48,8 +48,8 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = DMDAGetCorners(dmregular,&xs,&ys,0,&xe,&ye,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dmregular,&Xs,&Ys,0,&Xe,&Ye,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dmregular,&xs,&ys,NULL,&xe,&ye,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dmregular,&Xs,&Ys,NULL,&Xe,&Ye,NULL);CHKERRQ(ierr);
   xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
   ye += ys; Ye += Ys; if (ys != Ys) ys -= 1;
 

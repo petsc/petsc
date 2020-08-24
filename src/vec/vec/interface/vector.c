@@ -388,7 +388,7 @@ PetscErrorCode  VecDestroy(Vec *v)
   PetscFunctionBegin;
   if (!*v) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
-  if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*v))->refct > 0) {*v = NULL; PetscFunctionReturn(0);}
 
   ierr = PetscObjectSAWsViewOff((PetscObject)*v);CHKERRQ(ierr);
   /* destroy the internal part */
@@ -1322,7 +1322,7 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
   v->map->N = N;
   if (v->ops->create) {
     ierr = (*v->ops->create)(v);CHKERRQ(ierr);
-    v->ops->create = 0;
+    v->ops->create = NULL;
   }
   PetscFunctionReturn(0);
 }

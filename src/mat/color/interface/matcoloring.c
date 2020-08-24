@@ -1,8 +1,8 @@
 #include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
 
-PetscFunctionList MatColoringList              = 0;
+PetscFunctionList MatColoringList              = NULL;
 PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
-const char *const MatColoringWeightTypes[] = {"RANDOM","LEXICAL","LF","SL","MatColoringWeightType","MAT_COLORING_WEIGHT_",0};
+const char *const MatColoringWeightTypes[] = {"RANDOM","LEXICAL","LF","SL","MatColoringWeightType","MAT_COLORING_WEIGHT_",NULL};
 
 /*@C
    MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
@@ -113,7 +113,7 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (--((PetscObject)(*mc))->refct > 0) {*mc = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*mc))->refct > 0) {*mc = NULL; PetscFunctionReturn(0);}
   ierr = MatDestroy(&(*mc)->mat);CHKERRQ(ierr);
   if ((*mc)->ops->destroy) {ierr = (*((*mc)->ops->destroy))(*mc);CHKERRQ(ierr);}
   if ((*mc)->user_weights) {ierr = PetscFree((*mc)->user_weights);CHKERRQ(ierr);}
@@ -156,10 +156,10 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
     ierr             = (*(mc)->ops->destroy)(mc);CHKERRQ(ierr);
     mc->ops->destroy = NULL;
   }
-  mc->ops->apply            = 0;
-  mc->ops->view             = 0;
-  mc->ops->setfromoptions   = 0;
-  mc->ops->destroy          = 0;
+  mc->ops->apply            = NULL;
+  mc->ops->view             = NULL;
+  mc->ops->setfromoptions   = NULL;
+  mc->ops->destroy          = NULL;
 
   ierr = PetscObjectChangeTypeName((PetscObject)mc,type);CHKERRQ(ierr);
   ierr = (*r)(mc);CHKERRQ(ierr);

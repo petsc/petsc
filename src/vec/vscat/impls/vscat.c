@@ -70,9 +70,9 @@ static PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,Inser
         } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
         ierr = MPI_Scatterv(xvt,scat->count,disply,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
       } else {
-        ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,0, 0,0,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+        ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,NULL,NULL,NULL,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
         ierr = MPI_Reduce(xv,xvt,xx_n,MPIU_SCALAR,MPIU_SUM,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-        ierr = MPI_Scatterv(0,scat->count,disply,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+        ierr = MPI_Scatterv(NULL,scat->count,disply,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
       }
     }
   } else {
@@ -166,7 +166,7 @@ static PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,Inser
     }
   /* ---------  Forward scatter; gather all values onto processor 0 */
   } else {
-    PetscScalar          *yvt  = 0;
+    PetscScalar          *yvt  = NULL;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     PetscInt             i;
     PetscMPIInt          *displx = scat->displx;
@@ -236,8 +236,8 @@ static PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
     sto->count[i]  = in_to->count[i];
     sto->displx[i] = in_to->displx[i];
   }
-  sto->work1    = 0;
-  sto->work2    = 0;
+  sto->work1    = NULL;
+  sto->work2    = NULL;
   out->todata   = (void*)sto;
   out->fromdata = (void*)0;
   PetscFunctionReturn(0);
@@ -417,12 +417,12 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx,PetscErrorCode (*vecs
       from12->n          = nx;
       from12->first      = from_first-start;
       from12->step       = from_step;
-      to12->format         = VEC_SCATTER_SEQ_STRIDE;
-      from12->format       = VEC_SCATTER_SEQ_STRIDE;
+      to12->format       = VEC_SCATTER_SEQ_STRIDE;
+      from12->format     = VEC_SCATTER_SEQ_STRIDE;
       ctx->todata        = (void*)to12;
       ctx->fromdata      = (void*)from12;
       ctx->ops->begin    = VecScatterBegin_SSToSS;
-      ctx->ops->end      = 0;
+      ctx->ops->end      = NULL;
       ctx->ops->destroy  = VecScatterDestroy_SSToSS;
       ctx->ops->copy     = VecScatterCopy_SSToSS;
       ctx->ops->view     = VecScatterView_SSToSS;
@@ -468,13 +468,13 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx,PetscErrorCode (*vecs
       }
       sto->count        = count;
       sto->displx       = displx;
-      sto->work1        = 0;
-      sto->work2        = 0;
+      sto->work1        = NULL;
+      sto->work2        = NULL;
       sto->format         = VEC_SCATTER_MPI_TOALL;
       ctx->todata       = (void*)sto;
-      ctx->fromdata     = 0;
+      ctx->fromdata     = NULL;
       ctx->ops->begin   = VecScatterBegin_MPI_ToAll;
-      ctx->ops->end     = 0;
+      ctx->ops->end     = NULL;
       ctx->ops->destroy = VecScatterDestroy_MPI_ToAll;
       ctx->ops->copy    = VecScatterCopy_MPI_ToAll;
       ctx->ops->view    = VecScatterView_MPI_ToAll;
@@ -528,13 +528,13 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx,PetscErrorCode (*vecs
       }
       sto->count        = count;
       sto->displx       = displx;
-      sto->work1        = 0;
-      sto->work2        = 0;
-      sto->format         = VEC_SCATTER_MPI_TOONE;
+      sto->work1        = NULL;
+      sto->work2        = NULL;
+      sto->format       = VEC_SCATTER_MPI_TOONE;
       ctx->todata       = (void*)sto;
-      ctx->fromdata     = 0;
+      ctx->fromdata     = NULL;
       ctx->ops->begin   = VecScatterBegin_MPI_ToOne;
-      ctx->ops->end     = 0;
+      ctx->ops->end     = NULL;
       ctx->ops->destroy = VecScatterDestroy_MPI_ToAll;
       ctx->ops->copy    = VecScatterCopy_MPI_ToAll;
       ctx->ops->view    = VecScatterView_MPI_ToAll;
@@ -665,7 +665,7 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx,PetscErrorCode (*vecs
       ctx->todata       = (void*)to;
       ctx->fromdata     = (void*)from;
       ctx->ops->begin   = VecScatterBegin_SSToSS;
-      ctx->ops->end     = 0;
+      ctx->ops->end     = NULL;
       ctx->ops->destroy = VecScatterDestroy_SSToSS;
       ctx->ops->copy    = VecScatterCopy_SSToSS;
       ctx->ops->view    = VecScatterView_SSToSS;
@@ -791,7 +791,7 @@ PetscErrorCode GetInputISType_private(VecScatter ctx,PetscInt xin_type,PetscInt 
   PetscErrorCode    ierr;
   MPI_Comm          comm;
   Vec               xin = ctx->from_v,yin = ctx->to_v;
-  IS                tix = 0,tiy = 0,ix = ctx->from_is, iy = ctx->to_is;
+  IS                tix = NULL,tiy = NULL,ix = ctx->from_is, iy = ctx->to_is;
   PetscInt          ix_type  = IS_GENERAL_ID,iy_type = IS_GENERAL_ID;
   PetscBool         flag;
 

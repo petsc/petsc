@@ -32,8 +32,8 @@ struct _n_PetscSFWinLink {
   PetscSFWinLink          next;
 };
 
-const char *const PetscSFWindowSyncTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFWindowSyncType","PETSCSF_WINDOW_SYNC_",0};
-const char *const PetscSFWindowFlavorTypes[] = {"CREATE","DYNAMIC","ALLOCATE","SHARED","PetscSFWindowFlavorType","PETSCSF_WINDOW_FLAVOR_",0};
+const char *const PetscSFWindowSyncTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFWindowSyncType","PETSCSF_WINDOW_SYNC_",NULL};
+const char *const PetscSFWindowFlavorTypes[] = {"CREATE","DYNAMIC","ALLOCATE","SHARED","PetscSFWindowFlavorType","PETSCSF_WINDOW_FLAVOR_",NULL};
 
 /* Built-in MPI_Ops act elementwise inside MPI_Accumulate, but cannot be used with composite types inside collectives (MPIU_Allreduce) */
 static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)

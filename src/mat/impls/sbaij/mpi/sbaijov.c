@@ -157,7 +157,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   const PetscInt *idx_i;
   PetscInt       idx,isz,col,*n,*data1,**data1_start,*data2,*data2_i,*data,*data_i;
   PetscInt       Mbs,i,j,k,*odata1,*odata2;
-  PetscInt       proc_id,**odata2_ptr,*ctable=0,*btable,len_max,len_est;
+  PetscInt       proc_id,**odata2_ptr,*ctable=NULL,*btable,len_max,len_est;
   PetscInt       proc_end=0,len_unused,nodata2;
   PetscInt       ois_max; /* max no of is[] in each of processor */
   char           *t_p;

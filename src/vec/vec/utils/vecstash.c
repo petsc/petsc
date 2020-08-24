@@ -52,18 +52,18 @@ PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
   stash->oldnmax  = 0;
   stash->n        = 0;
   stash->reallocs = -1;
-  stash->idx      = 0;
-  stash->array    = 0;
+  stash->idx      = NULL;
+  stash->array    = NULL;
 
-  stash->send_waits   = 0;
-  stash->recv_waits   = 0;
-  stash->send_status  = 0;
+  stash->send_waits   = NULL;
+  stash->recv_waits   = NULL;
+  stash->send_status  = NULL;
   stash->nsends       = 0;
   stash->nrecvs       = 0;
-  stash->svalues      = 0;
-  stash->rvalues      = 0;
+  stash->svalues      = NULL;
+  stash->rvalues      = NULL;
   stash->rmax         = 0;
-  stash->nprocs       = 0;
+  stash->nprocs       = NULL;
   stash->nprocessed   = 0;
   stash->donotstash   = PETSC_FALSE;
   stash->ignorenegidx = PETSC_FALSE;
@@ -120,8 +120,8 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
   stash->nprocessed = 0;
 
   ierr = PetscFree2(stash->array,stash->idx);CHKERRQ(ierr);
-  stash->array = 0;
-  stash->idx   = 0;
+  stash->array = NULL;
+  stash->idx   = NULL;
   ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
   ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
   ierr = PetscFree2(stash->svalues,stash->sindices);CHKERRQ(ierr);

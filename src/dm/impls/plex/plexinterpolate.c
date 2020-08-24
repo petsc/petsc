@@ -2,7 +2,7 @@
 #include <petsc/private/hashmapi.h>
 #include <petsc/private/hashmapij.h>
 
-const char * const DMPlexInterpolatedFlags[] = {"none", "partial", "mixed", "full", "DMPlexInterpolatedFlag", "DMPLEX_INTERPOLATED_", 0};
+const char * const DMPlexInterpolatedFlags[] = {"none", "partial", "mixed", "full", "DMPlexInterpolatedFlag", "DMPLEX_INTERPOLATED_", NULL};
 
 /* HashIJKL */
 

@@ -65,12 +65,12 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   no_inode             = PETSC_FALSE;
   no_unroll            = PETSC_FALSE;
   b->inode.node_count  = 0;
-  b->inode.size        = 0;
+  b->inode.size        = NULL;
   b->inode.limit       = 5;
   b->inode.max_limit   = 5;
   b->inode.ibdiagvalid = PETSC_FALSE;
-  b->inode.ibdiag      = 0;
-  b->inode.bdiag       = 0;
+  b->inode.ibdiag      = NULL;
+  b->inode.bdiag       = NULL;
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)B),((PetscObject)B)->prefix,"Options for SEQAIJ matrix","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for inodes (slower)",NULL,no_unroll,&no_unroll,NULL);CHKERRQ(ierr);

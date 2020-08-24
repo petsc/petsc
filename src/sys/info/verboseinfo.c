@@ -16,7 +16,7 @@
   PetscInfoFilename determines where PetscInfo() output is piped.
   PetscInfoClassnames holds a char array of classes which are filtered out/for in PetscInfo() calls.
 */
-const char * const        PetscInfoCommFlags[] = {"all", "no_self", "only_self", "PetscInfoCommFlag", "PETSC_INFO_COMM_", 0};
+const char * const        PetscInfoCommFlags[] = {"all", "no_self", "only_self", "PetscInfoCommFlag", "PETSC_INFO_COMM_", NULL};
 static PetscBool          PetscInfoClassesLocked = PETSC_FALSE, PetscInfoInvertClasses = PETSC_FALSE, PetscInfoClassesSet = PETSC_FALSE;
 static char               **PetscInfoClassnames = NULL;
 static char               *PetscInfoFilename = NULL;

@@ -7,7 +7,7 @@ const char *const DMFieldContinuities[] = {
   "EDGE",
   "FACET",
   "CELL",
-  0
+  NULL
 };
 
 PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm,PetscInt numComponents,DMFieldContinuity continuity,DMField *field)
@@ -48,7 +48,7 @@ PetscErrorCode DMFieldDestroy(DMField *field)
   PetscFunctionBegin;
   if (!*field) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*field),DMFIELD_CLASSID,1);
-  if (--((PetscObject)(*field))->refct > 0) {*field = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*field))->refct > 0) {*field = NULL; PetscFunctionReturn(0);}
   if ((*field)->ops->destroy) {ierr = (*(*field)->ops->destroy)(*field);CHKERRQ(ierr);}
   ierr = DMDestroy(&((*field)->dm));CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(field);CHKERRQ(ierr);

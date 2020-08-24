@@ -99,15 +99,15 @@ PetscErrorCode MatSeqSBAIJZeroOps_Private(Mat Bseq)
 
   PetscFunctionBegin;
   ierr = MatSetOption(Bseq,MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
-  Bseq->ops->mult                   = 0;
-  Bseq->ops->multadd                = 0;
-  Bseq->ops->multtranspose          = 0;
-  Bseq->ops->multtransposeadd       = 0;
-  Bseq->ops->lufactor               = 0;
-  Bseq->ops->choleskyfactor         = 0;
-  Bseq->ops->lufactorsymbolic       = 0;
-  Bseq->ops->choleskyfactorsymbolic = 0;
-  Bseq->ops->getinertia             = 0;
+  Bseq->ops->mult                   = NULL;
+  Bseq->ops->multadd                = NULL;
+  Bseq->ops->multtranspose          = NULL;
+  Bseq->ops->multtransposeadd       = NULL;
+  Bseq->ops->lufactor               = NULL;
+  Bseq->ops->choleskyfactor         = NULL;
+  Bseq->ops->lufactorsymbolic       = NULL;
+  Bseq->ops->choleskyfactorsymbolic = NULL;
+  Bseq->ops->getinertia             = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1133,7 +1133,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
-  PetscScalar       *z,*z_ptr=0,*zb,*work,*workt;
+  PetscScalar       *z,*z_ptr=NULL,*zb,*work,*workt;
   const PetscScalar *x,*x_ptr,*xb;
   const MatScalar   *v;
   PetscErrorCode    ierr;
@@ -1711,7 +1711,7 @@ PetscErrorCode MatMatMultNumeric_SeqSBAIJ_SeqDense(Mat A,Mat B,Mat C)
   PetscInt          cm=cd->lda,cn=B->cmap->n,bm=bd->lda;
   PetscInt          mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
   PetscBLASInt      bbs,bcn,bbm,bcm;
-  PetscScalar       *z = 0;
+  PetscScalar       *z = NULL;
   PetscScalar       *c,*b;
   const MatScalar   *v;
   const PetscInt    *idx,*ii;

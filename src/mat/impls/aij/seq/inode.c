@@ -4103,8 +4103,8 @@ PetscErrorCode MatSeqAIJCheckInode(Mat A)
     A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ;
     A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ;
     A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ;
-    A->ops->coloringpatch     = 0;
-    A->ops->multdiagonalblock = 0;
+    A->ops->coloringpatch     = NULL;
+    A->ops->multdiagonalblock = NULL;
 
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
@@ -4162,12 +4162,12 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
       B->ops->solve = MatSolve_SeqAIJ_Inode_inplace;
     }
   } else {
-    c->inode.size       = 0;
+    c->inode.size       = NULL;
     c->inode.node_count = 0;
   }
   c->inode.ibdiagvalid = PETSC_FALSE;
-  c->inode.ibdiag      = 0;
-  c->inode.bdiag       = 0;
+  c->inode.ibdiag      = NULL;
+  c->inode.bdiag       = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -4245,15 +4245,15 @@ PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A)
 
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
-    A->ops->mult              = 0;
-    A->ops->sor               = 0;
-    A->ops->multadd           = 0;
-    A->ops->getrowij          = 0;
-    A->ops->restorerowij      = 0;
-    A->ops->getcolumnij       = 0;
-    A->ops->restorecolumnij   = 0;
-    A->ops->coloringpatch     = 0;
-    A->ops->multdiagonalblock = 0;
+    A->ops->mult              = NULL;
+    A->ops->sor               = NULL;
+    A->ops->multadd           = NULL;
+    A->ops->getrowij          = NULL;
+    A->ops->restorerowij      = NULL;
+    A->ops->getcolumnij       = NULL;
+    A->ops->restorecolumnij   = NULL;
+    A->ops->coloringpatch     = NULL;
+    A->ops->multdiagonalblock = NULL;
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
 

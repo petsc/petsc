@@ -2357,9 +2357,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
   ierr    = PetscMalloc1((iu[mbs]+1)*a->bs2,&b->a);CHKERRQ(ierr);
   b->j    = ju;
   b->i    = iu;
-  b->diag = 0;
-  b->ilen = 0;
-  b->imax = 0;
+  b->diag = NULL;
+  b->ilen = NULL;
+  b->imax = NULL;
 
   ierr    = ISDestroy(&b->row);CHKERRQ(ierr);
   ierr    = ISDestroy(&b->icol);CHKERRQ(ierr);
@@ -2557,8 +2557,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   b->i         = ui;
   b->diag      = udiag;
   b->free_diag = PETSC_TRUE;
-  b->ilen      = 0;
-  b->imax      = 0;
+  b->ilen      = NULL;
+  b->imax      = NULL;
   b->row       = perm;
   b->col       = perm;
 
@@ -2759,9 +2759,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
 
   b->j             = uj;
   b->i             = ui;
-  b->diag          = 0;
-  b->ilen          = 0;
-  b->imax          = 0;
+  b->diag          = NULL;
+  b->ilen          = NULL;
+  b->imax          = NULL;
   b->row           = perm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 

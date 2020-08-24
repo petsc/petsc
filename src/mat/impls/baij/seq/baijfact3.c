@@ -300,8 +300,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   b->i             = bi;
   b->diag          = bdiag;
   b->free_diag     = PETSC_TRUE;
-  b->ilen          = 0;
-  b->imax          = 0;
+  b->ilen          = NULL;
+  b->imax          = NULL;
   b->row           = isrow;
   b->col           = iscol;
   b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
@@ -467,8 +467,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   b->i             = bi;
   b->diag          = bdiag;
   b->free_diag     = PETSC_TRUE;
-  b->ilen          = 0;
-  b->imax          = 0;
+  b->ilen          = NULL;
+  b->imax          = NULL;
   b->row           = isrow;
   b->col           = iscol;
   b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;

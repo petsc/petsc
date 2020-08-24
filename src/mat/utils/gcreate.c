@@ -351,8 +351,8 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   product = A->product;
 
   /* zero these so the destroy below does not free them */
-  ((PetscObject)A)->type_name = 0;
-  ((PetscObject)A)->name      = 0;
+  ((PetscObject)A)->type_name = NULL;
+  ((PetscObject)A)->name      = NULL;
 
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
@@ -376,8 +376,8 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   A->product                  = product;
 
   /* since these two are copied into A we do not want them destroyed in C */
-  ((PetscObject)*C)->qlist = 0;
-  ((PetscObject)*C)->olist = 0;
+  ((PetscObject)*C)->qlist = NULL;
+  ((PetscObject)*C)->olist = NULL;
 
   ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);

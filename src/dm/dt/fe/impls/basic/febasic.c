@@ -307,10 +307,10 @@ static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0]; /* Local face number in cell */
-    fegeom.n = 0;
-    fegeom.v = 0;
-    fegeom.J = 0;
-    fegeom.detJ = 0;
+    fegeom.n = NULL;
+    fegeom.v = NULL;
+    fegeom.J = NULL;
+    fegeom.detJ = NULL;
     fegeom.dim      = fgeom->dim;
     fegeom.dimEmbed = fgeom->dimEmbed;
     cgeom.dim       = fgeom->dim;
@@ -522,10 +522,10 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscInt field, Pets
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
-    fegeom.n = 0;
-    fegeom.v = 0;
-    fegeom.J = 0;
-    fegeom.detJ = 0;
+    fegeom.n = NULL;
+    fegeom.v = NULL;
+    fegeom.J = NULL;
+    fegeom.detJ = NULL;
     fegeom.dim      = fgeom->dim;
     fegeom.dimEmbed = fgeom->dimEmbed;
     cgeom.dim       = fgeom->dim;
@@ -917,10 +917,10 @@ static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscInt fiel
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
-    fegeom.n = 0;
-    fegeom.v = 0;
-    fegeom.J = 0;
-    fegeom.detJ = 0;
+    fegeom.n = NULL;
+    fegeom.v = NULL;
+    fegeom.J = NULL;
+    fegeom.detJ = NULL;
     fegeom.dim      = fgeom->dim;
     fegeom.dimEmbed = fgeom->dimEmbed;
     cgeom.dim       = fgeom->dim;

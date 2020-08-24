@@ -859,7 +859,7 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
 
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSELLSetPreallocation_C",NULL);CHKERRQ(ierr);
@@ -1558,7 +1558,7 @@ PetscErrorCode MatSetUp_SeqSELL(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSeqSELLSetPreallocation(A,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatSeqSELLSetPreallocation(A,PETSC_DEFAULT,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1634,7 +1634,7 @@ PetscErrorCode MatSOR_SeqSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 {
   Mat_SeqSELL       *a=(Mat_SeqSELL*)A->data;
   PetscScalar       *x,sum,*t;
-  const MatScalar   *idiag=0,*mdiag;
+  const MatScalar   *idiag=NULL,*mdiag;
   const PetscScalar *b,*xb;
   PetscInt          n,m=A->rmap->n,i,j,shift;
   const PetscInt    *diag;
@@ -1741,144 +1741,144 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSELL,
                                /* 4*/  MatMultAdd_SeqSELL,
                                        MatMultTranspose_SeqSELL,
                                        MatMultTransposeAdd_SeqSELL,
-                                       0,
-                                       0,
-                                       0,
-                               /* 10*/ 0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 10*/ NULL,
+                                       NULL,
+                                       NULL,
                                        MatSOR_SeqSELL,
-                                       0,
+                                       NULL,
                                /* 15*/ MatGetInfo_SeqSELL,
                                        MatEqual_SeqSELL,
                                        MatGetDiagonal_SeqSELL,
                                        MatDiagonalScale_SeqSELL,
-                                       0,
-                               /* 20*/ 0,
+                                       NULL,
+                               /* 20*/ NULL,
                                        MatAssemblyEnd_SeqSELL,
                                        MatSetOption_SeqSELL,
                                        MatZeroEntries_SeqSELL,
-                               /* 24*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                               /* 24*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                /* 29*/ MatSetUp_SeqSELL,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                /* 34*/ MatDuplicate_SeqSELL,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 39*/ 0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 39*/ NULL,
+                                       NULL,
+                                       NULL,
                                        MatGetValues_SeqSELL,
                                        MatCopy_SeqSELL,
-                               /* 44*/ 0,
+                               /* 44*/ NULL,
                                        MatScale_SeqSELL,
                                        MatShift_SeqSELL,
-                                       0,
-                                       0,
-                               /* 49*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                               /* 49*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                /* 54*/ MatFDColoringCreate_SeqXAIJ,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 59*/ 0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 59*/ NULL,
                                        MatDestroy_SeqSELL,
                                        MatView_SeqSELL,
-                                       0,
-                                       0,
-                               /* 64*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 69*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 74*/ 0,
+                                       NULL,
+                                       NULL,
+                               /* 64*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 69*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 74*/ NULL,
                                        MatFDColoringApply_AIJ, /* reuse the FDColoring function for AIJ */
-                                       0,
-                                       0,
-                                       0,
-                               /* 79*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 84*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 89*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 94*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /* 99*/ 0,
-                                       0,
-                                       0,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 79*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 84*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 89*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 94*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /* 99*/ NULL,
+                                       NULL,
+                                       NULL,
                                        MatConjugate_SeqSELL,
-                                       0,
-                               /*104*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*109*/ 0,
-                                       0,
-                                       0,
-                                       0,
+                                       NULL,
+                               /*104*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*109*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
                                        MatMissingDiagonal_SeqSELL,
-                               /*114*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*119*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*124*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*129*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*134*/ 0,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                               /*139*/ 0,
-                                       0,
-                                       0,
+                               /*114*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*119*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*124*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*129*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*134*/ NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                               /*139*/ NULL,
+                                       NULL,
+                                       NULL,
                                        MatFDColoringSetUp_SeqXAIJ,
-                                       0,
-                                /*144*/0
+                                       NULL,
+                               /*144*/ NULL
 };
 
 PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
@@ -1950,20 +1950,20 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
 
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  b->row                = 0;
-  b->col                = 0;
-  b->icol               = 0;
+  b->row                = NULL;
+  b->col                = NULL;
+  b->icol               = NULL;
   b->reallocs           = 0;
   b->ignorezeroentries  = PETSC_FALSE;
   b->roworiented        = PETSC_TRUE;
   b->nonew              = 0;
-  b->diag               = 0;
-  b->solve_work         = 0;
-  B->spptr              = 0;
-  b->saved_values       = 0;
-  b->idiag              = 0;
-  b->mdiag              = 0;
-  b->ssor_work          = 0;
+  b->diag               = NULL;
+  b->solve_work         = NULL;
+  B->spptr              = NULL;
+  b->saved_values       = NULL;
+  b->idiag              = NULL;
+  b->mdiag              = NULL;
+  b->ssor_work          = NULL;
   b->omega              = 1.0;
   b->fshift             = 0.0;
   b->idiagvalid         = PETSC_FALSE;
@@ -1993,9 +1993,9 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C,Mat A,MatDuplicateOption cpval
   c = (Mat_SeqSELL*)C->data;
 
   C->factortype = A->factortype;
-  c->row        = 0;
-  c->col        = 0;
-  c->icol       = 0;
+  c->row        = NULL;
+  c->col        = NULL;
+  c->icol       = NULL;
   c->reallocs   = 0;
 
   C->assembled = PETSC_TRUE;
@@ -2037,12 +2037,12 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C,Mat A,MatDuplicateOption cpval
     for (i=0; i<m; i++) {
       c->diag[i] = a->diag[i];
     }
-  } else c->diag = 0;
+  } else c->diag = NULL;
 
-  c->solve_work         = 0;
-  c->saved_values       = 0;
-  c->idiag              = 0;
-  c->ssor_work          = 0;
+  c->solve_work         = NULL;
+  c->saved_values       = NULL;
+  c->idiag              = NULL;
+  c->ssor_work          = NULL;
   c->keepnonzeropattern = a->keepnonzeropattern;
   c->free_val           = PETSC_TRUE;
   c->free_colidx        = PETSC_TRUE;

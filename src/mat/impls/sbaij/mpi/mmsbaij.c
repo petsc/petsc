@@ -276,7 +276,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
 #endif
   ierr = PetscFree(baij->garray);CHKERRQ(ierr);
 
-  baij->garray = 0;
+  baij->garray = NULL;
 
   ierr = PetscFree(rvals);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)A,-ec*sizeof(PetscInt));CHKERRQ(ierr);

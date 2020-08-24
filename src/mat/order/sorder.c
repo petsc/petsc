@@ -6,7 +6,7 @@
 #include <petsc/private/matimpl.h>
 #include <petscmat.h>  /*I "petscmat.h" I*/
 
-PetscFunctionList MatOrderingList              = 0;
+PetscFunctionList MatOrderingList              = NULL;
 PetscBool         MatOrderingRegisterAllCalled = PETSC_FALSE;
 
 extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS*,IS*);

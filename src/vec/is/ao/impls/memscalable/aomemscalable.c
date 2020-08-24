@@ -270,10 +270,10 @@ static struct _AOOps AOOps_MemoryScalable = {
   AODestroy_MemoryScalable,
   AOPetscToApplication_MemoryScalable,
   AOApplicationToPetsc_MemoryScalable,
-  0,
-  0,
-  0,
-  0
+  NULL,
+  NULL,
+  NULL,
+  NULL
 };
 
 PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const PetscInt from_array[],const PetscInt to_array[],AO ao, PetscInt *aomap_loc)

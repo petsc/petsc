@@ -550,7 +550,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   if (!*prob) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*prob), PETSCDS_CLASSID, 1);
 
-  if (--((PetscObject)(*prob))->refct > 0) {*prob = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*prob))->refct > 0) {*prob = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*prob))->refct = 0;
   if ((*prob)->subprobs) {
     PetscInt dim, d;

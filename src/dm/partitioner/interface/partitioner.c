@@ -262,7 +262,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
   if (!*part) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*part), PETSCPARTITIONER_CLASSID, 1);
 
-  if (--((PetscObject)(*part))->refct > 0) {*part = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*part))->refct > 0) {*part = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*part))->refct = 0;
 
   ierr = PetscPartitionerReset(*part);CHKERRQ(ierr);

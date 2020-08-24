@@ -65,7 +65,7 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm,Vec *gvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
-  *gvec = 0;
+  *gvec = NULL;
   ierr  = VecCreate(PetscObjectComm((PetscObject)dm),gvec);CHKERRQ(ierr);
   ierr  = VecSetSizes(*gvec,red->n,red->N);CHKERRQ(ierr);
   ierr  = VecSetType(*gvec,dm->vectype);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ static PetscErrorCode DMCreateLocalVector_Redundant(DM dm,Vec *lvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(lvec,2);
-  *lvec = 0;
+  *lvec = NULL;
   ierr  = VecCreate(PETSC_COMM_SELF,lvec);CHKERRQ(ierr);
   ierr  = VecSetSizes(*lvec,red->N,red->N);CHKERRQ(ierr);
   ierr  = VecSetType(*lvec,dm->vectype);CHKERRQ(ierr);
@@ -264,8 +264,8 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
   ierr = MatCreate(PetscObjectComm((PetscObject)dmc),P);CHKERRQ(ierr);
   ierr = MatSetSizes(*P,redc->n,redc->n,redc->N,redc->N);CHKERRQ(ierr);
   ierr = MatSetType(*P,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*P,1,0);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(*P,1,0,0,0);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*P,1,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*P,1,NULL,0,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(*P,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {ierr = MatSetValue(*P,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);}
   ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

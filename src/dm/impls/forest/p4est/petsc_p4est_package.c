@@ -3,7 +3,7 @@
 #include <p4est_base.h>
 #include "petsc_p4est_package.h"
 
-static const char*const SCLogTypes[] = {"DEFAULT","ALWAYS","TRACE","DEBUG","VERBOSE","INFO","STATISTICS","PRODUCTION","ESSENTIAL","ERROR","SILENT","SCLogTypes","SC_LP_",0};
+static const char*const SCLogTypes[] = {"DEFAULT","ALWAYS","TRACE","DEBUG","VERBOSE","INFO","STATISTICS","PRODUCTION","ESSENTIAL","ERROR","SILENT","SCLogTypes","SC_LP_", NULL};
 
 static PetscBool    PetscP4estInitialized = PETSC_FALSE;
 static PetscBool    PetscBeganSc          = PETSC_FALSE;

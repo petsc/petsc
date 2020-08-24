@@ -2,7 +2,7 @@
 #include <petsc/private/petscfeimpl.h>  /* For PetscFEInterpolate_Static() */
 #include <petscsf.h>
 
-const char * const DMPlexCellRefinerTypes[] = {"Regular", "ToBox", "ToSimplex", "Alfeld2D", "Alfeld3D", "PowellSabin", "BoundaryLayer", "DMPlexCellRefinerTypes", "DM_REFINER_", 0};
+const char * const DMPlexCellRefinerTypes[] = {"Regular", "ToBox", "ToSimplex", "Alfeld2D", "Alfeld3D", "PowellSabin", "BoundaryLayer", "DMPlexCellRefinerTypes", "DM_REFINER_", NULL};
 
 /*
   Note that j and invj are non-square:

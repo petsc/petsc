@@ -64,17 +64,17 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->oldnmax    = 0;
   stash->n          = 0;
   stash->reallocs   = -1;
-  stash->space_head = 0;
-  stash->space      = 0;
+  stash->space_head = NULL;
+  stash->space      = NULL;
 
-  stash->send_waits  = 0;
-  stash->recv_waits  = 0;
-  stash->send_status = 0;
+  stash->send_waits  = NULL;
+  stash->recv_waits  = NULL;
+  stash->send_status = NULL;
   stash->nsends      = 0;
   stash->nrecvs      = 0;
-  stash->svalues     = 0;
-  stash->rvalues     = 0;
-  stash->rindices    = 0;
+  stash->svalues     = NULL;
+  stash->rvalues     = NULL;
+  stash->rindices    = NULL;
   stash->nprocessed  = 0;
   stash->reproduce   = PETSC_FALSE;
   stash->blocktype   = MPI_DATATYPE_NULL;
@@ -111,7 +111,7 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
   ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
   if (stash->ScatterDestroy) {ierr = (*stash->ScatterDestroy)(stash);CHKERRQ(ierr);}
 
-  stash->space = 0;
+  stash->space = NULL;
 
   ierr = PetscFree(stash->flg_v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -165,7 +165,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
 
   ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
 
-  stash->space = 0;
+  stash->space = NULL;
 
   ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
   ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
@@ -1022,7 +1022,7 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
 
   ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
 
-  stash->space = 0;
+  stash->space = NULL;
 
   PetscFunctionReturn(0);
 }

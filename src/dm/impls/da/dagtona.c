@@ -41,12 +41,12 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,NULL,&global);CHKERRQ(ierr);
   ierr = VecGetSize(global,&N);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&to);CHKERRQ(ierr);
   ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&from);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,N,0,&tmplocal);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,N,NULL,&tmplocal);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmplocal,to,scatter);CHKERRQ(ierr);
   ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
@@ -88,12 +88,12 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
 
   /* create the scatter context */
   ierr = MPIU_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,m,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,m,PETSC_DETERMINE,NULL,&global);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(global,&start,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from);CHKERRQ(ierr);
   ierr = AOPetscToApplicationIS(ao,from);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&to);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,M,0,&tmplocal);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,M,NULL,&tmplocal);CHKERRQ(ierr);
   ierr = VecScatterCreate(tmplocal,from,global,to,scatter);CHKERRQ(ierr);
   ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);

@@ -2332,8 +2332,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           PetscLagNodeIndices intNodeIndicesMerged = NULL;
           Mat              matMerged = NULL;
 
-          ierr = MatGetSize(intMat, &nDof, 0);CHKERRQ(ierr);
-          ierr = MatGetSize(intMat2, &nDof2, 0);CHKERRQ(ierr);
+          ierr = MatGetSize(intMat, &nDof, NULL);CHKERRQ(ierr);
+          ierr = MatGetSize(intMat2, &nDof2, NULL);CHKERRQ(ierr);
           ierr = PetscQuadraturePointsMerge(intNodes, intNodes2, &merged, &toMerged, &toMerged2);CHKERRQ(ierr);
           ierr = PetscQuadratureGetData(merged, NULL, NULL, &nM, NULL, NULL);CHKERRQ(ierr);
           ierr = MatricesMerge(intMat, intMat2, dim, formDegree, nM, toMerged, toMerged2, &matMerged);CHKERRQ(ierr);

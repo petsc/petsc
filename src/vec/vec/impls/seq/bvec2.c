@@ -170,7 +170,7 @@ PetscErrorCode VecResetArray_Seq(Vec vin)
 
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
-  v->unplacedarray = 0;
+  v->unplacedarray = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -773,11 +773,12 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
                                VecPointwiseMult_Seq,
                                VecPointwiseDivide_Seq,
                                VecSetValues_Seq, /* 20 */
-                               0,0,
-                               0,
+                               NULL,
+                               NULL,
+                               NULL,
                                VecGetSize_Seq,
                                VecGetSize_Seq,
-                               0,
+                               NULL,
                                VecMax_Seq,
                                VecMin_Seq,
                                VecSetRandom_Seq,
@@ -795,32 +796,32 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
                                VecLoad_Default,
                                VecReciprocal_Default,
                                VecConjugate_Seq,
-                               0,
-                               0,
+                               NULL,
+                               NULL,
                                VecResetArray_Seq,
-                               0,
+                               NULL,
                                VecMaxPointwiseDivide_Seq,
                                VecPointwiseMax_Seq,
                                VecPointwiseMaxAbs_Seq,
                                VecPointwiseMin_Seq,
                                VecGetValues_Seq,
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
                                VecStrideGather_Default,
                                VecStrideScatter_Default,
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
                                VecStrideSubSetGather_Default,
                                VecStrideSubSetScatter_Default,
-                               0,
-                               0
+                               NULL,
+                               NULL
 };
 
 
@@ -839,7 +840,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   v->data            = (void*)s;
   v->petscnative     = PETSC_TRUE;
   s->array           = (PetscScalar*)array;
-  s->array_allocated = 0;
+  s->array_allocated = NULL;
 
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQ);CHKERRQ(ierr);

@@ -145,7 +145,7 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpimaij_mpiaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_mpiaij_mpimaij_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -179,11 +179,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
 
   A->ops->setup = MatSetUp_MAIJ;
 
-  b->AIJ  = 0;
+  b->AIJ  = NULL;
   b->dof  = 0;
-  b->OAIJ = 0;
-  b->ctx  = 0;
-  b->w    = 0;
+  b->OAIJ = NULL;
+  b->ctx  = NULL;
+  b->w    = NULL;
   ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQMAIJ);CHKERRQ(ierr);

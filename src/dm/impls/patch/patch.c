@@ -55,7 +55,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
   /* Create patch DM */
-  ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, 0,0,0, &dof, 0,0,0,0, &st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, NULL,NULL,NULL, &dof, NULL,NULL,NULL,NULL, &st);CHKERRQ(ierr);
 
   /* Get piece for rank r, expanded by halo */
   bupper.i = PetscMin(M, upper.i + halo); blower.i = PetscMax(lower.i - halo, 0);
@@ -179,7 +179,7 @@ PetscErrorCode DMPatchSolve(DM dm)
   ierr = DMPatchGetCommSize(dm, &commSize);CHKERRQ(ierr);
   ierr = DMPatchGetCommSize(dm, &commSize);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmc, &XC);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dmc, 0, &M, &N, &P, &l, &m, &n, 0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dmc, NULL, &M, &N, &P, &l, &m, &n, NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   M    = PetscMax(M, 1); l = PetscMax(l, 1);
   N    = PetscMax(N, 1); m = PetscMax(m, 1);
   P    = PetscMax(P, 1); n = PetscMax(n, 1);

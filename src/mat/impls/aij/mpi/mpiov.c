@@ -52,7 +52,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   MPI_Comm       comm;
   PetscInt       *length,length_i,tlength,*remoterows,nrrows,reducednrrows,*rrow_ranks,*rrow_isids,i,j;
   PetscInt       *tosizes,*tosizes_temp,*toffsets,*fromsizes,*todata,*fromdata;
-  PetscInt       nrecvrows,*sbsizes = 0,*sbdata = 0;
+  PetscInt       nrecvrows,*sbsizes = NULL,*sbdata = NULL;
   const PetscInt *indices_i,**indices;
   PetscLayout    rmap;
   PetscMPIInt    rank,size,*toranks,*fromranks,nto,nfrom,owner;
@@ -1054,7 +1054,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ     *b,*ad = (Mat_SeqAIJ*)a->A->data,*bd = (Mat_SeqAIJ*)a->B->data;
   PetscErrorCode ierr;
-  PetscMPIInt    size,rank,*recvcounts = 0,*displs = 0;
+  PetscMPIInt    size,rank,*recvcounts = NULL,*displs = NULL;
   PetscInt       sendcount,i,*rstarts = A->rmap->range,n,cnt,j;
   PetscInt       m,*b_sendj,*garray = a->garray,*lens,*jsendbuf,*a_jsendbuf,*b_jsendbuf;
   MatScalar      *sendbuf,*recvbuf,*a_sendbuf,*b_sendbuf;
@@ -2469,7 +2469,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
         row = irow_i[j];
         proc = row2proc_i[j];
         if (proc == rank) {
-          ierr = MatGetRow_MPIAIJ(C,row,&ncols,&cols,0);CHKERRQ(ierr);
+          ierr = MatGetRow_MPIAIJ(C,row,&ncols,&cols,NULL);CHKERRQ(ierr);
           if (!allcolumns[i]) {
             for (k=0; k<ncols; k++) {
 #if defined(PETSC_USE_CTABLE)
@@ -2482,7 +2482,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
           } else { /* allcolumns */
             lens_i[j] = ncols;
           }
-          ierr = MatRestoreRow_MPIAIJ(C,row,&ncols,&cols,0);CHKERRQ(ierr);
+          ierr = MatRestoreRow_MPIAIJ(C,row,&ncols,&cols,NULL);CHKERRQ(ierr);
         }
       }
     }

@@ -717,8 +717,8 @@ PetscErrorCode DMSwarmDataBucketInsertValues(DMSwarmDataBucket db1,DMSwarmDataBu
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMSwarmDataBucketGetSizes(db1,&n_mp_points1,0,0);CHKERRQ(ierr);
-  ierr = DMSwarmDataBucketGetSizes(db2,&n_mp_points2,0,0);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(db1,&n_mp_points1,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(db2,&n_mp_points2,NULL,NULL);CHKERRQ(ierr);
   n_mp_points1_new = n_mp_points1 + n_mp_points2;
   ierr = DMSwarmDataBucketSetSizes(db1,n_mp_points1_new,DMSWARM_DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p = 0; p < n_mp_points2; ++p) {

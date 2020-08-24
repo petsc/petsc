@@ -415,7 +415,7 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   ierr = DMDASubDomainDA_Private(dm,&n,&sdm);CHKERRQ(ierr);
   if (names) {
     ierr = PetscMalloc1(n,names);CHKERRQ(ierr);
-    for (i=0;i<n;i++) (*names)[i] = 0;
+    for (i=0;i<n;i++) (*names)[i] = NULL;
   }
   ierr = DMDASubDomainIS_Private(dm,n,sdm,iis,ois);CHKERRQ(ierr);
   if (subdm) *subdm = sdm;

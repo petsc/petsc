@@ -144,7 +144,7 @@ PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
   PetscFunctionBegin;
   if (!*tagger) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*tagger),VEC_TAGGER_CLASSID,1);
-  if (--((PetscObject)(*tagger))->refct > 0) {*tagger = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*tagger))->refct > 0) {*tagger = NULL; PetscFunctionReturn(0);}
   if ((*tagger)->ops->destroy) {ierr = (*(*tagger)->ops->destroy)(*tagger);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(tagger);CHKERRQ(ierr);
   PetscFunctionReturn(0);

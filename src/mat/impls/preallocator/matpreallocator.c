@@ -17,7 +17,7 @@ PetscErrorCode MatDestroy_Preallocator(Mat A)
   ierr = PetscHSetIJDestroy(&p->ht);CHKERRQ(ierr);
   ierr = PetscFree4(p->dnz, p->onz, p->dnzu, p->onzu);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject) A, 0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject) A, NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) A, "MatPreallocatorPreallocate_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -131,7 +131,7 @@ PetscErrorCode MatFindNonzeroRows_SeqAIJ(Mat A,IS *keptrows)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  *keptrows = 0;
+  *keptrows = NULL;
   ii        = a->i;
   for (i=0; i<m; i++) {
     n = ii[i+1] - ii[i];
@@ -1177,7 +1177,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
      due to different matrix sizes */
   ierr = PetscObjectCompose((PetscObject)A,"__PETSc__ab_dense",NULL);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJSetColumnIndices_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
@@ -1832,7 +1832,7 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscScalar       *x,d,sum,*t,scale;
-  const MatScalar   *v,*idiag=0,*mdiag;
+  const MatScalar   *v,*idiag=NULL,*mdiag;
   const PetscScalar *b, *bs,*xb, *ts;
   PetscErrorCode    ierr;
   PetscInt          n,m = A->rmap->n,i;
@@ -2162,7 +2162,7 @@ PetscErrorCode MatGetRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
   if (idx) {
     itmp = a->j + a->i[row];
     if (*nz) *idx = itmp;
-    else *idx = 0;
+    else *idx = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -2922,7 +2922,7 @@ PetscErrorCode MatSetUp_SeqAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(A,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(A,PETSC_DEFAULT,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3379,12 +3379,12 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                 /*  4*/ MatMultAdd_SeqAIJ,
                                         MatMultTranspose_SeqAIJ,
                                         MatMultTransposeAdd_SeqAIJ,
-                                        0,
-                                        0,
-                                        0,
-                                /* 10*/ 0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 10*/ NULL,
                                         MatLUFactor_SeqAIJ,
-                                        0,
+                                        NULL,
                                         MatSOR_SeqAIJ,
                                         MatTranspose_SeqAIJ,
                                 /*1 5*/ MatGetInfo_SeqAIJ,
@@ -3392,25 +3392,25 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatGetDiagonal_SeqAIJ,
                                         MatDiagonalScale_SeqAIJ,
                                         MatNorm_SeqAIJ,
-                                /* 20*/ 0,
+                                /* 20*/ NULL,
                                         MatAssemblyEnd_SeqAIJ,
                                         MatSetOption_SeqAIJ,
                                         MatZeroEntries_SeqAIJ,
                                 /* 24*/ MatZeroRows_SeqAIJ,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 29*/ MatSetUp_SeqAIJ,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 34*/ MatDuplicate_SeqAIJ,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                         MatILUFactor_SeqAIJ,
-                                        0,
+                                        NULL,
                                 /* 39*/ MatAXPY_SeqAIJ,
                                         MatCreateSubMatrices_SeqAIJ,
                                         MatIncreaseOverlap_SeqAIJ,
@@ -3427,99 +3427,99 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatGetColumnIJ_SeqAIJ,
                                         MatRestoreColumnIJ_SeqAIJ,
                                 /* 54*/ MatFDColoringCreate_SeqXAIJ,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                         MatPermute_SeqAIJ,
-                                        0,
-                                /* 59*/ 0,
+                                        NULL,
+                                /* 59*/ NULL,
                                         MatDestroy_SeqAIJ,
                                         MatView_SeqAIJ,
-                                        0,
-                                        0,
-                                /* 64*/ 0,
+                                        NULL,
+                                        NULL,
+                                /* 64*/ NULL,
                                         MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 69*/ MatGetRowMaxAbs_SeqAIJ,
                                         MatGetRowMinAbs_SeqAIJ,
-                                        0,
-                                        0,
-                                        0,
-                                /* 74*/ 0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 74*/ NULL,
                                         MatFDColoringApply_AIJ,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 79*/ MatFindZeroDiagonals_SeqAIJ,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                         MatLoad_SeqAIJ,
                                 /* 84*/ MatIsSymmetric_SeqAIJ,
                                         MatIsHermitian_SeqAIJ,
-                                        0,
-                                        0,
-                                        0,
-                                /* 89*/ 0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 89*/ NULL,
+                                        NULL,
                                         MatMatMultNumeric_SeqAIJ_SeqAIJ,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                 /* 94*/ MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                         MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ,
-                                        0,
+                                        NULL,
                                 /* 99*/ MatProductSetFromOptions_SeqAIJ,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                         MatConjugate_SeqAIJ,
-                                        0,
+                                        NULL,
                                 /*104*/ MatSetValuesRow_SeqAIJ,
                                         MatRealPart_SeqAIJ,
                                         MatImaginaryPart_SeqAIJ,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                 /*109*/ MatMatSolve_SeqAIJ,
-                                        0,
+                                        NULL,
                                         MatGetRowMin_SeqAIJ,
-                                        0,
+                                        NULL,
                                         MatMissingDiagonal_SeqAIJ,
-                                /*114*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /*119*/ 0,
-                                        0,
-                                        0,
-                                        0,
+                                /*114*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*119*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                         MatGetMultiProcBlock_SeqAIJ,
                                 /*124*/ MatFindNonzeroRows_SeqAIJ,
                                         MatGetColumnNorms_SeqAIJ,
                                         MatInvertBlockDiagonal_SeqAIJ,
                                         MatInvertVariableBlockDiagonal_SeqAIJ,
-                                        0,
-                                /*129*/ 0,
-                                        0,
-                                        0,
+                                        NULL,
+                                /*129*/ NULL,
+                                        NULL,
+                                        NULL,
                                         MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ,
                                         MatTransposeColoringCreate_SeqAIJ,
                                 /*134*/ MatTransColoringApplySpToDen_SeqAIJ,
                                         MatTransColoringApplyDenToSp_SeqAIJ,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                         MatRARtNumeric_SeqAIJ_SeqAIJ,
-                                 /*139*/0,
-                                        0,
-                                        0,
+                                 /*139*/NULL,
+                                        NULL,
+                                        NULL,
                                         MatFDColoringSetUp_SeqXAIJ,
                                         MatFindOffBlockDiagonalEntries_SeqAIJ,
                                         MatCreateMPIMatConcatenateSeqMat_SeqAIJ,
                                  /*145*/MatDestroySubMatrices_SeqAIJ,
-                                        0,
-                                        0
+                                        NULL,
+                                        NULL
 };
 
 PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
@@ -4399,20 +4399,20 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   if (B->sortedfull) B->ops->setvalues = MatSetValues_SeqAIJ_SortedFull;
 
-  b->row                = 0;
-  b->col                = 0;
-  b->icol               = 0;
+  b->row                = NULL;
+  b->col                = NULL;
+  b->icol               = NULL;
   b->reallocs           = 0;
   b->ignorezeroentries  = PETSC_FALSE;
   b->roworiented        = PETSC_TRUE;
   b->nonew              = 0;
-  b->diag               = 0;
-  b->solve_work         = 0;
-  B->spptr              = 0;
-  b->saved_values       = 0;
-  b->idiag              = 0;
-  b->mdiag              = 0;
-  b->ssor_work          = 0;
+  b->diag               = NULL;
+  b->solve_work         = NULL;
+  B->spptr              = NULL;
+  b->saved_values       = NULL;
+  b->idiag              = NULL;
+  b->mdiag              = NULL;
+  b->ssor_work          = NULL;
   b->omega              = 1.0;
   b->fshift             = 0.0;
   b->idiagvalid         = PETSC_FALSE;
@@ -4484,9 +4484,9 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
   c = (Mat_SeqAIJ*)C->data;
 
   C->factortype = A->factortype;
-  c->row        = 0;
-  c->col        = 0;
-  c->icol       = 0;
+  c->row        = NULL;
+  c->col        = NULL;
+  c->icol       = NULL;
   c->reallocs   = 0;
 
   C->assembled = PETSC_TRUE;
@@ -4527,10 +4527,10 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
     ierr = PetscLogObjectMemory((PetscObject)C,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
   } else c->diag = NULL;
 
-  c->solve_work         = 0;
-  c->saved_values       = 0;
-  c->idiag              = 0;
-  c->ssor_work          = 0;
+  c->solve_work         = NULL;
+  c->saved_values       = NULL;
+  c->idiag              = NULL;
+  c->ssor_work          = NULL;
   c->keepnonzeropattern = a->keepnonzeropattern;
   c->free_a             = PETSC_TRUE;
   c->free_ij            = PETSC_TRUE;
@@ -4751,7 +4751,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
   /* ierr = MatSetBlockSizes(*mat,,);CHKERRQ(ierr); */
   ierr = MatSetType(*mat,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(*mat,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(*mat,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   aij  = (Mat_SeqAIJ*)(*mat)->data;
   ierr = PetscMalloc1(m,&aij->imax);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&aij->ilen);CHKERRQ(ierr);

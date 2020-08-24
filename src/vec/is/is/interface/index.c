@@ -1009,7 +1009,7 @@ PetscErrorCode  ISDestroy(IS *is)
   PetscFunctionBegin;
   if (!*is) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*is),IS_CLASSID,1);
-  if (--((PetscObject)(*is))->refct > 0) {*is = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*is))->refct > 0) {*is = NULL; PetscFunctionReturn(0);}
   if ((*is)->complement) {
     PetscInt refcnt;
     ierr = PetscObjectGetReference((PetscObject)((*is)->complement), &refcnt);CHKERRQ(ierr);

@@ -350,8 +350,8 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)matfd);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,sizeof(value),&flg);CHKERRQ(ierr);
   if (flg) {
     if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
@@ -513,7 +513,7 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 
   PetscFunctionBegin;
   if (!*c) PetscFunctionReturn(0);
-  if (--((PetscObject)color)->refct > 0) {*c = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)color)->refct > 0) {*c = NULL; PetscFunctionReturn(0);}
 
   /* we do not free the column arrays since their entries are owned by the ISs in color->isa */
   for (i=0; i<color->ncolors; i++) {
