@@ -85,6 +85,8 @@ check-ci-settings:
 
 mpich-cxx-py3:
   extends: .stage-1
+  tags:
+  - stage1, fedora
   variables:
     PYTHON: python3
     CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-clanguage=cxx --with-fc=0
