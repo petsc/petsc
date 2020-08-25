@@ -175,4 +175,16 @@ int main(int argc,char **args)
       output_file: output/ex49_1.out
       args: -bs {{1 3}} -pc_type cholesky -pc_factor_mat_solver_type mkl_pardiso
 
+   test:
+      suffix: cg
+      requires: complex
+      output_file: output/ex49_cg.out
+      args: -herm -ksp_cg_type hermitian -mat_type aij -ksp_type cg -pc_type jacobi -ksp_rtol 4e-07
+
+   test:
+      suffix: pipecg2
+      requires: complex
+      output_file: output/ex49_pipecg2.out
+      args: -herm -mat_type aij -ksp_type pipecg2 -pc_type jacobi -ksp_rtol 4e-07 -ksp_norm_type {{preconditioned unpreconditioned natural}}
+
 TEST*/
