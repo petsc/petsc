@@ -179,7 +179,7 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
             if not ii in tested: tested[ii] = {}
             for line in testlines:
                 try:
-                  tested[ii][int(line)-1] = 1
+                  tested[ii][int(line)] = 1
                 except Exception as e:
                   print("  Error processing %s" % in_file)
                   print("  Invalid tested data, skipping file")
@@ -191,7 +191,7 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
             in_fid.close()
             if not ii in code: code[ii] = {}
             for line in codelines:
-                code[ii][int(line)-1] = 1
+                code[ii][int(line)] = 1
 
       print("Building html files for %s" % lang)
       ntotal_lines = 0
@@ -223,7 +223,7 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
           n_code = 0
           for i in range(0,len(lines)):
               line = lines[i]
-              if not i-10 in tested[file] and i-10 in code[file]:
+              if not i-9 in tested[file] and i-9 in code[file]:
                  if line.startswith('<pre width='):
                     num = line.find('>')
                     temp_outline = line[:num+1]+'<font color="red">Untested :&nbsp;&nbsp;</font>'+line[num+1:]
@@ -233,7 +233,7 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
               else:
                  temp_outline = spaces_12+line
               print(temp_outline,file = outhtml_fid)
-              if i-10 in code[file]: n_code += 1
+              if i-9 in code[file]: n_code += 1
           outhtml_fid.close()
           nsrc_files_not_tested += (not_tested > 0)
 
@@ -275,10 +275,10 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
          for line in diff:
              if len(line) > 0:
                  line = line[:line.find(')')]
-                 c = int(line[line.rfind(' '):])-1
+                 c = int(line[line.rfind(' '):])
                  if ii in code and c in code[ii]:
                      t_nsrc_lines += 1
-                     if ii in tested and not line in tested[ii]:
+                     if ii in tested and not c in tested[ii]:
                          t_nsrc_lines_not_tested += 1
                          lines_not_tested[c] = 1
          if t_nsrc_lines_not_tested:
@@ -301,7 +301,7 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
             inhtml_fid.close()
             for i in range(0,len(lines)):
                line = lines[i]
-               if i-10 in lines_not_tested and (not ii in code or i-10 in code[ii]):
+               if i-9 in lines_not_tested:
                  if line.startswith('<pre width='):
                     num = line.find('>')
                     temp_outline = line[:num+1]+'<font color="red">Untested :&nbsp;&nbsp;</font>'+line[num+1:]
