@@ -873,7 +873,27 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 }
 
 /*@
-   PCGetFailedReason - Gets the reason a PCSetUp() failed or 0 if it did not fail
+   PCSetFailedReason - Sets the reason a PCSetUp() failed or PC_NOERROR if it did not fail
+
+   Logically Collective on PC
+
+   Input Parameter:
++  pc - the preconditioner context
+-  reason - the reason it failedx
+
+   Level: advanced
+
+.seealso: PCCreate(), PCApply(), PCDestroy(), PCFailedReason
+@*/
+PetscErrorCode PCSetFailedReason(PC pc,PCFailedReason reason)
+{
+  PetscFunctionBegin;
+  pc->failedreason = reason;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCGetFailedReason - Gets the reason a PCSetUp() failed or PC_NOERROR if it did not fail
 
    Logically Collective on PC
 
@@ -881,11 +901,15 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 .  pc - the preconditioner context
 
    Output Parameter:
-.  reason - the reason it failed, currently only -1
+.  reason - the reason it failed
 
    Level: advanced
 
-.seealso: PCCreate(), PCApply(), PCDestroy()
+   Notes: This is the maximum over reason over all ranks in the PC communicator. It is only valid after
+   a call KSPCheckDot() or  KSPCheckNorm() inside a KSPSolve(). It is not valid immediately after a PCSetUp()
+   or PCApply(), then use PCGetFailedReasonRank()
+
+.seealso: PCCreate(), PCApply(), PCDestroy(), PCGetFailedReasonRank(), PCSetFailedReason()
 @*/
 PetscErrorCode PCGetFailedReason(PC pc,PCFailedReason *reason)
 {
@@ -895,6 +919,31 @@ PetscErrorCode PCGetFailedReason(PC pc,PCFailedReason *reason)
   PetscFunctionReturn(0);
 }
 
+/*@
+   PCGetFailedReasonRank - Gets the reason a PCSetUp() failed or PC_NOERROR if it did not fail on this MPI rank
+
+  Not Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  reason - the reason it failed
+
+   Notes:
+     Different ranks may have different reasons or no reason, see PCGetFailedReason()
+
+   Level: advanced
+
+.seealso: PCCreate(), PCApply(), PCDestroy(), PCGetFailedReason(), PCSetFailedReason()
+@*/
+PetscErrorCode PCGetFailedReasonRank(PC pc,PCFailedReason *reason)
+{
+  PetscFunctionBegin;
+  if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
+  else *reason = pc->failedreason;
+  PetscFunctionReturn(0);
+}
 
 /*
       a setupcall of 0 indicates never setup,

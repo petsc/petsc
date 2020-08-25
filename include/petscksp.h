@@ -374,8 +374,11 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool*);
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPViewFromOptions(KSP,PetscObject,const char[]);
-PETSC_EXTERN PetscErrorCode KSPReasonView(KSP,PetscViewer);
-PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
+PETSC_EXTERN PetscErrorCode KSPConvergedReasonView(KSP,PetscViewer,PetscViewerFormat);
+PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewFromOptions(KSP);
+
+PETSC_DEPRECATED_FUNCTION("Use KSPConvergedReasonView() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode KSPReasonView(KSP ksp,PetscViewer v) {return KSPConvergedReasonView(ksp,v,PETSC_VIEWER_DEFAULT);}
+PETSC_DEPRECATED_FUNCTION("Use KSPConvergedReasonViewFromOptions() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode KSPReasonViewFromOptions(KSP ksp) {return KSPConvergedReasonViewFromOptions(ksp);}
 
 #define KSP_FILE_CLASSID 1211223
 
@@ -467,7 +470,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
       The string versions of these are KSPConvergedReasons; if you change
       any of the values here also change them that array of names.
 
-.seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetTolerances()
+.seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetTolerances(), KSPConvergedReasonView()
 E*/
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL_NORMAL        =  1,

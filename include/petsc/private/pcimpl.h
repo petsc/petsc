@@ -53,7 +53,8 @@ struct _p_PC {
   void             *data;
   PetscInt         presolvedone;  /* has PCPreSolve() already been run */
   void             *user;             /* optional user-defined context */
-  PCFailedReason   failedreason;
+  PCFailedReason   failedreason;      /* after VecNorm or VecDot contains maximum of all rank failed reasons */
+  PCFailedReason   failedreasonrank;  /* failed reason on this rank */
 };
 
 PETSC_EXTERN PetscLogEvent PC_SetUp;
