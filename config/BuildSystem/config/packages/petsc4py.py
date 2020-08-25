@@ -71,7 +71,7 @@ class Configure(config.package.Package):
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\
-                          '@echo "To use petsc4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
+                          '@echo "To use petsc4py, add '+os.path.join(self.installDir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('petsc4py-build','')
