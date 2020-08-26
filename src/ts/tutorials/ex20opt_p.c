@@ -5,7 +5,7 @@ Input parameters include:\n";
 /*
    Concepts: TS^time-dependent nonlinear problems
    Concepts: TS^van der Pol equation DAE equivalent
-   Concepts: Optimization using adjoint sensitivity analysis
+   Concepts: TS^Optimization using adjoint sensitivity analysis
    Processors: 1
 */
 /* ------------------------------------------------------------------------

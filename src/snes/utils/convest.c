@@ -220,7 +220,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
 - r  - The refinement level
 
   Options database keys:
-+ -convest_monitor - Activate the monitor
+. -convest_monitor - Activate the monitor
 
   Level: intermediate
 

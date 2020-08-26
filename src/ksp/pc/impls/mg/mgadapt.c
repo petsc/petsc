@@ -191,7 +191,7 @@ PetscErrorCode PCMGAdaptInterpolator_Internal(PC pc, PetscInt l, KSP csmooth, KS
   ierr = PCMGGetInterpolation(pc, l, &Interp);CHKERRQ(ierr);
 
   ierr = DMAdaptInterpolator(cdm, dm, Interp, fsmooth, Nc, fspace, cspace, &InterpAdapt, pc);CHKERRQ(ierr);
-  if (mg->mespMonitor) {ierr = DMCheckInterpolator(dm, InterpAdapt, Nc, cspace, fspace, 0.5/*PETSC_SMALL*/);CHKERRQ(ierr);}
+  if (mg->mespMonitor) {ierr = DMCheckInterpolator(dm, InterpAdapt, Nc, cspace, fspace, 0.5/* PETSC_SMALL */);CHKERRQ(ierr);}
   ierr = PCMGSetInterpolation(pc, l, InterpAdapt);CHKERRQ(ierr);
   ierr = PCMGSetRestriction(pc, l, InterpAdapt);CHKERRQ(ierr);
   ierr = MatDestroy(&InterpAdapt);CHKERRQ(ierr);

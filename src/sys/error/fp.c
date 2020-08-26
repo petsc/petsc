@@ -185,6 +185,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
    Notes:
       Currently only supported on Linux and MacOS. Checks if divide by zero is enable and if so declares that trapping is on.
 
+   Level: advanced
 
 .seealso: PetscFPTrapPush(), PetscFPTrapPop(), PetscDetermineInitialFPTrap()
 @*/

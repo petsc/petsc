@@ -1611,7 +1611,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS prob, PetscInt fieldI, PetscIn
   Not collective
 
   Input Parameters:
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . jtype        - The type of matrix pointwise functions that should be used
 . fieldI       - The test field being integrated
 . fieldJ       - The basis field being integrated

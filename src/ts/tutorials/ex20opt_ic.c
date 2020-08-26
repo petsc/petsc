@@ -3,7 +3,7 @@ static char help[] = "Solves a ODE-constrained optimization problem -- finding t
 /**
   Concepts: TS^time-dependent nonlinear problems
   Concepts: TS^van der Pol equation DAE equivalent
-  Concepts: Optimization using adjoint sensitivities
+  Concepts: TS^Optimization using adjoint sensitivity analysis
   Processors: 1
 */
 /**

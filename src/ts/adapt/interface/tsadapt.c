@@ -581,7 +581,7 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt,PetscReal *low,PetscReal *high)
 
    Input Arguments:
 +  adapt - adaptive controller context
-.  scale - scale
+-  scale - scale
 
    Options Database Keys:
 .  -ts_adapt_scale_solve_failed <scale> - to set scale step by this factor if solve fails
@@ -610,7 +610,7 @@ PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt,PetscReal scale)
 .  adapt - adaptive controller context
 
    Ouput Arguments:
-+  scale - scale factor
+.  scale - scale factor
 
    Level: intermediate
 
