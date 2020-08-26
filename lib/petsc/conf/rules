@@ -671,7 +671,7 @@ checkbadSource:
 	-@echo "Space before CHKERRQ ---------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -l -P '; CHKERRQ\(' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
 	-@echo "No space after if, for or while -----------------------------" >> checkbadSource.out
-	-@git --no-pager grep -l -P -e 'for\(' -e 'if\('  -e 'while\(' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -l -P -e '[^_]for\(' -e 'if\('  -e 'while\(' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
 	-@echo "Two ;; -----------------------------" >> checkbadSource.out
 	-@git --no-pager grep  -P -e ';;'  -- '*.[chF]' '*.F90' '*.cxx' | grep -v ' for (' | grep -v khash.h >> checkbadSource.out;true
 	-@echo "Missing if (ierr) return(ierr); -----------------------------" >> checkbadSource.out
@@ -682,7 +682,7 @@ checkbadSource:
 	-@git --no-pager grep  -l -P '{SETERRQ' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ  --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; let "l=$$a-11" ;\
+	@a=`cat checkbadSource.out | wc -l`; let "l=$$a-10" ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

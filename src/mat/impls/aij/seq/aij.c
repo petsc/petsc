@@ -4037,7 +4037,7 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
       structure will be the union of all the previous nonzero structures.
 
     Developer Notes:
-      An optimization could be added to the implementation where it checks if the i, and j are identical to the current i and j and 
+      An optimization could be added to the implementation where it checks if the i, and j are identical to the current i and j and
       then just copies the v values directly with PetscMemcpy().
 
       This routine could also take a PetscCopyMode argument to allow sharing the values instead of always copying them.
