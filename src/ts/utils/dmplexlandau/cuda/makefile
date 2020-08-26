@@ -1,16 +1,18 @@
+#requirespackage 'PETSC_HAVE_CUDA'
+-include ../../../../../petscdir.mk
 
-ALL: lib
-
+CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dmts.c dmlocalts.c dmdats.c dmplexts.c tsconvest.c
+SOURCEC  =
+SOURCECU = landaucu.cu
 SOURCEF  =
 SOURCEH  =
+DIRS     =
 LIBBASE  = libpetscts
 MANSEC   = TS
-DIRS     = dmplexlandau
-EDIRS    =
-LOCDIR   = src/ts/utils/
+SUBMANSEC= LANDAU
+LOCDIR   = src/ts/utils/dmplexlandau/cuda
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

@@ -1,16 +1,18 @@
-
+-include ../../../../petscdir.mk
 ALL: lib
 
+CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dmts.c dmlocalts.c dmdats.c dmplexts.c tsconvest.c
+SOURCEC  = plexland.c
+SOURCECU =
 SOURCEF  =
-SOURCEH  =
+SOURCEH  = land_kernel.h land_tensors.h
+DIRS     = tutorials cuda kokkos
 LIBBASE  = libpetscts
 MANSEC   = TS
-DIRS     = dmplexlandau
-EDIRS    =
-LOCDIR   = src/ts/utils/
+SUBMANSEC= LANDAU
+LOCDIR   = src/ts/utils/dmplexlandau
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

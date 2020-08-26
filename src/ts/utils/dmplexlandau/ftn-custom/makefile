@@ -1,16 +1,14 @@
-
+-include ../../../../../petscdir.mk
+#requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
-
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dmts.c dmlocalts.c dmdats.c dmplexts.c tsconvest.c
+SOURCEC  = zlandaucreate.c
 SOURCEF  =
 SOURCEH  =
+DIRS     =
 LIBBASE  = libpetscts
-MANSEC   = TS
-DIRS     = dmplexlandau
-EDIRS    =
-LOCDIR   = src/ts/utils/
+LOCDIR   = src/ts/utils/dmplexlandau/ftn-custom/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
