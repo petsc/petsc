@@ -2,8 +2,8 @@
 /*@C
    MatCreateMPIAIJSELL - Creates a sparse parallel matrix whose local
    portions are stored as SEQAIJSELL matrices (a matrix class that inherits
-   from SEQAIJ but performs some operations in SELL format).  The same 
-   guidelines that apply to MPIAIJ matrices for preallocating the matrix 
+   from SEQAIJ but performs some operations in SELL format).  The same
+   guidelines that apply to MPIAIJ matrices for preallocating the matrix
    storage apply here as well.
 
       Collective
@@ -151,4 +151,3 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJSELL(Mat A)
 
 .seealso: MatCreateMPIAIJSELL(), MATSEQAIJSELL, MATMPIAIJSELL
 M*/
-

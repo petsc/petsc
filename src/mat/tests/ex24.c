@@ -14,7 +14,7 @@ PetscErrorCode FormJacobian(Mat A)
   ierr = MatGetOwnershipRange(A,&ownbegin,&ownend);CHKERRQ(ierr);
 
   for (i=ownbegin; i<ownend; i++) {
-    for(j=i-3; j<i+3; j++) {
+    for (j=i-3; j<i+3; j++) {
       if (j >= 0 && j < M) {
         ierr = MatSetValues(A,1,&i,1,&j,&dummy,INSERT_VALUES);CHKERRQ(ierr);
       }

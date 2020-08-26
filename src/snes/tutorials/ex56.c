@@ -126,9 +126,9 @@ void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lam
             if (k==l && i==j) g3[IDX(i,j,k,l)] += lambda;
             if (i==k && j==l) g3[IDX(i,j,k,l)] += mu;
             if (i==l && j==k) g3[IDX(i,j,k,l)] += mu;
-	    if (k==l && i==j && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += lambda;\n",IDX(i,j,k,l));
-	    if (i==k && j==l && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
-	    if (i==l && j==k && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
+            if (k==l && i==j && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += lambda;\n",IDX(i,j,k,l));
+            if (i==k && j==l && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
+            if (i==l && j==k && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
           }
         }
       }

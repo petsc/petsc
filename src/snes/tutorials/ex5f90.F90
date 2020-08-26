@@ -515,7 +515,7 @@
 !  Notes:
 !  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping 
+!  global numbering with the "ltog" mapping
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !

@@ -39,7 +39,7 @@ int main(int argc, char **argv)
   ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
 
   /* Create a KSP object */

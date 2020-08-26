@@ -310,7 +310,7 @@ PetscErrorCode MatFindZeroRows(Mat mat,IS *zerorows)
    Notes:
     see the manual page for MatCreateAIJ() for more information on the "diagonal part" of the matrix.
           Use caution, as the reference count on the returned matrix is not incremented and it is used as
-	  part of the containing MPI Mat's normal operation.
+          part of the containing MPI Mat's normal operation.
 
    Level: advanced
 
@@ -4468,7 +4468,7 @@ PetscErrorCode MatSolverTypeDestroy(void)
 .  flg - PETSC_TRUE if uses the ordering
 
    Notes:
-      Most internal PETSc factorizations use the ordering past to the factorization routine but external 
+      Most internal PETSc factorizations use the ordering past to the factorization routine but external
       packages do no, thus we want to skip the ordering when it is not needed.
 
    Level: developer
@@ -5336,7 +5336,7 @@ PetscErrorCode MatAssembled(Mat mat,PetscBool  *assembled)
 .  -mat_view draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (See Users-Manual: ch_matlab )
+.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (See Users-Manual: ch_matlab)
 .  -viewer_socket_machine <machine> - Machine to use for socket
 .  -viewer_socket_port <port> - Port number to use for socket
 -  -mat_view binary:filename[:append] - Save matrix to file in binary format
@@ -7077,8 +7077,8 @@ PetscErrorCode MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],PetscInt ov)
   MatCheckPreallocated(mat,1);
   if (!ov) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
-  for(i=0; i<n; i++){
-	ierr =  MatIncreaseOverlapSplit_Single(mat,&is[i],ov);CHKERRQ(ierr);
+  for (i=0; i<n; i++){
+        ierr =  MatIncreaseOverlapSplit_Single(mat,&is[i],ov);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

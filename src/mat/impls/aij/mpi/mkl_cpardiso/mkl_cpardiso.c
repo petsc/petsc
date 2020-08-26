@@ -52,7 +52,7 @@ static const char *Err_MSG_CPardiso(int errNo) {
       return "problems with opening OOC temporary files"; break;
     case -11:
       return "read/write problems with the OOC data file"; break;
-    default : 
+    default :
       return "unknown error";
   }
 }
@@ -842,7 +842,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
    Level: Intermediate
 
    Notes:
-    This routine cannot be used if you are solving the linear system with TS, SNES, or KSP, only if you directly call MatGetFactor() so use the options 
+    This routine cannot be used if you are solving the linear system with TS, SNES, or KSP, only if you directly call MatGetFactor() so use the options
           database approach when working with TS, SNES, or KSP.
 
    References:
@@ -919,7 +919,7 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatSolverTypeRegister(MATSOLVERMKL_CPARDISO,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_mpiaij_mkl_cpardiso);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERMKL_CPARDISO,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_mpiaij_mkl_cpardiso);CHKERRQ(ierr);

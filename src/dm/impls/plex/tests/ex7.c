@@ -319,7 +319,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
       PetscInt    markerPoints[16]     = {2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1};
 
       ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for(p = 0; p < 8; ++p) {
+      for (p = 0; p < 8; ++p) {
         ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
       }
     }

@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   char            **testClassesStrArr;
   FILE            *infoFile;
 
-  ierr = PetscInitialize(&argc, &argv,(char *) 0, help);if(ierr){ return ierr;}
+  ierr = PetscInitialize(&argc, &argv,(char *) 0, help);if (ierr) return ierr;
 
   /*
      Examples on how to call PetscInfo() using different objects with or without arguments, and different communicators.

@@ -294,7 +294,7 @@ static const char *PetscErrorStrings[] = {
 
    Level: developer
 
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscError(), SETERRQ(), CHKERRQ() 
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscError(), SETERRQ(), CHKERRQ()
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
 PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
@@ -437,7 +437,7 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
 PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscMPIInt	 rank,size;
+  PetscMPIInt    rank,size;
   PetscInt       j,i,n = N/20,p = N % 20;
   PetscBool      iascii,isbinary;
   MPI_Comm       comm;
@@ -534,7 +534,7 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscMPIInt	 rank,size;
+  PetscMPIInt    rank,size;
   PetscInt       j,i,n = N/5,p = N % 5;
   PetscBool      iascii,isbinary;
   MPI_Comm       comm;
@@ -639,7 +639,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
 PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscMPIInt	 rank,size;
+  PetscMPIInt    rank,size;
   PetscInt       j,i,n = N/3,p = N % 3;
   PetscBool      iascii,isbinary;
   MPI_Comm       comm;

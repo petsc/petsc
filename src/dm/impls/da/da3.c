@@ -1383,7 +1383,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 .  bx,by,bz - type of ghost nodes the array have.
          Use one of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_PERIODIC.
 .  stencil_type - Type of stencil (DMDA_STENCIL_STAR or DMDA_STENCIL_BOX)
-.  M,N,P - global dimension in each direction of the array 
+.  M,N,P - global dimension in each direction of the array
 .  m,n,p - corresponding number of processors in each dimension
            (or PETSC_DECIDE to have calculated)
 .  dof - number of degrees of freedom per node

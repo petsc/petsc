@@ -7,7 +7,7 @@
 #define dmdagetglobalindices_          dmdagetglobalindices
 #endif
 
-PETSC_EXTERN void  dmdasetaotype_(DM *da,char* type, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len )
+PETSC_EXTERN void  dmdasetaotype_(DM *da,char* type, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
   FIXCHAR(type,len,t);

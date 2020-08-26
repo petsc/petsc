@@ -188,7 +188,7 @@ PetscErrorCode VecTaggerAndOrIsSubBox_Private(PetscInt bs, const VecTaggerBox *s
   *isSub = PETSC_TRUE;
   for (i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
-    if (superBox[i].min > subBox[i].min || superBox[i].max < subBox[i].max ) {
+    if (superBox[i].min > subBox[i].min || superBox[i].max < subBox[i].max) {
       *isSub = PETSC_FALSE;
       break;
     }

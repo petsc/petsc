@@ -8,7 +8,7 @@ static PetscErrorCode DMPlexInvertCells_CTetgen(PetscInt numCells, PetscInt numC
   PetscInt bound = numCells*numCorners, coff;
 
   PetscFunctionBegin;
-#define SWAP(a,b) do { PetscInt tmp = (a); (a) = (b); (b) = tmp; } while(0)
+#define SWAP(a,b) do { PetscInt tmp = (a); (a) = (b); (b) = tmp; } while (0)
   for (coff = 0; coff < bound; coff += numCorners) SWAP(cells[coff],cells[coff+1]);
 #undef SWAP
   PetscFunctionReturn(0);

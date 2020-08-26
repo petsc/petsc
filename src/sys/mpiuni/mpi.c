@@ -150,8 +150,8 @@ static int Keyval_setup(void)
 {
   attr[CommIdx(MPI_COMM_WORLD)][0].active        = 1;
   attr[CommIdx(MPI_COMM_WORLD)][0].attribute_val = &mpi_tag_ub;
-  attr[CommIdx(MPI_COMM_SELF )][0].active        = 1;
-  attr[CommIdx(MPI_COMM_SELF )][0].attribute_val = &mpi_tag_ub;
+  attr[CommIdx(MPI_COMM_SELF)][0].active        = 1;
+  attr[CommIdx(MPI_COMM_SELF)][0].attribute_val = &mpi_tag_ub;
   attr_keyval[0].active                          = 1;
   return MPI_SUCCESS;
 }

@@ -129,7 +129,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     if (tao->ops->update) {
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
-    
+
     /* Perform projected gradient iterations */
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
 
@@ -218,11 +218,11 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
         xdiff *= stepsize;
 
         /* Adjust trust region size */
-        if (rhok < tron->eta2 ){
+        if (rhok < tron->eta2){
           delta = PetscMin(xdiff,delta)*tron->sigma1;
-        } else if (rhok > tron->eta4 ){
+        } else if (rhok > tron->eta4){
           delta= PetscMin(xdiff,delta)*tron->sigma3;
-        } else if (rhok > tron->eta3 ){
+        } else if (rhok > tron->eta3){
           delta=PetscMin(xdiff,delta)*tron->sigma2;
         }
         ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);

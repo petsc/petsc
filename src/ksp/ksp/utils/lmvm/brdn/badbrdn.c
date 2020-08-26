@@ -4,15 +4,15 @@
 
 /*
   The solution method is the matrix-free implementation of the inverse Hessian in
-  Equation 6 on page 312 of Griewank "Broyden Updating, The Good and The Bad!" 
+  Equation 6 on page 312 of Griewank "Broyden Updating, The Good and The Bad!"
   (http://www.emis.ams.org/journals/DMJDMV/vol-ismp/45_griewank-andreas-broyden.pdf).
-  
-  Q[i] = (B_i)^{-1}*S[i] terms are computed ahead of time whenever 
-  the matrix is updated with a new (S[i], Y[i]) pair. This allows 
+
+  Q[i] = (B_i)^{-1}*S[i] terms are computed ahead of time whenever
+  the matrix is updated with a new (S[i], Y[i]) pair. This allows
   repeated calls of MatSolve without incurring redundant computation.
-  
+
   dX <- J0^{-1} * F
-  
+
   for i=0,1,2,...,k
     # Q[i] = (B_i)^{-1} * Y[i]
     tau = (Y[i]^T F) / (Y[i]^T Y[i])
@@ -27,11 +27,11 @@ static PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
   PetscErrorCode    ierr;
   PetscInt          i, j;
   PetscScalar       yjtyi, ytf;
-  
+
   PetscFunctionBegin;
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
-  
+
   if (lbb->needQ) {
     /* Pre-compute (Q[i] = (B_i)^{-1} * Y[i]) */
     for (i = 0; i <= lmvm->k; ++i) {
@@ -43,7 +43,7 @@ static PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
     }
     lbb->needQ = PETSC_FALSE;
   }
-  
+
   ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->Y[i], F, &ytf);CHKERRQ(ierr);
@@ -55,17 +55,17 @@ static PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
 /*------------------------------------------------------------*/
 
 /*
-  The forward product is the matrix-free implementation of the direct update in 
+  The forward product is the matrix-free implementation of the direct update in
   Equation 6 on page 302 of Griewank "Broyden Updating, The Good and The Bad!"
   (http://www.emis.ams.org/journals/DMJDMV/vol-ismp/45_griewank-andreas-broyden.pdf).
-  
-  P[i] = (B_i)*S[i] terms are computed ahead of time whenever 
-  the matrix is updated with a new (S[i], Y[i]) pair. This allows 
-  repeated calls of MatMult inside KSP solvers without unnecessarily 
+
+  P[i] = (B_i)*S[i] terms are computed ahead of time whenever
+  the matrix is updated with a new (S[i], Y[i]) pair. This allows
+  repeated calls of MatMult inside KSP solvers without unnecessarily
   recomputing P[i] terms in expensive nested-loops.
-  
+
   Z <- J0 * X
-  
+
   for i=0,1,2,...,k
     # P[i] = B_i * S[i]
     tau = (Y[i]^T X) / (Y[i]^T S[i])
@@ -80,11 +80,11 @@ static PetscErrorCode MatMult_LMVMBadBrdn(Mat B, Vec X, Vec Z)
   PetscErrorCode    ierr;
   PetscInt          i, j;
   PetscScalar       yjtsi, ytx;
-  
+
   PetscFunctionBegin;
   VecCheckSameSize(X, 2, Z, 3);
   VecCheckMatCompatible(B, X, 2, Z, 3);
-  
+
   if (lbb->needP) {
     /* Pre-compute (P[i] = (B_i) * S[i]) */
     for (i = 0; i <= lmvm->k; ++i) {
@@ -96,7 +96,7 @@ static PetscErrorCode MatMult_LMVMBadBrdn(Mat B, Vec X, Vec Z)
     }
     lbb->needP = PETSC_FALSE;
   }
-  
+
   ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->Y[i], X, &ytx);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ static PetscErrorCode MatReset_LMVMBadBrdn(Mat B, PetscBool destructive)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   lbb->needP = lbb->needQ = PETSC_TRUE;
   if (destructive && lbb->allocated) {
@@ -197,7 +197,7 @@ static PetscErrorCode MatAllocate_LMVMBadBrdn(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!lbb->allocated) {
@@ -238,7 +238,7 @@ static PetscErrorCode MatSetUp_LMVMBadBrdn(Mat B)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_Brdn          *lbb = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   if (!lbb->allocated) {
@@ -285,16 +285,16 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMBadBroyden - Creates a limited-memory modified (aka "bad") Broyden-type 
-   approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be 
+   MatCreateLMVMBadBroyden - Creates a limited-memory modified (aka "bad") Broyden-type
+   approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be
    symmetric or positive-definite.
-   
-   The provided local and global sizes must match the solution and function vectors 
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-BadBrdn matrix will have 
-   storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in 
-   parallel. To use the L-BadBrdn matrix with other vector types, the matrix must be 
-   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate(). 
-   This ensures that the internal storage and work vectors are duplicated from the 
+
+   The provided local and global sizes must match the solution and function vectors
+   used with MatLMVMUpdate() and MatSolve(). The resulting L-BadBrdn matrix will have
+   storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in
+   parallel. To use the L-BadBrdn matrix with other vector types, the matrix must be
+   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
+   This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
 
    Collective
@@ -321,13 +321,13 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 
    Level: intermediate
 
-.seealso: MatCreate(), MATLMVM, MATLMVMBADBRDN, MatCreateLMVMDFP(), MatCreateLMVMSR1(), 
+.seealso: MatCreate(), MATLMVM, MATLMVMBADBRDN, MatCreateLMVMDFP(), MatCreateLMVMSR1(),
           MatCreateLMVMBFGS(), MatCreateLMVMBrdn(), MatCreateLMVMSymBrdn()
 @*/
 PetscErrorCode MatCreateLMVMBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);

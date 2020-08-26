@@ -75,7 +75,7 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
   /* Subtract Demand flows at the vertices */
   for (i=0; i<nv; i++) {
     ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
-    if(ghostvtex) continue;
+    if (ghostvtex) continue;
 
     ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
     } else if (vertex->type == VERTEX_TYPE_RESERVOIR) {
       reservoir = &vertex->res;
       farr[offset] = xarr[offset] - reservoir->head;
-    } else if(vertex->type == VERTEX_TYPE_TANK) {
+    } else if (vertex->type == VERTEX_TYPE_TANK) {
       tank = &vertex->tank;
       farr[offset] = xarr[offset] - (tank->elev + tank->initlvl);
     }
@@ -186,15 +186,15 @@ PetscErrorCode GetListofEdges_Water(WATERDATA *water,PetscInt *edgelist)
 
     for (j=0; j < water->nvertex; j++) {
       if (water->vertex[j].id == node1) {
-	edgelist[2*i] = j;
-	break;
+        edgelist[2*i] = j;
+        break;
       }
     }
 
     for (j=0; j < water->nvertex; j++) {
       if (water->vertex[j].id == node2) {
-	edgelist[2*i+1] = j;
-	break;
+        edgelist[2*i+1] = j;
+        break;
       }
     }
   }

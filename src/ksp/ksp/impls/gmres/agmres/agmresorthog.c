@@ -305,7 +305,7 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
     dpt = j * nloc + j;
     if (tloc[j] != 0.0) {
       len       = nloc - j;
-      ierr      = PetscBLASIntCast(len,&blen);CHKERRQ(ierr); 
+      ierr      = PetscBLASIntCast(len,&blen);CHKERRQ(ierr);
       rho       = Qloc[dpt];
       Qloc[dpt] = 1.0;
       tt        = tloc[j] * (BLASdot_(&blen, &(Qloc[dpt]), &pas, &(zloc[j]), &pas));

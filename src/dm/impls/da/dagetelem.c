@@ -73,10 +73,10 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
     ierr   = PetscMalloc1(1 + nn*da->ne,&da->e);CHKERRQ(ierr);
     for (j=ys; j<ye-1; j++) {
       for (i=xs; i<xe-1; i++) {
-        cell[0] = (i-Xs  ) + (j-Ys  )*(Xe-Xs);
-        cell[1] = (i-Xs+1) + (j-Ys  )*(Xe-Xs);
+        cell[0] = (i-Xs)   + (j-Ys)*(Xe-Xs);
+        cell[1] = (i-Xs+1) + (j-Ys)*(Xe-Xs);
         cell[2] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs);
-        cell[3] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs);
+        cell[3] = (i-Xs)   + (j-Ys+1)*(Xe-Xs);
         if (da->elementtype == DMDA_ELEMENT_P1) {
           for (c=0; c<ns*nn; c++) da->e[cnt++] = cell[split[c]];
         }
@@ -144,14 +144,14 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
     for (k=zs; k<ze-1; k++) {
       for (j=ys; j<ye-1; j++) {
         for (i=xs; i<xe-1; i++) {
-          cell[0] = (i-Xs  ) + (j-Ys  )*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
-          cell[1] = (i-Xs+1) + (j-Ys  )*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
-          cell[2] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
-          cell[3] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
-          cell[4] = (i-Xs  ) + (j-Ys  )*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
-          cell[5] = (i-Xs+1) + (j-Ys  )*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
-          cell[6] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
-          cell[7] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
+          cell[0] = (i  -Xs) + (j  -Ys)*(Xe-Xs) + (k  -Zs)*(Xe-Xs)*(Ye-Ys);
+          cell[1] = (i+1-Xs) + (j  -Ys)*(Xe-Xs) + (k  -Zs)*(Xe-Xs)*(Ye-Ys);
+          cell[2] = (i+1-Xs) + (j+1-Ys)*(Xe-Xs) + (k  -Zs)*(Xe-Xs)*(Ye-Ys);
+          cell[3] = (i  -Xs) + (j+1-Ys)*(Xe-Xs) + (k  -Zs)*(Xe-Xs)*(Ye-Ys);
+          cell[4] = (i  -Xs) + (j  -Ys)*(Xe-Xs) + (k+1-Zs)*(Xe-Xs)*(Ye-Ys);
+          cell[5] = (i+1-Xs) + (j  -Ys)*(Xe-Xs) + (k+1-Zs)*(Xe-Xs)*(Ye-Ys);
+          cell[6] = (i+1-Xs) + (j+1-Ys)*(Xe-Xs) + (k+1-Zs)*(Xe-Xs)*(Ye-Ys);
+          cell[7] = (i  -Xs) + (j+1-Ys)*(Xe-Xs) + (k+1-Zs)*(Xe-Xs)*(Ye-Ys);
           if (da->elementtype == DMDA_ELEMENT_P1) {
             for (c=0; c<ns*nn; c++) da->e[cnt++] = cell[split[c]];
           }
@@ -162,10 +162,10 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
       }
     }
 
-    corners[0] = (xs  -Xs) + (ys  -Ys)*(Xe-Xs) + (zs-Zs  )*(Xe-Xs)*(Ye-Ys);
-    corners[1] = (xe-1-Xs) + (ys  -Ys)*(Xe-Xs) + (zs-Zs  )*(Xe-Xs)*(Ye-Ys);
-    corners[2] = (xs  -Xs) + (ye-1-Ys)*(Xe-Xs) + (zs-Zs  )*(Xe-Xs)*(Ye-Ys);
-    corners[3] = (xe-1-Xs) + (ye-1-Ys)*(Xe-Xs) + (zs-Zs  )*(Xe-Xs)*(Ye-Ys);
+    corners[0] = (xs  -Xs) + (ys  -Ys)*(Xe-Xs) + (zs-  Zs)*(Xe-Xs)*(Ye-Ys);
+    corners[1] = (xe-1-Xs) + (ys  -Ys)*(Xe-Xs) + (zs-  Zs)*(Xe-Xs)*(Ye-Ys);
+    corners[2] = (xs  -Xs) + (ye-1-Ys)*(Xe-Xs) + (zs-  Zs)*(Xe-Xs)*(Ye-Ys);
+    corners[3] = (xe-1-Xs) + (ye-1-Ys)*(Xe-Xs) + (zs-  Zs)*(Xe-Xs)*(Ye-Ys);
     corners[4] = (xs  -Xs) + (ys  -Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);
     corners[5] = (xe-1-Xs) + (ys  -Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);
     corners[6] = (xs  -Xs) + (ye-1-Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);

@@ -2030,7 +2030,7 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indices
     for (i=0; i<n; i++) {
       idx        = *indicesx++;
       idy        = *indicesy++;
-      for (j=0; j<bs; j++ )  y[idy+j] += x[idx+j];
+      for (j=0; j<bs; j++)  y[idy+j] += x[idx+j];
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
@@ -2038,7 +2038,7 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indices
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      for (j=0; j<bs; j++ )  y[idy+j] = PetscMax(y[idy+j],x[idx+j]);
+      for (j=0; j<bs; j++)  y[idy+j] = PetscMax(y[idy+j],x[idx+j]);
     }
 #else
   case MAX_VALUES:

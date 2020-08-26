@@ -341,7 +341,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   pc->ops->view           = PCView_Redistribute;
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&red->ksp);CHKERRQ(ierr);
-  ierr = KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure);CHKERRQ(ierr); 
+  ierr = KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);

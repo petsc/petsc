@@ -1,7 +1,7 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
 
 /*
-  Limited-memory Broyden's method for approximating the inverse of 
+  Limited-memory Broyden's method for approximating the inverse of
   a Jacobian.
 */
 

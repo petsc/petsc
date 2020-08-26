@@ -771,7 +771,7 @@ do { \
   __start = 0; __end = __start;                                         \
   _4_ierr = MPI_Scan(&__ncols,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ncols;\
   _4_ierr = MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __nrows; \
-  do { } while(0)
+  do { } while (0)
 
 /*MC
    MatPreallocateSetLocal - Indicates the locations (rows and columns) in the matrix where nonzeros will be
@@ -1041,7 +1041,7 @@ do { PetscInt __i; \
 .seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
           MatPreallocateSymmetricSetLocalBlock()
 M*/
-#define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) 0; do {if (A) {ierr = MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);} else {ierr =  MatPreallocateSet(row,ncols,cols,dnz,onz);CHKERRQ(ierr);}} while(0)
+#define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) 0; do {if (A) {ierr = MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);} else {ierr =  MatPreallocateSet(row,ncols,cols,dnz,onz);CHKERRQ(ierr);}} while (0)
 
 
 /*MC
@@ -1070,7 +1070,7 @@ M*/
 .seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
           MatPreallocateSymmetricSetLocalBlock()
 M*/
-#define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree2(dnz,onz);CHKERRQ(_4_ierr);} while(0)
+#define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree2(dnz,onz);CHKERRQ(_4_ierr);} while (0)
 
 /* Routines unique to particular data structures */
 PETSC_EXTERN PetscErrorCode MatShellGetContext(Mat,void *);
@@ -1787,7 +1787,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetType(Mat,MatMFFDType);
 PETSC_EXTERN PetscErrorCode MatMFFDRegister(const char[],PetscErrorCode (*)(MatMFFD));
 
 PETSC_EXTERN PetscErrorCode MatMFFDDSSetUmin(Mat,PetscReal);
-PETSC_EXTERN PetscErrorCode MatMFFDWPSetComputeNormU(Mat,PetscBool );
+PETSC_EXTERN PetscErrorCode MatMFFDWPSetComputeNormU(Mat,PetscBool);
 
 PETSC_EXTERN PetscErrorCode MatFDColoringSetType(MatFDColoring,MatMFFDType);
 

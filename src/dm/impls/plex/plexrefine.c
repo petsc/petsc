@@ -2779,7 +2779,7 @@ static PetscErrorCode DMPlexCellRefinerSetCoordinates(DMPlexCellRefiner cr, DM r
     for (c = cStart; c < cEnd; ++c) {
       PetscInt dof;
 
-      ierr = PetscSectionGetDof(coordSection, c, &dof); CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
       if (dof) {
         DMPolytopeType  ct;
         DMPolytopeType *rct;
@@ -2845,7 +2845,7 @@ static PetscErrorCode DMPlexCellRefinerSetCoordinates(DMPlexCellRefiner cr, DM r
     }
     if (localizeVertices && ct != DM_POLYTOPE_POINT && (p >= ocStart) && (p < ocEnd)) {
       PetscInt dof;
-      ierr = PetscSectionGetDof(coordSection, p, &dof); CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(coordSection, p, &dof);CHKERRQ(ierr);
       if (dof) isLocalized = PETSC_TRUE;
     }
     if (hasVertex) {
@@ -2898,7 +2898,7 @@ static PetscErrorCode DMPlexCellRefinerSetCoordinates(DMPlexCellRefiner cr, DM r
     ierr = DMPlexCellRefinerRefine(cr, ct, &Nct, &rct, &rsize, &rcone, &rornt);CHKERRQ(ierr);
     if (localizeCells && ct != DM_POLYTOPE_POINT && (p >= ocStart) && (p < ocEnd)) {
       PetscInt dof;
-      ierr = PetscSectionGetDof(coordSection, p, &dof); CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(coordSection, p, &dof);CHKERRQ(ierr);
       if (dof) isLocalized = PETSC_TRUE;
     }
     if (isLocalized) {

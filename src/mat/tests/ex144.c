@@ -49,7 +49,7 @@ int main(int argc,char **args)
 
   N        = 2*N0*(N1/2+1);
   N_factor = N0*N1;
-  n        = 2*local_n0*(N1/2+1); 
+  n        = 2*local_n0*(N1/2+1);
 
 /*    printf("The value N is  %d from process %d\n",N,rank);  */
 /*    printf("The value n is  %d from process %d\n",n,rank);  */
@@ -127,7 +127,7 @@ int main(int argc,char **args)
   }
 
   ierr = PetscMalloc2(local_n0*N1,&x_arr,local_n0*N1,&y_arr);CHKERRQ(ierr); /* arr must be allocated for VecGetValues() */
-  ierr = VecGetValues(fin,local_n0*N1,indx4,(PetscScalar*)x_arr);CHKERRQ(ierr); 
+  ierr = VecGetValues(fin,local_n0*N1,indx4,(PetscScalar*)x_arr);CHKERRQ(ierr);
   ierr = VecSetValues(ini,local_n0*N1,indx3,x_arr,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(ini);CHKERRQ(ierr);

@@ -69,7 +69,7 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Ve
     if (a1 != 0.0) {
       ierr = PetscInfo1(snes,"||J^T(F-Ax)||/||F-AX|| %14.12e near zero implies inconsistent rhs\n",(double)(a2/a1));CHKERRQ(ierr);
     }
-    ierr = VecDestroy(&W1);CHKERRQ(ierr);    
+    ierr = VecDestroy(&W1);CHKERRQ(ierr);
     ierr = VecDestroy(&W2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

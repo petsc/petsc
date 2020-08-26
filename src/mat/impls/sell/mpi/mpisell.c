@@ -1566,7 +1566,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
      proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
      proc2: d_nnz = [1,1]   and o_nnz = [4,4]
 .ve
-   Here the space allocated is still 37 though there are 34 nonzeros because 
+   Here the space allocated is still 37 though there are 34 nonzeros because
    the allocation is always done according to rlenmax.
 
    Level: intermediate

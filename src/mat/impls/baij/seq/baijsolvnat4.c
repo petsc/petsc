@@ -290,7 +290,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A,Vec bb,
     CONVERT_DOUBLE4_FLOAT4(t,b);
     v =  aa + 16*((unsigned int)ai[1]);
 
-    for (i=1; i<n; ) {
+    for (i=1; i<n;) {
       PREFETCH_NTA(&v[8]);
       vi   =  aj      + ai[i];
       nz   =  diag[i] - ai[i];
@@ -347,7 +347,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A,Vec bb,
     idt  = 4*(n-1);
     ai16 = 16*diag[n-1];
     v    = aa + ai16 + 16;
-    for (i=n-1; i>=0; ) {
+    for (i=n-1; i>=0;) {
       PREFETCH_NTA(&v[8]);
       vi = aj + diag[i] + 1;
       nz = ai[i+1] - diag[i] - 1;
@@ -485,7 +485,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec 
     CONVERT_DOUBLE4_FLOAT4(t,b);
     v =  aa + 16*ai[1];
 
-    for (i=1; i<n; ) {
+    for (i=1; i<n;) {
       PREFETCH_NTA(&v[8]);
       vi   =  aj      + ai[i];
       nz   =  diag[i] - ai[i];
@@ -543,7 +543,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec 
     idt  = 4*(n-1);
     ai16 = 16*diag[n-1];
     v    = aa + ai16 + 16;
-    for (i=n-1; i>=0; ) {
+    for (i=n-1; i>=0;) {
       PREFETCH_NTA(&v[8]);
       vi = aj + diag[i] + 1;
       nz = ai[i+1] - diag[i] - 1;

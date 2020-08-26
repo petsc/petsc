@@ -383,7 +383,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   }
   ierr = (*ctx->func)(ctx->funcctx,w,y);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_COMPLEX)  
+#if defined(PETSC_USE_COMPLEX)
   if (ctx->usecomplex) {
     ierr = VecImaginaryPart(y);CHKERRQ(ierr);
     h    = PetscImaginaryPart(h);
@@ -618,7 +618,7 @@ PetscErrorCode  MatMFFDSetHHistory_MFFD(Mat J,PetscScalar history[],PetscInt nhi
 
   Developers Note: This is implemented on top of MATSHELL to get support for scaling and shifting without requiring duplicate code
 
-.seealso: MatCreateMFFD(), MatCreateSNESMF(), MatMFFDSetFunction(), MatMFFDSetType(),  
+.seealso: MatCreateMFFD(), MatCreateSNESMF(), MatMFFDSetFunction(), MatMFFDSetType(),
           MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(),
           MatMFFDGetH(),

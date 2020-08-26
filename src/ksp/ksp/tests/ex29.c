@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_MG/ML */
 
   for (i=0; i<3; i++) {
-    if (i<2) { 
+    if (i<2) {
       /* set values for rhs vector */
       ierr = VecSet(fine_ctx.b,i+1.0);CHKERRQ(ierr);
       /* modify A */

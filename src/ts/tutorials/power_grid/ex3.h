@@ -37,7 +37,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   if (event_list[0] == 0) {
     if (forwardsolve) user->Pmax = 0.0; /* Apply disturbance - this is done by setting Pmax = 0 */
     else user->Pmax = user->Pmax_ini; /* Going backward, reversal of event */
-  } else if(event_list[0] == 1) {
+  } else if (event_list[0] == 1) {
     if (forwardsolve) user->Pmax = user->Pmax_ini; /* Remove the fault  - this is done by setting Pmax = Pmax_ini */
     else user->Pmax = 0.0; /* Going backward, reversal of event */
   }

@@ -224,7 +224,7 @@ PETSC_EXTERN PetscErrorCode DMSetSectionSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMCreateSectionSF(DM, PetscSection, PetscSection);
 PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetSectionSF() (since v3.12)") PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *s) {return DMGetSectionSF(dm,s);}
 PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetSectionSF() (since v3.12)") PetscErrorCode DMSetDefaultSF(DM dm, PetscSF s) {return DMSetSectionSF(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMCreateSectionSF() (since v3.12)") PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection l, PetscSection g ) {return DMCreateSectionSF(dm,l,g);}
+PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMCreateSectionSF() (since v3.12)") PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection l, PetscSection g) {return DMCreateSectionSF(dm,l,g);}
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 

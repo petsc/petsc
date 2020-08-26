@@ -296,7 +296,7 @@ static PetscErrorCode ForceStress(const Ctx *ctx,Vec stress, PetscReal t)
   /* Normal stresses at a single point */
   this_rank = (PetscBool) (start[0] <= N[0]/2 && N[0]/2 <= start[0] + n[0]);
   this_rank = (PetscBool) (this_rank && start[1] <= N[1]/2 && N[1]/2 <= start[1] + n[1]);
-  if(ctx->dim == 3 ) this_rank = (PetscBool) (this_rank && start[2] <= N[2]/2 && N[2]/2 <= start[2] + n[2]);
+  if (ctx->dim == 3) this_rank = (PetscBool) (this_rank && start[2] <= N[2]/2 && N[2]/2 <= start[2] + n[2]);
   if (this_rank) {
     /* Note integer division to pick element near the center */
     pos.i = N[0]/2; pos.j = N[1]/2; pos.k = N[2]/2; pos.c = 0; pos.loc = DMSTAG_ELEMENT;
@@ -371,7 +371,7 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, 
 
         arr_velocity[ey][ex][slot_vy_down] += B * ctx->dt * (
               (arr_stress[ey][ex][slot_txy_downright] - arr_stress[ey  ][ex][slot_txy_downleft]) / dx
-            + (arr_stress[ey][ex][slot_tyy]           - arr_stress[ey-1][ex][slot_tyy]         ) / dy );
+            + (arr_stress[ey][ex][slot_tyy]           - arr_stress[ey-1][ex][slot_tyy]) / dy);
       }
 
       /* Update x-velocity */
@@ -381,8 +381,8 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, 
         const PetscScalar B = arr_buoyancy[ey][ex][slot_buoyancy_left];
 
         arr_velocity[ey][ex][slot_vx_left] += B * ctx->dt * (
-              (arr_stress[ey][ex][slot_txx]        - arr_stress[ey][ex-1][slot_txx]         ) / dx
-            + (arr_stress[ey][ex][slot_txy_upleft] - arr_stress[ey][ex  ][slot_txy_downleft]) / dy );
+              (arr_stress[ey][ex][slot_txx]        - arr_stress[ey][ex-1][slot_txx]) / dx
+            + (arr_stress[ey][ex][slot_txy_upleft] - arr_stress[ey][ex  ][slot_txy_downleft]) / dy);
       }
     }
   }
@@ -470,7 +470,7 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx,Vec velocity,Vec stress, 
 
           arr_velocity[ez][ey][ex][slot_vy_down] += B * ctx->dt * (
                 (arr_stress[ez][ey][ex][slot_txy_downright] - arr_stress[ez][ey  ][ex][slot_txy_downleft]) / dx
-              + (arr_stress[ez][ey][ex][slot_tyy]           - arr_stress[ez][ey-1][ex][slot_tyy]         ) / dy
+              + (arr_stress[ez][ey][ex][slot_tyy]           - arr_stress[ez][ey-1][ex][slot_tyy]) / dy
               + (arr_stress[ez][ey][ex][slot_tyz_frontdown] - arr_stress[ez][ey  ][ex][slot_tyz_backdown]) / dz);
         }
 
@@ -482,9 +482,9 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx,Vec velocity,Vec stress, 
           const PetscScalar B = arr_buoyancy[ez][ey][ex][slot_buoyancy_left];
 
           arr_velocity[ez][ey][ex][slot_vx_left] += B * ctx->dt * (
-                (arr_stress[ez][ey][ex][slot_txx]           - arr_stress[ez][ey][ex-1][slot_txx]         ) / dx
+                (arr_stress[ez][ey][ex][slot_txx]           - arr_stress[ez][ey][ex-1][slot_txx]) / dx
               + (arr_stress[ez][ey][ex][slot_txy_upleft]    - arr_stress[ez][ey][ex  ][slot_txy_downleft]) / dy
-              + (arr_stress[ez][ey][ex][slot_txz_frontleft] - arr_stress[ez][ey][ex  ][slot_txz_backleft]) / dz );
+              + (arr_stress[ez][ey][ex][slot_txz_frontleft] - arr_stress[ez][ey][ex  ][slot_txz_backleft]) / dz);
         }
 
         /* Update z-velocity */
@@ -495,9 +495,9 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx,Vec velocity,Vec stress, 
           const PetscScalar B = arr_buoyancy[ez][ey][ex][slot_buoyancy_back];
 
           arr_velocity[ez][ey][ex][slot_vz_back] += B * ctx->dt * (
-              (arr_stress[ez][ey][ex][slot_txz_backright] - arr_stress[ez  ][ey][ex][slot_txz_backleft] ) / dx
-            + (arr_stress[ez][ey][ex][slot_tyz_backup]    - arr_stress[ez  ][ey][ex][slot_tyz_backdown] ) / dy
-            + (arr_stress[ez][ey][ex][slot_tzz]           - arr_stress[ez-1][ey][ex][slot_tzz]          ) / dz);
+              (arr_stress[ez][ey][ex][slot_txz_backright] - arr_stress[ez  ][ey][ex][slot_txz_backleft]) / dx
+            + (arr_stress[ez][ey][ex][slot_tyz_backup]    - arr_stress[ez  ][ey][ex][slot_tyz_backdown]) / dy
+            + (arr_stress[ez][ey][ex][slot_tzz]           - arr_stress[ez-1][ey][ex][slot_tzz]) / dz);
         }
       }
     }
@@ -603,7 +603,7 @@ static PetscErrorCode UpdateStress_2d(const Ctx *ctx,Vec velocity,Vec stress, Ve
 
         arr_stress[ey][ex][slot_txy_downleft] += M * ctx->dt * (
             (arr_velocity[ey][ex][slot_vx_left] - arr_velocity[ey-1][ex][slot_vx_left]) / dy
-          + (arr_velocity[ey][ex][slot_vy_down] - arr_velocity[ey][ex-1][slot_vy_down]) / dx );
+          + (arr_velocity[ey][ex][slot_vy_down] - arr_velocity[ey][ex-1][slot_vy_down]) / dx);
       }
     }
   }
@@ -716,7 +716,7 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx,Vec velocity,Vec stress, Ve
 
             arr_stress[ez][ey][ex][slot_txy_downleft] += M * ctx->dt * (
                   (arr_velocity[ez][ey][ex][slot_vx_left] - arr_velocity[ez][ey-1][ex][slot_vx_left]) / dy
-                + (arr_velocity[ez][ey][ex][slot_vy_down] - arr_velocity[ez][ey][ex-1][slot_vy_down]) / dx );
+                + (arr_velocity[ez][ey][ex][slot_vy_down] - arr_velocity[ez][ey][ex-1][slot_vy_down]) / dx);
           }
 
           /* Update tau_xz */

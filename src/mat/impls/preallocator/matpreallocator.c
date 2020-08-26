@@ -106,7 +106,7 @@ PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
     ierr = MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg);CHKERRQ(ierr);
     if (!flg) break;
 
-    for (i = 0; i < n; ) {
+    for (i = 0; i < n;) {
       /* Now identify the consecutive vals belonging to the same row */
       for (j = i, rstart = row[j]; j < n; j++) {
         if (row[j] != rstart) break;

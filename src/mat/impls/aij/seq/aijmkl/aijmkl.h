@@ -1,7 +1,7 @@
-/* 
-  Wrappers for mkl_cspblas_ routines. 
-  A more elegant way to do this would be to use an approach like that used in petsclbaslapack_mangle.h, 
-  but since the MKL sparse BLAS routines are not going to be as widely used, and because 
+/*
+  Wrappers for mkl_cspblas_ routines.
+  A more elegant way to do this would be to use an approach like that used in petsclbaslapack_mangle.h,
+  but since the MKL sparse BLAS routines are not going to be as widely used, and because
   we don't have to worry about Fortran name mangling, this seems OK for now.
 */
 

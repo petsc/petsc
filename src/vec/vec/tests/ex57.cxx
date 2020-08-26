@@ -11,7 +11,7 @@ int main(int argc,char *argv[])
   PetscInt       n = 5;
   ViennaclVector *x_vcl;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,NULL);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,NULL);if (ierr) return ierr;
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetType(x,VECVIENNACL);CHKERRQ(ierr);
@@ -28,13 +28,12 @@ int main(int argc,char *argv[])
   ierr = VecViennaCLRestoreArray(x,&x_vcl);CHKERRQ(ierr);
 
   // Expected output: 'x' is a 5-vector with all entries as '84'.
-  VecView(x,PETSC_VIEWER_STDOUT_WORLD);
-  VecDestroy(&y);
-  VecDestroy(&x);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
 
-  PetscFinalize();
-
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /*TEST

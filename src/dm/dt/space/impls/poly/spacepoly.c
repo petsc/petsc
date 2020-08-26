@@ -536,7 +536,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
   ierr = PetscSpaceGetNumVariables(sp, &dim);CHKERRQ(ierr);
   ierr = PetscSpaceGetDegree(sp, &order, NULL);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialGetTensor(sp, &tensor);CHKERRQ(ierr);
-  if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
+  if (height > dim || height < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
   if (!poly->subspaces) {ierr = PetscCalloc1(dim, &poly->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!poly->subspaces[height-1]) {

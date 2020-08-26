@@ -12,16 +12,16 @@
 #define CPPJoin4(a,b,c,d)  a##_##b##_##c##_##d
 
 /* Operations working like s += t */
-#define OP_BINARY(op,s,t)   do {(s) = (s) op (t);  } while(0)      /* binary ops in the middle such as +, *, && etc. */
-#define OP_FUNCTION(op,s,t) do {(s) = op((s),(t)); } while(0)      /* ops like a function, such as PetscMax, PetscMin */
-#define OP_LXOR(op,s,t)     do {(s) = (!(s)) != (!(t));} while(0)  /* logical exclusive OR */
-#define OP_ASSIGN(op,s,t)   do {(s) = (t);} while(0)
+#define OP_BINARY(op,s,t)   do {(s) = (s) op (t);  } while (0)      /* binary ops in the middle such as +, *, && etc. */
+#define OP_FUNCTION(op,s,t) do {(s) = op((s),(t)); } while (0)      /* ops like a function, such as PetscMax, PetscMin */
+#define OP_LXOR(op,s,t)     do {(s) = (!(s)) != (!(t));} while (0)  /* logical exclusive OR */
+#define OP_ASSIGN(op,s,t)   do {(s) = (t);} while (0)
 /* Ref MPI MAXLOC */
 #define OP_XLOC(op,s,t) \
   do {                                       \
     if ((s).u == (t).u) (s).i = PetscMin((s).i,(t).i); \
     else if (!((s).u op (t).u)) s = t;           \
-  } while(0)
+  } while (0)
 
 /* DEF_PackFunc - macro defining a Pack routine
 
@@ -599,7 +599,7 @@ found:
 
   /* Allocate buffers on host for buffering data on device in cast not use_gpu_aware_mpi */
   if (rootmtype == PETSC_MEMTYPE_DEVICE && rootmtype_mpi == PETSC_MEMTYPE_HOST) {
-    if(!link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) {
+    if (!link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) {
       ierr = PetscMalloc(bas->rootbuflen[PETSCSF_REMOTE]*link->unitbytes,&link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
     }
     link->rootbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST] = link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];

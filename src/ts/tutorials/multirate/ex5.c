@@ -46,8 +46,8 @@ static PetscErrorCode PhysicsRiemann_Advect(void *vctx,PetscInt m,const PetscSca
 
   PetscFunctionBeginUser;
   speed = ctx->a;
-  if(x==0 || x == xmin || x == xmax) flux[0] = PetscMax(0,(speed[0]+speed[1])/2.0)*uL[0] + PetscMin(0,(speed[0]+speed[1])/2.0)*uR[0]; /* if condition need to be changed base on different problem, '0' is the discontinuous point of a */
-  else if(x<0) flux[0] = PetscMax(0,speed[0])*uL[0] + PetscMin(0,speed[0])*uR[0];  /* else if condition need to be changed based on diferent problem, 'x = 0' is discontinuous point of a */
+  if (x==0 || x == xmin || x == xmax) flux[0] = PetscMax(0,(speed[0]+speed[1])/2.0)*uL[0] + PetscMin(0,(speed[0]+speed[1])/2.0)*uR[0]; /* if condition need to be changed base on different problem, '0' is the discontinuous point of a */
+  else if (x<0) flux[0] = PetscMax(0,speed[0])*uL[0] + PetscMin(0,speed[0])*uR[0];  /* else if condition need to be changed based on diferent problem, 'x = 0' is discontinuous point of a */
   else flux[0] = PetscMax(0,speed[1])*uL[0] + PetscMin(0,speed[1])*uR[0];
   *maxspeed = *speed;
   PetscFunctionReturn(0);
@@ -60,7 +60,7 @@ static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx,PetscInt m,const P
   PetscFunctionBeginUser;
   X[0]      = 1.;
   Xi[0]     = 1.;
-  if(x<0) speeds[0] = ctx->a[0];  /* x is discontinuous point of a */
+  if (x<0) speeds[0] = ctx->a[0];  /* x is discontinuous point of a */
   else    speeds[0] = ctx->a[1];
   PetscFunctionReturn(0);
 }
@@ -71,7 +71,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
   PetscReal *a    = ctx->a,x0;
 
   PetscFunctionBeginUser;
-  if(x<0){   /* x is cell center */
+  if (x<0){   /* x is cell center */
     switch (bctype) {
       case FVBC_OUTFLOW:  x0 = x-a[0]*t; break;
       case FVBC_PERIODIC: x0 = RangeMod(x-a[0]*t,xmin,xmax); break;

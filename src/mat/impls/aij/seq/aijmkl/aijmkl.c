@@ -428,7 +428,7 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
 
   /* If there are no nonzero entries, zero yy and return immediately. */
-  if(!a->nz) {
+  if (!a->nz) {
     PetscInt i;
     PetscInt m=A->rmap->n;
     ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -453,7 +453,7 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   /* Call MKL SpMV2 executor routine to do the MatMult. */
   stat = mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: failure in mkl_sparse_x_mv()");
-  
+
   ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
@@ -512,7 +512,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
 
   /* If there are no nonzero entries, zero yy and return immediately. */
-  if(!a->nz) {
+  if (!a->nz) {
     PetscInt i;
     PetscInt n=A->cmap->n;
     ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -537,7 +537,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   /* Call MKL SpMV2 executor routine to do the MatMultTranspose. */
   stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: failure in mkl_sparse_x_mv()");
-  
+
   ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
@@ -614,7 +614,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
 
   /* If there are no nonzero entries, set zz = yy and return immediately. */
-  if(!a->nz) {
+  if (!a->nz) {
     PetscInt i;
     ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
@@ -727,7 +727,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
 
   /* If there are no nonzero entries, set zz = yy and return immediately. */
-  if(!a->nz) {
+  if (!a->nz) {
     PetscInt i;
     ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -1174,7 +1174,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   ierr = PetscOptionsBool("-mat_aijmkl_eager_inspection","Run inspection at matrix assembly time, instead of waiting until needed by an operation","None",(PetscBool)aijmkl->eager_inspection,(PetscBool*)&aijmkl->eager_inspection,&set);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-  if(!aijmkl->no_SpMV2) {
+  if (!aijmkl->no_SpMV2) {
     ierr = PetscInfo(B,"User requested use of MKL SpMV2 routines, but MKL version does not support mkl_sparse_optimize();  defaulting to non-SpMV2 routines.\n");
     aijmkl->no_SpMV2 = PETSC_TRUE;
   }
@@ -1214,7 +1214,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
 
-  if(!aijmkl->no_SpMV2) {
+  if (!aijmkl->no_SpMV2) {
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqaijmkl_seqaijmkl_C",MatProductSetFromOptions_SeqAIJMKL);CHKERRQ(ierr);

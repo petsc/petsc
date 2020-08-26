@@ -73,7 +73,7 @@
       call PetscFinalize(ierr)
       end
 
-!  Nag compiler automatically turns on catching of floating point exceptions and prints message at 
+!  Nag compiler automatically turns on catching of floating point exceptions and prints message at
 !  end of run about the exceptions seen
 !
 !/*TEST

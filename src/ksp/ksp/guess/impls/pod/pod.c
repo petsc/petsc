@@ -352,7 +352,7 @@ complete_request:
   if (lierr<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: illegal argument %d",-(int)lierr);
   else if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: %d eigenvectors failed to converge",(int)lierr);
 
-  /* dimension of lower dimensional system */ 
+  /* dimension of lower dimensional system */
   pod->st = -1;
   for (i=0,toten=0;i<pod->n;i++) {
     pod->eigs[i] = PetscMax(pod->eigs[i],0.0);
@@ -374,7 +374,7 @@ complete_request:
     PetscInt        j;
 
     for (j=0;j<pod->n;j++) pod->eigv[st+j] *= v;
-  } 
+  }
 
   /* compute S * V^T * X^T * A * X * V * S if needed */
   if (pod->nen && !pod->Aspd) {
@@ -453,7 +453,7 @@ static PetscErrorCode KSPGuessView_POD(KSPGuess guess,PetscViewer viewer)
   The number of solutions to be retained and the energy tolerance to construct the lower dimensional basis can be specified at command line by -ksp_guess_pod_tol <real> and -ksp_guess_pod_size <int>.
 
   References:
-.   1. - http://www.math.uni-konstanz.de/numerik/personen/volkwein/teaching/POD-Book.pdf 
+.   1. - http://www.math.uni-konstanz.de/numerik/personen/volkwein/teaching/POD-Book.pdf
 
     Level: intermediate
 

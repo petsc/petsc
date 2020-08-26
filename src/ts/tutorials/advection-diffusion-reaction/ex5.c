@@ -31,7 +31,7 @@ F*/
    Include "petscts.h" so that we can use SNES numerical (ODE) integrators.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h  - vectors
-     petscmat.h - matrices                    petscis.h   - index sets  
+     petscmat.h - matrices                    petscis.h   - index sets
      petscksp.h - Krylov subspace methods     petscpc.h   - preconditioners
      petscviewer.h - viewers                  petscsnes.h - nonlinear solvers
 */
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space.  
+     Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
 }
 /* ------------------------------------------------------------------- */
 /*
-   RHSFunction - Evaluates nonlinear function, that defines the right 
+   RHSFunction - Evaluates nonlinear function, that defines the right
      hand side of the ODE
 
    Input Parameters:

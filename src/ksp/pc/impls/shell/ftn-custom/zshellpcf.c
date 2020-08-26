@@ -49,7 +49,7 @@ static PetscErrorCode ourshellapplysymmetricleft(PC pc,Vec x,Vec y)
   return 0;
 }
 
-static PetscErrorCode ourshellapplysymmetricright(PC pc,Vec x,Vec y) 
+static PetscErrorCode ourshellapplysymmetricright(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr = 0;
   (*(void (*)(PC*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[10]))(&pc,&x,&y,&ierr);CHKERRQ(ierr);
@@ -256,4 +256,3 @@ PETSC_EXTERN void pcshellgetname_(PC *pc,char* name, PetscErrorCode *ierr,PETSC_
 }
 
 /* -----------------------------------------------------------------*/
-

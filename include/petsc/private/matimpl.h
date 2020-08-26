@@ -57,7 +57,7 @@ struct _MatOps {
   /*20*/
   PetscErrorCode (*assemblybegin)(Mat,MatAssemblyType);
   PetscErrorCode (*assemblyend)(Mat,MatAssemblyType);
-  PetscErrorCode (*setoption)(Mat,MatOption,PetscBool );
+  PetscErrorCode (*setoption)(Mat,MatOption,PetscBool);
   PetscErrorCode (*zeroentries)(Mat);
   /*24*/
   PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
@@ -366,8 +366,8 @@ PETSC_INTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
 PETSC_INTERN PetscErrorCode MatStashScatterEnd_Private(MatStash*);
 PETSC_INTERN PetscErrorCode MatStashSetInitialSize_Private(MatStash*,PetscInt);
 PETSC_INTERN PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
-PETSC_INTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscBool );
-PETSC_INTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscBool );
+PETSC_INTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscBool);
+PETSC_INTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscBool);
 PETSC_INTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
 PETSC_INTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
 PETSC_INTERN PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
@@ -1001,7 +1001,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   for (_k=0; _k<_nidx; _k++){\
     _entry = indices[_k];\
     nzbd++;\
-    if ( _entry== diag) im[idx_start] = nzbd;\
+    if (_entry== diag) im[idx_start] = nzbd;\
     if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
       /* search for insertion location */\
       do {\

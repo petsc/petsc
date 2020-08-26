@@ -7531,8 +7531,8 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
   ierr = DMPlexIsInterpolated(dm, &interpEnum);CHKERRQ(ierr);
   if (interpEnum == DMPLEX_INTERPOLATED_NONE) PetscFunctionReturn(0);
   if (interpEnum == DMPLEX_INTERPOLATED_PARTIAL) {
-    PetscMPIInt	rank;
-    MPI_Comm	comm;
+    PetscMPIInt rank;
+    MPI_Comm    comm;
 
     ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);

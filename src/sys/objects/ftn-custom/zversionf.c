@@ -22,7 +22,7 @@ PETSC_EXTERN void  petscgetversion_(char* version,int *ierr,PETSC_FORTRAN_CHARLE
   FIXRETURNCHAR(PETSC_TRUE,version,len1);
 }
 
-PETSC_EXTERN void  petscgetversionnumber_(PetscInt *major,PetscInt *minor,PetscInt *subminor,PetscInt *release, int *ierr )
+PETSC_EXTERN void  petscgetversionnumber_(PetscInt *major,PetscInt *minor,PetscInt *subminor,PetscInt *release, int *ierr)
 {
   CHKFORTRANNULLINTEGER(major);
   CHKFORTRANNULLINTEGER(minor);

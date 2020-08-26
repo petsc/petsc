@@ -1,4 +1,3 @@
-// @HEADER
 //
 // ***********************************************************************
 //
@@ -39,7 +38,6 @@
 //
 // ***********************************************************************
 //
-// @HEADER
 
 /**
    \file   quick_solve.cpp
@@ -122,10 +120,10 @@ int main(int argc, char *argv[]) {
   }
 
   // Before we do anything, check that the solver is enabled
-  if( !Amesos2::query(solver_name) ){
+  if (!Amesos2::query(solver_name)){
     std::cerr << solver_name << " not enabled.  Exiting..." << std::endl;
-    return EXIT_SUCCESS;	// Otherwise CTest will pick it up as
-				// failure, which it isn't really
+    return EXIT_SUCCESS;        // Otherwise CTest will pick it up as
+                                // failure, which it isn't really
   }
 
   const size_t numVectors = 1;
@@ -133,25 +131,25 @@ int main(int argc, char *argv[]) {
   // create a Map
   global_size_t nrows = 6;
   RCP<Tpetra::Map<LO,GO> > map
-    = rcp( new Tpetra::Map<LO,GO>(nrows,0,comm) );
+    = rcp( new Tpetra::Map<LO,GO>(nrows,0,comm));
 
   std::string mat_pathname = filedir + filename;
   RCP<MAT> A = Tpetra::MatrixMarket::Reader<MAT>::readSparseFile(mat_pathname,comm,node);
 
-  if( printMatrix ){
+  if (printMatrix){
     A->describe(*fos, Teuchos::VERB_EXTREME);
   }
-  else if( verbose && myRank==0 ){
+  else if (verbose && myRank==0){
     *fos << std::endl << A->description() << std::endl << std::endl;
   }
 
   // get the maps
-  RCP<const Tpetra::Map<LO,GO,Node> > dmnmap = A->getDomainMap();      	
+  RCP<const Tpetra::Map<LO,GO,Node> > dmnmap = A->getDomainMap();
   RCP<const Tpetra::Map<LO,GO,Node> > rngmap = A->getRangeMap();
 
   // Create random X
-  RCP<MV> Xhat = rcp( new MV(dmnmap,numVectors) );
-  RCP<MV> X = rcp( new MV(dmnmap,numVectors) );
+  RCP<MV> Xhat = rcp( new MV(dmnmap,numVectors));
+  RCP<MV> X = rcp( new MV(dmnmap,numVectors));
   X->setObjectLabel("X");
   Xhat->setObjectLabel("Xhat");
   X->randomize();
@@ -170,29 +168,29 @@ int main(int argc, char *argv[]) {
 
   solver->numericFactorization();
 
-  if( printLUStats && myRank == 0 ){
+  if (printLUStats && myRank == 0){
     Amesos2::Status solver_status = solver->getStatus();
     *fos << "L+U nnz = " << solver_status.getNnzLU() << std::endl;
   }
-  
+
   solver->solve();
 
-  if( printSolution ){
+  if (printSolution){
     // Print the solution
     Xhat->describe(*fos,Teuchos::VERB_EXTREME);
     X->describe(*fos,Teuchos::VERB_EXTREME);
   }
-  
-  if( printTiming ){
+
+  if (printTiming){
     // Print some timing statistics
     solver->printTiming(*fos);
   }
 
-  if( printResidual ){
+  if (printResidual){
     Teuchos::Array<Magnitude> xhatnorms(numVectors);
     Xhat->update(-1.0, *X, 1.0);
     Xhat->norm2(xhatnorms());
-    if( myRank == 0 ){
+    if (myRank == 0){
       *fos << "Norm2 of Ax - b = " << xhatnorms << std::endl;
     }
   }

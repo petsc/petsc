@@ -14,12 +14,12 @@
 #define matnullspaceview_                matnullspaceview
 #endif
 
-PETSC_EXTERN void  matnullspacecreate0_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr )
+PETSC_EXTERN void  matnullspacecreate0_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr)
 {
   *ierr = MatNullSpaceCreate(MPI_Comm_f2c(*(comm)),*has_cnst,*n,vecs,SP);
 }
 
-PETSC_EXTERN void  matnullspacecreate1_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr )
+PETSC_EXTERN void  matnullspacecreate1_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr)
 {
   *ierr = MatNullSpaceCreate(MPI_Comm_f2c(*(comm)),*has_cnst,*n,vecs,SP);
 }

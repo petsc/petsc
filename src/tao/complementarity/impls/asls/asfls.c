@@ -158,7 +158,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
     ierr = TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     if (TAO_CONTINUE_ITERATING != tao->reason) break;
-    
+
     /* Call general purpose update function */
     if (tao->ops->update) {
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);

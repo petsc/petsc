@@ -430,7 +430,7 @@ static PetscErrorCode VecMax_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
     ierr = VecMax(x,&_entry_loc,&_entry_val);CHKERRQ(ierr);
     if (_entry_val > *max) {
       *max = _entry_val;
-      if(p) *p = _entry_loc + *cnt;
+      if (p) *p = _entry_loc + *cnt;
     }
     ierr = VecGetSize(x,&L);CHKERRQ(ierr);
     *cnt = *cnt + L;

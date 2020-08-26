@@ -168,7 +168,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
    Notes:
     The Schur complement is NOT actually formed! Rather, this
           object performs the matrix-vector product by using formula S = A11 - A10 A^{-1} A01
-	  for Schur complement S and a KSP solver to approximate the action of A^{-1}.
+          for Schur complement S and a KSP solver to approximate the action of A^{-1}.
 
           All four matrices must have the same MPI communicator.
 
@@ -215,7 +215,7 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
    Notes:
     The Schur complement is NOT actually formed! Rather, this
           object performs the matrix-vector product by using formula S = A11 - A10 A^{-1} A01
-	  for Schur complement S and a KSP solver to approximate the action of A^{-1}.
+          for Schur complement S and a KSP solver to approximate the action of A^{-1}.
 
           All four matrices must have the same MPI communicator.
 

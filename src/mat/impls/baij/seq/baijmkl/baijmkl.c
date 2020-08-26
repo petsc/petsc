@@ -1,7 +1,7 @@
 /*
   Defines basic operations for the MATSEQBAIJMKL matrix class.
-  Uses sparse BLAS operations from the Intel Math Kernel Library (MKL) 
-  wherever possible. If used MKL verion is older than 11.3 PETSc default 
+  Uses sparse BLAS operations from the Intel Math Kernel Library (MKL)
+  wherever possible. If used MKL verion is older than 11.3 PETSc default
   code for sparse matrix operations is used.
 */
 
@@ -265,7 +265,7 @@ static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   /* If there are no nonzero entries, zero yy and return immediately. */
-  if(!a->nz) {
+  if (!a->nz) {
     ierr = VecSet(yy,0.0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -352,7 +352,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,V
 
   PetscFunctionBegin;
   /* If there are no nonzero entries, set zz = yy and return immediately. */
-  if(!a->nz) {
+  if (!a->nz) {
     ierr = VecCopy(yy,zz);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -360,8 +360,8 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,V
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
 
-  /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call 
-   * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably 
+  /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
+   * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
   if (!baijmkl->sparse_optimized) {
     ierr = MatSeqBAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
@@ -369,11 +369,11 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,V
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
-    /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y, 
+    /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y,
      * with alpha and beta both set to 1.0. */
     stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,1.0,z);CHKERRMKL(stat);
   } else {
-    /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then 
+    /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
     stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,0.0,z);CHKERRMKL(stat);
     for (i=0; i<n; i++) {

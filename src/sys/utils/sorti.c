@@ -18,9 +18,9 @@
 #define MEDIAN(v,right) MEDIAN3(v,right/4,right/2,right/4*3)
 
 /* Swap one, two or three pairs. Each pair can have its own type */
-#define SWAP1(a,b,t1)               do {t1=a;a=b;b=t1;} while(0)
-#define SWAP2(a,b,c,d,t1,t2)        do {t1=a;a=b;b=t1; t2=c;c=d;d=t2;} while(0)
-#define SWAP3(a,b,c,d,e,f,t1,t2,t3) do {t1=a;a=b;b=t1; t2=c;c=d;d=t2; t3=e;e=f;f=t3;} while(0)
+#define SWAP1(a,b,t1)               do {t1=a;a=b;b=t1;} while (0)
+#define SWAP2(a,b,c,d,t1,t2)        do {t1=a;a=b;b=t1; t2=c;c=d;d=t2;} while (0)
+#define SWAP3(a,b,c,d,e,f,t1,t2,t3) do {t1=a;a=b;b=t1; t2=c;c=d;d=t2; t3=e;e=f;f=t3;} while (0)
 
 /* Swap a & b, *c & *d. c, d, t2 are pointers to a type of size <siz> */
 #define SWAP2Data(a,b,c,d,t1,t2,siz)                                             \
@@ -30,7 +30,7 @@
     ierr = PetscMemcpy(t2,c,siz);CHKERRQ(ierr);                                  \
     ierr = PetscMemcpy(c,d,siz);CHKERRQ(ierr);                                   \
     ierr = PetscMemcpy(d,t2,siz);CHKERRQ(ierr);                                  \
-  } while(0)
+  } while (0)
 
 /*
    Partition X[lo,hi] into two parts: X[lo,l) <= pivot; X[r,hi] > pivot
@@ -52,7 +52,7 @@
   do {                                                                           \
     l = lo;                                                                      \
     r = hi;                                                                      \
-    while(1) {                                                                   \
+    while (1) {                                                                   \
       while (X[l] < pivot) l++;                                                  \
       while (X[r] > pivot) r--;                                                  \
       if (l >= r) {r++; break;}                                                  \
@@ -60,7 +60,7 @@
       l++;                                                                       \
       r--;                                                                       \
     }                                                                            \
-  } while(0)
+  } while (0)
 
 /*
    Partition X[lo,hi] into two parts: X[lo,l) >= pivot; X[r,hi] < pivot
@@ -82,7 +82,7 @@
   do {                                                                           \
     l = lo;                                                                      \
     r = hi;                                                                      \
-    while(1) {                                                                   \
+    while (1) {                                                                   \
       while (X[l] > pivot) l++;                                                  \
       while (X[r] < pivot) r--;                                                  \
       if (l >= r) {r++; break;}                                                  \
@@ -90,13 +90,13 @@
       l++;                                                                       \
       r--;                                                                       \
     }                                                                            \
-  } while(0)
+  } while (0)
 
 #define TwoWayPartition2(X,Y,pivot,t1,t2,lo,hi,l,r)                              \
   do {                                                                           \
     l = lo;                                                                      \
     r = hi;                                                                      \
-    while(1) {                                                                   \
+    while (1) {                                                                   \
       while (X[l] < pivot) l++;                                                  \
       while (X[r] > pivot) r--;                                                  \
       if (l >= r) {r++; break;}                                                  \
@@ -104,13 +104,13 @@
       l++;                                                                       \
       r--;                                                                       \
     }                                                                            \
-  } while(0)
+  } while (0)
 
 #define TwoWayPartition3(X,Y,Z,pivot,t1,t2,t3,lo,hi,l,r)                         \
   do {                                                                           \
     l = lo;                                                                      \
     r = hi;                                                                      \
-    while(1) {                                                                   \
+    while (1) {                                                                   \
       while (X[l] < pivot) l++;                                                  \
       while (X[r] > pivot) r--;                                                  \
       if (l >= r) {r++; break;}                                                  \
@@ -118,7 +118,7 @@
       l++;                                                                       \
       r--;                                                                       \
     }                                                                            \
-  } while(0)
+  } while (0)
 
 /* Templates for similar functions used below */
 #define QuickSort1(FuncName,X,n,pivot,t1,ierr)                                   \
@@ -141,7 +141,7 @@
       ierr  = FuncName(l,X);CHKERRQ(ierr);                                       \
       ierr  = FuncName(hi-r+1,X+r);CHKERRQ(ierr);                                \
     }                                                                            \
-  } while(0)
+  } while (0)
 
 /* Templates for similar functions used below */
 #define QuickSortReverse1(FuncName,X,n,pivot,t1,ierr)                            \
@@ -164,7 +164,7 @@
       ierr  = FuncName(l,X);CHKERRQ(ierr);                                       \
       ierr  = FuncName(hi-r+1,X+r);CHKERRQ(ierr);                                \
     }                                                                            \
-  } while(0)
+  } while (0)
 
 #define QuickSort2(FuncName,X,Y,n,pivot,t1,t2,ierr)                              \
   do {                                                                           \
@@ -186,7 +186,7 @@
       ierr  = FuncName(l,X,Y);CHKERRQ(ierr);                                     \
       ierr  = FuncName(hi-r+1,X+r,Y+r);CHKERRQ(ierr);                            \
     }                                                                            \
-  } while(0)
+  } while (0)
 
 #define QuickSort3(FuncName,X,Y,Z,n,pivot,t1,t2,t3,ierr)                         \
   do {                                                                           \
@@ -208,7 +208,7 @@
       ierr  = FuncName(l,X,Y,Z);CHKERRQ(ierr);                                   \
       ierr  = FuncName(hi-r+1,X+r,Y+r,Z+r);CHKERRQ(ierr);                        \
     }                                                                            \
-  } while(0)
+  } while (0)
 
 /*@
    PetscSortedInt - Determines whether the array is sorted.
@@ -403,7 +403,7 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n,const PetscInt X[],PetscBool *dups)
     ierr = PetscHSetIResize(ht,n);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr = PetscHSetIQueryAdd(ht,X[i],&missing);CHKERRQ(ierr);
-      if(!missing) {*dups = PETSC_TRUE; break;}
+      if (!missing) {*dups = PETSC_TRUE; break;}
     }
     ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
   }
@@ -694,7 +694,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt X[],void *Y,size_t
     pivot = X[p];
     l     = 0;
     r     = hi;
-    while(1) {
+    while (1) {
       while (X[l] < pivot) l++;
       while (X[r] > pivot) r--;
       if (l >= r) {r++; break;}
@@ -861,12 +861,12 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an,const PetscMPIInt aI[],PetscInt
 
   PetscFunctionBegin;
   if (!*L) {ierr = PetscMalloc1((an+bn),L);CHKERRQ(ierr);}
-  for (ai=0,bi=0,k=0; ai<an || bi<bn; ) {
+  for (ai=0,bi=0,k=0; ai<an || bi<bn;) {
     PetscInt t = -1;
-    for ( ; ai<an && (!bn || aI[ai] <= bI[bi]); ai++) (*L)[k++] = t = aI[ai];
-    for ( ; bi<bn && bI[bi] == t; bi++);
-    for ( ; bi<bn && (!an || bI[bi] <= aI[ai]); bi++) (*L)[k++] = t = bI[bi];
-    for ( ; ai<an && aI[ai] == t; ai++);
+    for (; ai<an && (!bn || aI[ai] <= bI[bi]); ai++) (*L)[k++] = t = aI[ai];
+    for (; bi<bn && bI[bi] == t; bi++);
+    for (; bi<bn && (!an || bI[bi] <= aI[ai]); bi++) (*L)[k++] = t = bI[bi];
+    for (; ai<an && aI[ai] == t; ai++);
   }
   *n = k;
   PetscFunctionReturn(0);

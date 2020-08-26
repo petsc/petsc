@@ -143,7 +143,7 @@ int main(int argc,char **argv)
     /* use private routine to turn off warnings about negative number of cores etc */
     Kokkos::Impl::pre_initialize(Kokkos::InitArguments(-1, -1, -1, true));
   }
-  Kokkos::initialize( argc, argv );
+  Kokkos::initialize( argc, argv);
   if (view_kokkos_configuration) {
     Kokkos::print_configuration(std::cout, true);
   }
@@ -152,7 +152,7 @@ int main(int argc,char **argv)
   Kokkos::Experimental::OffsetView<PetscScalar*> xFF(Kokkos::View<PetscScalar*>(FF,xm),{xs}), xUU(Kokkos::View<PetscScalar*>(UU,xm),{xs});
 
   PetscReal xpbase = xs*ctx.h;
-  Kokkos:: parallel_for(Kokkos::RangePolicy<> (xs,xm), KOKKOS_LAMBDA ( int j ) {
+  Kokkos:: parallel_for (Kokkos::RangePolicy<> (xs,xm), KOKKOS_LAMBDA ( int j) {
     PetscReal xp = xpbase + j*ctx.h;
     xFF(j) = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     xUU(j) = xp*xp*xp;

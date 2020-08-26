@@ -27,7 +27,7 @@ int main(int argc,char **args)
   beta = 4.0;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-         Create the matrix 
+         Create the matrix
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);

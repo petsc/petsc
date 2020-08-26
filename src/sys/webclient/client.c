@@ -89,7 +89,7 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 }
 
 /*@C
-     PetscSSLDestroyContext - frees a SSL_CTX obtained with PetscSSLInitializeContext() 
+     PetscSSLDestroyContext - frees a SSL_CTX obtained with PetscSSLInitializeContext()
 
      Input Parameter:
 .     ctx - the SSL_CTX

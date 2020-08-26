@@ -3557,7 +3557,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         }
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
         if (B_ierr) {
-          if (B_ierr < 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: illegal value for argument %d",-(int)B_ierr);
+          if (B_ierr < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: illegal value for argument %d",-(int)B_ierr);
           else if (B_ierr <= B_N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d eigenvalues failed to converge",(int)B_ierr);
           else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: leading minor of order %d is not positive definite",(int)B_ierr-B_N-1);
         }
@@ -3612,7 +3612,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           B_neigs += B_neigs2;
         }
         if (B_ierr) {
-          if (B_ierr < 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: illegal value for argument %d",-(int)B_ierr);
+          if (B_ierr < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: illegal value for argument %d",-(int)B_ierr);
           else if (B_ierr <= B_N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d eigenvalues failed to converge",(int)B_ierr);
           else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: leading minor of order %d is not positive definite",(int)B_ierr-B_N-1);
         }
@@ -4124,7 +4124,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = MatMatMult(C_CR,pcbddc->local_auxmat2,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&M3);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
-    /* Assemble explicitly S_CC = ( C_{CR} A_{RR}^{-1} C^T_{CR} )^{-1}  */
+    /* Assemble explicitly S_CC = ( C_{CR} A_{RR}^{-1} C^T_{CR})^{-1}  */
     ierr = MatScale(M3,m_one);CHKERRQ(ierr);
     if (isCHOL) {
       ierr = MatCholeskyFactor(M3,NULL,NULL);CHKERRQ(ierr);
@@ -5756,7 +5756,7 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
   PetscErrorCode  ierr;
   PC_BDDC*        pcbddc = (PC_BDDC*)(pc->data);
   PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
-  PetscBool       reuse_solver = sub_schurs ? ( sub_schurs->reuse_solver ? PETSC_TRUE : PETSC_FALSE ) : PETSC_FALSE;
+  PetscBool       reuse_solver = sub_schurs ? ( sub_schurs->reuse_solver ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!reuse_solver) {
@@ -6799,7 +6799,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TRTRS Lapack routine %d",(int)lierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
 
-          /* explicitly compute all columns of Q (Q = [Q1 | Q2] ) overwriting QR factorization in qr_basis */
+          /* explicitly compute all columns of Q (Q = [Q1 | Q2]) overwriting QR factorization in qr_basis */
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_N);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(primal_dofs,&Blas_K);CHKERRQ(ierr);
@@ -8779,7 +8779,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
     /* Check coarse problem if in debug mode or if solving with an iterative method */
     ierr = PetscObjectTypeCompare((PetscObject)pcbddc->coarse_ksp,KSPPREONLY,&ispreonly);CHKERRQ(ierr);
-    if (pcbddc->dbg_flag || (!ispreonly && pcbddc->use_coarse_estimates) ) {
+    if (pcbddc->dbg_flag || (!ispreonly && pcbddc->use_coarse_estimates)) {
       KSP       check_ksp;
       KSPType   check_ksp_type;
       PC        check_pc;

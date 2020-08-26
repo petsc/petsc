@@ -278,7 +278,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     for (_i_ = 1; _i_ < (n); _i_++)         \
       if ((idx)[_i_] < (idx)[_i_ - 1])      \
         { (sorted) = PETSC_FALSE; break; }  \
-  } while(0)
+  } while (0)
 
 #if !defined(PETSC_USE_DEBUG)
 
@@ -426,7 +426,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   0; do { PetscErrorCode (*_7_f)B, _7_ierr; \
     _7_ierr = PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f);CHKERRQ(_7_ierr); \
     if (_7_f) {_7_ierr = (*_7_f)C;CHKERRQ(_7_ierr);} \
-  } while(0)
+  } while (0)
 
 /*
    PetscUseMethod - Queries an object for a method, if it exists then calls it, otherwise generates an error.
@@ -441,7 +441,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     _7_ierr = PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f);CHKERRQ(_7_ierr); \
     if (_7_f) {_7_ierr = (*_7_f)C;CHKERRQ(_7_ierr);} \
     else SETERRQ1(PetscObjectComm((PetscObject)(obj)),PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
-  } while(0)
+  } while (0)
 
 /*MC
    PetscObjectStateIncrease - Increases the state of any PetscObject
@@ -735,7 +735,7 @@ M*/
 M*/
 #if defined(PETSC_USE_COMPLEX)
 #define PetscObjectComposedDataGetScalar(obj,id,data,flag)                              \
-  ((((obj)->scalarcomposedstate && ((obj)->scalarcomposedstate[id] == (obj)->state) ) ? \
+  ((((obj)->scalarcomposedstate && ((obj)->scalarcomposedstate[id] == (obj)->state)) ? \
    (data = (obj)->scalarcomposeddata[id],flag = PETSC_TRUE) : (flag = PETSC_FALSE)),0)
 #else
 #define PetscObjectComposedDataGetScalar(obj,id,data,flag)                             \

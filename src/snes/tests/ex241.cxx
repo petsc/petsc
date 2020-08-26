@@ -54,7 +54,7 @@ int main(int argc,char **argv)
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+
   /* Done */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -83,14 +83,14 @@ PetscErrorCode UserFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /* Calculate residual */
-  for(i=0; i<N; ++i) {
-    /* 
+  for (i=0; i<N; ++i) {
+    /*
        Test for domain error.
        Artifical test is applied.  With starting value 1.0, first iterate will be 0.5 + user->value/2.
        Declare (0.5-value,0.5+value) to be infeasible.
        In later iterations, snes->domainerror should be cleared, allowing iterations in the feasible region to be accepted.
     */
-    if( (half-user->value) < PetscRealPart(x[i]) && PetscRealPart(x[i]) < (half+user->value) ) {
+    if ((half-user->value) < PetscRealPart(x[i]) && PetscRealPart(x[i]) < (half+user->value)) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"DOMAIN ERROR: x=%g\n",(double)PetscRealPart(x[i]));CHKERRQ(ierr);
       ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
     }
@@ -113,7 +113,7 @@ PetscErrorCode UserJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
 
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  
+
   /* Calculate Jacobian */
   for (i=0; i<N; ++i) {
     row = i;
@@ -141,4 +141,3 @@ PetscErrorCode UserJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
       args:  -snes_monitor_solution -snes_linesearch_monitor
 
 TEST*/
-

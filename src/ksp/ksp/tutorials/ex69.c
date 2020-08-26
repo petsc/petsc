@@ -85,7 +85,7 @@ PetscErrorCode ComputeRhs(DM da,PetscGLL *gll,Vec b)
      Run with -build_twosided allreduce -pc_type bjacobi -sub_pc_type lu -q 16 -ksp_rtol 1.e-34 (or 1.e-14 for double precision)
 
      -q <q> number of spectral elements to use
-     -N <N> maximum number of GLL points per element 
+     -N <N> maximum number of GLL points per element
 
 */
 int main(int argc,char **args)

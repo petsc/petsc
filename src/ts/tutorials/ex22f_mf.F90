@@ -548,7 +548,7 @@ end subroutine SaveSolutionToDisk
 !/*TEST
 !
 !    test:
-!      args: -da_grid_x 200 -ts_arkimex_type 4 
+!      args: -da_grid_x 200 -ts_arkimex_type 4
 !      requires: !single
 !      output_file: output/ex22f_mf_1.out
 !

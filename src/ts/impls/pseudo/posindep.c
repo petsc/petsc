@@ -119,7 +119,7 @@ PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool 
 
   PetscFunctionBegin;
   *flag = PETSC_TRUE;
-  if(pseudo->verify) {
+  if (pseudo->verify) {
     ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

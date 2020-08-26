@@ -35,7 +35,7 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
   Vec_Chain      *p = head->next, *q;
 
   PetscFunctionBegin;
-  while(p) {
+  while (p) {
     q = p->next;
     ierr = VecDestroy(&p->V);CHKERRQ(ierr);
     ierr = PetscFree(p);CHKERRQ(ierr);
@@ -100,13 +100,13 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   ierr = TaoLogConvergenceHistory(tao,f,1.0,0.0,tao->ksp_its);CHKERRQ(ierr);
   ierr = TaoMonitor(tao,tao->niter,f,1.0,0.0,tao->step);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
-  
+
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
-    
+
     /* compute bt = Remp(Wt-1) - <Wt-1, At> */
     ierr = VecDot(W, G, &bt);CHKERRQ(ierr);
     bt = f - bt;
@@ -178,7 +178,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
       else if (innerSolverTol < 1e-7) innerSolverTol = 1e-7;
 
       /* if the annealing doesn't work well, lower the inner solver tolerance */
-      if(pre_epsilon < epsilon) innerSolverTol *= 0.2;
+      if (pre_epsilon < epsilon) innerSolverTol *= 0.2;
 
       df.tol = innerSolverTol*0.5;
     }
@@ -463,7 +463,7 @@ PetscReal phi(PetscReal *x,PetscInt n,PetscReal lambda,PetscReal *a,PetscReal b,
   for (i = 0; i < n; i++){
     x[i] = -c[i] + lambda*a[i];
     if (x[i] > u[i])     x[i] = u[i];
-    else if(x[i] < l[i]) x[i] = l[i];
+    else if (x[i] < l[i]) x[i] = l[i];
     r += a[i]*x[i];
   }
   return r - b;
@@ -502,7 +502,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
   /* Bracketing Phase */
   r = phi(x, n, lambda, a, b, c, l, u);
 
-  if(nonNegativeSlack) {
+  if (nonNegativeSlack) {
     /* inequality constraint, i.e., with \xi >= 0 constraint */
     if (r < TOL_R) return 0;
   } else  {
@@ -544,9 +544,9 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
     rl      = r;
   }
 
-  if(PetscAbsReal(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
+  if (PetscAbsReal(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
-  if(ru == 0){
+  if (ru == 0){
     return innerIter;
   }
 
@@ -603,7 +603,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
   }
 
   *lam_ext = lambda;
-  if(innerIter >= df->maxProjIter) {
+  if (innerIter >= df->maxProjIter) {
     ierr = PetscInfo(NULL,"WARNING: DaiFletcher max iterations\n");CHKERRQ(ierr);
   }
   return innerIter;
@@ -866,5 +866,3 @@ PetscErrorCode solve(TAO_DF *df)
   }
   return 0;
 }
-
-

@@ -32,18 +32,19 @@ extern PetscErrorCode MySNESMonitor(SNES, PetscInt, PetscReal, PetscViewerAndFor
 
 /* Defining the usr defined context */
 typedef struct {
-    DM da;
-    PetscBool interpolate;                  /* Generate intermediate mesh elements */
-    char filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
-    PetscInt dim;
+    DM          da;
+    PetscBool   interpolate;                  /* Generate intermediate mesh elements */
+    char        filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
+    PetscInt    dim;
     PetscScalar diffusion;
-    PetscReal u, v;
+    PetscReal   u, v;
     PetscScalar delta_x, delta_y;
-    PetscInt cells[2];
+    PetscInt    cells[2];
 } AppCtx;
 
 /* Options for the scenario */
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
     PetscErrorCode ierr;
 
     PetscFunctionBeginUser;
@@ -71,7 +72,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   User can provide the file containing the mesh.
   Or can generate the mesh using DMPlexCreateBoxMesh with the specified options.
 */
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
     size_t len;
     PetscErrorCode ierr;
     PetscFunctionBeginUser;
@@ -98,11 +100,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
     The initial solution can be modified accordingly inside the loops.
     No need for a local vector because there is exchange of information
     across the processors. Unlike for FormFunction which depends on the neighbours */
-PetscErrorCode FormInitialSolution(DM da, Vec U) {
+PetscErrorCode FormInitialSolution(DM da, Vec U)
+{
     PetscErrorCode ierr;
-    PetscScalar *u;
-    PetscInt cell, cStart, cEnd;
-    PetscReal cellvol, centroid[3], normal[3];
+    PetscScalar    *u;
+    PetscInt       cell, cStart, cEnd;
+    PetscReal      cellvol, centroid[3], normal[3];
 
     PetscFunctionBeginUser;
     /* Get pointers to vector data */
@@ -121,10 +124,12 @@ PetscErrorCode FormInitialSolution(DM da, Vec U) {
     PetscFunctionReturn(0);
 }
 
-PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *ctx) {
+PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *ctx)
+{
     PetscErrorCode ierr;
-    PetscReal norm;
-    MPI_Comm comm;
+    PetscReal      norm;
+    MPI_Comm       comm;
+
     PetscFunctionBeginUser;
     if (step < 0) PetscFunctionReturn(0); /* step of -1 indicates an interpolated solution */
     ierr = VecNorm(v, NORM_2, &norm);CHKERRQ(ierr);
@@ -142,8 +147,10 @@ PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *c
      ctx - optional user-defined context for private data for the
          monitor routine, as set by SNESMonitorSet()
 */
-PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf)
+{
     PetscErrorCode ierr;
+
     PetscFunctionBeginUser;
     ierr = SNESMonitorDefaultShort(snes, its, fnorm, vf);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -160,7 +167,8 @@ PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscView
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx) {
+PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx)
+{
     AppCtx *user = (AppCtx *) ctx;
     DM da = (DM) user->da;
     PetscErrorCode ierr;
@@ -270,36 +278,33 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx) {
         /* Calculating the net flux for each cell
            and computing the RHS time derivative f[.] */
         f[cell] = -(flux_centre + flux_east + flux_west + flux_north + flux_south);
-
     }
-
     ierr = PetscFVDestroy(&fvm);
     ierr = VecRestoreArray(localX, &x);CHKERRQ(ierr);
     ierr = VecRestoreArray(F, &f);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da, &localX);CHKERRQ(ierr);
-
     PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
-    TS ts;                         /* time integrator */
-    SNES snes;
-    Vec x, r;                        /* solution, residual vectors */
-    PetscErrorCode ierr;
-    DM da;
-    PetscMPIInt rank;
+int main(int argc, char **argv)
+{
+    TS                   ts;                         /* time integrator */
+    SNES                 snes;
+    Vec                  x, r;                        /* solution, residual vectors */
+    PetscErrorCode       ierr;
+    DM                   da;
+    PetscMPIInt          rank;
     PetscViewerAndFormat *vf;
-    AppCtx user;                             /* mesh context */
-    PetscInt numFields = 1, numBC, i;
-    PetscInt numComp[1];
-    PetscInt numDof[12];
-    PetscInt bcField[1];
-    PetscSection section;
-    IS bcPointIS[1];
+    AppCtx               user;                             /* mesh context */
+    PetscInt             numFields = 1, numBC, i;
+    PetscInt             numComp[1];
+    PetscInt             numDof[12];
+    PetscInt             bcField[1];
+    PetscSection         section;
+    IS                   bcPointIS[1];
 
     /* Initialize program */
-    ierr = PetscInitialize(&argc, &argv, (char *) 0, help);
-    if (ierr) return ierr;
+    ierr = PetscInitialize(&argc, &argv, (char *) 0, help);if (ierr) return ierr;
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
     /* Create distributed array (DMPLEX) to manage parallel grid and vectors */
     ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);

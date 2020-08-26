@@ -49,7 +49,7 @@ struct _p_PetscDrawBar {
 
 .seealso: PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP, PetscDrawHGCreate(), PetscDrawHG, PetscDrawBarDestroy(), PetscDrawBarSetData(),
           PetscDrawBar, PetscDrawBarDraw(), PetscDrawBarSave(), PetscDrawBarSetColor(), PetscDrawBarSort(), PetscDrawBarSetLimits(), PetscDrawBarGetAxis(), PetscDrawAxis,
-          PetscDrawBarGetDraw(), PetscDrawBarSetFromOptions() 
+          PetscDrawBarGetDraw(), PetscDrawBarSetFromOptions()
 @*/
 PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
 {
@@ -422,4 +422,3 @@ PetscErrorCode  PetscDrawBarSetFromOptions(PetscDrawBar bar)
   }
   PetscFunctionReturn(0);
 }
-

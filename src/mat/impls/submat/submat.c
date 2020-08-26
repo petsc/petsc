@@ -55,7 +55,7 @@ static PetscErrorCode MatGetDiagonal_SubMatrix(Mat N,Vec d)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetDiagonal(Na->A,Na->rwork);CHKERRQ(ierr); 
+  ierr = MatGetDiagonal(Na->A,Na->rwork);CHKERRQ(ierr);
   ierr = VecScatterBegin(Na->rprolong,Na->rwork,d,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(Na->rprolong,Na->rwork,d,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

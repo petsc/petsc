@@ -17,7 +17,7 @@ static char help[] = "Basic equation for generator stability analysis.\n";
    ./ex9 -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01 -ts_monitor -ts_type rk -pc_type lu -ksp_type preonly
 
   Initial conditions same as when fault is ended
-   ./ex9 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01 -ts_monitor -ts_type rk -pc_type lu -ksp_type preonly 
+   ./ex9 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01 -ts_monitor -ts_type rk -pc_type lu -ksp_type preonly
 
 
 F*/

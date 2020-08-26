@@ -64,7 +64,7 @@ static void f0_q_linear(PetscInt dim,PetscInt Nf,PetscInt NfAux,const PetscInt u
   PetscScalar rhs,divu=0;
   PetscInt    i;
 
-  (void)linear_divu(dim,t,x,dim,&rhs,NULL);;
+  (void)linear_divu(dim,t,x,dim,&rhs,NULL);
   for (i=0; i< dim; ++i) divu += u_x[uOff_x[0]+i*dim+i];
   f0[0] = divu-rhs;
 }

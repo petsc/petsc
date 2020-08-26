@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
   char           file[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
@@ -99,8 +99,8 @@ int main(int argc, char** argv) {
       ierr = MatSetType(B, MATSEQBAIJ);CHKERRQ(ierr);
       ierr = MatSetSizes(B, bs[j] * An, bs[j] * An, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
       ierr = PetscMalloc1(Ai[An] * bs[j] * bs[j],&val);CHKERRQ(ierr);
-      for(i = 0; i < Ai[An]; ++i)
-        for(k = 0; k < bs[j] * bs[j]; ++k)
+      for (i = 0; i < Ai[An]; ++i)
+        for (k = 0; k < bs[j] * bs[j]; ++k)
           val[i * bs[j] * bs[j] + k] = Aa[i] * ptr[k];
       ierr = MatSetOption(B, MAT_ROW_ORIENTED, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatSeqBAIJSetPreallocationCSR(B, bs[j], Ai, Aj, val);CHKERRQ(ierr);
@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
 
       ierr = MatViewFromOptions(A, NULL, "-A_view");CHKERRQ(ierr);
 
-      for(k = 0; k < nN; ++k) {
+      for (k = 0; k < nN; ++k) {
         MatType       Atype, Ctype;
         PetscInt      AM, AN, CM, CN, t;
         PetscLogStage stage, tstage;
@@ -397,7 +397,7 @@ int main(int argc, char** argv) {
         break;
       }
     }
-    if(E != A) {
+    if (E != A) {
       ierr = MatDestroy(&E);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);

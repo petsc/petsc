@@ -132,7 +132,7 @@ int main(int argc, char **argv)
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&uex);CHKERRQ(ierr);
   /* initial solution */
-  ierr = ExactSolution(u  ,&ctxt,0.0);CHKERRQ(ierr);                 
+  ierr = ExactSolution(u  ,&ctxt,0.0);CHKERRQ(ierr);
   /* exact   solution */
   ierr = ExactSolution(uex,&ctxt,ctxt.dt*ctxt.niter);CHKERRQ(ierr);
 
@@ -242,16 +242,16 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of time steps: %D (%D Krylov iterations)\n",ctxt.niter,total_its);CHKERRQ(ierr);
 
   /* Free up memory */
-  ierr = KSPDestroy(&ksp);      CHKERRQ(ierr);
-  ierr = MatDestroy(&TA);       CHKERRQ(ierr);
-  ierr = MatDestroy(&SC);       CHKERRQ(ierr);
-  ierr = MatDestroy(&R);        CHKERRQ(ierr);
-  ierr = MatDestroy(&J);        CHKERRQ(ierr);
-  ierr = MatDestroy(&Identity); CHKERRQ(ierr);
-  ierr = PetscFree3(A,b,c);     CHKERRQ(ierr);
-  ierr = PetscFree2(At,B);      CHKERRQ(ierr);
-  ierr = VecDestroy(&uex);      CHKERRQ(ierr);
-  ierr = VecDestroy(&u);        CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&TA);CHKERRQ(ierr);
+  ierr = MatDestroy(&SC);CHKERRQ(ierr);
+  ierr = MatDestroy(&R);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = MatDestroy(&Identity);CHKERRQ(ierr);
+  ierr = PetscFree3(A,b,c);CHKERRQ(ierr);
+  ierr = PetscFree2(At,B);CHKERRQ(ierr);
+  ierr = VecDestroy(&uex);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&IRKList);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
@@ -270,7 +270,7 @@ PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)
   dx = (ctxt->xmax - ctxt->xmin)/((PetscReal) ctxt->imax);
   ierr = VecGetOwnershipRange(u,&is,&ie);CHKERRQ(ierr);
   ierr = VecGetArray(u,&uarr);CHKERRQ(ierr);
-  for(i=is; i<ie; i++) {
+  for (i=is; i<ie; i++) {
     x          = i * dx;
     switch (ctxt->physics_type) {
     case PHYSICS_DIFFUSION:

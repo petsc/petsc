@@ -74,7 +74,7 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
 
   PetscFunctionBegin;
   ierr = PetscStrlen(in_str, &yamlLength);CHKERRQ(ierr);
-  if(!yaml_parser_initialize(&parser)){
+  if (!yaml_parser_initialize(&parser)){
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"YAML parser initialization error");
   }
   yaml_parser_set_input_string(&parser,(const unsigned char *) in_str,yamlLength);

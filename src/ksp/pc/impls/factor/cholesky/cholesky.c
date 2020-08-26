@@ -64,7 +64,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       }
       ierr = MatFactorGetUseOrdering(((PC_Factor*)dir)->fact,&useordering);CHKERRQ(ierr);
-      if (useordering) { 
+      if (useordering) {
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         /* check if dir->row == dir->col */
         ierr = ISEqual(dir->row,dir->col,&flg);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_CHOLESKY,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
         ierr = MatFactorGetUseOrdering(((PC_Factor*)dir)->fact,&useordering);CHKERRQ(ierr);
-        if (useordering) { 
+        if (useordering) {
           ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
           ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
           ierr = ISDestroy(&dir->col);CHKERRQ(ierr); /* only use dir->row ordering in CholeskyFactor */

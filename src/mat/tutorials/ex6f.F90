@@ -79,7 +79,7 @@
         PRINT*,'ctxF%lambda = ',ctxF%lambda
 
         CALL MatShellGetContext(F,ctxF_pt,ierr)
-        PRINT*,'ctxF_pt%lambda = ',ctxF_pt%lambda 
+        PRINT*,'ctxF_pt%lambda = ',ctxF_pt%lambda
 
         call MatDestroy(F,ierr)
         CALL PetscFinalize(ierr)

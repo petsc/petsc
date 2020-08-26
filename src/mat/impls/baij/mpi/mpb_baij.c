@@ -91,12 +91,12 @@ PetscErrorCode  MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse
         }
         /* copy column-oriented aijB->a into row-oriented vals */
         aijBvals = aijB->a + j*bs*bs;
-        for (k1=0; k1<bs; k1++) { 
-          for (k=0; k<bs; k++) { 
-            vals[k1+k*bs] = *aijBvals++; 
+        for (k1=0; k1<bs; k1++) {
+          for (k=0; k<bs; k++) {
+            vals[k1+k*bs] = *aijBvals++;
           }
         }
-        ierr = MatSetValues(*subMat,bs,newbRow,bs,newbCol,vals,INSERT_VALUES);CHKERRQ(ierr); 
+        ierr = MatSetValues(*subMat,bs,newbRow,bs,newbCol,vals,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }

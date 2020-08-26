@@ -21,7 +21,7 @@ typedef struct {
 /* junction              */
 /*-----------------------*/
 struct _p_Junction{
-  PetscInt	id;        /* global index */
+  PetscInt      id;        /* global index */
   PetscInt      tag;       /* external id */
   VertexType    type;
   PetscInt      isEnd;                /* -1: left end; 0: not an end; 1: right end */

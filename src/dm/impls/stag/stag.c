@@ -164,7 +164,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
     *set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
-  ierr = DMGetDimension(dm ,&dim );CHKERRQ(ierr);
+  ierr = DMGetDimension(dm ,&dim);CHKERRQ(ierr);
   ierr = DMGetDimension(dm2,&dim2);CHKERRQ(ierr);
   if (dim != dim2) {
     ierr = PetscInfo((PetscObject)dm,"DMStag objects have different dimensions");CHKERRQ(ierr);
@@ -370,7 +370,7 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer," %D:%D",i,stag->dof[i]);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-    if(dm->coordinateDM) {
+    if (dm->coordinateDM) {
       ierr = PetscViewerASCIIPrintf(viewer,"Has coordinate DM\n");CHKERRQ(ierr);
     }
     maxRanksToView = 16;
@@ -391,7 +391,7 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
           break;
         default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim==%D",dim);
       }
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local native entries: %d\n",rank,stag->entries     );CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local native entries: %d\n",rank,stag->entries);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local entries total : %d\n",rank,stag->entriesGhost);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);

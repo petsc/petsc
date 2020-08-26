@@ -1690,7 +1690,7 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
   ierr = PetscFEGetFaceQuadrature(fe, &subq);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(Q, &dim);CHKERRQ(ierr);
-  if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
+  if (height > dim || height < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
   if (!fe->subspaces) {ierr = PetscCalloc1(dim, &fe->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!fe->subspaces[height-1]) {

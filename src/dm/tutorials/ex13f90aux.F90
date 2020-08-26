@@ -1,4 +1,4 @@
-module ex13f90aux 
+module ex13f90aux
   implicit none
 contains
   !
@@ -8,12 +8,12 @@ contains
 #include <petsc/finclude/petscdm.h>
     use petscdm
     DMBoundaryType,intent(inout) :: b_x,b_y,b_z
-    
+
     ! Here you may set the BC types you want
     b_x = DM_BOUNDARY_GHOSTED
     b_y = DM_BOUNDARY_GHOSTED
     b_z = DM_BOUNDARY_GHOSTED
-   
+
   end subroutine get_boundary_cond
   !
   ! A function which returns the RHS of the equation we are solving
@@ -60,9 +60,9 @@ contains
   !    PETSc gives you local arrays which are indexed using the global indices.
   ! This is probably handy in some cases, but when you are re-writing an
   ! existing serial code and want to use DMDAs, you have tons of loops going
-  ! from 1 to imax etc. that you don't want to change. 
+  ! from 1 to imax etc. that you don't want to change.
   !    These subroutines re-map the arrays so that all the local arrays go from
-  ! 1 to the (local) imax. 
+  ! 1 to the (local) imax.
   !
   subroutine petsc_to_local(da,vec,array,f,dof,stw)
     use petscdmda
@@ -73,7 +73,7 @@ contains
     PetscReal, intent(inout), dimension(:,1-stw:,1-stw:,1-stw:) :: f
     PetscErrorCode                                                :: ierr
     !
-    call DMDAVecGetArrayF90(da,vec,array,ierr);CHKERRQ(ierr); 
+    call DMDAVecGetArrayF90(da,vec,array,ierr);CHKERRQ(ierr);
     call transform_petsc_us(array,f,stw)
   end subroutine petsc_to_local
   subroutine transform_petsc_us(array,f,stw)
@@ -92,7 +92,7 @@ contains
     PetscReal,intent(inout),dimension(:,1-stw:,1-stw:,1-stw:)  :: f
     PetscErrorCode                                        :: ierr
     call transform_us_petsc(array,f,stw)
-    call DMDAVecRestoreArrayF90(da,vec,array,ierr);CHKERRQ(ierr); 
+    call DMDAVecRestoreArrayF90(da,vec,array,ierr);CHKERRQ(ierr);
   end subroutine local_to_petsc
   subroutine transform_us_petsc(array,f,stw)
     !Note: this assumed shape-array is what does the "coordinate transformation"

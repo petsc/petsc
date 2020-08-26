@@ -9,7 +9,7 @@ typedef struct {
   PetscInt     ned;                 /* size of following arrays */
   PetscScalar  *e,*d;
   PetscReal    *ee,*dd;             /* work space for Lanczos algorithm */
-  
+
   PetscInt     mmax;        /* The maximum number of P/C vectors to store */
   PetscInt     nprealloc;   /* How many vectors to preallocate */
   PetscInt     nvecs;       /* How many P/C vecs are actually stored */

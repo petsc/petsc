@@ -80,7 +80,7 @@ PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool xterm)
   if (debugger) {
     ierr = PetscStrncpy(PetscDebugger,debugger,sizeof(PetscDebugger));CHKERRQ(ierr);
   }
-  if(Xterm) Xterm = xterm;
+  if (Xterm) Xterm = xterm;
   PetscFunctionReturn(0);
 }
 
@@ -437,7 +437,7 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
   (*PetscErrorPrintf)("%s() line %d in %s %s\n",fun,line,file,mess);
 
   ierr = PetscAttachDebugger();
-  if (ierr) abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */    
+  if (ierr) abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */
   PetscFunctionReturn(0);
 }
 
@@ -547,6 +547,3 @@ PetscErrorCode  PetscStopForDebugger(void)
 #endif
   PetscFunctionReturn(0);
 }
-
-
-

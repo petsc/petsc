@@ -636,7 +636,7 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
  formProl0
 
    Input Parameter:
-   . agg_llists - list of arrays with aggregates -- list from selected vertices of aggregate unselected vertices 
+   . agg_llists - list of arrays with aggregates -- list from selected vertices of aggregate unselected vertices
    . bs - row block size
    . nSAvec - column bs of new P
    . my0crs - global index of start of locals
@@ -1111,7 +1111,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   /* compute maximum value of operator to be used in smoother */
   if (0 < pc_gamg_agg->nsmooths) {
     /* get eigen estimates */
-    if ( pc_gamg->emax > 0) {
+    if (pc_gamg->emax > 0) {
       emin = pc_gamg->emin;
       emax = pc_gamg->emax;
     } else {

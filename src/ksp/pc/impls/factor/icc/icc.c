@@ -45,7 +45,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
     pc->failedreason = (PCFailedReason)err;
     PetscFunctionReturn(0);
   }
- 
+
   ierr = MatCholeskyFactorNumeric(((PC_Factor*)icc)->fact,pc->pmat,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   ierr = MatFactorGetError(((PC_Factor*)icc)->fact,&err);CHKERRQ(ierr);
   if (err) { /* FactorNumeric() fails */
@@ -174,7 +174,7 @@ extern PetscErrorCode  PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,Petsc
           to turn off the shift.
 
    References:
-.  1. - TONY F. CHAN AND HENK A. VAN DER VORST, Review article: APPROXIMATE AND INCOMPLETE FACTORIZATIONS, 
+.  1. - TONY F. CHAN AND HENK A. VAN DER VORST, Review article: APPROXIMATE AND INCOMPLETE FACTORIZATIONS,
       Chapter in Parallel Numerical Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
       Science and Engineering, Kluwer.
 
@@ -214,5 +214,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   pc->ops->applysymmetricright = PCApplySymmetricRight_ICC;
   PetscFunctionReturn(0);
 }
-
-

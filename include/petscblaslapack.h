@@ -32,7 +32,7 @@
     PetscStackPushNoCheck(name,PETSC_FALSE,PETSC_TRUE);         \
     routine;                                                    \
     PetscStackPop;                                              \
-  } while(0)
+  } while (0)
 
 PETSC_STATIC_INLINE void PetscMissingLapack(const char *fname,...)
 {

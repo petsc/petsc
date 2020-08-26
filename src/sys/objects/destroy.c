@@ -92,8 +92,6 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#define CHKERRQI(incall,ierr) if (ierr) {incall = PETSC_FALSE; CHKERRQ(ierr);}
-
 /*@C
   PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed.
 
@@ -120,13 +118,13 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
   prefix = bobj ? bobj->prefix : obj->prefix;
-  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),obj->options,prefix,optionname,&viewer,&format,&flg);CHKERRQI(incall,ierr);
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),obj->options,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQI(incall,ierr);
-    ierr = PetscObjectView(obj,viewer);CHKERRQI(incall,ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQI(incall,ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQI(incall,ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQI(incall,ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = PetscObjectView(obj,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);

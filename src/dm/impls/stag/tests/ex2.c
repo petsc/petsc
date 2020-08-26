@@ -109,7 +109,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             404,405,406,407,408,409,410,411,
             412,413,414,415,416,417,418,419,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 1) {
           const PetscScalar arrLocalExpectedHere[] = {
             8,  9,  10, 11, 12, 13, 14, 15,
@@ -140,7 +140,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             412,413,414,415,416,417,418,419,
             420,421,422,423,424,425,426,427,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 2) {
           const PetscScalar arrLocalExpectedHere[] = {
             64, 65, 66, 67, 68, 69, 70, 71,
@@ -171,7 +171,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             420,421,422,423,424,425,426,427,
             428,-1, 429,-1, 430,-1 ,431,-1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 3) {
           const PetscScalar arrLocalExpectedHere[] = {
             16, 17, 18, 19, 20, 21, 22, 23,
@@ -202,7 +202,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             440,441,442,443,444,445,446,447,
             456,457,458,459,460,461,462,463,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 4) {
           const PetscScalar arrLocalExpectedHere[] = {
             24, 25, 26, 27, 28, 29 ,30, 31,
@@ -233,7 +233,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             456,457,458,459,460,461,462,463,
             468,469,470,471,472,473,474,475,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 5) {
           const PetscScalar arrLocalExpectedHere[] = {
             72, 73, 74, 75, 76, 77, 78, 79,
@@ -264,7 +264,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             468,469,470,471,472,473,474,475,
             476,-1, 477,-1, 478,-1, 479,-1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 6) {
           const PetscScalar arrLocalExpectedHere[] = {
             144,145,146,147,148,149,150,151,
@@ -295,7 +295,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             452,453,-1, -1, 454,455,-1, -1,
             464,465,-1, -1, 466,467,-1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 7) {
           const PetscScalar arrLocalExpectedHere[] = {
             152,153,154,155,156,157,158,159,
@@ -326,7 +326,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             464,465,-1, -1, 466,467,-1, -1,
             480,481,-1, -1, 482,483,-1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 8) {
           const PetscScalar arrLocalExpectedHere[] = {
             176,177,178,179,180,181,182,183,
@@ -357,7 +357,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             480,481,-1, -1, 482,483,-1, -1,
             484,-1, -1, -1, 485,-1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 9) {
           const PetscScalar arrLocalExpectedHere[] = {
             32, 33, 34, 35, 36, 37, 38, 39,
@@ -388,7 +388,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             602,603,604,605,606,607,608,609,
             618,619,620,621,622,623,624,625,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 10) {
           const PetscScalar arrLocalExpectedHere[] = {
             40, 41, 42, 43, 44, 45, 46, 47,
@@ -419,7 +419,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             618,619,620,621,622,623,624,625,
             630,631,632,633,634,635,636,637,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 11) {
           const PetscScalar arrLocalExpectedHere[] = {
             80, 81, 82, 83, 84, 85, 86, 87,
@@ -450,7 +450,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             630,631,632,633,634,635,636,637,
             638,-1, 639,-1, 640,-1, 641,-1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 12) {
           const PetscScalar arrLocalExpectedHere[] = {
             48, 49, 50, 51, 52, 53, 54, 55,
@@ -481,7 +481,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             656,657,658,659,660,661,662,663,
             684,685,686,687,688,689,690,691,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 13) {
           const PetscScalar arrLocalExpectedHere[] = {
             56, 57, 58, 59, 60, 61, 62, 63,
@@ -512,7 +512,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             684,685,686,687,688,689,690,691,
             702,703,704,705,706,707,708,709,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 14) {
           const PetscScalar arrLocalExpectedHere[] = {
             88, 89, 90, 91, 92, 93, 94, 95,
@@ -543,7 +543,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             702,703,704,705,706,707,708,709,
             710,-1, 711,-1, 712,-1, 713,-1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 15) {
           const PetscScalar arrLocalExpectedHere[] = {
             160,161,162,163,164,165,166,167,
@@ -574,7 +574,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             668,669,-1, -1, 670,671,-1, -1,
             692,693,-1, -1, 694,695,-1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 16) {
           const PetscScalar arrLocalExpectedHere[] = {
             168,169,170,171,172,173,174,175,
@@ -605,7 +605,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             692,693,-1, -1, 694,695,-1, -1,
             714,715,-1, -1, 716,717,-1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 17) {
           const PetscScalar arrLocalExpectedHere[] = {
             184,185,186,187,188,189,190,191,
@@ -636,7 +636,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             714,715,-1, -1, 716,717,-1, -1,
             718,-1, -1, -1, 719,-1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 18) {
           const PetscScalar arrLocalExpectedHere[] = {
             324,325,326,327,328,329,330,331,
@@ -667,7 +667,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             614,615,616,617,-1, -1, -1, -1,
             626,627,628,629,-1, -1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 19) {
           const PetscScalar arrLocalExpectedHere[] = {
             332,333,334,335,336,337,338,339,
@@ -698,7 +698,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             626,627,628,629,-1, -1, -1, -1,
             642,643,644,645,-1, -1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 20) {
           const PetscScalar arrLocalExpectedHere[] = {
             356,357,358,359,360,361,362,363,
@@ -729,7 +729,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             642,643,644,645,-1, -1, -1, -1,
             646,-1, 647,-1, -1, -1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 21) {
           const PetscScalar arrLocalExpectedHere[] = {
             340,341,342,343,344,345,346,347,
@@ -760,7 +760,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             676,677,678,679,-1, -1, -1, -1,
             696,697,698,699,-1, -1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 22) {
           const PetscScalar arrLocalExpectedHere[] = {
             348,349,350,351,352,353,354,355,
@@ -791,7 +791,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             696,697,698,699,-1, -1, -1, -1,
             720,721,722,723,-1, -1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 23) {
           const PetscScalar arrLocalExpectedHere[] = {
             364,365,366,367,368,369,370,371,
@@ -822,7 +822,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             720,721,722,723,-1, -1, -1, -1,
             724,-1, 725,-1, -1, -1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 24) {
           const PetscScalar arrLocalExpectedHere[] = {
             396,397,398,399,400,401,402,403,
@@ -853,7 +853,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             682,683,-1, -1, -1, -1, -1, -1,
             700,701,-1, -1, -1, -1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 25) {
           const PetscScalar arrLocalExpectedHere[] = {
             404,405,406,407,408,409,410,411,
@@ -884,7 +884,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             700,701,-1, -1, -1, -1, -1, -1,
             726,727,-1, -1, -1, -1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     } else if (rank == 26) {
           const PetscScalar arrLocalExpectedHere[] = {
             412,413,414,415,416,417,418,419,
@@ -915,11 +915,11 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
             726,727,-1, -1, -1, -1, -1, -1,
             728,-1, -1, -1, -1, -1, -1, -1,
           };
-         for(i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
+         for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     }
 
     ierr = VecGetArrayRead(vecLocal,&arrLocal);CHKERRQ(ierr);
-    for(i=0, nerr=0; i<entriesGhost; ++i) {
+    for (i=0, nerr=0; i<entriesGhost; ++i) {
       if (arrLocal[i] != arrLocalExpected[i]) {
         ++nerr;
           if (nerr <= maxErrPerRank) {

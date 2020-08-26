@@ -12,22 +12,22 @@
 typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_BINARY, DATABUCKET_VIEW_HDF5 } DMSwarmDataBucketViewType;
 
 struct _p_DMSwarmDataField {
-	char          *registration_function;
-	PetscInt      L,bs;
-	PetscBool     active;
-	size_t        atomic_size;
-	char          *name; /* what are they called */
-	void          *data; /* the data - an array of structs */
+        char          *registration_function;
+        PetscInt      L,bs;
+        PetscBool     active;
+        size_t        atomic_size;
+        char          *name; /* what are they called */
+        void          *data; /* the data - an array of structs */
   PetscDataType petsc_type;
 };
 
 struct _p_DMSwarmDataBucket {
-	PetscInt  L;             /* number in use */
-	PetscInt  buffer;        /* memory buffer used for re-allocation */
-	PetscInt  allocated;     /* number allocated, this will equal datafield->L */
-	PetscBool finalised;     /* DEPRECATED */
-	PetscInt  nfields;       /* how many fields of this type */
-	DMSwarmDataField *field; /* the data */
+        PetscInt  L;             /* number in use */
+        PetscInt  buffer;        /* memory buffer used for re-allocation */
+        PetscInt  allocated;     /* number allocated, this will equal datafield->L */
+        PetscBool finalised;     /* DEPRECATED */
+        PetscInt  nfields;       /* how many fields of this type */
+        DMSwarmDataField *field; /* the data */
 };
 
 #define DMSWARM_DATAFIELD_point_access(data,index,atomic_size) (void*)((char*)(data) + (index)*(atomic_size))

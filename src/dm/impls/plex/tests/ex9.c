@@ -177,7 +177,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  for(p = 0; p < 12; ++p) {
+  for (p = 0; p < 12; ++p) {
     ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
   }
   *newdm = dm;

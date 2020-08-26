@@ -87,7 +87,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
 
   /* At this point, we've solved the Newton system for delta_x, and we assume that
      its norm is greater than the solution tolerance (otherwise we wouldn't be in
-     here). So let's go ahead and estimate the Lipschitz constant. 
+     here). So let's go ahead and estimate the Lipschitz constant.
 
      W contains bar_delta_x_prev at this point. */
 
@@ -115,7 +115,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
     lambda = linesearch->damping;
   }
 
-  /* The main while loop of the algorithm. 
+  /* The main while loop of the algorithm.
      At the end of this while loop, G should have the accepted new X in it. */
 
   count = 0;

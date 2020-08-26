@@ -79,7 +79,7 @@ static PetscErrorCode DMDAGetNumVerticesGhosted(DM da, PetscInt *nvx, PetscInt *
   PetscFunctionBegin;
   ierr = DMGetDimension(da,&dim);CHKERRQ(ierr);
   ierr = DMDAGetNumElementsGhosted(da,&ien,&jen,&ken);CHKERRQ(ierr);
-  tote = ien * (dim > 1 ? jen : 1 ) * (dim > 2 ? ken : 1);
+  tote = ien * (dim > 1 ? jen : 1) * (dim > 2 ? ken : 1);
   if (tote) {
     ien = ien+1;
     jen = dim > 1 ? jen+1 : 1;

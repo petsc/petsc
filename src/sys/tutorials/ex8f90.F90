@@ -1,5 +1,5 @@
 !
-!   Example of getting an enum value from the options database in Fortran 
+!   Example of getting an enum value from the options database in Fortran
 
 #include "petsc/finclude/petsc.h"
       use petsc

@@ -325,7 +325,6 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
 
     test:
       suffix: 2
-      args: -ts_monitor_pseudo -ts_pseudo_frtol 1.e-5 
+      args: -ts_monitor_pseudo -ts_pseudo_frtol 1.e-5
 
 TEST*/
-

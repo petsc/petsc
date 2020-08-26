@@ -197,7 +197,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   PetscScalar fvalue;
   PetscScalar Efd, RF, VR;
   PetscScalar Vr,Vi,Vm;
-  
+
   PetscFunctionBegin;
 
   ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
@@ -210,20 +210,20 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
     if (event_list[i] == 0) {
       /* Apply disturbance - resistive fault at user->faultbus */
       /* This is done by adding shunt conductance to the diagonal location
-	 in the Ybus matrix */
+         in the Ybus matrix */
       row_loc = 2*user->faultbus; col_loc = 2*user->faultbus+1; /* Location for G */
       val     = 1/user->Rfault;
       ierr    = MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
       row_loc = 2*user->faultbus+1; col_loc = 2*user->faultbus; /* Location for G */
       val     = 1/user->Rfault;
       ierr    = MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
-      
+
       ierr = MatAssemblyBegin(user->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(user->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      
+
       /* Solve the algebraic equations */
       ierr = SNESSolve(user->snes_alg,NULL,X);CHKERRQ(ierr);
-    } else if(event_list[i] == 1) {
+    } else if (event_list[i] == 1) {
       /* Remove the fault */
       row_loc = 2*user->faultbus; col_loc = 2*user->faultbus+1;
       val     = -1/user->Rfault;
@@ -231,61 +231,61 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
       row_loc = 2*user->faultbus+1; col_loc = 2*user->faultbus;
       val     = -1/user->Rfault;
       ierr    = MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
-      
+
       ierr = MatAssemblyBegin(user->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(user->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      
+
       /* Solve the algebraic equations */
       ierr = SNESSolve(user->snes_alg,NULL,X);CHKERRQ(ierr);
 
       /* Check the VR derivatives and reset flags if needed */
       for (i=0; i < ngen; i++) {
-	Efd   = xgen[idx+6];
-	RF    = xgen[idx+7];
-	VR    = xgen[idx+8];
+        Efd   = xgen[idx+6];
+        RF    = xgen[idx+7];
+        VR    = xgen[idx+8];
 
-	Vr = xnet[2*gbus[i]]; /* Real part of generator terminal voltage */
-	Vi = xnet[2*gbus[i]+1]; /* Imaginary part of the generator terminal voltage */
-	Vm = PetscSqrtScalar(Vr*Vr + Vi*Vi);
+        Vr = xnet[2*gbus[i]]; /* Real part of generator terminal voltage */
+        Vi = xnet[2*gbus[i]+1]; /* Imaginary part of the generator terminal voltage */
+        Vm = PetscSqrtScalar(Vr*Vr + Vi*Vi);
 
-	if (VRatmax[i]) {
-	  fvalue = (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i];
-	  if (fvalue < 0) { 
-	    VRatmax[i] = 0;
-	    ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went negative on fault clearing at time %g\n",i,t);CHKERRQ(ierr);
-	  }
-	}
-	if (VRatmin[i]) {
-	  fvalue =  (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i];
+        if (VRatmax[i]) {
+          fvalue = (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i];
+          if (fvalue < 0) {
+            VRatmax[i] = 0;
+            ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went negative on fault clearing at time %g\n",i,t);CHKERRQ(ierr);
+          }
+        }
+        if (VRatmin[i]) {
+          fvalue =  (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i];
 
-	  if(fvalue > 0) {
-	    VRatmin[i] = 0;
-	    ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went positive on fault clearing at time %g\n",i,t);CHKERRQ(ierr);
-	  }
-	}
-	idx = idx+9;
+          if (fvalue > 0) {
+            VRatmin[i] = 0;
+            ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went positive on fault clearing at time %g\n",i,t);CHKERRQ(ierr);
+          }
+        }
+        idx = idx+9;
       }
     } else {
       idx = (event_list[i]-2)/2;
       event_num = (event_list[i]-2)%2;
       if (event_num == 0) { /* Max VR */
-	if (!VRatmax[idx]) {
-	  VRatmax[idx] = 1;
-	  ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit upper limit at time %g\n",idx,t);CHKERRQ(ierr);
-	}
-	else {
-	  VRatmax[idx] = 0;
-	  ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is negative at time %g\n",idx,t);CHKERRQ(ierr);
-	}
+        if (!VRatmax[idx]) {
+          VRatmax[idx] = 1;
+          ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit upper limit at time %g\n",idx,t);CHKERRQ(ierr);
+        }
+        else {
+          VRatmax[idx] = 0;
+          ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is negative at time %g\n",idx,t);CHKERRQ(ierr);
+        }
       } else {
-	if (!VRatmin[idx]) {
-	  VRatmin[idx] = 1;
-	  ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit lower limit at time %g\n",idx,t);CHKERRQ(ierr);
-	}
-	else {
-	  VRatmin[idx] = 0;
-	  ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is positive at time %g\n",idx,t);CHKERRQ(ierr);
-	}
+        if (!VRatmin[idx]) {
+          VRatmin[idx] = 1;
+          ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit lower limit at time %g\n",idx,t);CHKERRQ(ierr);
+        }
+        else {
+          VRatmin[idx] = 0;
+          ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is positive at time %g\n",idx,t);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -513,8 +513,8 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
     /* Exciter differential equations */
     fgen[idx+6] = (-KE[i]*Efd - SE + VR)/TE[i];
     fgen[idx+7] = (-RF + KF[i]*Efd/TF[i])/TF[i];
-    if(VRatmax[i]) fgen[idx+8] = VR - VRMAX[i];
-    else if(VRatmin[i]) fgen[idx+8] = VRMIN[i] - VR;
+    if (VRatmax[i]) fgen[idx+8] = VR - VRMAX[i];
+    else if (VRatmin[i]) fgen[idx+8] = VRMIN[i] - VR;
     else fgen[idx+8] = (-VR + KA[i]*RF - KA[i]*KF[i]*Efd/TF[i] + KA[i]*(Vref[i] - Vm))/TA[i];
 
     idx = idx + 9;
@@ -838,10 +838,10 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     /* Vm = (Vd^2 + Vq^2)^0.5; */
 
     row[0] = idx + 8;
-    if(VRatmax[i]) {
+    if (VRatmax[i]) {
       col[0] = idx + 8; val[0] = 1.0;
       ierr = MatSetValues(J,1,row,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
-    } else if(VRatmin[i]) {
+    } else if (VRatmin[i]) {
       col[0] = idx + 8; val[0] = -1.0;
       ierr = MatSetValues(J,1,row,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
     } else {
@@ -1115,7 +1115,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  if(user.semiexplicit) {
+  if (user.semiexplicit) {
     ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&user);CHKERRQ(ierr);
@@ -1169,9 +1169,9 @@ int main(int argc,char **argv)
 
   ierr = TSSetEventHandler(ts,2*ngen+2,direction,terminate,EventFunction,PostEventFunction,(void*)&user);CHKERRQ(ierr);
 
-  if(user.semiexplicit) {
+  if (user.semiexplicit) {
     /* Use a semi-explicit approach with the time-stepping done by an explicit method and the
-       algrebraic part solved via PostStage and PostEvaluate callbacks 
+       algrebraic part solved via PostStage and PostEvaluate callbacks
     */
     ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
     ierr = TSSetPostStage(ts,PostStage);CHKERRQ(ierr);
@@ -1179,13 +1179,13 @@ int main(int argc,char **argv)
   }
 
 
-  if(user.setisdiff) {
+  if (user.setisdiff) {
     /* Create vector of absolute tolerances and set the algebraic part to infinity */
     ierr = VecDuplicate(X,&vatol);CHKERRQ(ierr);
     ierr = VecSet(vatol,100000.0);CHKERRQ(ierr);
     ierr = VecGetArray(vatol,&vatoli);CHKERRQ(ierr);
     ierr = ISGetIndices(user.is_diff,&idx3);CHKERRQ(ierr);
-    for(k=0; k < 7*ngen; k++) vatoli[idx3[k]] = 1e-2;
+    for (k=0; k < 7*ngen; k++) vatoli[idx3[k]] = 1e-2;
     ierr = VecRestoreArray(vatol,&vatoli);CHKERRQ(ierr);
   }
 
@@ -1236,7 +1236,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&user.is_diff);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_alg);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  if(user.setisdiff) {
+  if (user.setisdiff) {
     ierr = VecDestroy(&vatol);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();

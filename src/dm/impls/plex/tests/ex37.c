@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
             int    periodic[2];
 
             ierr = PetscHMapISet(edgeMap, eid-1, numEdges++);CHKERRQ(ierr);
-            ierr = EG_getRange(edge, range, periodic); CHKERRQ(ierr);
+            ierr = EG_getRange(edge, range, periodic);CHKERRQ(ierr);
             params[0] = 0.5*(range[0] + range[1]);
             ierr = EG_evaluate(edge, params, result);CHKERRQ(ierr);
             coords[v*cdim+0] = result[0];
@@ -278,7 +278,7 @@ int main(int argc, char *argv[])
           ierr = EG_getBodyTopos(body, loop, FACE, &Nf, &fobjs);CHKERRQ(ierr);
           if (Nf != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1", lid-1, Nf);
           face = EG_indexBodyTopo(body, fobjs[0]);CHKERRQ(ierr);
-          ierr = EG_getRange(fobjs[0], range, periodic); CHKERRQ(ierr);
+          ierr = EG_getRange(fobjs[0], range, periodic);CHKERRQ(ierr);
           params[0] = 0.5*(range[0] + range[1]);
           params[1] = 0.5*(range[2] + range[3]);
           ierr = EG_evaluate(fobjs[0], params, result);CHKERRQ(ierr);

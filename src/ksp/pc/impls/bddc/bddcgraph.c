@@ -915,7 +915,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
       if (graph->mirrors[i] > 0) {
         ierr = PetscFindInt(graph->mirrors_set[i][0],graph->nvtxs,global_indices,&k);CHKERRQ(ierr);
         j = global_indices[k];
-        while ( k > 0 && global_indices[k-1] == j) k--;
+        while (k > 0 && global_indices[k-1] == j) k--;
         for (j=0;j<graph->mirrors[i];j++) {
           graph->mirrors_set[i][j]=local_indices[k+j];
         }

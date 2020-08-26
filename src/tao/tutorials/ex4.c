@@ -333,7 +333,7 @@ static PetscErrorCode GradientRegularization(Tao tao, Vec x, Vec V, void *_ctx)
 }
 
 /* NORM_2 Case: returns diag(mu)
- * NORM_1 Case: diag(mu* 1/sqrt(x_i^2 + eps) * ( 1 - x_i^2/ABS(x_i^2+eps)))  */
+ * NORM_1 Case: diag(mu* 1/sqrt(x_i^2 + eps) * (1 - x_i^2/ABS(x_i^2+eps)))  */
 static PetscErrorCode HessianRegularization(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx)
 {
   UserCtx        ctx = (UserCtx) _ctx;
@@ -351,7 +351,7 @@ static PetscErrorCode HessianRegularization(Tao tao, Vec x, Mat H, Mat Hpre, voi
       ierr = MatShift(Hpre,ctx->mu);CHKERRQ(ierr);
     }
   } else if (ctx->p == NORM_1) {
-    /* 1/sqrt(x_i^2 + eps) * ( 1 - x_i^2/ABS(x_i^2+eps) ) */
+    /* 1/sqrt(x_i^2 + eps) * (1 - x_i^2/ABS(x_i^2+eps)) */
     copy1 = ctx->workRight[1];
     copy2 = ctx->workRight[2];
     copy3 = ctx->workRight[3];
@@ -486,7 +486,7 @@ static PetscErrorCode GradientComplete(Tao tao, Vec x, Vec V, void *ctx)
 }
 
 /* NORM_2 Case: diag(mu) + FTF
- * NORM_1 Case: diag(mu* 1/sqrt(x_i^2 + eps) * ( 1 - x_i^2/ABS(x_i^2+eps))) + FTF  */
+ * NORM_1 Case: diag(mu* 1/sqrt(x_i^2 + eps) * (1 - x_i^2/ABS(x_i^2+eps))) + FTF  */
 static PetscErrorCode HessianComplete(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
 {
   Mat            tempH;
@@ -660,7 +660,7 @@ int main(int argc, char ** argv)
   ierr = TaoSetInitialVector(tao, x);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   if (ctx->use_admm) {
-    ierr = TaoSolveADMM(ctx,x); CHKERRQ(ierr);
+    ierr = TaoSolveADMM(ctx,x);CHKERRQ(ierr);
   } else {ierr = TaoSolve(tao);CHKERRQ(ierr);}
   /* examine solution */
   ierr = VecViewFromOptions(x, NULL, "-view_sol");CHKERRQ(ierr);

@@ -912,8 +912,8 @@ int main(int argc,char *argv[])
       ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
       ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
       ierr = VecGetArrayRead(XR,&ptr_XR);CHKERRQ(ierr);
-      for(i=xs;i<xs+xm;i++) {
-        if(i < ctx.sf || i > ctx.fs-1)
+      for (i=xs;i<xs+xm;i++) {
+        if (i < ctx.sf || i > ctx.fs-1)
           for (k=0; k<dof; k++) nrm1 = nrm1 + hs*PetscAbs(ptr_X[i*dof+k]-ptr_XR[i*dof+k]);
         else
           for (k=0; k<dof; k++) nrm1 = nrm1 + hf*PetscAbs(ptr_X[i*dof+k]-ptr_XR[i*dof+k]);

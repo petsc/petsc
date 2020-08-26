@@ -19,7 +19,7 @@ int main(int argc,char **argv)
 
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);  
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xstart,&ystart,0,&m,&n,0);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);

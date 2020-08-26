@@ -58,19 +58,19 @@ int main(int argc,char **argv)
 
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of entire vector: %g\n",(double)norm);CHKERRQ(ierr);
-  
+
   ierr = VecNorm(x,NORM_1,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of entire vector: %g\n",(double)norm);CHKERRQ(ierr);
-  
+
   ierr = VecNorm(x,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of entire vector: %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = VecStrideNorm(x,0,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 0: %g\n",(double)norm);CHKERRQ(ierr);
-  
+
   ierr = VecStrideNorm(x,0,NORM_1,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of sub-vector 0: %g\n",(double)norm);CHKERRQ(ierr);
-  
+
   ierr = VecStrideNorm(x,0,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 0: %g\n",(double)norm);CHKERRQ(ierr);
 

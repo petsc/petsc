@@ -58,7 +58,7 @@ static PetscErrorCode PCHMGExpandInterpolation_Private(Mat subinterp, Mat *inter
     if (max_nz<nz) max_nz = nz;
     dnz = 0; onz = 0;
     for (i=0;i<nz;i++) {
-      if(idx[i]>=subcstart && idx[i]<subcend) dnz++;
+      if (idx[i]>=subcstart && idx[i]<subcend) dnz++;
       else onz++;
     }
     for (i=0;i<blocksize;i++) {

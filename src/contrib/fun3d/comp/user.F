@@ -125,8 +125,8 @@
 !
 !  The following u0,v0,w0 are Kyle's original (no yaw) components
 !
-!     u0 = xmach * cos( alpha/conv )
-!     v0 = xmach * sin( alpha/conv )
+!     u0 = xmach * cos(alpha/conv)
+!     v0 = xmach * sin(alpha/conv)
 !     w0 = 0.0
 !
 !  The following u0,v0,w0 are CFL3D's yawed components, based
@@ -156,13 +156,13 @@
       v0 = - xmach * sin(yaw/conv)
       w0 =   xmach * sin(alpha/conv) * cos(yaw/conv)
 #else
-      u0 = xmach * cos( alpha/conv )
-      v0 = xmach * sin( alpha/conv )
+      u0 = xmach * cos(alpha/conv)
+      v0 = xmach * sin(alpha/conv)
       w0 = 0.0
 #endif
 !
-      ei0   = p0/(( gamma - 1.0 )*rho0)
-      et0   = rho0*( ei0 + 0.5*(u0*u0 + v0*v0 + w0*w0))
+      ei0   = p0/((gamma - 1.0)*rho0)
+      et0   = rho0*(ei0 + 0.5*(u0*u0 + v0*v0 + w0*w0))
       h0    = (et0 + p0)/rho0
 !      pt0   = p0*(1.0 + 0.5*gm1*xmach*xmach)**3.5
       pt0 = 1.0

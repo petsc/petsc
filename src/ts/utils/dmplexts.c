@@ -333,7 +333,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     /* Choose a perturbation direction */
     ierr = PetscRandomCreate(comm, &rand);CHKERRQ(ierr);
     ierr = VecDuplicate(u, &du);CHKERRQ(ierr);
-    ierr = VecSetRandom(du, rand); CHKERRQ(ierr);
+    ierr = VecSetRandom(du, rand);CHKERRQ(ierr);
     ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
     ierr = VecDuplicate(u, &df);CHKERRQ(ierr);
     ierr = MatMult(J, du, df);CHKERRQ(ierr);

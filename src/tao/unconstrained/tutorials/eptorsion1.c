@@ -87,7 +87,7 @@ PetscErrorCode main(int argc,char **argv)
   AppCtx             user;                /* application context */
   PetscMPIInt        size;                /* number of processes */
   PetscReal          one=1.0;
-  
+
   PetscBool          test_lmvm = PETSC_FALSE;
   KSP                ksp;
   PC                 pc;
@@ -108,7 +108,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_lmvm",&test_lmvm,&flg);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n---- Elastic-Plastic Torsion Problem -----\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"mx: %D     my: %D   \n\n",mx,my); CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"mx: %D     my: %D   \n\n",mx,my);CHKERRQ(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
 
@@ -152,8 +152,8 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
-  ierr = TaoSolve(tao); CHKERRQ(ierr);
-  
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
+
   /* Test the LMVM matrix */
   if (test_lmvm) {
     ierr = TaoGetKSP(tao, &ksp);CHKERRQ(ierr);
@@ -439,7 +439,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H,Mat Hpre, void *ptr)
 
   /* Initialize Hessian entries and work vector to zero */
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(H); CHKERRQ(ierr);}
+  if (assembled){ierr = MatZeroEntries(H);CHKERRQ(ierr);}
 
   ierr = VecSet(user->s, zero);CHKERRQ(ierr);
 
@@ -632,15 +632,15 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
    test:
       suffix: 3
       args: -tao_smonitor -tao_type bntr -tao_gatol 1.e-4 -my_tao_mf -tao_test_hessian
-      
+
    test:
      suffix: 4
      args: -tao_smonitor -tao_gatol 1e-3 -tao_type bqnls
-     
+
    test:
      suffix: 5
      args: -tao_smonitor -tao_gatol 1e-3 -tao_type blmvm
-     
+
    test:
      suffix: 6
      args: -tao_smonitor -tao_gatol 1e-3 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1

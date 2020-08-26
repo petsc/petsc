@@ -6,7 +6,7 @@
 #include <petsc/finclude/petscsys.h>
       use petscsys
       implicit none
-      
+
       PetscErrorCode ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -130,7 +130,3 @@
  10   continue
       return
       end
-
-
-
-

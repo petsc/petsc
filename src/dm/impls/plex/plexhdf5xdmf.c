@@ -74,7 +74,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"DMPlex HDF5/XDMF Loader Options","PetscViewer");CHKERRQ(ierr);
   ierr = PetscOptionsString("-dm_plex_hdf5_topology_path","HDF5 path of topology dataset",NULL,topo_path,topo_path,sizeof(topo_path),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-dm_plex_hdf5_geometry_path","HDF5 path to geometry dataset",NULL,geom_path,geom_path,sizeof(geom_path),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool(  "-dm_plex_hdf5_force_sequential","force sequential loading",NULL,seq,&seq,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_hdf5_force_sequential","force sequential loading",NULL,seq,&seq,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = SplitPath_Private(topo_path, topo_name);CHKERRQ(ierr);
@@ -116,13 +116,12 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   numVertices /= spatialDim;
   NVertices /= spatialDim;
 
-  ierr = PetscInfo4(NULL, "Loaded mesh dimensions: numCells %d numCorners %d numVertices %d spatialDim %d\n", numCells, numCorners, numVertices, spatialDim);CHKERRQ(ierr);
-
+  ierr = PetscInfo4(NULL, "Loaded mesh dimensions: numCells %D numCorners %D numVertices %D spatialDim %D\n", numCells, numCorners, numVertices, spatialDim);CHKERRQ(ierr);
   {
     const PetscScalar *coordinates_arr;
     PetscReal         *coordinates_arr_real;
     const PetscInt    *cells_arr;
-    PetscSF           sfVert=NULL;
+    PetscSF           sfVert = NULL;
     PetscInt          i;
 
     ierr = VecGetArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
@@ -143,7 +142,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     ierr = DMSetDimension(dm, spatialDim);CHKERRQ(ierr);
     ierr = DMPlexBuildFromCellListParallel(dm, numCells, numVertices, NVertices, numCorners, cells_arr, &sfVert);CHKERRQ(ierr);
     ierr = DMPlexInvertCells_XDMF_Private(dm);CHKERRQ(ierr);
-    ierr = DMPlexBuildCoordinatesFromCellListParallel( dm, spatialDim, sfVert, coordinates_arr_real);CHKERRQ(ierr);
+    ierr = DMPlexBuildCoordinatesFromCellListParallel(dm, spatialDim, sfVert, coordinates_arr_real);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISRestoreIndices(cells, &cells_arr);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);

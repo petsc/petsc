@@ -29,7 +29,7 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 
     } else if (format == PETSC_VIEWER_DEFAULT) {
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-      El::Print( *a->emat, "Elemental matrix (cyclic ordering)" );
+      El::Print( *a->emat, "Elemental matrix (cyclic ordering)");
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       if (A->factortype == MAT_FACTOR_NONE){
         Mat Adense;
@@ -122,7 +122,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         P2RO(A,1,cols[j],&crank,&cidx);
         RO2E(A,1,crank,cidx,&ecol);
         if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
-        if (!a->emat->IsLocal(erow,ecol) ){ /* off-proc entry */
+        if (!a->emat->IsLocal(erow,ecol)){ /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
           if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
@@ -138,7 +138,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
     }
 
     /* printf("numQueues=%d\n",numQueues); */
-    a->emat->Reserve( numQueues );
+    a->emat->Reserve( numQueues);
     for (i=0; i<nr; i++) {
       if (rows[i] < 0) continue;
       P2RO(A,0,rows[i],&rrank,&ridx);
@@ -147,9 +147,9 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         if (cols[j] < 0) continue;
         P2RO(A,1,cols[j],&crank,&cidx);
         RO2E(A,1,crank,cidx,&ecol);
-        if ( !a->emat->IsLocal(erow,ecol) ) { /*off-proc entry*/
+        if (!a->emat->IsLocal(erow,ecol)) { /*off-proc entry*/
           /* printf("Queueing remotely update of (%d,%d)\n",erow,ecol); */
-          a->emat->QueueUpdate( erow, ecol, vals[i*nc+j] );
+          a->emat->QueueUpdate( erow, ecol, vals[i*nc+j]);
         }
       }
     }
@@ -164,7 +164,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         P2RO(A,0,rows[i],&rrank,&ridx);
         RO2E(A,0,rrank,ridx,&erow);
         if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
-        if (!a->emat->IsLocal(erow,ecol) ){ /* off-proc entry */
+        if (!a->emat->IsLocal(erow,ecol)){ /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
           if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
@@ -180,7 +180,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
     }
 
     /* printf("numQueues=%d\n",numQueues); */
-    a->emat->Reserve( numQueues );
+    a->emat->Reserve( numQueues);
     for (j=0; j<nc; j++) {
       if (cols[j] < 0) continue;
       P2RO(A,1,cols[j],&crank,&cidx);
@@ -190,9 +190,9 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         if (rows[i] < 0) continue;
         P2RO(A,0,rows[i],&rrank,&ridx);
         RO2E(A,0,rrank,ridx,&erow);
-        if ( !a->emat->IsLocal(erow,ecol) ) { /*off-proc entry*/
+        if (!a->emat->IsLocal(erow,ecol)) { /*off-proc entry*/
           /* printf("Queueing remotely update of (%d,%d)\n",erow,ecol); */
-          a->emat->QueueUpdate( erow, ecol, vals[i+j*nr] );
+          a->emat->QueueUpdate( erow, ecol, vals[i+j*nr]);
         }
       }
     }

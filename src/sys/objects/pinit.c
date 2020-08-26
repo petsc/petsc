@@ -876,7 +876,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
 
-  /* CHKERRQ can be used from now */
+  /*CHKERRQ can be used from now */
   PetscErrorHandlingInitialized = PETSC_TRUE;
 
   /* on Windows - set printf to default to printing 2 digit exponents */
@@ -1109,7 +1109,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   flg = PETSC_TRUE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewfromoptions",&flg,NULL);CHKERRQ(ierr);
-  if (!flg) {ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE); CHKERRQ(ierr);}
+  if (!flg) {ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE);CHKERRQ(ierr);}
 
 #if defined(PETSC_HAVE_ADIOS)
   ierr = adios_init_noxml(PETSC_COMM_WORLD);CHKERRQ(ierr);

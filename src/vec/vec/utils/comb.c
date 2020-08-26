@@ -530,7 +530,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
    VecNormEnd - Ends a split phase norm computation.
 
    Input Parameters:
-+  x - the first vector 
++  x - the first vector
 .  ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
 -  result - where the result will go
 
@@ -551,7 +551,7 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   MPI_Comm            comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);  
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   ierr = PetscSplitReductionEnd(sr);CHKERRQ(ierr);

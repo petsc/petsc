@@ -2,8 +2,8 @@
 /*@C
    MatCreateMPIAIJMKL - Creates a sparse parallel matrix whose local
    portions are stored as SEQAIJMKL matrices (a matrix class that inherits
-   from SEQAIJ but uses some operations provided by Intel MKL).  The same 
-   guidelines that apply to MPIAIJ matrices for preallocating the matrix 
+   from SEQAIJ but uses some operations provided by Intel MKL).  The same
+   guidelines that apply to MPIAIJ matrices for preallocating the matrix
    storage apply here as well.
 
       Collective
@@ -151,4 +151,3 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJMKL(Mat A)
 
 .seealso: MatCreateMPIAIJMKL(), MATSEQAIJMKL, MATMPIAIJMKL
 M*/
-

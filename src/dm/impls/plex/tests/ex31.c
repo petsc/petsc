@@ -3,7 +3,7 @@ static char FILENAME[] = "ex31.c";
 
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
-#include "petscsf.h" 
+#include "petscsf.h"
 
 
 typedef struct {
@@ -12,7 +12,7 @@ typedef struct {
   PetscBool interpolate;                  /* Interpolate mesh */
   PetscBool parallel;                     /* Use ParMetis or Metis */
   PetscBool useInitialGuess;              /* Only active when in parallel, uses RefineKway of ParMetis */
-  PetscInt  entityDepth;                  /* depth of the entities to rebalance ( 0 => vertices ) */
+  PetscInt  entityDepth;                  /* depth of the entities to rebalance ( 0 => vertices) */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -29,7 +29,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->useInitialGuess = PETSC_FALSE;
   options->entityDepth     = 0;
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-entity_depth", "Depth of the entities to rebalance ( 0 => vertices )", FILENAME, options->entityDepth, &options->entityDepth, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-entity_depth", "Depth of the entities to rebalance (0 => vertices)", FILENAME, options->entityDepth, &options->entityDepth, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", FILENAME, options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   if (options->dim > 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "dimension set to %d, must be <= 3", options->dim);
   ierr = PetscOptionsBool("-simplex", "Use simplices if true, otherwise hexes", FILENAME, options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
@@ -172,4 +172,3 @@ int main(int argc, char **argv)
     args: -faces 2,3,4 -interpolate -entity_depth 0 -parallel FALSE -use_initial_guess FALSE
 
 TEST*/
-

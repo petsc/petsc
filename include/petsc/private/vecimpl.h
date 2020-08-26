@@ -49,7 +49,7 @@ struct _VecOps {
   PetscErrorCode (*max)(Vec,PetscInt*,PetscReal*);      /* z = max(x); idx=index of max(x) */
   PetscErrorCode (*min)(Vec,PetscInt*,PetscReal*);      /* z = min(x); idx=index of min(x) */
   PetscErrorCode (*setrandom)(Vec,PetscRandom);         /* set y[j] = random numbers */
-  PetscErrorCode (*setoption)(Vec,VecOption,PetscBool );
+  PetscErrorCode (*setoption)(Vec,VecOption,PetscBool);
   PetscErrorCode (*setvaluesblocked)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*destroy)(Vec);
   PetscErrorCode (*view)(Vec,PetscViewer);
@@ -300,7 +300,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, Pets
 #define VecCheckSameSize(x,ar1,y,ar2) do { \
     if ((x)->map->N != (y)->map->N) SETERRQ4(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths parameter # %d global size %D != parameter # %d global size %D", ar1,(x)->map->N, ar2,(y)->map->N); \
     VecCheckSameLocalSize(x,ar1,y,ar2); \
-  } while(0)
+  } while (0)
 
 #define VecCheckLocalSize(x,ar1,n) do { \
     if ((x)->map->n != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect vector local size: parameter # %d local size %D != %D",ar1,(x)->map->n,n); \

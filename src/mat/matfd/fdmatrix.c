@@ -221,7 +221,7 @@ PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring matfd,PetscInt brows,Pets
 
    Level: beginner
 
-   Notes: When the coloring type is IS_COLORING_LOCAL the coloring is in the local ordering of the unknowns. 
+   Notes: When the coloring type is IS_COLORING_LOCAL the coloring is in the local ordering of the unknowns.
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy()
 @*/

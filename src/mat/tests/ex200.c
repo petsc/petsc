@@ -16,7 +16,7 @@ int main(int argc,char **argv)
    /* Test set options prefix with the string obtained from get options prefix */
    ierr = PetscObjectGetOptionsPrefix((PetscObject)A,&pfx);CHKERRQ(ierr);
    ierr = MatSetOptionsPrefix(B, pfx);CHKERRQ(ierr);
-   ierr = MatDestroy(&A); CHKERRQ(ierr);
+   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;

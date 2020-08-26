@@ -116,7 +116,7 @@ PetscErrorCode FormFunction_Dummy(DM networkdm,Vec localX, Vec localF,PetscInt n
 
   for (i=0; i<nv; i++) {
     ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
-    if(ghostvtex) continue;
+    if (ghostvtex) continue;
 
     ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumVariables(networkdm,vtx[i],&nvar);CHKERRQ(ierr);

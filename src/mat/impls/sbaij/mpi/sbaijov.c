@@ -20,7 +20,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
   PetscBT        table;
   PetscInt       *ai,brow,nz,nis,l,nmax,nstages_local,nstages,max_no,pos;
   const PetscInt *idx;
-  PetscBool      flg; 
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(is_max,&is_new);CHKERRQ(ierr);
@@ -564,5 +564,3 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C,PetscInt *data,Pet
   ierr = PetscBTDestroy(&table0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

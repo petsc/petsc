@@ -239,7 +239,7 @@ PetscErrorCode MatCreateSubMatrices_SMF(Mat A,PetscInt n, IS *irow,IS *icol,MatR
     ierr = PetscCalloc1(n+1,B);CHKERRQ(ierr);
   }
 
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ierr = MatCreateSubMatrix_SMF(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

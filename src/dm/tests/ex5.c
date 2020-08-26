@@ -1,4 +1,4 @@
-/* 
+/*
   Test DMCreateMatrix() for structure_only
 */
 

@@ -68,7 +68,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 #if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
   int                   *assignment;
 #else
-  short                 *assignment;  
+  short                 *assignment;
 #endif
   double                eigtol;
   long                  seed;

@@ -8,7 +8,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
   PetscScalar    value[3],*vals;
   PetscInt       i,col[3],n=5,bs=1;
-  
+
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);

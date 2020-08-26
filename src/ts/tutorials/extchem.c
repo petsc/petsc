@@ -46,7 +46,7 @@ struct _User {
   int       Nreac;
   PetscReal Tini;
   double    *tchemwork;
-  double    *Jdense;        /* Dense array workspace where Tchem computes the Jacobian */ 
+  double    *Jdense;        /* Dense array workspace where Tchem computes the Jacobian */
   PetscInt  *rows;
   char      **snames;
 };

@@ -109,7 +109,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems
     } else { \
       MUMPS_c(&mumps->id); \
     } \
-  } while(0)
+  } while (0)
 #else
 #define PetscMUMPS_c(mumps) \
   do { MUMPS_c(&mumps->id); } while (0)
@@ -1701,7 +1701,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
       } else if (mumps->id.INFOG(1) == -13) {
         ierr = PetscInfo2(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, cannot allocate required memory %d megabytes\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         F->factorerrortype = MAT_FACTOR_OUTMEMORY;
-      } else if (mumps->id.INFOG(1) == -8 || mumps->id.INFOG(1) == -9 || (-16 < mumps->id.INFOG(1) && mumps->id.INFOG(1) < -10) ) {
+      } else if (mumps->id.INFOG(1) == -8 || mumps->id.INFOG(1) == -9 || (-16 < mumps->id.INFOG(1) && mumps->id.INFOG(1) < -10)) {
         ierr = PetscInfo2(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d, problem with workarray \n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         F->factorerrortype = MAT_FACTOR_OUTMEMORY;
       } else {

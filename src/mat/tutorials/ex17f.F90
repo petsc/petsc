@@ -28,7 +28,7 @@ implicit none
     print*,'PetscInitialize failed'
     stop
   endif
-      
+
   call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
   call MPI_Comm_size(PETSC_COMM_WORLD,sizef,ierr);CHKERRA(ierr)
 
@@ -37,7 +37,7 @@ implicit none
 
   call PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-emptyranks",emptyranks,nemptyranks,set,ierr);CHKERRA(ierr)
   call PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-bigranks",bigranks,nbigranks,set,ierr);CHKERRA(ierr)
-  
+
   m = 1
   do i=1,nemptyranks
     if (rank == emptyranks(i)) m = 0
@@ -61,11 +61,11 @@ implicit none
 
   call MatGetSize(A,PETSC_NULL_INTEGER,N,ierr);CHKERRA(ierr)
   call MatGetOwnershipRange(A,rstart,rend,ierr);CHKERRA(ierr)
-  
+
   allocate(cols(0:3))
   allocate(vals(0:3))
-  do i=rstart,rend-1 
-    
+  do i=rstart,rend-1
+
     cols = (/mod((i+N-1),N),i,mod((i+1),N)/)
     vals = [1.0,1.0,1.0]
     call MatSetValues(A,one,i,three,cols,vals,INSERT_VALUES,ierr);CHKERRA(ierr)
@@ -85,7 +85,7 @@ implicit none
   call MatPartitioningDestroy(part,ierr);CHKERRA(ierr)
   call MatDestroy(A,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)
-  
+
 end program
 
 

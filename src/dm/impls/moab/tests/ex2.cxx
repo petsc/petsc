@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   }
 
   if (user.nfields) {
-    for(i=0; i<user.nfields; i++) {
+    for (i=0; i<user.nfields; i++) {
       ierr = PetscFree(user.fieldnames[i]);CHKERRQ(ierr);
     }
   }

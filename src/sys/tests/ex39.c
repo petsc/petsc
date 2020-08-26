@@ -8,7 +8,7 @@ PetscReal zero = 0;
 #define CALL(call) do { \
     PetscErrorCode _ierr;                                               \
     _ierr = PetscPrintf(PETSC_COMM_WORLD,"%s -> %s\n",#call,(call)?"True":"False");CHKERRQ(_ierr); \
-  } while(0);
+  } while (0);
 
 int main(int argc, char **argv) {
 

@@ -47,7 +47,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
     else         {ierr = PetscObjectSetName((PetscObject) dm, "hexahedral");CHKERRQ(ierr);}
     break;
   default:
-    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
+    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %D", dim);
   }
   if (rank) {
     PetscInt numPoints[2] = {0, 0};
@@ -99,7 +99,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
       }
       break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
+      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %D", dim);
     }
   }
   *newdm = dm;
@@ -530,7 +530,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(MPI_Comm comm, PetscI
   switch (dim) {
   case 2: ierr = DMPlexCreateSquareBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);break;
   case 3: ierr = DMPlexCreateCubeBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);break;
-  default: SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+  default: SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %D", dim);
   }
   ierr = DMPlexGenerate(boundary, NULL, interpolate, dm);CHKERRQ(ierr);
   ierr = DMDestroy(&boundary);CHKERRQ(ierr);
@@ -579,7 +579,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
     faceMarkerLeft   = 6;
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %d not supported",dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",dim);
     break;
   }
   ierr = PetscOptionsGetBool(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
@@ -665,10 +665,10 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
     for (fz = 0; fz < numZEdges; ++fz) {
       for (fy = 0; fy < numYEdges; ++fy) {
         for (fx = 0; fx < numXVertices; ++fx) {
-          PetscInt face    = firstXFace + (fz*numYEdges+fy)*numXVertices + fx;
-          PetscInt edgeL   = firstZEdge + (  fy*                 numXVertices+fx)*numZEdges + fz;
+          PetscInt face    = firstXFace + (fz*numYEdges+fy)     *numXVertices+fx;
+          PetscInt edgeL   = firstZEdge + (fy                   *numXVertices+fx)*numZEdges + fz;
           PetscInt edgeR   = firstZEdge + (((fy+1)%numYVertices)*numXVertices+fx)*numZEdges + fz;
-          PetscInt edgeB   = firstYEdge + (  fz*                 numXVertices+fx)*numYEdges + fy;
+          PetscInt edgeB   = firstYEdge + (fz                   *numXVertices+fx)*numYEdges + fy;
           PetscInt edgeT   = firstYEdge + (((fz+1)%numZVertices)*numXVertices+fx)*numYEdges + fy;
           PetscInt ornt[4] = {0, 0, -2, -2};
           PetscInt cone[4];
@@ -697,9 +697,9 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
       for (fx = 0; fx < numXEdges; ++fx) {
         for (fy = 0; fy < numYVertices; ++fy) {
           PetscInt face    = firstYFace + (fz*numXEdges+fx)*numYVertices + fy;
-          PetscInt edgeL   = firstZEdge + (fy*numXVertices+  fx                 )*numZEdges + fz;
+          PetscInt edgeL   = firstZEdge + (fy*numXVertices+  fx)*numZEdges + fz;
           PetscInt edgeR   = firstZEdge + (fy*numXVertices+((fx+1)%numXVertices))*numZEdges + fz;
-          PetscInt edgeB   = firstXEdge + (  fz                 *numYVertices+fy)*numXEdges + fx;
+          PetscInt edgeB   = firstXEdge + (fz                   *numYVertices+fy)*numXEdges + fx;
           PetscInt edgeT   = firstXEdge + (((fz+1)%numZVertices)*numYVertices+fy)*numXEdges + fx;
           PetscInt ornt[4] = {0, 0, -2, -2};
           PetscInt cone[4];
@@ -728,9 +728,9 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
       for (fx = 0; fx < numXEdges; ++fx) {
         for (fz = 0; fz < numZVertices; fz++) {
           PetscInt face    = firstZFace + (fy*numXEdges+fx)*numZVertices + fz;
-          PetscInt edgeL   = firstYEdge + (fz*numXVertices+  fx                 )*numYEdges + fy;
+          PetscInt edgeL   = firstYEdge + (fz*numXVertices+  fx)*numYEdges + fy;
           PetscInt edgeR   = firstYEdge + (fz*numXVertices+((fx+1)%numXVertices))*numYEdges + fy;
-          PetscInt edgeB   = firstXEdge + (fz*numYVertices+  fy                 )*numXEdges + fx;
+          PetscInt edgeB   = firstXEdge + (fz*numYVertices+  fy)*numXEdges + fx;
           PetscInt edgeT   = firstXEdge + (fz*numYVertices+((fy+1)%numYVertices))*numXEdges + fx;
           PetscInt ornt[4] = {0, 0, -2, -2};
           PetscInt cone[4];
@@ -764,7 +764,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
       for (vx = 0; vx < numXVertices; vx++) {
         for (ez = 0; ez < numZEdges; ez++) {
           const PetscInt edge    = firstZEdge  + (vy*numXVertices+vx)*numZEdges + ez;
-          const PetscInt vertexB = firstVertex + (  ez                 *numYVertices+vy)*numXVertices + vx;
+          const PetscInt vertexB = firstVertex + (ez                   *numYVertices+vy)*numXVertices + vx;
           const PetscInt vertexT = firstVertex + (((ez+1)%numZVertices)*numYVertices+vy)*numXVertices + vx;
           PetscInt       cone[2];
 
@@ -958,7 +958,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(MPI_Comm comm, PetscIn
   switch (dim) {
   case 2: {ierr = DMPlexCreateCubeMesh_Internal(*dm, lower, upper, faces, periodicity[0], periodicity[1], DM_BOUNDARY_NONE);CHKERRQ(ierr);break;}
   case 3: {ierr = DMPlexCreateCubeMesh_Internal(*dm, lower, upper, faces, periodicity[0], periodicity[1], periodicity[2]);CHKERRQ(ierr);break;}
-  default: SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+  default: SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %D", dim);
   }
   if (periodicity[0] == DM_BOUNDARY_PERIODIC || periodicity[0] == DM_BOUNDARY_TWIST ||
       periodicity[1] == DM_BOUNDARY_PERIODIC || periodicity[1] == DM_BOUNDARY_TWIST ||
@@ -2937,7 +2937,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   for (v = 0; v < numVertices;    ++v) {vertexOwner[v].index = -1;         vertexOwner[v].rank = -1;}
   ierr = PetscSFReduceBegin(sfVert, MPIU_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(sfVert, MPIU_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
-  for (v = 0; v < numVertices;    ++v) if (vertexOwner[v].rank < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global vertex %d on rank %d was unclaimed", v + vrange[rank], rank);
+  for (v = 0; v < numVertices;    ++v) if (vertexOwner[v].rank < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global vertex %D on rank %d was unclaimed", v + vrange[rank], rank);
   ierr = PetscSFBcastBegin(sfVert, MPIU_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sfVert, MPIU_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
   for (v = 0; v < numVerticesAdj; ++v) if (vertexLocal[v].rank != rank) ++numVerticesGhost;
@@ -3409,7 +3409,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
-  if (dimEmbed < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Embedding dimension %d cannot be less than intrinsic dimension %d",dimEmbed,dim);
+  if (dimEmbed < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Embedding dimension %D cannot be less than intrinsic dimension %d",dimEmbed,dim);
   for (d = 0; d <= depth; ++d) pEnd += numPoints[d];
   ierr = DMPlexSetChart(dm, pStart, pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
@@ -3418,7 +3418,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
       firstVertex = p - pStart;
     }
   }
-  if (firstVertex < 0 && numPoints[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected %d vertices but could not find any", numPoints[0]);
+  if (firstVertex < 0 && numPoints[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected %D vertices but could not find any", numPoints[0]);
   ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
   for (p = pStart, off = 0; p < pEnd; off += coneSize[p-pStart], ++p) {
     ierr = DMPlexSetCone(dm, p, &cones[off]);CHKERRQ(ierr);

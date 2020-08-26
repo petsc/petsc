@@ -182,7 +182,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
        coefficients we use in the orthogonalization process,because of the shift */
 
     /* Do some local twiddling to allow for a single reduction */
-    for(i=0;i<loc_it+1;i++){
+    for (i=0;i<loc_it+1;i++){
       redux[i] = VEC_VV(i);
     }
     redux[loc_it+1] = ZVEC(loc_it);
@@ -233,7 +233,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /* Compute the norm of the un-normalized new direction using the rearranged formula
        Note that these are shifted ("barred") quantities */
-    for(k=0;k<=loc_it;k++) tt -= ((PetscReal)(PetscAbsScalar(lhh[k]) * PetscAbsScalar(lhh[k])));
+    for (k=0;k<=loc_it;k++) tt -= ((PetscReal)(PetscAbsScalar(lhh[k]) * PetscAbsScalar(lhh[k])));
     /* On AVX512 this is accumulating roundoff errors for eg: tt=-2.22045e-16 */
     if ((tt < 0.0) && tt > -PETSC_SMALL) tt = 0.0 ;
     if (tt < 0.0) {

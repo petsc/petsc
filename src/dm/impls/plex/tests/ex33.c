@@ -154,7 +154,7 @@ static PetscErrorCode DMCreateCoordinateDisc(DM dm, PetscBool isSimplex)
     Vec     coordinates, coordinatesNew;
 
     /* Have to clear out previous coordinate structures */
-    ierr = DMGetCoordinates(dm, &coordinates); CHKERRQ(ierr);
+    ierr = DMGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
     ierr = DMSetCoordinateField(dm, NULL);CHKERRQ(ierr);
     ierr = DMSetLocalSection(cdm, NULL);CHKERRQ(ierr);
     ierr = DMSetGlobalSection(cdm, NULL);CHKERRQ(ierr);
@@ -165,9 +165,9 @@ static PetscErrorCode DMCreateCoordinateDisc(DM dm, PetscBool isSimplex)
     ierr = DMSetField(cdmLinear, 0, NULL, (PetscObject) feLinear);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&feLinear);CHKERRQ(ierr);
     ierr = DMCreateDS(cdmLinear);CHKERRQ(ierr);
-    ierr = DMCreateInterpolation(cdmLinear, cdm, &In, NULL); CHKERRQ(ierr);
-    ierr = DMCreateGlobalVector(cdm, &coordinatesNew); CHKERRQ(ierr);
-    ierr = MatInterpolate(In, coordinates, coordinatesNew); CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdmLinear, cdm, &In, NULL);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(cdm, &coordinatesNew);CHKERRQ(ierr);
+    ierr = MatInterpolate(In, coordinates, coordinatesNew);CHKERRQ(ierr);
     ierr = MatDestroy(&In);CHKERRQ(ierr);
     ierr = DMSetCoordinates(dm, coordinatesNew);CHKERRQ(ierr);
     ierr = VecViewFromOptions(coordinatesNew, NULL, "-coords_view");CHKERRQ(ierr);

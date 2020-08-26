@@ -59,7 +59,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
     ncols_recv_offsets[i+1] = ncols_recv[i]+ncols_recv_offsets[i];
   }
   Ncols_send = 0;
-  for(i=0; i<nlrows_mat; i++){
+  for (i=0; i<nlrows_mat; i++){
     Ncols_send += ncols_send[i];
   }
   ierr = PetscCalloc1(Ncols_recv,&iremote);CHKERRQ(ierr);
@@ -109,15 +109,15 @@ static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols,
   if (a->useedgeweights) {ierr = PetscCalloc1(rnclos,&svalues);CHKERRQ(ierr);}
   ierr = PetscCalloc1(nlrows_is+1,&sxadj);CHKERRQ(ierr);
   rnclos = 0;
-  for(i=0; i<nlrows_is; i++){
-    for(j=ncols_recv_offsets[i]; j<ncols_recv_offsets[i+1]; j++){
+  for (i=0; i<nlrows_is; i++){
+    for (j=ncols_recv_offsets[i]; j<ncols_recv_offsets[i+1]; j++){
       if (adjncy_recv[j]<0) continue;
       sadjncy[rnclos] = adjncy_recv[j];
       if (a->useedgeweights) svalues[rnclos] = values_recv[j];
       rnclos++;
     }
   }
-  for(i=0; i<nlrows_is; i++){
+  for (i=0; i<nlrows_is; i++){
     sxadj[i+1] = sxadj[i]+ncols_recv[i];
   }
   if (sadj_xadj)  { *sadj_xadj = sxadj;} else    { ierr = PetscFree(sxadj);CHKERRQ(ierr);}
@@ -147,7 +147,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
   /*
    * Estimate a maximum number for allocating memory
    */
-  for(i=0; i<n; i++){
+  for (i=0; i<n; i++){
     ierr = ISGetLocalSize(irow[i],&irow_n);CHKERRQ(ierr);
     ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
     nindx = nindx>(irow_n+icol_n)? nindx:(irow_n+icol_n);

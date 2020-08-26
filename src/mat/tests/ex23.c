@@ -556,7 +556,7 @@ int main(int argc,char **args)
           ierr = MatGetOwnershipRanges(A,&sts);CHKERRQ(ierr);
           switch (diff) {
           case 1: /* inverted layout by processes */
-	    in = 1;
+            in = 1;
             st = sts[size - rank - 1];
             en = sts[size - rank];
             nl = en - st;

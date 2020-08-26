@@ -95,7 +95,7 @@ int main(int argc,char **argv)
 }
 
 /*
-   Defines the RHS function that is passed to the time-integrator. 
+   Defines the RHS function that is passed to the time-integrator.
 
 
 
@@ -125,5 +125,3 @@ PetscErrorCode TSFunctionI(TS ts,PetscReal t,Vec UV,Vec UVdot,Vec F,void *actx)
   ierr = (*ctx->F)(t,UV,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

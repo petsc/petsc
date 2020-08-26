@@ -61,7 +61,7 @@ static PetscErrorCode PCSetUp_CHOWILUVIENNACL(PC pc)
 #else
     ierr      = MatViennaCLCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct = (Mat_SeqAIJViennaCL*)(pc->pmat->spptr);
-    
+
     viennacl::linalg::chow_patel_tag ilu_tag;
     ViennaCLAIJMatrix *mat = (ViennaCLAIJMatrix*)gpustruct->mat;
     ilu->CHOWILUVIENNACL = new viennacl::linalg::chow_patel_ilu_precond<viennacl::compressed_matrix<PetscScalar> >(*mat, ilu_tag);
@@ -209,4 +209,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_CHOWILUVIENNACL(PC pc)
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
-

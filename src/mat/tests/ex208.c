@@ -16,7 +16,7 @@ int main(int argc,char **args)
   nsubcomm = size;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nsubcomm",&nsubcomm,NULL);CHKERRQ(ierr);
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A); CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A, MATAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   if (!rank) {
     for (i=0;i<size*PetscMin(m,n);i++) {
-      ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

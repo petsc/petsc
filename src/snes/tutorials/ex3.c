@@ -762,5 +762,5 @@ PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
       suffix: 12
       args: -view_initial
       filter: grep -v "type:"
- 
+
 TEST*/

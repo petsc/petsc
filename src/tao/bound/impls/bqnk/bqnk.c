@@ -184,7 +184,7 @@ static PetscErrorCode TaoDestroy_BQNK(Tao tao)
   TAO_BNK        *bnk = (TAO_BNK*)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
   ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
   TAO_BNK        *bnk;
   TAO_BQNK       *bqnk;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, "tao_bqnk_");CHKERRQ(ierr);
@@ -207,16 +207,16 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
   tao->ops->destroy = TaoDestroy_BQNK;
   tao->ops->view = TaoView_BQNK;
   tao->ops->setup = TaoSetUp_BQNK;
-  
+
   bnk = (TAO_BNK *)tao->data;
   bnk->computehessian = TaoBQNKComputeHessian;
   bnk->computestep = TaoBQNKComputeStep;
   bnk->init_type = BNK_INIT_DIRECTION;
-  
+
   ierr = PetscNewLog(tao,&bqnk);CHKERRQ(ierr);
   bnk->ctx = (void*)bqnk;
   bqnk->is_spd = PETSC_TRUE;
-  
+
   ierr = MatCreate(PetscObjectComm((PetscObject)tao), &bqnk->B);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)bqnk->B, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(bqnk->B, "tao_bqnk_");CHKERRQ(ierr);
@@ -230,7 +230,7 @@ PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B)
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscErrorCode ierr;
   PetscBool      is_bqnls, is_bqnkls, is_bqnktr, is_bqnktl;
-  
+
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)tao, TAOBQNLS, &is_bqnls);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)tao, TAOBQNKLS, &is_bqnkls);CHKERRQ(ierr);

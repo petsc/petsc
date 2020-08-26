@@ -507,7 +507,7 @@ int main(int argc,char **argv)
   }
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
-  ierr = TaoSolve(tao); CHKERRQ(ierr);
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   ierr = VecView(P,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free TAO data structures */

@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&tsrhs);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&U);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,tsrhs,TSFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);  
+  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
   ctx.f = f;
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&ctx.snes);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
 }
 
 /*
-   Defines the RHS function that is passed to the time-integrator. 
+   Defines the RHS function that is passed to the time-integrator.
 
    Solves F(U,V) for V and then computes f(U,V)
 */
@@ -114,6 +114,6 @@ PetscErrorCode SNESFunction(SNES snes,Vec V,Vec F,void *actx)
 /*TEST
 
     test:
-      args:  -ts_monitor -ts_view 
+      args:  -ts_monitor -ts_view
 
 TEST*/

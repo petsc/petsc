@@ -18,7 +18,7 @@ Input parameters include:\n";
        mu = 10^6.
    This is a nonlinear equation.
 
-   This is a copy and modification of ex20.c to exactly match a test 
+   This is a copy and modification of ex20.c to exactly match a test
    problem that comes with the Radau5 integrator package.
 
   ------------------------------------------------------------------------- */

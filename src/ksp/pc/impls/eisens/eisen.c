@@ -268,7 +268,7 @@ PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
 
    Input Parameters:
 +  pc - the preconditioner context
--  flg - PETSC_TRUE turns off diagonal scaling inside the algorithm  
+-  flg - PETSC_TRUE turns off diagonal scaling inside the algorithm
 
    Options Database Key:
 .  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatSetNoDiagonalScaling()

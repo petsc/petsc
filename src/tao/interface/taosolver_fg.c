@@ -340,7 +340,7 @@ $      func (Tao tao, Vec x, Vec f, void *ctx);
 PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(res,VEC_CLASSID,2);
@@ -351,7 +351,7 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
   tao->ls_res = res;
   tao->user_lsresP = ctx;
   tao->ops->computeresidual = func;
-  
+
   PetscFunctionReturn(0);
 }
 
