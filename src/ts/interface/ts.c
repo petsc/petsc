@@ -194,12 +194,23 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
   ierr = PetscOptionsName("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",&opt);CHKERRQ(ierr);
   if (opt) {
-    TSMonitorLGCtx ctx;
     PetscInt       howoften = 1;
+    DM             dm;
+    PetscBool      net;
 
     ierr = PetscOptionsInt("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
-    ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)dm,DMNETWORK,&net);CHKERRQ(ierr);
+    if (net) {
+      TSMonitorLGCtxNetwork ctx;
+      ierr = TSMonitorLGCtxNetworkCreate(ts,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorLGCtxNetworkSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxNetworkDestroy);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-ts_monitor_lg_solution_semilogy","Plot the solution with a semi-log axis","",ctx->semilogy,&ctx->semilogy,NULL);CHKERRQ(ierr);
+    } else {
+      TSMonitorLGCtx ctx;
+      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+    }
   }
 
   ierr = PetscOptionsName("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",&opt);CHKERRQ(ierr);
