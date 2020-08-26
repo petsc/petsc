@@ -2,7 +2,7 @@
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
 !   Concepts: TS^pseudo-timestepping
-!   Concepts: pseudo-timestepping
+!   Concepts: TS^pseudo-timestepping
 !   Concepts: TS^nonlinear problems
 !   Processors: 1
 !

@@ -4278,8 +4278,8 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 
 
    Options Database Keys:
-.  -snes_converged_reason - print reason for converged or diverged, also prints number of iterations
-.  -snes_converged_reason ::failed - only print reason and number of iterations when diverged
++  -snes_converged_reason - print reason for converged or diverged, also prints number of iterations
+-  -snes_converged_reason ::failed - only print reason and number of iterations when diverged
 
 
    Level: beginner

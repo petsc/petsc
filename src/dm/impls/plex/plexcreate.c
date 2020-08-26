@@ -1162,10 +1162,10 @@ PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], c
   The mesh created has prismatic cells, and the vertex ordering in the cone of the cell is that of the tensor prismatic cells. Not currently supported in Fortran.
 
   Options Database Keys:
--dm_plex_extrude_layers <k> - Sets the nubmer of layers k
--dm_plex_extrude_height <h> - Sets the height h of each layer
--dm_plex_extrude_order_height - If true, order cells by height first
--dm_plex_extrude_normal <n0,...,nd> - Sets the normal vector along which to extrude
++   -dm_plex_extrude_layers <k> - Sets the nubmer of layers k
+.   -dm_plex_extrude_height <h> - Sets the height h of each layer
+.   -dm_plex_extrude_order_height - If true, order cells by height first
+-   -dm_plex_extrude_normal <n0,...,nd> - Sets the normal vector along which to extrude
 
   Level: advanced
 

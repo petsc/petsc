@@ -487,7 +487,9 @@ PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F,MatInfoType flag,MatInfo *i
 }
 
 /*MC
-  MATSOLVERCHOLMOD = "cholmod" - A matrix type providing direct solvers (Cholesky) for sequential matrices
+  MATSOLVERCHOLMOD
+
+  A matrix type providing direct solvers (Cholesky) for sequential matrices
   via the external package CHOLMOD.
 
   Use ./configure --download-suitesparse to install PETSc to use CHOLMOD
@@ -511,7 +513,7 @@ PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F,MatInfoType flag,MatInfo *i
 . -mat_cholmod_nrelax <4>          - 3 size_t supernodal relaxed amalgamation parameters (None)
 . -mat_cholmod_prefer_upper <TRUE> - Work with upper triangular form (faster when using fill-reducing ordering, slower in natural ordering) (None)
 . -mat_cholmod_print <3>           - Verbosity level (None)
-. -mat_ordering_type internal      - Use the ordering provided by Cholmod
+- -mat_ordering_type internal      - Use the ordering provided by Cholmod
 
    Level: beginner
 
