@@ -6,6 +6,11 @@
 #include <petscdm.h>
 PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
 
+/*
+   Contains the list of registered coarse space construction routines
+*/
+PetscFunctionList PCMGCoarseList = NULL;
+
 PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonConvergedReason *reason)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
@@ -138,7 +143,7 @@ PetscErrorCode PCReset_MG(PC pc)
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
   PetscErrorCode ierr;
-  PetscInt       i,n;
+  PetscInt       i,c,n;
 
   PetscFunctionBegin;
   if (mglevels) {
@@ -157,12 +162,16 @@ PetscErrorCode PCReset_MG(PC pc)
     ierr = VecDestroy(&mglevels[n-1]->b);CHKERRQ(ierr);
 
     for (i=0; i<n; i++) {
+      if (mglevels[i]->coarseSpace) for (c = 0; c < mg->Nc; ++c) {ierr = VecDestroy(&mglevels[i]->coarseSpace[c]);CHKERRQ(ierr);}
+      ierr = PetscFree(mglevels[i]->coarseSpace);CHKERRQ(ierr);
+      mglevels[i]->coarseSpace = NULL;
       ierr = MatDestroy(&mglevels[i]->A);CHKERRQ(ierr);
       if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
         ierr = KSPReset(mglevels[i]->smoothd);CHKERRQ(ierr);
       }
       ierr = KSPReset(mglevels[i]->smoothu);CHKERRQ(ierr);
     }
+    mg->Nc = 0;
   }
   PetscFunctionReturn(0);
 }
@@ -399,7 +408,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode   ierr;
   PetscInt         levels,cycles;
-  PetscBool        flg;
+  PetscBool        flg, flg2;
   PC_MG            *mg = (PC_MG*)pc->data;
   PC_MG_Levels     **mglevels;
   PCMGType         mgtype;
@@ -428,6 +437,12 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   if (flg) {
     ierr = PCMGSetGalerkin(pc,gtype);CHKERRQ(ierr);
   }
+  flg2 = PETSC_FALSE;
+  ierr = PetscOptionsBool("-pc_mg_adapt_interp","Adapt interpolation using some coarse space","PCMGSetAdaptInterpolation",PETSC_FALSE,&flg2,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = PCMGSetAdaptInterpolation(pc, flg2);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-pc_mg_adapt_interp_n","Size of the coarse space for adaptive interpolation","PCMGSetCoarseSpace",mg->Nc,&mg->Nc,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-pc_mg_adapt_interp_coarse_space","Type of coarse space: polynomial, harmonic, eigenvector, generalized_eigenvector","PCMGSetAdaptCoarseSpaceType",PCMGCoarseSpaceTypes,(PetscEnum)mg->coarseSpaceType,(PetscEnum*)&mg->coarseSpaceType,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_mg_mesp_monitor","Monitor the multilevel eigensolver","PCMGSetAdaptInterpolation",PETSC_FALSE,&mg->mespMonitor,&flg);CHKERRQ(ierr);
   flg = PETSC_FALSE;
   ierr = PetscOptionsBool("-pc_mg_distinct_smoothup","Create separate smoothup KSP and append the prefix _up","PCMGSetDistinctSmoothUp",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
@@ -484,12 +499,17 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 #endif
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  /* Check option consistency */
+  ierr = PCMGGetGalerkin(pc, &gtype);CHKERRQ(ierr);
+  ierr = PCMGGetAdaptInterpolation(pc, &flg);CHKERRQ(ierr);
+  if (flg && (gtype >= PC_MG_GALERKIN_NONE)) SETERRQ(PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_INCOMP, "Must use Galerkin coarse operators when adapting the interpolator");
   PetscFunctionReturn(0);
 }
 
 const char *const PCMGTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","PCMGType","PC_MG",NULL};
 const char *const PCMGCycleTypes[] = {"invalid","v","w","PCMGCycleType","PC_MG_CYCLE",NULL};
 const char *const PCMGGalerkinTypes[] = {"both","pmat","mat","none","external","PCMGGalerkinType","PC_MG_GALERKIN",NULL};
+const char *const PCMGCoarseSpaceTypes[] = {"polynomial","harmonic","eigenvector","generalized_eigenvector","PCMGCoarseSpaceType","PCMG_POLYNOMIAL",NULL};
 
 #include <petscdraw.h>
 PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
@@ -577,7 +597,6 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include <petsc/private/dmimpl.h>
 #include <petsc/private/kspimpl.h>
 
 /*
@@ -768,6 +787,20 @@ PetscErrorCode PCSetUp_MG(PC pc)
       dB = B;
     }
   }
+
+
+  /* Adapt interpolation matrices */
+  if (mg->adaptInterpolation) {
+    mg->Nc = mg->Nc < 0 ? 6 : mg->Nc; /* Default to 6 modes */
+    for (i = 0; i < n; ++i) {
+      ierr = PCMGComputeCoarseSpace_Internal(pc, i, mg->coarseSpaceType, mg->Nc, !i ? NULL : mglevels[i-1]->coarseSpace, &mglevels[i]->coarseSpace);CHKERRQ(ierr);
+      if (i) {ierr = PCMGAdaptInterpolator_Internal(pc, i, mglevels[i-1]->smoothu, mglevels[i]->smoothu, mg->Nc, mglevels[i-1]->coarseSpace, mglevels[i]->coarseSpace);CHKERRQ(ierr);}
+    }
+    for (i = n-2; i > -1; --i) {
+      ierr = PCMGRecomputeLevelOperators_Internal(pc, i);CHKERRQ(ierr);
+    }
+  }
+
   if (needRestricts && pc->dm) {
     for (i=n-2; i>=0; i--) {
       DM  dmfine,dmcoarse;
@@ -1132,6 +1165,80 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PCMGGalerkinType  *galerkin)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PCMGSetAdaptInterpolation_MG(PC pc, PetscBool adapt)
+{
+  PC_MG *mg = (PC_MG *) pc->data;
+
+  PetscFunctionBegin;
+  mg->adaptInterpolation = adapt;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt)
+{
+  PC_MG *mg = (PC_MG *) pc->data;
+
+  PetscFunctionBegin;
+  *adapt = mg->adaptInterpolation;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PCMGSetAdaptInterpolation - Adapt the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
+
+  Logically Collective on PC
+
+  Input Parameters:
++ pc    - the multigrid context
+- adapt - flag for adaptation of the interpolator
+
+  Options Database Keys:
++ -pc_mg_adapt_interp                     - Turn on adaptation
+. -pc_mg_adapt_interp_n <int>             - The number of modes to use, should be divisible by dimension
+- -pc_mg_adapt_interp_coarse_space <type> - The type of coarse space: polynomial, harmonic, eigenvector, generalized_eigenvector
+
+  Level: intermediate
+
+.keywords: MG, set, Galerkin
+.seealso: PCMGGetAdaptInterpolation(), PCMGSetGalerkin()
+@*/
+PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  ierr = PetscTryMethod(pc,"PCMGSetAdaptInterpolation_C",(PC,PetscBool),(pc,adapt));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PCMGGetAdaptInterpolation - Get the flag to adapt the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
+
+  Not collective
+
+  Input Parameter:
+. pc    - the multigrid context
+
+  Output Parameter:
+. adapt - flag for adaptation of the interpolator
+
+  Level: intermediate
+
+.keywords: MG, set, Galerkin
+.seealso: PCMGSetAdaptInterpolation(), PCMGSetGalerkin()
+@*/
+PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidPointer(adapt, 2);
+  ierr = PetscUseMethod(pc,"PCMGGetAdaptInterpolation_C",(PC,PetscBool*),(pc,adapt));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    PCMGSetNumberSmooth - Sets the number of pre and post-smoothing steps to use
    on all levels.  Use PCMGDistinctSmoothUp() to create separate up and down smoothers if you want different numbers of
@@ -1262,6 +1369,75 @@ PetscErrorCode  PCGetCoarseOperators_MG(PC pc,PetscInt *num_levels,Mat *coarseOp
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PCMGRegisterCoarseSpaceConstructor -  Adds a method to the PCMG package for coarse space construction.
+
+  Not collective
+
+  Input Parameters:
++ name     - name of the constructor
+- function - constructor routine
+
+  Notes:
+  Calling sequence for the routine:
+$ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, const Vec initGuess[], Vec **coarseSp)
+$   pc        - The PC object
+$   l         - The multigrid level, 0 is the coarse level
+$   dm        - The DM for this level
+$   smooth    - The level smoother
+$   Nc        - The size of the coarse space
+$   initGuess - Basis for an initial guess for the space
+$   coarseSp  - A basis for the computed coarse space
+
+  Level: advanced
+
+.seealso: PCMGGetCoarseSpaceConstructor(), PCRegister()
+@*/
+PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCInitializePackage();CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PCMGCoarseList,name,function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PCMGGetCoarseSpaceConstructor -  Returns the given coarse space construction method.
+
+  Not collective
+
+  Input Parameter:
+. name     - name of the constructor
+
+  Output Parameter:
+. function - constructor routine
+
+  Notes:
+  Calling sequence for the routine:
+$ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, const Vec initGuess[], Vec **coarseSp)
+$   pc        - The PC object
+$   l         - The multigrid level, 0 is the coarse level
+$   dm        - The DM for this level
+$   smooth    - The level smoother
+$   Nc        - The size of the coarse space
+$   initGuess - Basis for an initial guess for the space
+$   coarseSp  - A basis for the computed coarse space
+
+  Level: advanced
+
+.seealso: PCMGRegisterCoarseSpaceConstructor(), PCRegister()
+@*/
+PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (**function)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListFind(PCMGCoarseList,name,function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------------------------------------*/
 
 /*MC
@@ -1311,6 +1487,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   mg->nlevels  = -1;
   mg->am       = PC_MG_MULTIPLICATIVE;
   mg->galerkin = PC_MG_GALERKIN_NONE;
+  mg->adaptInterpolation = PETSC_FALSE;
+  mg->Nc                 = -1;
+  mg->eigenvalue         = -1;
 
   pc->useAmat = PETSC_TRUE;
 
@@ -1321,10 +1500,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   pc->ops->setfromoptions = PCSetFromOptions_MG;
   pc->ops->view           = PCView_MG;
 
+  ierr = PetscObjectComposedDataRegister(&mg->eigenvalue);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetGalerkin_C",PCMGSetGalerkin_MG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGetLevels_C",PCMGGetLevels_MG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetLevels_C",PCMGSetLevels_MG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",PCGetInterpolations_MG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",PCGetCoarseOperators_MG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetAdaptInterpolation_C",PCMGSetAdaptInterpolation_MG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGetAdaptInterpolation_C",PCMGGetAdaptInterpolation_MG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

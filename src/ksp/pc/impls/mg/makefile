@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC   = mg.c fmg.c smg.c mgfunc.c
+SOURCEC   = mg.c fmg.c smg.c mgfunc.c mgadapt.c
 SOURCEF   =
 SOURCEH   = ../../../../../include/petsc/private/pcmgimpl.h
 LIBBASE   = libpetscksp

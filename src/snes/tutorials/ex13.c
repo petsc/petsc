@@ -565,6 +565,16 @@ int main(int argc, char **argv)
             -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
             -mg_levels_pc_type jacobi
   test:
+    suffix: 2d_p1_gmg_vcycle_adapt
+    requires: triangle bamg
+    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
+          -ksp_rtol 5e-10 -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp -pc_mg_adapt_interp_coarse_space harmonic -pc_mg_adapt_interp_n 8 \
+            -mg_levels_ksp_max_it 1 \
+            -mg_levels_esteig_ksp_type cg \
+            -mg_levels_esteig_ksp_max_it 10 \
+            -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
+            -mg_levels_pc_type jacobi
+  test:
     suffix: 2d_p2_0
     requires: triangle
     args: -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
