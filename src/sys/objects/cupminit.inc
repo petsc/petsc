@@ -58,6 +58,8 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
         /* It implies user has initialized device runtime outside of petsc. We do nothing to respect the device choice. */
       }
     }
+    ierr = PetscCUPMBLASInitializeHandle();CHKERRQ(ierr);
+    ierr = PetscCUPMSOLVERDnInitializeHandle();CHKERRQ(ierr);
     PetscCUPMInitialized = PETSC_TRUE;
 #if defined(PETSC_HAVE_KOKKOS)
     ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
