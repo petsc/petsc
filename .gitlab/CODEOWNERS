@@ -17,6 +17,8 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 /src/ksp/pc/impls/hpddm/  @prj- @stefanozampini
 /src/ksp/ksp/impls/hpddm/ @prj- @stefanozampini
 
+/src/binding/petsc4py/    @dalcinl @wence @pefarrell @joseroman
+
 /src/sys/classes/viewer/  @petsc/integrators @haplav
 
 /src/vec/is/sf/           @jedbrown @jczhang07
