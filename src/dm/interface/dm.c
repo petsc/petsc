@@ -6048,10 +6048,12 @@ PetscErrorCode DMGetPeriodicity(DM dm, PetscBool *per, const PetscReal **maxCell
 
   Input Parameters:
 + dm      - The DM object
-. per     - Whether the DM is periodic or not. If maxCell is not provided, coordinates need to be localized
-. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
+. per     - Whether the DM is periodic or not.
+. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates. Pass NULL to remove such information.
 . L       - If we assume the mesh is a torus, this is the length of each coordinate
 - bd      - This describes the type of periodicity in each topological dimension
+
+  Notes: If per is PETSC_TRUE and maxCell is not provided, coordinates need to be already localized, or must be localized by hand by the user.
 
   Level: developer
 
@@ -6072,7 +6074,10 @@ PetscErrorCode DMSetPeriodicity(DM dm, PetscBool per, const PetscReal maxCell[],
   if (maxCell) {
     if (!dm->maxCell) {ierr = PetscMalloc1(dim, &dm->maxCell);CHKERRQ(ierr);}
     for (d = 0; d < dim; ++d) dm->maxCell[d] = maxCell[d];
+  } else { /* remove maxCell information to disable automatic computation of localized vertices */
+    ierr = PetscFree(dm->maxCell);CHKERRQ(ierr);
   }
+
   if (L) {
     if (!dm->L) {ierr = PetscMalloc1(dim, &dm->L);CHKERRQ(ierr);}
     for (d = 0; d < dim; ++d) dm->L[d] = L[d];
