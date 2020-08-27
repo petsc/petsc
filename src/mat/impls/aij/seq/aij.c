@@ -520,6 +520,104 @@ noinsert:;
   PetscFunctionReturn(0);
 }
 
+
+PetscErrorCode MatSetValues_SeqAIJ_SortedFullNoPreallocation(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscInt       *rp,k,row;
+  PetscInt       *ai = a->i;
+  PetscErrorCode ierr;
+  PetscInt       *aj = a->j;
+  MatScalar      *aa = a->a,*ap;
+
+  PetscFunctionBegin;
+  if (A->was_assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot call on assembled matrix.");
+  if (m*n+a->nz > a->maxnz) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of entries in matrix will be larger than maximum nonzeros allocated for %D in MatSeqAIJSetTotalPreallocation()",a->maxnz);
+  for (k=0; k<m; k++) { /* loop over added rows */
+    row  = im[k];
+    rp   = aj + ai[row];
+    ap   = aa + ai[row];
+
+    ierr = PetscMemcpy(rp,in,n*sizeof(PetscInt));CHKERRQ(ierr);
+    if (!A->structure_only) {
+      if (v) {
+        ierr = PetscMemcpy(ap,v,n*sizeof(PetscScalar));CHKERRQ(ierr);
+        v   += n;
+      } else {
+        ierr = PetscMemzero(ap,n*sizeof(PetscScalar));CHKERRQ(ierr);
+      }
+    }
+    a->ilen[row] = n;
+    a->imax[row] = n;
+    a->i[row+1]  = a->i[row]+n;
+    a->nz       += n;
+  }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && m && n) A->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatSeqAIJSetTotalPreallocation - Sets an upper bound on the total number of expected nonzeros in the matrix.
+
+  Input Parameters:
++  A - the SeqAIJ matrix
+-  nztotal - bound on the number of nonzeros
+
+  Level: advanced
+
+  Notes:
+    This can be called if you will be provided the matrix row by row (from row zero) with sorted column indices for each row.
+    Simply call MatSetValues() after this call to provide the matrix entries in the usual manner. This matrix may be used
+    as always with multiple matrix assemblies.
+
+.seealso: MatSetOption(), MAT_SORTED_FULL, MatSetValues(), MatSeqAIJSetPreallocation()
+@*/
+
+PetscErrorCode MatSeqAIJSetTotalPreallocation(Mat A,PetscInt nztotal)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  a->maxnz  = nztotal;
+  if (!a->imax) {
+    ierr = PetscMalloc1(A->rmap->n,&a->imax);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  if (!a->ilen) {
+    ierr = PetscMalloc1(A->rmap->n,&a->ilen);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
+    ierr = PetscMemzero(a->ilen,A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+
+  /* allocate the matrix space */
+  if (A->structure_only) {
+    ierr = PetscMalloc1(nztotal,&a->j);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->rmap->n+1,&a->i);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,(A->rmap->n+1)*sizeof(PetscInt)+nztotal*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc3(nztotal,&a->a,nztotal,&a->j,A->rmap->n+1,&a->i);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,(A->rmap->n+1)*sizeof(PetscInt)+nztotal*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+  }
+  a->i[0] = 0;
+  if (A->structure_only) {
+    a->singlemalloc = PETSC_FALSE;
+    a->free_a       = PETSC_FALSE;
+  } else {
+    a->singlemalloc = PETSC_TRUE;
+    a->free_a       = PETSC_TRUE;
+  }
+  a->free_ij         = PETSC_TRUE;
+  A->ops->setvalues = MatSetValues_SeqAIJ_SortedFullNoPreallocation;
+  A->preallocated   = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -532,6 +630,7 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A,PetscInt m,const PetscInt im
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k];
+    if (PetscUnlikelyDebug(n > a->imax[row])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Preallocation for row %D does not match number of columns provided",n);
     rp   = aj + ai[row];
     ap   = aa + ai[row];
     if (!A->was_assembled) {
@@ -3869,7 +3968,8 @@ PetscErrorCode  MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatGetInfo()
+.seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatGetInfo(),
+          MatSeqAIJSetTotalPreallocation()
 
 @*/
 PetscErrorCode  MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[])

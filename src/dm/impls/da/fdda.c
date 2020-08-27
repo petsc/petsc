@@ -310,11 +310,6 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
   if (st == DMDA_STENCIL_STAR && s == 1) {
     ierr = DMCreateColoring_DA_2d_5pt_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else {
-
-    if (bx == DM_BOUNDARY_PERIODIC && (m % col)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X (%d) is divisible\n\
-                                                            by 2*stencil_width + 1 (%d)\n", m, col);
-    if (by == DM_BOUNDARY_PERIODIC && (n % col)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y (%d) is divisible\n\
-                                                            by 2*stencil_width + 1 (%d)\n", n, col);
     if (ctype == IS_COLORING_GLOBAL) {
       if (!dd->localcoloring) {
         ierr = PetscMalloc1(nc*nx*ny,&colors);CHKERRQ(ierr);
@@ -376,13 +371,6 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColori
   */
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
-  if (bx == DM_BOUNDARY_PERIODIC && (m % col)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                                                         by 2*stencil_width + 1\n");
-  if (by == DM_BOUNDARY_PERIODIC && (n % col)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                                                         by 2*stencil_width + 1\n");
-  if (bz == DM_BOUNDARY_PERIODIC && (p % col)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
-                                                         by 2*stencil_width + 1\n");
-
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -449,10 +437,6 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColori
   */
   ierr = DMDAGetInfo(da,&dim,&m,NULL,NULL,&M,NULL,NULL,&nc,&s,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
   col  = 2*s + 1;
-
-  if (bx == DM_BOUNDARY_PERIODIC && (m % col)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points %d is divisible\n\
-                                                          by 2*stencil_width + 1 %d\n",(int)m,(int)col);
-
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&nx,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,NULL,NULL,&gnx,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -527,10 +511,6 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
   ierr = DMDAGetCorners(da,&xs,&ys,NULL,&nx,&ny,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gnx,&gny,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-
-  if (bx == DM_BOUNDARY_PERIODIC && (m % 5)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible by 5\n");
-  if (by == DM_BOUNDARY_PERIODIC && (n % 5)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible by 5\n");
-
   /* create the coloring */
   if (ctype == IS_COLORING_GLOBAL) {
     if (!dd->localcoloring) {
@@ -570,6 +550,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
 /* =========================================================================== */
 extern PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM,Mat,PetscBool);
 extern PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM,Mat);
+extern PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM,Mat,PetscBool);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM,Mat,PetscBool);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM,Mat,PetscBool);
@@ -780,7 +761,15 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
       if (dd->ofill) {
         ierr = DMCreateMatrix_DA_1d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        ierr = DMCreateMatrix_DA_1d_MPIAIJ(da,A,PETSC_FALSE);CHKERRQ(ierr);
+        DMBoundaryType bx;
+        PetscMPIInt  size;
+        ierr = DMDAGetInfo(da,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+        if (size == 1 && bx == DM_BOUNDARY_NONE) {
+          ierr = DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(da,A,PETSC_FALSE);CHKERRQ(ierr);
+        } else {
+          ierr = DMCreateMatrix_DA_1d_MPIAIJ(da,A,PETSC_FALSE);CHKERRQ(ierr);
+        }
       }
     } else if (dim == 2) {
       if (dd->ofill) {
@@ -1775,6 +1764,74 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J,PetscBool isIS)
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da,Mat J,PetscBool isIS)
+{
+  PetscErrorCode         ierr;
+  PetscInt               xs,nx,i,i1,slot,gxs,gnx;
+  PetscInt               m,dim,s,*cols = NULL,nc,*rows = NULL,col,cnt,l;
+  PetscInt               istart,iend;
+  DMBoundaryType         bx;
+  ISLocalToGlobalMapping ltog,mltog;
+
+  PetscFunctionBegin;
+  /*
+         nc - number of components per grid point
+         col - number of colors needed in one direction for single component problem
+  */
+  ierr = DMDAGetInfo(da,&dim,&m,NULL,NULL,NULL,NULL,NULL,&nc,&s,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
+  col  = 2*s + 1;
+
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&nx,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,NULL,NULL,&gnx,NULL,NULL);CHKERRQ(ierr);
+
+  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetTotalPreallocation(J,nx*nc*col*nc);CHKERRQ(ierr);
+
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = MatGetLocalToGlobalMapping(J,&mltog,NULL);CHKERRQ(ierr);
+  if (!mltog) {
+    ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
+  }
+
+  /*
+    For each node in the grid: we get the neighbors in the local (on processor ordering
+    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
+    PETSc ordering.
+  */
+  if (!da->prealloc_only) {
+    ierr = PetscMalloc2(nc,&rows,col*nc*nc,&cols);CHKERRQ(ierr);
+    for (i=xs; i<xs+nx; i++) {
+      istart = PetscMax(-s,gxs - i);
+      iend   = PetscMin(s,gxs + gnx - i - 1);
+      slot   = i - gxs;
+
+      cnt = 0;
+      for (i1=istart; i1<iend+1; i1++) {
+        cols[cnt++] = nc*(slot + i1);
+        for (l=1; l<nc; l++) {
+          cols[cnt] = 1 + cols[cnt-1];cnt++;
+        }
+      }
+      rows[0] = nc*(slot); for (l=1; l<nc; l++) rows[l] = 1 + rows[l-1];
+      ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatBindToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (!isIS && bx == DM_BOUNDARY_NONE) {
+      ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE);CHKERRQ(ierr);
+    }
+    ierr = MatBindToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
+  }
+  ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
