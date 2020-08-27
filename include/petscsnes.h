@@ -88,8 +88,11 @@ PETSC_EXTERN PetscErrorCode SNESGetRhs(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLoad(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESViewFromOptions(SNES,PetscObject,const char[]);
-PETSC_EXTERN PetscErrorCode SNESReasonView(SNES,PetscViewer);
-PETSC_EXTERN PetscErrorCode SNESReasonViewFromOptions(SNES);
+PETSC_EXTERN PetscErrorCode SNESConvergedReasonView(SNES,PetscViewer);
+PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewFromOptions(SNES);
+
+PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonView() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode SNESReasonView(SNES snes,PetscViewer v) {return SNESConvergedReasonView(snes,v);}
+PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonViewFromOptions() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode SNESReasonViewFromOptions(SNES snes) {return SNESConvergedReasonViewFromOptions(snes);}
 
 #define SNES_FILE_CLASSID 1211224
 

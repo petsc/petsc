@@ -382,10 +382,10 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool*);
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPViewFromOptions(KSP,PetscObject,const char[]);
-PETSC_EXTERN PetscErrorCode KSPConvergedReasonView(KSP,PetscViewer,PetscViewerFormat);
+PETSC_EXTERN PetscErrorCode KSPConvergedReasonView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewFromOptions(KSP);
 
-PETSC_DEPRECATED_FUNCTION("Use KSPConvergedReasonView() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode KSPReasonView(KSP ksp,PetscViewer v) {return KSPConvergedReasonView(ksp,v,PETSC_VIEWER_DEFAULT);}
+PETSC_DEPRECATED_FUNCTION("Use KSPConvergedReasonView() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode KSPReasonView(KSP ksp,PetscViewer v) {return KSPConvergedReasonView(ksp,v);}
 PETSC_DEPRECATED_FUNCTION("Use KSPConvergedReasonViewFromOptions() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode KSPReasonViewFromOptions(KSP ksp) {return KSPConvergedReasonViewFromOptions(ksp);}
 
 #define KSP_FILE_CLASSID 1211223

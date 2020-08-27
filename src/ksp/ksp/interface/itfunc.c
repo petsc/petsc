@@ -431,26 +431,30 @@ PetscErrorCode KSPSetUp(KSP ksp)
 +  ksp - iterative context obtained from KSPCreate()
 -  viewer - the viewer to display the reason
 
-
    Options Database Keys:
 +  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
 -  -ksp_converged_reason ::failed - only print reason and number of iterations when diverged
 
+   Notes:
+     To change the format of the output call PetscViewerPushFormat(viewer,format) before this call. Use PETSC_VIEWER_DEFAULT for the default,
+     use PETSC_VIEWER_FAILED to only display a reason if it fails.
+
    Level: beginner
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
-          KSPSolveTranspose(), KSPGetIterationNumber(), KSP, KSPGetConvergedReason()
+          KSPSolveTranspose(), KSPGetIterationNumber(), KSP, KSPGetConvergedReason(), PetscViewerPushFormat(), PetscViewerPopFormat()
 @*/
-PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer, PetscViewerFormat format)
+PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  PetscBool      isAscii;
+  PetscErrorCode    ierr;
+  PetscBool         isAscii;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp));
-  if (format != PETSC_VIEWER_DEFAULT) {ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);}
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isAscii);CHKERRQ(ierr);
   if (isAscii) {
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
     if (ksp->reason > 0 && format != PETSC_VIEWER_FAILED) {
       if (((PetscObject) ksp)->prefix) {
@@ -472,7 +476,6 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer, PetscViewerFo
     }
     ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   }
-  if (format != PETSC_VIEWER_DEFAULT) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -497,7 +500,9 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
   PetscFunctionBegin;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_converged_reason",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPConvergedReasonView(ksp, viewer, format);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = KSPConvergedReasonView(ksp, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -724,7 +729,11 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
   if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ksp->totalits += ksp->its;
 
-  if (ksp->viewReason) {ierr = KSPConvergedReasonView(ksp, ksp->viewerReason, ksp->formatReason);CHKERRQ(ierr);}
+  if (ksp->viewReason) {
+    ierr = PetscViewerPushFormat(ksp->viewerReason,ksp->formatReason);CHKERRQ(ierr);
+    ierr = KSPConvergedReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(ksp->viewerReason);CHKERRQ(ierr);
+  }
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
   /* diagonal scale solution if called for */
@@ -1012,7 +1021,9 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
         ierr = KSPViewFinalMatResidual_Internal(ksp, B, X, ksp->viewerFinalRes, ksp->formatFinalRes, 0);CHKERRQ(ierr);
       }
       if (ksp->viewReason) {
-        ierr = KSPConvergedReasonView(ksp, ksp->viewerReason,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(ksp->viewerReason,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+        ierr = KSPConvergedReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
+        ierr = PetscViewerPopFormat(ksp->viewerReason);CHKERRQ(ierr);
       }
     } else {
       for (n2 = 0; n2 < N2; n2 += Bbn) {
@@ -1023,7 +1034,9 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
           ierr = KSPViewFinalMatResidual_Internal(ksp, vB, vX, ksp->viewerFinalRes, ksp->formatFinalRes, n2);CHKERRQ(ierr);
         }
         if (ksp->viewReason) {
-          ierr = KSPConvergedReasonView(ksp, ksp->viewerReason,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+          ierr = PetscViewerPushFormat(ksp->viewerReason,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+          ierr = KSPConvergedReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
+          ierr = PetscViewerPopFormat(ksp->viewerReason);CHKERRQ(ierr);
         }
         ierr = MatDenseRestoreSubMatrix(B, &vB);CHKERRQ(ierr);
         ierr = MatDenseRestoreSubMatrix(X, &vX);CHKERRQ(ierr);
