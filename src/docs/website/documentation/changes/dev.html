@@ -179,7 +179,6 @@
       <h4>KSP:</h4>
       <ul>
         <li>Change KSPReasonView() to  KSPConvergenceReasonView()</li>
-        <li>Add viewer format argument to KSPReasonView() to  KSPConvergenceReasonView()</li>
         <li>Change KSPReasonViewFromOptions() to KSPConvergedReasonViewFromOptions()</li>
           <li>Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence when the maximum number of iterations is reached</li>
           <li>Fix many KSP implementations to actually perform the number of iterations requested</li>
@@ -187,6 +186,10 @@
           <li>Chebyshev uses MAT_SPD to default to CG for the eigen estimate</li>
         </ul>
       <h4>SNES:</h4>
+      <ul>
+        <li>Change SNESReasonView() to  SNESConvergedReasonView()</li>
+        <li>Change SNESReasonViewFromOptions() to SNESConvergedReasonViewFromOptions()</li>
+      </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>TAO:</h4>
