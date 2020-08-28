@@ -11,6 +11,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex47.c ex49.c ex50.c ex51.c ex55.c ex56.c
 EXAMPLESCXX     = ex57.cxx
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F ex40f90.F90
+EXAMPLESCU      = ex100.cu
 MANSEC          = Vec
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

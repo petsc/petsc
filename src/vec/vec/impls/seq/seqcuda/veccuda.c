@@ -204,10 +204,24 @@ PetscErrorCode VecPlaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
+  Vec_Seq        *vs = (Vec_Seq*)vin->data;
 
   PetscFunctionBegin;
-  ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
-  ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
+  if (vs->array != vs->array_allocated) {
+    /* make sure the users array has the latest values */
+    ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
+  }
+  if (vs->array_allocated) {
+    if (vin->pinned_memory) {
+      ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
+    }
+    ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
+    if (vin->pinned_memory) {
+      ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
+    }
+  }
+  vin->pinned_memory = PETSC_FALSE;
+  vs->array_allocated = vs->array = (PetscScalar*)a;
   vin->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
@@ -366,7 +380,7 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->waxpy                  = VecWAXPY_Seq;
     V->ops->dotnorm2               = NULL;
     V->ops->placearray             = VecPlaceArray_Seq;
-    V->ops->replacearray           = VecReplaceArray_Seq;
+    V->ops->replacearray           = VecReplaceArray_SeqCUDA;
     V->ops->resetarray             = VecResetArray_Seq;
     V->ops->duplicate              = VecDuplicate_Seq;
     V->ops->conjugate              = VecConjugate_Seq;
