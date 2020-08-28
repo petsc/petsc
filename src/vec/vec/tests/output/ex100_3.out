@@ -1,0 +1,59 @@
+Vec Object: Test_Vec 5 MPI processes
+  type: mpicuda
+Process [0]
+0.
+1.
+2.
+3.
+Process [1]
+4.
+5.
+6.
+7.
+Process [2]
+8.
+9.
+10.
+11.
+Process [3]
+12.
+13.
+14.
+15.
+Process [4]
+16.
+17.
+18.
+19.
+writing vector in binary to vector.dat ...
+reading vector in binary from vector.dat ...
+Setting vector type...
+Before load, vectype is : (null)
+After load, vectype is : mpicuda
+Vec Object: Test_Vec 5 MPI processes
+  type: mpicuda
+Process [0]
+0.
+1.
+2.
+3.
+Process [1]
+4.
+5.
+6.
+7.
+Process [2]
+8.
+9.
+10.
+11.
+Process [3]
+12.
+13.
+14.
+15.
+Process [4]
+16.
+17.
+18.
+19.

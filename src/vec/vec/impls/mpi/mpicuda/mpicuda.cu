@@ -295,7 +295,7 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
     V->ops->pointwisemult          = VecPointwiseMult_Seq;
     V->ops->setrandom              = VecSetRandom_Seq;
     V->ops->placearray             = VecPlaceArray_Seq;
-    V->ops->replacearray           = VecReplaceArray_Seq;
+    V->ops->replacearray           = VecReplaceArray_SeqCUDA;
     V->ops->resetarray             = VecResetArray_Seq;
     V->ops->dot_local              = VecDot_Seq;
     V->ops->tdot_local             = VecTDot_Seq;

@@ -1,0 +1,58 @@
+Vec Object: Test_Vec 4 MPI processes
+  type: mpicuda
+Process [0]
+0.
+1.
+2.
+3.
+4.
+Process [1]
+5.
+6.
+7.
+8.
+9.
+Process [2]
+10.
+11.
+12.
+13.
+14.
+Process [3]
+15.
+16.
+17.
+18.
+19.
+writing vector in hdf5 to vector.dat ...
+reading vector in hdf5 from vector.dat ...
+Setting vector sizes...
+Setting vector type...
+Before load, vectype is : mpicuda
+After load, vectype is : mpicuda
+Vec Object: Test_Vec 4 MPI processes
+  type: mpicuda
+Process [0]
+0.
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+Process [1]
+9.
+10.
+11.
+12.
+13.
+Process [2]
+14.
+15.
+16.
+17.
+18.
+Process [3]
+19.
