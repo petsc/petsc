@@ -296,7 +296,6 @@ linux-cuda-double:
   tags:
     - gpu:nvidia, os:linux, name:p1
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
     TEST_ARCH: arch-ci-linux-cuda-double
 
 linux-gcc-quad-64idx-dbg:
@@ -424,7 +423,6 @@ linux-cuda-complex:
   tags:
     - gpu:nvidia, os:linux, name:p1
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
     TEST_ARCH: arch-ci-linux-cuda-complex
 
 linux-cuda-double-64idx:
@@ -434,7 +432,6 @@ linux-cuda-double-64idx:
   tags:
     - gpu:nvidia, os:linux, name:p1
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
     TEST_ARCH: arch-ci-linux-cuda-double-64idx
 
 linux-cuda-single-cxx:
@@ -454,7 +451,6 @@ linux-cuda-uni-pkgs:
   tags:
     - gpu:nvidia, os:linux, name:frog
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
 
 linux-viennacl:
