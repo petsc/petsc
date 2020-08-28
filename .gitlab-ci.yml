@@ -430,10 +430,11 @@ linux-c-exodus-dbg:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux
+    - gpu:nvidia, os:linux, name:frog
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
+    RUN_GCOV: 1
 
 linux-cuda-complex:
   extends:
@@ -849,6 +850,7 @@ analyze-pipeline:
   tags:
     - gce-nfs
   dependencies:
+    - linux-c-exodus-dbg
     - linux-pkgs-gcov
     - linux-cmplx-gcov
     - linux-matlab-ilp64-gcov

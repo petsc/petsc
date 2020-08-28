@@ -14,6 +14,7 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
+    '--with-gcov=1',
     '--download-suitesparse',
     '--download-mumps',
     '--download-scalapack',
