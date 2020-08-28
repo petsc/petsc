@@ -166,20 +166,13 @@ class Configure(config.package.Package):
     cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
     cflags += ' '+self.headers.toString('.')
     cflags += ' -fPIC'
+    cflags += ' -DTETLIBRARY'
     predcflags = '-O0 -fPIC'    # Need to compile without optimization
 
     g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
     g.write('CFLAGS         = '+cflags+'\n')
     g.write('PREDCXXFLAGS   = '+predcflags+'\n')
     g.close()
-
-    # I'd rather have this than to completely fork TetGen
-    new_file = open(os.path.join(self.packageDir, 'tetgen_def.h'),'w')
-    old_file = open(os.path.join(self.packageDir, 'tetgen.h'))
-    for line in old_file:
-      new_file.write(line.replace('// #define TETLIBRARY', '#define TETLIBRARY'))
-    new_file.close()
-    old_file.close()
 
     # Now compile & install
     if self.installNeeded('make.inc'):
@@ -189,7 +182,7 @@ class Configure(config.package.Package):
         self.installDirProvider.printSudoPasswordMessage()
         output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
         output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
-        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.setCompilers.getCompiler() + '" CXXFLAGS="' + cflags + '" PREDCXXFLAGS="' + predcflags + '" tetlib && mv tetgen_def.h tetgen.h && '+self.installSudo+'cp *.a ' + libDir + ' && rm *.a *.o', timeout=2500, log = self.log)
+        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.setCompilers.getCompiler() + '" CXXFLAGS="' + cflags + '" PREDCXXFLAGS="' + predcflags + '" tetlib && '+self.installSudo+'cp *.a ' + libDir + ' && rm *.a *.o', timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on TetGen: '+str(e))
       output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=60, log = self.log)
@@ -197,3 +190,29 @@ class Configure(config.package.Package):
 
     self.setCompilers.popLanguage()
     return self.installDir
+
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
+    include = '#include <tetgen.h>'
+    body = \
+'''
+  char args[] = "";
+  tetgenio in,out;
+  tetrahedralize(args, &in, &out);
+'''
+    self.pushLanguage('Cxx')
+    oldFlags = self.compilers.CXXPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CXXPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    if not self.checkCompile(include,body):
+      self.compilers.CXXPPFLAGS += ' -DTETLIBRARY'
+      if self.checkCompile(include,body):
+        self.addDefine('HAVE_TETGEN_TETLIBRARY_NEEDED',1)
+      else:
+        raise RuntimeError('Unable to compile with TetGen')
+    if not self.checkLink(include,body):
+      raise RuntimeError('Unable to link TetGen')
+    self.compilers.CXXPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    self.popLanguage()

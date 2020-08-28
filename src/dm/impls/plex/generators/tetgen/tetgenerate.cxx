@@ -1,5 +1,8 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
+#if defined(PETSC_HAVE_TETGEN_TETLIBRARY_NEEDED)
+#define TETLIBRARY
+#endif
 #include <tetgen.h>
 
 /* This is to fix the tetrahedron orientation from TetGen */
