@@ -85,12 +85,12 @@ static void * my_dlopen(const char *name, int mode) {
     printf("HAVE_DLFCN_H: no\n");
     #endif
     printf("\n");
-    printf("RTLD_LAZY:    0x%X\n", RTLD_LAZY   );
-    printf("RTLD_NOW:     0x%X\n", RTLD_NOW    );
-    printf("RTLD_LOCAL:   0x%X\n", RTLD_LOCAL  );
-    printf("RTLD_GLOBAL:  0x%X\n", RTLD_GLOBAL );
+    printf("RTLD_LAZY:    0x%X\n", RTLD_LAZY);
+    printf("RTLD_NOW:     0x%X\n", RTLD_NOW);
+    printf("RTLD_LOCAL:   0x%X\n", RTLD_LOCAL);
+    printf("RTLD_GLOBAL:  0x%X\n", RTLD_GLOBAL);
     #ifdef RTLD_NOLOAD
-    printf("RTLD_NOLOAD:  0x%X\n", RTLD_NOLOAD );
+    printf("RTLD_NOLOAD:  0x%X\n", RTLD_NOLOAD);
     #endif
     printf("\n");
   }

@@ -2,13 +2,13 @@
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by the
     partial differential equation
-  
+
             -Laplacian(u) - lambda * exp(u) = 0,  0 < x,y,z < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1, z = 0, z = 1
-  
+
     A finite difference approximation with the usual 7-point stencil
     is used to discretize the boundary value problem to obtain a
     nonlinear system of equations. The problem is solved in a 3D
@@ -72,7 +72,7 @@ PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
       for (i=xs; i<xs+xm; i++) {
         if (i == 0 || j == 0 || k == 0 || i == Mx-1 || j == My-1 || k == Mz-1) {
           /* boundary conditions are all zero Dirichlet */
-          x[k][j][i] = 0.0; 
+          x[k][j][i] = 0.0;
         } else {
           x[k][j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,tempj));
         }
@@ -115,9 +115,6 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
   hyhzdhx = hy*hz/hx;
   hxhydhz = hx*hy/hz;
 
-  /*
-    
-   */
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
 
   /*
@@ -147,10 +144,10 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         if (i == 0 || j == 0 || k == 0 || i == Mx-1 || j == My-1 || k == Mz-1) {
-	  /* boundary points */
+          /* boundary points */
           f[k][j][i] = x[k][j][i] - 0.0;
         } else {
-	  /* interior grid points */
+          /* interior grid points */
           u           = x[k][j][i];
           u_east      = x[k][j][i+1];
           u_west      = x[k][j][i-1];
@@ -162,7 +159,7 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
           u_yy        = (-u_north + two*u - u_south)*hxhzdhy;
           u_zz        = (-u_up + two*u - u_down)*hxhydhz;
           f[k][j][i]  = u_xx + u_yy + u_zz - sc*PetscExpScalar(u);
-	}
+        }
       }
     }
   }
@@ -206,9 +203,6 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
   hyhzdhx = hy*hz/hx;
   hxhydhz = hx*hy/hz;
 
-  /*
-    
-   */
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
 
   /*
@@ -230,7 +224,7 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
   */
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
-  /* 
+  /*
     Compute entries for the locally owned part of the Jacobian.
 
     - Currently, all PETSc parallel matrix formats are partitioned by
@@ -270,7 +264,7 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
   ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
-  /* 
+  /*
     Assemble matrix, using the 2-step process: MatAssemblyBegin(),
     MatAssemblyEnd().
   */

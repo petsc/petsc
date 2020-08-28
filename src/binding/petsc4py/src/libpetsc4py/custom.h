@@ -28,7 +28,7 @@ PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
 }
 
 PETSC_STATIC_INLINE
-PetscErrorCode KSPConverged(KSP ksp, 
+PetscErrorCode KSPConverged(KSP ksp,
                             PetscInt iter,PetscReal rnorm,
                             KSPConvergedReason *reason)
 {

@@ -1,11 +1,11 @@
 static
 void *Cython_ImportFunction(PyObject   *module,
                             const char *funcname,
-                            const char *signature) 
+                            const char *signature)
 {
   PyObject *capi = NULL, *capsule = NULL; void *p = NULL;
   capi = PyObject_GetAttrString(module, (char *)"__pyx_capi__");
-  if (!capi) 
+  if (!capi)
     goto bad;
   capsule = PyDict_GetItemString(capi, (char *)funcname);
   if (!capsule) {

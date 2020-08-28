@@ -44,7 +44,7 @@ PetscLogStageFindId(const char name[], PetscLogStage *stageid)
   PetscValidIntPointer(stageid,2);
   *stageid = -1;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
-  for(s = 0; s < stageLog->numStages; s++) {
+  for (s = 0; s < stageLog->numStages; s++) {
     const char *sname = stageLog->stageInfo[s].name;
     ierr = PetscStrcasecmp(sname, name, &match);CHKERRQ(ierr);
     if (match) { *stageid = s; break; }
@@ -64,7 +64,7 @@ PetscLogClassFindId(const char name[], PetscClassId *classid)
   PetscValidIntPointer(classid,2);
   *classid = -1;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
-  for(c = 0; c < stageLog->classLog->numClasses; c++) {
+  for (c = 0; c < stageLog->classLog->numClasses; c++) {
     const char *cname = stageLog->classLog->classInfo[c].name;
     PetscClassId id = PetscCLASSID(stageLog,c);
     ierr = PetscStrcasecmp(cname, name, &match);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
   PetscValidIntPointer(eventid,2);
   *eventid = -1;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
-  for(e = 0; e < stageLog->eventLog->numEvents; e++) {
+  for (e = 0; e < stageLog->eventLog->numEvents; e++) {
     const char *ename = stageLog->eventLog->eventInfo[e].name;
     ierr = PetscStrcasecmp(ename, name, &match);CHKERRQ(ierr);
     if (match) { *eventid = e; break; }
@@ -118,7 +118,7 @@ PetscLogClassFindName(PetscClassId classid,
   PetscValidPointer(name,3);
   *name = 0;
   if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
-  for(c = 0; c < stageLog->classLog->numClasses; c++) {
+  for (c = 0; c < stageLog->classLog->numClasses; c++) {
     if (classid == PetscCLASSID(stageLog,c)) {
       *name  = stageLog->classLog->classInfo[c].name;
       break;
@@ -212,13 +212,13 @@ PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,Petsc
   *aij = *baij = *sbaij = PETSC_FALSE;
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
-  if ( f) {*aij = PETSC_TRUE; goto done;};
+  if (f)  {*aij = PETSC_TRUE; goto done;};
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
-  if ( f) {*baij = PETSC_TRUE; goto done;};
+  if (f)  {*baij = PETSC_TRUE; goto done;};
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
-  if ( f) {*sbaij = PETSC_TRUE; goto done;};
+  if (f)  {*sbaij = PETSC_TRUE; goto done;};
  done:
   PetscFunctionReturn(0);
 }
@@ -368,9 +368,9 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   ierr = SNESGetUseMFFD(snes,&flg);CHKERRQ(ierr);
-  if ( flg &&  flag) PetscFunctionReturn(0);
+  if (flg  &&  flag) PetscFunctionReturn(0);
   if (!flg && !flag) PetscFunctionReturn(0);
-  if ( flg && !flag) {
+  if (flg  && !flag) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
             "cannot change matrix-free once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
@@ -432,9 +432,9 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   ierr = SNESGetUseFDColoring(snes,&flg);CHKERRQ(ierr);
-  if ( flg &&  flag) PetscFunctionReturn(0);
+  if (flg  &&  flag) PetscFunctionReturn(0);
   if (!flg && !flag) PetscFunctionReturn(0);
-  if ( flg && !flag) {
+  if (flg  && !flag) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
             "cannot change colored finite diferences once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);

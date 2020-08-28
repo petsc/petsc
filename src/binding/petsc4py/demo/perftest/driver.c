@@ -99,7 +99,7 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&f);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
   PetscInt       n,start,step,stop,samples;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
 
   ierr = GetInt("-start",   &start,   12);CHKERRQ(ierr);
   ierr = GetInt("-step",    &step,    4);CHKERRQ(ierr);

@@ -13,7 +13,7 @@ EXTERN_C_BEGIN
 extern void Del2Apply(int*,double*,const double*,double*);
 EXTERN_C_END
 
-/* user data structure and routines 
+/* user data structure and routines
  * defining the matrix-free operator */
 
 typedef struct {
@@ -22,7 +22,7 @@ typedef struct {
 } Del2Mat;
 
 /* y <- A * x */
-PetscErrorCode Del2Mat_mult(Mat A, Vec x, Vec y) 
+PetscErrorCode Del2Mat_mult(Mat A, Vec x, Vec y)
 {
   Del2Mat *ctx;
   const PetscScalar *xx;
@@ -42,7 +42,7 @@ PetscErrorCode Del2Mat_mult(Mat A, Vec x, Vec y)
 }
 
 /*D_i <- A_ii */
-PetscErrorCode Del2Mat_diag(Mat A, Vec D) 
+PetscErrorCode Del2Mat_diag(Mat A, Vec D)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

@@ -7,17 +7,17 @@
 #define DEL2MAT_MULT   ((void(*)(void))Del2Mat_mult)
 #define DEL2MAT_DIAG   ((void(*)(void))Del2Mat_diag)
 
-int main(int argc,char **argv) 
+int main(int argc,char **argv)
 {
   PetscInt n;
   PetscScalar h;
   Del2Mat shell;
   Mat A;
-  Vec x,b; 
+  Vec x,b;
   KSP ksp;
   PC  pc;
   PetscMPIInt size;
-  /* PETSc initialization  */ 
+  /* PETSc initialization  */
   PetscInitialize(&argc, &argv, NULL, NULL);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (size != 1) {
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
     PetscFinalize();
     return 1;
   }
-  /* number of nodes in each direction 
+  /* number of nodes in each direction
    * excluding those at the boundary */
   n = 32;
   h = 1.0/(n+1); /* grid spacing */
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   VecDestroy(&b);
   MatDestroy(&A);
   KSPDestroy(&ksp);
-  /* finalize PETSc */ 
+  /* finalize PETSc */
   PetscFinalize();
   return 0;
 }
