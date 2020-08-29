@@ -10,7 +10,7 @@ class Configure(config.package.GNUPackage):
     self.includes          = ['ck_spinlock.h']
     self.liblist           = [['libck.a']]
     self.downloadonWindows = 0
-    self.downloaddirnames  = ['ck']
+    self.downloaddirnames  = ['ck-']
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)

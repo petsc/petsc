@@ -9,7 +9,7 @@
 typedef struct {
   /* context for time stepping */
   PetscReal    stage_time;
-  Vec          X0,X,Xdot;                /* Storage for stages and time derivative */
+  Vec          X0,X,Xdot;                /* Storage for stage solution, u^n + dt a_{11} k_1, and time derivative u^{n+1}_t */
   Vec          affine;                   /* Affine vector needed for residual at beginning of step in endpoint formulation */
   PetscReal    Theta;
   PetscReal    shift;                    /* Shift parameter for SNES Jacobian, used by forward, TLM and adjoint */
@@ -940,6 +940,10 @@ static PetscErrorCode TSDestroy_Theta(TS ts)
 /*
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
+
+  Note that U here is the stage argument. This means that U = U_{n+1} only if endpoint = true,
+  otherwise U = theta U_{n+1} + (1 - theta) U0, which for the case of implicit midpoint is
+  U = (U_{n+1} + U0)/2
 */
 static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
 {
