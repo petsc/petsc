@@ -153,10 +153,10 @@ check-py-vermin:
     - printf "./config/examples/${TEST_ARCH}.py\n"
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
-    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS}
-    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} check
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}"
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check
     - make updatedatafiles
-    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
+    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
     - if [ ! -z ${RUN_GCOV+x} ]; then make gcov && bash <(curl -s https://codecov.io/bash) -c > /dev/null 2>&1; fi
   artifacts:
     reports:
@@ -296,7 +296,6 @@ linux-cuda-double:
   tags:
     - gpu:nvidia, os:linux, name:p1
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
     TEST_ARCH: arch-ci-linux-cuda-double
 
 linux-gcc-quad-64idx-dbg:
@@ -406,34 +405,16 @@ linux-sycl-double:
     INIT_SCRIPT: /home/glci/bin/ci-inteloneapi.sh
     DISABLE_TESTS: 1
 
-linux-viennacl:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gpu:nvidia, os:linux, name:frog
-  variables:
-    TEST_ARCH: arch-ci-linux-viennacl
-
-linux-viennacl-cuda:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gpu:nvidia, os:linux, name:frog
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
-    TEST_ARCH: arch-ci-linux-viennacl-cuda
-
 linux-c-exodus-dbg:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux
+    - gpu:nvidia, os:linux, name:frog
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
+    RUN_GCOV: 1
 
 linux-cuda-complex:
   extends:
@@ -442,7 +423,6 @@ linux-cuda-complex:
   tags:
     - gpu:nvidia, os:linux, name:p1
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
     TEST_ARCH: arch-ci-linux-cuda-complex
 
 linux-cuda-double-64idx:
@@ -452,7 +432,6 @@ linux-cuda-double-64idx:
   tags:
     - gpu:nvidia, os:linux, name:p1
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
     TEST_ARCH: arch-ci-linux-cuda-double-64idx
 
 linux-cuda-single-cxx:
@@ -472,8 +451,28 @@ linux-cuda-uni-pkgs:
   tags:
     - gpu:nvidia, os:linux, name:frog
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
+
+linux-viennacl:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux
+  variables:
+    TEST_ARCH: arch-ci-linux-viennacl
+    MAKE_CXXFLAGS: -Werror -Wno-ignored-attributes
+
+linux-viennacl-cuda:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
+    TEST_ARCH: arch-ci-linux-viennacl-cuda
+    MAKE_CXXFLAGS: -Werror -Wno-ignored-attributes -Wno-parentheses
 
 linux-without-fc:
   extends:
@@ -849,6 +848,7 @@ analyze-pipeline:
   tags:
     - gce-nfs
   dependencies:
+    - linux-c-exodus-dbg
     - linux-pkgs-gcov
     - linux-cmplx-gcov
     - linux-matlab-ilp64-gcov

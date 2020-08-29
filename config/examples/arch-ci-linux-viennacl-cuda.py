@@ -12,6 +12,7 @@ if __name__ == '__main__':
     '--with-opencl-include=/usr/local/cuda/include',
     '--with-opencl-lib=-L/usr/local/cuda/lib64 -lOpenCL',
     '--with-cuda=1',
+    '--with-make-test-np=2',
     '--download-codipack=1',
     '--download-adblaslapack=1',
   ]
