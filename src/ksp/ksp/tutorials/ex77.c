@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PC                 pc;          /* preconditioner context */
   Mat                F;           /* factored matrix from the preconditioner context */
   PetscScalar        *x,*S = NULL,*T = NULL;
-  PetscReal          norm;
+  PetscReal          norm,deflation = -1.0;
   PetscInt           m,M,N = 5,i;
   PetscMPIInt        rank,size;
   const char         *deft = MATAIJ;
@@ -28,6 +28,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must provide a binary file for the matrix");
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-breakdown",&breakdown,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-ksp_hpddm_deflation_tol",&deflation,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
@@ -115,7 +116,7 @@ int main(int argc,char **args)
       ierr = MatDenseRestoreArrayWrite(B,&x);CHKERRQ(ierr);
       ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
       ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-      if (reason != KSP_DIVERGED_BREAKDOWN) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
+      if (reason != KSP_DIVERGED_BREAKDOWN && deflation < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
     }
   } else {
     ierr = KSPSetOperators(ksp,KA,KA);CHKERRQ(ierr);
@@ -168,13 +169,19 @@ int main(int argc,char **args)
       suffix: preonly
       args: -N 6 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -pc_type lu -ksp_type hpddm -ksp_hpddm_type preonly
 
-   # to avoid breakdown failures, use -ksp_hpddm_deflation_tol, cf. KSPHPDDM documentation
-   test:
+   testset:
       nsize: 1
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      suffix: breakdown
-      output_file: output/ex77_preonly.out
-      args: -N 3 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -pc_type none -ksp_type hpddm -ksp_hpddm_type {{bcg bgmres bgcrodr bfbcg}shared output} -breakdown
+      args: -N 3 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_type hpddm -breakdown
+      test:
+         suffix: breakdown_wo_deflation
+         output_file: output/ex77_preonly.out
+         args: -pc_type none -ksp_hpddm_type {{bcg bgmres bgcrodr bfbcg}shared output}
+      test:
+         suffix: breakdown_w_deflation
+         output_file: output/ex77_deflation.out
+         filter: sed "s/BGCRODR/BGMRES/g"
+         args: -pc_type lu -ksp_hpddm_type {{bgmres bgcrodr}shared output} -ksp_hpddm_deflation_tol 1e-1 -info :ksp
 
    test:
       nsize: 2
