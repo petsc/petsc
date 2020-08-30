@@ -822,7 +822,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 
    Options Database Keys:
 +  -ksp_view_eigenvalues - compute preconditioned operators eigenvalues
-.  -ksp_view_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and using LAPACK
+.  -ksp_view_eigenvalues_explicit - compute the eigenvalues by forming the dense operator and using LAPACK
 .  -ksp_view_mat binary - save matrix to the default binary viewer
 .  -ksp_view_pmat binary - save matrix used to build preconditioner to the default binary viewer
 .  -ksp_view_rhs binary - save right hand side vector to the default binary viewer
