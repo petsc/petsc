@@ -11,12 +11,9 @@ and eventually adaptivity.\n\n\n";
 
 typedef struct {
   /* Domain and mesh definition */
-  PetscInt  dim;               /* The topological mesh dimension */
-  PetscBool simplex;           /* Simplicial mesh */
-  PetscBool spectral;          /* Look at the spectrum along planes in the solution */
-  PetscInt  cells[3];          /* The initial domain division */
-  PetscBool shear;             /* Shear the domain */
-  PetscBool adjoint;           /* Solve the adjoint problem */
+  PetscBool spectral; /* Look at the spectrum along planes in the solution */
+  PetscBool shear;    /* Shear the domain */
+  PetscBool adjoint;  /* Solve the adjoint problem */
 } AppCtx;
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -87,23 +84,14 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt       n = 3;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim      = 2;
-  options->cells[0] = 1;
-  options->cells[1] = 1;
-  options->cells[2] = 1;
-  options->simplex  = PETSC_TRUE;
   options->shear    = PETSC_FALSE;
   options->spectral = PETSC_FALSE;
   options->adjoint  = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex13.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex13.c", options->cells, &n, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex13.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-shear", "Shear the domain", "ex13.c", options->shear, &options->shear, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-spectral", "Look at the spectrum along planes of the solution", "ex13.c", options->spectral, &options->spectral, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-adjoint", "Solve the adjoint problem", "ex13.c", options->adjoint, &options->adjoint, NULL);CHKERRQ(ierr);
@@ -152,20 +140,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBeginUser;
   /* Create box mesh */
-  ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, user->cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  /* Distribute mesh over processes */
-  {
-    DM               dmDist = NULL;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, 0, NULL, &dmDist);CHKERRQ(ierr);
-    if (dmDist) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = dmDist;
-    }
-  }
+  ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   /* TODO: This should be pulled into the library */
   {
     char      convType[256];
@@ -185,14 +160,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   if (user->shear) {ierr = DMPlexShearGeometry(*dm, DM_X, NULL);CHKERRQ(ierr);}
-  /* TODO: This should be pulled into the library */
   ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  /* TODO: Add a hierachical viewer */
   if (user->spectral) {
     PetscInt  planeDir[2]   = {0,  1};
     PetscReal planeCoord[2] = {0., 1.};
@@ -246,13 +219,20 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
 {
   DM             cdm = dm;
   PetscFE        fe;
+  DMPolytopeType ct;
+  PetscBool      simplex;
+  PetscInt       dim, cStart;
   char           prefix[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   /* Create finite element */
   ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), user->dim, 1, user->simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
@@ -523,13 +503,76 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
-    suffix: 2d_p1_0
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.9
+    suffix: 2d_p1_conv
     requires: triangle
-    args: -potential_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
+    args: -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 2.9
+    suffix: 2d_p2_conv
+    requires: triangle
+    args: -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 3.9
+    suffix: 2d_p3_conv
+    requires: triangle
+    args: -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.9
+    suffix: 2d_q1_conv
+    args: -dm_plex_box_simplex 0 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 2.9
+    suffix: 2d_q2_conv
+    args: -dm_plex_box_simplex 0 -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 3.9
+    suffix: 2d_q3_conv
+    args: -dm_plex_box_simplex 0 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.9
+    suffix: 2d_q1_shear_conv
+    args: -dm_plex_box_simplex 0 -shear -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 2.9
+    suffix: 2d_q2_shear_conv
+    args: -dm_plex_box_simplex 0 -shear -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 3.9
+    suffix: 2d_q3_shear_conv
+    args: -dm_plex_box_simplex 0 -shear -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
+  test:
+    # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 1.7
+    suffix: 3d_p1_conv
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1
+  test:
+    # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 2.8
+    suffix: 3d_p2_conv
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 1
+  test:
+    # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 4.0
+    suffix: 3d_p3_conv
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 1
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.8
+    suffix: 3d_q1_conv
+    args: -dm_plex_box_dim 3 -dm_plex_box_simplex 0 -dm_refine 1 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1
+  test:
+    # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 2.8
+    suffix: 3d_q2_conv
+    args: -dm_plex_box_dim 3 -dm_plex_box_simplex 0 -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 1
+  test:
+    # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 3.8
+    suffix: 3d_q3_conv
+    args: -dm_plex_box_dim 3 -dm_plex_box_simplex 0 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 1
+
   test:
     suffix: 2d_p1_scalable
-    requires: triangle long_runtime
-    args: -potential_petscspace_order 1 -dm_refine 3 -num_refine 3 -snes_convergence_estimate \
+    requires: triangle
+    args: -potential_petscspace_degree 1 -dm_refine 3 \
       -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned \
       -pc_type gamg \
         -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 \
@@ -547,7 +590,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_gmg_vcycle
     requires: triangle
-    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
+    args: -potential_petscspace_degree 1 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 3 \
           -ksp_rtol 5e-10 -pc_type mg \
             -mg_levels_ksp_max_it 1 \
             -mg_levels_esteig_ksp_type cg \
@@ -557,7 +600,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_gmg_fcycle
     requires: triangle
-    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
+    args: -potential_petscspace_degree 1 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 3 \
           -ksp_rtol 5e-10 -pc_type mg -pc_mg_type full \
             -mg_levels_ksp_max_it 2 \
             -mg_levels_esteig_ksp_type cg \
@@ -567,7 +610,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_gmg_vcycle_adapt
     requires: triangle bamg
-    args: -potential_petscspace_degree 1 -cells 2,2 -dm_refine_hierarchy 2 -convest_num_refine 2 -snes_convergence_estimate \
+    args: -potential_petscspace_degree 1 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 3 \
           -ksp_rtol 5e-10 -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp -pc_mg_adapt_interp_coarse_space harmonic -pc_mg_adapt_interp_n 8 \
             -mg_levels_ksp_max_it 1 \
             -mg_levels_esteig_ksp_type cg \
@@ -575,65 +618,17 @@ int main(int argc, char **argv)
             -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
             -mg_levels_pc_type jacobi
   test:
-    suffix: 2d_p2_0
-    requires: triangle
-    args: -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
-  test:
-    suffix: 2d_p3_0
-    requires: triangle
-    args: -potential_petscspace_degree 3 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
-  test:
-    suffix: 2d_q1_0
-    args: -simplex 0 -potential_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
-  test:
-    suffix: 2d_q1_1
-    args: -simplex 0 -shear -potential_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
-  test:
-    suffix: 2d_q2_0
-    args: -simplex 0 -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
-  test:
-    suffix: 2d_q2_1
-    args: -simplex 0 -shear -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
-  test:
-    suffix: 2d_q3_0
-    args: -simplex 0 -potential_petscspace_degree 3 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
-  test:
-    suffix: 2d_q3_1
-    args: -simplex 0 -shear -potential_petscspace_degree 3 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
-  test:
-    suffix: 3d_p1_0
-    requires: ctetgen
-    args: -dim 3 -cells 2,2,2 -potential_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
-  test:
-    suffix: 3d_p2_0
-    requires: ctetgen
-    args: -dim 3 -cells 2,2,2 -potential_petscspace_degree 2 -convest_num_refine 2 -snes_convergence_estimate
-  test:
-    suffix: 3d_p3_0
-    requires: ctetgen
-    timeoutfactor: 2
-    args: -dim 3 -cells 2,2,2 -potential_petscspace_degree 3 -convest_num_refine 2 -snes_convergence_estimate
-  test:
-    suffix: 3d_q1_0
-    args: -dim 3 -simplex 0 -potential_petscspace_degree 1 -dm_refine 1 -convest_num_refine 2 -snes_convergence_estimate
-  test:
-    suffix: 3d_q2_0
-    args: -dim 3 -simplex 0 -potential_petscspace_degree 2 -dm_refine 1 -convest_num_refine 2 -snes_convergence_estimate
-  test:
-    suffix: 3d_q3_0
-    args: -dim 3 -simplex 0 -potential_petscspace_degree 3 -convest_num_refine 2 -snes_convergence_estimate
-  test:
     suffix: 2d_p1_spectral_0
     requires: triangle fftw !complex
-    args: -potential_petscspace_degree 1 -dm_refine 6 -spectral -fft_view
+    args: -dm_plex_box_faces 1,1 -potential_petscspace_degree 1 -dm_refine 6 -spectral -fft_view
   test:
     suffix: 2d_p1_spectral_1
     requires: triangle fftw !complex
     nsize: 2
-    args: -potential_petscspace_degree 1 -dm_refine 2 -spectral -fft_view
+    args: -dm_plex_box_faces 4,4 -dm_distribute -potential_petscspace_degree 1 -spectral -fft_view
   test:
     suffix: 2d_p1_adj_0
     requires: triangle
-    args: -potential_petscspace_degree 1 -dm_refine 2 -adjoint -adjoint_petscspace_degree 1 -error_petscspace_degree 0
+    args: -potential_petscspace_degree 1 -dm_refine 1 -adjoint -adjoint_petscspace_degree 1 -error_petscspace_degree 0
 
 TEST*/
