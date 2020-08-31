@@ -4267,7 +4267,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    SNESConvergedReasonView - Displays the reason a SNES solve converged or diverged to a viewer
 
    Collective on SNES
@@ -4341,7 +4341,7 @@ PetscErrorCode  SNESConvergedReasonView(SNES snes,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   SNESConvergedReasonViewFromOptions - Processes command line options to determine if/how a SNESReason is to be viewed.
 
   Collective on SNES

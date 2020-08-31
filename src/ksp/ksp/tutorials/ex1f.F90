@@ -157,6 +157,9 @@
       call KSPSolve(ksp,b,x,ierr)
       call PetscLogStagePop(ierr)
 
+!  View solver converged reason; we could instead use the option -ksp_converged_reason
+      call KSPConvergedReasonView(ksp,PETSC_VIEWER_STDOUT_WORLD,ierr)
+
 !  View solver info; we could instead use the option -ksp_view
 
       call KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD,ierr)

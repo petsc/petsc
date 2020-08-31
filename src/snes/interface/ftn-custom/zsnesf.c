@@ -4,6 +4,7 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define snesconvergedreasonview_         SNESCONVERGEDREASONVIEW
 #define snessetpicard_                   SNESSETPICARD
 #define matmffdcomputejacobian_          MATMFFDCOMPUTEJACOBIAN
 #define snessolve_                       SNESSOLVE
@@ -37,6 +38,7 @@
 #define snesnewtontrsetpostcheck_        SNESNEWTONTRSETPOSTCHECK
 #define snesviewfromoptions_             SNESVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define snesconvergedreasonview_         snesconvergedreasonview
 #define snessetpicard_                   snessetpicard
 #define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve
@@ -433,4 +435,11 @@ PETSC_EXTERN void snesviewfromoptions_(SNES *ao,PetscObject obj,char* type,Petsc
   FIXCHAR(type,len,t);
   *ierr = SNESViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
+}
+
+PETSC_EXTERN void snesconvergedreasonview_(SNES *snes,PetscViewer *viewer, PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = SNESConvergedReasonView(*snes,v);
 }

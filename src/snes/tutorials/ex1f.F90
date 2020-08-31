@@ -158,6 +158,10 @@
       pfive = 0.5
       call VecSet(x,pfive,ierr)
       call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
+
+!  View solver converged reason; we could instead use the option -snes_converged_reason
+      call SNESConvergedReasonView(snes,PETSC_VIEWER_STDOUT_WORLD,ierr)
+
       call SNESGetIterationNumber(snes,its,ierr);
       if (rank .eq. 0) then
          write(6,100) its

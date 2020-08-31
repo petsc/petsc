@@ -422,7 +422,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    KSPConvergedReasonView - Displays the reason a KSP solve converged or diverged to a viewer
 
    Collective on ksp
@@ -479,7 +479,7 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   KSPConvergedReasonViewFromOptions - Processes command line options to determine if/how a KSPReason is to be viewed.
 
   Collective on ksp
