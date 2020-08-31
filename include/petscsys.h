@@ -376,6 +376,20 @@ M*/
 M*/
 #define PetscUnlikelyDebug(cond) (PetscDefined(USE_DEBUG) && PetscUnlikely(cond))
 
+/* PetscPragmaSIMD - from CeedPragmaSIMD */
+
+#if defined(__INTEL_COMPILER) && !defined(_WIN32)
+#  define PetscPragmaSIMD _Pragma("vector")
+#elif defined(__GNUC__) && __GNUC__ >= 5
+#  define PetscPragmaSIMD _Pragma("GCC ivdep")
+#elif defined(_OPENMP) && _OPENMP >= 201307
+#  define PetscPragmaSIMD _Pragma("omp simd")
+#elif defined(PETSC_HAVE_CRAY_VECTOR)
+#  define PetscPragmaSIMD _Pragma("_CRI ivdep")
+#else
+#  define PetscPragmaSIMD
+#endif
+
 /*
     Declare extern C stuff after including external header files
 */
