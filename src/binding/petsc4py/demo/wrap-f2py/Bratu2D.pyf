@@ -1,0 +1,39 @@
+! -*- f90 -*-
+
+python module Bratu2D
+
+usercode '''
+#include "Bratu2Dmodule.h"
+'''
+
+interface
+       
+   subroutine FormInitGuess(dm, x, param, ierr)
+     !integer, parameter :: HANDLE_KIND=4
+     integer(kind=HANDLE_KIND) dm ! DM
+     integer(kind=HANDLE_KIND) x  ! Vec
+     real(kind=8)              param
+     integer, intent(out) ::   ierr
+   end subroutine FormInitGuess
+
+   subroutine FormFunction(dm, x, f, param, ierr)
+     !integer, parameter :: HANDLE_KIND=4
+     integer(kind=HANDLE_KIND) dm ! DM
+     integer(kind=HANDLE_KIND) x  ! Vec
+     integer(kind=HANDLE_KIND) f  ! Vec
+     real(kind=8)              param
+     integer, intent(out) ::   ierr
+   end subroutine FormFunction
+   
+   subroutine FormJacobian(dm, x, J, param, ierr)
+     !integer, parameter :: HANDLE_KIND=4
+     integer(kind=HANDLE_KIND) dm ! DM
+     integer(kind=HANDLE_KIND) x  ! Vec
+     integer(kind=HANDLE_KIND) J  ! Vec
+     real(kind=8)              param
+     integer, intent(out) ::   ierr
+   end subroutine FormJacobian
+   
+end interface
+    
+end python module Bratu2D
