@@ -6,7 +6,9 @@ static char help[] = "Tests timing PetscSortInt().\n\n";
 int main(int argc,char **argv)
 {
   PetscInt       i,n = 1000,*values;
-  int            event;
+#if defined(PETSC_USE_LOG)
+  PetscLogEvent  event;
+#endif
   PetscRandom    rand;
   PetscReal      value;
   PetscErrorCode ierr;
@@ -48,8 +50,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
 
 /*TEST
 

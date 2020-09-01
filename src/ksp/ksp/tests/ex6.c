@@ -1,4 +1,3 @@
-
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Input arguments are:\n\
   -f <input_file> : file to load. For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\n";
@@ -28,7 +27,9 @@ int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   PetscInt       its;
+#if defined(PETSC_USE_LOG)
   PetscLogStage  stage1,stage2;
+#endif
   PetscReal      norm;
   Vec            x,b,u;
   Mat            A;

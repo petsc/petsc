@@ -13,7 +13,9 @@ int main(int argc, char **argv)
   PetscScalar    val;
   PetscReal      norm1,norm2;
   PetscRandom    rctx;
+#if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
+#endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);

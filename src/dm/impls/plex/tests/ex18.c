@@ -217,7 +217,9 @@ struct _n_PortableBoundary {
 };
 typedef struct _n_PortableBoundary * PortableBoundary;
 
+#if defined(PETSC_USE_LOG)
 static PetscLogStage  stage[3];
+#endif
 
 static PetscErrorCode DMPlexCheckPointSFHeavy(DM, PortableBoundary);
 static PetscErrorCode DMPlexSetOrientInterface_Private(DM,PetscBool);

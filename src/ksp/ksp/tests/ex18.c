@@ -16,7 +16,9 @@ int main(int argc,char **args)
   KSP            ksp;
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
+#if defined(PETSC_USE_LOG)
   PetscLogStage  stage1;
+#endif
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 

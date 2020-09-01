@@ -36,7 +36,9 @@ int main(int argc,char **argv)
   PetscInt       i,j,its;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
+#if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
+#endif
   DMDALocalInfo  info;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;

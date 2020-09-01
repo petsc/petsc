@@ -14,7 +14,9 @@ int main(int argc, char **argv)
   PetscErrorCode  ierr;
   Mat             A, Aself;
   Vec             b, bself;
+#if defined(PETSC_USE_INFO)
   PetscInt        testarg = 1234;
+#endif
   int             numClasses;
   PetscClassId    testMatClassid, testVecClassid, testSysClassid;
   PetscBool       isEnabled = PETSC_FALSE, invert = PETSC_FALSE;

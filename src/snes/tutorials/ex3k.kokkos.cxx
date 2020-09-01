@@ -414,7 +414,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
 
    test:
      suffix: 3
-     requires: kokkos double !complex !single defined(PETSC_HAVE_cusparseCreateSolveAnalysisInfo) cuda
+     requires: kokkos double !complex !single define(PETSC_HAVE_cusparseCreateSolveAnalysisInfo) cuda
      nsize: 2
      args: -dm_vec_type cuda -dm_mat_type aijcusparse -vec_pinned_memory_min 0 -view_initial -view_kokkos_configuration false  -snes_monitor
      output_file: output/ex3k_1.out

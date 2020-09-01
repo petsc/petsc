@@ -6,7 +6,7 @@ static char help[]= "Test event log of VecScatter with various block sizes\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode     ierr;
-  PetscInt           i,j,low,high,n=256,N,errors,tot_errors,tot_msg,tot_len,avg_len;
+  PetscInt           i,j,low,high,n=256,N,errors,tot_errors;
   PetscInt           bs=1,ix[2],iy[2];
   PetscMPIInt        nproc,rank;
   PetscScalar       *xval;
@@ -15,10 +15,13 @@ int main(int argc,char **argv)
   IS                 isx,isy;
   VecScatter         ctx;
   const PetscInt     niter = 10;
+#if defined(PETSC_USE_LOG)
   PetscLogStage      stage1,stage2;
   PetscLogEvent      event1,event2;
   PetscLogDouble     numMessages,messageLength;
   PetscEventPerfInfo eventInfo;
+  PetscInt           tot_msg,tot_len,avg_len;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -81,6 +84,7 @@ int main(int argc,char **argv)
   if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %d\n",bs);CHKERRQ(ierr); }
 
   /* print out event log of VecScatter(bs=1) */
+#if defined(PETSC_USE_LOG)
   ierr    = PetscLogEventGetPerfInfo(stage1,event1,&eventInfo);CHKERRQ(ierr);
   ierr    = MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr    = MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -89,6 +93,7 @@ int main(int argc,char **argv)
   avg_len = tot_msg? (PetscInt)(messageLength/numMessages) : 0;
   /* when nproc > 2, tot_msg = 2*nproc*niter, tot_len = tot_msg*sizeof(PetscScalar)*bs */
   ierr    = PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%d) has sent out %d messages, total %d bytes, with average length %d bytes\n",bs,tot_msg,tot_len,avg_len);CHKERRQ(ierr);
+#endif
 
   ierr = ISDestroy(&isx);CHKERRQ(ierr);
   ierr = ISDestroy(&isy);CHKERRQ(ierr);
@@ -135,6 +140,7 @@ int main(int argc,char **argv)
   if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %d\n",bs);CHKERRQ(ierr); }
 
   /* print out event log of VecScatter(bs=4) */
+#if defined(PETSC_USE_LOG)
   ierr    = PetscLogEventGetPerfInfo(stage2,event2,&eventInfo);CHKERRQ(ierr);
   ierr    = MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr    = MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -143,6 +149,7 @@ int main(int argc,char **argv)
   avg_len = tot_msg? (PetscInt)(messageLength/numMessages) : 0;
   /* when nproc > 2, tot_msg = 2*nproc*niter, tot_len = tot_msg*sizeof(PetscScalar)*bs */
   ierr    = PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%d) has sent out %d messages, total %d bytes, with average length %d bytes\n",bs,tot_msg,tot_len,avg_len);CHKERRQ(ierr);
+#endif
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Program finished\n");CHKERRQ(ierr);
   ierr = ISDestroy(&isx);CHKERRQ(ierr);

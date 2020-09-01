@@ -18,6 +18,9 @@ configure_options = [
   '--with-scalar-type=complex',
   '--with-64-bit-indices=1',
 
+  '--with-log=0',
+  '--with-info=0',  
+
   '--download-hypre=1',
   '--download-mpich=1',
   '--download-cmake=1',

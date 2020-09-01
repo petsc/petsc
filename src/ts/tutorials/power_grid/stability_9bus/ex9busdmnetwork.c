@@ -973,11 +973,13 @@ int main(int argc,char ** argv)
   Exc            *exc;
   Load           *load;
   DM             networkdm;
+#if defined(PETSC_USE_LOG)
   PetscLogStage  stage1;
+#endif
   Userctx        user;
   KSP            ksp;
   PC             pc;
-  PetscInt       numEdges=0,numVertices=0;
+  PetscInt       numEdges = 0,numVertices = 0;
 
   ierr = PetscInitialize(&argc,&argv,"ex9busnetworkops",help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nc",&nc,NULL);CHKERRQ(ierr);

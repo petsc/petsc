@@ -522,13 +522,13 @@ PetscErrorCode postcheck(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_y,PetscB
       suffix: 2a
       filter: grep -i KSPConvergedDefault > /dev/null && echo "Found KSPConvergedDefault"
       args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -info
-      requires: define(PETSC_USE_LOG)
+      requires: define(PETSC_USE_INFO)
 
    test:
       suffix: 2b
       filter: grep -i  "User provided convergence test" > /dev/null  && echo "Found User provided convergence test"
       args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -use_convergence_test -info
-      requires: define(PETSC_USE_LOG)
+      requires: define(PETSC_USE_INFO)
 
    test:
       suffix: 3

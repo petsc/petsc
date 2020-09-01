@@ -14,10 +14,12 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 int main(int argc,char ** argv)
 {
   PetscErrorCode   ierr;
-  char             waterdata_file[PETSC_MAX_PATH_LEN]="sample1.inp";
+  char             waterdata_file[PETSC_MAX_PATH_LEN] = "sample1.inp";
   WATERDATA        *waterdata;
   AppCtx_Water     appctx;
+#if defined(PETSC_USE_LOG)
   PetscLogStage    stage1,stage2;
+#endif
   PetscMPIInt      crank;
   DM               networkdm;
   PetscInt         *edgelist = NULL;
@@ -38,7 +40,7 @@ int main(int argc,char ** argv)
   ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Water),&appctx.compkey_vtx);CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("Read Data",&stage1);CHKERRQ(ierr);
-  PetscLogStagePush(stage1);
+  ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
   ierr = PetscNew(&waterdata);CHKERRQ(ierr);
 
   /* READ THE DATA */
@@ -50,10 +52,10 @@ int main(int argc,char ** argv)
     ierr = PetscCalloc1(2*waterdata->nedge,&edgelist);CHKERRQ(ierr);
     ierr = GetListofEdges_Water(waterdata,edgelist);CHKERRQ(ierr);
   }
-  PetscLogStagePop();
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
-  PetscLogStagePush(stage2);
+  ierr = PetscLogStagePush(stage2);CHKERRQ(ierr);
 
   /* Set numbers of nodes and edges */
   ierr = DMNetworkSetSizes(networkdm,1,&waterdata->nvertex,&waterdata->nedge,0,NULL);CHKERRQ(ierr);
@@ -96,7 +98,7 @@ int main(int argc,char ** argv)
   /* Distribute networkdm to multiple processes */
   ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
 
-  PetscLogStagePop();
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
@@ -113,9 +115,7 @@ int main(int argc,char ** argv)
 
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
-  if (reason < 0) {
-    SETERRQ(PETSC_COMM_SELF,0,"No solution found for the water network");
-  }
+  if (reason < 0) SETERRQ(PETSC_COMM_SELF,0,"No solution found for the water network");
   /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);
