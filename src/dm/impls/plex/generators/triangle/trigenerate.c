@@ -242,7 +242,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   struct triangulateio in;
   struct triangulateio out;
   DMLabel              label;
-  PetscInt             vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
+  PetscInt             vStart, vEnd, v, gcStart, cStart, cEnd, c, depth, depthGlobal;
   PetscMPIInt          rank;
   PetscErrorCode       ierr;
   double               *maxVolumes;
@@ -283,7 +283,9 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
   }
-  ierr  = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetGhostCellStratum(dm, &gcStart, NULL);CHKERRQ(ierr);
+  if (gcStart >= 0) cEnd = gcStart;
 
   in.numberofcorners   = 3;
   in.numberoftriangles = cEnd - cStart;
