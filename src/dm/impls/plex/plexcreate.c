@@ -1002,9 +1002,13 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(MPI_Comm comm, PetscIn
 . dm  - The DM object
 
   Options Database Keys:
-+ -dm_plex_box_lower <x,y,z> - Specify lower-left-bottom coordinates for the box
-. -dm_plex_box_upper <x,y,z> - Specify upper-right-top coordinates for the box
-- -dm_plex_box_faces <m,n,p> - Number of faces in each linear direction
+  These options override the hard-wired input values.
++ -dm_plex_box_dim <dim>       - Set the topological dimension
+. -dm_plex_box_simplex <bool>  - PETSC_TRUE for simplex elements, PETSC_FALSE for tensor elements
+. -dm_plex_box_lower <x,y,z>   - Specify lower-left-bottom coordinates for the box
+. -dm_plex_box_upper <x,y,z>   - Specify upper-right-top coordinates for the box
+- -dm_plex_box_faces <m,n,p>   - Number of faces in each linear direction
+
 
   Notes:
   The options database keys above take lists of length d in d dimensions.
