@@ -153,6 +153,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
                                          68, 69, 70, 82, 83, 84, 85, 102, 103, 105, 106, 107, 108, 109, 110, 111, 112, 114, 130, 132, 134, 135, 136, 137, 139};
   size_t         len, bdlen, extlen;
   PetscMPIInt    rank, size;
+  PetscBool      periodic;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -212,7 +213,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = edm;
   }
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
+
+  /* For topologically periodic meshes, we first localize coordinates,
+     and then remove any information related with the
+     automatic computation of localized vertices.
+     This way, refinement operations and conversions to p4est
+     will preserve the shape of the domain in physical space */
+  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
+  ierr = DMGetPeriodicity(*dm,&periodic,NULL,NULL,NULL);CHKERRQ(ierr);
+  if (periodic) {
+    ierr = DMSetPeriodicity(*dm,PETSC_TRUE,NULL,NULL,NULL);CHKERRQ(ierr);
+  }
+
   ierr = DMViewFromOptions(*dm,NULL,"-init_dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(*dm,&dim);CHKERRQ(ierr);
 

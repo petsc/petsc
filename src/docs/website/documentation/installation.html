@@ -772,11 +772,19 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         </p>
 
         <ul>
-          <li>python</li>
+          <li>python3</li>
           <li>make</li>
           <li>[default selection should already have <code>diff</code> and other tools]</li>
         </ul>
-
+        <p>
+        Note: If installing PETSc with <strong>Cygwin/GNU</strong> compilers - install  additional Cygwin components.
+        <ul>
+          <li>gcc-core gcc-g++ gcc-fortran</li>
+          <li>liblapack-devel</li>
+          <li>openmpi libopenmpi-devel</li>
+        </ul>
+        Additional cygwin components like <code>git cmake</code> can be useful for installing external packages.
+        </p>
         <p>
           <strong>Remove Cygwin link.exe: </strong>Cygwin link.exe can
           conflict with Intel ifort compiler. If you are using ifort -
