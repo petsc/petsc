@@ -2416,16 +2416,21 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
 
 static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
+  PetscReal      volume = -1.0;
   PetscInt       prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0;
-  PetscBool      distribute = PETSC_FALSE, isHierarchy;
+  PetscBool      uniformOrig, uniform = PETSC_TRUE, distribute = PETSC_FALSE, isHierarchy, flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Options");CHKERRQ(ierr);
   /* Handle DMPlex refinement before distribution */
-  ierr = PetscOptionsBoundedInt("-dm_refine_pre", "The number of uniform refinements before distribution", "DMCreate", prerefine, &prerefine, NULL,0);CHKERRQ(ierr);
-  if (prerefine) {ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);}
+  ierr = DMPlexGetRefinementUniform(dm, &uniformOrig);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_refine_uniform_pre", "Flag for uniform refinement before distribution", "DMCreate", uniform, &uniform, &flg);CHKERRQ(ierr);
+  if (flg) {ierr = DMPlexSetRefinementUniform(dm, uniform);CHKERRQ(ierr);}
+  ierr = PetscOptionsReal("-dm_refine_volume_limit_pre", "The maximum cell volume after refinement before distribution", "DMCreate", volume, &volume, &flg);CHKERRQ(ierr);
+  if (flg) {ierr = DMPlexSetRefinementLimit(dm, volume);CHKERRQ(ierr);}
+  ierr = PetscOptionsBoundedInt("-dm_refine_pre", "The number of refinements before distribution", "DMCreate", prerefine, &prerefine, NULL,0);CHKERRQ(ierr);
   for (r = 0; r < prerefine; ++r) {
     DM             rdm;
     PetscPointFunc coordFunc = ((DM_Plex*) dm->data)->coordFunc;
@@ -2441,6 +2446,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     }
     ierr = DMDestroy(&rdm);CHKERRQ(ierr);
   }
+  ierr = DMPlexSetRefinementUniform(dm, uniformOrig);CHKERRQ(ierr);
   /* Handle DMPlex distribution */
   ierr = PetscOptionsBool("-dm_distribute", "Flag to redistribute a mesh among processes", "DMCreate", distribute, &distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-dm_distribute_overlap", "The size of the overlap halo", "DMCreate", overlap, &overlap, NULL, 0);CHKERRQ(ierr);
@@ -2682,11 +2688,18 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
                     ownership of the underlying DMPlex points. This is specified by another PetscSection object.
 
   Options Database Keys:
-+ -dm_plex_hash_location             - Use grid hashing for point location
++ -dm_refine_pre                     - Refine mesh before distribution
++ -dm_refine_uniform_pre             - Choose uniform or generator-based refinement
++ -dm_refine_volume_limit_pre        - Cell volume limit after pre-refinement using generator
+. -dm_distribute                     - Distribute mesh across processes
+. -dm_distribute_overlap             - Number of cells to overlap for distribution
+. -dm_refine                         - Refine mesh after distribution
+. -dm_plex_hash_location             - Use grid hashing for point location
 . -dm_plex_partition_balance         - Attempt to evenly divide points on partition boundary between processes
 . -dm_plex_remesh_bd                 - Allow changes to the boundary on remeshing
 . -dm_plex_max_projection_height     - Maxmimum mesh point height used to project locally
 . -dm_plex_regular_refinement        - Use special nested projection algorithm for regular refinement
+. -dm_plex_check_all                 - Perform all shecks below
 . -dm_plex_check_symmetry            - Check that the adjacency information in the mesh is symmetric
 . -dm_plex_check_skeleton <celltype> - Check that each cell has the correct number of vertices
 . -dm_plex_check_faces <celltype>    - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type
