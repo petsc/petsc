@@ -302,7 +302,7 @@ void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
   #define PetscCUPMSynchronize                    PetscCUDASynchronize
   #define PetscNotUseCUPM                         PetscNotUseCUDA
   #define cupmOptionsStr                          "CUDA options"
-  #define cupmSetDeviceStr                        "-cuda_set_device"
+  #define cupmSetDeviceStr                        "-cuda_device"
   #define cupmViewStr                             "-cuda_view"
   #define cupmSynchronizeStr                      "-cuda_synchronize"
   #define PetscCUPMInitializeStr                  "PetscCUDAInitialize"
@@ -333,7 +333,7 @@ void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
   #define PetscCUPMSynchronize                    PetscHIPSynchronize
   #define PetscNotUseCUPM                         PetscNotUseHIP
   #define cupmOptionsStr                          "HIP options"
-  #define cupmSetDeviceStr                        "-hip_set_device"
+  #define cupmSetDeviceStr                        "-hip_device"
   #define cupmViewStr                             "-hip_view"
   #define cupmSynchronizeStr                      "-hip_synchronize"
   #define PetscCUPMInitializeStr                  "PetscHIPInitialize"
