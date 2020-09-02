@@ -22,11 +22,11 @@ if __name__ == "__main__":
           ln = re.search('<a name="line[0-9]*">[ 0-9]*: </a>',line)
           linenumber = line[ln.start():ln.end()]
           if os.path.isfile(includename):
-            sys.stdout.write(linenumber+' #include <A href="'+includename+'.html">&lt;'+includename+'&gt;</A>\n')
+            sys.stdout.write(linenumber+'#include <A href="'+includename+'.html">&lt;'+includename+'&gt;</A>\n')
           elif os.path.isfile(os.path.join(root,'include',includename)):
-            sys.stdout.write(linenumber+' #include <A href="'+os.path.relpath(os.path.join(froot,'include',includename))+'.html">&lt;'+includename+'&gt;</A>\n')
+            sys.stdout.write(linenumber+'#include <A href="'+os.path.relpath(os.path.join(froot,'include',includename))+'.html">&lt;'+includename+'&gt;</A>\n')
           elif os.path.isfile(os.path.join(root,includename)):
-            sys.stdout.write(linenumber+' #include <A href="'+os.path.relpath(os.path.join(froot,includename))+'.html">&lt;'+includename+'&gt;</A>\n')
+            sys.stdout.write(linenumber+'#include <A href="'+os.path.relpath(os.path.join(froot,includename))+'.html">&lt;'+includename+'&gt;</A>\n')
           else:
             sys.stdout.write(line)
         else:
