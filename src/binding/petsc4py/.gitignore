@@ -1,0 +1,22 @@
+build
+docs/*.html
+docs/*.info
+docs/*.pdf
+docs/*.[137]
+docs/apiref
+docs/usrman
+dist
+MANIFEST
+__pycache__
+*.pyc
+*.pyo
+.tox
+
+## Please don't mess with .gitignore. If you really hate `git status`
+## showing Cython-generated files, please add the following lines
+## (without the comment marks) to `.git/info/exclude`.
+
+# Cython-*.egg
+# petsc4py.PETSc.c
+# petsc4py.PETSc*.h
+# src/libpetsc4py/libpetsc4py.[hc]

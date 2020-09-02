@@ -3,15 +3,13 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '19a4cb5321333fca8b9c0438d43a14dcc670b73c'
-    self.download               = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
+    self.download               = ['link://src/binding/petsc4py']
     self.functions              = []
     self.includes               = []
     self.skippackagewithoptions = 1
     self.useddirectly           = 0
     self.linkedbypetsc          = 0
     self.builtafterpetsc        = 1
-    self.downloaddirnames       = ['petsc-petsc4py','petsc4py']
     return
 
   def setupDependencies(self, framework):
@@ -73,8 +71,12 @@ class Configure(config.package.Package):
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\
-                          '@echo "To use petsc4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
+                          '@echo "To use petsc4py, add '+os.path.join(self.installDir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
+    self.addMakeRule('petsc4pytest','', \
+                       ['@echo "*** Testing petsc4py ***"',\
+                        '@PYTHONPATH='+os.path.join(self.installDir,'lib')+':${PYTHONPATH} '+self.python.pyexe+' '+os.path.join(self.packageDir,'test','runtests.py'+' --verbose'),\
+                        '@echo "====================================="'])
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('petsc4py-build','')
       # the build must be done at install time because PETSc shared libraries must be in final location before building petsc4py
@@ -88,13 +90,18 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
-    if not self.python.cython:
-        raise RuntimeError('petsc4py requires Python with Cython module installed')
-    if not self.python.numpy:
-        raise RuntimeError('petsc4py requires Python with numpy module installed')
+    chkpkgs = ['cython','numpy']
+    npkgs  = []
+    for pkg in chkpkgs:
+      if not getattr(self.python,pkg): npkgs.append(pkg)
+    if npkgs:
+      raise RuntimeError('PETSc4py requires Python with "%s" module(s) installed!\n'
+                         'Please install using package managers - for ex: "apt" or "dnf" (on linux),\n'
+                         'or with "pip" using: %s -m pip install %s' % (" ".join(npkgs), self.python.pyexe, " ".join(npkgs)))
     self.checkDownload()
 
   def alternateConfigureLibrary(self):
     self.addMakeRule('petsc4py-build','')
     self.addMakeRule('petsc4py-install','')
+    self.addMakeRule('petsc4pytest','')
 
