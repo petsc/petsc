@@ -1578,6 +1578,8 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
 
   Consider trying TSARKIMEX if the stiff part is strongly nonlinear.
 
+  Since this uses a single linear solve per time-step if you wish to lag the jacobian or preconditioner computation you must use also -snes_lag_jacobian_persists true or -snes_lag_jacobian_preconditioner true
+
   Developer Notes:
   Rosenbrock-W methods are typically specified for autonomous ODE
 

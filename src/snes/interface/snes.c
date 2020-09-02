@@ -859,7 +859,9 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
 .  -snes_max_fail <max_fail> - maximum number of line search failures allowed before stopping, default is none
 .  -snes_max_linear_solve_fail - number of linear solver failures before SNESSolve() stops
 .  -snes_lag_preconditioner <lag> - how often preconditioner is rebuilt (use -1 to never rebuild)
+.  -snes_lag_preconditioner_persists <true,false> - retains the -snes_lag_preconditioner information across multiple SNESSolve()
 .  -snes_lag_jacobian <lag> - how often Jacobian is rebuilt (use -1 to never rebuild)
+.  -snes_lag_jacobian_persists <true,false> - retains the -snes_lag_jacobian information across multiple SNESSolve()
 .  -snes_trtol <trtol> - trust region tolerance
 .  -snes_no_convergence_test - skip convergence test in nonlinear
                                solver; hence iterations will continue until max_it
@@ -936,6 +938,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
   ierr = PetscOptionsInt("-snes_lag_preconditioner","How often to rebuild preconditioner","SNESSetLagPreconditioner",snes->lagpreconditioner,&lag,&flg);CHKERRQ(ierr);
   if (flg) {
+    if (lag == -1) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_USER,"Cannot set the lag to -1 from the command line since the preconditioner must be built as least once, perhaps you mean -2");
     ierr = SNESSetLagPreconditioner(snes,lag);CHKERRQ(ierr);
   }
   ierr = PetscOptionsBool("-snes_lag_preconditioner_persists","Preconditioner lagging through multiple SNES solves","SNESSetLagPreconditionerPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
@@ -944,6 +947,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   }
   ierr = PetscOptionsInt("-snes_lag_jacobian","How often to rebuild Jacobian","SNESSetLagJacobian",snes->lagjacobian,&lag,&flg);CHKERRQ(ierr);
   if (flg) {
+    if (lag == -1) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_USER,"Cannot set the lag to -1 from the command line since the Jacobian must be built as least once, perhaps you mean -2");
     ierr = SNESSetLagJacobian(snes,lag);CHKERRQ(ierr);
   }
   ierr = PetscOptionsBool("-snes_lag_jacobian_persists","Jacobian lagging through multiple SNES solves","SNESSetLagJacobianPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
@@ -1681,7 +1685,7 @@ PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
                     SNES always creates the snes->kspconvctx even though it is used by only one type. This should
                     be fixed.
 
-.seealso: SNESSolve(), SNESDestroy(), SNES, SNESSetLagPreconditioner()
+.seealso: SNESSolve(), SNESDestroy(), SNES, SNESSetLagPreconditioner(), SNESSetLagJacobian()
 
 @*/
 PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
@@ -3296,16 +3300,20 @@ PetscErrorCode  SNESDestroy(SNES *snes)
          the Jacobian is built etc. -2 indicates rebuild preconditioner at next chance but then never rebuild after that
 
    Options Database Keys:
-.    -snes_lag_preconditioner <lag>
++    -snes_lag_jacobian_persists <true,false> - sets the persistence
+.    -snes_lag_jacobian <-2,1,2,...> - sets the lag
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+-    -snes_lag_preconditioner <-2,1,2,...> - sets the lag
 
    Notes:
    The default is 1
-   The preconditioner is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1
+   The preconditioner is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1 or SNESSetLagPreconditionerPersists() was called
    If  -1 is used before the very first nonlinear solve the preconditioner is still built because there is no previous preconditioner to use
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian()
+.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESSetLagPreconditionerPersists(),
+          SNESSetLagJacobianPersists()
 
 @*/
 PetscErrorCode  SNESSetLagPreconditioner(SNES snes,PetscInt lag)
@@ -3391,7 +3399,10 @@ PetscErrorCode  SNESGetGridSequence(SNES snes,PetscInt *steps)
          the Jacobian is built etc. -2 indicates rebuild preconditioner at next chance but then never rebuild after that
 
    Options Database Keys:
-.    -snes_lag_preconditioner <lag>
++    -snes_lag_jacobian_persists <true,false> - sets the persistence
+.    -snes_lag_jacobian <-2,1,2,...> - sets the lag
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+-    -snes_lag_preconditioner <-2,1,2,...> - sets the lag
 
    Notes:
    The default is 1
@@ -3399,7 +3410,7 @@ PetscErrorCode  SNESGetGridSequence(SNES snes,PetscInt *steps)
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESSetLagPreconditioner()
+.seealso: SNESSetTrustRegionTolerance(), SNESSetLagPreconditioner(), SNESSetLagJacobianPersists(), SNESSetLagPreconditionerPersists()
 
 @*/
 PetscErrorCode  SNESGetLagPreconditioner(SNES snes,PetscInt *lag)
@@ -3422,7 +3433,10 @@ PetscErrorCode  SNESGetLagPreconditioner(SNES snes,PetscInt *lag)
          the Jacobian is built etc. -2 means rebuild at next chance but then never again
 
    Options Database Keys:
-.    -snes_lag_jacobian <lag>
++    -snes_lag_jacobian_persists <true,false> - sets the persistence
+.    -snes_lag_jacobian <-2,1,2,...> - sets the lag
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+-    -snes_lag_preconditioner <-2,1,2,...> - sets the lag.
 
    Notes:
    The default is 1
@@ -3432,7 +3446,7 @@ PetscErrorCode  SNESGetLagPreconditioner(SNES snes,PetscInt *lag)
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagPreconditioner(), SNESGetLagJacobian()
+.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagPreconditioner(), SNESGetLagJacobianPersists(), SNESSetLagPreconditionerPersists()
 
 @*/
 PetscErrorCode  SNESSetLagJacobian(SNES snes,PetscInt lag)
@@ -3458,16 +3472,13 @@ PetscErrorCode  SNESSetLagJacobian(SNES snes,PetscInt lag)
 .   lag - -1 indicates NEVER rebuild, 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
          the Jacobian is built etc.
 
-   Options Database Keys:
-.    -snes_lag_jacobian <lag>
-
    Notes:
    The default is 1
-   The jacobian is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1
+   The jacobian is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1 or SNESSetLagJacobianPersists() was called.
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESSetLagJacobian(), SNESSetLagPreconditioner(), SNESGetLagPreconditioner()
+.seealso: SNESSetTrustRegionTolerance(), SNESSetLagJacobian(), SNESSetLagPreconditioner(), SNESGetLagPreconditioner(), SNESSetLagJacobianPersists(), SNESSetLagPreconditionerPersists()
 
 @*/
 PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
@@ -3488,7 +3499,11 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
 -   flg - jacobian lagging persists if true
 
    Options Database Keys:
-.    -snes_lag_jacobian_persists <flg>
++    -snes_lag_jacobian_persists <true,false> - sets the persistence
+.    -snes_lag_jacobian <-2,1,2,...> - sets the lag
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+-    -snes_lag_preconditioner <-2,1,2,...> - sets the lag
+
 
    Notes:
     This is useful both for nonlinear preconditioning, where it's appropriate to have the Jacobian be stale by
@@ -3497,7 +3512,7 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
 
    Level: developer
 
-.seealso: SNESSetLagPreconditionerPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetNPC()
+.seealso: SNESSetLagPreconditionerPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetNPC(), SNESSetLagJacobianPersists()
 
 @*/
 PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
@@ -3519,7 +3534,10 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
 -   flg - preconditioner lagging persists if true
 
    Options Database Keys:
-.    -snes_lag_jacobian_persists <flg>
++    -snes_lag_jacobian_persists <true,false> - sets the persistence
+.    -snes_lag_jacobian <-2,1,2,...> - sets the lag
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+-    -snes_lag_preconditioner <-2,1,2,...> - sets the lag
 
    Notes:
     This is useful both for nonlinear preconditioning, where it's appropriate to have the preconditioner be stale
@@ -3528,7 +3546,7 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
 
    Level: developer
 
-.seealso: SNESSetLagJacobianPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetNPC()
+.seealso: SNESSetLagJacobianPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetNPC(), SNESSetLagPreconditioner()
 
 @*/
 PetscErrorCode  SNESSetLagPreconditionerPersists(SNES snes,PetscBool flg)

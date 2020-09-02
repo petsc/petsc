@@ -6,7 +6,7 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
         \dot{U} = f(U,V)
         F(U,V)  = 0
 
-    Same as ex6.c and ex7.c except calls the ARKIMEX integrator on the entire DAE
+    Same as ex6.c and ex7.c except calls the TSROSW integrator on the entire DAE
 */
 
 
