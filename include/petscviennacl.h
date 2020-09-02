@@ -29,7 +29,9 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayWrite(Vec v, viennacl::vector<Pet
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, viennacl::vector<PetscScalar> **a);
 
 PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCLWithArray(MPI_Comm,PetscInt,PetscInt,const viennacl::vector<PetscScalar> *,Vec *);
+PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,const viennacl::vector<PetscScalar> *,Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const viennacl::vector<PetscScalar> *,Vec *);
+PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar *,const viennacl::vector<PetscScalar> *,Vec *);
 
 PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec,const viennacl::vector<PetscScalar> *);
 PETSC_EXTERN PetscErrorCode VecViennaCLResetArray(Vec);

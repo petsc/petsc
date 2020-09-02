@@ -326,6 +326,66 @@ PetscErrorCode  VecCreateMPIViennaCLWithArray(MPI_Comm comm,PetscInt bs,PetscInt
   PetscFunctionReturn(0);
 }
 
+/*@C
+   VecCreateMPIViennaCLWithArrays - Creates a parallel, array-style vector,
+   where the user provides the ViennaCL vector to store the vector values.
+
+   Collective
+
+   Input Parameters:
++  comm  - the MPI communicator to use
+.  bs    - block size, same meaning as VecSetBlockSize()
+.  n     - local vector length, cannot be PETSC_DECIDE
+.  N     - global vector length (or PETSC_DECIDE to have calculated)
+-  cpuarray - the user provided CPU array to store the vector values
+-  viennaclvec - ViennaCL vector where the Vec entries are to be stored on the device.
+
+   Output Parameter:
+.  vv - the vector
+
+   Notes:
+   If both cpuarray and viennaclvec are provided, the caller must ensure that
+   the provided arrays have identical values.
+
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   same type as an existing vector.
+
+   PETSc does NOT free the provided arrays when the vector is destroyed via
+   VecDestroy(). The user should not free the array until the vector is
+   destroyed.
+
+   Level: intermediate
+
+.seealso: VecCreateSeqViennaCLWithArrays(), VecCreateMPIWithArray()
+          VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
+          VecCreateMPI(), VecCreateGhostWithArray(), VecViennaCLPlaceArray(),
+          VecPlaceArray(), VecCreateMPICUDAWithArrays(),
+          VecViennaCLAllocateCheckHost()
+@*/
+PetscErrorCode  VecCreateMPIViennaCLWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const PetscScalar cpuarray[],const ViennaCLVector *viennaclvec,Vec *vv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCreateMPIViennaCLWithArray(comm,bs,n,N,viennaclvec,vv);CHKERRQ(ierr);
+
+  if (cpuarray && viennaclvec) {
+    Vec_MPI *s         = (Vec_MPI*)((*vv)->data);
+    s->array           = (PetscScalar*)cpuarray;
+    (*vv)->offloadmask = PETSC_OFFLOAD_BOTH;
+  } else if (cpuarray) {
+    Vec_MPI *s         = (Vec_MPI*)((*vv)->data);
+    s->array           = (PetscScalar*)cpuarray;
+    (*vv)->offloadmask =  PETSC_OFFLOAD_CPU;
+  } else if (viennaclvec) {
+    (*vv)->offloadmask = PETSC_OFFLOAD_GPU;
+  } else {
+    (*vv)->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
+  }
+
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecCreate_MPIViennaCL_Private(Vec vv,PetscBool alloc,PetscInt nghost,const ViennaCLVector *array)
 {
   PetscErrorCode ierr;
