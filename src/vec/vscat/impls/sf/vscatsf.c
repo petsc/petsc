@@ -216,7 +216,7 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
   for (i=0; i<bas->ioffset[bas->niranks]; i++) bas->irootloc[i] = tomap[bas->irootloc[i]*bs]/bs;
 #if defined(PETSC_HAVE_DEVICE)
   /* Free the irootloc copy on device. We allocate a new copy and get the updated value on demand. See PetscSFLinkGetRootPackOptAndIndices() */
-  for (i=0; i<2; i++) {ierr = PetscSFFree(PETSC_MEMTYPE_DEVICE,bas->irootloc_d[i]);CHKERRQ(ierr);}
+  for (i=0; i<2; i++) {ierr = PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,bas->irootloc_d[i]);CHKERRQ(ierr);}
 #endif
   /* Destroy and then rebuild root packing optimizations since indices are changed */
   ierr = PetscSFResetPackFields(sf);CHKERRQ(ierr);
@@ -442,6 +442,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
 
     if (pattern[0] || pattern[1]) {
       ierr = PetscSFCreate(xcomm,&data->sf);CHKERRQ(ierr);
+      ierr = PetscSFSetFromOptions(data->sf);CHKERRQ(ierr);
       ierr = PetscSFSetGraphWithPattern(data->sf,map,pattern[0] ? PETSCSF_PATTERN_ALLGATHER : PETSCSF_PATTERN_GATHER);CHKERRQ(ierr);
       goto functionend; /* No further analysis needed. What a big win! */
     }

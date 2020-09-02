@@ -390,14 +390,14 @@ static PetscErrorCode PetscSFLinkDestroy_Kokkos(PetscSFLink link)
 }
 
 /* Some device-specific utilities */
-PetscErrorCode PetscSFLinkSyncDevice(PetscSF sf,PetscSFLink link)
+static PetscErrorCode PetscSFLinkSyncDevice_Kokkos(PetscSFLink link)
 {
   PetscFunctionBegin;
   Kokkos::fence();
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFLinkSyncStream(PetscSF sf,PetscSFLink link)
+static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink link)
 {
   DeviceExecutionSpace&  exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
   PetscFunctionBegin;
@@ -405,7 +405,7 @@ PetscErrorCode PetscSFLinkSyncStream(PetscSF sf,PetscSFLink link)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFLinkMemcpy(PetscSF sf,PetscSFLink link,PetscMemType dstmtype,void* dst,PetscMemType srcmtype,const void*src,size_t n)
+static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink link,PetscMemType dstmtype,void* dst,PetscMemType srcmtype,const void*src,size_t n)
 {
   DeviceExecutionSpace&  exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
 
@@ -433,7 +433,7 @@ PetscErrorCode PetscSFLinkMemcpy(PetscSF sf,PetscSFLink link,PetscMemType dstmty
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFMalloc(PetscMemType mtype,size_t size,void** ptr)
+PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype,size_t size,void** ptr)
 {
   PetscFunctionBegin;
   if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
@@ -442,7 +442,7 @@ PetscErrorCode PetscSFMalloc(PetscMemType mtype,size_t size,void** ptr)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFFree_Private(PetscMemType mtype,void* ptr)
+PetscErrorCode PetscSFFree_Kokkos(PetscMemType mtype,void* ptr)
 {
   PetscFunctionBegin;
   if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
@@ -456,7 +456,7 @@ PetscErrorCode PetscSFFree_Private(PetscMemType mtype,void* ptr)
 /*====================================================================================*/
 
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
-PetscErrorCode PetscSFLinkSetUp_Device(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
+PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
   PetscInt       nSignedChar=0,nUnsignedChar=0,nInt=0,nPetscInt=0,nPetscReal=0;
@@ -541,6 +541,10 @@ PetscErrorCode PetscSFLinkSetUp_Device(PetscSF sf,PetscSFLink link,MPI_Datatype 
   if (!sf->use_default_stream) {hipError_t cerr = hipStreamCreate(&link->stream);CHKERRQ(cerr);}
   link->sptr         = new DeviceExecutionSpace(link->stream);
 #endif
+
+  link->d_SyncDevice = PetscSFLinkSyncDevice_Kokkos;
+  link->d_SyncStream = PetscSFLinkSyncStream_Kokkos;
+  link->Memcpy       = PetscSFLinkMemcpy_Kokkos;
   link->Destroy      = PetscSFLinkDestroy_Kokkos;
   link->deviceinited = PETSC_TRUE;
   PetscFunctionReturn(0);

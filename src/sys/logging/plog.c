@@ -80,7 +80,7 @@ PetscLogDouble petsc_sum_of_waits_ct = 0.0;  /* The total number of waits */
 PetscLogDouble petsc_allreduce_ct    = 0.0;  /* The number of reductions */
 PetscLogDouble petsc_gather_ct       = 0.0;  /* The number of gathers and gathervs */
 PetscLogDouble petsc_scatter_ct      = 0.0;  /* The number of scatters and scattervs */
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
 PetscLogDouble petsc_ctog_ct         = 0.0;  /* The total number of CPU to GPU copies */
 PetscLogDouble petsc_gtoc_ct         = 0.0;  /* The total number of GPU to CPU copies */
 PetscLogDouble petsc_ctog_sz         = 0.0;  /* The total size of CPU to GPU copies */
