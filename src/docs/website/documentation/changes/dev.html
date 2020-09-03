@@ -134,8 +134,11 @@
         </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
-      <h4>PetscSF:</h4>
-      <h4>PF:</h4>
+      <h4>VecScatter / PetscSF:</h4>
+        <ul>
+          <li>Add a Kokkos backend to SF. Previously, SF could only handle CUDA devices. Now it can handle other devices that Kokkos supports when Petsc is configured with Kokkos. The command line option is: -sf_backend cuda | kokkos</li>
+        </ul>
+        <h4>PF:</h4>
       <h4>Vec:</h4>
         <ul>
           <li>Fix memory leaks when requesting -vec_type {standard|cuda|viennacl} when the vector is already of the desired type</li>
@@ -144,7 +147,6 @@
           <li>Add VecCreate{Seq|MPI}CUDAWithArrays to create VECCUDA sharing the CPU and/or GPU memory spaces.</li>
           <li>Add VecCreate{Seq|MPI}ViennaCLWithArrays to create VECVIENNACL sharing the CPU and/or GPU memory spaces.</li>
         </ul>
-      <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <ul>
         <li>PetscSectionGetClosurePermutation(), PetscSectionSetClosurePermutation(), and PetscSectionGetClosureInversePermutation() all require a new argument depth and the getters require closure size to be specified by the caller.
