@@ -1,0 +1,42 @@
+Vec Object: 2 MPI processes
+  type: mpicuda
+Process [0]
+0.
+1.
+2.
+3.
+4.
+Process [1]
+0.
+1.
+2.
+3.
+4.
+Vec Object: 2 MPI processes
+  type: mpicuda
+Process [0]
+42.
+42.
+42.
+42.
+42.
+Process [1]
+42.
+42.
+42.
+42.
+42.
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+42.
+42.
+42.
+42.
+42.
+Process [1]
+42.
+42.
+42.
+42.
+42.
