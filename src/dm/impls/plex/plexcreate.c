@@ -1007,8 +1007,8 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(MPI_Comm comm, PetscIn
 . -dm_plex_box_simplex <bool>  - PETSC_TRUE for simplex elements, PETSC_FALSE for tensor elements
 . -dm_plex_box_lower <x,y,z>   - Specify lower-left-bottom coordinates for the box
 . -dm_plex_box_upper <x,y,z>   - Specify upper-right-top coordinates for the box
-- -dm_plex_box_faces <m,n,p>   - Number of faces in each linear direction
-
+. -dm_plex_box_faces <m,n,p>   - Number of faces in each linear direction
+- -dm_plex_box_bd <bx,by,bz>   - Specify the DMBoundaryType for each direction
 
   Notes:
   The options database keys above take lists of length d in d dimensions.
@@ -1075,6 +1075,9 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
   n    = 3;
   ierr = PetscOptionsGetRealArray(NULL, NULL, "-dm_plex_box_upper", upp, &n, &flg);CHKERRQ(ierr);
   if (flg && (n != dim)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Upper box point had %D values, should have been %D", n, dim);
+  n    = 3;
+  ierr = PetscOptionsGetEnumArray(NULL, NULL, "-dm_plex_box_bd", DMBoundaryTypes, (PetscEnum *) bdt, &n, &flg);CHKERRQ(ierr);
+  if (flg && (n != dim)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Box boundary types had %D values, should have been %D", n, dim);
 
   if (dim == 1)      {ierr = DMPlexCreateLineMesh_Internal(comm, fac[0], low[0], upp[0], bdt[0], dm);CHKERRQ(ierr);}
   else if (simplex)  {ierr = DMPlexCreateBoxMesh_Simplex_Internal(comm, dim, fac, low, upp, bdt, interpolate, dm);CHKERRQ(ierr);}
