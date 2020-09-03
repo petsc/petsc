@@ -105,10 +105,10 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
   b->use_gpu_aware_mpi    = use_gpu_aware_mpi;
   b->use_stream_aware_mpi = PETSC_FALSE;
   b->use_default_stream   = PETSC_TRUE; /* The assumption is true for PETSc internal use of SF */
-  #if defined(PETSC_HAVE_CUDA)
-    b->backend = PETSCSF_BACKEND_CUDA;
-  #elif defined(PETSC_HAVE_KOKKOS)
+  #if defined(PETSC_HAVE_KOKKOS) /* Prefer kokkos over cuda*/
     b->backend = PETSCSF_BACKEND_KOKKOS;
+  #elif defined(PETSC_HAVE_CUDA)
+    b->backend = PETSCSF_BACKEND_CUDA;
   #endif
 #endif
   *sf = b;
