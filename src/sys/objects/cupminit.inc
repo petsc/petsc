@@ -34,7 +34,36 @@ static PetscErrorCode PetscCUPMValidate(void)
   PetscFunctionReturn(0);
 }
 
-/* Initialize the device lazily just before creating the first device object. */
+/*@C
+     PetscCUDAInitializeCheck - Check if CUDA is initialized. If not, initialize it.
+
+  Logically collective
+
+  Level: beginner
+
+  Notes:
+    In PETSc lazy device initialization, PETSc calls this function right before creating the first CUDA/HIP object.
+    It can be used by application developers who want to lazily initialize CUDA/HIP when they start to use it (which may before a PETSc CUDA/HIP object is created.)
+
+  .seealso: PetscCUDAInitialize(), PetscHIPInitialize(), PetscHIPInitializeCheck()
+@*/
+PETSC_EXTERN PetscErrorCode PetscCUDAInitializeCheck(void);
+
+
+/*@C
+     PetscHIPInitializeCheck - Check if HIP is initialized. If not, initialize it.
+
+  Logically collective
+
+  Level: beginner
+
+  Notes:
+    See notes of PetscCUDAInitializeCheck() for details.
+
+  .seealso: PetscHIPInitialize(), PetscCUDAInitialize(), PetscCUDAInitializeCheck()
+@*/
+PETSC_EXTERN PetscErrorCode PetscCUDAInitializeCheck(void);
+
 PetscErrorCode PetscCUPMInitializeCheck(void)
 {
   PetscErrorCode        ierr;
@@ -75,32 +104,61 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
 }
 
 /*@C
-     Petsc{CUDA,HIP}Initialize - Initializes the device (eagerly in PetscInitialize()) and BLAS/SPARSE on the device
+     PetscCUDAInitialize - Initializes CUDA (eagerly in PetscInitialize() or soon after PetscInitialize()) and cuBLAS/cuSPARSE libraries on the device
 
      Logically collective
 
   Input Parameter:
-  comm   - the MPI communicator that will utilize the devices
-  device - the device assigned to current MPI process. Special values like PETSC_DECIDE/DEFAULT have special meanings (see details below)
+. comm   - the MPI communicator that will utilize the devices
+. device - the device assigned to current MPI process. Special values like PETSC_DECIDE or PETSC_DEFAULT have special meanings (see details below)
 
-  Options Database: (xxx below can be cuda or hip)
-+  -xxx_set_device <device> - the device assigned to current MPI rank. <device> is case-insensitive and can be:
+  Options Database:
++  -cuda_device <device> - the device assigned to current MPI rank. <device> is case-insensitive and can be:
        NONE (or none, or -3) : the code will not use any device, otherwise it will error out;
        PETSC_DEFAULT(or DEFAULT, or -2) : do not explicitly set device, i.e., use whatever device already set by user (probably before PetscInitialize()). Init device runtime etc;
        PETSC_DECIDE (or DECIDE, or -1) : assign MPI ranks in comm to available devices in round-robin, and init device runtime etc on the selected device;
        >= 0 integer  : assign the device with this id to current MPI process. Error out if <device> is invalid. Init device runtime etc on this device;
      With PETSC_{DECIDE, DEFAULT}, if there are actually no devices, the code can still run, but it will error out when trying to create device objects.
-.  -xxx_view               - view information about the devices.
-.  -xxx_synchronize        - wait at the end of asynchronize device calls so that their time gets credited to the current event; default with -log_view.
-.  -log_view               - logging, however if alone or combined with `-xxx_set_device DEFAULT | DECIDE | >=0 int`, will init device; if combined with `-xxx_set_device none`, won't init device.
--  -use_gpu_aware_mpi      - assume the MPI is device/GPU-aware when communicating data on devices.
+.  -cuda_view              - view information about the devices.
+.  -cuda_synchronize       - wait at the end of asynchronize device calls so that their time gets credited to the current event. With -log_view, the default is true, otherwise false.
+.  -log_view               - logging, however if alone or combined with `-cuda_set_device DEFAULT | DECIDE | >=0 int`, will init device; if combined with `-cuda_set_device none`, won't init device.
+-  -use_gpu_aware_mpi      - assume the MPI is device/GPU-aware when communicating data on devices. Default true.
 
   Level: beginner
 
   Notes:
-   Initializing BLAS on GPUs takes about 1/2 second therefore it is done by default in Petsc{CUDA,HIP}Initialize() before logging begins.
+    Unless the input parameter <device> = -3, this routine initializes the CUDA device. It also initializes the cuBLAS/cuSPARSE libraries, which
+    takes a lot of time. Initializing them early helps avoid skewing timings in -log_view.
 
+    If this routine is triggered by command line options, it is called in PetscInitialize(). If users want to directly call it, they should call it immediately after PetscInitialize().
+
+    If this is not called then the CUDA initialization is delayed until first creation of a CUDA object and this can affect the timing since they happen asynchronously on different nodes and take a lot of time.
+
+   .seealso: PetscCUDAInitializeCheck(), PetscHIPInitialize(), PetscHIPInitializeCheck()
 @*/
+PETSC_EXTERN PetscErrorCode PetscCUDAInitialize(MPI_Comm comm,PetscInt device);
+
+/*@C
+     PetscHIPInitialize - Initializes HIP (eagerly in PetscInitialize() or soon after PetscInitialize()) and hipBLAS/hipSPARSE libraries on the device
+
+     Logically collective
+
+  Input Parameter:
+   (see notes)
+
+  Options Database:
+   (see notes)
+
+  Level: beginner
+
+  Notes:
+    The functionality, parameters and options database of this routine are similar to that of PetscCUDAInitialize(), except that the option names
+    are -hip_device, -hip_view, -hip_synchronize instead. See manpage of PetscCUDAInitialize() for details.
+
+  .seealso: PetscHIPInitializeCheck(), PetscCUDAInitialize(), PetscCUDAInitializeCheck()
+@*/
+PETSC_EXTERN PetscErrorCode PetscHIPInitialize(MPI_Comm comm,PetscInt device);
+
 PetscErrorCode PetscCUPMInitialize(MPI_Comm comm,PetscInt device)
 {
   PetscErrorCode        ierr;
