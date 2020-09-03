@@ -7,17 +7,14 @@ static char help[] = "Tests L2 projection with DMSwarm using delta function part
 #include <petscksp.h>
 #include <petsc/private/petscfeimpl.h>
 typedef struct {
-  PetscInt       dim;                              /* The topological mesh dimension */
-  PetscBool      simplex;                          /* Flag for simplices or tensor cells */
-  char           meshFilename[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
-  PetscInt       faces;                            /* Number of faces per edge if unit square/cube generated */
-  PetscReal      domain_lo[3], domain_hi[3];       /* Lower left and upper right mesh corners */
-  DMBoundaryType boundary[3];                      /* The domain boundary type, e.g. periodic */
-  PetscInt       particlesPerCell;                 /* The number of partices per cell */
-  PetscReal      particleRelDx;                    /* Relative particle position perturbation compared to average cell diameter h */
-  PetscReal      meshRelDx;                        /* Relative vertex position perturbation compared to average cell diameter h */
-  PetscInt       k;                                /* Mode number for test function */
-  PetscReal      momentTol;                        /* Tolerance for checking moment conservation */
+  char      meshFilename[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
+  PetscReal L[3];                             /* Dimensions of the mesh bounding box */
+  PetscInt  particlesPerCell;                 /* The number of partices per cell */
+  PetscReal particleRelDx;                    /* Relative particle position perturbation compared to average cell diameter h */
+  PetscReal meshRelDx;                        /* Relative vertex position perturbation compared to average cell diameter h */
+  PetscInt  k;                                /* Mode number for test function */
+  PetscReal momentTol;                        /* Tolerance for checking moment conservation */
+  PetscBool useBlockDiagPrec;                 /* Use the block diagonal of the normal equations as a preconditioner */
   PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
 } AppCtx;
 
@@ -29,7 +26,7 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
   PetscInt d;
 
   u[0] = 0.0;
-  for (d = 0; d < dim; ++d) u[0] += x[d]/(ctx->domain_hi[d] - ctx->domain_lo[d]);
+  for (d = 0; d < dim; ++d) u[0] += x[d]/(ctx->L[d]);
   return 0;
 }
 
@@ -39,7 +36,7 @@ static PetscErrorCode x2_x4(PetscInt dim, PetscReal time, const PetscReal x[], P
   PetscInt d;
 
   u[0] = 1;
-  for (d = 0; d < dim; ++d) u[0] *= PetscSqr(x[d])*PetscSqr(ctx->domain_hi[d]) - PetscPowRealInt(x[d], 4);
+  for (d = 0; d < dim; ++d) u[0] *= PetscSqr(x[d])*PetscSqr(ctx->L[d]) - PetscPowRealInt(x[d], 4);
   return 0;
 }
 
@@ -47,59 +44,31 @@ static PetscErrorCode sinx(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 {
   AppCtx *ctx = (AppCtx *) a_ctx;
 
-  u[0] = PetscSinScalar(2*PETSC_PI*ctx->k*x[0]/(ctx->domain_hi[0] - ctx->domain_lo[0]));
+  u[0] = PetscSinScalar(2*PETSC_PI*ctx->k*x[0]/(ctx->L[0]));
   return 0;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt       ii, bd;
   char           fstring[PETSC_MAX_PATH_LEN] = "linear";
   PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim              = 2;
-  options->simplex          = PETSC_TRUE;
-  options->faces            = 1;
-  options->domain_lo[0]     = 0.0;
-  options->domain_lo[1]     = 0.0;
-  options->domain_lo[2]     = 0.0;
-  options->domain_hi[0]     = 1.0;
-  options->domain_hi[1]     = 1.0;
-  options->domain_hi[2]     = 1.0;
-  options->boundary[0]      = DM_BOUNDARY_NONE; /* PERIODIC (plotting does not work in parallel, moments not conserved) */
-  options->boundary[1]      = DM_BOUNDARY_NONE;
-  options->boundary[2]      = DM_BOUNDARY_NONE;
   options->particlesPerCell = 1;
   options->k                = 1;
   options->particleRelDx    = 1.e-20;
   options->meshRelDx        = 1.e-20;
   options->momentTol        = 100.*PETSC_MACHINE_EPSILON;
+  options->useBlockDiagPrec = PETSC_FALSE;
   ierr = PetscStrcpy(options->meshFilename, "");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "L2 Projection Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex2.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-mesh", "Name of the mesh filename if any", "ex2.c", options->meshFilename, options->meshFilename, sizeof(options->meshFilename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-faces", "Number of faces per edge if unit square/cube generated", "ex2.c", options->faces, &options->faces, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-k", "Mode number of test", "ex2.c", options->k, &options->k, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-particlesPerCell", "Number of particles per cell", "ex2.c", options->particlesPerCell, &options->particlesPerCell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-particle_perturbation", "Relative perturbation of particles (0,1)", "ex2.c", options->particleRelDx, &options->particleRelDx, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mesh_perturbation", "Relative perturbation of mesh points (0,1)", "ex2.c", options->meshRelDx, &options->meshRelDx, NULL);CHKERRQ(ierr);
-  ii = options->dim;
-  ierr = PetscOptionsRealArray("-domain_hi", "Domain size", "ex2.c", options->domain_hi, &ii, NULL);CHKERRQ(ierr);
-  ii = options->dim;
-  ierr = PetscOptionsRealArray("-domain_lo", "Domain size", "ex2.c", options->domain_lo, &ii, NULL);CHKERRQ(ierr);
-  bd = options->boundary[0];
-  ierr = PetscOptionsEList("-x_boundary", "The x-boundary", "ex2.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[0]], &bd, NULL);CHKERRQ(ierr);
-  options->boundary[0] = (DMBoundaryType) bd;
-  bd = options->boundary[1];
-  ierr = PetscOptionsEList("-y_boundary", "The y-boundary", "ex2.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[1]], &bd, NULL);CHKERRQ(ierr);
-  options->boundary[1] = (DMBoundaryType) bd;
-  bd = options->boundary[2];
-  ierr = PetscOptionsEList("-z_boundary", "The z-boundary", "ex2.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[2]], &bd, NULL);CHKERRQ(ierr);
-  options->boundary[2] = (DMBoundaryType) bd;
   ierr = PetscOptionsString("-function", "Name of test function", "ex2.c", fstring, fstring, sizeof(fstring), NULL);CHKERRQ(ierr);
   ierr = PetscStrcmp(fstring, "linear", &flag);CHKERRQ(ierr);
   if (flag) {
@@ -114,6 +83,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
       if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown function %s",fstring);
     }
   }
+  ierr = PetscOptionsBool("-block_diag_prec", "Use the block diagonal of the normal equations to precondition the particle projection", "ex2.c", options->useBlockDiagPrec, &options->useBlockDiagPrec, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -125,18 +95,20 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
   PetscReal      interval = user->meshRelDx;
   Vec            coordinates;
   PetscScalar   *coords;
-  PetscReal      *hh;
-  PetscInt       d, cdim, N, p, bs;
+  PetscReal     *hh, low[3], high[3];
+  PetscInt       d, cdim, cEnd, N, p, bs;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetBoundingBox(dm, low, high);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject) dm), &rnd);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rnd, -interval, interval);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
-  ierr = PetscCalloc1(PetscMax(user->dim,cdim),&hh);CHKERRQ(ierr);
-  for (d = 0; d < user->dim; ++d) hh[d] = (user->domain_hi[d] - user->domain_lo[d])/user->faces;
+  ierr = PetscCalloc1(cdim,&hh);CHKERRQ(ierr);
+  for (d = 0; d < cdim; ++d) hh[d] = (user->L[d])/PetscPowReal(cEnd, 1./cdim);
   ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
   ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
   if (bs != cdim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Coordinate vector has wrong block size %D != %D", bs, cdim);
@@ -146,7 +118,7 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
 
     for (d = 0; d < cdim; ++d) {
       ierr = PetscRandomGetValue(rnd, &value);CHKERRQ(ierr);
-      coord[d] = PetscMax(user->domain_lo[d], PetscMin(user->domain_hi[d], PetscRealPart(coord[d] + value*hh[d])));
+      coord[d] = PetscMax(low[d], PetscMin(high[d], PetscRealPart(coord[d] + value*hh[d])));
     }
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
@@ -157,20 +129,21 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
+  PetscReal      low[3], high[3];
+  PetscInt       cdim, d;
   PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscStrcmp(user->meshFilename, "", &flg);CHKERRQ(ierr);
   if (flg) {
-    PetscInt faces[3];
-
-    faces[0] = user->faces; faces[1] = user->faces; faces[2] = user->faces;
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, faces, user->domain_lo, user->domain_hi, user->boundary, PETSC_TRUE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, user->meshFilename, PETSC_TRUE, dm);CHKERRQ(ierr);
-    ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
   }
+  ierr = DMGetCoordinateDim(*dm, &cdim);CHKERRQ(ierr);
+  ierr = DMGetBoundingBox(*dm, low, high);CHKERRQ(ierr);
+  for (d = 0; d < cdim; ++d) user->L[d] = high[d] - low[d];
   {
     DM distributedMesh = NULL;
 
@@ -200,12 +173,17 @@ static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
 {
   PetscFE        fe;
   PetscDS        ds;
-  PetscInt       dim;
+  DMPolytopeType ct;
+  PetscBool      simplex;
+  PetscInt       dim, cStart;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, user->simplex, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "fe");CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
@@ -220,14 +198,19 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 {
   PetscRandom    rnd, rndp;
   PetscReal      interval = user->particleRelDx;
+  DMPolytopeType ct;
+  PetscBool      simplex;
   PetscScalar    value, *vals;
   PetscReal     *centroid, *coords, *xi0, *v0, *J, *invJ, detJ;
   PetscInt      *cellid;
-  PetscInt       Ncell, Np = user->particlesPerCell, p, c, dim, d;
+  PetscInt       Ncell, Np = user->particlesPerCell, p, cStart, c, dim, d;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), sw);CHKERRQ(ierr);
   ierr = DMSetType(*sw, DMSWARM);CHKERRQ(ierr);
   ierr = DMSetDimension(*sw, dim);CHKERRQ(ierr);
@@ -265,7 +248,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 
         cellid[n] = c;
         for (d = 0; d < dim; ++d) {ierr = PetscRandomGetValue(rnd, &value);CHKERRQ(ierr); refcoords[d] = PetscRealPart(value); sum += refcoords[d];}
-        if (user->simplex && sum > 0.0) for (d = 0; d < dim; ++d) refcoords[d] -= PetscSqrtReal(dim)*sum;
+        if (simplex && sum > 0.0) for (d = 0; d < dim; ++d) refcoords[d] -= PetscSqrtReal(dim)*sum;
         CoordinatesRefToReal(dim, dim, xi0, v0, J, refcoords, &coords[n*dim]);
       }
     }
@@ -438,7 +421,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   MPI_Comm       comm;
   KSP            ksp;
   Mat            M;            /* FEM mass matrix */
-  Mat            M_p;          /* Particle mass matrix */
+  Mat            M_p, PM_p;    /* Particle mass matrix M_p, and the preconditioning matrix, e.g. M_p M^T_p */
   Vec            f, rhs, fhat; /* Particle field f, \int phi_i fhat, FEM field */
   PetscReal      pmoments[3];  /* \int f, \int x f, \int r^2 f */
   PetscReal      fmoments[3];  /* \int \hat f, \int x \hat f, \int r^2 \hat f */
@@ -468,8 +451,10 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   ierr = DMPlexSNESComputeJacobianFEM(dm, fhat, M, M, user);CHKERRQ(ierr);
   ierr = MatViewFromOptions(M, NULL, "-M_view");CHKERRQ(ierr);
   ierr = MatMultTranspose(M, fhat, rhs);CHKERRQ(ierr);
+  if (user->useBlockDiagPrec) {ierr = DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p);CHKERRQ(ierr);}
+  else                        {ierr = PetscObjectReference((PetscObject) M_p);CHKERRQ(ierr); PM_p = M_p;}
 
-  ierr = KSPSetOperators(ksp, M_p, M_p);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, M_p, PM_p);CHKERRQ(ierr);
   ierr = KSPSolveTranspose(ksp, rhs, f);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fhat,"fhat");CHKERRQ(ierr);
   ierr = VecViewFromOptions(fhat, NULL, "-fhat_view");CHKERRQ(ierr);
@@ -486,6 +471,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&M);CHKERRQ(ierr);
   ierr = MatDestroy(&M_p);CHKERRQ(ierr);
+  ierr = MatDestroy(&PM_p);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &fhat);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &rhs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -694,94 +680,116 @@ int main (int argc, char * argv[]) {
 
 /*TEST
 
+  # Swarm does not handle complex or quad
+  build:
+    requires: !complex double
+
   test:
     suffix: proj_tri_0
-    requires: triangle !complex
-    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle
+    args: -dm_plex_box_faces 1,1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_2_faces
-    requires: triangle !complex
-    args: -dim 2 -faces 2  -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle
+    args: -dm_plex_box_faces 2,2  -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_quad_0
-    requires: triangle !complex
-    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle
+    args: -dm_plex_box_simplex 0 -dm_plex_box_faces 1,1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_quad_2_faces
-    requires: triangle !complex
-    args: -dim 2 -simplex 0 -faces 2 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle
+    args: -dm_plex_box_simplex 0 -dm_plex_box_faces 2,2 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_5P
-    requires: triangle !complex
-    args: -dim 2 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle
+    args: -dm_plex_box_faces 1,1 -particlesPerCell 5 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_quad_5P
-    requires: triangle !complex
-    args: -dim 2 -simplex 0 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle
+    args: -dm_plex_box_simplex 0 -dm_plex_box_faces 1,1 -particlesPerCell 5 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_mdx
-    requires: triangle !complex
-    args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle
+    args: -dm_plex_box_faces 1,1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_mdx_5P
-    requires: triangle !complex
-    args: -dim 2 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: triangle
+    args: -dm_plex_box_faces 1,1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d
-    requires: ctetgen !complex
-    args: -dim 3 -faces 1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d_2_faces
-    requires: ctetgen !complex
-    args: -dim 3 -faces 2 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d_5P
-    requires: ctetgen !complex
-    args: -dim 3 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -particlesPerCell 5 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d_mdx
-    requires: ctetgen !complex
-    args: -dim 3 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d_mdx_5P
-    requires: ctetgen !complex
-    args: -dim 3 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d_mdx_2_faces
-    requires: ctetgen !complex
-    args: -dim 3 -faces 2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
 
   test:
     suffix: proj_tri_3d_mdx_5P_2_faces
-    requires: ctetgen !complex
-    args: -dim 3 -faces 2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
+    requires: ctetgen
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_degree 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
     filter: grep -v marker | grep -v atomic | grep -v usage
+
+  test:
+    suffix: proj_quad_lsqr_scale
+    requires: !complex
+    args: -dm_plex_box_simplex 0 -dm_plex_box_faces 4,4 \
+      -petscspace_degree 2 -petscfe_default_quadrature_order 3 \
+      -particlesPerCell 200 \
+      -ptof_pc_type lu  \
+      -ftop_ksp_rtol 1e-17 -ftop_ksp_type lsqr -ftop_pc_type none
+
+  test:
+    suffix: proj_quad_lsqr_prec_scale
+    requires: !complex
+    args: -dm_plex_box_simplex 0 -dm_plex_box_faces 4,4 \
+      -petscspace_degree 2 -petscfe_default_quadrature_order 3 \
+      -particlesPerCell 200 \
+      -ptof_pc_type lu  \
+      -ftop_ksp_rtol 1e-17 -ftop_ksp_type lsqr -ftop_pc_type lu -ftop_pc_factor_shift_type nonzero -block_diag_prec
 
 TEST*/
