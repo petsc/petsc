@@ -139,11 +139,7 @@ int main(int argc,char **argv)
   /*  export OMP_PROC_BIND="threads"  export OMP_PROC_BIND="spread" */
 
   if (!getenv("KOKKOS_NUM_THREADS")) setenv("KOKKOS_NUM_THREADS","4",1);
-  if (!view_kokkos_configuration) {
-    /* use private routine to turn off warnings about negative number of cores etc */
-    Kokkos::Impl::pre_initialize(Kokkos::InitArguments(-1, -1, -1, true));
-  }
-  Kokkos::initialize( argc, argv);
+
   if (view_kokkos_configuration) {
     Kokkos::print_configuration(std::cout, true);
   }
@@ -157,8 +153,6 @@ int main(int argc,char **argv)
     xFF(j) = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     xUU(j) = xp*xp*xp;
   });
-
-  Kokkos::finalize();
 
   /*
      Restore vectors
