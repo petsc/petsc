@@ -55,6 +55,8 @@ class Configure(config.package.Package):
     # support MPI-3 non-blocking collectives
     self.support_mpi3_nbc = 0
     self.mpi_pkg_version  = ''
+    self.mpiexec          = None
+    self.mpiexecExecutable = None
     return
 
   def setupHelp(self, help):
@@ -179,7 +181,6 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
       self.addMakeMacro('MPIEXEC', self.mpiexec)
       return
-    self.mpiexec = None
     if 'with-mpiexec' in self.argDB:
       self.argDB['with-mpiexec'] = os.path.expanduser(self.argDB['with-mpiexec'])
       if not self.getExecutable(self.argDB['with-mpiexec'], resultName = 'mpiexec'):
@@ -210,10 +211,15 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       # Support for spaces and () in executable names; also needs to handle optional arguments at the end
       # TODO: This support for spaces and () should be moved to core BuildSystem
       self.mpiexec = self.mpiexec.replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)').replace('\ -',' -')
+      self.mpiexecExecutable = self.mpiexec
       if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
         (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 60, log = self.log, threads = 1)
         if out.find('--oversubscribe') >=0:
           self.mpiexec = self.mpiexec + ' --oversubscribe'
+
+    if not self.mpiexecExecutable:
+      self.mpiexecExecutable = self.mpiexec
+    self.getExecutable(self.mpiexecExecutable, getFullPath=1, resultName='mpiexecExecutable')
 
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
