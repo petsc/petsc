@@ -35,7 +35,6 @@ class Configure(config.package.GNUPackage):
     help.addArgument('MAKE', '-with-make-test-np=<np>',                      nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel tests'))
     help.addArgument('MAKE', '-with-make-load=<load>',                       nargs.ArgReal(None, None, min=1.0, help='max load to use for parallel builds'))
     help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
-    help.addArgument('MAKE', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
     help.addArgument('MAKE', '-with-make-exec=<executable>',                 nargs.Arg(None, None, 'Make executable to look for'))
     return
 
@@ -45,8 +44,6 @@ class Configure(config.package.GNUPackage):
     args = ['--prefix='+self.installDir]
     if 'download-make-cc' in self.argDB and self.argDB['download-make-cc']:
       args.append('CC="'+self.argDB['download-make-cc']+'"')
-    if 'download-make-configure-options' in self.argDB and self.argDB['download-make-configure-options']:
-      args.append(self.argDB['download-make-configure-options'])
     return args
 
   def Install(self):

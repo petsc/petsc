@@ -16,7 +16,6 @@ class Configure(config.package.GNUPackage):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
     help.addArgument('C2HTML', '-download-c2html-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for c2html'))
-    help.addArgument('C2HTML', '-download-c2html-configure-options=<options>',   nargs.Arg(None, None, 'additional options for c2html'))
     help.addArgument('C2HTML', '-with-c2html-exec=<executable>',                 nargs.Arg(None, None, 'c2html executable to look for'))
     return
 
@@ -26,8 +25,6 @@ class Configure(config.package.GNUPackage):
     args = ['--prefix='+self.confDir]
     if 'download-c2html-cc' in self.argDB and self.argDB['download-c2html-cc']:
       args.append('CC="'+self.argDB['download-c2html-cc']+'"')
-    if 'download-c2html-configure-options' in self.argDB and self.argDB['download-c2html-configure-options']:
-      args.append(self.argDB['download-c2html-configure-options'])
     return args
 
   def locateC2html(self):
