@@ -324,6 +324,55 @@ In place of ``TSSolve()``, a single step can be taken using
 
 .. _sec_imex:
 
+DAE Formulations
+~~~~~~~~~~~~~~~~
+
+You can find a discussion of DAEs in :cite:`AscherPetzold1998` or `Scholarpedia <http://www.scholarpedia.org/article/Differential-algebraic_equations>`__. In PETSc, TS deals with the semi-discrete form of the equations, so that space has already been discretized. If the DAE depends explicitly on the coordinate :math:`x`, then this will just appear as any other data for the equation, not as an explicit argument. Thus we have
+
+.. math::
+
+  F(t, u, \dot{u}) = 0
+
+In this form, only fully implicit solvers are appropriate. However, specialized solvers for restricted forms of DAE are supported by PETSc. Below we consider an ODE which is augmented with algebraic constraints on the variables.
+
+Hessenberg Index-1 DAE
+``````````````````````
+
+  This is a Semi-Explicit Index-1 DAE which has the form
+
+.. math::
+
+  \begin{aligned}
+    \dot{u} &= f(t, u, z) \\
+          0 &= h(t, u, z)
+  \end{aligned}
+
+where :math:`z` is a new constraint variable, and the Jacobian :math:`\frac{dh}{dz}` is non-singular everywhere. We have suppressed the :math:`x` dependence since it plays no role here. Using the non-singularity of the Jacobian and the Implicit Function Theorem, we can solve for :math:`z` in terms of :math:`u`. This means we could, in principle, plug :math:`z(u)` into the first equation to obtain a simple ODE, even if this is not the numerical process we use. Below we show that this type of DAE can be used with IMEX schemes.
+
+Hessenberg Index-2 DAE
+``````````````````````
+
+  This DAE has the form
+
+.. math::
+
+  \begin{aligned}
+    \dot{u} &= f(t, u, z) \\
+          0 &= h(t, u)
+  \end{aligned}
+
+Notice that the constraint equation :math:`h` is not a function of the constraint variable :math:'z'. This means that we cannot naively invert as we did in the index-1 case. Our strategy will be to convert this into an index-1 DAE using a time derivative, which loosely corresponds to the idea of index being the number of derivatives necessary to get back to an ODE. If we differentiate the constraint equation with respect to time, we can use the ODE to simplify it,
+
+.. math::
+
+  \begin{aligned}
+          0 &= \dot{h}(t, u) \\
+            &= \frac{dh}{du} \dot{u} + \frac{\partial h}{\partial t} \\
+            &= \frac{dh}{du} f(t, u, z) + \frac{\partial h}{\partial t}
+  \end{aligned}
+
+If the Jacobian :math:`\frac{dh}{du} \frac{df}{dz}` is non-singular, then we have precisely a semi-explicit index-1 DAE, and we can once again use the PETSc IMEX tools to solve it. A common example of an index-2 DAE is the incompressible Navier-Stokes equations, since the continuity equation :math:`\nabla\cdot u = 0` does not involve the pressure. Using PETSc IMEX with the above conversion then corresponds to the Segregated Runge-Kutta method applied to this equation :cite:`ColomesBadia2016`.
+
 Using Implicit-Explicit (IMEX) Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -351,95 +400,162 @@ identity matrix:
 
 -  a DAE is being solved.
 
-An IMEX problem representation can be made implicit by setting
-``TSARKIMEXSetFullyImplicit()``.
+An IMEX problem representation can be made implicit by setting ``TSARKIMEXSetFullyImplicit()``.
 
-Some use-case examples for ``TSARKIMEX`` are listed in Table
-`5.2 <#tab_DE_forms>`__ and a list of methods with a summary of their
-properties is given in Table `5.3 <#tab_IMEX_RK_PETSc>`__.
+In PETSc, DAEs and ODEs are formulated as :math:`F(t,u,\dot{u})=G(t,u)`, where :math:`F()` is meant to be integrated implicitly and :math:`G()` explicitly. An IMEX formulation such as :math:`M\dot{u}=f(t,u)+g(t,u)` requires the user to provide :math:`M^{-1} g(t,u)` or solve :math:`g(t,u) - M x=0` in place of :math:`G(t,u)`. General cases such as :math:`F(t,u,\dot{u})=G(t,u)` are not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods. Some use-case examples for ``TSARKIMEX`` are listed in :numref:`tab-DE-forms` and a list of methods with a summary of their properties is given in :numref:`tab-IMEX-RK-PETSc`.
 
-.. container::
-   :name: tab_DE_forms
+.. _tab-DE-forms:
+.. list-table::
+   :widths: 40 40 80
 
-   .. table:: In PETSc, DAEs and ODEs are formulated as :math:`F(t,y,\dot{y})=G(t,y)`, where :math:`F()` is meant to be integrated implicitly and :math:`G()` explicitly. An IMEX formulation such as :math:`M\dot{y}=g(t,y)+f(t,y)` requires the user to provide :math:`M^{-1} g(t,y)` or solve :math:`g(t,y) - M x=0` in place of :math:`G(t,u)`. General cases such as :math:`F(t,y,\dot{y})=G(t,y)` are not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods.
+   * - :math:`\dot{u} = g(t,u)`
+     - nonstiff ODE
+     - :math:`\begin{aligned}F(t,u,\dot{u}) &= \dot{u} \\ G(t,u) &= g(t,u)\end{aligned}`
+   * - :math:`M \dot{u} = g(t,u)`
+     - nonstiff ODE with mass matrix
+     - :math:`\begin{aligned}F(t,u,\dot{u}) &= \dot{u} \\ G(t,u) &= M^{-1} g(t,u)\end{aligned}`
+   * - :math:`\dot{u} = f(t,u)`
+     - stiff ODE
+     - :math:`\begin{aligned}F(t,u,\dot{u}) &= \dot{u} - f(t,u) \\ G(t,u) &= 0\end{aligned}`
+   * - :math:`M \dot{u} = f(t,u)`
+     - stiff ODE with mass matrix
+     - :math:`\begin{aligned}F(t,u,\dot{u}) &= M \dot{u} - f(t,u) \\ G(t,u) &= 0\end{aligned}`
+   * - :math:`\dot{u} = f(t,u) + g(t,u)`
+     - stiff-nonstiff ODE
+     - :math:`\begin{aligned}F(t,u,\dot{u}) &= \dot{u} - f(t,u) \\ G(t,u) &= g(t,u)\end{aligned}`
+   * - :math:`M \dot{u} = f(t,u) + g(t,u)`
+     - stiff-nonstiff ODE with mass matrix
+     - :math:`\begin{aligned}F(t,u,\dot{u}) &= M\dot{u} - f(t,u) \\ G(t,u) &= M^{-1} g(t,u)\end{aligned}`
+   * - :math:`\begin{aligned}\dot{u} &= f(t,u,z) + g(t,u,z)\\0 &= h(t,y,z)\end{aligned}`
+     - semi-explicit index-1 DAE
+     - :math:`\begin{aligned}F(t,u,\dot{u}) &= \begin{pmatrix}\dot{u} - f(t,u,z)\\h(t, u, z)\end{pmatrix}\\G(t,u) &= g(t,u)\end{aligned}`
+   * - :math:`f(t,u,\dot{u})=0`
+     - fully implicit ODE/DAE
+     - :math:`\begin{aligned}F(t,u,\dot{u}) &= f(t,u,\dot{u})\\G(t,u) &= 0\end{aligned}`; the user needs to set ``TSSetEquationType()`` to ``TS_EQ_IMPLICIT`` or higher
 
-      +--------------------------------+----------------------+--------------------------+
-      | :math:`\dot{y}=g(t,y)`         | nonstiff ODE         | :math:`F(t,y,            |
-      |                                |                      | \dot{y}) = \dot{y}`,     |
-      |                                |                      | :math:`G(t,y)=g(t,y)`    |
-      +--------------------------------+----------------------+--------------------------+
-      | :math:`\dot{y}=f(t,y)`         | stiff ODE            | :math:`F(t,y,\dot{y})    |
-      |                                |                      | = \dot{y}-f(t,y)`,       |
-      |                                |                      | :math:`G(t,y)=0`         |
-      +--------------------------------+----------------------+--------------------------+
-      | :math:`M \dot{y}=f(t,y)`       | stiff ODE with mass  |                          |
-      |                                | matrix               | :math:`F(t,y,\dot{y})    |
-      |                                |                      | = M \dot{y}-f(t,y)`,     |
-      |                                |                      | :math:`G(t,y)=0`         |
-      +--------------------------------+----------------------+--------------------------+
-      | :math:`M \dot{y} = g(t,y)`     | nonstiff ODE with    | :math:`F(t,y,\dot{y})    |
-      |                                | mass matrix          | = \dot{y}, G(t,y)        |
-      |                                |                      | = M^{-1} g(t,y)`         |
-      +--------------------------------+----------------------+--------------------------+
-      | :math:`\dot{y}=g(t,y)+f(t,y)`  | stiff-nonstiff ODE   | :math:`F(t,y,\dot{y}     |
-      |                                |                      | ) = \dot{y}-f(t,y)`,     |
-      |                                |                      | :math:`G(t,y)=g(t,y)`    |
-      +--------------------------------+----------------------+--------------------------+
-      | :math:`M\dot{y}=g(t,y)+f(t,y)` | stiff-nonstiff ODE   | :math:`F(t,y,\dot{y})    |
-      |                                | with mass matrix     | = M \dot{y}-f(t,y)`,     |
-      |                                |                      | :math:`G(t,y)            |
-      |                                |                      | = M^{-1}g(t,y)`          |
-      +--------------------------------+----------------------+--------------------------+
-      | :math:`f(t,y,\dot{y})=0`       | implicit ODE/DAE     | :math:`F(t,y,\dot{y}     |
-      |                                |                      | ) = f(t,y,\dot{y})`,     |
-      |                                |                      | :math:`G(t,y) = 0`;      |
-      |                                |                      | the user needs to        |
-      |                                |                      | set                      |
-      |                                |                      | ``TSSetEquationType()``  |
-      |                                |                      | to                       |
-      |                                |                      | ``TS_EQ_IMPLICIT``       |
-      |                                |                      | or higher                |
-      +--------------------------------+----------------------+--------------------------+
+List of the currently available IMEX Runge-Kutta schemes. For each method we listed the ``-ts_arkimex_type`` name, the reference, the total number of stages/implicit stages, the order/stage-order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, and dense output (DO).
 
-.. container::
-   :name: tab_IMEX_RK_PETSc
+.. _tab-IMEX-RK-PETSc:
+.. list-table::
+  :header-rows: 1
 
-   .. table:: [tab_IMEX_RK_PETSc] List of the currently available IMEX Runge-Kutta schemes. For each method we listed the ``-ts_arkimex_type`` name, the reference, the total number of stages/implicit stages, the order/stage-order, the implicit stability properties, stiff accuracy (SA), the existence of an embedded scheme, and dense output.
-
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | **Name**   | **Reference**            | **Stages (IM)** | **Order (Stage)**  | **IM Stab.**  | **SA** | **Embed.**  | **Dense Output**  | **Remarks** |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | a2         | based                    | 2(1)            | 2(2)               | A-            | yes    | yes(1)      | yes(2)            |             |
-      |            | on CN                    |                 |                    | Stable        |        |             |                   |             |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | l2         | SS                       | 2(2)            | 2(1)               | L-            | yes    | yes(1)      | yes(2)            | SSP,        |
-      |            | P2(2,2,2)                |                 |                    | Stable        |        |             |                   | SDIRK       |
-      |            | :cite:`Pareschi_2005`    |                 |                    |               |        |             |                   |             |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | ars122     | A                        | 2(1)            | 3(1)               | A-            | yes    | yes(1)      | yes(2)            |             |
-      |            | RS122,                   |                 |                    | Stable        |        |             |                   |             |
-      |            | :cite:`Ascher_1997`      |                 |                    |               |        |             |                   |             |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | 2c         | :cite:`Giraldo_2013`     | 3(2)            | 2(2)               | L-            | yes    | yes(1)      | yes(2)            | SDIRK       |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | 2d         | :cite:`Giraldo_2013`     | 3(2)            | 2(2)               | L-            | yes    | yes(1)      | yes(2)            | SDIRK       |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | 2e         | :cite:`Giraldo_2013`     | 3(2)            | 2(2)               | L-            | yes    | yes(1)      | yes(2)            | SDIRK       |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | prssp2     | PRS(                     | 3(3)            | 3(1)               | L-            | yes    | no          | no                | SSP,        |
-      |            | 3,3,2)                   |                 |                    | Stable        |        |             |                   | no          |
-      |            | :cite:`Pareschi_2005`    |                 |                    |               |        |             |                   |             |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | 3          | :cite:`Kennedy_2003`     | 4(3)            | 3(2)               | L-            | yes    | yes(2)      | yes(2)            | SDIRK       |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | bpr3       | :cite:`Boscarino_TR2011` | 5(4)            | 3(2)               | L-            | yes    | no          | no                | SDIRK,      |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | ars443     | :cite:`Ascher_1997`      | 5(4)            | 3(1)               | L-            | yes    | no          | no                | SDIRK       |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | 4          | :cite:`Kennedy_2003`     | 6(5)            | 4(2)               | L-            | yes    | yes(3)      | ye                | SDIRK       |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
-      | 5          | :cite:`Kennedy_2003`     | 8(7)            | 5(2)               | L-            | yes    | yes(4)      | yes(3)            | SDIRK       |
-      +------------+--------------------------+-----------------+--------------------+---------------+--------+-------------+-------------------+-------------+
+  * - Name
+    - Reference
+    - Stages (IM)
+    - Order (Stage)
+    - IM
+    - SA
+    - Embed
+    - DO
+    - Remarks
+  * - a2
+    - based on CN
+    - 2 (1)
+    - 2 (2)
+    - A-Stable
+    - yes
+    - yes (1)
+    - yes (2)
+    -
+  * - l2
+    - SSP2(2,2,2) :cite:`Pareschi_2005`
+    - 2 (2)
+    - 2 (1)
+    - L-Stable
+    - yes
+    - yes (1)
+    - yes (2)
+    - SSP SDIRK
+  * - ars122
+    - ARS122 :cite:`Ascher_1997`
+    - 2 (1)
+    - 3 (1)
+    - A-Stable
+    - yes
+    - yes (1)
+    - yes (2)
+    -
+  * - 2c
+    - :cite:`Giraldo_2013`
+    - 3 (2)
+    - 2 (2)
+    - L-Stable
+    - yes
+    - yes (1)
+    - yes (2)
+    - SDIRK
+  * - 2d
+    - :cite:`Giraldo_2013`
+    - 3 (2)
+    - 2 (2)
+    - L-Stable
+    - yes
+    - yes (1)
+    - yes (2)
+    - SDIRK
+  * -  2e
+    - :cite:`Giraldo_2013`
+    - 3 (2)
+    - 2 (2)
+    - L-Stable
+    - yes
+    - yes (1)
+    - yes (2)
+    - SDIRK
+  * - prssp2
+    - PRS(3,3,2) :cite:`Pareschi_2005`
+    - 3 (3)
+    - 3 (1)
+    - L-Stable
+    - yes
+    - no
+    - no
+    - SSP
+  * - 3
+    - :cite:`Kennedy_2003`
+    - 4 (3)
+    - 3 (2)
+    - L-Stable
+    - yes
+    - yes (2)
+    - yes (2)
+    - SDIRK
+  * - bpr3
+    - :cite:`Boscarino_TR2011`
+    - 5 (4)
+    - 3 (2)
+    - L-Stable
+    - yes
+    - no
+    - no
+    - SDIRK
+  * - ars443
+    - :cite:`Ascher_1997`
+    - 5 (4)
+    - 3 (1)
+    - L-Stable
+    - yes
+    - no
+    - no
+    - SDIRK
+  * - 4
+    - :cite:`Kennedy_2003`
+    - 6 (5)
+    - 4 (2)
+    - L-Stable
+    - yes
+    - yes (3)
+    - yes
+    - SDIRK
+  * - 5
+    - :cite:`Kennedy_2003`
+    - 8 (7)
+    - 5 (2)
+    - L-Stable
+    - yes
+    - yes (4)
+    - yes (3)
+    - SDIRK
 
 ROSW are linearized implicit Runge-Kutta methods known as Rosenbrock
 W-methods. They can accommodate inexact Jacobian matrices in their
@@ -449,55 +565,39 @@ formulation. A series of methods are available in PETSc listed in Table
 .. container::
    :name: tab_IMEX_RosW_PETSc
 
-   .. table:: List of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number of stages and implicit stages, the scheme order and stage-order, the implicit stability properties, stiff accuracy (SA), the existence of an embedded scheme, dense output, the capacity to use inexact Jacobian matrices (-W), and high order integration of differential algebraic equations (PDAE).
+   .. table:: List of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number of stages and implicit stages, the scheme order and stage order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, dense output (DO), the capacity to use inexact Jacobian matrices (-W), and high order integration of differential algebraic equations (PDAE).
 
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | **TS** | **Reference**      | **St   | **O    | **IM** | **SA** | **Em   | **D    | **-W** | **     | **Rem  |   |   |   |   |
-      |        |                    | ages** | rder** |        |        | bed.** | ense** |        | PDAE** | arks** |   |   |   |   |
-      |        |                    |        |        |        |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | Name   |                    | (IM)   | (      | Stab.  |        |        | Output |        |        |        |   |   |   |   |
-      |        |                    |        | stage) |        |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | theta1 | classical          | 1(1)   | 1(1)   | L-     | -      | -      | -      | -      | -      | -      |   |   |   |   |
-      |        |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | theta2 | classical          | 1(1)   | 2(2)   | A-     | -      | -      | -      | -      | -      | -      |   |   |   |   |
-      |        |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | 2m     | Zoltan             | 2(2)   | 2(1)   | L-     | No     | Yes(1) | Yes(2) | Yes    | No     | SSP    |   |   |   |   |
-      |        |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | 2p     | Zoltan             | 2(2)   | 2(1)   | L-     | No     | Yes(1) | Yes(2) | Yes    | No     | SSP    |   |   |   |   |
-      |        |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | ra3pw  | :cite:`Rang_2005`  | 3(3)   | 3(1)   | A-     | No     | Yes    | Yes(2) | No     | Yes(3) | -      |   |   |   |   |
-      |        |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | r      | :cite:`Rang_2005`  | 4(4)   | 3(1)   | L-     | Yes    | Yes    | Yes(3) | Yes    | Yes(3) | -      |   |   |   |   |
-      | a34pw2 |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | rodas3 | :cite:`Sandu_1997` | 4(4)   | 3(1)   | L-     | Yes    | Yes    | No     | No     | Yes    | -      |   |   |   |   |
-      |        |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | sandu3 | :cite:`Sandu_1997` | 3(3)   | 3(1)   | L-     | Yes    | Yes    | Yes(2) | No     | No     | -      |   |   |   |   |
-      |        |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | assp   | unpublished        | 3(2)   | 3(1)   | A-     | No     | Yes    | Yes(2) | Yes    | No     | SSP    |   |   |   |   |
-      | 3p3s1c |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | lassp  | unpublished        | 4(3)   | 3(1)   | L-     | No     | Yes    | Yes(3) | Yes    | No     | SSP    |   |   |   |   |
-      | 3p4s2c |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | lassp  | unpublished        | 4(3)   | 3(1)   | L-     | No     | Yes    | Yes(3) | Yes    | No     | SSP    |   |   |   |   |
-      | 3p4s2c |                    |        |        | Stable |        |        |        |        |        |        |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
-      | ark3   | unpublished        | 4(3)   | 3(1)   | L-     | No     | Yes    | Yes(3) | Yes    | No     | I      |   |   |   |   |
-      |        |                    |        |        | Stable |        |        |        |        |        | MEX-RK |   |   |   |   |
-      +--------+--------------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---+---+---+---+
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | **TS**     | **Reference**      | **Stages** | **Order**  | **IM**  | **SA** | **Embed**  | **DO** | **-W** | **PDAE**| **Remarks**|
+      |            |                    | (**IM**)   | (**Stage**)|         |        |            |        |        |         |            |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | theta1     | classical          | 1(1)       | 1(1)       | L-Stable| -      | -          | -      | -      | -       | -          |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | theta2     | classical          | 1(1)       | 2(2)       | A-Stable| -      | -          | -      | -      | -       | -          |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | 2m         | Zoltan             | 2(2)       | 2(1)       | L-Stable| No     | Yes(1)     | Yes(2) | Yes    | No      | SSP        |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | 2p         | Zoltan             | 2(2)       | 2(1)       | L-Stable| No     | Yes(1)     | Yes(2) | Yes    | No      | SSP        |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | ra3pw      | :cite:`Rang_2005`  | 3(3)       | 3(1)       | A-Stable| No     | Yes        | Yes(2) | No     | Yes(3)  | -          |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | ra34pw2    | :cite:`Rang_2005`  | 4(4)       | 3(1)       | L-Stable| Yes    | Yes        | Yes(3) | Yes    | Yes(3)  | -          |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | rodas3     | :cite:`Sandu_1997` | 4(4)       | 3(1)       | L-Stable| Yes    | Yes        | No     | No     | Yes     | -          |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | sandu3     | :cite:`Sandu_1997` | 3(3)       | 3(1)       | L-Stable| Yes    | Yes        | Yes(2) | No     | No      | -          |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | assp3p3s1c | unpub.             | 3(2)       | 3(1)       | A-Stable| No     | Yes        | Yes(2) | Yes    | No      | SSP        |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | lassp3p4s2c| unpub.             | 4(3)       | 3(1)       | L-Stable| No     | Yes        | Yes(3) | Yes    | No      | SSP        |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | lassp3p4s2c| unpub.             | 4(3)       | 3(1)       | L-Stable| No     | Yes        | Yes(3) | Yes    | No      | SSP        |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+      | ark3       | unpub.             | 4(3)       | 3(1)       | L-Stable| No     | Yes        | Yes(3) | Yes    | No      | IMEX-RK    |
+      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
 
 GLEE methods
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 In this section, we describe explicit and implicit time stepping methods
 with global error estimation that are introduced in
@@ -973,4 +1073,3 @@ References
 
 .. bibliography:: ../../tex/petscapp.bib
    :filter: docname in docnames
-
