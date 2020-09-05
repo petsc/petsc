@@ -192,18 +192,42 @@ $(TESTDIR)/snes/tests/ex1: PETSC_TEST_LIB = $(PETSC_SNES_LIB)
 $(TESTDIR)/ts/tests/ex2: PETSC_TEST_LIB = $(PETSC_TS_LIB)
 $(TESTDIR)/tao/tutorials/ex1: PETSC_TEST_LIB = $(PETSC_TAO_LIB)
 
+# if configured --with-macos-firewall-rules, ensure mpiexec.hydra and test executable is on firewall list
+ifdef MACOS_FIREWALL_MPIEXEC
+define macos-firewall-register
+  @APP=$(call abspath, $(1)); \
+    FW=/usr/libexec/ApplicationFirewall/socketfilterfw; \
+    ANS=`$$FW --getappblocked $$APP`; \
+    if ! echo $$ANS | grep "$$APP" &> /dev/null; then \
+      if ! sudo -n true 2>/dev/null; then echo "Asking for sudo password to add new firewall rule for\n  $$APP:"; fi; \
+      sudo $$FW --add $$APP && \
+      sudo $$FW --block $$APP; \
+    else \
+      echo $$ANS; \
+    fi
+endef
+define macos-firewall-fix
+  $(call macos-firewall-register, $(MACOS_FIREWALL_MPIEXEC))
+  $(call macos-firewall-register, $(1))
+endef
+endif
+
 # Test executables
 $(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,FLINKER) -o $@ $^ $(PETSC_TEST_LIB)
+	-$(call macos-firewall-fix,$@)
 
 $(testexe.c) $(testexe.cu) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,CLINKER) -o $@ $^ $(PETSC_TEST_LIB)
+	-$(call macos-firewall-fix,$@)
 
 $(testexe.kokkos.cxx) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,PETSC_LINK.kokkos.cxx) -o $@ $^ $(PETSC_TEST_LIB)
+	-$(call macos-firewall-fix,$@)
 
 $(testexe.cxx) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,CXXLINKER) -o $@ $^ $(PETSC_TEST_LIB)
+	-$(call macos-firewall-fix,$@)
 
 # Fortran source files need petsc*.mod, which isn't explicitly managed in the makefile.
 $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
