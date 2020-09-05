@@ -26,7 +26,6 @@ class Configure(config.package.GNUPackage):
     help.addArgument('SOWING', '-download-sowing-cxx=<prog>',                    nargs.Arg(None, None, 'CXX compiler for sowing configure'))
     help.addArgument('SOWING', '-download-sowing-cpp=<prog>',                    nargs.Arg(None, None, 'CPP for sowing configure'))
     help.addArgument('SOWING', '-download-sowing-cxxpp=<prog>',                  nargs.Arg(None, None, 'CXX CPP for sowing configure'))
-    help.addArgument('SOWING', '-download-sowing-configure-options=<options>',   nargs.Arg(None, None, 'additional options for sowing configure'))
     return
 
   def setupDependencies(self, framework):
@@ -46,8 +45,6 @@ class Configure(config.package.GNUPackage):
       args.append('CPP="'+self.argDB['download-sowing-cpp']+'"')
     if 'download-sowing-cxxpp' in self.argDB and self.argDB['download-sowing-cxxpp']:
       args.append('CXXPP="'+self.argDB['download-sowing-cxxpp']+'"')
-    if 'download-sowing-configure-options' in self.argDB and self.argDB['download-sowing-configure-options']:
-      args.append(self.argDB['download-sowing-configure-options'])
     return args
 
   def alternateConfigureLibrary(self):
