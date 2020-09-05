@@ -25,6 +25,7 @@ class Logger(args.ArgumentProcessor):
     self.debugLevel    = debugLevel
     self.debugSections = debugSections
     self.debugIndent   = debugIndent
+    self.linewidth     = -1
     self.getRoot()
     return
 
