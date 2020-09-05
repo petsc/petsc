@@ -43,7 +43,6 @@ TS Object: 1 MPI processes
     total number of linear solver iterations=1
     total number of function evaluations=1
     norm schedule ALWAYS
-    Jacobian is never rebuilt
     KSP Object: 1 MPI processes
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

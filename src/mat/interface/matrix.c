@@ -113,9 +113,10 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 
    Notes:
     This routine does not work for factorizations done with external packages.
-   This routine should only be called if MatGetFactorError() returns a value of MAT_FACTOR_NUMERIC_ZEROPIVOT
 
-   This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+    This routine should only be called if MatGetFactorError() returns a value of MAT_FACTOR_NUMERIC_ZEROPIVOT
+
+    This can be called on non-factored matrices that come from, for example, matrices used in SOR.
 
 .seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatLUFactorSymbolic(), MatCholeskyFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
 @*/
@@ -3073,9 +3074,9 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFacto
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!(fact)->ops->lufactorsymbolic) {
-    MatSolverType spackage;
-    ierr = MatFactorGetSolverType(fact,&spackage);CHKERRQ(ierr);
-    SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic LU using solver package %s",((PetscObject)mat)->type_name,spackage);
+    MatSolverType stype;
+    ierr = MatFactorGetSolverType(fact,&stype);CHKERRQ(ierr);
+    SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic LU using solver package %s",((PetscObject)mat)->type_name,stype);
   }
   MatCheckPreallocated(mat,2);
   if (!info) {
@@ -3247,9 +3248,9 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFacto
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!(fact)->ops->choleskyfactorsymbolic) {
-    MatSolverType spackage;
-    ierr = MatFactorGetSolverType(fact,&spackage);CHKERRQ(ierr);
-    SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s symbolic factor Cholesky using solver package %s",((PetscObject)mat)->type_name,spackage);
+    MatSolverType stype;
+    ierr = MatFactorGetSolverType(fact,&stype);CHKERRQ(ierr);
+    SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s symbolic factor Cholesky using solver package %s",((PetscObject)mat)->type_name,stype);
   }
   MatCheckPreallocated(mat,2);
   if (!info) {
@@ -4293,13 +4294,13 @@ PetscErrorCode MatFactorGetSolverType(Mat mat, MatSolverType *type)
 typedef struct _MatSolverTypeForSpecifcType* MatSolverTypeForSpecifcType;
 struct _MatSolverTypeForSpecifcType {
   MatType                        mtype;
-  PetscErrorCode                 (*getfactor[4])(Mat,MatFactorType,Mat*);
+  PetscErrorCode                 (*createfactor[4])(Mat,MatFactorType,Mat*);
   MatSolverTypeForSpecifcType next;
 };
 
 typedef struct _MatSolverTypeHolder* MatSolverTypeHolder;
 struct _MatSolverTypeHolder {
-  char                           *name;
+  char                        *name;
   MatSolverTypeForSpecifcType handlers;
   MatSolverTypeHolder         next;
 };
@@ -4307,19 +4308,19 @@ struct _MatSolverTypeHolder {
 static MatSolverTypeHolder MatSolverTypeHolders = NULL;
 
 /*@C
-   MatSolvePackageRegister - Registers a MatSolverType that works for a particular matrix type
+   MatSolveTypeRegister - Registers a MatSolverType that works for a particular matrix type
 
    Input Parameters:
 +    package - name of the package, for example petsc or superlu
 .    mtype - the matrix type that works with this package
 .    ftype - the type of factorization supported by the package
--    getfactor - routine that will create the factored matrix ready to be used
+-    createfactor - routine that will create the factored matrix ready to be used
 
     Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable()
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatGetFactor()
 @*/
-PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFactorType ftype,PetscErrorCode (*getfactor)(Mat,MatFactorType,Mat*))
+PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFactorType ftype,PetscErrorCode (*createfactor)(Mat,MatFactorType,Mat*))
 {
   PetscErrorCode              ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders,prev = NULL;
@@ -4333,7 +4334,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFact
     ierr = PetscStrallocpy(package,&MatSolverTypeHolders->name);CHKERRQ(ierr);
     ierr = PetscNew(&MatSolverTypeHolders->handlers);CHKERRQ(ierr);
     ierr = PetscStrallocpy(mtype,(char **)&MatSolverTypeHolders->handlers->mtype);CHKERRQ(ierr);
-    MatSolverTypeHolders->handlers->getfactor[(int)ftype-1] = getfactor;
+    MatSolverTypeHolders->handlers->createfactor[(int)ftype-1] = createfactor;
     PetscFunctionReturn(0);
   }
   while (next) {
@@ -4344,7 +4345,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFact
       while (inext) {
         ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
         if (flg) {
-          inext->getfactor[(int)ftype-1] = getfactor;
+          inext->createfactor[(int)ftype-1] = createfactor;
           PetscFunctionReturn(0);
         }
         iprev = inext;
@@ -4352,7 +4353,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFact
       }
       ierr = PetscNew(&iprev->next);CHKERRQ(ierr);
       ierr = PetscStrallocpy(mtype,(char **)&iprev->next->mtype);CHKERRQ(ierr);
-      iprev->next->getfactor[(int)ftype-1] = getfactor;
+      iprev->next->createfactor[(int)ftype-1] = createfactor;
       PetscFunctionReturn(0);
     }
     prev = next;
@@ -4362,28 +4363,28 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFact
   ierr = PetscStrallocpy(package,&prev->next->name);CHKERRQ(ierr);
   ierr = PetscNew(&prev->next->handlers);CHKERRQ(ierr);
   ierr = PetscStrallocpy(mtype,(char **)&prev->next->handlers->mtype);CHKERRQ(ierr);
-  prev->next->handlers->getfactor[(int)ftype-1] = getfactor;
+  prev->next->handlers->createfactor[(int)ftype-1] = createfactor;
   PetscFunctionReturn(0);
 }
 
 /*@C
-   MatSolvePackageGet - Get's the function that creates the factor matrix if it exist
+   MatSolveTypeGet - Gets the function that creates the factor matrix if it exist
 
    Input Parameters:
-+    package - name of the package, for example petsc or superlu
-.    ftype - the type of factorization supported by the package
--    mtype - the matrix type that works with this package
++    type - name of the package, for example petsc or superlu
+.    ftype - the type of factorization supported by the type
+-    mtype - the matrix type that works with this type
 
    Output Parameters:
-+   foundpackage - PETSC_TRUE if the package was registered
-.   foundmtype - PETSC_TRUE if the package supports the requested mtype
--   getfactor - routine that will create the factored matrix ready to be used or NULL if not found
++   foundtype - PETSC_TRUE if the type was registered
+.   foundmtype - PETSC_TRUE if the type supports the requested mtype
+-   createfactor - routine that will create the factored matrix ready to be used or NULL if not found
 
     Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable()
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatSolvePackageRegister), MatGetFactor()
 @*/
-PetscErrorCode MatSolverTypeGet(MatSolverType package,MatType mtype,MatFactorType ftype,PetscBool *foundpackage,PetscBool *foundmtype,PetscErrorCode (**getfactor)(Mat,MatFactorType,Mat*))
+PetscErrorCode MatSolverTypeGet(MatSolverType type,MatType mtype,MatFactorType ftype,PetscBool *foundtype,PetscBool *foundmtype,PetscErrorCode (**createfactor)(Mat,MatFactorType,Mat*))
 {
   PetscErrorCode              ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders;
@@ -4391,21 +4392,21 @@ PetscErrorCode MatSolverTypeGet(MatSolverType package,MatType mtype,MatFactorTyp
   MatSolverTypeForSpecifcType inext;
 
   PetscFunctionBegin;
-  if (foundpackage) *foundpackage = PETSC_FALSE;
+  if (foundtype) *foundtype = PETSC_FALSE;
   if (foundmtype)   *foundmtype   = PETSC_FALSE;
-  if (getfactor)    *getfactor    = NULL;
+  if (createfactor) *createfactor    = NULL;
 
-  if (package) {
+  if (type) {
     while (next) {
-      ierr = PetscStrcasecmp(package,next->name,&flg);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(type,next->name,&flg);CHKERRQ(ierr);
       if (flg) {
-        if (foundpackage) *foundpackage = PETSC_TRUE;
+        if (foundtype) *foundtype = PETSC_TRUE;
         inext = next->handlers;
         while (inext) {
           ierr = PetscStrbeginswith(mtype,inext->mtype,&flg);CHKERRQ(ierr);
           if (flg) {
             if (foundmtype) *foundmtype = PETSC_TRUE;
-            if (getfactor)  *getfactor  = inext->getfactor[(int)ftype-1];
+            if (createfactor)  *createfactor  = inext->createfactor[(int)ftype-1];
             PetscFunctionReturn(0);
           }
           inext = inext->next;
@@ -4418,10 +4419,10 @@ PetscErrorCode MatSolverTypeGet(MatSolverType package,MatType mtype,MatFactorTyp
       inext = next->handlers;
       while (inext) {
         ierr = PetscStrbeginswith(mtype,inext->mtype,&flg);CHKERRQ(ierr);
-        if (flg && inext->getfactor[(int)ftype-1]) {
-          if (foundpackage) *foundpackage = PETSC_TRUE;
+        if (flg && inext->createfactor[(int)ftype-1]) {
+          if (foundtype) *foundtype = PETSC_TRUE;
           if (foundmtype)   *foundmtype   = PETSC_TRUE;
-          if (getfactor)    *getfactor    = inext->getfactor[(int)ftype-1];
+          if (createfactor) *createfactor = inext->createfactor[(int)ftype-1];
           PetscFunctionReturn(0);
         }
         inext = inext->next;
@@ -4501,14 +4502,17 @@ PetscErrorCode MatFactorGetUseOrdering(Mat mat, PetscBool *flg)
 
       PETSc must have been ./configure to use the external solver, using the option --download-package
 
+   Developer Notes:
+      This should actually be called MatCreateFactor() since it creates a new factor object
+
    Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatFactorGetUseOrdering()
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatFactorGetUseOrdering(), MatSolverTypeRegister()
 @*/
 PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat *f)
 {
   PetscErrorCode ierr,(*conv)(Mat,MatFactorType,Mat*);
-  PetscBool      foundpackage,foundmtype;
+  PetscBool      foundtype,foundmtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -4517,12 +4521,12 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat 
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = MatSolverTypeGet(type,((PetscObject)mat)->type_name,ftype,&foundpackage,&foundmtype,&conv);CHKERRQ(ierr);
-  if (!foundpackage) {
+  ierr = MatSolverTypeGet(type,((PetscObject)mat)->type_name,ftype,&foundtype,&foundmtype,&conv);CHKERRQ(ierr);
+  if (!foundtype) {
     if (type) {
-      SETERRQ4(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate solver package %s for factorization type %s and matrix type %s. Perhaps you must ./configure with --download-%s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name,type);
+      SETERRQ4(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate solver type %s for factorization type %s and matrix type %s. Perhaps you must ./configure with --download-%s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name,type);
     } else {
-      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate a solver package for factorization type %s and matrix type %s.",MatFactorTypes[ftype],((PetscObject)mat)->type_name);
+      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate a solver type for factorization type %s and matrix type %s.",MatFactorTypes[ftype],((PetscObject)mat)->type_name);
     }
   }
   if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverType %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
@@ -4533,7 +4537,7 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat 
 }
 
 /*@C
-   MatGetFactorAvailable - Returns a a flag if matrix supports particular package and factor type
+   MatGetFactorAvailable - Returns a a flag if matrix supports particular type and factor type
 
    Not Collective
 
@@ -4551,9 +4555,12 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat 
 
       PETSc must have been ./configure to use the external solver, using the option --download-package
 
+   Developer Notes:
+      This should actually be called MatCreateFactorAvailable() since MatGetFactor() creates a new factor object
+
    Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetFactor()
+.seealso: MatCopy(), MatDuplicate(), MatGetFactor(), MatSolverTypeRegister()
 @*/
 PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type,MatFactorType ftype,PetscBool  *flg)
 {
@@ -6633,10 +6640,10 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFact
   PetscValidPointer(fact,5);
   if (info->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %D",(PetscInt)info->levels);
   if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",(double)info->fill);
-  if (!(fact)->ops->ilufactorsymbolic) {
-    MatSolverType spackage;
-    ierr = MatFactorGetSolverType(fact,&spackage);CHKERRQ(ierr);
-    SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic ILU using solver package %s",((PetscObject)mat)->type_name,spackage);
+  if (!fact->ops->ilufactorsymbolic) {
+    MatSolverType stype;
+    ierr = MatFactorGetSolverType(fact,&stype);CHKERRQ(ierr);
+    SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic ILU using solver type %s",((PetscObject)mat)->type_name,stype);
   }
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
@@ -6696,9 +6703,9 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
   if (info->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %D",(PetscInt) info->levels);
   if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",(double)info->fill);
   if (!(fact)->ops->iccfactorsymbolic) {
-    MatSolverType spackage;
-    ierr = MatFactorGetSolverType(fact,&spackage);CHKERRQ(ierr);
-    SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic ICC using solver package %s",((PetscObject)mat)->type_name,spackage);
+    MatSolverType stype;
+    ierr = MatFactorGetSolverType(fact,&stype);CHKERRQ(ierr);
+    SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic ICC using solver type %s",((PetscObject)mat)->type_name,stype);
   }
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   MatCheckPreallocated(mat,2);

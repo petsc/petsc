@@ -4576,12 +4576,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 */
 PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalues,PetscBool mallocmatspace)
 {
-  Mat_SeqAIJ     *c,*a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *c = (Mat_SeqAIJ*)C->data,*a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       m = A->rmap->n,i;
 
   PetscFunctionBegin;
-  c = (Mat_SeqAIJ*)C->data;
+  if (!A->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot duplicate unassembled matrxix");
 
   C->factortype = A->factortype;
   c->row        = NULL;

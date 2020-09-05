@@ -6,7 +6,7 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
         \dot{U} = f(U,V)
         F(U,V)  = 0
 
-    Same as ex6.c and ex7.c except calls the ARKIMEX integrator on the entire DAE
+    Same as ex6.c and ex7.c except calls the TSROSW integrator on the entire DAE
 */
 
 
@@ -26,10 +26,10 @@ PetscErrorCode f(PetscReal t,Vec UV,Vec F)
   n    = n/2;
   ierr = VecGetArrayRead(UV,&u);CHKERRQ(ierr);
   v    = u + n;
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
   for (i=0; i<n; i++) f[i] = u[i] + v[i];
   ierr = VecRestoreArrayRead(UV,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -49,12 +49,12 @@ PetscErrorCode F(PetscReal t,Vec UV,Vec F)
   n    = n/2;
   ierr = VecGetArrayRead(UV,&u);CHKERRQ(ierr);
   v    = u + n;
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
   f    = f + n;
   for (i=0; i<n; i++) f[i] = u[i] - v[i];
   f    = f - n;
   ierr = VecRestoreArrayRead(UV,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -79,9 +79,10 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&tsrhs);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&UV);CHKERRQ(ierr);
+  ierr = VecDuplicate(tsrhs,&UV);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,tsrhs,TSFunctionRHS,&ctx);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,TSFunctionI,&ctx);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
   ctx.f = f;
   ctx.F = F;
 
@@ -96,9 +97,6 @@ int main(int argc,char **argv)
 
 /*
    Defines the RHS function that is passed to the time-integrator.
-
-
-
 */
 PetscErrorCode TSFunctionRHS(TS ts,PetscReal t,Vec UV,Vec F,void *actx)
 {
@@ -113,7 +111,6 @@ PetscErrorCode TSFunctionRHS(TS ts,PetscReal t,Vec UV,Vec F,void *actx)
 
 /*
    Defines the nonlinear function that is passed to the time-integrator
-
 */
 PetscErrorCode TSFunctionI(TS ts,PetscReal t,Vec UV,Vec UVdot,Vec F,void *actx)
 {
@@ -125,3 +122,15 @@ PetscErrorCode TSFunctionI(TS ts,PetscReal t,Vec UV,Vec UVdot,Vec F,void *actx)
   ierr = (*ctx->F)(t,UV,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    test:
+      args:  -ts_view
+
+    test:
+      suffix: 2
+      args: -snes_lag_jacobian 2 -ts_view
+
+TEST*/
+
