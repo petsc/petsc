@@ -264,4 +264,9 @@ int main(int argc,char **argv)
       args: -monitor -ts_type bdf -ts_rtol 1e-6 -ts_atol 1e-6 -ts_view -ts_adapt_type dsp -ts_adapt_dsp_pid 0.4,0.2
       output_file: output/ex19_pi42.out
 
+   test:
+      requires: !single
+      suffix: bdf_reject
+      args: -ts_type bdf -ts_dt 0.5 -ts_max_steps 1 -ts_max_reject {{0 1 2}separate_output} -ts_error_if_step_fails false -ts_adapt_monitor
+
 TEST*/
