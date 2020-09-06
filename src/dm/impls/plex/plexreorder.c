@@ -38,7 +38,7 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
         }
       }
     }
-    if (fMax != fEnd) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of depth %d faces %d does not match permuted nubmer %d", d, fEnd-fStart, fMax-fStart);
+    if (fMax != fEnd) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of depth %d faces %d does not match permuted number %d", d, fEnd-fStart, fMax-fStart);
   }
   *clperm    = perm;
   *invclperm = iperm;

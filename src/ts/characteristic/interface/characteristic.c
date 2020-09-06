@@ -562,7 +562,7 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
 PetscErrorCode CharacteristicAddPoint(Characteristic c, CharacteristicPointDA2D *point)
 {
   PetscFunctionBegin;
-  if (c->queueSize >= c->queueMax) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Exceeeded maximum queue size %d", c->queueMax);
+  if (c->queueSize >= c->queueMax) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Exceeded maximum queue size %d", c->queueMax);
   c->queue[c->queueSize++] = *point;
   PetscFunctionReturn(0);
 }

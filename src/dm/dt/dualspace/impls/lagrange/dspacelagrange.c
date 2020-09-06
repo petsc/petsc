@@ -2094,7 +2094,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           ierr = DMPlexGetConeSize(dm, q, &coneSize);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, q, &cone);CHKERRQ(ierr);
           for (c = 0; c < coneSize; c++) if (cone[c] == p) break;
-          if (c == coneSize) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "cone/suppport mismatch");
+          if (c == coneSize) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "cone/support mismatch");
           ierr = PetscDualSpaceGetDM(qsp, &qdm);CHKERRQ(ierr);
           ierr = DMPlexGetCone(qdm, 0, &refCone);CHKERRQ(ierr);
           /* get the equivalent dual space from the support dual space */

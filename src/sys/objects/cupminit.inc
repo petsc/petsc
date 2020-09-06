@@ -73,7 +73,7 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
   static PetscBool      cupmValdidateChecked = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (PetscNotUseCUPM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You asserted the code would't use devices with -device_set none, but now trying to create a device object. Remove this option or see manpage of PetscCUPMInitialize().");
+  if (PetscNotUseCUPM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You asserted the code wouldn't use devices with -device_set none, but now trying to create a device object. Remove this option or see manpage of PetscCUPMInitialize().");
   if (!PetscCUPMInitialized) {
     cerr = cupmGetDeviceCount(&devCount);CHKERRCUPM(cerr);
     if (devCount > 1) {

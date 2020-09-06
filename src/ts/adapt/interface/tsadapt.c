@@ -541,7 +541,7 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
   PetscValidLogicalCollectiveReal(adapt,high,3);
   if (low  != PETSC_DEFAULT && low  < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be non negative",(double)low);
   if (low  != PETSC_DEFAULT && low  > 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be less than one",(double)low);
-  if (high != PETSC_DEFAULT && high < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Increase factor %g must be geather than one",(double)high);
+  if (high != PETSC_DEFAULT && high < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Increase factor %g must be greater than one",(double)high);
   if (low  != PETSC_DEFAULT) adapt->clip[0] = low;
   if (high != PETSC_DEFAULT) adapt->clip[1] = high;
   PetscFunctionReturn(0);
@@ -656,7 +656,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
   if (hmax != PETSC_DEFAULT) adapt->dt_max = hmax;
   hmin = adapt->dt_min;
   hmax = adapt->dt_max;
-  if (hmax <= hmin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Maximum time step %g must geather than minimum time step %g",(double)hmax,(double)hmin);
+  if (hmax <= hmin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Maximum time step %g must greater than minimum time step %g",(double)hmax,(double)hmin);
   PetscFunctionReturn(0);
 }
 
