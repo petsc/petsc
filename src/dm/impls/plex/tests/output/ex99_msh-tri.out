@@ -29,6 +29,13 @@ Process 0:
   (   1) dim  2 offset   0 0. 0.
   (   2) dim  2 offset   2 1. 0.
   (   3) dim  2 offset   4 0. 1.
+Label 'marker':
+[0]: 1 (1)
+[0]: 2 (1)
+[0]: 3 (1)
+[0]: 4 (1)
+[0]: 5 (1)
+[0]: 6 (1)
 Label 'celltype':
 [0]: 1 (0)
 [0]: 2 (0)

@@ -176,6 +176,7 @@ finish:
     args: -dm_view ::ascii_info_detail
     args: -dm_plex_check_all
     args: -dm_plex_gmsh_highorder false
+    args: -dm_plex_gmsh_use_marker true
 
 
   testset:
