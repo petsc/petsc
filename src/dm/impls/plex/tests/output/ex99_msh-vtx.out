@@ -1,0 +1,14 @@
+DM Object: mesh-vtx 1 MPI processes
+  type: plex
+mesh-vtx in 0 dimensions:
+Supports:
+[0] Max support size: 0
+Cones:
+[0] Max cone size: 0
+coordinates with 1 fields
+  field 0 with 3 components
+Process 0:
+  (   0) dim  3 offset   0 0. 0. 0.
+Label 'marker':
+Label 'celltype':
+[0]: 0 (0)
