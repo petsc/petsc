@@ -8221,6 +8221,7 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 $    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
 
 +  dim - The spatial dimension
+.  time - The time at which to sample
 .  x   - The coordinates
 .  Nf  - The number of fields
 .  u   - The output field values

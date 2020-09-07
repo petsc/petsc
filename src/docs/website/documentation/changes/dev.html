@@ -245,6 +245,9 @@
           <li>Add argument to DM nullspace constructors</li>
         </ul>
       <h4>PetscViewer:</h4>
+        <ul>
+          <li>Deprecate the legacy <code>.vtk</code> (PETSC_VIEWER_ASCII_VTK) viewer.  Please use <code>.vtr</code> or <code>.vts</code> for structured grids (DMDA) and <code>.vtu</code> for unstructured (DMPlex).</li>
+        </ul>
       <h4>SYS:</h4>
         <ul>
           <li>Add PetscPowInt64 returning a 64bit integer result for cases where PetscPowInt result overflows 32bit representations</li>
