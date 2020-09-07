@@ -1729,7 +1729,7 @@ class CMakePackage(Package):
       os.mkdir(folder)
 
       try:
-        self.logPrintBox('Configuring '+self.PACKAGE+' with cmake, this may take several minutes')
+        self.logPrintBox('Configuring '+self.PACKAGE+' with cmake; this may take several minutes')
         output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error configuring '+self.PACKAGE+' with cmake '+str(e))
