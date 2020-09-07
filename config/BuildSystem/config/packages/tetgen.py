@@ -6,6 +6,7 @@ class Configure(config.package.Package):
     self.download     = ['http://www.tetgen.org/1.5/src/tetgen1.5.1.tar.gz',
                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.5.1.tar.gz']
     self.liblist      = [['libtet.a']]
+    self.includes     = ['tetgen.h']
     self.cxx          = 1
     return
 
