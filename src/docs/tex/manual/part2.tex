@@ -2124,7 +2124,7 @@ Note that this does not state that the method converged at this
 iteration: it can also have reached the maximum number of iterations,
 or have diverged.
 
-Section~\ref{section_convergencetests} gives more details regarding
+Section~\ref{sec_convergencetests} gives more details regarding
 convergence testing. Note that multiple linear solves can be performed by
 the same \lstinline{KSP} context. Once the \lstinline{KSP} context is no longer needed, it should be
 destroyed with the command
@@ -2385,7 +2385,7 @@ minimization one with Lagrange multipliers. The only matrix type supported is
 Consult the online documentation for further details.
 
 \subsection{Convergence Tests}
-\label{section_convergencetests}
+\label{sec_convergencetests}
 
 The default convergence test, \lstinline{KSPConvergedDefault()}, is
 based on the $l_2$-norm of the residual. Convergence
@@ -3181,7 +3181,7 @@ can be used to obtain the operators with \lstinline{PCGetOperators()} and the
 application-provided data structure that was set with \lstinline{PCShellSetContext()}.
 
 %----------------------------------------------------------------------
-\subsection{Combining Preconditioners\label{sec:combining-pcs}} \sindex{combining preconditioners}
+\subsection{Combining Preconditioners\label{sec_combining-pcs}} \sindex{combining preconditioners}
 
 The \lstinline{PC} type \lstinline{PCCOMPOSITE} allows one to form
 new preconditioners by combining already-defined preconditioners and
@@ -3583,7 +3583,7 @@ A_{00}^{-1}   & 0 \\
 These can be accessed with \trl{-pc_fieldsplit_type<additive,multiplicative,}\break\trl{symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function \lstinline{PCFieldSplitSetType()}. The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
 
 By default blocks $A_{00}, A_{01}$ and so on are extracted out of \trl{Pmat}, the matrix that the \lstinline{KSP} uses to build the preconditioner,
-and not out of \trl{Amat} (i.e., $A$ itself). As discussed above in Sec.~\ref{sec:combining-pcs}, however, it is possible to use \lstinline{Amat}
+and not out of \trl{Amat} (i.e., $A$ itself). As discussed above in Sec.~\ref{sec_combining-pcs}, however, it is possible to use \lstinline{Amat}
 instead of \trl{Pmat} by calling \lstinline{PCSetUseAmat(pc)} or using \trl{-pc_use_amat} on the command line.  Alternatively, you can have \lstinline{PCFieldSplit}
 extract the diagonal blocks $A_{00}, A_{11}$ etc. out of \lstinline{Amat} by calling \lstinline{PCFieldSplitSetDiagUseAmat(pc,PETSC_TRUE)} or supplying
 command-line argument \trl{-pc_fieldsplit_diag_use_amat}.  Similarly, \break\lstinline{PCFieldSplitSetOffDiagUseAmat(pc,{PETSC_TRUE}) or \trl{-pc_fieldsplit_off_diag_use_amat}
@@ -4499,7 +4499,7 @@ instead employ the techniques of Eisenstat and Walker \cite{EW96}
 to compute $ \eta_k $ at each step of the nonlinear solver by using the
 option \trl{-snes_ksp_ew_conv} \findex{-snes_ksp_ew_conv}. In addition,
 by adding one's own \lstinline{KSP} convergence test (see Section
-\ref{section_convergencetests}), one can easily create one's own,
+\ref{sec_convergencetests}), one can easily create one's own,
 problem-dependent, inner convergence tests.
 
 % ---------------------------------------------------------------
@@ -5426,7 +5426,7 @@ The error tolerances are satisfied when $\SErr \le 1.0$.
 The next step size is based on this error estimate, and determined by
 %%%
 \begin{eqnarray}
-  \label{eq:hnew}
+  \label{eq_hnew}
  \Delta t_{\rm new}(t)&=&\Delta t_{\rm{old}} \min(\alpha_{\max},
  \max(\alpha_{\min}, \beta (1/\SErr)^\frac{1}{\widehat{p}+1}))\,,
 \end{eqnarray}
@@ -5872,7 +5872,7 @@ three vertices). In fact, this structure has been known for a long time. It is a
 which is a Directed Acyclic Graph (DAG) representing a cell complex using the covering relation. The graph edges
 represent the relation, which also encodes a partially ordered set (poset).
 
-For example, we can encode the doublet mesh in Figure \ref{fig:doubletMesh},
+For example, we can encode the doublet mesh in Figure \ref{fig_doubletMesh},
 \begin{figure}
 \centering
 \begin{tikzpicture}[scale=2.0]
@@ -5897,9 +5897,9 @@ For example, we can encode the doublet mesh in Figure \ref{fig:doubletMesh},
   \path ( 0.6667, 0.0) node[faceV](f1) {$f_1$};
 \end{tikzpicture}
 \caption{A 2D doublet mesh, two triangles sharing an edge.}
-\label{fig:doubletMesh}
+\label{fig_doubletMesh}
 \end{figure}
-which can also be represented as the DAG in Figure~\ref{fig:doubletDAG}.
+which can also be represented as the DAG in Figure~\ref{fig_doubletDAG}.
 \begin{figure}
 \centering
 \begin{tikzpicture}[scale=2.0]
@@ -5940,10 +5940,10 @@ which can also be represented as the DAG in Figure~\ref{fig:doubletDAG}.
   \draw[sec] (e4)  -- (f1);
 \end{tikzpicture}
 \caption{The Hasse diagram for our 2D doublet mesh, expressed as a DAG.}
-\label{fig:doubletDAG}
+\label{fig_doubletDAG}
 \end{figure}
 To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention in 3 dimensions is to number first cells,
-then vertices, then faces, and then edges. In 2 dimensions the convention is to number faces, vertices, and then edges. The user is free to violate these conventions. In terms of the labels in Figure~\ref{fig:doubletMesh}, these numberings are
+then vertices, then faces, and then edges. In 2 dimensions the convention is to number faces, vertices, and then edges. The user is free to violate these conventions. In terms of the labels in Figure~\ref{fig_doubletMesh}, these numberings are
 \begin{equation*}
   f_0 \mapsto \mathtt{0}, f_1 \mapsto \mathtt{1}, \quad v_0 \mapsto \mathtt{2}, v_1 \mapsto \mathtt{3}, v_2 \mapsto \mathtt{4}, v_3 \mapsto \mathtt{5}, \quad e_0 \mapsto \mathtt{6}, e_1 \mapsto \mathtt{7}, e_2 \mapsto \mathtt{8}, e_3 \mapsto \mathtt{9}, e_4 \mapsto \mathtt{10}
 \end{equation*}
@@ -6011,7 +6011,7 @@ The sequence for setting up any \lstinline{PetscSection} is the following:
   \item Specify the number of dofs per point, and
   \item Set up the \lstinline{PetscSection}.
 \end{enumerate}
-For example, using the mesh from Figure~\ref{fig:doubletMesh}, we can lay out data for a continuous Galerkin $P_3$ finite
+For example, using the mesh from Figure~\ref{fig_doubletMesh}, we can lay out data for a continuous Galerkin $P_3$ finite
 element method,
 \begin{lstlisting}
 PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
