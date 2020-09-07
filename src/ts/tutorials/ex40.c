@@ -319,7 +319,7 @@ int main(int argc,char **argv)
 
     test:
       suffix: e
-      args:  -ts_type bdf -ts_adapt_dt_max 0.025 -ts_max_steps 1500 -ts_trajectory_dirname ex40_e_dir
+      args: -ts_type bdf -ts_adapt_dt_max 0.025 -ts_max_steps 1500 -ts_trajectory_dirname ex40_e_dir
       output_file: output/ex40.out
 
     test:
@@ -345,6 +345,17 @@ int main(int argc,char **argv)
     test:
       suffix: j
       args: -rhs-form -ts_type rk -ts_rk_type 8vr -ts_trajectory_dirname ex40_j_dir
+      output_file: output/ex40.out
+
+    test:
+      suffix: k
+      args: -ts_type theta -ts_adapt_type dsp -ts_trajectory_dirname ex40_k_dir
+      output_file: output/ex40.out
+
+    test:
+      suffix: l
+      args: -rhs-form -ts_type rk -ts_rk_type 2a -ts_trajectory_dirname ex40_l_dir
+      args: -ts_adapt_type dsp -ts_adapt_always_accept {{false true}} -ts_adapt_dt_min 0.01
       output_file: output/ex40.out
 
 TEST*/
