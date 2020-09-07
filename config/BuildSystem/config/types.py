@@ -1,7 +1,6 @@
 import config.base
 
 import os
-import re
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -232,13 +231,15 @@ class Configure(config.base.Configure):
 #else
 #  define PETSC_MAX_PATH_LEN 4096
 #endif
-int petsc_max_path_len = PETSC_MAX_PATH_LEN;
+#define xstr(s) str(s)
+#define str(s) #s
+char petsc_max_path_len[] = xstr(PETSC_MAX_PATH_LEN);
 '''
     MaxPathLength = 'unknown'
     if self.checkCompile(length):
       buf = self.outputPreprocess(length)
       try:
-        MaxPathLength = re.compile('\nint petsc_max_path_len ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
+        MaxPathLength = re.compile('\nchar petsc_max_path_len\s?\[\s?\] = '+HASHLINESPACE+'\"([0-9]+)\"'+HASHLINESPACE+';').search(buf).group(1)
       except:
         raise RuntimeError('Unable to determine PETSC_MAX_PATH_LEN')
     if MaxPathLength == 'unknown' or not MaxPathLength.isdigit():
