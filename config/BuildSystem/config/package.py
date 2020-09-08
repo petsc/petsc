@@ -93,7 +93,7 @@ class Package(config.base.Configure):
     self.hastests               = 0 # indicates that PETSc make alltests has tests for this package
     self.hastestsdatafiles      = 0 # indicates that PETSc make alltests has tests for this package that require DATAFILESPATH to be set
     self.makerulename           = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
-    self.installedpetsc         = 0
+    self.installedpetsc         = 0  # configure actually compiled and installed PETSc
     self.installwithbatch       = 1  # install the package even though configure in the batch mode; f2blaslapack and fblaslapack for example
     self.builtafterpetsc        = 0  # package is compiled/installed after PETSc is compiled
 
@@ -323,6 +323,7 @@ class Package(config.base.Configure):
     return ['']
 
   def getInstallDir(self):
+    '''Calls self.Install() to install the package'''
     '''Returns --prefix (or the value computed from --package-prefix-hash) if provided otherwise $PETSC_DIR/$PETSC_ARCH'''
     '''Special case for packages such as sowing that are have self.publicInstall == 0 it always locates them in $PETSC_DIR/$PETSC_ARCH'''
     '''Special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
@@ -586,11 +587,11 @@ class Package(config.base.Configure):
         fd.close()
       return self.getInstallDir()
     else:
-      # check if download option is set for any of the dependent packages - if so flag an error.
+      # check if download option is set for MPI dependent packages - if so flag an error.
       mesg=''
-      for pkg in self.deps:
-        if 'download-'+pkg.package in self.argDB and self.argDB['download-'+pkg.package]:
-          mesg+='Error! Cannot use --download-'+pkg.package+' when not using --download-'+self.package+'. Perhaps you need to look for a version of '+pkg.PACKAGE+' that '+self.PACKAGE+' was built with!\n'
+      if hasattr(self,'mpi') and self.mpi in self.deps:
+        if 'download-mpich' in self.argDB and self.argDB['download-mpich'] or 'download-openmpi' in self.argDB and self.argDB['download-openmpi']:
+          mesg+='Cannot use --download-mpich or --download-openmpi when not using --download-%s. Perhaps you want --download-%s.\n' % (self.package,self.package)
       if mesg:
         raise RuntimeError(mesg)
     return ''
@@ -932,6 +933,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     pass
 
   def consistencyChecks(self):
+    '''Checks run on the system and currently installed packages that need to be correct for the package now being configured'''
+    self.printTest(self.consistencyChecks)
     if 'with-'+self.package+'-dir' in self.argDB and ('with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB):
       raise RuntimeError('Specify either "--with-'+self.package+'-dir" or "--with-'+self.package+'-lib --with-'+self.package+'-include". But not both!')
 

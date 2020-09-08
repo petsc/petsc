@@ -128,6 +128,7 @@ class Configure(script.Script):
       self.logWrite('stderr:\n' + error)
 
   def executeTest(self, test, args = [], kargs = {}):
+    '''Prints the function and class information for the test and then runs the test'''
     import time
 
     self.logWrite('================================================================================\n')
@@ -139,6 +140,13 @@ class Configure(script.Script):
     ret = test(*args,**kargs)
     #self.logPrint('  TIME: '+str(time.time() - t)+' sec', debugSection = 'screen', indent = 0)
     return ret
+
+  def printTest(self, test):
+    '''Prints the function and class information for a test'''
+    self.logWrite('================================================================================\n')
+    self.logWrite('TEST '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')\n')
+    self.logPrint('TESTING: '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')', debugSection = 'screen', indent = 0)
+    if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
 
   #################################
   # Define and Substitution Supported

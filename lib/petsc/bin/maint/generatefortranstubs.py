@@ -35,7 +35,7 @@ def FixFile(filename):
   ff.close()
 
   # https://gitlab.com/petsc/petsc/-/issues/360#note_231598172
-  if data.find('\00'): print('Found null character in generated Fortran stub file')
+  if data.find('\00') > -1: print('Found null character in generated Fortran stub file. First location %d immediately before: %s' % (data.find('\00'),data[data.find('\00')+1:]))
   data = re.subn('\00','',data)[0]  
   data = re.subn('\nvoid ','\nPETSC_EXTERN void ',data)[0]
   data = re.subn('\nPetscErrorCode ','\nPETSC_EXTERN void ',data)[0]
@@ -61,7 +61,7 @@ def FixFile(filename):
   ff = open(filename)
   data = ff.read()
   ff.close()
-  if data.find('\00'): print('Found null character in generated Fortran stub file after generatefortranstubs.py processing')
+  if data.find('\00') > -1: print('Found null character in generated Fortran stub file after generatefortranstubs.py processing. First location %d immediately before: %s' % (data.find('\00'),data[data.find('\00')+1:]))
 
 def FindSource(filename):
   import os.path
