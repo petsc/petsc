@@ -8,6 +8,8 @@ TS Object: 1 MPI processes
   type: bdf
     Order=2
   maximum time=0.5
+  total number of I function evaluations=114
+  total number of I Jacobian evaluations=93
   total number of nonlinear solver iterations=93
   total number of linear solver iterations=93
   total number of nonlinear solve failures=0

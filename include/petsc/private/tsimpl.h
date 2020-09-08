@@ -259,6 +259,9 @@ struct _p_TS {
   PetscInt num_snes_failures;
   PetscInt max_snes_failures;
 
+  /* --- Logging --- */
+  PetscInt ifuncs,rhsfuncs,ijacs,rhsjacs;
+
   /* --- Data that is unique to each particular solver --- */
   PetscInt setupcalled;             /* true if setup has been called */
   void     *data;                   /* implementationspecific data */

@@ -594,6 +594,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
     PetscStackPush("TS user Jacobian function");
     ierr = (*rhsjacobianfunc)(ts,t,U,A,B,ctx);CHKERRQ(ierr);
     PetscStackPop;
+    ts->rhsjacs++;
     ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
   } else {
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
@@ -646,18 +647,18 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
 
   if (!rhsfunction && !ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
 
-  ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
   if (rhsfunction) {
+    ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
     ierr = VecLockReadPush(U);CHKERRQ(ierr);
     PetscStackPush("TS user right-hand-side function");
     ierr = (*rhsfunction)(ts,t,U,y,ctx);CHKERRQ(ierr);
     PetscStackPop;
     ierr = VecLockReadPop(U);CHKERRQ(ierr);
+    ts->rhsfuncs++;
+    ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
   } else {
     ierr = VecZeroEntries(y);CHKERRQ(ierr);
   }
-
-  ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -857,6 +858,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
     PetscStackPush("TS user implicit function");
     ierr = (*ifunction)(ts,t,U,Udot,Y,ctx);CHKERRQ(ierr);
     PetscStackPop;
+    ts->ifuncs++;
   }
   if (imex) {
     if (!ifunction) {
@@ -969,6 +971,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   if (ijacobian) {
     PetscStackPush("TS user implicit Jacobian");
     ierr = (*ijacobian)(ts,t,U,Udot,shift,A,B,ctx);CHKERRQ(ierr);
+    ts->ijacs++;
     PetscStackPop;
   }
   if (imex) {
@@ -2096,6 +2099,18 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
     if (ts->max_time < PETSC_MAX_REAL) {
       ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",(double)ts->max_time);CHKERRQ(ierr);
+    }
+    if (ts->ifuncs) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of I function evaluations=%D\n",ts->ifuncs);CHKERRQ(ierr);
+    }
+    if (ts->ijacs) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of I Jacobian evaluations=%D\n",ts->ijacs);CHKERRQ(ierr);
+    }
+    if (ts->rhsfuncs) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of RHS function evaluations=%D\n",ts->rhsfuncs);CHKERRQ(ierr);
+    }
+    if (ts->rhsjacs) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of RHS Jacobian evaluations=%D\n",ts->rhsjacs);CHKERRQ(ierr);
     }
     if (ts->usessnes) {
       PetscBool lin;

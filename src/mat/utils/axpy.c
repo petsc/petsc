@@ -122,7 +122,7 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
     ierr = MatGetLocalSize(Y,&m,&n);CHKERRQ(ierr);
     ierr = MatCreate(PetscObjectComm((PetscObject)Y),&preallocator);CHKERRQ(ierr);
     ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
-    ierr = MatSetSizes(preallocator,m,n,M,N);CHKERRQ(ierr);
+    ierr = MatSetLayouts(preallocator,Y->rmap,Y->cmap);CHKERRQ(ierr);
     ierr = MatSetUp(preallocator);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(preallocator,&rstart,&rend);CHKERRQ(ierr);
     for (r = rstart; r < rend; ++r) {
@@ -144,7 +144,7 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
 
     ierr = MatCreate(PetscObjectComm((PetscObject)Y),B);CHKERRQ(ierr);
     ierr = MatSetType(*B,((PetscObject)Y)->type_name);CHKERRQ(ierr);
-    ierr = MatSetSizes(*B,m,n,M,N);CHKERRQ(ierr);
+    ierr = MatSetLayouts(*B,Y->rmap,Y->cmap);CHKERRQ(ierr);
     ierr = MatPreallocatorPreallocate(preallocator,PETSC_FALSE,*B);CHKERRQ(ierr);
     ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
   }
@@ -169,8 +169,8 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
   }
   /* no need to preallocate if Y is dense */
   ierr = PetscObjectBaseTypeCompareAny((PetscObject)Y,&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
-  if (isdense && str == DIFFERENT_NONZERO_PATTERN) str = SUBSET_NONZERO_PATTERN;
-  if (str != DIFFERENT_NONZERO_PATTERN) {
+  if (isdense && (str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN)) str = SUBSET_NONZERO_PATTERN;
+  if (str != DIFFERENT_NONZERO_PATTERN && str != UNKNOWN_NONZERO_PATTERN) {
     PetscInt          i,start,end,j,ncols,m,n;
     const PetscInt    *row;
     PetscScalar       *val;

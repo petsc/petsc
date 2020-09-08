@@ -205,6 +205,8 @@ TS Object: 1 MPI processes
   type: beuler
   maximum steps=100
   maximum time=100.
+  total number of I function evaluations=100
+  total number of I Jacobian evaluations=100
   total number of linear solver iterations=4
   total number of linear solve failures=0
   total number of rejected steps=0

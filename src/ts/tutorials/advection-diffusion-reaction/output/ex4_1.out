@@ -57,6 +57,7 @@ TS Object: 1 MPI processes
     Abscissa of A       =  0.000000  0.871733  0.731580  1.000000 
     Abscissa of A+Gamma =  0.435867  0.871733  0.731580  1.000000 
   maximum time=1.
+  total number of I function evaluations=620
   total number of nonlinear solver iterations=248
   total number of linear solver iterations=248
   total number of linear solve failures=0
