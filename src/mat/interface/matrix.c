@@ -2102,6 +2102,32 @@ PetscErrorCode MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmapping
 }
 
 /*@
+   MatSetLayouts - Sets the PetscLayout objects for rows and columns of a matrix
+
+   Logically Collective on A
+
+   Input Parameters:
++  A - the matrix
+. rmap - row layout
+- cmap - column layout
+
+   Level: advanced
+
+.seealso:  MatCreateVecs(), MatGetLocalToGlobalMapping(), MatGetLayouts()
+@*/
+PetscErrorCode MatSetLayouts(Mat A,PetscLayout rmap,PetscLayout cmap)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+
+  ierr = PetscLayoutReference(rmap,&A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(cmap,&A->cmap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    MatGetLayouts - Gets the PetscLayout objects for rows and columns
 
    Not Collective
@@ -2115,7 +2141,7 @@ PetscErrorCode MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmapping
 
    Level: advanced
 
-.seealso:  MatCreateVecs(), MatGetLocalToGlobalMapping()
+.seealso:  MatCreateVecs(), MatGetLocalToGlobalMapping(), MatSetLayouts()
 @*/
 PetscErrorCode MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
 {

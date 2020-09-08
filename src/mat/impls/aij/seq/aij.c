@@ -3083,17 +3083,29 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *x = (Mat_SeqAIJ*)X->data,*y = (Mat_SeqAIJ*)Y->data;
-  PetscBLASInt   one=1,bnz;
 
   PetscFunctionBegin;
-  ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
+  if (str == DIFFERENT_NONZERO_PATTERN) {
+    if (x->nz == y->nz) {
+      PetscBool e;
+      ierr = PetscArraycmp(x->i,y->i,Y->rmap->n+1,&e);CHKERRQ(ierr);
+      if (e) {
+        ierr = PetscArraycmp(x->j,y->j,y->nz,&e);CHKERRQ(ierr);
+        if (e) {
+          str = SAME_NONZERO_PATTERN;
+        }
+      }
+    }
+  }
   if (str == SAME_NONZERO_PATTERN) {
-    PetscScalar alpha = a;
+    PetscScalar  alpha = a;
+    PetscBLASInt one = 1,bnz;
+
+    ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
-    /* the MatAXPY_Basic* subroutines calls MatAssembly, so the matrix on the GPU
-       will be updated */
+    /* the MatAXPY_Basic* subroutines calls MatAssembly, so the matrix on the GPU will be updated */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (Y->offloadmask != PETSC_OFFLOAD_UNALLOCATED) {
       Y->offloadmask = PETSC_OFFLOAD_CPU;
@@ -3107,8 +3119,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = PetscMalloc1(Y->rmap->N,&nnz);CHKERRQ(ierr);
     ierr = MatCreate(PetscObjectComm((PetscObject)Y),&B);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetBlockSizesFromMats(B,Y,Y);CHKERRQ(ierr);
+    ierr = MatSetLayouts(B,Y->rmap,Y->cmap);CHKERRQ(ierr);
     ierr = MatSetType(B,(MatType) ((PetscObject)Y)->type_name);CHKERRQ(ierr);
     ierr = MatAXPYGetPreallocation_SeqAIJ(Y,X,nnz);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(B,0,nnz);CHKERRQ(ierr);

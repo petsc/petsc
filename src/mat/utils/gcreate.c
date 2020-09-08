@@ -397,6 +397,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   PetscInt         refct;
   PetscObjectState state;
   struct _p_Mat    buffer;
+  MatStencilInfo   stencil;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -406,13 +407,15 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   if (((PetscObject)*C)->refct != 1) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %D > 1, would leave hanging reference",((PetscObject)*C)->refct);
 
   /* swap C and A */
-  refct = ((PetscObject)A)->refct;
-  state = ((PetscObject)A)->state;
+  refct   = ((PetscObject)A)->refct;
+  state   = ((PetscObject)A)->state;
+  stencil = A->stencil;
   ierr  = PetscMemcpy(&buffer,A,sizeof(struct _p_Mat));CHKERRQ(ierr);
   ierr  = PetscMemcpy(A,*C,sizeof(struct _p_Mat));CHKERRQ(ierr);
   ierr  = PetscMemcpy(*C,&buffer,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  ((PetscObject)A)->refct = refct;
-  ((PetscObject)A)->state = state + 1;
+  ((PetscObject)A)->refct   = refct;
+  ((PetscObject)A)->state   = state + 1;
+  A->stencil                = stencil;
 
   ((PetscObject)*C)->refct = 1;
   ierr = MatShellSetOperation(*C,MATOP_DESTROY,(void(*)(void))NULL);CHKERRQ(ierr);
