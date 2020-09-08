@@ -4581,7 +4581,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
   PetscInt       m = A->rmap->n,i;
 
   PetscFunctionBegin;
-  if (!A->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot duplicate unassembled matrix");
+  if (!A->assembled && cpvalues!=MAT_DO_NOT_COPY_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot duplicate unassembled matrix");
 
   C->factortype = A->factortype;
   c->row        = NULL;
