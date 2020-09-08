@@ -604,7 +604,7 @@ PetscErrorCode  PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
 }
 
 /*@C
-   PetscLayoutsCreateSF - Creates a parallel star forest mapping two PetscLayout objects
+   PetscSFCreateFromLayouts - Creates a parallel star forest mapping two PetscLayout objects
 
    Collective
 
@@ -619,7 +619,7 @@ PetscErrorCode  PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
 
 .seealso: PetscSFCreate(), PetscLayoutCreate(), PetscSFSetGraphLayout()
 @*/
-PetscErrorCode PetscLayoutsCreateSF(PetscLayout rmap, PetscLayout lmap, PetscSF* sf)
+PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, PetscSF* sf)
 {
   PetscErrorCode ierr;
   PetscInt       i,nroots,nleaves = 0;
