@@ -135,7 +135,7 @@ int main(int argc,char **argv)
 
    test:
       args: -pbag_rho 44 -pbag_do_output true
-      requires: yaml !complex
+      requires: !complex
 
    test:
       suffix: yaml
