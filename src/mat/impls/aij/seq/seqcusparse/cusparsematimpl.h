@@ -1,6 +1,7 @@
 #if !defined(__CUSPARSEMATIMPL)
 #define __CUSPARSEMATIMPL
 
+#include <petscpkg_version.h>
 #include <petsc/private/cudavecimpl.h>
 
 #include <cusparse_v2.h>
@@ -90,6 +91,7 @@ struct CsrMatrix {
   THRUSTARRAY      *values;
 };
 
+#if PETSC_PKG_CUDA_VERSION_LT(11,0,0)
 /* This is struct holding the relevant data needed to a MatSolve */
 struct Mat_SeqAIJCUSPARSETriFactorStruct {
   /* Data needed for triangular solve */
@@ -98,6 +100,7 @@ struct Mat_SeqAIJCUSPARSETriFactorStruct {
   cusparseOperation_t         solveOp;
   CsrMatrix                   *csrMat;
 };
+#endif
 
 /* This is struct holding the relevant data needed to a MatMult */
 struct Mat_SeqAIJCUSPARSEMultStruct {
@@ -108,6 +111,8 @@ struct Mat_SeqAIJCUSPARSEMultStruct {
   PetscScalar        *beta_zero; /* pointer to a device "scalar" storing the beta parameter in the SpMV as zero*/
   PetscScalar        *beta_one; /* pointer to a device "scalar" storing the beta parameter in the SpMV as one */
 };
+
+#if PETSC_PKG_CUDA_VERSION_LT(11,0,0)
 
 /* This is a larger struct holding all the triangular factors for a solve, transpose solve, and
  any indices used in a reordering */
@@ -122,6 +127,7 @@ struct Mat_SeqAIJCUSPARSETriFactors {
   cusparseHandle_t                  handle;   /* a handle to the cusparse library */
   PetscInt                          nnz;      /* number of nonzeros ... need this for accurate logging between ICC and ILU */
 };
+#endif
 
 /* This is a larger struct holding all the matrices for a SpMV, and SpMV Tranpose */
 struct Mat_SeqAIJCUSPARSE {
