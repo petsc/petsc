@@ -2462,7 +2462,7 @@ PetscErrorCode MatImaginaryPart_SeqBAIJ(Mat A)
 }
 
 /*
-    Code almost idential to MatGetColumnIJ_SeqAIJ() should share common code
+    Code almost identical to MatGetColumnIJ_SeqAIJ() should share common code
 */
 PetscErrorCode MatGetColumnIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *nn,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {

@@ -22,7 +22,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   sized = (PetscMPIInt) PetscSqrtReal((PetscReal) size);
-  if (PetscSqr(sized) != size) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "This test may only be run on a nubmer of processes which is a perfect square, not %d", (int) size);
+  if (PetscSqr(sized) != size) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "This test may only be run on a number of processes which is a perfect square, not %d", (int) size);
   if (M % sized) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of x-vertices %D does not divide the number of x-processes %d", M, (int) sized);
   if (N % sized) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of y-vertices %D does not divide the number of y-processes %d", N, (int) sized);
   /* Assemble the matrix for the five point stencil, YET AGAIN
