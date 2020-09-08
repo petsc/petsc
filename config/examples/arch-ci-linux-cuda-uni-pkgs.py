@@ -11,8 +11,8 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--with-mpi=0',
-    '--with-cc=clang',
-    '--with-cxx=clang++',
+    '--with-cc=gcc',
+    '--with-cxx=g++',
     '--with-fc=gfortran',
     '--with-cuda=1',
     '--download-hdf5',
@@ -20,8 +20,6 @@ if __name__ == '__main__':
     '--download-superlu',
     '--download-mumps',
     '--with-mumps-serial',
-    'CUDAFLAGS=-ccbin clang++',
-    'CFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-unused-function', # should be CXXFLAGS
     '--with-shared-libraries=1',
   ]
   configure.petsc_configure(configure_options)
