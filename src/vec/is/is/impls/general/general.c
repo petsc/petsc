@@ -398,7 +398,7 @@ static PetscErrorCode ISSort_General(IS is)
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  ierr = PetscSortInt(n,sub->idx);CHKERRQ(ierr);
+  ierr = PetscIntSortSemiOrdered(n,sub->idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

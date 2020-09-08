@@ -73,8 +73,8 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
       ierr = PetscArraycpy(a1,ptr1,sz1);CHKERRQ(ierr);
       ierr = PetscArraycpy(a2,ptr2,sz2);CHKERRQ(ierr);
 
-      ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
-      ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
+      ierr = PetscIntSortSemiOrdered(sz1,a1);CHKERRQ(ierr);
+      ierr = PetscIntSortSemiOrdered(sz2,a2);CHKERRQ(ierr);
       ierr = PetscArraycmp(a1,a2,sz1,&flag);CHKERRQ(ierr);
 
       ierr = ISRestoreIndices(is1,&ptr1);CHKERRQ(ierr);

@@ -192,7 +192,7 @@ static PetscErrorCode ISSort_Block(IS is)
   PetscFunctionBegin;
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  ierr = PetscSortInt(n/bs,sub->idx);CHKERRQ(ierr);
+  ierr = PetscIntSortSemiOrdered(n/bs,sub->idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -260,7 +260,7 @@ static PetscErrorCode ISUniqueLocal_Block(IS is,PetscBool *flg)
   if (!sortedLocal) {
     ierr = PetscMalloc1(n, &idxcopy);CHKERRQ(ierr);
     ierr = PetscArraycpy(idxcopy, idx, n);CHKERRQ(ierr);
-    ierr = PetscSortInt(n, idxcopy);CHKERRQ(ierr);
+    ierr = PetscIntSortSemiOrdered(n, idxcopy);CHKERRQ(ierr);
     idx = idxcopy;
   }
   for (i = 1; i < n; i++) if (idx[i] == idx[i - 1]) break;
@@ -286,7 +286,7 @@ static PetscErrorCode ISPermutationLocal_Block(IS is,PetscBool *flg)
   if (!sortedLocal) {
     ierr = PetscMalloc1(n, &idxcopy);CHKERRQ(ierr);
     ierr = PetscArraycpy(idxcopy, idx, n);CHKERRQ(ierr);
-    ierr = PetscSortInt(n, idxcopy);CHKERRQ(ierr);
+    ierr = PetscIntSortSemiOrdered(n, idxcopy);CHKERRQ(ierr);
     idx = idxcopy;
   }
   for (i = 0; i < n; i++) if (idx[i] != i) break;
