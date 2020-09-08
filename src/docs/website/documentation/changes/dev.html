@@ -115,7 +115,7 @@
           <li>Change PetscCUDAInitialize(comm) to PetscCUDAInitialize(comm,dev)</li>
           <li>Add PetscCUDAInitializeCheck() to do lazy CUDA initialization</li>
           <li>Add -hip_device, -hip_view, -hip_synchronize, PetscHIPInitialize(comm,dev) and PetscHIPInitializeCheck(). Their usage is similar to their CUDA counterpart</li>
-          <li>Add PetscOptionsInsertStringYAML() and "-options_string_yaml" for YAML-formatted options on the command line</li>
+          <li>Add PetscOptionsInsertStringYAML() and -options_string_yaml for YAML-formatted options on the command line</li>
           <li>Add PETSC_OPTIONS_YAML environment variable for setting options in YAML format</li>
           <li>Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS Fortran linker enables catching floating point divide by zero the trapping is disabled for LAPACK routines that generate divide by zero, for example, the reference implementation of ieeeck().</li>
           <li>Add floating point exception handling support for freebsd and Windows.</li>
@@ -124,7 +124,7 @@
           <li>Remove PetscOptionsSetFromOptions()</li>
           <li>Remove PetscOptionsMonitorCancel()</li>
           <li>Remove -h and -v options. Use -help and -version instead. The short options -h and -v can now be used within user codes.</li>
-          </li>Import PETSc4py sources into PETSc source tree. Continue to use<em>--download-petsc4py</em> to build petsc4py.</li>
+          <li>Import PETSc4py sources into PETSc source tree. Continue to use --download-petsc4py to build petsc4py.</li>
         </ul>
       <h4>Configure/Build:</h4>
         <ul>
