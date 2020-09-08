@@ -232,7 +232,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+  if (hist) {ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);}
   ierr = TSSetMaxTime(ts,30.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.1);CHKERRQ(ierr);
@@ -357,5 +357,18 @@ int main(int argc,char **argv)
       args: -rhs-form -ts_type rk -ts_rk_type 2a -ts_trajectory_dirname ex40_l_dir
       args: -ts_adapt_type dsp -ts_adapt_always_accept {{false true}} -ts_adapt_dt_min 0.01
       output_file: output/ex40.out
+
+    test:
+      suffix: m
+      args: -ts_type alpha -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 -test_adapthistory false
+      args: -ts_max_time 10 -ts_exact_final_time {{STEPOVER MATCHSTEP INTERPOLATE}}
+
+    test:
+      requires: !single
+      suffix: n
+      args: -test_adapthistory false
+      args: -ts_type alpha -ts_alpha_radius 1.0 -ts_view
+      args: -ts_dt 0.25 -ts_adapt_type basic -ts_adapt_wnormtype INFINITY -ts_adapt_monitor
+      args: -ts_max_steps 1 -ts_max_reject {{0 1 2}separate_output} -ts_error_if_step_fails false
 
 TEST*/
