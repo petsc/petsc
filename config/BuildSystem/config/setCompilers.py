@@ -1283,6 +1283,7 @@ class Configure(config.base.Configure):
     arcUnix    = os.path.join(self.tmpDir, 'libconf1.a')
     arcWindows = os.path.join(self.tmpDir, 'libconf1.lib')
     def checkArchive(command, status, output, error):
+      if error in ["xiar: executing 'ar'\n"]: error = None
       if error or status:
         self.logError('archiver', status, output, error)
         if os.path.isfile(objName):
