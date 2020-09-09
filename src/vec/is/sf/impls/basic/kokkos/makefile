@@ -1,12 +1,12 @@
-#requirespackage 'PETSC_HAVE_CUDA'
+#requirespackage 'PETSC_HAVE_KOKKOS'
 ALL: lib
 
 SOURCEH       =
 SOURCEC       =
-SOURCECU      = sfcuda.cu
+SOURCEKOKKOS  = sfkok.kokkos.cxx
 LIBBASE       = libpetscvec
 DIRS          =
-LOCDIR        = src/vec/is/sf/impls/basic/cuda
+LOCDIR        = src/vec/is/sf/impls/basic/kokkos
 MANSEC        = Vec
 SUBMANSEC     = PetscSF
 

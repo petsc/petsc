@@ -14,7 +14,7 @@
 #include <petscconf.h>
 #include <petscfix.h>
 
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP) || defined(PETSC_HAVE_KOKKOS)
    #define PETSC_HAVE_DEVICE
 #endif
 

@@ -7,7 +7,6 @@
 
 #if defined(PETSC_HAVE_CUDA)
   #include <cuda_runtime.h>
-  #include <petsc/private/cudavecimpl.h>
 #endif
 
 #if defined(PETSC_HAVE_HIP)
@@ -34,6 +33,8 @@ PETSC_EXTERN PetscLogEvent PETSCSF_Unpack;
 typedef enum {PETSCSF_ROOT2LEAF=0, PETSCSF_LEAF2ROOT} PetscSFDirection;
 typedef enum {PETSCSF_BCAST=0, PETSCSF_REDUCE, PETSCSF_FETCH} PetscSFOperation;
 typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE} PetscMemType;
+/* When doing device-aware MPI, a backend refers to the SF/device interface */
+typedef enum {PETSCSF_BACKEND_INVALID=0,PETSCSF_BACKEND_CUDA,PETSCSF_BACKEND_KOKKOS} PetscSFBackend;
 
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
@@ -55,6 +56,9 @@ struct _PetscSFOps {
   PetscErrorCode (*GetGraph)(PetscSF,PetscInt*,PetscInt*,const PetscInt**,const PetscSFNode**);
   PetscErrorCode (*CreateEmbeddedSF)(PetscSF,PetscInt,const PetscInt*,PetscSF*);
   PetscErrorCode (*CreateEmbeddedLeafSF)(PetscSF,PetscInt,const PetscInt*,PetscSF*);
+
+  PetscErrorCode (*Malloc)(PetscMemType,size_t,void**);
+  PetscErrorCode (*Free)(PetscMemType,void*);
 };
 
 typedef struct _n_PetscSFPackOpt *PetscSFPackOpt;
@@ -103,6 +107,7 @@ struct _p_PetscSF {
 #if defined(PETSC_HAVE_CUDA)
   PetscInt        maxResidentThreadsPerGPU;
 #endif
+  PetscSFBackend  backend;         /* The device backend (if any) SF will use */
   void *data;                      /* Pointer to implementation */
 };
 
@@ -137,74 +142,27 @@ PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype,MPI_Dataty
 #define MPIU_Ialltoall(a,b,c,d,e,f,g,req)      MPI_Alltoall(a,b,c,d,e,f,g)
 #endif
 
-PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType *type)
-{
-  PetscFunctionBegin;
-  PetscValidPointer(type,2);
-  *type = PETSC_MEMTYPE_HOST;
 #if defined(PETSC_HAVE_CUDA)
-  if (PetscCUDAInitialized && data) {
-    cudaError_t                  cerr;
-    struct cudaPointerAttributes attr;
-    enum cudaMemoryType          mtype;
-    cerr = cudaPointerGetAttributes(&attr,data); /* Do not check error since before CUDA 11.0, passing a host pointer returns cudaErrorInvalidValue */
-    cudaGetLastError(); /* Reset the last error */
-    #if (CUDART_VERSION < 10000)
-      mtype = attr.memoryType;
-    #else
-      mtype = attr.type;
-    #endif
-    if (cerr == cudaSuccess && mtype == cudaMemoryTypeDevice) {
-      *type = PETSC_MEMTYPE_DEVICE;
-      PetscFunctionReturn(0);
-    }
-  }
+PETSC_EXTERN PetscErrorCode PetscSFMalloc_Cuda(PetscMemType,size_t,void**);
+PETSC_EXTERN PetscErrorCode PetscSFFree_Cuda(PetscMemType,void*);
 #endif
 
-#if defined(PETSC_HAVE_HIP)
-  if (PetscHIPInitialized && data) {
-    hipError_t                   cerr;
-    struct hipPointerAttribute_t attr;
-    enum hipMemoryType           mtype;
-    cerr = hipPointerGetAttributes(&attr,data);
-    hipGetLastError(); /* Reset the last error */
-    mtype = attr.memoryType;
-    if (cerr == hipSuccess && mtype == hipMemoryTypeDevice) {
-      *type = PETSC_MEMTYPE_DEVICE;
-      PetscFunctionReturn(0);
-    }
-  }
+#if defined(PETSC_HAVE_KOKKOS)
+PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
+PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
 #endif
-  PetscFunctionReturn(0);
-}
 
-PETSC_STATIC_INLINE PetscErrorCode PetscMallocWithMemType(PetscMemType mtype,size_t size,void** ptr)
-{
-  PetscFunctionBegin;
-  if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
-#if defined(PETSC_HAVE_CUDA)
-  else if (mtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaMalloc(ptr,size);CHKERRCUDA(err);}
-#elif defined(PETSC_HAVE_HIP)
-  else if (mtype == PETSC_MEMTYPE_DEVICE) {hipError_t  err = hipMalloc(ptr,size);CHKERRQ(err==hipSuccess?0:PETSC_ERR_LIB);}
+/* SF only supports CUDA and Kokkos devices. Even VIENNACL is a device, its device pointers are invisible to SF.
+   Through VecGetArray(), we copy data of VECVIENNACL from device to host and pass host pointers to SF.
+ */
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS)
+  #define PetscSFMalloc(sf,mtype,sz,ptr)  ((*(sf)->ops->Malloc)(mtype,sz,ptr))
+  /* Free memory and set ptr to NULL when succeeded */
+  #define PetscSFFree(sf,mtype,ptr)       ((ptr) && ((*(sf)->ops->Free)(mtype,ptr) || ((ptr)=NULL,0)))
+#else
+  /* If pure host code, do with less indirection */
+  #define PetscSFMalloc(sf,mtype,sz,ptr)  PetscMalloc(sz,ptr)
+  #define PetscSFFree(sf,mtype,ptr)       PetscFree(ptr)
 #endif
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mtype,void* ptr)
-{
-  PetscFunctionBegin;
-  if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
-#if defined(PETSC_HAVE_CUDA)
-  else if (mtype == PETSC_MEMTYPE_DEVICE) {cudaError_t err = cudaFree(ptr);CHKERRCUDA(err);}
-#elif defined(PETSC_HAVE_HIP)
-  else if (mtype == PETSC_MEMTYPE_DEVICE) {hipError_t  err = hipFree(ptr);CHKERRQ(err==hipSuccess?0:PETSC_ERR_LIB);}
-#endif
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
-  PetscFunctionReturn(0);
-}
-
-/* Free memory and set ptr to NULL when succeeded */
-#define PetscFreeWithMemType(t,p) ((p) && (PetscFreeWithMemType_Private((t),(p)) || ((p)=NULL,0)))
 
 #endif
