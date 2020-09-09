@@ -2873,10 +2873,8 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
 {
   PetscSF         sfPoint, sfVert;
   PetscLayout     vLayout;
-  PetscHSetI      vhash;
-  PetscSFNode    *remoteVerticesAdj, *vertexLocal, *vertexOwner, *remoteVertex;
-  const PetscInt *vrange;
-  PetscInt        numVerticesAdj, off = 0, *verticesAdj, numVerticesGhost = 0, *localVertex, *cones, c, p, v, g, dim;
+  PetscSFNode    *vertexLocal, *vertexOwner, *remoteVertex;
+  PetscInt        numVerticesAdj, *verticesAdj, numVerticesGhost = 0, *localVertex, *cones, c, p, v, g, dim;
   PetscMPIInt     rank, size;
   PetscErrorCode  ierr;
 
@@ -2906,30 +2904,24 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   ierr = PetscLayoutSetSize(vLayout, NVertices);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(vLayout, 1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(vLayout);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRanges(vLayout, &vrange);CHKERRQ(ierr);
-  /* Count vertices and map them to procs */
-  ierr = PetscHSetICreate(&vhash);CHKERRQ(ierr);
-  for (c = 0; c < numCells; ++c) {
-    for (p = 0; p < numCorners; ++p) {
-      ierr = PetscHSetIAdd(vhash, cells[c*numCorners+p]);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscHSetIGetSize(vhash, &numVerticesAdj);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numVerticesAdj, &verticesAdj);CHKERRQ(ierr);
-  ierr = PetscHSetIGetElems(vhash, &off, verticesAdj);CHKERRQ(ierr);
-  ierr = PetscHSetIDestroy(&vhash);CHKERRQ(ierr);
-  if (off != numVerticesAdj) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %D should be %D", off, numVerticesAdj);
-  ierr = PetscSortInt(numVerticesAdj, verticesAdj);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numVerticesAdj, &remoteVerticesAdj);CHKERRQ(ierr);
-  for (v = 0; v < numVerticesAdj; ++v) {
-    const PetscInt gv = verticesAdj[v];
-    PetscInt       vrank;
+  /* Count locally unique vertices */
+  {
+    PetscHSetI vhash;
+    PetscInt off = 0;
 
-    ierr = PetscFindInt(gv, size+1, vrange, &vrank);CHKERRQ(ierr);
-    vrank = vrank < 0 ? -(vrank+2) : vrank;
-    remoteVerticesAdj[v].index = gv - vrange[vrank];
-    remoteVerticesAdj[v].rank  = vrank;
+    ierr = PetscHSetICreate(&vhash);CHKERRQ(ierr);
+    for (c = 0; c < numCells; ++c) {
+      for (p = 0; p < numCorners; ++p) {
+        ierr = PetscHSetIAdd(vhash, cells[c*numCorners+p]);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscHSetIGetSize(vhash, &numVerticesAdj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numVerticesAdj, &verticesAdj);CHKERRQ(ierr);
+    ierr = PetscHSetIGetElems(vhash, &off, verticesAdj);CHKERRQ(ierr);
+    ierr = PetscHSetIDestroy(&vhash);CHKERRQ(ierr);
+    if (off != numVerticesAdj) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %D should be %D", off, numVerticesAdj);
   }
+  ierr = PetscSortInt(numVerticesAdj, verticesAdj);CHKERRQ(ierr);
   /* Create cones */
   ierr = DMPlexSetChart(dm, 0, numCells+numVerticesAdj);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {ierr = DMPlexSetConeSize(dm, c, numCorners);CHKERRQ(ierr);}
@@ -2940,6 +2932,8 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
       const PetscInt gv = cells[c*numCorners+p];
       PetscInt       lv;
 
+      /* Positions within verticesAdj form 0-based local vertex numbering;
+         we need to shift it by numCells to get correct DAG points (cells go first) */
       ierr = PetscFindInt(gv, numVerticesAdj, verticesAdj, &lv);CHKERRQ(ierr);
       if (lv < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not find global vertex %D in local connectivity", gv);
       cones[c*numCorners+p] = lv+numCells;
@@ -2949,7 +2943,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), &sfVert);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) sfVert, "Vertex Ownership SF");CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sfVert);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sfVert, numVertices, numVerticesAdj, NULL, PETSC_OWN_POINTER, remoteVerticesAdj, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(sfVert, vLayout, numVerticesAdj, NULL, PETSC_OWN_POINTER, verticesAdj);CHKERRQ(ierr);
   ierr = PetscFree(verticesAdj);CHKERRQ(ierr);
   /* Build pointSF */
   ierr = PetscMalloc2(numVerticesAdj, &vertexLocal, numVertices, &vertexOwner);CHKERRQ(ierr);
@@ -2957,7 +2951,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   for (v = 0; v < numVertices;    ++v) {vertexOwner[v].index = -1;         vertexOwner[v].rank = -1;}
   ierr = PetscSFReduceBegin(sfVert, MPIU_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(sfVert, MPIU_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
-  for (v = 0; v < numVertices;    ++v) if (vertexOwner[v].rank < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global vertex %D on rank %d was unclaimed", v + vrange[rank], rank);
+  for (v = 0; v < numVertices;    ++v) if (vertexOwner[v].rank < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global vertex %D was unclaimed", v + vLayout->rstart);
   ierr = PetscSFBcastBegin(sfVert, MPIU_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sfVert, MPIU_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
   for (v = 0; v < numVerticesAdj; ++v) if (vertexLocal[v].rank != rank) ++numVerticesGhost;
