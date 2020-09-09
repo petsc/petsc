@@ -1,0 +1,69 @@
+Graph Partitioner: 3 MPI Processes
+  type: shell
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+  using random partition
+PetscSection Object: NULL SECTION 3 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  0 offset   0
+Process 1:
+  (   0) dim  0 offset   0
+Process 2:
+  (   0) dim  0 offset   0
+IS Object: NULL PARTITION 3 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 0
+[1] Number of indices in (stride) set 0
+[2] Number of indices in (stride) set 0
+Graph Partitioner: 3 MPI Processes
+  type: shell
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+  using random partition
+PetscSection Object: SEQ SECTION 3 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  0 offset   0
+Process 1:
+  (   0) dim  0 offset   0
+Process 2:
+  (   0) dim  4 offset   0
+IS Object: SEQ PARTITION 3 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 0
+[1] Number of indices in (stride) set 0
+[2] Number of indices in (stride) set 4
+[2] 0 0
+[2] 1 1
+[2] 2 2
+[2] 3 3
+Graph Partitioner: 3 MPI Processes
+  type: shell
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+  using random partition
+PetscSection Object: PARVOID SECTION 3 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  4 offset   0
+Process 1:
+  (   0) dim  0 offset   0
+Process 2:
+  (   0) dim  4 offset   0
+IS Object: PARVOID PARTITION 3 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 4
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[1] Number of indices in (stride) set 0
+[2] Number of indices in (stride) set 4
+[2] 0 0
+[2] 1 1
+[2] 2 2
+[2] 3 3
