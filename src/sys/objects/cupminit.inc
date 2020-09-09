@@ -298,7 +298,7 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
   ierr = PetscCUPMInitializeAndView(initDevice,device,logView,devView);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_KOKKOS)
-  if (PetscCUDAInitialized && !kinited) {
+  if (PetscCUPMInitialized && !kinited) {
     ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
     PetscBeganKokkos = PETSC_TRUE;
   }
