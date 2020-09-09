@@ -2925,13 +2925,16 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options,const char pre[],
 .  name - the option one is seeking
 -  nmax - maximum number of strings
 
-   Output Parameter:
+   Output Parameters:
 +  strings - location to copy strings
+.  nmax - the number of strings found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
    Notes:
+   The nmax parameter is used for both input and output.
+
    The user should pass in an array of pointers to char, to hold all the
    strings returned by this function.
 
