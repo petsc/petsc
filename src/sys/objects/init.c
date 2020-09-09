@@ -581,6 +581,8 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
       }
       ierr = MPI_Comm_create_errhandler(Petsc_MPI_AbortOnError,&err_handler);CHKERRQ(ierr);
       ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRQ(ierr);
+    } else {
+      ierr = PetscWaitOnError();CHKERRQ(ierr);
     }
     ierr = PetscFree(nodes);CHKERRQ(ierr);
   }
