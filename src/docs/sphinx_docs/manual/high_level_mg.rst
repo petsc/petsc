@@ -58,7 +58,7 @@ so that our discrete optimization problem is
 
 .. math::
 
-  \min_{P_{ij]} \| f^F_i - \sum_j P_{ij} f^C_j \|_2
+  \min_{P_{ij}} \| f^F_i - \sum_j P_{ij} f^C_j \|_2
 
 and we will treat each row of the interpolator as a separate optimization problem. We could allow an arbitrary sparsity pattern, or try to determine adaptively, as is done in sparse approximate inverse preconditioning. However, we know the supports of the basis functions in finite elements, and thus the naive sparsity pattern from local interpolation can be used.
 
@@ -69,9 +69,9 @@ We can easily solve the above problem using QR factorization. However, there are
 .. math::
 
   \begin{aligned}
-    &\min_{P_{ij]} \sum_k w_k \| f^{F,k}_i - \sum_j P_{ij} f^{C,k}_j \|_2 \\
-  = &\min_{P_{ij]} \sum_k \| \sqrt{w_k} f^{F,k}_i - \sqrt{w_k} \sum_j P_{ij} f^{C,k}_j \|_2 \\
-  = &\min_{P_{ij]} \| W^{1/2} \vf^{F}_i - W^{1/2} \vf^{C} p_i \|_2
+    &\min_{P_{ij}} \sum_k w_k \| f^{F,k}_i - \sum_j P_{ij} f^{C,k}_j \|_2 \\
+  = &\min_{P_{ij}} \sum_k \| \sqrt{w_k} f^{F,k}_i - \sqrt{w_k} \sum_j P_{ij} f^{C,k}_j \|_2 \\
+  = &\min_{P_{ij}} \| W^{1/2} \mathbf{f}^{F}_i - W^{1/2} \mathbf{f}^{C} p_i \|_2
   \end{aligned}
 
 where
@@ -80,8 +80,8 @@ where
 
   \begin{aligned}
   W         &= \begin{pmatrix} w_0 & & \\ & \ddots & \\ & & w_K \end{pmatrix} \\
-  \vf^{F}_i &= \begin{pmatrix} f^{F,0}_i \\ \vdots \\ f^{F,K}_i \end{pmatrix} \\
-  \vf^{C}   &= \begin{pmatrix} f^{C,0}_0 & \cdots & f^{C,0}_n \\ \vdots & \ddots &  \vdots \\ f^{C,K}_0 & \cdots & f^{C,K}_n \end{pmatrix} \\
+  \mathbf{f}^{F}_i &= \begin{pmatrix} f^{F,0}_i \\ \vdots \\ f^{F,K}_i \end{pmatrix} \\
+  \mathbf{f}^{C}   &= \begin{pmatrix} f^{C,0}_0 & \cdots & f^{C,0}_n \\ \vdots & \ddots &  \vdots \\ f^{C,K}_0 & \cdots & f^{C,K}_n \end{pmatrix} \\
   p_i       &= \begin{pmatrix} P_{i0} \\ \vdots \\ P_{in} \end{pmatrix}
   \end{aligned}
 
@@ -100,7 +100,7 @@ We thus have a standard least-squares problem
 
 .. math::
 
-  \min_{P_{ij]} \| b - A x \|_2
+  \min_{P_{ij}} \| b - A x \|_2
 
 where
 
@@ -121,3 +121,12 @@ We will typically perform this optimization on a multigrid level :math:`l` when 
   \frac{|\lambda_l - \lambda_{l+1}|}{|\lambda_l|}.
 
 This indicates that the generalized eigenvector associated with that eigenvalue was not adequately represented by :math:`P^l_{l+1}``, and the interpolator should be recomputed.
+
+References
+~~~~~~~~~~
+
+.. bibliography:: ../../tex/petsc.bib
+   :filter: docname in docnames
+
+.. bibliography:: ../../tex/petscapp.bib
+   :filter: docname in docnames
