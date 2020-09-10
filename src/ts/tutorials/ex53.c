@@ -61,6 +61,7 @@ typedef struct {
   SolutionType solType;     /* Type of exact solution */
   PetscBag     bag;         /* Problem parameters */
   PetscReal    t_r;         /* Relaxation time: 4 L^2 / c */
+  PetscReal    dtInitial;   /* Override the choice for first timestep */
   /* Exact solution terms */
   PetscInt    niter; /* Number of series term iterations in exact solutions */
   PetscReal   eps;   /* Precision value for root finding */
@@ -1655,12 +1656,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim      = 2;
-  options->simplex  = PETSC_TRUE;
-  options->refLimit = -1.0;
-  options->solType  = SOL_QUADRATIC_TRIG;
-  options->niter    = 500;
-  options->eps      = PETSC_SMALL;
+  options->dim       = 2;
+  options->simplex   = PETSC_TRUE;
+  options->refLimit  = -1.0;
+  options->solType   = SOL_QUADRATIC_TRIG;
+  options->niter     = 500;
+  options->eps       = PETSC_SMALL;
+  options->dtInitial = -1.0;
   ierr = PetscStrncpy(options->dmType, DMPLEX, 256);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "Biot Poroelasticity Options", "DMPLEX");CHKERRQ(ierr);
@@ -1672,7 +1674,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex53.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolutionType) sol;
   ierr = PetscOptionsFList("-dm_type", "Convert DMPlex to another format", "ex53.c", DMList, options->dmType, options->dmType, 256, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-eps", " Precision value for root finding", "ex53.c", options->eps, &options->eps, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-eps", "Precision value for root finding", "ex53.c", options->eps, &options->eps, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dt_initial", "Override the initial timestep", "ex53.c", options->dtInitial, &options->dtInitial, NULL);CHKERRQ(ierr);
 
   // Wrap up loose ends
   if (options->solType == SOL_CRYER) {
@@ -2346,7 +2349,7 @@ static PetscErrorCode TSAdaptChoose_Terzaghi(TSAdapt adapt, TS ts, PetscReal h, 
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm, (void **) &ctx);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts, &step);CHKERRQ(ierr);
-  dtInitial = 1.0e-4*ctx->t_r;
+  dtInitial = ctx->dtInitial < 0.0 ? 1.0e-4*ctx->t_r : ctx->dtInitial;
   if (!step) {
     if (PetscAbsReal(dtInitial - h) > PETSC_SMALL) {
       *accept  = PETSC_FALSE;
@@ -2530,6 +2533,15 @@ int main(int argc, char **argv)
     args: -sol_type terzaghi -dm_plex_separate_marker -dm_plex_box_faces 1,8 -simplex 0 \
       -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 -niter 16000 \
       -ts_dt 0.023 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1 -pc_type lu
+
+  test:
+    # -dm_plex_box_faces 1,16 -convest_num_refine 4 gives L_2 convergence rate: [1.7, 1.2, 1.1]
+    # if we add -displacement_petscspace_degree 3 -tracestrain_petscspace_degree 2 -pressure_petscspace_degree 2, we get [2.1, 1.6, 1.5], so I think we lose an order
+    suffix: 2d_terzaghi_sconv
+    requires: triangle
+    args: -sol_type terzaghi -dm_plex_separate_marker -dm_plex_box_faces 1,8 -simplex 0 \
+      -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 -niter 16000 \
+      -ts_dt 1e-5 -dt_initial 1e-5 -ts_max_steps 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 -pc_type lu
 
   test:
     suffix: 2d_mandel
