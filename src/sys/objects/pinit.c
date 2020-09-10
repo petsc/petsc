@@ -699,6 +699,7 @@ PetscInt PetscNumOMPThreads;
 .  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
 .  -malloc_view - show a list of all allocated memory during PetscFinalize()
 .  -malloc_view_threshold <t> - only list memory allocations of size greater than t with -malloc_view
+.  -malloc_requested_size - malloc logging will record the requested size rather than size after alignment
 .  -fp_trap - Stops on floating point exceptions
 .  -no_signal_handler - Indicates not to trap error signals
 .  -shared_tmp - indicates /tmp directory is shared by all processors
