@@ -1273,7 +1273,6 @@ PETSC_EXTERN PetscErrorCode PetscDataTypeFromString(const char*,PetscDataType*,P
    around the basic Unix system calls, but a few of them have additional
    functionality and/or error checking.
 */
-PETSC_EXTERN PetscErrorCode PetscBitMemcpy(void*,PetscInt,const void*,PetscInt,PetscInt,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscMemcmp(const void*,const void*,size_t,PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscStrlen(const char[],size_t*);
 PETSC_EXTERN PetscErrorCode PetscStrToArray(const char[],char,int*,char ***);

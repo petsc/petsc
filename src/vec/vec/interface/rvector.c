@@ -1263,7 +1263,8 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       ierr = ISGetSize(is,&N);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
-      if (n%bs || bs == 1 || !n) bs = -1; /* Do not decide block size if we do not have to */
+
+      if (n%bs || bs == 1) bs = -1; /* Do not decide block size if we do not have to */
       ierr = VecLockGet(X,&state);CHKERRQ(ierr);
       if (state) {
         const PetscScalar *x;
