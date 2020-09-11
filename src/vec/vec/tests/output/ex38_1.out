@@ -1,3 +1,37 @@
+Vec Object: 3 MPI processes
+Process [0]
+0.
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+9.
+Process [1]
+10.
+11.
+12.
+13.
+14.
+15.
+16.
+17.
+18.
+19.
+Process [2]
+20.
+21.
+22.
+23.
+24.
+25.
+26.
+27.
+28.
+29.
 IS Object: 3 MPI processes
 [0] Number of indices in (stride) set 3
 [0] 0 0
@@ -100,3 +134,37 @@ Process [2]
 5.
 2.
 3.
+Vec Object: 3 MPI processes
+Process [0]
+1000.
+1.
+2.
+3.
+4.
+-30.
+6.
+7.
+8.
+9.
+Process [1]
+2000.
+11.
+12.
+13.
+14.
+-20.
+16.
+17.
+18.
+19.
+Process [2]
+3000.
+21.
+22.
+23.
+24.
+-10.
+-3000.
+27.
+28.
+29.
