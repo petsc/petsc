@@ -13,6 +13,24 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/cudavecimpl.h>
 
+PetscErrorCode VecCUDAGetArrays_Private(Vec v,const PetscScalar** x,const PetscScalar** x_d,PetscOffloadMask* flg)
+{
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+  PetscFunctionBegin;
+  if (x) {
+    Vec_Seq *h = (Vec_Seq*)v->data;
+
+    *x = h->array;
+  }
+  if (x_d) {
+    Vec_CUDA *d = (Vec_CUDA*)v->spptr;
+
+    *x_d = d ? d->GPUarray : NULL;
+  }
+  if (flg) *flg = v->offloadmask;
+  PetscFunctionReturn(0);
+}
+
 /*
     Allocates space for the vector array on the Host if it does not exist.
     Does NOT change the PetscCUDAFlag for the vector
