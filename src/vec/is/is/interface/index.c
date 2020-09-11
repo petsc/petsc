@@ -896,13 +896,12 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(start,5);
+  PetscValidIntPointer(start,4);
   PetscValidIntPointer(contig,5);
+  *start  = -1;
+  *contig = PETSC_FALSE;
   if (is->ops->contiguous) {
     ierr = (*is->ops->contiguous)(is,gstart,gend,start,contig);CHKERRQ(ierr);
-  } else {
-    *start  = -1;
-    *contig = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
