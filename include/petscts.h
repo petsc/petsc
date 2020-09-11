@@ -632,7 +632,7 @@ struct _n_TSMonitorLGCtxNetwork {
 typedef struct _n_TSMonitorLGCtxNetwork*  TSMonitorLGCtxNetwork;
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkCreate(TS,const char[],const char[],int,int,int,int,PetscInt,TSMonitorLGCtxNetwork*);
-PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkSolution(TS,PetscInt,PetscReal,Vec,void*); 
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkSolution(TS,PetscInt,PetscReal,Vec,void*);
 
 typedef struct _n_TSMonitorEnvelopeCtx*  TSMonitorEnvelopeCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorEnvelopeCtxCreate(TS,TSMonitorEnvelopeCtx*);

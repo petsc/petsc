@@ -3,7 +3,7 @@
 #include <petscdraw.h>
 
 /*
-   TSMonitorLGCtxDestroy - Destroys  line graph contexts that where created with TSMonitorLGCtxCreate_Network().
+   TSMonitorLGCtxDestroy - Destroys  line graph contexts that where created with TSMonitorLGCtxNetworkCreate().
 
    Collective on TSMonitorLGCtx_Network
 
@@ -95,7 +95,7 @@ PetscErrorCode  TSMonitorLGCtxNetworkCreate(TS ts,const char host[],const char l
 .  step - current time-step
 .  ptime - current time
 .  u - current solution
--  dctx - the TSMonitorLGCtx object that contains all the options for the monitoring, this is created with TSMonitorLGCtxCreateNetwork()
+-  dctx - the TSMonitorLGCtxNetwork object that contains all the options for the monitoring, this is created with TSMonitorLGCtxCreateNetwork()
 
    Options Database:
 .   -ts_monitor_lg_solution_variables
@@ -137,7 +137,7 @@ PetscErrorCode  TSMonitorLGCtxNetworkSolution(TS ts,PetscInt step,PetscReal ptim
     ierr = VecGetArray(uv,&yv);CHKERRQ(ierr);
     ierr = VecGetLocalSize(uv,&n);CHKERRQ(ierr);
     for (j=0; j<n; j++) {
-      if (yv[j] <= 0) yv[j] = -12;
+      if (PetscRealPart(yv[j]) <= 0.0) yv[j] = -12;
       else            yv[j] = PetscLog10Real(yv[j]);
     }
     xv = yv;
@@ -153,7 +153,7 @@ PetscErrorCode  TSMonitorLGCtxNetworkSolution(TS ts,PetscInt step,PetscReal ptim
     if (!nvar) continue;
 
     ierr = DMNetworkGetVariableOffset(dm,e,&offset);CHKERRQ(ierr);
-    ierr = PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,xv+offset);CHKERRQ(ierr);
+    ierr = PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset));CHKERRQ(ierr);
     i++;
   }
 
@@ -164,7 +164,7 @@ PetscErrorCode  TSMonitorLGCtxNetworkSolution(TS ts,PetscInt step,PetscReal ptim
     if (!nvar) continue;
 
     ierr = DMNetworkGetVariableOffset(dm,v,&offset);CHKERRQ(ierr);
-    ierr = PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,xv+offset);CHKERRQ(ierr);
+    ierr = PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset));CHKERRQ(ierr);
     i++;
   }
   if (ctx->semilogy) {
