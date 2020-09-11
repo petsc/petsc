@@ -179,97 +179,118 @@ int main(int argc,char **args)
 /*TEST
 
    test:
+      diff_args: -j
       suffix: 0
 
    test:
+      diff_args: -j
       suffix: 1
       nsize: 2
 
    test:
+      diff_args: -j
       suffix: 10
       nsize: 2
       args: -bs 2 -nonlocal_bc
 
    test:
+      diff_args: -j
       suffix: 11
       nsize: 7
       args: -bs 2 -nonlocal_bc
 
    test:
+      diff_args: -j
       suffix: 12
       args: -bs 2 -nonlocal_bc -mat_type baij
 
    test:
+      diff_args: -j
       suffix: 13
       nsize: 2
       args: -bs 2 -nonlocal_bc -mat_type baij
 
    test:
+      diff_args: -j
       suffix: 14
       nsize: 7
       args: -bs 2 -nonlocal_bc -mat_type baij
 
    test:
+      diff_args: -j
       suffix: 2
       nsize: 7
 
    test:
+      diff_args: -j
       suffix: 3
       args: -mat_type baij
 
    test:
+      diff_args: -j
       suffix: 4
       nsize: 2
       args: -mat_type baij
 
    test:
+      diff_args: -j
       suffix: 5
       nsize: 7
       args: -mat_type baij
 
    test:
+      diff_args: -j
       suffix: 6
       args: -bs 2 -mat_type baij
 
    test:
+      diff_args: -j
       suffix: 7
       nsize: 2
       args: -bs 2 -mat_type baij
 
    test:
+      diff_args: -j
       suffix: 8
       nsize: 7
       args: -bs 2 -mat_type baij
 
    test:
+      diff_args: -j
       suffix: 9
       args: -bs 2 -nonlocal_bc
 
    test:
+      diff_args: -j
       suffix: 15
       args: -bs 2 -nonlocal_bc -convname shell
 
    test:
+      diff_args: -j
       suffix: 16
       nsize: 2
       args: -bs 2 -nonlocal_bc -convname shell
 
    test:
+      diff_args: -j
       suffix: 17
       args: -bs 2 -nonlocal_bc -convname dense
 
    testset:
+      diff_args: -j
       suffix: full
       nsize: {{1 3}separate output}
       args: -diag {{0.12 -0.13}separate output} -convname {{aij shell baij}separate output} -zerorhs 0
 
    test:
+      diff_args: -j
       requires: cuda
       suffix: cusparse_1
       nsize: 1
       args: -diag {{0.12 -0.13}separate output} -convname {{seqaijcusparse mpiaijcusparse}separate output} -zerorhs 0 -mat_type {{seqaijcusparse mpiaijcusparse}separate output}
 
    test:
+      diff_args: -j
       requires: cuda
       suffix: cusparse_3
       nsize: 3
