@@ -539,7 +539,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   ierr = PetscOptionsGetString(NULL,NULL,"-stop_for_debugger",string,sizeof(string),&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
     PetscMPIInt    size;
-    PetscInt       lsize,*nodes;
+    PetscInt       lsize,*ranks;
     MPI_Errhandler err_handler;
     /*
        we have to make sure that all processors have opened
@@ -563,12 +563,37 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
       }
     }
     /* check if this processor node should be in debugger */
-    ierr  = PetscMalloc1(size,&nodes);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(size,&ranks);CHKERRQ(ierr);
     lsize = size;
-    ierr  = PetscOptionsGetIntArray(NULL,NULL,"-debugger_nodes",nodes,&lsize,&flag);CHKERRQ(ierr);
+    /* Deprecated in 3.14 */
+    ierr  = PetscOptionsGetIntArray(NULL,NULL,"-debugger_nodes",ranks,&lsize,&flag);CHKERRQ(ierr);
+    if (flag) {
+      const char * const quietopt="-options_suppress_deprecated_warnings";
+      char               msg[4096];
+      PetscBool          quiet = PETSC_FALSE;
+
+      ierr = PetscOptionsGetBool(NULL,NULL,quietopt,&quiet,NULL);CHKERRQ(ierr);
+      if (!quiet) {
+        ierr = PetscStrcpy(msg,"** PETSc DEPRECATION WARNING ** : the option ");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg,"-debugger_nodes");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg," is deprecated as of version ");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg,"3.14");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg," and will be removed in a future release.");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg," Please use the option ");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg,"-debugger_ranks");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg," instead.");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg," (Silence this warning with ");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg,quietopt);CHKERRQ(ierr);
+        ierr = PetscStrcat(msg,")\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,msg);CHKERRQ(ierr);
+      }
+    } else {
+      lsize = size;
+      ierr  = PetscOptionsGetIntArray(NULL,NULL,"-debugger_ranks",ranks,&lsize,&flag);CHKERRQ(ierr);
+    }
     if (flag) {
       for (i=0; i<lsize; i++) {
-        if (nodes[i] == rank) { flag = PETSC_FALSE; break; }
+        if (ranks[i] == rank) { flag = PETSC_FALSE; break; }
       }
     }
     if (!flag) {
@@ -584,7 +609,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     } else {
       ierr = PetscWaitOnError();CHKERRQ(ierr);
     }
-    ierr = PetscFree(nodes);CHKERRQ(ierr);
+    ierr = PetscFree(ranks);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsGetString(NULL,NULL,"-on_error_emacs",emacsmachinename,sizeof(emacsmachinename),&flg1);CHKERRQ(ierr);
@@ -691,7 +716,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     ierr = (*PetscHelpPrintf)(comm,"       start all processes in the debugger\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -on_error_emacs <machinename>\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"    emacs jumps to error file\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -debugger_ranks [n1,n2,..] Ranks to start in debugger\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -stop_for_debugger : prints message on how to attach debugger manually\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"                      waits the delay for you to attach\n");CHKERRQ(ierr);

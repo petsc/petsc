@@ -688,7 +688,7 @@ PetscInt PetscNumOMPThreads;
 .  -on_error_mpiabort - calls MPI_abort() when error detected
 .  -error_output_stderr - prints error messages to stderr instead of the default stdout
 .  -error_output_none - does not print the error messages (but handles errors in the same way as if this was not called)
-.  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
+.  -debugger_ranks [rank1,rank2,...] - Indicates ranks to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to
                         process and wait (-debugger_pause) seconds for attachment

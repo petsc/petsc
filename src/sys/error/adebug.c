@@ -15,6 +15,7 @@ static char      PetscDebugger[PETSC_MAX_PATH_LEN];
 static char      DebugTerminal[PETSC_MAX_PATH_LEN];
 static PetscBool Xterm = PETSC_TRUE;
 PetscBool        petscwaitonerror = PETSC_FALSE;
+PetscBool        petscindebugger  = PETSC_FALSE;
 
 /*@C
    PetscSetDebugTerminal - Sets the terminal to use (instead of xterm) for debugging.
@@ -227,6 +228,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     (*PetscErrorPrintf)("Error in fork() attaching debugger\n");
     PetscFunctionReturn(1);
   }
+  petscindebugger = PETSC_TRUE;
 
   /*
       Swap role the parent and child. This is (I think) so that control c typed
@@ -318,7 +320,10 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
       args[j++] = PetscDebugger;
       jj = j;
-      args[j++] = program; args[j++] = pid; args[j++] = NULL;
+      /* this is for default gdb */
+      args[j++] = program;
+      args[j++] = pid;
+      args[j++] = NULL;
 
       if (isidb) {
         j = jj;
