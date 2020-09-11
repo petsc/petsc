@@ -102,3 +102,4 @@ graphviz_dot = str(result)
 # Set default highlighting language
 highlight_language = 'c'
 autosummary_generate = True
+numfig = True
