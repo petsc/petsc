@@ -83,9 +83,9 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
   }
 
   /*
-   *  the second step classical Gram-Schmidt is only necessary
-   *  when a simple test criteria is not passed
-   */
+     the second step classical Gram-Schmidt is only necessary
+     when a simple test criteria is not passed
+  */
   if (gmres->cgstype == KSP_GMRES_CGS_REFINE_IFNEEDED) {
     hnrm = 0.0;
     for (j=0; j<=it; j++) hnrm +=  PetscRealPart(lhh[j] * PetscConj(lhh[j]));

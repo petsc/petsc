@@ -1,6 +1,5 @@
 !
-!
-!  Include file for Fortran use of the Vec package in PETSc
+!  Used by petscvecmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscvec.h"
 
@@ -64,8 +63,6 @@
       PetscEnum, parameter :: VECOP_LOAD = 41
       PetscEnum, parameter :: VECOP_VIEWNATIVE = 68
       PetscEnum, parameter :: VECOP_LOADNATIVE = 69
-!
-!  End of Fortran include file for the Vec package in PETSc
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_VEC

@@ -1,6 +1,5 @@
 !
-!
-!  Include file for Fortran use of the PetscDraw package in PETSc
+!  Used by petscsysmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscdraw.h"
 !
@@ -54,6 +53,4 @@
       PetscEnum, parameter :: PETSC_BUTTON_LEFT_SHIFT = 6
       PetscEnum, parameter :: PETSC_BUTTON_CENTER_SHIFT = 7
       PetscEnum, parameter :: PETSC_BUTTON_RIGHT_SHIFT = 8
-!
-!  End of Fortran include file for the PetscDraw package in PETSc
 

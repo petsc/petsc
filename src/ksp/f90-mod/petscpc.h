@@ -1,6 +1,5 @@
 !
-!
-!  Include file for Fortran use of the PC (preconditioner) package in PETSc
+! Used by petsckspdefmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscpc.h"
 
@@ -125,6 +124,5 @@
       PetscEnum, parameter :: PC_SUBPC_ERROR=5
 
       external  PCMGRESIDUALDEFAULT
-!
-!  End of Fortran include file for the PC package in PETSc
+
 

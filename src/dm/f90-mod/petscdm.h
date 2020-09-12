@@ -1,7 +1,5 @@
-
-
 !
-!  Include file for Fortran use of the DM package in PETSc
+! Used by petscdmmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscdm.h"
 

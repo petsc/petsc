@@ -11,6 +11,9 @@
 #include <../src/sys/f90-mod/petscsys.h>
 #include <../src/sys/f90-mod/petscdraw.h>
 #include <../src/sys/f90-mod/petscviewer.h>
+#include <../src/sys/f90-mod/petscbag.h>
+#include <../src/sys/f90-mod/petscerror.h>
+#include <../src/sys/f90-mod/petsclog.h>
         end module
 
         module petscsysdef

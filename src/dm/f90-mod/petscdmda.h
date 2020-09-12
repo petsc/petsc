@@ -1,6 +1,5 @@
-
 !
-!  Include file for Fortran use of the DM (distributed array) package in PETSc
+!  Used by petscdmdamod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscdmda.h"
 
@@ -19,5 +18,3 @@
 !
       PetscEnum, parameter :: DMDA_ELEMENT_P1=0
       PetscEnum, parameter :: DMDA_ELEMENT_Q1=1
-!
-!  End of Fortran include file for the DM package in PETSc

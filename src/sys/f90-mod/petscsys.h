@@ -276,12 +276,6 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_SUBCOMM_CONTIGUOUS
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_SUBCOMM_INTERLACED
 #endif
-!
-! include other sys components
-!
-#include "../src/sys/f90-mod/petscerror.h"
-#include "../src/sys/f90-mod/petsclog.h"
-#include "../src/sys/f90-mod/petscbag.h"
 
 ! ----------------------------------------------------------------------------
 !

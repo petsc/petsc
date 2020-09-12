@@ -1,5 +1,5 @@
 !
-!  Include file for Fortran use of the PetscViewer package in PETSc
+!  Used by petscsysmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscviewer.h"
 
@@ -78,8 +78,6 @@
       PetscEnum, parameter :: PETSC_VIEWER_HDF5_MAT = 34
       PetscEnum, parameter :: PETSC_VIEWER_NOFORMAT = 35
       PetscEnum, parameter :: PETSC_VIEWER_LOAD_BALANCE = 36
-!
-!  End of Fortran include file for the PetscViewer package in PETSc
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_VIEWER

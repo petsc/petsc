@@ -14,7 +14,7 @@ program main
       use petscksp
 
       implicit none
-      KSP            :: myKsp            ! linear solver context
+      KSP            :: ksp            ! linear solver context
       Mat            :: C,Ctmp           ! matrix
       Vec            :: x,u,b            ! approx solution, RHS, exact solution
       PetscReal      :: norm             ! norm of solution error
@@ -23,8 +23,8 @@ program main
       PetscInt       :: Ii,JJ,ldim,low,high,iglobal,Istart,Iend
       PetscErrorCode :: ierr
       PetscInt       :: i,j,its,n
-      PetscInt       :: m = 3
-      PetscMPIInt    :: mySize,myRank
+      PetscInt       :: m = 3, orthog = 0
+      PetscMPIInt    :: size,rank
       PetscBool :: &
         testnewC         = PETSC_FALSE, &
         testscaledMat    = PETSC_FALSE, &
@@ -41,13 +41,15 @@ program main
         stop
       endif
 
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-orthog',orthog,flg,ierr)
+      CHKERRA(ierr)
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       CHKERRA(ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,myRank,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       CHKERRA(ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       CHKERRA(ierr)
-      n=2*mySize
+      n=2*size
 
 
       ! Set flag if we are doing a nonsymmetric problem; the default is symmetric.
@@ -185,7 +187,7 @@ program main
       CHKERRA(ierr)
       do i=0,ldim-1
         iglobal = i + low
-        v = real(i + 100*myRank)
+        v = real(i + 100*rank)
         call VecSetValues(u,one,iglobal,v,INSERT_VALUES,ierr)
         CHKERRA(ierr)
       enddo
@@ -208,16 +210,16 @@ program main
 
       ! Create linear solver context
 
-      call  KSPCreate(PETSC_COMM_WORLD,myKsp,ierr)
+      call  KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       CHKERRA(ierr)
       ! Set operators. Here the matrix that defines the linear system
       ! also serves as the preconditioning matrix.
 
-      call  KSPSetOperators(myKsp,C,C,ierr)
+      call  KSPSetOperators(ksp,C,C,ierr)
       CHKERRA(ierr)
       ! Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
 
-      call  KSPSetFromOptions(myKsp,ierr)
+      call  KSPSetFromOptions(ksp,ierr)
       CHKERRA(ierr)
       ! Solve linear system.  Here we explicitly call KSPSetUp() for more
       ! detailed performance monitoring of certain preconditioners, such
@@ -225,10 +227,18 @@ program main
       ! automatically be called within KSPSolve() if it hasn't been
       ! called already.
 
-      call  KSPSetUp(myKsp,ierr)
+      call  KSPSetUp(ksp,ierr)
       CHKERRA(ierr)
 
-      call  KSPSolve(myKsp,b,x,ierr)
+      ! Do not do this in application code, use -ksp_gmres_modifiedgramschmidt or -ksp_gmres_modifiedgramschmidt
+      if (orthog .eq. 1) then
+         call KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization,ierr)
+      else if (orthog .eq. 2) then
+         call KSPGMRESSetOrthogonalization(ksp,KSPGMRESClassicalGramSchmidtOrthogonalization,ierr)
+      endif
+      CHKERRA(ierr)
+
+      call  KSPSolve(ksp,b,x,ierr)
       CHKERRA(ierr)
 
       ! Check the error
@@ -236,7 +246,7 @@ program main
       call VecAXPY(x,myNone,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
 
-      call KSPGetIterationNumber(myKsp,its,ierr)
+      call KSPGetIterationNumber(ksp,its,ierr)
       if (.not. testscaledMat .or. norm > 1.e-7) then
         write(outputString,'(a,f11.9,a,i2.2,a)') 'Norm of error ',norm,', Iterations ',its,'\n'
         call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr)
@@ -268,7 +278,7 @@ program main
       ! of the matrix entries.
 
       do i=0,m-1
-        do j=2*myRank,2*myRank+1
+        do j=2*rank,2*rank+1
           v =-1.0; Ii=j + n*i
           if (i>0) then
             JJ = Ii - n
@@ -327,11 +337,11 @@ program main
       if (testscaledMat) then
         ! Scale a(0,0) and a(M-1,M-1)
 
-        if (myRank /= 0) then
+        if (rank /= 0) then
           v = 6.0*0.00001; Ii = 0; JJ = 0
           call MatSetValues(C,one,Ii,one,JJ,v,INSERT_VALUES,ierr)
           CHKERRA(ierr)
-        elseif (myRank == mySize -1) then
+        elseif (rank == size -1) then
           v = 6.0*0.00001; Ii = m*n-1; JJ = m*n-1
           call MatSetValues(C,one,Ii,one,JJ,v,INSERT_VALUES,ierr)
 
@@ -374,18 +384,18 @@ program main
       ! Set operators. Here the matrix that defines the linear system
       ! also serves as the preconditioning matrix.
 
-      call KSPSetOperators(myKsp,C,C,ierr);CHKERRA(ierr)
+      call KSPSetOperators(ksp,C,C,ierr);CHKERRA(ierr)
 
       ! Solve linear system
 
-      call  KSPSetUp(myKsp,ierr); CHKERRA(ierr)
-      call  KSPSolve(myKsp,b,x,ierr); CHKERRA(ierr)
+      call  KSPSetUp(ksp,ierr); CHKERRA(ierr)
+      call  KSPSolve(ksp,b,x,ierr); CHKERRA(ierr)
 
       ! Check the error
 
       call VecAXPY(x,myNone,u,ierr); CHKERRA(ierr)
       call VecNorm(x,NORM_2,norm,ierr); CHKERRA(ierr)
-      call KSPGetIterationNumber(myKsp,its,ierr); CHKERRA(ierr)
+      call KSPGetIterationNumber(ksp,its,ierr); CHKERRA(ierr)
       if (.not. testscaledMat .or. norm > 1.e-7) then
         write(outputString,'(a,f11.9,a,i2.2,a)') 'Norm of error ',norm,', Iterations ',its,'\n'
         call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr)
@@ -394,7 +404,7 @@ program main
       ! Free work space.  All PETSc objects should be destroyed when they
       ! are no longer needed.
 
-      call  KSPDestroy(myKsp,ierr); CHKERRA(ierr)
+      call  KSPDestroy(ksp,ierr); CHKERRA(ierr)
       call  VecDestroy(u,ierr); CHKERRA(ierr)
       call  VecDestroy(x,ierr); CHKERRA(ierr)
       call  VecDestroy(b,ierr); CHKERRA(ierr)
@@ -485,6 +495,14 @@ program main
 !      requires: superlu_dist
 !      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -test_scaledMat
 !      output_file: output/ex5f_superlu_dist.out
+!
+!   test:
+!      suffix: orthog1
+!      args: -orthog 1 -ksp_view
+!
+!   test:
+!      suffix: orthog2
+!      args: -orthog 2 -ksp_view
 !
 !TEST*/
 

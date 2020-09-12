@@ -1,5 +1,5 @@
 !
-!  Include file for Fortran use of the DMPlex package in PETSc
+!  Used by petscdmmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscdmlabel.h"
 
