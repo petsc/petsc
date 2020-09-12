@@ -679,7 +679,7 @@ PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
   if (!isvtk) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {
-  case PETSC_VIEWER_ASCII_VTK:
+  case PETSC_VIEWER_ASCII_VTK_DEPRECATED:
     ierr = DMPlexVTKWriteAll_ASCII(dm, viewer);CHKERRQ(ierr);
     break;
   case PETSC_VIEWER_VTK_VTU:

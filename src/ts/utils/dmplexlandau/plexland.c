@@ -1373,17 +1373,11 @@ PetscErrorCode LandauCreateColoring(Mat JacP, DM plex, PetscContainer *container
       ierr = ISRestoreIndices(is[colour],&indices);CHKERRQ(ierr);
     }
     /* view */
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "color.vtk");CHKERRQ(ierr);
+    ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD, "color.vtu", FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) color_vec, "color");CHKERRQ(ierr);
     ierr = VecView(color_vec, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "eidx.vtk");CHKERRQ(ierr);
+    ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD, "eidx.vtu", FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) eidx_vec, "element-idx");CHKERRQ(ierr);
     ierr = VecView(eidx_vec, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

@@ -102,7 +102,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
     ierr = PetscObjectSetOptionsPrefix((PetscObject) natural, "coor_");CHKERRQ(ierr);
     ierr = DMDAGlobalToNaturalBegin(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
     ierr = DMDAGlobalToNaturalEnd(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED);CHKERRQ(ierr);
     ierr = VecView(natural, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = VecDestroy(&natural);CHKERRQ(ierr);

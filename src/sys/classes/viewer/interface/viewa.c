@@ -74,7 +74,7 @@ const char *const PetscViewerFormats[] = {
        element number next to each vector entry
 .    PETSC_VIEWER_ASCII_SYMMODU - print parallel vectors without
        indicating the processor ranges
-.    PETSC_VIEWER_ASCII_VTK - outputs the object to a VTK file
+.    PETSC_VIEWER_ASCII_VTK - outputs the object to a VTK file (deprecated since v3.14)
 .    PETSC_VIEWER_NATIVE - store the object to the binary
        file in its native format (for example, dense
        matrices are stored as dense), DMDA vectors are dumped directly to the

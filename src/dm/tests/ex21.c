@@ -78,18 +78,12 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
     ierr = DMCreateGlobalVector(daf,&af);CHKERRQ(ierr);
     ierr = VecZeroEntries(af);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_7.vtk", &vv);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = DMView(dac, vv);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_7.vtu", &vv);CHKERRQ(ierr);
     ierr = VecView(ac, vv);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_7.vtk", &vv);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = DMView(daf, vv);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_7.vtu", &vv);CHKERRQ(ierr);
     ierr = VecView(af, vv);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
     ierr = VecDestroy(&ac);CHKERRQ(ierr);
     ierr = VecDestroy(&af);CHKERRQ(ierr);
