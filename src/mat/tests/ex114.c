@@ -11,32 +11,85 @@ int main(int argc,char **args)
   Mat            A;
   Vec            min,max,maxabs;
   PetscInt       m,n;
-  PetscInt       imin[M],imax[M],imaxabs[M],indices[N],row;
+  PetscInt       imin[M],imax[M],imaxabs[M],indices[N],row,testcase=0;
   PetscScalar    values[N];
   PetscErrorCode ierr;
   MatType        type;
-  PetscMPIInt    size;
+  PetscMPIInt    size,rank;
   PetscBool      doTest=PETSC_TRUE;
+  PetscInt       j,col,cols[N];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-testcase",&testcase,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  if (testcase == 1) { /* proc[0] holds entire A and other processes have no entry */
+    if (!rank) {
+      ierr = MatSetSizes(A,M,N,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetSizes(A,0,0,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    }
+    testcase = 0;
+  } else {
+    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  }
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  row  = 0;
 
-  indices[0] = 0;   indices[1] = 1;  indices[2] = 2;  indices[3] = 3;  indices[4] = 4;  indices[5] = 5;
-  values[0]  = -1.0; values[1] = 0.0; values[2] = 1.0; values[3] = 3.0; values[4] = 4.0; values[5] = -5.0;
+  if (!rank) { /* proc[0] sets matrix A */
+    for (j=0; j<N; j++) indices[j] = j;
+    switch (testcase) {
+    case 1: /* see testcast 0 */
+      break;
+    case 2:
+      row = 0;
+      values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0; values[3] = -4.0; values[4] = 0.0; values[5] = 1.0;
+      ierr = MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      row = 2;
+      indices[0] = 0;    indices[1] = 3;    indices[2] = 5;
+      values[0]  = -2.0; values[1]  = -2.0; values[2]  = -2.0;
+      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      row = 3;
+      indices[0] = 0;    indices[1] = 1;    indices[2] = 4;
+      values[0]  = -2.0; values[1]  = -2.0; values[2]  = -2.0;
+      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      row = 4;
+      indices[0] = 0;    indices[1] = 1;    indices[2] = 2;
+      values[0]  = -2.0; values[1]  = -2.0; values[2]  = -2.0;
+      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      break;
+    case 3:
+      row = 0;
+      values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0;
+      ierr = MatSetValues(A,1,&row,3,indices+1,values,INSERT_VALUES);CHKERRQ(ierr);
+      row = 1;
+      values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0;
+      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      row = 2;
+      values[0]  = -2.0; values[1] = -2.0; values[2]  = -2.0;
+      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      row = 3;
+      values[0]  = -2.0; values[1] = -2.0; values[2]  = -2.0; values[3] = -1.0;
+      ierr = MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      row = 4;
+      values[0]  = -2.0; values[1] = -2.0; values[2]  = -2.0; values[3] = -1.0;
+      ierr = MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      break;
 
-  ierr = MatSetValues(A,1,&row,6,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-  row  = 1;
-  ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-  row  = 4;
-  ierr = MatSetValues(A,1,&row,1,indices+4,values+4,INSERT_VALUES);CHKERRQ(ierr);
-  row  = 4;
-  ierr = MatSetValues(A,1,&row,2,indices+4,values+4,INSERT_VALUES);CHKERRQ(ierr);
+    default:
+      row  = 0;
+      values[0]  = -1.0; values[1] = 0.0; values[2] = 1.0; values[3] = 3.0; values[4] = 4.0; values[5] = -5.0;
+      ierr = MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      row  = 1;
+      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      row  = 3;
+      ierr = MatSetValues(A,1,&row,1,indices+4,values+4,INSERT_VALUES);CHKERRQ(ierr);
+      row  = 4;
+      ierr = MatSetValues(A,1,&row,2,indices+4,values+4,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -47,6 +100,14 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(min);CHKERRQ(ierr);
   ierr = VecDuplicate(min,&max);CHKERRQ(ierr);
   ierr = VecDuplicate(min,&maxabs);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Row Maximums\n");CHKERRQ(ierr);
+  ierr = MatGetRowMax(A,max,NULL);CHKERRQ(ierr);
+  ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
+  ierr = VecView(max,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(max,&n);CHKERRQ(ierr);
+  ierr = PetscIntView(n,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  exit(1);
 
   /* Test MatGetRowMin, MatGetRowMax and MatGetRowMaxAbs */
   if (size == 1) {

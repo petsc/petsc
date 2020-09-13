@@ -4826,10 +4826,18 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
   PetscValidType(mat,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (!mat->ops->getrowmax) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  MatCheckPreallocated(mat,1);
 
-  ierr = (*mat->ops->getrowmax)(mat,v,idx);CHKERRQ(ierr);
+  if (!mat->cmap->N) {
+    ierr = VecSet(v,PETSC_MIN_REAL);CHKERRQ(ierr);
+    if (idx) {
+      PetscInt i,m = mat->rmap->n;
+      for (i=0; i<m; i++) idx[i] = -1;
+    }
+  } else {
+    if (!mat->ops->getrowmax) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+    MatCheckPreallocated(mat,1);
+    ierr = (*mat->ops->getrowmax)(mat,v,idx);CHKERRQ(ierr);
+  }
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
