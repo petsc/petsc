@@ -28,7 +28,6 @@ PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
   PetscFunctionReturn(0);
 }
 
-
 /*
      Defines the DAE passed to the time solver
 */
@@ -42,7 +41,7 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
   /*  The next three lines allow us to access the entries of the vectors directly */
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Ydot,&ydot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
 
   f[0]= PetscSinReal(200*PETSC_PI*t)/2500. - y[0]/1000. - ydot[0]/1.e6 + ydot[1]/1.e6;
   f[1]=0.0006666766666666667 -  PetscExpReal((500*(y[1] - y[2]))/13.)/1.e8 - y[1]/4500. + ydot[0]/1.e6 - ydot[1]/1.e6;
@@ -52,7 +51,7 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
 
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Ydot,&ydot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
