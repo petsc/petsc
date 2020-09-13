@@ -705,6 +705,11 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->res_hist_len   = 0;
   ksp->res_hist_max   = 0;
   ksp->res_hist_reset = PETSC_TRUE;
+  ksp->err_hist       = NULL;
+  ksp->err_hist_alloc = NULL;
+  ksp->err_hist_len   = 0;
+  ksp->err_hist_max   = 0;
+  ksp->err_hist_reset = PETSC_TRUE;
   ksp->numbermonitors = 0;
   ksp->setfromoptionscalled = 0;
 

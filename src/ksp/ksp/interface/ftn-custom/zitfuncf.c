@@ -3,6 +3,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define kspconvergedreasonview_        KSPCONVERGEDREASONVIEW
+#define kspconvergedrateview_          KSPCONVERGEDRATEVIEW
 #define kspmonitorset_                 KSPMONITORSET
 #define kspsetconvergencetest_         KSPSETCONVERGENCETEST
 #define kspgetresidualhistory_         KSPGETRESIDUALHISTORY
@@ -25,6 +26,7 @@
 #define dmkspsetcomputeoperators_      DMKSPSETCOMPUTEOPERATORS    /* zdmkspf.c */
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspconvergedreasonview_        kspconvergedreasonview
+#define kspconvergedrateview_          kspconvergedrateview
 #define kspmonitorset_                 kspmonitorset
 #define kspsetconvergencetest_         kspsetconvergencetest
 #define kspgetresidualhistory_         kspgetresidualhistory
@@ -218,4 +220,11 @@ PETSC_EXTERN void kspconvergedreasonview_(KSP *ksp,PetscViewer *viewer, PetscErr
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = KSPConvergedReasonView(*ksp,v);
+}
+
+PETSC_EXTERN void kspconvergedrateview_(KSP *ksp,PetscViewer *viewer, PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = KSPConvergedRateView(*ksp,v);
 }

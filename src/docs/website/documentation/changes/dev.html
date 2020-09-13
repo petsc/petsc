@@ -154,12 +154,20 @@
       </ul>
       <h4>KSP:</h4>
        <ul>
-         <li>Add <tt>-all_ksp_monitor</tt> which turns on monitoring for all KSP solvers regardless of their prefix. This is useful for monitor solvers
+         <li>Add <tt>-all_ksp_monitor</tt> which turns on monitoring for all KSP solvers regardless of their prefix. This is useful for monitoring solvers
            with inner solvers such as PCMG, PCGAMG, PCFIELDSPLIT.
          </li>
-         <li>Add support for monitor KSPPREONLY. This is useful for monitor solvers
+         <li>Add support for monitor KSPPREONLY. This is useful for monitoring solvers
            with inner solvers such as PCMG, PCGAMG, PCFIELDSPLIT.
          </li>
+         <li>Change KSPReasonView() to  KSPConvergenceReasonView()</li>
+         <li>Change KSPReasonViewFromOptions() to KSPConvergedReasonViewFromOptions()</li>
+         <li>Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence when the maximum number of iterations is reached</li>
+         <li>Fix many KSP implementations to actually perform the number of iterations requested</li>
+         <li>Add KSPMatSolve() for solving iteratively (currently only with KSPHPDDM and KSPPREONLY) systems with multiple right-hand sides, and KSP{Set|Get}MatSolveBlockSize() to set a block size limit</li>
+         <li>Chebyshev uses MAT_SPD to default to CG for the eigen estimate</li>
+         <li>Add KSPPIPECG2, a pipelined solver that reduces the number of allreduces to one per two iterations and overlaps it with two PCs and SPMVs using non-blocking allreduce</li>
+         <li>Add KSPConvergedRateView() and KSPComputeConvergenceRate() to check the convergence rate of a linear solve</li>
       </ul>
       <h4>SNES:</h4>
       <ul>
