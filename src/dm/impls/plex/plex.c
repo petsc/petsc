@@ -2673,10 +2673,12 @@ PetscErrorCode DMSetUp_Plex(DM dm)
   ierr = PetscSectionGetStorageSize(mesh->coneSection, &size);CHKERRQ(ierr);
   ierr = PetscMalloc1(size, &mesh->cones);CHKERRQ(ierr);
   ierr = PetscCalloc1(size, &mesh->coneOrientations);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject) dm, size*2*sizeof(PetscInt));CHKERRQ(ierr);
   if (mesh->maxSupportSize) {
     ierr = PetscSectionSetUp(mesh->supportSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(mesh->supportSection, &size);CHKERRQ(ierr);
     ierr = PetscMalloc1(size, &mesh->supports);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject) dm, size*sizeof(PetscInt));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -389,6 +389,9 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
       initializenan = PETSC_FALSE;
     }
 
+    ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_requested_size",&flg1,&flg2);CHKERRQ(ierr);
+    if (flg2) {ierr = PetscMallocLogRequestedSizeSet(flg1);CHKERRQ(ierr);}
+
     ierr = PetscOptionsHasName(NULL,NULL,"-malloc_view",&mlog);CHKERRQ(ierr);
     if (mlog) {
       mdebug = PETSC_TRUE;

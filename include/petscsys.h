@@ -1275,6 +1275,8 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*,PetscBool*,PetscBool*
 PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscMallocViewSet(PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscMallocViewGet(PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscMallocLogRequestedSizeSet(PetscBool);
+PETSC_EXTERN PetscErrorCode PetscMallocLogRequestedSizeGet(PetscBool*);
 
 PETSC_EXTERN const char *const PetscDataTypes[];
 PETSC_EXTERN PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
@@ -1435,6 +1437,9 @@ PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt*);
 
 #include <petscviewertypes.h>
 #include <petscoptions.h>
+
+PETSC_EXTERN PetscErrorCode PetscMallocTraceSet(PetscViewer,PetscBool,PetscLogDouble);
+PETSC_EXTERN PetscErrorCode PetscMallocTraceGet(PetscBool*);
 
 PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
 

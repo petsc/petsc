@@ -83,6 +83,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
       if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown function %s",fstring);
     }
   }
+  ierr = PetscOptionsReal("-moment_tol", "Tolerance for moment checks", "ex2.c", options->momentTol, &options->momentTol, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-block_diag_prec", "Use the block diagonal of the normal equations to precondition the particle projection", "ex2.c", options->useBlockDiagPrec, &options->useBlockDiagPrec, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 

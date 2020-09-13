@@ -256,6 +256,8 @@
           <li>Add PetscPowInt64 returning a 64bit integer result for cases where PetscPowInt result overflows 32bit representations</li>
           <li>Add PetscTimSort[WithArray]() for improved performance when sorting semi-ordered arrays of any type</li>
           <li>Add PetscIntSortSemiOrdered[WithArray](), PetscMPIIntSortSemiOrdered[WithArray](), PetscRealSort[WithArrayInt]() which employ PetscTimSort[WithArray]() as backends respectively to more efficiently sort semi-ordered arrays of various Petsc datatypes</li>
+          <li>Add PetscMallocTraceSet/Get() to allow tracing of all PetscMalloc calls</li>
+          <li>Add PetscMallocLogRequestedSizeSet/Get() to allow reporting of the original requested size for mallocs, rather than the total size with alignment and header</li>
         </ul>
       <h4>AO:</h4>
       <h4>Convest:</h4>
