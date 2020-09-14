@@ -490,7 +490,11 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         PetscInt nmin,nmax;
 
         ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
-        ierr = MatFindZeroDiagonals(pc->mat,&zerodiags);CHKERRQ(ierr);
+        if (jac->diag_use_amat) {
+          ierr = MatFindZeroDiagonals(pc->mat,&zerodiags);CHKERRQ(ierr);
+        } else {
+          ierr = MatFindZeroDiagonals(pc->pmat,&zerodiags);CHKERRQ(ierr);
+        }
         ierr = ISComplement(zerodiags,nmin,nmax,&rest);CHKERRQ(ierr);
         ierr = PCFieldSplitSetIS(pc,"0",rest);CHKERRQ(ierr);
         ierr = PCFieldSplitSetIS(pc,"1",zerodiags);CHKERRQ(ierr);
@@ -501,7 +505,11 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         PetscInt nmin,nmax;
 
         ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
-        ierr = MatFindOffBlockDiagonalEntries(pc->mat,&coupling);CHKERRQ(ierr);
+        if (jac->offdiag_use_amat) {
+          ierr = MatFindOffBlockDiagonalEntries(pc->mat,&coupling);CHKERRQ(ierr);
+        } else {
+          ierr = MatFindOffBlockDiagonalEntries(pc->pmat,&coupling);CHKERRQ(ierr);
+        }
         ierr = ISCreateStride(PetscObjectComm((PetscObject)pc->mat),nmax-nmin,nmin,1,&rest);CHKERRQ(ierr);
         ierr = ISSetIdentity(rest);CHKERRQ(ierr);
         ierr = PCFieldSplitSetIS(pc,"0",rest);CHKERRQ(ierr);
