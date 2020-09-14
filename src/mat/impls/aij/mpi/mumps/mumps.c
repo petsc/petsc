@@ -159,13 +159,12 @@ struct Mat_MUMPS {
   MPI_Comm       mumps_comm;
   PetscMUMPSInt  ICNTL9_pre;            /* check if ICNTL(9) is changed from previous MatSolve */
   VecScatter     scat_rhs, scat_sol;    /* used by MatSolve() */
-#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
+  PetscMUMPSInt  ICNTL20;               /* use centralized (0) or distributed (10) dense RHS */
   PetscMUMPSInt  lrhs_loc,nloc_rhs,*irhs_loc;
-  #if defined(PETSC_HAVE_OPENMP_SUPPORT)
+#if defined(PETSC_HAVE_OPENMP_SUPPORT)
   PetscInt       *rhs_nrow,max_nrhs;
   PetscMPIInt    *rhs_recvcounts,*rhs_disps;
   PetscScalar    *rhs_loc,*rhs_recvbuf;
-  #endif
 #endif
   Vec            b_seq,x_seq;
   PetscInt       ninfo,*info;           /* which INFO to display */
@@ -1000,19 +999,16 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
   if (mumps->use_petsc_omp_support) {
     ierr = PetscOmpCtrlDestroy(&mumps->omp_ctrl);CHKERRQ(ierr);
-    #if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
     ierr = PetscFree2(mumps->rhs_loc,mumps->rhs_recvbuf);CHKERRQ(ierr);
     ierr = PetscFree3(mumps->rhs_nrow,mumps->rhs_recvcounts,mumps->rhs_disps);CHKERRQ(ierr);
-    #endif
   }
 #endif
   ierr = PetscFree(mumps->ia_alloc);CHKERRQ(ierr);
   ierr = PetscFree(mumps->ja_alloc);CHKERRQ(ierr);
   ierr = PetscFree(mumps->recvcount);CHKERRQ(ierr);
   ierr = PetscFree(mumps->reqs);CHKERRQ(ierr);
-#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
   ierr = PetscFree(mumps->irhs_loc);CHKERRQ(ierr);
-#endif
+  if (mumps->mumps_comm != MPI_COMM_NULL) {ierr = MPI_Comm_free(&mumps->mumps_comm);CHKERRQ(ierr);}
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -1032,7 +1028,6 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   PetscFunctionReturn(0);
 }
 
-#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
 /* Set up the distributed RHS info for MUMPS. <nrhs> is the number of RHS. <array> points to start of RHS on the local processor. */
 static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A,PetscInt nrhs,const PetscScalar *array)
 {
@@ -1131,14 +1126,11 @@ static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A,PetscInt nrhs,const PetscSc
   mumps->id.irhs_loc = mumps->irhs_loc;
   PetscFunctionReturn(0);
 }
-#endif /* PETSC_PKG_MUMPS_VERSION_GE(5,3,0) */
 
 PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 {
   Mat_MUMPS          *mumps=(Mat_MUMPS*)A->data;
-#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
-  const PetscScalar  *rarray;
-#endif
+  const PetscScalar  *rarray = NULL;
   PetscScalar        *array;
   IS                 is_iden,is_petsc;
   PetscErrorCode     ierr;
@@ -1158,19 +1150,19 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 
   mumps->id.nrhs = 1;
   if (mumps->petsc_size > 1) {
-#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
-    mumps->id.ICNTL(20) = 10; /* dense distributed RHS */
-    ierr = VecGetArrayRead(b,&rarray);CHKERRQ(ierr);
-    ierr = MatMumpsSetUpDistRHSInfo(A,1,rarray);CHKERRQ(ierr);
-#else
-    mumps->id.ICNTL(20) = 0; /* dense centralized RHS; Scatter b into a seqential rhs vector*/
-    ierr = VecScatterBegin(mumps->scat_rhs,b,mumps->b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(mumps->scat_rhs,b,mumps->b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    if (!mumps->myid) {
-      ierr = VecGetArray(mumps->b_seq,&array);CHKERRQ(ierr);
-      mumps->id.rhs = (MumpsScalar*)array;
+    if (mumps->ICNTL20 == 10) {
+      mumps->id.ICNTL(20) = 10; /* dense distributed RHS */
+      ierr = VecGetArrayRead(b,&rarray);CHKERRQ(ierr);
+      ierr = MatMumpsSetUpDistRHSInfo(A,1,rarray);CHKERRQ(ierr);
+    } else {
+      mumps->id.ICNTL(20) = 0; /* dense centralized RHS; Scatter b into a seqential rhs vector*/
+      ierr = VecScatterBegin(mumps->scat_rhs,b,mumps->b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(mumps->scat_rhs,b,mumps->b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      if (!mumps->myid) {
+        ierr = VecGetArray(mumps->b_seq,&array);CHKERRQ(ierr);
+        mumps->id.rhs = (MumpsScalar*)array;
+      }
     }
-#endif
   } else {  /* petsc_size == 1 */
     mumps->id.ICNTL(20) = 0; /* dense centralized RHS */
     ierr = VecCopy(b,x);CHKERRQ(ierr);
@@ -1223,11 +1215,11 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   }
 
   if (mumps->petsc_size > 1) {
-#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
-    ierr = VecRestoreArrayRead(b,&rarray);CHKERRQ(ierr);
-#else
-    if (!mumps->myid) {ierr = VecRestoreArray(mumps->b_seq,&array);CHKERRQ(ierr);}
-#endif
+    if (mumps->ICNTL20 == 10) {
+      ierr = VecRestoreArrayRead(b,&rarray);CHKERRQ(ierr);
+    } else if (!mumps->myid) {
+      ierr = VecRestoreArray(mumps->b_seq,&array);CHKERRQ(ierr);
+    }
   } else {ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);}
 
   ierr = PetscLogFlops(2.0*mumps->id.RINFO(3));CHKERRQ(ierr);
@@ -1263,10 +1255,8 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   const PetscInt    *rstart;
   Vec               v_mpi,msol_loc;
   VecScatter        scat_sol;
-#if PETSC_PKG_MUMPS_VERSION_LT(5,3,0)
   Vec               b_seq;
   VecScatter        scat_rhs;
-#endif
   PetscScalar       *aa;
   PetscInt          spnr,*ia,*ja;
   Mat_MPIAIJ        *b = NULL;
@@ -1354,59 +1344,60 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,nlsol_loc,(PetscScalar*)sol_loc,&msol_loc);CHKERRQ(ierr);
 
   if (denseB) {
-#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0)
-    mumps->id.ICNTL(20) = 10; /* dense distributed RHS */
-    ierr = MatDenseGetArrayRead(B,&rbray);CHKERRQ(ierr);
-    ierr = MatMumpsSetUpDistRHSInfo(A,nrhs,rbray);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArrayRead(B,&rbray);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),1,nrhs*m,nrhs*M,NULL,&v_mpi);CHKERRQ(ierr);
-#else
-    /* TODO: Because of non-contiguous indices, the created vecscatter scat_rhs is not done in MPI_Gather, resulting in
-       very inefficient communication. An optimization is to use VecScatterCreateToZero to gather B to rank 0. Then on rank
-       0, re-arrange B into desired order, which is a local operation.
-     */
-
-    /* scatter v_mpi to b_seq because MUMPS before 5.3.0 only supports centralized rhs */
-    /* wrap dense rhs matrix B into a vector v_mpi */
-    ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(B,&bray);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),1,nrhs*m,nrhs*M,(const PetscScalar*)bray,&v_mpi);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(B,&bray);CHKERRQ(ierr);
-
-    /* scatter v_mpi to b_seq in proc[0]. MUMPS requires rhs to be centralized on the host! */
-    if (!mumps->myid) {
-      PetscInt *idx;
-      /* idx: maps from k-th index of v_mpi to (i,j)-th global entry of B */
-      ierr = PetscMalloc1(nrhs*M,&idx);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRanges(B,&rstart);CHKERRQ(ierr);
-      k = 0;
-      for (proc=0; proc<mumps->petsc_size; proc++){
-        for (j=0; j<nrhs; j++){
-          for (i=rstart[proc]; i<rstart[proc+1]; i++) idx[k++] = j*M + i;
-        }
-      }
-
-      ierr = VecCreateSeq(PETSC_COMM_SELF,nrhs*M,&b_seq);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,nrhs*M,idx,PETSC_OWN_POINTER,&is_to);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF,nrhs*M,0,1,&is_from);CHKERRQ(ierr);
+    if (mumps->ICNTL20 == 10) {
+      mumps->id.ICNTL(20) = 10; /* dense distributed RHS */
+      ierr = MatDenseGetArrayRead(B,&rbray);CHKERRQ(ierr);
+      ierr = MatMumpsSetUpDistRHSInfo(A,nrhs,rbray);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArrayRead(B,&rbray);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),1,nrhs*m,nrhs*M,NULL,&v_mpi);CHKERRQ(ierr);
     } else {
-      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&b_seq);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_to);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_from);CHKERRQ(ierr);
-    }
-    ierr = VecScatterCreate(v_mpi,is_from,b_seq,is_to,&scat_rhs);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scat_rhs,v_mpi,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = ISDestroy(&is_to);CHKERRQ(ierr);
-    ierr = ISDestroy(&is_from);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat_rhs,v_mpi,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      mumps->id.ICNTL(20) = 0; /* dense centralized RHS */
+      /* TODO: Because of non-contiguous indices, the created vecscatter scat_rhs is not done in MPI_Gather, resulting in
+        very inefficient communication. An optimization is to use VecScatterCreateToZero to gather B to rank 0. Then on rank
+        0, re-arrange B into desired order, which is a local operation.
+      */
 
-    if (!mumps->myid) { /* define rhs on the host */
-      ierr = VecGetArray(b_seq,&bray);CHKERRQ(ierr);
-      mumps->id.rhs = (MumpsScalar*)bray;
-      ierr = VecRestoreArray(b_seq,&bray);CHKERRQ(ierr);
+      /* scatter v_mpi to b_seq because MUMPS before 5.3.0 only supports centralized rhs */
+      /* wrap dense rhs matrix B into a vector v_mpi */
+      ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(B,&bray);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),1,nrhs*m,nrhs*M,(const PetscScalar*)bray,&v_mpi);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArray(B,&bray);CHKERRQ(ierr);
+
+      /* scatter v_mpi to b_seq in proc[0]. MUMPS requires rhs to be centralized on the host! */
+      if (!mumps->myid) {
+        PetscInt *idx;
+        /* idx: maps from k-th index of v_mpi to (i,j)-th global entry of B */
+        ierr = PetscMalloc1(nrhs*M,&idx);CHKERRQ(ierr);
+        ierr = MatGetOwnershipRanges(B,&rstart);CHKERRQ(ierr);
+        k = 0;
+        for (proc=0; proc<mumps->petsc_size; proc++){
+          for (j=0; j<nrhs; j++){
+            for (i=rstart[proc]; i<rstart[proc+1]; i++) idx[k++] = j*M + i;
+          }
+        }
+
+        ierr = VecCreateSeq(PETSC_COMM_SELF,nrhs*M,&b_seq);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,nrhs*M,idx,PETSC_OWN_POINTER,&is_to);CHKERRQ(ierr);
+        ierr = ISCreateStride(PETSC_COMM_SELF,nrhs*M,0,1,&is_from);CHKERRQ(ierr);
+      } else {
+        ierr = VecCreateSeq(PETSC_COMM_SELF,0,&b_seq);CHKERRQ(ierr);
+        ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_to);CHKERRQ(ierr);
+        ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_from);CHKERRQ(ierr);
+      }
+      ierr = VecScatterCreate(v_mpi,is_from,b_seq,is_to,&scat_rhs);CHKERRQ(ierr);
+      ierr = VecScatterBegin(scat_rhs,v_mpi,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_to);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_from);CHKERRQ(ierr);
+      ierr = VecScatterEnd(scat_rhs,v_mpi,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      if (!mumps->myid) { /* define rhs on the host */
+        ierr = VecGetArray(b_seq,&bray);CHKERRQ(ierr);
+        mumps->id.rhs = (MumpsScalar*)bray;
+        ierr = VecRestoreArray(b_seq,&bray);CHKERRQ(ierr);
+      }
     }
-#endif
   } else { /* sparse B */
     b = (Mat_MPIAIJ*)Bt->data;
 
@@ -1485,10 +1476,10 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
     }
   } else {
-#if PETSC_PKG_MUMPS_VERSION_LT(5,3,0)
-    ierr = VecDestroy(&b_seq);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&scat_rhs);CHKERRQ(ierr);
-#endif
+    if (mumps->ICNTL20 == 0) {
+      ierr = VecDestroy(&b_seq);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&scat_rhs);CHKERRQ(ierr);
+    }
   }
   ierr = VecScatterDestroy(&scat_sol);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*nrhs*mumps->id.RINFO(3));CHKERRQ(ierr);
@@ -1794,7 +1785,21 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
     ierr = MatDestroy(&F->schur);CHKERRQ(ierr);
     ierr = MatMumpsResetSchur_Private(mumps);CHKERRQ(ierr);
   }
-  /* ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_20","ICNTL(20): the format (dense or sparse) of the right-hand sides","None",mumps->id.ICNTL(20),&mumps->id.ICNTL(20),NULL);CHKERRQ(ierr); -- sparse rhs is not supported in PETSc API */
+
+  /* MPICH Fortran MPI_IN_PLACE binding has a bug that prevents the use of 'mpi4py + mpich + mumps', e.g., by Firedrake.
+     So we turn off distributed RHS for MPICH. See https://bitbucket.org/mpi4py/mpi4py/issues/162/mpi4py-initialization-breaks-fortran
+     and a petsc-maint mailing list thread with subject 'MUMPS segfaults in parallel because of ...'
+   */
+#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0) && defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+  mumps->ICNTL20 = 10; /* Distributed dense RHS*/
+#else
+  mumps->ICNTL20 = 0;  /* Centralized dense RHS*/
+#endif
+  ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_20","ICNTL(20): give mumps centralized (0) or distributed (10) dense right-hand sides","None",mumps->ICNTL20,&mumps->ICNTL20,&flg);CHKERRQ(ierr);
+  if (flg && mumps->ICNTL20 != 10 && mumps->ICNTL20 != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"ICNTL(20)=%d is not supported by the PETSc/MUMPS interface. Allowed values are 0, 10\n",(int)mumps->ICNTL20);
+#if PETSC_PKG_MUMPS_VERSION_LT(5,3,0)
+  if (flg && mumps->ICNTL20 == 10) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ICNTL(20)=10 is not supported before MUMPS-5.3.0\n");
+#endif
   /* ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_21","ICNTL(21): the distribution (centralized or distributed) of the solution vectors","None",mumps->id.ICNTL(21),&mumps->id.ICNTL(21),NULL);CHKERRQ(ierr); we only use distributed solution vector */
 
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_22","ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)","None",mumps->id.ICNTL(22),&mumps->id.ICNTL(22),NULL);CHKERRQ(ierr);
@@ -1845,6 +1850,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 {
   PetscErrorCode ierr;
   PetscInt       nthreads=0;
+  MPI_Comm       newcomm=MPI_COMM_NULL;
 
   PetscFunctionBegin;
   mumps->petsc_comm = PetscObjectComm((PetscObject)A);
@@ -1869,6 +1875,12 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   ierr = MPI_Comm_size(mumps->omp_comm,&mumps->omp_comm_size);CHKERRQ(ierr);
   mumps->reqs = NULL;
   mumps->tag  = 0;
+
+  /* It looks like MUMPS does not dup the input comm. Dup a new comm for MUMPS to avoid any tag mismatches. */
+  if (mumps->mumps_comm != MPI_COMM_NULL) {
+    ierr = MPI_Comm_dup(mumps->mumps_comm,&newcomm);CHKERRQ(ierr);
+    mumps->mumps_comm = newcomm;
+  }
 
   mumps->id.comm_fortran = MPI_Comm_c2f(mumps->mumps_comm);
   mumps->id.job = JOB_INIT;
@@ -1895,7 +1907,6 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
     mumps->id.ICNTL(7)  = 7;   /* automatic choice of ordering done by the package */
   } else {
     mumps->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
-    mumps->id.ICNTL(20) = 0;   /* rhs is in dense format */
     mumps->id.ICNTL(21) = 1;   /* distributed solution */
   }
 
@@ -1981,10 +1992,11 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
     mumps->id.irn_loc = mumps->irn;
     mumps->id.jcn_loc = mumps->jcn;
     if (mumps->id.ICNTL(6)>1) mumps->id.a_loc = (MumpsScalar*)mumps->val;
-    /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
-    ierr = MatCreateVecs(A,NULL,&b);CHKERRQ(ierr);
-    ierr = VecScatterCreateToZero(b,&mumps->scat_rhs,&mumps->b_seq);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    if (mumps->ICNTL20 == 0) { /* Centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
+      ierr = MatCreateVecs(A,NULL,&b);CHKERRQ(ierr);
+      ierr = VecScatterCreateToZero(b,&mumps->scat_rhs,&mumps->b_seq);CHKERRQ(ierr);
+      ierr = VecDestroy(&b);CHKERRQ(ierr);
+    }
     break;
   }
   PetscMUMPS_c(mumps);
@@ -2037,10 +2049,11 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
     if (mumps->id.ICNTL(6)>1) {
       mumps->id.a_loc = (MumpsScalar*)mumps->val;
     }
-    /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
-    ierr = MatCreateVecs(A,NULL,&b);CHKERRQ(ierr);
-    ierr = VecScatterCreateToZero(b,&mumps->scat_rhs,&mumps->b_seq);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    if (mumps->ICNTL20 == 0) { /* Centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
+      ierr = MatCreateVecs(A,NULL,&b);CHKERRQ(ierr);
+      ierr = VecScatterCreateToZero(b,&mumps->scat_rhs,&mumps->b_seq);CHKERRQ(ierr);
+      ierr = VecDestroy(&b);CHKERRQ(ierr);
+    }
     break;
   }
   PetscMUMPS_c(mumps);
@@ -2091,10 +2104,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
     if (mumps->id.ICNTL(6)>1) {
       mumps->id.a_loc = (MumpsScalar*)mumps->val;
     }
-    /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
-    ierr = MatCreateVecs(A,NULL,&b);CHKERRQ(ierr);
-    ierr = VecScatterCreateToZero(b,&mumps->scat_rhs,&mumps->b_seq);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    if (mumps->ICNTL20 == 0) { /* Centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
+      ierr = MatCreateVecs(A,NULL,&b);CHKERRQ(ierr);
+      ierr = VecScatterCreateToZero(b,&mumps->scat_rhs,&mumps->b_seq);CHKERRQ(ierr);
+      ierr = VecDestroy(&b);CHKERRQ(ierr);
+    }
     break;
   }
   PetscMUMPS_c(mumps);
@@ -2891,6 +2905,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 .  -mat_mumps_icntl_13  - ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting
 .  -mat_mumps_icntl_14  - ICNTL(14): percentage increase in the estimated working space
 .  -mat_mumps_icntl_19  - ICNTL(19): computes the Schur complement
+.  -mat_mumps_icntl_20  - ICNTL(20): give MUMPS centralized (0) or distributed (10) dense RHS
 .  -mat_mumps_icntl_22  - ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)
 .  -mat_mumps_icntl_23  - ICNTL(23): max size of the working memory (MB) that can allocate per processor
 .  -mat_mumps_icntl_24  - ICNTL(24): detection of null pivot rows (0 or 1)
