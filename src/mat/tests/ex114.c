@@ -9,15 +9,15 @@ static char help[] = "Tests MatGetRowMax(), MatGetRowMin(), MatGetRowMaxAbs()\n"
 int main(int argc,char **args)
 {
   Mat            A;
-  Vec            min,max,maxabs;
-  PetscInt       m,n;
+  Vec            min,max,maxabs,e;
+  PetscInt       m,n,j,col,cols[N];
   PetscInt       imin[M],imax[M],imaxabs[M],indices[N],row,testcase=0;
   PetscScalar    values[N];
   PetscErrorCode ierr;
   MatType        type;
   PetscMPIInt    size,rank;
   PetscBool      doTest=PETSC_TRUE;
-  PetscInt       j,col,cols[N];
+  PetscReal      enorm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -100,13 +100,27 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(min);CHKERRQ(ierr);
   ierr = VecDuplicate(min,&max);CHKERRQ(ierr);
   ierr = VecDuplicate(min,&maxabs);CHKERRQ(ierr);
+  ierr = VecDuplicate(min,&e);CHKERRQ(ierr);
 
+  /* Test MatGetRowMax() */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Row Maximums\n");CHKERRQ(ierr);
   ierr = MatGetRowMax(A,max,NULL);CHKERRQ(ierr);
   ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
   ierr = VecView(max,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetLocalSize(max,&n);CHKERRQ(ierr);
   ierr = PetscIntView(n,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* Test MatGetRowMin() */
+  ierr = MatScale(A,-1.0);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Row Minimums\n");CHKERRQ(ierr);
+  ierr = MatGetRowMin(A,min,NULL);CHKERRQ(ierr);
+  ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
+
+  ierr = VecWAXPY(e,1.0,max,min);CHKERRQ(ierr); /* e = max + min */
+  ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+  if (enorm > PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
+  for (j = 0; j < n; j++) if (imin[j] != imax[j]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin != imax");
+
   exit(1);
 
   /* Test MatGetRowMin, MatGetRowMax and MatGetRowMaxAbs */
@@ -168,6 +182,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&min);CHKERRQ(ierr);
   ierr = VecDestroy(&max);CHKERRQ(ierr);
   ierr = VecDestroy(&maxabs);CHKERRQ(ierr);
+  ierr = VecDestroy(&e);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

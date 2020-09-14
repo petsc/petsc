@@ -3197,7 +3197,7 @@ PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   aj = a->j;
 
   ierr = VecSet(v,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<m; i++) {
@@ -3222,7 +3222,7 @@ PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v,PetscInt idx[])
       aa++; aj++;
     }
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3287,7 +3287,7 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   aj = a->j;
 
   ierr = VecSet(v,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<m; i++) {
@@ -3297,13 +3297,14 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
     } else {  /* row is sparse so already KNOW minimum is 0.0 or lower */
       x[i] = 0.0;
       if (idx) {   /* find first implicit 0.0 in the row */
-        idx[i] = 0; /* in case ncols is zero */
         for (j=0; j<ncols; j++) {
           if (aj[j] > j) {
             idx[i] = j;
             break;
           }
         }
+        /* in case first implicit 0.0 in the row occurs at ncols-th column */
+        if (j==ncols && j < A->cmap->n) idx[i] = j;
       }
     }
     for (j=0; j<ncols; j++) {
@@ -3311,7 +3312,7 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
       aa++; aj++;
     }
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
