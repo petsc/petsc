@@ -523,11 +523,11 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 
     Example usage:
     [*] KSP ex2, no preconditioner, pipel = 2, lmin = 0.0, lmax = 8.0 :
-            $mpirun -ppn 14 ./ex2 -m 1000 -n 1000 -ksp_type pipelcg -pc_type none -ksp_norm_type UNPRECONDITIONED
-        -ksp_rtol 1e-10 -ksp_max_it 1000 -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 8.0 -log_summary
+        $mpiexec -n 14 ./ex2 -m 1000 -n 1000 -ksp_type pipelcg -pc_type none -ksp_norm_type natural
+        -ksp_rtol 1e-10 -ksp_max_it 1000 -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 8.0 -log_view
     [*] SNES ex48, bjacobi preconditioner, pipel = 3, lmin = 0.0, lmax = 2.0, show restart information :
-        $mpirun -ppn 14 ./ex48 -M 150 -P 100 -ksp_type pipelcg -pc_type bjacobi -ksp_rtol 1e-10 -ksp_pipelcg_pipel 3
-        -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_monitor -log_summary
+        $mpiexec -n 14 ./ex48 -M 150 -P 100 -ksp_type pipelcg -pc_type bjacobi -ksp_rtol 1e-10 -ksp_pipelcg_pipel 3
+        -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_monitor -log_view
 
     References:
     [*] J. Cornelis, S. Cools and W. Vanroose,
@@ -551,7 +551,6 @@ PetscErrorCode KSPCreate_PIPELCG(KSP ksp)
   ksp->data = (void*)plcg;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPELCG;
