@@ -414,10 +414,11 @@ int main(int argc, char** argv)
 }
 
 /*TEST
+   build:
+     requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
    testset:
      nsize: 1
-     requires: double !complex !define(PETSC_USE_64BIT_INDICES)
      filter: sed "/Benchmarking/d"
      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -bs 1,2,3 -N 1,2,18 -check -trans -convert_aij {{false true}shared output}
      test:

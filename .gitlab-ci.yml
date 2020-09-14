@@ -536,7 +536,7 @@ linux-knl:
 linux-intel-mkl-single:
   extends:
     - .stage-3
-    - .linux_test_noflags
+    - .linux_test_nofflags
   tags:
     - name:isdp001
   variables:
@@ -659,7 +659,7 @@ linux-nagfor:
 linux-intel-cmplx:
   extends:
     - .stage-3
-    - .linux_test_noflags
+    - .linux_test_nofflags
   tags:
     - gce-nfs
   variables:

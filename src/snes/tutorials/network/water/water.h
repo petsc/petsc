@@ -51,7 +51,7 @@ struct _p_VERTEX_Water{
   Junction junc; /* junction data */
   Reservoir res; /* reservoir data */
   Tank      tank; /* tank data */
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 typedef struct _p_VERTEX_Water *VERTEX_Water;
 
 typedef struct {
@@ -90,7 +90,7 @@ struct _p_EDGE_Water{
   PetscInt type; /* edge type (pump, pipe) */
   Pipe     pipe; /* pipe data */
   Pump     pump; /* pump data */
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 typedef struct _p_EDGE_Water *EDGE_Water;
 
 /* EPANET top-level data structure */
@@ -104,7 +104,7 @@ struct _p_WATERDATA{
   PetscInt    npump;
   VERTEX_Water vertex;
   EDGE_Water   edge;
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 typedef struct _p_WATERDATA WATERDATA;
 
 extern PetscErrorCode WaterReadData(WATERDATA*,char*);

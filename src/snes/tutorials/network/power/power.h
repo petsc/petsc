@@ -19,7 +19,7 @@ struct _p_UserCtx_Power{
   PetscInt     compkey_bus;
   PetscInt     compkey_gen;
   PetscInt     compkey_load;
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct _p_UserCtx_Power UserCtx_Power;
 
@@ -43,7 +43,7 @@ struct _p_VERTEX_Power{
   PetscInt      gidx[NGEN_AT_BUS_MAX]; /* list of inndices for accessing the generator data in GEN structure */
   PetscInt      nload;
   PetscInt      lidx[NLOAD_AT_BUS_MAX];
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct _p_VERTEX_Power *VERTEX_Power;
 
@@ -65,7 +65,7 @@ struct _p_LOAD{
   PetscScalar   scale_load;
   PetscInt      owner; /* Owner number */
   PetscInt      internal_i; /* Internal Bus Number */
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct _p_LOAD *LOAD;
 
@@ -96,7 +96,7 @@ struct _p_GEN{
   PetscScalar   f1; /* Fraction of ownership */
   PetscScalar   scale_gen;
   PetscInt      internal_i; /* Internal Bus Number */
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct _p_GEN *GEN;
 
@@ -126,7 +126,7 @@ struct _p_EDGE_Power{
   PetscScalar   yff[2],yft[2],ytf[2],ytt[2]; /* [G,B] */
   PetscInt      internal_i; /* Internal From Bus Number */
   PetscInt      internal_j; /* Internal To Bus Number */
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct _p_EDGE_Power *EDGE_Power;
 
@@ -139,7 +139,7 @@ typedef struct{
   LOAD         load;
   GEN          gen;
   EDGE_Power   branch;
-} PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PFDATA PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 extern PetscErrorCode PFReadMatPowerData(PFDATA*,char*);
 extern PetscErrorCode GetListofEdges_Power(PFDATA*,PetscInt*);
