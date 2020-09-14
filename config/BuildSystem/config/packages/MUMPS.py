@@ -118,7 +118,7 @@ class Configure(config.package.Package):
     elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
       extra_fcflags = '-fallow-argument-mismatch '
     g.write('OPTF    = '+extra_fcflags+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
-    if self.blasLapack.mkl and self.blasLapack.foundversion.isdigit() and int(self.blasLapack.foundversion) >= 110300:
+    if self.blasLapack.checkForRoutine('dgemmt'):
       g.write('OPTF   += -DGEMMT_AVAILABLE \n')
     g.write('OUTF = -o \n')
     self.setCompilers.popLanguage()
