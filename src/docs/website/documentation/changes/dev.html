@@ -108,7 +108,10 @@
 
       <!-- Please use Imperative with first letter cap, e.g. Add, Improve, Change etc. WITHOUT dot at the end -->
       <h4>General:</h4>
-        <ul>
+      <ul>
+          <li>Replace -debugger_nodes with -debugger_ranks</li>
+          <li>Change PETSCABORT() to abort instead of MPI_Abort if run under -start_in_debugger</li>
+          <li>Change -start_in_debugger with GDB or LLDB to automatically continue the program in the debugger and not require the user to type continue. In GDB if the program exits then the debugger is automatically quit.</li>
           <li>Add PETSC_MPI_THREAD_REQUIRED to control the requested threading level for MPI_Init</li>
           <li>Remove option -cuda_initialize, whose functionality is succeeded by -cuda_device xxx</li>
           <li>Change -cuda_set_device to -cuda_device, which can now accept NONE, PETSC_DEFAULT, PETSC_DECIDE in additon to non-negative integers</li>
@@ -157,6 +160,7 @@
       <h4>PetscPartitioner:</h4>
       <h4>Mat:</h4>
       <ul>
+          <li>Add MatSetLayouts().</li>
           <li>Add MatSeqAIJSetTotalPreallocation(Mat,PetscInt) for efficient row by row setting of a matrix without requiring preallocating for each row</li>
           <li>Add full support for MKL sparse matrix-matrix products in MATSEQAIJMKL</li>
           <li>Fix few bugs for MATSEQSBAIJ when missing diagonal entries</li>

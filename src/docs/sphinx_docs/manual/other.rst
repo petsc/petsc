@@ -411,9 +411,9 @@ run without the debugger) with the option
 
 .. code-block:: none
 
-   -debugger_nodes node1,node2,...
+   -debugger_ranks rank1,rank2,...
 
-where you simply list the nodes you want the debugger to run with.
+where you simply list the ranks you want the debugger to run with.
 
 Error Handling
 ~~~~~~~~~~~~~~
