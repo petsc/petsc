@@ -254,12 +254,20 @@ PetscErrorCode TaoPDIPMInitializeSolution(Tao tao)
     ierr = VecSet(pdipm->lambdae,0.0);CHKERRQ(ierr);
   }
   /* Initialize X.lambdai = push_init_lambdai, X.z = push_init_slack */
-  ierr = VecSet(pdipm->lambdai,pdipm->push_init_lambdai);CHKERRQ(ierr);
-  ierr = VecSet(pdipm->z,pdipm->push_init_slack);CHKERRQ(ierr);
+  if (pdipm->lambdai) {
+    ierr = VecSet(pdipm->lambdai,pdipm->push_init_lambdai);CHKERRQ(ierr);
+  }
+  if (pdipm->z) {
+    ierr = VecSet(pdipm->z,pdipm->push_init_slack);CHKERRQ(ierr);
+  }
 
   /* Additional modification for X.lambdai and X.z */
-  ierr = VecGetArray(pdipm->lambdai,&lambdai);CHKERRQ(ierr);
-  ierr = VecGetArray(pdipm->z,&z);CHKERRQ(ierr);
+  if (pdipm->lambdai) {
+    ierr = VecGetArray(pdipm->lambdai,&lambdai);CHKERRQ(ierr);
+  }
+  if (pdipm->z) {
+    ierr = VecGetArray(pdipm->z,&z);CHKERRQ(ierr);
+  }
   if (pdipm->Nh) {
     ierr = VecGetArrayRead(tao->constraints_inequality,&h);CHKERRQ(ierr);
     for (i=0; i < pdipm->nh; i++) {
@@ -268,8 +276,12 @@ PetscErrorCode TaoPDIPMInitializeSolution(Tao tao)
     }
     ierr = VecRestoreArrayRead(tao->constraints_inequality,&h);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(pdipm->lambdai,&lambdai);CHKERRQ(ierr);
-  ierr = VecRestoreArray(pdipm->z,&z);CHKERRQ(ierr);
+  if (pdipm->lambdai) {
+    ierr = VecRestoreArray(pdipm->lambdai,&lambdai);CHKERRQ(ierr);
+  }
+  if (pdipm->z) {
+    ierr = VecRestoreArray(pdipm->z,&z);CHKERRQ(ierr);
+  }
 
   ierr = VecRestoreArray(pdipm->X,&Xarr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -530,9 +542,11 @@ PetscErrorCode TaoSNESFunction_PDIPM(SNES snes,Vec X,Vec F,void *ctx)
   ierr = VecResetArray(pdipm->ci);CHKERRQ(ierr);
 
   /* note: pdipm->z is not changed below */
-  ierr = VecPlaceArray(pdipm->z,Farr+pdipm->off_z);CHKERRQ(ierr);
-  ierr = VecNorm(pdipm->z,NORM_2,&res[1]);CHKERRQ(ierr);
-  ierr = VecResetArray(pdipm->z);CHKERRQ(ierr);
+  if (pdipm->z) {
+    ierr = VecPlaceArray(pdipm->z,Farr+pdipm->off_z);CHKERRQ(ierr);
+    ierr = VecNorm(pdipm->z,NORM_2,&res[1]);CHKERRQ(ierr);
+    ierr = VecResetArray(pdipm->z);CHKERRQ(ierr);
+  } else res[1] = 0.0;
 
   tao->residual = PetscSqrtReal(res[0]*res[0] + res[1]*res[1]);
   tao->cnorm    = PetscSqrtReal(cnorm[0]*cnorm[0] + cnorm[1]*cnorm[1]);
@@ -637,7 +651,9 @@ PetscErrorCode PDIPMLineSearch(SNESLineSearch linesearch,void *ctx)
   ierr = SNESLineSearchComputeNorms(linesearch);CHKERRQ(ierr); /* must call this func, do not know why */
 
   /* update mu = mu_update_factor * dot(z,lambdai)/pdipm->nci at updated X */
-  ierr = VecDot(pdipm->z,pdipm->lambdai,&dot);CHKERRQ(ierr);
+  if (pdipm->z) {
+    ierr = VecDot(pdipm->z,pdipm->lambdai,&dot);CHKERRQ(ierr);
+  } else dot = 0.0;
 
   /* if (PetscAbsReal(pdipm->gradL) < 0.9*pdipm->mu)  */
   pdipm->mu = pdipm->mu_update_factor * dot/pdipm->Nci;
