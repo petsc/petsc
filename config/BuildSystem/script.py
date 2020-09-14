@@ -236,7 +236,7 @@ class Script(logger.Logger):
         thread = InShell()
         thread.start()
         thread.join(timeout)
-        if thread.isAlive():
+        if thread.is_alive():
           error = 'Runaway process exceeded time limit of '+str(timeout)+'\n'
           log.write(error)
           return ('', error, -1)
