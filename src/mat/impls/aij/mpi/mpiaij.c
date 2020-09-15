@@ -2301,41 +2301,50 @@ PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
+PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,*idxb = NULL;
-  PetscScalar    *va,*vb;
-  Vec            vtmp;
+  PetscInt       i,*idxb = NULL,m = A->rmap->n;
+  PetscScalar    *va,*vv;
+  Vec            vB,vA;
+  const PetscScalar *vb;
 
   PetscFunctionBegin;
-  ierr = MatGetRowMaxAbs(a->A,v,idx);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&va);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap->n,&vA);CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(a->A,vA,idx);CHKERRQ(ierr);
+
+  ierr = VecGetArrayWrite(vA,&va);CHKERRQ(ierr);
   if (idx) {
-    for (i=0; i<A->rmap->n; i++) {
+    for (i=0; i<m; i++) {
       if (PetscAbsScalar(va[i])) idx[i] += A->cmap->rstart;
     }
   }
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap->n,&vtmp);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap->n,&vB);CHKERRQ(ierr);
   if (idx) {
     ierr = PetscMalloc1(A->rmap->n,&idxb);CHKERRQ(ierr);
   }
-  ierr = MatGetRowMaxAbs(a->B,vtmp,idxb);CHKERRQ(ierr);
-  ierr = VecGetArray(vtmp,&vb);CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(a->B,vB,idxb);CHKERRQ(ierr);
 
-  for (i=0; i<A->rmap->n; i++) {
+  ierr = VecGetArrayWrite(v,&vv);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(vB,&vb);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
     if (PetscAbsScalar(va[i]) < PetscAbsScalar(vb[i])) {
-      va[i] = vb[i];
+      vv[i] = vb[i];
       if (idx) idx[i] = a->garray[idxb[i]];
+    } else {
+      vv[i] = va[i];
+      if (idx && PetscAbsScalar(va[i]) == PetscAbsScalar(vb[i]) && idx[i] > a->garray[idxb[i]])
+        idx[i] = a->garray[idxb[i]];
     }
   }
-
-  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(vA,&vv);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(vA,&va);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vB,&vb);CHKERRQ(ierr);
   ierr = PetscFree(idxb);CHKERRQ(ierr);
-  ierr = VecDestroy(&vtmp);CHKERRQ(ierr);
+  ierr = VecDestroy(&vA);CHKERRQ(ierr);
+  ierr = VecDestroy(&vB);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

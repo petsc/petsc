@@ -112,6 +112,7 @@ int main(int argc,char **args)
 
   /* Test MatGetRowMin() */
   ierr = MatScale(A,-1.0);CHKERRQ(ierr);
+  /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Row Minimums\n");CHKERRQ(ierr);
   ierr = MatGetRowMin(A,min,NULL);CHKERRQ(ierr);
   ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
@@ -121,6 +122,12 @@ int main(int argc,char **args)
   if (enorm > PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
   for (j = 0; j < n; j++) if (imin[j] != imax[j]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin != imax");
 
+  /* Test MatGetRowMaxAbs() */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Row Maximum Absolute\n");CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(A,maxabs,NULL);CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
+  ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscIntView(n,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   exit(1);
 
   /* Test MatGetRowMin, MatGetRowMax and MatGetRowMaxAbs */

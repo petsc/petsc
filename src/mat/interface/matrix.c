@@ -4884,9 +4884,17 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->getrowmaxabs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
-  if (idx) {ierr = PetscArrayzero(idx,mat->rmap->n);CHKERRQ(ierr);}
 
-  ierr = (*mat->ops->getrowmaxabs)(mat,v,idx);CHKERRQ(ierr);
+  if (!mat->cmap->N) {
+    ierr = VecSet(v,0.0);CHKERRQ(ierr);
+    if (idx) {
+      PetscInt i,m = mat->rmap->n;
+      for (i=0; i<m; i++) idx[i] = -1;
+    }
+  } else {
+    if (idx) {ierr = PetscArrayzero(idx,mat->rmap->n);CHKERRQ(ierr);}
+    ierr = (*mat->ops->getrowmaxabs)(mat,v,idx);CHKERRQ(ierr);
+  }
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
