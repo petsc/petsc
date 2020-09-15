@@ -1,4 +1,4 @@
-.. _ch_fortran:
+.. _chapter_fortran:
 
 PETSc for Fortran Users
 -----------------------
@@ -23,8 +23,8 @@ listed in Section `1.1.9 <#sec_fortran_exceptions>`__.
 
 .. _sec_fortran_includes:
 
-Include Files
-^^^^^^^^^^^^^
+Fortran Include Files
+^^^^^^^^^^^^^^^^^^^^^
 
 The Fortran include files for PETSc are located in the directory
 ``${PETSC_DIR}/include/petsc/finclude`` and should be used via

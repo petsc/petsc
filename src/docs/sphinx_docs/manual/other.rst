@@ -19,10 +19,10 @@ its value, for example to an existing ``MPI_COMM_WORLD``,
 *before* calling ``PetscInitialize()``, but, obviously, after calling
 ``MPI_Init()``.
 
+.. _sec_options:
+
 Runtime Options
 ~~~~~~~~~~~~~~~
-
-[sec_options]
 
 Allowing the user to modify parameters and options easily at runtime is
 very desirable for many applications. PETSc provides a simple mechanism
@@ -372,10 +372,10 @@ Also see the manual pages for ``PetscSAWsBlock``,
 ``PetscStackSAWsTakeAccess``, ``KSPMonitorSAWs``, and
 ``SNESMonitorSAWs``.
 
+.. _sec-debugging:
+
 Debugging
 ~~~~~~~~~
-
-[sec_debugging]
 
 PETSc programs may be debugged using one of the two options below.
 
@@ -533,10 +533,10 @@ usage is given below.
        PetscFunctionReturn(0);
    }
 
+.. _sec_complex:
+
 Numbers
 ~~~~~~~
-
-[sec_complex]
 
 PETSc supports the use of complex numbers in application programs
 written in C, C++, and Fortran. To do so, we employ either the C99

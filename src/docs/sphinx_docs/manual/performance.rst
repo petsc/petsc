@@ -578,7 +578,7 @@ will cause PETSc to preallocate the correct amount of space for
 incomplete (ILU) factorization. The corresponding option for direct (LU)
 factorization is ``-pc_factor_fill <fill_amount>``.
 
-.. _detecting_memory_problems:
+.. _detecting-memory-problems:
 
 Detecting Memory Allocation Problems
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
