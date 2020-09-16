@@ -3,8 +3,6 @@
 Matrices
 --------
 
-.. include:: temp_edit_needed_banner.inc
-
 PETSc provides a variety of matrix implementations because no single
 matrix format is appropriate for all problems. Currently, we support
 dense storage and compressed sparse row storage (both sequential and
@@ -467,46 +465,43 @@ secant condition. The limited-memory variants do not store the full
 explicit Jacobian, and instead compute forward products and inverse
 applications based on a fixed number of stored update vectors.
 
-.. container::
-   :name: tab_matlmvmimpl
+.. list-table:: PETSc LMVM matrix implementations.
+  :name: tab_matlmvmimpl
+  :header-rows: 1
 
-   .. table:: PETSc LMVM matrix implementations.
-
-      +-----------------------------------------+----------------+----------------+--------------+
-      | **Method**                              | **PETSc Type** | **Name**       | **Property** |
-      +=========================================+================+================+==============+
-      | "Good" Broyden                          | `              | ``lmvmbrdn``   | Square       |
-      |                                         | `MATLMVMBrdn`` |                |              |
-      | :cite:`griewank2012broyden`             |                |                |              |
-      +-----------------------------------------+----------------+----------------+--------------+
-      | "Bad" Broyden                           | ``MA           | `              | Square       |
-      |                                         | TLMVMBadBrdn`` | `lmvmbadbrdn`` |              |
-      | :cite:`griewank2012broyden`             |                |                |              |
-      +-----------------------------------------+----------------+----------------+--------------+
-      | Symmetric                               | ``MATLMVMSR1`` | ``lmvmsr1``    | Symmetric    |
-      | Rank-1                                  |                |                |              |
-      | :cite:`NW99`                            |                |                |              |
-      +-----------------------------------------+----------------+----------------+--------------+
-      | Davidon-F                               | ``MATLMVMDFP`` | ``lmvmdfp``    | SPD          |
-      | letcher-Powell                          |                |                |              |
-      | (DFP)                                   |                |                |              |
-      | :cite:`NW99`                            |                |                |              |
-      +-----------------------------------------+----------------+----------------+--------------+
-      | Broy                                    | `              | ``lmvmbfgs``   | SPD          |
-      | den-Fletcher-G                          | `MATLMVMBFGS`` |                |              |
-      | oldfarb-Shanno                          |                |                |              |
-      | (BFGS)                                  |                |                |              |
-      | :cite:`NW99`                            |                |                |              |
-      +-----------------------------------------+----------------+----------------+--------------+
-      | Restricted                              | ``MA           | `              | SPD          |
-      | Broyden Family                          | TLMVMSymBrdn`` | `lmvmsymbrdn`` |              |
-      | :cite:`erway2017solving`                |                |                |              |
-      +-----------------------------------------+----------------+----------------+--------------+
-      | Restricted                              | ``MAT          | ``             | SPD          |
-      | Broyden Family                          | LMVMDiagBrdn`` | lmvmdiagbrdn`` |              |
-      | (full-memory                            |                |                |              |
-      | diagonal)                               |                |                |              |
-      +-----------------------------------------+----------------+----------------+--------------+
+  * - Method
+    - PETSc Type
+    - Name
+    - Property
+  * - "Good" Broyden   :cite:`griewank2012broyden`
+    - ``MATLMVMBrdn``
+    - ``lmvmbrdn``
+    - Square
+  * - "Bad" Broyden :cite:`griewank2012broyden`
+    - ``MATLMVMBadBrdn``
+    - ``lmvmbadbrdn``
+    - Square
+  * - Symmetric Rank-1 :cite:`NW99`
+    - ``MATLMVMSR1``
+    - ``lmvmsr1``
+    - Symmetric
+  * - Davidon-Fletcher-Powell (DFP) :cite:`NW99`
+    - ``MATLMVMDFP``
+    - ``lmvmdfp``
+    - SPD
+  * - Broyden-Fletcher-Goldfarb-Shanno (BFGS)
+       :cite:`NW99`
+    - ``MATLMVMBFGS``
+    - ``lmvmbfgs``
+    - SPD
+  * - Restricted Broyden Family :cite:`erway2017solving`
+    - ``MATLMVMSymBrdn``
+    - ``lmvmsymbrdn``
+    - SPD
+  * - Restricted Broyden Family (full-memory diagonal)
+    - ``MATLMVMDiagBrdn``
+    - ``lmvmdiagbrdn``
+    - SPD
 
 PETSc implements seven different LMVM matrices listed in the
 table above. They can be created using the
@@ -655,7 +650,7 @@ especially in a multi-physics context where different groups might be
 responsible for assembling each of the blocks, it is desirable to be
 able to use exactly the same code to assemble a single block
 independently as to assemble it as part of a larger system. To do this,
-we introduce the four spaces shown in Figure `2.1 <#fig_localspaces>`__.
+we introduce the four spaces shown in :numref:`fig_localspaces`.
 
 -  The monolithic global space is the space in which the Krylov and
    Newton solvers operate, with collective semantics across the entire
@@ -785,54 +780,40 @@ where ``viewer`` was obtained with ``PetscViewerDrawOpen()``. Additional
 viewers and options are given in the ``MatView()`` man page and
 :any:`sec_viewers`.
 
-.. container::
-   :name: fig_matrixops
+.. list-table:: PETSc Matrix Operations
+  :name: fig_matrixops
+  :header-rows: 1
 
-   .. table:: PETSc Matrix Operations
-
-      +----------------------------------+----------------------------------+
-      | **Function Name**                | **Operation**                    |
-      +==================================+==================================+
-      | ``MatAXPY(Mat Y, PetscSca        | :math:`Y = Y + a*X`              |
-      | lar a, Mat X, MatStructure s);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | ``MatMult(Mat A,Vec x, Vec y);`` | :math:`y = A*x`                  |
-      +----------------------------------+----------------------------------+
-      | ``MatMult                        | :math:`z = y + A*x`              |
-      | Add(Mat A,Vec x, Vec y,Vec z);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | ``MatMult                        | :math:`y = A^{T}*x`              |
-      | Transpose(Mat A,Vec x, Vec y);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | ``MatMultTransposeAd             | :math:`z = y + A^{T}*x`          |
-      | d(Mat A, Vec x, Vec y, Vec z);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | ``MatNorm(Mat A                  | :math:`r = ||A||_{type}`         |
-      | ,NormType type, PetscReal *r);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | ``MatDia                         | :math:`A =                       |
-      | gonalScale(Mat A,Vec l,Vec r);`` | \hbox{diag}(l)*A*\hbox{diag}(r)` |
-      +----------------------------------+----------------------------------+
-      | ``                               | :math:`A = a*A`                  |
-      | MatScale(Mat A,PetscScalar a);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | ``MatConvert                     | :math:`B = A`                    |
-      | (Mat A, MatType type, Mat *B);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | ``MatCopy(                       | :math:`B = A`                    |
-      | Mat A, Mat B, MatStructure s);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | `                                | :math:`x = \hbox{diag}(A)`       |
-      | `MatGetDiagonal(Mat A, Vec x);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | ``MatTrans                       | :math:`B = A^{T}`                |
-      | pose(Mat A, MatReuse, Mat* B);`` |                                  |
-      +----------------------------------+----------------------------------+
-      | ``MatZeroEntries(Mat A);``       | :math:`A = 0`                    |
-      +----------------------------------+----------------------------------+
-      | ``M                              | :math:`Y =  Y + a*I`             |
-      | atShift(Mat Y, PetscScalar a);`` |                                  |
-      +----------------------------------+----------------------------------+
+  * - Function Name
+    - Operation
+  * - ``MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure s);``
+    - :math:`Y = Y + a*X`
+  * - ``MatMult(Mat A,Vec x, Vec y);``
+    - :math:`y = A*x`
+  * - ``MatMultAdd(Mat A,Vec x, Vec y,Vec z);``
+    - :math:`z = y + A*x`
+  * - ``MatMultTranspose(Mat A,Vec x, Vec y);``
+    - :math:`y = A^{T}*x`
+  * - ``MatMultTransposeAdd(Mat A, Vec x, Vec y, Vec z);``
+    - :math:`z = y + A^{T}*x`
+  * - ``MatNorm(Mat A,NormType type, PetscReal *r);``
+    - :math:`r = A_{type}`
+  * - ``MatDiagonalScale(Mat A,Vec l,Vec r);``
+    - :math:`A = \text{diag}(l)*A*\text{diag}(r)`
+  * - ``MatScale(Mat A,PetscScalar a);``
+    - :math:`A = a*A`
+  * - ``MatConvert(Mat A, MatType type, Mat *B);``
+    - :math:`B = A`
+  * - ``MatCopy(Mat A, Mat B, MatStructure s);``
+    - :math:`B = A`
+  * - ``MatGetDiagonal(Mat A, Vec x);``
+    - :math:`x = \text{diag}(A)`
+  * - ``MatTranspose(Mat A, MatReuse, Mat* B);``
+    - :math:`B = A^{T}`
+  * - ``MatZeroEntries(Mat A);``
+    - :math:`A = 0`
+  * - ``MatShift(Mat Y, PetscScalar a);``
+    - :math:`Y =  Y + a*I`
 
 The ``NormType`` argument to ``MatNorm()`` is one of ``NORM_1``,
 ``NORM_INFINITY``, and ``NORM_FROBENIUS``.
@@ -1067,7 +1048,7 @@ However, this does not mean it need be done in a separate, sequential
 program; rather, it should be done before one sets up the parallel grid
 data structures in the actual program. PETSc provides an interface to
 the ParMETIS (developed by George Karypis; see
-```$PETSC_DIR/docs/installation.html`` <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__.
+`the PETSc installation instructions <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__.
 for directions on installing PETSc to use ParMETIS) to allow the
 partitioning to be done in parallel. PETSc does not currently provide
 directly support for dynamic repartitioning, load balancing by migrating
