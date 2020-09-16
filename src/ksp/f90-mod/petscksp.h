@@ -1,12 +1,8 @@
 !
-!
-!  Include file for Fortran use of the KSP package in PETSc
+!  Used by petsckspdefmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscksp.h"
 
-!
-!  CG Types
-!
       type tKSP
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tKSP
@@ -73,13 +69,13 @@
       external KSPMONITORSOLUTION
       external KSPMONITORSINGULARVALUE
       external KSPGMRESMONITORKRYLOV
+      external KSPGMRESCLASSICALGRAMSCHMIDTORTHOGONALIZATION
+      external KSPGMRESMODIFIEDGRAMSCHMIDTORTHOGONALIZATION
 !
 !   Possible arguments to KSPGMRESSetRefinementType()
 !
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_NEVER = 0
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_IFNEEDED = 1
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_ALWAYS = 2
-!
-!  End of Fortran include file for the KSP package in PETSc
-!
+
 

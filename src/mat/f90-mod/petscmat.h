@@ -1,6 +1,5 @@
 !
-!
-!  Include file for Fortran use of the Mat package in PETSc
+!  Used by petscmatmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscmat.h"
 
@@ -347,9 +346,7 @@
       PetscEnum, parameter :: MAT_CUSPARSE_MULT=2
       PetscEnum, parameter :: MAT_CUSPARSE_ALL=3
 #endif
-!
-!  End of Fortran include file for the Mat package in PETSc
-!
+
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MATFDCOLORING

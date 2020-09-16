@@ -1,8 +1,4 @@
 !
-!
-!  Include file for Fortran use of the AO (application ordering) package in PETSc
+!  Used by petscvecmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscao.h"
-
-!
-!  End of Fortran include file for the AO package in PETSc

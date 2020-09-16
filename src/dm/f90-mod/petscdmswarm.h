@@ -1,5 +1,5 @@
 !
-!  Include file for Fortran use of the DMSwarm package in PETSc
+!  Used by petscdmswarmmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscdmswarm.h"
 

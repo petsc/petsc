@@ -1,5 +1,5 @@
 !
-!  Include file for Fortran use of the TS (timestepping) package in PETSc
+! Used by petsctsmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscts.h"
 
@@ -71,6 +71,4 @@
       external TSCOMPUTERHSJACOBIANCONSTANT
       external TSCOMPUTEIFUNCTIONLINEAR
       external TSCOMPUTEIJACOBIANCONSTANT
-
-!  End of Fortran include file for the TS package in PETSc
 
