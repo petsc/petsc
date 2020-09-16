@@ -66,6 +66,7 @@ class Configure(config.base.Configure):
     self.arch          = framework.require('PETSc.options.arch',        self.setCompilers)
     self.petscdir      = framework.require('PETSc.options.petscdir',    self.arch)
     self.installdir    = framework.require('PETSc.options.installDir',  self)
+    self.dataFilesPath = framework.require('PETSc.options.dataFilesPath',self)
     self.scalartypes   = framework.require('PETSc.options.scalarTypes', self)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
@@ -768,11 +769,17 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
       (petscdir,error,status) = self.executeShellCommand('cygpath -m '+self.installdir.petscDir, log = self.log)
       self.addMakeMacro('wPETSC_DIR',petscdir)
+      if self.dataFilesPath.datafilespath:
+        (datafilespath,error,status) = self.executeShellCommand('cygpath -m '+self.dataFilesPath.datafilespath, log = self.log)
+        self.addMakeMacro('DATAFILESPATH',datafilespath)
+
     else:
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
       self.addDefine('DIR','"'+self.installdir.petscDir+'"')
       self.addMakeMacro('wPETSC_DIR',self.installdir.petscDir)
+      if self.dataFilesPath.datafilespath:
+        self.addMakeMacro('DATAFILESPATH',self.dataFilesPath.datafilespath)
     self.addDefine('ARCH','"'+self.installdir.petscArch+'"')
     return
 

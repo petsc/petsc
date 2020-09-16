@@ -43,8 +43,6 @@ class Configure(config.base.Configure):
       self.datafilespath = parentloc
     elif os.path.isdir(os.path.join(self.petscdir.dir, '..', '..','Datafiles')) &  os.path.isdir(os.path.join(self.petscdir.dir, '..','..', 'Datafiles', 'Matrices')):
       self.datafilespath = os.path.join(self.petscdir.dir, '..','..', 'Datafiles')
-    if self.datafilespath:
-      self.addMakeMacro('DATAFILESPATH',self.datafilespath)
     return
 
   def configure(self):
