@@ -95,14 +95,19 @@
         <li><a href="#gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></li>
         <li><a href="#packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE?</a></li>
         <li><a href="#multiplempis">How to fix the problem: PETSc was configured with one MPICH or OpenMPI mpi.h version but now appears to be compiling using a different MPICH OpenMPI mpi.h version</a></li>
-        <li><a href="#PetscOptionsInsertFile">What does it mean when make check gives:</a>
+        <li><a href="#mpi-network-misconfigure">What does it mean when make check gives:</a>
             <pre>
 Possible error running C/C++ src/snes/tutorials/ex19 with 2 MPI processes
 See https://www.mcs.anl.gov/petsc/documentation/faq.html
 [0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
 [0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
 [0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
-            </pre></li>
+            </pre>
+            or you get the message
+            <pre>
+Error in first MPI collective call, this indicates a network problem, it could be caused by an incorrect mpiexec or having VPN running:
+            </pre>
+        </li>
       </ul>
 
       <h4><a href="#usage">Usage</a></h4>
@@ -647,7 +652,7 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
   </ul>
 
 
-      <h3><a name="PetscOptionsInsertFile">What does it mean when make check gives:</a></h3>
+      <h3><a name="mpi-network-misconfigure">What does it mean when make check gives:</a></h3>
             <pre>
 Possible error running C/C++ src/snes/tutorials/ex19 with 2 MPI processes
 See https://www.mcs.anl.gov/petsc/documentation/faq.html
@@ -656,8 +661,16 @@ See https://www.mcs.anl.gov/petsc/documentation/faq.html
 [0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
 </pre></li>
 
-      <p>
-        The machine has a funky network configuration and for some reason MPICH is unable to communicate between processes with the socket connections it has established. This can happen even if you are running MPICH on just one machine. Often you will find that ping `hostname` fails with this network configuration; that is processes on the machine cannot even connect to the same machine. You can try completely disconnecting your machine from the network and see if make check then works or speaking with your system adminstrator. You can also use the ./configure options --download-mpich --download-mpich-device=ch3:nemesis
+       <p>
+      You are using the wrong mpiexec for the MPI you have linked PETSc with.
+       </p>
+
+       <p>
+      You have VPN enabled on your machine whose network settings may not play well with MPI
+       </p>
+
+       <p>
+        The machine has a funky network configuration and for some reason MPICH is unable to communicate between processes with the socket connections it has established. This can happen even if you are running MPICH on just one machine. Often you will find that ping `hostname` fails with this network configuration; that is processes on the machine cannot even connect to the same machine. You can try completely disconnecting your machine from the network and see if make check then works or speaking with your system administrator. You can also use the ./configure options --download-mpich --download-mpich-device=ch3:nemesis
       </p>
 
       <hr>
