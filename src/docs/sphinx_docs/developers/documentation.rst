@@ -90,12 +90,8 @@ Sphinx Documentation Guidelines
 
 * We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
-  This currently generates a "duplicate label" warning when the same reference is used in two different documents.
-  The recommended `workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#section-key-prefixing>`__ could be used,
-  but requires prefixing reference labels in the rendered text.
-  The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__
-  promises to support our use case better with "foot" citations, which can be investigated
-  when a new release is available.
+  You must include ``.. bibliography::`` blocks at the bottom of any page including citations, to generate a reference section.
+  This currently generates a "duplicate label" warning when the same reference is used in two different documents [#bibtex_footnote]_.
 
 * When possible, please use SVG for images.  SVG is web-friendly and will be automatically converted to PDF using ``rsvg-convert`` (installable with your package manager, e.g., ``librsvg2-bin`` on Debian/Ubuntu systems).  If SVG originals are not available, it is useful to provide images in both web-friendly (such as PNG) and PDF formats.  This can be done with a wildcard extension, as in the following example, which uses ``ghost.png`` for the web but ``ghost.pdf`` when building a PDF with LaTeX.
 
@@ -127,24 +123,30 @@ Sphinx Documentation Guidelines
           - 1.99
           - On a stick!
 
-which renders as
+  which renders as
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Treat
-     - Quantity
-     - Description
-   * - Albatross
-     - 2.99
-     - On a stick!
-   * - Crunchy Frog
-     - 1.49
-     - If we took the bones out, it wouldn't be
-       crunchy, now would it?
-   * - Gannet Ripple
-     - 1.99
-     - On a stick!
+     * - Treat
+       - Quantity
+       - Description
+     * - Albatross
+       - 2.99
+       - On a stick!
+     * - Crunchy Frog
+       - 1.49
+       - If we took the bones out, it wouldn't be
+         crunchy, now would it?
+     * - Gannet Ripple
+       - 1.99
+       - On a stick!
+
+* When using external links with inline URLs, prefer to use `anonymous hyperlink references <https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html#anonymous-hyperlinks>`__ with two trailing underscores, e.g.
+
+  .. code-block:: rst
+
+      `link text <https://external.org>`__
 
 
 Porting LaTeX to Sphinx
@@ -211,3 +213,7 @@ Next, one must examine the output, ideally comparing to the original rendered La
 * Replace/fix tables
 * Replace included source code with "literalinclude" (see :ref:`sphinx_guidelines`)
 * (please add more common fixes here as you find them) ...
+
+.. rubric:: Footnotes
+
+.. [#bibtex_footnote] The recommended `workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#section-key-prefixing>`__ could be used, but requires prefixing reference labels in the rendered text.  The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ promises to support our use case better with "foot" citations, which can be investigated when a new release is available.
