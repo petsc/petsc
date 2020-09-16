@@ -333,7 +333,7 @@ mswin-uni:
     - .stage-2
     - .mswin_test
   tags:
-    - name:ps5-2
+    - win-stage2
   variables:
     TEST_ARCH: arch-ci-mswin-uni
 
@@ -342,7 +342,7 @@ mswin-gnu:
     - .stage-2
     - .mswin_test
   tags:
-    - name:ps5-3
+    - win-stage2
   variables:
     TEST_ARCH: arch-ci-mswin-gnu
     MAKE_CFLAGS: -Werror
@@ -768,7 +768,7 @@ mswin-intel-cxx-cmplx:
     - .stage-3
     - .mswin_test
   tags:
-    - name:ps5
+    - os:win
   variables:
     TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
 
@@ -777,7 +777,7 @@ mswin-intel:
     - .stage-3
     - .mswin_test
   tags:
-    - name:ps5
+    - os:win
   variables:
     TEST_ARCH: arch-ci-mswin-intel
 
@@ -786,7 +786,7 @@ mswin-opt-impi:
     - .stage-3
     - .mswin_test
   tags:
-    - name:ps4
+    - os:win
   variables:
     TEST_ARCH: arch-ci-mswin-opt-impi
     DISABLE_TESTS: 1
