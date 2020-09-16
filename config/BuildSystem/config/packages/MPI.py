@@ -241,19 +241,50 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     self.addMakeMacro('MPIEXEC', self.mpiexec)
     self.mpiexec = self.mpiexec + ' -n 1'
 
+    # check that hostname works
+    self.getExecutable('ping', resultName = 'ping')
+    if not hasattr(self,'ping'):
+      self.getExecutable('fping', resultName = 'ping')
+    if hasattr(self,'ping'):
+      self.getExecutable('hostname', resultName = 'hostname')
+      if hasattr(self,'hostname'):
+        try:
+          (hostname, err, ret) = Configure.executeShellCommand(self.hostname, timeout = 10, log = self.log, threads = 1)
+          self.logPrint("Return code from hostname: %s\n" % ret)
+        except:
+          self.logPrint("Exception: Unable to get result from hostname, skipping ping check\n")
+        else:
+          if ret == 0:
+            self.logPrint("Testing ping on %s\n" % self.hostname)
+            if self.setCompilers.isCygwin(self.log):
+              count = ' -n 2 '
+            else:
+              count = ' -c 2 '
+            errormessage = 'Your hostname will not work with MPI, perhaps you have VPN running whose network settings may not play well with MPI or your network is misconfigured\n'
+            try:
+              (ok, err, ret) = Configure.executeShellCommand(self.ping + count + hostname, timeout = 10, log = self.log, threads = 1)
+              self.logPrint("Return code from ping: %s\n" % ret)
+              if ret != 0:
+                raise RuntimeError(errormessage+" Return code %s\n" % ret)
+            except:
+              raise RuntimeError("Exception: "+errormessage)
+          else:
+            self.logPrint("Unable to get result from hostname, skipping ping check\n")
+
     # check that mpiexec runs an MPI program correctly
+    error_message = 'Unable to run MPI program with '+self.mpiexec+'\n\
+    (1) make sure this is the correct program to run MPI jobs\n\
+    (2) your network may be misconfigured; see https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-network-misconfigure\n\
+    (3) you may have VPN running whose network settings may not play nice with MPI\n'
+
     includes = '#include <mpi.h>'
     body = 'MPI_Init(0,0);\nMPI_Finalize();\n'
     try:
-      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 60, threads = 1)
-      if not ok: raise RuntimeError('Unable to run MPI program with '+self.mpiexec+' make sure this is the correct program to run MPI jobs')
+      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 30, threads = 1)
+      if not ok: raise RuntimeError(error_message)
     except RuntimeError as e:
       if str(e).find('Runaway process exceeded time limit') > -1:
-        raise RuntimeError('Timeout: Unable to run MPI program with '+self.mpiexec+'\n\
-    (1) make sure this is the correct program to run MPI jobs\n\
-    (2) your network may be misconfigured; see https://www.mcs.anl.gov/petsc/documentation/faq.html#PetscOptionsInsertFile\n')
-
-
+        raise RuntimeError('Timeout: %s' % error_message)
 
   def configureMPI2(self):
     '''Check for functions added to the interface in MPI-2'''
