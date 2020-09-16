@@ -80,6 +80,28 @@ html_static_path = ['_static']
 html_logo = os.path.join('..','website','images','PETSc-TAO_RGB.svg')
 html_favicon = os.path.join('..','website','images','PETSc_RGB-logo.png')
 
+# -- Options for LaTeX output --------------------------------------------
+
+latex_additional_files = [
+    'manual/anl_tech_report/ArgonneLogo.pdf',
+    'manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
+    'manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
+    'manual/anl_tech_report/first.inc',
+    'manual/anl_tech_report/last.inc',
+]
+
+latex_elements = {
+    'maketitle': r'''
+\input{first.inc}
+\sphinxmaketitle
+''',
+    'printindex': r'''
+\printindex
+\input{last.inc}
+''',
+}
+
+
 # -- General Config Options ---------------------------------------------------
 
 # Graphviz config which searches for correct installation of a DOT language parser
