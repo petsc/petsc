@@ -55,7 +55,7 @@ class Configure(config.package.GNUPackage):
 
       self.setCompilers.pushLanguage('C')
       g.write('CC = '+self.setCompilers.getCompiler()+'\n')
-      g.write('CFLAGS = ' + self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
+      g.write('CFLAGS = ' + self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+'\n')
       self.setCompilers.popLanguage()
 
       # build flags for serial MFEM

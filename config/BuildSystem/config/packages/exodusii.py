@@ -41,10 +41,6 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_Fortran_COMPILER:FILEPATH="'+self.setCompilers.getCompiler()+'"')
       args.append('-DSEACASProj_ENABLE_SEACASExodus_for=ON')
       args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32=ON')
-      if config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
-        args = self.addArgStartsWith(args,'-DCMAKE_Fortran_FLAGS:STRING','-fallow-argument-mismatch')
-        args = self.addArgStartsWith(args,'-DCMAKE_Fortran_FLAGS_DEBUG:STRING','-fallow-argument-mismatch')
-        args = self.addArgStartsWith(args,'-DCMAKE_Fortran_FLAGS_RELEASE:STRING','-fallow-argument-mismatch')
       self.setCompilers.popLanguage()
     else:
       args.append('-DSEACASProj_ENABLE_SEACASExodus_for=OFF')

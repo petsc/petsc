@@ -38,7 +38,7 @@ class Configure(config.package.GNUPackage):
     args.append('--enable-libcheck')
 
     self.framework.pushLanguage('C')
-    args.append('--with-cflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+    args.append('--with-cflags="'+self.updatePackageCFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.mpi.include)+'"')
     self.framework.popLanguage()
 
@@ -49,7 +49,7 @@ class Configure(config.package.GNUPackage):
     else:
       args.append('F77=""')
     self.framework.pushLanguage('Cxx')
-    args.append('--with-cxxflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+    args.append('--with-cxxflags="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
     self.framework.popLanguage()
 
     # ML does not have --with-mpi-include - so specify includes with cflags,fflags,cxxflags,CPPFLAGS

@@ -33,7 +33,7 @@ class Configure(config.package.Package):
     # C compiler
     self.setCompilers.pushLanguage('C')
     g.write('CC         = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CFLAGS     = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' -DUSE_MPI -DREAL=double -DHAS_BLAS ')
+    g.write('CFLAGS     = '+self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+' -DUSE_MPI -DREAL=double -DHAS_BLAS ')
     if self.scalartypes.scalartype == 'complex':
       g.write('-DDBL_CMPLX\n')
     else:

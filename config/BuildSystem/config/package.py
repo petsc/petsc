@@ -256,9 +256,30 @@ class Package(config.base.Configure):
 
   def removeWarningFlags(self,flags):
     outflags = []
-    for flag in flags.split():
+    for flag in flags:
       if not flag in ['-Werror','-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas','-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden','-std=c89','-pedantic','--coverage','-MFree','-fdefault-integer-8']:
         outflags.append(flag)
+    return outflags
+
+  def updatePackageCFlags(self,flags):
+    '''To turn off various warnings or errors the compilers may produce with external packages, remove or add appropriate compiler flags'''
+    outflags = self.removeWarningFlags(flags.split())
+    with self.Language('C'):
+      if config.setCompilers.Configure.isDarwinCatalina(self.log) and config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
+        outflags.append('-Wno-implicit-function-declaration')
+    return ' '.join(outflags)
+
+  def updatePackageFFlags(self,flags):
+    outflags = self.removeWarningFlags(flags.split())
+    with self.Language('FC'):
+      if config.setCompilers.Configure.isNAG(self.getLinker(), self.log):
+         outflags.extend(['-mismatch','-dusty','-dcfuns'])
+      if config.setCompilers.Configure.isGfortran100plus(self.getCompiler(), self.log):
+        outflags.append('-fallow-argument-mismatch')
+    return ' '.join(outflags)
+
+  def updatePackageCxxFlags(self,flags):
+    outflags = self.removeWarningFlags(flags.split())
     return ' '.join(outflags)
 
   def getDefaultLanguage(self):
@@ -1516,7 +1537,7 @@ class GNUPackage(Package):
       args.append('CC="'+self.setCompilers.cross_cc+'"')
     else:
       args.append('CC="'+self.getCompiler()+'"')
-    args.append('CFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
+    args.append('CFLAGS="'+self.updatePackageCFlags(self.getCompilerFlags())+'"')
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
     if not self.installwithbatch and hasattr(self.setCompilers,'cross_LIBS'):
@@ -1530,7 +1551,7 @@ class GNUPackage(Package):
         args.append('CXX="'+self.setCompilers.cross_CC+'"')
       else:
         args.append('CXX="'+self.getCompiler()+'"')
-      args.append('CXXFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
+      args.append('CXXFLAGS="'+self.updatePackageCxxFlags(self.getCompilerFlags())+'"')
       self.popLanguage()
     else:
       args.append('--disable-cxx')
@@ -1551,17 +1572,17 @@ class GNUPackage(Package):
           args.append('F90="'+self.setCompilers.cross_fc+'"')
         else:
           args.append('F90="'+fc+'"')
-        args.append('F90FLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
+        args.append('F90FLAGS="'+self.updatePackageFFlags(self.getCompilerFlags())+'"')
       else:
         args.append('--disable-f90')
-      args.append('FFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
+      args.append('FFLAGS="'+self.updatePackageFFlags(self.getCompilerFlags())+'"')
       if not self.installwithbatch and hasattr(self.setCompilers,'cross_fc'):
         args.append('FC="'+self.setCompilers.cross_fc+'"')
         args.append('F77="'+self.setCompilers.cross_fc+'"')
       else:
         args.append('FC="'+fc+'"')
         args.append('F77="'+fc+'"')
-      args.append('FCFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
+      args.append('FCFLAGS="'+self.updatePackageFFlags(self.getCompilerFlags())+'"')
       self.popLanguage()
     else:
       args.append('--disable-fortran')
@@ -1678,7 +1699,7 @@ class CMakePackage(Package):
     args.append('-DCMAKE_AR='+self.setCompilers.AR)
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
-    cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
+    cflags = self.updatePackageCFlags(self.setCompilers.getCompilerFlags())
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     args.append('-DCMAKE_C_FLAGS_DEBUG:STRING="'+cflags+'"')
     args.append('-DCMAKE_C_FLAGS_RELEASE:STRING="'+cflags+'"')
@@ -1686,17 +1707,17 @@ class CMakePackage(Package):
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_Fortran_FLAGS_DEBUG:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_Fortran_FLAGS_RELEASE:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_Fortran_FLAGS_DEBUG:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_Fortran_FLAGS_RELEASE:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
     if self.setCompilers.LDFLAGS:

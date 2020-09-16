@@ -104,7 +104,7 @@ class Configure(config.package.Package):
     g.write('RM = /bin/rm -f\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC = '+self.setCompilers.getCompiler()+'\n')
-    g.write('OPTC    = ' + self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
+    g.write('OPTC    = ' + self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.write('OUTC = -o \n')
     self.setCompilers.popLanguage()
     if not self.fortran.fortranIsF90:
@@ -112,12 +112,7 @@ class Configure(config.package.Package):
     self.setCompilers.pushLanguage('FC')
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
-    extra_fcflags = ''
-    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
-      extra_fcflags = '-dusty -dcfuns '
-    elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
-      extra_fcflags = '-fallow-argument-mismatch '
-    g.write('OPTF    = '+extra_fcflags+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
+    g.write('OPTF    = '+self.updatePackageFFlags(self.setCompilers.getCompilerFlags())+'\n')
     if self.blasLapack.checkForRoutine('dgemmt'):
       g.write('OPTF   += -DGEMMT_AVAILABLE \n')
     g.write('OUTF = -o \n')

@@ -54,7 +54,7 @@ class Configure(config.package.Package):
 
     self.setCompilers.pushLanguage('C')
     args.append('CC="'+self.setCompilers.getCompiler()+'"')
-    cflags=self.removeWarningFlags(self.setCompilers.getCompilerFlags())
+    cflags=self.updatePackageCFlags(self.setCompilers.getCompilerFlags())
     if self.checkSharedLibrariesEnabled():
       ldflags=self.setCompilers.getDynamicLinkerFlags()
     else:

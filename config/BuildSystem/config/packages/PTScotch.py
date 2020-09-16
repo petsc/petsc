@@ -55,7 +55,7 @@ class Configure(config.package.Package):
     g.write('CCD        = '+self.setCompilers.getCompiler()+'\n')
 
     # Building cflags/ldflags
-    self.cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)
+    self.cflags = self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)
     functions = self.framework.require('config.functions', self)
     if not functions.haveFunction('FORK') and not functions.haveFunction('_PIPE'):
       raise RuntimeError('Error building PTScotch: no pipe function')

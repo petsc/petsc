@@ -32,12 +32,12 @@ class Configure(config.package.CMakePackage):
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
     else:
         raise RuntimeError("googletest requires a C++ compiler\n")
     self.framework.popLanguage()
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
-    args.append('-DCMAKE_C_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+    args.append('-DCMAKE_C_FLAGS:STRING="'+self.updatePackageCFlags(self.framework.getCompilerFlags())+'"')
     self.framework.popLanguage()
     return args

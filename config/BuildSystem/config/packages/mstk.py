@@ -70,10 +70,10 @@ class Configure(config.package.CMakePackage):
 
     #  Need to pass -DMETIS_5 to C and C++ compiler flags otherwise assumes older Metis
     args = self.rmArgsStartsWith(args,['-DCMAKE_CXX_FLAGS:STRING','-DCMAKE_C_FLAGS:STRING'])
-    args.append('-DCMAKE_C_FLAGS:STRING="'+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' -DMETIS_5"')
+    args.append('-DCMAKE_C_FLAGS:STRING="'+self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+' -DMETIS_5"')
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMETIS_5"')
+      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+' -DMETIS_5"')
     self.framework.popLanguage()
 
     # mstk does not use the standard -DCMAKE_INSTALL_PREFIX

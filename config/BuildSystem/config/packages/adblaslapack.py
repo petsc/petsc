@@ -28,7 +28,7 @@ class Configure(config.package.Package):
     g.write('AROPT            = rcs\n')
     g.write('AR               = '+self.setCompilers.AR+'\n')
     g.write('CXX              = '+self.framework.getCompiler()+'\n')
-    g.write('CFLAGS           = -I$(CODI_DIR) -I../include '+self.removeWarningFlags(self.framework.getCompilerFlags())+'\n')
+    g.write('CFLAGS           = -I$(CODI_DIR) -I../include '+self.updatePackageCFlags(self.framework.getCompilerFlags())+'\n')
     g.close()
     self.framework.popLanguage()
 

@@ -27,12 +27,12 @@ class Configure(config.package.Package):
     args = []
     self.framework.pushLanguage('C')
     args.append('CC="'+self.framework.getCompiler()+'"')
-    args.append('CFLAGS="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+    args.append('CFLAGS="'+self.updatePackageCFlags(self.framework.getCompilerFlags())+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('CXX="'+self.framework.getCompiler()+'"')
-      args.append('CXXFLAGS="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('CXXFLAGS="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
     args = '\n'.join(args)
 

@@ -40,7 +40,7 @@ class Configure(config.package.Package):
             line = 'CC = '+cc+'\n'
           if line.startswith('COPTFLAGS '):
             self.setCompilers.pushLanguage('C')
-            line = 'COPTFLAGS  = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n'
+            line = 'COPTFLAGS  = '+self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+'\n'
             self.setCompilers.popLanguage()
           if line.startswith('CNOOPT'):
             self.setCompilers.pushLanguage('C')

@@ -22,7 +22,7 @@ class Configure(config.package.Package):
     args = []
     self.framework.pushLanguage('C')
     args.append('CC="'+self.framework.getCompiler()+'"')
-    args.append('CFLAGS="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+    args.append('CFLAGS="'+self.updatePackageCFlags(self.framework.getCompilerFlags())+'"')
     args.append('prefix="'+self.installDir+'"')
     self.framework.popLanguage()
     args=' '.join(args)

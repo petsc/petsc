@@ -18,7 +18,7 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     self.framework.pushLanguage('C')
-    args.append('MPI_CFLAGS="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+    args.append('MPI_CFLAGS="'+self.updatePackageCFlags(self.framework.getCompilerFlags())+'"')
     args.append('MPI_CC="'+self.framework.getCompiler()+'"')
     self.framework.popLanguage()
 

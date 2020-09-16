@@ -28,7 +28,7 @@ class Configure(config.package.Package):
     elif self.blasLapack.mangling == 'caps': FTNOPT = ''
     else:                                          FTNOPT = '-DSP2'
 
-    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DSPAI_USE_MPI '+FTNOPT+' '+self.removeWarningFlags(self.framework.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)+'\n'
+    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DSPAI_USE_MPI '+FTNOPT+' '+self.updatePackageCFlags(self.framework.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)+'\n'
     args = args+'AR         = '+self.setCompilers.AR+'\n'
     args = args+'ARFLAGS    = '+self.setCompilers.AR_FLAGS+'\n'
 

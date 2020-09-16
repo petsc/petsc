@@ -61,9 +61,9 @@ class Configure(config.package.Package):
     else:
       cflags = ''
     if self.mpi.found:
-      g.write('CCFOPT      = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)+' '+cflags+'\n')
+      g.write('CCFOPT      = '+self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)+' '+cflags+'\n')
     else:
-      g.write('CCFOPT      = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' '+cflags+'\n')
+      g.write('CCFOPT      = '+self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+' '+cflags+'\n')
     self.setCompilers.popLanguage()
     g.write('CFPROG      = \n')
     g.write('CF90PROG    = \n')
