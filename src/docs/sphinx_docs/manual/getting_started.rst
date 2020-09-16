@@ -544,7 +544,7 @@ being used, they *must* be called in the same order on each processor.
 The next example, given below,
 illustrates the solution of a linear system in parallel. This code,
 corresponding to
-``$PETSC_DIR/src/ksp/ksp/tutorials/ex2.c`` (`source <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex2.c.html>`__),
+`KSP Tutorial ex2 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex2.c.html>`,
 handles the two-dimensional Laplacian discretized with finite
 differences, where the linear system is again solved with KSP. The code
 performs the same tasks as the sequential version within

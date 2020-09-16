@@ -118,7 +118,7 @@ without having to use the adjoint solvers.
 
 To provide a better understanding of the use of the adjoint solvers, we
 introduce a simple example, corresponding to
-```${PETSC_DIR}/src/ts/tutorials/power_grid/ex3adj.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/ex3adj.c.html>`__.
+`TS Power Grid Tutorial ex3adj <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/ex3adj.c.html>`__.
 The problem is to study dynamic security of power system when there are
 credible contingencies such as short-circuits or loss of generators,
 transmission lines, or loads. The dynamic security constraints are
@@ -188,38 +188,38 @@ backward solve and thus must call
 Examples include:
 
 -  a discrete adjoint sensitivity using explicit time stepping methods
-   ```${PETSC_DIR}/src/ts/tutorials/ex16adj.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex16adj.c.html>`__,
+   `TS Tutorial ex16adj <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex16adj.c.html>`__,
 
 -  a discrete adjoint sensitivity using implicit time stepping methods
-   ```${PETSC_DIR}/src/ts/tutorials/ex20adj.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex20adj.c.html>`__,
+   `TS Tutorial ex20adj <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex20adj.c.html>`__,
 
 -  an optimization using the discrete adjoint models of ERK
-   ```${PETSC_DIR}/src/ts/tutorials/ex16opt_ic.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex16opt_ic.c.html>`__
+   `TS Tutorial ex16opt_ic <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex16opt_ic.c.html>`__
    and
-   ```${PETSC_DIR}/src/ts/tutorials/ex16opt_p.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex16opt_p.c.html>`__,
+   `TS Tutorial ex16opt_p` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex16opt_p.c.html>`__,
 
 -  an optimization using the discrete adjoint models of Theta methods
    for stiff DAEs
-   ```${PETSC_DIR}/src/ts/tutorials/ex20opt_ic.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex20opt_ic.c.html>`__
+   `TS Tutorial ex20opt_ic <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex20opt_ic.c.html>`__
    and
-   ```${PETSC_DIR}/src/ts/tutorials/ex20opt_p.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex20opt_p.c.html>`__,
+   `TS Tutorial ex20opt_p <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex20opt_p.c.html>`__,
 
 -  an ODE-constrained optimization using the discrete adjoint models of
    Theta methods for cost function with an integral term
-   ```${PETSC_DIR}/src/ts/tutorials/power_grid/ex3opt.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/ex3opt.c.html>`__,
+   `TS Power Grid Tutorial ex3opt <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/ex3opt.c.html>`__,
 
 -  a discrete adjoint sensitivity using ``TSCN`` (Crank-Nicolson)
    methods for DAEs with discontinuities
-   ```${PETSC_DIR}/src/ts/tutorials/power_grid/stability_9bus/ex9busadj.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/stability/stability_9bus/ex9busadj.c.html>`__,
+   `TS Power Grid Stability Tutorial ex9busadj.c <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/stability/stability_9bus/ex9busadj.c.html>`__,
 
 -  a DAE-constrained optimization using the discrete adjoint models of
    ``TSCN`` (Crank-Nicolson) methods for cost function with an integral
    term
-   ```${PETSC_DIR}/src/ts/tutorials/power_grid/stability_9bus/ex9busopt.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/stability/stability_9bus/ex9busopt.c.html>`__,
+   `TS Power Grid Tutorial ex9busopt.c <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/stability/stability_9bus/ex9busopt.c.html>`__,
 
 -  a discrete adjoint sensitivity using ``TSCN`` methods for a PDE
    problem
-   ```${PETSC_DIR}/src/ts/tutorials/advection-diffusion-reaction/ex5adj.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/advection-diffusion-reaction/ex5adj.c.html>`__.
+   `TS Advection-Diffusion-Reaction Tutorial ex5adj <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/advection-diffusion-reaction/ex5adj.c.html>`__.
 
 Checkpointing
 ~~~~~~~~~~~~~

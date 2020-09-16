@@ -564,10 +564,10 @@ working *only* with real numbers in a code, one should use a version of
 PETSc for real numbers for best efficiency.
 
 The program
-```${PETSC_DIR}/src/ksp/ksp/tutorials/ex11.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex11.c.html>`__
+`KSP Tutorial ex11 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex11.c.html>`__
 solves a linear system with a complex coefficient matrix. Its Fortran
 counterpart is
-```${PETSC_DIR}/src/ksp/ksp/tutorials/ex11f.F90`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex11f.F90.html>`__.
+`KSP Tutorial ex11f <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex11f.F90.html>`__.
 
 Parallel Communication
 ~~~~~~~~~~~~~~~~~~~~~~

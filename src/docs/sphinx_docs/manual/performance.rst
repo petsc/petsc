@@ -642,9 +642,9 @@ a user-defined context. In C and C++ such a context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and
 pointers to PETSc objects. See
-```${PETSC_DIR}/snes/tutorials/ex5.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`__
+`SNES Tutorial ex5 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`__
 and
-```${PETSC_DIR}/snes/tutorials/ex5f.F90`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`__
+`SNES Tutorial ex5f <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`__
 for examples of user-defined application contexts in C and Fortran,
 respectively.
 
@@ -678,7 +678,7 @@ the solvers accordingly.
 Tips for Efficient Use of Linear Solvers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As discussed in :any:`ch_ksp`, the default linear
+As discussed in :any:`chapter_ksp`, the default linear
 solvers are
 
 -  | uniprocess: GMRES(30) with ILU(0) preconditioning
@@ -734,7 +734,7 @@ them.
 -  **Overhead of timing routines on certain machines**: On certain
    machines, even calling the system clock in order to time routines is
    slow; this skews all of the flop rates and timing results. The file
-   ```$PETSC_DIR/src/benchmarks/PetscTime.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/benchmarks/PetscTime.c.html>`__
+   ``$PETSC_DIR/src/benchmarks/PetscTime.c`` (`source <https://www.mcs.anl.gov/petsc/petsc-current/src/benchmarks/PetscTime.c.html>`__)
    contains a simple test problem that will approximate the amount of
    time required to get the current time in a running program. On good
    systems it will on the order of :math:`10^{-6}` seconds or less.

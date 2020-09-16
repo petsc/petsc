@@ -920,9 +920,9 @@ the various blocks. To set the appropriate data structures, the user
 *must* explicitly call ``KSPSetUp()`` before calling
 ``PCBJacobiGetSubKSP()`` or ``PCASMGetSubKSP(``). For further details,
 see
-`KSP Example 7 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex7.c.html>`__
+`KSP Tutorial ex7 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex7.c.html>`__
 or
-`KSP Example 8 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex8.c.html>`__.
+`KSP Tutorial ex8 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex8.c.html>`__.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz
 preconditioners allow the user to set the number of blocks into which
@@ -1043,7 +1043,7 @@ for subdomains that fit within a single MPI rank, exactly as in
 ``PCASM``.
 
 Examples of the described PCGASM usage can be found in
-`KSP Example 62 <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGASM.html>`__.
+`KSP Tutorial ex62 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex62.c.html>`__.
 In particular, ``runex62_superlu_dist`` illustrates the use of
 ``SuperLU_DIST`` as the subdomain solver on coalesced multi-rank
 subdomains. The ``runex62_2D_*`` examples illustrate the use of
@@ -1359,7 +1359,7 @@ the number of subdomains that will be generated at the next level; the
 larger the coarsening ratio, the lower the number of coarser subdomains.
 
 For further details, see the example
-`KSP Example 59 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex59.c>`__
+`KSP Tutorial ex59 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex59.c>`__
 and the online documentation for ``PCBDDC``.
 
 Shell Preconditioners

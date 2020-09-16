@@ -255,11 +255,11 @@ Sample Fortran Programs
 Sample programs that illustrate the PETSc interface for Fortran are
 given in Figures `[fig_vec-Fortran] <#fig_vec-Fortran>`__ *–*
 `[fig_SNES-Fortran] <#fig_SNES-Fortran>`__, corresponding to
-```${PETSC_DIR}/src/vec/vec/tests/ex19f.F`` <https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/tests/ex19f.F.html>`__,
-```${PETSC_DIR}/src/vec/vec/tutorials/ex4f.F`` <https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/tutorials/ex4f.F.html>`__,
-```${PETSC_DIR}/src/sys/classes/draw/tests/ex5f.F`` <https://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/tests/ex5f.F.html>`__,
+`Vec Tutorial ex19f <https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/tests/ex19f.F.html>`__,
+`Vec Tutorial ex4f <https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/tutorials/ex4f.F.html>`__,
+`Vec Tutorial ex5f <https://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/tests/ex5f.F.html>`__,
 and
-```${PETSC_DIR}/src/snes/examples/ex1f.F90`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex1f.F90.html>`__,
+`SNES Tutorial ex1f <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex1f.F90.html>`__,
 respectively. We also refer Fortran programmers to the C examples listed
 throughout the manual, since PETSc usage within the two languages
 differs only slightly.
