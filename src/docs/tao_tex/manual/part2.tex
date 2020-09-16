@@ -3,7 +3,7 @@
 %  - Be sure to place captions BEFORE labels in figures and tables!
 %    Otherwise, numbering will be incorrect.  For example, use the following:
 %       \caption{TAO Info}
-%       \label{fig:taoinfo}
+%       \label{fig_taoinfo}
 %  - Use \break to indicate a line break (needed to prevent long strings in
 %    \tt mode from running of the page)
 %
@@ -11,7 +11,7 @@
 
 \chapter{Using TAO Solvers}
 %\sindex{continuous optimization}
-\label{chapter:tao_solver}
+\label{chapter_tao_solver}
 
 TAO contains unconstrained minimization, bound-constrained minimization, 
 nonlinear complementarity, nonlinear least squares solvers, and solvers
@@ -93,8 +93,8 @@ This routine frees the internal data structures used by the solver.
 
 \section{TAO Applications}
 \sindex{application}
-\label{section:taoapplication}
-\label{section:petscapp}
+\label{sec_taoapplication}
+\label{sec_petscapp}
 
 The solvers in TAO address applications that have a set of variables, an objective
 function, and possibly constraints on the variables.  Many solvers also
@@ -174,7 +174,7 @@ such structure or needed by the application then a NULL pointer can be used.
 
 
 
-\subsection{Objective Function and Gradient Routines}\label{sec:fghj}
+\subsection{Objective Function and Gradient Routines}\label{sec_fghj}
 
 TAO solvers that minimize an objective function require
 the application to evaluate the objective function.  Some solvers
@@ -277,8 +277,8 @@ successful completion and a nonzero integer if the function
 is undefined at that point or an error occurred.
 
 \subsection{Hessian Evaluation}
-\label{sec:matrixfree}
-\label{sec:finitedifference}
+\label{sec_matrixfree}
+\label{sec_finitedifference}
 
 Some optimization routines also require a Hessian matrix from the user.
 The routine that evaluates the Hessian should have the form 
@@ -367,7 +367,7 @@ Details about using matrix-free methods are provided in the
 PETSc users manual \cite{petsc-user-ref}.
 
 
-\subsection{Bounds on Variables}\label{sec:bounds}
+\subsection{Bounds on Variables}\label{sec_bounds}
 
 Some optimization problems also impose constraints on the variables.
 The constraints may impose simple bounds on the variables or
@@ -420,7 +420,7 @@ routine.
 %This routine will call the TAO solver. 
 We discuss several universal options below. 
 
-\subsection{Convergence}\label{sec:customize}
+\subsection{Convergence}\label{sec_customize}
 
 Although TAO and its solvers set default parameters that are useful
 for many problems, the user may need to modify these
@@ -530,7 +530,7 @@ user includes the {\tt -help } option on the command line.
 Below we discuss how to exploit the special structures for three classes
 of problems that TAO solves. 
 
-\subsection{PDE-Constrained Optimization}\label{sec:pde_applications}
+\subsection{PDE-Constrained Optimization}\label{sec_pde_applications}
 TAO can solve PDE-constrained optimization applications 
 of the form
 \[
@@ -637,7 +637,7 @@ design Jacobian, there is no need to provide preconditioner or inverse
 matrices.
 
 
-\subsection{Nonlinear Least Squares}\label{sec:evalsof}
+\subsection{Nonlinear Least Squares}\label{sec_evalsof}
 For nonlinear least squares applications, we are solving
 the optimization problem
 \begin{equation*}

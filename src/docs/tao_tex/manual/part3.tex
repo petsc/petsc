@@ -5,7 +5,7 @@ This section discusses options and routines that apply to most TAO
 solvers and problem classes.  In particular, we focus on
 linear solvers, convergence tests, and line searches.
 
-\section{Linear Solvers}\label{sec:TaoLinearSolvers}
+\section{Linear Solvers}\label{sec_TaoLinearSolvers}
 One of the most computationally intensive phases of many optimization
 algorithms involves the solution of linear systems of equations.  
 The performance of the linear solver may be critical to an efficient 
@@ -53,11 +53,11 @@ after the solution update.
 
 
 \section{Convergence Tests}
-\label{sec:Taoconvergence}
+\label{sec_Taoconvergence}
 
 Convergence of a solver can be defined in many ways.
 The methods TAO uses by default are mentioned in 
-Section \ref{sec:customize}.
+Section \ref{sec_customize}.
 These methods include absolute and relative convergence tolerances as well
 as a maximum number of iterations of function evaluations.
 If these choices are not sufficient, 
@@ -96,7 +96,7 @@ The termination flag can be set by using the routine
 
 
 \section{Line Searches} \sindex{line search}
-\label{sec:TaoLineSearch}
+\label{sec_TaoLineSearch}
 
 By using the command line option  {\tt -tao\_ls\_type}.  
 Available line searches 
