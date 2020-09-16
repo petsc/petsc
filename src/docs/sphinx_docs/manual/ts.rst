@@ -3,8 +3,6 @@
 TS: Scalable ODE and DAE Solvers
 --------------------------------
 
-.. include:: temp_edit_needed_banner.inc
-
 The ``TS`` library provides a framework for the scalable solution of
 ODEs and DAEs arising from the discretization of time-dependent PDEs.
 
@@ -188,70 +186,77 @@ One can set the solution method with the routine
   Sundials package is installed), or the command line option
 | ``-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials,eimex,arkimex,rosw``.
 
-A list of available methods is given in Table `5.1 <#tab_TSPET>`__.
+A list of available methods is given in the following table.
 
-.. container::
+.. list-table:: Time integration schemes
    :name: tab_TSPET
+   :header-rows: 1
 
-   .. table:: Time integration schemes.
-
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | **TS       | **R                               | **Class**  | **Type**   | **Order**  |   |   |   |   |   |   |   |
-      | Name**     | eference**                        |            |            |            |   |   |   |   |   |   |   |
-      +============+===================================+============+============+============+===+===+===+===+===+===+===+
-      | euler      | forward                           | one-step   | explicit   | 1          |   |   |   |   |   |   |   |
-      |            | Euler                             |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | ssp        | multistage                        | R          | explicit   | :          |   |   |   |   |   |   |   |
-      |            | SSP                               | unge-Kutta |            | math:`\le` |   |   |   |   |   |   |   |
-      |            |                                   |            |            | 4          |   |   |   |   |   |   |   |
-      |            | :cite:`Ketcheson_2008`            |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | rk\*       | multistage                        | R          | explicit   | :          |   |   |   |   |   |   |   |
-      |            |                                   | unge-Kutta |            | math:`\ge` |   |   |   |   |   |   |   |
-      |            |                                   |            |            | 1          |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | beuler     | backward                          | one-step   | implicit   | 1          |   |   |   |   |   |   |   |
-      |            | Euler                             |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | cn         | Cran                              | one-step   | implicit   | 2          |   |   |   |   |   |   |   |
-      |            | k-Nicolson                        |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | theta\*    | th                                | one-step   | implicit   | :mat       |   |   |   |   |   |   |   |
-      |            | eta-method                        |            |            | h:`\le`\ 2 |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | alpha      | al                                | one-step   | implicit   | 2          |   |   |   |   |   |   |   |
-      |            | pha-method                        |            |            |            |   |   |   |   |   |   |   |
-      |            | :cite:`Jansen_2000`               |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | gl         | general                           | multistep- | implicit   | :          |   |   |   |   |   |   |   |
-      |            | linear                            | multistage |            | math:`\le` |   |   |   |   |   |   |   |
-      |            |                                   |            |            | 3          |   |   |   |   |   |   |   |
-      |            | :cite:`Butcher_2007`              |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | eimex      | ex                                | one-step   | :math:`\ge |            |   |   |   |   |   |   |   |
-      |            | trapolated                        |            | 1`,        |            |   |   |   |   |   |   |   |
-      |            | IMEX                              |            | adaptive   |            |   |   |   |   |   |   |   |
-      |            | :cite:`Constantinescu_A2010a`     |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | arkimex    | see                               | IMEX       | IMEX       | :          |   |   |   |   |   |   |   |
-      |            | Tab                               | R          |            | math:`1-5` |   |   |   |   |   |   |   |
-      |            | . `5.3 <#t                        | unge-Kutta |            |            |   |   |   |   |   |   |   |
-      |            | ab_IMEX_RK                        |            |            |            |   |   |   |   |   |   |   |
-      |            | _PETSc>`__                        |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | rosw       | see                               | Ro         | linearly   | :          |   |   |   |   |   |   |   |
-      |            | Tab.                              | senbrock-W | implicit   | math:`1-4` |   |   |   |   |   |   |   |
-      |            | `5.4 <#tab                        |            |            |            |   |   |   |   |   |   |   |
-      |            | _IMEX_RosW                        |            |            |            |   |   |   |   |   |   |   |
-      |            | _PETSc>`__                        |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
-      | glee       | see                               | GL with    | explicit   | :          |   |   |   |   |   |   |   |
-      |            | Tab.                              | global     | and        | math:`1-3` |   |   |   |   |   |   |   |
-      |            | `5.5 <#tab                        | error      | implicit   |            |   |   |   |   |   |   |   |
-      |            | _IMEX_GLEE                        |            |            |            |   |   |   |   |   |   |   |
-      |            | _PETSc>`__                        |            |            |            |   |   |   |   |   |   |   |
-      +------------+-----------------------------------+------------+------------+------------+---+---+---+---+---+---+---+
+   * - TS Name
+     - Reference
+     - Class
+     - Type
+     - Order
+   * - euler
+     - forward Euler
+     - one-step
+     - explicit
+     - :math:`1`
+   * - ssp
+     - multistage SSP :cite:`Ketcheson_2008`
+     - Runge-Kutta
+     - explicit
+     - :math:`\le 4`
+   * - rk*
+     - multiscale
+     - Runge-Kutta
+     - explicit
+     - :math:`\ge 1`
+   * - beuler
+     - backward Euler
+     - one-step
+     - implicit
+     - :math:`1`
+   * - cn
+     - Crank-Nicolson
+     - one-step
+     - implicit
+     - :math:`2`
+   * - theta*
+     - theta-method
+     - one-step
+     - implicit
+     - :math:`\le 2`
+   * - alpha
+     - alpha-method :cite:`Jansen_2000`
+     - one-step
+     - implicit
+     - :math:`2`
+   * - gl
+     - general linear :cite:`Butcher_2007`
+     - multistep-multistage
+     - implicit
+     - :math:`\le 3`
+   * - eimex
+     - extrapolated IMEX :cite:`Constantinescu_A2010a`
+     - one-step
+     - :math:`\ge 1`, adaptive
+     -
+   * - arkimex
+     - See :any:`tab_IMEX_RK_PETSc`
+     - IMEX Runge-Kutta
+     - IMEX
+     - :math:`1-5`
+   * - rosw
+     - See :any:`tab_IMEX_RosW_PETSc`
+     - Rosenbrock-W
+     - linearly implicit
+     - :math:`1-4`
+   * - glee
+     - See :any:`tab_IMEX_GLEE_PETSc`
+     - GL with global error
+     - explicit and implicit
+     - :math:`1-3`
 
 Set the initial time with the command
 
@@ -402,7 +407,7 @@ identity matrix:
 
 An IMEX problem representation can be made implicit by setting ``TSARKIMEXSetFullyImplicit()``.
 
-In PETSc, DAEs and ODEs are formulated as :math:`F(t,u,\dot{u})=G(t,u)`, where :math:`F()` is meant to be integrated implicitly and :math:`G()` explicitly. An IMEX formulation such as :math:`M\dot{u}=f(t,u)+g(t,u)` requires the user to provide :math:`M^{-1} g(t,u)` or solve :math:`g(t,u) - M x=0` in place of :math:`G(t,u)`. General cases such as :math:`F(t,u,\dot{u})=G(t,u)` are not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods. Some use-case examples for ``TSARKIMEX`` are listed in :numref:`tab-DE-forms` and a list of methods with a summary of their properties is given in :numref:`tab-IMEX-RK-PETSc`.
+In PETSc, DAEs and ODEs are formulated as :math:`F(t,u,\dot{u})=G(t,u)`, where :math:`F()` is meant to be integrated implicitly and :math:`G()` explicitly. An IMEX formulation such as :math:`M\dot{u}=f(t,u)+g(t,u)` requires the user to provide :math:`M^{-1} g(t,u)` or solve :math:`g(t,u) - M x=0` in place of :math:`G(t,u)`. General cases such as :math:`F(t,u,\dot{u})=G(t,u)` are not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods. Some use-case examples for ``TSARKIMEX`` are listed in :numref:`tab-DE-forms` and a list of methods with a summary of their properties is given in :any:`tab_IMEX_RK_PETSc`.
 
 .. _tab-DE-forms:
 .. list-table::
@@ -433,10 +438,9 @@ In PETSc, DAEs and ODEs are formulated as :math:`F(t,u,\dot{u})=G(t,u)`, where :
      - fully implicit ODE/DAE
      - :math:`\begin{aligned}F(t,u,\dot{u}) &= f(t,u,\dot{u})\\G(t,u) &= 0\end{aligned}`; the user needs to set ``TSSetEquationType()`` to ``TS_EQ_IMPLICIT`` or higher
 
-List of the currently available IMEX Runge-Kutta schemes. For each method we listed the ``-ts_arkimex_type`` name, the reference, the total number of stages/implicit stages, the order/stage-order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, and dense output (DO).
 
-.. _tab-IMEX-RK-PETSc:
-.. list-table::
+.. list-table:: List of the currently available IMEX Runge-Kutta schemes. For each method we listed the ``-ts_arkimex_type`` name, the reference, the total number of stages/implicit stages, the order/stage-order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, and dense output (DO).
+  :name: tab_IMEX_RK_PETSc
   :header-rows: 1
 
   * - Name
@@ -559,42 +563,156 @@ List of the currently available IMEX Runge-Kutta schemes. For each method we lis
 
 ROSW are linearized implicit Runge-Kutta methods known as Rosenbrock
 W-methods. They can accommodate inexact Jacobian matrices in their
-formulation. A series of methods are available in PETSc listed in Table
-`5.4 <#tab_IMEX_RosW_PETSc>`__.
+formulation. A series of methods are available in PETSc are listed in
+the table below.
 
-.. container::
+.. list-table:: List of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number of stages and implicit stages, the scheme order and stage order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, dense output (DO), the capacity to use inexact Jacobian matrices (-W), and high order integration of differential algebraic equations (PDAE).
    :name: tab_IMEX_RosW_PETSc
+   :header-rows: 1
 
-   .. table:: List of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number of stages and implicit stages, the scheme order and stage order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, dense output (DO), the capacity to use inexact Jacobian matrices (-W), and high order integration of differential algebraic equations (PDAE).
-
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | **TS**     | **Reference**      | **Stages** | **Order**  | **IM**  | **SA** | **Embed**  | **DO** | **-W** | **PDAE**| **Remarks**|
-      |            |                    | (**IM**)   | (**Stage**)|         |        |            |        |        |         |            |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | theta1     | classical          | 1(1)       | 1(1)       | L-Stable| -      | -          | -      | -      | -       | -          |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | theta2     | classical          | 1(1)       | 2(2)       | A-Stable| -      | -          | -      | -      | -       | -          |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | 2m         | Zoltan             | 2(2)       | 2(1)       | L-Stable| No     | Yes(1)     | Yes(2) | Yes    | No      | SSP        |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | 2p         | Zoltan             | 2(2)       | 2(1)       | L-Stable| No     | Yes(1)     | Yes(2) | Yes    | No      | SSP        |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | ra3pw      | :cite:`Rang_2005`  | 3(3)       | 3(1)       | A-Stable| No     | Yes        | Yes(2) | No     | Yes(3)  | -          |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | ra34pw2    | :cite:`Rang_2005`  | 4(4)       | 3(1)       | L-Stable| Yes    | Yes        | Yes(3) | Yes    | Yes(3)  | -          |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | rodas3     | :cite:`Sandu_1997` | 4(4)       | 3(1)       | L-Stable| Yes    | Yes        | No     | No     | Yes     | -          |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | sandu3     | :cite:`Sandu_1997` | 3(3)       | 3(1)       | L-Stable| Yes    | Yes        | Yes(2) | No     | No      | -          |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | assp3p3s1c | unpub.             | 3(2)       | 3(1)       | A-Stable| No     | Yes        | Yes(2) | Yes    | No      | SSP        |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | lassp3p4s2c| unpub.             | 4(3)       | 3(1)       | L-Stable| No     | Yes        | Yes(3) | Yes    | No      | SSP        |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | lassp3p4s2c| unpub.             | 4(3)       | 3(1)       | L-Stable| No     | Yes        | Yes(3) | Yes    | No      | SSP        |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
-      | ark3       | unpub.             | 4(3)       | 3(1)       | L-Stable| No     | Yes        | Yes(3) | Yes    | No      | IMEX-RK    |
-      +------------+--------------------+------------+------------+---------+--------+------------+--------+--------+---------+------------+
+   * - TS
+     - Reference
+     - Stages (IM)
+     - Order (Stage)
+     - IM
+     - SA
+     - Embed
+     - DO
+     - -W
+     - PDAE
+     - Remarks
+   * - theta1
+     - classical
+     - 1(1)
+     - 1(1)
+     - L-Stable
+     - -
+     - -
+     - -
+     - -
+     - -
+     - -
+   * - theta2
+     - classical
+     - 1(1)
+     - 2(2)
+     - A-Stable
+     - -
+     - -
+     - -
+     - -
+     - -
+     - -
+   * - 2m
+     - Zoltan
+     - 2(2)
+     - 2(1)
+     - L-Stable
+     - No
+     - Yes(1)
+     - Yes(2)
+     - Yes
+     - No
+     - SSP
+   * - 2p
+     - Zoltan
+     - 2(2)
+     - 2(1)
+     - L-Stable
+     - No
+     - Yes(1)
+     - Yes(2)
+     - Yes
+     - No
+     - SSP
+   * - ra3pw
+     - :cite:`Rang_2005`
+     - 3(3)
+     - 3(1)
+     - A-Stable
+     - No
+     - Yes
+     - Yes(2)
+     - No
+     - Yes(3)
+     - -
+   * - ra34pw2
+     - :cite:`Rang_2005`
+     - 4(4)
+     - 3(1)
+     - L-Stable
+     - Yes
+     - Yes
+     - Yes(3)
+     - Yes
+     - Yes(3)
+     - -
+   * - rodas3
+     - :cite:`Sandu_1997`
+     - 4(4)
+     - 3(1)
+     - L-Stable
+     - Yes
+     - Yes
+     - No
+     - No
+     - Yes
+     - -
+   * - sandu3
+     - :cite:`Sandu_1997`
+     - 3(3)
+     - 3(1)
+     - L-Stable
+     - Yes
+     - Yes
+     - Yes(2)
+     - No
+     - No
+     - -
+   * - assp3p3s1c
+     - unpub.
+     - 3(2)
+     - 3(1)
+     - A-Stable
+     - No
+     - Yes
+     - Yes(2)
+     - Yes
+     - No
+     - SSP
+   * - lassp3p4s2c
+     - unpub.
+     - 4(3)
+     - 3(1)
+     - L-Stable
+     - No
+     - Yes
+     - Yes(3)
+     - Yes
+     - No
+     - SSP
+   * - lassp3p4s2c
+     - unpub.
+     - 4(3)
+     - 3(1)
+     - L-Stable
+     - No
+     - Yes
+     - Yes(3)
+     - Yes
+     - No
+     - SSP
+   * - ark3
+     - unpub.
+     - 4(3)
+     - 3(1)
+     - L-Stable
+     - No
+     - Yes
+     - Yes(3)
+     - Yes
+     - No
+     - IMEX-RK
 
 GLEE methods
 ~~~~~~~~~~~~
@@ -695,32 +813,73 @@ y)`. However, the actual local error is :math:`\varepsilon_{loc}
 = \varepsilon_{n+1} - \varepsilon_n = \frac{1}{1-\gamma} * [(\tilde{y} -
 y)_{n+1} - (\tilde{y} - y)_n]`.
 
-.. container::
+.. list-table:: List of the currently available GL schemes with global error estimation introduced in :cite:`Constantinescu_TR2016b`.
    :name: tab_IMEX_GLEE_PETSc
+   :header-rows: 1
 
-   .. table::  List of the currently available GL schemes with global error estimation introduced in :cite:`Constantinescu_TR2016b`.
-
-      +-------------------+----------------+-------------+--------------+--------------------+-----------------------+----------------------+
-      | **TS**            | **Reference**  | **IM/EX**   | **(p,r,s)**  | **:math:`\gamma`** | **Form**              | **Notes**            |
-      +===================+================+=============+==============+====================+=======================+======================+
-      | ``TSGLEEi1``      | ``BE1``        | IM          | 1,3,2        | 0.5                | :math:`y\varepsilon`  | Based                |
-      |                   |                |             |              |                    |                       | on                   |
-      |                   |                |             |              |                    |                       | backward Euler       |
-      +-------------------+----------------+-------------+--------------+--------------------+-----------------------+----------------------+
-      | ``TSGLEE23``      | ``23``         | EX          | 2,3,2        | 0                  | :math:`y\varepsilon`  |                      |
-      +-------------------+----------------+-------------+--------------+--------------------+-----------------------+----------------------+
-      | ``TSGLEE24``      | ``24``         | EX          | 2,4,2        | 0                  | :math:`y\tilde{y}`    |                      |
-      +-------------------+----------------+-------------+--------------+--------------------+-----------------------+----------------------+
-      | ``TSGLEE25I``     | ``25i``        | EX          | 2,5,2        | 0                  | :math:`y\tilde{y}`    |                      |
-      +-------------------+----------------+-------------+--------------+--------------------+-----------------------+----------------------+
-      | ``TSGLEE35``      | ``35``         | EX          | 3,5,2        | 0                  | :math:`y\tilde{y}`    |                      |
-      +-------------------+----------------+-------------+--------------+--------------------+-----------------------+----------------------+
-      | ``TSGLEEEXRK2A``  | ``exrk2a``     | EX          | 2,6,2        | 0.25               | :math:`y\varepsilon`  |                      |
-      +-------------------+----------------+-------------+--------------+--------------------+-----------------------+----------------------+
-      | ``TSGLEERK32G1``  | ``rk32g1``     | EX          | 3,8,2        | 0                  | :math:`y\varepsilon`  |                      |
-      +-------------------+----------------+-------------+--------------+--------------------+-----------------------+----------------------+
-      | ``TSGLEERK285EX`` | ``rk285ex``    | EX          | 2,9,2        | 0.25               | :math:`y\varepsilon`  |                      |
-      +-------------------+----------------+-------------+--------------+--------------------+-----------------------+----------------------+
+   * - TS
+     - Reference
+     - IM/EX
+     - :math:`(p,r,s)`
+     - :math:`\gamma`
+     - Form
+     - Notes
+   * - ``TSGLEEi1``
+     - ``BE1``
+     - IM
+     - :math:`(1,3,2)`
+     - :math:`0.5`
+     - :math:`y\varepsilon`
+     - Based on backward Euler
+   * - ``TSGLEE23``
+     - ``23``
+     - EX
+     - :math:`(2,3,2)`
+     - :math:`0`
+     - :math:`y\varepsilon`
+     -
+   * - ``TSGLEE24``
+     - ``24``
+     - EX
+     - :math:`(2,4,2)`
+     - :math:`0`
+     - :math:`y\tilde{y}`
+     -
+   * - ``TSGLEE25I``
+     - ``25i``
+     - EX
+     - :math:`(2,5,2)`
+     - :math:`0`
+     - :math:`y\tilde{y}`
+     -
+   * - ``TSGLEE35``
+     - ``35``
+     - EX
+     - :math:`(3,5,2)`
+     - :math:`0`
+     - :math:`y\tilde{y}`
+     -
+   * - ``TSGLEEEXRK2A``
+     - ``exrk2a``
+     - EX
+     - :math:`(2,6,2)`
+     - :math:`0.25`
+     - :math:`y\varepsilon`
+     -
+   * - ``TSGLEERK32G1``
+     - ``rk32g1``
+     - EX
+     - :math:`(3,8,2)`
+     - :math:`0`
+     - :math:`y\varepsilon`
+     -
+   * - ``TSGLEERK285EX``
+     - ``rk285ex``
+     - EX
+     - :math:`(2,9,2)`
+     - :math:`0.25`
+     - :math:`y\varepsilon`
+     -
 
 Using fully implicit methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -839,29 +998,24 @@ Most of the time stepping methods avaialable in PETSc have an error
 estimation and error control mechanism. This mechanism is implemented by
 changing the step size in order to maintain user specified absolute and
 relative tolerances. The PETSc object responsible with error control is
-``TSAdapt``. The available ``TSAdapt`` types are listed in Table
-`5.6 <#tab_adaptors>`__.
+``TSAdapt``. The available ``TSAdapt`` types are listed in the following table.
 
-.. container::
+.. list-table:: ``TSAdapt``: available adaptors
    :name: tab_adaptors
+   :header-rows: 1
 
-   .. table:: ``TSAdapt``: available adaptors.[tab_adaptors]
-
-      +------------------+-----------+-------------------------------------+
-      | ID               | Name      | Notes                               |
-      +==================+===========+=====================================+
-      | ``TSADAPTNONE``  | ``none``  | no adaptivity                       |
-      +------------------+-----------+-------------------------------------+
-      | ``TSADAPTBASIC`` | ``basic`` | the default adaptor                 |
-      +------------------+-----------+-------------------------------------+
-      | ``TSADAPTGLEE``  | ``glee``  | extension of the basic adaptor to   |
-      |                  |           | treat :math:`{\rm Tol}_{\rm A}` and |
-      |                  |           | :math:`{\rm Tol}_{\rm R}` as        |
-      |                  |           | separate criteria. It can also      |
-      |                  |           | control global erorrs if the        |
-      |                  |           | integrator (e.g., ``TSGLEE``)       |
-      |                  |           | provides this information           |
-      +------------------+-----------+-------------------------------------+
+   * - ID
+     - Name
+     - Notes
+   * - ``TSADAPTNONE``
+     - ``none``
+     - no adaptivity
+   * - ``TSADAPTBASIC``
+     - ``basic``
+     - the default adaptor
+   * - ``TSADAPTGLEE``
+     - ``glee``
+     - extension of the basic adaptor to treat :math:`{\rm Tol}_{\rm A}` and :math:`{\rm Tol}_{\rm R}` as separate criteria. It can also control global erorrs if the integrator (e.g., ``TSGLEE``) provides this information
 
 When using ``TSADAPTBASIC`` (the default), the user typically provides a
 desired absolute :math:`{\rm Tol}_{\rm A}` or a relative
@@ -924,7 +1078,7 @@ accepted and the next step is modified according to
 (`[eq:hnew] <#eq:hnew>`__); otherwise, the step is rejected and retaken
 with the step length computed in (`[eq:hnew] <#eq:hnew>`__).
 
-**``TSAdapt`` glee.** ``TSADAPTGLEE`` is an extension of the basic
+``TSADAPTGLEE`` is an extension of the basic
 adaptor to treat :math:`{\rm Tol}_{\rm A}` and :math:`{\rm Tol}_{\rm R}`
 as separate criteria. it can also control global errors if the
 integrator (e.g., ``TSGLEE``) provides this information.
@@ -975,10 +1129,10 @@ the additional ``./configure`` option ``--download-tchem``. We currently
 provide two examples of its use; one for single cell reaction and one
 for an “artificial” one dimensional problem with periodic boundary
 conditions and diffusion of all species. The self-explanatory examples
-are
-```$PETSC_DIR/src/ts/tutorials/extchem.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/extchem.c.html>`__
+are the
+`The TS tutorial extchem <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/extchem.c.html>`__
 and
-```$PETSC_DIR/src/ts/tutorials/exchemfield.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/exchemfield.c.html>`__.
+`The TS tutorial exchemfield <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/exchemfield.c.html>`__.
 
 .. _sec_sundials:
 
