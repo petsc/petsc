@@ -30,7 +30,7 @@ For a full list of options, use
 Understanding test output and more information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As discussed in Section `1.2 <#sec_running>`__, users should set
+As discussed in :any:`sec_runningtests`, users should set
 ``PETSC_DIR`` and ``PETSC_ARCH`` before running the tests, or can
 provide them on the command line as below.
 
@@ -78,7 +78,7 @@ contained within the test source file, that are invoked by the makefile
 system. The tests are run in ``${PETSC_DIR}/${PETSC_ARCH}/tests`` with
 the same directory as the source tree underneath. For testing installs,
 the default location is ``${PREFIX_DIR}/tests`` but this can be changed
-with the ``TESTDIR`` location. (See Section `1.7 <#sec_directory>`__). A
+with the ``TESTDIR`` location. (See :any:`sec_directory`). A
 label is used to denote where it can be found within the source tree.
 For example, test ``vec_vec_tutorials-ex6``, which can be run e.g. with
 

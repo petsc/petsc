@@ -9,10 +9,10 @@ The vector (denoted by ``Vec``) is one of the simplest PETSc objects.
 Vectors are used to store discrete PDE solutions, right-hand sides for
 linear systems, etc. This chapter is organized as follows:
 
--  (``Vec``) Sections `1.1 <#sec_veccreate>`__ and
-   `1.2 <#sec_vecbasic>`__ - basic usage of vectors
+-  (``Vec``) :any:`sec_veccreate` and
+   :any:`sec_vecbasic` - basic usage of vectors
 
--  Section `1.3 <#sec_indexingandordering>`__ - management of the
+-  Section :any:`sec_indexingandordering` - management of the
    various numberings of degrees of freedom, vertices, cells, etc.
 
    -  (``AO``) Mapping between different global numberings
@@ -20,9 +20,9 @@ linear systems, etc. This chapter is organized as follows:
    -  (``ISLocalToGlobalMapping``) Mapping between local and global
       numberings
 
--  (``DM``) Section `[sec_struct] <#sec_struct>`__ - management of grids
+-  (``DM``) :any:`sec_struct` - management of grids
 
--  (``IS``, ``VecScatter``) Section `1.5 <#sec_unstruct>`__ - management
+-  (``IS``, ``VecScatter``) :any:`sec_unstruct` - management
    of vectors related to unstructured grids
 
 .. _sec_veccreate:
@@ -69,7 +69,7 @@ uniprocessor case.
 We emphasize that all processes in ``comm`` *must* call the vector
 creation routines, since these routines are collective over all
 processes in the communicator. If you are not familiar with MPI
-communicators, see the discussion in Section `1.3 <#sec_writing>`__ on
+communicators, see the discussion in :any:`sec_writing` on
 page . In addition, if a sequence of ``VecCreateXXX()`` routines is
 used, they must be called in the same order on each process in the
 communicator.
@@ -139,7 +139,7 @@ does not allow the simultaneous use of ``INSERT_VALUES`` and
 You can call ``VecGetValues()`` to pull local values from a vector (but
 not off-process values), an alternative method for extracting some
 components of a vector are the vector scatter routines. See
-Section `[sec_scatter] <#sec_scatter>`__ for details; see also below for
+:any:`sec_scatter` for details; see also below for
 ``VecGetArray()``.
 
 One can examine a vector with the command
@@ -153,8 +153,8 @@ To print the vector to the screen, one can use the viewer
 printed correctly to ``stdout``. To display the vector in an X-window,
 one can use the default X-windows viewer ``PETSC_VIEWER_DRAW_WORLD``, or
 one can create a viewer with the routine ``PetscViewerDrawOpenX()``. A
-variety of viewers are discussed further in Section
-`5.3 <#sec_viewers>`__.
+variety of viewers are discussed further in
+:any:`sec_viewers`.
 
 To create a new vector of the same format as an existing vector, one
 uses the command
@@ -175,7 +175,7 @@ are very useful because they allow one to write library code that does
 not depend on the particular format of the vectors being used. Instead,
 the subroutines can automatically correctly create work vectors based on
 the specified existing vector. As discussed in
-Section `1.1.5 <#sec_fortvecd>`__, the Fortran interface for
+:any:`sec_fortvecd`, the Fortran interface for
 ``VecDuplicateVecs()`` differs slightly.
 
 When a vector is no longer needed, it should be destroyed with the
@@ -192,7 +192,7 @@ To destroy an array of vectors, use the command
    VecDestroyVecs(PetscInt n,Vec **vecs);
 
 Note that the Fortran interface for ``VecDestroyVecs()`` differs
-slightly, as described in Section `1.1.5 <#sec_fortvecd>`__.
+slightly, as described in :any:`sec_fortvecd`.
 
 It is also possible to create vectors that use an array provided by the
 user, rather than having PETSc internally allocate the array space. Such
@@ -317,8 +317,8 @@ access and should be used instead.
    VecRestoreArrayRead(Vec v, const PetscScalar **array);
 
 Minor differences exist in the Fortran interface for ``VecGetArray()``
-and ``VecRestoreArray()``, as discussed in Section
-`1.2.1 <#sec_fortranarrays>`__. It is important to note that
+and ``VecRestoreArray()``, as discussed in
+:any:`sec_fortranarrays`. It is important to note that
 ``VecGetArray()`` and ``VecRestoreArray()`` do *not* copy the vector
 elements; they merely give users direct access to the vector elements.
 Thus, these routines require essentially no time to call and can be used
@@ -388,7 +388,7 @@ having multiple ways of indexing (numbering) and ordering objects such
 as vertices and degrees of freedom. For example, a grid generator or
 partitioner may renumber the nodes, requiring adjustment of the other
 data structures that refer to these objects; see Figure
-`1.2 <#fig_daao>`__. In addition, local numbering (on a single process)
+:any:`fig_daao`. In addition, local numbering (on a single process)
 of objects may be different than the global (cross-process) numbering.
 PETSc provides a variety of tools to help to manage the mapping amongst
 the various numbering systems. The two most basic are the ``AO``
@@ -470,7 +470,7 @@ An alternative routine to create the application ordering, ``AO``, is
 
    AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
 
-where index sets (see `[sec_indexset] <#sec_indexset>`__) are used
+where index sets (see :any:`sec_indexset`) are used
 instead of integer arrays.
 
 The mapping routines
@@ -580,12 +580,10 @@ Now the ``indices`` use the local numbering, rather than the global,
 meaning the entries lie in :math:`[0,n)` where :math:`n` is the local
 size of the vector.
 
-.. _sec_da:
+.. _sec_struct:
 
 Structured Grids Using Distributed Arrays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-[sec_struct]
 
 Distributed arrays (DMDAs), which are used in conjunction with PETSc
 vectors, are intended for use with *logically regular rectangular grids*
@@ -601,7 +599,7 @@ For example, a typical situation one encounters in solving PDEs in
 parallel is that, to evaluate a local function, ``f(x)``, each process
 requires its local portion of the vector ``x`` as well as its ghost
 points (the bordering portions of the vector that are owned by
-neighboring processes). Figure `1.1 <#fig_ghosts>`__ illustrates the
+neighboring processes). Figure :any:`fig_ghosts` illustrates the
 ghost points for the seventh process of a two-dimensional, regular
 parallel grid. Each box represents a process; the ghost points for the
 seventh process’s local part of a parallel array are shown in gray.
@@ -915,7 +913,7 @@ numbering and ``VecSetValuesLocal()`` and ``MatSetValuesLocal()``.
 Since the global ordering that PETSc uses to manage its parallel vectors
 (and matrices) does not usually correspond to the “natural” ordering of
 a two- or three-dimensional array, the ``DMDA`` structure provides an
-application ordering ``AO`` (see Section `1.3.1 <#sec_ao>`__) that maps
+application ordering ``AO`` (see :any:`sec_ao`) that maps
 between the natural ordering on a rectangular grid and the ordering
 PETSc uses to parallelize. This ordering context can be obtained with
 the command
@@ -924,7 +922,7 @@ the command
 
    DMDAGetAO(DM da,AO *ao);
 
-In Figure `1.2 <#fig_daao>`__ we indicate the orderings for a
+In Figure :any:`fig_daao` we indicate the orderings for a
 two-dimensional distributed array, divided among four processes.
 
 .. figure:: images/danumbering.*
@@ -939,7 +937,7 @@ The example
 illustrates the use of a distributed array in the solution of a
 nonlinear problem. The analogous Fortran program is
 ```$PETSC_DIR/src/snes/tutorials/ex5f.F90`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`__;
-see Chapter `[chapter_snes] <#chapter_snes>`__ for a discussion of the
+see :any:`chapter_snes` for a discussion of the
 nonlinear solvers.
 
 Staggered Grids
@@ -954,10 +952,10 @@ like ``DMDA``; see the ``DMSTAG`` manual page for more information.
 Vectors Related to Unstructured Grids
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. _sec_indexset:
+
 Index Sets
 ^^^^^^^^^^
-
-[sec_indexset]
 
 To facilitate general vector scatters and gathers used, for example, in
 updating ghost points for problems defined on unstructured grids  [1]_,
@@ -1026,10 +1024,10 @@ routines analogous to those described above exist as well, including
 ``ISBlockGetLocalSize()``, ``ISGetBlockSize()``. See the man pages for
 details.
 
+.. _sec_scatter:
+
 Scatters and Gathers
 ^^^^^^^^^^^^^^^^^^^^
-
-[sec_scatter]
 
 PETSc vectors have full support for general scatters and gathers. One
 can select any subset of the components of a vector to insert or add to
@@ -1107,8 +1105,7 @@ local values from the vector. To get off-process values, the user should
 create a new vector where the components are to be stored, and then
 perform the appropriate vector scatter. For example, if one desires to
 obtain the values of the 100th and 200th entries of a parallel vector,
-``p``, one could use a code such as that within
-Figure `[fig_vecscatter] <#fig_vecscatter>`__. In this example, the
+``p``, one could use a code such as that below. In this example, the
 values of the 100th and 200th components are placed in the array values.
 In this example each process now has the 100th and 200th component, but
 obviously each process could gather any elements it needed, or none by
@@ -1236,7 +1233,7 @@ would be appropriate, for example, when performing a finite element
 assembly of a load vector. One can also use ``MAX_VALUES`` or
 ``MIN_VALUES`` with ``SCATTER_REVERSE``.
 
-Section `2.5 <#sec_partitioning>`__ discusses the important topic of
+:any:`sec_partitioning` discusses the important topic of
 partitioning an unstructured grid.
 
 .. [1]

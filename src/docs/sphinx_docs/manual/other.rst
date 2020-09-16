@@ -52,7 +52,7 @@ One could then override this choice at runtime with the option
    -ksp_type tfqmr
 
 to select the Transpose-Free QMR algorithm. (See
-Chapter `[ch_ksp] <#ch_ksp>`__ for details.)
+:any:`chapter_ksp` for details.)
 
 The remainder of this section discusses details of runtime options.
 
@@ -209,8 +209,8 @@ Here ``obj`` is any PETSc object of type ``XXX``, where ``XXX`` is
    object to be drawn in a default X window.
 
 -  Passing in a viewer obtained by ``PetscViewerDrawOpen()`` causes the
-   object to be displayed graphically. See Section
-   `5.9 <#sec_graphics>`__ for more on PETSc’s graphics support.
+   object to be displayed graphically. See
+   :any:`sec_graphics` for more on PETSc’s graphics support.
 
 -  To save an object to a file in ASCII format, the user creates the
    viewer object with the command
@@ -227,7 +227,7 @@ Here ``obj`` is any PETSc object of type ``XXX``, where ``XXX`` is
 -  Vector and matrix objects can be passed to a running MATLAB process
    with a viewer created by
    ``PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer *viewer)``.
-   For more, see Section `2.2 <#sec_matlabsocket>`__.
+   For more, see :any:`sec_matlabsocket`.
 
 The user can control the format of ASCII printed objects with viewers
 created by ``PetscViewerASCIIOpen()`` by calling
@@ -603,8 +603,8 @@ may first create a viewer using the command
 
 This viewer may be passed to any of the ``XXXView()`` routines.
 Alternately, one may use command-line options to quickly specify viewer
-formats, including ``PetscDraw``-based ones; see Section
-`5.3.1 <#sec_viewfromoptions>`__.
+formats, including ``PetscDraw``-based ones; see
+:any:`sec_viewfromoptions`.
 
 To draw directly into the viewer, one must obtain the ``PetscDraw``
 object with the command
@@ -798,8 +798,8 @@ Graphical Convergence Monitor
 For both the linear and nonlinear solvers default routines allow one to
 graphically monitor convergence of the iterative method. These are
 accessed via the command line with ``-ksp_monitor_lg_residualnorm`` and
-``-snes_monitor_lg_residualnorm``. See also Sections
-`3.3.3 <#sec_kspmonitor>`__ and `4.3.2 <#sec_snesmonitor>`__.
+``-snes_monitor_lg_residualnorm``. See also
+:any:`sec_kspmonitor` and :any:`sec_snesmonitor`.
 
 The two functions used are ``KSPMonitorLGResidualNorm()`` and
 ``KSPMonitorLGResidualNormCreate()``. These can easily be modified to

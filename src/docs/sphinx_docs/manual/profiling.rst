@@ -10,9 +10,9 @@ of application programs. The PETSc routines automatically log
 performance data if certain options are specified at runtime. The user
 can also log information about application codes for a complete picture
 of performance. In addition, as described in
-Section `3.1.1 <#sec_ploginfo>`__, PETSc provides a mechanism for
+:any:`sec_ploginfo`, PETSc provides a mechanism for
 printing informative messages about computations.
-Section `3.1 <#sec_profbasic>`__ introduces the various profiling
+:any:`sec_profbasic` introduces the various profiling
 options in PETSc, while the remainder of the chapter focuses on details
 such as monitoring application codes and tips for accurate profiling.
 
@@ -42,7 +42,7 @@ activated at runtime. The profiling options include the following:
    ``-info``, is useful to see where a program is hanging without
    running in the debugger.
 
-As discussed in Section `3.1.3 <#sec_mpelogs>`__, additional profiling
+As discussed in :any:`sec_mpelogs`, additional profiling
 can be done with MPE.
 
 .. _sec_ploginfo:
@@ -57,7 +57,7 @@ printed at any time within a program by calling ``PetscLogView()``.
 
 We print performance data for each routine, organized by PETSc
 libraries, followed by any user-defined events (discussed in
-Section `3.2 <#sec_profileuser>`__). For each routine, the output data
+:any:`sec_profileuser`). For each routine, the output data
 include the maximum time and floating point operation (flop) rate over
 all processes. Information about parallel performance is also included,
 as discussed in the following section.
@@ -164,7 +164,7 @@ performance summary, including times, floating-point operations,
 computational rates, and message-passing activity (such as the number
 and size of messages sent and collective operations). Summaries for
 various user-defined stages of monitoring (as discussed in
-Section `3.3 <#sec_profstages>`__) are also given. Information about the
+:any:`sec_profstages`) are also given. Information about the
 various phases of computation then follow (as shown separately here in
 Figure `[fig_exparprof2] <#fig_exparprof2>`__). Finally, a summary of
 memory usage and object creation and destruction is presented.
@@ -309,10 +309,10 @@ The final data presented are the percentages of the various statistics
 (time (``%T``), flop/sec (``%F``), messages(``%M``), average message
 length (``%L``), and reductions (``%R``)) for each event relative to the
 total computation and to any user-defined stages (discussed in
-Section `3.3 <#sec_profstages>`__). These statistics can aid in
+:any:`sec_profstages`). These statistics can aid in
 optimizing performance, since they indicate the sections of code that
 could benefit from various kinds of tuning.
-Chapter `4 <#ch_performance>`__ gives suggestions about achieving good
+:any:`ch_performance` gives suggestions about achieving good
 performance with PETSc codes.
 
 .. _sec_mpelogs:
@@ -331,8 +331,8 @@ with the MPE software, which is part of the MPICH
 
 creates a logfile of events appropriate for viewing with *Jumpshot*. The
 user can either use the default logging file or specify a name via
-``logfile``. Events can be deactivated as described in Section
-`3.4 <#sec_deactivate>`__.
+``logfile``. Events can be deactivated as described in 
+:any:`sec_deactivate`.
 
 The user can also log MPI events. To do this, simply consider the PETSc
 application as any MPI application, and follow the MPI implementation’s
@@ -374,7 +374,7 @@ purposes:
 
 Here ``string`` is a user-defined event name, and ``color`` is an
 optional user-defined event color (for use with *Jumpshot* logging; see
-Section `3.1.3 <#sec_mpelogs>`__); one should see the manual page for
+:any:`sec_mpelogs`); one should see the manual page for
 details. The argument returned in ``e`` should then be passed to the
 ``PetscLogEventBegin()`` and ``PetscLogEventEnd()`` routines.
 
@@ -461,7 +461,7 @@ monitoring. This code organization (solving a small linear system
 followed by a larger system) enables generation of more accurate
 profiling statistics for the second system by overcoming the often
 considerable overhead of paging, as discussed in
-Section `3.8 <#sec_profaccuracy>`__.
+:any:`sec_profaccuracy`.
 
 .. _sec_deactivate:
 
@@ -479,7 +479,7 @@ PETSc logging of individual events, one uses the commands
 The ``event`` may be either a predefined PETSc event (as listed in the
 file ``${PETSC_DIR}/include/petsclog.h``) or one obtained with
 ``PetscLogEventRegister()`` (as described in
-Section `3.2 <#sec_profileuser>`__).
+:any:`sec_profileuser`).
 
 PETSc also provides routines that deactivate (or activate) logging for
 entire components of the library. Currently, the components that support
@@ -520,7 +520,7 @@ data structures, etc. to the screen by using the option ``-info`` or by
 calling ``PetscInfoAllow(PETSC_TRUE)``. Such logging, which is used
 throughout the PETSc libraries, can aid the user in understanding
 algorithms and tuning program performance. For example, as discussed in
-Section `2.1.1 <#sec_matsparse>`__, ``-info`` activates the printing of
+:any:`sec_matsparse`, ``-info`` activates the printing of
 information about memory allocation during matrix assembly.
 
 Application programmers can employ this logging as well, by using the
@@ -572,7 +572,7 @@ with the command
 which returns the current time in seconds since the epoch, and is
 commonly implemented with ``MPI_Wtime``. A floating point number is
 returned in order to express fractions of a second. In addition, as
-discussed in Section `3.2 <#sec_profileuser>`__, PETSc can automatically
+discussed in :any:`sec_profileuser`, PETSc can automatically
 profile user-defined segments of code.
 
 Saving Output to a File
@@ -599,7 +599,7 @@ not in memory, a pagefault occurs, prompting the required pages to be
 loaded from the disk (a very slow process). This activity distorts the
 results significantly. (The paging effects are noticeable in the log
 files generated by ``-log_mpe``, which is described in
-Section `3.1.3 <#sec_mpelogs>`__.)
+:any:`sec_mpelogs`.)
 
 To eliminate the effects of paging when profiling the performance of a
 program, we have found an effective procedure is to run the *exact same
@@ -611,7 +611,7 @@ already been loaded into main memory, so that the performance numbers
 are not distorted.
 
 When this procedure is used in conjunction with the user-defined stages
-of profiling described in Section `3.3 <#sec_profstages>`__, we can
+of profiling described in :any:`sec_profstages`, we can
 focus easily on the problem of interest. For example, we used this
 technique in the program
 ```${PETSC_DIR}/src/ksp/ksp/tutorials/ex10.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex10.c.html>`__
@@ -619,7 +619,7 @@ to generate the timings within
 Figures `[fig_exparprof] <#fig_exparprof>`__ and
 `[fig_exparprof2] <#fig_exparprof2>`__. In this case, the profiled code
 of interest (solving the linear system for the larger problem) occurs
-within event stages 5 and 6. Section `3.1.2 <#sec_parperformance>`__
+within event stages 5 and 6. :any:`sec_parperformance`
 provides details about interpreting such profiling data.
 
 In particular, the macros

@@ -41,7 +41,7 @@ controls memory allocation. This routine facilitates switching among
 various matrix types, for example, to determine the format that is most
 efficient for a certain application. By default, ``MatCreate()`` employs
 the sparse AIJ format, which is discussed in detail
-Section `2.1.1 <#sec_matsparse>`__. See the manual pages for further
+:any:`sec_matsparse`. See the manual pages for further
 information about available matrix formats.
 
 To insert or add entries to a matrix, one can call a variant of
@@ -163,7 +163,7 @@ this matrix format for large-scale applications. Additional formats
 generally much more efficient for problems with multiple degrees of
 freedom per node) are discussed below. Beginning users need not concern
 themselves initially with such details and may wish to proceed directly
-to Section `2.2 <#sec_matoptions>`__. However, when an application code
+to :any:`sec_matoptions`. However, when an application code
 progresses to the point of tuning for efficiency and/or generating
 timing results, it is *crucial* to read this information.
 
@@ -509,7 +509,7 @@ applications based on a fixed number of stored update vectors.
       +-----------------------------------------+----------------+----------------+--------------+
 
 PETSc implements seven different LMVM matrices listed in the
-Table `2.1 <#tab_matlmvmimpl>`__. They can be created using the
+table above. They can be created using the
 ``MatCreate()`` and ``MatSetType()`` workflow, and share a number of
 common interface functions. We will review the most important ones
 below:
@@ -647,7 +647,7 @@ matrices for each block (“nested”). These formats have different
 performance characteristics depending on the operation being performed.
 In particular, many preconditioners require a monolithic format, but
 some that are very effective for solving block systems (see
-Section `3.5 <#sec_block_matrices>`__) are more efficient when a nested
+:any:`sec_block_matrices`) are more efficient when a nested
 format is used. In order to stay flexible, we would like to be able to
 use the same code to assemble block matrices in both monolithic and
 nested formats. Additionally, for software maintainability and testing,
@@ -783,7 +783,7 @@ Also one can use
 
 where ``viewer`` was obtained with ``PetscViewerDrawOpen()``. Additional
 viewers and options are given in the ``MatView()`` man page and
-Section `5.3 <#sec_viewers>`__.
+:any:`sec_viewers`.
 
 .. container::
    :name: fig_matrixops
@@ -900,7 +900,7 @@ urge anyone who introduces such changes to use caution, since it would
 be very easy to accidentally create a bug in the new routine that could
 affect other routines as well.
 
-See also Section `4.5 <#sec_nlmatrixfree>`__ for details on one set of
+See also :any:`sec_nlmatrixfree` for details on one set of
 helpful utilities for using the matrix-free approach for nonlinear
 solvers.
 
@@ -1155,7 +1155,7 @@ process. The command
 
    AOCreateBasicIS(isg,NULL,&ao);
 
-generates, see Section `1.3.1 <#sec_ao>`__, an AO object that can be
+generates, see :any:`sec_ao`, an AO object that can be
 used in conjunction with the ``is`` and ``isg`` to move the relevant
 grid information to the correct process and renumber the nodes etc. In
 this context, the new ordering is the “application” ordering so
