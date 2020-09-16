@@ -203,6 +203,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   const char     *deft = MATAIJ;
   char           type[256];
   PetscBool      flg,set;
+  PetscInt       bind_below = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
@@ -247,6 +248,14 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-mat_form_explicit_transpose","Hint to form an explicit transpose for operations like MatMultTranspose","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = MatSetOption(B,MAT_FORM_EXPLICIT_TRANSPOSE,flg);CHKERRQ(ierr);}
+
+  /* Bind to CPU if below a user-specified size threshold.
+   * This perhaps belongs in the options for the GPU Mat types, but MatBindToCPU() does nothing when called on non-GPU types,
+   * and putting it here makes is more maintainable than duplicating this for all. */
+  ierr = PetscOptionsInt("-mat_bind_below","Set the size threshold (in local rows) below which the Mat is bound to the CPU","MatBindToCPU",bind_below,&bind_below,&flg);CHKERRQ(ierr);
+  if (flg && B->rmap->n < bind_below) {
+    ierr = MatBindToCPU(B,PETSC_TRUE);CHKERRQ(ierr);
+  }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)B);CHKERRQ(ierr);

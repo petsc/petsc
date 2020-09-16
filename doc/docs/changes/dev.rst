@@ -52,12 +52,15 @@ Changes: Development
 .. rubric:: Vec:
 
 -  Change ``VecTaggerComputeBoxes()`` and ``VecTaggerComputeIS()`` to return a boolean whose value is true if the list was created
+-  Add ``-vec_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` operations
 
 .. rubric:: PetscSection:
 
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
+
+-  Add ``-mat_bind_below`` option for specifying size threshold below which GPU is not used for ``Mat`` operations
 
 .. rubric:: PC:
 

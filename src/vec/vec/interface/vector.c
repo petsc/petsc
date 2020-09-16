@@ -1266,6 +1266,8 @@ static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptio
 PetscErrorCode  VecSetFromOptions(Vec vec)
 {
   PetscErrorCode ierr;
+  PetscBool      flg;
+  PetscInt       bind_below = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
@@ -1277,6 +1279,14 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   /* Handle specific vector options */
   if (vec->ops->setfromoptions) {
     ierr = (*vec->ops->setfromoptions)(PetscOptionsObject,vec);CHKERRQ(ierr);
+  }
+
+  /* Bind to CPU if below a user-specified size threshold.
+   * This perhaps belongs in the options for the GPU Vec types, but VecBindToCPU() does nothing when called on non-GPU types,
+   * and putting it here makes is more maintainable than duplicating this for all. */
+  ierr = PetscOptionsInt("-vec_bind_below","Set the size threshold (in local entries) below which the Vec is bound to the CPU","VecBindToCPU",bind_below,&bind_below,&flg);CHKERRQ(ierr);
+  if (flg && vec->map->n < bind_below) {
+    ierr = VecBindToCPU(vec,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
