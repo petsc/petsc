@@ -24,7 +24,8 @@ static char help[] = "Mini-app to benchmark matrix--matrix multiplication\n\n";
   } while (0)
 #endif
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
   Mat            A, C, D, E;
   PetscInt       nbs = 10, ntype = 10, nN = 8, m, M, trial = 5;
   PetscViewer    viewer;
@@ -198,8 +199,10 @@ int main(int argc, char** argv) {
       for (k = 0; k < nN; ++k) {
         MatType       Atype, Ctype;
         PetscInt      AM, AN, CM, CN, t;
+#if defined(PETSC_USE_LOG)
         PetscLogStage stage, tstage;
         char          stage_s[256];
+#endif
 
         ierr = MatCreateDense(PETSC_COMM_WORLD, bs[j] * m, PETSC_DECIDE, bs[j] * M, N[k], NULL, &C);CHKERRQ(ierr);
         ierr = MatCreateDense(PETSC_COMM_WORLD, bs[j] * m, PETSC_DECIDE, bs[j] * M, N[k], NULL, &D);CHKERRQ(ierr);
@@ -219,6 +222,7 @@ int main(int argc, char** argv) {
         ierr = MatGetSize(A, &AM, &AN);CHKERRQ(ierr);
         ierr = MatGetSize(C, &CM, &CN);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_LOG)
         if (!maij || N[k] > 1) {
           ierr = PetscSNPrintf(stage_s, sizeof(stage_s), "type_%s-bs_%D-N_%02d", type[i], bs[j], (int)N[k]);CHKERRQ(ierr);
           ierr = PetscLogStageRegister(stage_s, &stage);CHKERRQ(ierr);
@@ -227,7 +231,7 @@ int main(int argc, char** argv) {
           ierr = PetscSNPrintf(stage_s, sizeof(stage_s), "trans_type_%s-bs_%D-N_%02d", type[i], bs[j], (int)N[k]);CHKERRQ(ierr);
           ierr = PetscLogStageRegister(stage_s, &tstage);CHKERRQ(ierr);
         }
-
+#endif
         /* A*B */
         if (N[k] > 1) {
           if (!maij) {

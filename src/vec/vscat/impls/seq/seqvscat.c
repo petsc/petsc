@@ -675,7 +675,6 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
   PetscErrorCode    ierr;
   PetscInt          ix_type=-1,iy_type=-1;
   IS                tix = NULL,tiy = NULL,ix=ctx->from_is,iy=ctx->to_is;
-  Vec               xin=ctx->from_v;
 
   PetscFunctionBegin;
   ierr = GetInputISType_private(ctx,VEC_SEQ_ID,VEC_SEQ_ID,&ix_type,&tix,&iy_type,&tiy);CHKERRQ(ierr);
@@ -710,7 +709,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
     ctx->ops->destroy = VecScatterDestroy_SGToSG;
     ctx->ops->copy    = VecScatterCopy_SGToSG;
     ctx->ops->view    = VecScatterView_SGToSG;
-    ierr              = PetscInfo(xin,"Special case: sequential vector general scatter\n");CHKERRQ(ierr);
+    ierr              = PetscInfo(ctx->from_v,"Special case: sequential vector general scatter\n");CHKERRQ(ierr);
     goto functionend;
   } else if (ix_type == IS_STRIDE_ID &&  iy_type == IS_STRIDE_ID) {
     PetscInt              nx,ny,to_first,to_step,from_first,from_step;
@@ -737,7 +736,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
     ctx->ops->destroy = VecScatterDestroy_SSToSS;
     ctx->ops->copy    = VecScatterCopy_SSToSS;
     ctx->ops->view    = VecScatterView_SSToSS;
-    ierr          = PetscInfo(xin,"Special case: sequential vector stride to stride\n");CHKERRQ(ierr);
+    ierr          = PetscInfo(ctx->from_v,"Special case: sequential vector stride to stride\n");CHKERRQ(ierr);
     goto functionend;
   } else if (ix_type == IS_GENERAL_ID && iy_type == IS_STRIDE_ID) {
     PetscInt               nx,ny,first,step;
@@ -774,7 +773,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
     ctx->ops->view    = VecScatterView_SGToSS;
     to9->format       = VEC_SCATTER_SEQ_STRIDE;
     from9->format     = VEC_SCATTER_SEQ_GENERAL;
-    ierr = PetscInfo(xin,"Special case: sequential vector general to stride\n");CHKERRQ(ierr);
+    ierr = PetscInfo(ctx->from_v,"Special case: sequential vector general to stride\n");CHKERRQ(ierr);
     goto functionend;
   } else if (ix_type == IS_STRIDE_ID && iy_type == IS_GENERAL_ID) {
     PetscInt               nx,ny,first,step;
@@ -812,7 +811,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
     ctx->ops->view    = VecScatterView_SSToSG;
     to10->format      = VEC_SCATTER_SEQ_GENERAL;
     from10->format    = VEC_SCATTER_SEQ_STRIDE;
-    ierr = PetscInfo(xin,"Special case: sequential vector stride to general\n");CHKERRQ(ierr);
+    ierr = PetscInfo(ctx->from_v,"Special case: sequential vector stride to general\n");CHKERRQ(ierr);
     goto functionend;
   } else {
     PetscInt               nx,ny;
@@ -844,7 +843,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
       ctx->ops->destroy  = VecScatterDestroy_SSToSS;
       ctx->ops->copy     = VecScatterCopy_SSToSS;
       ctx->ops->view     = VecScatterView_SSToSS;
-      ierr = PetscInfo(xin,"Special case: sequential copy\n");CHKERRQ(ierr);
+      ierr = PetscInfo(ctx->from_v,"Special case: sequential copy\n");CHKERRQ(ierr);
       goto functionend;
     }
 
@@ -870,7 +869,7 @@ PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
     ierr = VecScatterMemcpyPlanCreate_SGToSG(1,to11,from11);CHKERRQ(ierr);
     ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
     ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
-    ierr = PetscInfo(xin,"Sequential vector scatter with block indices\n");CHKERRQ(ierr);
+    ierr = PetscInfo(ctx->from_v,"Sequential vector scatter with block indices\n");CHKERRQ(ierr);
     goto functionend;
   }
   functionend:

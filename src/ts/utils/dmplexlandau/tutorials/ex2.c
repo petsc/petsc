@@ -724,10 +724,13 @@ int main(int argc, char **argv)
   rectx->Ez_initial = ctx->Ez;       /* cache for induction caclulation - applied E field */
   ierr = MatSetOption(J, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
   { /* warm up an test just LandauIJacobian */
+#if defined(PETSC_USE_LOG)
     PetscLogStage stage;
+#endif
     Vec           vec;
     PetscRandom   rctx;
-    PetscInt       ii;
+    PetscInt      ii;
+
     ierr = PetscRandomCreate(PETSC_COMM_SELF,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = VecDuplicate(X,&vec);CHKERRQ(ierr);

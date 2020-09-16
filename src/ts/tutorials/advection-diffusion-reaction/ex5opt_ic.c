@@ -281,10 +281,12 @@ int main(int argc,char **argv)
   ierr = GenerateOBs(appctx.ts,appctx.U,&appctx);CHKERRQ(ierr);
 
   if (!forwardonly) {
-    Tao tao;
-    Vec P;
-    Vec lambda[1];
+    Tao           tao;
+    Vec           P;
+    Vec           lambda[1];
+#if defined(PETSC_USE_LOG)
     PetscLogStage opt_stage;
+#endif
 
     ierr = PetscLogStageRegister("Optimization",&opt_stage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(opt_stage);CHKERRQ(ierr);

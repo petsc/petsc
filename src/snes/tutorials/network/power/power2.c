@@ -15,27 +15,27 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
 
 PetscErrorCode FormFunction_Subnet(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
 {
-  PetscErrorCode ierr;
-  UserCtx_Power  *User=(UserCtx_Power*)appctx;
-  PetscInt       e,v,vfrom,vto;
+  PetscErrorCode    ierr;
+  UserCtx_Power     *User = (UserCtx_Power*)appctx;
+  PetscInt          e,v,vfrom,vto;
   const PetscScalar *xarr;
-  PetscScalar    *farr;
-  PetscInt       offsetfrom,offsetto,offset;
+  PetscScalar       *farr;
+  PetscInt          offsetfrom,offsetto,offset;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
 
   for (v=0; v<nv; v++) {
-    PetscInt    i,j,key;
-    PetscScalar Vm;
-    PetscScalar Sbase=User->Sbase;
-    VERTEX_Power  bus=NULL;
-    GEN         gen;
-    LOAD        load;
-    PetscBool   ghostvtex;
-    PetscInt    numComps;
-    void*       component;
+    PetscInt      i,j,key;
+    PetscScalar   Vm;
+    PetscScalar   Sbase = User->Sbase;
+    VERTEX_Power  bus = NULL;
+    GEN           gen;
+    LOAD          load;
+    PetscBool     ghostvtex;
+    PetscInt      numComps;
+    void*         component;
 
     ierr = DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex);CHKERRQ(ierr);
     ierr = DMNetworkGetNumComponents(networkdm,vtx[v],&numComps);CHKERRQ(ierr);
@@ -64,7 +64,7 @@ PetscErrorCode FormFunction_Subnet(DM networkdm,Vec localX, Vec localF,PetscInt 
 
         ierr = DMNetworkGetSupportingEdges(networkdm,vtx[v],&nconnedges,&connedges);CHKERRQ(ierr);
         for (i=0; i < nconnedges; i++) {
-          EDGE_Power       branch;
+          EDGE_Power     branch;
           PetscInt       keye;
           PetscScalar    Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
           const PetscInt *cone;
@@ -91,7 +91,7 @@ PetscErrorCode FormFunction_Subnet(DM networkdm,Vec localX, Vec localF,PetscInt 
 
           thetaf = xarr[offsetfrom];
           Vmf     = xarr[offsetfrom+1];
-          thetat = xarr[offsetto];
+          thetat  = xarr[offsetto];
           Vmt     = xarr[offsetto+1];
           thetaft = thetaf - thetat;
           thetatf = thetat - thetaf;
@@ -133,8 +133,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 {
   PetscErrorCode ierr;
   DM             networkdm;
-  Vec           localX,localF;
-  PetscInt      nv,ne;
+  Vec            localX,localF;
+  PetscInt       nv,ne;
   const PetscInt *vtx,*edges;
 
   PetscFunctionBegin;
@@ -167,13 +167,13 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 
 PetscErrorCode FormJacobian_Subnet(DM networkdm,Vec localX, Mat J, Mat Jpre, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
 {
-  PetscErrorCode ierr;
-  UserCtx_Power  *User=(UserCtx_Power*)appctx;
-  PetscInt       e,v,vfrom,vto;
+  PetscErrorCode    ierr;
+  UserCtx_Power     *User=(UserCtx_Power*)appctx;
+  PetscInt          e,v,vfrom,vto;
   const PetscScalar *xarr;
-  PetscInt       offsetfrom,offsetto,goffsetfrom,goffsetto;
-  PetscInt       row[2],col[8];
-  PetscScalar    values[8];
+  PetscInt          offsetfrom,offsetto,goffsetfrom,goffsetto;
+  PetscInt          row[2],col[8];
+  PetscScalar       values[8];
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ PetscErrorCode FormJacobian_Subnet(DM networkdm,Vec localX, Mat J, Mat Jpre, Pet
     PetscInt    offset,goffset;
     PetscScalar Vm;
     PetscScalar Sbase=User->Sbase;
-    VERTEX_Power  bus;
+    VERTEX_Power bus;
     PetscBool   ghostvtex;
     PetscInt    numComps;
     void*       component;
@@ -328,9 +328,9 @@ PetscErrorCode FormJacobian_Subnet(DM networkdm,Vec localX, Mat J, Mat Jpre, Pet
 PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 {
   PetscErrorCode ierr;
-  DM            networkdm;
-  Vec           localX;
-  PetscInt      ne,nv;
+  DM             networkdm;
+  Vec            localX;
+  PetscInt       ne,nv;
   const PetscInt *vtx,*edges;
 
   PetscFunctionBegin;
@@ -360,7 +360,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 PetscErrorCode SetInitialValues_Subnet(DM networkdm,Vec localX,PetscInt nv,PetscInt ne, const PetscInt *vtx, const PetscInt *edges,void* appctx)
 {
   PetscErrorCode ierr;
-  VERTEX_Power     bus;
+  VERTEX_Power   bus;
   PetscInt       i;
   GEN            gen;
   PetscBool      ghostvtex;
@@ -432,7 +432,9 @@ int main(int argc,char ** argv)
   DM               networkdm;
   PetscInt         componentkey[4];
   UserCtx_Power    User;
+#if defined(PETSC_USE_LOG)
   PetscLogStage    stage1,stage2;
+#endif
   PetscMPIInt      rank;
   PetscInt         nsubnet = 2;
   PetscInt         numVertices[2],numEdges[2];

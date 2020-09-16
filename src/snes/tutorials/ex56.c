@@ -202,20 +202,22 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 
 int main(int argc,char **args)
 {
-  Mat            Amat;
-  PetscErrorCode ierr;
-  SNES           snes;
-  KSP            ksp;
-  MPI_Comm       comm;
-  PetscMPIInt    rank;
-  PetscLogStage  stage[17];
-  PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE,attach_nearnullspace=PETSC_FALSE;
-  Vec            xx,bb;
-  PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7],run_type=1;
-  DM             dm,distdm,basedm;
-  PetscBool      flg;
-  char           convType[256];
-  PetscReal      Lx,mdisp[10],err[10];
+  Mat                Amat;
+  PetscErrorCode     ierr;
+  SNES               snes;
+  KSP                ksp;
+  MPI_Comm           comm;
+  PetscMPIInt        rank;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage      stage[17];
+#endif
+  PetscBool          test_nonzero_cols = PETSC_FALSE,use_nearnullspace = PETSC_TRUE,attach_nearnullspace = PETSC_FALSE;
+  Vec                xx,bb;
+  PetscInt           iter,i,N,dim = 3,cells[3] = {1,1,1},max_conv_its,local_sizes[7],run_type = 1;
+  DM                 dm,distdm,basedm;
+  PetscBool          flg;
+  char               convType[256];
+  PetscReal          Lx,mdisp[10],err[10];
   const char * const options[10] = {"-ex56_dm_refine 0",
                                     "-ex56_dm_refine 1",
                                     "-ex56_dm_refine 2",

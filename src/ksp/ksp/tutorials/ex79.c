@@ -18,7 +18,9 @@ int main(int argc,char **args)
   KSP                ksp;         /* linear solver context */
   PC                 pc;          /* preconditioner context */
   PetscInt           m = 10;
+#if defined(PETSC_USE_LOG)
   PetscLogEvent      event;
+#endif
   PetscEventPerfInfo info;
   PetscErrorCode     ierr;
 

@@ -300,7 +300,7 @@ PetscErrorCode  PetscLogAllBegin(void)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   PetscLogTraceBegin - Activates trace logging.  Every time a PETSc event
   begins or ends, the event name is printed.
 

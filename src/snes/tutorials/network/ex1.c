@@ -25,7 +25,7 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
 {
   PetscErrorCode ierr;
   UserCtx        *user = (UserCtx*)appctx;
-  Vec            X,localXold=user->localXold;
+  Vec            X,localXold = user->localXold;
   DM             networkdm;
   PetscMPIInt    rank;
   MPI_Comm       comm;
@@ -35,11 +35,11 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 #if 0
   if (!rank) {
-    PetscInt       subsnes_id=user->subsnes_id;
+    PetscInt       subsnes_id = user->subsnes_id;
     if (subsnes_id == 2) {
-      ierr = PetscPrintf(PETSC_COMM_SELF," it %d, subsnes_id %d, fnorm %g\n",user->it,user->subsnes_id,fnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF," it %D, subsnes_id %D, fnorm %g\n",user->it,user->subsnes_id,(double)fnorm);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"       subsnes_id %d, fnorm %g\n",user->subsnes_id,fnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"       subsnes_id %D, fnorm %g\n",user->subsnes_id,(double)fnorm);CHKERRQ(ierr);
     }
   }
 #endif
@@ -302,38 +302,40 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode   ierr;
-  DM               networkdm;
-  PetscLogStage    stage[4];
-  PetscMPIInt      rank,size;
-  PetscInt         nsubnet=2,nsubnetCouple=0,numVertices[2],numEdges[2],numEdgesCouple[1];
-  PetscInt         i,j,nv,ne;
-  PetscInt         *edgelist[2];
-  const PetscInt   *vtx,*edges;
-  Vec              X,F;
-  SNES             snes,snes_power,snes_water;
-  Mat              Jac;
-  PetscBool        viewJ=PETSC_FALSE,viewX=PETSC_FALSE,viewDM=PETSC_FALSE,test=PETSC_FALSE,distribute=PETSC_TRUE;
-  UserCtx          user;
-  PetscInt         it_max=10;
+  PetscErrorCode      ierr;
+  DM                  networkdm;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage       stage[4];
+#endif
+  PetscMPIInt         rank,size;
+  PetscInt            nsubnet = 2,nsubnetCouple = 0,numVertices[2],numEdges[2],numEdgesCouple[1];
+  PetscInt            i,j,nv,ne;
+  PetscInt            *edgelist[2];
+  const PetscInt      *vtx,*edges;
+  Vec                 X,F;
+  SNES                snes,snes_power,snes_water;
+  Mat                 Jac;
+  PetscBool           viewJ = PETSC_FALSE,viewX = PETSC_FALSE,viewDM = PETSC_FALSE,test = PETSC_FALSE,distribute = PETSC_TRUE;
+  UserCtx             user;
+  PetscInt            it_max = 10;
   SNESConvergedReason reason;
 
   /* Power subnetwork */
-  UserCtx_Power    *appctx_power = &user.appctx_power;
-  char             pfdata_file[PETSC_MAX_PATH_LEN]="power/case9.m";
-  PFDATA           *pfdata=NULL;
-  PetscInt         genj,loadj;
-  PetscInt         *edgelist_power=NULL;
-  PetscScalar      Sbase=0.0;
+  UserCtx_Power       *appctx_power  = &user.appctx_power;
+  char                pfdata_file[PETSC_MAX_PATH_LEN] = "power/case9.m";
+  PFDATA              *pfdata = NULL;
+  PetscInt            genj,loadj;
+  PetscInt            *edgelist_power = NULL;
+  PetscScalar         Sbase = 0.0;
 
   /* Water subnetwork */
-  AppCtx_Water     *appctx_water = &user.appctx_water;
-  WATERDATA        *waterdata=NULL;
-  char             waterdata_file[PETSC_MAX_PATH_LEN]="water/sample1.inp";
-  PetscInt         *edgelist_water=NULL;
+  AppCtx_Water        *appctx_water = &user.appctx_water;
+  WATERDATA           *waterdata = NULL;
+  char                waterdata_file[PETSC_MAX_PATH_LEN] = "water/sample1.inp";
+  PetscInt            *edgelist_water = NULL;
 
   /* Coupling subnetwork */
-  PetscInt         *edgelist_couple=NULL;
+  PetscInt            *edgelist_couple = NULL;
 
   ierr = PetscInitialize(&argc,&argv,"ex1options",help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -342,7 +344,7 @@ int main(int argc,char **argv)
   /* (1) Read Data - Only rank 0 reads the data */
   /*--------------------------------------------*/
   ierr = PetscLogStageRegister("Read Data",&stage[0]);CHKERRQ(ierr);
-  PetscLogStagePush(stage[0]);
+  ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
 
   for (i=0; i<nsubnet; i++) {
     numVertices[i] = 0;
@@ -391,13 +393,13 @@ int main(int argc,char **argv)
     edgelist_couple[0] = 0; edgelist_couple[1] = 4; /* from node: net[0] vertex[4] */
     edgelist_couple[2] = 1; edgelist_couple[3] = 0; /* to node:   net[1] vertex[0] */
   }
-  PetscLogStagePop();
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* (2) Create network */
   /*--------------------*/
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Net Setup",&stage[1]);CHKERRQ(ierr);
-  PetscLogStagePush(stage[1]);
+  ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewDM",&viewDM,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test",&test,NULL);CHKERRQ(ierr);
@@ -537,7 +539,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&user.localXold);CHKERRQ(ierr);
 
-  PetscLogStagePop();
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* (3) Setup Solvers */
   /*-------------------*/
@@ -545,7 +547,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewX",&viewX,NULL);CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("SNES Setup",&stage[2]);CHKERRQ(ierr);
-  PetscLogStagePush(stage[2]);
+  ierr = PetscLogStagePush(stage[2]);CHKERRQ(ierr);
 
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
   /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
@@ -622,12 +624,12 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Water Solution:\n");CHKERRQ(ierr);
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  PetscLogStagePop();
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* (4) Solve */
   /*-----------*/
   ierr = PetscLogStageRegister("SNES Solve",&stage[3]);CHKERRQ(ierr);
-  PetscLogStagePush(stage[3]);
+  ierr = PetscLogStagePush(stage[3]);CHKERRQ(ierr);
   user.it = 0;
   reason  = SNES_DIVERGED_DTOL;
   while (user.it < it_max && (PetscInt)reason<0) {
@@ -648,8 +650,8 @@ int main(int argc,char **argv)
   if (viewX) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Final Solution:\n");CHKERRQ(ierr);
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-   }
-  PetscLogStagePop();
+  }
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* Free objects */
   /* -------------*/
