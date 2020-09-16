@@ -737,6 +737,32 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
   ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
   numFaces = geom->numCells;
   Nq = geom->numPoints;
+  /* First, set local faces and flip normals so that they are outward for the first supporting cell */
+  for (p = 0; p < numFaces; p++) {
+    PetscInt        point = points[p];
+    PetscInt        suppSize, s, coneSize, c, numChildren;
+    const PetscInt *supp, *cone, *ornt;
+
+    ierr = DMPlexGetTreeChildren(dm, point, &numChildren, NULL);CHKERRQ(ierr);
+    if (numChildren) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
+    ierr = DMPlexGetSupportSize(dm, point, &suppSize);CHKERRQ(ierr);
+    if (suppSize > 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2\n", point, suppSize);
+    if (!suppSize) continue;
+    ierr = DMPlexGetSupport(dm, point, &supp);CHKERRQ(ierr);
+    for (s = 0; s < suppSize; ++s) {
+      ierr = DMPlexGetConeSize(dm, supp[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, supp[s], &cone);CHKERRQ(ierr);
+      for (c = 0; c < coneSize; ++c) if (cone[c] == point) break;
+      if (c == coneSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %D not found in cone of support point %D", point, supp[s]);
+      geom->face[p][s] = c;
+    }
+    ierr = DMPlexGetConeOrientation(dm, supp[0], &ornt);CHKERRQ(ierr);
+    if (ornt[geom->face[p][0]] < 0) {
+      PetscInt Np = geom->numPoints, q, dE = geom->dimEmbed, d;
+
+      for (q = 0; q < Np; ++q) for (d = 0; d < dE; ++d) geom->n[(p*Np + q)*dE + d] = -geom->n[(p*Np + q)*dE + d];
+    }
+  }
   if (maxDegree <= 1) {
     PetscInt        numCells, offset, *cells;
     PetscFEGeom     *cellGeom;
