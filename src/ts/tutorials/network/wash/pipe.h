@@ -41,7 +41,7 @@ struct _p_Pipe
   PetscReal   R;
   PetscReal   rad;
   PipeBoundary boundary; /* boundary conditions for H and Q */
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct _p_Pipe *Pipe;
 

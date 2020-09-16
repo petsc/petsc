@@ -177,7 +177,7 @@ int main(int argc,char **args)
        we can then directly call any KSP and PC routines to set
        various options.
   */
-  ierr = KSPSetTolerances(ksp,1.e-6,1.e-50,PETSC_DEFAULT,200);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,200);CHKERRQ(ierr);
 
   /*
     Set runtime options, e.g.,
