@@ -13,6 +13,5 @@ PETSc |version| Documentation
    :maxdepth: 1
 
    manual/index
-   tutorials/introductory_tutorial
    guides/guide_to_examples
    developers/index
