@@ -1,3 +1,5 @@
+.. _chapter_snes:
+
 SNES: Nonlinear Solvers
 -----------------------
 
