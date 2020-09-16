@@ -31,6 +31,7 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
   ierr = VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
+  if (dd->Nlocal < da->bind_below) {ierr = VecBindToCPU(*g,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = VecSetDM(*g, da);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
   ierr = VecSetOperation(*g,VECOP_VIEW,(void (*)(void))VecView_MPI_DA);CHKERRQ(ierr);

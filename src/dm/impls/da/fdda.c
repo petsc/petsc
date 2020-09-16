@@ -708,6 +708,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,dof*M*N*P,dof*M*N*P);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  if (dof*nx*ny*nz < da->bind_below) {ierr = MatBindToCPU(A,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = MatSetDM(A,da);CHKERRQ(ierr);
   if (da->structure_only) {
     ierr = MatSetOption(A,MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);

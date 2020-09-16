@@ -79,6 +79,7 @@ Changes: Development
 -  Add ``DMLabelCompare()`` for ``DMLabel`` comparison
 -  Add ``DMCompareLabels()`` comparing ``DMLabel``\s of two ``DM``\s
 -  ``DMCopyLabels()`` now takes DMCopyLabelsMode argument determining duplicity handling
+-  Add ``-dm_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` and ``Mat`` objects associated with a DM
 
 .. rubric:: DMSwarm:
 
