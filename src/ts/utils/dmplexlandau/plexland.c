@@ -237,7 +237,7 @@ static void CircleInflate(PetscReal r1, PetscReal r2, PetscReal r0, PetscInt num
                           PetscReal *outX, PetscReal *outY)
 {
   PetscReal rr = PetscSqrtReal(x*x + y*y), outfact, efact;
-  if (rr < r1 + 1.e-8) {
+  if (rr < r1 + PETSC_SQRT_MACHINE_EPSILON) {
     *outX = x; *outY = y;
   } else {
     const PetscReal xy[2] = {x,y}, sinphi=y/rr, cosphi=x/rr;
@@ -679,7 +679,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscReal refineTo
     ierr = PetscInfo1(sol, "Phase:%s: Uniform refinement\n","adaptToleranceFEM");
   } else if (type==2) {
     PetscInt  rCellIdx[8], eCellIdx[64], iCellIdx[64], eMaxIdx = -1, iMaxIdx = -1, nr = 0, nrmax = (dim==3 && !ctx->quarter3DDomain) ? 8 : 2;
-    PetscReal minRad = 1.e100, r, eMinRad = 1.e100, iMinRad = 1.e100;
+    PetscReal minRad = PETSC_INFINITY, r, eMinRad = PETSC_INFINITY, iMinRad = PETSC_INFINITY;
     for (c = 0; c < 64; c++) { eCellIdx[c] = iCellIdx[c] = -1; }
     for (c = cStart; c < cEnd; c++) {
       PetscReal    tt, v0[LANDAU_MAX_NQ*3], detJ[LANDAU_MAX_NQ];
@@ -687,12 +687,12 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscReal refineTo
       for (qj = 0; qj < Nq; ++qj) {
         tt = PetscSqr(v0[dim*qj+0]) + PetscSqr(v0[dim*qj+1]) + PetscSqr(((dim==3) ? v0[dim*qj+2] : 0));
         r = PetscSqrtReal(tt);
-        if (r < minRad - 1.e-6) {
+        if (r < minRad - PETSC_SQRT_MACHINE_EPSILON*10.) {
           minRad = r;
           nr = 0;
           rCellIdx[nr++]= c;
           ierr = PetscInfo4(sol, "\t\tPhase: adaptToleranceFEM Found first inner r=%e, cell %D, qp %D/%D\n", r, c, qj+1, Nq);CHKERRQ(ierr);
-        } else if ((r-minRad) < 1.e-8 && nr < nrmax) {
+        } else if ((r-minRad) < PETSC_SQRT_MACHINE_EPSILON*100. && nr < nrmax) {
           for (k=0;k<nr;k++) if (c == rCellIdx[k]) break;
           if (k==nr) {
             rCellIdx[nr++]= c;
@@ -702,11 +702,11 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscReal refineTo
         if (ctx->sphere) {
           if ((tt=r-ctx->e_radius) > 0) {
             PetscInfo2(sol, "\t\t\t %D cell r=%g\n",c,tt);
-            if (tt < eMinRad - 1.e-5) {
+            if (tt < eMinRad - PETSC_SQRT_MACHINE_EPSILON*100.) {
               eMinRad = tt;
               eMaxIdx = 0;
               eCellIdx[eMaxIdx++] = c;
-            } else if (eMaxIdx > 0 && (tt-eMinRad) <= 1.e-5 && c != eCellIdx[eMaxIdx-1]) {
+            } else if (eMaxIdx > 0 && (tt-eMinRad) <= PETSC_SQRT_MACHINE_EPSILON && c != eCellIdx[eMaxIdx-1]) {
               eCellIdx[eMaxIdx++] = c;
             }
           }
@@ -715,7 +715,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscReal refineTo
               iMinRad = tt;
               iMaxIdx = 0;
               iCellIdx[iMaxIdx++] = c;
-            } else if (iMaxIdx > 0 && (tt-iMinRad) <= 1.e-5  && c != iCellIdx[iMaxIdx-1]) {
+            } else if (iMaxIdx > 0 && (tt-iMinRad) <= PETSC_SQRT_MACHINE_EPSILON && c != iCellIdx[iMaxIdx-1]) {
               iCellIdx[iMaxIdx++] = c;
             }
           }
@@ -752,11 +752,11 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscReal refineTo
       for (nz = d = 0; d < Nv; d++) {
         PetscReal z = PetscRealPart(coef[d*dim + (dim-1)]), x = PetscSqr(PetscRealPart(coef[d*dim + 0])) + ((dim==3) ? PetscSqr(PetscRealPart(coef[d*dim + 1])) : 0);
         x = PetscSqrtReal(x);
-        if (x < 1e-12 && PetscAbsReal(z)<1e-12) doit = 1;             /* refine origin */
-        else if (type==0 && (z < -1e-12 || z > ctx->re_radius+1e-12)) outside++;   /* first pass don't refine bottom */
+        if (x < PETSC_MACHINE_EPSILON*10. && PetscAbsReal(z)<PETSC_MACHINE_EPSILON*10.) doit = 1;             /* refine origin */
+        else if (type==0 && (z < -PETSC_MACHINE_EPSILON*10. || z > ctx->re_radius+PETSC_MACHINE_EPSILON*10.)) outside++;   /* first pass don't refine bottom */
         else if (type==1 && (z > ctx->vperp0_radius1 || z < -ctx->vperp0_radius1)) outside++; /* don't refine outside electron refine radius */
         else if (type==3 && (z > ctx->vperp0_radius2 || z < -ctx->vperp0_radius2)) outside++; /* don't refine outside ion refine radius */
-        if (x < 1e-12) nz++;
+        if (x < PETSC_MACHINE_EPSILON*10.) nz++;
       }
       ierr = DMPlexVecRestoreClosure(cdm, cs, coords, c, &csize, &coef);CHKERRQ(ierr);
       if (doit || (outside<Nv && nz)) {
