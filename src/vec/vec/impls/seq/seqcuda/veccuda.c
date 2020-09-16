@@ -13,6 +13,24 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/cudavecimpl.h>
 
+PetscErrorCode VecCUDAGetArrays_Private(Vec v,const PetscScalar** x,const PetscScalar** x_d,PetscOffloadMask* flg)
+{
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+  PetscFunctionBegin;
+  if (x) {
+    Vec_Seq *h = (Vec_Seq*)v->data;
+
+    *x = h->array;
+  }
+  if (x_d) {
+    Vec_CUDA *d = (Vec_CUDA*)v->spptr;
+
+    *x_d = d ? d->GPUarray : NULL;
+  }
+  if (flg) *flg = v->offloadmask;
+  PetscFunctionReturn(0);
+}
+
 /*
     Allocates space for the vector array on the Host if it does not exist.
     Does NOT change the PetscCUDAFlag for the vector
@@ -321,15 +339,12 @@ PetscErrorCode VecCreate_SeqCUDA(Vec V)
 PetscErrorCode  VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar array[],Vec *V)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
   ierr = VecCreate(comm,V);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,n,n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*V,bs);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   ierr = VecCreate_SeqCUDA_Private(*V,array);CHKERRQ(ierr);
   (*V)->offloadmask = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
@@ -368,13 +383,8 @@ PetscErrorCode  VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,c
 PetscErrorCode  VecCreateSeqCUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar cpuarray[],const PetscScalar gpuarray[],Vec *V)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
-
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
-
   // set V's gpuarray to be gpuarray, do not allocate memory on host yet.
   ierr = VecCreateSeqCUDAWithArray(comm,bs,n,gpuarray,V);CHKERRQ(ierr);
 

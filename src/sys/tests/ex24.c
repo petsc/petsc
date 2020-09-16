@@ -20,5 +20,6 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
+     diff_args: -j
 
 TEST*/

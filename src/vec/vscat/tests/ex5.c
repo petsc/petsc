@@ -212,7 +212,7 @@ int main(int argc,char **argv)
    test:
       suffix: 1
       nsize: 2
-      args:
+      diff_args: -j
       requires: double
 TEST*/
 

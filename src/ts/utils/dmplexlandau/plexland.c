@@ -138,7 +138,7 @@ PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const PetscInt dim
           const PetscReal *Dq = &Tf[f]->T[1][qj*Nb*dim];
           PetscInt         b, e;
           uu[fOffset] = 0.0;
-          for (d = 0; d < dim; ++d) refSpaceDer[d] = 0.0;
+          for (d = 0; d < LANDAU_DIM; ++d) refSpaceDer[d] = 0.0;
           for (b = 0; b < Nb; ++b) {
             const PetscInt    cidx = b;
             uu[fOffset] += Bq[cidx]*coef[dOffset+cidx];

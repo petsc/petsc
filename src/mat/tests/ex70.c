@@ -728,14 +728,7 @@ int main(int argc,char **args)
     output_file: output/ex70_1.out
     requires: cuda
     suffix: 1_cuda
-    args: -local {{0 1}} -xgpu {{0 1}} -bgpu {{0 1}} -A_mat_type {{seqaijcusparse seqaij}} -testnest 0 -testshellops {{0 1}}
-
-  test:
-    TODO: VecGetSubVector seems broken with CUDA
-    output_file: output/ex70_1.out
-    requires: cuda
-    suffix: 1_cuda_broken
-    args: -local {{0 1}} -xgpu {{0 1}} -bgpu {{0 1}} -A_mat_type seqaijcusparse -testnest
+    args: -local {{0 1}} -xgpu {{0 1}} -bgpu {{0 1}} -A_mat_type {{seqaijcusparse seqaij}} -testshellops {{0 1}}
 
   test:
     output_file: output/ex70_1.out
