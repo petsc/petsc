@@ -253,16 +253,42 @@ Sample Fortran Programs
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Sample programs that illustrate the PETSc interface for Fortran are
-given in Figures `[fig_vec-Fortran] <#fig_vec-Fortran>`__ *–*
-`[fig_SNES-Fortran] <#fig_SNES-Fortran>`__, corresponding to
-`Vec Tutorial ex19f <https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/tests/ex19f.F.html>`__,
+given below, corresponding to
+`Vec Test ex19f <https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/tests/ex19f.F.html>`__,
 `Vec Tutorial ex4f <https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/tutorials/ex4f.F.html>`__,
-`Vec Tutorial ex5f <https://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/tests/ex5f.F.html>`__,
+`Draw Test ex5f <https://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/tests/ex5f.F.html>`__,
 and
 `SNES Tutorial ex1f <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex1f.F90.html>`__,
 respectively. We also refer Fortran programmers to the C examples listed
 throughout the manual, since PETSc usage within the two languages
 differs only slightly.
+
+
+.. admonition:: Listing: ``src/vec/vec/tests/ex19f.F``
+   :name: vec-test-ex19f
+
+   .. literalinclude:: ../../../vec/vec/tests/ex19f.F
+      :language: fortran
+
+.. _listing_vec_ex4f:
+
+.. admonition:: Listing: ``src/vec/vec/tutorials/ex4f.F``
+   :name: vec-ex4f
+
+   .. literalinclude:: ../../../vec/vec/tutorials/ex4f.F
+      :language: fortran
+
+.. admonition:: Listing: ``src/sys/classes/draw/tests/ex5f.F``
+   :name: draw-test-ex5f
+
+   .. literalinclude:: ../../../sys/classes/draw/tests/ex5f.F
+      :language: fortran
+
+.. admonition:: Listing: ``src/snes/tutorials/ex1f.F90``
+   :name: snes-ex1f
+
+   .. literalinclude:: ../../../snes/tutorials/ex1f.F90
+      :language: fortran
 
 .. _sec_fortranarrays:
 
@@ -322,7 +348,7 @@ manipulations in the conventional Fortran manner.
    10 continue
       call VecRestoreArray(x,xx_v,xx_i,ierr)
 
-Figure `[fig_vec2-Fortran] <#fig_vec2-Fortran>`__ contains an example of
+:ref:`The Vec ex4f Tutorial listed above <listing_vec_ex4f>` contains an example of
 using ``VecGetArray()`` within a Fortran routine.
 
 Since in this case the array is accessed directly from Fortran, indexing
