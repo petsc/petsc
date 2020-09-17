@@ -3,8 +3,6 @@
 Hints for Performance Tuning
 ----------------------------
 
-.. include:: temp_edit_needed_banner.inc
-
 This chapter provides hints on how to get to achieve best performance
 with PETSc, particularly on distributed-memory machines with multiple
 CPU sockets per node. We focus on machine-related performance
@@ -52,13 +50,13 @@ entries of each vector, the operation is embarrasingly parallel.
    over the number of processes used. One can get close to peak memory
    bandwidth with only a few processes.
 
-As Fig. `4.1 <#fig_stream_intel>`__ shows, the performance gains due to
+As :numref`fig_stream_intel` shows, the performance gains due to
 parallelization on different multi- and many-core CPUs quickly
 saturates. The reason is that only a fraction of the total number of CPU
 cores is required to saturate the memory channels. For example, a
 dual-socket system equipped with Haswell 12-core Xeon CPUs achieves more
 than 80 percent of achievable peak memory bandwidth with only four
-processes per socket (8 total), cf. Fig. `4.1 <#fig_stream_intel>`__.
+processes per socket (8 total), cf. :numref:`fig_stream_intel`.
 Consequently, running with more than 8 MPI ranks on such a system will
 not increase performance substantially. For the same reason, PETSc-based
 applications usually do not benefit from hyper-threading.
@@ -107,7 +105,7 @@ Non-Uniform Memory Access (NUMA) and Process Placement
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 CPUs in nodes with more than one CPU socket are internally connected via
-a high-speed fabric, cf. Fig. `4.2 <#fig_numa>`__, to enable data
+a high-speed fabric, cf. :numref:`fig_numa`, to enable data
 exchange as well as cache coherency. Because main memory on modern
 systems is connected via the integrated memory controllers on each CPU,
 memory is accessed in a non-uniform way: A process running on one socket
