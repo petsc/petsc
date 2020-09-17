@@ -1391,7 +1391,13 @@ PetscErrorCode DMPlexSetOptionsPrefix(DM dm, const char prefix[])
   Output Parameter:
 . dm  - The DM object
 
-  Note: Here is the output numbering looking from the bottom of the cylinder:
+  Options Database Keys:
+These options override the hard-wired input values.
++ -dm_plex_hex_cyl_refine <r> - Refine the sylinder r times
+- -dm_plex_hex_cyl_bd <bz>    - Specify the DMBoundaryType in the z-direction
+
+  Note:
+  Here is the output numbering looking from the bottom of the cylinder:
 $       17-----14
 $        |     |
 $        |  2  |
@@ -1436,7 +1442,9 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
   PetscFunctionBegin;
   PetscValidPointer(dm, 4);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, NULL, "-dm_plex_hex_cyl_refine", &numRefine, NULL);CHKERRQ(ierr);
   if (numRefine < 0) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of refinements %D cannot be negative", numRefine);
+  ierr = PetscOptionsGetEnum(NULL, NULL, "-dm_plex_box_bd", DMBoundaryTypes, (PetscEnum *) &periodicZ, NULL);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
