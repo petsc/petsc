@@ -1,22 +1,17 @@
 /*
   Defines the basic matrix operations for the AIJ (compressed row)
-  matrix storage format using the CUSPARSE library.
-  CUSPARSE changed completely with CUDA 11, so this functionality requires an older CUDA.
+  matrix storage format using the CUSPARSE library,
 */
 #define PETSC_SKIP_SPINLOCK
 #define PETSC_SKIP_CXX_COMPLEX_FIX
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 
 #include <petscconf.h>
-#include <petscpkg_version.h>
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/vecimpl.h>
 #undef VecType
-
-#if PETSC_PKG_CUDA_VERSION_LT(11,0,0)
-
 #include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 
 const char *const MatCUSPARSEStorageFormats[] = {"CSR","ELL","HYB","MatCUSPARSEStorageFormat","MAT_CUSPARSE_",0};
@@ -2212,26 +2207,3 @@ static PetscErrorCode MatSeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriF
   }
   PetscFunctionReturn(0);
 }
-#else
-
-/* The following stubs are only provided to satisfy the linker */
-
-PetscErrorCode MatSeqAIJCUSPARSESetGenerateTranspose(Mat A,PetscBool transgen) {
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE in CUDA 11 is currently not supported!");
-}
-
-PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
-{
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE in CUDA 11 is currently not supported!");
-}
-
-PetscErrorCode MatCUSPARSESetFormat(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
-{
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE in CUDA 11 is currently not supported!");
-}
-
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType mtype, MatReuse reuse, Mat* newmat)
-{
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE in CUDA 11 is currently not supported!");
-}
-#endif

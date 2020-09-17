@@ -7,8 +7,6 @@
 #include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 #include <../src/mat/impls/aij/mpi/mpicusparse/mpicusparsematimpl.h>
 
-#if PETSC_PKG_CUDA_VERSION_LT(11,0,0)
-
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ         *b               = (Mat_MPIAIJ*)B->data;
@@ -347,12 +345,3 @@ PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
  .seealso: MatCreateAIJCUSPARSE(), MATSEQAIJCUSPARSE, MatCreateSeqAIJCUSPARSE(), MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
 M
 M*/
-#else
-
-/* The following stubs are only provided to satisfy the linker */
-
-PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
-{
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE in CUDA 11 is currently not supported!");
-}
-#endif
