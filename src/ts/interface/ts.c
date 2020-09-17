@@ -770,6 +770,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
     if (!ts->Arhs) {
       if (ijacobian) {
         ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&ts->Arhs);CHKERRQ(ierr);
+        ierr = TSSetMatStructure(ts,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       } else {
         ts->Arhs = A;
         ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
@@ -1039,10 +1040,8 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
       }
       ts->rhsjacobian.scale = -1;
       ts->rhsjacobian.shift = shift;
-    } else if (Arhs) {  /* Both IJacobian and RHSJacobian exist or the RHS matrix provided (A) is different from the internal RHS matrix (Arhs) */
-      MatStructure axpy = DIFFERENT_NONZERO_PATTERN;
-
-      if (!ijacobian) { /* No IJacobian provided, but we have a separate RHS matrix */
+    } else if (Arhs) {          /* Both IJacobian and RHSJacobian */
+      if (!ijacobian) {         /* No IJacobian provided, but we have a separate RHS matrix */
         ierr = MatZeroEntries(A);CHKERRQ(ierr);
         ierr = MatShift(A,shift);CHKERRQ(ierr);
         if (A != B) {
@@ -1051,9 +1050,9 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
         }
       }
       ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
-      ierr = MatAXPY(A,-1,Arhs,axpy);CHKERRQ(ierr);
+      ierr = MatAXPY(A,-1,Arhs,ts->axpy_pattern);CHKERRQ(ierr);
       if (A != B) {
-        ierr = MatAXPY(B,-1,Brhs,axpy);CHKERRQ(ierr);
+        ierr = MatAXPY(B,-1,Brhs,ts->axpy_pattern);CHKERRQ(ierr);
       }
     }
   }
@@ -1765,11 +1764,11 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
   PetscStackPop;
 
   if (rhsjacobian) {
-    Mat Jrhs,Prhs; MatStructure axpy = DIFFERENT_NONZERO_PATTERN;
+    Mat Jrhs,Prhs;
     ierr = TSGetRHSMats_Private(ts,&Jrhs,&Prhs);CHKERRQ(ierr);
     ierr = TSComputeRHSJacobian(ts,t,U,Jrhs,Prhs);CHKERRQ(ierr);
-    ierr = MatAXPY(J,-1,Jrhs,axpy);CHKERRQ(ierr);
-    if (P != J) {ierr = MatAXPY(P,-1,Prhs,axpy);CHKERRQ(ierr);}
+    ierr = MatAXPY(J,-1,Jrhs,ts->axpy_pattern);CHKERRQ(ierr);
+    if (P != J) {ierr = MatAXPY(P,-1,Prhs,ts->axpy_pattern);CHKERRQ(ierr);}
   }
 
   ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,J,P);CHKERRQ(ierr);
@@ -7709,5 +7708,29 @@ PetscErrorCode TSGetUseSplitRHSFunction(TS ts, PetscBool *use_splitrhsfunction)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   *use_splitrhsfunction = ts->use_splitrhsfunction;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    TSSetMatStructure - sets the relationship between the nonzero structure of the RHS Jacobian matrix to the IJacobian matrix.
+
+   Logically  Collective on ts
+
+   Input Parameters:
++  ts - the time-stepper
+-  str - the structure (the default is UNKNOWN_NONZERO_PATTERN)
+
+   Level: intermediate
+
+   Notes:
+     When the relationship between the nonzero structures is known and supplied the solution process can be much faster
+
+.seealso: MatAXPY(), MatStructure
+ @*/
+PetscErrorCode TSSetMatStructure(TS ts,MatStructure str)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->axpy_pattern = str;
   PetscFunctionReturn(0);
 }

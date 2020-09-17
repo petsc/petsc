@@ -249,6 +249,7 @@ struct _p_TS {
     PetscReal shift;            /* The derivative of the lhs wrt to Xdot */
   } ijacobian;
 
+  MatStructure  axpy_pattern;  /* information about the nonzero pattern of the RHS Jacobian in reference to the implicit Jacobian */
   /* --------------------Nonlinear Iteration------------------------------*/
   SNES     snes;
   PetscBool usessnes;   /* Flag set by each TSType to indicate if the type actually uses a SNES;

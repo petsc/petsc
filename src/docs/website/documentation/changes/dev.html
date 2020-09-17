@@ -146,8 +146,8 @@
         <li>Add MatSetPreallocationCOO and MatSetValuesCOO to preallocate and set values in a matrix using COO format. Currently efficiently implemented only for MATCUSPARSE</li>
         <li>Add the option MAT_FORCE_DIAGONAL_ENTRIES for MatSetOption(). It forces allocation of all diagonal entries.</li>
         <li>MAT_NEW_DIAGONALS is removed from MatOption.
-      </ul>
-      </ul>
+          <li>Add UNKNOW_NONZERO_PATTERN as new value for MatStructure. It indicates that the relationship is unknown, when set the AIJ matrices check if the two matrices have identical patterns and if so use the faster code.</li>
+        </ul>
       <h4>PC:</h4>
       <ul>
         <li>Add PCGAMGSetRankReductionFactors(), provide an array, <tt>-pc_gamg_rank_reduction_factors factors</tt>, tp specify factor by which to reduce active processors on coarse grids in PCGAMG that overrides default heuristics </li>
@@ -171,6 +171,10 @@
         <li>Change to --download-sundials2 to indicate the version of SUNDIALS PETSc downloads, which is very old and out-dated.</li>
       </ul>
       <h4>TAO:</h4>
+        <ul>
+          <li>Add TSSetMatStructure() to indicate the relationship between the nonzero structures of the I Jacobian and the RHS Jacobian.</li>
+          <li>Automatically set the MatStructure flag of TS to SAME_NONZERO_PATTERN if the RHS matrix is obtained with a MatDuplicate() from the I Jacobian.</li>
+        </ul>
       <h4>DM/DA:</h4>
       <ul>
         <li>Change DMDACreatePatchIS() to collective operation and add an extra rgument to indicate whether off processor values will be returned.

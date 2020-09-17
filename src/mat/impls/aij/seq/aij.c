@@ -3112,7 +3112,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   Mat_SeqAIJ     *x = (Mat_SeqAIJ*)X->data,*y = (Mat_SeqAIJ*)Y->data;
 
   PetscFunctionBegin;
-  if (str == DIFFERENT_NONZERO_PATTERN) {
+  if (str == UNKNOWN_NONZERO_PATTERN) {
     if (x->nz == y->nz) {
       PetscBool e;
       ierr = PetscArraycmp(x->i,y->i,Y->rmap->n+1,&e);CHKERRQ(ierr);
