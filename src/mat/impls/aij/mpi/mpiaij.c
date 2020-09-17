@@ -2303,15 +2303,15 @@ PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
 
 PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A,Vec v,PetscInt idx[])
 {
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,*idxb = NULL,m = A->rmap->n;
-  PetscScalar    *va,*vv;
-  Vec            vB,vA;
+  Mat_MPIAIJ        *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          i,*idxb = NULL,m = A->rmap->n;
+  PetscScalar       *va,*vv;
+  Vec               vB,vA;
   const PetscScalar *vb;
 
   PetscFunctionBegin;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap->n,&vA);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&vA);CHKERRQ(ierr);
   ierr = MatGetRowMaxAbs(a->A,vA,idx);CHKERRQ(ierr);
 
   ierr = VecGetArrayWrite(vA,&va);CHKERRQ(ierr);
@@ -2321,9 +2321,9 @@ PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A,Vec v,PetscInt idx[])
     }
   }
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap->n,&vB);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&vB);CHKERRQ(ierr);
   if (idx) {
-    ierr = PetscMalloc1(A->rmap->n,&idxb);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&idxb);CHKERRQ(ierr);
   }
   ierr = MatGetRowMaxAbs(a->B,vB,idxb);CHKERRQ(ierr);
 
@@ -2350,39 +2350,107 @@ PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A,Vec v,PetscInt idx[])
 
 PetscErrorCode MatGetRowMinAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 {
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJ     *mat   = (Mat_MPIAIJ*) A->data;
+  PetscInt       m = A->rmap->n,n = A->cmap->n;
+  PetscInt       cstart = A->cmap->rstart,cend = A->cmap->rend;
+  PetscInt       *cmap  = mat->garray;
+  PetscInt       *diagIdx, *offdiagIdx;
+  Vec            diagV, offdiagV;
+  PetscScalar    *a, *diagA, *offdiagA, *ba;
+  PetscInt       r,j,col,ncols,*bi,*bj;
   PetscErrorCode ierr;
-  PetscInt       i,*idxb = NULL;
-  PetscScalar    *va,*vb;
-  Vec            vtmp;
+  Mat            B = mat->B;
+  Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
 
   PetscFunctionBegin;
-  ierr = MatGetRowMinAbs(a->A,v,idx);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&va);CHKERRQ(ierr);
-  if (idx) {
-    for (i=0; i<A->cmap->n; i++) {
-      if (PetscAbsScalar(va[i])) idx[i] += A->cmap->rstart;
+  /* When a process holds entire A and other processes have no entry */
+  if (A->cmap->N == n) {
+    ierr = VecGetArrayWrite(v,&diagA);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,diagA,&diagV);CHKERRQ(ierr);
+    ierr = MatGetRowMinAbs(mat->A,diagV,idx);CHKERRQ(ierr);
+    ierr = VecDestroy(&diagV);CHKERRQ(ierr);
+    ierr = VecRestoreArrayWrite(v,&diagA);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } else if (n == 0) {
+    if (m) {
+      ierr = VecGetArrayWrite(v,&a);CHKERRQ(ierr);
+      for (r = 0; r < m; r++) {a[r] = 0.0; if (idx) idx[r] = -1;}
+      ierr = VecRestoreArrayWrite(v,&a);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+
+  ierr = PetscMalloc2(m,&diagIdx,m,&offdiagIdx);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF, m, &diagV);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF, m, &offdiagV);CHKERRQ(ierr);
+  ierr = MatGetRowMinAbs(mat->A, diagV, diagIdx);CHKERRQ(ierr);
+
+  /* Get offdiagIdx[] for implicit 0.0 */
+  ba = b->a;
+  bi = b->i;
+  bj = b->j;
+  ierr = VecGetArrayWrite(offdiagV, &offdiagA);CHKERRQ(ierr);
+  for (r = 0; r < m; r++) {
+    ncols = bi[r+1] - bi[r];
+    if (ncols == A->cmap->N - n) { /* Brow is dense */
+      offdiagA[r] = *ba; offdiagIdx[r] = cmap[0];
+    } else { /* Brow is sparse so already KNOW maximum is 0.0 or higher */
+      offdiagA[r] = 0.0;
+
+      /* Find first hole in the cmap */
+      for (j=0; j<ncols; j++) {
+        col = cmap[bj[j]]; /* global column number = cmap[B column number] */
+        if (col > j && j < cstart) {
+          offdiagIdx[r] = j; /* global column number of first implicit 0.0 */
+          break;
+        } else if (col > j + n && j >= cstart) {
+          offdiagIdx[r] = j + n; /* global column number of first implicit 0.0 */
+          break;
+        }
+      }
+      if (j == ncols && B->cmap->N < A->cmap->N - n) {
+        /* a hole is outside compressed Bcols */
+        if (ncols == 0) {
+          if (cstart) {
+            offdiagIdx[r] = 0;
+          } else offdiagIdx[r] = cend;
+        } else { /* ncols > 0 */
+          offdiagIdx[r] = cmap[ncols-1] + 1;
+          if (offdiagIdx[r] == cstart) offdiagIdx[r] += n;
+        }
+      }
+    }
+
+    for (j=0; j<ncols; j++) {
+      if (PetscAbsScalar(offdiagA[r]) > PetscAbsScalar(*ba)) {offdiagA[r] = *ba; offdiagIdx[r] = cmap[*bj];}
+      ba++; bj++;
     }
   }
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap->n,&vtmp);CHKERRQ(ierr);
-  if (idx) {
-    ierr = PetscMalloc1(A->rmap->n,&idxb);CHKERRQ(ierr);
-  }
-  ierr = MatGetRowMinAbs(a->B,vtmp,idxb);CHKERRQ(ierr);
-  ierr = VecGetArray(vtmp,&vb);CHKERRQ(ierr);
-
-  for (i=0; i<A->rmap->n; i++) {
-    if (PetscAbsScalar(va[i]) > PetscAbsScalar(vb[i])) {
-      va[i] = vb[i];
-      if (idx) idx[i] = a->garray[idxb[i]];
+  ierr = VecGetArrayWrite(v, &a);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(diagV, (const PetscScalar**)&diagA);CHKERRQ(ierr);
+  for (r = 0; r < m; ++r) {
+    if (PetscAbsScalar(diagA[r]) < PetscAbsScalar(offdiagA[r])) {
+      a[r]   = diagA[r];
+      if (idx) idx[r] = cstart + diagIdx[r];
+    } else if (PetscAbsScalar(diagA[r]) == PetscAbsScalar(offdiagA[r])) {
+      a[r] = diagA[r];
+      if (idx) {
+        if (cstart + diagIdx[r] <= offdiagIdx[r]) {
+          idx[r] = cstart + diagIdx[r];
+        } else idx[r] = offdiagIdx[r];
+      }
+    } else {
+      a[r]   = offdiagA[r];
+      if (idx) idx[r] = offdiagIdx[r];
     }
   }
-
-  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr);
-  ierr = PetscFree(idxb);CHKERRQ(ierr);
-  ierr = VecDestroy(&vtmp);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(v, &a);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(diagV, (const PetscScalar**)&diagA);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(offdiagV, &offdiagA);CHKERRQ(ierr);
+  ierr = VecDestroy(&diagV);CHKERRQ(ierr);
+  ierr = VecDestroy(&offdiagV);CHKERRQ(ierr);
+  ierr = PetscFree2(diagIdx, offdiagIdx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

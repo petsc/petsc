@@ -45,7 +45,7 @@ int main(int argc,char **args)
       break;
     case 2:
       row = 0;
-      values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0; values[3] = -4.0; values[4] = 0.0; values[5] = 1.0;
+      values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0; values[3] = -4.0; values[4] = 1.0; values[5] = 1.0;
       ierr = MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES);CHKERRQ(ierr);
       row = 2;
       indices[0] = 0;    indices[1] = 3;    indices[2] = 5;
@@ -102,61 +102,74 @@ int main(int argc,char **args)
   ierr = VecDuplicate(min,&maxabs);CHKERRQ(ierr);
   ierr = VecDuplicate(min,&e);CHKERRQ(ierr);
 
-  /* Test MatGetRowMax() */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Row Maximums\n");CHKERRQ(ierr);
+  /* MatGetRowMax() */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMax\n");CHKERRQ(ierr);
   ierr = MatGetRowMax(A,max,NULL);CHKERRQ(ierr);
   ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
   ierr = VecView(max,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetLocalSize(max,&n);CHKERRQ(ierr);
   ierr = PetscIntView(n,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* Test MatGetRowMin() */
+  /* MatGetRowMin() */
   ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-  /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Row Minimums\n");CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMin\n");CHKERRQ(ierr);
   ierr = MatGetRowMin(A,min,NULL);CHKERRQ(ierr);
   ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
 
   ierr = VecWAXPY(e,1.0,max,min);CHKERRQ(ierr); /* e = max + min */
   ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
   if (enorm > PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
-  for (j = 0; j < n; j++) if (imin[j] != imax[j]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin != imax");
+  for (j = 0; j < n; j++) {
+    if (imin[j] != imax[j]) {
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin %D != imax %D",imin[j],imax[j]);
+    }
+  }
 
-  /* Test MatGetRowMaxAbs() */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Row Maximum Absolute\n");CHKERRQ(ierr);
+  /* MatGetRowMaxAbs() */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs\n");CHKERRQ(ierr);
   ierr = MatGetRowMaxAbs(A,maxabs,NULL);CHKERRQ(ierr);
   ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
   ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscIntView(n,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  exit(1);
 
-  /* Test MatGetRowMin, MatGetRowMax and MatGetRowMaxAbs */
+  /* MatGetRowMinAbs() */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMinAbs\n");CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatGetRowMinAbs(A,min,NULL);CHKERRQ(ierr);
+  ierr = MatGetRowMinAbs(A,min,imin);CHKERRQ(ierr);
+  ierr = VecView(min,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscIntView(n,imin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   if (size == 1) {
-    ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
+    /* Test MatGetRowMax, MatGetRowMin and MatGetRowMaxAbs for SeqDense and MPIBAIJ matrix */
+    ierr = MatConvert(A,MATDENSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMax for seqdense matrix\n");CHKERRQ(ierr);
     ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
-    ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
-
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Minimums\n");CHKERRQ(ierr);
-    ierr = VecView(min,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscIntView(5,imin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximums\n");CHKERRQ(ierr);
     ierr = VecView(max,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscIntView(5,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values\n");CHKERRQ(ierr);
+    ierr = PetscIntView(n,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    ierr = MatScale(A,-1.0);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMin for seqdense matrix\n");CHKERRQ(ierr);
+    ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
+    ierr = VecView(min,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(n,imin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    ierr = VecWAXPY(e,1.0,max,min);CHKERRQ(ierr); /* e = max + min */
+    ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
+    for (j = 0; j < n; j++) {
+      if (imin[j] != imax[j]) {
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin %D != imax %D for seqdense matrix",imin[j],imax[j]);
+      }
+    }
+
+    ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
     ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscIntView(5,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(n,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   } else {
-    ierr = MatGetType(A,&type);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nMatrix type: %s\n",type);CHKERRQ(ierr);
-    /* AIJ */
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&doTest);CHKERRQ(ierr);
-    if (doTest) {
-      ierr = MatGetRowMaxAbs(A,maxabs,NULL);CHKERRQ(ierr);
-      ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values:\n");CHKERRQ(ierr);
-      ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    }
+    #if 0
     /* BAIJ */
     ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIBAIJ,&doTest);CHKERRQ(ierr);
     if (doTest) {
@@ -165,25 +178,7 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values:\n");CHKERRQ(ierr);
       ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
-  }
-
-  if (size == 1) {
-    ierr = MatConvert(A,MATDENSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-
-    ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
-    ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
-    ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
-
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Minimums\n");CHKERRQ(ierr);
-    ierr = VecView(min,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscIntView(5,imin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximums\n");CHKERRQ(ierr);
-    ierr = VecView(max,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscIntView(5,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values\n");CHKERRQ(ierr);
-    ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscIntView(5,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    #endif
   }
 
   ierr = VecDestroy(&min);CHKERRQ(ierr);

@@ -3235,38 +3235,37 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   MatScalar      *aa;
 
   PetscFunctionBegin;
-  if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   aa = a->a;
   ai = a->i;
   aj = a->j;
 
   ierr = VecSet(v,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector, %D vs. %D rows", A->rmap->n, n);
+  if (n != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector, %D vs. %D rows", m, n);
   for (i=0; i<m; i++) {
     ncols = ai[1] - ai[0]; ai++;
-    if (ncols) {
-      /* Get first nonzero */
-      for (j = 0; j < ncols; j++) {
-        atmp = PetscAbsScalar(aa[j]);
-        if (atmp > 1.0e-12) {
-          x[i] = atmp;
-          if (idx) idx[i] = aj[j];
-          break;
+    if (ncols == A->cmap->n) { /* row is dense */
+      x[i] = *aa; if (idx) idx[i] = 0;
+    } else {  /* row is sparse so already KNOW minimum is 0.0 or higher */
+      x[i] = 0.0;
+      if (idx) {   /* find first implicit 0.0 in the row */
+        for (j=0; j<ncols; j++) {
+          if (aj[j] > j) {
+            idx[i] = j;
+            break;
+          }
         }
+        /* in case first implicit 0.0 in the row occurs at ncols-th column */
+        if (j==ncols && j < A->cmap->n) idx[i] = j;
       }
-      if (j == ncols) {x[i] = PetscAbsScalar(*aa); if (idx) idx[i] = *aj;}
-    } else {
-      x[i] = 0.0; if (idx) idx[i] = 0;
     }
-    for (j = 0; j < ncols; j++) {
-      atmp = PetscAbsScalar(*aa);
-      if (atmp > 1.0e-12 && PetscAbsScalar(x[i]) > atmp) {x[i] = atmp; if (idx) idx[i] = *aj;}
+    for (j=0; j<ncols; j++) {
+      if (PetscAbsScalar(x[i]) > PetscAbsScalar(*aa)) {x[i] = *aa; if (idx) idx[i] = *aj;}
       aa++; aj++;
     }
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3288,7 +3287,7 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   ierr = VecSet(v,0.0);CHKERRQ(ierr);
   ierr = VecGetArrayWrite(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<m; i++) {
     ncols = ai[1] - ai[0]; ai++;
     if (ncols == A->cmap->n) { /* row is dense */
