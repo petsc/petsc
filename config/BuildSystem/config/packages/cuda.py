@@ -104,4 +104,8 @@ class Configure(config.package.Package):
     if gencodearch:
       self.gencodearch = str(gencodearch)
     self.addDefine('HAVE_CUDA','1')
+    if not self.version_tuple:
+      self.checkVersion(); # set version_tuple
+    if self.version_tuple[0] >= 11:
+      self.addDefine('HAVE_CUDA_VERSION_11PLUS','1')
     return
