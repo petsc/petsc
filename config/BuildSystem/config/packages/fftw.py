@@ -22,9 +22,9 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    self.framework.pushLanguage('C')
-    args.append('MPICC="'+self.framework.getCompiler()+'"')
-    self.framework.popLanguage()
+    self.pushLanguage('C')
+    args.append('MPICC="'+self.getCompiler()+'"')
+    self.popLanguage()
     args.append('--enable-mpi')
     if self.mpi.lib:
       args.append('LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')

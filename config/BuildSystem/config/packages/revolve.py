@@ -20,7 +20,7 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    self.framework.pushLanguage('Cxx')
+    self.pushLanguage('Cxx')
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('CP               = '+self.programs.cp+'\n')
     g.write('RM               = '+self.programs.RM+'\n')
@@ -33,11 +33,11 @@ class Configure(config.package.Package):
 
     g.write('PREFIX           = '+self.installDir+'\n')
 
-    g.write('CXX              = '+self.framework.getCompiler()+'\n')
-    g.write('CXXFLAGS         = '+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'\n')
+    g.write('CXX              = '+self.getCompiler()+'\n')
+    g.write('CXXFLAGS         = '+self.updatePackageCxxFlags(self.getCompilerFlags())+'\n')
     g.close()
 
-    self.framework.popLanguage()
+    self.popLanguage()
 
     if self.installNeeded('make.inc'):
       self.logPrintBox('Configuring, compiling and installing revolve; this may take several seconds')

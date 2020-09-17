@@ -31,17 +31,17 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     '''Add ADIOS specific configure arguments'''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    self.framework.pushLanguage('C')
-    args.append('MPICC="'+self.framework.getCompiler()+'"')
-    self.framework.popLanguage()
+    self.pushLanguage('C')
+    args.append('MPICC="'+self.getCompiler()+'"')
+    self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      args.append('MPICXX="'+self.framework.getCompiler()+'"')
-      self.framework.popLanguage()
+      self.pushLanguage('Cxx')
+      args.append('MPICXX="'+self.getCompiler()+'"')
+      self.popLanguage()
     if hasattr(self.compilers, 'FC'):
-      self.framework.pushLanguage('FC')
-      args.append('MPIFC="'+self.framework.getCompiler()+'"')
-      self.framework.popLanguage()
+      self.pushLanguage('FC')
+      args.append('MPIFC="'+self.getCompiler()+'"')
+      self.popLanguage()
     else:
       args.append('--disable-fortran')
     if self.hdf5.found:

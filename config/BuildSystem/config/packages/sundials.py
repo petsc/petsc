@@ -27,9 +27,9 @@ class Configure(config.package.GNUPackage):
     import os
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
 
-    self.framework.pushLanguage('C')
+    self.pushLanguage('C')
     # use --with-mpi-root if we know it works
-    if self.mpi.directory and (os.path.realpath(self.framework.getCompiler())).find(os.path.realpath(self.mpi.directory)) >=0:
+    if self.mpi.directory and (os.path.realpath(self.getCompiler())).find(os.path.realpath(self.mpi.directory)) >=0:
       self.log.write('Sundials configure: using --with-mpi-root='+self.mpi.directory+'\n')
       args.append('--with-mpi-root="'+self.mpi.directory+'"')
     # else provide everything!
@@ -37,7 +37,7 @@ class Configure(config.package.GNUPackage):
       #print a message if the previous check failed
       if self.mpi.directory:
         self.log.write('Sundials configure: --with-mpi-dir specified - but could not use it\n')
-        self.log.write(str(os.path.realpath(self.framework.getCompiler()))+' '+str(os.path.realpath(self.mpi.directory))+'\n')
+        self.log.write(str(os.path.realpath(self.getCompiler()))+' '+str(os.path.realpath(self.mpi.directory))+'\n')
 
       if self.mpi.include:
         args.append('--with-mpi-incdir="'+self.mpi.include[0]+'"')
@@ -59,7 +59,7 @@ class Configure(config.package.GNUPackage):
         args.append('--with-mpi-libdir="/usr/lib"')  # dummy case
         args.append('--with-mpi-libs="-lc"')
 
-    self.framework.popLanguage()
+    self.popLanguage()
 
     args = self.rmArgsStartsWith(args,['F77=','F90=','FC=','FFLAGS=','FCFLAGS=','F90FLAGS='])
     args.append('--without-mpif77')

@@ -34,7 +34,7 @@ class Configure(config.package.Package):
     g.write('CFLAGS         = '+cflags+'\n')
     g.write('CLD            = $(CC)\n')
     g.write('MPICC          = $(CC)\n')
-    g.write('CPP            ='+self.framework.getPreprocessor()+'\n')
+    g.write('CPP            ='+self.getPreprocessor()+'\n')
     self.setCompilers.popLanguage()
 
     # extra unused options

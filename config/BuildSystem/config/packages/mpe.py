@@ -17,17 +17,17 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    self.framework.pushLanguage('C')
-    args.append('MPI_CFLAGS="'+self.updatePackageCFlags(self.framework.getCompilerFlags())+'"')
-    args.append('MPI_CC="'+self.framework.getCompiler()+'"')
-    self.framework.popLanguage()
+    self.pushLanguage('C')
+    args.append('MPI_CFLAGS="'+self.updatePackageCFlags(self.getCompilerFlags())+'"')
+    args.append('MPI_CC="'+self.getCompiler()+'"')
+    self.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
-      self.framework.pushLanguage('FC')
-      args.append('MPI_FFLAGS="'+self.framework.getCompilerFlags()+'"')
-      args.append('F77="'+self.framework.getCompiler()+'"')
-      args.append('MPI_F77="'+self.framework.getCompiler()+'"')
-      self.framework.popLanguage()
+      self.pushLanguage('FC')
+      args.append('MPI_FFLAGS="'+self.getCompilerFlags()+'"')
+      args.append('F77="'+self.getCompiler()+'"')
+      args.append('MPI_F77="'+self.getCompiler()+'"')
+      self.popLanguage()
     else:
       args.append('--disable-f77')
 

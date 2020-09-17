@@ -72,9 +72,9 @@ class Configure(config.package.CMakePackage):
     args = self.rmArgsStartsWith(args,['-DCMAKE_CXX_FLAGS:STRING','-DCMAKE_C_FLAGS:STRING'])
     args.append('-DCMAKE_C_FLAGS:STRING="'+self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+' -DMETIS_5"')
     if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+' -DMETIS_5"')
-    self.framework.popLanguage()
+      self.pushLanguage('Cxx')
+      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.getCompilerFlags())+' -DMETIS_5"')
+    self.popLanguage()
 
     # mstk does not use the standard -DCMAKE_INSTALL_PREFIX
     args.append('-DINSTALL_DIR='+self.installDir)

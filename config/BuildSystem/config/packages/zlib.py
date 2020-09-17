@@ -20,11 +20,11 @@ class Configure(config.package.Package):
     import os
 
     args = []
-    self.framework.pushLanguage('C')
-    args.append('CC="'+self.framework.getCompiler()+'"')
-    args.append('CFLAGS="'+self.updatePackageCFlags(self.framework.getCompilerFlags())+'"')
+    self.pushLanguage('C')
+    args.append('CC="'+self.getCompiler()+'"')
+    args.append('CFLAGS="'+self.updatePackageCFlags(self.getCompilerFlags())+'"')
     args.append('prefix="'+self.installDir+'"')
-    self.framework.popLanguage()
+    self.popLanguage()
     args=' '.join(args)
 
     cargs=[]

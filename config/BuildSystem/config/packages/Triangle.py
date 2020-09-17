@@ -64,7 +64,7 @@ class Configure(config.package.Package):
       import config.setCompilers
 
       g.write('BUILDSHAREDLIB = yes\n')
-      if config.setCompilers.Configure.isSolaris(self.log) and config.setCompilers.Configure.isGNU(self.framework.getCompiler(), self.log):
+      if config.setCompilers.Configure.isSolaris(self.log) and config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
         g.write('shared_arch: shared_'+sys.platform+'gnu\n')
       else:
         g.write('shared_arch: shared_'+sys.platform+'\n')

@@ -36,12 +36,12 @@ class Configure(config.package.CMakePackage):
     args.append('-DEIGEN_INCLUDE_DIR='+self.eigen.include[0])
 
     # prevent Pragmatic from linking to MPI it finds by itself
-    args.append('-DMPI_C_COMPILER:STRING="'+self.framework.getCompiler()+'"')
+    args.append('-DMPI_C_COMPILER:STRING="'+self.getCompiler()+'"')
     args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
     args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')
     args.append('-DMPI_C_LINK_FLAGS:STRING=""')
     args.append('-DMPI_C_LIBRARIES:STRING=""')
-    args.append('-DMPI_CXX_COMPILER:STRING="'+self.framework.getCompiler('Cxx')+'"')
+    args.append('-DMPI_CXX_COMPILER:STRING="'+self.getCompiler('Cxx')+'"')
     args.append('-DMPI_CXX_INCLUDE_PATH:STRING=""')
     args.append('-DMPI_CXX_COMPILE_FLAGS:STRING=""')
     args.append('-DMPI_CXX_LINK_FLAGS:STRING=""')

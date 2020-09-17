@@ -65,20 +65,20 @@ class Configure(config.package.CMakePackage):
     if not self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS=off')
 
-    self.framework.pushLanguage('C')
-    args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
+    self.pushLanguage('C')
+    args.append('-DMPI_C_COMPILER="'+self.getCompiler()+'"')
     if self.argDB['with-64-bit-indices']:
       args.append('-DEL_USE_64BIT_INTS=ON')
-    self.framework.popLanguage()
+    self.popLanguage()
 
-    self.framework.pushLanguage('Cxx')
+    self.pushLanguage('Cxx')
     if config.setCompilers.Configure.isSolaris(self.log):
        raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
-    args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-    self.framework.popLanguage()
+    args.append('-DMPI_CXX_COMPILER="'+self.getCompiler()+'"')
+    self.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
-      self.framework.pushLanguage('FC')
-      args.append('-DMPI_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
-      self.framework.popLanguage()
+      self.pushLanguage('FC')
+      args.append('-DMPI_Fortran_COMPILER="'+self.getCompiler()+'"')
+      self.popLanguage()
     return args
