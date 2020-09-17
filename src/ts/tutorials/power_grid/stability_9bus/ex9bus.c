@@ -577,18 +577,19 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
 
   PetscFunctionBegin;
   ierr = RHSFunction(ts,t,X,F,ctx);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
+  ierr = VecScale(F,-1.0);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   for (i=0;i < ngen;i++) {
-    f[9*i]   -= xdot[9*i];
-    f[9*i+1] -= xdot[9*i+1];
-    f[9*i+2] -= xdot[9*i+2];
-    f[9*i+3] -= xdot[9*i+3];
-    f[9*i+6] -= xdot[9*i+6];
-    f[9*i+7] -= xdot[9*i+7];
-    f[9*i+8] -= xdot[9*i+8];
+    f[9*i]   += xdot[9*i];
+    f[9*i+1] += xdot[9*i+1];
+    f[9*i+2] += xdot[9*i+2];
+    f[9*i+3] += xdot[9*i+3];
+    f[9*i+6] += xdot[9*i+6];
+    f[9*i+7] += xdot[9*i+7];
+    f[9*i+8] += xdot[9*i+8];
   }
-  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -979,9 +980,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat 
 
   PetscFunctionBegin;
   user->t = t;
-  atmp *= -1;
 
   ierr = RHSJacobian(ts,t,X,A,B,user);CHKERRQ(ierr);
+  ierr = MatScale(B,-1.0);CHKERRQ(ierr);
   for (i=0;i < ngen;i++) {
     row = 9*i;
     ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
@@ -1257,7 +1258,8 @@ int main(int argc,char **argv)
 
    test:
       suffix: steprestart
-      args: -ts_monitor -snes_monitor_short -ts_type arkimex
+      # needs ARKIMEX methods with all implicit stages since the mass matrix is not the identity
+      args: -ts_monitor -snes_monitor_short -ts_type arkimex -ts_arkimex_type prssp2
       localrunfiles: petscoptions X.bin Ybus.bin
 
 TEST*/
