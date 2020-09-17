@@ -3,8 +3,6 @@
 Using MATLAB with PETSc
 -----------------------
 
-.. include:: temp_edit_needed_banner.inc
-
 There are three basic ways to use MATLAB with PETSc:
 
 #. (:any:`sec_matlabdump`) dumping files to be read into
