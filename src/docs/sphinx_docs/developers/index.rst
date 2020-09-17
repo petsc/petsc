@@ -11,6 +11,7 @@ Information for PETSc developers and those interested in contributing.
    contributing
    style
    integration
+   buildsystem
    testing
    documentation
    design

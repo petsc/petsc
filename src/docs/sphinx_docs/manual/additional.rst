@@ -9,7 +9,6 @@ Additional Information
    profiling
    performance
    other
-   buildsystem
    advanced
    tests
    acknowledgements
