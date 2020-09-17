@@ -53,15 +53,15 @@ class Configure(config.package.GNUPackage):
       g.write('GLVIS_USE_LIBTIFF = NO\n')
       g.write('GLVIS_USE_LIBPNG = NO\n')
 
-      self.setCompilers.pushLanguage('C')
-      g.write('CC = '+self.setCompilers.getCompiler()+'\n')
-      g.write('CFLAGS = ' + self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+'\n')
-      self.setCompilers.popLanguage()
+      self.pushLanguage('C')
+      g.write('CC = '+self.getCompiler()+'\n')
+      g.write('CFLAGS = ' + self.updatePackageCFlags(self.getCompilerFlags())+'\n')
+      self.popLanguage()
 
       # build flags for serial MFEM
-      self.setCompilers.pushLanguage('Cxx')
-      mfem_flags='CXX=\"'+self.setCompilers.getCompiler()+'\" CXXFLAGS=\"-O3 '+self.setCompilers.getCompilerFlags()+'\"'
-      self.setCompilers.popLanguage()
+      self.pushLanguage('Cxx')
+      mfem_flags='CXX=\"'+self.getCompiler()+'\" CXXFLAGS=\"-O3 '+self.getCompilerFlags()+'\"'
+      self.popLanguage()
 
       g.write('PETSC_MFEM_FLAGS = '+mfem_flags+'\n')
       g.close()

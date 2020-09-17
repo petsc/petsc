@@ -34,10 +34,10 @@ class Configure(config.package.Package):
     if self.openmp.found:
       self.usesopenmp = 'yes'
 
-    self.setCompilers.pushLanguage('Cxx')
-    cxx = self.setCompilers.getCompiler()
-    cxxflags = self.setCompilers.getCompilerFlags()
-    self.setCompilers.popLanguage()
+    self.pushLanguage('Cxx')
+    cxx = self.getCompiler()
+    cxxflags = self.getCompilerFlags()
+    self.popLanguage()
 
     self.pushLanguage('CUDA')
     nvcc = self.getCompiler()

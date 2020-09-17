@@ -25,17 +25,17 @@ class Configure(config.package.Package):
     g.write('AR_LIB_SUFFIX  = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('RANLIB         = '+self.setCompilers.RANLIB+'\n')
 
-    self.setCompilers.pushLanguage('C')
-    cflags = self.updatePackageCFlags(self.setCompilers.getCompilerFlags())
+    self.pushLanguage('C')
+    cflags = self.updatePackageCFlags(self.getCompilerFlags())
     cflags += ' ' + self.headers.toString(self.mpi.include)+' '+self.headers.toString('.')
     cflags += ' ' + '-DSPRNG_MPI' # either using MPI or MPIUNI
 
-    g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CC             = '+self.getCompiler()+'\n')
     g.write('CFLAGS         = '+cflags+'\n')
     g.write('CLD            = $(CC)\n')
     g.write('MPICC          = $(CC)\n')
     g.write('CPP            ='+self.getPreprocessor()+'\n')
-    self.setCompilers.popLanguage()
+    self.popLanguage()
 
     # extra unused options
     g.write('CLDFLAGS       = \n')

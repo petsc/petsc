@@ -15,9 +15,9 @@ class Configure(config.package.Package):
     import os
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
-    self.setCompilers.pushLanguage('C')
-    g.write('CC = '+self.setCompilers.getCompiler()+' '+self.updatePackageCFlags(self.setCompilers.getCompilerFlags())+'\n')
-    self.setCompilers.popLanguage()
+    self.pushLanguage('C')
+    g.write('CC = '+self.getCompiler()+' '+self.updatePackageCFlags(self.getCompilerFlags())+'\n')
+    self.popLanguage()
     g.close()
 
     if self.installNeeded('make.inc'):

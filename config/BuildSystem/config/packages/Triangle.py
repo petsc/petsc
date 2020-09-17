@@ -37,7 +37,7 @@ class Configure(config.package.Package):
     g.write('MKDIR            = '+self.programs.mkdir+'\n')
     g.write('OMAKE            = '+self.make.make+' '+self.make.noprintdirflag+'\n')
 
-    g.write('CLINKER          = '+self.setCompilers.getLinker()+'\n')
+    g.write('CLINKER          = '+self.getLinker()+'\n')
     g.write('AR               = '+self.setCompilers.AR+'\n')
     g.write('ARFLAGS          = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('AR_LIB_SUFFIX    = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
@@ -51,14 +51,14 @@ class Configure(config.package.Package):
     g.write('TRIANGLELIB      = libtriangle.$(AR_LIB_SUFFIX)\n')
     g.write('SHLIB            = libtriangle\n')
 
-    self.setCompilers.pushLanguage('C')
-    cflags = self.updatePackageCFlags(self.setCompilers.getCompilerFlags())
+    self.pushLanguage('C')
+    cflags = self.updatePackageCFlags(self.getCompilerFlags())
     cflags += ' '+self.headers.toString('.')
     cflags += ' -fPIC'
 
-    g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CC             = '+self.getCompiler()+'\n')
     g.write('CFLAGS         = '+cflags+'\n')
-    self.setCompilers.popLanguage()
+    self.popLanguage()
 
     if self.checkSharedLibrariesEnabled():
       import config.setCompilers

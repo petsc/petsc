@@ -52,22 +52,22 @@ class Configure(config.package.Package):
     # From v4.5.0, SuiteSparse_config/SuiteSparse_config.mk is not modifiable anymore. Instead, we must override make variables
     args=[]
 
-    self.setCompilers.pushLanguage('C')
-    args.append('CC="'+self.setCompilers.getCompiler()+'"')
-    cflags=self.updatePackageCFlags(self.setCompilers.getCompilerFlags())
+    self.pushLanguage('C')
+    args.append('CC="'+self.getCompiler()+'"')
+    cflags=self.updatePackageCFlags(self.getCompilerFlags())
     if self.checkSharedLibrariesEnabled():
-      ldflags=self.setCompilers.getDynamicLinkerFlags()
+      ldflags=self.getDynamicLinkerFlags()
     else:
       ldflags=''
     ldflags+=self.setCompilers.LDFLAGS
     # SuiteSparse 5.6.0 makefile has a bug in how it treats LDFLAGS (not using the override directive)
     ldflags+=" -L\$(INSTALL_LIB)"
-    self.setCompilers.popLanguage()
+    self.popLanguage()
 
     # CHOLMOD may build the shared library with CXX
-    self.setCompilers.pushLanguage('Cxx')
-    args.append('CXX="'+self.setCompilers.getCompiler()+'"')
-    self.setCompilers.popLanguage()
+    self.pushLanguage('Cxx')
+    args.append('CXX="'+self.getCompiler()+'"')
+    self.popLanguage()
 
     args.append('MAKE="'+self.make.make+'"')
     args.append('RANLIB="'+self.setCompilers.RANLIB+'"')

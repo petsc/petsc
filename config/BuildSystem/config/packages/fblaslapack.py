@@ -38,14 +38,14 @@ class Configure(config.package.Package):
         cc = self.compilers.CC
         line = 'CC = '+cc+'\n'
       if line.startswith('COPTFLAGS '):
-        self.setCompilers.pushLanguage('C')
-        line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()
+        self.pushLanguage('C')
+        line = 'COPTFLAGS  = '+self.getCompilerFlags()
         noopt = self.checkNoOptFlag()
-        self.setCompilers.popLanguage()
+        self.popLanguage()
       if line.startswith('CNOOPT'):
-        self.setCompilers.pushLanguage('C')
-        line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
-        self.setCompilers.popLanguage()
+        self.pushLanguage('C')
+        line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.getCompilerFlags())+' '+self.getPointerSizeFlag(self.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.getCompilerFlags())
+        self.popLanguage()
       if line.startswith('FC  '):
         fc = self.compilers.FC
         if fc.find('f90') >= 0 or fc.find('f95') >=0:
@@ -54,14 +54,14 @@ class Configure(config.package.Package):
             self.log.write('Using IBM f90 compiler, switching to xlf for compiling BLAS/LAPACK\n')
         line = 'FC = '+fc+'\n'
       if line.startswith('FOPTFLAGS '):
-        self.setCompilers.pushLanguage('FC')
-        line = 'FOPTFLAGS  = '+self.updatePackageFFlags(self.setCompilers.getCompilerFlags())+'\n'
+        self.pushLanguage('FC')
+        line = 'FOPTFLAGS  = '+self.updatePackageFFlags(self.getCompilerFlags())+'\n'
         noopt = self.checkNoOptFlag()
-        self.setCompilers.popLanguage()
+        self.popLanguage()
       if line.startswith('FNOOPT'):
-        self.setCompilers.pushLanguage('FC')
-        line = 'FNOOPT = '+noopt+' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+' '+self.updatePackageFFlags('')+'\n'
-        self.setCompilers.popLanguage()
+        self.pushLanguage('FC')
+        line = 'FNOOPT = '+noopt+' '+self.getSharedFlag(self.getCompilerFlags())+' '+self.getPointerSizeFlag(self.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.getCompilerFlags())+' '+self.updatePackageFFlags('')+'\n'
+        self.popLanguage()
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'
       if line.startswith('AR_FLAGS  '):
