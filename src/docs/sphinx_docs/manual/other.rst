@@ -1,8 +1,6 @@
 Other PETSc Features
 --------------------
 
-.. include:: temp_edit_needed_banner.inc
-
 PETSc on a process subset
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -545,14 +543,14 @@ basic “scalar” datatype, given in PETSc codes by ``PetscScalar``, is
 defined as ``complex`` (or ``complex<double>`` for machines using
 templated complex class libraries). To work with complex numbers, the
 user should run ``./configure`` with the additional option
-``--with-scalar-type=complex``. The file
-```${PETSC_DIR}/src/docs/website/documentation/installation.html`` <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__
-provides detailed instructions for installing PETSc. You can use
+``--with-scalar-type=complex``. The
+`installation instructions <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__
+provide detailed instructions for installing PETSc. You can use
 ``--with-clanguage=c`` (the default) to use the C99 complex numbers or
 ``--with-clanguage=c++`` to use the C++ complex type [9]_.
 
 Recall that each variant of the PETSc libraries is stored in a different
-directory, given by ``${PETSC_DIR}/lib/${PETSC_ARCH``
+directory, given by ``${PETSC_DIR}/lib/${PETSC_ARCH}``
 
 according to the architecture. Thus, the libraries for complex numbers
 are maintained separately from those for real numbers. When using any of
@@ -588,7 +586,7 @@ interactively with PETSc programs. We urge users to generate their
 publication-quality graphics using a professional graphics package. If a
 user wants to hook certain packages into PETSc, he or she should send a
 message to
-```petsc-maint@mcs.anl.gov`` <mailto:petsc-maint@mcs.anl.gov>`__; we
+`petsc-maint@mcs.anl.gov <mailto:petsc-maint@mcs.anl.gov>`__; we
 will see whether it is reasonable to try to provide direct interfaces.
 
 Windows as PetscViewers
@@ -725,7 +723,7 @@ PETSc includes a set of routines for manipulating simple two-dimensional
 graphs. These routines, which begin with ``PetscDrawAxisDraw()``, are
 usually not used directly by the application programmer. Instead, the
 programmer employs the line graph routines to draw simple line graphs.
-As shown in the program, within Figure `[fig_plot] <#fig_plot>`__, line
+As shown in the :ref:`listing below <listing_draw_test_ex3>`, line
 graphs are created with the command
 
 ::
@@ -791,6 +789,19 @@ It is possible to turn off all graphics with the option ``-nox``. This
 will prevent any windows from being opened or any drawing actions to be
 done. This is useful for running large jobs when the graphics overhead
 is too large, or for timing.
+
+The full example, `Draw Test ex3 <https://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/tests/ex3.c.html>`__,
+follows.
+
+.. _listing_draw_test_ex3:
+
+.. admonition:: Listing: ``src/classes/draw/tests/ex3.c``
+   :name: snes-ex1
+
+   .. literalinclude:: ../../../sys/classes/draw/tests/ex3.c
+      :end-before: /*TEST
+
+
 
 Graphical Convergence Monitor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1156,7 +1167,7 @@ libraries inside your iOS XCode projects; see the examples in
 the Apple ``Accelerate.framework``.
 
 .. [8]
-   ```https://bitbucket.org/saws/saws/wiki/Home`` <https://bitbucket.org/saws/saws/wiki/Home>`__
+   `Saws wiki on Bitbucket <https://bitbucket.org/saws/saws/wiki/Home>`__
 
 .. [9]
    Note that this option is not required to use PETSc with C++
