@@ -3,8 +3,6 @@
 DMPlex: Unstructured Grids in PETSc
 -----------------------------------
 
-.. include:: temp_edit_needed_banner.inc
-
 This chapter introduces the ``DMPLEX`` subclass of ``DM``, which allows
 the user to handle unstructured grids using the generic ``DM`` interface
 for hierarchy and multi-physics. ``DMPlex`` was created to remedy a huge
@@ -36,18 +34,27 @@ Directed Acyclic Graph (DAG) representing a cell complex using the
 covering relation. The graph edges represent the relation, which also
 encodes a partially ordered set (poset).
 
-For example, we can encode the doublet mesh in Figure
-`[fig:doubletMesh] <#fig:doubletMesh>`__,
+For example, we can encode the doublet mesh as in :numref:`fig_doubletMesh`,
+
+.. figure:: images/dmplex_doublet_mesh.svg
+  :name: fig_doubletMesh
+
+  A 2D doublet mesh, two triangles sharing an edge.
 
 which can also be represented as the DAG in
-Figure `[fig:doubletDAG] <#fig:doubletDAG>`__.
+:numref:`fig_doubletDAG`.
+
+.. figure:: images/dmplex_doublet_dag.svg
+  :name: fig_doubletDAG
+
+  The Hasse diagram for our 2D doublet mesh, expressed as a DAG.
 
 To use the PETSc API, we first consecutively number the mesh pieces. The
 PETSc convention in 3 dimensions is to number first cells, then
 vertices, then faces, and then edges. In 2 dimensions the convention is
 to number faces, vertices, and then edges. The user is free to violate
 these conventions. In terms of the labels in
-Figure `[fig:doubletMesh] <#fig:doubletMesh>`__, these numberings are
+:numref:`fig_doubletMesh`, these numberings are
 
 .. math:: f_0 \mapsto \mathtt{0}, f_1 \mapsto \mathtt{1}, \quad v_0 \mapsto \mathtt{2}, v_1 \mapsto \mathtt{3}, v_2 \mapsto \mathtt{4}, v_3 \mapsto \mathtt{5}, \quad e_0 \mapsto \mathtt{6}, e_1 \mapsto \mathtt{7}, e_2 \mapsto \mathtt{8}, e_3 \mapsto \mathtt{9}, e_4 \mapsto \mathtt{10}
 
@@ -141,7 +148,7 @@ The sequence for setting up any ``PetscSection`` is the following:
 #. Set up the ``PetscSection``.
 
 For example, using the mesh from
-Figure `[fig:doubletMesh] <#fig:doubletMesh>`__, we can lay out data for
+:numref:`fig_doubletMesh`, we can lay out data for
 a continuous Galerkin :math:`P_3` finite element method,
 
 ::
@@ -327,7 +334,7 @@ where we want the data from neighboring cells for each face:
    myfunc(a[offA], a[offB]);
    VecRestoreArray(u, &a);
 
-This kind of calculation is used in ``TS``
+This kind of calculation is used in
 `TS Tutorial ex11 <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex11.c.html>`__.
 
 Networks
