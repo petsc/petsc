@@ -18,8 +18,8 @@ options are fully supported. The routine arguments follow the usual
 Fortran conventions; the user need not worry about passing pointers or
 values. The calling sequences for the Fortran version are in most cases
 identical to the C version, except for the error checking variable
-discussed in Section `1.1.2 <#sec_fortran_errors>`__ and a few routines
-listed in Section `1.1.9 <#sec_fortran_exceptions>`__.
+discussed in :any:`sec_fortran_errors` and a few routines
+listed in :any:`sec_fortran_exceptions`.
 
 .. _sec_fortran_includes:
 
@@ -74,8 +74,8 @@ which terminates all processes when an error is encountered. Likewise,
 one can set error codes within Fortran programs by using
 ``SETERRQ(comm,p,' ',ierr)``, which again terminates all processes upon
 detection of an error. Note that complete error tracebacks with
-``CHKERRQ()`` and ``SETERRQ()``, as described in Section
-`1.4 <#sec_simple>`__ for C routines, are *not* directly supported for
+``CHKERRQ()`` and ``SETERRQ()``, as described in
+:any:`sec_simple` for C routines, are *not* directly supported for
 Fortran routines; however, Fortran programmers can easily use the error
 codes in writing their own tracebacks. For example, one could use code
 such as the following:
@@ -171,7 +171,7 @@ Matrix, Vector and IS Indices
 All matrices, vectors and ``IS`` in PETSc use zero-based indexing,
 regardless of whether C or Fortran is being used. The interface
 routines, such as ``MatSetValues()`` and ``VecSetValues()``, always use
-zero indexing. See Section `2.2 <#sec_matoptions>`__ for further
+zero indexing. See :any:`sec_matoptions` for further
 details.
 
 Setting Routines

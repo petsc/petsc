@@ -238,7 +238,7 @@ only the first memory channel is fully saturated at 25.5 GB/sec.
 
 | One must not assume that ``mpirun`` uses good defaults. To
   demonstrate, compare the full output of ``make streams`` from
-  Section `4.1.1 <#subsec:bandwidth-vs-processes>`__ on the left with
+  :any:`subsec:bandwidth-vs-processes` on the left with
   the results on the right obtained by passing
   ``--bind-to core --map-by socket``:
 
@@ -478,7 +478,7 @@ Profiling
 
 Users should not spend time optimizing a code until after having
 determined where it spends the bulk of its time on realistically sized
-problems. As discussed in detail in Chapter `3 <#ch_profiling>`__, the
+problems. As discussed in detail in :any:`ch_profiling`, the
 PETSc routines automatically log performance data if certain runtime
 options are specified.
 
@@ -526,7 +526,7 @@ lower data motion. Typical examples are:
    reducing the number of ``PetscMalloc()`` calls may be warranted. For
    example, reusing space or allocating large chunks and dividing it
    into pieces can produce a significant savings in allocation overhead.
-   Section `4.2.7 <#sec_dsreuse>`__ gives details.
+   :any:`sec_dsreuse` gives details.
 
 Aggressive aggregation of data may result in inflexible datastructures
 and code that is hard to maintain. We advise users to keep these
@@ -545,7 +545,7 @@ and ``MatCreateAIJ()`` for compressed, sparse row formats, instead of
 the generic ``MatCreate()`` routine. For problems with multiple degrees
 of freedom per node, the block, compressed, sparse row formats, created
 by ``MatCreateSeqBAIJ()`` and ``MatCreateBAIJ()``, can significantly
-enhance performance. Section `2.1.1 <#sec_matsparse>`__ includes
+enhance performance. :any:`sec_matsparse` includes
 extensive details and examples regarding preallocation.
 
 .. _sec_symbolfactor:
@@ -670,7 +670,7 @@ the solvers accordingly.
 -  Use the option ``-info`` to print details about the solvers’
    operation.
 
--  Use the PETSc monitoring discussed in Chapter `3 <#ch_profiling>`__
+-  Use the PETSc monitoring discussed in :any:`ch_profiling`
    to evaluate the performance of various numerical methods.
 
 .. _sec_slestips:
@@ -678,7 +678,7 @@ the solvers accordingly.
 Tips for Efficient Use of Linear Solvers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As discussed in Chapter `[ch_ksp] <#ch_ksp>`__, the default linear
+As discussed in :any:`ch_ksp`, the default linear
 solvers are
 
 -  | uniprocess: GMRES(30) with ILU(0) preconditioning
@@ -700,12 +700,12 @@ solvers, as discussed throughout the manual.
 In particular, note that the default restart parameter for GMRES is 30,
 which may be too small for some large-scale problems. One can alter this
 parameter with the option ``-ksp_gmres_restar <restart>`` or by calling
-``KSPGMRESSetRestart()``. Section `[sec_ksp] <#sec_ksp>`__ gives
+``KSPGMRESSetRestart()``. :any:`sec_ksp` gives
 information on setting alternative GMRES orthogonalization routines,
 which may provide much better parallel performance.
 
 For elliptic problems one often obtains good performance and scalability
-with multigrid solvers. Consult Section `3.4.5 <#sec_amg>`__ for
+with multigrid solvers. Consult :any:`sec_amg` for
 available options. Our experience is that GAMG works particularly well
 for elasticity problems, whereas hypre does well for scalar problems.
 
@@ -753,7 +753,7 @@ them.
 -  **Inconsistent timings**: Inconsistent timings are likely due to
    other users on the machine, thrashing (using more virtual memory than
    available physical memory), or paging in of the initial executable.
-   Section `3.8 <#sec_profaccuracy>`__ provides information on
+   :any:`sec_profaccuracy` provides information on
    overcoming paging overhead when profiling a code. We have found on
    all systems that if you follow all the advise above your timings will
    be consistent within a variation of less than five percent.

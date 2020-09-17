@@ -7,14 +7,14 @@ Using MATLAB with PETSc
 
 There are three basic ways to use MATLAB with PETSc:
 
-#. (Section `2.1 <#sec_matlabdump>`__) dumping files to be read into
+#. (:any:`sec_matlabdump`) dumping files to be read into
    MATLAB,
 
-#. (Section `2.2 <#sec_matlabsocket>`__) automatically sending data from
+#. (:any:`sec_matlabsocket`) automatically sending data from
    a running PETSc program to a MATLAB process where you may
    interactively type MATLAB commands (or run scripts), and
 
-#. (Section `2.3 <#sec_matlabengine>`__) automatically sending data back
+#. (:any:`sec_matlabengine`) automatically sending data back
    and forth between PETSc and MATLAB where MATLAB commands are issued
    not interactively but from a script or the PETSc program (this uses
    the MATLAB Engine).
@@ -59,8 +59,8 @@ If no name is specified, the object is given a default name using
 Dumping Binary Data for MATLAB
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-One can also read PETSc binary files (see Section
-`5.3 <#sec_viewers>`__) directly into MATLAB via the scripts available
+One can also read PETSc binary files (see
+:any:`sec_viewers`) directly into MATLAB via the scripts available
 in ``$PETSC_DIR/share/matlab``. This requires less disk space and is
 recommended for all but the smallest data sizes. One can also use
 
@@ -102,7 +102,7 @@ as the PETSc program) and then sends matrices or vectors via
    VecView(Vec A,v);
    MatView(Mat B,v);
 
-See Section `5.3 <#sec_viewers>`__ for more on PETSc viewers. One may
+See :any:`sec_viewers` for more on PETSc viewers. One may
 start the MATLAB program manually or use the PETSc command
 ``PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp)``;
 where ``machine`` and ``script`` may be ``NULL``. It is also possible to
