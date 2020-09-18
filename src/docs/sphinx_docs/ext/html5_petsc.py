@@ -26,13 +26,13 @@ def setup(app: Sphinx) -> None:
 
 
 def _check_version(app: Sphinx) -> None:
-    app.require_sphinx('2.4')
     sphinx_version_info_source = (2, 4, 4, 'final', 0)
+    app.require_sphinx('%s.%s' % (sphinx_version_info_source[0], sphinx_version_info_source[1]))
     if sphinx_version_info != sphinx_version_info_source:
-        error_message = 'This extension duplicates code from Sphinx '
-        error_message += str(sphinx_version_info_source)
-        error_message += ' which is incompatible with the current version'
-        error_message += str(sphinx_version_info)
+        error_message = ' '.join([
+            'This extension duplicates code from Sphinx %s ' % (sphinx_version_info_source,),
+            'which is incompatible with the current version %s' % (sphinx_version_info,),
+            ])
         raise NotImplementedError(error_message)
 
 
