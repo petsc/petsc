@@ -414,20 +414,30 @@ docsetdate: chk_petscdir
 # there.
 PETSC_SPHINX_ROOT=src/docs/sphinx_docs
 PETSC_SPHINX_ENV=sphinx_docs_env
+PETSC_SPHINX_DEST_SUBDIR=docs/sphinx_docs
 
-sphinx-docs-html:
+sphinx-docs-all: sphinx-docs-html sphinx-docs-manual
+
+sphinx-docs-html: chk_loc sphinx-docs-env
+	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
+		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST_SUBDIR} html
+
+sphinx-docs-manual: chk_loc sphinx-docs-env
+	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
+		BUILDDIR_MANUAL=${LOC}/${PETSC_SPHINX_DEST_SUBDIR} manual_pdf
+
+sphinx-docs-env:
 	@${PYTHON} -c 'import sys; sys.exit(sys.version_info[:2] < (3,3))' || \
-    (printf 'Working Python 3.3 or later is required to build the Sphinx docs in a virtual environment\nTry e.g.\n  make sphinx-docs-html PYTHON=python3\n' && false)
+    (printf 'Working Python 3.3 or later is required to build the Sphinx docs in a virtual environment\nTry e.g.\n  make ... PYTHON=python3\n' && false)
 	@if [ ! -d  "${PETSC_SPHINX_ENV}" ]; then \
         ${PYTHON} -m venv ${PETSC_SPHINX_ENV}; \
         . ${PETSC_SPHINX_ENV}/bin/activate; \
-        pip install -r src/docs/sphinx_docs/requirements.txt; \
+        pip install -r ${PETSC_SPHINX_ROOT}/requirements.txt; \
       fi
-	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} html
 
-sphinx-docs-clean:
-	${OMAKE} -C ${PETSC_SPHINX_ROOT} clean
+sphinx-docs-clean: chk_loc
 	${RM} -rf ${PETSC_SPHINX_ENV}
+	${RM} -rf ${LOC}/${PETSC_SPHINX_DEST_SUBDIR}
 
 alldocclean: deletemanualpages allcleanhtml
 
