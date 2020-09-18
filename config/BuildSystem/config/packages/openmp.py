@@ -41,7 +41,7 @@ class Configure(config.package.Package):
         # OpenMP compile flag is also needed at link time
         self.setCompilers.LDFLAGS += ' '+ompflag
         oldFlags = self.compilers.CPPFLAGS
-        self.compilers.CPPFLAGS += ompflag
+        self.compilers.CPPFLAGS += ' '+ompflag
         try:
           output,err,status  = self.preprocess('#if defined(_OPENMP)\nopmv=_OPENMP\n#else\n#error "No _OPENMP macro, something is wrong with the OpenMP install"\n#endif')
         except:
@@ -69,7 +69,7 @@ class Configure(config.package.Package):
           ompflag = flag
           self.found = 1
           oldFlags = self.compilers.CPPFLAGS
-          self.compilers.CPPFLAGS += ompflag
+          self.compilers.CPPFLAGS += ' '+ompflag
           try:
             output,err,status  = self.preprocess('#if !defined(_OPENMP)\n#error "No _OPENMP macro, something is wrong with the OpenMP install"\n#endif')
           except:
@@ -89,7 +89,7 @@ class Configure(config.package.Package):
           ompflag = flag
           self.found = 1
           oldFlags = self.compilers.CPPFLAGS
-          self.compilers.CPPFLAGS += ompflag
+          self.compilers.CPPFLAGS += ' '+ompflag
           try:
             output,err,status  = self.preprocess('#if !defined(_OPENMP)\n#error "No _OPENMP macro, something is wrong with the OpenMP install"\n#endif')
           except:
