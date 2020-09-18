@@ -3,8 +3,6 @@
 Using MATLAB with PETSc
 -----------------------
 
-.. include:: temp_edit_needed_banner.inc
-
 There are three basic ways to use MATLAB with PETSc:
 
 #. (:any:`sec_matlabdump`) dumping files to be read into
@@ -71,7 +69,7 @@ recommended for all but the smallest data sizes. One can also use
 to dump both a PETSc binary file and a corresponding ``.info`` file
 which ``PetscReadBinaryMatlab.m`` will use to format the binary file in
 more complex cases, such as using a ``DMDA``. For an example, see
-```${PETSC_DIR}/src/dm/tutorials/ex7.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/dm/tutorials/ex7.c.html>`__.
+`DM Tutorial ex7 <https://www.mcs.anl.gov/petsc/petsc-current/src/dm/tutorials/ex7.c.html>`__.
 In MATLAB (R2015b), one may then generate a useful structure. For
 example:
 
@@ -121,7 +119,7 @@ side, one should destroy the viewer object with
 ``PetscViewerDestroy()``.
 
 For an example, which includes sending data back to PETSc, see
-```${PETSC_DIR}/src/vec/vec/tutorials/ex42.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/tutorials/ex42.c.html>`__
+`Vec Tutorial ex42 <https://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/tutorials/ex42.c.html>`__
 and the associated ``.m`` file.
 
 .. _sec_matlabengine:

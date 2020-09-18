@@ -149,9 +149,9 @@ needed. In C and C++, a user-defined context is merely a structure in
 which various objects can be stashed; in Fortran a user context can be
 an integer array that contains both parameters and pointers to PETSc
 objects.
-`${PETSC_DIR}/src/snes/tutorials/ex5.c <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`_
+`SNES Tutorial ex5 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`__
 and
-`${PETSC_DIR}/src/snes/tutorials/ex5f.F90 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`_
+`SNES Tutorial ex5f <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`__
 give examples of user-defined application contexts in C and Fortran,
 respectively.
 

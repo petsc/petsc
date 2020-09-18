@@ -3,8 +3,6 @@
 Hints for Performance Tuning
 ----------------------------
 
-.. include:: temp_edit_needed_banner.inc
-
 This chapter provides hints on how to get to achieve best performance
 with PETSc, particularly on distributed-memory machines with multiple
 CPU sockets per node. We focus on machine-related performance
@@ -52,13 +50,13 @@ entries of each vector, the operation is embarrasingly parallel.
    over the number of processes used. One can get close to peak memory
    bandwidth with only a few processes.
 
-As Fig. `4.1 <#fig_stream_intel>`__ shows, the performance gains due to
+As :numref`fig_stream_intel` shows, the performance gains due to
 parallelization on different multi- and many-core CPUs quickly
 saturates. The reason is that only a fraction of the total number of CPU
 cores is required to saturate the memory channels. For example, a
 dual-socket system equipped with Haswell 12-core Xeon CPUs achieves more
 than 80 percent of achievable peak memory bandwidth with only four
-processes per socket (8 total), cf. Fig. `4.1 <#fig_stream_intel>`__.
+processes per socket (8 total), cf. :numref:`fig_stream_intel`.
 Consequently, running with more than 8 MPI ranks on such a system will
 not increase performance substantially. For the same reason, PETSc-based
 applications usually do not benefit from hyper-threading.
@@ -107,7 +105,7 @@ Non-Uniform Memory Access (NUMA) and Process Placement
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 CPUs in nodes with more than one CPU socket are internally connected via
-a high-speed fabric, cf. Fig. `4.2 <#fig_numa>`__, to enable data
+a high-speed fabric, cf. :numref:`fig_numa`, to enable data
 exchange as well as cache coherency. Because main memory on modern
 systems is connected via the integrated memory controllers on each CPU,
 memory is accessed in a non-uniform way: A process running on one socket
@@ -642,9 +640,9 @@ a user-defined context. In C and C++ such a context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and
 pointers to PETSc objects. See
-```${PETSC_DIR}/snes/tutorials/ex5.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`__
+`SNES Tutorial ex5 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`__
 and
-```${PETSC_DIR}/snes/tutorials/ex5f.F90`` <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`__
+`SNES Tutorial ex5f <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`__
 for examples of user-defined application contexts in C and Fortran,
 respectively.
 
@@ -678,7 +676,7 @@ the solvers accordingly.
 Tips for Efficient Use of Linear Solvers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As discussed in :any:`ch_ksp`, the default linear
+As discussed in :any:`chapter_ksp`, the default linear
 solvers are
 
 -  | uniprocess: GMRES(30) with ILU(0) preconditioning
@@ -734,7 +732,7 @@ them.
 -  **Overhead of timing routines on certain machines**: On certain
    machines, even calling the system clock in order to time routines is
    slow; this skews all of the flop rates and timing results. The file
-   ```$PETSC_DIR/src/benchmarks/PetscTime.c`` <https://www.mcs.anl.gov/petsc/petsc-current/src/benchmarks/PetscTime.c.html>`__
+   ``$PETSC_DIR/src/benchmarks/PetscTime.c`` (`source <https://www.mcs.anl.gov/petsc/petsc-current/src/benchmarks/PetscTime.c.html>`__)
    contains a simple test problem that will approximate the amount of
    time required to get the current time in a running program. On good
    systems it will on the order of :math:`10^{-6}` seconds or less.

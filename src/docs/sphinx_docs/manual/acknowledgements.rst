@@ -2,7 +2,6 @@
 
 Acknowledgments
 ---------------
-.. include:: temp_edit_needed_banner.inc
 
 We thank all PETSc users for their many suggestions, bug reports, and
 encouragement.
