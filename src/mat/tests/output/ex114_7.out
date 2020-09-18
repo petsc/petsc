@@ -1,5 +1,5 @@
-Mat Object: 1 MPI processes
-  type: seqaij
+Mat Object: 3 MPI processes
+  type: mpiaij
 row 0: (0, -2.)  (1, -2.)  (2, -2.)  (3, -4.)  (4, 1.)  (5, 1.) 
 row 1:
 row 2: (0, -2.)  (3, -2.)  (5, -2.) 
@@ -7,16 +7,21 @@ row 3: (0, -2.)  (1, -2.)  (4, -2.)
 row 4: (0, -2.)  (1, -2.)  (2, -2.) 
 
  MatGetRowMax
-Vec Object: 1 MPI processes
-  type: seq
+Vec Object: 3 MPI processes
+  type: mpi
+Process [0]
 1.
 0.
+Process [1]
 0.
 0.
+Process [2]
 0.
-0: 4 0 1 2 3
-Mat Object: 1 MPI processes
-  type: seqaij
+[0] 0: 4 0
+[1] 0: 1 2
+[2] 0: 3
+Mat Object: 3 MPI processes
+  type: mpiaij
 row 0: (0, 2.)  (1, 2.)  (2, 2.)  (3, 4.)  (4, -1.)  (5, -1.) 
 row 1:
 row 2: (0, 2.)  (3, 2.)  (5, 2.) 
@@ -26,24 +31,33 @@ row 4: (0, 2.)  (1, 2.)  (2, 2.)
  MatGetRowMin
 
  MatGetRowMaxAbs
-Vec Object: 1 MPI processes
-  type: seq
+Vec Object: 3 MPI processes
+  type: mpi
+Process [0]
 4.
 0.
+Process [1]
 2.
 2.
+Process [2]
 2.
-0: 3 0 0 0 0
+[0] 0: 3 0
+[1] 0: 0 0
+[2] 0: 0
 
  MatGetRowMinAbs
-Vec Object: 1 MPI processes
-  type: seq
+Vec Object: 3 MPI processes
+  type: mpi
+Process [0]
 -1.
 0.
+Process [1]
 0.
 0.
+Process [2]
 0.
-0: 4 0 1 2 3
-MatGetRowMax for seqdense matrix
-MatGetRowMin for seqdense matrix
-MatGetRowMaxAbs for seqdense matrix
+[0] 0: 4 0
+[1] 0: 1 2
+[2] 0: 3
+
+ MatGetRowMaxAbs for MPIBAIJ matrix

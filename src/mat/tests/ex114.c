@@ -10,13 +10,10 @@ int main(int argc,char **args)
 {
   Mat            A;
   Vec            min,max,maxabs,e;
-  PetscInt       m,n,j,col,cols[N];
-  PetscInt       imin[M],imax[M],imaxabs[M],indices[N],row,testcase=0;
+  PetscInt       m,n,j,imin[M],imax[M],imaxabs[M],indices[N],row,testcase=0;
   PetscScalar    values[N];
   PetscErrorCode ierr;
-  MatType        type;
   PetscMPIInt    size,rank;
-  PetscBool      doTest=PETSC_TRUE;
   PetscReal      enorm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -121,9 +118,7 @@ int main(int argc,char **args)
   ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
   if (enorm > PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
   for (j = 0; j < n; j++) {
-    if (imin[j] != imax[j]) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin %D != imax %D",imin[j],imax[j]);
-    }
+    if (imin[j] != imax[j]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%D] %D != imax %D",j,imin[j],imax[j]);
   }
 
   /* MatGetRowMaxAbs() */
@@ -135,7 +130,6 @@ int main(int argc,char **args)
 
   /* MatGetRowMinAbs() */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMinAbs\n");CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetRowMinAbs(A,min,NULL);CHKERRQ(ierr);
   ierr = MatGetRowMinAbs(A,min,imin);CHKERRQ(ierr);
   ierr = VecView(min,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -143,42 +137,61 @@ int main(int argc,char **args)
 
   if (size == 1) {
     /* Test MatGetRowMax, MatGetRowMin and MatGetRowMaxAbs for SeqDense and MPIBAIJ matrix */
-    ierr = MatConvert(A,MATDENSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMax for seqdense matrix\n");CHKERRQ(ierr);
-    ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
-    ierr = VecView(max,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscIntView(n,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    Mat Adense;
+    Vec max_d,maxabs_d;
+    ierr = VecDuplicate(min,&max_d);CHKERRQ(ierr);
+    ierr = VecDuplicate(min,&maxabs_d);CHKERRQ(ierr);
 
     ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMin for seqdense matrix\n");CHKERRQ(ierr);
-    ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
-    ierr = VecView(min,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscIntView(n,imin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMax for seqdense matrix\n");CHKERRQ(ierr);
+    ierr = MatGetRowMax(Adense,max_d,imax);CHKERRQ(ierr);
+
+    ierr = VecWAXPY(e,-1.0,max,max_d);CHKERRQ(ierr); /* e = -max + max_d */
+    ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-max + max_d) %g > PETSC_MACHINE_EPSILON",enorm);
+
+    ierr = MatScale(Adense,-1.0);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMin for seqdense matrix\n");CHKERRQ(ierr);
+    ierr = MatGetRowMin(Adense,min,imin);CHKERRQ(ierr);
 
     ierr = VecWAXPY(e,1.0,max,min);CHKERRQ(ierr); /* e = max + min */
     ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
     if (enorm > PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
     for (j = 0; j < n; j++) {
       if (imin[j] != imax[j]) {
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin %D != imax %D for seqdense matrix",imin[j],imax[j]);
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%D] %D != imax %D for seqdense matrix",j,imin[j],imax[j]);
       }
     }
 
-    ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
-    ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscIntView(n,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMaxAbs for seqdense matrix\n");CHKERRQ(ierr);
+    ierr = MatGetRowMaxAbs(Adense,maxabs_d,imaxabs);CHKERRQ(ierr);
+    ierr = VecWAXPY(e,-1.0,maxabs,maxabs_d);CHKERRQ(ierr); /* e = -maxabs + maxabs_d */
+    ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",enorm);
 
+    ierr = MatDestroy(&Adense);CHKERRQ(ierr);
+    ierr = VecDestroy(&max_d);CHKERRQ(ierr);
+    ierr = VecDestroy(&maxabs_d);CHKERRQ(ierr);
   } else {
-    #if 0
     /* BAIJ */
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIBAIJ,&doTest);CHKERRQ(ierr);
-    if (doTest) {
-      ierr = MatGetRowMaxAbs(A,maxabs,NULL);CHKERRQ(ierr);
-      ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values:\n");CHKERRQ(ierr);
-      ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    Mat      B;
+    Vec      maxabsB;
+    PetscInt imaxabsB[M];
+    ierr = MatConvert(A,MATMPIBAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = VecDuplicate(min,&maxabsB);CHKERRQ(ierr);
+    ierr = MatGetRowMaxAbs(A,maxabsB,NULL);CHKERRQ(ierr);
+    ierr = MatGetRowMaxAbs(A,maxabsB,imaxabsB);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs for MPIBAIJ matrix\n");CHKERRQ(ierr);
+    ierr = VecWAXPY(e,-1.0,maxabs,maxabsB);CHKERRQ(ierr); /* e = -maxabs + maxabsB */
+    ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",enorm);
+
+    for (j = 0; j < n; j++) {
+      if (imaxabs[j] != imaxabsB[j]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imaxabs[%D] %D != imaxabsB %D",j,imin[j],imax[j]);
     }
-    #endif
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    ierr = VecDestroy(&maxabsB);CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&min);CHKERRQ(ierr);
@@ -190,8 +203,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
-
 /*TEST
 
    test:
@@ -199,11 +210,41 @@ int main(int argc,char **args)
 
    test:
       suffix: 2
-      nsize: 2
+      args: -testcase 1
+      output_file: output/ex114.out
 
    test:
       suffix: 3
-      nsize: 2
-      args: -mat_type baij
+      args: -testcase 2
+      output_file: output/ex114_3.out
+
+   test:
+      suffix: 4
+      args: -testcase 3
+      output_file: output/ex114_4.out
+
+   test:
+      suffix: 5
+      nsize: 3
+      args: -testcase 0
+      output_file: output/ex114_5.out
+
+   test:
+      suffix: 6
+      nsize: 3
+      args: -testcase 1
+      output_file: output/ex114_6.out
+
+   test:
+      suffix: 7
+      nsize: 3
+      args: -testcase 2
+      output_file: output/ex114_7.out
+
+   test:
+      suffix: 8
+      nsize: 3
+      args: -testcase 3
+      output_file: output/ex114_8.out
 
 TEST*/

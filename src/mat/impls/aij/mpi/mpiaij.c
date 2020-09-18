@@ -2322,9 +2322,7 @@ PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A,Vec v,PetscInt idx[])
   }
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&vB);CHKERRQ(ierr);
-  if (idx) {
-    ierr = PetscMalloc1(m,&idxb);CHKERRQ(ierr);
-  }
+  ierr = PetscMalloc1(m,&idxb);CHKERRQ(ierr);
   ierr = MatGetRowMaxAbs(a->B,vB,idxb);CHKERRQ(ierr);
 
   ierr = VecGetArrayWrite(v,&vv);CHKERRQ(ierr);
@@ -2335,7 +2333,7 @@ PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A,Vec v,PetscInt idx[])
       if (idx) idx[i] = a->garray[idxb[i]];
     } else {
       vv[i] = va[i];
-      if (idx && PetscAbsScalar(va[i]) == PetscAbsScalar(vb[i]) && idx[i] > a->garray[idxb[i]])
+      if (idx && PetscAbsScalar(va[i]) == PetscAbsScalar(vb[i]) && idxb[i] != -1 && idx[i] > a->garray[idxb[i]])
         idx[i] = a->garray[idxb[i]];
     }
   }
@@ -2408,7 +2406,7 @@ PetscErrorCode MatGetRowMinAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
           break;
         }
       }
-      if (j == ncols && B->cmap->N < A->cmap->N - n) {
+      if (j == ncols && ncols < A->cmap->N - n) {
         /* a hole is outside compressed Bcols */
         if (ncols == 0) {
           if (cstart) {
@@ -2486,7 +2484,7 @@ PetscErrorCode MatGetRowMin_MPIAIJ(Mat A,Vec v,PetscInt idx[])
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscMalloc2(m,&diagIdx,m,&offdiagIdx);CHKERRQ(ierr);
+  ierr = PetscCalloc2(m,&diagIdx,m,&offdiagIdx);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF, m, &diagV);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF, m, &offdiagV);CHKERRQ(ierr);
   ierr = MatGetRowMin(mat->A, diagV, diagIdx);CHKERRQ(ierr);
@@ -2514,7 +2512,7 @@ PetscErrorCode MatGetRowMin_MPIAIJ(Mat A,Vec v,PetscInt idx[])
           break;
         }
       }
-      if (j == ncols && B->cmap->N < A->cmap->N - n) {
+      if (j == ncols && ncols < A->cmap->N - n) {
         /* a hole is outside compressed Bcols */
         if (ncols == 0) {
           if (cstart) {
@@ -2620,7 +2618,7 @@ PetscErrorCode MatGetRowMax_MPIAIJ(Mat A,Vec v,PetscInt idx[])
           break;
         }
       }
-      if (j == ncols && B->cmap->N < A->cmap->N - n) {
+      if (j == ncols && ncols < A->cmap->N - n) {
         /* a hole is outside compressed Bcols */
         if (ncols == 0) {
           if (cstart) {

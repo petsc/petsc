@@ -3230,9 +3230,7 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,j,m = A->rmap->n,*ai,*aj,ncols,n;
-  PetscReal      atmp;
-  PetscScalar    *x;
-  MatScalar      *aa;
+  PetscScalar    *x,*aa;
 
   PetscFunctionBegin;
   aa = a->a;
