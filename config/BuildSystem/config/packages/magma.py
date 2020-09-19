@@ -143,7 +143,7 @@ class Configure(config.package.Package):
       g.write('CXX = '+cxx+'\n')
       g.write('CXXFLAGS = '+cxxflags+'\n')
       g.write('NVCC = '+nvcc+'\n')
-      g.write('NVCCFLAGS = -std=c++11 '+nvccflags+'\n')
+      g.write('NVCCFLAGS = '+nvccflags+'\n')
       if fcbindings:
         g.write('FORT = '+fc+'\n')
         g.write('FFLAGS = '+fcflags+'\n')
