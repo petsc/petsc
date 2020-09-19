@@ -145,7 +145,7 @@ where the latter is needed to make have it run in the local directory
 instead of ``$PREFIX_DIR``.
 
 To learn more about the test system details, one can look at the
-:doc:`../developers/index`.
+`the PETSc developers documentation <https://docs.petsc.org/en/latest/developers>`__.
 
 .. [11]
    See https://testanything.org/tap-specification.html
