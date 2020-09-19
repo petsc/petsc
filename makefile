@@ -332,7 +332,7 @@ deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 
 # Builds all the documentation - should be done every night
-alldoc: allcite allpdf alldoc1 alldoc2 docsetdate
+alldoc: allcite allpdf alldoc1 alldoc2 docsetdate sphinx-docs-all
 
 # Build just citations
 allcite: chk_loc deletemanualpages
@@ -414,32 +414,37 @@ docsetdate: chk_petscdir
 # there.
 PETSC_SPHINX_ROOT=src/docs/sphinx_docs
 PETSC_SPHINX_ENV=sphinx_docs_env
-PETSC_SPHINX_DEST_SUBDIR=docs/sphinx_docs
+PETSC_SPHINX_DEST=docs/sphinx_docs
+PETSC_SPHINX_WORKING=${PETSC_SPHINX_DEST}/working
 
 sphinx-docs-all: sphinx-docs-html sphinx-docs-manual
 
-sphinx-docs-html: chk_loc sphinx-docs-env
+sphinx-docs-html: chk_loc allcite sphinx-docs-env
 	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
-		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST_SUBDIR} html
+		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} html
 
 sphinx-docs-manual: chk_loc sphinx-docs-env
 	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
-		BUILDDIR_MANUAL=${LOC}/${PETSC_SPHINX_DEST_SUBDIR} manual_pdf
+		BUILDDIR_MANUAL=${LOC}/${PETSC_SPHINX_WORKING} manual_pdf
+	@mv ${LOC}/${PETSC_SPHINX_WORKING}/petsc.pdf ${LOC}/${PETSC_SPHINX_DEST}/manual.pdf
+	@${RM} -rf ${LOC}/${PETSC_SPHINX_WORKING}
 
-sphinx-docs-env:
-	@${PYTHON} -c 'import sys; sys.exit(sys.version_info[:2] < (3,3))' || \
-    (printf 'Working Python 3.3 or later is required to build the Sphinx docs in a virtual environment\nTry e.g.\n  make ... PYTHON=python3\n' && false)
+sphinx-docs-env: sphinx-docs-check-python
 	@if [ ! -d  "${PETSC_SPHINX_ENV}" ]; then \
         ${PYTHON} -m venv ${PETSC_SPHINX_ENV}; \
         . ${PETSC_SPHINX_ENV}/bin/activate; \
         pip install -r ${PETSC_SPHINX_ROOT}/requirements.txt; \
       fi
 
+sphinx-docs-check-python:
+	@${PYTHON} -c 'import sys; sys.exit(sys.version_info[:2] < (3,3))' || \
+    (printf 'Working Python 3.3 or later is required to build the Sphinx docs in a virtual environment\nTry e.g.\n  make ... PYTHON=python3\n' && false)
+
 sphinx-docs-clean: chk_loc
 	${RM} -rf ${PETSC_SPHINX_ENV}
-	${RM} -rf ${LOC}/${PETSC_SPHINX_DEST_SUBDIR}
+	${RM} -rf ${LOC}/${PETSC_SPHINX_DEST}
 
-alldocclean: deletemanualpages allcleanhtml
+alldocclean: deletemanualpages allcleanhtml sphinx-docs-clean
 
 # Deletes man pages (HTML version)
 deletemanualpages: chk_loc
