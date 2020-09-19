@@ -109,8 +109,8 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
      Logically collective
 
   Input Parameter:
-. comm   - the MPI communicator that will utilize the devices
-. device - the device assigned to current MPI process. Special values like PETSC_DECIDE or PETSC_DEFAULT have special meanings (see details below)
++ comm   - the MPI communicator that will utilize the devices
+- device - the device assigned to current MPI process. Special values like PETSC_DECIDE or PETSC_DEFAULT have special meanings (see details below)
 
   Options Database:
 +  -cuda_device <device> - the device assigned to current MPI rank. <device> is case-insensitive and can be:

@@ -1172,7 +1172,7 @@ static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   Input Parameters:
 +   X  - the state
-.   stepi - current step to print
+-   stepi - current step to print
 
   Level: beginner
 
@@ -1275,7 +1275,7 @@ static PetscErrorCode destroy_coloring (void *is)
 
   Input Parameters:
 +   JacP  - matrix to add coloring to
-.   plex - The DM
+-   plex - The DM
 
   Output Parameter:
 .   container  - Container with coloring
@@ -1472,10 +1472,10 @@ static void g0_r(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   Collective on dm
 
   Input Parameters:
-+ dm     - the DM object
+. dm     - the DM object
 
  Output Parameters:
-+ Amat - The mass matrix (optional), mass matrix is added to the DM context
+. Amat - The mass matrix (optional), mass matrix is added to the DM context
 
   Level: beginner
 
