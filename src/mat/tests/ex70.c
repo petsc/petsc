@@ -749,12 +749,18 @@ int main(int argc,char **args)
     nsize: 1
     args: -M {{7 11}} -N {{12 9}} -K {{1 3}} -local {{0 1}}
 
-  test:
+  testset:
     requires: cuda
     output_file: output/ex70_1.out
-    suffix: 2_cuda
     nsize: 1
     args: -M 7 -N 9 -K 2 -local {{0 1}} -testnest 0 -A_mat_type {{seqdensecuda seqdense}} -xgpu {{0 1}} -bgpu {{0 1}}
+    test:
+      requires: !complex
+      suffix: 2_cuda_real
+    test:
+      # complex+single gives a little bigger error in the MatDenseGetColumnVec test
+      requires: complex !single
+      suffix: 2_cuda_complex
 
   test:
     output_file: output/ex70_1.out
