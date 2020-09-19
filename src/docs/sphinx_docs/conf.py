@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath('./ext'))
 
 project = 'PETSc'
 copyright = str(datetime.date.today().year)
-author = 'PETSc'
+author = 'The PETSc Team'
 
 with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as version_file:
     buf = version_file.read()
