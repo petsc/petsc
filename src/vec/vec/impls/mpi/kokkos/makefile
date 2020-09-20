@@ -1,15 +1,15 @@
-
+#requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = pbvec.c pdvec.c pvec2.c vmpicr.c commonmpvec.c
+SOURCECU =
+SOURCEKOKKOS = mpikok.kokkos.cxx
 SOURCEF  =
-SOURCEH  = pvecimpl.h
+SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-DIRS     = mpiviennacl mpiviennaclcuda mpicuda kokkos
-LOCDIR   = src/vec/vec/impls/mpi/
+LOCDIR   = src/vec/vec/impls/mpi/kokkos/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

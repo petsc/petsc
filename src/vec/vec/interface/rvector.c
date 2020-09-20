@@ -1402,6 +1402,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
             }
             break;
           case PETSC_OFFLOAD_UNALLOCATED:
+          case PETSC_OFFLOAD_VECKOKKOS:
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
             break;
           }
@@ -1629,30 +1630,37 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
   if (x->petscnative) {
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) { /* offloadmask here works as a tag quickly saying this is a VecKokkos */
+      ierr = VecKokkosSyncHost(x);CHKERRQ(ierr);
+      *a   = *((PetscScalar**)x->data);
+      PetscFunctionReturn(0);
+    }
+#endif
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->offloadmask == PETSC_OFFLOAD_GPU) {
-#if defined(PETSC_HAVE_VIENNACL)
+  #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
       if (is_viennacltype) {
         ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
       } else
-#endif
+  #endif
       {
-#if defined(PETSC_HAVE_CUDA)
+  #if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
-#endif
+  #endif
       }
     } else if (x->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
-#if defined(PETSC_HAVE_VIENNACL)
+  #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
       if (is_viennacltype) {
         ierr = VecViennaCLAllocateCheckHost(x);CHKERRQ(ierr);
       } else
-#endif
+  #endif
       {
-#if defined(PETSC_HAVE_CUDA)
+  #if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDAAllocateCheckHost(x);CHKERRQ(ierr);
-#endif
+  #endif
       }
     }
 #endif
@@ -1690,6 +1698,13 @@ PetscErrorCode VecGetArrayInPlace(Vec x,PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+    ierr = VecKokkosGetArrayInPlace(x,a);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
 
 #if defined(PETSC_HAVE_CUDA)
   if (x->petscnative && (x->offloadmask & PETSC_OFFLOAD_GPU)) { /* Prefer working on GPU when offloadmask is PETSC_OFFLOAD_BOTH */
@@ -1778,6 +1793,13 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+      ierr = VecKokkosSyncHost(x);CHKERRQ(ierr);
+      *a   = *((PetscScalar **)x->data);
+      PetscFunctionReturn(0);
+    }
+#endif
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->offloadmask == PETSC_OFFLOAD_GPU) {
 #if defined(PETSC_HAVE_VIENNACL)
@@ -1829,6 +1851,13 @@ PetscErrorCode VecGetArrayReadInPlace(Vec x,const PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+    ierr = VecKokkosGetArrayReadInPlace(x,a);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+
 #if defined(PETSC_HAVE_CUDA)
   if (x->petscnative && x->offloadmask & PETSC_OFFLOAD_GPU) {
     PetscBool is_cudatype = PETSC_FALSE;
@@ -1946,9 +1975,15 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    x->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
+   #if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {ierr = VecKokkosModifyHost(x);CHKERRQ(ierr);}
+    else
+   #endif
+    {
+     #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      x->offloadmask = PETSC_OFFLOAD_CPU;
+     #endif
+    }
   } else {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }
@@ -1977,6 +2012,13 @@ PetscErrorCode VecRestoreArrayInPlace(Vec x,PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+    ierr = VecKokkosRestoreArrayInPlace(x,a);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+
 #if defined(PETSC_HAVE_CUDA)
   if (x->petscnative && x->offloadmask == PETSC_OFFLOAD_GPU) {
     PetscBool is_cudatype = PETSC_FALSE;
@@ -2012,6 +2054,12 @@ PetscErrorCode VecRestoreArrayWrite(Vec x,PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+    ierr = VecKokkosModifyHost(x);CHKERRQ(ierr);
+  } else
+#endif
   if (x->petscnative) {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     x->offloadmask = PETSC_OFFLOAD_CPU;
@@ -2023,6 +2071,7 @@ PetscErrorCode VecRestoreArrayWrite(Vec x,PetscScalar **a)
       ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
     }
   }
+
   if (a) *a = NULL;
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
