@@ -4,7 +4,6 @@
  */
 
 #include "petsc/private/petscimpl.h"
-#include <petscconf.h>
 #include <petscvec.hpp>
 #include <petsc/private/vecimpl.h> /* for struct Vec */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /* for VecCreate/Destroy_MPI */

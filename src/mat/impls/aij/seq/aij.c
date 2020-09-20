@@ -173,7 +173,7 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
   MatScalar         *aa = aij->a;
   const PetscScalar *v;
   PetscBool         missing;
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   PetscBool         inserted = PETSC_FALSE;
 #endif
 
@@ -184,7 +184,7 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
       diag = aij->diag;
       ierr = VecGetArrayRead(D,&v);CHKERRQ(ierr);
       if (is == INSERT_VALUES) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
         inserted = PETSC_TRUE;
 #endif
         for (i=0; i<m; i++) {
@@ -192,13 +192,13 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
         }
       } else {
         for (i=0; i<m; i++) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
           if (v[i] != 0.0) inserted = PETSC_TRUE;
 #endif
           aa[diag[i]] += v[i];
         }
       }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
       if (inserted) Y->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
       ierr = VecRestoreArrayRead(D,&v);CHKERRQ(ierr);
@@ -373,7 +373,7 @@ PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A,PetscInt row,const PetscScalar v[])
 
   PetscFunctionBegin;
   ierr = PetscArraycpy(a->a+ai[row],v,ai[row+1]-ai[row]);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && ai[row+1]-ai[row]) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -427,7 +427,7 @@ PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],
       }
     }
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && m && n) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   return 0;
@@ -443,7 +443,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   MatScalar      *ap=NULL,value=0.0,*aa = a->a;
   PetscBool      ignorezeroentries = a->ignorezeroentries;
   PetscBool      roworiented       = a->roworiented;
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   PetscBool      inserted          = PETSC_FALSE;
 #endif
 
@@ -481,7 +481,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
               (void)PetscLogFlops(1.0);
             }
             else ap[i] = value;
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
             inserted = PETSC_TRUE;
 #endif
           }
@@ -507,14 +507,14 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       }
       low = i + 1;
       A->nonzerostate++;
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
       inserted = PETSC_TRUE;
 #endif
 noinsert:;
     }
     ailen[row] = nrow;
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && inserted) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -552,7 +552,7 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFullNoPreallocation(Mat A,PetscInt m,co
     a->i[row+1]  = a->i[row]+n;
     a->nz       += n;
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && m && n) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -647,7 +647,7 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A,PetscInt m,const PetscInt im
     ailen[row] = n;
     a->nz      += n;
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && m && n) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -1207,7 +1207,7 @@ PetscErrorCode MatRealPart_SeqAIJ(Mat A)
   PetscFunctionBegin;
   for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -1223,7 +1223,7 @@ PetscErrorCode MatImaginaryPart_SeqAIJ(Mat A)
   PetscFunctionBegin;
   for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -1237,7 +1237,7 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
   PetscFunctionBegin;
   ierr = PetscArrayzero(a->a,a->i[A->rmap->n]);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -2183,7 +2183,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     }
     A->nonzerostate++;
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   ierr = (*A->ops->assemblyend)(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2241,7 +2241,7 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
       }
     }
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   ierr = (*A->ops->assemblyend)(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2517,7 +2517,7 @@ PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
     ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   }
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -2679,7 +2679,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,
       ierr  = PetscSortIntWithScalarArray(ilen,mat_j,mat_a);CHKERRQ(ierr);
     }
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   ierr = MatBindToCPU(C,A->boundtocpu);CHKERRQ(ierr);
 #endif
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2768,7 +2768,7 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&oalpha,a->a,&one));
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(inA);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (inA->offloadmask != PETSC_OFFLOAD_UNALLOCATED) inA->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -2977,7 +2977,7 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 
   (*B)->assembled = PETSC_FALSE;
 
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   ierr = MatBindToCPU(*B,A->boundtocpu);CHKERRQ(ierr);
 #endif
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -3106,7 +3106,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
     /* the MatAXPY_Basic* subroutines calls MatAssembly, so the matrix on the GPU will be updated */
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
     if (Y->offloadmask != PETSC_OFFLOAD_UNALLOCATED) {
       Y->offloadmask = PETSC_OFFLOAD_CPU;
     }
@@ -3141,7 +3141,7 @@ PetscErrorCode  MatConjugate_SeqAIJ(Mat mat)
   nz = aij->nz;
   a  = aij->a;
   for (i=0; i<nz; i++) a[i] = PetscConj(a[i]);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   if (mat->offloadmask != PETSC_OFFLOAD_UNALLOCATED) mat->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
 #else
@@ -4392,17 +4392,17 @@ PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 @*/
 PetscErrorCode  MatSeqAIJGetArrayRead(Mat A,const PetscScalar **array)
 {
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_DEVICE)
   PetscOffloadMask oval;
 #endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_DEVICE)
   oval = A->offloadmask;
 #endif
   ierr = MatSeqAIJGetArray(A,(PetscScalar**)array);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_DEVICE)
   if (oval == PETSC_OFFLOAD_GPU || oval == PETSC_OFFLOAD_BOTH) A->offloadmask = PETSC_OFFLOAD_BOTH;
 #endif
   PetscFunctionReturn(0);
@@ -4425,17 +4425,17 @@ PetscErrorCode  MatSeqAIJGetArrayRead(Mat A,const PetscScalar **array)
 @*/
 PetscErrorCode  MatSeqAIJRestoreArrayRead(Mat A,const PetscScalar **array)
 {
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_DEVICE)
   PetscOffloadMask oval;
 #endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_DEVICE)
   oval = A->offloadmask;
 #endif
   ierr = MatSeqAIJRestoreArray(A,(PetscScalar**)array);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_DEVICE)
   A->offloadmask = oval;
 #endif
   PetscFunctionReturn(0);
