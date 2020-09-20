@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 {
   DM                dm;
   const char *const mshlist[] = {"seg", "tri", "qua", "tet", "wed", "hex",
-                                 "B2tri", "B2qua", "B3tet", "B3hex"};
+                                 "vtx", "B2tri", "B2qua", "B3tet", "B3hex"};
   const char *const fmtlist[] = {"msh22", "msh40", "msh41"};
   PetscInt          msh = 5;
   PetscInt          fmt = 2;
@@ -170,12 +170,25 @@ finish:
   test:
     requires: define(PETSC_GMSH_EXE)
     args: -dir ${wPETSC_DIR}/share/petsc/datafiles/meshes
+    args: -msh {{vtx}separate_output}
+    args: -order 1
+    args: -fmt {{msh22 msh40 msh41}} -bin {{0 1}}
+    args: -dm_view ::ascii_info_detail
+    args: -dm_plex_check_all
+    args: -dm_plex_gmsh_highorder false
+    args: -dm_plex_gmsh_use_marker true
+    args: -dm_plex_gmsh_spacedim 3
+
+  test:
+    requires: define(PETSC_GMSH_EXE)
+    args: -dir ${wPETSC_DIR}/share/petsc/datafiles/meshes
     args: -msh {{seg tri qua tet wed hex}separate_output}
     args: -order {{1 2 3 7}}
     args: -fmt {{msh22 msh40 msh41}} -bin {{0 1}}
     args: -dm_view ::ascii_info_detail
     args: -dm_plex_check_all
     args: -dm_plex_gmsh_highorder false
+    args: -dm_plex_gmsh_use_marker true
 
 
   testset:

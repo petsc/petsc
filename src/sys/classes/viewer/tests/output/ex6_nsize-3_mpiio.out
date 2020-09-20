@@ -1,0 +1,52 @@
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: WRITE (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: READ (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: APPEND (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: READ (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: APPEND (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: READ (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: WRITE (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: READ (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: WRITE (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: READ (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: APPEND (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: READ (mpiio)
+PetscViewer Object: 3 MPI processes
+  type: binary
+  Filename: binary.dat
+  Mode: WRITE (mpiio)

@@ -47,6 +47,7 @@ static int PTScotch_Strategy(PetscInt strategy)
 static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalance, SCOTCH_Num n, SCOTCH_Num xadj[], SCOTCH_Num adjncy[],
                                              SCOTCH_Num vtxwgt[], SCOTCH_Num adjwgt[], SCOTCH_Num nparts, SCOTCH_Num tpart[], SCOTCH_Num part[])
 {
+  SCOTCH_Arch    archdat;
   SCOTCH_Graph   grafdat;
   SCOTCH_Strat   stradat;
   SCOTCH_Num     vertnbr = n;
@@ -68,15 +69,14 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
   ierr = SCOTCH_graphBuild(&grafdat, 0, vertnbr, xadj, xadj + 1, velotab, NULL, edgenbr, adjncy, edlotab);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_stratInit(&stradat);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_stratGraphMapBuild(&stradat, flagval, nparts, kbalval);CHKERRPTSCOTCH(ierr);
+  ierr = SCOTCH_archInit(&archdat);CHKERRPTSCOTCH(ierr);
   if (tpart) {
-    SCOTCH_Arch archdat;
-    ierr = SCOTCH_archInit(&archdat);CHKERRPTSCOTCH(ierr);
     ierr = SCOTCH_archCmpltw(&archdat, nparts, tpart);CHKERRPTSCOTCH(ierr);
-    ierr = SCOTCH_graphMap(&grafdat, &archdat, &stradat, part);CHKERRPTSCOTCH(ierr);
-    SCOTCH_archExit(&archdat);
   } else {
-    ierr = SCOTCH_graphPart(&grafdat, nparts, &stradat, part);CHKERRPTSCOTCH(ierr);
+    ierr = SCOTCH_archCmplt(&archdat, nparts);CHKERRPTSCOTCH(ierr);
   }
+  ierr = SCOTCH_graphMap(&grafdat, &archdat, &stradat, part);CHKERRPTSCOTCH(ierr);
+  SCOTCH_archExit(&archdat);
   SCOTCH_stratExit(&stradat);
   SCOTCH_graphExit(&grafdat);
   PetscFunctionReturn(0);
@@ -122,7 +122,6 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
     ierr = SCOTCH_archCmplt(&archdat, nparts);CHKERRPTSCOTCH(ierr);
   }
   ierr = SCOTCH_dgraphMapInit(&grafdat, &mappdat, &archdat, part);CHKERRPTSCOTCH(ierr);
-
   ierr = SCOTCH_dgraphMapCompute(&grafdat, &mappdat, &stradat);CHKERRPTSCOTCH(ierr);
   SCOTCH_dgraphMapExit(&grafdat, &mappdat);
   SCOTCH_archExit(&archdat);
@@ -250,9 +249,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
       ierr = PetscSectionGetDof(targetSection,p,&tpwgts[p]);CHKERRQ(ierr);
       sumw += tpwgts[p];
     }
-    if (!sumw) {
-      ierr = PetscFree(tpwgts);CHKERRQ(ierr);
-    }
+    if (!sumw) {ierr = PetscFree(tpwgts);CHKERRQ(ierr);}
   }
 
   {

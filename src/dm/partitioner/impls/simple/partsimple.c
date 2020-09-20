@@ -51,9 +51,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
       ierr = PetscSectionGetDof(targetSection,np,&tpwgts[np]);CHKERRQ(ierr);
       sumw += tpwgts[np];
     }
-    if (!sumw) {
-      ierr = PetscFree(tpwgts);CHKERRQ(ierr);
-    } else {
+    if (sumw) {
       PetscInt m,mp;
       for (np = 0; np < nparts; ++np) tpwgts[np] = (tpwgts[np]*numVerticesGlobal)/sumw;
       for (np = 0, m = -1, mp = 0, sumw = 0; np < nparts; ++np) {
@@ -62,6 +60,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
       }
       if (sumw != numVerticesGlobal) tpwgts[mp] += numVerticesGlobal - sumw;
     }
+    if (!sumw) {ierr = PetscFree(tpwgts);CHKERRQ(ierr);}
   }
 
   ierr = ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition);CHKERRQ(ierr);

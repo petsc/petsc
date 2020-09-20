@@ -1,0 +1,68 @@
+Graph Partitioner: 2 MPI Processes
+  type: shell
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+  using random partition
+PetscSection Object: NULL SECTION 2 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+Process 1:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+IS Object: NULL PARTITION 2 MPI processes
+  type: general
+[0] Number of indices in set 0
+[1] Number of indices in set 0
+Graph Partitioner: 2 MPI Processes
+  type: shell
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+  using random partition
+PetscSection Object: SEQ SECTION 2 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+Process 1:
+  (   0) dim  2 offset   0
+  (   1) dim  1 offset   2
+  (   2) dim  1 offset   3
+IS Object: SEQ PARTITION 2 MPI processes
+  type: general
+[0] Number of indices in set 0
+[1] Number of indices in set 4
+[1] 0 1
+[1] 1 3
+[1] 2 0
+[1] 3 2
+Graph Partitioner: 2 MPI Processes
+  type: shell
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+  using random partition
+PetscSection Object: PARVOID SECTION 2 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  2 offset   0
+  (   1) dim  1 offset   2
+  (   2) dim  1 offset   3
+Process 1:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+IS Object: PARVOID PARTITION 2 MPI processes
+  type: general
+[0] Number of indices in set 4
+[0] 0 1
+[0] 1 3
+[0] 2 0
+[0] 3 2
+[1] Number of indices in set 0

@@ -62,6 +62,8 @@ static PetscErrorCode TestExplicitTS(TS ts,PetscInt order,const char subtype[])
   ierr = TSSetMaxTime(ts,Tf);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSolve(ts,NULL);CHKERRQ(ierr);
+  ierr = TSRollBack(ts);CHKERRQ(ierr);
+  ierr = TSSolve(ts,NULL);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
 
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);

@@ -56,12 +56,14 @@ static PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscVie
 
 static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscOptionItems *PetscOptionsObject, PetscPartitioner part)
 {
-  PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
-  PetscErrorCode          ierr;
+  PetscBool      random = PETSC_FALSE, set;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject, "PetscPartitioner Shell Options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-petscpartitioner_shell_random", "Use a random partition", "PetscPartitionerView", PETSC_FALSE, &p->random, NULL);CHKERRQ(ierr);
+  ierr = PetscPartitionerShellGetRandom(part, &random);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-petscpartitioner_shell_random", "Use a random partition", "PetscPartitionerView", PETSC_FALSE, &random, &set);CHKERRQ(ierr);
+  if (set) {ierr = PetscPartitionerShellSetRandom(part, random);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

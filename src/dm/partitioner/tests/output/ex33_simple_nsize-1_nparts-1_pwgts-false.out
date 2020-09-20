@@ -1,0 +1,44 @@
+Graph Partitioner: 1 MPI Process
+  type: simple
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+PetscSection Object: NULL SECTION 1 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  0 offset   0
+IS Object: NULL PARTITION 1 MPI processes
+  type: stride
+Number of indices in (stride) set 0
+Graph Partitioner: 1 MPI Process
+  type: simple
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+PetscSection Object: SEQ SECTION 1 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  4 offset   0
+IS Object: SEQ PARTITION 1 MPI processes
+  type: stride
+Number of indices in (stride) set 4
+0 0
+1 1
+2 2
+3 3
+Graph Partitioner: 1 MPI Process
+  type: simple
+  edge cut: 0
+  balance: 0
+  use vertex weights: 1
+PetscSection Object: PARVOID SECTION 1 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  4 offset   0
+IS Object: PARVOID PARTITION 1 MPI processes
+  type: stride
+Number of indices in (stride) set 4
+0 0
+1 1
+2 2
+3 3
