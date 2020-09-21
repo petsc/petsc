@@ -866,7 +866,7 @@ static PetscErrorCode MatNorm_ScaLAPACK(Mat A,NormType type,PetscReal *nrm)
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data;
   PetscBLASInt   one=1,lwork=0;
   const char     *ntype;
-  PetscScalar    *work,dummy;
+  PetscScalar    *work=NULL,dummy;
 
   PetscFunctionBegin;
   switch (type){
