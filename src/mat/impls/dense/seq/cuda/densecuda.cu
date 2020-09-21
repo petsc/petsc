@@ -808,7 +808,8 @@ static PetscErrorCode MatDenseGetArray_SeqDenseCUDA(Mat A,PetscScalar **array)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSeqDenseCUDACopyFromGPU(A);CHKERRQ(ierr);
+  if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {ierr = MatSeqDenseSetPreallocation(A,NULL);CHKERRQ(ierr);}
+  else if (A->offloadmask == PETSC_OFFLOAD_GPU) {ierr = MatSeqDenseCUDACopyFromGPU(A);CHKERRQ(ierr);}
   *array = mat->v;
   A->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
