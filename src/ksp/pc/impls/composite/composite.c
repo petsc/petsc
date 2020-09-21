@@ -29,7 +29,7 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
 
-  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPCType() or -pc_composite_pcs");
 
   /* Set the reuse flag on children PCs */
   while (next) {
@@ -70,7 +70,7 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
   Mat              mat  = pc->pmat;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPCType() or -pc_composite_pcs");
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
   }
@@ -112,7 +112,7 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPCType() or -pc_composite_pcs");
   if (!next->next || next->next->next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
 
   /* Set the reuse flag on children PCs */
@@ -131,7 +131,7 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPCType() or -pc_composite_pcs");
 
   /* Set the reuse flag on children PCs */
   while (next) {
@@ -156,7 +156,7 @@ static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPCType() or -pc_composite_pcs");
   ierr = PCApplyTranspose(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
@@ -239,10 +239,10 @@ static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsO
   if (flg) {
     ierr = PCCompositeSetType(pc,jac->type);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPC",pcs,&nmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPCType",pcs,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     for (i=0; i<nmax; i++) {
-      ierr = PCCompositeAddPC(pc,pcs[i]);CHKERRQ(ierr);
+      ierr = PCCompositeAddPCType(pc,pcs[i]);CHKERRQ(ierr);
       ierr = PetscFree(pcs[i]);CHKERRQ(ierr);   /* deallocate string pcs[i], which is allocated in PetscOptionsStringArray() */
     }
   }
@@ -323,23 +323,21 @@ static PetscErrorCode  PCCompositeGetType_Composite(PC pc,PCCompositeType *type)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
+static PetscErrorCode PCCompositeAddPC_Composite(PC pc, PC subpc)
 {
-  PC_Composite     *jac;
-  PC_CompositeLink next,ilink;
-  PetscErrorCode   ierr;
+  PC_Composite    *jac;
+  PC_CompositeLink next, ilink;
   PetscInt         cnt = 0;
-  const char       *prefix;
+  const char      *prefix;
   char             newprefix[20];
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr        = PetscNewLog(pc,&ilink);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc, &ilink);CHKERRQ(ierr);
   ilink->next = NULL;
-  ierr        = PCCreate(PetscObjectComm((PetscObject)pc),&ilink->pc);CHKERRQ(ierr);
-  ierr        = PetscObjectIncrementTabLevel((PetscObject)ilink->pc,(PetscObject)pc,1);CHKERRQ(ierr);
-  ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->pc);CHKERRQ(ierr);
+  ilink->pc   = subpc;
 
-  jac  = (PC_Composite*)pc->data;
+  jac  = (PC_Composite *) pc->data;
   next = jac->head;
   if (!next) {
     jac->head       = ilink;
@@ -353,12 +351,27 @@ static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
     next->next      = ilink;
     ilink->previous = next;
   }
-  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-  ierr = PCSetOptionsPrefix(ilink->pc,prefix);CHKERRQ(ierr);
-  sprintf(newprefix,"sub_%d_",(int)cnt);
-  ierr = PCAppendOptionsPrefix(ilink->pc,newprefix);CHKERRQ(ierr);
+  ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
+  ierr = PCSetOptionsPrefix(subpc, prefix);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(newprefix, 20, "sub_%d_", (int) cnt);CHKERRQ(ierr);
+  ierr = PCAppendOptionsPrefix(subpc, newprefix);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) subpc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCCompositeAddPCType_Composite(PC pc, PCType type)
+{
+  PC             subpc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCCreate(PetscObjectComm((PetscObject)pc), &subpc);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) subpc);CHKERRQ(ierr);
+  ierr = PCCompositeAddPC_Composite(pc, subpc);CHKERRQ(ierr);
   /* type is set after prefix, because some methods may modify prefix, e.g. pcksp */
-  ierr = PCSetType(ilink->pc,type);CHKERRQ(ierr);
+  ierr = PCSetType(subpc, type);CHKERRQ(ierr);
+  ierr = PCDestroy(&subpc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -474,24 +487,49 @@ PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 }
 
 /*@C
-   PCCompositeAddPC - Adds another PC to the composite PC.
+  PCCompositeAddPCType - Adds another PC of the given type to the composite PC.
 
-   Collective on PC
+  Collective on PC
 
-   Input Parameters:
-+  pc - the preconditioner context
--  type - the type of the new preconditioner
+  Input Parameters:
++ pc - the preconditioner context
+- type - the type of the new preconditioner
 
-   Level: Developer
+  Level: Developer
 
+.seealso: PCCompositeAddPC()
 @*/
-PetscErrorCode  PCCompositeAddPC(PC pc,PCType type)
+PetscErrorCode  PCCompositeAddPCType(PC pc,PCType type)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCCompositeAddPC_C",(PC,PCType),(pc,type));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCCompositeAddPCType_C",(PC,PCType),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PCCompositeAddPC - Adds another PC to the composite PC.
+
+  Collective on PC
+
+  Input Parameters:
++ pc    - the preconditioner context
+- subpc - the new preconditioner
+
+   Level: Developer
+
+.seealso: PCCompositeAddPCType()
+@*/
+PetscErrorCode PCCompositeAddPC(PC pc, PC subpc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(subpc,PC_CLASSID,2);
+  ierr = PetscTryMethod(pc,"PCCompositeAddPC_C",(PC,PC),(pc,subpc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -539,9 +577,9 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
     To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then
             call PCSetOperators() on that PC.
 
-.seealso: PCCompositeAddPC(), PCCompositeGetNumberPC(), PCSetOperators()
+.seealso: PCCompositeAddPCType(), PCCompositeGetNumberPC(), PCSetOperators()
 @*/
-PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
+PetscErrorCode PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 {
   PetscErrorCode ierr;
 
@@ -574,7 +612,7 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCSHELL, PCKSP, PCCompositeSetType(), PCCompositeSpecialSetAlpha(), PCCompositeAddPC(),
+           PCSHELL, PCKSP, PCCompositeSetType(), PCCompositeSpecialSetAlpha(), PCCompositeAddPCType(),
            PCCompositeGetPC(), PCSetUseAmat()
 
 M*/
@@ -604,6 +642,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C",PCCompositeSetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetType_C",PCCompositeGetType_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPCType_C",PCCompositeAddPCType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C",PCCompositeAddPC_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetNumberPC_C",PCCompositeGetNumberPC_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C",PCCompositeGetPC_Composite);CHKERRQ(ierr);

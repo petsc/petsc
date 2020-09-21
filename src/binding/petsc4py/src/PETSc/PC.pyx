@@ -524,10 +524,10 @@ cdef class PC(Object):
         PetscINCREF(pc.obj)
         return pc
 
-    def addCompositePC(self, pc_type):
+    def addCompositePCType(self, pc_type):
         cdef PetscPCType cval = NULL
         pc_type = str2bytes(pc_type, &cval)
-        CHKERR( PCCompositeAddPC(self.pc, cval) )
+        CHKERR( PCCompositeAddPCType(self.pc, cval) )
 
     # --- KSP ---
 
