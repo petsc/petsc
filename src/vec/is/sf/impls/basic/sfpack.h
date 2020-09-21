@@ -151,8 +151,8 @@ struct _n_PetscSFLink {
   hipStream_t    stream;
 #endif
 
-  PetscErrorCode (*Destroy)(PetscSFLink);    /* Device specific destroy function */
-  void           *sptr;
+  PetscErrorCode (*Destroy)(PetscSFLink);    /* These two fields are meant to be used by SF_Kokkos, with spptr pointing to an execution space object */
+  void           *spptr;                     /* for a given stream, but unused now due to a Kokkos bug, so that SF_Kokkos only supports null stream. */
 #endif
 
   PetscMPIInt  tag;                          /* Each link has a tag so we can perform multiple SF ops at the same time */

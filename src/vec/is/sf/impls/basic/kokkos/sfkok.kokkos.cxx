@@ -101,7 +101,7 @@ static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,PetscS
   const PetscInt          M = EQ ? 1 : link->bs/BS, MBS=M*BS; /* If EQ, then MBS will be a compile-time const */
   const Type              *data = static_cast<const Type*>(data_);
   Type                    *buf = static_cast<Type*>(buf_);
-  DeviceExecutionSpace&   exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
+  DeviceExecutionSpace    exec;
 
   PetscFunctionBegin;
   Kokkos::parallel_for(Kokkos::RangePolicy<DeviceExecutionSpace>(exec,0,count),KOKKOS_LAMBDA(PetscInt tid) {
@@ -123,7 +123,7 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start
   const PetscInt          M = EQ ? 1 : link->bs/BS, MBS=M*BS;
   Type                    *data = static_cast<Type*>(data_);
   const Type              *buf = static_cast<const Type*>(buf_);
-  DeviceExecutionSpace&   exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
+  DeviceExecutionSpace    exec;
 
   PetscFunctionBegin;
   Kokkos::parallel_for(Kokkos::RangePolicy<DeviceExecutionSpace>(exec,0,count),KOKKOS_LAMBDA(PetscInt tid) {
@@ -141,7 +141,7 @@ static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,
   const PetscInt          *ropt = opt ? opt->array : NULL;
   const PetscInt          M = EQ ? 1 : link->bs/BS, MBS=M*BS;
   Type                    *rootdata = static_cast<Type*>(data),*leafbuf=static_cast<Type*>(buf);
-  DeviceExecutionSpace&   exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
+  DeviceExecutionSpace    exec;
 
   PetscFunctionBegin;
   Kokkos::parallel_for(Kokkos::RangePolicy<DeviceExecutionSpace>(exec,0,count),KOKKOS_LAMBDA(PetscInt tid) {
@@ -159,7 +159,7 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcS
   const PetscInt          M = (EQ) ? 1 : link->bs/BS, MBS=M*BS;
   const Type              *src = static_cast<const Type*>(src_);
   Type                    *dst = static_cast<Type*>(dst_);
-  DeviceExecutionSpace&   exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
+  DeviceExecutionSpace    exec;
 
   PetscFunctionBegin;
   /* The 3D shape of source subdomain may be different than that of the destination, which makes it difficult to use CUDA 3D grid and block */
@@ -204,7 +204,7 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt 
   PetscErrorCode          ierr;
   const Type              *src = static_cast<const Type*>(src_);
   Type                    *dst = static_cast<Type*>(dst_);
-  DeviceExecutionSpace&   exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
+  DeviceExecutionSpace    exec;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
@@ -229,7 +229,7 @@ static PetscErrorCode FetchAndOpLocal(PetscSFLink link,PetscInt count,PetscInt r
   const PetscInt          *lopt = leafopt ? leafopt->array : NULL;
   Type                    *rootdata = static_cast<Type*>(rootdata_),*leafupdate = static_cast<Type*>(leafupdate_);
   const Type              *leafdata = static_cast<const Type*>(leafdata_);
-  DeviceExecutionSpace&   exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
+  DeviceExecutionSpace    exec;
 
   PetscFunctionBegin;
   Kokkos::parallel_for(Kokkos::RangePolicy<DeviceExecutionSpace>(exec,0,count),KOKKOS_LAMBDA(PetscInt tid) {
@@ -382,12 +382,22 @@ static void PackInit_DumbType(PetscSFLink link)
   /* Atomics for dumb types are not implemented yet */
 }
 
+/*
+  Kokkos::DefaultExecutionSpace(stream) is a reference counted pointer object. It has a bug
+  that one is not able to repeatedly create and destroy the object. SF's original design was each
+  SFLink has a stream (NULL or not) and hence an execution space object. The bug prevents us from
+  destroying multiple SFLinks with NULL stream and the default execution space object. To avoid
+  memory leaks, SF_Kokkos only supports NULL stream, which is also petsc's default scheme. SF_Kokkos
+  does not do its own new/delete. It just uses Kokkos::DefaultExecutionSpace(), which is a singliton
+  object in Kokkos.
+*/
+/*
 static PetscErrorCode PetscSFLinkDestroy_Kokkos(PetscSFLink link)
 {
   PetscFunctionBegin;
-  delete static_cast<DeviceExecutionSpace*>(link->sptr);
   PetscFunctionReturn(0);
 }
+*/
 
 /* Some device-specific utilities */
 static PetscErrorCode PetscSFLinkSyncDevice_Kokkos(PetscSFLink link)
@@ -399,7 +409,7 @@ static PetscErrorCode PetscSFLinkSyncDevice_Kokkos(PetscSFLink link)
 
 static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink link)
 {
-  DeviceExecutionSpace&  exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
+  DeviceExecutionSpace    exec;
   PetscFunctionBegin;
   exec.fence();
   PetscFunctionReturn(0);
@@ -407,7 +417,7 @@ static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink link)
 
 static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink link,PetscMemType dstmtype,void* dst,PetscMemType srcmtype,const void*src,size_t n)
 {
-  DeviceExecutionSpace&  exec = *static_cast<DeviceExecutionSpace*>(link->sptr);
+  DeviceExecutionSpace    exec;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
@@ -534,18 +544,17 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF sf,PetscSFLink link,MPI_Datatype 
     }
   }
 
-#if defined(KOKKOS_ENABLE_CUDA)
-  if (!sf->use_default_stream) {cudaError_t cerr = cudaStreamCreate(&link->stream);CHKERRCUDA(cerr);}
-  link->sptr         = new DeviceExecutionSpace(link->stream);
-#elif defined(KOKKOS_ENABLE_HIP)
-  if (!sf->use_default_stream) {hipError_t cerr = hipStreamCreate(&link->stream);CHKERRQ(cerr);}
-  link->sptr         = new DeviceExecutionSpace(link->stream);
-#endif
+  if (!sf->use_default_stream) {
+   #if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP)
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Non-default cuda/hip streams are not supported by the SF Kokkos backend. If it is cuda, use -sf_backend cuda instead");
+   #endif
+  }
 
   link->d_SyncDevice = PetscSFLinkSyncDevice_Kokkos;
   link->d_SyncStream = PetscSFLinkSyncStream_Kokkos;
   link->Memcpy       = PetscSFLinkMemcpy_Kokkos;
-  link->Destroy      = PetscSFLinkDestroy_Kokkos;
+  link->spptr        = NULL; /* Unused now */
+  link->Destroy      = NULL; /* PetscSFLinkDestroy_Kokkos; */
   link->deviceinited = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
