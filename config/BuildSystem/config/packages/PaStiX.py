@@ -53,18 +53,18 @@ class Configure(config.package.Package):
     g.write('EXEEXT      = \n')
     g.write('OBJEXT      = .o\n')
     g.write('LIBEXT      = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
-    self.setCompilers.pushLanguage('C')
-    g.write('CCPROG      = '+self.setCompilers.getCompiler()+'\n')
+    self.pushLanguage('C')
+    g.write('CCPROG      = '+self.getCompiler()+'\n')
     # common.c tries to use some silly clock_gettime() routine that Mac doesn't have unless this is set
     if self.setCompilers.isDarwin(self.log):
       cflags = ' -DX_ARCHi686_mac    '
     else:
       cflags = ''
     if self.mpi.found:
-      g.write('CCFOPT      = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)+' '+cflags+'\n')
+      g.write('CCFOPT      = '+self.updatePackageCFlags(self.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)+' '+cflags+'\n')
     else:
-      g.write('CCFOPT      = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' '+cflags+'\n')
-    self.setCompilers.popLanguage()
+      g.write('CCFOPT      = '+self.updatePackageCFlags(self.getCompilerFlags())+' '+cflags+'\n')
+    self.popLanguage()
     g.write('CFPROG      = \n')
     g.write('CF90PROG    = \n')
     g.write('MCFPROG     = \n')
@@ -74,9 +74,9 @@ class Configure(config.package.Package):
     g.write('MKPROG      = '+self.make.make+'\n')
     # PaStiX make system has error where in one location it doesn't pass in CCFOTP
     if self.setCompilers.isDarwin(self.log):
-      g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+' -DX_ARCHi686_mac \n')
+      g.write('MPCCPROG    = '+self.getCompiler()+' -DX_ARCHi686_mac \n')
     else:
-      g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+'\n')
+      g.write('MPCCPROG    = '+self.getCompiler()+'\n')
     g.write('ARFLAGS     = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('ARPROG      = '+self.setCompilers.AR+'\n')
     extralib = ''

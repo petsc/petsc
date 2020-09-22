@@ -34,11 +34,5 @@ class Configure(config.package.GNUPackage):
         self.include = oldinclude
 
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    if hasattr(self.compilers, 'FC'):
-      with self.Language('FC'):
-        if config.setCompilers.Configure.isGfortran100plus(self.getCompiler(), self.log):
-          args = self.addArgStartsWith(args, 'FFLAGS', '-fallow-argument-mismatch')
-          args = self.addArgStartsWith(args, 'FCFLAGS', '-fallow-argument-mismatch')
-
     self.addToArgs(args,'LIBS',self.libraries.toStringNoDupes(self.flibs.lib))
     return args

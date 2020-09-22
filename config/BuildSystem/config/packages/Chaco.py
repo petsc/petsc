@@ -25,11 +25,11 @@ class Configure(config.package.Package):
 
     mkfile = 'make.inc'
     g = open(os.path.join(self.packageDir, mkfile), 'w')
-    self.setCompilers.pushLanguage('C')
-    g.write('CC = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CFLAGS = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
-    g.write('OFLAGS = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
-    self.setCompilers.popLanguage()
+    self.pushLanguage('C')
+    g.write('CC = '+self.getCompiler()+'\n')
+    g.write('CFLAGS = '+self.updatePackageCFlags(self.getCompilerFlags())+'\n')
+    g.write('OFLAGS = '+self.updatePackageCFlags(self.getCompilerFlags())+'\n')
+    self.popLanguage()
     g.close()
 
     if self.installNeeded(mkfile):

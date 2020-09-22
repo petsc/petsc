@@ -39,14 +39,14 @@ class Configure(config.package.Package):
             cc = self.compilers.CC
             line = 'CC = '+cc+'\n'
           if line.startswith('COPTFLAGS '):
-            self.setCompilers.pushLanguage('C')
-            line = 'COPTFLAGS  = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n'
-            self.setCompilers.popLanguage()
+            self.pushLanguage('C')
+            line = 'COPTFLAGS  = '+self.updatePackageCFlags(self.getCompilerFlags())+'\n'
+            self.popLanguage()
           if line.startswith('CNOOPT'):
-            self.setCompilers.pushLanguage('C')
+            self.pushLanguage('C')
             noopt = self.checkNoOptFlag()
-            line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
-            self.setCompilers.popLanguage()
+            line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.getCompilerFlags())+' '+self.getPointerSizeFlag(self.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.getCompilerFlags())+'\n'
+            self.popLanguage()
           if line.startswith('AR  '):
             line = 'AR      = '+self.setCompilers.AR+'\n'
           if line.startswith('AR_FLAGS  '):

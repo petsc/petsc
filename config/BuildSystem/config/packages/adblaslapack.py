@@ -22,15 +22,15 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    self.framework.pushLanguage('Cxx')
+    self.pushLanguage('Cxx')
     g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
     g.write('CODI_DIR         = '+self.CoDiPack.include[0]+'\n')
     g.write('AROPT            = rcs\n')
     g.write('AR               = '+self.setCompilers.AR+'\n')
-    g.write('CXX              = '+self.framework.getCompiler()+'\n')
-    g.write('CFLAGS           = -I$(CODI_DIR) -I../include '+self.removeWarningFlags(self.framework.getCompilerFlags())+'\n')
+    g.write('CXX              = '+self.getCompiler()+'\n')
+    g.write('CFLAGS           = -I$(CODI_DIR) -I../include '+self.updatePackageCFlags(self.getCompilerFlags())+'\n')
     g.close()
-    self.framework.popLanguage()
+    self.popLanguage()
 
     if self.installNeeded('Makefile.inc'):
       self.logPrintBox('Configuring, compiling and installing adblaslapack; this may take several seconds')

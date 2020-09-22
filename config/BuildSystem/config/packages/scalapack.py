@@ -43,26 +43,21 @@ class Configure(config.package.Package):
     else:
       fdef = '-DNoChange'
     g.write('CDEFS        = '+fdef+'\n')
-    self.setCompilers.pushLanguage('FC')
-    g.write('FC           = '+self.setCompilers.getCompiler()+'\n')
-    extra_fcflags = ''
-    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
-      extra_fcflags = '-dusty -dcfuns '
-    elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
-      extra_fcflags = '-fallow-argument-mismatch '
-    g.write('FCFLAGS      = '+extra_fcflags+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
-    g.write('FCLOADER     = '+self.setCompilers.getLinker()+'\n')
-    g.write('FCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
-    self.setCompilers.popLanguage()
-    self.setCompilers.pushLanguage('C')
-    g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CCFLAGS      = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' $(MPIINC)\n')
+    self.pushLanguage('FC')
+    g.write('FC           = '+self.getCompiler()+'\n')
+    g.write('FCFLAGS      = '+self.updatePackageFFlags(self.getCompilerFlags())+'\n')
+    g.write('FCLOADER     = '+self.getLinker()+'\n')
+    g.write('FCLOADFLAGS  = '+self.getLinkerFlags()+'\n')
+    self.popLanguage()
+    self.pushLanguage('C')
+    g.write('CC           = '+self.getCompiler()+'\n')
+    g.write('CCFLAGS      = '+self.updatePackageCFlags(self.getCompilerFlags())+' $(MPIINC)\n')
     noopt = self.checkNoOptFlag()
-    g.write('CFLAGS       = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
+    g.write('CFLAGS       = '+noopt+ ' '+self.getSharedFlag(self.getCompilerFlags())+' '+self.getPointerSizeFlag(self.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.getCompilerFlags())+'\n')
 
-    g.write('CCLOADER     = '+self.setCompilers.getLinker()+'\n')
-    g.write('CCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
-    self.setCompilers.popLanguage()
+    g.write('CCLOADER     = '+self.getLinker()+'\n')
+    g.write('CCLOADFLAGS  = '+self.getLinkerFlags()+'\n')
+    self.popLanguage()
     g.write('ARCH         = '+self.setCompilers.AR+'\n')
     g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
