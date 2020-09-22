@@ -274,9 +274,9 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 .  -sf_rank_order         - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
 .  -sf_use_default_stream - Assume callers of SF computed the input root/leafdata with the default cuda stream. SF will also
                             use the default stream to process data. Therefore, no stream synchronization is needed between SF and its caller (default: true).
-                            If true, this option only works with -use_cuda_aware_mpi 1.
+                            If true, this option only works with -use_gpu_aware_mpi 1.
 -  -sf_use_stream_aware_mpi  - Assume the underlying MPI is cuda-stream aware and SF won't sync streams for send/recv buffers passed to MPI (default: false).
-                               If true, this option only works with -use_cuda_aware_mpi 1.
+                               If true, this option only works with -use_gpu_aware_mpi 1.
 
    Level: intermediate
 @*/
