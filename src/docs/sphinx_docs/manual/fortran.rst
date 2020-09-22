@@ -3,8 +3,6 @@
 PETSc for Fortran Users
 -----------------------
 
-.. include:: temp_edit_needed_banner.inc
-
 Most of the functionality of PETSc can be obtained by people who program
 purely in Fortran.
 
@@ -190,17 +188,7 @@ test is assumed to be written in Fortran.
 Compiling and Linking Fortran Programs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Figure `[fig_make1] <#fig_make1>`__ shows a sample makefile that can be
-used for PETSc programs. In this makefile, one can compile and run a
-debugging version of the Fortran program ``ex3.F90`` with the actions
-``make`` ``ex3`` and ``make`` ``runex3``, respectively. The compilation
-command is restated below:
-
-.. code-block:: make
-
-   ex3: ex3.o
-          -${FLINKER}} -o ex3 ex3.o ${PETSC_LIB}
-           ${RM} ex3.o
+See :any:`sec_writing_application_codes`.
 
 .. _sec_fortran_exceptions:
 
