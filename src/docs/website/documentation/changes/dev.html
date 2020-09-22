@@ -113,6 +113,10 @@
           <li>Change PETSCABORT() to abort instead of MPI_Abort if run under -start_in_debugger</li>
           <li>Change -start_in_debugger with GDB or LLDB to automatically continue the program in the debugger and not require the user to type continue. In GDB if the program exits then the debugger is automatically quit.</li>
           <li>Add PETSC_MPI_THREAD_REQUIRED to control the requested threading level for MPI_Init</li>
+          <li>Add CUDA-11 support, but with CUDA-11, -mat_cusparse_storage_format {ELL, HYB} are not supported anymore. Only CSR is supported</li>
+          <li>Add CUDA-11 option -mat_cusparse_spmv_alg {MV_ALG_DEFAULT, CSRMV_ALG1 (default), CSRMV_ALG2} for users to select cuSPARSE SpMV algorithms</li>
+          <li>Add CUDA-11 option -mat_cusparse_spmm_alg {ALG_DEFAULT, CSR_ALG1 (default), CSR_ALG2} for users to select cuSPARSE SpMM algorithms</li>
+          <li>Add CUDA-11 option -mat_cusparse_csr2csc_alg {ALG1 (default), ALG2} for users to select cuSPARSE CSR to CSC conversion algorithms</li>
           <li>Remove option -cuda_initialize, whose functionality is succeeded by -cuda_device xxx</li>
           <li>Change -cuda_set_device to -cuda_device, which can now accept NONE, PETSC_DEFAULT, PETSC_DECIDE in additon to non-negative integers</li>
           <li>Change PetscCUDAInitialize(comm) to PetscCUDAInitialize(comm,dev)</li>

@@ -419,7 +419,7 @@ linux-c-exodus-dbg:
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
     RUN_GCOV: 1
 
-linux-cuda11:
+linux-cuda11-double:
   extends:
     - .stage-3
     - .linux_test
@@ -427,8 +427,17 @@ linux-cuda11:
     - gpu:nvidia, os:linux, name:frog
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
-    TEST_ARCH: arch-ci-linux-cuda11
-    DISABLE_TESTS: 1
+    TEST_ARCH: arch-ci-linux-cuda11-double
+
+linux-cuda11-complex:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux, name:frog
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
+    TEST_ARCH: arch-ci-linux-cuda11-complex
 
 linux-cuda-complex:
   extends:

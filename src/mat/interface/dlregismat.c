@@ -1,6 +1,5 @@
 
 #include <petsc/private/matimpl.h>
-#include <petscpkg_version.h>
 
 const char       *MatOptions_Shifted[] = {"UNUSED_NONZERO_LOCATION_ERR",
                                   "ROW_ORIENTED",
@@ -85,9 +84,7 @@ PetscErrorCode  MatFinalizePackage(void)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #endif
 #if defined(PETSC_HAVE_CUDA)
-#if PETSC_PKG_CUDA_VERSION_LT(11,0,0)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
-#endif
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void);
@@ -379,9 +376,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = MatSolverTypeRegister_MUMPS();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CUDA)
-#if PETSC_PKG_CUDA_VERSION_LT(11,0,0)
   ierr = MatSolverTypeRegister_CUSPARSE();CHKERRQ(ierr);
-#endif
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
   ierr = MatSolverTypeRegister_ViennaCL();CHKERRQ(ierr);
