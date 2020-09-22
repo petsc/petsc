@@ -2106,7 +2106,7 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 }
 
 /*@
-    DMGetRefineLevel - Get's the number of refinements that have generated this DM.
+    DMGetRefineLevel - Gets the number of refinements that have generated this DM.
 
     Not Collective
 
@@ -2130,7 +2130,7 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
 }
 
 /*@
-    DMSetRefineLevel - Set's the number of refinements that have generated this DM.
+    DMSetRefineLevel - Sets the number of refinements that have generated this DM.
 
     Not Collective
 
