@@ -3,8 +3,8 @@ static char help[] = "Solves the trival ODE 2 du/dt = 1, u(0) = 0. \n\n";
 #include <petscts.h>
 #include <petscpc.h>
 
-static PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
+PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
+PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 int main(int argc,char **argv)
 {
@@ -74,7 +74,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec x,Vec xdot,Vec f,void *ctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IJacobian(TS ts,PetscReal t,Vec x,Vec xdot,PetscScalar shift,Mat A,Mat B,void *ctx)
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec x,Vec xdot,PetscReal shift,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   PetscScalar    j;
@@ -94,7 +94,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec x,Vec xdot,PetscScalar shift,Mat 
       suffix: arkimex_explicit_stage
       requires: define(PETSC_USE_DEBUG)
       args: -ts_type arkimex -error_output_stdout
-      filter:  grep -v Petsc | grep -v "on a" | grep ERROR
+      filter:  egrep -v "(Petsc|on a| in |Configure)"
 
     test:
       suffix: arkimex_implicit_stage

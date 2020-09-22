@@ -2,7 +2,3 @@
 [0]PETSC ERROR: Arguments are incompatible
 [0]PETSC ERROR: This scheme requires an identity mass matrix, however the TSIFunction you provide does not utilize an identity mass matrix
 [0]PETSC ERROR: See https://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.
-[0]PETSC ERROR: Configure options 
-[0]PETSC ERROR: #1 TSStep_ARKIMEX() line 782 in /Users/barrysmith/Src/petsc/src/ts/impls/arkimex/arkimex.c
-[0]PETSC ERROR: #2 TSStep() line 3753 in /Users/barrysmith/Src/petsc/src/ts/interface/ts.c
-[0]PETSC ERROR: #3 TSSolve() line 4150 in /Users/barrysmith/Src/petsc/src/ts/interface/ts.c
