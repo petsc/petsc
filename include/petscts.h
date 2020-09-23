@@ -623,6 +623,17 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGSNESIterations(TS,PetscInt,PetscReal,Vec,
 PETSC_EXTERN PetscErrorCode TSMonitorLGKSPIterations(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorError(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat *);
 
+struct _n_TSMonitorLGCtxNetwork {
+  PetscInt       nlg;
+  PetscDrawLG    *lg;
+  PetscBool      semilogy;
+  PetscInt       howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+};
+typedef struct _n_TSMonitorLGCtxNetwork*  TSMonitorLGCtxNetwork;
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkCreate(TS,const char[],const char[],int,int,int,int,PetscInt,TSMonitorLGCtxNetwork*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkSolution(TS,PetscInt,PetscReal,Vec,void*);
+
 typedef struct _n_TSMonitorEnvelopeCtx*  TSMonitorEnvelopeCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorEnvelopeCtxCreate(TS,TSMonitorEnvelopeCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorEnvelope(TS,PetscInt,PetscReal,Vec,void*);
