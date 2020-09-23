@@ -36,6 +36,7 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
   ierr            = PetscLayoutCreate(comm,&v->map);CHKERRQ(ierr);
   v->array_gotten = PETSC_FALSE;
   v->petscnative  = PETSC_FALSE;
+  v->offloadmask  = PETSC_OFFLOAD_UNALLOCATED;
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   v->minimum_bytes_pinned_memory = 0;
   v->pinned_memory = PETSC_FALSE;
