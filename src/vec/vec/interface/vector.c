@@ -365,6 +365,9 @@ PetscErrorCode  VecDuplicate(Vec v,Vec *newv)
   PetscValidPointer(newv,2);
   PetscValidType(v,1);
   ierr = (*v->ops->duplicate)(v,newv);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (v->boundtocpu) {ierr = VecBindToCPU(*newv,PETSC_TRUE);CHKERRQ(ierr);}
+#endif
   ierr = PetscObjectStateIncrease((PetscObject)*newv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -436,6 +439,17 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
   PetscValidPointer(V,3);
   PetscValidType(v,1);
   ierr = (*v->ops->duplicatevecs)(v,m,V);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (v->boundtocpu) {
+    PetscInt i;
+
+    for (i=0; i<m; i++) {
+      /* Since ops->duplicatevecs might itself propagate the value of boundtocpu,
+       * avoid unnecessary overhead by only calling VecBindToCPU() if the vector isn't already bound. */
+      if (!(*V)[i]->boundtocpu) {ierr = VecBindToCPU((*V)[i],PETSC_TRUE);CHKERRQ(ierr);}
+    }
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
