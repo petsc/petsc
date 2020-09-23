@@ -505,7 +505,7 @@ PetscErrorCode DMStagGetNumRanks(DM dm,PetscInt *nRanks0,PetscInt *nRanks1,Petsc
 
   Level: developer
 
-.seealso: `DMSTAG`, `DMStagGetDOF()`, `DMStagGetEntriesPerElement()`, `DMCreateLocalVector()`
+.seealso: `DMSTAG`, `DMStagGetDOF()`, `DMStagGetEntriesLocal()`, `DMStagGetEntriesPerElement()`, `DMCreateLocalVector()`
 @*/
 PetscErrorCode DMStagGetEntries(DM dm,PetscInt *entries)
 {
@@ -514,6 +514,34 @@ PetscErrorCode DMStagGetEntries(DM dm,PetscInt *entries)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   if (entries) *entries = stag->entries;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMStagGetEntriesLocal - get number of entries in the local representation
+
+  Not Collective
+
+  Input Parameter:
+. dm - the DMStag object
+
+  Output Parameters:
+. entries - number of entries in the local representation
+
+  Note:
+  This is the number of entries on this rank in the local representation.
+
+  Level: developer
+
+.seealso: DMSTAG, DMStagGetDOF(), DMStagGetEntries(), DMStagGetEntriesPerElement(), DMCreateLocalVector()
+@*/
+PetscErrorCode DMStagGetEntriesLocal(DM dm,PetscInt *entries)
+{
+  const DM_Stag * const stag = (DM_Stag*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (entries) *entries = stag->entriesGhost;
   PetscFunctionReturn(0);
 }
 
