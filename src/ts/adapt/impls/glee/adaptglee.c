@@ -1,41 +1,42 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
+#include <petscdm.h>
 
 typedef struct {
-  Vec E,Y;
+  Vec Y;
 } TSAdapt_GLEE;
 
 static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
-  TSAdapt_GLEE  *glee = (TSAdapt_GLEE*)adapt->data;
-  TSType         time_scheme;      /* Type of time-integration scheme        */
+  TSAdapt_GLEE   *glee = (TSAdapt_GLEE*)adapt->data;
   PetscErrorCode ierr;
   Vec            X,Y,E;
   PetscReal      enorm,enorma,enormr,hfac_lte,hfac_ltea,hfac_lter,h_lte,safety;
   PetscInt       order;
-  PetscBool      bGTEMethod=PETSC_FALSE;
+  PetscBool      bGTEMethod;
 
   PetscFunctionBegin;
-
   *next_sc = 0; /* Reuse the same order scheme */
   safety = adapt->safety;
-  ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
-  if (!strcmp(time_scheme,TSGLEE)) bGTEMethod=PETSC_TRUE;
+  ierr = PetscObjectTypeCompare((PetscObject)ts,TSGLEE,&bGTEMethod);CHKERRQ(ierr);
   order = adapt->candidates.order[0];
 
   if (bGTEMethod){/* the method is of GLEE type */
+    DM dm;
+
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
     if (!glee->Y && adapt->glee_use_local) {
       ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);/*create vector to store previous step global error*/
       ierr = VecZeroEntries(glee->Y);CHKERRQ(ierr); /*set error to zero on the first step - may not work if error is not zero initially*/
     }
-    if (!glee->E) {ierr = VecDuplicate(X,&glee->E);CHKERRQ(ierr);}
-    E    = glee->E;
+    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dm,&E);CHKERRQ(ierr);
     ierr = TSGetTimeError(ts,0,&E);CHKERRQ(ierr);
 
     if (adapt->glee_use_local) {ierr = VecAXPY(E,-1.0,glee->Y);CHKERRQ(ierr);} /* local error = current error - previous step error */
 
     /* this should be called with the solution at the beginning of the step too*/
     ierr = TSErrorWeightedENorm(ts,E,X,X,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm,&E);CHKERRQ(ierr);
   } else {
     /* the method is NOT of GLEE type; use the stantard basic augmented by separate atol and rtol */
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
@@ -75,7 +76,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
     if (*accept == PETSC_TRUE && adapt->glee_use_local) {
       /* If step is accepted, then overwrite previous step error with the current error to be used on the next step */
       /* WARNING: if the adapters are composable, then the accept test will not be reliable*/
-      ierr = TSGetTimeError(ts,0,&(glee->Y));CHKERRQ(ierr);
+      ierr = TSGetTimeError(ts,0,&glee->Y);CHKERRQ(ierr);
     }
 
     /* The optimal new step based on the current global truncation error. */
@@ -119,7 +120,6 @@ static PetscErrorCode TSAdaptReset_GLEE(TSAdapt adapt)
 
   PetscFunctionBegin;
   ierr = VecDestroy(&glee->Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&glee->E);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

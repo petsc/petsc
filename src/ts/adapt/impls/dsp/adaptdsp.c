@@ -1,4 +1,5 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
+#include <petscdm.h>
 
 static const char *citation[] = {
   "@article{Soderlind2003,\n"
@@ -27,7 +28,6 @@ static const char *citation[] = {
 static PetscBool cited[] = {PETSC_FALSE,PETSC_FALSE};
 
 typedef struct {
-  Vec       Y;
   PetscReal kBeta[3];  /* filter parameters */
   PetscReal Alpha[2];  /* filter parameters */
   PetscReal cerror[3]; /* control error (controller input) history */
@@ -83,12 +83,17 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
     ierr = TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
     if (enorm >= 0 && order < 1) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
   } else if (ts->ops->evaluatestep) {
+    DM  dm;
+    Vec Y;
+
     if (adapt->candidates.n < 1) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
     if (!adapt->candidates.inuse_set) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
-    if (!dsp->Y) {ierr = VecDuplicate(ts->vec_sol,&dsp->Y);CHKERRQ(ierr);}
     order = adapt->candidates.order[0];
-    ierr = TSEvaluateStep(ts,order-1,dsp->Y,NULL);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,dsp->Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dm,&Y);CHKERRQ(ierr);
+    ierr = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
+    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm,&Y);CHKERRQ(ierr);
   }
   if (enorm < 0) {
     ierr = TSAdaptRestart_DSP(adapt);CHKERRQ(ierr);
@@ -168,16 +173,6 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptReset_DSP(TSAdapt adapt)
-{
-  TSAdapt_DSP    *dsp = (TSAdapt_DSP*)adapt->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecDestroy(&dsp->Y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TSAdaptDestroy_DSP(TSAdapt adapt)
 {
   PetscErrorCode ierr;
@@ -185,7 +180,6 @@ static PetscErrorCode TSAdaptDestroy_DSP(TSAdapt adapt)
   PetscFunctionBegin;
   ierr = PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetFilter_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetPID_C",NULL);CHKERRQ(ierr);
-  ierr = TSAdaptReset_DSP(adapt);CHKERRQ(ierr);
   ierr = PetscFree(adapt->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -401,7 +395,6 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt)
   adapt->ops->choose         = TSAdaptChoose_DSP;
   adapt->ops->setfromoptions = TSAdaptSetFromOptions_DSP;
   adapt->ops->destroy        = TSAdaptDestroy_DSP;
-  adapt->ops->reset          = TSAdaptReset_DSP;
   adapt->ops->view           = TSAdaptView_DSP;
 
   ierr = PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetFilter_C",TSAdaptDSPSetFilter_DSP);CHKERRQ(ierr);

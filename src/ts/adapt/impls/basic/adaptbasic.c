@@ -1,12 +1,10 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
-
-typedef struct {
-  Vec Y;
-} TSAdapt_Basic;
+#include <petscdm.h>
 
 static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
-  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  Vec            Y;
+  DM             dm;
   PetscInt       order  = PETSC_DECIDE;
   PetscReal      enorm  = -1;
   PetscReal      enorma,enormr;
@@ -25,10 +23,12 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   } else if (ts->ops->evaluatestep) {
     if (adapt->candidates.n < 1) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
     if (!adapt->candidates.inuse_set) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
-    if (!basic->Y) {ierr = VecDuplicate(ts->vec_sol,&basic->Y);CHKERRQ(ierr);}
     order = adapt->candidates.order[0];
-    ierr = TSEvaluateStep(ts,order-1,basic->Y,NULL);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,basic->Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dm,&Y);CHKERRQ(ierr);
+    ierr = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
+    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm,&Y);CHKERRQ(ierr);
   }
 
   if (enorm < 0) {
@@ -72,26 +72,6 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptReset_Basic(TSAdapt adapt)
-{
-  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecDestroy(&basic->Y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = TSAdaptReset_Basic(adapt);CHKERRQ(ierr);
-  ierr = PetscFree(adapt->data);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*MC
    TSADAPTBASIC - Basic adaptive controller for time stepping
 
@@ -101,14 +81,7 @@ static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
 {
-  PetscErrorCode ierr;
-  TSAdapt_Basic  *basic;
-
   PetscFunctionBegin;
-  ierr= PetscNewLog(adapt,&basic);CHKERRQ(ierr);
-  adapt->data         = (void*)basic;
-  adapt->ops->choose  = TSAdaptChoose_Basic;
-  adapt->ops->reset   = TSAdaptReset_Basic;
-  adapt->ops->destroy = TSAdaptDestroy_Basic;
+  adapt->ops->choose = TSAdaptChoose_Basic;
   PetscFunctionReturn(0);
 }
