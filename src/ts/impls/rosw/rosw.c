@@ -1338,6 +1338,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   PetscErrorCode ierr;
   DM             dm;
   SNES           snes;
+  TSRHSJacobian  rhsjacobian;
 
   PetscFunctionBegin;
   ierr = TSRosWTableauSetUp(ts);CHKERRQ(ierr);
@@ -1353,6 +1354,28 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!((PetscObject)snes)->type_name) {
     ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
+  }
+  ierr = DMTSGetRHSJacobian(dm,&rhsjacobian,NULL);CHKERRQ(ierr);
+  if (rhsjacobian == TSComputeRHSJacobianConstant) {
+    Mat Amat,Pmat;
+
+    /* Set the SNES matrix to be different from the RHS matrix because there is no way to reconstruct shift*M-J */
+    ierr = SNESGetJacobian(snes,&Amat,&Pmat,NULL,NULL);CHKERRQ(ierr);
+    if (Amat && Amat == ts->Arhs) {
+      if (Amat == Pmat) {
+        ierr = MatDuplicate(ts->Arhs,MAT_COPY_VALUES,&Amat);CHKERRQ(ierr);
+        ierr = SNESSetJacobian(snes,Amat,Amat,NULL,NULL);CHKERRQ(ierr);
+      } else {
+        ierr = MatDuplicate(ts->Arhs,MAT_COPY_VALUES,&Amat);CHKERRQ(ierr);
+        ierr = SNESSetJacobian(snes,Amat,NULL,NULL,NULL);CHKERRQ(ierr);
+        if (Pmat && Pmat == ts->Brhs) {
+          ierr = MatDuplicate(ts->Brhs,MAT_COPY_VALUES,&Pmat);CHKERRQ(ierr);
+          ierr = SNESSetJacobian(snes,NULL,Pmat,NULL,NULL);CHKERRQ(ierr);
+          ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
+        }
+      }
+      ierr = MatDestroy(&Amat);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
