@@ -407,7 +407,7 @@ docsetdate: chk_petscdir
           -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
         echo "Done fixing version number, date, canonical URL info"
 
-# Build the Sphinx HTML documentation.  This uses Python's venv, which should
+# Use Sphinx to build some documentation.  This uses Python's venv, which should
 # behave similarly to what happens on e.g. ReadTheDocs. You may prefer to use
 # your own Python environment and directly build the Sphinx docs by using
 # the makefile in ${PETSC_SPHINX_ROOT}, paying attention to the requirements.txt
@@ -415,7 +415,6 @@ docsetdate: chk_petscdir
 PETSC_SPHINX_ROOT=src/docs/sphinx_docs
 PETSC_SPHINX_ENV=sphinx_docs_env
 PETSC_SPHINX_DEST=docs/sphinx_docs
-PETSC_SPHINX_WORKING=${PETSC_SPHINX_DEST}/working
 
 sphinx-docs-all: sphinx-docs-html sphinx-docs-manual
 
@@ -425,9 +424,9 @@ sphinx-docs-html: chk_loc allcite sphinx-docs-env
 
 sphinx-docs-manual: chk_loc sphinx-docs-env
 	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
-		BUILDDIR_MANUAL=${LOC}/${PETSC_SPHINX_WORKING} manual_pdf
-	@mv ${LOC}/${PETSC_SPHINX_WORKING}/petsc.pdf ${LOC}/${PETSC_SPHINX_DEST}/manual.pdf
-	@${RM} -rf ${LOC}/${PETSC_SPHINX_WORKING}
+		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} latexpdf
+	@mv ${LOC}/${PETSC_SPHINX_DEST}/latex/manual.pdf ${LOC}/docs/manual.pdf
+	@${RM} -rf ${LOC}/${PETSC_SPHINX_DEST}/latex
 
 sphinx-docs-env: sphinx-docs-check-python
 	@if [ ! -d  "${PETSC_SPHINX_ENV}" ]; then \
@@ -463,7 +462,7 @@ chk_concepts_dir: chk_loc
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 
 # Builds simple html versions of the source without links into the $PETSC_ARCH/obj directory, used by make mergecov
-srchtml: 
+srchtml:
 	-${OMAKE_SELF} ACTION=simplehtml PETSC_DIR=${PETSC_DIR} alltree_src
 
 ###########################################################
