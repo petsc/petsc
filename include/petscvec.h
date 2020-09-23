@@ -483,6 +483,7 @@ PETSC_EXTERN PetscErrorCode VecGetPinnedMemoryMin(Vec,size_t *);
    Level: developer
 E*/
 typedef enum {PETSC_OFFLOAD_UNALLOCATED=0x0,PETSC_OFFLOAD_CPU=0x1,PETSC_OFFLOAD_GPU=0x2,PETSC_OFFLOAD_BOTH=0x3,PETSC_OFFLOAD_VECKOKKOS=0x100} PetscOffloadMask;
+PETSC_EXTERN PetscErrorCode VecGetOffloadMask(Vec,PetscOffloadMask *);
 
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES,VEC_SUBSET_OFF_PROC_ENTRIES} VecOption;
 PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool);
