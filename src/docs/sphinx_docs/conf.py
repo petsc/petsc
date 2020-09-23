@@ -91,7 +91,8 @@ latex_additional_files = [
 ]
 
 latex_elements = {
-    'maketitle': r'''
+    'maketitle': r'\newcommand{\techreportversion}{%s}' % version +
+r'''
 \input{first.inc}
 \sphinxmaketitle
 ''',

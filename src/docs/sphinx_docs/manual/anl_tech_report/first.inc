@@ -1,13 +1,13 @@
 \pagestyle{empty}
 \hspace{-.65in}\includegraphics{ArgonneLogo}
-\hfill  {\large {\bf ANL-95/11 Rev 3.14}}
+\hfill  {\large {\bf ANL-95/11 Rev \techreportversion{}}}
 
 \vspace*{2in}
 \noindent {\huge{\bf PETSc Users Manual}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\Large{\it Revision 3.14}}
+\noindent {\Large{\it Revision \techreportversion{}}}
 
 \vspace*{1in}
 \noindent \\
