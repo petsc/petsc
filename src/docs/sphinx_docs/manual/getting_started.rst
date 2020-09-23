@@ -562,6 +562,10 @@ local part of the matrix and vectors in the parallel case.
    .. literalinclude:: ../../../ksp/ksp/tutorials/ex2.c
       :end-before: /*TEST
 
+.. raw:: latex
+
+  \newpage
+
 Compiling and Running Programs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
