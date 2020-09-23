@@ -241,35 +241,74 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     self.addMakeMacro('MPIEXEC', self.mpiexec)
     self.mpiexec = self.mpiexec + ' -n 1'
 
-    # check that hostname works
-    self.getExecutable('ping', resultName = 'ping')
-    if not hasattr(self,'ping'):
-      self.getExecutable('fping', resultName = 'ping')
-    if hasattr(self,'ping'):
-      self.getExecutable('hostname', resultName = 'hostname')
-      if hasattr(self,'hostname'):
+    if hasattr(self,'mpich_numversion') or hasattr(self,'ompi_major_version'):
+
+      hostnameworks = 0
+      # turn of checks if Apple firewall is on since it prevents success of the tests even though MPI will work
+      self.getExecutable('socketfilterfw', path = ['/usr/libexec/ApplicationFirewall'])
+      if hasattr(self,'socketfilterfw'):
         try:
-          (hostname, err, ret) = Configure.executeShellCommand(self.hostname, timeout = 10, log = self.log, threads = 1)
+          (result, err, ret) = Configure.executeShellCommand(self.socketfilterfw + ' --getglobalstate', timeout = 60, log = self.log, threads = 1)
+          if result.find("Firewall is enabled") > -1:  hostnameworks = 1
+        except:
+          self.logPrint("Exception: Unable to get result from socketfilterfw\n")
+
+
+      self.getExecutable('hostname')
+      if not hostnameworks and hasattr(self,'hostname'):
+        try:
+          (hostname, err, ret) = Configure.executeShellCommand(self.hostname, timeout = 60, log = self.log, threads = 1)
           self.logPrint("Return code from hostname: %s\n" % ret)
         except:
-          self.logPrint("Exception: Unable to get result from hostname, skipping ping check\n")
+          self.logPrint("Exception: Unable to get result from hostname, skipping network checks\n")
         else:
           if ret == 0:
-            self.logPrint("Testing ping on %s\n" % self.hostname)
-            if self.setCompilers.isCygwin(self.log):
-              count = ' -n 2 '
-            else:
-              count = ' -c 2 '
-            errormessage = 'Your hostname will not work with MPI, perhaps you have VPN running whose network settings may not play well with MPI or your network is misconfigured\n'
-            try:
-              (ok, err, ret) = Configure.executeShellCommand(self.ping + count + hostname, timeout = 10, log = self.log, threads = 1)
-              self.logPrint("Return code from ping: %s\n" % ret)
-              if ret != 0:
-                raise RuntimeError(errormessage+" Return code %s\n" % ret)
-            except:
-              raise RuntimeError("Exception: "+errormessage)
+            self.logPrint("Hostname works, running network checks")
+
+            self.getExecutable('ping', path = ['/sbin'], useDefaultPath = 1)
+            if not hasattr(self,'ping'):
+              self.getExecutable('fping', resultName = 'ping')
+            if hasattr(self,'ping'):
+              if self.setCompilers.isCygwin(self.log):
+                count = ' -n 2 '
+              else:
+                count = ' -c 2 '
+              try:
+                (ok, err, ret) = Configure.executeShellCommand(self.ping + count + hostname, timeout = 60, log = self.log, threads = 1)
+                self.logPrint("Return code from ping: %s\n" % ret)
+                if not ret: hostnameworks = 1
+              except:
+                self.logPrint("Exception: while running ping skipping ping check\n")
+
+              if not hostnameworks:
+                # Note: host may not work on MacOS, this is normal
+                self.getExecutable('host')
+                if hasattr(self,'host'):
+                  try:
+                    (ok, err, ret) = Configure.executeShellCommand(self.host + ' '+ hostname, timeout = 60, log = self.log, threads = 1)
+                    self.logPrint("Return code from host: %s\n" % ret)
+                    # host works even with broken VPN is is not a useful test
+                  except:
+                    self.logPrint("Exception: while running host skipping host check\n")
+
+              if not hostnameworks:
+                self.getExecutable('traceroute', path = ['/usr/sbin'], useDefaultPath = 1)
+                if hasattr(self,'traceroute'):
+                  try:
+                    (ok, err, ret) = Configure.executeShellCommand(self.traceroute + ' ' + hostname, timeout = 60, log = self.log, threads = 1)
+                    self.logPrint("Return code from traceroute: %s\n" % ret)
+                    if not ret: hostnameworks = 1
+                  except:
+                    self.logPrint("Exception: while running traceroute skipping traceroute check\n")
+
+              if not hostnameworks:
+                self.logPrintBox('***** WARNING: mpiexec may not work on your system due to network issues.\n\
+Perhaps you have VPN running whose network settings may not work with mpiexec or your network is misconfigured')
           else:
-            self.logPrint("Unable to get result from hostname, skipping ping check\n")
+            elf.logPrintBox('***** WARNING: mpiexec may not work on your system due to network issues.\n\
+Unable to run hostname to check the network')
+          self.logPrintDivider()
+
 
     # check that mpiexec runs an MPI program correctly
     error_message = 'Unable to run MPI program with '+self.mpiexec+'\n\
@@ -280,7 +319,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     includes = '#include <mpi.h>'
     body = 'MPI_Init(0,0);\nMPI_Finalize();\n'
     try:
-      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 30, threads = 1)
+      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 60, threads = 1)
       if not ok: raise RuntimeError(error_message)
     except RuntimeError as e:
       if str(e).find('Runaway process exceeded time limit') > -1:
