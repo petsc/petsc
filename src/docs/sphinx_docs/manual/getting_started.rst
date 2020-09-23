@@ -606,6 +606,8 @@ The low floating point operation (flop) rates in this example are due to
 the fact that the code solved a tiny system. We include this example
 merely to demonstrate the ease of extracting performance information.
 
+.. _listing_exprof:
+
 .. code-block:: none
 
    $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_view
