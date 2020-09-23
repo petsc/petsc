@@ -9219,6 +9219,9 @@ PetscErrorCode MatCreateVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
       ierr = VecSetType(*right,mat->defaultvectype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      if (mat->boundtocpu) {ierr = VecBindToCPU(*right,PETSC_TRUE);CHKERRQ(ierr);}
+#endif
       ierr = PetscLayoutReference(mat->cmap,&(*right)->map);CHKERRQ(ierr);
     }
     if (left) {
@@ -9227,6 +9230,9 @@ PetscErrorCode MatCreateVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
       ierr = VecSetType(*left,mat->defaultvectype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      if (mat->boundtocpu) {ierr = VecBindToCPU(*left,PETSC_TRUE);CHKERRQ(ierr);}
+#endif
       ierr = PetscLayoutReference(mat->rmap,&(*left)->map);CHKERRQ(ierr);
     }
   }
