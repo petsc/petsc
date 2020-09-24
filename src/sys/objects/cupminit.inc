@@ -272,7 +272,7 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
 {
   PetscErrorCode ierr;
   PetscBool      initDevice = PETSC_FALSE,devView = PETSC_FALSE,devNone = PETSC_FALSE;
-  PetscInt       device;
+  PetscInt       device = 0;
   char           devStr[32]={0};
 #if defined(PETSC_HAVE_KOKKOS)
   PetscBool      set,kinited,devDefault;
