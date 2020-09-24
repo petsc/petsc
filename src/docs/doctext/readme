@@ -1,7 +1,7 @@
 
     You should set the variable
 
-setenv DOCTEXT_PATH /home/bsmith/petsc/docs/tex/doctext
+setenv DOCTEXT_PATH /home/bsmith/petsc/src/docs/doctext
 
 contains the "formating" files used by doctext to format
 the HTML manual pages.

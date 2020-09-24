@@ -437,8 +437,8 @@ chk_manualpage_dir:
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
-	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/tex/doctext; export TEXTFILTER_PATH; \
+          DOCTEXT_PATH=${PETSC_DIR}/src/docs/doctext; export DOCTEXT_PATH; \
+	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/doctext; export TEXTFILTER_PATH; \
           ${DOCTEXT} -html -indexdir ../$${LMANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
 		-mpath ${LOC}/docs/manualpages/$${LMANSEC} ${SOURCED};  fi
@@ -447,10 +447,10 @@ manualpages_buildcite: chk_manualpage_dir
 manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
+          DOCTEXT_PATH=${PETSC_DIR}/src/docs/doctext; export DOCTEXT_PATH; \
 	  ${DOCTEXT} -html \
 		-mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc \
-		-defn ${PETSC_DIR}/src/docs/tex/doctext/html.def \
+		-defn ${PETSC_DIR}/src/docs/doctext/html.def \
 		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit ${SOURCED};\
 		chmod -f g+w ${LOC}/docs/manualpages/$${LMANSEC}/* ; fi
 #
