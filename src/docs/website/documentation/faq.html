@@ -801,7 +801,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         and several others. You may see the available ASM options by using
         <code>-pc_type asm -help</code> Also, see the procedural interfaces in the
         manual pages, with names <code>PCASMxxxx()</code> and check the index of the
-        <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a>
+        <a href="https://docs.petsc.org/en/latest/manual">users manual</a>
         for <code>PCASMxxx</code>().
       </p>
 
@@ -959,7 +959,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <h3><a name="makefiles">How do I compile and link may own PETSc application codes and can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></h3>
 
-      See the section of the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a> called Writing Application Codes with PETSc. This provides a
+      See the <a href="https://docs.petsc.org/en/latest/manual/getting_started/#writing-application-codes-with-petsc">section of the users manual</a> on writing application codes with PETSc. This provides a
       simple makefile that can be used to compiler user code. You are free to modify this makefile or completely replace it with your own makefile. 
 
       <h3><a name="cmake">Can I use CMake to build my own project that depends on PETSc?</a></h3>
@@ -1400,7 +1400,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <h3><a name="efficient-assembly">Assembling large sparse matrices takes a long time. What can I do make this process faster? or MatSetValues() is so slow, what can I do to speed it up?</a></h3>
 
-      See the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a> for many tips on this.
+      See the <a href="https://docs.petsc.org/en/latest/manual/performance/">Performance chapter of the users manual</a> for many tips on this.
 
       <ol>
         <li>
@@ -1422,7 +1422,7 @@ PETSC_COMM_WORLD = NewComm;
       <p>Preallocation of matrix memory is crucial for good performance for large problems, see:</p>
 
       <ul>
-        <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#sec_matsparse">https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#sec_matsparse</a></li>
+        <li><a href="https://docs.petsc.org/en/latest/manual/mat/#sparse-matrices">the users manual on sparse matrices</a></li>
         <li><a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateAIJ.html">https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateMPIAIJ.html</a></li>
       </ul>
 
@@ -1440,7 +1440,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <h3><a name="log-view">How can I generate performance summaries with PETSc?</a></h3>
 
-      Use these options at runtime: -log_view. See the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
+      Use these options at runtime: -log_view. See the <a href="https://docs.petsc.org/en/latest/manual/performance/">Performance chapter of the users manual</a>
       for information on interpreting the summary data. If using the PETSc
       (non)linear solvers, one can also specify -snes_view or -ksp_view for
       a printout of solver info. Only the highest level PETSc object used needs

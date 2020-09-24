@@ -341,9 +341,8 @@ allcite: chk_loc deletemanualpages
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 
-# Build just PDF manuals + prerequisites
+# Build just TAO PDF manual + prerequisites
 allpdf: chk_loc allcite
-	-cd src/docs/tex/manual; ${OMAKE_SELF} manual.pdf LOC=${LOC}
 	-cd src/docs/tao_tex/manual; ${OMAKE_SELF} manual.pdf LOC=${LOC}
 
 # Build just manual pages + prerequisites
