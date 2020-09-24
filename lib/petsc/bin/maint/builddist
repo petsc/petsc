@@ -110,6 +110,7 @@ cd $PETSC_DIR
 # we should have an option of running configure - without compilers/mpi/blas etc..
 ./config/configure.py --with-mpi=0 --download-c2html=1 --download-sowing=1
 make allfortranstubs
+make sphinx-docs-check-python
 make alldoc LOC=${PETSC_DIR} DOCSETDATE_PRUNE_LIST="" GONULL=""
 #
 make ACTION=clean tree_basic

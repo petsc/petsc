@@ -332,7 +332,7 @@ deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 
 # Builds all the documentation - should be done every night
-alldoc: allcite allpdf alldoc1 alldoc2 docsetdate
+alldoc: allcite allpdf alldoc1 alldoc2 docsetdate sphinx-docs-all
 
 # Build just citations
 allcite: chk_loc deletemanualpages
@@ -407,29 +407,43 @@ docsetdate: chk_petscdir
           -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
         echo "Done fixing version number, date, canonical URL info"
 
-# Build the Sphinx HTML documentation.  This uses Python's venv, which should
+# Use Sphinx to build some documentation.  This uses Python's venv, which should
 # behave similarly to what happens on e.g. ReadTheDocs. You may prefer to use
 # your own Python environment and directly build the Sphinx docs by using
 # the makefile in ${PETSC_SPHINX_ROOT}, paying attention to the requirements.txt
 # there.
 PETSC_SPHINX_ROOT=src/docs/sphinx_docs
 PETSC_SPHINX_ENV=sphinx_docs_env
+PETSC_SPHINX_DEST=docs/sphinx_docs
 
-sphinx-docs-html:
-	@${PYTHON} -c 'import sys; sys.exit(sys.version_info[:2] < (3,3))' || \
-    (printf 'Working Python 3.3 or later is required to build the Sphinx docs in a virtual environment\nTry e.g.\n  make sphinx-docs-html PYTHON=python3\n' && false)
+sphinx-docs-all: sphinx-docs-html sphinx-docs-manual
+
+sphinx-docs-html: chk_loc allcite sphinx-docs-env
+	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
+		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} html
+
+sphinx-docs-manual: chk_loc sphinx-docs-env
+	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
+		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} latexpdf
+	@mv ${LOC}/${PETSC_SPHINX_DEST}/latex/manual.pdf ${LOC}/docs/manual.pdf
+	@${RM} -rf ${LOC}/${PETSC_SPHINX_DEST}/latex
+
+sphinx-docs-env: sphinx-docs-check-python
 	@if [ ! -d  "${PETSC_SPHINX_ENV}" ]; then \
         ${PYTHON} -m venv ${PETSC_SPHINX_ENV}; \
         . ${PETSC_SPHINX_ENV}/bin/activate; \
-        pip install -r src/docs/sphinx_docs/requirements.txt; \
+        pip install -r ${PETSC_SPHINX_ROOT}/requirements.txt; \
       fi
-	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} html
 
-sphinx-docs-clean:
-	${OMAKE} -C ${PETSC_SPHINX_ROOT} clean
+sphinx-docs-check-python:
+	@${PYTHON} -c 'import sys; sys.exit(sys.version_info[:2] < (3,3))' || \
+    (printf 'Working Python 3.3 or later is required to build the Sphinx docs in a virtual environment\nTry e.g.\n  make ... PYTHON=python3\n' && false)
+
+sphinx-docs-clean: chk_loc
 	${RM} -rf ${PETSC_SPHINX_ENV}
+	${RM} -rf ${LOC}/${PETSC_SPHINX_DEST}
 
-alldocclean: deletemanualpages allcleanhtml
+alldocclean: deletemanualpages allcleanhtml sphinx-docs-clean
 
 # Deletes man pages (HTML version)
 deletemanualpages: chk_loc
@@ -448,7 +462,7 @@ chk_concepts_dir: chk_loc
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 
 # Builds simple html versions of the source without links into the $PETSC_ARCH/obj directory, used by make mergecov
-srchtml: 
+srchtml:
 	-${OMAKE_SELF} ACTION=simplehtml PETSC_DIR=${PETSC_DIR} alltree_src
 
 ###########################################################

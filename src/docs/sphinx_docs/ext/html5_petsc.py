@@ -26,13 +26,13 @@ def setup(app: Sphinx) -> None:
 
 
 def _check_version(app: Sphinx) -> None:
-    app.require_sphinx('2.4')
     sphinx_version_info_source = (2, 4, 4, 'final', 0)
+    app.require_sphinx('%s.%s' % (sphinx_version_info_source[0], sphinx_version_info_source[1]))
     if sphinx_version_info != sphinx_version_info_source:
-        error_message = 'This extension duplicates code from Sphinx '
-        error_message += str(sphinx_version_info_source)
-        error_message += ' which is incompatible with the current version'
-        error_message += str(sphinx_version_info)
+        error_message = ' '.join([
+            'This extension duplicates code from Sphinx %s ' % (sphinx_version_info_source,),
+            'which is incompatible with the current version %s' % (sphinx_version_info,),
+            ])
         raise NotImplementedError(error_message)
 
 
@@ -57,8 +57,8 @@ class HTML5PETScTranslator(HTML5Translator):
         instead of the direct data member, which may not be populated yet
         """
         if not self._manpage_map:
-            htmlmap_stash_filename = _generate_htmlmap_stash()
-            manpage_map_raw = htmlmap_to_dict(htmlmap_stash_filename)
+            htmlmap_filename = _generate_htmlmap()
+            manpage_map_raw = htmlmap_to_dict(htmlmap_filename)
             manpage_prefix = 'https://www.mcs.anl.gov/petsc/petsc-current/docs/'
             self._manpage_map = dict_complete_links(manpage_map_raw, manpage_prefix)
         return self._manpage_map
@@ -166,38 +166,45 @@ def dict_complete_links(string_to_link: Dict[str,str], prefix: str = '') -> Dict
     return dict((k, link_string(k, v, prefix)) for (k, v) in string_to_link.items())
 
 
-def _generate_htmlmap_stash() -> str:
-    """ Perform a minimal PETSc configuration and docs build to obtain htmlmap
+def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
+    configure = [
+        './configure',
+        '--with-mpi=0',
+        '--with-blaslapack=0',
+        '--with-fortran=0',
+        '--with-cxx=0',
+        '--with-x=0',
+        '--with-cmake=0',
+        '--with-pthread=0',
+        '--with-regexp=0',
+        '--download-sowing',
+        '--with-mkl_sparse_optimize=0',
+        '--with-mkl_sparse=0',
+        'PETSC_ARCH=' + petsc_arch,
+    ]
+    print(__file__, ': performing a minimal PETSc configuration, with PETSC_ARCH=', petsc_arch)
+    subprocess.run(configure, cwd=petsc_dir, check=True)
 
-    This may be quite slow (on the order of ~5 minutes), as
-    we configure and build PETSc and traverse the source.
+
+def _generate_htmlmap() -> str:
+    """ Returns a filename for a valid htmlmap file.
+
+    Checks if the expected file exists in a standard location.
+
+    If this fails, performs a custom minimalist configuration and uses this to generate
+    the file.
+
+    If having to configure and build the map, this may be quite slow (on the order of ~5 minutes).
     """
-    htmlmap_stash_filename = os.path.join('_build', 'docs', 'manualpages', 'htmlmap')
-    if not os.path.isfile(htmlmap_stash_filename):
-        petsc_dir = os.path.abspath(os.path.join('..', '..', '..'))
+    petsc_dir = os.path.abspath(os.path.join('..', '..', '..'))
+    htmlmap_filename = os.path.join(petsc_dir, 'docs', 'manualpages', 'htmlmap')
+    if not os.path.isfile(htmlmap_filename):
         petsc_arch = 'arch-sphinxdocs-minimal'
-        configure = [
-                './configure',
-                '--with-mpi=0',
-                '--with-blaslapack=0',
-                '--with-fortran=0',
-                '--with-cxx=0',
-                '--with-x=0',
-                '--with-cmake=0',
-                '--with-pthread=0',
-                '--with-regexp=0',
-                '--download-sowing',
-                '--with-mkl_sparse_optimize=0',
-                '--with-mkl_sparse=0',
-                'PETSC_ARCH=' + petsc_arch,
-                ]
-        status = subprocess.run(configure, cwd = petsc_dir).check_returncode()
-        docs_destination = os.path.join(os.getcwd(),'_build')
+        _configure_minimal_petsc(petsc_dir, petsc_arch)
         allcite = ['make', 'allcite', 'PETSC_DIR=' + petsc_dir,
-                   'PETSC_ARCH=' + petsc_arch, 'LOC=' + docs_destination]
-        print(__file__,': performing a minimal PETSc configuration, with PETSC_ARCH=', petsc_arch)
-        subprocess.run(allcite, cwd=petsc_dir).check_returncode()
-    return htmlmap_stash_filename
+                   'PETSC_ARCH=' + petsc_arch, 'LOC=' + petsc_dir]
+        subprocess.run(allcite, cwd=petsc_dir, check=True)
+    return htmlmap_filename
 
 
 def get_multiple_replace_pattern(source_dict: Dict[str,str]) -> re.Pattern:
