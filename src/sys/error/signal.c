@@ -140,6 +140,8 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   if (sig >= 0 && sig <= 20) (*PetscErrorPrintf)("Caught signal number %d %s\n",sig,SIGNAME[sig]);
   else (*PetscErrorPrintf)("Caught signal\n");
 
+  PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__);
+
   (*PetscErrorPrintf)("Try option -start_in_debugger or -on_error_attach_debugger\n");
   (*PetscErrorPrintf)("or see https://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind\n");
   (*PetscErrorPrintf)("or try http://valgrind.org on GNU/linux and Apple Mac OS X to find memory corruption errors\n");

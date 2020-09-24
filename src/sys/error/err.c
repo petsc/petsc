@@ -398,6 +398,8 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
     if (p == PETSC_ERROR_INITIAL) PetscStrncpy(PetscErrorBaseMessage,lbuf,1023);
   }
 
+  if (p == PETSC_ERROR_INITIAL && n != PETSC_ERR_MEMC) PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__);
+
   if (!eh) ierr = PetscTraceBackErrorHandler(comm,line,func,file,n,p,lbuf,NULL);
   else     ierr = (*eh->handler)(comm,line,func,file,n,p,lbuf,eh->ctx);
 
