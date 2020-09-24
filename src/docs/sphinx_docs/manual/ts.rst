@@ -438,8 +438,9 @@ In PETSc, DAEs and ODEs are formulated as :math:`F(t,u,\dot{u})=G(t,u)`, where :
      - fully implicit ODE/DAE
      - :math:`\begin{aligned}F(t,u,\dot{u}) &= f(t,u,\dot{u})\\G(t,u) &= 0\end{aligned}`; the user needs to set ``TSSetEquationType()`` to ``TS_EQ_IMPLICIT`` or higher
 
+:numref:`tab_IMEX_RK_PETSc` lists of the currently available IMEX Runge-Kutta schemes. For each method, it gives the ``-ts_arkimex_type`` name, the reference, the total number of stages/implicit stages, the order/stage-order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, and dense output (DO).
 
-.. list-table:: List of the currently available IMEX Runge-Kutta schemes. For each method we listed the ``-ts_arkimex_type`` name, the reference, the total number of stages/implicit stages, the order/stage-order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, and dense output (DO).
+.. list-table:: IMEX Runge-Kutta schemes
   :name: tab_IMEX_RK_PETSc
   :header-rows: 1
 
@@ -564,9 +565,9 @@ In PETSc, DAEs and ODEs are formulated as :math:`F(t,u,\dot{u})=G(t,u)`, where :
 ROSW are linearized implicit Runge-Kutta methods known as Rosenbrock
 W-methods. They can accommodate inexact Jacobian matrices in their
 formulation. A series of methods are available in PETSc are listed in
-the table below.
+:numref:`tab_IMEX_RosW_PETSc` below. For each method, it gives the reference, the total number of stages and implicit stages, the scheme order and stage order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, dense output (DO), the capacity to use inexact Jacobian matrices (-W), and high order integration of differential algebraic equations (PDAE).
 
-.. list-table:: List of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number of stages and implicit stages, the scheme order and stage order, the implicit stability properties (IM), stiff accuracy (SA), the existence of an embedded scheme, dense output (DO), the capacity to use inexact Jacobian matrices (-W), and high order integration of differential algebraic equations (PDAE).
+.. list-table:: Rosenbrock W-schemes
    :name: tab_IMEX_RosW_PETSc
    :header-rows: 1
 
@@ -813,7 +814,9 @@ y)`. However, the actual local error is :math:`\varepsilon_{loc}
 = \varepsilon_{n+1} - \varepsilon_n = \frac{1}{1-\gamma} * [(\tilde{y} -
 y)_{n+1} - (\tilde{y} - y)_n]`.
 
-.. list-table:: List of the currently available GL schemes with global error estimation introduced in :cite:`Constantinescu_TR2016b`.
+:numref:`tab_IMEX_GLEE_PETSc` lists currently available GL schemes with global error estimation :cite:`Constantinescu_TR2016b`.
+
+.. list-table:: GL schemes with global error estimation
    :name: tab_IMEX_GLEE_PETSc
    :header-rows: 1
 

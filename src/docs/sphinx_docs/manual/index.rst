@@ -43,14 +43,14 @@ Prepared by
 **H. Zhang** :sup:`5`, and 
 **H. Zhang** :sup:`1`
 
-:sup:`1`\ Mathematics and Computer Science Division, Argonne National Laboratory,
-:sup:`2`\ Electricity Infrastructure and Buildings Division, Pacific Northwest National Laboratory,
-:sup:`3`\ Computational Research, Lawrence Berkeley National Laboratory,
-:sup:`4`\ Extreme Computing Research Center, King Abdullah University of Science and Technology,
-:sup:`5`\ Computer Science Department, Illinois Institute of Technology,
-:sup:`6`\ Texas Advanced Computing Center, University of Texas at Austin,
-:sup:`7`\ Department of Earth Sciences, University of Oxford,
-:sup:`8`\ Institute of Geophysics, ETH Zurich
+| :sup:`1`\ Mathematics and Computer Science Division, Argonne National Laboratory
+| :sup:`2`\ Electricity Infrastructure and Buildings Division, Pacific Northwest National Laboratory
+| :sup:`3`\ Computational Research, Lawrence Berkeley National Laboratory
+| :sup:`4`\ Extreme Computing Research Center, King Abdullah University of Science and Technology
+| :sup:`5`\ Computer Science Department, Illinois Institute of Technology
+| :sup:`6`\ Texas Advanced Computing Center, University of Texas at Austin
+| :sup:`7`\ Department of Earth Sciences, University of Oxford
+| :sup:`8`\ Institute of Geophysics, ETH Zurich
 
 --------------
 

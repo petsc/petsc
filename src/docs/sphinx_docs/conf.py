@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath('./ext'))
 
 project = 'PETSc'
 copyright = str(datetime.date.today().year)
-author = 'PETSc'
+author = 'The PETSc Team'
 
 with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as version_file:
     buf = version_file.read()
@@ -35,8 +35,8 @@ with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as ve
     patch_version      = re.search(' PETSC_VERSION_PATCH[ ]*([0-9]*)',buf).group(1)
 
     if petsc_release_flag == '0':
-        version = 'dev'
-        release = 'dev'
+        version = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')
+        release = version
     else:
         version = '.'.join([major_version, minor_version])
         release = '.'.join([major_version,minor_version,subminor_version])
