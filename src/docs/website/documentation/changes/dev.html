@@ -132,6 +132,10 @@
           <li>Remove PetscOptionsMonitorCancel()</li>
           <li>Remove -h and -v options. Use -help and -version instead. The short options -h and -v can now be used within user codes.</li>
           <li>Import PETSc4py sources into PETSc source tree. Continue to use --download-petsc4py to build petsc4py.</li>
+          <li>Add an experimental Kokkos backend for PETSc GPU operations. For example, one can use '--download-kokkos --download-kokkos-kernels --with-kokkos-cuda-arch=TURING75' to build PETSc with a Kokkos CUDA backend,
+              and then use -vec_type kokkos -mat_type aijkokkos. With that, vector and matrix operations on GPUs are done through Kokkos kernels. Currently, VECKOKKOS supports all vector operations,
+              but MATAIJKOKKOS only supports MatMult() and its variants. More complete support is coming.
+          </li>
         </ul>
       <h4>Configure/Build:</h4>
         <ul>
@@ -153,6 +157,7 @@
           <li>Add VecCreate{Seq|MPI}ViennaCLWithArray and VecViennaCL{Place|Reset}Array.</li>
           <li>Add VecCreate{Seq|MPI}CUDAWithArrays to create VECCUDA sharing the CPU and/or GPU memory spaces.</li>
           <li>Add VecCreate{Seq|MPI}ViennaCLWithArrays to create VECVIENNACL sharing the CPU and/or GPU memory spaces.</li>
+          <li>Add an experimental vector type VECKOKKOS</li>
         </ul>
       <h4>PetscSection:</h4>
       <ul>
@@ -182,7 +187,8 @@
           <li>Add support for MUMPS-5.3.0 distributed right hand side</li>
           <li>Add support for MatMultHermitianTranspose with SEQAIJCUSPARSE</li>
           <li>Remove default generation of explicit matrix for MatMultTranspose operations with SEQAIJCUSPARSE. Users can still require it via MatSeqAIJCUSPARSESetGenerateTranspose</li>
-          <li>Add MatOrderingType external returns a NULL ordering to allow solver types  MATSOLVERUMFPACK and MATSOLVERCHOLMOD to use their orderings
+          <li>Add MatOrderingType external returns a NULL ordering to allow solver types  MATSOLVERUMFPACK and MATSOLVERCHOLMOD to use their orderings</li>
+          <li>Add an experimental matrix type MATAIJKOKKOS</li>
         </ul>
       <h4>PC:</h4>
         <ul>
