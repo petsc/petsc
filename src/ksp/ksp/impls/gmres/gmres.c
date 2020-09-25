@@ -220,7 +220,6 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   KSP_GMRES      *gmres     = (KSP_GMRES*)ksp->data;
   PetscBool      guess_zero = ksp->guess_zero;
   PetscInt       N = gmres->max_k + 1;
-  PetscBLASInt   bN;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !gmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
@@ -245,8 +244,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
           ierr = PetscLogObjectMemory((PetscObject)ksp,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = VecDuplicateVecs(VEC_VV(0),N,&gmres->vecb);CHKERRQ(ierr);
         }
-        ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
-        ierr = PetscArraycpy(gmres->hes_ritz,gmres->hes_origin,bN*bN);CHKERRQ(ierr);
+        ierr = PetscArraycpy(gmres->hes_ritz,gmres->hes_origin,N*N);CHKERRQ(ierr);
         for (i=0; i<gmres->max_k+1; i++) {
           ierr = VecCopy(VEC_VV(i),gmres->vecb[i]);CHKERRQ(ierr);
         }

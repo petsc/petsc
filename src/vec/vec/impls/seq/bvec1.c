@@ -10,7 +10,7 @@
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   const PetscScalar *ya,*xa;
-  PetscBLASInt      one = 1,bn;
+  PetscBLASInt      one = 1,bn = 0;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -30,7 +30,7 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   const PetscScalar *ya,*xa;
-  PetscBLASInt      one = 1,bn;
+  PetscBLASInt      one = 1,bn = 0;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;

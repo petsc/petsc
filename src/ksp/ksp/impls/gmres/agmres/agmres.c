@@ -21,11 +21,11 @@ extern PetscErrorCode KSPDestroy_DGMRES(KSP);
 extern PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *,KSP);
 extern PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP,PetscInt);
 /*
- * This function allocates  data for the Newton basis GMRES implementation.
- * Note that most data are allocated in KSPSetUp_DGMRES and KSPSetUp_GMRES, including the space for the basis vectors, the various Hessenberg matrices and the Givens rotations coefficients
- *
- */
-static PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
+   This function allocates  data for the Newton basis GMRES implementation.
+   Note that most data are allocated in KSPSetUp_DGMRES and KSPSetUp_GMRES, including the space for the basis vectors, the various Hessenberg matrices and the Givens rotations coefficients
+
+*/
+static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
 {
   PetscErrorCode  ierr;
   PetscInt        hes;
@@ -72,10 +72,9 @@ static PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/* This function returns the current solution from the private data structure of AGMRES back to ptr.
- * This function is provided to be compliant with the KSP GMRES  scheme.
- *
- */
+/*
+    Returns the current solution from the private data structure of AGMRES back to ptr.
+*/
 static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp,Vec ptr, Vec *result)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
@@ -96,11 +95,11 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp,Vec ptr, Vec *result)
   PetscFunctionReturn(0);
 }
 
-/* This function computes the shifts  needed to generate stable basis vectors (through the Newton polynomials)
- * At input, the operators (matrix and preconditioners) are used to create a new GMRES KSP.
- * One cycle of GMRES with the Arnoldi process is performed and the eigenvalues of the induced Hessenberg matrix (the Ritz values) are computed.
- * NOTE: This function is not currently used; the next function is rather used when  the eigenvectors are needed next to augment the basis
- */
+/* Computes the shifts  needed to generate stable basis vectors (through the Newton polynomials)
+   At input, the operators (matrix and preconditioners) are used to create a new GMRES KSP.
+   One cycle of GMRES with the Arnoldi process is performed and the eigenvalues of the induced Hessenberg matrix (the Ritz values) are computed.
+   NOTE: This function is not currently used; the next function is rather used when  the eigenvectors are needed next to augment the basis
+*/
 PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
 {
   PetscErrorCode  ierr;
@@ -160,17 +159,17 @@ PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/* This function computes the shift values (Ritz values) needed to generate stable basis vectors
- * One cycle of DGMRES is performed to find the eigenvalues. The same data structures are used since AGMRES extends DGMRES
- * Note that when the basis is  to be augmented, then this function computes the harmonic Ritz vectors from this first cycle.
- * Input :
- *  - The operators (matrix, preconditioners and right hand side) are  normally required.
- *  - max_k : the size of the (non augmented) basis.
- *  - neig: The number of eigenvectors to augment, if deflation is needed
- * Output :
- *  - The shifts as complex pair of arrays in wr and wi (size max_k).
- *  - The harmonic Ritz vectors (agmres->U) if deflation is needed.
- */
+/* Computes the shift values (Ritz values) needed to generate stable basis vectors
+   One cycle of DGMRES is performed to find the eigenvalues. The same data structures are used since AGMRES extends DGMRES
+   Note that when the basis is  to be augmented, then this function computes the harmonic Ritz vectors from this first cycle.
+   Input :
+    - The operators (matrix, preconditioners and right hand side) are  normally required.
+    - max_k : the size of the (non augmented) basis.
+    - neig: The number of eigenvectors to augment, if deflation is needed
+   Output :
+    - The shifts as complex pair of arrays in wr and wi (size max_k).
+    - The harmonic Ritz vectors (agmres->U) if deflation is needed.
+*/
 static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -242,7 +241,6 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
     ierr = PetscFree(Ishift);CHKERRQ(ierr);
     ierr = PetscFree(wi);CHKERRQ(ierr);
   }
-
   agmres->HasShifts = PETSC_TRUE;
   ksp->max_it       = max_it;
   ierr              = PetscLogEventEnd(KSP_AGMRESComputeShifts, ksp, 0,0,0);CHKERRQ(ierr);
@@ -250,15 +248,15 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
 }
 
 /*
- * Generate the basis vectors from the Newton polynomials with shifts and scaling factors
- * The scaling factors are computed to obtain unit vectors. Note that this step can be avoided with the preprocessing option KSP_AGMRES_NONORM.
- * Inputs :
- *  - Operators (Matrix and preconditioners and the first basis vector in VEC_V(0)
- *  - Shifts values in agmres->Rshift and agmres->Ishift.
- * Output :
- *  - agmres->vecs or VEC_V : basis vectors
- *  - agmres->Scale : Scaling factors (equal to 1 if no scaling is done)
- */
+   Generate the basis vectors from the Newton polynomials with shifts and scaling factors
+   The scaling factors are computed to obtain unit vectors. Note that this step can be avoided with the preprocessing option KSP_AGMRES_NONORM.
+   Inputs :
+    - Operators (Matrix and preconditioners and the first basis vector in VEC_V(0)
+    - Shifts values in agmres->Rshift and agmres->Ishift.
+   Output :
+    - agmres->vecs or VEC_V : basis vectors
+    - agmres->Scale : Scaling factors (equal to 1 if no scaling is done)
+*/
 static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -359,15 +357,15 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/* Form the Hessenberg matrix for the Arnoldi-like relation.
- * Inputs :
- * - Shifts values in agmres->Rshift and agmres->Ishift
- * - RLoc : Triangular matrix from the RODDEC orthogonalization
- * Outputs :
- * - H = agmres->hh_origin : The Hessenberg matrix.
- *
- * NOTE: Note that the computed Hessenberg matrix is not mathematically equivalent to that in the real Arnoldi process (in KSP GMRES). If it is needed, it can be explicitly  formed as H <-- H * RLoc^-1.
- *
+/*
+  Form the Hessenberg matrix for the Arnoldi-like relation.
+   Inputs :
+   - Shifts values in agmres->Rshift and agmres->Ishift
+   - RLoc : Triangular matrix from the RODDEC orthogonalization
+   Outputs :
+   - H = agmres->hh_origin : The Hessenberg matrix.
+
+   NOTE: Note that the computed Hessenberg matrix is not mathematically equivalent to that in the real Arnoldi process (in KSP GMRES). If it is needed, it can be explicitly  formed as H <-- H * RLoc^-1.
  */
 static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp)
 {
@@ -412,10 +410,8 @@ static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp)
 }
 
 /*
- * Form the new approximate solution from the least-square problem
- *
- */
-
+  Form the new approximate solution from the least-square problem
+*/
 static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
@@ -471,18 +467,18 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
 }
 
 /*
- * Run  one cycle of the Newton-basis gmres, possibly augmented with eigenvectors.
- *
- * Return residual history if requested.
- * Input :
- * - The vector VEC_V(0) is the initia residual
- * Output :
- *  - the solution vector is in agmres->vec_sol
- * - itcount : number of inner iterations
- *  - res : the new residual norm
+   Run  one cycle of the Newton-basis gmres, possibly augmented with eigenvectors.
+
+   Return residual history if requested.
+   Input :
+   - The vector VEC_V(0) is the initia residual
+   Output :
+    - the solution vector is in agmres->vec_sol
+   - itcount : number of inner iterations
+    - res : the new residual norm
  .
  NOTE: Unlike GMRES where the residual norm is available at each (inner) iteration,  here it is available at the end of the cycle.
- */
+*/
 static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*)(ksp->data);
@@ -517,7 +513,6 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount,KSP ksp)
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
-
 
   *itcount = KspSize;
   PetscFunctionReturn(0);
@@ -608,7 +603,6 @@ static PetscErrorCode KSPDestroy_AGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
@@ -677,7 +671,6 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptionItems *PetscOptionsObj
   PetscFunctionReturn(0);
 }
 
-
 /*MC
  KSPAGMRES - Newton basis GMRES implementation with adaptive augmented eigenvectors
 
@@ -692,9 +685,8 @@ There are  many ongoing work that aim at avoiding (or minimizing) the communicat
  .   -ksp_agmres_maxeigen <max_neig> - Maximum number of eigenvalues to deflate
  .   -ksp_agmres_MinRatio <1> - Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed
  .   -ksp_agmres_MaxRatio <1> - Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed
- .   --ksp_agmres_DeflPrecond  Apply deflation as a preconditioner, this is similar to DGMRES but it rather builds a Newton basis.  This is an experimental option.
- .   -ksp_dgmres_force <0, 1> - Force the deflation at each restart.
- .   - There are many experimental parameters. Run with -help option to see the whole list
+ .   -ksp_agmres_DeflPrecond - Apply deflation as a preconditioner, this is similar to DGMRES but it rather builds a Newton basis.  This is an experimental option.
+ -   -ksp_dgmres_force <0, 1> - Force the deflation at each restart.
 
  Level: beginner
 
@@ -788,6 +780,3 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   ierr = PetscObjectGetNewTag((PetscObject)ksp,&agmres->tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-/*  LocalWords:  iascii
- */

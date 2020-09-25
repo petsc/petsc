@@ -343,7 +343,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   PetscErrorCode ierr;
   PetscErrorCode (*func)(SNES,Vec,Mat,Mat,void*);
   PetscInt       n,i;
-  PetscBLASInt   nb,lwork;
+  PetscBLASInt   nb = 0,lwork;
   PetscReal      *eigr,*eigi;
   PetscScalar    *work;
   PetscScalar    *a;
