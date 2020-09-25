@@ -878,6 +878,8 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts,Mat A,Mat B)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (A != ts->Arhs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Amat");
+  if (B != ts->Brhs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Bmat");
 
   if (ts->rhsjacobian.shift) {
     ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
