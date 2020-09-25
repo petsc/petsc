@@ -883,7 +883,6 @@ analyze-pipeline:
     - date
     - hostname
   script:
-  - git fetch --unshallow --no-tags origin +master:remotes/origin/master
   - ./configure --with-mpi=0 --with-cxx=0 --with-c2html
   - make srchtml
   - make mergegcov
