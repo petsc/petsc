@@ -203,7 +203,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-    if (PetscUnlikelyDebug(im[i] >= mat->rmap->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->rmap->N-1);
+    if (im[i] >= mat->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->rmap->N-1);
     if (im[i] >= rstart_orig && im[i] < rend_orig) {
       row = im[i] - rstart_orig;
       for (j=0; j<n; j++) {
@@ -213,7 +213,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
           else             value = v[i+j*m];
           MatSetValues_SeqBAIJ_A_Private(row,col,value,addv,im[i],in[j]);
         } else if (in[j] < 0) continue;
-        else if (PetscUnlikelyDebug(in[j] >= mat->cmap->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
+        else if (PetscUnlikely(in[j] >= mat->cmap->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
         else {
           if (mat->was_assembled) {
             if (!baij->colmap) {
