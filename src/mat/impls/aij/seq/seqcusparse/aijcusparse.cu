@@ -1544,10 +1544,8 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
       matrix = (CsrMatrix*)cusparsestruct->mat->mat;
 
       ierr = PetscLogEventBegin(MAT_CUSPARSECopyToGPU,A,0,0,0);CHKERRQ(ierr);
-      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       matrix->values->assign(a->a, a->a+a->nz);
       err  = WaitForCUDA();CHKERRCUDA(err);
-      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = PetscLogCpuToGpu((a->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_CUSPARSECopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
@@ -1556,7 +1554,6 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
         cusparseIndexBase_t indexBase = cusparseGetMatIndexBase(cusparsestruct->mat->descr);
         matrixT = (CsrMatrix*)cusparsestruct->matTranspose->mat;
         ierr = PetscLogEventBegin(MAT_CUSPARSEGenerateTranspose,A,0,0,0);CHKERRQ(ierr);
-        ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
         stat = cusparse_csr2csc(cusparsestruct->handle, A->rmap->n,
                             A->cmap->n, matrix->num_entries,
                             matrix->values->data().get(),
@@ -1573,12 +1570,10 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
                           #endif
                            );CHKERRCUSPARSE(stat);
         err  = WaitForCUDA();CHKERRCUDA(err);
-        ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
         ierr = PetscLogEventEnd(MAT_CUSPARSEGenerateTranspose,A,0,0,0);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscLogEventBegin(MAT_CUSPARSECopyToGPU,A,0,0,0);CHKERRQ(ierr);
-      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       ierr = MatSeqAIJCUSPARSEMultStruct_Destroy(&cusparsestruct->mat,cusparsestruct->format);CHKERRQ(ierr);
       ierr = MatSeqAIJCUSPARSEMultStruct_Destroy(&cusparsestruct->matTranspose,cusparsestruct->format);CHKERRQ(ierr);
       delete cusparsestruct->workVector;
@@ -1694,7 +1689,6 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
       }
       err  = WaitForCUDA();CHKERRCUDA(err);
-      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_CUSPARSECopyToGPU,A,0,0,0);CHKERRQ(ierr);
       cusparsestruct->nonzerostate = A->nonzerostate;
     }
