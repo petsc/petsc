@@ -159,7 +159,7 @@ check-py-vermin:
     - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check
     - make updatedatafiles
     - if [ -z ${DISABLE_PETSC4PY_TESTS+x} ]; then if [ -z ${ENABLE_PETSC4PY_LDPRELOAD+x} ]; then echo "NOT using LD_PRELOAD"; make petsc4pytest; else echo "using LD_PRELOAD"; LD_PRELOAD=${PWD}/${TEST_ARCH}/lib/libpetsc.so make petsc4pytest; fi; fi
-    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
+    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS}; fi
     - if [ ! -z ${RUN_GCOV+x} ]; then make gcov && bash <(curl -s https://codecov.io/bash) -c > /dev/null 2>&1; fi
   artifacts:
     reports:
@@ -418,6 +418,7 @@ linux-c-exodus-dbg:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
     RUN_GCOV: 1
+    TEST_OPTS: -j1 query=requires queryval=cuda
 
 linux-cuda11-double:
   extends:
@@ -428,6 +429,7 @@ linux-cuda11-double:
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-cuda11-double
+    TEST_OPTS: -j1 query=requires queryval=cuda
 
 linux-cuda11-complex:
   extends:
@@ -438,15 +440,7 @@ linux-cuda11-complex:
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-cuda11-complex
-
-linux-cuda-complex:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gpu:nvidia, os:linux, name:p1
-  variables:
-    TEST_ARCH: arch-ci-linux-cuda-complex
+    TEST_OPTS: -j1 query=requires queryval=cuda
 
 linux-cuda-double-64idx:
   extends:
@@ -456,6 +450,7 @@ linux-cuda-double-64idx:
     - gpu:nvidia, os:linux, name:p1
   variables:
     TEST_ARCH: arch-ci-linux-cuda-double-64idx
+    TEST_OPTS: -j1 query=requires queryval=cuda
 
 linux-cuda-single-cxx:
   extends:
@@ -466,6 +461,7 @@ linux-cuda-single-cxx:
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
+    TEST_OPTS: -j1 query=requires queryval=cuda
 
 linux-cuda-uni-pkgs:
   extends:
@@ -475,6 +471,7 @@ linux-cuda-uni-pkgs:
     - gpu:nvidia, os:linux
   variables:
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
+    TEST_OPTS: -j4 query=requires queryval=cuda
 
 linux-viennacl:
   extends:
@@ -485,6 +482,7 @@ linux-viennacl:
   variables:
     TEST_ARCH: arch-ci-linux-viennacl
     MAKE_CXXFLAGS: -Werror -Wno-ignored-attributes
+    TEST_OPTS: -j1 query=requires queryval=viennacl
 
 linux-viennacl-cuda:
   extends:
