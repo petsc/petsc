@@ -131,7 +131,7 @@ def print_htmltable(nsrc_files,nsrc_files_not_tested,ntotal_lines,ntotal_lines_n
         print("""</table></p>""", file=out_fid)
 
 
-def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
+def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch):
     # Create index_gcov webpages using information processed from running gcov
 
     cwd = os.getcwd()
@@ -258,7 +258,7 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
       new_ntotal_lines = 0
       new_ntotal_lines_not_tested = 0
       new_output_list = []
-      diff = str(subprocess.check_output('git diff --name-only origin/master...', shell=True).decode(encoding='UTF-8',errors='replace')).split('\n')
+      diff = str(subprocess.check_output('git diff --name-only '+destBranch+'...', shell=True).decode(encoding='UTF-8',errors='replace')).split('\n')
       if lang == 'C':
          diff = [ i for i in diff if i.endswith('.c') and not i.find('ftn-') > -1 and not i.find('f90-') > -1]
       if lang == 'Fortran stubs':
@@ -268,8 +268,9 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI):
          t_nsrc_lines_not_tested = 0
          ii = file.replace(os.sep,'__')
          try:
-             diff = str(subprocess.check_output('git blame origin/master.. '+file+' | grep -v "\^"', shell=True).decode(encoding='UTF-8',errors='replace')).split('\n')
+             diff = str(subprocess.check_output('git blame '+destBranch+'.. '+file+' | grep -v "^\^"', shell=True).decode(encoding='UTF-8',errors='replace')).split('\n')
          except:
+             diff = ''
              pass
          lines_not_tested = {}
          for line in diff:
@@ -356,6 +357,9 @@ def main():
     parser.add_option('-m', '--merge_gcov', dest='merge_gcov',
                       help='Merging gcov results and creating main html page',
                       action='store_true',default=False)
+    parser.add_option('-d', '--merge_branch', dest='merge_branch',
+                      help='destination branch corresponding to the merge request',
+                      default='')
     options, args = parser.parse_args()
 
 
@@ -393,8 +397,12 @@ def main():
           print("No coverage tarballs found")
           return
 
+        print('options.merge_branch:',options.merge_branch)
+        if options.merge_branch: destBranch = options.merge_branch
+        else: destBranch = 'origin/master'
+        print('destBranch:',destBranch)
         gcov_dir = tempfile.mkdtemp()
-        make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI)
+        make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch)
         shutil.rmtree(gcov_dir)
     else:
         parser.print_usage()
