@@ -17,13 +17,12 @@ class Configure(config.package.Package):
     self.complex           = 1
     self.hastests          = 0
     self.hastestsdatafiles = 0
-    self.gencodearch       = ''
     return
 
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('CUDA', '-with-cuda-gencodearch', nargs.ArgInt(None, 0, 'Cuda architecture for code generation, for example 70, (this may be used by external packages)'))
+    help.addArgument('CUDA', '-with-cuda-gencodearch', nargs.ArgString(None, None, 'Cuda architecture for code generation, for example 70, (this may be used by external packages), use all to build a fat binary for distribution'))
     return
 
   def __str__(self):
@@ -106,9 +105,9 @@ class Configure(config.package.Package):
     if self.thrust.found:
       self.log.write('Overriding the thrust library in CUDAToolkit with a user-specified one\n')
       self.include = self.thrust.include+self.include
-    gencodearch = self.argDB['with-cuda-gencodearch']
-    if gencodearch:
-      self.gencodearch = str(gencodearch)
+
+    if 'with-cuda-gencodearch' in self.framework.clArgDB:
+      self.gencodearch = self.argDB['with-cuda-gencodearch']
     else:
       import os
       self.pushLanguage('CUDA')
@@ -119,7 +118,6 @@ class Configure(config.package.Package):
         cudaDir = os.path.dirname(os.path.dirname(self.systemNvcc))
         dq = os.path.join(cudaDir,'extras','demo_suite')
         self.getExecutable('deviceQuery',path = dq)
-        print(self.deviceQuery)
         if hasattr(self,'deviceQuery'):
           try:
             (out, err, ret) = Configure.executeShellCommand(self.deviceQuery + ' | grep "CUDA Capability"',timeout = 60, log = self.log, threads = 1)
@@ -134,7 +132,12 @@ class Configure(config.package.Package):
               self.log.write('Unable to parse CUDA capability\n')
 
     if hasattr(self,'gencodearch'):
-      self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+self.gencodearch+',code=sm_'+self.gencodearch
+      if self.gencodearch == 'all':
+        for gen in ['52','60','61','70','75']:
+          self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+gen+',code=sm_'+gen+' '
+          self.log.write(self.setCompilers.CUDAFLAGS+'\n')
+      else:
+        self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+self.gencodearch+',code=sm_'+self.gencodearch+' '
 
     self.addDefine('HAVE_CUDA','1')
     if not self.version_tuple:
