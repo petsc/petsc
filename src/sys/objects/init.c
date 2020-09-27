@@ -291,6 +291,8 @@ void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
   #define cupmGetLastError()                      cudaGetLastError()
   #define cupmDeviceMapHost                       cudaDeviceMapHost
   #define cupmSuccess                             cudaSuccess
+  #define cupmErrorMemoryAllocation               cudaErrorMemoryAllocation
+  #define cupmErrorLaunchOutOfResources           cudaErrorLaunchOutOfResources
   #define cupmErrorSetOnActiveProcess             cudaErrorSetOnActiveProcess
   #define CHKERRCUPM(x)                           CHKERRCUDA(x)
   #define PetscCUPMBLASInitializeHandle()         PetscCUBLASInitializeHandle()
@@ -322,6 +324,8 @@ void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
   #define cupmGetLastError()                      hipGetLastError()
   #define cupmDeviceMapHost                       hipDeviceMapHost
   #define cupmSuccess                             hipSuccess
+  #define cupmErrorMemoryAllocation               hipErrorMemoryAllocation
+  #define cupmErrorLaunchOutOfResources           hipErrorLaunchOutOfResources
   #define cupmErrorSetOnActiveProcess             hipErrorSetOnActiveProcess
   #define CHKERRCUPM(x)                           CHKERRQ((x)==hipSuccess? 0:PETSC_ERR_LIB)
   #define PetscCUPMBLASInitializeHandle()         0

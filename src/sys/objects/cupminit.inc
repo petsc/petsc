@@ -82,7 +82,13 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
       if (cerr == cupmSuccess) { /* It implies device runtime has not been initialized? */
         ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
         devId = rank % devCount;
-        cerr  = cupmSetDevice(devId);CHKERRCUPM(cerr);
+        for (int i=0; i<3; i++) {
+          cerr  = cupmSetDevice(devId);
+          if (cerr == cupmSuccess) break;
+          if (cerr != cupmErrorMemoryAllocation && cerr != cupmErrorLaunchOutOfResources) CHKERRCUPM(cerr);
+          if (i < 2) {ierr = PetscSleep(3);CHKERRQ(ierr);}
+        }
+        if (cerr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize the GPU");
       } else if (cerr == cupmErrorSetOnActiveProcess) {
         /* It implies user has initialized device runtime outside of petsc. We do nothing to respect the device choice. */
       }

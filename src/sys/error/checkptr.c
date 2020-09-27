@@ -160,24 +160,24 @@ PetscBool PetscMPICUPMAwarenessCheck(void)  \
 }
 
 #if defined(PETSC_HAVE_CUDA)
-  #define cupmError_t                cudaError_t
-  #define cupmMalloc                 cudaMalloc
-  #define cupmMemcpy                 cudaMemcpy
-  #define cupmFree                   cudaFree
-  #define cupmSuccess                cudaSuccess
-  #define cupmMemcpyHostToDevice     cudaMemcpyHostToDevice
-  #define PetscMPICUPMAwarenessCheck PetscMPICUDAAwarenessCheck
+  #define cupmError_t                   cudaError_t
+  #define cupmMalloc                    cudaMalloc
+  #define cupmMemcpy                    cudaMemcpy
+  #define cupmFree                      cudaFree
+  #define cupmSuccess                   cudaSuccess
+  #define cupmMemcpyHostToDevice        cudaMemcpyHostToDevice
+  #define PetscMPICUPMAwarenessCheck    PetscMPICUDAAwarenessCheck
   PetscMPICUPMAwarnessCheckFunction
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-  #define cupmError_t                hipError_t
-  #define cupmMalloc                 hipMalloc
-  #define cupmMemcpy                 hipMemcpy
-  #define cupmFree                   hipFree
-  #define cupmSuccess                hipSuccess
-  #define cupmMemcpyHostToDevice     hipMemcpyHostToDevice
-  #define PetscMPICUPMAwarenessCheck PetscMPIHIPAwarenessCheck
+  #define cupmError_t                   hipError_t
+  #define cupmMalloc                    hipMalloc
+  #define cupmMemcpy                    hipMemcpy
+  #define cupmFree                      hipFree
+  #define cupmSuccess                   hipSuccess
+  #define cupmMemcpyHostToDevice        hipMemcpyHostToDevice
+  #define PetscMPICUPMAwarenessCheck    PetscMPIHIPAwarenessCheck
   PetscMPICUPMAwarnessCheckFunction
 #endif
 

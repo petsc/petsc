@@ -278,6 +278,7 @@ static const char *PetscErrorStrings[] = {
   /*93 */ "You cannot overwrite this option since that will conflict with other previously set options",
   /*94 */ "Example/application run with number of MPI ranks it does not support",
   /*95 */ "Missing or incorrect user input ",
+  /*96 */ "GPU resources unavailable ",
 };
 
 /*@C
