@@ -133,6 +133,9 @@ class Configure(config.package.Package):
             except:
               self.log.write('Unable to parse CUDA capability\n')
 
+    if hasattr(self,'gencodearch'):
+      self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+self.gencodearch+',code=sm_'+self.gencodearch
+
     self.addDefine('HAVE_CUDA','1')
     if not self.version_tuple:
       self.checkVersion(); # set version_tuple
