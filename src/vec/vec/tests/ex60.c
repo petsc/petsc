@@ -4,11 +4,11 @@ static char help[] = "Tests VecPlaceArray().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
-  PetscInt          n=5,bs;
-  PetscBool         cuda;
-  Vec               x,x1,x2;
-  const PetscScalar *px;
+  PetscErrorCode ierr;
+  PetscInt       n=5,bs;
+  PetscBool      cuda;
+  Vec            x,x1,x2;
+  PetscScalar    *px;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
@@ -21,21 +21,23 @@ int main(int argc,char **argv)
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQCUDA,&cuda);CHKERRQ(ierr);
   ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
   if (cuda) {
+#if defined(PETSC_HAVE_CUDA)
     ierr = VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1);CHKERRQ(ierr);
     ierr = VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2);CHKERRQ(ierr);
+#endif
   } else {
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2);CHKERRQ(ierr);
   }
 
-  ierr = VecGetArrayRead(x,&px);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(x,&px);CHKERRQ(ierr);
   ierr = VecPlaceArray(x1,px);CHKERRQ(ierr);
   ierr = VecPlaceArray(x2,px+n);CHKERRQ(ierr);
   ierr = VecSet(x1,1.0);CHKERRQ(ierr);
   ierr = VecSet(x2,2.0);CHKERRQ(ierr);
   ierr = VecResetArray(x1);CHKERRQ(ierr);
   ierr = VecResetArray(x2);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(x,&px);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(x,&px);CHKERRQ(ierr);
 
   ierr = VecView(x,NULL);CHKERRQ(ierr);
 
@@ -57,5 +59,6 @@ int main(int argc,char **argv)
          suffix: 1_cuda
          args: -vec_type cuda
          filter: sed -e 's/seqcuda/seq/'
+         requires: cuda
 
 TEST*/
