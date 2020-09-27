@@ -168,6 +168,12 @@ function petsc_testrun() {
 
   eval "{ time -p $cmd ; } 2>> timing.out"
   cmd_res=$?
+  #  If it is a lack of GPU resources, then try once more 
+  #  See: src/sys/error/err.c
+  if [ $cmd_res -eq 96 ]; then
+    eval "{ time -p $cmd ; } 2>> timing.out"
+    cmd_res=$?
+  fi
   touch "$2" "$3"
   # ETIMEDOUT=110 on most systems (used by Open MPI 3.0).  MPICH uses
   # 255.  Earlier Open MPI returns 1 but outputs about MPIEXEC_TIMEOUT.
