@@ -7,7 +7,7 @@
 #endif
 
 /*@C
-   PetscIgnoreErrorHandler - Ignores the error, allows program to continue as if error did not occure
+   PetscIgnoreErrorHandler - Deprecated, use PetscReturnErrorHandler(). Ignores the error, allows program to continue as if error did not occure
 
    Not Collective
 
@@ -28,14 +28,8 @@
    the calling sequence
 $     SETERRQ(comm,number,p,mess)
 
-   Notes for experienced users:
-   Use PetscPushErrorHandler() to set the desired error handler.  The
-   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscMPIAbortErrorHandler()
 
-
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
-          PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
+.seealso:  PetscReturnErrorHandler()
  @*/
 PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
@@ -50,7 +44,7 @@ static PetscBool PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char      version[256];
 
 /*
-   Initializes arch, hostname, username,date so that system calls do NOT need
+   Initializes arch, hostname, username, date so that system calls do NOT need
    to be made during the error handler.
 */
 PetscErrorCode  PetscErrorPrintfInitialize(void)
@@ -152,7 +146,9 @@ PETSC_EXTERN PetscErrorCode  PetscOptionsViewError(void);
 .  p - PETSC_ERROR_INITIAL if this is the first call the error handler, otherwise PETSC_ERROR_REPEAT
 -  ctx - error handler context
 
-   Level: developer
+  Options Database:
++  -error_output_stdout - output the error messages to stdout instead of the default stderr
+-  -error_output_none - do not output the error messages
 
    Notes:
    Most users need not directly employ this routine and the other error
@@ -161,13 +157,12 @@ PETSC_EXTERN PetscErrorCode  PetscOptionsViewError(void);
 $     SETERRQ(comm,number,n,mess)
 
    Notes for experienced users:
-   Use PetscPushErrorHandler() to set the desired error handler.  The
-   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscMPIAbortErrorHandler()
+   Use PetscPushErrorHandler() to set the desired error handler.
 
+   Level: developer
 
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
-          PetscAbortErrorHandler()
+.seealso: PetscError(), PetscPushErrorHandler(), PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(),
+          PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscReturnErrorHandler(), PetscEmacsClientErrorHandler()
  @*/
 PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {

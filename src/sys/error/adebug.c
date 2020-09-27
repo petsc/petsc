@@ -426,8 +426,8 @@ PetscErrorCode  PetscAttachDebugger(void)
 -  ctx - error handler context
 
    Options Database Keys:
-.  -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] - Activates
-   debugger attachment
++  -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] - Activates debugger attachment
+-  -start_in_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] [-debugger_ranks m,n]
 
    Level: developer
 
@@ -449,8 +449,8 @@ $    PetscAbortErrorHandler()
    or you may write your own.
 
 
-.seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(),
-           PetscAbortErrorHandler()
+.seealso:  PetscSetDebuggerFromString(), PetscSetDebugger(), PetscSetDefaultDebugger(), PetscError(), PetscPushErrorHandler(), PetscPopErrorHandler(), PetscTraceBackErrorHandler(),
+           PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscEmacsClientErrorHandler(), PetscReturnErrorHandler()
 @*/
 PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode num,PetscErrorType p,const char *mess,void *ctx)
 {

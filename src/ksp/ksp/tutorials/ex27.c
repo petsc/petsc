@@ -33,7 +33,7 @@ static PetscErrorCode VecLoadIfExists_Private(Vec b,PetscViewer fd,PetscBool *ha
 #endif
   } else {
     PetscErrorCode ierrp;
-    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
+    ierr  = PetscPushErrorHandler(PetscReturnErrorHandler,NULL);CHKERRQ(ierr);
     ierrp = VecLoad(b,fd);
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
     *has  = ierrp ? PETSC_FALSE : PETSC_TRUE;
