@@ -101,6 +101,9 @@ typedef const char* VecType;
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
 #define VECNEST        "nest"
 #define VECNODE        "node"       /* use on-node shared memory */
+#define VECSEQKOKKOS   "seqkokkos"
+#define VECMPIKOKKOS   "mpikokkos"
+#define VECKOKKOS      "kokkos"     /* seqkokkos on one process and mpikokkos on several */
 
 /*J
     VecScatterType - String with the name of a PETSc vector scatter type
@@ -485,6 +488,15 @@ PETSC_EXTERN PetscErrorCode VecGetArrayInPlace(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayInPlace(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetArrayReadInPlace(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayReadInPlace(Vec,const PetscScalar**);
+
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+PETSC_EXTERN PetscErrorCode VecKokkosGetArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecKokkosRestoreArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecKokkosGetArrayReadInPlace(Vec,const PetscScalar**);
+PETSC_STATIC_INLINE PetscErrorCode VecKokkosRestoreArrayReadInPlace(Vec v,const PetscScalar** a) {return 0;}
+PETSC_EXTERN PetscErrorCode VecKokkosSyncHost(Vec);
+PETSC_EXTERN PetscErrorCode VecKokkosModifyHost(Vec);
+#endif
 
 /*@C
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only

@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '3.1.01'
+    self.gitcommit        = '3.2.00'
     self.versionname      = 'KOKKOS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos.git']
     self.downloaddirnames = ['kokkos']
@@ -28,7 +28,8 @@ class Configure(config.package.CMakePackage):
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('Kokkos', '-with-kokkos-cuda-arch', nargs.ArgString(None, 0, 'One of KEPLER30, KEPLER32, KEPLER35, KEPLER37, MAXWELL50, MAXWELL52, MAXWELL53, PASCAL60, PASCAL61, VOLTA70, VOLTA72, TURING75 (Titan V is Volta), use nvidia-smi'))
+    help.addArgument('Kokkos', '-with-kokkos-cuda-arch', nargs.ArgString(None, 0, 'One of KEPLER30, KEPLER32, KEPLER35, KEPLER37, MAXWELL50, MAXWELL52, MAXWELL53, PASCAL60, PASCAL61, VOLTA70, VOLTA72, TURING75, AMPERE80, use nvidia-smi'))
+    help.addArgument('Kokkos', '-with-kokkos-hip-arch',  nargs.ArgString(None, 0, 'One of VEGA900, VEGA906, VEGA908'))
     return
 
   def setupDependencies(self, framework):
@@ -44,9 +45,10 @@ class Configure(config.package.CMakePackage):
     self.openmp          = framework.require('config.packages.openmp',self)
     self.pthread         = framework.require('config.packages.pthread',self)
     self.cuda            = framework.require('config.packages.cuda',self)
+    self.hip             = framework.require('config.packages.hip',self)
     self.hwloc           = framework.require('config.packages.hwloc',self)
     self.mpi             = framework.require('config.packages.MPI',self)
-    self.odeps           = [self.openmp,self.hwloc,self.cuda,self.pthread]
+    self.odeps           = [self.openmp,self.hwloc,self.cuda,self.hip,self.pthread]
     return
 
   def versionToStandardForm(self,ver):
@@ -97,6 +99,7 @@ class Configure(config.package.CMakePackage):
     if pthreadfound:
       args.append('-DKokkos_ENABLE_PTHREAD=ON')
       self.system = 'PThread'
+
     if self.cuda.found:
       args.append('-DKokkos_ENABLE_CUDA=ON')
       self.system = 'CUDA'
@@ -120,6 +123,25 @@ class Configure(config.package.CMakePackage):
       nvccpath = os.path.dirname(petscNvcc)
       if nvccpath:
          os.environ['PATH'] = path+':'+nvccpath
+    elif self.hip.found:
+      self.system = 'HIP'
+      args.append('-DKokkos_ENABLE_HIP=ON')
+      self.pushLanguage('HIP')
+      petscHipcc = self.getCompiler()
+      hipFlags = self.getCompilerFlags()
+      self.popLanguage()
+      args.append('-DKOKKOS_HIP_OPTIONS="'+hipFlags.replace(' ',';')+'"')
+      self.getExecutable(petscHipcc,getFullPath=1,resultName='systemHipcc')
+      if hasattr(self,'systemHipcc'):
+        hipccDir = os.path.dirname(self.systemHipcc)
+      else:
+        raise RuntimeError('HIP error: could not find path of hipcc')
+      args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
+      args.append('-DCMAKE_CXX_COMPILER='+hipccDir)
+      if not 'with-kokkos-hip-arch' in self.framework.clArgDB:
+        raise RuntimeError('You must set -with-kokkos-hip-arch=VEGA900, VEGA906, VEGA908 etc.')
+      args.append('-DKokkos_ARCH_'+self.argDB['with-kokkos-hip-arch']+'=ON')
+      args.append('-DKokkos_ENABLE_HIP_RELOCATABLE_DEVICE_CODE=OFF')
     return args
 
   def configureLibrary(self):

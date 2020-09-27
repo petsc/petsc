@@ -825,10 +825,11 @@ typedef struct {
    PETSC_OFFLOAD_GPU - GPU has valid vector/matrix entries
    PETSC_OFFLOAD_CPU - CPU has valid vector/matrix entries
    PETSC_OFFLOAD_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+   PETSC_OFFLOAD_VECKOKKOS - Reserved for Vec_Kokkos. The offload is managed by Kokkos, thus this flag is not used in Vec_Kokkos.
 
    Level: developer
 E*/
-typedef enum {PETSC_OFFLOAD_UNALLOCATED=0x0,PETSC_OFFLOAD_CPU=0x1,PETSC_OFFLOAD_GPU=0x2,PETSC_OFFLOAD_BOTH=0x3} PetscOffloadMask;
+typedef enum {PETSC_OFFLOAD_UNALLOCATED=0x0,PETSC_OFFLOAD_CPU=0x1,PETSC_OFFLOAD_GPU=0x2,PETSC_OFFLOAD_BOTH=0x3,PETSC_OFFLOAD_VECKOKKOS=0x100} PetscOffloadMask;
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 
@@ -941,6 +942,7 @@ PETSC_INTERN PetscBool      PetscBeganKokkos;
 PETSC_INTERN PetscErrorCode PetscKokkosInitialize_Private(void); /* C bindings for the Kokkos C++ routines */
 PETSC_INTERN PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool*);
 PETSC_INTERN PetscErrorCode PetscKokkosFinalize_Private(void);
+PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void);  /* Check if CUDA is initialized and init CUDA if not yet. */
 #endif
 
 #if defined(PETSC_HAVE_CUDA)

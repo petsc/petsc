@@ -772,19 +772,19 @@ PetscErrorCode PetscSFLinkDestroy(PetscSF sf,PetscSFLink *avail)
     for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
       ierr = PetscFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
       ierr = PetscFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DEVICE)
+      #if defined(PETSC_HAVE_DEVICE)
       ierr = PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
       ierr = PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
-#endif
+      #endif
     }
-#if defined(PETSC_HAVE_DEVICE)
+  #if defined(PETSC_HAVE_DEVICE)
     if (link->Destroy) {ierr = (*link->Destroy)(link);CHKERRQ(ierr);}
-  #if defined(PETSC_HAVE_CUDA)
+   #if defined(PETSC_HAVE_CUDA)
     if (link->stream) {cudaError_t cerr = cudaStreamDestroy(link->stream);CHKERRCUDA(cerr); link->stream = NULL;}
-  #elif defined(PETSC_HAVE_HIP)
+   #elif defined(PETSC_HAVE_HIP)
     if (link->stream) {hipError_t  cerr = hipStreamDestroy(link->stream);CHKERRQ(cerr); link->stream = NULL;} /* TODO: CHKERRHIP? */
+   #endif
   #endif
-#endif
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
   *avail = NULL;

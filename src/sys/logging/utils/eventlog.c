@@ -9,7 +9,7 @@
 
 PetscBool PetscLogSyncOn = PETSC_FALSE;
 PetscBool PetscLogMemory = PETSC_FALSE;
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
 PetscBool PetscLogGpuTraffic = PETSC_FALSE;
 #endif
 
@@ -163,7 +163,7 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
   eventInfo->numMessages   = 0.0;
   eventInfo->messageLength = 0.0;
   eventInfo->numReductions = 0.0;
-  #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  #if defined(PETSC_HAVE_DEVICE)
   eventInfo->CpuToGpuCount = 0.0;
   eventInfo->GpuToCpuCount = 0.0;
   eventInfo->CpuToGpuSize  = 0.0;
@@ -666,7 +666,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event,int t,PetscObject o
     eventLog->eventInfo[event].mallocIncrease -= usage;
     ierr = PetscMallocPushMaximumUsage((int)event);CHKERRQ(ierr);
   }
-  #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  #if defined(PETSC_HAVE_DEVICE)
   eventLog->eventInfo[event].CpuToGpuCount -= petsc_ctog_ct;
   eventLog->eventInfo[event].GpuToCpuCount -= petsc_gtoc_ct;
   eventLog->eventInfo[event].CpuToGpuSize  -= petsc_ctog_sz;
@@ -713,7 +713,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event,int t,PetscObject o1,
     ierr = PetscMallocGetMaximumUsage(&usage);CHKERRQ(ierr);
     eventLog->eventInfo[event].mallocIncrease += usage;
   }
-  #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  #if defined(PETSC_HAVE_DEVICE)
   eventLog->eventInfo[event].CpuToGpuCount += petsc_ctog_ct;
   eventLog->eventInfo[event].GpuToCpuCount += petsc_gtoc_ct;
   eventLog->eventInfo[event].CpuToGpuSize  += petsc_ctog_sz;

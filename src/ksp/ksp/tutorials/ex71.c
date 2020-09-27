@@ -610,7 +610,8 @@ int main(int argc,char **args)
    nsize: 8
    filter: grep -v "variant HERMITIAN"
    suffix: bddc_cusparse
-   requires: cuda
+   # no kokkos since it seems kokkos's resource demand is too much with 8 ranks and the test will fail on cuda related initialization.
+   requires: cuda !kokkos
    args: -pde_type Poisson -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_dirichlet_pc_type cholesky -pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse -pc_bddc_dirichlet_pc_factor_mat_ordering_type nd -pc_bddc_neumann_pc_type cholesky -pc_bddc_neumann_pc_factor_mat_solver_type cusparse -pc_bddc_neumann_pc_factor_mat_ordering_type nd -matis_localmat_type aijcusparse
  test:
    nsize: 8

@@ -19,6 +19,7 @@ if __name__ == '__main__':
     '--with-precision=double',
     '--with-clanguage=c',
     '--download-kokkos',
+    '--download-kokkos-kernels',
     '--download-hwloc',
     '--with-kokkos-cuda-arch=TURING75',
     # Note: If using nvcc with a host compiler other than the CUDA SDK default for your platform (GCC on Linux, clang

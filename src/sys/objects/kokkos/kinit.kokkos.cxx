@@ -32,3 +32,19 @@ PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool *isInitialized)
   *isInitialized = Kokkos::is_initialized() ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+/* Initialize the device lazily just before creating the first device object. */
+PetscErrorCode PetscKokkosInitializeCheck(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#if defined(KOKKOS_ENABLE_CUDA)
+  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+#elif defined(KOKKOS_ENABLE_HIP)
+  ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
+#else
+  ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}

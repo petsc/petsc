@@ -66,10 +66,17 @@ int main(int argc, char **argv)
 
    test:
 
-   test:
-      suffix: cuda
-      args: -vec_type cuda
+   testset:
       output_file: output/ex43_1.out
-      requires: cuda
+
+      test:
+         suffix: cuda
+         args: -vec_type cuda
+         requires: cuda
+
+      test:
+         suffix: kokkos
+         args: -vec_type kokkos
+         requires: kokkos_kernels
 
 TEST*/

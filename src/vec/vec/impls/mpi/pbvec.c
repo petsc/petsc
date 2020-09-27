@@ -46,7 +46,7 @@ static PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
+PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
   Vec_MPI        *vw,*w = (Vec_MPI*)win->data;
@@ -546,7 +546,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateMPI()
 M*/
 
-PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec vv)
+PetscErrorCode VecCreate_MPI(Vec vv)
 {
   PetscErrorCode ierr;
 

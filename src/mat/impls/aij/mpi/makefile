@@ -8,7 +8,7 @@ SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c mpiptap.c mpimatmatmul
 SOURCEF	 =
 SOURCEH	 = mpiaij.h
 LIBBASE	 = libpetscmat
-DIRS	 = superlu_dist mumps aijperm aijmkl aijsell crl pastix mpicusparse mpiviennacl mpiviennaclcuda clique mkl_cpardiso strumpack
+DIRS	   = superlu_dist mumps aijperm aijmkl aijsell crl pastix mpicusparse mpiviennacl mpiviennaclcuda clique mkl_cpardiso strumpack kokkos
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/aij/mpi/
 
