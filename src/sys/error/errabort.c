@@ -43,8 +43,8 @@ $     SETERRQ(comm,number,mess)
    PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
 
 
-.seealso: PetscPushErrorHandler(), PetscTraceBackErrorHandler(),
-          PetscAttachDebuggerErrorHandler()
+.seealso: PetscError(), PetscPushErrorHandler(), PetscPopErrorHander(), PetscTraceBackErrorHandler(),
+          PetscAttachDebuggerErrorHandler(), PetscMPIAbortErrorHandler(), PetscReturnErrorHandler(), PetscEmacsClientErrorHandler()
 @*/
 PetscErrorCode  PetscAbortErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
