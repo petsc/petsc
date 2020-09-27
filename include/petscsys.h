@@ -2458,11 +2458,11 @@ PETSC_EXTERN PetscErrorCode PetscMergeIntArray(PetscInt,const PetscInt[],PetscIn
 PETSC_EXTERN PetscErrorCode PetscMergeMPIIntArray(PetscInt,const PetscMPIInt[],PetscInt,const PetscMPIInt[],PetscInt*,PetscMPIInt**);
 PETSC_EXTERN PetscErrorCode PetscParallelSortedInt(MPI_Comm, PetscInt, const PetscInt[], PetscBool *);
 
-PETSC_EXTERN PetscErrorCode PetscTimSort(PetscInt,void*,size_t,int(*)(const void*,const void*));
+PETSC_EXTERN PetscErrorCode PetscTimSort(PetscInt,void*,size_t,int(*)(const void*,const void*,void*),void*);
 PETSC_EXTERN PetscErrorCode PetscIntSortSemiOrdered(PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscRealSortSemiOrdered(PetscInt,PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscTimSortWithArray(PetscInt,void*,size_t,void*,size_t,int(*)(const void*,const void*));
+PETSC_EXTERN PetscErrorCode PetscTimSortWithArray(PetscInt,void*,size_t,void*,size_t,int(*)(const void*,const void*,void*),void*);
 PETSC_EXTERN PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt,PetscMPIInt[],PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscRealSortSemiOrderedWithArrayInt(PetscInt,PetscReal[],PetscInt[]);

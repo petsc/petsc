@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zarchf.c zstrf.c zfhostf.c
+SOURCEC  = zarchf.c zstrf.c zfhostf.c zsortsof.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =
