@@ -439,7 +439,7 @@ sphinx-docs-env: sphinx-docs-check-python sphinx-docs-check-rsvg-convert
       fi
 
 sphinx-docs-check-rsvg-convert:
-	@if ! command -v rsvg-convertx 2>&1 > /dev/null; then \
+	@if ! command -v rsvg-convert 2>&1 > /dev/null; then \
 		    printf "rsvg-convert is required for the sphinxcontrib-svg2pdfconverter extension for the Sphinx docs\n"; \
 			  false; \
 	    fi
