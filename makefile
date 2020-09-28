@@ -431,12 +431,18 @@ sphinx-docs-manual: chk_loc sphinx-docs-env
 	@mv ${LOC}/${PETSC_SPHINX_DEST}/latex/manual.pdf ${LOC}/docs/manual.pdf
 	@${RM} -rf ${LOC}/${PETSC_SPHINX_DEST}/latex
 
-sphinx-docs-env: sphinx-docs-check-python
+sphinx-docs-env: sphinx-docs-check-python sphinx-docs-check-rsvg-convert
 	@if [ ! -d  "${PETSC_SPHINX_ENV}" ]; then \
         ${PYTHON} -m venv ${PETSC_SPHINX_ENV}; \
         . ${PETSC_SPHINX_ENV}/bin/activate; \
         pip install -r ${PETSC_SPHINX_ROOT}/requirements.txt; \
       fi
+
+sphinx-docs-check-rsvg-convert:
+	@if ! command -v rsvg-convert 2>&1 > /dev/null; then \
+		    printf "rsvg-convert is required for the sphinxcontrib-svg2pdfconverter extension for the Sphinx docs\n"; \
+			  false; \
+	    fi
 
 sphinx-docs-check-python:
 	@${PYTHON} -c 'import sys; sys.exit(sys.version_info[:2] < (3,3))' || \
