@@ -593,6 +593,8 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
  Output Parameter:
  .   X  - The state
 
+ Level: beginner
+
 .keywords: mesh
 .seealso: LandauCreateVelocitySpace()
 @*/
