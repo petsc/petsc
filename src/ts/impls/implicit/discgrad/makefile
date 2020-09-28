@@ -1,9 +1,14 @@
 
 ALL: lib
 
-LOCDIR   = src/ts/impls/implicit/
-DIRS     = sundials theta alpha glle radau5 discgrad
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = tsdiscgrad.c
+SOURCEF  =
+SOURCEH  =
+LIBBASE  = libpetscts
 MANSEC   = TS
+LOCDIR   = src/ts/impls/implicit/discgrad/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

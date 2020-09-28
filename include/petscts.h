@@ -45,6 +45,8 @@ typedef const char* TSType;
 #define TSBDF             "bdf"
 #define TSRADAU5          "radau5"
 #define TSMPRK            "mprk"
+#define TSDISCGRAD        "discgrad"
+
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -981,6 +983,8 @@ PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegister(TSBasicSymplecticType,Pets
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
+
+PETSC_EXTERN PetscErrorCode TSDiscGradSetFormulation(TS, PetscErrorCode(*)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(*)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(*)(TS, PetscReal, Vec, Vec, void *), void *);
 
 /*
        PETSc interface to Sundials
