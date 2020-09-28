@@ -11,7 +11,7 @@ using MatColumnIndex_t           = PetscInt;
 using MatValue_t                 = PetscScalar;
 using MatDevice_t                = typename Kokkos::Device<DeviceExecutionSpace,DeviceMemorySpace>;
 
-using KokkosCsrMatrix_t          = typename KokkosSparse::CrsMatrix<MatValue_t,MatColumnIndex_t,MatDevice_t,void/*MemoryTraits*/,MatRowMap_t>;
+using KokkosCsrMatrix_t          = typename KokkosSparse::CrsMatrix<MatValue_t,MatColumnIndex_t,MatDevice_t,void/* MemoryTraits */,MatRowMap_t>;
 using KokkosCsrGraph_t           = typename KokkosCsrMatrix_t::staticcrsgraph_type;
 
 using MatColumnIndexViewDevice_t = typename KokkosCsrGraph_t::entries_type;
