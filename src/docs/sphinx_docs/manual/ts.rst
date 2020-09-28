@@ -1222,8 +1222,9 @@ may be set in the options database with ``-ts_sundials_maxl`` ``maxl``.
    `en.wikipedia.org/wiki/CHEMKIN <https://en.wikipedia.org/wiki/CHEMKIN>`__
 
 
-References
-~~~~~~~~~~
+.. raw:: html
+
+    <hr>
 
 .. bibliography:: ../../tex/petsc.bib
    :filter: docname in docnames
