@@ -912,13 +912,25 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *a
   Output Parameters:
 . arr  - sorted array
 
+  Notes:
+  Timsort makes the assumption that input data is already likely partially ordered, or that it contains contiguous
+ sections (termed 'runs') where the data is locally ordered (but not necessarily globally ordered). It therefore aims to
+ select slices of the array in such a way that resulting mergesorts operate on near perfectly length-balanced arrays. To
+ do so it repeatedly triggers attempts throughout to merge adjacent runs.
+
+  Should one run continuously "win" a comparison the algorithm begins the "gallop" phase. It will aggressively search
+  the "winner" for the location of the "losers" next entry (and vice versa) to copy all preceding elements into place in
+  bulk. However if the data is truly unordered (as is the case with random data) the immense gains possible from these
+  searches are expected __not__ to repay their costs. While adjacent arrays are almost all nearly the same size, they
+  likely all contain similar data.
+
   Sample usage:
   The comparison function must follow the qsort() comparison function paradigm, returning the sign of the difference
   between its arguments. If left < right : return -1, if left == right : return 0, if left > right : return 1. The user
   may also
  change or reverse the order of the sort by flipping the above. Note that stability of the sort is only guaranteed if
  the comparison function forms a valid trigraph. For example when sorting an array of type "my_type" in increasing
-  order:
+  order
 
 .vb
   int my_increasing_comparison_function(const void *left, const void *right, void *ctx) {
@@ -933,21 +945,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *a
   PetscTimSort(n, arr, sizeof(arr[0]), my_increasing_comparison_function, ctx)
 .ve
 
-  Notes: Timsort makes the assumption that input data is already likely partially ordered, or that it contains
-  contiguous sections (termed 'runs') where the data is locally ordered (but not necessarily globally ordered). It
-  therefore aims
- to select slices of the array in such a way that resulting mergesorts operate on near perfectly length-balanced
- arrays. To do so it repeatedly triggers attempts throughout to merge adjacent runs.
-
-  Should one run continuously "win" a comparison the algorithm begins the "gallop" phase. It will aggressively search
-  the "winner" for the location of the "losers" next entry (and vice versa) to copy all preceding elements into place in
-  bulk. However if the data is truly unordered (as is the case with random data) the immense gains possible from these
-  searches are expected __not__ to repay their costs. While adjacent arrays are almost all nearly the same size, they
-  likely all contain similar data.
-
   Fortran Notes:
   To use this from fortran you must write a comparison subroutine with 4 arguments which accepts left, right, ctx and
-  returns result. For example:
+  returns result. For example
 .vb
  subroutine CompareIntegers(left,right,ctx,result)
    implicit none
@@ -1039,14 +1039,29 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
 
   Output Parameters:
 + arr  - sorted array
-+ barr - reordered array
+- barr - reordered array
+
+  Notes:
+  The arrays need not be of the same type, however barr MUST contain at least as many elements as arr and the two CANNOT
+  overlap.
+
+  Timsort makes the assumption that input data is already likely partially ordered, or that it contains contiguous
+  sections (termed 'runs') where the data is locally ordered (but not necessarily globally ordered). It therefore aims
+ to select slices of the array in such a way that resulting mergesorts operate on near perfectly length-balanced
+ arrays. To do so it repeatedly triggers attempts throughout to merge adjacent runs.
+
+  Should one run continuously "win" a comparison the algorithm begins the "gallop" phase. It will aggressively search
+  the "winner" for the location of the "losers" next entry (and vice versa) to copy all preceding elements into place in
+  bulk. However if the data is truly unordered (as is the case with random data) the immense gains possible from these
+  searches are expected __not__ to repay their costs. While adjacent arrays are almost all nearly the same size, they
+  likely all contain similar data.
 
   Sample usage:
   The comparison function must follow the qsort() comparison function paradigm, returning the sign of the difference
   between its arguments. If left < right : return -1, if left == right : return 0, if left > right : return 1. The user
   may also change or reverse the order of the sort by flipping the above. Note that stability of the sort is only
   guaranteed if the comparison function forms a valid trigraph. For example when sorting an array of type "my_type" in
-  increasing order:
+  increasing order
 
 .vb
   int my_increasing_comparison_function(const void *left, const void *right, void *ctx) {
@@ -1061,24 +1076,10 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
   PetscTimSortWithArray(n, arr, sizeof(arr[0]), barr, sizeof(barr[0]), my_increasing_comparison_function, ctx)
 .ve
 
-  Notes:
-  The arrays need not be of the same type, however barr MUST contain at least as many elements as arr and the two CANNOT
-  overlap.
-
-  Timsort makes the assumption that input data is already likely partially ordered, or that it contains contiguous
-  sections (termed 'runs') where the data is locally ordered (but not necessarily globally ordered). It therefore aims
- to select slices of the array in such a way that resulting mergesorts operate on near perfectly length-balanced
- arrays. To do so it repeatedly triggers attempts throughout to merge adjacent runs.
-
-  Should one run continuously "win" a comparison the algorithm begins the "gallop" phase. It will aggressively
-  search the "winner" for the location of the "losers" next entry (and vice versa) to copy all preceding elements into
-  place in bulk. However if the data is truly unordered (as is the case with random data) the immense gains possible
-  from these searches are expected __not__ to repay their costs. While adjacent arrays are almost all nearly the same
-  size, they likely all contain similar data.
 
   Fortran Notes:
   To use this from fortran you must write a comparison subroutine with 4 arguments which accepts left, right, ctx and
-  returns result. For example:
+  returns result. For example
 .vb
  subroutine CompareIntegers(left,right,ctx,result)
    implicit none
