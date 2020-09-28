@@ -416,7 +416,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = PetscOptionsGetBool(NULL,NULL,"-binary_write_double",&writedouble,NULL);CHKERRQ(ierr);
   /* If using __float128 precision we still write in doubles to file */
-  if ((type == PETSC_SCALAR || type == PETSC_REAL) && writedouble) {
+  if ((type == PETSC_SCALAR || type == PETSC_REAL || type == PETSC_COMPLEX) && writedouble) {
     wtype = PETSC_DOUBLE;
     ierr = PetscMalloc1(n,&ppp);CHKERRQ(ierr);
     pv = (PetscReal*)pp;
@@ -430,6 +430,9 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
 
   if (wtype == PETSC_INT)          m *= sizeof(PetscInt);
   else if (wtype == PETSC_SCALAR)  m *= sizeof(PetscScalar);
+#if defined(PETSC_HAVE_COMPLEX)
+  else if (wtype == PETSC_COMPLEX) m *= sizeof(PetscComplex);
+#endif
   else if (wtype == PETSC_REAL)    m *= sizeof(PetscReal);
   else if (wtype == PETSC_DOUBLE)  m *= sizeof(double);
   else if (wtype == PETSC_FLOAT)   m *= sizeof(float);
@@ -459,7 +462,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
     free(fname);
   }
 #if defined(PETSC_USE_REAL___FLOAT128)
-  if ((type == PETSC_SCALAR || type == PETSC_REAL) && writedouble) {
+  if ((type == PETSC_SCALAR || type == PETSC_REAL || type == PETSC_COMPLEX) && writedouble) {
     ierr = PetscFree(ppp);CHKERRQ(ierr);
   }
 #endif
