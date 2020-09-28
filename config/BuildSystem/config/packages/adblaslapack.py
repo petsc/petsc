@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit  = 'master'
+    self.gitcommit  = 'e55b6ad4234066617ef198cbf080f0d07d151823' #master jul-02-2018
     self.download   = ['git://https://xgitlab.cels.anl.gov/schanen/adblaslapack.git']
     self.functions  = []
     self.includes   = []

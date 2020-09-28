@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit = 'master'
+    self.gitcommit = 'fe4d5f10840c5f62b984364a4d41719f1bc079a2' # master sep-24-2020
     self.download  = ['git://https://github.com/google/googletest.git']
     self.functions = []
     self.includes  = ['gtest/gtest.h']

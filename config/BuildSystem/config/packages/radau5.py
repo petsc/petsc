@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit         = 'master'
+    self.gitcommit         = 'dc161a92a1919ca4a7661ee47fc5c89e3860f258' #master dec-1-2018
     self.download          = ['git://https://bitbucket.org/petsc/pkg-radau5.git','https://bitbucket.org/petsc/pkg-radau5/get/'+self.gitcommit+'.tar.gz']
     self.liblist           = [['libradau5.a']]
     self.libdir            = ''
