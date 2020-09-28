@@ -8,6 +8,7 @@ class Configure(config.package.CMakePackage):
     self.versionname      = 'KOKKOS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos.git']
     self.downloaddirnames = ['kokkos']
+    self.excludedDirs     = ['kokkos-kernels'] # Do not wrongly think kokkos-kernels as kokkos-vernum
     self.includes         = ['Kokkos_Macros.hpp']
     self.liblist          = [['libkokkoscontainers.a','libkokkoscore.a']]
     self.functions        = ['']
@@ -132,12 +133,10 @@ class Configure(config.package.CMakePackage):
       self.popLanguage()
       args.append('-DKOKKOS_HIP_OPTIONS="'+hipFlags.replace(' ',';')+'"')
       self.getExecutable(petscHipcc,getFullPath=1,resultName='systemHipcc')
-      if hasattr(self,'systemHipcc'):
-        hipccDir = os.path.dirname(self.systemHipcc)
-      else:
+      if not hasattr(self,'systemHipcc'):
         raise RuntimeError('HIP error: could not find path of hipcc')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
-      args.append('-DCMAKE_CXX_COMPILER='+hipccDir)
+      args.append('-DCMAKE_CXX_COMPILER='+self.systemHipcc)
       if not 'with-kokkos-hip-arch' in self.framework.clArgDB:
         raise RuntimeError('You must set -with-kokkos-hip-arch=VEGA900, VEGA906, VEGA908 etc.')
       args.append('-DKokkos_ARCH_'+self.argDB['with-kokkos-hip-arch']+'=ON')
