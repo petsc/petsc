@@ -37,35 +37,35 @@ Input parameters include:\n\
 
    where
 
-   [ F(u,t) ] = [ u_2 ]
+   [ G(u,t) ] = [ u_2 ]
                 [  0  ]
 
    and
 
-   [ G(u',u,t) ] = [ u_1' ] - [            0                ]
+   [ F(u',u,t) ] = [ u_1' ] - [            0                ]
                    [ u_2' ]   [ \mu ((1 - u_1^2) u_2 - u_1) ]
 
-   Using the definition of the Jacobian of G (from the PETSc user manual),
-   in the equation G(u',u,t) = F(u,t),
+   Using the definition of the Jacobian of F (from the PETSc user manual),
+   in the equation F(u',u,t) = G(u,t),
 
-              dG   dG
-   J(G) = a * -- - --
+              dF   dF
+   J(F) = a * -- - --
               du'  du
 
    where d is the partial derivative. In this example,
 
-   dG   [ 1 ; 0 ]
+   dF   [ 1 ; 0 ]
    -- = [       ]
    du'  [ 0 ; 1 ]
 
-   dG   [       0             ;         0        ]
+   dF   [       0             ;         0        ]
    -- = [                                        ]
    du   [ -\mu (2*u_1*u_2 + 1);  \mu (1 - u_1^2) ]
 
    Hence,
 
           [      a             ;          0          ]
-   J(G) = [                                          ]
+   J(F) = [                                          ]
           [ \mu (2*u_1*u_2 + 1); a - \mu (1 - u_1^2) ]
 
   ------------------------------------------------------------------------- */
