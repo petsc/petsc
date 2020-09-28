@@ -111,19 +111,19 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
   PetscClassId *nend;
 
   if (!TRdebugLevel) return 0;
-  PetscFunctionBegin;
   head = TRhead; lasthead = NULL;
   if (head && head->prev) {
     (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s\n",function,line,file);
     (*PetscErrorPrintf)("Root memory header %p has invalid back pointer %p\n",head,head->prev);
+    return PETSC_ERR_MEMC;
   }
   while (head) {
     if (head->classid != CLASSID_VALUE) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at  %s() line %d in %s\n",function,line,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
-      (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
+      (*PetscErrorPrintf)("Probably write before beginning of or past end of array\n");
       if (lasthead) (*PetscErrorPrintf)("Last intact block allocated in %s() line %d in %s\n",lasthead->functionname,lasthead->lineno,lasthead->filename);
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC," ");
+      return PETSC_ERR_MEMC;
     }
     a    = (char*)(((TrSPACE*)head) + 1);
     nend = (PetscClassId*)(a + head->size);
@@ -131,27 +131,27 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s\n",function,line,file);
       if (*nend == ALREADY_FREED) {
         (*PetscErrorPrintf)("Memory [id=%d(%.0f)] at address %p already freed\n",head->id,(PetscLogDouble)head->size,a);
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC," ");
+        return PETSC_ERR_MEMC;
       } else {
         (*PetscErrorPrintf)("Memory [id=%d(%.0f)] at address %p is corrupted (probably write past end of array)\n",head->id,(PetscLogDouble)head->size,a);
         (*PetscErrorPrintf)("Memory originally allocated in %s() line %d in %s\n",head->functionname,head->lineno,head->filename);
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC," ");
+        return PETSC_ERR_MEMC;
       }
     }
     if (head->prev && head->prev != lasthead) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s\n",function,line,file);
       (*PetscErrorPrintf)("Backpointer %p is invalid, should be %p\n",head->prev,lasthead);
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC," ");
+      return PETSC_ERR_MEMC;
     }
     if (head->next && head != head->next->prev) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s\n",function,line,file);
       (*PetscErrorPrintf)("Next memory header %p has invalid back pointer %p, should be %p\n",head->next,head->next->prev,head);
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC," ");
+      return PETSC_ERR_MEMC;
     }
     lasthead = head;
     head     = head->next;
   }
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 /*
