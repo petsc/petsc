@@ -416,7 +416,7 @@ docsetdate: chk_petscdir
 # the makefile in ${PETSC_SPHINX_ROOT}, paying attention to the requirements.txt
 # there.
 PETSC_SPHINX_ROOT=src/docs/sphinx_docs
-PETSC_SPHINX_ENV=sphinx_docs_env
+PETSC_SPHINX_ENV=${PETSC_ARCH}/sphinx_docs_env
 PETSC_SPHINX_DEST=docs/sphinx_docs
 
 sphinx-docs-all: sphinx-docs-html sphinx-docs-manual
