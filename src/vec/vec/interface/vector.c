@@ -1936,3 +1936,25 @@ PetscErrorCode VecGetPinnedMemoryMin(Vec v,size_t *mbytes)
   return 0;
 #endif
 }
+
+/*@
+  VecGetOffloadMask - Get the offload mask of a Vec.
+
+  Not Collective
+
+  Input Parameters:
+.   v - the vector
+
+  Output Parameters:
+.   mask - corresponding PetscOffloadMask enum value.
+
+   Level: intermediate
+
+.seealso: VecCreateSeqCUDA(), VecCreateSeqViennaCL(), VecGetArray(), VecGetType()
+@*/
+PetscErrorCode VecGetOffloadMask(Vec v,PetscOffloadMask* mask)
+{
+  PetscFunctionBegin;
+  *mask = v->offloadmask;
+  PetscFunctionReturn(0);
+}
