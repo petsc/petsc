@@ -1153,8 +1153,9 @@ appropriate general user interface and providing a scalable
 implementation that can be used for a wide variety of different grids
 requires a great deal of time.
 
-References
-~~~~~~~~~~
+.. raw:: html
+
+    <hr>
 
 .. bibliography:: ../../tex/petsc.bib
    :filter: docname in docnames

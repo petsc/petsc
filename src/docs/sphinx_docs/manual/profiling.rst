@@ -639,8 +639,9 @@ preloading. The command line options ``-preload`` ``true`` and
 ``-preload`` ``false`` may be used to turn on and off preloading at run
 time for PETSc programs that use these macros.
 
-References
-~~~~~~~~~~
+.. raw:: html
+
+    <hr>
 
 .. bibliography:: ../../tex/petsc.bib
    :filter: docname in docnames

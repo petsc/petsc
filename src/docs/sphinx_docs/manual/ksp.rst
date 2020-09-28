@@ -2293,17 +2293,22 @@ preallocation routines are called for these communicator morphing types.
 The call for the incorrect type will simply be ignored without any harm
 or message.
 
+.. raw:: html
+
+   <hr>
+
 .. [2]
    See :any:`sec_amg` for information on using algebraic multigrid.
 
 .. [3]
-   This may seem an odd way to implement since it involves the “extra”
+   This may seem an odd way to implement since it involves the "extra"
    multiply by :math:`-A_{11}`. The reason is this is implemented this
    way is that this approach works for any number of blocks that may
    overlap.
 
-References
-~~~~~~~~~~
+.. raw:: html
+
+   <hr>
 
 .. bibliography:: ../../tex/petsc.bib
    :filter: docname in docnames

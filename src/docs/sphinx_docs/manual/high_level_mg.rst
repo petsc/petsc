@@ -122,8 +122,9 @@ We will typically perform this optimization on a multigrid level :math:`l` when 
 
 This indicates that the generalized eigenvector associated with that eigenvalue was not adequately represented by :math:`P^l_{l+1}``, and the interpolator should be recomputed.
 
-References
-~~~~~~~~~~
+.. raw:: html
+
+    <hr>
 
 .. bibliography:: ../../tex/petsc.bib
    :filter: docname in docnames

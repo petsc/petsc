@@ -850,8 +850,9 @@ subdirectories:
    implementations, but ideally will not know about implementations for
    other components.
 
-References
-~~~~~~~~~~
+.. raw:: html
+
+    <hr>
 
 .. bibliography:: ../../tex/petsc.bib
    :filter: docname in docnames
