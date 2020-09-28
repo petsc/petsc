@@ -60,9 +60,8 @@ class Configure(config.package.CMakePackage):
       petscHipcc = self.getCompiler()
       self.popLanguage()
       self.getExecutable(petscHipcc,getFullPath=1,resultName='systemHipcc')
-      if hasattr(self,'systemHipcc'):
-        hipccDir = os.path.dirname(self.systemHipcc)
-      else:
+      if not hasattr(self,'systemHipcc'):
         raise RuntimeError('HIP error: could not find path of hipcc')
-      args.append('-DCMAKE_CXX_COMPILER='+hipccDir)
+      args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
+      args.append('-DCMAKE_CXX_COMPILER='+self.systemHipcc)
     return args
