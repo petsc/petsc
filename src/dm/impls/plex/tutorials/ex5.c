@@ -181,7 +181,7 @@ int main(int argc, char **argv)
       args: -dm_plex_hdf5_force_sequential
     test:
       suffix: 9_hdf5
-      args: -interpolate 1
+      args: -interpolate 1 -petscpartitioner_type simple
     test:
       suffix: 9_hdf5_repart
       requires: parmetis
