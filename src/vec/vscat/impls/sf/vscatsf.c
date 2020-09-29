@@ -16,17 +16,17 @@ typedef struct {
 
 static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
+  PetscErrorCode ierr;
   VecScatter_SF  *data=(VecScatter_SF*)vscat->data;
   PetscSF        sf=data->sf;
   MPI_Op         mop=MPI_OP_NULL;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
+  PetscMemType   xmtype=PETSC_MEMTYPE_HOST,ymtype=PETSC_MEMTYPE_HOST;
 
   PetscFunctionBegin;
   if (x != y) {ierr = VecLockReadPush(x);CHKERRQ(ierr);}
-
   if (sf->use_gpu_aware_mpi || vscat->packongpu) {
-    ierr = VecGetArrayReadInPlace(x,&vscat->xdata);CHKERRQ(ierr);
+    ierr = VecGetArrayReadInPlace_Internal(x,&vscat->xdata,&xmtype);CHKERRQ(ierr);
   } else {
 #if defined(PETSC_HAVE_CUDA)
     PetscBool is_cudatype = PETSC_FALSE;
@@ -44,9 +44,12 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   }
 
   if (x != y) {
-    if (sf->use_gpu_aware_mpi || vscat->packongpu) {ierr = VecGetArrayInPlace(y,&vscat->ydata);CHKERRQ(ierr);}
+    if (sf->use_gpu_aware_mpi || vscat->packongpu) {ierr = VecGetArrayInPlace_Internal(y,&vscat->ydata,&ymtype);CHKERRQ(ierr);}
     else {ierr = VecGetArray(y,&vscat->ydata);CHKERRQ(ierr);}
-  } else vscat->ydata = (PetscScalar *)vscat->xdata;
+  } else {
+    vscat->ydata = (PetscScalar *)vscat->xdata;
+    ymtype       = xmtype;
+  }
   ierr = VecLockWriteSet_Private(y,PETSC_TRUE);CHKERRQ(ierr);
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
@@ -65,9 +68,9 @@ static PetscErrorCode VecScatterBegin_SF(VecScatter vscat,Vec x,Vec y,InsertMode
   else SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"Unsupported InsertMode %D in VecScatterBegin/End",addv);
 
   if (mode & SCATTER_REVERSE) { /* REVERSE indicates leaves to root scatter. Note that x and y are swapped in input */
-    ierr = PetscSFReduceBegin(sf,data->unit,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
+    ierr = PetscSFReduceWithMemTypeBegin(sf,data->unit,xmtype,vscat->xdata,ymtype,vscat->ydata,mop);CHKERRQ(ierr);
   } else { /* FORWARD indicates x to y scatter, where x is root and y is leaf */
-    ierr = PetscSFBcastAndOpBegin(sf,data->unit,vscat->xdata,vscat->ydata,mop);CHKERRQ(ierr);
+    ierr = PetscSFBcastAndOpWithMemTypeBegin(sf,data->unit,xmtype,vscat->xdata,ymtype,vscat->ydata,mop);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

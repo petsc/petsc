@@ -638,4 +638,12 @@ typedef struct _n_PetscSegBuffer *PetscSegBuffer;
 
 typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
 
+/*E
+  PetscMemType - Memory type of a pointer
+
+  Level: beginner
+
+.seealso: VecGetArrayInPlace(), PetscSFBcastAndOpWithMemTypeBegin(), PetscSFReduceWithMemTypeBegin()
+E*/
+typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE} PetscMemType;
 #endif

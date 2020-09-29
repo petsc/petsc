@@ -1,6 +1,7 @@
 #if !defined(PETSCSFIMPL_H)
 #define PETSCSFIMPL_H
 
+#include <petscvec.h>
 #include <petscsf.h>
 #include <petsc/private/petscimpl.h>
 #include <petscviewer.h>
@@ -32,7 +33,6 @@ PETSC_EXTERN PetscLogEvent PETSCSF_Unpack;
 
 typedef enum {PETSCSF_ROOT2LEAF=0, PETSCSF_LEAF2ROOT} PetscSFDirection;
 typedef enum {PETSCSF_BCAST=0, PETSCSF_REDUCE, PETSCSF_FETCH} PetscSFOperation;
-typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE} PetscMemType;
 /* When doing device-aware MPI, a backend refers to the SF/device interface */
 typedef enum {PETSCSF_BACKEND_INVALID=0,PETSCSF_BACKEND_CUDA,PETSCSF_BACKEND_KOKKOS} PetscSFBackend;
 

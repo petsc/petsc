@@ -2,6 +2,7 @@
      Provides the interface functions for vector operations that have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
+#include "petsc/private/sfimpl.h"
 #include <petsc/private/vecimpl.h>       /*I  "petscvec.h"   I*/
 #if defined(PETSC_HAVE_CUDA)
 #include <../src/vec/vec/impls/dvecimpl.h>
@@ -1698,7 +1699,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayInPlace - Like VecGetArray(), but if this is a CUDA vector and it is currently offloaded to GPU,
+   VecGetArrayInPlace_Internal - Like VecGetArray(), but if this is a CUDA vector and it is currently offloaded to GPU,
    the returned pointer will be a GPU pointer to the GPU memory that contains this processor's portion of the
    vector data. Otherwise, it functions as VecGetArray().
 
@@ -1718,14 +1719,22 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 PetscErrorCode VecGetArrayInPlace(Vec x,PetscScalar **a)
 {
   PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = VecGetArrayInPlace_Internal(x,a,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayInPlace_Internal(Vec x,PetscScalar **a,PetscMemType *mtype)
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
-
+  if (mtype) *mtype = PETSC_MEMTYPE_HOST;
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
-    ierr = VecKokkosGetArrayInPlace(x,a);CHKERRQ(ierr);
+    ierr = VecKokkosGetArrayInPlace_Internal(x,a,mtype);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 #endif
@@ -1737,6 +1746,7 @@ PetscErrorCode VecGetArrayInPlace(Vec x,PetscScalar **a)
     if (is_cudatype) {
       ierr = VecCUDAGetArray(x,a);CHKERRQ(ierr);
       x->offloadmask = PETSC_OFFLOAD_GPU; /* Change the mask once GPU gets write access, don't wait until restore array */
+      if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
       PetscFunctionReturn(0);
     }
   }
@@ -1872,12 +1882,21 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
 PetscErrorCode VecGetArrayReadInPlace(Vec x,const PetscScalar **a)
 {
   PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = VecGetArrayReadInPlace_Internal(x,a,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayReadInPlace_Internal(Vec x,const PetscScalar **a,PetscMemType *mtype)
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (mtype) *mtype = PETSC_MEMTYPE_HOST;
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
-    ierr = VecKokkosGetArrayReadInPlace(x,a);CHKERRQ(ierr);
+    ierr = VecKokkosGetArrayReadInPlace_Internal(x,a,mtype);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 #endif
@@ -1888,6 +1907,7 @@ PetscErrorCode VecGetArrayReadInPlace(Vec x,const PetscScalar **a)
     ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
     if (is_cudatype) {
       ierr = VecCUDAGetArrayRead(x,a);CHKERRQ(ierr);
+      if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
       PetscFunctionReturn(0);
     }
   }
