@@ -53,7 +53,7 @@
     <div id="main">
 
       <p>
-        In this file we list some of the techniques that may be used to increase
+        We list some of the techniques that may be used to increase
         one's efficiency when developing PETSc application codes. We have learned
         to use these techniques ourselves, and they have improved our efficiency
         tremendously.
@@ -68,13 +68,13 @@
       </p>
 
       <ul>
-        <li>Edit a file with <code>emacs</code>.</li>
-        <li>Exit <code>emacs</code>.</li>
+        <li>Edit a file with <code>emacs</code> or <code>vim</code>.</li>
+        <li>Exit <code>emacs</code> or <code>vim</code>.</li>
         <li>Run <code>make</code> and see some error messages.</li>
 
         <li>
-          Start <code>emacs</code> and try to fix the errors; often starting
-          <code>emacs</code> hides the error messages so that users cannot
+          Start <code>emacs</code> or <code>vim</code> and try to fix the errors; often starting
+          the editor hides the error messages so that users cannot
           remember all of them and thus do not fix all the compiler errors.
         </li>
 
@@ -100,45 +100,20 @@
 
       <ul>
         <li>
-          <code>emacs</code> has a feature to allow the user to compile using make
+          <code>emacs</code> and <code>vim</code> have a feature to allow the user to compile using make
           and have the editor automatically jump to the line of source
           code where the compiler detects an error, even when not
           currently editing the erroneous file.
         </li>
 
         <li>
-          The etags feature of <code>emacs</code> enables one to search quickly
+          The etags feature of <code>emacs</code> or tags feature of <code>vim</code> enables one to search quickly
           through a group of user-defined source files (and/or PETSc
-          source files) regardless of the directory in which they are located.
-          Etags usage tips (where <code>M-</code> denotes the "meta" key in <code>emacs</code>):
-          <ul>
-            <li>
-              To access the predefined PETSc tags in <code>emacs</code>, type
-              <code>M-x visit-tags-table</code> and specify the file
-              <code>${PETSC_DIR}/TAGS</code>
-            </li>
-            <li>
-              To move to where a PETSc function is defined, enter <code>M-.</code>
-              This is useful for viewing manpages and locating source code.
-            </li>
-            <li>
-              To search for a string and move to the first
-              occurrence, use <code>M-x tags-search</code> Then, to locate later
-              occurrences, type <code>M-,</code> In particular, this is useful for
-              quickly locating examples of usage of certain PETSc routines.
-            </li>
-            <li>
-              Another quite helpful command is <code>M-x tags-query-replace</code>
-              which replaces occurrences of a string hroughout all tagged
-              files (can retain any entries if desired); this enables quick and
-              painless revisions of source code, particularly when routines are
-              spread throughout many files and directories.
-            </li>
-          </ul>
-        </li>
-
+          source files) regardless of the directory in which they are located. <a href="http://www.gnu.org/s/global">GNU Global</a> is a richer alternative to
+          etags.<br>
+         
         <li>
-          Also, <code>emacs</code> easily enables:
+          Also, <code>emacs</code> and <code>vim</code> easily enable:
           <ul>
             <li>editing files that reside in any directory and retaining one's place within each of them</li>
 
@@ -147,20 +122,12 @@
         </li>
       </ul>
 
-      <p>
-        Admittedly, it takes a while to get the hang of using <code>emacs</code>.
-        But we've found that the increase in our programming efficiency has
-        been well worth the time spent learning to use this editor. We
-        seriously believe that we could not have developed PETSc as it is today
-        if we had not switched to <code>emacs</code>.
-      </p>
+      
 
       <p>
-        <code>vi</code> and <code>Eclipse</code> also provide tools for quickly finding things
-        and searching in PETSc source code, see the Emacs, VI/Vim and Eclipse
-        sections of the <a href="https://docs.petsc.org/en/latest/manual">users manual</a>.
-        <a href="http://www.gnu.org/s/global">GNU Global</a> is a richer alternative to
-        etags, see the user's manual for more details.<br>
+        You might consider using <code>Microsoft Visual Studio</code>,  <code>Eclipse</code> or other advanced software development systems.
+        See  the <a href="https://docs.petsc.org/en/latest/manual/other/#emacs-users">PETSc users manual</a>.
+        
       </p>
 
       <h2>Debugging</h2>
@@ -253,8 +220,11 @@
       <h2>Fortran notes</h2>
 
       <p>
-        Since Fortran77 does not provide type checking of routine input/output
-        parameters, we find that many errors encountered within PETSc Fortran77
+        PETSc provides
+        interfaces and modules for Fortran 90; see the
+        <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Sys/UsingFortran.html">manual page</a>
+        for how to use them. It does not yet  provide type checking of all routine input/output
+        parameters, we find that many errors encountered within PETSc Fortran
         programs result from accidentally using incorrect calling sequences.
         Thus, if your Fortran program is crashing, one of the first things to
         check is that all subroutines are being called with the correct arguments.
@@ -263,20 +233,13 @@
       <p>
         When passing floating point numbers into Fortran subroutines, always
         make sure you have them marked as double precision (e.g., pass in 10.d0
-        instead of 10.0). Otherwise, the compiler interprets the input as
+        instead of 10.0 or declare them as PETSc variables, e.g. PetscScalar one = 1.0).
+        Otherwise, the compiler interprets the input as
         a single precision number, which can cause crashes or other mysterious
         problems. Make sure to declare all variables (do not use the implicit
         feature of Fortran). In fact, we <b>highly</b> recommend
         using the <b>implicit none</b> option at the begining of each
         Fortran subroutine you write.
-      </p>
-
-      <p>
-        Fortran 90 provides the ability to do some type checking of subroutine
-        calls by using Fortran 90 interfaces or modules. PETSc now provides
-        interfaces and modules for Fortran 90; see the
-        <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Sys/UsingFortran.html">manual page</a>
-        for how to use them.
       </p>
 
     </div>
