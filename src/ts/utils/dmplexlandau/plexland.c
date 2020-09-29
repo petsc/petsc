@@ -1217,7 +1217,7 @@ PetscErrorCode LandauPrintNorms(Vec X, PetscInt stepi)
       zmomentumtot += zmomentum[ii];
       energytot  += energy[ii];
       densitytot += density[ii];
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "%3D) species-%D: charge density= %20.13e z-momentum= %20.13e energy= %20.13e",stepi,ii,density[ii],zmomentum[ii],energy[ii]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "%3D) species-%D: charge density= %20.13e z-momentum= %20.13e energy= %20.13e",stepi,ii,PetscRealPart(density[ii]),PetscRealPart(zmomentum[ii]),PetscRealPart(energy[ii]));CHKERRQ(ierr);
     } else { /* 2/3X + 3V */
       ierr = PetscDSSetObjective(prob, 0, &f0_s_den);CHKERRQ(ierr);
       ierr = DMPlexComputeIntegralFEM(plex,X,tt,ctx);CHKERRQ(ierr);
@@ -1236,7 +1236,7 @@ PetscErrorCode LandauPrintNorms(Vec X, PetscInt stepi)
       ierr = DMPlexComputeIntegralFEM(plex,X,tt,ctx);CHKERRQ(ierr);
       energy[ii]    = 0.5*tt[0]*ctx->n_0*ctx->v_0*ctx->v_0*ctx->masses[ii];
       ierr = PetscPrintf(PETSC_COMM_WORLD, "%3D) species %D: density=%20.13e, x-momentum=%20.13e, y-momentum=%20.13e, z-momentum=%20.13e, energy=%21.13e",
-                         stepi,ii,density[ii],xmomentum[ii],ymomentum[ii],zmomentum[ii],energy[ii]);CHKERRQ(ierr);
+                         stepi,ii,PetscRealPart(density[ii]),PetscRealPart(xmomentum[ii]),PetscRealPart(ymomentum[ii]),PetscRealPart(zmomentum[ii]),PetscRealPart(energy[ii]));CHKERRQ(ierr);
       xmomentumtot += xmomentum[ii];
       ymomentumtot += ymomentum[ii];
       zmomentumtot += zmomentum[ii];
@@ -1251,10 +1251,10 @@ PetscErrorCode LandauPrintNorms(Vec X, PetscInt stepi)
   if (ctx->num_species>1) {
     if (dim==2) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "\t%3D) Total: charge density=%21.13e, momentum=%21.13e, energy=%21.13e (m_i[0]/m_e = %g, %D cells)",
-                  stepi,densitytot,zmomentumtot,energytot,ctx->masses[1]/ctx->masses[0],cEnd-cStart);CHKERRQ(ierr);
+                  stepi,PetscRealPart(densitytot),PetscRealPart(zmomentumtot),PetscRealPart(energytot),ctx->masses[1]/ctx->masses[0],cEnd-cStart);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "\t%3D) Total: charge density=%21.13e, x-momentum=%21.13e, y-momentum=%21.13e, z-momentum=%21.13e, energy=%21.13e (m_i[0]/m_e = %g, %D cells)",
-                  stepi,densitytot,xmomentumtot,ymomentumtot,zmomentumtot,energytot,ctx->masses[1]/ctx->masses[0],cEnd-cStart);CHKERRQ(ierr);
+                  stepi,PetscRealPart(densitytot),PetscRealPart(xmomentumtot),PetscRealPart(ymomentumtot),PetscRealPart(zmomentumtot),PetscRealPart(energytot),ctx->masses[1]/ctx->masses[0],cEnd-cStart);CHKERRQ(ierr);
     }
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD, " -- %D cells",cEnd-cStart);CHKERRQ(ierr);
