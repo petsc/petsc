@@ -112,7 +112,6 @@
           <li>Deprecate PetscIgnoreErrorHandler(), use PetscReturnErrorHandler()</li>
           <li>Replace -debugger_nodes with -debugger_ranks</li>
           <li>Change PETSCABORT() to abort instead of MPI_Abort if run under -start_in_debugger</li>
-          <li>Change -start_in_debugger with GDB or LLDB to automatically continue the program in the debugger and not require the user to type continue. In GDB if the program exits then the debugger is automatically quit.</li>
           <li>Add PETSC_MPI_THREAD_REQUIRED to control the requested threading level for MPI_Init</li>
           <li>Add CUDA-11 support, but with CUDA-11, -mat_cusparse_storage_format {ELL, HYB} are not supported anymore. Only CSR is supported</li>
           <li>Add CUDA-11 option -mat_cusparse_spmv_alg {MV_ALG_DEFAULT, CSRMV_ALG1 (default), CSRMV_ALG2} for users to select cuSPARSE SpMV algorithms</li>
