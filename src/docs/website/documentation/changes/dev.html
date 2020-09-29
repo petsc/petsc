@@ -218,6 +218,11 @@
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+      <ul>
+        <li>Fix examples using automatic differentiation. One can use '--download-adolc --download-colpack' to install the AD tool</li>
+        <li>Improve shift handling in TSComputeXXXJacobian()</li>
+        <li>Update TSTrajectory (type memory) to preallocate a checkpoint pool to be reused across multiple TS runs</li>
+      </ul>
       <h4>TAO:</h4>
         <ul>
           <li>Add lm regularizer to TAOBRGN. This regularizer turns BRGN into a Levenberg-Marquardt algorithm. TAOBRGNGetDamping() vector returns the damping vector used by this regularizer.</li>
