@@ -75,9 +75,8 @@ git:
   depth: 3
 branches:
   only:
-    - maint
+    - release
     - master
-    - next
     - /^pr\/.*$/
     - /^ci\/.*$/
 

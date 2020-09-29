@@ -6,8 +6,8 @@
 # example usages:
 #   builddist /sandbox/petsc/petsc.clone balay/foo [petsc-balay-foo.tar.bz]
 #   builddist /sandbox/petsc/petsc.clone master [petsc-master.tar.bz]
-#   builddist /sandbox/petsc/petsc.clone maint [petsc-3.4.1.tar.bz]
-#   builddist /sandbox/petsc/petsc.clone maint release-snapshot [petsc-release-snapshot.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone release [petsc-3.4.1.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone release release-snapshot [petsc-release-snapshot.tar.bz]
 #
 # Notes: version info is automatically obtained from include/petscversion.h
 #
