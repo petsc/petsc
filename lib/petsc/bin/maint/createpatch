@@ -73,7 +73,8 @@ cat include/petscversion.h.bak | \
 # Update patchlevel in download/index.html
 /bin/mv src/docs/website/download/index.html src/docs/website/download/index.html.bak
 cat src/docs/website/download/index.html.bak | \
-  sed -e "s/-${oldver}.tar.gz/-${newver}.tar.gz/g" > src/docs/website/download/index.html
+  sed -e "s/-${oldver}.tar.gz/-${newver}.tar.gz/g" | \
+  sed -e "s/git checkout v[0-9.]*/git checkout v${newver}/g" > src/docs/website/download/index.html
 /bin/rm -f src/docs/website/download/index.html.bak
 
 # now create a changeset
