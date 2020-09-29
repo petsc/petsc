@@ -81,18 +81,18 @@
           On systems where MPI and BLAS/LAPACK are installed.
           <ul class="code">
             <li>./configure</li>
-            <li>make all test</li>
+            <li>make all check</li>
           </ul>
         </li>
         <li>
           Or to specify compilers and have PETSc download and install MPI and BLAS/LAPACK (when they are not already on your machine)
           <ul class="code">
             <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --download-fblaslapack</li>
-            <li>make all test</li>
+            <li>make all check</li>
           </ul>
         </li>
         <li>
-          <a style="color: rgb(204,102,0);" href="#windows"><b>Check here for MS Windows installation</b></a> and <a style="color: rgb(204,102,0);" href="#doemachines"><b>here for DOE large scale systems installation</b></a>
+          <a style="color: rgb(204,102,0);" href="#windows"><b>Microsoft Windows installation</b></a> and <a style="color: rgb(204,102,0);" href="#doemachines"><b>DOE large scale systems installation</b></a>
         </li>
       </ul>
 
@@ -202,7 +202,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           </li>
 
           <li>
-            Install 2 variants of PETSc, one with gnu, the other with intel compilers. Specify different PETSC_ARCH for each build.
+            Install 2 variants of PETSc, one with gnu, the other with Intel compilers. Specify different PETSC_ARCH for each build.
             <ul>
               <li>./configure PETSC_ARCH=linux-gnu --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich</li>
               <li>make PETSC_ARCH=linux-gnu all test</li>
@@ -218,8 +218,8 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
       <div id="vars">
 
-        PETSC_DIR and PETSC_ARCH are a couple of variables that control the
-        configuration and build process of PETSc. These variables can be set as
+        PETSC_DIR and PETSC_ARCH  control the
+        configuration and build locations of PETSc. These variables can be set as
         envirnment variables or specified on the command line [to both configure and make]
 
         <ul>
@@ -255,8 +255,8 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         </ul>
 
         <p>
-          <a class="def" name="PETSC_DIR">PETSC_DIR:</a>
-          this variable should point to the location of the PETSc
+          <a class="def" name="PETSC_DIR">PETSC_DIR</a>
+          should point to the location of the PETSc
           installation that is used. Multiple PETSc versions can
           coexist on the same file-system. By changing PETSC_DIR
           value, one can switch between these installed versions of
@@ -264,12 +264,12 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         </p>
 
         <p>
-          <span class="def">PETSC_ARCH:</span>
-          this variable gives a name to a configuration/build.
-          Configure uses this value to stores the generated config
+          <span class="def">PETSC_ARCH</span>
+          gives a name to a specific configuration/build.
+          Configure uses this value to stores the generated configuration
           makefiles in ${PETSC_DIR}/${PETSC_ARCH}. Make
-          uses this value to determine this location of these
-          makefiles [which intern help in locating the correct
+          uses this value to determine the location of these
+          makefiles [which internally help in locating the correct
           include and library files].
         </p>
 
@@ -285,7 +285,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           If configure doesn't find a PETSC_ARCH value [either in
           env variable or command line option], it automatically
           generates a default value and uses it. Also - if make
-          doesn't find a PETSC_ARCH env variable - it defaults to
+          doesn't find a PETSC_ARCH environmental variable - it defaults to
           the value used by last successful invocation of previous
           configure.
         </p>
@@ -356,7 +356,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
             way you can switch between debugging your code and running for performance by simply changing the value of PETSC_ARCH.
             Additionally one can specify more suitable optimization
             flags with the options COPTFLAGS, FOPTFLAGS,
-            CXXOPTFLAGS. For ex: when using gnu compilers with corresponding
+            CXXOPTFLAGS. For example when using gnu compilers with corresponding
             optimization flags:
             <ul>
               <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native' --download-mpich</li>
@@ -446,7 +446,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
             <span class="def">--with-PACKAGENAME-include=INCLUDEPATH --with-PACKAGENAME-lib=LIBRARYLIST</span>:
             Usually a package is defined completely by its include file location -
             and library list. [If the package is already installed] - then one can use
-            these two options to specify the package to configure. For eg:
+            these two options to specify the package to configure. For example
 
             <ul>
               <li>
@@ -558,7 +558,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           </li>
 
           <li>
-            One can use the following options to let configure download/install blas/lapack automatically.
+            One can use the following options to let configure download/install BLAS/LAPACK automatically.
             <ul>
               <li>--download-fblaslapack [when fortran compiler is present]</li>
               <li>--download-f2cblaslapack [when configuring without a fortran compiler - i.e --with-fc=0]</li>
@@ -579,9 +579,9 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
         <ul>
           <li> <h4> Intel MKL</h4>
-            Intel provides blas/lapack via  the <a href="https://software.intel.com/en-us/mkl">MKL</a> library.
-            It usually works from GNU/Intel compilers on Linux and MS/Intel compilers on Windows.
-            One can specify it to PETSc configure with for eg: <code>--with-blaslapack-dir=$MKLROOT</code> or, for example,
+            Intel provides BLAS/LAPACK via  the <a href="https://software.intel.com/en-us/mkl">MKL</a> library.
+            It usually works from GNU/Intel compilers on Linux and Microsoft/Intel compilers on Microsoft Windows.
+            One can specify it to PETSc configure with for example: <code>--with-blaslapack-dir=$MKLROOT</code> or, for example,
             <code>--with-blaslapack-dir=/soft/com/packages/intel/13/079/mkl</code>
             <br>
             If the above option does not work - one could determine the correct library list for your compilers using
@@ -718,7 +718,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <h3><a name="windows">Microsoft Windows Installation:</a></h3>
 
             Are you sure you want to use Microsoft Windows? We recommend using Linux
-            if possible [and minimize troubleshooting Microsoft windows related issues].
+            if possible [and minimize troubleshooting Microsoft Windows related issues].
             
         <h4>Installation With GNU gcc/g++/gfortran compilers:</h4>
         
@@ -732,11 +732,11 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
             installing Cygwin for PETSc. Be sure to install the GNU compilers, do not use the win32fe script.
           </li>
           <li>
-            <a href="https://devblogs.microsoft.com/commandline/announcing-wsl-2/">Windows Subsystem for Linux 2 (WLS2)</a>.
+            <a href="https://devblogs.microsoft.com/commandline/announcing-wsl-2/">Microsoft Windows Subsystem for Linux 2 (WLS2)</a>.
             Untested, let us know your experience.
           </li>
           <li>
-            <a href="https://docs.docker.com/docker-for-windows/">Docker for Windows</a>.
+            <a href="https://docs.docker.com/docker-for-windows/">Docker for Microsoft Windows</a>.
             Untested, let us know your experience.
           </li>
           <li>
@@ -825,7 +825,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>Now run configure with win32fe and then build the libraries with make [as per the usual instructions]</li>
         </ul>
 
-        <strong>Example Configure usage with Windows Compilers:</strong>
+        <strong>Example Configure usage with Microsoft Windows Compilers:</strong>
 
         <p>
           Use configure with VC2005 C and Intel Fortran 10 [Without MPI].
@@ -842,10 +842,10 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         </ul>
 
         <p> <strong>Using MPI:</strong>
-        We support both <a href="https://www.microsoft.com/en-us/download/details.aspx?id=57467">MS-MPI</a> [64-bit] and <a href="https://software.intel.com/en-us/mpi-library">Intel MPI</a> on Windows (MPICH2 does not work, do not use it). For example usages, check <code>config/examples/arch-mswin*.py</code></p>
+        We support both <a href="https://www.microsoft.com/en-us/download/details.aspx?id=57467">MS-MPI</a> [64-bit] and <a href="https://software.intel.com/en-us/mpi-library">Intel MPI</a> on Microsoft Windows (MPICH2 does not work, do not use it). For example usages, check <code>config/examples/arch-mswin*.py</code></p>
 
         <p> <strong>Avoiding spaces in PATHs:</strong>
-        Its best to avoid spaces or similar special chars when specifying configure options. On windows - this usually affects specifying MPI or MKL. Windows supports <b>dos short form</b> for dir names - so its best to use this notation. And cygwin tool <code>cygpath</code> can be used to get paths in this notation. for ex:
+        Its best to avoid spaces or similar special chars when specifying configure options. On Microsoft Windows - this usually affects specifying MPI or MKL. Microsoft Windows supports <b>dos short form</b> for dir names - so its best to use this notation. And cygwin tool <code>cygpath</code> can be used to get paths in this notation. For example
          <code><br><br>
            $ cygpath -u `cygpath -ms '/cygdrive/c/Program Files (x86)/Microsoft SDKs/MPI'`<br>
            /cygdrive/c/PROGRA~2/MICROS~2/MPI<br>
@@ -882,7 +882,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           </li>
 
           <li>
-            try compiling the example from Cygwin bash shell - using makefile - for eg:
+            try compiling the example from Cygwin bash shell - using makefile - for example
             <ul>
               <li>cd src/ksp/ksp/tutorials</li>
               <li>make ex2</li>
@@ -932,13 +932,13 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
              Marshal unix type compiler options to Cl (Microsoft compiler).
           </li>
           <li>
-             Convert paths in some of these options from this system (for example Cygwin paths) to Windows paths.
+             Convert paths in some of these options from this system (for example Cygwin paths) to Microsoft Windows paths.
           </li>
           <li>
              Have python that works with system path notation.
           </li>
           <li>
-             Have the ability equivalent to Windows process spawning; Cygwin process spawning produces Windows processes. WSL1 lacked this.
+             Have the ability equivalent to Microsoft Windows process spawning; Cygwin process spawning produces Microsoft Windows processes. WSL1 lacked this.
           </li>
         </ul>
 
@@ -999,7 +999,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
         <h4>Multiple installs using --prefix and DESTDIR:</h4>
 
-        Sepcify a different --prefix location/option for each build - at configure time. For eg:
+        Sepcify a different --prefix location/option for each build - at configure time. For example
 
         <ul class="code">
           <li>untar petsc tar ball</li>
@@ -1058,7 +1058,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <p>
           On systems where you can use modules to load packages such as HDF5, the locations of the include files and libraries are known
           by the compiler. Hence you simply load the appropriate module for the package and run <code>./configure</code> with the option <code>--with-package</code>.
-          For example.
+          For example
            <ul>
           <li>
             module load hdf5
