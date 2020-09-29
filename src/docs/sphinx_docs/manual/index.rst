@@ -1,16 +1,6 @@
 PETSc Users Manual
 ==================
 
-.. important::
-
-    The manual is currently being migrated here.
-    If you are a user,
-    see the current manual `here <https://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf>`__.
-    If you are a PETSc contributor, make any future changes to this version, and please help
-    clean up and improve it!
-
---------------
-
 **Argonne National Laboratory**
 
 **Mathematics and Computer Science Division**

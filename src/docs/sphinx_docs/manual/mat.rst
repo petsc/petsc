@@ -671,7 +671,7 @@ we introduce the four spaces shown in :numref:`fig_localspaces`.
    space (at least not during assembly), but it is a useful for
    declaring which part of a matrix is being assembled.
 
-.. figure:: images/localspaces.*
+.. figure:: images/localspaces.svg
    :alt: The relationship between spaces used for coupled assembly.
    :name: fig_localspaces
 
