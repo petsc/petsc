@@ -335,7 +335,7 @@ deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 
 # Builds all the documentation - should be done every night
-alldoc: allcite allpdf alldoc1 alldoc2 docsetdate sphinx-docs-all
+alldoc: allcite allpdf sphinx-docs-all alldoc1 alldoc2 docsetdate
 
 # Build just citations
 allcite: chk_loc deletemanualpages
@@ -418,7 +418,7 @@ PETSC_SPHINX_ROOT=src/docs/sphinx_docs
 PETSC_SPHINX_ENV=${PETSC_ARCH}/sphinx_docs_env
 PETSC_SPHINX_DEST=docs/sphinx_docs
 
-sphinx-docs-all: sphinx-docs-html sphinx-docs-manual
+sphinx-docs-all: sphinx-docs-manual sphinx-docs-html
 
 sphinx-docs-html: chk_loc allcite sphinx-docs-env
 	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
