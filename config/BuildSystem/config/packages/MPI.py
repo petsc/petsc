@@ -189,23 +189,26 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     elif self.isPOE:
       self.mpiexec = os.path.abspath(os.path.join('bin', 'mpiexec.poe'))
     else:
-      mpiexecs = ['mpiexec', 'mpirun', 'mprun']
+      mpiexecs = ['mpiexec', 'mpirun', 'mprun', 'srun']
       path    = []
       if 'with-mpi-dir' in self.argDB:
         path.append(os.path.join(os.path.abspath(self.argDB['with-mpi-dir']), 'bin'))
         # MPICH-NT-1.2.5 installs MPIRun.exe in mpich/mpd/bin
         path.append(os.path.join(os.path.abspath(self.argDB['with-mpi-dir']), 'mpd','bin'))
-      for inc in self.include:
-        path.append(os.path.join(os.path.dirname(inc), 'bin'))
-        # MPICH-NT-1.2.5 installs MPIRun.exe in mpich/SDK/include/../../mpd/bin
-        path.append(os.path.join(os.path.dirname(os.path.dirname(inc)),'mpd','bin'))
-      for lib in self.lib:
-        path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
-      self.pushLanguage('C')
-      if os.path.basename(self.getCompiler()) == 'mpicc' and os.path.dirname(self.getCompiler()):
-        path.append(os.path.dirname(self.getCompiler()))
-      self.popLanguage()
-      if not self.getExecutable(mpiexecs, path = path, useDefaultPath = 1, resultName = 'mpiexec',setMakeMacro=0):
+        useDefaultPath = 0
+      else:
+        for inc in self.include:
+          path.append(os.path.join(os.path.dirname(inc), 'bin'))
+          # MPICH-NT-1.2.5 installs MPIRun.exe in mpich/SDK/include/../../mpd/bin
+          path.append(os.path.join(os.path.dirname(os.path.dirname(inc)),'mpd','bin'))
+        for lib in self.lib:
+          path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
+        self.pushLanguage('C')
+        if (os.path.basename(self.getCompiler()) == 'mpicc' or os.path.basename(self.getCompiler()) == 'mpiicc') and os.path.dirname(self.getCompiler()):
+          path.append(os.path.dirname(self.getCompiler()))
+        self.popLanguage()
+        useDefaultPath = 1
+      if not self.getExecutable(mpiexecs, path = path, useDefaultPath = useDefaultPath, resultName = 'mpiexec',setMakeMacro=0):
         if not self.getExecutable('/bin/false', path = [], useDefaultPath = 0, resultName = 'mpiexec',setMakeMacro=0):
           raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
       # Support for spaces and () in executable names; also needs to handle optional arguments at the end
