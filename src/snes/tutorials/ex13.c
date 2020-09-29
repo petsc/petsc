@@ -630,5 +630,13 @@ int main(int argc, char **argv)
     suffix: 2d_p1_adj_0
     requires: triangle
     args: -potential_petscspace_degree 1 -dm_refine 1 -adjoint -adjoint_petscspace_degree 1 -error_petscspace_degree 0
+  test:
+    nsize: 2
+    requires: kokkos_kernels
+    suffix: kokkos
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,3,6 -dm_distribute -petscpartitioner_type simple -dm_plex_box_simplex 0 -potential_petscspace_degree 1 \
+         -dm_refine 0 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 1000 -pc_gamg_threshold 0.0 \
+         -pc_gamg_threshold_scale .5 -mg_levels_ksp_type chebyshev -mg_levels_ksp_max_it 2 -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 \
+         -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ksp_monitor -snes_monitor -dm_view -dm_mat_type aijkokkos -dm_vec_type kokkos
 
 TEST*/
