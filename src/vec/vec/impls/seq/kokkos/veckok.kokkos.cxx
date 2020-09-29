@@ -62,11 +62,13 @@ PetscErrorCode VecKokkosGetDeviceView(Vec v,PetscScalarViewDevice_t* d_view)
 
 PetscErrorCode VecKokkosRestoreDeviceView(Vec v,PetscScalarViewDevice_t* d_view)
 {
-  Vec_Kokkos *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+  PetscErrorCode ierr;
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
   VecErrorIfNotKokkos(v);
   veckok->dual_v.modify_device();
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -106,12 +108,14 @@ PetscErrorCode VecKokkosGetDeviceViewWrite(Vec v,PetscScalarViewDevice_t* d_view
 
 PetscErrorCode VecKokkosRestoreDeviceViewWrite(Vec v,PetscScalarViewDevice_t* dv)
 {
-  Vec_Kokkos *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+  PetscErrorCode ierr;
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
   VecErrorIfNotKokkos(v);
   veckok->dual_v.clear_sync_state();
   veckok->dual_v.modify_device();
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -133,7 +137,8 @@ PetscErrorCode VecKokkosGetArrayInPlace(Vec v,PetscScalar** array)
 
 PetscErrorCode VecKokkosRestoreArrayInPlace(Vec v,PetscScalar** array)
 {
-  Vec_Kokkos  *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+  PetscErrorCode ierr;
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
   VecErrorIfNotKokkos(v);
@@ -142,6 +147,7 @@ PetscErrorCode VecKokkosRestoreArrayInPlace(Vec v,PetscScalar** array)
   } else {
     veckok->dual_v.modify_device();
   }
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -857,7 +863,7 @@ PetscErrorCode VecReplaceArray_SeqKokkos(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-/* Maps the local portion of a vector into a vector */
+/* Maps the local portion of vector v into vector w */
 PetscErrorCode VecGetLocalVector_SeqKokkos(Vec v,Vec w)
 {
   PetscErrorCode   ierr;
@@ -866,7 +872,7 @@ PetscErrorCode VecGetLocalVector_SeqKokkos(Vec v,Vec w)
 
   PetscFunctionBegin;
   PetscCheckTypeName(w,VECSEQKOKKOS);
-  /* Destroy ->data, ->spptr structs of w */
+  /* Destroy w->data, w->spptr */
   if (vecseq) {
     ierr = PetscFree(vecseq->array_allocated);CHKERRQ(ierr);
     ierr = PetscFree(w->data);CHKERRQ(ierr);
@@ -885,17 +891,13 @@ PetscErrorCode VecRestoreLocalVector_SeqKokkos(Vec v,Vec w)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscCheckTypeName(w,VECSEQCUDA);
-
+  PetscCheckTypeName(w,VECSEQKOKKOS);
   v->data  = w->data;
   v->spptr = w->spptr;
   ierr     = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
-  /* TODO: nullifying ->data, ->spptr seems dengerous. But recreating w involves malloc on host and device! */
-  /*
+  /* TODO: need to think if setting w->data/spptr to NULL is safe */
   w->data  = NULL;
   w->spptr = NULL;
-  */
-  ierr = VecCreate_SeqKokkos(w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1104,9 +1106,10 @@ PetscErrorCode VecDestroy_SeqKokkos(Vec v)
 {
   PetscErrorCode ierr;
   Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+  Vec_Seq        *vecseq = static_cast<Vec_Seq*>(v->data);
 
   PetscFunctionBegin;
   delete veckok;
-  ierr = VecDestroy_Seq(v);CHKERRQ(ierr);
+  if (vecseq) {ierr = VecDestroy_Seq(v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
