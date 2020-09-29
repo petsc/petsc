@@ -1894,7 +1894,7 @@ PetscErrorCode VecBindToCPU(Vec v,PetscBool flg)
 
 . -vec_pinned_memory_min <size> - minimum size (in bytes) for an allocation to use pinned memory on host.
                                   Note that this takes a PetscScalar, to accommodate large values;
-                                  specifying -1 ensures that pinned memory will always be used.
+                                  specifying -1 ensures that pinned memory will never be used.
 
   Level: developer
 
