@@ -678,7 +678,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscReal refineTo
     for (c = cStart; c < cEnd; c++) {
       ierr = DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE);CHKERRQ(ierr);
     }
-    ierr = PetscInfo1(sol, "Phase:%s: Uniform refinement\n","adaptToleranceFEM");
+    ierr = PetscInfo1(sol, "Phase:%s: Uniform refinement\n","adaptToleranceFEM");CHKERRQ(ierr);
   } else if (type==2) {
     PetscInt  rCellIdx[8], eCellIdx[64], iCellIdx[64], eMaxIdx = -1, iMaxIdx = -1, nr = 0, nrmax = (dim==3 && !ctx->quarter3DDomain) ? 8 : 2;
     PetscReal minRad = PETSC_INFINITY, r, eMinRad = PETSC_INFINITY, iMinRad = PETSC_INFINITY;
@@ -974,7 +974,9 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   }
   if (ctx->sphere && (ctx->e_radius <= ctx->i_radius || ctx->radius <= ctx->e_radius)) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"bad radii: %g < %g < %g",ctx->i_radius,ctx->e_radius,ctx->radius);
   ierr = PetscOptionsInt("-dm_landau_sub_thread_block_size", "Number of threads in CUDA integration point subblock", "plexland.c", ctx->subThreadBlockSize, &ctx->subThreadBlockSize, NULL);CHKERRQ(ierr);
-  if (ctx->subThreadBlockSize > LANDAU_MAX_SUB_THREAD_BLOCKS) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"num sub threads %D > MAX %D",ctx->subThreadBlockSize,LANDAU_MAX_SUB_THREAD_BLOCKS);
+#if !defined(PETSC_HAVE_KOKKOS)
+  if (ctx->subThreadBlockSize > LANDAU_MAX_SUB_THREAD_BLOCKS) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"num sub threads %D > MAX %d",ctx->subThreadBlockSize,LANDAU_MAX_SUB_THREAD_BLOCKS);
+#endif
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   for (ii=ctx->num_species;ii<LANDAU_MAX_SPECIES;ii++) ctx->masses[ii] = ctx->thermal_temps[ii]  = ctx->charges[ii] = 0;
   if (ctx->verbose > 0) {
@@ -1549,7 +1551,7 @@ PetscErrorCode LandauCreateMassMatrix(DM dm, Mat *Amat)
 .keywords: mesh
 .seealso: LandauCreateVelocitySpace(), LandauIJacobian()
 @*/
-PetscErrorCode LandauIFunction(TS ts,PetscReal time_dummy,Vec X,Vec X_t,Vec F,void *actx)
+PetscErrorCode LandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec F, void *actx)
 {
   PetscErrorCode ierr;
   LandauCtx      *ctx=(LandauCtx*)actx;
@@ -1565,11 +1567,15 @@ PetscErrorCode LandauIFunction(TS ts,PetscReal time_dummy,Vec X,Vec X_t,Vec F,vo
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr); // remove in real application
   ierr = PetscLogEventBegin(ctx->events[0],0,0,0,0);CHKERRQ(ierr);
   ierr = DMGetDimension(ctx->dmv, &dim);CHKERRQ(ierr);
-  if (ctx->normJ!=unorm) {
+  if (ctx->normJ != unorm) {
     ctx->normJ = unorm;
+    ierr = PetscInfo1(ts, "Create Landau Jacobian t=%g\n",time_dummy);CHKERRQ(ierr);
     ierr = LandauFormJacobian_Internal(X,ctx->J,dim,(void*)ctx);CHKERRQ(ierr);
     ctx->aux_bool = PETSC_TRUE; /* debug: set flag that we made a new Jacobian */
-  } else ctx->aux_bool = PETSC_FALSE;
+  } else {
+    ctx->aux_bool = PETSC_FALSE;
+    ierr = PetscInfo1(ts, "Skip Landau Jacobian t=%g\n",(double)time_dummy);CHKERRQ(ierr);
+  }
   /* mat vec for op */
   ierr = MatMult(ctx->J,X,F);CHKERRQ(ierr);CHKERRQ(ierr); /* C*f */
   /* add time term */
@@ -1602,7 +1608,7 @@ PetscErrorCode LandauIFunction(TS ts,PetscReal time_dummy,Vec X,Vec X_t,Vec F,vo
 .keywords: mesh
 .seealso: LandauCreateVelocitySpace(), LandauIFunction()
 @*/
-PetscErrorCode LandauIJacobian(TS ts,PetscReal time_dummy,Vec X,Vec U_tdummy,PetscReal shift,Mat Amat,Mat Pmat,void *actx)
+PetscErrorCode LandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy, PetscReal shift, Mat Amat, Mat Pmat, void *actx)
 {
   PetscErrorCode ierr;
   LandauCtx      *ctx=(LandauCtx*)actx;
@@ -1620,10 +1626,14 @@ PetscErrorCode LandauIJacobian(TS ts,PetscReal time_dummy,Vec X,Vec U_tdummy,Pet
   ierr = PetscLogEventBegin(ctx->events[9],0,0,0,0);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_2,&unorm);CHKERRQ(ierr);
   if (ctx->normJ!=unorm) {
+    ierr = PetscInfo2(ts, "Create Landau Jacobian t=%g, shift=%g\n",(double)time_dummy,(double)shift);CHKERRQ(ierr);
     ierr = LandauFormJacobian_Internal(X,ctx->J,dim,(void*)ctx);CHKERRQ(ierr);
     ctx->normJ = unorm;
     ctx->aux_bool = PETSC_TRUE; /* debug: set flag that we made a new Jacobian */
-  } else ctx->aux_bool = PETSC_FALSE;
+  } else {
+    ctx->aux_bool = PETSC_FALSE;
+    ierr = PetscInfo3(ts, "Skip Landau Jacobian t=%g, shift=%g shift*|u|=%20.12e\n",(double)time_dummy,(double)shift,(double)shift*unorm);CHKERRQ(ierr);
+  }
   /* add C */
   ierr = MatCopy(ctx->J,Pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   /* add mass */
