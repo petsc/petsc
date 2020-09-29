@@ -62,6 +62,7 @@ check-ci-settings:
   script:
     - printf "PATH:$PATH\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
     - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
@@ -152,6 +153,7 @@ check-py-vermin:
   script:
     - printf "PATH:$PATH\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - printf "./config/examples/${TEST_ARCH}.py\n"
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
