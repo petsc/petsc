@@ -3,7 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Chaco-2.2-p2.tar.gz']
+    self.gitcommit         = 'v2.2-p3'
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-chaco.git',
+                              'https://bitbucket.org/petsc/pkg-chaco/get/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames  = ['petsc-pkg-chaco','Chaco']
     self.functions         = ['interface']
     self.includes          = [] #Chaco does not have an include file
     self.liblist           = [['libchaco.a']]
