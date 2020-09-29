@@ -124,18 +124,17 @@
           <li>Add -hip_device, -hip_view, -hip_synchronize, PetscHIPInitialize(comm,dev) and PetscHIPInitializeCheck(). Their usage is similar to their CUDA counterpart</li>
           <li>Add PetscOptionsInsertStringYAML() and -options_string_yaml for YAML-formatted options on the command line</li>
           <li>Add PETSC_OPTIONS_YAML environment variable for setting options in YAML format</li>
-          <li>Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS Fortran linker enables catching floating point divide by zero the trapping is disabled for LAPACK routines that generate divide by zero, for example, the reference implementation of ieeeck().</li>
-          <li>Add floating point exception handling support for freebsd and Windows.</li>
-          <li>Consistently set exception handling for divide by zero, invalid, underflow, and overflow for all systems when possible.</li>
+          <li>Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS Fortran linker enables catching floating point divide by zero the trapping is disabled for LAPACK routines that generate divide by zero, for example, the reference implementation of ieeeck()</li>
+          <li>Add floating point exception handling support for freebsd and Windows</li>
+          <li>Consistently set exception handling for divide by zero, invalid, underflow, and overflow for all systems when possible</li>
           <li>-options_monitor and -options_monitor_cancel have immediate global effect, see PetscInitialize() for details</li>
           <li>Remove PetscOptionsSetFromOptions()</li>
           <li>Remove PetscOptionsMonitorCancel()</li>
-          <li>Remove -h and -v options. Use -help and -version instead. The short options -h and -v can now be used within user codes.</li>
-          <li>Import PETSc4py sources into PETSc source tree. Continue to use --download-petsc4py to build petsc4py.</li>
+          <li>Remove -h and -v options. Use -help and -version instead. The short options -h and -v can now be used within user codes</li>
+          <li>Import PETSc4py sources into PETSc source tree. Continue to use --download-petsc4py to build petsc4py</li>
           <li>Add an experimental Kokkos backend for PETSc GPU operations. For example, one can use '--download-kokkos --download-kokkos-kernels --with-kokkos-cuda-arch=TURING75' to build PETSc with a Kokkos CUDA backend,
               and then use -vec_type kokkos -mat_type aijkokkos. With that, vector and matrix operations on GPUs are done through Kokkos kernels. Currently, VECKOKKOS supports all vector operations,
-              but MATAIJKOKKOS only supports MatMult() and its variants. More complete support is coming.
-          </li>
+              but MATAIJKOKKOS only supports MatMult() and its variants. More complete support is coming</li>
         </ul>
       <h4>Configure/Build:</h4>
         <ul>
@@ -153,10 +152,10 @@
       <h4>Vec:</h4>
         <ul>
           <li>Fix memory leaks when requesting -vec_type {standard|cuda|viennacl} when the vector is already of the desired type</li>
-          <li>Add VecViennaCLGetCL{Context|Queue|Mem} for VECVIENNACL to access the CL objects underlying the PETSc Vecs.</li>
-          <li>Add VecCreate{Seq|MPI}ViennaCLWithArray and VecViennaCL{Place|Reset}Array.</li>
-          <li>Add VecCreate{Seq|MPI}CUDAWithArrays to create VECCUDA sharing the CPU and/or GPU memory spaces.</li>
-          <li>Add VecCreate{Seq|MPI}ViennaCLWithArrays to create VECVIENNACL sharing the CPU and/or GPU memory spaces.</li>
+          <li>Add VecViennaCLGetCL{Context|Queue|Mem} for VECVIENNACL to access the CL objects underlying the PETSc Vecs</li>
+          <li>Add VecCreate{Seq|MPI}ViennaCLWithArray and VecViennaCL{Place|Reset}Array</li>
+          <li>Add VecCreate{Seq|MPI}CUDAWithArrays to create VECCUDA sharing the CPU and/or GPU memory spaces</li>
+          <li>Add VecCreate{Seq|MPI}ViennaCLWithArrays to create VECVIENNACL sharing the CPU and/or GPU memory spaces</li>
           <li>Add an experimental vector type VECKOKKOS</li>
           <li>Add VecGetOffloadMask to query a Vec's offload mask</li>
         </ul>
@@ -164,13 +163,12 @@
       <ul>
         <li>PetscSectionGetClosurePermutation(), PetscSectionSetClosurePermutation(), and PetscSectionGetClosureInversePermutation() all require a new argument depth and the getters require closure size to be specified by the caller.
           This allows multiple closure permutations to be specified, e.g., for mixed topology meshes and boundary faces and for variable-degree spaces.
-          The previous behavior only applied to points at height zero.
-        </li>
+          The previous behavior only applied to points at height zero</li>
       </ul>
       <h4>PetscPartitioner:</h4>
       <h4>Mat:</h4>
       <ul>
-          <li>Add MatSetLayouts().</li>
+          <li>Add MatSetLayouts()</li>
           <li>Add MatSeqAIJSetTotalPreallocation(Mat,PetscInt) for efficient row by row setting of a matrix without requiring preallocating for each row</li>
           <li>Add full support for MKL sparse matrix-matrix products in MATSEQAIJMKL</li>
           <li>Fix few bugs for MATSEQSBAIJ when missing diagonal entries</li>
@@ -224,7 +222,7 @@
       </ul>
       <h4>TAO:</h4>
         <ul>
-          <li>Add lm regularizer to TAOBRGN. This regularizer turns BRGN into a Levenberg-Marquardt algorithm. TAOBRGNGetDamping() vector returns the damping vector used by this regularizer.</li>
+          <li>Add lm regularizer to TAOBRGN. This regularizer turns BRGN into a Levenberg-Marquardt algorithm. TAOBRGNGetDamping() vector returns the damping vector used by this regularizer</li>
         </ul>
       <h4>DM/DA:</h4>
         <ul>
@@ -234,7 +232,7 @@
       <h4>DMPlex:</h4>
         <ul>
           <li>Deprecate DMPlexCreateFromCellList[Parallel]() in favor of DMPlexCreateFromCellList[Parallel]Petsc() which accept PETSc datatypes (PetscInt, PetscReal)</li>
-          <li>Expose DMPlexBuildFromCellList(), DMPlexBuildFromCellListParallel(), DMPlexBuildCoordinatesFromCellList(), DMPlexBuildCoordinatesFromCellListParallel(). They now accept PETSc datatypes.</li>
+          <li>Expose DMPlexBuildFromCellList(), DMPlexBuildFromCellListParallel(), DMPlexBuildCoordinatesFromCellList(), DMPlexBuildCoordinatesFromCellListParallel(). They now accept PETSc datatypes</li>
           <li>Add DMPlexMatSetClosureGeneral() for different row and column layouts</li>
           <li>DMPlexGet/RestoreClosureIndices() now take argument for ignoring the closure permutation and for modifying the input values for SetClosure()</li>
           <li>DMPlexComputeInterpolatorNested() now takes a flag allowing nested interpolation between different spaces on the same mesh</li>
@@ -246,7 +244,7 @@
           <li>Add several refinement methods for Plex</li>
           <li>Add DMPlexGet/SetActivePoint() to allow user to see which mesh point is being handled by projection</li>
           <li>Add DMPlexComputeOrthogonalQuality() to compute cell-wise orthogonality quality mesh statistic</li>
-          <li>Change DMPlexSetClosurePermutationTensor() to set tensor permutations at every depth, instead of just height 0.</li>
+          <li>Change DMPlexSetClosurePermutationTensor() to set tensor permutations at every depth, instead of just height 0</li>
           <li>Add DMComputeExactSolution() which uses PetscDS information</li>
           <li>Change DMSNESCheckFromOptions() and DMTSCheckFromOptions() to get exact solution from PetscDS</li>
           <li>Change DMPlexSNESGetGeometryFVM() to DMPlexGetGeometryFVM()</li>
@@ -263,14 +261,14 @@
           <li>Add PetscDTJacobiNorm() for the weighted L2 norm of Jacobi polynomials</li>
           <li>Add PetscDTJacobiEvalJet() and PetscDTPKDEvalJet() for evaluating the derivatives of orthogonal polynomials on the segment (Jacobi) and simplex (PKD)</li>
           <li>Add PetscDTIndexToGradedOrder() and PetscDTGradedOrderToIndex() for indexing multivariate monomials and derivatives in a linear order</li>
-          <li>Add PetscSpaceType "sum" for constructing FE spaces as the sum or concatenation of other spaces.</li>
+          <li>Add PetscSpaceType "sum" for constructing FE spaces as the sum or concatenation of other spaces</li>
           <li>Add PetscDSGet/SetExactSolutionTimeDerivative()</li>
           <li>Add PetscDSSelectDiscretizations()</li>
           <li>Add argument to DM nullspace constructors</li>
         </ul>
       <h4>PetscViewer:</h4>
         <ul>
-          <li>Deprecate the legacy <code>.vtk</code> (PETSC_VIEWER_ASCII_VTK) viewer.  Please use <code>.vtr</code> or <code>.vts</code> for structured grids (DMDA) and <code>.vtu</code> for unstructured (DMPlex).</li>
+          <li>Deprecate the legacy <code>.vtk</code> (PETSC_VIEWER_ASCII_VTK) viewer.  Please use <code>.vtr</code> or <code>.vts</code> for structured grids (DMDA) and <code>.vtu</code> for unstructured (DMPlex)</li>
         </ul>
       <h4>SYS:</h4>
         <ul>
