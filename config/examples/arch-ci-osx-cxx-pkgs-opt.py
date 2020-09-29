@@ -48,6 +48,8 @@ configure_options = [
   '--download-mfem=1',
   '--download-glvis=1',
   '--with-opengl=1',
+  '--download-adolc',
+  '--download-colpack',
   ]
 
 if __name__ == '__main__':
