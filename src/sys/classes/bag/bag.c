@@ -760,6 +760,43 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
 }
 
 /*@C
+  PetscBagViewFromOptions - Processes command line options to determine if/how a PetscBag is to be viewed.
+
+  Collective on PetscBag
+
+  Input Parameters:
++ obj   - the object
+. bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
+- optionname - option to activate viewing
+  Level: intermediate
+@*/
+PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const char optionname[])
+{
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  const char       *prefix, *bprefix = NULL;
+  PetscBool         flg;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
+  if (bobj) {ierr = PetscObjectGetOptionsPrefix(bobj, &bprefix);CHKERRQ(ierr);}
+  prefix = bobj ? bprefix : bag->bagprefix;
+  ierr   = PetscOptionsGetViewer(bag->bagcomm, NULL, prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+    ierr = PetscBagView(bag, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  incall = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    PetscBagLoad - Loads a bag of values from a binary file
 
    Collective on PetscViewer
