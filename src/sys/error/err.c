@@ -273,6 +273,7 @@ static const char *PetscErrorStrings[] = {
   /*94 */ "Example/application run with number of MPI ranks it does not support",
   /*95 */ "Missing or incorrect user input ",
   /*96 */ "GPU resources unavailable ",
+  /*97 */ "GPU error ",
 };
 
 /*@C
