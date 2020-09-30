@@ -25,7 +25,7 @@ Runtime Options
 Allowing the user to modify parameters and options easily at runtime is
 very desirable for many applications. PETSc provides a simple mechanism
 to enable such customization. To print a list of available options for a
-given program, simply specify the option ``-help`` (or ``-h``) at
+given program, simply specify the option ``-help`` at
 runtime, e.g.,
 
 ::
