@@ -62,6 +62,17 @@ Git branch, which is useful if developing a large set of documentation changes.
 
 We also use Sphinx to generate a PDF version of the User Manual, via LaTeX.
 
+Making changes to the Sphinx Docs from the web
+----------------------------------------------
+You can make small changes this documentation entirely through web interfaces,
+using the usual guidelines in :doc:`integration` (note the options for speedy review of docs-only changes).
+
+1. Find the page of interest, confirming the version is what you expect (usually "latest").
+2. In the small ReadTheDocs menu in the bottom right, click the link to edit on GitLab.
+3. Make your changes.
+4. Compose a commit message and name your branch.
+5. Click the button to commit changes and create a Merge Request.
+
 Building the Sphinx docs locally
 --------------------------------
 
