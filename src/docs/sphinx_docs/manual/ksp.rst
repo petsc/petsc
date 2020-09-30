@@ -66,7 +66,7 @@ Much of the power of ``KSP`` can be accessed through the single routine
 
    KSPSetFromOptions(KSP ksp);
 
-This routine accepts the options ``-h`` and ``-help`` as well as any of
+This routine accepts the option ``-help`` as well as any of
 the ``KSP`` and ``PC`` options discussed below. To solve a linear
 system, one sets the rhs and solution vectors using and executes the
 command
@@ -2253,7 +2253,7 @@ at the beginning of this manual). To use these solvers, one may:
      - -
 
 The default and available input options for each external software can
-be found by specifying ``-help`` (or ``-h``) at runtime.
+be found by specifying ``-help`` at runtime.
 
 As an alternative to using runtime flags to employ these external
 packages, procedural calls are provided for some packages. For example,

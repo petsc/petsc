@@ -169,8 +169,8 @@ PETSc also comes with a script that automatically uses the correct
 
    ${PETSC_DIR}/lib/petsc/bin/petscmpiexec -n 8 ./petsc_program_name petsc_options
 
-All PETSc-compliant programs support the use of the ``-h`` or ``-help``
-option as well as the ``-v`` or ``-version`` option.
+All PETSc-compliant programs support the use of the ``-help``
+option as well as the ``-version`` option.
 
 Certain options are supported by all PETSc programs. We list a few
 particularly useful ones below; a complete list can be obtained by
