@@ -211,7 +211,14 @@ PetscErrorCode  PetscDrawSave(PetscDraw draw)
   if (draw->savesinglefile) {
     ierr = PetscSNPrintf(basename,sizeof(basename),"%s",draw->savefilename);CHKERRQ(ierr);
   } else {
-    ierr = PetscSNPrintf(basename,sizeof(basename),"%s/%s_%d",draw->savefilename,draw->savefilename,(int)saveindex);CHKERRQ(ierr);
+    char *basefilename;
+
+    ierr = PetscStrrchr(draw->savefilename, '/', (char **) &basefilename);CHKERRQ(ierr);
+    if (basefilename != draw->savefilename) {
+      ierr = PetscSNPrintf(basename,sizeof(basename),"%s_%d",draw->savefilename,(int)saveindex);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSNPrintf(basename,sizeof(basename),"%s/%s_%d",draw->savefilename,draw->savefilename,(int)saveindex);CHKERRQ(ierr);
+    }
   }
 
   /* this call is collective, only the first process gets the image data */
