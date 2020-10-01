@@ -45,6 +45,7 @@ OPTIONS
   -o <arg> .......... Output format: 'interactive', 'err_only'
   -p ................ Print command:  Print first command and exit
   -t ................ Override the default timeout (default=$TIMEOUT sec)
+  -U ................ run cUda-memcheck
   -V ................ run Valgrind
   -v ................ Verbose: Print commands
 EOF
@@ -63,7 +64,7 @@ debugger=false
 printcmd=false
 force=false
 diff_flags=""
-while getopts "a:cCde:fhjJ:mMn:o:pt:vV" arg
+while getopts "a:cCde:fhjJ:mMn:o:pt:UvV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
@@ -81,6 +82,7 @@ do
     o ) output_fmt=$OPTARG   ;;  
     p ) printcmd=true        ;;
     t ) TIMEOUT=$OPTARG      ;;  
+    U ) mpiexec="petsc_mpiexec_cudamemcheck $mpiexec" ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
     v ) verbose=true         ;;  
     *)  # To take care of any extra args
@@ -251,6 +253,21 @@ function petsc_testend() {
   fi
 }
 
+function petsc_mpiexec_cudamemcheck() {
+  _mpiexec=$1;shift
+  npopt=$1;shift
+  np=$1;shift
+
+  cudamemchk="cuda-memcheck"
+
+  $_mpiexec $npopt $np $cudamemchk $*
+}
+export LC_ALL=C
+
+if $compile; then
+    curexec=`basename ${exec}`
+    (cd $petsc_dir && make -f gmakefile.test ${abspath_scriptdir}/${curexec})
+fi
 function petsc_mpiexec_valgrind() {
   _mpiexec=$1;shift
   npopt=$1;shift

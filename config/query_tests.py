@@ -83,12 +83,21 @@ def get_inverse_dictionary(dataDict,field,srcdir):
                   invDict[val] = [name]
     return invDict
 
-def get_gmakegentest_data(testdir):
+def get_gmakegentest_data(testdir,petsc_dir,petsc_arch):
     """
      Write out the dataDict into a pickle file
     """
     # This needs to be consistent with gmakegentest.py of course
-    fd = open(os.path.join(testdir,'datatest.pkl'), 'rb')
+    pkl_file=os.path.join(testdir,'datatest.pkl')
+    # If it doesn't exist, then we need to regenerate
+    if not os.path.exists(pkl_file):
+      startdir=os.path.abspath(os.curdir)
+      os.chdir(petsc_dir)
+      args='--petsc-dir='+petsc_dir+' --petsc-arch='+petsc_arch+' --testdir='+testdir
+      buf = os.popen('config/gmakegentest.py '+args).read()
+      os.chdir(startdir)
+
+    fd = open(pkl_file, 'rb')
     dataDict=pickle.load(fd)
     fd.close()
     return dataDict
@@ -121,7 +130,7 @@ def walktree(top):
 
     return dataDict
 
-def do_query(use_source, startdir, srcdir, testdir, field, label):
+def do_query(use_source, startdir, srcdir, testdir, petsc_dir, petsc_arch, field, label):
     """
     Do the actual query
     This part of the code is placed here instead of main()
@@ -132,7 +141,7 @@ def do_query(use_source, startdir, srcdir, testdir, field, label):
     if use_source:
         dataDict=walktree(startdir)
     else:
-        dataDict=get_gmakegentest_data(testdir)
+        dataDict=get_gmakegentest_data(testdir, petsc_dir, petsc_arch)
 
     # Get inverse dictionary for searching
     invDict=get_inverse_dictionary(dataDict, field, srcdir)
@@ -217,7 +226,8 @@ def main():
             return
 
     # Do the actual query
-    do_query(opts.use_source, startdir, petsc_full_src, petsc_full_test, field, match)
+    do_query(opts.use_source, startdir, petsc_full_src, petsc_full_test,
+             petsc_dir, petsc_arch, field, match)
 
     return
 
