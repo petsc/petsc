@@ -168,7 +168,9 @@ struct Mat_CusparseSpMV {
   PetscBool             initialized;    /* Don't rely on spmvBuffer != NULL to test if the struct is initialized, */
   size_t                spmvBufferSize; /* since I'm not sure if smvBuffer can be NULL even after cusparseSpMV_bufferSize() */
   void                  *spmvBuffer;
+ #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)  /* these are present from CUDA 10.1, but PETSc code makes use of them from CUDA 11 on */
   cusparseDnVecDescr_t  vecXDescr,vecYDescr; /* descriptor for the dense vectors in y=op(A)x */
+ #endif
 };
 
 /* This is struct holding the relevant data needed to a MatMult */
