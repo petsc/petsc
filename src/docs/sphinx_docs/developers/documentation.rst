@@ -62,6 +62,8 @@ Git branch, which is useful if developing a large set of documentation changes.
 
 We also use Sphinx to generate a PDF version of the User Manual, via LaTeX.
 
+`These slides <https://gitlab.com/psanan/petsc-sphinx-slides>`__ contain an overview of Sphinx and how it's used in PETSc, as of October, 2020.
+
 Making changes to the Sphinx Docs from the web
 ----------------------------------------------
 You can make small changes this documentation entirely through web interfaces,
