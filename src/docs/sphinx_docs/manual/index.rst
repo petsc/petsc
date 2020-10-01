@@ -9,12 +9,12 @@ PETSc Users Manual
 
 Prepared by
 
-**S. Balay** :sup:`1`, 
-**S. Abhyankar** :sup:`2`, 
-**M. Adams** :sup:`3`, 
-**J. Brown** :sup:`1`, 
+**S. Balay** :sup:`1`,
+**S. Abhyankar** :sup:`2`,
+**M. Adams** :sup:`3`,
+**J. Brown** :sup:`1`,
 **P. Brune** :sup:`1`,
-**K. Buschelman** :sup:`1`, 
+**K. Buschelman** :sup:`1`,
 **L. Dalcin** :sup:`4`,
 **A. Dener** :sup:`1`,
 **V. Eijkhout** :sup:`6`,
@@ -22,15 +22,15 @@ Prepared by
 **D. Karpeyev** :sup:`1`,
 **D. Kaushik** :sup:`1`,
 **M. Knepley** :sup:`1`,
-**D. May** :sup:`7`, 
+**D. May** :sup:`7`,
 **L.  Curfman McInnes** :sup:`1`,
 **R. Mills** :sup:`1`,
 **T. Munson** :sup:`1`,
 **K. Rupp** :sup:`1`,
 **P.  Sanan** :sup:`8`,
 **B. Smith** :sup:`1`,
-**S. Zampini** :sup:`4`, 
-**H. Zhang** :sup:`5`, and 
+**S. Zampini** :sup:`4`,
+**H. Zhang** :sup:`5`, and
 **H. Zhang** :sup:`1`
 
 | :sup:`1`\ Mathematics and Computer Science Division, Argonne National Laboratory
