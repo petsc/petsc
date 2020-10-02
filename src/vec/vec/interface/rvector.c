@@ -1220,7 +1220,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 /*@
    VecGetSubVector - Gets a vector representing part of another vector
 
-   Collective on IS
+   Collective on X and IS
 
    Input Arguments:
 + X - vector from which to extract a subvector
@@ -1233,9 +1233,11 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 
    Notes:
    The subvector Y should be returned with VecRestoreSubVector().
+   X and is must be defined on the same communicator
 
    This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
    modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
+   The resulting subvector inherits the block size from the IS if greater than one. Otherwise, the block size is guessed from the block size of the original vec.
 
 .seealso: MatCreateSubMatrix()
 @*/
@@ -1247,28 +1249,39 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscCheckSameComm(X,1,is,2);
   PetscValidPointer(Y,3);
   if (X->ops->getsubvector) {
     ierr = (*X->ops->getsubvector)(X,is,&Z);CHKERRQ(ierr);
   } else { /* Default implementation currently does no caching */
     PetscInt  gstart,gend,start;
-    PetscBool contiguous,gcontiguous;
+    PetscBool red[2] = { PETSC_TRUE, PETSC_TRUE };
+    PetscInt  n,N,ibs,vbs,bs = -1;
 
+    ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+    ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(is,&ibs);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(X,&vbs);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
-    ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
-    if (gcontiguous) { /* We can do a no-copy implementation */
+    ierr = ISContiguousLocal(is,gstart,gend,&start,&red[0]);CHKERRQ(ierr);
+    /* block size is given by IS if ibs > 1; otherwise, check the vector */
+    if (ibs > 1) {
+      ierr = MPIU_Allreduce(MPI_IN_PLACE,red,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+      bs   = ibs;
+    } else {
+      if (n%vbs || vbs == 1) red[1] = PETSC_FALSE; /* this process invalidate the collectiveness of block size */
+      ierr = MPIU_Allreduce(MPI_IN_PLACE,red,2,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+      if (red[1]) bs = vbs; /* all processes have a valid block size */
+    }
+    if (red[0]) { /* We can do a no-copy implementation */
       const PetscScalar *x;
-      PetscInt          n,N,bs;
       PetscInt          state = 0;
+      PetscBool         isstd;
 #if defined(PETSC_HAVE_CUDA)
       PetscBool         iscuda;
 #endif
 
-      ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
-      if (n%bs || bs == 1) bs = -1; /* Do not decide block size if we do not have to */
+      ierr = PetscObjectTypeCompareAny((PetscObject)X,&isstd,VECSEQ,VECMPI,VECSTANDARD,"");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
       ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
       if (iscuda) {
@@ -1288,16 +1301,28 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
           ierr = VecCreateMPICUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
         }
         Z->offloadmask = flg;
-      } else {
+      } else if (isstd) {
 #else
-      {
+      if (isstd) { /* standard CPU: use CreateWithArray pattern */
 #endif
+        PetscMPIInt size;
+
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+        if (x) x += start;
+        if (size == 1) {
+          ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,x,&Z);CHKERRQ(ierr);
+        } else {
+          ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x,&Z);CHKERRQ(ierr);
+        }
+        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+      } else { /* default implementation: use place array */
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
         ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
         ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
         ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
         ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
-        ierr = VecPlaceArray(Z,x+start);CHKERRQ(ierr);
+        ierr = VecPlaceArray(Z,x ? x+start : NULL);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
       }
 
@@ -1310,12 +1335,10 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       Z->ops->replacearray = NULL;
     } else { /* Have to create a scatter and do a copy */
       VecScatter scatter;
-      PetscInt   n,N;
 
-      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-      ierr = ISGetSize(is,&N);CHKERRQ(ierr);
       ierr = VecCreate(PetscObjectComm((PetscObject)is),&Z);CHKERRQ(ierr);
       ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
       ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
       ierr = VecScatterCreate(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
       ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1352,6 +1375,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscCheckSameComm(X,1,is,2);
   PetscValidPointer(Y,3);
   PetscValidHeaderSpecific(*Y,VEC_CLASSID,3);
   if (X->ops->restoresubvector) {
