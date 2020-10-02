@@ -6418,7 +6418,36 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   /* Check current discretization is compatible */
   ierr = DMGetField(cdmOld, 0, NULL, &discOld);CHKERRQ(ierr);
   ierr = PetscObjectGetClassId(discOld, &classid);CHKERRQ(ierr);
-  if (classid != PETSCFE_CLASSID) SETERRQ(PetscObjectComm(discOld), PETSC_ERR_SUP, "Discretization type not supported");
+  if (classid != PETSCFE_CLASSID) {
+    if (classid == PETSC_CONTAINER_CLASSID) {
+      PetscFE        feLinear;
+      DMPolytopeType ct;
+      PetscInt       dim, dE, cStart;
+      PetscBool      simplex;
+
+      /* Assume linear vertex coordinates */
+      ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+      ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
+      ierr = DMPlexGetHeightStratum(cdmOld, 0, &cStart, NULL);CHKERRQ(ierr);
+      ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+      switch (ct) {
+        case DM_POLYTOPE_TRI_PRISM:
+        case DM_POLYTOPE_TRI_PRISM_TENSOR:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot autoamtically create coordinate space for prisms");
+        default: break;
+      }
+      simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+      ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, 1, -1, &feLinear);CHKERRQ(ierr);
+      ierr = DMSetField(cdmOld, 0, NULL, (PetscObject) feLinear);CHKERRQ(ierr);
+      ierr = PetscFEDestroy(&feLinear);CHKERRQ(ierr);
+      ierr = DMCreateDS(cdmOld);CHKERRQ(ierr);
+    } else {
+      const char *discname;
+
+      ierr = PetscObjectGetType(discOld, &discname);CHKERRQ(ierr);
+      SETERRQ1(PetscObjectComm(discOld), PETSC_ERR_SUP, "Discretization type %s not supported", discname);
+    }
+  }
   /* Make a fresh clone of the coordinate DM */
   ierr = DMClone(cdmOld, &cdmNew);CHKERRQ(ierr);
   ierr = DMSetField(cdmNew, 0, NULL, (PetscObject) disc);CHKERRQ(ierr);
