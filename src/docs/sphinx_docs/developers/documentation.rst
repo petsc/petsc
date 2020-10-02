@@ -50,7 +50,7 @@ Sphinx Documentation
 ====================
 
 `Sphinx <https://www.sphinx-doc.org/en/master/>`__ is a well-documented and widely-used set of Python-based tools
-for building documentation. Most content is written using `reStructuredText <https://docutils.sourceforge.io/rst.html>`__, a simple markup language.
+for building documentation. Most content is written using `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`__, a simple markup language.
 
 The Sphinx documentation is currently not integrated into the main docs build as described
 in :ref:`docs_build`.
