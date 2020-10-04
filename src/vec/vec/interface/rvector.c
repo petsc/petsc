@@ -1271,7 +1271,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
     } else {
       if (n%vbs || vbs == 1) red[1] = PETSC_FALSE; /* this process invalidate the collectiveness of block size */
       ierr = MPIU_Allreduce(MPI_IN_PLACE,red,2,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
-      if (red[1]) bs = vbs; /* all processes have a valid block size */
+      if (red[0] && red[1]) bs = vbs; /* all processes have a valid block size and the access will be contiguous */
     }
     if (red[0]) { /* We can do a no-copy implementation */
       const PetscScalar *x;
