@@ -6,7 +6,7 @@ for pyimpl in python3 python python2; do
   if [ $? -eq 0 ]; then
     $pyimpl -c "import distutils.sysconfig" > /dev/null 2>&1
     if [ $? -eq 0 ]; then
-      echo "Using $pyimpl for Python" && exec $pyimpl "$0" "$@"
+      exec $pyimpl "$0" "$@"
     else
       echo "$pyimpl is missing distutils.sysconfig, Skipping..."
     fi
