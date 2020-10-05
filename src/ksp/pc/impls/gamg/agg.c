@@ -865,16 +865,26 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   nloc = n/bs;
 
   if (pc_gamg->current_level < pc_gamg_agg->square_graph) {
+    const char *prefix;
+    char       addp[32];
+
+    ierr = PCGetOptionsPrefix(a_pc,&prefix);CHKERRQ(ierr);
     ierr = PetscInfo2(a_pc,"Square Graph on level %D of %D to square\n",pc_gamg->current_level+1,pc_gamg_agg->square_graph);CHKERRQ(ierr);
-    ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
+    ierr = MatProductCreate(Gmat1,Gmat1,NULL,&Gmat2);CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(Gmat2,prefix);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(addp,sizeof(addp),"pc_gamg_square_%d_",pc_gamg->current_level);CHKERRQ(ierr);
+    ierr = MatAppendOptionsPrefix(Gmat2,addp);CHKERRQ(ierr);
+    ierr = MatProductSetType(Gmat2,MATPRODUCT_AtB);CHKERRQ(ierr);
+    ierr = MatProductSetFromOptions(Gmat2);CHKERRQ(ierr);
+    ierr = MatProductSymbolic(Gmat2);CHKERRQ(ierr);
+    /* we only need the sparsity, cheat and tell PETSc the matrix has been assembled */
+    Gmat2->assembled = PETSC_TRUE;
   } else Gmat2 = Gmat1;
 
   /* get MIS aggs - randomize */
   ierr = PetscMalloc1(nloc, &permute);CHKERRQ(ierr);
   ierr = PetscCalloc1(nloc, &bIndexSet);CHKERRQ(ierr);
-  for (Ii = 0; Ii < nloc; Ii++) {
-    permute[Ii]   = Ii;
-  }
+  for (Ii = 0; Ii < nloc; Ii++) permute[Ii] = Ii;
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat1, &Istart, &Iend);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
