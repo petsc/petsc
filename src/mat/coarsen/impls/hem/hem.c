@@ -1052,15 +1052,11 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
   PetscFunctionReturn(0);
 }
 
-typedef struct {
-  int dummy;
-} MatCoarsen_HEM;
 /*
    HEM coarsen, simple greedy.
 */
 static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 {
-  /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx; */
   PetscErrorCode ierr;
   Mat            mat = coarse->graph;
 
@@ -1081,7 +1077,6 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 
 static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
 {
-  /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx; */
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscBool      iascii;
@@ -1098,16 +1093,6 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
-{
-  MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(HEM);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*MC
    MATCOARSENHEM - A coarsener that uses HEM a simple greedy coarsener
 
@@ -1119,14 +1104,8 @@ M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen coarse)
 {
-  PetscErrorCode ierr;
-  MatCoarsen_HEM *HEM;
-
   PetscFunctionBegin;
-  ierr                 = PetscNewLog(coarse,&HEM);CHKERRQ(ierr);
-  coarse->subctx       = (void*)HEM;
   coarse->ops->apply   = MatCoarsenApply_HEM;
   coarse->ops->view    = MatCoarsenView_HEM;
-  coarse->ops->destroy = MatCoarsenDestroy_HEM;
   PetscFunctionReturn(0);
 }

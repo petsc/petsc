@@ -255,24 +255,20 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
   PetscFunctionReturn(0);
 }
 
-typedef struct {
-  int dummy;
-} MatCoarsen_MIS;
 /*
    MIS coarsen, simple greedy.
 */
 static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
 {
-  /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
   PetscErrorCode ierr;
   Mat            mat = coarse->graph;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   if (!coarse->perm) {
     IS       perm;
     PetscInt n,m;
     MPI_Comm comm;
+
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
     ierr = MatGetLocalSize(mat, &m, &n);CHKERRQ(ierr);
     ierr = ISCreateStride(comm, m, 0, 1, &perm);CHKERRQ(ierr);
@@ -286,13 +282,11 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
 
 PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 {
-  /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -301,17 +295,6 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatCoarsenDestroy_MIS(MatCoarsen coarse)
-{
-  MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->subctx;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
-  ierr = PetscFree(MIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -334,17 +317,9 @@ M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
 {
-  PetscErrorCode ierr;
-  MatCoarsen_MIS *MIS;
-
   PetscFunctionBegin;
-  ierr           = PetscNewLog(coarse,&MIS);CHKERRQ(ierr);
-  coarse->subctx = (void*)MIS;
-
-  coarse->ops->apply   = MatCoarsenApply_MIS;
-  coarse->ops->view    = MatCoarsenView_MIS;
-  coarse->ops->destroy = MatCoarsenDestroy_MIS;
+  coarse->ops->apply = MatCoarsenApply_MIS;
+  coarse->ops->view  = MatCoarsenView_MIS;
   /* coarse->ops->setfromoptions = MatCoarsenSetFromOptions_MIS; */
   PetscFunctionReturn(0);
 }
-
