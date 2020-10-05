@@ -549,6 +549,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
       /* could have failed to create new level */
       if (Prol11) {
+        const char *prefix;
+        char       addp[32];
+
         /* get new block size of coarse matrices */
         ierr = MatGetBlockSizes(Prol11, NULL, &bs);CHKERRQ(ierr);
 
@@ -563,6 +566,29 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           ierr = PetscCDGetASMBlocks(agg_lists, bs, Gmat, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);CHKERRQ(ierr);
         }
 
+        ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+        ierr = MatSetOptionsPrefix(Prol11,prefix);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(addp,sizeof(addp),"pc_gamg_prolongator_%d_",level);CHKERRQ(ierr);
+        ierr = MatAppendOptionsPrefix(Prol11,addp);CHKERRQ(ierr);
+        /* if we reuse the prolongator, then it is better to generate the transpose by default with CUDA
+           Such behaviour can be adapted with -pc_gamg_prolongator_ prefixed options */
+#if defined(PETSC_HAVE_CUDA)
+        {
+          PetscBool ismpiaij;
+
+          ierr = PetscObjectBaseTypeCompare((PetscObject)Prol11,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+          if (ismpiaij) {
+            Mat Prol_d,Prol_o;
+
+            ierr = MatMPIAIJGetSeqAIJ(Prol11,&Prol_d,&Prol_o,NULL);CHKERRQ(ierr);
+            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_d,pc_gamg->reuse_prol);CHKERRQ(ierr);
+            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_o,pc_gamg->reuse_prol);CHKERRQ(ierr);
+          } else {
+            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol11,pc_gamg->reuse_prol);CHKERRQ(ierr);
+          }
+        }
+#endif
+        ierr = MatSetFromOptions(Prol11);CHKERRQ(ierr);
         Parr[level1] = Prol11;
       } else Parr[level1] = NULL; /* failed to coarsen */
 
