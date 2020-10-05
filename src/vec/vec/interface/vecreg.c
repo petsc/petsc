@@ -76,6 +76,7 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
     vec->ops->destroy = NULL;
   }
+  ierr = PetscMemzero(vec->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
   if (vec->map->n < 0 && vec->map->N < 0) {
     vec->ops->create = r;
     vec->ops->load   = VecLoad_Default;
