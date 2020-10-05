@@ -1871,13 +1871,6 @@ if (dlclose(handle)) {
         self.logPrint('Adding to LD_LIBRARY_PATH '+libdir)
     return
 
-  def printEnvVariables(self):
-    buf = '**** printenv ****'
-    for key,val in os.environ.items():
-      buf += '\n'+str(key)+'='+str(val)
-    self.logPrint(buf)
-    return
-
   def resetEnvCompilers(self):
     ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
     for envVal in ignoreEnvCompilers:
@@ -1934,7 +1927,6 @@ if (dlclose(handle)) {
 
   def configure(self):
     self.mainLanguage = self.languages.clanguage
-    self.executeTest(self.printEnvVariables)
     self.executeTest(self.resetEnvCompilers)
     self.executeTest(self.checkEnvCompilers)
     self.executeTest(self.checkMPICompilerOverride)

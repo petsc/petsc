@@ -193,6 +193,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if not hasattr(self, '_doCleanup'):
       return self.argDB['doCleanup']
     return self._doCleanup
+
   def setCleanup(self, doCleanup):
     self._doCleanup = doCleanup
     return
@@ -208,6 +209,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for child in self.childGraph.vertices:
       if hasattr(child, 'setupHelp'): child.setupHelp(self.help)
     return argDB
+
+  def outputBasics(self):
+    buf = 'Environmental variables
+    for key,val in os.environ.items():
+      buf += '\n'+str(key)+'='+str(val)
+    self.logPrint(buf)
+    return
+
 
   def dumpConfFiles(self):
     '''Performs:
@@ -1247,6 +1256,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.setup()
     self.outputBanner()
     self.updateDependencies()
+    self.outputBasics()
     self.executeTest(self.configureExternalPackagesDir)
     self.processChildren()
     if self.argDB['with-batch']:
