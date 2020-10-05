@@ -603,7 +603,7 @@ int main(int argc,char **args)
  test:
    nsize: 8
    suffix: bddc_elast_deluxe_layers_adapt_mkl_pardiso
-   filter: sed -e "s/CONVERGED_RTOL iterations [1-2][0-9]/CONVERGED_RTOL iterations 13/g"
+   filter: sed -e "s/CONVERGED_RTOL iterations [1-2][0-9]/CONVERGED_RTOL iterations 13/g" | sed -e "s/CONVERGED_RTOL iterations 6/CONVERGED_RTOL iterations 5/g"
    requires: mkl_pardiso !complex
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mkl_pardiso -sub_schurs_mat_mkl_pardiso_65 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output}
  test:
