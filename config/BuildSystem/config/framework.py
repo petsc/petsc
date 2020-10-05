@@ -211,12 +211,25 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return argDB
 
   def outputBasics(self):
-    buf = 'Environmental variables
+    buf = 'Environmental variables'
     for key,val in os.environ.items():
       buf += '\n'+str(key)+'='+str(val)
     self.logPrint(buf)
-    return
-
+    def logPrintFilesInPath(path):
+      for d in path:
+        try:
+          self.logWrite('      '+d+' '+' '.join(os.listdir(d))+'\n')
+        except Exception as e:
+          self.logWrite('      Warning accessing '+d+' gives errors: '+str(e)+'\n')
+      return
+    if os.environ['PATH'].split(os.path.pathsep):
+      self.logWrite('    Files in path provided by default path\n')
+      logPrintFilesInPath(os.environ['PATH'].split(os.path.pathsep))
+    dirs = self.argDB['with-executables-search-path']
+    if not isinstance(dirs, list): dirs = [dirs]
+    if dirs:
+      self.logWrite('    Files in path provided by --with-executables-search-path\n')
+      logPrintFilesInPath(dirs)
 
   def dumpConfFiles(self):
     '''Performs:

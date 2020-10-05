@@ -301,22 +301,12 @@ class Configure(script.Script):
       def logPrintFilesInPath(path):
         for d in path:
           try:
-            self.logWrite('      '+str(os.listdir(d))+'\n')
-          except OSError as e:
+            self.logWrite('      '+dir+' '+' '.join(os.listdir(d))+'\n')
+          except Exception as e:
             self.logWrite('      Warning accessing '+d+' gives errors: '+str(e)+'\n')
         return
-      self.logWrite('  Unable to find programs '+str(names)+' providing listing of each search directory to help debug\n')
-      self.logWrite('    Path provided in Python program\n')
+      self.logWrite('  Unable to find programs '+str(names)+' providing listing of the specific search path\n')
       logPrintFilesInPath(path)
-      if useDefaultPath:
-        if os.environ['PATH'].split(os.path.pathsep):
-          self.logWrite('    Path provided by default path\n')
-          logPrintFilesInPath(os.environ['PATH'].split(os.path.pathsep))
-      dirs = self.argDB['with-executables-search-path']
-      if not isinstance(dirs, list): dirs = [dirs]
-      if dirs:
-        self.logWrite('    Path provided by --with-executables-search-path\n')
-        logPrintFilesInPath(dirs)
     return found
 
   def getExecutables(self, names, path = '', getFullPath = 0, useDefaultPath = 0, resultName = ''):
