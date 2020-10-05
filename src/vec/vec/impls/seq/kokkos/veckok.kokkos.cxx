@@ -25,7 +25,7 @@
       if (!isKokkos) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Calling VECKOKKOS methods on a non-VECKOKKOS object"); \
     } while (0)
 #else
-  #define VecErrorIfNotKokkos(v) 0
+  #define VecErrorIfNotKokkos(v) do {(void)(v);} while (0)
 #endif
 
 PetscErrorCode VecKokkosSyncHost(Vec v)
