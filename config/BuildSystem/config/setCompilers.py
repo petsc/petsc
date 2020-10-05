@@ -920,19 +920,17 @@ class Configure(config.base.Configure):
       else:
         yield self.argDB['CXX']
       raise RuntimeError('C++ compiler you provided with -CXX='+self.argDB['CXX']+' cannot be found or does not work.'+'\n'+self.mesg)
-    elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
-      self.usedMPICompilers = 1
+    elif self.usedMPICompilers and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiicpc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcp')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpic++')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiCC')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpCC_r')
-      self.usedMPICompilers = 0
       raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
-      if self.useMPICompilers():
-        self.usedMPICompilers = 1
+      if self.usedMPICompilers:
+        # TODO: Should only look for the MPI CXX compiler related to the found MPI C compiler
         cray = os.getenv('CRAYPE_DIR')
         if cray:
           cross_CC = self.crayCrossCompiler('CC')
@@ -948,34 +946,34 @@ class Configure(config.base.Configure):
         yield 'mpic++'
         yield 'mpCC'
         yield 'mpxlC'
-        self.usedMPICompilers = 0
-      #attempt to match c++ compiler with c compiler
-      if self.CC.find('win32fe cl') >= 0:
-        yield 'win32fe cl'
-      elif self.CC.find('win32fe icl') >= 0:
-        yield 'win32fe icl'
-      elif self.CC == 'gcc':
+      else:
+        #attempt to match c++ compiler with c compiler
+        if self.CC.find('win32fe cl') >= 0:
+          yield 'win32fe cl'
+        elif self.CC.find('win32fe icl') >= 0:
+          yield 'win32fe icl'
+        elif self.CC == 'gcc':
+          yield 'g++'
+        elif self.CC == 'clang':
+          yield 'clang++'
+        elif self.CC == 'icc':
+          yield 'icpc'
+        elif self.CC == 'xlc':
+          yield 'xlC'
         yield 'g++'
-      elif self.CC == 'clang':
         yield 'clang++'
-      elif self.CC == 'icc':
+        yield 'c++'
         yield 'icpc'
-      elif self.CC == 'xlc':
+        yield 'CC'
+        yield 'cxx'
+        yield 'cc++'
         yield 'xlC'
-      yield 'g++'
-      yield 'clang++'
-      yield 'c++'
-      yield 'icpc'
-      yield 'CC'
-      yield 'cxx'
-      yield 'cc++'
-      yield 'xlC'
-      yield 'ccpc'
-      yield 'win32fe icl'
-      yield 'win32fe cl'
-      yield 'pgCC'
-      yield 'CC'
-      yield 'win32fe bcc32'
+        yield 'ccpc'
+        yield 'win32fe icl'
+        yield 'win32fe cl'
+        yield 'pgCC'
+        yield 'CC'
+        yield 'win32fe bcc32'
     return
 
   def checkCxxCompiler(self):
@@ -1062,20 +1060,18 @@ class Configure(config.base.Configure):
         yield self.argDB['FC']
       yield self.argDB['FC']
       raise RuntimeError('Fortran compiler you provided with -FC='+self.argDB['FC']+' cannot be found or does not work.'+'\n'+self.mesg)
-    elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
-      self.usedMPICompilers = 1
+    elif self.usedMPICompilers and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiifort')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf90')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf95_r')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf90_r')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf_r')
-      self.usedMPICompilers = 0
       if os.path.isfile(os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')):
         raise RuntimeError('bin/mpif90 you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
-      if self.useMPICompilers():
-        self.usedMPICompilers = 1
+      if self.usedMPICompilers:
+        # TODO: Should only look for the MPI Fortran compiler related to the found MPI C compiler
         cray = os.getenv('CRAYPE_DIR')
         if cray:
           cross_fc = self.crayCrossCompiler('ftn')
@@ -1089,35 +1085,35 @@ class Configure(config.base.Configure):
         yield 'mpxlf_r'
         yield 'mpxlf'
         yield 'mpf90'
-        self.usedMPICompilers = 0
-      #attempt to match fortran compiler with c compiler
-      if self.CC == 'gcc':
+      else:
+        #attempt to match fortran compiler with c compiler
+        if self.CC == 'gcc':
+          yield 'gfortran'
+        elif self.CC == 'clang':
+          yield 'gfortran'
+        elif self.CC == 'icc':
+          yield 'ifort'
+        elif self.CC == 'xlc':
+          yield 'xlf90'
+          yield 'xlf'
+        elif self.CC.find('win32fe cl') >= 0:
+          yield 'win32fe f90'
+          yield 'win32fe ifc'
+        elif self.CC.find('win32fe icl') >= 0:
+          yield 'win32fe ifc'
         yield 'gfortran'
-      elif self.CC == 'clang':
-        yield 'gfortran'
-      elif self.CC == 'icc':
-        yield 'ifort'
-      elif self.CC == 'xlc':
+        yield 'g95'
         yield 'xlf90'
         yield 'xlf'
-      elif self.CC.find('win32fe cl') >= 0:
-        yield 'win32fe f90'
-        yield 'win32fe ifc'
-      elif self.CC.find('win32fe icl') >= 0:
-        yield 'win32fe ifc'
-      yield 'gfortran'
-      yield 'g95'
-      yield 'xlf90'
-      yield 'xlf'
-      yield 'f90'
-      yield 'lf95'
-      yield 'win32fe ifort'
-      yield 'win32fe ifl'
-      yield 'ifort'
-      yield 'ifc'
-      yield 'pgf90'
-      yield 'f95'
-      yield 'f90'
+        yield 'f90'
+        yield 'lf95'
+        yield 'win32fe ifort'
+        yield 'win32fe ifl'
+        yield 'ifort'
+        yield 'ifc'
+        yield 'pgf90'
+        yield 'f95'
+        yield 'f90'
     return
 
   def checkFortranCompiler(self):
