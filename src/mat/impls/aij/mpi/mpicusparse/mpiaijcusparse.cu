@@ -402,6 +402,9 @@ M*/
 // get GPU pointer to stripped down Mat. For both Seq and MPI Mat.
 PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure **B)
 {
+#if defined(PETSC_USE_CTABLE)
+  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device metadata does not support ctable (--with-ctable=0)");
+#else
   PetscSplitCSRDataStructure **p_d_mat;
   PetscMPIInt                size,rank;
   MPI_Comm                   comm;
@@ -499,9 +502,6 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure **
       aij->donotstash = PETSC_TRUE;
       aij->A->nooffprocentries = aij->B->nooffprocentries = A->nooffprocentries = PETSC_TRUE;
       jaca->nonew = jacb->nonew = PETSC_TRUE; // no more dissassembly
-#if defined(PETSC_USE_CTABLE)
-      SETERRQ(comm,PETSC_ERR_SUP,"Devioce metadata does not support ctable (--with-ctable=0)");
-#else
       ierr = PetscCalloc1(A->cmap->N+1,&aij->colmap);CHKERRQ(ierr);
       aij->colmap[A->cmap->N] = -9;
       ierr = PetscLogObjectMemory((PetscObject)A,(A->cmap->N+1)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -510,7 +510,6 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure **
 	for (ii=0; ii<aij->B->cmap->n; ii++) aij->colmap[aij->garray[ii]] = ii+1;
       }
       if(aij->colmap[A->cmap->N] != -9) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"aij->colmap[A->cmap->N] != -9");
-#endif
       // allocate B copy data
       h_mat.rstart = A->rmap->rstart; h_mat.rend = A->rmap->rend;
       h_mat.cstart = A->cmap->rstart; h_mat.cend = A->cmap->rend;
@@ -551,4 +550,5 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure **
   }
   A->assembled = PETSC_FALSE; // ready to write with matsetvalues - this done (lazy) in normal MatSetValues
   PetscFunctionReturn(0);
+#endif
 }

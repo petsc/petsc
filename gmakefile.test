@@ -53,8 +53,11 @@ endif
 ifeq ($(FORCE),1)
   TESTFLAGS += -f    # force test execution
 endif
+ifeq ($(CUDAMEMCHECK),1)
+  TESTFLAGS += -U    # Add cuda-memcheck option to the flags
+endif
 ifeq ($(VALGRIND),1)
-  TESTFLAGS += -V    # Add valgrind to the flags
+  TESTFLAGS += -V    # Add valgrind option to the flags
 endif
 ifeq ($(REPLACE),1)
   TESTFLAGS += -m    # Replace results by passing -m to petscdiff
@@ -403,6 +406,7 @@ help-test:
 	-@echo "  OUTPUT=1          Show only the errors on stdout"
 	-@echo "  ALT=1             Replace 'alt' output in PETSC_DIR source tree (-M to test scripts)"
 	-@echo "  DIFF_NUMBERS=1    Diff the numbers in the output (-j to test scripts and petscdiff)"
+	-@echo "  CUDAMEMCHECK=1    Execute the tests using cuda-memcheck (-U to test scripts)"
 	-@echo "  VALGRIND=1        Execute the tests using valgrind (-V to test scripts)"
 	-@echo "  NP=<num proc>     Set a number of processors to pass to scripts."
 	-@echo "  FORCE=1           Force SKIP or TODO tests to run"

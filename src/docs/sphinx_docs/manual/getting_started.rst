@@ -169,8 +169,8 @@ PETSc also comes with a script that automatically uses the correct
 
    ${PETSC_DIR}/lib/petsc/bin/petscmpiexec -n 8 ./petsc_program_name petsc_options
 
-All PETSc-compliant programs support the use of the ``-h`` or ``-help``
-option as well as the ``-v`` or ``-version`` option.
+All PETSc-compliant programs support the use of the ``-help``
+option as well as the ``-version`` option.
 
 Certain options are supported by all PETSc programs. We list a few
 particularly useful ones below; a complete list can be obtained by
@@ -185,22 +185,21 @@ running any PETSc program with the option ``-help``.
    at conclusion of the run, see
    :any:`detecting-memory-problems`,
 
--  ``-malloc_debug`` - enable memory tracing (by default this is
+-  ``-malloc_debug`` - enable memory debugging (by default this is
    activated for the debugging version of PETSc), see
    :any:`detecting-memory-problems`,
 
--  ``-start_in_debugger`` ``[noxterm,gdb,dbx,xxgdb]``
+-  ``-start_in_debugger`` ``[noxterm,gdb,lldb]``
    ``[-display name]`` - start all processes in debugger. See
    :any:`sec-debugging`, for more information on
    debugging PETSc programs.
 
--  ``-on_error_attach_debugger`` ``[noxterm,gdb,dbx,xxgdb]``
+-  ``-on_error_attach_debugger`` ``[noxterm,gdb,lldb]``
    ``[-display name]`` - start debugger only on encountering an error
 
 -  ``-info`` - print a great deal of information about what the program
    is doing as it runs
 
--  ``-options_file`` ``filename`` - read options from a file
 
 .. _sec_writing:
 
@@ -211,7 +210,7 @@ Most PETSc programs begin with a call to
 
 ::
 
-   PetscInitialize(int *argc,char ***argv,char *file,char *help);
+   ierr = PetscInitialize(int *argc,char ***argv,char *file,char *help);if (ierr) return ierr;
 
 which initializes PETSc and MPI. The arguments ``argc`` and ``argv`` are
 the command line arguments delivered in all C and C++ programs. The
@@ -232,8 +231,8 @@ been not previously initialized. In certain circumstances in which MPI
 needs to be initialized directly (or is initialized by some other
 library), the user can first call ``MPI_Init()`` (or have the other
 library do it), and then call ``PetscInitialize()``. By default,
-``PetscInitialize()`` sets the PETSc “world” communicator, given by
-``PETSC_COMM_WORLD``, to ``MPI_COMM_WORLD``.
+``PetscInitialize()`` sets the PETSc “world” communicator
+``PETSC_COMM_WORLD`` to ``MPI_COMM_WORLD``.
 
 For those not familiar with MPI, a *communicator* is a way of indicating
 a collection of processes that will be involved together in a
@@ -257,8 +256,7 @@ indicating whether an error has occurred during the call. The error code
 is set to be nonzero if an error has been detected; otherwise, it is
 zero. For the C/C++ interface, the error variable is the routine’s
 return value, while for the Fortran version, each PETSc routine has as
-its final argument an integer error variable. Error tracebacks are
-discussed in the following section.
+its final argument an integer error variable. 
 
 All PETSc programs should call ``PetscFinalize()`` as their final (or
 nearly final) statement, as given below in the C/C++ and Fortran
@@ -266,7 +264,8 @@ formats, respectively:
 
 .. code-block:: c
 
-   PetscFinalize();
+   ierr = PetscFinalize();
+   return ierr;
 
 .. code-block:: fortran
 

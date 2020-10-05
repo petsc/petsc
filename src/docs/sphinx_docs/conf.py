@@ -23,8 +23,8 @@ sys.path.append(os.path.abspath('./ext'))
 # -- Project information -----------------------------------------------------
 
 project = 'PETSc'
-copyright = str(datetime.date.today().year)
-author = 'The PETSc Team'
+copyright = '1991-%d, UChicago Argonne, LLC and the PETSc Development Team' % datetime.date.today().year
+author = 'The PETSc Development Team'
 
 with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as version_file:
     buf = version_file.read()

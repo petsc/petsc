@@ -50,7 +50,7 @@ Sphinx Documentation
 ====================
 
 `Sphinx <https://www.sphinx-doc.org/en/master/>`__ is a well-documented and widely-used set of Python-based tools
-for building documentation. Most content is written using `reStructuredText <https://docutils.sourceforge.io/rst.html>`__, a simple markup language.
+for building documentation. Most content is written using `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`__, a simple markup language.
 
 The Sphinx documentation is currently not integrated into the main docs build as described
 in :ref:`docs_build`.
@@ -61,6 +61,19 @@ A version of the documentation can be built there, corresponding to any
 Git branch, which is useful if developing a large set of documentation changes.
 
 We also use Sphinx to generate a PDF version of the User Manual, via LaTeX.
+
+`These slides <https://gitlab.com/psanan/petsc-sphinx-slides>`__ contain an overview of Sphinx and how it's used in PETSc, as of October, 2020.
+
+Making changes to the Sphinx Docs from the web
+----------------------------------------------
+You can make small changes this documentation entirely through web interfaces,
+using the usual guidelines in :doc:`integration` (note the options for speedy review of docs-only changes).
+
+1. Find the page of interest, confirming the version is what you expect (usually "latest").
+2. In the small ReadTheDocs menu in the bottom right, click the link to edit on GitLab.
+3. Make your changes.
+4. Compose a commit message and name your branch.
+5. Click the button to commit changes and create a Merge Request.
 
 Building the Sphinx docs locally
 --------------------------------

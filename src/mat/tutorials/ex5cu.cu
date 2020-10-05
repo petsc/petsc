@@ -1,5 +1,16 @@
 static char help[] = "Serial test of Cuda matrix assemble with 1D Laplacian.\n\n";
 
+// This a minimal example of the use of the Cuda MatAIJ metadata for assembly.
+//
+// The matrix must be a type 'cusparse' and must first be assembled to get the correct
+// nonzero patern, which is created in MatAssemblyEnd on the host. Next, get a
+// pointer to simple CSR mirror (PetscSplitCSRDataStructure) of the matrix data on
+// the device with MatCUSPARSEGetDeviceMatWrite. Then use this object to populate
+// the matrix on the device with the standard MatSetValues for the device
+// (MatSetValuesDevice). Finaly one calls MatAssemblyBegin/End on the host and the
+// matrix is ready to use on the device without matrix data movement between the
+// host and device.
+
 #include <petscconf.h>
 #include <petscmat.h>
 #include <petscaijdevice.h>
