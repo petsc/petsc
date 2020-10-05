@@ -183,7 +183,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat A, MatType mtype, MatReuse reu
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(VECKOKKOS,&B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJKOKKOS);CHKERRQ(ierr);
-  ierr = MatSetOps_SeqAIJKokkos(A);CHKERRQ(ierr);
+  ierr = MatSetOps_SeqAIJKokkos(B);CHKERRQ(ierr);
 
   B->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
