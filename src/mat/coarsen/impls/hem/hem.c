@@ -1065,7 +1065,6 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
   Mat            mat = coarse->graph;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   if (!coarse->perm) {
     IS       perm;
     PetscInt n,m;
@@ -1088,7 +1087,6 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -1106,7 +1104,6 @@ static PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   ierr = PetscFree(HEM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
