@@ -656,7 +656,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       break;
     }
   } /* levels */
-  ierr                  = PetscFree(pc_gamg->data);CHKERRQ(ierr);
+  ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
 
   ierr = PetscInfo2(pc,"%D levels, grid complexity = %g\n",level+1,nnztot/nnz0);CHKERRQ(ierr);
   pc_gamg->Nlevels = level + 1;
@@ -664,6 +664,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   ierr             = PCMGSetLevels(pc,pc_gamg->Nlevels,NULL);CHKERRQ(ierr);
 
   if (pc_gamg->Nlevels > 1) { /* don't setup MG if one level */
+    PetscErrorCode (*savesetfromoptions[PETSC_MG_MAXLEVELS])(PetscOptionItems*,KSP);
+
     /* set default smoothers & set operators */
     for (lidx = 1, level = pc_gamg->Nlevels-2; lidx <= fine_level; lidx++, level--) {
       KSP smoother;
@@ -713,6 +715,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       /* coarse grid */
       KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
       Mat Lmat = Aarr[(level=pc_gamg->Nlevels-1)]; lidx = 0;
+
       ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
       ierr = KSPSetOperators(smoother, Lmat, Lmat);CHKERRQ(ierr);
       if (!pc_gamg->use_parallel_coarse_grid_solver) {
@@ -740,30 +743,54 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_EXTERNAL);CHKERRQ(ierr);
 
+    /* setup cheby eigen estimates from SA */
+    if (pc_gamg->use_sa_esteig==1) {
+      for (lidx = 1, level = pc_gamg->Nlevels-2; level >= 0 ; lidx++, level--) {
+        KSP       smoother;
+        PetscBool ischeb;
+
+        savesetfromoptions[level] = NULL;
+        ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)smoother,KSPCHEBYSHEV,&ischeb);CHKERRQ(ierr);
+        if (ischeb) {
+          KSP_Chebyshev *cheb = (KSP_Chebyshev*)smoother->data;
+
+          ierr = KSPSetFromOptions(smoother);CHKERRQ(ierr); /* let command line emax override using SA's eigenvalues */
+          if (mg->max_eigen_DinvA[level] > 0 && cheb->emax == 0.) {
+            PC        subpc;
+            PetscBool isjac;
+            ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
+            ierr = PetscObjectTypeCompare((PetscObject)subpc,PCJACOBI,&isjac);CHKERRQ(ierr);
+            if (isjac && pc_gamg->use_sa_esteig==1) {
+              PetscReal emax,emin;
+
+              emin = mg->min_eigen_DinvA[level];
+              emax = mg->max_eigen_DinvA[level];
+              ierr = PetscInfo4(pc,"PCSetUp_GAMG: call KSPChebyshevSetEigenvalues on level %D (N=%D) with emax = %g emin = %g\n",level,Aarr[level]->rmap->N,(double)emax,(double)emin);CHKERRQ(ierr);
+              cheb->emin_computed = emin;
+              cheb->emax_computed = emax;
+              ierr = KSPChebyshevSetEigenvalues(smoother, cheb->tform[2]*emin + cheb->tform[3]*emax, cheb->tform[0]*emin + cheb->tform[1]*emax);CHKERRQ(ierr);
+
+              /* We have set the eigenvalues and consumed the transformation values
+                 prevent from flagging the recomputation of the eigenvalues again in PCSetUp_MG
+                 below when setfromoptions will be called again */
+              savesetfromoptions[level] = smoother->ops->setfromoptions;
+              smoother->ops->setfromoptions = NULL;
+            }
+          }
+        }
+      }
+    }
+
     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
 
-    /* setup cheby eigen estimates from SA */
-    for (lidx = 1, level = pc_gamg->Nlevels-2; level >= 0 ; lidx++, level--) {
-      KSP       smoother;
-      PetscBool ischeb;
-      ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)smoother,KSPCHEBYSHEV,&ischeb);CHKERRQ(ierr);
-      if (ischeb) {
-        KSP_Chebyshev  *cheb = (KSP_Chebyshev*)smoother->data;
-        if (mg->max_eigen_DinvA[level] > 0 && cheb->emax == 0.) { /* let command line emax override using SA's eigenvalues */
-          PC        subpc;
-          PetscBool isjac;
-          ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
-          ierr = PetscObjectTypeCompare((PetscObject)subpc,PCJACOBI,&isjac);CHKERRQ(ierr);
-          if ((isjac && pc_gamg->use_sa_esteig==-1) || pc_gamg->use_sa_esteig==1) {
-            PetscReal       emax,emin;
-            emin = mg->min_eigen_DinvA[level];
-            emax = mg->max_eigen_DinvA[level];
-            ierr = PetscInfo4(pc,"PCSetUp_GAMG: call KSPChebyshevSetEigenvalues on level %D (N=%D) with emax = %g emin = %g\n",level,Aarr[level]->rmap->N,(double)emax,(double)emin);CHKERRQ(ierr);
-            cheb->emin_computed = emin;
-            cheb->emax_computed = emax;
-            ierr = KSPChebyshevSetEigenvalues(smoother, cheb->tform[2]*emin + cheb->tform[3]*emax, cheb->tform[0]*emin + cheb->tform[1]*emax);CHKERRQ(ierr);
-          }
+    /* restore Chebyshev smoother for next calls */
+    if (pc_gamg->use_sa_esteig==1) {
+      for (lidx = 1, level = pc_gamg->Nlevels-2; level >= 0 ; lidx++, level--) {
+        if (savesetfromoptions[level]) {
+          KSP smoother;
+          ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
+          smoother->ops->setfromoptions = savesetfromoptions[level];
         }
       }
     }
@@ -773,9 +800,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = MatDestroy(&Parr[level]);CHKERRQ(ierr);
       ierr = MatDestroy(&Aarr[level]);CHKERRQ(ierr);
     }
-
   } else {
     KSP smoother;
+
     ierr = PetscInfo(pc,"One level solver used (system is seen as DD). Using default solver.\n");CHKERRQ(ierr);
     ierr = PCMGGetSmoother(pc, 0, &smoother);CHKERRQ(ierr);
     ierr = KSPSetOperators(smoother, Aarr[0], Aarr[0]);CHKERRQ(ierr);
@@ -998,7 +1025,7 @@ PetscErrorCode PCGAMGSetUseSAEstEig(PC pc, PetscBool n)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscInt n)
+static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;

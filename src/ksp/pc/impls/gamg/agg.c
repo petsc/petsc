@@ -1104,6 +1104,8 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       emin = pc_gamg->emin;
       emax = pc_gamg->emax;
     } else {
+      const char *prefix;
+
       ierr = MatCreateVecs(Amat, &bb, NULL);CHKERRQ(ierr);
       ierr = MatCreateVecs(Amat, &xx, NULL);CHKERRQ(ierr);
       ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
@@ -1111,11 +1113,13 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
 
       ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
+      ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(eksp,prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(eksp,"pc_gamg_smoothprolongator_");CHKERRQ(ierr);
       if (pc_gamg->esteig_type[0] == '\0') {
         PetscBool flg;
         ierr = MatGetOption(Amat, MAT_SPD, &flg);CHKERRQ(ierr);
         if (flg) {
-          const char *prefix;
           ierr = KSPGetOptionsPrefix(eksp,&prefix);CHKERRQ(ierr);
           ierr = PetscOptionsHasName(NULL,prefix,"-ksp_type",&flg);CHKERRQ(ierr);
           if (!flg) {
@@ -1131,7 +1135,6 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 
       ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
       ierr = KSPSetOperators(eksp, Amat, Amat);CHKERRQ(ierr);
-      ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
 
       ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);
       ierr = PCSetType(epc, PCJACOBI);CHKERRQ(ierr);  /* smoother in smoothed agg. */
@@ -1139,6 +1142,8 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       /* solve - keep stuff out of logging */
       ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
       ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
+      ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = KSPSolve(eksp, bb, xx);CHKERRQ(ierr);
       ierr = KSPCheckSolve(eksp,pc,xx);CHKERRQ(ierr);
       ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
