@@ -1143,7 +1143,11 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
-  if (A->was_assembled && A->ass_nonzerostate == A->nonzerostate) PetscFunctionReturn(0);
+  if (A->was_assembled && A->ass_nonzerostate == A->nonzerostate) {
+    /* we need to respect users asking to use or not the inodes routine in between matrix assemblies */
+    ierr = MatAssemblyEnd_SeqAIJ_Inode(A,mode);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   if (m) rmax = ailen[0]; /* determine row with most nonzeros */
   for (i=1; i<m; i++) {
@@ -1357,7 +1361,7 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_USE_INODES:
-    /* Not an error because MatSetOption_SeqAIJ_Inode handles this one */
+    ierr = MatSetOption_SeqAIJ_Inode(A,MAT_USE_INODES,flg);CHKERRQ(ierr);
     break;
   case MAT_SUBMAT_SINGLEIS:
     A->submat_singleis = flg;
@@ -1369,7 +1373,6 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }
-  ierr = MatSetOption_SeqAIJ_Inode(A,op,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1486,6 +1489,10 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
+  if (a->inode.use && a->inode.checked) {
+    ierr = MatMult_SeqAIJ_Inode(A,xx,yy);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ii   = a->i;
@@ -1638,6 +1645,10 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
+  if (a->inode.use && a->inode.checked) {
+    ierr = MatMultAdd_SeqAIJ_Inode(A,xx,yy,zz);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
   if (usecprow) { /* use compressed row format */
@@ -1940,6 +1951,10 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
   const PetscInt    *idx,*diag;
 
   PetscFunctionBegin;
+  if (a->inode.use && a->inode.checked && omega == 1.0 && fshift == 0.0) {
+    ierr = MatSOR_SeqAIJ_Inode(A,bb,omega,flag,fshift,its,lits,xx);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   its = its*lits;
 
   if (fshift != a->fshift || omega != a->omega) a->idiagvalid = PETSC_FALSE; /* must recompute idiag[] */

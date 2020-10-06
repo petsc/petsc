@@ -792,8 +792,6 @@ PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pets
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatMultDiagonalBlock_MPIAIJ(Mat,Vec,Vec);
-
 PetscErrorCode MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
@@ -812,7 +810,6 @@ PetscErrorCode MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ     *a   = (Mat_SeqAIJ*)aij->A->data;
   PetscErrorCode ierr;
   PetscMPIInt    n;
   PetscInt       i,j,rstart,ncols,flg;
@@ -883,7 +880,6 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   aij->rowvalues = NULL;
 
   ierr = VecDestroy(&aij->diag);CHKERRQ(ierr);
-  if (a->inode.size) mat->ops->multdiagonalblock = MatMultDiagonalBlock_MPIAIJ;
 
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */
   if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
@@ -2930,7 +2926,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatGetGhosts_MPIAIJ,
                                        NULL,
                                        NULL,
-                                /*119*/NULL,
+                                /*119*/MatMultDiagonalBlock_MPIAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
