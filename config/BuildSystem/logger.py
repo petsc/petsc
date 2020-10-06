@@ -216,9 +216,9 @@ class Logger(args.ArgumentProcessor):
 
   def logPrintDivider(self, debugLevel = -1, debugSection = None, single = 0):
     if single:
-      self.logPrint('-------------------------------------------------------------------------------', debugLevel = debugLevel, debugSection = debugSection)
+      self.logPrint('---------------------------------------------------------------------------------------------', debugLevel = debugLevel, debugSection = debugSection)
     else:
-      self.logPrint('===============================================================================', debugLevel = debugLevel, debugSection = debugSection)
+      self.logPrint('=============================================================================================', debugLevel = debugLevel, debugSection = debugSection)
     return
 
   def logPrintBox(self,msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None):
@@ -243,7 +243,7 @@ class Logger(args.ArgumentProcessor):
 
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
     '''Write the message to the log streams'''
-    '''Generally goes to the file but not the screeen'''
+    '''Generally goes to the file but not the screen'''
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
         if not forceScroll and not writeAll and self.linewidth > 0:
@@ -264,7 +264,7 @@ class Logger(args.ArgumentProcessor):
 
   def logPrint(self, msg, debugLevel = -1, debugSection = None, indent = 1, comm = None, forceScroll = 0):
     '''Write the message to the log streams with proper indentation and a newline'''
-    '''Generally goes to the file and the screeen'''
+    '''Generally goes to the file and the screen'''
     if indent:
       self.logIndent(debugLevel, debugSection, comm)
     self.logWrite(msg, debugLevel, debugSection, forceScroll = forceScroll)
