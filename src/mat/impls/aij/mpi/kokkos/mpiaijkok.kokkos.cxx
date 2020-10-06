@@ -115,14 +115,14 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
 
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(VECKOKKOS,&B->defaultvectype);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJKOKKOS);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJKOKKOS);CHKERRQ(ierr);
 
   B->ops->assemblyend    = MatAssemblyEnd_MPIAIJKokkos;
   B->ops->mult           = MatMult_MPIAIJKokkos;
   B->ops->multadd        = MatMultAdd_MPIAIJKokkos;
   B->ops->multtranspose  = MatMultTranspose_MPIAIJKokkos;
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJKokkos);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJKokkos);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
