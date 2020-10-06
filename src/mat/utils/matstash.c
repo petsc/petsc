@@ -277,10 +277,10 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
   space = stash->space;
   k     = space->local_used;
   for (i=0; i<n; i++) {
-    if (ignorezeroentries && (values[i] == 0.0)) continue;
+    if (ignorezeroentries && values && values[i] == 0.0) continue;
     space->idx[k] = row;
     space->idy[k] = idxn[i];
-    space->val[k] = values[i];
+    space->val[k] = values ? values[i] : 0.0;
     k++;
     cnt++;
   }
@@ -318,10 +318,10 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
   space = stash->space;
   k     = space->local_used;
   for (i=0; i<n; i++) {
-    if (ignorezeroentries && (values[i*stepval] == 0.0)) continue;
+    if (ignorezeroentries && values && values[i*stepval] == 0.0) continue;
     space->idx[k] = row;
     space->idy[k] = idxn[i];
-    space->val[k] = values[i*stepval];
+    space->val[k] = values ? values[i*stepval] : 0.0;
     k++;
     cnt++;
   }
@@ -373,7 +373,7 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,Pet
     array = space->val + bs2*l;
     vals  = values + idx*bs2*n + bs*i;
     for (j=0; j<bs; j++) {
-      for (k=0; k<bs; k++) array[k*bs] = vals[k];
+      for (k=0; k<bs; k++) array[k*bs] = values ? vals[k] : 0.0;
       array++;
       vals += cmax*bs;
     }
@@ -427,7 +427,7 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,Pet
     array = space->val + bs2*l;
     vals  = values + idx*bs2*n + bs*i;
     for (j=0; j<bs; j++) {
-      for (k=0; k<bs; k++) array[k] = vals[k];
+      for (k=0; k<bs; k++) array[k] = values ? vals[k] : 0.0;
       array += bs;
       vals  += rmax*bs;
     }
