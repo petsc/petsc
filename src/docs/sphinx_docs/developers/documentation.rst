@@ -78,8 +78,8 @@ using the usual guidelines in :doc:`integration` (note the options for speedy re
 Building the Sphinx docs locally
 --------------------------------
 
-* Make sure that you have a recent version of Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/master/.readthedocs.yml>`__ and `requirements file for ReadTheDocs <https://github.com/petsc/petsc/blob/master/src/docs/sphinx_docs/requirements.txt>`__ (we use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/master/src/docs/sphinx_docs/ext/html5_petsc.py>`__).
-* Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``src/docs/sphinx_docs``).
+* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/master/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/master/src/docs/sphinx_docs/requirements.txt>`__ [#f1]. e.g. with pip, `pip install -r $PETSC_DIR/src/docs/sphinx_docs/requirements.txt`.
+* Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``$PETSC_DIR/src/docs/sphinx_docs``).
 * ``make html``
 * Open ``_build/html/index.html`` with your browser.
 
@@ -230,3 +230,4 @@ Next, one must examine the output, ideally comparing to the original rendered La
 .. rubric:: Footnotes
 
 .. [#bibtex_footnote] The recommended `workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#section-key-prefixing>`__ could be used, but requires prefixing reference labels in the rendered text.  The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ promises to support our use case better with "foot" citations, which can be investigated when a new release is available.
+.. [#f1] We use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/master/src/docs/sphinx_docs/ext/html5_petsc.py>`__
