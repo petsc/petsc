@@ -171,6 +171,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat A, MatType mtype,
 {
   PetscErrorCode   ierr;
   Mat              B;
+  Mat_SeqAIJ       *aij;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) { /* Build a new mat */
@@ -184,6 +185,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat A, MatType mtype,
   ierr = PetscStrallocpy(VECKOKKOS,&B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJKOKKOS);CHKERRQ(ierr);
   ierr = MatSetOps_SeqAIJKokkos(B);CHKERRQ(ierr);
+  /* TODO: see ViennaCL and CUSPARSE once we have a BindToCPU? */
+  aij  = (Mat_SeqAIJ*)B->data;
+  aij->inode.use = PETSC_FALSE;
 
   B->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
