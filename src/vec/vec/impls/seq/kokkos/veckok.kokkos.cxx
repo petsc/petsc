@@ -971,7 +971,7 @@ static PetscErrorCode BuildVecKokkosFromVecSeq_Private(Vec v)
   } else {
     darray = static_cast<PetscScalar*>(Kokkos::kokkos_malloc<DeviceMemorySpace>(sizeof(PetscScalar)*v->map->n));
   }
-
+  if (v->spptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"v->spptr not NULL");
   veckok = new Vec_Kokkos(v->map->n,vecseq->array,darray,darray);
   Kokkos::deep_copy(veckok->dual_v.view_device(),0.0);
   v->spptr = static_cast<void*>(veckok);
@@ -1098,7 +1098,6 @@ PetscErrorCode VecDuplicate_SeqKokkos(Vec win,Vec *v)
 
   PetscFunctionBegin;
   ierr = VecDuplicate_Seq(win,v);CHKERRQ(ierr); /* It also dups ops of win */
-  ierr = BuildVecKokkosFromVecSeq_Private(*v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1110,6 +1109,7 @@ PetscErrorCode VecDestroy_SeqKokkos(Vec v)
 
   PetscFunctionBegin;
   delete veckok;
+  v->spptr = NULL;
   if (vecseq) {ierr = VecDestroy_Seq(v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
