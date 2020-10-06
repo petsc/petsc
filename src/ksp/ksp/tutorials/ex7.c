@@ -296,4 +296,17 @@ int main(int argc,char **args)
       requires: cuda
       args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
 
+   testset:
+      args: -ksp_monitor_short -pc_type gamg -ksp_view
+      test:
+        suffix: gamg_cuda
+        nsize: {{1 2}separate output}
+        requires: cuda
+        args: -mat_type aijcusparse -vec_type cuda
+      test:
+        suffix: gamg_kokkos
+        nsize: {{1 2}separate output}
+        requires: kokkos
+        args: -mat_type aijkokkos -vec_type kokkos
+
 TEST*/
