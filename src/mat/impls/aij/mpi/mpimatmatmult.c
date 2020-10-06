@@ -1218,7 +1218,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   PetscMPIInt         size,rank;
   PetscFreeSpaceList  free_space=NULL,current_space=NULL;
   PetscInt            pn=P->cmap->n,aN=A->cmap->N,an=A->cmap->n;
-  PetscInt            *lnk,i,k,nsend;
+  PetscInt            *lnk,i,k,nsend,rstart;
   PetscBT             lnkbt;
   PetscMPIInt         tagi,tagj,*len_si,*len_s,*len_ri,icompleted=0,nrecv;
   PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
@@ -1437,6 +1437,23 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ierr = MatMPIAIJSetPreallocation(C,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
+  /* add C_loc and C_oth to C */
+  ierr = MatGetOwnershipRange(C,&rstart,NULL);CHKERRQ(ierr);
+  for (i=0; i<pn; i++) {
+    const PetscInt ncols = c_loc->i[i+1] - c_loc->i[i];
+    const PetscInt *cols = c_loc->j + c_loc->i[i];
+    const PetscInt row = rstart + i;
+    ierr = MatSetValues(C,1,&row,ncols,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  for (i=0; i<con; i++) {
+    const PetscInt ncols = c_oth->i[i+1] - c_oth->i[i];
+    const PetscInt *cols = c_oth->j + c_oth->i[i];
+    const PetscInt row = prmap[i];
+    ierr = MatSetValues(C,1,&row,ncols,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   /* members in merge */
   ierr = PetscFree(id_r);CHKERRQ(ierr);
   ierr = PetscFree(len_r);CHKERRQ(ierr);
@@ -1449,9 +1466,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /* attach the supporting struct to C for reuse */
   C->product->data    = ptap;
   C->product->destroy = MatDestroy_MPIAIJ_PtAP;
-
-  /* C is not ready for use - assembly will be done by MatPtAPNumeric() */
-  C->assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1492,7 +1506,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   C_loc = ptap->C_loc;
   C_oth = ptap->C_oth;
 
-  /* add C_loc and Co to to C */
+  /* add C_loc and C_oth to C */
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
 
   /* C_loc -> C */
@@ -1996,6 +2010,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   ierr = MatMPIAIJSetPreallocation(C,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   ierr = MatSetBlockSize(C,1);CHKERRQ(ierr);
+  ierr = MatSetOption(C,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   for (i=0; i<pn; i++) {
     row  = i + rstart;
     nnz  = bi[i+1] - bi[i];
