@@ -1451,10 +1451,6 @@ PetscErrorCode MatZeroEntries_SeqSBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-/*
-   This code does not work since it only checks the upper triangular part of
-  the matrix. Hence it is not listed in the function table.
-*/
 PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
