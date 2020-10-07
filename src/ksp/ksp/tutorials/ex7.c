@@ -306,7 +306,7 @@ int main(int argc,char **args)
       test:
         suffix: gamg_kokkos
         nsize: {{1 2}separate output}
-        requires: kokkos
+        requires: kokkos_kernels
         args: -mat_type aijkokkos -vec_type kokkos
 
 TEST*/
