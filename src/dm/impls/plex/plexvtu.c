@@ -31,10 +31,10 @@ static PetscErrorCode TransferWrite(PetscViewer viewer,FILE *fp,PetscMPIInt sran
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   if (rank == srank && rank != root) {
-    ierr = MPI_Send((void*)send,count,mpidatatype,root,tag,comm);CHKERRQ(ierr);
+    ierr = MPI_Send((void*)send,count,mpidatatype,root,tag,comm);CHKERRMPI(ierr);
   } else if (rank == root) {
     const void *buffer;
     if (root == srank) {        /* self */
@@ -42,8 +42,8 @@ static PetscErrorCode TransferWrite(PetscViewer viewer,FILE *fp,PetscMPIInt sran
     } else {
       MPI_Status  status;
       PetscMPIInt nrecv;
-      ierr = MPI_Recv(recv,count,mpidatatype,srank,tag,comm,&status);CHKERRQ(ierr);
-      ierr = MPI_Get_count(&status,mpidatatype,&nrecv);CHKERRQ(ierr);
+      ierr = MPI_Recv(recv,count,mpidatatype,srank,tag,comm,&status);CHKERRMPI(ierr);
+      ierr = MPI_Get_count(&status,mpidatatype,&nrecv);CHKERRMPI(ierr);
       if (count != nrecv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
       buffer = recv;
     }
@@ -153,8 +153,8 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 #else
   loops_per_scalar = 1;
 #endif
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   tag  = ((PetscObject)viewer)->tag;
 
   ierr = PetscFOpen(comm,vtk->filename,"wb",&fp);CHKERRQ(ierr);
@@ -205,7 +205,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
     piece.ncells++;
   }
   if (!rank) {ierr = PetscMalloc1(size,&gpiece);CHKERRQ(ierr);}
-  ierr = MPI_Gather((PetscInt*)&piece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,(PetscInt*)gpiece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Gather((PetscInt*)&piece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,(PetscInt*)gpiece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,0,comm);CHKERRMPI(ierr);
 
   /*
    * Write file header

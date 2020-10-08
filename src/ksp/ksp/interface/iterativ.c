@@ -773,7 +773,7 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
     PetscInt       sendbuf,recvbuf;
     ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);
     sendbuf = (PetscInt)pcreason;
-    ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRMPI(ierr);
     if (recvbuf) {
       *reason = KSP_DIVERGED_PC_FAILED;
       ierr = PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf);CHKERRQ(ierr);

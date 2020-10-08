@@ -384,7 +384,7 @@ static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   if (label) {
     const char *name;
@@ -1496,22 +1496,22 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
     ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
   }
   ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   /* Bcast name */
   if (!rank) {
     ierr = PetscObjectGetName((PetscObject) label, &lname);CHKERRQ(ierr);
     ierr = PetscStrlen(lname, &len);CHKERRQ(ierr);
   }
   nameSize = len;
-  ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
   ierr = PetscMalloc1(nameSize+1, &name);CHKERRQ(ierr);
   if (!rank) {ierr = PetscArraycpy(name, lname, nameSize+1);CHKERRQ(ierr);}
-  ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRMPI(ierr);
   ierr = DMLabelCreate(PETSC_COMM_SELF, name, labelNew);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);
   /* Bcast defaultValue */
   if (!rank) (*labelNew)->defaultValue = label->defaultValue;
-  ierr = MPI_Bcast(&(*labelNew)->defaultValue, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&(*labelNew)->defaultValue, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
   /* Distribute stratum values over the SF and get the point mapping on the receiver */
   ierr = DMLabelDistribute_Internal(label, sf, &leafSection, &leafStrata);CHKERRQ(ierr);
   /* Determine received stratum values and initialise new label*/
@@ -1612,18 +1612,18 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 2);
   ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   /* Bcast name */
   if (!rank) {
     ierr = PetscObjectGetName((PetscObject) label, &lname);CHKERRQ(ierr);
     ierr = PetscStrlen(lname, &len);CHKERRQ(ierr);
   }
   nameSize = len;
-  ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
   ierr = PetscMalloc1(nameSize+1, &name);CHKERRQ(ierr);
   if (!rank) {ierr = PetscArraycpy(name, lname, nameSize+1);CHKERRQ(ierr);}
-  ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRMPI(ierr);
   ierr = DMLabelCreate(PETSC_COMM_SELF, name, labelNew);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);
   /* Gather rank/index pairs of leaves into local roots to build

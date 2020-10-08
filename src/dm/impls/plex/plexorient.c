@@ -313,8 +313,8 @@ PetscErrorCode DMPlexOrient(DM dm)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = PetscOptionsHasName(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-orientation_view", &flg);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-orientation_view_synchronized", &flg2);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
@@ -498,22 +498,22 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscMPIInt  size = 0;
 
     ierr = PetscCalloc1(numComponents, &flipped);CHKERRQ(ierr);
-    if (!rank) {ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);}
+    if (!rank) {ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);}
     ierr = PetscCalloc4(size, &recvcounts, size+1, &displs, size, &Nc, size+1, &Noff);CHKERRQ(ierr);
-    ierr = MPI_Gather(&numComponents, 1, MPI_INT, Nc, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
+    ierr = MPI_Gather(&numComponents, 1, MPI_INT, Nc, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
     for (p = 0; p < size; ++p) {
       displs[p+1] = displs[p] + Nc[p];
     }
     if (!rank) {ierr = PetscMalloc1(displs[size],&N);CHKERRQ(ierr);}
-    ierr = MPI_Gatherv(numNeighbors, numComponents, MPIU_INT, N, Nc, displs, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(numNeighbors, numComponents, MPIU_INT, N, Nc, displs, MPIU_INT, 0, comm);CHKERRMPI(ierr);
     for (p = 0, o = 0; p < size; ++p) {
       recvcounts[p] = 0;
       for (c = 0; c < Nc[p]; ++c, ++o) recvcounts[p] += N[o];
       displs[p+1] = displs[p] + recvcounts[p];
     }
     if (!rank) {ierr = PetscMalloc2(displs[size], &adj, displs[size], &val);CHKERRQ(ierr);}
-    ierr = MPI_Gatherv(nrankComp, totNeighbors, MPIU_2INT, adj, recvcounts, displs, MPIU_2INT, 0, comm);CHKERRQ(ierr);
-    ierr = MPI_Gatherv(match, totNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(nrankComp, totNeighbors, MPIU_2INT, adj, recvcounts, displs, MPIU_2INT, 0, comm);CHKERRMPI(ierr);
+    ierr = MPI_Gatherv(match, totNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm);CHKERRMPI(ierr);
     ierr = PetscFree2(numNeighbors, neighbors);CHKERRQ(ierr);
     if (!rank) {
       for (p = 1; p <= size; ++p) {Noff[p] = Noff[p-1] + Nc[p-1];}
@@ -609,7 +609,7 @@ PetscErrorCode DMPlexOrient(DM dm)
           displs[p+1] = displs[p] + Nc[p];
         }
       }
-      ierr = MPI_Scatterv(flips, Nc, displs, MPIU_BOOL, flipped, numComponents, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+      ierr = MPI_Scatterv(flips, Nc, displs, MPIU_BOOL, flipped, numComponents, MPIU_BOOL, 0, comm);CHKERRMPI(ierr);
       ierr = PetscFree(flips);CHKERRQ(ierr);
     }
     if (!rank) {ierr = PetscBTDestroy(&flippedProcs);CHKERRQ(ierr);}

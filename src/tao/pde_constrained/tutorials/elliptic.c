@@ -619,7 +619,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
                         0.9226,     0.5461,     0.4126,     0.2364,     0.6096,     0.7042,     0.3914,     0.0711};
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = PetscLogStageRegister("Elliptic Setup",&user->stages[0]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[0]);CHKERRQ(ierr);
 

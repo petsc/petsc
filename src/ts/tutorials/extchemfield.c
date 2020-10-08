@@ -480,7 +480,7 @@ static PetscErrorCode MonitorCell(TS ts,User user,PetscInt cell)
   ierr = DMDAGetCoordinateArray(user->dm,&xc);CHKERRQ(ierr);
   temp = 1.0 + .05*PetscSinScalar(2.*PETSC_PI*xc[cell]);  /* Non-dimensionalized by user->Tini */
   ierr = DMDARestoreCoordinateArray(user->dm,&xc);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscSNPrintf(label,sizeof(label),"Initial Temperature %g Cell %d Rank %d",(double)user->Tini*temp,(int)cell,rank);CHKERRQ(ierr);
   ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,label,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);CHKERRQ(ierr);
   ierr = DMDAGetFieldNames(user->dm,(const char * const **)&snames);CHKERRQ(ierr);

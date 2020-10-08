@@ -127,7 +127,7 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],optionsprefix);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],"sub_");CHKERRQ(ierr);
         ierr = SNESSetDM(nasm->subsnes[i],subdms[i]);CHKERRQ(ierr);
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)nasm->subsnes[i]),&size);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)nasm->subsnes[i]),&size);CHKERRMPI(ierr);
         if (size == 1) {
           ierr = SNESGetKSP(nasm->subsnes[i],&ksp);CHKERRQ(ierr);
           ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -225,8 +225,8 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPIU_Allreduce(&nasm->n,&N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  total subdomain blocks = %D\n",N);CHKERRQ(ierr);

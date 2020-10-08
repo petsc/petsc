@@ -14,13 +14,13 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRMPI(ierr);
   if (part->n != size) {
     const char *prefix;
     ierr = PetscObjectGetOptionsPrefix((PetscObject)part,&prefix);CHKERRQ(ierr);
     SETERRQ1(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -%smat_partitioning_type parmetis or chaco or ptscotch for more than one subdomain per processor",prefix ? prefix : "");
   }
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRMPI(ierr);
 
   ierr = MatGetLocalSize(part->adj,&m,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)part),m,rank,0,partitioning);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRMPI(ierr);
   if (part->n != size) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Currently only supports one domain per processor");
   p = (PetscInt)PetscSqrtReal((PetscReal)part->n);
   if (p*p != part->n) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
@@ -430,7 +430,7 @@ PetscErrorCode  MatPartitioningViewImbalance(MatPartitioning matp, IS partitioni
   for (i=0;i<nlocal;i++) {
     subdomainsizes_tmp[indices[i]] += matp->vertex_weights? matp->vertex_weights[i]:1;
   }
-  ierr = MPI_Allreduce(subdomainsizes_tmp,subdomainsizes,nparts,MPIU_INT,MPI_SUM, PetscObjectComm((PetscObject)matp));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(subdomainsizes_tmp,subdomainsizes,nparts,MPIU_INT,MPI_SUM, PetscObjectComm((PetscObject)matp));CHKERRMPI(ierr);
   ierr = ISRestoreIndices(partitioning,&indices);CHKERRQ(ierr);
   minsub = PETSC_MAX_INT, maxsub = PETSC_MIN_INT, avgsub=0;
   for (i=0; i<nparts; i++) {

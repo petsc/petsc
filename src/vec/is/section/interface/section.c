@@ -247,7 +247,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
   PetscValidIntPointer(congruent,3);
   flg = PETSC_FALSE;
 
-  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)s1),PetscObjectComm((PetscObject)s2),&mflg);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)s1),PetscObjectComm((PetscObject)s2),&mflg);CHKERRMPI(ierr);
   if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
     *congruent = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -1308,7 +1308,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     off += gs->atlasDof[q] > 0 ? gs->atlasDof[q]-cdof : 0;
   }
   if (!localOffsets) {
-    ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) s));CHKERRQ(ierr);
+    ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) s));CHKERRMPI(ierr);
     globalOff -= off;
   }
   for (p = pStart, off = 0; p < pEnd; ++p) {
@@ -1407,7 +1407,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
     (*gsection)->atlasOff[q] = off;
     off += (*gsection)->atlasDof[q] > 0 ? (*gsection)->atlasDof[q]-cdof : 0;
   }
-  ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) s));CHKERRQ(ierr);
+  ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) s));CHKERRMPI(ierr);
   globalOff -= off;
   for (p = 0, off = 0; p < pEnd-pStart; ++p) {
     (*gsection)->atlasOff[p] += globalOff;
@@ -2013,7 +2013,7 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank);CHKERRQ(ierr);
   for (p = 0; p < s->pEnd - s->pStart; ++p) {
@@ -3360,7 +3360,7 @@ PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Da
   PetscValidHeaderSpecific(points, IS_CLASSID, 4);
   if (newSection) PetscValidPointer(newSection, 5);
   if (newArray) PetscValidPointer(newArray, 6);
-  ierr = MPI_Type_size(dataType, &unitsize);CHKERRQ(ierr);
+  ierr = MPI_Type_size(dataType, &unitsize);CHKERRMPI(ierr);
   ierr = ISGetLocalSize(points, &npoints);CHKERRQ(ierr);
   ierr = ISGetIndices(points, &points_);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(origSection, &pStart, &pEnd);CHKERRQ(ierr);

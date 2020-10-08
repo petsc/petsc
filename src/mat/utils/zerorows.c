@@ -15,7 +15,7 @@ PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat A,PetscInt N,const P
 
   PetscFunctionBegin;
   /* Create SF where leaves are input rows and roots are owned rows */
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRMPI(ierr);
   ierr = PetscMalloc1(n, &lrows);CHKERRQ(ierr);
   for (r = 0; r < n; ++r) lrows[r] = -1;
   if (!A->nooffproczerorows) {ierr = PetscMalloc1(N, &rrows);CHKERRQ(ierr);}

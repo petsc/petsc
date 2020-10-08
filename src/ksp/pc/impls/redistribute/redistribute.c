@@ -68,7 +68,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     PetscInt NN;
 
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
 
     /* count non-diagonal rows on process */
@@ -160,7 +160,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     count = 0;
     for (i=0; i<size; i++) {
       if (sizes[i]) {
-        ierr = MPI_Isend(svalues+starts[i],sizes[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
+        ierr = MPI_Isend(svalues+starts[i],sizes[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRMPI(ierr);
       }
     }
 
@@ -168,7 +168,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     count = nrecvs;
     slen  = 0;
     while (count) {
-      ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
+      ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRMPI(ierr);
       /* unpack receives into our local space */
       ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
       slen += n;
@@ -185,7 +185,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscFree2(sizes,owner);CHKERRQ(ierr);
     if (nsends) {   /* wait on sends */
       ierr = PetscMalloc1(nsends,&send_status);CHKERRQ(ierr);
-      ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
+      ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRMPI(ierr);
       ierr = PetscFree(send_status);CHKERRQ(ierr);
     }
     ierr = PetscFree3(svalues,send_waits,starts);CHKERRQ(ierr);

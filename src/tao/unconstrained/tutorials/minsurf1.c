@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   /* Initialize TAO,PETSc */
   ierr = PetscInitialize(&argc, &argv,(char *)0,help);if (ierr) return ierr;
 
-  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRMPI(ierr);
   if (size >1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
 
   /* Specify default dimension of the problem */

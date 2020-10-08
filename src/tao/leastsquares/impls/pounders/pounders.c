@@ -1085,7 +1085,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   for (i=0;i<PetscMax(mfqP->m,mfqP->n);i++) {
     mfqP->indices[i] = i;
   }
-  ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->size);CHKERRMPI(ierr);
   if (mfqP->size > 1) {
     ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localx);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localxmin);CHKERRQ(ierr);

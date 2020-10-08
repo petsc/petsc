@@ -437,7 +437,7 @@ PetscErrorCode  PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(sdraw,2);
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
     *sdraw = draw;
@@ -474,7 +474,7 @@ PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
   PetscValidPointer(sdraw,2);
   PetscValidHeaderSpecific(*sdraw,PETSC_DRAW_CLASSID,2);
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRMPI(ierr);
   if (size == 1) {
     if (draw == *sdraw) {
       ierr = PetscObjectDereference((PetscObject)draw);CHKERRQ(ierr);

@@ -32,7 +32,7 @@ static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
   PetscErrorCode             ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_free(&p->pcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&p->pcomm);CHKERRMPI(ierr);
   ierr = PetscFree(part->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -105,12 +105,12 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   /* Calculate vertex distribution */
   ierr = PetscMalloc4(size+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment);CHKERRQ(ierr);
   vtxdist[0] = 0;
-  ierr = MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm);CHKERRMPI(ierr);
   for (p = 2; p <= size; ++p) {
     hasempty = (PetscBool)(hasempty || !vtxdist[p-1] || !vtxdist[p]);
     vtxdist[p] += vtxdist[p-1];
@@ -193,7 +193,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     if (hasempty) { /* parmetis does not support empty graphs on some of the processes */
       PetscInt cnt;
 
-      ierr = MPI_Comm_split(pm->pcomm,!!nvtxs,rank,&pcomm);CHKERRQ(ierr);
+      ierr = MPI_Comm_split(pm->pcomm,!!nvtxs,rank,&pcomm);CHKERRMPI(ierr);
       for (p=0,cnt=0;p<size;p++) {
         if (vtxdist[p+1] != vtxdist[p]) {
           vtxdist[cnt+1] = vtxdist[p+1];
@@ -209,7 +209,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       if (err != METIS_OK) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", err);
     }
     if (hasempty) {
-      ierr = MPI_Comm_free(&pcomm);CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&pcomm);CHKERRMPI(ierr);
     }
   }
 
@@ -268,7 +268,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
   ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
   part->data = p;
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)part),&p->pcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)part),&p->pcomm);CHKERRMPI(ierr);
   p->ptype          = 0;
   p->imbalanceRatio = 1.05;
   p->debugFlag      = 0;

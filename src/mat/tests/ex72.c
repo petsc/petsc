@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   PetscBool   sametype,flag,symmetric = PETSC_FALSE,skew = PETSC_FALSE,real = PETSC_FALSE,pattern = PETSC_FALSE,aijonly = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,sizeof(filein),&flag);CHKERRQ(ierr);

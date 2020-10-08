@@ -42,7 +42,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 2);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
 #if defined(PETSC_HAVE_CGNS)
   if (!rank) {
     ierr = cg_open(filename, CG_MODE_READ, &cgid);CHKERRQ(ierr);
@@ -94,8 +94,8 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CGNS)
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &num_proc);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &num_proc);CHKERRMPI(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   /* Open CGNS II file and read basic informations on rank 0, then broadcast to all processors */
@@ -120,9 +120,9 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       vertStart[z] += numCells;
     }
   }
-  ierr = MPI_Bcast(basename, CGIO_MAX_NAME_LENGTH+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&dim, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&nzones, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(basename, CGIO_MAX_NAME_LENGTH+1, MPI_CHAR, 0, comm);CHKERRMPI(ierr);
+  ierr = MPI_Bcast(&dim, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
+  ierr = MPI_Bcast(&nzones, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, basename);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);

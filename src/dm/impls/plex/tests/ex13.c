@@ -51,8 +51,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscInt        *points = NULL;
     PetscMPIInt      rank, size;
 
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+    ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
     if (!rank) {
       if (dim == 2 && cellSimplex && size == 2) {
         switch (user->testNum) {

@@ -28,8 +28,8 @@ PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
   stash->comm = comm;
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag1);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag2);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(stash->comm,&stash->size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(stash->comm,&stash->size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRMPI(ierr);
 
   nopt = stash->size;
   ierr = PetscMalloc1(nopt,&opt);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
   /* wait on sends */
   if (nsends) {
     ierr = PetscMalloc1(2*nsends,&send_status);CHKERRQ(ierr);
-    ierr = MPI_Waitall(2*nsends,stash->send_waits,send_status);CHKERRQ(ierr);
+    ierr = MPI_Waitall(2*nsends,stash->send_waits,send_status);CHKERRMPI(ierr);
     ierr = PetscFree(send_status);CHKERRQ(ierr);
   }
 
@@ -264,8 +264,8 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   ierr = PetscMalloc2(nreceives*nmax*bs,&rvalues,nreceives*nmax,&rindices);CHKERRQ(ierr);
   ierr = PetscMalloc1(2*nreceives,&recv_waits);CHKERRQ(ierr);
   for (i=0,count=0; i<nreceives; i++) {
-    ierr = MPI_Irecv(rvalues+bs*nmax*i,bs*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,recv_waits+count++);CHKERRQ(ierr);
-    ierr = MPI_Irecv(rindices+nmax*i,nmax,MPIU_INT,MPI_ANY_SOURCE,tag2,comm,recv_waits+count++);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rvalues+bs*nmax*i,bs*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,recv_waits+count++);CHKERRMPI(ierr);
+    ierr = MPI_Irecv(rindices+nmax*i,nmax,MPIU_INT,MPI_ANY_SOURCE,tag2,comm,recv_waits+count++);CHKERRMPI(ierr);
   }
 
   /* do sends:
@@ -293,8 +293,8 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
 
   for (i=0,count=0; i<size; i++) {
     if (nprocs[2*i+1]) {
-      ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[2*i],MPIU_SCALAR,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
-      ierr = MPI_Isend(sindices+start[i],nprocs[2*i],MPIU_INT,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[2*i],MPIU_SCALAR,i,tag1,comm,send_waits+count++);CHKERRMPI(ierr);
+      ierr = MPI_Isend(sindices+start[i],nprocs[2*i],MPIU_INT,i,tag2,comm,send_waits+count++);CHKERRMPI(ierr);
     }
   }
   ierr = PetscFree(owner);CHKERRQ(ierr);
@@ -351,13 +351,13 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
   /* If a matching pair of receives are found, process them, and return the data to
      the calling function. Until then keep receiving messages */
   while (!match_found) {
-    ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
+    ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRMPI(ierr);
     /* Now pack the received message into a structure which is useable by others */
     if (i % 2) {
-      ierr = MPI_Get_count(&recv_status,MPIU_INT,nvals);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&recv_status,MPIU_INT,nvals);CHKERRMPI(ierr);
       flg_v[2*recv_status.MPI_SOURCE+1] = i/2;
     } else {
-      ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRMPI(ierr);
       flg_v[2*recv_status.MPI_SOURCE] = i/2;
       *nvals = *nvals/bs;
     }

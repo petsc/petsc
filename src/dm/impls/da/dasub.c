@@ -63,13 +63,13 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   } else {
     *X = c[*JJ][*II].x;
     *Y = c[*JJ][*II].y;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRMPI(ierr);
     rank++;
   }
   ierr = MPIU_Allreduce(&rank,&root,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   root--;
-  ierr = MPI_Bcast(X,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
-  ierr = MPI_Bcast(Y,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPI_Bcast(X,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  ierr = MPI_Bcast(Y,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
   ierr = DMDAVecRestoreArrayRead(dacoors,coors,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -107,7 +107,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
 
   PetscFunctionBegin;
   if (da->dim == 3) SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) da), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) da), &rank);CHKERRMPI(ierr);
   ierr = DMDAGetAO(da, &ao);CHKERRQ(ierr);
   if (!rank) {
     if (da->dim == 1) {
@@ -203,7 +203,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   flag = 0;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRMPI(ierr);
   if (dir == DM_Z) {
     if (da->dim < 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
     if (gp < 0 || gp > dd->P) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
@@ -218,7 +218,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
   ierr = PetscMalloc2(size,&owners,size,&ranks);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
   ict  = 0;
   ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
@@ -228,11 +228,11 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
     }
   }
   ierr = PetscInfo(da,"\n");CHKERRQ(ierr);
-  ierr = MPI_Comm_group(PetscObjectComm((PetscObject)da),&group);CHKERRQ(ierr);
-  ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRQ(ierr);
-  ierr = MPI_Comm_create(PetscObjectComm((PetscObject)da),subgroup,comm);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&subgroup);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+  ierr = MPI_Comm_group(PetscObjectComm((PetscObject)da),&group);CHKERRMPI(ierr);
+  ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRMPI(ierr);
+  ierr = MPI_Comm_create(PetscObjectComm((PetscObject)da),subgroup,comm);CHKERRMPI(ierr);
+  ierr = MPI_Group_free(&subgroup);CHKERRMPI(ierr);
+  ierr = MPI_Group_free(&group);CHKERRMPI(ierr);
   ierr = PetscFree2(owners,ranks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -275,7 +275,7 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcom
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   if (dir == DM_Z) {
     if (da->dim < 3) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
     firstPoint = zs;
@@ -287,7 +287,7 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcom
   } else SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
   ierr = PetscMalloc2(size, &firstPoints, size, &subgroupRanks);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRMPI(ierr);
   ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
   for (p = 0; p < size; ++p) {
     if (firstPoints[p] == firstPoint) {
@@ -296,11 +296,11 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcom
     }
   }
   ierr = PetscInfo(da, "\n");CHKERRQ(ierr);
-  ierr = MPI_Comm_group(comm, &group);CHKERRQ(ierr);
-  ierr = MPI_Group_incl(group, subgroupSize, subgroupRanks, &subgroup);CHKERRQ(ierr);
-  ierr = MPI_Comm_create(comm, subgroup, subcomm);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&subgroup);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+  ierr = MPI_Comm_group(comm, &group);CHKERRMPI(ierr);
+  ierr = MPI_Group_incl(group, subgroupSize, subgroupRanks, &subgroup);CHKERRMPI(ierr);
+  ierr = MPI_Comm_create(comm, subgroup, subcomm);CHKERRMPI(ierr);
+  ierr = MPI_Group_free(&subgroup);CHKERRMPI(ierr);
+  ierr = MPI_Group_free(&group);CHKERRMPI(ierr);
   ierr = PetscFree2(firstPoints, subgroupRanks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

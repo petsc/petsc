@@ -79,7 +79,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
     ierr = PetscViewerASCIIPrintf(viewer," (%s)",obj->prefix);CHKERRQ(ierr);
   }
   ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIPrintf(viewer," %d MPI processes\n",size);CHKERRQ(ierr);
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"%%");CHKERRQ(ierr);}
@@ -125,11 +125,11 @@ PetscErrorCode  PetscObjectName(PetscObject obj)
   PetscValidHeader(obj,1);
   if (!obj->name) {
     union {MPI_Comm comm; void *ptr; char raw[sizeof(MPI_Comm)]; } ucomm;
-    ierr = MPI_Comm_get_attr(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
+    ierr = MPI_Comm_get_attr(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRMPI(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
     ucomm.ptr = NULL;
     ucomm.comm = obj->comm;
-    ierr = MPI_Bcast(ucomm.raw,sizeof(MPI_Comm),MPI_BYTE,0,obj->comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(ucomm.raw,sizeof(MPI_Comm),MPI_BYTE,0,obj->comm);CHKERRMPI(ierr);
     /* If the union has extra bytes, their value is implementation-dependent, but they will normally be what we set last
      * in 'ucomm.ptr = NULL'.  This output is always implementation-defined (and varies from run to run) so the union
      * abuse acceptable. */

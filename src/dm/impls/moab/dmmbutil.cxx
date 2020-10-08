@@ -534,7 +534,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   ierr = PetscLogEventRegister("AddElements", DM_CLASSID,   &genCtx.generateElements);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("ParResolve", DM_CLASSID,   &genCtx.parResolve);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(genCtx.generateMesh, 0, 0, 0, 0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &global_size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &global_size);CHKERRMPI(ierr);
   /* total number of vertices in all dimensions */
   n = pow(npts, dim);
 

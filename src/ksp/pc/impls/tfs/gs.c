@@ -907,7 +907,7 @@ PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_free(&gs->PCTFS_gs_comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&gs->PCTFS_gs_comm);CHKERRMPI(ierr);
   if (gs->nghs) free((void*) gs->nghs);
   if (gs->pw_nghs) free((void*) gs->pw_nghs);
 
@@ -1150,7 +1150,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs,  PetscScal
   do {
     /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
         second one *list and do list++ afterwards */
-    ierr = MPI_Irecv(in1, *size *step, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list, gs->PCTFS_gs_comm, msg_ids_in);CHKERRQ(ierr);
+    ierr = MPI_Irecv(in1, *size *step, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list, gs->PCTFS_gs_comm, msg_ids_in);CHKERRMPI(ierr);
     list++;msg_ids_in++;
     in1 += *size++ *step;
   } while (*++msg_nodes);
@@ -1171,7 +1171,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs,  PetscScal
       dptr2+=step;
       iptr++;
     }
-    ierr = MPI_Isend(dptr3, *msg_size *step, MPIU_SCALAR, *msg_list, MSGTAG1+PCTFS_my_id, gs->PCTFS_gs_comm, msg_ids_out);CHKERRQ(ierr);
+    ierr = MPI_Isend(dptr3, *msg_size *step, MPIU_SCALAR, *msg_list, MSGTAG1+PCTFS_my_id, gs->PCTFS_gs_comm, msg_ids_out);CHKERRMPI(ierr);
     msg_size++; msg_list++;msg_ids_out++;
   }
 
@@ -1185,7 +1185,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs,  PetscScal
 
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    ierr = MPI_Wait(ids_in, &status);CHKERRQ(ierr);
+    ierr = MPI_Wait(ids_in, &status);CHKERRMPI(ierr);
     ids_in++;
     while (*iptr >= 0) {
       ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
@@ -1208,7 +1208,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs,  PetscScal
   /* Should I check the return value of MPI_Wait() or status? */
   /* Can this loop be replaced by a call to MPI_Waitall()? */
   while (*msg_nodes++) {
-    ierr = MPI_Wait(ids_out, &status);CHKERRQ(ierr);
+    ierr = MPI_Wait(ids_out, &status);CHKERRMPI(ierr);
     ids_out++;
   }
   PetscFunctionReturn(0);
@@ -1338,7 +1338,7 @@ static PetscErrorCode PCTFS_gs_gop_pairwise_plus_hc(PCTFS_gs_id *gs,  PetscScala
     /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
         second one *list and do list++ afterwards */
     if ((PCTFS_my_id|mask)==(*list|mask)) {
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list, gs->PCTFS_gs_comm, msg_ids_in);CHKERRQ(ierr);
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list, gs->PCTFS_gs_comm, msg_ids_in);CHKERRMPI(ierr);
       list++; msg_ids_in++;in1 += *size++;
     } else { list++; size++; }
   } while (*++msg_nodes);
@@ -1355,7 +1355,7 @@ static PetscErrorCode PCTFS_gs_gop_pairwise_plus_hc(PCTFS_gs_id *gs,  PetscScala
       while (*iptr >= 0) *dptr2++ = *(dptr1 + *iptr++);
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size, MPIU_SCALAR, *list, MSGTAG1+PCTFS_my_id, gs->PCTFS_gs_comm, msg_ids_out);CHKERRQ(ierr);
+      ierr = MPI_Isend(dptr3, *msg_size, MPIU_SCALAR, *list, MSGTAG1+PCTFS_my_id, gs->PCTFS_gs_comm, msg_ids_out);CHKERRMPI(ierr);
       msg_size++;list++;msg_ids_out++;
     } else {list++; msg_size++;}
   }
@@ -1370,7 +1370,7 @@ static PetscErrorCode PCTFS_gs_gop_pairwise_plus_hc(PCTFS_gs_id *gs,  PetscScala
     if ((PCTFS_my_id|mask)==(*list|mask)) {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in, &status);CHKERRQ(ierr);
+      ierr = MPI_Wait(ids_in, &status);CHKERRMPI(ierr);
       ids_in++;
       while (*iptr >= 0) *(dptr1 + *iptr++) += *in2++;
     }
@@ -1386,7 +1386,7 @@ static PetscErrorCode PCTFS_gs_gop_pairwise_plus_hc(PCTFS_gs_id *gs,  PetscScala
     if ((PCTFS_my_id|mask)==(*msg_list|mask)) {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_out, &status);CHKERRQ(ierr);
+      ierr = MPI_Wait(ids_out, &status);CHKERRMPI(ierr);
       ids_out++;
     }
     msg_list++;

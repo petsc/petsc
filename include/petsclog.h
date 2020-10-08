@@ -508,8 +508,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm,const Pets
   PetscErrorCode ierr;
 
   if (type == MPI_DATATYPE_NULL) return 0;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Type_size(type,&typesize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Type_size(type,&typesize);CHKERRMPI(ierr);
   for (p=0; p<size; ++p) {
     *length += (PetscLogDouble) (counts[p]*typesize);
   }
@@ -522,7 +522,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeCount(PetscInt n,const PetscM
   PetscErrorCode ierr;
 
   if (type == MPI_DATATYPE_NULL) return 0;
-  ierr = MPI_Type_size(type,&typesize);CHKERRQ(ierr);
+  ierr = MPI_Type_size(type,&typesize);CHKERRMPI(ierr);
   for (p=0; p<n; ++p) {
     *length += (PetscLogDouble) (counts[p]*typesize);
   }

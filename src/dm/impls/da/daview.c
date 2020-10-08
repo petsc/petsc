@@ -19,7 +19,7 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
   const char       *fnames[] = {"dimension","m","n","p","dof","stencil_width","bx","by","bz","stencil_type"};
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
     mx   = mxCreateStructMatrix(1,1,8,(const char**)fnames);
@@ -55,7 +55,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT);CHKERRQ(ierr);

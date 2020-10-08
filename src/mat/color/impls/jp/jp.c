@@ -422,7 +422,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
   ISColoringValue  *color,*mincolor;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mc),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mc),&rank);CHKERRMPI(ierr);
   ierr = PetscLogEventBegin(MATCOLORING_Weights,mc,0,0,0);CHKERRQ(ierr);
   ierr = MatColoringCreateWeights(mc,&weights,&lperm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MATCOLORING_Weights,mc,0,0,0);CHKERRQ(ierr);

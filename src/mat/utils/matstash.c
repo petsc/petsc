@@ -38,8 +38,8 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
 
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag1);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag2);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(stash->comm,&stash->size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(stash->comm,&stash->size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRMPI(ierr);
   ierr = PetscMalloc1(2*stash->size,&stash->flg_v);CHKERRQ(ierr);
   for (i=0; i<2*stash->size; i++) stash->flg_v[i] = -1;
 
@@ -145,7 +145,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
   /* wait on sends */
   if (nsends) {
     ierr = PetscMalloc1(2*nsends,&send_status);CHKERRQ(ierr);
-    ierr = MPI_Waitall(2*nsends,stash->send_waits,send_status);CHKERRQ(ierr);
+    ierr = MPI_Waitall(2*nsends,stash->send_waits,send_status);CHKERRMPI(ierr);
     ierr = PetscFree(send_status);CHKERRQ(ierr);
   }
 
@@ -577,8 +577,8 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
 
   for (i=0,count=0; i<size; i++) {
     if (sizes[i]) {
-      ierr = MPI_Isend(sindices+2*startv[i],2*nlengths[i],MPIU_INT,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
-      ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_SCALAR,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(sindices+2*startv[i],2*nlengths[i],MPIU_INT,i,tag1,comm,send_waits+count++);CHKERRMPI(ierr);
+      ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_SCALAR,i,tag2,comm,send_waits+count++);CHKERRMPI(ierr);
     }
   }
 #if defined(PETSC_USE_INFO)
@@ -663,21 +663,21 @@ PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPII
   while (!match_found) {
     if (stash->reproduce) {
       i    = stash->reproduce_count++;
-      ierr = MPI_Wait(stash->recv_waits+i,&recv_status);CHKERRQ(ierr);
+      ierr = MPI_Wait(stash->recv_waits+i,&recv_status);CHKERRMPI(ierr);
     } else {
-      ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
+      ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRMPI(ierr);
     }
     if (recv_status.MPI_SOURCE < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Negative MPI source!");
 
     /* Now pack the received message into a structure which is usable by others */
     if (i % 2) {
-      ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRMPI(ierr);
 
       flg_v[2*recv_status.MPI_SOURCE] = i/2;
 
       *nvals = *nvals/bs2;
     } else {
-      ierr = MPI_Get_count(&recv_status,MPIU_INT,nvals);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&recv_status,MPIU_INT,nvals);CHKERRMPI(ierr);
 
       flg_v[2*recv_status.MPI_SOURCE+1] = i/2;
 
@@ -795,11 +795,11 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
     displs[1] = offsetof(struct DummyBlock,vals);
     types[0] = MPIU_INT;
     types[1] = MPIU_SCALAR;
-    ierr = MPI_Type_create_struct(2,blocklens,displs,types,&stype);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&stype);CHKERRQ(ierr);
-    ierr = MPI_Type_create_resized(stype,0,stash->blocktype_size,&stash->blocktype);CHKERRQ(ierr); /* MPI-2 */
-    ierr = MPI_Type_commit(&stash->blocktype);CHKERRQ(ierr);
-    ierr = MPI_Type_free(&stype);CHKERRQ(ierr);
+    ierr = MPI_Type_create_struct(2,blocklens,displs,types,&stype);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&stype);CHKERRMPI(ierr);
+    ierr = MPI_Type_create_resized(stype,0,stash->blocktype_size,&stash->blocktype);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&stash->blocktype);CHKERRMPI(ierr);
+    ierr = MPI_Type_free(&stype);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -815,7 +815,7 @@ static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm,const PetscMPIInt ta
 
   PetscFunctionBegin;
   if (rank != stash->sendranks[rankid]) SETERRQ3(comm,PETSC_ERR_PLIB,"BTS Send rank %d does not match sendranks[%d] %d",rank,rankid,stash->sendranks[rankid]);
-  ierr = MPI_Isend(stash->sendframes[rankid].buffer,hdr->count,stash->blocktype,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
+  ierr = MPI_Isend(stash->sendframes[rankid].buffer,hdr->count,stash->blocktype,rank,tag[0],comm,&req[0]);CHKERRMPI(ierr);
   stash->sendframes[rankid].count = hdr->count;
   stash->sendframes[rankid].pending = 1;
   PetscFunctionReturn(0);
@@ -834,7 +834,7 @@ static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm,const PetscMPIInt ta
   PetscFunctionBegin;
   ierr = PetscSegBufferGet(stash->segrecvframe,1,&frame);CHKERRQ(ierr);
   ierr = PetscSegBufferGet(stash->segrecvblocks,hdr->count,&frame->buffer);CHKERRQ(ierr);
-  ierr = MPI_Irecv(frame->buffer,hdr->count,stash->blocktype,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
+  ierr = MPI_Irecv(frame->buffer,hdr->count,stash->blocktype,rank,tag[0],comm,&req[0]);CHKERRMPI(ierr);
   frame->count = hdr->count;
   frame->pending = 1;
   PetscFunctionReturn(0);
@@ -964,13 +964,13 @@ static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash *stash,PetscMPIInt *n,
   while (!stash->recvframe_active || stash->recvframe_i == stash->recvframe_count) {
     if (stash->some_i == stash->some_count) {
       if (stash->recvcount == stash->nrecvranks) PetscFunctionReturn(0); /* Done */
-      ierr = MPI_Waitsome(stash->nrecvranks,stash->recvreqs,&stash->some_count,stash->some_indices,stash->use_status?stash->some_statuses:MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Waitsome(stash->nrecvranks,stash->recvreqs,&stash->some_count,stash->some_indices,stash->use_status?stash->some_statuses:MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
       stash->some_i = 0;
     }
     stash->recvframe_active = &stash->recvframes[stash->some_indices[stash->some_i]];
     stash->recvframe_count = stash->recvframe_active->count; /* From header; maximum count */
     if (stash->use_status) { /* Count what was actually sent */
-      ierr = MPI_Get_count(&stash->some_statuses[stash->some_i],stash->blocktype,&stash->recvframe_count);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&stash->some_statuses[stash->some_i],stash->blocktype,&stash->recvframe_count);CHKERRMPI(ierr);
     }
     if (stash->recvframe_count > 0) { /* Check for InsertMode consistency */
       block = (MatStashBlock*)&((char*)stash->recvframe_active->buffer)[0];
@@ -998,7 +998,7 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Waitall(stash->nsendranks,stash->sendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(stash->nsendranks,stash->sendreqs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   if (stash->first_assembly_done) { /* Reuse the communication contexts, so consolidate and reset segrecvblocks  */
     void *dummy;
     ierr = PetscSegBufferExtractInPlace(stash->segrecvblocks,&dummy);CHKERRQ(ierr);
@@ -1037,7 +1037,7 @@ PetscErrorCode MatStashScatterDestroy_BTS(MatStash *stash)
   stash->recvframes = NULL;
   ierr = PetscSegBufferDestroy(&stash->segrecvblocks);CHKERRQ(ierr);
   if (stash->blocktype != MPI_DATATYPE_NULL) {
-    ierr = MPI_Type_free(&stash->blocktype);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&stash->blocktype);CHKERRMPI(ierr);
   }
   stash->nsendranks = 0;
   stash->nrecvranks = 0;

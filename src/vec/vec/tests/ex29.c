@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   Vec            x,y;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   bs   = size;
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-repeat",&repeat,NULL);CHKERRQ(ierr);

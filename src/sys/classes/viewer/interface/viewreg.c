@@ -549,7 +549,7 @@ PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer,PetscInt i,Pe
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   if (i >= *mcnt) {
     *mcnt += cnt;
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -561,7 +561,7 @@ PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer,PetscInt *mcnt
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   *mcnt = 0;
-  ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -573,7 +573,7 @@ PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer,PetscMPIInt r
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   while (PETSC_TRUE) {
     if (rank < *mcnt) break;
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -585,7 +585,7 @@ PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer,PetscInt *mcnt
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   while (PETSC_TRUE) {
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
     if (!*mcnt) break;
   }
   PetscFunctionReturn(0);

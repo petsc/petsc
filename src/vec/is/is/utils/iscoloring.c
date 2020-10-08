@@ -163,8 +163,8 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
     PetscMPIInt size,rank;
 
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"ISColoring Object: %d MPI processes\n",size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"ISColoringType: %s\n",ISColoringTypes[iscoloring->ctype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
@@ -256,7 +256,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscI
       ierr = PetscArrayzero(mcolors,nc);CHKERRQ(ierr);
 
       if (iscoloring->ctype == IS_COLORING_GLOBAL) {
-        ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
+        ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRMPI(ierr);
         base -= iscoloring->N;
         for (i=0; i<n; i++) ii[colors[i]][mcolors[colors[i]]++] = i + base; /* global idx */
       } else if (iscoloring->ctype == IS_COLORING_LOCAL) {
@@ -349,19 +349,19 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   comm = (*iscoloring)->comm;
 
   /* compute the number of the first node on my processor */
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   /* should use MPI_Scan() */
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
     base = 0;
     top  = n;
   } else {
-    ierr = MPI_Recv(&base,1,MPIU_INT,rank-1,tag,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(&base,1,MPIU_INT,rank-1,tag,comm,&status);CHKERRMPI(ierr);
     top  = base+n;
   }
   if (rank < size-1) {
-    ierr = MPI_Send(&top,1,MPIU_INT,rank+1,tag,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(&top,1,MPIU_INT,rank+1,tag,comm);CHKERRMPI(ierr);
   }
 
   /* compute the total number of colors */
@@ -426,7 +426,7 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
 
    PetscFunctionBegin;
    ierr = PetscObjectGetComm((PetscObject)ito,&comm);CHKERRQ(ierr);
-   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
    ierr = ISGetLocalSize(ito,&ito_ln);CHKERRQ(ierr);
    /* why we do not have ISGetLayout? */
    isrmap = ito->map;
@@ -565,7 +565,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   ierr = PetscArrayzero(lsizes,np);CHKERRQ(ierr);
   for (i=0; i<n; i++) lsizes[indices[i]]++;
   ierr = MPIU_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  ierr = MPI_Scan(lsizes,starts,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Scan(lsizes,starts,np,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   for (i=0; i<np; i++) starts[i] -= lsizes[i];
   for (i=1; i<np; i++) {
     sums[i]   += sums[i-1];
@@ -627,7 +627,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
   if (len == PETSC_DEFAULT) {
     PetscMPIInt size;
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     len  = (PetscInt) size;
   }
 
@@ -700,7 +700,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
   PetscValidPointer(isout,2);
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&stride);CHKERRQ(ierr);
   if (size == 1 && stride) { /* should handle parallel ISStride also */
@@ -720,7 +720,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
 
     ierr = PetscMalloc1(N,&indices);CHKERRQ(ierr);
     ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
-    ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr);
+    ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRMPI(ierr);
     ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
     ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
@@ -760,7 +760,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
   PetscMPIInt     size,*offsets = NULL,*sizes = NULL, nn = n;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
   ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
@@ -770,7 +770,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
   ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(N+1,&indices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_COLORING_VALUE,indices,sizes,offsets,MPIU_COLORING_VALUE,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_COLORING_VALUE,indices,sizes,offsets,MPIU_COLORING_VALUE,comm);CHKERRMPI(ierr);
 
   *outindices = indices;
   if (outN) *outN = N;

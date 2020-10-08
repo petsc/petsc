@@ -410,7 +410,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   }
 
   /* check consistency of connected components among neighbouring subdomains -> it adapt them in case it is needed */
-  ierr = MPI_Comm_size(interface_comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(interface_comm,&size);CHKERRMPI(ierr);
   adapt_interface_reduced = PETSC_FALSE;
   if (size > 1) {
     PetscInt i;
@@ -490,13 +490,13 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       for (k=0;k<count;k++) {
 
         ierr = PetscMPIIntCast(neighs[k],&neigh);CHKERRQ(ierr);
-        ierr = MPI_Isend(send_buffer_bool + i,           1,MPIU_BOOL,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
-        ierr = MPI_Irecv(recv_buffer_bool + sum_requests,1,MPIU_BOOL,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
+        ierr = MPI_Isend(send_buffer_bool + i,           1,MPIU_BOOL,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRMPI(ierr);
+        ierr = MPI_Irecv(recv_buffer_bool + sum_requests,1,MPIU_BOOL,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRMPI(ierr);
         sum_requests++;
       }
     }
-    ierr = MPI_Waitall(sum_requests,recv_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-    ierr = MPI_Waitall(sum_requests,send_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Waitall(sum_requests,recv_requests,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
+    ierr = MPI_Waitall(sum_requests,send_requests,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
 
     /* determine the subsets I have to adapt (those having more than 1 cc) */
     ierr = PetscBTCreate(graph->n_subsets,&subset_cc_adapt);CHKERRQ(ierr);
@@ -556,15 +556,15 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         ierr = PetscMPIIntCast(2*graph->subset_ref_node[i]+1,&tag);CHKERRQ(ierr);
         for (k=0;k<graph->count[j];k++) {
           ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
-          ierr = MPI_Isend(&send_buffer[start_of_send],size_of_send,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
-          ierr = MPI_Irecv(&recv_buffer[start_of_recv],size_of_send,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
+          ierr = MPI_Isend(&send_buffer[start_of_send],size_of_send,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRMPI(ierr);
+          ierr = MPI_Irecv(&recv_buffer[start_of_recv],size_of_send,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRMPI(ierr);
           start_of_recv += size_of_send;
           sum_requests++;
         }
         start_of_send += size_of_send;
       }
     }
-    ierr = MPI_Waitall(sum_requests,recv_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Waitall(sum_requests,recv_requests,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
 
     /* refine connected components */
     start_of_recv = 0;
@@ -646,7 +646,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       ierr = PetscFree(refine_buffer);CHKERRQ(ierr);
     }
     ierr = PetscFree(labels);CHKERRQ(ierr);
-    ierr = MPI_Waitall(sum_requests,send_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Waitall(sum_requests,send_requests,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
     ierr = PetscFree2(send_requests,recv_requests);CHKERRQ(ierr);
     ierr = PetscFree2(send_buffer,recv_buffer);CHKERRQ(ierr);
     ierr = PetscFree(cum_recv_counts);CHKERRQ(ierr);
@@ -771,7 +771,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
 
   /* reset any previous search of connected components */
   ierr = PetscBTMemzero(graph->nvtxs,graph->touched);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)graph->l2gmap),&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)graph->l2gmap),&commsize);CHKERRMPI(ierr);
   if (commsize > graph->commsizelimit) {
     PetscInt i;
     for (i=0;i<graph->nvtxs;i++) {
@@ -852,7 +852,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     PetscCheckSameComm(graph->l2gmap,1,custom_primal_vertices,7);
   }
   ierr = PetscObjectGetComm((PetscObject)(graph->l2gmap),&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&commsize);CHKERRMPI(ierr);
 
   /* custom_minimal_size */
   graph->custom_minimal_size = custom_minimal_size;

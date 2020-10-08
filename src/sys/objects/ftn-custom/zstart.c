@@ -175,7 +175,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   PetscMPIInt    rank;
   char           *p;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if (!rank) {
 #if defined(PETSC_HAVE_IARG_COUNT_PROGNAME)
     *argc = iargc_();
@@ -184,7 +184,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
     *argc = 1 + iargc_();
 #endif
   }
-  ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
 
   /* PetscTrMalloc() not yet set, so don't use PetscMalloc() */
   ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),PETSC_FALSE,0,0,0,(void**)argv);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
       }
     }
   }
-  ierr = MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   if (rank) {
     for (i=0; i<*argc; i++) (*argv)[i+1] = (*argv)[i] + warg;
   }

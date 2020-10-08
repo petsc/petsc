@@ -348,7 +348,7 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
     ierr = PetscFree3(mat_mkl_cpardiso->ia,mat_mkl_cpardiso->ja,mat_mkl_cpardiso->a);CHKERRQ(ierr);
   }
   comm = MPI_Comm_f2c(mat_mkl_cpardiso->comm_mkl_cpardiso);
-  ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&comm);CHKERRMPI(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -600,8 +600,8 @@ PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpa
 
   PetscFunctionBegin;
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&comm);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   mat_mkl_cpardiso->comm_mkl_cpardiso = MPI_Comm_c2f(comm);
 
   mat_mkl_cpardiso->CleanUp = PETSC_FALSE;

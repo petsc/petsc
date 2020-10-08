@@ -251,8 +251,8 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&pcomm);CHKERRQ(ierr);
   /* Duplicate the communicator to be sure that PTSCOTCH attribute caching does not interfere with PETSc. */
-  ierr = MPI_Comm_dup(pcomm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(pcomm,&comm);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) {
     /* bs indicates if the converted matrix is "reduced" from the original and hence the
@@ -273,7 +273,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
     PetscInt    *sizes, *seps, log2size, subd, *level, base = 0;
     PetscMPIInt size;
 
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     log2size = PetscLog2Real(size);
     subd = PetscPowInt(2,log2size);
     if (subd != size) SETERRQ(comm,PETSC_ERR_SUP,"Only power of 2 communicator sizes");
@@ -380,7 +380,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
 
     ierr = PetscFree(velotab);CHKERRQ(ierr);
   }
-  ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&comm);CHKERRMPI(ierr);
 
   if (bs > 1) {
     PetscInt *newlocals;

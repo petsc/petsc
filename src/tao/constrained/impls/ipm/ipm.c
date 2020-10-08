@@ -723,7 +723,7 @@ PetscErrorCode IPMUpdateAi(Tao tao)
   /* Create Ai matrix if it doesn't exist yet */
   if (!ipmP->Ai) {
     comm = ((PetscObject)(tao->solution))->comm;
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     if (size == 1) {
       ierr = PetscMalloc1(ipmP->nb,&nonzeros);CHKERRQ(ierr);
       for (i=0;i<ipmP->mi;i++) {
@@ -854,7 +854,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
 
   PetscFunctionBegin;
   comm = ((PetscObject)(tao->solution))->comm;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = IPMUpdateAi(tao);CHKERRQ(ierr);
 
   /* allocate workspace */

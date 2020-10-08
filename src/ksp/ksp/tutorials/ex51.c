@@ -51,8 +51,8 @@ int main(int argc,char **args)
   N    = (p*m+1)*(p*m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m; /* mesh width */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   /* Create stiffness matrix */
   ierr  = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);

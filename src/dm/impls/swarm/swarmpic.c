@@ -233,7 +233,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,Pe
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   ierr = DMSwarmGetCellDM(dm,&celldm);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(celldm,&coorlocal);CHKERRQ(ierr);
@@ -252,14 +252,14 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,Pe
   /* broadcast points from rank 0 if requested */
   if (redundant) {
     my_npoints = npoints;
-    ierr = MPI_Bcast(&my_npoints,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&my_npoints,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
 
     if (rank > 0) { /* allocate space */
       ierr = PetscMalloc1(bs*my_npoints,&my_coor);CHKERRQ(ierr);
     } else {
       my_coor = coor;
     }
-    ierr = MPI_Bcast(my_coor,bs*my_npoints,MPIU_REAL,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(my_coor,bs*my_npoints,MPIU_REAL,0,comm);CHKERRMPI(ierr);
   } else {
     my_npoints = npoints;
     my_coor = coor;

@@ -447,17 +447,17 @@ static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw,unsigned char palet
   if (w) *w = (unsigned int)img->w;
   if (h) *h = (unsigned int)img->h;
   if (pixels) *pixels = NULL;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = PetscMemcpy(palette,img->palette,sizeof(img->palette));CHKERRQ(ierr);
     ierr = PetscMalloc1((size_t)(img->w*img->h),&buffer);CHKERRQ(ierr);
     if (pixels) *pixels = buffer;
   }
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = PetscArraycpy(buffer,img->buffer,img->w*img->h);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Reduce(img->buffer,buffer,img->w*img->h,MPI_UNSIGNED_CHAR,MPI_MAX,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+    ierr = MPI_Reduce(img->buffer,buffer,img->w*img->h,MPI_UNSIGNED_CHAR,MPI_MAX,0,PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }

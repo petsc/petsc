@@ -20,7 +20,7 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   if (info.dim == 3) {
@@ -75,8 +75,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if (dim == 2) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,&da);CHKERRQ(ierr);
   } else if (dim == 3) {
@@ -127,10 +127,10 @@ int main(int argc,char **argv)
       if (i == rank) {
         ierr = VecView(smallvec,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
     }
 
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
     ierr = VecView(largevec,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
     ierr = VecDestroy(&smallvec);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ int main(int argc,char **argv)
         ierr = PetscPrintf(PETSC_COMM_SELF,"Processor %d: \n",i);CHKERRQ(ierr);
         ierr = DMView(subda[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
     }
 
     ierr = DMGetLocalVector(subda[0],&slvec);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ int main(int argc,char **argv)
         ierr = MatView(m,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
         ierr = MatDestroy(&m);CHKERRQ(ierr);
       }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
     }
     ierr = DMRestoreLocalVector(subda[0],&slvec);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(subda[0],&sgvec);CHKERRQ(ierr);

@@ -208,7 +208,7 @@ PetscErrorCode PetscCDPrint(const PetscCoarsenData *ail, MPI_Comm comm)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   for (ii=0; ii<ail->size; ii++) {
     kk = 0;
     n  = ail->array[ii];
@@ -434,8 +434,8 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)a_Gmat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MatGetOwnershipRange(a_Gmat, &my0, &Iend);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(comm, &tag1);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(comm, &tag2);CHKERRQ(ierr);
@@ -760,7 +760,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
               *pt++ = gid; *pt++ = lid0;
             }
             /* send request tag1 [n, proc, n*[gid1,lid0] ] */
-            ierr = MPI_Isend(sbuff, 2*n+2, MPIU_INT, proc, tag1, comm, request);CHKERRQ(ierr);
+            ierr = MPI_Isend(sbuff, 2*n+2, MPIU_INT, proc, tag1, comm, request);CHKERRMPI(ierr);
             /* post receive */
             request        = (MPI_Request*)pt;
             rreqs2[nSend1] = request; /* cache recv request */
@@ -781,13 +781,13 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           PetscInt    rbuff[BF_SZ],*pt,*pt2,*pt3,count2,*sbuff,count3;
           MPI_Request *request;
 
-          ierr = MPI_Iprobe(MPI_ANY_SOURCE, tag1, comm, &flag, &status);CHKERRQ(ierr);
+          ierr = MPI_Iprobe(MPI_ANY_SOURCE, tag1, comm, &flag, &status);CHKERRMPI(ierr);
           if (!flag) break;
-          ierr = MPI_Get_count(&status, MPIU_INT, &count);CHKERRQ(ierr);
+          ierr = MPI_Get_count(&status, MPIU_INT, &count);CHKERRMPI(ierr);
           if (count > BF_SZ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for receive: %d",count);
           proc = status.MPI_SOURCE;
           /* receive request tag1 [n, proc, n*[gid1,lid0] ] */
-          ierr = MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, comm, &status);CHKERRQ(ierr);
+          ierr = MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, comm, &status);CHKERRMPI(ierr);
           /* count sends */
           pt = rbuff; count3 = count2 = 0;
           n  = *pt++; kk = *pt++;
@@ -826,7 +826,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
             ierr = PetscCDRemoveAll(agg_llists, lid1);CHKERRQ(ierr);
           }
           /* send requested data tag2 *[lid0, n, n*[gid1] ] */
-          ierr = MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, comm, request);CHKERRQ(ierr);
+          ierr = MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, comm, request);CHKERRMPI(ierr);
         }
 
         /* receive tag2 *[lid0, n, n*[gid] ] */
@@ -860,7 +860,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
         /* wait for tag2 isends */
         while (nSend2--) {
           MPI_Request *request = sreqs2[nSend2];
-          ierr = MPI_Wait(request, &status);CHKERRQ(ierr);
+          ierr = MPI_Wait(request, &status);CHKERRMPI(ierr);
           ierr = PetscFree(request);CHKERRQ(ierr);
         }
 
@@ -1082,7 +1082,7 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);

@@ -371,7 +371,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
         /* coarse solve is (redundant) LU by default; set shifttype NONZERO to avoid annoying zero-pivot in LU preconditioner */
         ierr = KSPSetType(mglevels[0]->smoothd,KSPPREONLY);CHKERRQ(ierr);
         ierr = KSPGetPC(mglevels[0]->smoothd,&ipc);CHKERRQ(ierr);
-        ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
         if (size > 1) {
           ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
         } else {

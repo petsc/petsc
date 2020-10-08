@@ -175,7 +175,7 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
   ierr = PetscDrawIsNull(bar->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)bar),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)bar),&rank);CHKERRMPI(ierr);
 
   if (bar->numBins < 1) PetscFunctionReturn(0);
 

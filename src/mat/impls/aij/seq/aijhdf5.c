@@ -38,8 +38,8 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   }
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscObjectGetName((PetscObject)mat,&mat_name);CHKERRQ(ierr);
   if (format==PETSC_VIEWER_HDF5_MAT) {
     ierr = PetscStrallocpy("jc",&i_name);CHKERRQ(ierr);
@@ -105,10 +105,10 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 
   /* Create PetscLayout for j and a vectors; construct ranges first */
   ierr = PetscMalloc1(size+1, &range);CHKERRQ(ierr);
-  ierr = MPI_Allgather(i, 1, MPIU_INT, range, 1, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(i, 1, MPIU_INT, range, 1, MPIU_INT, comm);CHKERRMPI(ierr);
   /* Last rank has global number of nonzeros (= length of j and a arrays) in i[m] (last i entry) so broadcast it */
   range[size] = i[m];
-  ierr = MPI_Bcast(&range[size], 1, MPIU_INT, size-1, comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&range[size], 1, MPIU_INT, size-1, comm);CHKERRMPI(ierr);
   for (p=size-1; p>0; p--) {
     if (!range[p]) range[p] = range[p+1]; /* for ranks with 0 rows, take the value from the next processor */
   }

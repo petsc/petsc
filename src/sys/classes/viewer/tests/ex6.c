@@ -188,7 +188,7 @@ int main(int argc,char **args)
     ierr = TestOpen(FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
     if (!rank && !info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing info pointer");
     ierr = TestClose(&viewer);CHKERRQ(ierr);
   }

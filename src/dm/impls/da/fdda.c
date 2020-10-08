@@ -235,7 +235,7 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
   ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,&m,&n,&p,&nc,NULL,&bx,&by,&bz,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (ctype == IS_COLORING_LOCAL) {
     if (size == 1) {
       ctype = IS_COLORING_GLOBAL;
@@ -764,7 +764,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
         DMBoundaryType bx;
         PetscMPIInt  size;
         ierr = DMDAGetInfo(da,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRMPI(ierr);
         if (size == 1 && bx == DM_BOUNDARY_NONE) {
           ierr = DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(da,A,PETSC_FALSE);CHKERRQ(ierr);
         } else {
@@ -815,7 +815,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
   ierr = MatSetStencil(A,dim,dims,starts,dof);CHKERRQ(ierr);
   ierr = MatSetDM(A,da);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size > 1) {
     /* change viewer to display matrix in natural ordering */
     ierr = MatSetOperation(A, MATOP_VIEW, (void (*)(void))MatView_MPI_DA);CHKERRQ(ierr);
@@ -1532,8 +1532,8 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   PetscMPIInt            rank,size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRMPI(ierr);
 
   /*
          nc - number of components per grid point

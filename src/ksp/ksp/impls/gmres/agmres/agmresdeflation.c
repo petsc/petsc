@@ -169,7 +169,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
 
   /* Broadcast Sr to all other processes to have consistent data;
    * FIXME should investigate how to get unique Schur vectors (unique QR factorization, probably the sign of rotations) */
-  ierr = MPI_Bcast(Sr, (N+1)*r, MPIU_SCALAR, agmres->First, PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+  ierr = MPI_Bcast(Sr, (N+1)*r, MPIU_SCALAR, agmres->First, PetscObjectComm((PetscObject)ksp));CHKERRMPI(ierr);
   /* Update the Shift values for the Newton basis. This is surely necessary when applying the DeflationPrecond */
   if (agmres->DeflPrecond) {
     ierr = KSPAGMRESLejaOrdering(wr, wi, agmres->Rshift, agmres->Ishift, max_k);CHKERRQ(ierr);

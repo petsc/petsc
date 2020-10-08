@@ -50,8 +50,8 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
 #if defined(PETSC_HAVE_MED)
   mederr = MEDfileCompatibility(filename, &hdfok, &medok);
   if (mederr) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Cannot determine MED file compatibility: %s", filename);

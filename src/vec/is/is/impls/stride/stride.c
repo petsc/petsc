@@ -179,8 +179,8 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   if (iascii) {
     PetscBool matl, isperm;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRMPI(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRMPI(ierr);
     ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     matl = (PetscBool)(fmt == PETSC_VIEWER_ASCII_MATLAB);
     ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,&isperm);CHKERRQ(ierr);

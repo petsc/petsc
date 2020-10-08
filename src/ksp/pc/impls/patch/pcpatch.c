@@ -261,12 +261,12 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     }
     /* Offsets are the offsets on the current process of the
      * global dof numbering for the subspaces. */
-    ierr = MPI_Type_contiguous(n, MPIU_INT, &contig);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&contig);CHKERRQ(ierr);
+    ierr = MPI_Type_contiguous(n, MPIU_INT, &contig);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&contig);CHKERRMPI(ierr);
 
     ierr = PetscSFBcastBegin(rankSF, contig, offsets, remoteOffsets);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(rankSF, contig, offsets, remoteOffsets);CHKERRQ(ierr);
-    ierr = MPI_Type_free(&contig);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&contig);CHKERRMPI(ierr);
     ierr = PetscFree(offsets);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&rankSF);CHKERRQ(ierr);
     /* Now remoteOffsets contains the offsets on the remote
@@ -3232,7 +3232,7 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   /* TODO Redo tabbing with set tbas in new style */
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (!isascii) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) pc), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) pc), &rank);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Subspace Correction preconditioner with %d patches\n", patch->npatch);CHKERRQ(ierr);
   if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {

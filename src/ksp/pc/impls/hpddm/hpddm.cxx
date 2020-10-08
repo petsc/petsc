@@ -205,7 +205,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
     data->levels = levels;
   }
   ierr = PetscOptionsHead(PetscOptionsObject, "PCHPDDM options");CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRMPI(ierr);
   previous = size;
   while (i < PETSC_HPDDM_MAXLEVELS) {
     PetscInt p = 1;
@@ -380,8 +380,8 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
       for (i = 1; i < data->N; ++i) {
         if (data->levels[i]->ksp) color = 1;
         else color = 0;
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRQ(ierr);
-        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRMPI(ierr);
+        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank);CHKERRMPI(ierr);
         ierr = PetscSubcommCreate(PetscObjectComm((PetscObject)pc), &subcomm);CHKERRQ(ierr);
         ierr = PetscSubcommSetNumber(subcomm, PetscMin(size, 2));CHKERRQ(ierr);
         ierr = PetscSubcommSetTypeGeneral(subcomm, color, rank);CHKERRQ(ierr);
@@ -741,7 +741,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
     }
     /* check if some coarser levels are being reused */
-    ierr = MPI_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     const int *addr = data->levels[0]->P ? data->levels[0]->P->getAddrLocal() : &HPDDM::i__0;
 
     if (addr != &HPDDM::i__0 && reused != data->N - 1) {

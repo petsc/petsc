@@ -1801,7 +1801,7 @@ static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(isy,&localsize);CHKERRQ(ierr);
-  ierr = MPI_Scan(&localsize,&size,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)isy));CHKERRQ(ierr);
+  ierr = MPI_Scan(&localsize,&size,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)isy));CHKERRMPI(ierr);
   size -= localsize;
   while (ilink) {
     IS isrl,isr;

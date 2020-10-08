@@ -27,7 +27,7 @@
     PetscReal b1[3],b2[3];                                              \
     if (PetscIsNanReal(b)) {b1[2] = 1;} else {b1[2] = 0;};              \
     b1[0] = -b; b1[1] = b;                                              \
-    _7_ierr = MPI_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,a);CHKERRQ(_7_ierr); \
+    _7_ierr = MPI_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,a);CHKERRMPI(_7_ierr); \
     if (!(b2[2] > 0) && !PetscEqualReal(-b2[0],b2[1])) SETERRQ1(a,PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c); \
   } while (0)
 

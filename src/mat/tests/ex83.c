@@ -30,9 +30,9 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size != 4) SETERRQ(comm,1,"Must run with 4 processors \n");
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   /*set a small matrix */
   ierr = PetscMalloc1(5,&ia);CHKERRQ(ierr);
   ierr = PetscMalloc1(16,&ja);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ int main(int argc,char **args)
   ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
   ierr = ISView(isrows,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /*create a sub-communicator */
-  ierr = MPI_Comm_split(comm, membershipKey,rank,&scomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_split(comm, membershipKey,rank,&scomm);CHKERRMPI(ierr);
   ierr = ISGetLocalSize(isrows,&isrows_localsize);CHKERRQ(ierr);
   ierr = PetscMalloc1(isrows_localsize,&indices_sc);CHKERRQ(ierr);
   ierr = ISGetIndices(isrows,&indices);CHKERRQ(ierr);

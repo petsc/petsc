@@ -445,8 +445,8 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj
   PetscMPIInt    prank,size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(pobj->comm,&prank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(obj->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(pobj->comm,&prank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(obj->comm,&size);CHKERRMPI(ierr);
   if (size == 1 && prank > 0) obj->optionsprinted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

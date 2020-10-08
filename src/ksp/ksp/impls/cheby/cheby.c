@@ -97,7 +97,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
           PetscInt  sendbuf,recvbuf;
           ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);
           sendbuf = (PetscInt)pcreason;
-          ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+          ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRMPI(ierr);
           ierr = PCSetFailedReason(ksp->pc,(PCFailedReason) recvbuf);CHKERRQ(ierr);
         }
         ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);

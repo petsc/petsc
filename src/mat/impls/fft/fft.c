@@ -52,7 +52,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
 
   PetscFunctionBegin;
   if (ndim < 1) SETERRQ1(comm,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
 
   ierr      = MatCreate(comm,&FFT);CHKERRQ(ierr);
   ierr      = PetscNewLog(FFT,&fft);CHKERRQ(ierr);

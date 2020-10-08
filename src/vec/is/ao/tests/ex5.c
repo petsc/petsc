@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help); if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
 
   ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
   ierr = PetscLayoutSetSize(layout, n_global);CHKERRQ(ierr);

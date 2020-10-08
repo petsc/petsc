@@ -18,7 +18,7 @@ int main(int argc,char **args)
   char           factortype[64];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
 
   /* Create and assemble matrices, all have same data structure */
   for (k=0; k<num_numfac; k++) {

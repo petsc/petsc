@@ -2764,12 +2764,6 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,
 #endif
 
 /*
-    Returned from PETSc functions that are called from MPI, such as related to attributes
-*/
-PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS;
-PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
-
-/*
     List of external packages and queries on it
 */
 PETSC_EXTERN PetscErrorCode  PetscHasExternalPackage(const char[],PetscBool*);

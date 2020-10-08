@@ -14,8 +14,8 @@ PetscErrorCode fill(Mat m, Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(MPI_COMM_WORLD, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD, &size);CHKERRMPI(ierr);
 
   if (rank == 1 || rank == 2) localRows = 4;
   if (size == 1) localRows = 8;

@@ -154,7 +154,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)a_Prol,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = ISGetSize(selected_2, &nselected_2);CHKERRQ(ierr);
   if (nselected_2 == 1 || nselected_2 == 2) { /* 0 happens on idle processors */
     *a_worst_best = 100.0; /* this will cause a stop, but not globalized (should not happen) */
@@ -449,7 +449,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1,const Pet
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Gmat1,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MatGetOwnershipRange(Gmat1,&my0,&Iend);CHKERRQ(ierr); /* AIJ */
   nloc = Iend - my0; /* this does not change */
 
@@ -467,7 +467,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1,const Pet
 
     /* scan my coarse zero gid, set 'lid_state' with coarse GID */
     kk = nselected_1;
-    ierr = MPI_Scan(&kk, &myCrs0, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+    ierr = MPI_Scan(&kk, &myCrs0, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
     myCrs0 -= nselected_1;
 
     if (a_Gmat_2) { /* output */
@@ -681,8 +681,8 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_GAMGProlongator_GEO,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs; my0 = Istart/bs;

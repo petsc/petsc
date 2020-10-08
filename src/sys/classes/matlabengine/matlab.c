@@ -90,9 +90,9 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char host[],PetscMat
     ierr = PetscInfo(0,"Started MATLAB engine\n");CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineEvaluate(e,"MPI_Comm_rank = %d; MPI_Comm_size = %d;\n",rank,size);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = PetscMatlabEngineEvaluate(e,"MPI_Comm_rank = %d; MPI_Comm_size = %d;\n",rank,size);CHKERRQ(ierr);
   *mengine = e;
   PetscFunctionReturn(0);
 }
@@ -216,7 +216,7 @@ PetscErrorCode  PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
 
   PetscFunctionBegin;
   if (!mengine) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_MATLAB_ENGINE_() failed");
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mengine),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mengine),&rank);CHKERRMPI(ierr);
   ierr = PetscSynchronizedFPrintf(PetscObjectComm((PetscObject)mengine),fd,"[%d]%s",rank,mengine->buffer);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PetscObjectComm((PetscObject)mengine),fd);CHKERRQ(ierr);
   PetscFunctionReturn(0);

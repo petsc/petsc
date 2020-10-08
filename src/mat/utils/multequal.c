@@ -501,7 +501,7 @@ PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool  *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -516,7 +516,7 @@ PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool  *flg)
     if (!rank) {
       ierr = PetscRandomGetValue(rctx,&a);CHKERRQ(ierr);
     }
-    ierr = MPI_Bcast(&a, 1, MPIU_SCALAR, 0, comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&a, 1, MPIU_SCALAR, 0, comm);CHKERRMPI(ierr);
 
     /* s2 = a*A*x + A*y */
     ierr = MatMult(A,y,s2);CHKERRQ(ierr); /* s2 = A*y */

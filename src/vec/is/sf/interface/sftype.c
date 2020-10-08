@@ -20,10 +20,10 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Type_get_envelope(*a,&nints,&naddrs,&ntypes,&combiner);CHKERRQ(ierr);
+  ierr = MPI_Type_get_envelope(*a,&nints,&naddrs,&ntypes,&combiner);CHKERRMPI(ierr);
 
   if (combiner != MPI_COMBINER_NAMED) {
-    ierr = MPI_Type_free(a);CHKERRQ(ierr);
+    ierr = MPI_Type_free(a);CHKERRMPI(ierr);
   }
 
   *a = MPI_DATATYPE_NULL;
@@ -50,7 +50,7 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
   *flg = PETSC_FALSE;
   *atype = a;
   if (a == MPIU_INT || a == MPIU_REAL || a == MPIU_SCALAR) PetscFunctionReturn(0);
-  ierr = MPI_Type_get_envelope(a,&nints,&naddrs,&ntypes,&combiner);CHKERRQ(ierr);
+  ierr = MPI_Type_get_envelope(a,&nints,&naddrs,&ntypes,&combiner);CHKERRMPI(ierr);
   if (combiner == MPI_COMBINER_DUP) {
     if (nints != 0 || naddrs != 0 || ntypes != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
     ierr   = MPI_Type_get_contents(a,0,0,1,ints,NULL,types);CHKERRQ(ierr);
@@ -60,13 +60,13 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
       /* If the recursive call returns a new type, then that means that atype[0] != types[0] and we're on the hook to
        * free types[0].  Note that this case occurs if combiner(types[0]) is MPI_COMBINER_DUP, so we're safe to
        * directly call MPI_Type_free rather than MPIPetsc_Type_free here. */
-      ierr = MPI_Type_free(&(types[0]));CHKERRQ(ierr);
+      ierr = MPI_Type_free(&(types[0]));CHKERRMPI(ierr);
     }
     /* In any case, it's up to the caller to free the returned type in this case. */
     *flg = PETSC_TRUE;
   } else if (combiner == MPI_COMBINER_CONTIGUOUS) {
     if (nints != 1 || naddrs != 0 || ntypes != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
-    ierr = MPI_Type_get_contents(a,1,0,1,ints,NULL,types);CHKERRQ(ierr);
+    ierr = MPI_Type_get_contents(a,1,0,1,ints,NULL,types);CHKERRMPI(ierr);
     if (ints[0] == 1) { /* If a is created by MPI_Type_contiguous(1,..) */
       ierr = MPIPetsc_Type_unwrap(types[0],atype,flg);CHKERRQ(ierr);
       if (*flg) {ierr = MPIPetsc_Type_free(&(types[0]));CHKERRQ(ierr);}
@@ -98,8 +98,8 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool *ma
     *match = PETSC_TRUE;
     goto free_types;
   }
-  ierr = MPI_Type_get_envelope(atype,&aintcount,&aaddrcount,&atypecount,&acombiner);CHKERRQ(ierr);
-  ierr = MPI_Type_get_envelope(btype,&bintcount,&baddrcount,&btypecount,&bcombiner);CHKERRQ(ierr);
+  ierr = MPI_Type_get_envelope(atype,&aintcount,&aaddrcount,&atypecount,&acombiner);CHKERRMPI(ierr);
+  ierr = MPI_Type_get_envelope(btype,&bintcount,&baddrcount,&btypecount,&bcombiner);CHKERRMPI(ierr);
   if (acombiner == bcombiner && aintcount == bintcount && aaddrcount == baddrcount && atypecount == btypecount && (aintcount > 0 || aaddrcount > 0 || atypecount > 0)) {
     PetscMPIInt  *aints,*bints;
     MPI_Aint     *aaddrs,*baddrs;
@@ -107,8 +107,8 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool *ma
     PetscInt     i;
     PetscBool    same;
     ierr = PetscMalloc6(aintcount,&aints,bintcount,&bints,aaddrcount,&aaddrs,baddrcount,&baddrs,atypecount,&atypes,btypecount,&btypes);CHKERRQ(ierr);
-    ierr = MPI_Type_get_contents(atype,aintcount,aaddrcount,atypecount,aints,aaddrs,atypes);CHKERRQ(ierr);
-    ierr = MPI_Type_get_contents(btype,bintcount,baddrcount,btypecount,bints,baddrs,btypes);CHKERRQ(ierr);
+    ierr = MPI_Type_get_contents(atype,aintcount,aaddrcount,atypecount,aints,aaddrs,atypes);CHKERRMPI(ierr);
+    ierr = MPI_Type_get_contents(btype,bintcount,baddrcount,btypecount,bints,baddrs,btypes);CHKERRMPI(ierr);
     ierr = PetscArraycmp(aints,bints,aintcount,&same);CHKERRQ(ierr);
     if (same) {
       ierr = PetscArraycmp(aaddrs,baddrs,aaddrcount,&same);CHKERRQ(ierr);
@@ -157,7 +157,7 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a,MPI_Datatype b,PetscI
   *n = 0;
   ierr = MPIPetsc_Type_unwrap(a,&atype,&freeatype);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_unwrap(b,&btype,&freebtype);CHKERRQ(ierr);
-  ierr = MPI_Type_get_envelope(atype,&aintcount,&aaddrcount,&atypecount,&acombiner);CHKERRQ(ierr);
+  ierr = MPI_Type_get_envelope(atype,&aintcount,&aaddrcount,&atypecount,&acombiner);CHKERRMPI(ierr);
   if (acombiner == MPI_COMBINER_CONTIGUOUS && aintcount >= 1) {
     PetscMPIInt  *aints;
     MPI_Aint     *aaddrs;
@@ -165,7 +165,7 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a,MPI_Datatype b,PetscI
     PetscInt      i;
     PetscBool     same;
     ierr = PetscMalloc3(aintcount,&aints,aaddrcount,&aaddrs,atypecount,&atypes);CHKERRQ(ierr);
-    ierr = MPI_Type_get_contents(atype,aintcount,aaddrcount,atypecount,aints,aaddrs,atypes);CHKERRQ(ierr);
+    ierr = MPI_Type_get_contents(atype,aintcount,aaddrcount,atypecount,aints,aaddrs,atypes);CHKERRMPI(ierr);
     /* Check for identity first. */
     if (atypes[0] == btype) {
       *n = aints[0];

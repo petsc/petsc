@@ -67,7 +67,7 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedTyp
   PetscFunctionBegin;
   *twosided = PETSC_BUILDTWOSIDED_NOTSET;
   if (_twosided_type == PETSC_BUILDTWOSIDED_NOTSET) {
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     _twosided_type = PETSC_BUILDTWOSIDED_ALLREDUCE; /* default for small comms, see https://gitlab.com/petsc/petsc/-/merge_requests/2611 */
 #if defined(PETSC_HAVE_MPI_IBARRIER)
     if (size > 1024) _twosided_type = PETSC_BUILDTWOSIDED_IBARRIER;
@@ -92,12 +92,12 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
 
   PetscFunctionBegin;
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
-  ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRQ(ierr);
+  ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
   if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
   tdata = (char*)todata;
   ierr  = PetscMalloc1(nto,&sendreqs);CHKERRQ(ierr);
   for (i=0; i<nto; i++) {
-    ierr = MPI_Issend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRQ(ierr);
+    ierr = MPI_Issend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRMPI(ierr);
   }
   ierr = PetscSegBufferCreate(sizeof(PetscMPIInt),4,&segrank);CHKERRQ(ierr);
   ierr = PetscSegBufferCreate(unitbytes,4*count,&segdata);CHKERRQ(ierr);
@@ -110,7 +110,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   for (done=0; !done;) {
     PetscMPIInt flag;
     MPI_Status  status;
-    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag,comm,&flag,&status);CHKERRQ(ierr);
+    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag,comm,&flag,&status);CHKERRMPI(ierr);
     if (flag) {                 /* incoming message */
       PetscMPIInt *recvrank;
       void        *buf;
@@ -123,10 +123,10 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
     if (!barrier_started) {
       PetscMPIInt sent,nsends;
       ierr = PetscMPIIntCast(nto,&nsends);CHKERRQ(ierr);
-      ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
       if (sent) {
 #if defined(PETSC_HAVE_MPI_IBARRIER)
-        ierr = MPI_Ibarrier(comm,&barrier);CHKERRQ(ierr);
+        ierr = MPI_Ibarrier(comm,&barrier);CHKERRMPI(ierr);
 #elif defined(PETSC_HAVE_MPIX_IBARRIER)
         ierr = MPIX_Ibarrier(comm,&barrier);CHKERRQ(ierr);
 #endif
@@ -134,7 +134,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
         ierr = PetscFree(sendreqs);CHKERRQ(ierr);
       }
     } else {
-      ierr = MPI_Test(&barrier,&done,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Test(&barrier,&done,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
     }
   }
   *nfrom = nrecvs;
@@ -158,10 +158,10 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   PetscCommCounter *counter;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
-  ierr = MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
   if (!counter->iflags) {
     ierr   = PetscCalloc1(size,&counter->iflags);CHKERRQ(ierr);
@@ -180,12 +180,12 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr     = PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses);CHKERRQ(ierr);
   sendreqs = reqs + nrecvs;
   for (i=0; i<nrecvs; i++) {
-    ierr = MPI_Irecv((void*)(fdata+count*unitbytes*i),count,dtype,MPI_ANY_SOURCE,tag,comm,reqs+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv((void*)(fdata+count*unitbytes*i),count,dtype,MPI_ANY_SOURCE,tag,comm,reqs+i);CHKERRMPI(ierr);
   }
   for (i=0; i<nto; i++) {
-    ierr = MPI_Isend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRQ(ierr);
+    ierr = MPI_Isend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRMPI(ierr);
   }
-  ierr = MPI_Waitall(nto+nrecvs,reqs,statuses);CHKERRQ(ierr);
+  ierr = MPI_Waitall(nto+nrecvs,reqs,statuses);CHKERRMPI(ierr);
   ierr = PetscMalloc1(nrecvs,&franks);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
   ierr = PetscFree2(reqs,statuses);CHKERRQ(ierr);
@@ -209,9 +209,9 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   PetscCommCounter *counter;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
-  ierr = MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
   if (!counter->iflags) {
     ierr   = PetscCalloc1(size,&counter->iflags);CHKERRQ(ierr);
@@ -229,12 +229,12 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   ierr     = PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses);CHKERRQ(ierr);
   sendreqs = reqs + nrecvs;
   for (i=0; i<nrecvs; i++) {
-    ierr = MPI_Irecv((void*)(fdata+count*unitbytes*i),count,dtype,MPI_ANY_SOURCE,tag,comm,reqs+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv((void*)(fdata+count*unitbytes*i),count,dtype,MPI_ANY_SOURCE,tag,comm,reqs+i);CHKERRMPI(ierr);
   }
   for (i=0; i<nto; i++) {
-    ierr = MPI_Isend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRQ(ierr);
+    ierr = MPI_Isend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRMPI(ierr);
   }
-  ierr = MPI_Waitall(nto+nrecvs,reqs,statuses);CHKERRQ(ierr);
+  ierr = MPI_Waitall(nto+nrecvs,reqs,statuses);CHKERRMPI(ierr);
   ierr = PetscMalloc1(nrecvs,&franks);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
   ierr = PetscFree2(reqs,statuses);CHKERRQ(ierr);
@@ -341,7 +341,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMP
   ierr = PetscMalloc1(nto*ntags,&sendreq);CHKERRQ(ierr);
   ierr = PetscMalloc1(*nfrom*ntags,&recvreq);CHKERRQ(ierr);
 
-  ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRQ(ierr);
+  ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
   if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
   for (i=0; i<nto; i++) {
     PetscMPIInt k;
@@ -382,14 +382,14 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
   for (i=0; i<ntags; i++) {
     ierr = PetscCommGetNewTag(comm,&tags[i]);CHKERRQ(ierr);
   }
-  ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRQ(ierr);
+  ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
   if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
   tdata = (char*)todata;
   ierr = PetscMalloc1(nto,&sendreqs);CHKERRQ(ierr);
   ierr = PetscMalloc1(nto*ntags,&usendreqs);CHKERRQ(ierr);
   /* Post synchronous sends */
   for (i=0; i<nto; i++) {
-    ierr = MPI_Issend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRQ(ierr);
+    ierr = MPI_Issend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRMPI(ierr);
   }
   /* Post actual payloads.  These are typically larger messages.  Hopefully sending these later does not slow down the
    * synchronous messages above. */
@@ -411,14 +411,14 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
   for (done=0; !done;) {
     PetscMPIInt flag;
     MPI_Status  status;
-    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag,comm,&flag,&status);CHKERRQ(ierr);
+    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag,comm,&flag,&status);CHKERRMPI(ierr);
     if (flag) {                 /* incoming message */
       PetscMPIInt *recvrank,k;
       void        *buf;
       ierr = PetscSegBufferGet(segrank,1,&recvrank);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(segdata,count,&buf);CHKERRQ(ierr);
       *recvrank = status.MPI_SOURCE;
-      ierr = MPI_Recv(buf,count,dtype,status.MPI_SOURCE,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Recv(buf,count,dtype,status.MPI_SOURCE,tag,comm,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
       ierr = PetscSegBufferGet(segreq,ntags,&req);CHKERRQ(ierr);
       for (k=0; k<ntags; k++) req[k] = MPI_REQUEST_NULL;
       ierr = (*recv)(comm,tags,status.MPI_SOURCE,buf,req,ctx);CHKERRQ(ierr);
@@ -427,17 +427,17 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
     if (!barrier_started) {
       PetscMPIInt sent,nsends;
       ierr = PetscMPIIntCast(nto,&nsends);CHKERRQ(ierr);
-      ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
       if (sent) {
 #if defined(PETSC_HAVE_MPI_IBARRIER)
-        ierr = MPI_Ibarrier(comm,&barrier);CHKERRQ(ierr);
+        ierr = MPI_Ibarrier(comm,&barrier);CHKERRMPI(ierr);
 #elif defined(PETSC_HAVE_MPIX_IBARRIER)
         ierr = MPIX_Ibarrier(comm,&barrier);CHKERRQ(ierr);
 #endif
         barrier_started = PETSC_TRUE;
       }
     } else {
-      ierr = MPI_Test(&barrier,&done,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Test(&barrier,&done,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
     }
   }
   *nfrom = nrecvs;
@@ -500,8 +500,8 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm,PetscMPIInt count,MPI_Datat
 
   PetscFunctionBegin;
   ierr = PetscCommBuildTwoSidedFReq(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata,ntags,&toreqs,&fromreqs,send,recv,ctx);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nto*ntags,toreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = MPI_Waitall(*nfrom*ntags,fromreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(nto*ntags,toreqs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
+  ierr = MPI_Waitall(*nfrom*ntags,fromreqs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   ierr = PetscFree(toreqs);CHKERRQ(ierr);
   ierr = PetscFree(fromreqs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -559,7 +559,7 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
 
   PetscFunctionBegin;
   ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   for (i=0; i<nto; i++) {
     if (toranks[i] < 0 || size <= toranks[i]) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"toranks[%d] %d not in comm size %d",i,toranks[i],size);
   }

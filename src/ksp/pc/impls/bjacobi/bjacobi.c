@@ -21,8 +21,8 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   const char     *pprefix,*mprefix;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
   ierr = MatGetLocalSize(pc->pmat,&M,&N);CHKERRQ(ierr);
   ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
 
@@ -198,7 +198,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  using Amat local matrix, number of blocks = %D\n",jac->n);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  number of blocks = %D\n",jac->n);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
     if (jac->same_local_solves) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:\n");CHKERRQ(ierr);
       if (jac->ksp && !jac->psubcomm) {
@@ -550,7 +550,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
 
   pc->ops->apply           = NULL;
   pc->ops->matapply        = NULL;

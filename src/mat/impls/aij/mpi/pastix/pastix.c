@@ -204,7 +204,7 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
     ierr = PetscFree(lu->val);CHKERRQ(ierr);
     ierr = PetscFree(lu->perm);CHKERRQ(ierr);
     ierr = PetscFree(lu->invp);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&(lu->pastix_comm));CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&(lu->pastix_comm));CHKERRMPI(ierr);
   }
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -299,9 +299,9 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
     (F)->ops->solve = MatSolve_PaStiX;
 
     /* Initialize a PASTIX instance */
-    ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(lu->pastix_comm));CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(lu->pastix_comm, &lu->commRank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(lu->pastix_comm, &lu->commSize);CHKERRQ(ierr);
+    ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(lu->pastix_comm));CHKERRMPI(ierr);
+    ierr = MPI_Comm_rank(lu->pastix_comm, &lu->commRank);CHKERRMPI(ierr);
+    ierr = MPI_Comm_size(lu->pastix_comm, &lu->commSize);CHKERRMPI(ierr);
 
     /* Set pastix options */
     lu->iparm[IPARM_MODIFY_PARAMETER] = API_NO;

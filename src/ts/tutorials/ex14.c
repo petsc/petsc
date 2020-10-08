@@ -987,7 +987,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
   PetscFunctionBeginUser;
   ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
   ierr = MatGetSize(B,&m,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)B),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)B),&rank);CHKERRMPI(ierr);
   if (!rank) {
     PetscScalar val0,val2;
     ierr = MatGetValue(B,0,0,&val0);CHKERRQ(ierr);
@@ -1072,8 +1072,8 @@ static PetscErrorCode THISolveStatistics(THI thi,TS ts,PetscInt coarsened,const 
       tmax[2] = PetscMax(c,tmax[2]);
     }
     ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(tmin,min,3,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)thi));CHKERRQ(ierr);
-    ierr = MPI_Allreduce(tmax,max,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)thi));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(tmin,min,3,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)thi));CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(tmax,max,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)thi));CHKERRMPI(ierr);
     /* Dimensionalize to meters/year */
     nrm2 *= thi->units->year / thi->units->meter;
     for (j=0; j<3; j++) {
@@ -1401,8 +1401,8 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIOpen(comm,filename,&viewer3);CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(comm,filename2,&viewer2);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer3,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
@@ -1412,9 +1412,9 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
 
   ierr = DMDAGetCorners(da3,range,range+1,range+2,range+3,range+4,range+5);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(range[3]*range[4]*range[5]*dof,&nn);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&nn,&nmax,1,MPI_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&nn,&nmax,1,MPI_INT,MPI_MAX,0,comm);CHKERRMPI(ierr);
   ierr = PetscMPIIntCast(range[4]*range[5]*dof2,&nn2);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&nn2,&nmax2,1,MPI_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&nn2,&nmax2,1,MPI_INT,MPI_MAX,0,comm);CHKERRMPI(ierr);
   tag  = ((PetscObject)viewer3)->tag;
   ierr = VecGetArrayRead(X3,(const PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X2,(const PetscScalar**)&x2);CHKERRQ(ierr);
@@ -1428,17 +1428,17 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
       MPI_Status status;
 
       if (r) {
-        ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+        ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
       }
       zs = range[0];ys = range[1];xs = range[2];zm = range[3];ym = range[4];xm = range[5];
       if (xm*ym*zm*dof > nmax) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
       if (r) {
-        ierr = MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
-        ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
+        ierr = MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
+        ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
         if (nn != xm*ym*zm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da3 send");
         y3   = (Node*)array;
-        ierr = MPI_Recv(array2,nmax2,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
-        ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn2);CHKERRQ(ierr);
+        ierr = MPI_Recv(array2,nmax2,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
+        ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn2);CHKERRMPI(ierr);
         if (nn2 != xm*ym*dof2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da2 send");
         y2 = (PetscScalar(*)[PRMNODE_SIZE])array2;
       } else {
@@ -1506,9 +1506,9 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
     }
     ierr = PetscFree2(array,array2);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Send(range,6,MPIU_INT,0,tag,comm);CHKERRQ(ierr);
-    ierr = MPI_Send(x,nn,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
-    ierr = MPI_Send(x2,nn2,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(range,6,MPIU_INT,0,tag,comm);CHKERRMPI(ierr);
+    ierr = MPI_Send(x,nn,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
+    ierr = MPI_Send(x2,nn2,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
   }
   ierr = VecRestoreArrayRead(X3,(const PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(X2,(const PetscScalar**)&x2);CHKERRQ(ierr);

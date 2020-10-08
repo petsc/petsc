@@ -305,7 +305,7 @@ PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     Mat_SeqKAIJ *a = (Mat_SeqKAIJ*)A->data;
     a->AIJ = B;
@@ -470,7 +470,7 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
   Mat_SeqKAIJ    *seqkaij = (Mat_SeqKAIJ*)A->data;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = MatSetSizes(A,seqkaij->p*seqkaij->AIJ->rmap->n,seqkaij->q*seqkaij->AIJ->cmap->n,seqkaij->p*seqkaij->AIJ->rmap->N,seqkaij->q*seqkaij->AIJ->cmap->N);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(A->rmap,seqkaij->p);CHKERRQ(ierr);
@@ -1344,7 +1344,7 @@ PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],
 
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),kaij);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = MatSetType(*kaij,MATSEQKAIJ);CHKERRQ(ierr);
   } else {

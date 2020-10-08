@@ -43,7 +43,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
 
   PetscFunctionBegin;
   ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)pc->pmat)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc->pmat)->comm,&size);CHKERRMPI(ierr);
   if (size > 1) {
     Mat redmat;
 
@@ -188,7 +188,7 @@ static PetscErrorCode PCSVDRestoreVec(PC pc,PCSide side,AccessMode amode,Vec x,V
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
   switch (side) {
   case PC_LEFT:
     if (size != 1 && amode & WRITE) {

@@ -74,7 +74,7 @@ static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 
   PetscFunctionBegin;
   /* often PETSc generates unneeded clears, we want avoid creating empy pictures for them */
-  ierr = MPI_Allreduce(&win->written,&written,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)(draw)));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&win->written,&written,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)(draw)));CHKERRMPI(ierr);
   if (!written) PetscFunctionReturn(0);
   ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_END_FRAME);CHKERRQ(ierr);
   ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_BEGIN_FRAME);CHKERRQ(ierr);

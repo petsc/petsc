@@ -96,8 +96,8 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     ierr = VecCUDAGetArrayRead(xlocal,&xarray);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayWrite(f,&farray);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
     if (rank) xstartshift = 1;
     else xstartshift = 0;
     if (rank != size-1) xendshift = 1;

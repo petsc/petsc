@@ -49,7 +49,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
     if (amat->rmap->n > 0) bs = mat->rmap->n/amat->rmap->n;
   }
   ierr = MatMPIAdjCreateNonemptySubcommMat(amat,&pmat);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)part));CHKERRQ(ierr);
+  ierr = MPI_Barrier(PetscObjectComm((PetscObject)part));CHKERRMPI(ierr);
 
   if (pmat) {
     MPI_Comm   pcomm,comm;
@@ -106,14 +106,14 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
     options[0] = 0;
     for (i=1; i<24; i++) options[i] = -1;
     /* Duplicate the communicator to be sure that ParMETIS attribute caching does not interfere with PETSc. */
-    ierr = MPI_Comm_dup(pcomm,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_dup(pcomm,&comm);CHKERRMPI(ierr);
     if (useND) {
       PetscInt    *sizes, *seps, log2size, subd, *level;
       PetscMPIInt size;
       idx_t       mtype = PARMETIS_MTYPE_GLOBAL, rtype = PARMETIS_SRTYPE_2PHASE, p_nseps = 1, s_nseps = 1;
       real_t      ubfrac = 1.05;
 
-      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
       ierr = PetscMalloc1(pmat->rmap->n,&NDorder);CHKERRQ(ierr);
       ierr = PetscMalloc3(2*size,&sizes,4*size,&seps,size,&level);CHKERRQ(ierr);
       PetscStackCallParmetis(ParMETIS_V32_NodeND,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)&numflag,&mtype,&rtype,&p_nseps,&s_nseps,&ubfrac,NULL/* seed */,NULL/* dbglvl */,(idx_t*)NDorder,(idx_t*)(sizes),&comm));
@@ -145,7 +145,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
         PetscStackCallParmetis(ParMETIS_V3_PartKway,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
       }
     }
-    ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&comm);CHKERRMPI(ierr);
 
     ierr = PetscFree(tpwgts);CHKERRQ(ierr);
     ierr = PetscFree(ubvec);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
   PetscBool                iascii;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (pmetis->parallel == 2) {

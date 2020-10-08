@@ -85,7 +85,7 @@ int main(int argc,char *argv[])
 #endif
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-node",&node,NULL);CHKERRQ(ierr);
   /* --- SETUP --- determine precision and check timing --- */
 

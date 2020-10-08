@@ -27,7 +27,7 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_IALLREDUCE)
-  ierr = MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
+  ierr = MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRMPI(ierr);
 #elif defined(PETSC_HAVE_MPIX_IALLREDUCE)
   ierr = MPIX_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
 #else
@@ -136,7 +136,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
     MPI_Comm       comm = sr->comm;
     PetscMPIInt    size,cmul = sizeof(PetscScalar)/sizeof(PetscReal);
     ierr = PetscLogEventBegin(VEC_ReduceBegin,0,0,0,0);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(sr->comm,&size);CHKERRMPI(ierr);
     if (size == 1) {
       ierr = PetscArraycpy(gvalues,lvalues,numops);CHKERRQ(ierr);
     } else {
@@ -185,7 +185,7 @@ PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
     /* We are doing asynchronous-mode communication and this is the first VecXxxEnd() so wait for comm to complete */
     ierr = PetscLogEventBegin(VEC_ReduceEnd,0,0,0,0);CHKERRQ(ierr);
     if (sr->request != MPI_REQUEST_NULL) {
-      ierr = MPI_Wait(&sr->request,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Wait(&sr->request,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
     }
     sr->state = STATE_END;
     ierr = PetscLogEventEnd(VEC_ReduceEnd,0,0,0,0);CHKERRQ(ierr);
@@ -210,7 +210,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
   PetscFunctionBegin;
   if (sr->numopsend > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot call this after VecxxxEnd() has been called");
   ierr = PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(sr->comm,&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = PetscArraycpy(gvalues,lvalues,numops);CHKERRQ(ierr);
   } else {
@@ -311,12 +311,12 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
        the older version you will get a warning message about the next line;
        it is only a warning message and should do no harm.
     */
-    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelReduction,&Petsc_Reduction_keyval,NULL);CHKERRQ(ierr);
+    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelReduction,&Petsc_Reduction_keyval,NULL);CHKERRMPI(ierr);
   }
-  ierr = MPI_Comm_get_attr(comm,Petsc_Reduction_keyval,(void**)sr,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Reduction_keyval,(void**)sr,&flag);CHKERRMPI(ierr);
   if (!flag) {  /* doesn't exist yet so create it and put it in */
     ierr = PetscSplitReductionCreate(comm,sr);CHKERRQ(ierr);
-    ierr = MPI_Comm_set_attr(comm,Petsc_Reduction_keyval,*sr);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_attr(comm,Petsc_Reduction_keyval,*sr);CHKERRMPI(ierr);
     ierr = PetscInfo1(0,"Putting reduction data in an MPI_Comm %ld\n",(long)comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

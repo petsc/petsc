@@ -831,7 +831,7 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)view,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(comm,bag->bagcomm,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(comm,bag->bagcomm,&flag);CHKERRMPI(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the viewer and bag"); \
   ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this viewer type");

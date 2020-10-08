@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(ran);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);       /* number of nodes */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);     /* my ranking */
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
 
   hinfo.n           = 31;
   hinfo.r           = 0.04;
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     x += basketPayoff(vol,St0,n,r,dt,eps);
   }
 
-  ierr = MPI_Reduce(&x, &totalx, 1, MPIU_REAL, MPIU_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&x, &totalx, 1, MPIU_REAL, MPIU_SUM,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   /* payoff = exp(-r*dt*n)*(totalx/totalNumSim);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Option price = $%.3f using %ds of %s computation with %d %s for %d stocks, %d trading period per year, %.2f%% interest rate\n",
    payoff,(int)(stop - start),"parallel",size,"processors",n,(int)(1/dt),r);CHKERRQ(ierr); */
@@ -151,7 +151,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
   PetscInt       num=hinfo->n;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = PetscFOpen(PETSC_COMM_SELF,DATAFILENAME,"r",&fd);CHKERRQ(ierr);
     for (i=0;i<num;i++) {
@@ -162,7 +162,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
     }
     fclose(fd);
   }
-  ierr = MPI_Bcast(v,2*num,MPIU_REAL,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(v,2*num,MPIU_REAL,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] vol %g, ... %g; St0 %g, ... %g\n",rank,hinfo->vol[0],hinfo->vol[num-1],hinfo->St0 [0],hinfo->St0[num-1]); */
   PetscFunctionReturn(0);
 }

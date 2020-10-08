@@ -76,7 +76,7 @@ static PetscErrorCode PetscSFCreateLocalSF_Alltoall(PetscSF sf,PetscSF *out)
   PetscFunctionBegin;
   nroots  = 1;
   nleaves = 1;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
   ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
   ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
   ilocal[0]        = rank;
@@ -102,7 +102,7 @@ static PetscErrorCode PetscSFCreateEmbeddedSF_Alltoall(PetscSF sf,PetscInt nsele
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   /* Uniq selected[] and store the result in roots[] */
   ierr = PetscMalloc1(nselected,&tmproots);CHKERRQ(ierr);

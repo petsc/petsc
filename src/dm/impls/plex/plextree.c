@@ -1891,7 +1891,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMPlexCreate(PetscObjectComm((PetscObject)dm), ncdm);CHKERRQ(ierr);
   ierr = DMSetDimension(*ncdm,dim);CHKERRQ(ierr);
@@ -3583,9 +3583,9 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
     PetscSFNode  *iremoteToParents;
     PetscInt     *ilocalToParents;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRQ(ierr);
-    ierr = MPI_Type_contiguous(3,MPIU_INT,&threeInt);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&threeInt);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRMPI(ierr);
+    ierr = MPI_Type_contiguous(3,MPIU_INT,&threeInt);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&threeInt);CHKERRMPI(ierr);
     ierr = PetscMalloc2(pEndC-pStartC,&parentNodeAndIdCoarse,pEndF-pStartF,&parentNodeAndIdFine);CHKERRQ(ierr);
     ierr = DMGetPointSF(coarse,&pointSF);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(pointSF,NULL,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
@@ -3652,7 +3652,7 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
     coarseToFineEmbedded = sfToParents;
 
     ierr = PetscFree2(parentNodeAndIdCoarse,parentNodeAndIdFine);CHKERRQ(ierr);
-    ierr = MPI_Type_free(&threeInt);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&threeInt);CHKERRMPI(ierr);
   }
 
   { /* winnow out coarse points that don't have dofs */

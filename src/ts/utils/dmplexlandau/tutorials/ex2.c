@@ -544,7 +544,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
   if (reason) {
     PetscReal    val,rval;
     PetscMPIInt  rank;
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
     ierr = TSGetSolution(ts, &X);CHKERRQ(ierr);
     ierr = VecNorm(X,NORM_2,&val);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&val,&rval,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -697,7 +697,7 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   ierr = PetscFunctionListDestroy(&elist);CHKERRQ(ierr);
   {
     PetscMPIInt    rank;
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
     if (rank) { /* turn off output stuff for duplicate runs */
       ierr = PetscOptionsClearValue(NULL,"-dm_view");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-vec_view");CHKERRQ(ierr);

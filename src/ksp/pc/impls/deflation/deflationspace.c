@@ -176,7 +176,7 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   ierr = MatGetOwnershipRangeColumn(A,&ilo,&ihi);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&m);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&m);CHKERRMPI(ierr);
   ierr = MatCreate(comm,&defl);CHKERRQ(ierr);
   ierr = MatSetSizes(defl,ihi-ilo,1,M,m);CHKERRQ(ierr);
   ierr = MatSetUp(defl);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
     Iidx[i-ilo] = i;
     col[i-ilo] = 1;
   }
-  ierr = MPI_Comm_rank(comm,&m);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&m);CHKERRMPI(ierr);
   i = m;
   ierr = MatSetValues(defl,ihi-ilo,Iidx,1,&i,col,INSERT_VALUES);CHKERRQ(ierr);
 

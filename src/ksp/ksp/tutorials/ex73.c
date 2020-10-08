@@ -106,14 +106,14 @@ PetscErrorCode CommHierarchyCreate(MPI_Comm comm,PetscInt n,PetscInt number[],Pe
   if (view_hierarchy) {
     PetscMPIInt size;
 
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     ierr = PetscPrintf(comm,"level[%D] size %d\n",n,(int)size);CHKERRQ(ierr);
     for (k=n-1; k>=0; k--) {
       if (pscommlist[k]) {
         MPI_Comm comm_k = PetscSubcommChild(pscommlist[k]);
 
         if (pscommlist[k]->color == 0) {
-          ierr = MPI_Comm_size(comm_k,&size);CHKERRQ(ierr);
+          ierr = MPI_Comm_size(comm_k,&size);CHKERRMPI(ierr);
           ierr = PetscPrintf(comm_k,"level[%D] size %d\n",k,(int)size);CHKERRQ(ierr);
         }
       }
@@ -206,8 +206,8 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
   }
 
   /* note - assume rank 0 always participates */
-  ierr = MPI_Bcast(&Mp_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&Np_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&Mp_re,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
+  ierr = MPI_Bcast(&Np_re,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
 
   ierr = PetscCalloc1(Mp_re,&range_i_re);CHKERRQ(ierr);
   ierr = PetscCalloc1(Np_re,&range_j_re);CHKERRQ(ierr);
@@ -215,8 +215,8 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
   if (_range_i_re) {ierr = PetscArraycpy(range_i_re,_range_i_re,Mp_re);CHKERRQ(ierr);}
   if (_range_j_re) {ierr = PetscArraycpy(range_j_re,_range_j_re,Np_re);CHKERRQ(ierr);}
 
-  ierr = MPI_Bcast(range_i_re,Mp_re,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(range_j_re,Np_re,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(range_i_re,Mp_re,MPIU_INT,0,comm);CHKERRMPI(ierr);
+  ierr = MPI_Bcast(range_j_re,Np_re,MPIU_INT,0,comm);CHKERRMPI(ierr);
 
   ierr = PetscMalloc1(Mp_re,&start_i_re);CHKERRQ(ierr);
   ierr = PetscMalloc1(Np_re,&start_j_re);CHKERRQ(ierr);
@@ -366,7 +366,7 @@ PetscErrorCode DMCreateMatrix_ShellDA(DM dm,Mat *A)
   PetscFunctionBeginUser;
   ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = DMCreateMatrix(da,A);CHKERRQ(ierr);
   ierr = MatGetSize(*A,&M,&N);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA (%D x %D)\n",(PetscInt)size,M,N);CHKERRQ(ierr);
@@ -557,9 +557,9 @@ PetscErrorCode DMStateScatter_ShellDA(DM dmf_shell,ScatterMode mode,DM dmc_shell
   PetscMPIInt    size_f = 0,size_c = 0;
   PetscErrorCode ierr;
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dmf_shell),&size_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dmf_shell),&size_f);CHKERRMPI(ierr);
   if (dmc_shell) {
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dmc_shell),&size_c);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dmc_shell),&size_c);CHKERRMPI(ierr);
   }
   if (mode == SCATTER_FORWARD) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)dmf_shell),"User supplied state scatter (fine [size %d]-> coarse [size %d])\n",(int)size_f,(int)size_c);CHKERRQ(ierr);
@@ -634,7 +634,7 @@ PetscErrorCode HierarchyCreate_Basic(DM *dm_f,DM *dm_c,UserContext *ctx)
   PetscMPIInt    rank;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,17,17,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
@@ -754,7 +754,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
       }
       dalist[d*levelrefs + k] = dmref;
     }
-    ierr = MPI_Allreduce(MPI_IN_PLACE,&nx,1,MPIU_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE,&nx,1,MPIU_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   }
 
   /* create the hierarchy of DMShell's */
