@@ -60,4 +60,4 @@ Process [2]
 [1] 0: 0 0
 [2] 0: 0
 
- MatGetRowMaxAbs for MPIBAIJ matrix
+ MatGetRowMaxAbs for BAIJ matrix

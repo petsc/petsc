@@ -645,7 +645,7 @@ $  SNES_DIVERGED_DTOL             - (fnorm > divtol*snes->fnorm0)
 -    fnorm0 - 2-norm of the function at the initial solution (initial guess; zeroth iteration)
 
   Options Database Keys:
--  -snes_stol - convergence tolerance in terms of the norm  of the change in the solution between steps
++  -snes_stol - convergence tolerance in terms of the norm  of the change in the solution between steps
 .  -snes_atol <abstol> - absolute tolerance of residual norm
 .  -snes_rtol <rtol> - relative decrease in tolerance norm from the initial 2-norm of the solution
 .  -snes_divergence_tolerance <divtol> - if the residual goes above divtol*rnorm0, exit with divergence

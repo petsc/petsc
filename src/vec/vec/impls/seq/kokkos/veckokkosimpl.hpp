@@ -28,9 +28,11 @@ struct Vec_Kokkos {
 };
 
 #if defined(PETSC_HAVE_CUDA)
-  #define WaitForKokkos() PetscCUDASynchronize ? (Kokkos::fence(),0) : 0;
+  #define WaitForKokkos() PetscCUDASynchronize ? (Kokkos::fence(),0) : 0
 #elif defined(PETSC_HAVE_HIP)
-  #define WaitForKokkos() PetscHIPSynchronize ? (Kokkos::fence(),0) : 0;
+  #define WaitForKokkos() PetscHIPSynchronize ? (Kokkos::fence(),0) : 0
+#pragma
+  #define WaitForKokkos() 0
 #endif
 
 PETSC_INTERN PetscErrorCode VecAbs_SeqKokkos(Vec);

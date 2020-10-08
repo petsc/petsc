@@ -755,9 +755,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   KSP                    ksp;
   PC_BJacobi_Singleblock *bjac;
   PetscBool              wasSetup = PETSC_TRUE;
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
-  PetscBool              is_gpumatrix = PETSC_FALSE;
-#endif
+  VecType                vectype;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -804,20 +802,9 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ierr = MatGetSize(pmat,&m,&m);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&bjac->x);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&bjac->y);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-    ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,"");CHKERRQ(ierr);
-    if (is_gpumatrix) {
-      ierr = VecSetType(bjac->x,VECCUDA);CHKERRQ(ierr);
-      ierr = VecSetType(bjac->y,VECCUDA);CHKERRQ(ierr);
-    }
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
-    ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
-    if (is_gpumatrix) {
-      ierr = VecSetType(bjac->x,VECVIENNACL);CHKERRQ(ierr);
-      ierr = VecSetType(bjac->y,VECVIENNACL);CHKERRQ(ierr);
-    }
-#endif
+    ierr = MatGetVecType(pmat,&vectype);CHKERRQ(ierr);
+    ierr = VecSetType(bjac->x,vectype);CHKERRQ(ierr);
+    ierr = VecSetType(bjac->y,vectype);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->x);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->y);CHKERRQ(ierr);
   } else {
@@ -992,9 +979,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   PC                    subpc;
   IS                    is;
   MatReuse              scall;
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
-  PetscBool              is_gpumatrix = PETSC_FALSE;
-#endif
+  VecType               vectype;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(pc->pmat,&M,&N);CHKERRQ(ierr);
@@ -1047,6 +1032,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     }
 
     start = 0;
+    ierr = MatGetVecType(pmat,&vectype);CHKERRQ(ierr);
     for (i=0; i<n_local; i++) {
       m = jac->l_lens[i];
       /*
@@ -1059,20 +1045,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       */
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&y);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-      ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,"");CHKERRQ(ierr);
-      if (is_gpumatrix) {
-        ierr = VecSetType(x,VECCUDA);CHKERRQ(ierr);
-        ierr = VecSetType(y,VECCUDA);CHKERRQ(ierr);
-      }
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
-      ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
-      if (is_gpumatrix) {
-        ierr = VecSetType(x,VECVIENNACL);CHKERRQ(ierr);
-        ierr = VecSetType(y,VECVIENNACL);CHKERRQ(ierr);
-      }
-#endif
+      ierr = VecSetType(x,vectype);CHKERRQ(ierr);
+      ierr = VecSetType(y,vectype);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)x);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)y);CHKERRQ(ierr);
 
@@ -1241,9 +1215,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   MPI_Comm             comm,subcomm=0;
   const char           *prefix;
   PetscBool            wasSetup = PETSC_TRUE;
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
-  PetscBool              is_gpumatrix = PETSC_FALSE;
-#endif
+  VecType              vectype;
 
 
   PetscFunctionBegin;
@@ -1286,20 +1258,9 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = MatGetLocalSize(mpjac->submats,&m,&n);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&mpjac->xsub);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,NULL,&mpjac->ysub);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-    ierr = PetscObjectTypeCompareAny((PetscObject)mpjac->submats,&is_gpumatrix,MATAIJCUSPARSE,MATMPIAIJCUSPARSE,"");CHKERRQ(ierr);
-    if (is_gpumatrix) {
-      ierr = VecSetType(mpjac->xsub,VECMPICUDA);CHKERRQ(ierr);
-      ierr = VecSetType(mpjac->ysub,VECMPICUDA);CHKERRQ(ierr);
-    }
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
-    ierr = PetscObjectTypeCompareAny((PetscObject)mpjac->submats,&is_gpumatrix,MATAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
-    if (is_gpumatrix) {
-      ierr = VecSetType(mpjac->xsub,VECMPIVIENNACL);CHKERRQ(ierr);
-      ierr = VecSetType(mpjac->ysub,VECMPIVIENNACL);CHKERRQ(ierr);
-    }
-#endif
+    ierr = MatGetVecType(mpjac->submats,&vectype);CHKERRQ(ierr);
+    ierr = VecSetType(mpjac->xsub,vectype);CHKERRQ(ierr);
+    ierr = VecSetType(mpjac->ysub,vectype);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->xsub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->ysub);CHKERRQ(ierr);
 
