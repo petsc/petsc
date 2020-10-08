@@ -217,7 +217,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     def logPrintFilesInPath(path):
       for d in path:
         try:
-          self.logWrite('      '+d+' '+' '.join(os.listdir(d))+'\n')
+          self.logWrite('      '+d+': '+' '.join(os.listdir(d))+'\n')
         except Exception as e:
           self.logWrite('      Warning accessing '+d+' gives errors: '+str(e)+'\n')
       return
