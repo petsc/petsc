@@ -48,8 +48,6 @@ ssh petsc@login.mcs.anl.gov " \
 #######################################
 # M lib/petsc/bin/maint/update-docs.py
 # M include/petscversion.h
-# M src/docs/tex/manual/intro.tex
-# M src/docs/tex/manual/manual.tex
 # M src/docs/website/documentation/changes/300.html
 # M src/docs/website/documentation/changes/dev.html
 # M src/docs/website/documentation/changes/index.html
