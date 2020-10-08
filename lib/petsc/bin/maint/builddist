@@ -108,7 +108,7 @@ echo "Building ~/petsc$version.tar.gz and ~/petsc-lite$version.tar.gz"
 # create fortran stubdocs and cleanup
 cd $PETSC_DIR
 # we should have an option of running configure - without compilers/mpi/blas etc..
-./config/configure.py --with-mpi=0 --download-c2html=1 --download-sowing=1
+python3 ./config/configure.py --with-mpi=0 --download-c2html=1 --download-sowing=1
 make allfortranstubs
 make sphinx-docs-check-python
 make alldoc LOC=${PETSC_DIR} DOCSETDATE_PRUNE_LIST="" GONULL=""
