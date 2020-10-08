@@ -507,13 +507,7 @@ class Configure(config.base.Configure):
       msg = 'Cannot compile '+language+' with '+self.getCompiler()+'.'
       self.popLanguage()
       raise RuntimeError(msg)
-    if language == 'CUDA': # do not check CUDA linker since it is never used (and is broken on Mac with -m64)
-      self.popLanguage()
-      return
-    if language == 'HIP': # do not check HIP linker since it is never used (assumed for now)
-      self.popLanguage()
-      return
-    if language == 'SYCL': # do not check SYCL linker since it is never used (assumed for now)
+    if language == 'CUDA' or language == 'HIP' or language == 'SYCL': # do not check CUDA/HIP/SYCL linker since it is never used (assumed for now)
       self.popLanguage()
       return
     if not self.checkLink(linkLanguage=linkLanguage,includes=includes,body=body):
@@ -1871,13 +1865,6 @@ if (dlclose(handle)) {
         self.logPrint('Adding to LD_LIBRARY_PATH '+libdir)
     return
 
-  def printEnvVariables(self):
-    buf = '**** printenv ****'
-    for key,val in os.environ.items():
-      buf += '\n'+str(key)+'='+str(val)
-    self.logPrint(buf)
-    return
-
   def resetEnvCompilers(self):
     ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
     for envVal in ignoreEnvCompilers:
@@ -1934,7 +1921,6 @@ if (dlclose(handle)) {
 
   def configure(self):
     self.mainLanguage = self.languages.clanguage
-    self.executeTest(self.printEnvVariables)
     self.executeTest(self.resetEnvCompilers)
     self.executeTest(self.checkEnvCompilers)
     self.executeTest(self.checkMPICompilerOverride)

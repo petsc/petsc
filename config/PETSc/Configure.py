@@ -226,6 +226,17 @@ prepend-path PATH "%s"
       # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
       self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'), log = self.log)
 
+    self.logPrintDivider()
+    # Test for compiler-specific macros that need to be defined.
+    if self.setCompilers.isCrayVector('CC', self.log):
+      self.addDefine('HAVE_CRAY_VECTOR','1')
+
+    if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket') and self.headers.haveHeader('netinet/in.h'):
+      self.addDefine('USE_SOCKET_VIEWER','1')
+      if self.checkCompile('#include <sys/socket.h>','setsockopt(0,SOL_SOCKET,SO_REUSEADDR,0,0)'):
+        self.addDefine('HAVE_SO_REUSEADDR','1')
+
+    self.logPrintDivider()
     self.setCompilers.pushLanguage('C')
     compiler = self.setCompilers.getCompiler()
     if compiler.endswith('mpicc') or compiler.endswith('mpiicc'):
@@ -363,18 +374,9 @@ prepend-path PATH "%s"
     if self.framework.argDB['with-batch']:
       self.addMakeMacro('PETSC_WITH_BATCH','1')
 
-    # Test for compiler-specific macros that need to be defined.
-    if self.setCompilers.isCrayVector('CC', self.log):
-      self.addDefine('HAVE_CRAY_VECTOR','1')
-
-#-----------------------------------------------------------------------------------------------------
-    if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket') and self.headers.haveHeader('netinet/in.h'):
-      self.addDefine('USE_SOCKET_VIEWER','1')
-      if self.checkCompile('#include <sys/socket.h>','setsockopt(0,SOL_SOCKET,SO_REUSEADDR,0,0)'):
-        self.addDefine('HAVE_SO_REUSEADDR','1')
-
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for makefiles
+    self.logPrintDivider()
     self.framework.packages.reverse()
     petscincludes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
     petscincludes_install = [os.path.join(self.installdir.dir, 'include')] if self.framework.argDB['prefix'] else petscincludes

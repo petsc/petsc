@@ -211,7 +211,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
       print('   %s PETSC_DIR=%s PETSC_ARCH=%s all' % (getMakeUserPath(self.arch), self.petscdir.dir, self.arch))
       print('xxx=========================================================================xxx')
       sys.exit()
-    self.logPrint('configure hash file: '+hashfile+' does not match\n'+a+'\n---\n'+hash+'\n need to run configure')
+    self.logPrint('configure hash file: '+hashfile+' does not match, need to run configure')
     self.makeDependency(hash,hashfile,hashfilepackages)
 
   def configure(self):

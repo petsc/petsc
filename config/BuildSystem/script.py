@@ -221,7 +221,6 @@ class Script(logger.Logger):
           log.write('stdout: '+output+'\n')
       return output
     def runInShell(commandseq, log, cwd):
-      if not useThreads: log.write('UseThreads is off\n')
       if useThreads and threads:
         import threading
         log.write('Running Executable with threads to time it out at '+str(timeout)+'\n')
@@ -243,7 +242,6 @@ class Script(logger.Logger):
         else:
           return (thread.output, thread.error, thread.status)
       else:
-        log.write('Running Executable WITHOUT threads to time it out\n')
         return Script.runShellCommandSeq(commandseq, log, cwd)
 
     (output, error, status) = runInShell(commandseq, log, cwd)

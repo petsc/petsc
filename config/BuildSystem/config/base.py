@@ -99,7 +99,6 @@ class Configure(script.Script):
     if not hasattr(self, '_tmpDir'):
       self._tmpDir = os.path.join(self.framework.tmpDir, self.__module__)
       if not os.path.isdir(self._tmpDir): os.mkdir(self._tmpDir)
-      self.logPrint('All intermediate test results are stored in '+self._tmpDir)
     return self._tmpDir
   def setTmpDir(self, temp):
     if hasattr(self, '_tmpDir'):
@@ -131,8 +130,7 @@ class Configure(script.Script):
     '''Prints the function and class information for the test and then runs the test'''
     import time
 
-    self.logWrite('================================================================================\n')
-    self.logWrite('TEST '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')\n')
+    self.logPrintDivider()
     self.logPrint('TESTING: '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')', debugSection = 'screen', indent = 0)
     if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
     #t = time.time()
@@ -143,8 +141,7 @@ class Configure(script.Script):
 
   def printTest(self, test):
     '''Prints the function and class information for a test'''
-    self.logWrite('================================================================================\n')
-    self.logWrite('TEST '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')\n')
+    self.logPrintDivider()
     self.logPrint('TESTING: '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')', debugSection = 'screen', indent = 0)
     if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
 
@@ -303,22 +300,13 @@ class Configure(script.Script):
       def logPrintFilesInPath(path):
         for d in path:
           try:
-            self.logWrite('      '+str(os.listdir(d))+'\n')
-          except OSError as e:
+            self.logWrite('      '+dir+' '+' '.join(os.listdir(d))+'\n')
+          except Exception as e:
             self.logWrite('      Warning accessing '+d+' gives errors: '+str(e)+'\n')
         return
-      self.logWrite('  Unable to find programs '+str(names)+' providing listing of each search directory to help debug\n')
-      self.logWrite('    Path provided in Python program\n')
-      logPrintFilesInPath(path)
-      if useDefaultPath:
-        if os.environ['PATH'].split(os.path.pathsep):
-          self.logWrite('    Path provided by default path\n')
-          logPrintFilesInPath(os.environ['PATH'].split(os.path.pathsep))
-      dirs = self.argDB['with-executables-search-path']
-      if not isinstance(dirs, list): dirs = [dirs]
-      if dirs:
-        self.logWrite('    Path provided by --with-executables-search-path\n')
-        logPrintFilesInPath(dirs)
+      if path:
+        self.logWrite('  Unable to find programs '+str(names)+' providing listing of the specific search path\n')
+        logPrintFilesInPath(path)
     return found
 
   def getExecutables(self, names, path = '', getFullPath = 0, useDefaultPath = 0, resultName = ''):
@@ -556,6 +544,7 @@ class Configure(script.Script):
 
   def checkCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     '''Returns True if the compile was successful'''
+    self.logWrite('===== Checking compiler\n')
     (output, error, returnCode) = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
     output = self.filterCompileOutput(output+'\n'+error)
     return not (returnCode or len(output))
@@ -630,6 +619,7 @@ class Configure(script.Script):
     return (out+'\n'+err, ret)
 
   def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None):
+    self.logWrite('===== Checking linker\n')
     (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared, linkLanguage, examineOutput)
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
@@ -692,6 +682,7 @@ class Configure(script.Script):
     return (output+error, status)
 
   def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = '', executor = None, linkLanguage=None, timeout = 60, threads = 1):
+    self.logWrite('======== Checking running linked program\n')
     (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg, executor,linkLanguage=linkLanguage, timeout = timeout, threads = threads)
     return not returnCode
 
