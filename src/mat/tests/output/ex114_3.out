@@ -47,3 +47,5 @@ Vec Object: 1 MPI processes
 MatGetRowMax for seqdense matrix
 MatGetRowMin for seqdense matrix
 MatGetRowMaxAbs for seqdense matrix
+
+ MatGetRowMaxAbs for BAIJ matrix

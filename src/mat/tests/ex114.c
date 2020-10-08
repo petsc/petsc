@@ -149,7 +149,7 @@ int main(int argc,char **args)
 
     ierr = VecWAXPY(e,-1.0,max,max_d);CHKERRQ(ierr); /* e = -max + max_d */
     ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
-    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-max + max_d) %g > PETSC_MACHINE_EPSILON",enorm);
+    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-max + max_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
     ierr = MatScale(Adense,-1.0);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMin for seqdense matrix\n");CHKERRQ(ierr);
@@ -168,30 +168,85 @@ int main(int argc,char **args)
     ierr = MatGetRowMaxAbs(Adense,maxabs_d,imaxabs);CHKERRQ(ierr);
     ierr = VecWAXPY(e,-1.0,maxabs,maxabs_d);CHKERRQ(ierr); /* e = -maxabs + maxabs_d */
     ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
-    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",enorm);
+    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
     ierr = MatDestroy(&Adense);CHKERRQ(ierr);
     ierr = VecDestroy(&max_d);CHKERRQ(ierr);
     ierr = VecDestroy(&maxabs_d);CHKERRQ(ierr);
-  } else {
-    /* BAIJ */
-    Mat      B;
-    Vec      maxabsB;
-    PetscInt imaxabsB[M];
+  }
+
+  { /* BAIJ matrix */
+    Mat               B;
+    Vec               maxabsB,maxabsB2;
+    PetscInt          bs=2,*imaxabsB,*imaxabsB2,rstart,rend,cstart,cend,ncols,col,Brows[2],Bcols[2];
+    const PetscInt    *cols;
+    const PetscScalar *vals,*vals2;
+    PetscScalar       Bvals[4];
+
+    ierr = PetscMalloc2(M,&imaxabsB,bs*M,&imaxabsB2);CHKERRQ(ierr);
+
+    /* bs = 1 */
     ierr = MatConvert(A,MATMPIBAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = VecDuplicate(min,&maxabsB);CHKERRQ(ierr);
-    ierr = MatGetRowMaxAbs(A,maxabsB,NULL);CHKERRQ(ierr);
-    ierr = MatGetRowMaxAbs(A,maxabsB,imaxabsB);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs for MPIBAIJ matrix\n");CHKERRQ(ierr);
+    ierr = MatGetRowMaxAbs(B,maxabsB,NULL);CHKERRQ(ierr);
+    ierr = MatGetRowMaxAbs(B,maxabsB,imaxabsB);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs for BAIJ matrix\n");CHKERRQ(ierr);
     ierr = VecWAXPY(e,-1.0,maxabs,maxabsB);CHKERRQ(ierr); /* e = -maxabs + maxabsB */
     ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
-    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",enorm);
+    if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
     for (j = 0; j < n; j++) {
       if (imaxabs[j] != imaxabsB[j]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imaxabs[%D] %D != imaxabsB %D",j,imin[j],imax[j]);
     }
     ierr = MatDestroy(&B);CHKERRQ(ierr);
+
+    /* Test bs = 2: Create B with bs*bs block structure of A */
+    ierr = VecCreate(PETSC_COMM_WORLD,&maxabsB2);CHKERRQ(ierr);
+    ierr = VecSetSizes(maxabsB2,bs*m,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(maxabsB2);CHKERRQ(ierr);
+
+    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRangeColumn(A,&cstart,&cend);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,bs*(rend-rstart),bs*(cend-cstart),PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatSetUp(B);CHKERRQ(ierr);
+
+    for (row=rstart; row<rend; row++) {
+      ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+      for (col=0; col<ncols; col++) {
+        for (j=0; j<bs; j++) {
+          Brows[j] = bs*row + j;
+          Bcols[j] = bs*cols[col]+j;
+        }
+        for (j=0; j<bs*bs; j++) Bvals[j] = vals[col];
+        ierr = MatSetValues(B,bs,Brows,bs,Bcols,Bvals,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+    ierr = MatGetRowMaxAbs(B,maxabsB2,imaxabsB2);CHKERRQ(ierr);
+
+    /* Check maxabsB2 and imaxabsB2 */
+    ierr = VecGetArrayRead(maxabsB,&vals);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(maxabsB2,&vals2);CHKERRQ(ierr);
+    for (row=0; row<m; row++) {
+      if (PetscAbsScalar(vals[row] - vals2[bs*row]) > PETSC_MACHINE_EPSILON)
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row %D maxabsB != maxabsB2",row);
+    }
+    ierr = VecRestoreArrayRead(maxabsB,&vals);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(maxabsB2,&vals2);CHKERRQ(ierr);
+
+    for (col=0; col<n; col++) {
+      if (imaxabsB[col] != imaxabsB2[bs*col]/bs)
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"col %D imaxabsB != imaxabsB2",col);
+    }
     ierr = VecDestroy(&maxabsB);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    ierr = VecDestroy(&maxabsB2);CHKERRQ(ierr);
+    ierr = PetscFree2(imaxabsB,imaxabsB2);CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&min);CHKERRQ(ierr);
