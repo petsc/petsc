@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
 if [ ! -z ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x} ]; then
+  git fetch -q --unshallow --no-tags +${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}:remotes/origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
   echo origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
   exit 0
 fi
