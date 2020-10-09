@@ -99,7 +99,7 @@ int main(int argc, char** argv)
       ierr = MatCreate(PETSC_COMM_WORLD, &B);CHKERRQ(ierr);
       ierr = MatSetType(B, MATSEQBAIJ);CHKERRQ(ierr);
       ierr = MatSetSizes(B, bs[j] * An, bs[j] * An, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = PetscMalloc1(Ai[An] * bs[j] * bs[j],&val);CHKERRQ(ierr);
+      ierr = PetscMalloc1(Ai[An] * bs[j] * bs[j], &val);CHKERRQ(ierr);
       for (i = 0; i < Ai[An]; ++i)
         for (k = 0; k < bs[j] * bs[j]; ++k)
           val[i * bs[j] * bs[j] + k] = Aa[i] * ptr[k];
@@ -161,8 +161,8 @@ int main(int argc, char** argv)
         ierr = PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &flg);CHKERRQ(ierr);
         ierr = MatGetRowIJ(A, 0, PETSC_FALSE, flg ? PETSC_FALSE : PETSC_TRUE, &An, &Ai, &Aj, &done);CHKERRQ(ierr);
         if (!done) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
-        ierr = PetscMalloc1(An + 1,&ia_ptr);CHKERRQ(ierr);
-        ierr = PetscMalloc1(Ai[An],&ja_ptr);CHKERRQ(ierr);
+        ierr = PetscMalloc1(An + 1, &ia_ptr);CHKERRQ(ierr);
+        ierr = PetscMalloc1(Ai[An], &ja_ptr);CHKERRQ(ierr);
         if (flg) { /* SeqAIJ */
           for (k = 0; k < An + 1; ++k) ia_ptr[k] = Ai[k];
           for (k = 0; k < Ai[An]; ++k) ja_ptr[k] = Aj[k];
