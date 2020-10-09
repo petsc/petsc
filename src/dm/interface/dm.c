@@ -1362,17 +1362,20 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   /* Handle nullspace and near nullspace */
   if (dm->Nf) {
     MatNullSpace nullSpace;
-    PetscInt     Nf;
+    PetscInt     Nf, f;
 
     ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-    if (Nf == 1) {
-      if (dm->nullspaceConstructors[0]) {
-        ierr = (*dm->nullspaceConstructors[0])(dm, 0, 0, &nullSpace);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      if (dm->nullspaceConstructors[f]) {
+        ierr = (*dm->nullspaceConstructors[f])(dm, f, f, &nullSpace);CHKERRQ(ierr);
         ierr = MatSetNullSpace(*mat, nullSpace);CHKERRQ(ierr);
         ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+        break;
       }
-      if (dm->nearnullspaceConstructors[0]) {
-        ierr = (*dm->nearnullspaceConstructors[0])(dm, 0, 0, &nullSpace);CHKERRQ(ierr);
+    }
+    for (f = 0; f < Nf; ++f) {
+      if (dm->nearnullspaceConstructors[f]) {
+        ierr = (*dm->nearnullspaceConstructors[f])(dm, f, f, &nullSpace);CHKERRQ(ierr);
         ierr = MatSetNearNullSpace(*mat, nullSpace);CHKERRQ(ierr);
         ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
       }

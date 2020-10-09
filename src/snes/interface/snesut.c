@@ -655,7 +655,7 @@ $  SNES_DIVERGED_DTOL             - (fnorm > divtol*snes->fnorm0)
 
    Level: intermediate
 
-.seealso: SNESSetConvergenceTest(), SNESSetTolerances(), SNESSetDivergenceTolerance()
+.seealso: SNESSetConvergenceTest(), SNESConvergedSkip(), SNESSetTolerances(), SNESSetDivergenceTolerance()
 @*/
 PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
@@ -721,7 +721,7 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 
    Level: advanced
 
-.seealso: SNESSetConvergenceTest()
+.seealso: SNESConvergedDefault(), SNESSetConvergenceTest()
 @*/
 PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
