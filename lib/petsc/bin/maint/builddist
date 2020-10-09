@@ -13,7 +13,7 @@
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
 #echo "(0) Excluded any directories not for public release"
-#echo "(1) Set the version number in manual.tex (several places), and intro.tex, website/index.html?"
+#echo "(1) Set the version number in website/index.html?"
 #echo "(2) Set the version number and release date in petscversion.h?"
 #echo "(3) Made sure Fortran include files match C ones?"
 #echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on login.mcs"

@@ -4,15 +4,11 @@ FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  =
-TAODOCS  = tex/manual/manual.tex \
-	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
-	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/manual/manual_tex.tex \
-	   tex/tao.bib tex/tao-patches.html tex/tao-benchmarks.html \
-	   tex/tao-components.html tex/tao-patches*
+TAODOCS  =  \
+	   tao_tex/tao.bib
 
-DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
-	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
-	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/petsc.bib website/index.html \
+DOCS     = manualpages-sec/header_* \
+           tex/petsc.bib tex/petscapp.bib tex/petscconsult.bib website/index.html \
            website/download/index.html \
            website/download/petsc-patches.html website/publications/index.html \
            website/features/index.html website/features/details.html website/features/diagram.html \
