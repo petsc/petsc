@@ -1,4 +1,5 @@
 
+#include "petscsf.h"
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 
@@ -48,7 +49,7 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
     bas->ioffset[i+1] = bas->ioffset[i] + rlengths[i];
   }
   if (bas->ndiranks > 1 || (bas->ndiranks == 1 && bas->iranks[0] != rank)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Broken setup for shared ranks");
-  for ( ; i<bas->niranks; i++) {
+  for (; i<bas->niranks; i++) {
     bas->iranks[i] = iranks[i-bas->ndiranks];
     bas->ioffset[i+1] = bas->ioffset[i] + ilengths[i-bas->ndiranks];
   }
@@ -97,11 +98,8 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   if (bas->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   ierr = PetscFree2(bas->iranks,bas->ioffset);CHKERRQ(ierr);
   ierr = PetscFree(bas->irootloc);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-  {
-  PetscInt  i;
-  for (i=0; i<2; i++) {if (bas->irootloc_d[i]) {cudaError_t err = cudaFree(bas->irootloc_d[i]);CHKERRCUDA(err);bas->irootloc_d[i]=NULL;}}
-  }
+#if defined(PETSC_HAVE_DEVICE)
+  for (PetscInt i=0; i<2; i++) {ierr = PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,bas->irootloc_d[i]);CHKERRQ(ierr);}
 #endif
   ierr = PetscSFLinkDestroy(sf,&bas->avail);CHKERRQ(ierr);
   ierr = PetscSFResetPackFields(sf);CHKERRQ(ierr);
@@ -279,6 +277,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF sf,PetscInt ns
 
   PetscFunctionBegin;
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)sf),&esf);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(esf);CHKERRQ(ierr);
   ierr = PetscSFSetType(esf,PETSCSFBASIC);CHKERRQ(ierr); /* This optimized routine can only create a basic sf */
 
   /* Find out which leaves are still connected to roots in the embedded sf by doing a Bcast */
@@ -369,6 +368,20 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF sf,PetscInt ns
   /* Setup packing related fields */
   ierr = PetscSFSetUpPackFields(esf);CHKERRQ(ierr);
 
+  /* Copy from PetscSFSetUp(), since this method wants to skip PetscSFSetUp(). */
+#if defined(PETSC_HAVE_CUDA)
+  if (esf->backend == PETSCSF_BACKEND_CUDA) {
+    esf->ops->Malloc = PetscSFMalloc_Cuda;
+    esf->ops->Free   = PetscSFFree_Cuda;
+  }
+#endif
+
+#if defined(PETSC_HAVE_KOKKOS)
+  if (esf->backend == PETSCSF_BACKEND_KOKKOS) {
+    esf->ops->Malloc = PetscSFMalloc_Kokkos;
+    esf->ops->Free   = PetscSFFree_Kokkos;
+  }
+#endif
   esf->setupcalled = PETSC_TRUE; /* We have done setup ourselves! */
   ierr = PetscFree2(rootdata,leafmem);CHKERRQ(ierr);
   *newsf = esf;

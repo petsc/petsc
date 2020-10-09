@@ -396,7 +396,7 @@ PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC pc,Vec x,Vec y,Vec w,Pets
 
   if (its > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope_CoarseDM only supports max_it = 1");
   *reason = (PCRichardsonConvergedReason)0;
-  
+
   if (!zeroguess) {
     ierr = PetscInfo(pc,"PCTelescopeCoarseDM: Scattering y for non-zero-initial guess\n");CHKERRQ(ierr);
 

@@ -24,6 +24,7 @@ PETSC_EXTERN PetscErrorCode PetscConvEstSetUp(PetscConvEst);
 PETSC_EXTERN PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst, PetscInt, DM, Vec);
 PETSC_EXTERN PetscErrorCode PetscConvEstComputeError(PetscConvEst, PetscInt, DM, Vec, PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscConvEstGetConvRate(PetscConvEst, PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscConvEstRateView(PetscConvEst, const PetscReal[], PetscViewer);
 
 #endif

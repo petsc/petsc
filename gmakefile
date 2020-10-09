@@ -73,13 +73,26 @@ $(OBJDIR)/%.o : CCPPFLAGS+=-Dpetsc_EXPORTS
 $(OBJDIR)/%.o : CXXCPPFLAGS+=-Dpetsc_EXPORTS
 endif
 
-ifneq ($(CUDAC),)
-langs := F F90 cu cxx c
-else
 langs := F F90 cxx c
+ifneq ($(CUDAC),)
+langs += cu
 endif
+ifneq ($(HIPCC),)
+langs += hip.cpp
+endif
+ifneq ($(SYCLCPP),)
+langs += sycl.cxx
+endif
+ifneq ($(KOKKOS_LIB),)
+langs += kokkos.cxx
+endif
+
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):src/%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
+concatlangsrc = $(foreach lang, $(langs), $(srcs-$(1).$(lang)))
+csrc := $(foreach pkg, $(pkgs),  $(srcs-$(pkg).c))
+showcsrc:
+	-@echo $(csrc)
 
 define SHARED_RECIPE_DLL
   @$(RM) $@ dllcmd.${PETSC_ARCH}
@@ -162,8 +175,17 @@ $(call soname_function,%) : $(call libname_function,%)
 $(OBJDIR)/%.o : src/%.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
+$(OBJDIR)/%.o : src/%.kokkos.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.kokkos.cxx) $(abspath $<) -o $@
+
 $(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
+
+$(OBJDIR)/%.o : src/%.hip.cpp | $$(@D)/.DIR
+	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
+
+$(OBJDIR)/%.o : src/%.sycl.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o : src/%.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile

@@ -2,7 +2,7 @@ static char help[] = "Test resource recycling and MPI_Comm and keyval creation i
 
 #include <petscsys.h>
 
-#define  CHKMPIERR(ierr)  do {if (ierr) MPI_Abort(MPI_COMM_WORLD, ierr);} while(0)
+#define  CHKMPIERR(ierr)  do {if (ierr) MPI_Abort(MPI_COMM_WORLD, ierr);} while (0)
 
 int main(int argc,char **argv)
 {

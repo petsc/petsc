@@ -246,7 +246,7 @@
       if (irank .eq. 0) write(10,27)cfl2,dt,irest
 
       if (irank .eq. 0) then
-       if(ivisc.eq.5.or.ivisc.eq.6) write(10,123)itran,nbtran
+       if (ivisc.eq.5.or.ivisc.eq.6) write(10,123)itran,nbtran
       endif
 
    10 format(20a4)
@@ -1109,7 +1109,7 @@
        call PetscLogEventBegin(flux_event,ierr)
        flops = 0.0
        second = 1.0d0
-!      if(ntt.le.nitfo)second = 0.0
+!      if (ntt.le.nitfo)second = 0.0
 !      print *, 'Second is' , second
 #if defined(_OPENMP)
 #if defined(HAVE_EDGE_COLORING)
@@ -1210,7 +1210,7 @@
 ! {1,0,0} is close to unity, use {0,1,0}
 !
          dot = xnorm
-         if(abs(dot).lt.0.95d0)then
+         if (abs(dot).lt.0.95d0)then
           X1 = 1. - dot*xnorm
           Y1 =    - dot*ynorm
           Z1 =    - dot*znorm
@@ -1650,7 +1650,7 @@
 ! {1,0,0} is close to unity, use {0,1,0}
 !
          dot = xnorm
-         if(abs(dot).lt.0.95d0)then
+         if (abs(dot).lt.0.95d0)then
           X1 = 1.d0 - dot*xnorm
           Y1 =    - dot*ynorm
           Z1 =    - dot*znorm
@@ -1726,7 +1726,7 @@
 ! If ubar is negative, take the reference condition from outside
 !
 !
-         if(unorm.gt.0.0d0)then
+         if (unorm.gt.0.0d0)then
           pr = pi
           ur = ui
           vr = vi
@@ -2151,7 +2151,7 @@
 ! If second order, loop over all the faces accumulate sums
 !
 !     nitfo = 0
-!     if(ntt.gt.nitfo.or.ivisc.gt.0)then
+!     if (ntt.gt.nitfo.or.ivisc.gt.0)then
 !     if (1 .gt. 0) then
        do 1020 n = 1, nedge
          node1 = eptr(n,1)
@@ -2444,7 +2444,7 @@
 !
 ! Calculate the time step
 !
-      if(ires.eq.1) goto 888
+      if (ires.eq.1) goto 888
 !     call PetscLogEventBegin(delta2_event,0,0,0,0,ierr)
       call DELTAT2(nnodes,nedge,qvec,cdt,                                   &
      &             xyz,area,xyzn,evec,                                      &
@@ -2490,7 +2490,7 @@
 !
 ! If not doing Newton-Krylov and iflim=1 call the Flux Limiter
 !
-!     if(iflim.eq.1.and.ifcn.ne.1)then
+!     if (iflim.eq.1.and.ifcn.ne.1)then
 !      call TIMLIM(nnodes,nedge,qnod,res,dq,phi,ncolor,ncount,
 !    &             gradx,grady,gradz,x,y,z,eptr)
 !
@@ -2760,7 +2760,7 @@
 !
 ! If the offdiagonal term is ordered later in the ja array
 !
-!       if(node2.gt.node1)then
+!       if (node2.gt.node1)then
 !        jstart = idiag + 1
 !        jend   = ia(node1+1) - 1
 !       else
@@ -2769,7 +2769,7 @@
 !       end if
 !
 !        do 1070 j = jstart,jend
-!          if(ja(j).eq.node2)fhelp(i,1) = j
+!          if (ja(j).eq.node2)fhelp(i,1) = j
 !1070    continue
 !
 !
@@ -2779,7 +2779,7 @@
 !
 ! If the offdiagonal term is ordered later in the ja array
 !
-!       if(node1.gt.node2)then
+!       if (node1.gt.node2)then
 !        jstart = idiag + 1
 !        jend   = ia(node2+1) - 1
 !       else
@@ -2788,7 +2788,7 @@
 !       end if
 !
 !       do 1080 j = jstart,jend
-!         if(ja(j).eq.node1)fhelp(i,2) = j
+!         if (ja(j).eq.node1)fhelp(i,2) = j
 !1080   continue
 !       write(90,*) i,fhelp(i,1),fhelp(i,2)
 !1060 continue
@@ -2815,14 +2815,14 @@
         minsave = ja(i)
         jsave = i
         do 1010 j = i+1,iend
-          if(ja(j).lt.min)then
+          if (ja(j).lt.min)then
             min = ja(j)
             jsave = j
           end if
  1010   continue
         ja(i) = min
         ja(jsave) = minsave
-!       if(ja(i).eq.inode)iau(inode) = i
+!       if (ja(i).eq.inode)iau(inode) = i
  1000 continue
 !
       return

@@ -2094,7 +2094,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           ierr = DMPlexGetConeSize(dm, q, &coneSize);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, q, &cone);CHKERRQ(ierr);
           for (c = 0; c < coneSize; c++) if (cone[c] == p) break;
-          if (c == coneSize) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "cone/suppport mismatch");
+          if (c == coneSize) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "cone/support mismatch");
           ierr = PetscDualSpaceGetDM(qsp, &qdm);CHKERRQ(ierr);
           ierr = DMPlexGetCone(qdm, 0, &refCone);CHKERRQ(ierr);
           /* get the equivalent dual space from the support dual space */
@@ -2332,8 +2332,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           PetscLagNodeIndices intNodeIndicesMerged = NULL;
           Mat              matMerged = NULL;
 
-          ierr = MatGetSize(intMat, &nDof, 0);CHKERRQ(ierr);
-          ierr = MatGetSize(intMat2, &nDof2, 0);CHKERRQ(ierr);
+          ierr = MatGetSize(intMat, &nDof, NULL);CHKERRQ(ierr);
+          ierr = MatGetSize(intMat2, &nDof2, NULL);CHKERRQ(ierr);
           ierr = PetscQuadraturePointsMerge(intNodes, intNodes2, &merged, &toMerged, &toMerged2);CHKERRQ(ierr);
           ierr = PetscQuadratureGetData(merged, NULL, NULL, &nM, NULL, NULL);CHKERRQ(ierr);
           ierr = MatricesMerge(intMat, intMat2, dim, formDegree, nM, toMerged, toMerged2, &matMerged);CHKERRQ(ierr);

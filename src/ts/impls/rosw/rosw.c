@@ -968,6 +968,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
   PetscBool       stageok,accept = PETSC_TRUE;
   PetscReal       next_time_step = ts->time_step;
   PetscErrorCode  ierr;
+  PetscInt        lag;
 
   PetscFunctionBegin;
   if (!ts->steprollback) {
@@ -1002,9 +1003,15 @@ static PetscErrorCode TSStep_RosW(TS ts)
       if (!ros->stage_explicit) {
         ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
         if (!ros->recompute_jacobian && !i) {
-          ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
+          ierr = SNESGetLagJacobian(snes,&lag);CHKERRQ(ierr);
+          if (lag == 1) {  /* use did not set a nontrival lag, so lag over all stages */
+            ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again for the rest of the stages */
+          }
         }
         ierr = SNESSolve(snes,NULL,Y[i]);CHKERRQ(ierr);
+        if (!ros->recompute_jacobian && i == s-1 && lag == 1) {
+          ierr = SNESSetLagJacobian(snes,lag);CHKERRQ(ierr); /* Set lag back to 1 so we know user did not set it */
+        }
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
@@ -1331,6 +1338,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   PetscErrorCode ierr;
   DM             dm;
   SNES           snes;
+  TSRHSJacobian  rhsjacobian;
 
   PetscFunctionBegin;
   ierr = TSRosWTableauSetUp(ts);CHKERRQ(ierr);
@@ -1346,6 +1354,28 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!((PetscObject)snes)->type_name) {
     ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
+  }
+  ierr = DMTSGetRHSJacobian(dm,&rhsjacobian,NULL);CHKERRQ(ierr);
+  if (rhsjacobian == TSComputeRHSJacobianConstant) {
+    Mat Amat,Pmat;
+
+    /* Set the SNES matrix to be different from the RHS matrix because there is no way to reconstruct shift*M-J */
+    ierr = SNESGetJacobian(snes,&Amat,&Pmat,NULL,NULL);CHKERRQ(ierr);
+    if (Amat && Amat == ts->Arhs) {
+      if (Amat == Pmat) {
+        ierr = MatDuplicate(ts->Arhs,MAT_COPY_VALUES,&Amat);CHKERRQ(ierr);
+        ierr = SNESSetJacobian(snes,Amat,Amat,NULL,NULL);CHKERRQ(ierr);
+      } else {
+        ierr = MatDuplicate(ts->Arhs,MAT_COPY_VALUES,&Amat);CHKERRQ(ierr);
+        ierr = SNESSetJacobian(snes,Amat,NULL,NULL,NULL);CHKERRQ(ierr);
+        if (Pmat && Pmat == ts->Brhs) {
+          ierr = MatDuplicate(ts->Brhs,MAT_COPY_VALUES,&Pmat);CHKERRQ(ierr);
+          ierr = SNESSetJacobian(snes,NULL,Pmat,NULL,NULL);CHKERRQ(ierr);
+          ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
+        }
+      }
+      ierr = MatDestroy(&Amat);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1570,6 +1600,8 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
   This method currently only works with autonomous ODE and DAE.
 
   Consider trying TSARKIMEX if the stiff part is strongly nonlinear.
+
+  Since this uses a single linear solve per time-step if you wish to lag the jacobian or preconditioner computation you must use also -snes_lag_jacobian_persists true or -snes_lag_jacobian_preconditioner true
 
   Developer Notes:
   Rosenbrock-W methods are typically specified for autonomous ODE

@@ -55,7 +55,7 @@ static PetscErrorCode MatGetDiagonal_SubMatrix(Mat N,Vec d)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetDiagonal(Na->A,Na->rwork);CHKERRQ(ierr); 
+  ierr = MatGetDiagonal(Na->A,Na->rwork);CHKERRQ(ierr);
   ierr = VecScatterBegin(Na->rprolong,Na->rwork,d,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(Na->rprolong,Na->rwork,d,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -205,7 +205,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
   PetscValidHeaderSpecific(isrow,IS_CLASSID,2);
   PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
   PetscValidPointer(newmat,4);
-  *newmat = 0;
+  *newmat = NULL;
 
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&N);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow,&m);CHKERRQ(ierr);

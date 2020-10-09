@@ -4,13 +4,13 @@
 /*
  Implements Newton's Method with a trust region approach for solving
  bound constrained minimization problems.
- 
- In this variant, the trust region failures trigger a line search with 
- the existing Newton step instead of re-solving the step with a 
+
+ In this variant, the trust region failures trigger a line search with
+ the existing Newton step instead of re-solving the step with a
  different radius.
- 
+
  ------------------------------------------------------------
- 
+
  x_0 = VecMedian(x_0)
  f_0, g_0 = TaoComputeObjectiveAndGradient(x_0)
  pg_0 = project(g_0)
@@ -21,7 +21,7 @@
 
  while niter <= max_it
     niter += 1
-    
+
     if needH
       If max_cg_steps > 0
         x_k, g_k, pg_k = TaoSolve(BNCG)
@@ -58,7 +58,7 @@
       D = VecMedian(1e-6, abs(diag(Hr_k)), 1e6)
       scale BFGS with VecReciprocal(D)
     end
-    solve Hr_k dr_k = -gr_k 
+    solve Hr_k dr_k = -gr_k
     set d_k to (l - x) for variables in L, (u - x) for variables in U, and 0 for variables in F
 
     x_{k+1} = VecMedian(x_k + d_k)
@@ -85,7 +85,7 @@
           end
         end
       end
-      
+
       x_{k+1}, f_{k+1}, g_{k+1}, ls_failed = TaoBNKPerformLineSearch()
       if ls_failed
         f_{k+1} = f_k
@@ -98,8 +98,8 @@
         trust = oldTrust
         trust = TaoBNKUpdateTrustRadius(BNK_UPDATE_STEP)
         count the accepted step type (Newton, BFGS, scaled grad or grad)
-      end 
-    end 
+      end
+    end
 
     check convergence at pg_{k+1}
  end
@@ -115,7 +115,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
   PetscReal                    oldTrust, prered, actred, steplen, resnorm;
   PetscBool                    cgTerminate, needH = PETSC_TRUE, stepAccepted, shift = PETSC_FALSE;
   PetscInt                     stepType, nDiff;
-  
+
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
@@ -129,7 +129,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     ++tao->niter;
-    
+
     if (needH && bnk->inactive_idx) {
       /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
       ierr = TaoBNKTakeCGSteps(tao, &cgTerminate);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
       ierr = (*bnk->computehessian)(tao);CHKERRQ(ierr);
       needH = PETSC_FALSE;
     }
-    
+
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
     ierr = (*bnk->computestep)(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
 
@@ -151,14 +151,14 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
     ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, bnk->Gold);CHKERRQ(ierr);
     ierr = VecCopy(bnk->unprojected_gradient, bnk->unprojected_gradient_old);CHKERRQ(ierr);
-    
+
     /* Temporarily accept the step and project it into the bounds */
     ierr = VecAXPY(tao->solution, 1.0, tao->stepdirection);CHKERRQ(ierr);
     ierr = TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution);CHKERRQ(ierr);
-    
+
     /* Check if the projection changed the step direction */
     if (nDiff > 0) {
-      /* Projection changed the step, so we have to recompute the step and 
+      /* Projection changed the step, so we have to recompute the step and
          the predicted reduction. Leave the trust radius unchanged. */
       ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecAXPY(tao->stepdirection, -1.0, bnk->Xold);CHKERRQ(ierr);
@@ -168,13 +168,13 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
       ierr = KSPCGGetObjFcn(tao->ksp, &prered);CHKERRQ(ierr);
     }
     prered = -prered;
-    
+
     /* Compute the actual reduction and update the trust radius */
     ierr = TaoComputeObjective(tao, tao->solution, &bnk->f);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(bnk->f)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
     actred = bnk->fold - bnk->f;
     ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, bnk->update_type, stepType, &stepAccepted);CHKERRQ(ierr);
-    
+
     if (stepAccepted) {
       /* Step is good, evaluate the gradient and the hessian */
       steplen = 1.0;
@@ -244,7 +244,7 @@ static PetscErrorCode TaoSetFromOptions_BNTL(PetscOptionItems *PetscOptionsObjec
 
 /*------------------------------------------------------------*/
 /*MC
-  TAOBNTL - Bounded Newton Trust Region method with line-search fall-back for nonlinear 
+  TAOBNTL - Bounded Newton Trust Region method with line-search fall-back for nonlinear
             minimization with bound constraints.
 
   Options Database Keys:
@@ -259,12 +259,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
 {
   TAO_BNK        *bnk;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
   tao->ops->solve=TaoSolve_BNTL;
   tao->ops->setfromoptions=TaoSetFromOptions_BNTL;
-  
+
   bnk = (TAO_BNK *)tao->data;
   bnk->update_type = BNK_UPDATE_REDUCTION; /* trust region updates based on predicted/actual reduction */
   PetscFunctionReturn(0);

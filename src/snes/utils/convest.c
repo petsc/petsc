@@ -210,7 +210,23 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscConvEstMonitor_Private(PetscConvEst ce, PetscInt r)
+/*@
+  PetscConvEstMonitorDefault - Monitors the convergence estimation loop
+
+  Collective on PetscConvEst
+
+  Input Parameter:
++ ce - The PetscConvEst object
+- r  - The refinement level
+
+  Options database keys:
+. -convest_monitor - Activate the monitor
+
+  Level: intermediate
+
+.seealso: PetscConvEstCreate(), PetscConvEstGetConvRate(), SNESSolve(), TSSolve()
+@*/
+PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst ce, PetscInt r)
 {
   MPI_Comm       comm;
   PetscInt       f;
@@ -264,6 +280,33 @@ static PetscErrorCode PetscConvEstComputeErrorSNES_Private(PetscConvEst ce, Pets
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscConvEstSetJacobianNullspace_Private(PetscConvEst ce, SNES snes)
+{
+  DM             dm;
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+  for (f = 0; f < ce->Nf; ++f) {
+    PetscErrorCode (*nspconstr)(DM, PetscInt, PetscInt, MatNullSpace *);
+
+    ierr = DMGetNullSpaceConstructor(dm, f, &nspconstr);CHKERRQ(ierr);
+    if (nspconstr) {
+      MatNullSpace nullsp;
+      Mat          J;
+
+      ierr = (*nspconstr)(dm, f, f,&nullsp);CHKERRQ(ierr);
+      ierr = SNESSetUp(snes);CHKERRQ(ierr);
+      ierr = SNESGetJacobian(snes, &J, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = MatSetNullSpace(J, nullsp);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, PetscReal alpha[])
 {
   SNES           snes = (SNES) ce->solver;
@@ -300,8 +343,8 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
       ierr = DMCopyTransform(ce->idm, dm[r]);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) dm[r-1], &dmname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);
-      for (f = 0; f <= ce->Nf; ++f) {
-        PetscErrorCode (*nspconstr)(DM, PetscInt, MatNullSpace *);
+      for (f = 0; f < ce->Nf; ++f) {
+        PetscErrorCode (*nspconstr)(DM, PetscInt, PetscInt, MatNullSpace *);
 
         ierr = DMGetNullSpaceConstructor(dm[r-1], f, &nspconstr);CHKERRQ(ierr);
         ierr = DMSetNullSpaceConstructor(dm[r],   f,  nspconstr);CHKERRQ(ierr);
@@ -318,6 +361,8 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     ierr = SNESSetDM(snes, dm[r]);CHKERRQ(ierr);
     ierr = DMPlexSetSNESLocalFEM(dm[r], ctx, ctx, ctx);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+    /* Set nullspace for Jacobian */
+    ierr = PetscConvEstSetJacobianNullspace_Private(ce, snes);CHKERRQ(ierr);
     /* Create initial guess */
     ierr = PetscConvEstComputeInitialGuess(ce, r, dm[r], u);CHKERRQ(ierr);
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
@@ -337,7 +382,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
       ierr = PetscLogEventSetError(ce->event, f, ce->errors[r*ce->Nf+f]);CHKERRQ(ierr);
     }
     /* Monitor */
-    ierr = PetscConvEstMonitor_Private(ce, r);CHKERRQ(ierr);
+    ierr = PetscConvEstMonitorDefault(ce, r);CHKERRQ(ierr);
     if (!r) {
       /* PCReset() does not wipe out the level structure */
       KSP ksp;
@@ -382,6 +427,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   ierr = SNESSetDM(snes, ce->idm);CHKERRQ(ierr);
   ierr = DMPlexSetSNESLocalFEM(ce->idm, ctx, ctx, ctx);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  ierr = PetscConvEstSetJacobianNullspace_Private(ce, snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

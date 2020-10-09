@@ -1,4 +1,4 @@
-#include <../src/ksp/ksp/utils/lmvm/lmvm.h> 
+#include <../src/ksp/ksp/utils/lmvm/lmvm.h>
 
 /*
   "Full" memory implementation of only the diagonal terms in a symmetric Broyden approximation.

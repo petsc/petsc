@@ -17,7 +17,7 @@ PetscErrorCode MatDestroy_Preallocator(Mat A)
   ierr = PetscHSetIJDestroy(&p->ht);CHKERRQ(ierr);
   ierr = PetscFree4(p->dnz, p->onz, p->dnzu, p->onzu);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject) A, 0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject) A, NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) A, "MatPreallocatorPreallocate_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -106,7 +106,7 @@ PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
     ierr = MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg);CHKERRQ(ierr);
     if (!flg) break;
 
-    for (i = 0; i < n; ) {
+    for (i = 0; i < n;) {
       /* Now identify the consecutive vals belonging to the same row */
       for (j = i, rstart = row[j]; j < n; j++) {
         if (row[j] != rstart) break;

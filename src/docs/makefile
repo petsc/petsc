@@ -4,15 +4,11 @@ FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  =
-TAODOCS  = tex/manual/manual.tex \
-	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
-	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/manual/manual_tex.tex \
-	   tex/tao.bib tex/tao-patches.html tex/tao-benchmarks.html \
-	   tex/tao-components.html tex/tao-patches*
+TAODOCS  =  \
+	   tao_tex/tao.bib
 
-DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
-	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
-	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/petsc.bib website/index.html \
+DOCS     = manualpages-sec/header_* \
+           tex/petsc.bib tex/petscapp.bib tex/petscconsult.bib website/index.html \
            website/download/index.html \
            website/download/petsc-patches.html website/publications/index.html \
            website/features/index.html website/features/details.html website/features/diagram.html \
@@ -39,7 +35,7 @@ include ${PETSC_DIR}/lib/petsc/conf/test
 
 # petscapps* get built with 'builddist' and 'rsync'ed over to petsc web via the crontab
 bib2html: clean
-	${BIB2HTML} -group tex/doctext/petsc.group -listfile website/publications/petscapps.html -listconfig tex/doctext/petscapp.cfg tex/petscapp.bib -nospecials > website/publications/petscapps-bib.html
+	${BIB2HTML} -group doctext/petsc.group -listfile website/publications/petscapps.html -listconfig doctext/petscapp.cfg tex/petscapp.bib -nospecials > website/publications/petscapps-bib.html
 
 years:
 	for i in 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004; do\

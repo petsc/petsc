@@ -20,6 +20,7 @@ configure_options = [
 
   #'-download-fblaslapack=1',
   '--download-mpich=1',
+  '--download-mpich-device=ch3:sock',
   '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
@@ -43,9 +44,12 @@ configure_options = [
   '--download-saws',
   '--download-revolve=1',
   '--download-ctetgen=1',
+  '--download-tetgen=1',
   '--download-mfem=1',
   '--download-glvis=1',
   '--with-opengl=1',
+  '--download-adolc',
+  '--download-colpack',
   ]
 
 if __name__ == '__main__':

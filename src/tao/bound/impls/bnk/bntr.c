@@ -4,9 +4,9 @@
 /*
  Implements Newton's Method with a trust region approach for solving
  bound constrained minimization problems.
- 
+
  ------------------------------------------------------------
- 
+
  x_0 = VecMedian(x_0)
  f_0, g_0= TaoComputeObjectiveAndGradient(x_0)
  pg_0 = project(g_0)
@@ -14,15 +14,15 @@
  needH = TaoBNKInitialize(default:BNK_INIT_INTERPOLATION)
  niter = 0
  step_accepted = false
- 
+
  while niter <= max_it
     niter += 1
-    
+
     if needH
       If max_cg_steps > 0
         x_k, g_k, pg_k = TaoSolve(BNCG)
       end
-    
+
       H_k = TaoComputeHessian(x_k)
       if pc_type == BNK_PC_BFGS
         add correction to BFGS approx
@@ -48,17 +48,17 @@
       F = {i : l_i = (x_k)_i = u_i}
       A = {L + U + F}
       IA = {i : i not in A}
-      
+
     generate the reduced system Hr_k dr_k = -gr_k for variables in IA
     if pc_type == BNK_PC_BFGS && scale_type == BNK_SCALE_PHESS
       D = VecMedian(1e-6, abs(diag(Hr_k)), 1e6)
       scale BFGS with VecReciprocal(D)
     end
-    
+
     while !stepAccepted
       solve Hr_k dr_k = -gr_k
       set d_k to (l - x) for variables in L, (u - x) for variables in U, and 0 for variables in F
-      
+
       x_{k+1} = VecMedian(x_k + d_k)
       s = x_{k+1} - x_k
       prered = dot(s, 0.5*gr_k - Hr_k*s)
@@ -80,11 +80,11 @@
         if trust == oldTrust
           terminate because we cannot shrink the radius any further
         end
-      end 
-      
+      end
+
       check convergence at pg_{k+1}
     end
-    
+
  end
 */
 
@@ -97,7 +97,7 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
   PetscReal                    oldTrust, prered, actred, steplen, resnorm;
   PetscBool                    cgTerminate, needH = PETSC_TRUE, stepAccepted, shift = PETSC_FALSE;
   PetscInt                     stepType, nDiff;
-  
+
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
@@ -111,8 +111,8 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     ++tao->niter;
-    
-    if (needH && bnk->inactive_idx) { 
+
+    if (needH && bnk->inactive_idx) {
       /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
       ierr = TaoBNKTakeCGSteps(tao, &cgTerminate);CHKERRQ(ierr);
       if (cgTerminate) {
@@ -123,18 +123,18 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
       ierr = (*bnk->computehessian)(tao);CHKERRQ(ierr);
       needH = PETSC_FALSE;
     }
-    
+
     /* Store current solution before it changes */
     bnk->fold = bnk->f;
     ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, bnk->Gold);CHKERRQ(ierr);
     ierr = VecCopy(bnk->unprojected_gradient, bnk->unprojected_gradient_old);CHKERRQ(ierr);
-    
+
     /* Enter into trust region loops */
     stepAccepted = PETSC_FALSE;
     while (!stepAccepted && tao->reason == TAO_CONTINUE_ITERATING) {
       tao->ksp_its=0;
-      
+
       /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
       ierr = (*bnk->computestep)(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
 
@@ -144,7 +144,7 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
 
       /* Check if the projection changed the step direction */
       if (nDiff > 0) {
-        /* Projection changed the step, so we have to recompute the step and 
+        /* Projection changed the step, so we have to recompute the step and
            the predicted reduction. Leave the trust radius unchanged. */
         ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
         ierr = VecAXPY(tao->stepdirection, -1.0, bnk->Xold);CHKERRQ(ierr);
@@ -228,12 +228,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNTR(Tao tao)
 {
   TAO_BNK        *bnk;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
   tao->ops->solve=TaoSolve_BNTR;
   tao->ops->setfromoptions=TaoSetFromOptions_BNTR;
-  
+
   bnk = (TAO_BNK *)tao->data;
   bnk->update_type = BNK_UPDATE_REDUCTION; /* trust region updates based on predicted/actual reduction */
   PetscFunctionReturn(0);

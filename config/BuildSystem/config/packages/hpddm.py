@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = 'a7d22bb' # master july-06-2020
+    self.gitcommit              = '882ec10' # master aug-30-2020
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '2.0.7'
     self.versionname            = 'HPDDM_VERSION'
@@ -38,10 +38,10 @@ class Configure(config.package.Package):
     if self.slepc.found and not self.checkSharedLibrariesEnabled():
       raise RuntimeError('Shared libraries enabled needed to build PCHPDDM')
     buildDir = os.path.join(self.packageDir,'petsc-build')
-    self.setCompilers.pushLanguage('Cxx')
-    cxx = self.setCompilers.getCompiler()
-    cxxflags = self.setCompilers.getCompilerFlags()
-    self.setCompilers.popLanguage()
+    self.pushLanguage('Cxx')
+    cxx = self.getCompiler()
+    cxxflags = self.getCompilerFlags()
+    self.popLanguage()
     if self.framework.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       PETSC_DIR  = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
       PETSC_ARCH = ''

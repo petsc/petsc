@@ -73,19 +73,19 @@ static PetscErrorCode RHSFunctionActive(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   PetscScalar       *f;
   const PetscScalar *x;
 
-  adouble           f_a[2];			/* adouble for dependent variables */
-  adouble           x_a[2];			/* adouble for independent variables */
+  adouble           f_a[2];                     /* adouble for dependent variables */
+  adouble           x_a[2];                     /* adouble for independent variables */
 
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
-  trace_on(1);                  		/* Start of active section */
-  x_a[0] <<= x[0]; x_a[1] <<= x[1];     	/* Mark as independent */
+  trace_on(1);                                  /* Start of active section */
+  x_a[0] <<= x[0]; x_a[1] <<= x[1];             /* Mark as independent */
   f_a[0] = x_a[1];
   f_a[1] = mu*(1.-x_a[0]*x_a[0])*x_a[1]-x_a[0];
-  f_a[0] >>= f[0]; f_a[1] >>= f[1];     	/* Mark as dependent */
-  trace_off(1);                 		/* End of active section */
+  f_a[0] >>= f[0]; f_a[1] >>= f[1];             /* Mark as dependent */
+  trace_off(1);                                 /* End of active section */
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -97,14 +97,14 @@ static PetscErrorCode RHSFunctionActive(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 */
 static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
-  User           user=(User)ctx;
-  PetscScalar    *x;
+  PetscErrorCode    ierr;
+  User              user=(User)ctx;
+  const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = PetscAdolcComputeRHSJacobian(1,A,x,user->adctx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -131,7 +131,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 
 int main(int argc,char **argv)
 {
-  TS                 ts;          /* nonlinear solver */
+  TS                 ts = NULL;          /* nonlinear solver */
   Vec                ic,r;
   PetscBool          monitor = PETSC_FALSE;
   PetscScalar        *x_ptr;
@@ -148,7 +148,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_MPI_WRONG_SIZE,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options and create AdolcCtx
@@ -257,7 +257,7 @@ int main(int argc,char **argv)
   ierr = TaoSetTolerances(tao,1e-10,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
-  ierr = TaoSolve(tao); CHKERRQ(ierr);
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);

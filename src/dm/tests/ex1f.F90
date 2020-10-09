@@ -2,7 +2,7 @@
 ! Test the workaround for a bug in OpenMPI-2.1.1 on Ubuntu 18.04.2
 ! See https://lists.mcs.anl.gov/pipermail/petsc-dev/2019-July/024803.html
 !
-! Contributed-by: 	Fabian Jakub  <Fabian.Jakub@physik.uni-muenchen.de>
+! Contributed-by:       Fabian Jakub  <Fabian.Jakub@physik.uni-muenchen.de>
 program main
 #include "petsc/finclude/petsc.h"
 

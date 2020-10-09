@@ -4,7 +4,7 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 
 #if defined(PETSC_HAVE_CUDA)
-#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h>
 #endif
 
 typedef struct {
@@ -214,9 +214,9 @@ static PetscErrorCode VecScatterRemap_SF(VecScatter vscat,const PetscInt *tomap,
    */
   bas = (PetscSF_Basic*)sf->data;
   for (i=0; i<bas->ioffset[bas->niranks]; i++) bas->irootloc[i] = tomap[bas->irootloc[i]*bs]/bs;
-#if defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   /* Free the irootloc copy on device. We allocate a new copy and get the updated value on demand. See PetscSFLinkGetRootPackOptAndIndices() */
-  for (i=0; i<2; i++) {if (bas->irootloc_d[i]) {cudaError_t err = cudaFree(bas->irootloc_d[i]);CHKERRCUDA(err);bas->irootloc_d[i]=NULL;}}
+  for (i=0; i<2; i++) {ierr = PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,bas->irootloc_d[i]);CHKERRQ(ierr);}
 #endif
   /* Destroy and then rebuild root packing optimizations since indices are changed */
   ierr = PetscSFResetPackFields(sf);CHKERRQ(ierr);
@@ -407,7 +407,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
   if (ixid == IS_BLOCK)       {ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);}
   else if (ixid == IS_STRIDE) {ierr = ISStrideGetInfo(ix,&ixfirst,&ixstep);CHKERRQ(ierr);}
 
-  if ( iyid == IS_BLOCK)      {ierr = ISGetBlockSize(iy,&bsy);CHKERRQ(ierr);}
+  if (iyid == IS_BLOCK)      {ierr = ISGetBlockSize(iy,&bsy);CHKERRQ(ierr);}
   else if (iyid == IS_STRIDE) {ierr = ISStrideGetInfo(iy,&iyfirst,&iystep);CHKERRQ(ierr);}
 
   /* Check if a PtoS is special ToAll/ToZero scatters, which can be results of VecScatterCreateToAll/Zero.
@@ -442,6 +442,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
 
     if (pattern[0] || pattern[1]) {
       ierr = PetscSFCreate(xcomm,&data->sf);CHKERRQ(ierr);
+      ierr = PetscSFSetFromOptions(data->sf);CHKERRQ(ierr);
       ierr = PetscSFSetGraphWithPattern(data->sf,map,pattern[0] ? PETSCSF_PATTERN_ALLGATHER : PETSCSF_PATTERN_GATHER);CHKERRQ(ierr);
       goto functionend; /* No further analysis needed. What a big win! */
     }
@@ -741,7 +742,7 @@ static PetscErrorCode VecScatterSetUp_SF(VecScatter vscat)
 
 functionend:
   if (!vscat->from_is) {ierr = ISDestroy(&ix);CHKERRQ(ierr);}
-  if (!vscat->to_is  ) {ierr = ISDestroy(&iy);CHKERRQ(ierr);}
+  if (!vscat->to_is) {ierr = ISDestroy(&iy);CHKERRQ(ierr);}
 
   /* vecscatter uses eager setup */
   ierr = PetscSFSetUp(data->sf);CHKERRQ(ierr);

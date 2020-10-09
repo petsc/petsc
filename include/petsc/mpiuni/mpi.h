@@ -826,6 +826,11 @@ typedef int MPI_Fint;
      (MPIUNI_ARG(op),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)))
+#define MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request) \
+     (MPIUNI_ARG(op),\
+      MPIUNI_ARG(comm),\
+      MPIUNI_ARG(request),\
+      MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)))
 #define MPI_Scan(sendbuf, recvbuf,count,datatype,op,comm) \
      (MPIUNI_ARG(op),\
       MPIUNI_ARG(comm),\

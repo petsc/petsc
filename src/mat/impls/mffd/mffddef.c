@@ -145,7 +145,7 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(PetscOptionItems *PetscOptionsObj
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Finite difference matrix free parameters");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_mffd_umin","umin","MatMFFDDSSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mffd_umin","umin","MatMFFDDSSetUmin",hctx->umin,&hctx->umin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

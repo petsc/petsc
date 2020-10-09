@@ -84,12 +84,12 @@ static PetscErrorCode CreateMat(DM dmSol,Mat *pA)
   ierr = DMGetCoordinatesLocal(dmSol,&coordLocal);CHKERRQ(ierr);
   ierr = DMStagVecGetArrayRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
   for (d=0; d<3; ++d) {
-    ierr = DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]       );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]      );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]      );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]      );CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,RIGHT,  d,&icux_right[d]);CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,UP,     d,&icuy_up[d]   );CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,UP,     d,&icuy_up[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,FRONT,  d,&icuz_front[d]);CHKERRQ(ierr);
   }
 
@@ -544,12 +544,12 @@ static PetscErrorCode CheckMat(DM dmSol,Mat A)
   ierr = DMGetCoordinatesLocal(dmSol,&coordLocal);CHKERRQ(ierr);
   ierr = DMStagVecGetArrayRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
   for (d=0; d<3; ++d) {
-    ierr = DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]       );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]      );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]      );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]      );CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,RIGHT,  d,&icux_right[d]);CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,UP,     d,&icuy_up[d]   );CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,UP,     d,&icuy_up[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,FRONT,  d,&icuz_front[d]);CHKERRQ(ierr);
   }
 

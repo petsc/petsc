@@ -3,7 +3,7 @@ static char help[] = "Solves a linear system in parallel with KSP and HMG.\n\
 Input parameters include:\n\
   -view_exact_sol    : write exact solution vector to stdout\n\
   -m  <mesh_x>       : number of mesh points in x-direction\n\
-  -n  <mesh_n>       : number of mesh points in y-direction\n\
+  -n  <mesh_y>       : number of mesh points in y-direction\n\
   -bs                : number of variables on each mesh vertex \n\n";
 
 /*

@@ -277,14 +277,14 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
           The "symmetric" application of this preconditioner is not actually symmetric since L is not transpose(U)
           even when the matrix is not symmetric since the U stores the diagonals of the factorization.
 
-          If you are using MATSEQAIJCUSPARSE matrices (or MATMPIAIJCUSPARSE matrices with block Jacobi), factorization 
+          If you are using MATSEQAIJCUSPARSE matrices (or MATMPIAIJCUSPARSE matrices with block Jacobi), factorization
           is never done on the GPU).
 
    References:
 +  1. - T. Dupont, R. Kendall, and H. Rachford. An approximate factorization procedure for solving
    self adjoint elliptic difference equations. SIAM J. Numer. Anal., 5, 1968.
 .  2. -  T.A. Oliphant. An implicit numerical method for solving two dimensional timedependent diffusion problems. Quart. Appl. Math., 19, 1961.
--  3. -  TONY F. CHAN AND HENK A. VAN DER VORST, APPROXIMATE AND INCOMPLETE FACTORIZATIONS, 
+-  3. -  TONY F. CHAN AND HENK A. VAN DER VORST, APPROXIMATE AND INCOMPLETE FACTORIZATIONS,
       Chapter in Parallel Numerical
       Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
       Science and Engineering, Kluwer.

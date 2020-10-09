@@ -50,11 +50,11 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc,ISColoring coloring)
         ierr = PetscSFComputeDegreeBegin(etor,&degrees);CHKERRQ(ierr);
         ierr = PetscSFComputeDegreeEnd(etor,&degrees);CHKERRQ(ierr);
         nentries=0;
-        for(i=0;i<nrows;i++) {
+        for (i=0;i<nrows;i++) {
           nentries += degrees[i];
         }
         idx=0;
-        for(i=0;i<nrows;i++) {
+        for (i=0;i<nrows;i++) {
           for (j=0;j<degrees[i];j++) {
             stateleafrow[idx] = staterow[i];
             idx++;
@@ -71,11 +71,11 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc,ISColoring coloring)
         ierr = PetscSFComputeDegreeBegin(etoc,&degrees);CHKERRQ(ierr);
         ierr = PetscSFComputeDegreeEnd(etoc,&degrees);CHKERRQ(ierr);
         nentries=0;
-        for(i=0;i<ncols;i++) {
+        for (i=0;i<ncols;i++) {
           nentries += degrees[i];
         }
         idx=0;
-        for(i=0;i<ncols;i++) {
+        for (i=0;i<ncols;i++) {
           for (j=0;j<degrees[i];j++) {
             stateleafcol[idx] = statecol[i];
             idx++;

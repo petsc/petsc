@@ -5,24 +5,27 @@
 PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
 {
   PetscInt k,j;
-  for (k=0; k<n; k++)
-    for (L[k]=1, j=0; j<n; j++)
-      if (j != k)
-        L[k] *= (t - T[j])/(T[k] - T[j]);
+  for (k=0; k<n; k++) {
+    for (L[k]=1, j=0; j<n; j++) {
+      if (j != k) L[k] *= (t - T[j])/(T[k] - T[j]);
+    }
+  }
 }
 
 PETSC_STATIC_INLINE void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar dL[])
 {
   PetscInt k,j,i;
-  for (k=0; k<n; k++)
-    for (dL[k]=0, j=0; j<n; j++)
+  for (k=0; k<n; k++) {
+    for (dL[k]=0, j=0; j<n; j++) {
       if (j != k) {
         PetscReal L = 1/(T[k] - T[j]);
-        for (i=0; i<n; i++)
-          if (i != j && i != k)
-            L *= (t - T[i])/(T[k] - T[i]);
+        for (i=0; i<n; i++) {
+          if (i != j && i != k) L *= (t - T[i])/(T[k] - T[i]);
+        }
         dL[k] += L;
       }
+    }
+  }
 }
 
 PETSC_STATIC_INLINE PetscInt LagrangeGetId(PetscReal t, PetscInt n, const PetscReal T[], const PetscBool Taken[])
@@ -33,7 +36,7 @@ PETSC_STATIC_INLINE PetscInt LagrangeGetId(PetscReal t, PetscInt n, const PetscR
     return _tid;
   } else { /* we get back a negative id, where the maximum time is stored, since we use usually reconstruct backward in time */
     PetscReal max = PETSC_MIN_REAL;
-    PetscInt maxloc = n;
+    PetscInt  maxloc = n;
     _tid = 0;
     while (_tid < n) { maxloc = (max < T[_tid] && !Taken[_tid]) ? (max = T[_tid],_tid) : maxloc; _tid++; }
     return -maxloc-1;

@@ -42,6 +42,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 #endif
 
   PetscFunctionBegin;
+  if (part->use_edge_weights) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Party does not support edge weights");
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
@@ -397,6 +398,8 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 
    Notes:
     See http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html
+
+    Does not support using MatPartitioningSetUseEdgeWeights()
 
 .seealso: MatPartitioningSetType(), MatPartitioningType
 

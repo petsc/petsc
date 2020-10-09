@@ -311,7 +311,7 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
 
     if (f_petsc_comm_world) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first\n");return;}
 
-    *ierr = PetscPreMPIInit_Private(); if(*ierr) return;
+    *ierr = PetscPreMPIInit_Private(); if (*ierr) return;
     mpi_init_(&mierr);
     if (mierr) {
       *ierr = mierr;
@@ -445,7 +445,7 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
      below.
   */
   PetscInitializeFortran();
-  if(readarguments == PETSC_TRUE) {
+  if (readarguments == PETSC_TRUE) {
     PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);
     FIXCHAR(filename,len,t1);
     *ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,t1);

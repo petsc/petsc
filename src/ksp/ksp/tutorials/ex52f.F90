@@ -1,6 +1,6 @@
 !
 !   Modified from ex15f.F for testing MUMPS
-!   Solves a linear system in parallel with KSP.  
+!   Solves a linear system in parallel with KSP.
 !  -------------------------------------------------------------------------
 
       program main
@@ -122,7 +122,7 @@
       call PCFactorGetMatrix(pc,F,ierr)
 
 !     sequential ordering
-      icntl = 7 
+      icntl = 7
       ival  = 2
       call MatMumpsSetIcntl(F,icntl,ival,ierr)
 
@@ -158,7 +158,7 @@
  98   format('Mumps row pivot threshold = ',1pe11.2)
  99   format('Mumps determinant=(',1pe11.2,1pe11.2,')*2^',i3)
 #endif
-      
+
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -177,7 +177,7 @@
         else
            write(6,110) its
         endif
-      endif     
+      endif
   100 format('Norm of error ',1pe11.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12,iterations ',i5)
 

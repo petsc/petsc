@@ -40,7 +40,7 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     with self.Language('C'):
-      cc = self.setCompilers.getCompiler()
+      cc = self.getCompiler()
     try:
       self.logPrintBox('Configuring BLIS; this may take several minutes')
       args = ['./configure', '--prefix='+self.installDir]

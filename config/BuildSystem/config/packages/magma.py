@@ -86,24 +86,24 @@ class Configure(config.package.Package):
     if fcbindings and not hasattr(self.compilers, 'FC'):
       raise RuntimeError('Missing Fortran compiler for MAGMA Fortran bindings')
 
-    self.setCompilers.pushLanguage('C')
-    cc = self.setCompilers.getCompiler()
-    cflags = self.setCompilers.getCompilerFlags()
-    self.setCompilers.popLanguage()
+    self.pushLanguage('C')
+    cc = self.getCompiler()
+    cflags = self.getCompilerFlags()
+    self.popLanguage()
 
-    self.setCompilers.pushLanguage('Cxx')
-    cxx = self.setCompilers.getCompiler()
-    cxxflags = self.setCompilers.getCompilerFlags()
+    self.pushLanguage('Cxx')
+    cxx = self.getCompiler()
+    cxxflags = self.getCompilerFlags()
     cxxflags = cxxflags.replace('-fvisibility=hidden','')
-    self.setCompilers.popLanguage()
+    self.popLanguage()
 
     fc = ''
     fcflags = ''
     if fcbindings:
-      self.setCompilers.pushLanguage('FC')
-      fc = self.setCompilers.getCompiler()
-      fcflags = self.setCompilers.getCompilerFlags()
-      self.setCompilers.popLanguage()
+      self.pushLanguage('FC')
+      fc = self.getCompiler()
+      fcflags = self.getCompilerFlags()
+      self.popLanguage()
 
     self.pushLanguage('CUDA')
     nvcc = self.getCompiler()
@@ -143,7 +143,7 @@ class Configure(config.package.Package):
       g.write('CXX = '+cxx+'\n')
       g.write('CXXFLAGS = '+cxxflags+'\n')
       g.write('NVCC = '+nvcc+'\n')
-      g.write('NVCCFLAGS = -std=c++11 '+nvccflags+'\n')
+      g.write('NVCCFLAGS = '+nvccflags+'\n')
       if fcbindings:
         g.write('FORT = '+fc+'\n')
         g.write('FFLAGS = '+fcflags+'\n')

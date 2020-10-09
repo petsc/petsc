@@ -42,11 +42,11 @@ class Configure(config.package.Package):
     if self.openmp.found:
       self.usesopenmp = 'yes'
 
-    self.setCompilers.pushLanguage('Cxx')
-    cxx = self.setCompilers.getCompiler()
-    cxxflags = self.setCompilers.getCompilerFlags()
+    self.pushLanguage('Cxx')
+    cxx = self.getCompiler()
+    cxxflags = self.getCompilerFlags()
     cxxflags = cxxflags.replace('-fvisibility=hidden','')
-    self.setCompilers.popLanguage()
+    self.popLanguage()
 
     with_gpu=False
     if self.cuda.found and self.magma.found and self.kblas.found:

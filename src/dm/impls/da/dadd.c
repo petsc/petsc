@@ -69,7 +69,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
         if (jj > N-1) jj = jj - N;
         if (kk > P-1) kk = kk - P;
         /* gone out of processor range on x axis */
-        while(ii > me-1 || ii < ms) {
+        while (ii > me-1 || ii < ms) {
           if (mr == m-1) {
             ms = 0;
             me = lx[0];
@@ -81,7 +81,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
           }
         }
         /* gone out of processor range on y axis */
-        while(jj > ne-1 || jj < ns) {
+        while (jj > ne-1 || jj < ns) {
           if (nr == n-1) {
             ns = 0;
             ne = ly[0];
@@ -93,7 +93,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
           }
         }
         /* gone out of processor range on z axis */
-        while(kk > pe-1 || kk < ps) {
+        while (kk > pe-1 || kk < ps) {
           if (pr == p-1) {
             ps = 0;
             pe = lz[0];
@@ -415,7 +415,7 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   ierr = DMDASubDomainDA_Private(dm,&n,&sdm);CHKERRQ(ierr);
   if (names) {
     ierr = PetscMalloc1(n,names);CHKERRQ(ierr);
-    for (i=0;i<n;i++) (*names)[i] = 0;
+    for (i=0;i<n;i++) (*names)[i] = NULL;
   }
   ierr = DMDASubDomainIS_Private(dm,n,sdm,iis,ois);CHKERRQ(ierr);
   if (subdm) *subdm = sdm;

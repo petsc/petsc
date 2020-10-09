@@ -201,7 +201,7 @@ $     PetscViewerFileSetName(lab,name);
 
    This PetscViewer can be destroyed with PetscViewerDestroy().
 
-   The MPI communicator used here must match that used by the object one is viewing. For example if the 
+   The MPI communicator used here must match that used by the object one is viewing. For example if the
    Mat was created with a PETSC_COMM_WORLD, then the Viewer must be created with PETSC_COMM_WORLD
 
    As shown below, PetscViewerASCIIOpen() is useful in conjunction with
@@ -326,6 +326,3 @@ PetscErrorCode  PetscViewerASCIISetFILE(PetscViewer viewer,FILE *fd)
   vascii->closefile = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-
-
-

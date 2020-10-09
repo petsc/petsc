@@ -56,7 +56,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 #endif
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Coords);CHKERRQ(ierr);
   if (Coords) {
@@ -114,7 +114,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       const char *vecname = "Unnamed";
 
       ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(daCurr,0,0,0,0,0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
       maxbs = PetscMax(maxbs,bs);
 
       if (((PetscObject)X)->name || link != vtk->link) {
@@ -215,7 +215,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       DM                daCurr;
       PetscBool         fieldsnamed;
       ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(daCurr,0,0,0,0, 0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL, NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
       ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
       if (!rank) {
         if (r) {
@@ -289,7 +289,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 #endif
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = PetscFOpen(comm,vtk->filename,"wb",&fp);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
@@ -339,7 +339,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
       const char *vecname = "Unnamed";
 
       ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(daCurr,0,0,0,0,0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
       maxbs = PetscMax(maxbs,bs);
       if (((PetscObject)X)->name || link != vtk->link) {
         ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
@@ -463,7 +463,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
       DM                daCurr;
       PetscBool         fieldsnamed;
       ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(daCurr,0,0,0,0,0,0,0,&bs,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
       ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
       if (!rank) {

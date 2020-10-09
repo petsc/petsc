@@ -60,7 +60,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &user->bcFuncs);CHKERRQ(ierr);
     user->bcFuncs[0] = zero;
-    ierr = DMAddBoundary(*dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)(void)) user->bcFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(*dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)(void)) user->bcFuncs[0], NULL, 1, &id, user);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, user->filename, user->interpolate, dm);CHKERRQ(ierr);
   }

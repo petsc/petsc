@@ -12,11 +12,11 @@
 
 PetscClassId  DM_CLASSID;
 PetscClassId  DMLABEL_CLASSID;
-PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction, DM_CreateInjection, DM_CreateMatrix, DM_Load;
+PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction, DM_CreateInjection, DM_CreateMatrix, DM_Load, DM_AdaptInterpolator;
 
-const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_",0};
-const char *const DMBoundaryConditionTypes[] = {"INVALID","ESSENTIAL","NATURAL","INVALID","INVALID","ESSENTIAL_FIELD","NATURAL_FIELD","INVALID","INVALID","INVALID","NATURAL_RIEMANN","DMBoundaryConditionType","DM_BC_",0};
-const char *const DMPolytopeTypes[] = {"vertex", "segment", "tensor_segment", "triangle", "quadrilateral", "tensor_quad", "tetrahedron", "hexahedron", "triangular_prism", "tensor_triangular_prism", "tensor_quadrilateral_prism", "FV_ghost_cell", "unknown", "DMPolytopeType", "DM_POLYTOPE_", 0};
+const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_", NULL};
+const char *const DMBoundaryConditionTypes[] = {"INVALID","ESSENTIAL","NATURAL","INVALID","INVALID","ESSENTIAL_FIELD","NATURAL_FIELD","INVALID","INVALID","INVALID","NATURAL_RIEMANN","DMBoundaryConditionType","DM_BC_", NULL};
+const char *const DMPolytopeTypes[] = {"vertex", "segment", "tensor_segment", "triangle", "quadrilateral", "tensor_quad", "tetrahedron", "hexahedron", "triangular_prism", "tensor_triangular_prism", "tensor_quadrilateral_prism", "FV_ghost_cell", "interior_ghost_cell", "unknown", "invalid", "DMPolytopeType", "DM_POLYTOPE_", NULL};
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
 
@@ -610,7 +610,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   /* count all non-cyclic references in the doubly-linked list of coarse<->fine meshes */
   ierr = DMCountNonCyclicReferences(*dm,PETSC_TRUE,PETSC_TRUE,&cnt);CHKERRQ(ierr);
   --((PetscObject)(*dm))->refct;
-  if (--cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
+  if (--cnt > 0) {*dm = NULL; PetscFunctionReturn(0);}
   if (((PetscObject)(*dm))->refct < 0) PetscFunctionReturn(0);
   ((PetscObject)(*dm))->refct = 0;
 
@@ -1367,12 +1367,12 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
     ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
     if (Nf == 1) {
       if (dm->nullspaceConstructors[0]) {
-        ierr = (*dm->nullspaceConstructors[0])(dm, 0, &nullSpace);CHKERRQ(ierr);
+        ierr = (*dm->nullspaceConstructors[0])(dm, 0, 0, &nullSpace);CHKERRQ(ierr);
         ierr = MatSetNullSpace(*mat, nullSpace);CHKERRQ(ierr);
         ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
       }
       if (dm->nearnullspaceConstructors[0]) {
-        ierr = (*dm->nearnullspaceConstructors[0])(dm, 0, &nullSpace);CHKERRQ(ierr);
+        ierr = (*dm->nearnullspaceConstructors[0])(dm, 0, 0, &nullSpace);CHKERRQ(ierr);
         ierr = MatSetNearNullSpace(*mat, nullSpace);CHKERRQ(ierr);
         ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
       }
@@ -1510,7 +1510,29 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Array was not checked out");
 }
 
-PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+/*@C
+  DMSetNullSpaceConstructor - Provide a callback function which constructs the nullspace for a given field
+
+  Logically collective on DM
+
+  Input Parameters:
++ dm     - The DM
+. field  - The field number for the nullspace
+- nullsp - A callback to create the nullspace
+
+  Notes:
+  The callback is intended to provide nullspaces when function spaces are joined or split, such as in DMCreateSubDM(). The calling sequence is
+$ PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
+$ dm        - The present DM
+$ origField - The field number given above, in the original DM
+$ field     - The field number in dm
+$ nullSpace - The nullspace for the given field
+
+  This function is currently not available from Fortran.
+
+.seealso: DMGetNullSpaceConstructor(), DMSetNearNullSpaceConstructor(), DMGetNearNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
+*/
+PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1519,7 +1541,31 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+/*@C
+  DMGetNullSpaceConstructor - Return the callback function which constructs the nullspace for a given field, or NULL
+
+  Not collective
+
+  Input Parameters:
++ dm     - The DM
+- field  - The field number for the nullspace
+
+  Output Parameter:
+. nullsp - A callback to create the nullspace
+
+  Notes:
+  The callback is intended to provide nullspaces when function spaces are joined or split, such as in DMCreateSubDM(). The calling sequence is
+$ PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
+$ dm        - The present DM
+$ origField - The field number given above, in the original DM
+$ field     - The field number in dm
+$ nullSpace - The nullspace for the given field
+
+  This function is currently not available from Fortran.
+
+.seealso: DMSetNullSpaceConstructor(), DMSetNearNullSpaceConstructor(), DMGetNearNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
+*/
+PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1529,7 +1575,29 @@ PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+/*@C
+  DMSetNearNullSpaceConstructor - Provide a callback function which constructs the near-nullspace for a given field
+
+  Logically collective on DM
+
+  Input Parameters:
++ dm     - The DM
+. field  - The field number for the nullspace
+- nullsp - A callback to create the near-nullspace
+
+  Notes:
+  The callback is intended to provide nullspaces when function spaces are joined or split, such as in DMCreateSubDM(). The calling sequence is
+$ PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
+$ dm        - The present DM
+$ origField - The field number given above, in the original DM
+$ field     - The field number in dm
+$ nullSpace - The nullspace for the given field
+
+  This function is currently not available from Fortran.
+
+.seealso: DMGetNearNullSpaceConstructor(), DMSetNullSpaceConstructor(), DMGetNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
+*/
+PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1538,7 +1606,31 @@ PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+/*@C
+  DMGetNearNullSpaceConstructor - Return the callback function which constructs the near-nullspace for a given field, or NULL
+
+  Not collective
+
+  Input Parameters:
++ dm     - The DM
+- field  - The field number for the nullspace
+
+  Output Parameter:
+. nullsp - A callback to create the near-nullspace
+
+  Notes:
+  The callback is intended to provide nullspaces when function spaces are joined or split, such as in DMCreateSubDM(). The calling sequence is
+$ PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
+$ dm        - The present DM
+$ origField - The field number given above, in the original DM
+$ field     - The field number in dm
+$ nullSpace - The nullspace for the given field
+
+  This function is currently not available from Fortran.
+
+.seealso: DMSetNearNullSpaceConstructor(), DMSetNullSpaceConstructor(), DMGetNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
+*/
+PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1711,15 +1803,15 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   }
   if (namelist) {
     PetscValidPointer(namelist,3);
-    *namelist = 0;
+    *namelist = NULL;
   }
   if (islist) {
     PetscValidPointer(islist,4);
-    *islist = 0;
+    *islist = NULL;
   }
   if (dmlist) {
     PetscValidPointer(dmlist,5);
-    *dmlist = 0;
+    *dmlist = NULL;
   }
   /*
    Is it a good idea to apply the following check across all impls?
@@ -2108,7 +2200,7 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 }
 
 /*@
-    DMGetRefineLevel - Get's the number of refinements that have generated this DM.
+    DMGetRefineLevel - Gets the number of refinements that have generated this DM.
 
     Not Collective
 
@@ -2132,7 +2224,7 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
 }
 
 /*@
-    DMSetRefineLevel - Set's the number of refinements that have generated this DM.
+    DMSetRefineLevel - Sets the number of refinements that have generated this DM.
 
     Not Collective
 
@@ -4956,7 +5048,7 @@ static PetscErrorCode DMCompleteBoundaryLabel_Internal(DM dm, PetscDS ds, PetscI
     for (bd = 0; bd < PetscMin(Nbd, bdNum); ++bd) {
       const char *lname;
 
-      ierr = PetscDSGetBoundary(ds, bd, NULL, NULL, &lname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(ds, bd, NULL, NULL, &lname, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscStrcmp(lname, labelname, &duplicate);CHKERRQ(ierr);
       if (duplicate) break;
     }
@@ -5509,12 +5601,15 @@ PetscErrorCode DMCreateDS(DM dm)
 /*@
   DMComputeExactSolution - Compute the exact solution for a given DM, using the PetscDS information.
 
+  Collective on DM
+
   Input Parameters:
 + dm   - The DM
 - time - The time
 
   Output Parameters:
-. u    - The vector will be filled with exact solution values
++ u    - The vector will be filled with exact solution values, or NULL
+- u_t  - The vector will be filled with the time derivative of exact solution values, or NULL
 
   Note: The user must call PetscDSSetExactSolution() beforehand
 
@@ -5522,7 +5617,7 @@ PetscErrorCode DMCreateDS(DM dm)
 
 .seealso: PetscDSSetExactSolution()
 @*/
-PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u)
+PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u, Vec u_t)
 {
   PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
   void            **ectxs;
@@ -5530,6 +5625,9 @@ PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (u)   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
+  if (u_t) PetscValidHeaderSpecific(u_t, VEC_CLASSID, 4);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &exacts, Nf, &ectxs);CHKERRQ(ierr);
   ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
@@ -5545,19 +5643,41 @@ PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u)
     ierr = ISGetIndices(fieldIS, &fields);CHKERRQ(ierr);
     ierr = PetscArrayzero(exacts, Nf);CHKERRQ(ierr);
     ierr = PetscArrayzero(ectxs, Nf);CHKERRQ(ierr);
-    for (f = 0; f < dsNf; ++f) {
-      const PetscInt field = fields[f];
-      ierr = PetscDSGetExactSolution(ds, field, &exacts[field], &ectxs[field]);CHKERRQ(ierr);
+    if (u) {
+      for (f = 0; f < dsNf; ++f) {
+        const PetscInt field = fields[f];
+        ierr = PetscDSGetExactSolution(ds, field, &exacts[field], &ectxs[field]);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);
+      if (label) {
+        ierr = DMProjectFunctionLabel(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+      } else {
+        ierr = DMProjectFunction(dm, time, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+      }
     }
-    ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);
-    if (label) {
-      ierr = DMProjectFunctionLabel(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-    } else {
-      ierr = DMProjectFunction(dm, time, exacts, ectxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    if (u_t) {
+      ierr = PetscArrayzero(exacts, Nf);CHKERRQ(ierr);
+      ierr = PetscArrayzero(ectxs, Nf);CHKERRQ(ierr);
+      for (f = 0; f < dsNf; ++f) {
+        const PetscInt field = fields[f];
+        ierr = PetscDSGetExactSolutionTimeDerivative(ds, field, &exacts[field], &ectxs[field]);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);
+      if (label) {
+        ierr = DMProjectFunctionLabel(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, u_t);CHKERRQ(ierr);
+      } else {
+        ierr = DMProjectFunction(dm, time, exacts, ectxs, INSERT_ALL_VALUES, u_t);CHKERRQ(ierr);
+      }
     }
   }
-  ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) u, "exact_");CHKERRQ(ierr);
+  if (u) {
+    ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) u, "exact_");CHKERRQ(ierr);
+  }
+  if (u_t) {
+    ierr = PetscObjectSetName((PetscObject) u, "Exact Solution Time Derivative");CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) u_t, "exact_t_");CHKERRQ(ierr);
+  }
   ierr = PetscFree2(exacts, ectxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5600,7 +5720,7 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
       PetscInt    field;
 
       /* Do not check if label exists here, since p4est calls this for the reference tree which does not have the labels */
-      ierr = PetscDSGetBoundary(ds, bd, NULL, &name, &labelname, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(ds, bd, NULL, &name, &labelname, &field, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = DMCompleteBoundaryLabel_Internal(newdm, ds, field, bd, labelname);CHKERRQ(ierr);
     }
   }
@@ -6270,6 +6390,83 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMProjectCoordinates - Project coordinates to a different space
+
+  Input Parameters:
++ dm      - The DM object
+- disc    - The new coordinate discretization
+
+  Level: intermediate
+
+.seealso: DMGetCoordinateField()
+@*/
+PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
+{
+  PetscObject    discOld;
+  PetscClassId   classid;
+  DM             cdmOld,cdmNew;
+  Vec            coordsOld,coordsNew;
+  Mat            matInterp;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(disc,PETSCFE_CLASSID,2);
+
+  ierr = DMGetCoordinateDM(dm, &cdmOld);CHKERRQ(ierr);
+  /* Check current discretization is compatible */
+  ierr = DMGetField(cdmOld, 0, NULL, &discOld);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(discOld, &classid);CHKERRQ(ierr);
+  if (classid != PETSCFE_CLASSID) {
+    if (classid == PETSC_CONTAINER_CLASSID) {
+      PetscFE        feLinear;
+      DMPolytopeType ct;
+      PetscInt       dim, dE, cStart;
+      PetscBool      simplex;
+
+      /* Assume linear vertex coordinates */
+      ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+      ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
+      ierr = DMPlexGetHeightStratum(cdmOld, 0, &cStart, NULL);CHKERRQ(ierr);
+      ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+      switch (ct) {
+        case DM_POLYTOPE_TRI_PRISM:
+        case DM_POLYTOPE_TRI_PRISM_TENSOR:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot autoamtically create coordinate space for prisms");
+        default: break;
+      }
+      simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+      ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, 1, -1, &feLinear);CHKERRQ(ierr);
+      ierr = DMSetField(cdmOld, 0, NULL, (PetscObject) feLinear);CHKERRQ(ierr);
+      ierr = PetscFEDestroy(&feLinear);CHKERRQ(ierr);
+      ierr = DMCreateDS(cdmOld);CHKERRQ(ierr);
+    } else {
+      const char *discname;
+
+      ierr = PetscObjectGetType(discOld, &discname);CHKERRQ(ierr);
+      SETERRQ1(PetscObjectComm(discOld), PETSC_ERR_SUP, "Discretization type %s not supported", discname);
+    }
+  }
+  /* Make a fresh clone of the coordinate DM */
+  ierr = DMClone(cdmOld, &cdmNew);CHKERRQ(ierr);
+  ierr = DMSetField(cdmNew, 0, NULL, (PetscObject) disc);CHKERRQ(ierr);
+  ierr = DMCreateDS(cdmNew);CHKERRQ(ierr);
+  /* Project the coordinate vector from old to new space  */
+  ierr = DMGetCoordinates(dm, &coordsOld);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(cdmNew, &coordsNew);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(cdmOld, cdmNew, &matInterp, NULL);CHKERRQ(ierr);
+  ierr = MatInterpolate(matInterp, coordsOld, coordsNew);CHKERRQ(ierr);
+  ierr = MatDestroy(&matInterp);CHKERRQ(ierr);
+  /* Set new coordinate structures */
+  ierr = DMSetCoordinateField(dm, NULL);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(dm, cdmNew);CHKERRQ(ierr);
+  ierr = DMSetCoordinates(dm, coordsNew);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordsNew);CHKERRQ(ierr);
+  ierr = DMDestroy(&cdmNew);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMGetPeriodicity - Get the description of mesh periodicity
 
@@ -6302,10 +6499,12 @@ PetscErrorCode DMGetPeriodicity(DM dm, PetscBool *per, const PetscReal **maxCell
 
   Input Parameters:
 + dm      - The DM object
-. per     - Whether the DM is periodic or not. If maxCell is not provided, coordinates need to be localized
-. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
+. per     - Whether the DM is periodic or not.
+. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates. Pass NULL to remove such information.
 . L       - If we assume the mesh is a torus, this is the length of each coordinate
 - bd      - This describes the type of periodicity in each topological dimension
+
+  Notes: If per is PETSC_TRUE and maxCell is not provided, coordinates need to be already localized, or must be localized by hand by the user.
 
   Level: developer
 
@@ -6326,7 +6525,10 @@ PetscErrorCode DMSetPeriodicity(DM dm, PetscBool per, const PetscReal maxCell[],
   if (maxCell) {
     if (!dm->maxCell) {ierr = PetscMalloc1(dim, &dm->maxCell);CHKERRQ(ierr);}
     for (d = 0; d < dim; ++d) dm->maxCell[d] = maxCell[d];
+  } else { /* remove maxCell information to disable automatic computation of localized vertices */
+    ierr = PetscFree(dm->maxCell);CHKERRQ(ierr);
   }
+
   if (L) {
     if (!dm->L) {ierr = PetscMalloc1(dim, &dm->L);CHKERRQ(ierr);}
     for (d = 0; d < dim; ++d) dm->L[d] = L[d];
@@ -7836,6 +8038,7 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 . numcomps    - The number of constrained field components (0 will constrain all fields)
 . comps       - An array of constrained component numbers
 . bcFunc      - A pointwise function giving boundary values
+. bcFunc_t    - A pointwise function giving the time deriative of the boundary values, or NULL
 . numids      - The number of DMLabel ids for constrained points
 . ids         - An array of ids for constrained points
 - ctx         - An optional user context for bcFunc
@@ -7844,11 +8047,41 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 + -bc_<boundary name> <num> - Overrides the boundary ids
 - -bc_<boundary name>_comp <num> - Overrides the boundary components
 
+  Note:
+  Both bcFunc abd bcFunc_t will depend on the boundary condition type. If the type if DM_BC_ESSENTIAL, Then the calling sequence is:
+
+$ bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
+
+  If the type is DM_BC_ESSENTIAL_FIELD or other _FIELD value, then the calling sequence is:
+
+$ bcFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$        PetscReal time, const PetscReal x[], PetscScalar bcval[])
+
++ dim - the spatial dimension
+. Nf - the number of fields
+. uOff - the offset into u[] and u_t[] for each field
+. uOff_x - the offset into u_x[] for each field
+. u - each field evaluated at the current point
+. u_t - the time derivative of each field evaluated at the current point
+. u_x - the gradient of each field evaluated at the current point
+. aOff - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x - the offset into a_x[] for each auxiliary field
+. a - each auxiliary field evaluated at the current point
+. a_t - the time derivative of each auxiliary field evaluated at the current point
+. a_x - the gradient of auxiliary each field evaluated at the current point
+. t - current time
+. x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
+- bcval - output values at the current point
+
   Level: developer
 
-.seealso: DMGetBoundary()
+.seealso: DMGetBoundary(), PetscDSAddBoundary()
 @*/
-PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), void (*bcFunc_t)(void), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   PetscDS        ds;
   PetscErrorCode ierr;
@@ -7861,7 +8094,7 @@ PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char nam
   PetscValidLogicalCollectiveInt(dm, numids, 9);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = DMCompleteBoundaryLabel_Internal(dm, ds, field, PETSC_MAX_INT, labelname);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(ds, type,name, labelname, field, numcomps, comps, bcFunc, numids, ids, ctx);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(ds, type,name, labelname, field, numcomps, comps, bcFunc, bcFunc_t, numids, ids, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -7905,6 +8138,7 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 . numcomps    - The number of constrained field components
 . comps       - An array of constrained component numbers
 . bcFunc      - A pointwise function giving boundary values
+. bcFunc_t    - A pointwise function giving the time derviative of the boundary values
 . numids      - The number of DMLabel ids for constrained points
 . ids         - An array of ids for constrained points
 - ctx         - An optional user context for bcFunc
@@ -7917,7 +8151,7 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 
 .seealso: DMAddBoundary()
 @*/
-PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(void), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(void), void (**func_t)(void), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   PetscDS        ds;
   PetscErrorCode ierr;
@@ -7925,7 +8159,7 @@ PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, DMBoundaryConditionType *type, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-  ierr = PetscDSGetBoundary(ds, bd, type, name, labelname, field, numcomps, comps, func, numids, ids, ctx);CHKERRQ(ierr);
+  ierr = PetscDSGetBoundary(ds, bd, type, name, labelname, field, numcomps, comps, func, func_t, numids, ids, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -8016,6 +8250,7 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 $    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
 
 +  dim - The spatial dimension
+.  time - The time at which to sample
 .  x   - The coordinates
 .  Nf  - The number of fields
 .  u   - The output field values

@@ -47,7 +47,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   ierr = DMDAVecGetArrayRead(dacoors,coors,&c);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      d = PetscSqrtReal(PetscRealPart( (c[j][i].x - x)*(c[j][i].x - x) + (c[j][i].y - y)*(c[j][i].y - y) ));
+      d = PetscSqrtReal(PetscRealPart((c[j][i].x - x)*(c[j][i].x - x) + (c[j][i].y - y)*(c[j][i].y - y)));
       if (d < D) {
         D   = d;
         *II = i;
@@ -153,7 +153,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
     }
   } else {
     ierr = VecCreateSeq(PETSC_COMM_SELF, 0, newvec);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, 0, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
   }
   ierr = DMGetGlobalVector(da, &vec);CHKERRQ(ierr);
   ierr = VecScatterCreate(vec, is, *newvec, NULL, scatter);CHKERRQ(ierr);

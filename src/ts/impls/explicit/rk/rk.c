@@ -341,11 +341,11 @@ PetscErrorCode TSRKRegisterDestroy(void)
   while ((link = RKTableauList)) {
     RKTableau t = &link->tab;
     RKTableauList = link->next;
-    ierr = PetscFree3(t->A,t->b,t->c);  CHKERRQ(ierr);
-    ierr = PetscFree (t->bembed);       CHKERRQ(ierr);
-    ierr = PetscFree (t->binterp);      CHKERRQ(ierr);
-    ierr = PetscFree (t->name);         CHKERRQ(ierr);
-    ierr = PetscFree (link);            CHKERRQ(ierr);
+    ierr = PetscFree3(t->A,t->b,t->c);CHKERRQ(ierr);
+    ierr = PetscFree(t->bembed);CHKERRQ(ierr);
+    ierr = PetscFree(t->binterp);CHKERRQ(ierr);
+    ierr = PetscFree(t->name);CHKERRQ(ierr);
+    ierr = PetscFree(link);CHKERRQ(ierr);
   }
   TSRKRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -670,7 +670,7 @@ static PetscErrorCode TSForwardStep_RK(TS ts)
     zero = PETSC_FALSE;
     if (b[i] == 0 && i == s-1) zero = PETSC_TRUE;
     /* TLM Stage values */
-    if(!i) {
+    if (!i) {
       ierr = MatCopy(ts->mat_sensip,rk->MatsFwdStageSensip[i],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     } else if (!zero) {
       ierr = MatZeroEntries(rk->MatsFwdStageSensip[i]);CHKERRQ(ierr);
@@ -730,7 +730,7 @@ static PetscErrorCode TSForwardSetUp_RK(TS ts)
 
   ierr = PetscMalloc1(tab->s,&rk->MatsFwdStageSensip);CHKERRQ(ierr);
   ierr = PetscMalloc1(tab->s,&rk->MatsFwdSensipTemp);CHKERRQ(ierr);
-  for(i=0; i<tab->s; i++) {
+  for (i=0; i<tab->s; i++) {
     ierr = MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatsFwdStageSensip[i]);CHKERRQ(ierr);
     ierr = MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatsFwdSensipTemp[i]);CHKERRQ(ierr);
   }
@@ -789,11 +789,11 @@ static PetscErrorCode TSStep_RK(TS ts)
     PetscReal h = ts->time_step;
     for (i=0; i<s; i++) {
       rk->stage_time = t + h*c[i];
-      ierr = TSPreStage(ts,rk->stage_time); CHKERRQ(ierr);
+      ierr = TSPreStage(ts,rk->stage_time);CHKERRQ(ierr);
       ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
       for (j=0; j<i; j++) w[j] = h*A[i*s+j];
       ierr = VecMAXPY(Y[i],i,w,YdotRHS);CHKERRQ(ierr);
-      ierr = TSPostStage(ts,rk->stage_time,i,Y); CHKERRQ(ierr);
+      ierr = TSPostStage(ts,rk->stage_time,i,Y);CHKERRQ(ierr);
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
       ierr = TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&stageok);CHKERRQ(ierr);
       if (!stageok) goto reject_step;
@@ -845,7 +845,7 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
   if (ts->adjointsetupcalled++) PetscFunctionReturn(0);
   ierr = VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numcost,&rk->VecsDeltaLam);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&rk->VecsSensiTemp);CHKERRQ(ierr);
-  if(ts->vecs_sensip) {
+  if (ts->vecs_sensip) {
     ierr = VecDuplicate(ts->vecs_sensip[0],&rk->VecDeltaMu);CHKERRQ(ierr);
   }
   if (ts->vecs_sensi2) {

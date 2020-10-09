@@ -688,7 +688,7 @@ PetscInt PetscNumOMPThreads;
 .  -on_error_mpiabort - calls MPI_abort() when error detected
 .  -error_output_stderr - prints error messages to stderr instead of the default stdout
 .  -error_output_none - does not print the error messages (but handles errors in the same way as if this was not called)
-.  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
+.  -debugger_ranks [rank1,rank2,...] - Indicates ranks to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to
                         process and wait (-debugger_pause) seconds for attachment
@@ -699,6 +699,7 @@ PetscInt PetscNumOMPThreads;
 .  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
 .  -malloc_view - show a list of all allocated memory during PetscFinalize()
 .  -malloc_view_threshold <t> - only list memory allocations of size greater than t with -malloc_view
+.  -malloc_requested_size - malloc logging will record the requested size rather than size after alignment
 .  -fp_trap - Stops on floating point exceptions
 .  -no_signal_handler - Indicates not to trap error signals
 .  -shared_tmp - indicates /tmp directory is shared by all processors
@@ -796,7 +797,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       https://wiki.mpich.org/mpich/index.php/ABI_Compatibility_Initiative which started with
         MPICH v3.1 (Released Feburary 2014)
         IBM MPI v2.1 (December 2014)
-        Intel® MPI Library v5.0 (2014)
+        Intel MPI Library v5.0 (2014)
         Cray MPT v7.0.0 (June 2014)
       As of July 31, 2017 the ABI number still appears to be 12, that is all of the versions
       listed above and since that time are compatible.
@@ -876,7 +877,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
 
-  /* CHKERRQ can be used from now */
+  /*CHKERRQ can be used from now */
   PetscErrorHandlingInitialized = PETSC_TRUE;
 
   /* on Windows - set printf to default to printing 2 digit exponents */
@@ -1109,7 +1110,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   flg = PETSC_TRUE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewfromoptions",&flg,NULL);CHKERRQ(ierr);
-  if (!flg) {ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE); CHKERRQ(ierr);}
+  if (!flg) {ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE);CHKERRQ(ierr);}
 
 #if defined(PETSC_HAVE_ADIOS)
   ierr = adios_init_noxml(PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -1548,6 +1549,13 @@ PetscErrorCode  PetscFinalize(void)
 
   PetscGlobalArgc = 0;
   PetscGlobalArgs = NULL;
+
+#if defined(PETSC_HAVE_KOKKOS)
+  if (PetscBeganKokkos) {
+    ierr = PetscKokkosFinalize_Private();CHKERRQ(ierr);
+    PetscBeganKokkos = PETSC_FALSE;
+  }
+#endif
 
   ierr = PetscFreeMPIResources();CHKERRQ(ierr);
 

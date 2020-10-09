@@ -21,7 +21,7 @@
 
    Notes:
     Never use this in the form
-$       comm = PetscObjectComm((PetscObject)obj); 
+$       comm = PetscObjectComm((PetscObject)obj);
         instead use PetscObjectGetComm()
 
 

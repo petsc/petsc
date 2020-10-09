@@ -36,3 +36,41 @@
        PetscErrorCode z
       end subroutine
       end Interface
+
+      Interface PCASMGetSubKSP
+      subroutine PCASMGetSubKSP1(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCASMGetSubKSP2(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d(*) ! KSP
+       PetscErrorCode z
+      end subroutine
+      end Interface
+
+      Interface PCGASMGetSubKSP
+      subroutine PCGASMGetSubKSP1(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCGASMGetSubKSP2(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d(*) ! KSP
+       PetscErrorCode z
+      end subroutine
+      end Interface

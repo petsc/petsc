@@ -4,8 +4,6 @@
    Processors: n
 T*/
 
-
-
 /*
 Added at the request of Marc Garbey.
 
@@ -86,14 +84,17 @@ int main(int argc,char **argv)
     KSPSetDMActive(ksp,PETSC_FALSE);
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
     {
+#if defined(PETSC_USE_LOG)
       PetscLogStage stage;
+#endif
       PetscInt      i,n = 20;
-      PetscLogStageRegister("Solve only",&stage);
-      PetscLogStagePush(stage);
+
+      ierr = PetscLogStageRegister("Solve only",&stage);CHKERRQ(ierr);
+      ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
       }
-      PetscLogStagePop();
+      ierr = PetscLogStagePop();CHKERRQ(ierr);
     }
   }
 

@@ -1,0 +1,7 @@
+      TSAdapt basic bdf 0:2 step   0 rejected t=0          + 5.000e-01 dt=5.000e-02  wlte=  194  wltea=   -1 wlter=   -1
+      TSAdapt basic bdf 0:2 step   0 rejected t=0          + 5.000e-02 dt=2.053e-02  wlte=  1.2  wltea=   -1 wlter=   -1
+steps   0, ftime 0.
+Vec Object: 1 MPI processes
+  type: seq
+-2.
+-2.3553

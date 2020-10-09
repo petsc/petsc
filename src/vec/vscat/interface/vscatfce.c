@@ -1,6 +1,6 @@
 #include <petsc/private/vecscatterimpl.h> /*I   "petscvec.h"    I*/
 #if defined(PETSC_HAVE_CUDA)
-#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h>
 #endif
 /* ------------------------------------------------------------------*/
 /*@
@@ -175,7 +175,7 @@ PetscErrorCode VecScatterDestroy(VecScatter *ctx)
   if (!*ctx) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*ctx,VEC_SCATTER_CLASSID,1);
   if ((*ctx)->inuse && ((PetscObject)(*ctx))->refct == 1) SETERRQ(((PetscObject)(*ctx))->comm,PETSC_ERR_ARG_WRONGSTATE,"Scatter context is in use");
-  if (--((PetscObject)(*ctx))->refct > 0) {*ctx = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*ctx))->refct > 0) {*ctx = NULL; PetscFunctionReturn(0);}
 
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)(*ctx));CHKERRQ(ierr);

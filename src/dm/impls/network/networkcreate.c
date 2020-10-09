@@ -263,7 +263,7 @@ PetscErrorCode DMInitialize_Network(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMSetDimension(dm,1); CHKERRQ(ierr);
+  ierr = DMSetDimension(dm,1);CHKERRQ(ierr);
   dm->ops->view                            = DMView_Network;
   dm->ops->setfromoptions                  = DMSetFromOptions_Network;
   dm->ops->clone                           = DMClone_Network;
@@ -273,14 +273,14 @@ PetscErrorCode DMInitialize_Network(DM dm)
   dm->ops->getlocaltoglobalmapping         = NULL;
   dm->ops->createfieldis                   = NULL;
   dm->ops->createcoordinatedm              = NULL;
-  dm->ops->getcoloring                     = 0;
+  dm->ops->getcoloring                     = NULL;
   dm->ops->creatematrix                    = DMCreateMatrix_Network;
-  dm->ops->createinterpolation             = 0;
-  dm->ops->createinjection                 = 0;
-  dm->ops->refine                          = 0;
-  dm->ops->coarsen                         = 0;
-  dm->ops->refinehierarchy                 = 0;
-  dm->ops->coarsenhierarchy                = 0;
+  dm->ops->createinterpolation             = NULL;
+  dm->ops->createinjection                 = NULL;
+  dm->ops->refine                          = NULL;
+  dm->ops->coarsen                         = NULL;
+  dm->ops->refinehierarchy                 = NULL;
+  dm->ops->coarsenhierarchy                = NULL;
   dm->ops->globaltolocalbegin              = DMGlobalToLocalBegin_Network;
   dm->ops->globaltolocalend                = DMGlobalToLocalEnd_Network;
   dm->ops->localtoglobalbegin              = DMLocalToGlobalBegin_Network;

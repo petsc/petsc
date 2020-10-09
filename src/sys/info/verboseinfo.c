@@ -16,7 +16,7 @@
   PetscInfoFilename determines where PetscInfo() output is piped.
   PetscInfoClassnames holds a char array of classes which are filtered out/for in PetscInfo() calls.
 */
-const char * const        PetscInfoCommFlags[] = {"all", "no_self", "only_self", "PetscInfoCommFlag", "PETSC_INFO_COMM_", 0};
+const char * const        PetscInfoCommFlags[] = {"all", "no_self", "only_self", "PetscInfoCommFlag", "PETSC_INFO_COMM_", NULL};
 static PetscBool          PetscInfoClassesLocked = PETSC_FALSE, PetscInfoInvertClasses = PETSC_FALSE, PetscInfoClassesSet = PETSC_FALSE;
 static char               **PetscInfoClassnames = NULL;
 static char               *PetscInfoFilename = NULL;
@@ -531,7 +531,7 @@ $   -info [filename][:[~]<list,of,classnames>[:[~]self]]
     The optional <list,of,classnames> is a comma separated list of enabled classes, e.g. vec,mat,ksp.
     If this list is not specified, all classes are enabled.
     Prepending the list with ~ means inverted selection, i.e. all classes except the listed are enabled.
-    A special classname sys relates to PetscInfo() with obj being NULL. 
+    A special classname sys relates to PetscInfo() with obj being NULL.
 
     The optional self keyword specifies that PetscInfo() is enabled only for communicator size = 1 (e.g. PETSC_COMM_SELF), i.e. only PetscInfo() calls which print from every rank of PETSC_COMM_WORLD are enabled.
     By contrast, ~self means that PetscInfo() is enabled only for communicator size > 1 (e.g. PETSC_COMM_WORLD), i.e. those PetscInfo() calls which print from every rank of PETSC_COMM_WORLD are disabled.

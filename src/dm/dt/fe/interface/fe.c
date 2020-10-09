@@ -313,7 +313,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   if (!*fem) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*fem), PETSCFE_CLASSID, 1);
 
-  if (--((PetscObject)(*fem))->refct > 0) {*fem = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*fem))->refct > 0) {*fem = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*fem))->refct = 0;
 
   if ((*fem)->subspaces) {
@@ -1611,7 +1611,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS prob, PetscInt fieldI, PetscIn
   Not collective
 
   Input Parameters:
-. prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The PetscDS specifying the discretizations and continuum functions
 . jtype        - The type of matrix pointwise functions that should be used
 . fieldI       - The test field being integrated
 . fieldJ       - The basis field being integrated
@@ -1690,7 +1690,7 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
   ierr = PetscFEGetFaceQuadrature(fe, &subq);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(Q, &dim);CHKERRQ(ierr);
-  if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
+  if (height > dim || height < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
   if (!fe->subspaces) {ierr = PetscCalloc1(dim, &fe->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!fe->subspaces[height-1]) {
@@ -1927,9 +1927,9 @@ PetscErrorCode PetscFECreateLagrange(MPI_Comm comm, PetscInt dim, PetscInt Nc, P
   ierr = PetscDualSpaceSetOrder(Q, k);CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeSetTensor(Q, tensor);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
-  /* Create element */
+  /* Create finite element */
   ierr = PetscFECreate(comm, fem);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(name, 64, "P%d", (int) k);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(name, sizeof(name), "%s%D", isSimplex? "P" : "Q", k);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *fem, name);CHKERRQ(ierr);
   ierr = PetscFESetType(*fem, PETSCFEBASIC);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
@@ -1952,6 +1952,9 @@ PetscErrorCode PetscFECreateLagrange(MPI_Comm comm, PetscInt dim, PetscInt Nc, P
   ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
+  /* Set finite element name */
+  ierr = PetscSNPrintf(name, sizeof(name), "%s%D", isSimplex? "P" : "Q", k);CHKERRQ(ierr);
+  ierr = PetscFESetName(*fem, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

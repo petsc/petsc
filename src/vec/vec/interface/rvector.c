@@ -5,7 +5,7 @@
 #include <petsc/private/vecimpl.h>       /*I  "petscvec.h"   I*/
 #if defined(PETSC_HAVE_CUDA)
 #include <../src/vec/vec/impls/dvecimpl.h>
-#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h>
 #endif
 static PetscInt VecGetSubVectorSavedStateId = -1;
 
@@ -33,10 +33,10 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
     }
     ierr = VecRestoreArrayRead(vec,&x);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
 #else
-  return 0;
+  PetscFunctionBegin;
 #endif
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -1220,7 +1220,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 /*@
    VecGetSubVector - Gets a vector representing part of another vector
 
-   Collective on IS
+   Collective on X and IS
 
    Input Arguments:
 + X - vector from which to extract a subvector
@@ -1233,9 +1233,11 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 
    Notes:
    The subvector Y should be returned with VecRestoreSubVector().
+   X and is must be defined on the same communicator
 
    This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
    modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
+   The resulting subvector inherits the block size from the IS if greater than one. Otherwise, the block size is guessed from the block size of the original vec.
 
 .seealso: MatCreateSubMatrix()
 @*/
@@ -1247,51 +1249,96 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscCheckSameComm(X,1,is,2);
   PetscValidPointer(Y,3);
   if (X->ops->getsubvector) {
     ierr = (*X->ops->getsubvector)(X,is,&Z);CHKERRQ(ierr);
   } else { /* Default implementation currently does no caching */
     PetscInt  gstart,gend,start;
-    PetscBool contiguous,gcontiguous;
-    ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
-    ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
-    if (gcontiguous) { /* We can do a no-copy implementation */
-      PetscInt n,N,bs;
-      PetscInt state;
+    PetscBool red[2] = { PETSC_TRUE, PETSC_TRUE };
+    PetscInt  n,N,ibs,vbs,bs = -1;
 
-      ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
-      if (n%bs || bs == 1 || !n) bs = -1; /* Do not decide block size if we do not have to */
-      ierr = VecLockGet(X,&state);CHKERRQ(ierr);
-      if (state) {
-        const PetscScalar *x;
+    ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+    ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(is,&ibs);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(X,&vbs);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
+    ierr = ISContiguousLocal(is,gstart,gend,&start,&red[0]);CHKERRQ(ierr);
+    /* block size is given by IS if ibs > 1; otherwise, check the vector */
+    if (ibs > 1) {
+      ierr = MPIU_Allreduce(MPI_IN_PLACE,red,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+      bs   = ibs;
+    } else {
+      if (n%vbs || vbs == 1) red[1] = PETSC_FALSE; /* this process invalidate the collectiveness of block size */
+      ierr = MPIU_Allreduce(MPI_IN_PLACE,red,2,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+      if (red[0] && red[1]) bs = vbs; /* all processes have a valid block size and the access will be contiguous */
+    }
+    if (red[0]) { /* We can do a no-copy implementation */
+      const PetscScalar *x;
+      PetscInt          state = 0;
+      PetscBool         isstd;
+#if defined(PETSC_HAVE_CUDA)
+      PetscBool         iscuda;
+#endif
+
+      ierr = PetscObjectTypeCompareAny((PetscObject)X,&isstd,VECSEQ,VECMPI,VECSTANDARD,"");CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+      ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
+      if (iscuda) {
+        const PetscScalar *x_d;
+        PetscMPIInt       size;
+        PetscOffloadMask  flg;
+
+        ierr = VecCUDAGetArrays_Private(X,&x,&x_d,&flg);CHKERRQ(ierr);
+        if (flg == PETSC_OFFLOAD_UNALLOCATED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for PETSC_OFFLOAD_UNALLOCATED");
+        if (n && !x && !x_d) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
+        if (x) x += start;
+        if (x_d) x_d += start;
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
+        if (size == 1) {
+          ierr = VecCreateSeqCUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,x,x_d,&Z);CHKERRQ(ierr);
+        } else {
+          ierr = VecCreateMPICUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
+        }
+        Z->offloadmask = flg;
+      } else if (isstd) {
+#else
+      if (isstd) { /* standard CPU: use CreateWithArray pattern */
+#endif
+        PetscMPIInt size;
+
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+        if (x) x += start;
+        if (size == 1) {
+          ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,x,&Z);CHKERRQ(ierr);
+        } else {
+          ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x,&Z);CHKERRQ(ierr);
+        }
+        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+      } else { /* default implementation: use place array */
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
         ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
         ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
         ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
         ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
-        ierr = VecPlaceArray(Z,(PetscScalar*)x+start);CHKERRQ(ierr);
-        ierr = VecLockReadPush(Z);CHKERRQ(ierr);
+        ierr = VecPlaceArray(Z,x ? x+start : NULL);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-      } else {
-        PetscScalar *x;
-        ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-        ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
-        ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
-        ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
-        ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
-        ierr = VecPlaceArray(Z,(PetscScalar*)x+start);CHKERRQ(ierr);
-        ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
       }
+
+      /* this is relevant only in debug mode */
+      ierr = VecLockGet(X,&state);CHKERRQ(ierr);
+      if (state) {
+        ierr = VecLockReadPush(Z);CHKERRQ(ierr);
+      }
+      Z->ops->placearray = NULL;
+      Z->ops->replacearray = NULL;
     } else { /* Have to create a scatter and do a copy */
       VecScatter scatter;
-      PetscInt   n,N;
-      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-      ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+
       ierr = VecCreate(PetscObjectComm((PetscObject)is),&Z);CHKERRQ(ierr);
       ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
       ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
       ierr = VecScatterCreate(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
       ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1328,6 +1375,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscCheckSameComm(X,1,is,2);
   PetscValidPointer(Y,3);
   PetscValidHeaderSpecific(*Y,VEC_CLASSID,3);
   if (X->ops->restoresubvector) {
@@ -1335,14 +1383,61 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   } else {
     PETSC_UNUSED PetscObjectState dummystate = 0;
     PetscBool valid;
+
     ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,dummystate,valid);CHKERRQ(ierr);
     if (!valid) {
       VecScatter scatter;
+      PetscInt   state;
+
+      ierr = VecLockGet(X,&state);CHKERRQ(ierr);
+      if (state != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vec X is locked for read-only or read/write access");
 
       ierr = PetscObjectQuery((PetscObject)*Y,"VecGetSubVector_Scatter",(PetscObject*)&scatter);CHKERRQ(ierr);
       if (scatter) {
         ierr = VecScatterBegin(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         ierr = VecScatterEnd(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      } else {
+#if defined(PETSC_HAVE_CUDA)
+        PetscBool iscuda;
+
+        ierr = PetscObjectTypeCompareAny((PetscObject)*Y,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
+        if (iscuda) {
+          PetscOffloadMask ymask = (*Y)->offloadmask;
+
+          /* The offloadmask of X dictates where to move memory
+             If X GPU data is valid, then move Y data on GPU if needed
+             Otherwise, move back to the CPU */
+          switch (X->offloadmask) {
+          case PETSC_OFFLOAD_BOTH:
+            if (ymask == PETSC_OFFLOAD_CPU) {
+              ierr = VecCUDAResetArray(*Y);CHKERRQ(ierr);
+            } else if (ymask == PETSC_OFFLOAD_GPU) {
+              X->offloadmask = PETSC_OFFLOAD_GPU;
+            }
+            break;
+          case PETSC_OFFLOAD_GPU:
+            if (ymask == PETSC_OFFLOAD_CPU) {
+              ierr = VecCUDAResetArray(*Y);CHKERRQ(ierr);
+            }
+            break;
+          case PETSC_OFFLOAD_CPU:
+            if (ymask == PETSC_OFFLOAD_GPU) {
+              ierr = VecResetArray(*Y);CHKERRQ(ierr);
+            }
+            break;
+          case PETSC_OFFLOAD_UNALLOCATED:
+          case PETSC_OFFLOAD_VECKOKKOS:
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+            break;
+          }
+        } else {
+#else
+        {
+#endif
+          /* If OpenCL vecs updated the device memory, this triggers a copy on the CPU */
+          ierr = VecResetArray(*Y);CHKERRQ(ierr);
+        }
+        ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
       }
     }
     ierr = VecDestroy(Y);CHKERRQ(ierr);
@@ -1559,30 +1654,37 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
   if (x->petscnative) {
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) { /* offloadmask here works as a tag quickly saying this is a VecKokkos */
+      ierr = VecKokkosSyncHost(x);CHKERRQ(ierr);
+      *a   = *((PetscScalar**)x->data);
+      PetscFunctionReturn(0);
+    }
+#endif
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->offloadmask == PETSC_OFFLOAD_GPU) {
-#if defined(PETSC_HAVE_VIENNACL)
+  #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
       if (is_viennacltype) {
         ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
       } else
-#endif
+  #endif
       {
-#if defined(PETSC_HAVE_CUDA)
+  #if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
-#endif
+  #endif
       }
     } else if (x->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
-#if defined(PETSC_HAVE_VIENNACL)
+  #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
       if (is_viennacltype) {
         ierr = VecViennaCLAllocateCheckHost(x);CHKERRQ(ierr);
       } else
-#endif
+  #endif
       {
-#if defined(PETSC_HAVE_CUDA)
+  #if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDAAllocateCheckHost(x);CHKERRQ(ierr);
-#endif
+  #endif
       }
     }
 #endif
@@ -1620,6 +1722,13 @@ PetscErrorCode VecGetArrayInPlace(Vec x,PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+    ierr = VecKokkosGetArrayInPlace(x,a);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
 
 #if defined(PETSC_HAVE_CUDA)
   if (x->petscnative && (x->offloadmask & PETSC_OFFLOAD_GPU)) { /* Prefer working on GPU when offloadmask is PETSC_OFFLOAD_BOTH */
@@ -1708,6 +1817,13 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+      ierr = VecKokkosSyncHost(x);CHKERRQ(ierr);
+      *a   = *((PetscScalar **)x->data);
+      PetscFunctionReturn(0);
+    }
+#endif
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->offloadmask == PETSC_OFFLOAD_GPU) {
 #if defined(PETSC_HAVE_VIENNACL)
@@ -1759,6 +1875,13 @@ PetscErrorCode VecGetArrayReadInPlace(Vec x,const PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+    ierr = VecKokkosGetArrayReadInPlace(x,a);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+
 #if defined(PETSC_HAVE_CUDA)
   if (x->petscnative && x->offloadmask & PETSC_OFFLOAD_GPU) {
     PetscBool is_cudatype = PETSC_FALSE;
@@ -1876,9 +1999,15 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    x->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
+   #if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {ierr = VecKokkosModifyHost(x);CHKERRQ(ierr);}
+    else
+   #endif
+    {
+     #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      x->offloadmask = PETSC_OFFLOAD_CPU;
+     #endif
+    }
   } else {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }
@@ -1907,6 +2036,13 @@ PetscErrorCode VecRestoreArrayInPlace(Vec x,PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+    ierr = VecKokkosRestoreArrayInPlace(x,a);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+
 #if defined(PETSC_HAVE_CUDA)
   if (x->petscnative && x->offloadmask == PETSC_OFFLOAD_GPU) {
     PetscBool is_cudatype = PETSC_FALSE;
@@ -1942,6 +2078,12 @@ PetscErrorCode VecRestoreArrayWrite(Vec x,PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  if (x->offloadmask == PETSC_OFFLOAD_VECKOKKOS) {
+    ierr = VecKokkosModifyHost(x);CHKERRQ(ierr);
+  } else
+#endif
   if (x->petscnative) {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     x->offloadmask = PETSC_OFFLOAD_CPU;
@@ -1953,6 +2095,7 @@ PetscErrorCode VecRestoreArrayWrite(Vec x,PetscScalar **a)
       ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
     }
   }
+
   if (a) *a = NULL;
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

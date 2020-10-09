@@ -24,12 +24,14 @@
                                    used to increase the stability of the classical Gram-Schmidt  orthogonalization.
 
     Notes:
-    Use KSPGMRESSetCGSRefinementType() to determine if iterative refinement is to be used
+    Use KSPGMRESSetCGSRefinementType() to determine if iterative refinement is to be used.
+    This is much faster than KSPGMRESModifiedGramSchmidtOrthogonalization() but has the small possibility of stability issues
+    that can usually be handled by using a a single step of iterative refinement with KSPGMRESSetCGSRefinementType()
 
    Level: intermediate
 
 .seelaso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType(),
-           KSPGMRESGetCGSRefinementType(), KSPGMRESGetOrthogonalization()
+           KSPGMRESGetCGSRefinementType(), KSPGMRESGetOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization()
 
 @*/
 PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
@@ -65,6 +67,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
   ierr = VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
   for (j=0; j<=it; j++) {
     KSPCheckDot(ksp,lhh[j]);
+    if (ksp->reason) goto done;
     lhh[j] = -lhh[j];
   }
 
@@ -80,15 +83,17 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
   }
 
   /*
-   *  the second step classical Gram-Schmidt is only necessary
-   *  when a simple test criteria is not passed
-   */
+     the second step classical Gram-Schmidt is only necessary
+     when a simple test criteria is not passed
+  */
   if (gmres->cgstype == KSP_GMRES_CGS_REFINE_IFNEEDED) {
     hnrm = 0.0;
     for (j=0; j<=it; j++) hnrm +=  PetscRealPart(lhh[j] * PetscConj(lhh[j]));
 
     hnrm = PetscSqrtReal(hnrm);
     ierr = VecNorm(VEC_VV(it+1),NORM_2, &wnrm);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,wnrm);
+    if (ksp->reason) goto done;
     if (wnrm < hnrm) {
       refine = PETSC_TRUE;
       ierr   = PetscInfo2(ksp,"Performing iterative refinement wnorm %g hnorm %g\n",(double)wnrm,(double)hnrm);CHKERRQ(ierr);
@@ -97,7 +102,11 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
 
   if (refine) {
     ierr = VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
-    for (j=0; j<=it; j++) lhh[j] = -lhh[j];
+    for (j=0; j<=it; j++) {
+       KSPCheckDot(ksp,lhh[j]);
+       if (ksp->reason) goto done;
+       lhh[j] = -lhh[j];
+    }
     ierr = VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0));CHKERRQ(ierr);
     /* note lhh[j] is -<v,vnew> , hence the subtraction */
     for (j=0; j<=it; j++) {
@@ -105,6 +114,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
       hes[j] -= lhh[j];     /* hes += <v,vnew> */
     }
   }
+done:
   ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

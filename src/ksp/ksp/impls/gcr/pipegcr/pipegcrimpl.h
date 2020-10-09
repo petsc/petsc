@@ -8,7 +8,7 @@ typedef struct {
   PetscInt             nprealloc;   /* How many vectors to preallocate */
   PetscInt             nvecs;       /* How many vectors are actually stored */
   PetscInt             vecb;        /* How many vectors to allocate at a time in a chunk */
-  Vec                  *pvecs,*svecs,*qvecs,*tvecs,**ppvecs,**psvecs,**pqvecs,**ptvecs,*qold,*pold,*sold,*told; 
+  Vec                  *pvecs,*svecs,*qvecs,*tvecs,**ppvecs,**psvecs,**pqvecs,**ptvecs,*qold,*pold,*sold,*told;
   PetscInt             *chunksizes; /* Chunk sizes allocated */
   PetscInt             nchunks;     /* Number of chunks */
   KSPFCDTruncationType truncstrat;

@@ -101,6 +101,9 @@ typedef const char* VecType;
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
 #define VECNEST        "nest"
 #define VECNODE        "node"       /* use on-node shared memory */
+#define VECSEQKOKKOS   "seqkokkos"
+#define VECMPIKOKKOS   "mpikokkos"
+#define VECKOKKOS      "kokkos"     /* seqkokkos on one process and mpikokkos on several */
 
 /*J
     VecScatterType - String with the name of a PETSc vector scatter type
@@ -259,7 +262,7 @@ PETSC_EXTERN PetscErrorCode VecPointwiseDivide(Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecMaxPointwiseDivide(Vec,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode VecShift(Vec,PetscScalar);
 PETSC_EXTERN PetscErrorCode VecReciprocal(Vec);
-PETSC_EXTERN PetscErrorCode VecPermute(Vec, IS, PetscBool );
+PETSC_EXTERN PetscErrorCode VecPermute(Vec, IS, PetscBool);
 PETSC_EXTERN PetscErrorCode VecSqrtAbs(Vec);
 PETSC_EXTERN PetscErrorCode VecLog(Vec);
 PETSC_EXTERN PetscErrorCode VecExp(Vec);
@@ -408,6 +411,14 @@ PETSC_EXTERN PetscErrorCode VecCUDAPlaceArray(Vec,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecCUDAReplaceArray(Vec,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecCUDAResetArray(Vec);
 
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec);
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec, PETSC_UINTPTR_T*);
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
+
 /*MC
    VecSetValueLocal - Set a single entry into a vector using the local numbering
 
@@ -459,8 +470,23 @@ PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") PETSC_STATIC_INLINE 
 PETSC_EXTERN PetscErrorCode VecSetPinnedMemoryMin(Vec,size_t);
 PETSC_EXTERN PetscErrorCode VecGetPinnedMemoryMin(Vec,size_t *);
 
+
+/*E
+    PetscOffloadMask - indicates which memory (CPU, GPU, or none) contains valid data
+
+   PETSC_OFFLOAD_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_OFFLOAD_GPU - GPU has valid vector/matrix entries
+   PETSC_OFFLOAD_CPU - CPU has valid vector/matrix entries
+   PETSC_OFFLOAD_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+   PETSC_OFFLOAD_VECKOKKOS - Reserved for Vec_Kokkos. The offload is managed by Kokkos, thus this flag is not used in Vec_Kokkos.
+
+   Level: developer
+E*/
+typedef enum {PETSC_OFFLOAD_UNALLOCATED=0x0,PETSC_OFFLOAD_CPU=0x1,PETSC_OFFLOAD_GPU=0x2,PETSC_OFFLOAD_BOTH=0x3,PETSC_OFFLOAD_VECKOKKOS=0x100} PetscOffloadMask;
+PETSC_EXTERN PetscErrorCode VecGetOffloadMask(Vec,PetscOffloadMask *);
+
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES,VEC_SUBSET_OFF_PROC_ENTRIES} VecOption;
-PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool );
+PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool);
 
 PETSC_EXTERN PetscErrorCode VecGetArray(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetArrayWrite(Vec,PetscScalar**);
@@ -477,6 +503,15 @@ PETSC_EXTERN PetscErrorCode VecGetArrayInPlace(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayInPlace(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetArrayReadInPlace(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayReadInPlace(Vec,const PetscScalar**);
+
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+PETSC_EXTERN PetscErrorCode VecKokkosGetArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecKokkosRestoreArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecKokkosGetArrayReadInPlace(Vec,const PetscScalar**);
+PETSC_STATIC_INLINE PetscErrorCode VecKokkosRestoreArrayReadInPlace(Vec v,const PetscScalar** a) {return 0;}
+PETSC_EXTERN PetscErrorCode VecKokkosSyncHost(Vec);
+PETSC_EXTERN PetscErrorCode VecKokkosModifyHost(Vec);
+#endif
 
 /*@C
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
@@ -611,7 +646,7 @@ PETSC_EXTERN PetscErrorCode VecMedian(Vec, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecWhichInactive(Vec, Vec, Vec, Vec, PetscBool, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichBetween(Vec, Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichBetweenOrEqual(Vec, Vec, Vec, IS *);
-PETSC_EXTERN PetscErrorCode VecWhichGreaterThan(Vec, Vec, IS * );
+PETSC_EXTERN PetscErrorCode VecWhichGreaterThan(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichLessThan(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichEqual(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecISAXPY(Vec, IS, PetscScalar,Vec);
@@ -664,8 +699,10 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUDA(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUDA(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUDAWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
 #endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec,PetscInt*,Vec**);

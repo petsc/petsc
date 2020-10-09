@@ -3,7 +3,7 @@ static char help[] = "Solves a linear system in parallel with KSP.\n\
 Input parameters include:\n\
   -view_exact_sol   : write exact solution vector to stdout\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
-  -n <mesh_n>       : number of mesh points in y-direction\n\n";
+  -n <mesh_y>       : number of mesh points in y-direction\n\n";
 
 /*T
    Concepts: KSP^basic parallel example;
@@ -121,7 +121,7 @@ int main(int argc,char **args)
   /*
      Set exact solution; then compute right-hand-side vector.
      By default we use an exact solution of a vector with all
-     elements of 1.0;  
+     elements of 1.0;
   */
   ierr = VecSet(u,1.0);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
@@ -214,7 +214,7 @@ int main(int argc,char **args)
 
    test:
       suffix: chebyest_2
-      args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_esteig_ksp_type cg -ksp_monitor_short 
+      args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_esteig_ksp_type cg -ksp_monitor_short
 
    test:
       args: -ksp_monitor_short -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always
@@ -327,4 +327,14 @@ int main(int argc,char **args)
    test:
       suffix: pipeprcg_rcw
       args: -ksp_monitor_short -ksp_type pipeprcg -recompute_w false -m 9 -n 9
+
+   test:
+      suffix: pipecg2
+      args: -ksp_monitor_short -ksp_type pipecg2 -m 9 -n 9 -ksp_norm_type {{preconditioned unpreconditioned natural}}
+
+   test:
+      suffix: pipecg2_2
+      nsize: 4
+      args: -ksp_monitor_short -ksp_type pipecg2 -m 15 -n 9 -ksp_norm_type {{preconditioned unpreconditioned natural}}
+
  TEST*/

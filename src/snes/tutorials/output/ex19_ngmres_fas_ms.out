@@ -71,7 +71,6 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
                       rows=32, cols=32, bs=4
                       package used to perform factorization: petsc
                       total: nonzeros=448, allocated nonzeros=448
-                      total number of mallocs used during MatSetValues calls=0
                         using I-node routines: found 8 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object: 1 MPI processes

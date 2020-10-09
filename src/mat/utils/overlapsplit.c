@@ -1,5 +1,5 @@
 /*
- * overlapsplit.c: increase the overlap of a 'big' subdomain across several processor cores
+ * Increase the overlap of a 'big' subdomain across several processor cores
  *
  * Author: Fande Kong <fdkong.jd@gmail.com>
  */
@@ -39,9 +39,9 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   /* if the sub-communicator is the same as the global communicator,
    * user does not want to use a sub-communicator
    * */
-  if(issamecomm == MPI_IDENT || issamecomm == MPI_CONGRUENT){
-	ierr = PetscCommDestroy(&scomm);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
+  if (issamecomm == MPI_IDENT || issamecomm == MPI_CONGRUENT){
+        ierr = PetscCommDestroy(&scomm);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
   }
   /* if the sub-communicator is petsc_comm_self,
    * user also does not care the sub-communicator
@@ -74,7 +74,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   /* get individual local sizes for all index sets */
   ierr = MPI_Gather(&nindx,1,MPIU_INT,localsizes_sc,1,MPIU_INT,0,scomm);CHKERRQ(ierr);
   /* only root does these computations */
-  if(!srank){
+  if (!srank){
    /* get local size for the big index set */
    ierr = ISGetLocalSize(allis_sc,&localsize);CHKERRQ(ierr);
    ierr = PetscCalloc2(localsize,&indices_ov,localsize,&sources_sc);CHKERRQ(ierr);
@@ -85,8 +85,8 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
    ierr = ISDestroy(&allis_sc);CHKERRQ(ierr);
    /* assign corresponding sources */
    localsize_tmp = 0;
-   for(k=0; k<ssize; k++){
-     for(i=0; i<localsizes_sc[k]; i++){
+   for (k=0; k<ssize; k++){
+     for (i=0; i<localsizes_sc[k]; i++){
        sources_sc[localsize_tmp++] = k;
      }
    }
@@ -128,8 +128,8 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
    /* Allocate a 'zero' pointer to avoid using uninitialized variable  */
    ierr = PetscCalloc1(0,&remote);CHKERRQ(ierr);
    nleaves       = 0;
-   indices_ov_rd = 0;
-   sources_sc_rd = 0;
+   indices_ov_rd = NULL;
+   sources_sc_rd = NULL;
   }
   /* scatter sizes to everybody */
   ierr = MPI_Scatter(localsizes_sc,1, MPIU_INT,&nroots,1, MPIU_INT,0,scomm);CHKERRQ(ierr);

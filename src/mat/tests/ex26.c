@@ -68,7 +68,7 @@ int main(int argc,char **args)
 
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
-      
+
       PetscScalar v = -1.0;
       PetscInt    Ii = j + n*i,J;
       J = Ii - n;

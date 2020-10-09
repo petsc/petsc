@@ -23,8 +23,8 @@ sys.path.append(os.path.abspath('./ext'))
 # -- Project information -----------------------------------------------------
 
 project = 'PETSc'
-copyright = str(datetime.date.today().year)
-author = 'PETSc'
+copyright = '1991-%d, UChicago Argonne, LLC and the PETSc Development Team' % datetime.date.today().year
+author = 'The PETSc Development Team'
 
 with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as version_file:
     buf = version_file.read()
@@ -35,8 +35,8 @@ with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as ve
     patch_version      = re.search(' PETSC_VERSION_PATCH[ ]*([0-9]*)',buf).group(1)
 
     if petsc_release_flag == '0':
-        version = 'dev'
-        release = 'dev'
+        version = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')
+        release = version
     else:
         version = '.'.join([major_version, minor_version])
         release = '.'.join([major_version,minor_version,subminor_version])
@@ -47,11 +47,13 @@ with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as ve
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = []
-extensions.append('sphinx.ext.graphviz')
-extensions.append('sphinx.ext.mathjax')
-extensions.append('sphinxcontrib.bibtex')
-extensions.append('html5_petsc')          # Overrides HTML5Translator
+extensions = [
+    'sphinx.ext.graphviz',
+    'sphinxcontrib.bibtex',
+    'sphinxcontrib.katex',
+    'sphinxcontrib.rsvgconverter',
+    'html5_petsc',  # Overrides HTML5Translator
+]
 
 master_doc = 'index'
 # Add any paths that contain templates here, relative to this directory.
@@ -75,6 +77,44 @@ html_theme = 'sphinxdoc'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_logo = os.path.join('..','website','images','PETSc-TAO_RGB.svg')
+html_favicon = os.path.join('..','website','images','PETSc_RGB-logo.png')
+
+# -- Options for LaTeX output --------------------------------------------
+
+latex_engine = 'xelatex'
+
+# Specify how to arrange the documents into LaTeX files.
+# This allows building only the manual.
+latex_documents = [
+        ('manual/index', 'manual.tex', 'PETSc Users Manual', author, 'manual', False)
+        ]
+
+latex_additional_files = [
+    'manual/anl_tech_report/ArgonneLogo.pdf',
+    'manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
+    'manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
+    'manual/anl_tech_report/first.inc',
+    'manual/anl_tech_report/last.inc',
+]
+
+latex_elements = {
+    'maketitle': r'\newcommand{\techreportversion}{%s}' % version +
+r'''
+\input{first.inc}
+\sphinxmaketitle
+''',
+    'printindex': r'''
+\printindex
+\input{last.inc}
+''',
+    'fontpkg': r'''
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+'''
+}
+
+
 # -- General Config Options ---------------------------------------------------
 
 # Graphviz config which searches for correct installation of a DOT language parser
@@ -97,3 +137,4 @@ graphviz_dot = str(result)
 # Set default highlighting language
 highlight_language = 'c'
 autosummary_generate = True
+numfig = True

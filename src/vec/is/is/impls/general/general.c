@@ -133,7 +133,8 @@ static PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
   IS_General *sub = (IS_General*)in->data;
 
   PetscFunctionBegin;
-  if (*idx != sub->idx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
+   /* F90Array1dCreate() inside ISRestoreArrayF90() does not keep array when zero length array */
+  if (in->map->n > 0  && *idx != sub->idx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
   PetscFunctionReturn(0);
 }
 
@@ -397,7 +398,7 @@ static PetscErrorCode ISSort_General(IS is)
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  ierr = PetscSortInt(n,sub->idx);CHKERRQ(ierr);
+  ierr = PetscIntSortSemiOrdered(n,sub->idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -15,21 +15,21 @@ implicit none
   PetscErrorCode  ierr
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  
+
   if (ierr /= 0) then
    print*,'PetscInitialize failed'
    stop
   endif
-      
-  
+
+
   allocate(dnnz(0:m-1))
   allocate(onnz(0:m-1))
-  
-  do i=0,m-1 
+
+  do i=0,m-1
    dnnz(i) = 1
    onnz(i) = 1
   end do
-  
+
   call MatCreateAIJ(PETSC_COMM_WORLD,m,n,PETSC_DETERMINE,PETSC_DETERMINE,PETSC_DECIDE,dnnz,PETSC_DECIDE,onnz,A,ierr);CHKERRA(ierr)
   call MatSetFromOptions(A,ierr);CHKERRA(ierr)
   call MatSetUp(A,ierr);CHKERRA(ierr)
@@ -54,7 +54,7 @@ implicit none
   call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
   call MatDestroy(A,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)
-  
+
 end program
 
 !/*TEST

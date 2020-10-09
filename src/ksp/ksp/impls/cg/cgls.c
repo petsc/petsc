@@ -1,7 +1,7 @@
 /*
     This file implements CGLS, the Conjugate Gradient method for Least-Squares problems.
 */
-#include <petsc/private/kspimpl.h>	/*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>      /*I "petscksp.h" I*/
 
 typedef struct {
   PetscInt  nwork_n,nwork_m;

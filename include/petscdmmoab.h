@@ -15,10 +15,10 @@
 /* The MBERR macro is used to save typing. It checks a MOAB error code
  * (rval) and calls SETERRQ if not MB_SUCCESS. A message (msg) can
  * also be passed in. */
-#define MBERR(msg,rval) do{if(rval != moab::MB_SUCCESS) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,msg);} while(0)
-#define MBERRNM(rval) do{if(rval != moab::MB_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i)",rval);} while(0)
-#define MBERRV(mbif,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,emsg.c_str());} } while(0)
-#define MBERRVM(mbif,msg,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while(0)
+#define MBERR(msg,rval) do{if (rval != moab::MB_SUCCESS) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,msg);} while (0)
+#define MBERRNM(rval) do{if (rval != moab::MB_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i)",rval);} while (0)
+#define MBERRV(mbif,rval) do{if (rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,emsg.c_str());} } while (0)
+#define MBERRVM(mbif,msg,rval) do{if (rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while (0)
 
 
 /* define enums for options to read and write MOAB files in parallel */
@@ -99,9 +99,9 @@ PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryMarkers(DM dm, const moab::Range **
 
 /* TODO: Replace nverts/coords with just moab::EntityHandle -- can also eliminate dim */
 /* TODO: Replace quad/npts with PetscDT */
-PETSC_EXTERN PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const PetscInt nverts, PetscQuadrature *quadrature );
-PETSC_EXTERN PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal **dphi);
-PETSC_EXTERN PetscErrorCode DMMoabPToRMapping ( const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal* xphy, PetscReal* natparam, PetscReal* phi);
+PETSC_EXTERN PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscInt nverts, PetscQuadrature *quadrature);
+PETSC_EXTERN PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal **dphi);
+PETSC_EXTERN PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal* xphy, PetscReal* natparam, PetscReal* phi);
 
 /* DM utility creation interface */
 PETSC_EXTERN PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, const PetscReal*, PetscInt, PetscInt, DM*);

@@ -548,7 +548,8 @@ destroy:
 
   counts[0] = acnt;
   counts[1] = cnt;
-  ierr = MPI_Bcast(counts,2,MPI_INT,0,comm);CHKERRQ(ierr);
+  err = MPI_Bcast(counts,2,MPI_INT,0,comm);
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in first MPI collective call, could be caused by using an incorrect mpiexec or a network problem, it can be caused by having VPN running: see https://www.mcs.anl.gov/petsc/documentation/faq.html");
   acnt = counts[0];
   cnt = counts[1];
   if (rank) {
@@ -2925,13 +2926,16 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options,const char pre[],
 .  name - the option one is seeking
 -  nmax - maximum number of strings
 
-   Output Parameter:
+   Output Parameters:
 +  strings - location to copy strings
+.  nmax - the number of strings found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
    Notes:
+   The nmax parameter is used for both input and output.
+
    The user should pass in an array of pointers to char, to hold all the
    strings returned by this function.
 

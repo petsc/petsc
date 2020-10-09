@@ -88,8 +88,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Current;
-  part->ops->view    = 0;
-  part->ops->destroy = 0;
+  part->ops->view    = NULL;
+  part->ops->destroy = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -97,8 +97,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Average;
-  part->ops->view    = 0;
-  part->ops->destroy = 0;
+  part->ops->view    = NULL;
+  part->ops->destroy = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -106,8 +106,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Square;
-  part->ops->view    = 0;
-  part->ops->destroy = 0;
+  part->ops->view    = NULL;
+  part->ops->destroy = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -164,7 +164,7 @@ PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscI
 
 /* ===========================================================================================*/
 
-PetscFunctionList MatPartitioningList              = 0;
+PetscFunctionList MatPartitioningList              = NULL;
 PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 
@@ -488,7 +488,7 @@ PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
   PetscFunctionBegin;
   if (!*part) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*part),MAT_PARTITIONING_CLASSID,1);
-  if (--((PetscObject)(*part))->refct > 0) {*part = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*part))->refct > 0) {*part = NULL; PetscFunctionReturn(0);}
 
   if ((*part)->ops->destroy) {
     ierr = (*(*part)->ops->destroy)((*part));CHKERRQ(ierr);
@@ -634,7 +634,7 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   PetscMPIInt     size;
 
   PetscFunctionBegin;
-  *newp = 0;
+  *newp = NULL;
 
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(part,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
@@ -760,7 +760,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
     part->ops->destroy = NULL;
   }
   part->setupcalled = 0;
-  part->data        = 0;
+  part->data        = NULL;
   ierr = PetscMemzero(part->ops,sizeof(struct _MatPartitioningOps));CHKERRQ(ierr);
 
   ierr = PetscFunctionListFind(MatPartitioningList,type,&r);CHKERRQ(ierr);

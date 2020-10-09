@@ -65,7 +65,7 @@ struct ApplyStencil
     /* f = (2*x_i - x_(i+1) - x_(i-1))/h - h*exp(x_i) */
     thrust::get<0>(t) = 1;
     if ((thrust::get<4>(t) > 0) && (thrust::get<4>(t) < thrust::get<5>(t)-1)) {
-      thrust::get<0>(t) = (2.0*thrust::get<1>(t) - thrust::get<2>(t) - thrust::get<3>(t)) / (thrust::get<6>(t)) - (thrust::get<6>(t))*exp(thrust::get<1>(t));
+      thrust::get<0>(t) = (((PetscScalar)2.0)*thrust::get<1>(t) - thrust::get<2>(t) - thrust::get<3>(t)) / (thrust::get<6>(t)) - (thrust::get<6>(t))*exp(thrust::get<1>(t));
     } else if (thrust::get<4>(t) == 0) {
       thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
     } else if (thrust::get<4>(t) == thrust::get<5>(t)-1) {

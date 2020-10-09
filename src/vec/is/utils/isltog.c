@@ -128,7 +128,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Hash(ISLocalToGlobalMapping ma
   PetscFunctionBegin;
   ierr = PetscNew(&map);CHKERRQ(ierr);
   ierr = PetscHMapICreate(&map->globalht);CHKERRQ(ierr);
-  for (i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (idx[i] < 0) continue;
     ierr = PetscHMapISet(map->globalht,idx[i],i);CHKERRQ(ierr);
   }
@@ -620,7 +620,7 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   PetscFunctionBegin;
   if (!*mapping) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*mapping),IS_LTOGM_CLASSID,1);
-  if (--((PetscObject)(*mapping))->refct > 0) {*mapping = 0;PetscFunctionReturn(0);}
+  if (--((PetscObject)(*mapping))->refct > 0) {*mapping = NULL;PetscFunctionReturn(0);}
   ierr = PetscFree((*mapping)->indices);CHKERRQ(ierr);
   ierr = PetscFree((*mapping)->info_procs);CHKERRQ(ierr);
   ierr = PetscFree((*mapping)->info_numprocs);CHKERRQ(ierr);
@@ -641,7 +641,7 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
     ierr = (*(*mapping)->ops->destroy)(*mapping);CHKERRQ(ierr);
   }
   ierr     = PetscHeaderDestroy(mapping);CHKERRQ(ierr);
-  *mapping = 0;
+  *mapping = NULL;
   PetscFunctionReturn(0);
 }
 

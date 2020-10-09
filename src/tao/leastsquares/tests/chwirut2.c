@@ -6,7 +6,7 @@
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 
- This version tests correlated terms using both vector and listed forms 
+ This version tests correlated terms using both vector and listed forms
 */
 
 #include <petsctao.h>

@@ -85,7 +85,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
           /* ierr = PetscKernel_A_gets_A_minus_B_times_C_15(vv,pc,pv);CHKERRQ(ierr); */
           pv += bs2;
         }
-        ierr = PetscLogFlops(2*bs2*bs*(nz+1)-bs2);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
+        ierr = PetscLogFlops(2.0*bs2*bs*(nz+1)-bs2);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
     }
 
@@ -194,7 +194,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
         for (j=0; j<nz; j++) {
           PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
-        ierr = PetscLogFlops(2*bs2*bs*(nz+1)-bs2);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
+        ierr = PetscLogFlops(2.0*bs2*bs*(nz+1)-bs2);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
     }
 
@@ -524,8 +524,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
   b->i          = bi;
   b->diag       = bdiag;
   b->free_diag  = PETSC_TRUE;
-  b->ilen       = 0;
-  b->imax       = 0;
+  b->ilen       = NULL;
+  b->imax       = NULL;
   b->row        = isrow;
   b->col        = iscol;
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
@@ -746,8 +746,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
   for (i=0; i<n; i++) dloc[i] += ainew[i];
   b->diag          = dloc;
   b->free_diag     = PETSC_TRUE;
-  b->ilen          = 0;
-  b->imax          = 0;
+  b->ilen          = NULL;
+  b->imax          = NULL;
   b->row           = isrow;
   b->col           = iscol;
   b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;

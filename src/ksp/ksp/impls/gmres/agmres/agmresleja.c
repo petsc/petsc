@@ -1,10 +1,9 @@
 #define PETSCKSP_DLL
 /*
- * Functions in this file reorder the Ritz values in the (modified) Leja order.
- *
- * References : [1] Bai, Zhaojun and  Hu, D. and Reichel, L. A Newton basis GMRES implementation. IMA J. Numer. Anal. 14 (1994), no. 4, 563-581.
- *
- */
+   Functions in this file reorder the Ritz values in the (modified) Leja order.
+
+   References : [1] Bai, Zhaojun and  Hu, D. and Reichel, L. A Newton basis GMRES implementation. IMA J. Numer. Anal. 14 (1994), no. 4, 563-581.
+*/
 #include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 
 static PetscErrorCode KSPAGMRESLejafmaxarray(PetscScalar *re, PetscInt pt, PetscInt n,PetscInt *pos)

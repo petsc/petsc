@@ -75,11 +75,11 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
     ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_DOWN_LEFT,0,&idownleft);CHKERRQ(ierr);
   }
   if (stagCoord->dof[1]) {
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_DOWN     ,0,&idown    );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_LEFT     ,0,&ileft    );CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_DOWN     ,0,&idown);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_LEFT     ,0,&ileft);CHKERRQ(ierr);
   }
   if (stagCoord->dof[2]) {
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT  ,0,&ielement );CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT  ,0,&ielement);CHKERRQ(ierr);
   }
   ierr = DMStagGetCorners(dmCoord,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&nExtra[0],&nExtra[1],NULL);CHKERRQ(ierr);
 
@@ -87,8 +87,8 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
   h[0] = (xmax-xmin)/stagCoord->N[0];
   h[1] = (ymax-ymin)/stagCoord->N[1];
 
-  for(ind[1]=start[1]; ind[1]<start[1] + n[1] + nExtra[1]; ++ind[1]) {
-    for(ind[0]=start[0]; ind[0]<start[0] + n[0] + nExtra[0]; ++ind[0]) {
+  for (ind[1]=start[1]; ind[1]<start[1] + n[1] + nExtra[1]; ++ind[1]) {
+    for (ind[0]=start[0]; ind[0]<start[0] + n[0] + nExtra[0]; ++ind[0]) {
       if (stagCoord->dof[0]) {
         const PetscReal offs[2] = {0.0,0.0};
         for (c=0; c<2; ++c) {
@@ -155,7 +155,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
      Order is x-fast, as usual */
     stag->rank[0] = rank % stag->nRanks[0];
     stag->rank[1] = rank / stag->nRanks[0];
-    for(i=0; i<dim; ++i) {
+    for (i=0; i<dim; ++i) {
       stag->firstRank[i] = PetscNot(stag->rank[i]);
       stag->lastRank[i]  = (PetscBool)(stag->rank[i] == stag->nRanks[i]-1);
     }
@@ -190,7 +190,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
   /* Compute starting elements */
   for (i=0; i<dim; ++i) {
     stag->start[i] = 0;
-    for(j=0;j<stag->rank[i];++j){
+    for (j=0;j<stag->rank[i];++j){
       stag->start[i] += stag->l[i][j];
     }
   }
@@ -219,7 +219,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
   entriesPerEdge          = stag->dof[0] + stag->dof[1];
   entriesPerCorner        = stag->dof[0];
   entriesPerElementRow    = stag->n[0]*stag->entriesPerElement + (dummyEnd[0] ? entriesPerEdge : 0);
-  stag->entries           = stag->n[1]*entriesPerElementRow +  (dummyEnd[1] ? stag->n[0]*entriesPerEdge : 0 ) + (dummyEnd[0] && dummyEnd[1] ? entriesPerCorner: 0);
+  stag->entries           = stag->n[1]*entriesPerElementRow +  (dummyEnd[1] ? stag->n[0]*entriesPerEdge : 0) + (dummyEnd[0] && dummyEnd[1] ? entriesPerCorner: 0);
 
   /* Compute offsets for each rank into global vectors
      This again requires O(P) storage, which could be replaced with some global
@@ -328,7 +328,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
 
   /* Check stencil type */
   if (stag->stencilType != DMSTAG_STENCIL_NONE && stag->stencilType != DMSTAG_STENCIL_BOX && stag->stencilType != DMSTAG_STENCIL_STAR) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
-  if (stag->stencilType == DMSTAG_STENCIL_NONE && stag->stencilWidth != 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMStag 2d setup requries stencil width 0 with stencil type none");
+  if (stag->stencilType == DMSTAG_STENCIL_NONE && stag->stencilWidth != 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMStag 2d setup requires stencil width 0 with stencil type none");
   star = (PetscBool)(stag->stencilType == DMSTAG_STENCIL_STAR);
 
   {

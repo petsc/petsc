@@ -243,7 +243,7 @@ int main(int argc, char **argv)
   for (i = 1; i < user.mt; i++) {
 
     /* Solve the current version */
-    ierr = TaoSolve(tao); CHKERRQ(ierr);
+    ierr = TaoSolve(tao);CHKERRQ(ierr);
 
     /* Update Vt1 with the solution */
     ierr = DMGetLocalVector(user.dm,&localX);CHKERRQ(ierr);
@@ -378,7 +378,7 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
   ierr = DMLocalToGlobalEnd(user->dm,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->dm,&localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->dm,&localF);CHKERRQ(ierr);
-  ierr = PetscLogFlops(24*(gxm-2));CHKERRQ(ierr);
+  ierr = PetscLogFlops(24.0*(gxm-2));CHKERRQ(ierr);
   /*
   info=VecView(F,PETSC_VIEWER_STDOUT_WORLD);
   */
@@ -414,7 +414,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
   /* Set various matrix options */
   ierr = MatSetOption(J,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(J); CHKERRQ(ierr);}
+  if (assembled){ierr = MatZeroEntries(J);CHKERRQ(ierr);}
 
   ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL);CHKERRQ(ierr);
 
@@ -443,7 +443,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
   /* Assemble the Jacobian matrix */
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogFlops(18*(gxm)+5);CHKERRQ(ierr);
+  ierr = PetscLogFlops(18.0*(gxm)+5);CHKERRQ(ierr);
   return 0;
 }
 

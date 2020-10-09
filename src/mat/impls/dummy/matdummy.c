@@ -43,7 +43,7 @@ PetscErrorCode MatDestroy_Dummy(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

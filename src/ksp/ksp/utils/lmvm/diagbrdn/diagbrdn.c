@@ -26,7 +26,7 @@ static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z)
   PetscFunctionBegin;
   VecCheckSameSize(X, 2, Z, 3);
   VecCheckMatCompatible(B, X, 2, Z, 3);
-  ierr = VecPointwiseDivide(Z, X, ldb->invD); CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(Z, X, ldb->invD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -118,7 +118,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           ierr = VecAXPBYPCZ(ldb->invDnew, 1.0-ldb->theta, (ldb->theta)/ldb->yts[lmvm->k], 1.0, ldb->BFGS, ldb->DFP);CHKERRQ(ierr);
         }
 
-        ierr = VecAXPY(ldb->invDnew, 1.0/ldb->yts[lmvm->k], ldb->V); CHKERRQ(ierr);
+        ierr = VecAXPY(ldb->invDnew, 1.0/ldb->yts[lmvm->k], ldb->V);CHKERRQ(ierr);
         /*  Obtain inverse and ensure positive definite */
         ierr = VecReciprocal(ldb->invDnew);CHKERRQ(ierr);
         ierr = VecAbs(ldb->invDnew);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           /*  Broyden update U=(1-theta)*P + theta*Q */
           ierr = VecAXPBYPCZ(ldb->invDnew, (1.0-ldb->theta)/ldb->yts[lmvm->k], ldb->theta, 1.0, ldb->BFGS, ldb->DFP);CHKERRQ(ierr);
         }
-        ierr = VecAXPY(ldb->invDnew, 1.0/ldb->yts[lmvm->k], ldb->V); CHKERRQ(ierr);
+        ierr = VecAXPY(ldb->invDnew, 1.0/ldb->yts[lmvm->k], ldb->V);CHKERRQ(ierr);
         /*  Ensure positive definite */
         ierr = VecAbs(ldb->invDnew);CHKERRQ(ierr);
       }
@@ -325,7 +325,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
         ierr = VecAXPBY(ldb->invD, 1.0-ldb->rho, ldb->rho, ldb->invDnew);CHKERRQ(ierr);
       }
     } else {
-      ierr = MatLMVMReset(B, PETSC_FALSE); CHKERRQ(ierr);
+      ierr = MatLMVMReset(B, PETSC_FALSE);CHKERRQ(ierr);
     }
     /* End DiagBrdn update */
 
@@ -424,7 +424,7 @@ static PetscErrorCode MatReset_DiagBrdn(Mat B, PetscBool destructive)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecSet(ldb->invD, ldb->delta); CHKERRQ(ierr);
+  ierr = VecSet(ldb->invD, ldb->delta);CHKERRQ(ierr);
   if (destructive && ldb->allocated) {
     ierr = PetscFree3(ldb->yty, ldb->yts, ldb->sts);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->invDnew);CHKERRQ(ierr);
@@ -447,7 +447,7 @@ static PetscErrorCode MatAllocate_DiagBrdn(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!ldb->allocated) {
@@ -559,22 +559,22 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLMVMDiagBroyden - DiagBrdn creates a symmetric Broyden-type diagonal matrix used 
-   for approximating Hessians. It consists of a convex combination of DFP and BFGS 
-   diagonal approximation schemes, such that DiagBrdn = (1-theta)*BFGS + theta*DFP. 
-   To preserve symmetric positive-definiteness, we restrict theta to be in [0, 1]. 
+   MatCreateLMVMDiagBroyden - DiagBrdn creates a symmetric Broyden-type diagonal matrix used
+   for approximating Hessians. It consists of a convex combination of DFP and BFGS
+   diagonal approximation schemes, such that DiagBrdn = (1-theta)*BFGS + theta*DFP.
+   To preserve symmetric positive-definiteness, we restrict theta to be in [0, 1].
    We also ensure positive definiteness by taking the VecAbs() of the final vector.
 
-   There are two ways of approximating the diagonal: using the forward (B) update 
-   schemes for BFGS and DFP and then taking the inverse, or directly working with 
-   the inverse (H) update schemes for the BFGS and DFP updates, derived using the 
-   Sherman-Morrison-Woodbury formula. We have implemented both, controlled by a 
+   There are two ways of approximating the diagonal: using the forward (B) update
+   schemes for BFGS and DFP and then taking the inverse, or directly working with
+   the inverse (H) update schemes for the BFGS and DFP updates, derived using the
+   Sherman-Morrison-Woodbury formula. We have implemented both, controlled by a
    parameter below.
 
-   In order to use the DiagBrdn matrix with other vector types, i.e. doing MatMults 
-   and MatSolves, the matrix must first be created using MatCreate() and MatSetType(), 
-   followed by MatLMVMAllocate(). Then it will be available for updating 
-   (via MatLMVMUpdate) in one's favored solver implementation. 
+   In order to use the DiagBrdn matrix with other vector types, i.e. doing MatMults
+   and MatSolves, the matrix must first be created using MatCreate() and MatSetType(),
+   followed by MatLMVMAllocate(). Then it will be available for updating
+   (via MatLMVMUpdate) in one's favored solver implementation.
    This allows for MPI compatibility.
 
    Collective

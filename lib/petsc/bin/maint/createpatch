@@ -38,8 +38,8 @@ if [ "${a}" != "0" ]; then
 fi
 
 #git_branch=`git symbolic-ref HEAD 2>/dev/null | cut -d"/" -f 3`
-#if  [ "${git_branch}" != "maint" ]; then
-#  echo "Error: Wrong branch '${git_branch}'! Patchlevel can only be updated for 'maint' branch"
+#if  [ "${git_branch}" != "release" ]; then
+#  echo "Error: Wrong branch '${git_branch}'! Patchlevel can only be updated for 'release' branch"
 #  exit
 #fi
 
@@ -50,7 +50,7 @@ version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h
 
 
 if  [ ${version_release} = 0 ]; then
-  echo "Error: PETSC_VERSION_RELEASE is unset. Not using a 'maint' branch?"
+  echo "Error: PETSC_VERSION_RELEASE is unset. Not using a 'release' branch?"
   exit
 fi
 
@@ -73,7 +73,8 @@ cat include/petscversion.h.bak | \
 # Update patchlevel in download/index.html
 /bin/mv src/docs/website/download/index.html src/docs/website/download/index.html.bak
 cat src/docs/website/download/index.html.bak | \
-  sed -e "s/-${oldver}.tar.gz/-${newver}.tar.gz/g" > src/docs/website/download/index.html
+  sed -e "s/-${oldver}.tar.gz/-${newver}.tar.gz/g" | \
+  sed -e "s/git checkout v[0-9.]*/git checkout v${newver}/g" > src/docs/website/download/index.html
 /bin/rm -f src/docs/website/download/index.html.bak
 
 # now create a changeset

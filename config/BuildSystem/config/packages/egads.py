@@ -117,9 +117,9 @@ clean:
       self.logPrintBox('Compiling egads; this may take several minutes')
       # uses the regular PETSc library builder and then moves result
       # turn off any compiler optimizations as they may break egads
-      self.setCompilers.pushLanguage('C')
-      cflags = self.checkNoOptFlag()+' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+' '+self.getDebugFlags(self.setCompilers.getCompilerFlags())
-      self.setCompilers.popLanguage()
+      self.pushLanguage('C')
+      cflags = self.checkNoOptFlag()+' '+self.getSharedFlag(self.getCompilerFlags())+' '+self.getPointerSizeFlag(self.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.getCompilerFlags())+' '+self.getDebugFlags(self.getCompilerFlags())
+      self.popLanguage()
       output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' -f make.inc PETSC_DIR=' + self.petscdir.dir + ' clean lib PCC_FLAGS="' + cflags + '"', timeout=1000, log = self.log, cwd=self.packageDir)
       self.log.write(output+err)
       self.logPrintBox('Installing egads; this may take several minutes')

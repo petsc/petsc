@@ -624,7 +624,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-  
+
   ierr = MatCreate(((PetscObject)tao)->comm, &lclP->R);CHKERRQ(ierr);
   ierr = MatSetType(lclP->R, MATLMVMBFGS);CHKERRQ(ierr);
   PetscFunctionReturn(0);

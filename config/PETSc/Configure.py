@@ -14,11 +14,11 @@ class Configure(config.base.Configure):
     return
 
   def __str2__(self):
-    desc = []
+    desc = ['  Using GNU make: ' + self.make.make]
     if not self.installed:
       desc.append('xxx=========================================================================xxx')
       desc.append(' Configure stage complete. Now build PETSc libraries with:')
-      desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
+      desc.append('   %s PETSC_DIR=%s PETSC_ARCH=%s all' % (self.make.make_user, self.petscdir.dir, self.arch.arch))
       desc.append('xxx=========================================================================xxx')
     else:
       desc.append('xxx=========================================================================xxx')
@@ -66,6 +66,7 @@ class Configure(config.base.Configure):
     self.arch          = framework.require('PETSc.options.arch',        self.setCompilers)
     self.petscdir      = framework.require('PETSc.options.petscdir',    self.arch)
     self.installdir    = framework.require('PETSc.options.installDir',  self)
+    self.dataFilesPath = framework.require('PETSc.options.dataFilesPath',self)
     self.scalartypes   = framework.require('PETSc.options.scalarTypes', self)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
@@ -225,6 +226,17 @@ prepend-path PATH "%s"
       # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
       self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'), log = self.log)
 
+    self.logPrintDivider()
+    # Test for compiler-specific macros that need to be defined.
+    if self.setCompilers.isCrayVector('CC', self.log):
+      self.addDefine('HAVE_CRAY_VECTOR','1')
+
+    if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket') and self.headers.haveHeader('netinet/in.h'):
+      self.addDefine('USE_SOCKET_VIEWER','1')
+      if self.checkCompile('#include <sys/socket.h>','setsockopt(0,SOL_SOCKET,SO_REUSEADDR,0,0)'):
+        self.addDefine('HAVE_SO_REUSEADDR','1')
+
+    self.logPrintDivider()
     self.setCompilers.pushLanguage('C')
     compiler = self.setCompilers.getCompiler()
     if compiler.endswith('mpicc') or compiler.endswith('mpiicc'):
@@ -320,6 +332,16 @@ prepend-path PATH "%s"
       self.addMakeMacro('CUDAC_FLAGS',self.setCompilers.getCompilerFlags())
       self.setCompilers.popLanguage()
 
+    if hasattr(self.compilers, 'HIPCC'):
+      self.setCompilers.pushLanguage('HIP')
+      self.addMakeMacro('HIPCC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
+
+    if hasattr(self.compilers, 'SYCLCXX'):
+      self.setCompilers.pushLanguage('SYCL')
+      self.addMakeMacro('SYCLCXX_FLAGS',self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
+
     # shared library linker values
     self.setCompilers.pushLanguage(self.languages.clanguage)
     # need to fix BuildSystem to collect these separately
@@ -352,18 +374,9 @@ prepend-path PATH "%s"
     if self.framework.argDB['with-batch']:
       self.addMakeMacro('PETSC_WITH_BATCH','1')
 
-    # Test for compiler-specific macros that need to be defined.
-    if self.setCompilers.isCrayVector('CC', self.log):
-      self.addDefine('HAVE_CRAY_VECTOR','1')
-
-#-----------------------------------------------------------------------------------------------------
-    if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket') and self.headers.haveHeader('netinet/in.h'):
-      self.addDefine('USE_SOCKET_VIEWER','1')
-      if self.checkCompile('#include <sys/socket.h>','setsockopt(0,SOL_SOCKET,SO_REUSEADDR,0,0)'):
-        self.addDefine('HAVE_SO_REUSEADDR','1')
-
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for makefiles
+    self.logPrintDivider()
     self.framework.packages.reverse()
     petscincludes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
     petscincludes_install = [os.path.join(self.installdir.dir, 'include')] if self.framework.argDB['prefix'] else petscincludes
@@ -453,7 +466,7 @@ prepend-path PATH "%s"
   def dumpConfigInfo(self):
     import time
     fd = open(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
-    fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"')+'";\n')
+    fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"').replace('\\ ','\\\\ ')+'";\n')
     fd.close()
     return
 
@@ -763,11 +776,17 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
       (petscdir,error,status) = self.executeShellCommand('cygpath -m '+self.installdir.petscDir, log = self.log)
       self.addMakeMacro('wPETSC_DIR',petscdir)
+      if self.dataFilesPath.datafilespath:
+        (datafilespath,error,status) = self.executeShellCommand('cygpath -m '+self.dataFilesPath.datafilespath, log = self.log)
+        self.addMakeMacro('DATAFILESPATH',datafilespath)
+
     else:
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
       self.addDefine('DIR','"'+self.installdir.petscDir+'"')
       self.addMakeMacro('wPETSC_DIR',self.installdir.petscDir)
+      if self.dataFilesPath.datafilespath:
+        self.addMakeMacro('DATAFILESPATH',self.dataFilesPath.datafilespath)
     self.addDefine('ARCH','"'+self.installdir.petscArch+'"')
     return
 
@@ -847,13 +866,17 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
   def configureInstall(self):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
-      self.addMakeRule('print_mesg_after_build','',['-@echo "Now to install the libraries do:"',\
-                                              '-@echo "'+self.installdir.installSudo+'make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
-                                              '-@echo "========================================="'])
+      self.addMakeRule('print_mesg_after_build','',
+       ['-@echo "========================================="',
+        '-@echo "Now to install the libraries do:"',
+        '-@echo "%s${MAKE_USER} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"' % self.installdir.installSudo,
+        '-@echo "========================================="'])
     else:
-      self.addMakeRule('print_mesg_after_build','',['-@echo "Now to check if the libraries are working do:"',\
-                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} check"',\
-                                              '-@echo "========================================="'])
+      self.addMakeRule('print_mesg_after_build','',
+       ['-@echo "========================================="',
+        '-@echo "Now to check if the libraries are working do:"',
+        '-@echo "${MAKE_USER} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} check"',
+        '-@echo "========================================="'])
       return
 
   def configureGCOV(self):
@@ -914,10 +937,10 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureUnused)
     self.executeTest(self.configureDeprecated)
     self.executeTest(self.configureIsatty)
-    self.executeTest(self.configureExpect);
-    self.executeTest(self.configureAlign);
-    self.executeTest(self.configureFunctionName);
-    self.executeTest(self.configureIntptrt);
+    self.executeTest(self.configureExpect)
+    self.executeTest(self.configureAlign)
+    self.executeTest(self.configureFunctionName)
+    self.executeTest(self.configureIntptrt)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)

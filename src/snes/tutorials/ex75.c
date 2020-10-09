@@ -88,8 +88,8 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   a = B*B + km*km;
   b = 2.0*km*B;
   r = sqrt(a*a + b*b);
-  Rp = sqrt( (r+a)/2.0 );
-  Rm  = sqrt( (r-a)/2.0 );
+  Rp = sqrt( (r+a)/2.0);
+  Rm  = sqrt( (r-a)/2.0);
   UU  = Rp - B;
   VV = Rp + B;
 

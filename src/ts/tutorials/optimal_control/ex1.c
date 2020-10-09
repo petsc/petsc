@@ -250,7 +250,7 @@ int main(int argc,char **argv)
   PetscErrorCode     ierr;
 
   /* Initialize program */
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if(ierr) return ierr;
+  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
@@ -389,7 +389,7 @@ int main(int argc,char **argv)
   }
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
-  ierr = TaoSolve(tao); CHKERRQ(ierr);
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
   ierr = VecView(P,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free TAO data structures */

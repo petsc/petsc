@@ -45,18 +45,18 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   ierr = VecCopy(tao->solution,ipmP->rhs_x);CHKERRQ(ierr);
   ierr = IPMEvaluate(tao);CHKERRQ(ierr);
   ierr = IPMComputeKKT(tao);CHKERRQ(ierr);
-  
+
   tao->reason = TAO_CONTINUE_ITERATING;
   ierr = TaoLogConvergenceHistory(tao,ipmP->kkt_f,ipmP->phi,0.0,tao->ksp_its);CHKERRQ(ierr);
   ierr = TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,1.0);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
-  
+
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
-    
+
     tao->ksp_its=0;
     ierr = IPMUpdateK(tao);CHKERRQ(ierr);
     /*
@@ -619,7 +619,7 @@ static PetscErrorCode IPMComputeKKT(Tao tao)
   /* phi = ||rd; rpe; rpi; com|| */
   ierr = VecDot(ipmP->rd,ipmP->rd,&norm);CHKERRQ(ierr);
   ipmP->phi = norm;
-  if (ipmP->me > 0 ) {
+  if (ipmP->me > 0) {
     ierr = VecDot(ipmP->rpe,ipmP->rpe,&norm);CHKERRQ(ierr);
     ipmP->phi += norm;
   }

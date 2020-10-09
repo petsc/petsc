@@ -140,7 +140,7 @@ int main(int argc, char **argv)
     }
 
     /* SOLVE THE APPLICATION */
-    ierr = TaoSolve(tao); CHKERRQ(ierr);
+    ierr = TaoSolve(tao);CHKERRQ(ierr);
 
     /* Free TAO data structures */
     ierr = TaoDestroy(&tao);CHKERRQ(ierr);

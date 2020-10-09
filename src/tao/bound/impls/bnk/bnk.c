@@ -50,7 +50,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   ierr = TaoMonitor(tao,tao->niter,bnk->f,resnorm,0.0,1.0);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
-  
+
   /* Reset KSP stopping reason counters */
   bnk->ksp_atol = 0;
   bnk->ksp_rtol = 0;
@@ -59,17 +59,17 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   bnk->ksp_negc = 0;
   bnk->ksp_iter = 0;
   bnk->ksp_othr = 0;
-  
+
   /* Reset accepted step type counters */
   bnk->tot_cg_its = 0;
   bnk->newt = 0;
   bnk->bfgs = 0;
   bnk->sgrad = 0;
   bnk->grad = 0;
-  
+
   /* Initialize the Hessian perturbation */
   bnk->pert = bnk->sval;
-  
+
   /* Reset initial steplength to zero (this helps BNCG reset its direction internally) */
   ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
 
@@ -89,7 +89,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   } else if (is_jacobi) {
     ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
-  
+
   /* Prepare the min/max vectors for safeguarding diagonal scales */
   ierr = VecSet(bnk->Diag_min, bnk->dmin);CHKERRQ(ierr);
   ierr = VecSet(bnk->Diag_max, bnk->dmax);CHKERRQ(ierr);
@@ -144,7 +144,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
               f_min = ftrial;
               sigma = -tao->trust / bnk->gnorm;
             }
-            
+
             /* Compute the predicted and actual reduction */
             if (bnk->active_idx) {
               ierr = VecGetSubVector(bnk->W, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
             if (bnk->active_idx) {
               ierr = VecRestoreSubVector(bnk->W, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
               ierr = VecRestoreSubVector(bnk->Xwork, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
-            } 
+            }
             prered = tao->trust * (bnk->gnorm - 0.5 * tao->trust * prered / (bnk->gnorm * bnk->gnorm));
             actred = bnk->f - ftrial;
             if ((PetscAbsScalar(actred) <= bnk->epsilon) && (PetscAbsScalar(prered) <= bnk->epsilon)) {
@@ -242,7 +242,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
         }
       }
       tao->trust = PetscMax(tao->trust, max_radius);
-      
+
       /* Ensure that the trust radius is within the limits */
       tao->trust = PetscMax(tao->trust, bnk->min_radius);
       tao->trust = PetscMin(tao->trust, bnk->max_radius);
@@ -310,7 +310,7 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
 
 /* Routine for estimating the active set */
 
-PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType) 
+PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
@@ -351,10 +351,10 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
       }
     }
     ierr = VecScale(bnk->W, -1.0);CHKERRQ(ierr);
-    ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, bnk->Xwork, bnk->as_step, &bnk->as_tol, 
+    ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, bnk->Xwork, bnk->as_step, &bnk->as_tol,
                                    &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx);CHKERRQ(ierr);
     break;
-    
+
   default:
     break;
   }
@@ -365,11 +365,11 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 
 /* Routine for bounding the step direction */
 
-PetscErrorCode TaoBNKBoundStep(Tao tao, PetscInt asType, Vec step) 
+PetscErrorCode TaoBNKBoundStep(Tao tao, PetscInt asType, Vec step)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  
+
   PetscFunctionBegin;
   switch (asType) {
   case BNK_AS_NONE:
@@ -388,10 +388,10 @@ PetscErrorCode TaoBNKBoundStep(Tao tao, PetscInt asType, Vec step)
 
 /*------------------------------------------------------------*/
 
-/* Routine for taking a finite number of BNCG iterations to 
+/* Routine for taking a finite number of BNCG iterations to
    accelerate Newton convergence.
-   
-   In practice, this approach simply trades off Hessian evaluations 
+
+   In practice, this approach simply trades off Hessian evaluations
    for more gradient evaluations.
 */
 
@@ -399,7 +399,7 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
 {
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode               ierr;
-  
+
   PetscFunctionBegin;
   *terminate = PETSC_FALSE;
   if (bnk->max_cg_its > 0) {
@@ -435,7 +435,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   PetscInt                     bfgsUpdates = 0;
   PetscInt                     kspits;
   PetscBool                    is_lmvm;
-  
+
   PetscFunctionBegin;
   /* If there are no inactive variables left, save some computation and return an adjusted zero step
      that has (l-x) and (u-x) for lower and upper bounded variables. */
@@ -444,7 +444,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     ierr = TaoBNKBoundStep(tao, bnk->as_type, tao->stepdirection);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  
+
   /* Shift the reduced Hessian matrix */
   if ((shift) && (bnk->pert > 0)) {
     ierr = PetscObjectTypeCompare((PetscObject)tao->hessian, MATLMVM, &is_lmvm);CHKERRQ(ierr);
@@ -457,11 +457,12 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
       }
     }
   }
-  
+
   /* Solve the Newton system of equations */
   tao->ksp_its = 0;
   ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
   ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
+  ierr = KSPResetFromOptions(tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(tao->ksp,bnk->H_inactive,bnk->Hpre_inactive);CHKERRQ(ierr);
   ierr = VecCopy(bnk->unprojected_gradient, bnk->Gwork);CHKERRQ(ierr);
   if (bnk->active_idx) {
@@ -520,7 +521,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
   ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
   ierr = TaoBNKBoundStep(tao, bnk->as_type, tao->stepdirection);CHKERRQ(ierr);
-  
+
   /* Record convergence reasons */
   ierr = KSPGetConvergedReason(tao->ksp, ksp_reason);CHKERRQ(ierr);
   if (KSP_CONVERGED_ATOL == *ksp_reason) {
@@ -538,7 +539,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   } else {
     ++bnk->ksp_othr;
   }
-  
+
   /* Make sure the BFGS preconditioner is healthy */
   if (bnk->M) {
     ierr = MatLMVMGetUpdateCount(bnk->M, &bfgsUpdates);CHKERRQ(ierr);
@@ -560,7 +561,7 @@ PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  
+
   PetscFunctionBegin;
   /* Extract subvectors associated with the inactive set */
   if (bnk->active_idx){
@@ -589,7 +590,7 @@ PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
 
 /* Routine for ensuring that the Newton step is a descent direction.
 
-   The step direction falls back onto BFGS, scaled gradient and gradient steps 
+   The step direction falls back onto BFGS, scaled gradient and gradient steps
    in the event that the Newton step fails the test.
 */
 
@@ -597,10 +598,10 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  
+
   PetscReal                    gdx, e_min;
   PetscInt                     bfgsUpdates;
-  
+
   PetscFunctionBegin;
   switch (*stepType) {
   case BNK_NEWTON:
@@ -629,8 +630,8 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
         /* Attempt to use the BFGS direction */
         ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
 
-        /* Check for success (descent direction) 
-          NOTE: Negative gdx here means not a descent direction because 
+        /* Check for success (descent direction)
+          NOTE: Negative gdx here means not a descent direction because
           the fall-back step is missing a negative sign. */
         ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
         if ((gdx <= 0.0) || PetscIsInfOrNanReal(gdx)) {
@@ -691,7 +692,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       *stepType = BNK_NEWTON;
     }
     break;
-  
+
   case BNK_BFGS:
     /* Check for success (descent direction) */
     ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
@@ -708,14 +709,14 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       *stepType = BNK_BFGS;
     }
     break;
-  
+
   case BNK_SCALED_GRADIENT:
     break;
-    
+
   default:
     break;
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -723,7 +724,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
 
 /* Routine for performing a bound-projected More-Thuente line search.
 
-  Includes fallbacks to BFGS, scaled gradient, and unscaled gradient steps if the 
+  Includes fallbacks to BFGS, scaled gradient, and unscaled gradient steps if the
   Newton step does not produce a valid step length.
 */
 
@@ -732,10 +733,10 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
   TaoLineSearchConvergedReason ls_reason;
-  
+
   PetscReal      e_min, gdx;
   PetscInt       bfgsUpdates;
-  
+
   PetscFunctionBegin;
   /* Perform the linesearch */
   ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &bnk->f, bnk->unprojected_gradient, tao->stepdirection, steplen, &ls_reason);CHKERRQ(ierr);
@@ -771,7 +772,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
       } else {
         /* Attempt to use the BFGS direction */
         ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-        /* Check for success (descent direction) 
+        /* Check for success (descent direction)
            NOTE: Negative gdx means not a descent direction because the step here is missing a negative sign. */
         ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
         if ((gdx <= 0.0) || PetscIsInfOrNanReal(gdx)) {
@@ -811,7 +812,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
     /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
     ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
     ierr = TaoBNKBoundStep(tao, bnk->as_type, tao->stepdirection);CHKERRQ(ierr);
-    
+
     /* Perform one last line search with the fall-back step */
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &bnk->f, bnk->unprojected_gradient, tao->stepdirection, steplen, &ls_reason);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
@@ -822,9 +823,9 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
 
 /*------------------------------------------------------------*/
 
-/* Routine for updating the trust radius. 
+/* Routine for updating the trust radius.
 
-  Function features three different update methods: 
+  Function features three different update methods:
   1) Line-search step length based
   2) Predicted decrease on the CG quadratic model
   3) Interpolation
@@ -834,7 +835,7 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
-  
+
   PetscReal      step, kappa;
   PetscReal      gdx, tau_1, tau_2, tau_min, tau_max;
 
@@ -936,7 +937,7 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
           } else {
             kappa = actred / prered;
           }
-          
+
           ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
           tau_1 = bnk->theta * gdx / (bnk->theta * gdx - (1.0 - bnk->theta) * prered + actred);
           tau_2 = bnk->theta * gdx / (bnk->theta * gdx + (1.0 + bnk->theta) * prered - actred);
@@ -1000,7 +1001,7 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
 PetscErrorCode TaoBNKAddStepCounts(Tao tao, PetscInt stepType)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
-  
+
   PetscFunctionBegin;
   switch (stepType) {
   case BNK_NEWTON:
@@ -1258,7 +1259,7 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
   At each iteration, the BNK methods solve the symmetric
   system of equations to obtain the step diretion dk:
               Hk dk = -gk
-  for free variables only. The step can be globalized either through 
+  for free variables only. The step can be globalized either through
   trust-region methods, or a line search, or a heuristic mixture of both.
 
     Options Database Keys:
@@ -1335,11 +1336,11 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   if (!tao->trust0_changed) tao->trust0 = 100.0;
 
   tao->data = (void*)bnk;
-  
+
   /*  Hessian shifting parameters */
   bnk->computehessian = TaoBNKComputeHessian;
   bnk->computestep = TaoBNKComputeStep;
-  
+
   bnk->sval   = 0.0;
   bnk->imin   = 1.0e-4;
   bnk->imax   = 1.0e+2;

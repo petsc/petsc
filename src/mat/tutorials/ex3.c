@@ -1,4 +1,4 @@
-static char help[] = "Ilustration of MatIS using a 1D Laplacian assembly\n\n";
+static char help[] = "Illustration of MatIS using a 1D Laplacian assembly\n\n";
 
 /*
   MatIS means that the matrix is not assembled. The easiest way to think of this (for me) is that processes do not have

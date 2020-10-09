@@ -1,0 +1,63 @@
+Mat Object: 3 MPI processes
+  type: mpiaij
+row 0: (1, -2.)  (2, -2.)  (3, -2.) 
+row 1: (0, -2.)  (1, -2.)  (2, -2.) 
+row 2: (0, -2.)  (1, -2.)  (2, -2.) 
+row 3: (0, -2.)  (1, -2.)  (2, -2.)  (3, -1.) 
+row 4: (0, -2.)  (1, -2.)  (2, -2.)  (3, -1.) 
+
+ MatGetRowMax
+Vec Object: 3 MPI processes
+  type: mpi
+Process [0]
+0.
+0.
+Process [1]
+0.
+0.
+Process [2]
+0.
+[0] 0: 0 3
+[1] 0: 3 4
+[2] 0: 4
+Mat Object: 3 MPI processes
+  type: mpiaij
+row 0: (1, 2.)  (2, 2.)  (3, 2.) 
+row 1: (0, 2.)  (1, 2.)  (2, 2.) 
+row 2: (0, 2.)  (1, 2.)  (2, 2.) 
+row 3: (0, 2.)  (1, 2.)  (2, 2.)  (3, 1.) 
+row 4: (0, 2.)  (1, 2.)  (2, 2.)  (3, 1.) 
+
+ MatGetRowMin
+
+ MatGetRowMaxAbs
+Vec Object: 3 MPI processes
+  type: mpi
+Process [0]
+2.
+2.
+Process [1]
+2.
+2.
+Process [2]
+2.
+[0] 0: 1 0
+[1] 0: 0 0
+[2] 0: 0
+
+ MatGetRowMinAbs
+Vec Object: 3 MPI processes
+  type: mpi
+Process [0]
+0.
+0.
+Process [1]
+0.
+0.
+Process [2]
+0.
+[0] 0: 0 3
+[1] 0: 3 4
+[2] 0: 4
+
+ MatGetRowMaxAbs for BAIJ matrix

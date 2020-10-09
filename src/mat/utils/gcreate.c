@@ -237,6 +237,9 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-mat_new_nonzero_allocation_err","Generate an error if new nonzeros are allocated in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,flg);CHKERRQ(ierr);}
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_ignore_zero_entries","For AIJ/IS matrices this will stop zero values from creating a zero location in the matrix","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = MatSetOption(B,MAT_IGNORE_ZERO_ENTRIES,flg);CHKERRQ(ierr);}
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)B);CHKERRQ(ierr);
@@ -351,8 +354,8 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   product = A->product;
 
   /* zero these so the destroy below does not free them */
-  ((PetscObject)A)->type_name = 0;
-  ((PetscObject)A)->name      = 0;
+  ((PetscObject)A)->type_name = NULL;
+  ((PetscObject)A)->name      = NULL;
 
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
@@ -376,8 +379,8 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   A->product                  = product;
 
   /* since these two are copied into A we do not want them destroyed in C */
-  ((PetscObject)*C)->qlist = 0;
-  ((PetscObject)*C)->olist = 0;
+  ((PetscObject)*C)->qlist = NULL;
+  ((PetscObject)*C)->olist = NULL;
 
   ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -397,6 +400,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   PetscInt         refct;
   PetscObjectState state;
   struct _p_Mat    buffer;
+  MatStencilInfo   stencil;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -406,13 +410,15 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   if (((PetscObject)*C)->refct != 1) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %D > 1, would leave hanging reference",((PetscObject)*C)->refct);
 
   /* swap C and A */
-  refct = ((PetscObject)A)->refct;
-  state = ((PetscObject)A)->state;
+  refct   = ((PetscObject)A)->refct;
+  state   = ((PetscObject)A)->state;
+  stencil = A->stencil;
   ierr  = PetscMemcpy(&buffer,A,sizeof(struct _p_Mat));CHKERRQ(ierr);
   ierr  = PetscMemcpy(A,*C,sizeof(struct _p_Mat));CHKERRQ(ierr);
   ierr  = PetscMemcpy(*C,&buffer,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  ((PetscObject)A)->refct = refct;
-  ((PetscObject)A)->state = state + 1;
+  ((PetscObject)A)->refct   = refct;
+  ((PetscObject)A)->state   = state + 1;
+  A->stencil                = stencil;
 
   ((PetscObject)*C)->refct = 1;
   ierr = MatShellSetOperation(*C,MATOP_DESTROY,(void(*)(void))NULL);CHKERRQ(ierr);

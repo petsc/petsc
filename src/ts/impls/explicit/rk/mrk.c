@@ -147,7 +147,7 @@ static PetscErrorCode TSStep_RK_MultirateNonsplit(TS ts)
     ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
     for (j=0; j<i; j++) w[j] = h*A[i*s+j];
     ierr = VecMAXPY(Y[i],i,w,YdotRHS_slow);CHKERRQ(ierr);
-    ierr = TSPostStage(ts,rk->stage_time,i,Y); CHKERRQ(ierr);
+    ierr = TSPostStage(ts,rk->stage_time,i,Y);CHKERRQ(ierr);
     /* compute the stage RHS */
     ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
   }
@@ -415,7 +415,7 @@ static PetscErrorCode TSStep_RK_MultirateSplit(TS ts)
     ierr = VecMAXPY(Yslow,i,w,YdotRHS_slow);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(Y[i],rk->is_fast,&Yfast);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(Y[i],rk->is_slow,&Yslow);CHKERRQ(ierr);
-    ierr = TSPostStage(ts,rk->stage_time,i,Y); CHKERRQ(ierr);
+    ierr = TSPostStage(ts,rk->stage_time,i,Y);CHKERRQ(ierr);
     ierr = TSComputeRHSFunction(rk->subts_slow,t+h*c[i],Y[i],YdotRHS_slow[i]);CHKERRQ(ierr);
     ierr = TSComputeRHSFunction(rk->subts_fast,t+h*c[i],Y[i],YdotRHS_fast[i]);CHKERRQ(ierr);
   }

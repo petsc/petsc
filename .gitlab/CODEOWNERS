@@ -9,13 +9,15 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 /src/dm/impls/plex/       @knepley @wence @haplav @tisaac
 /src/dm/impls/stag/       @psanan @knepley
 
-/src/*/*/network/         @abhyshr @hongzhangsun
-/src/*/*/*/network/       @abhyshr @hongzhangsun
+/src/*/*/network/         @abhyshr @hongzhangsun @knepley
+/src/*/*/*/network/       @abhyshr @hongzhangsun @knepley
 
 /src/ksp/pc/impls/bddc/   @stefanozampini @jedbrown
 /src/ksp/pc/impls/gamg/   @markadams4 @jedbrown
 /src/ksp/pc/impls/hpddm/  @prj- @stefanozampini
 /src/ksp/ksp/impls/hpddm/ @prj- @stefanozampini
+
+/src/binding/petsc4py/    @dalcinl @wence @pefarrell @joseroman
 
 /src/sys/classes/viewer/  @petsc/integrators @haplav
 
@@ -26,5 +28,6 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 
 /config/*                 @krugers @knepley @sbalay @BarrySmith
 gmakefile*                @krugers @jedbrown @BarrySmith
+.gitlab*.yml              @sbalay @jedbrown
 /lib/petsc                @krugers @sbalay
 

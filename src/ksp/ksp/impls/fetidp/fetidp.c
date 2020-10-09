@@ -866,7 +866,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
             ierr = ISLocalToGlobalMappingCreateIS(lPall,&pmap);CHKERRQ(ierr);
             ierr = ISGetIndices(lPall,&idxs);CHKERRQ(ierr);
             for (p = 0, nv = 0; p < np; p++) {
-	      PetscInt x,n = idxs[p];
+              PetscInt x,n = idxs[p];
 
               ierr = ISGlobalToLocalMappingApply(pmap,IS_GTOLM_DROP,xadj[n+1]-xadj[n],adjn+xadj[n],&x,NULL);CHKERRQ(ierr);
               nv  += x;

@@ -111,6 +111,15 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 #endif
   }
 #endif
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_HAVE_BAMG)
+  {
+    PetscBool found;
+    ierr = PetscLoadDynamicLibrary("bamg",&found);CHKERRQ(ierr);
+    if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc BAMG dynamic library \n You cannot move the dynamic libraries!");
+  }
+#endif
+#endif
 
   nmax = 32;
   ierr = PetscOptionsGetStringArray(NULL,NULL,"-dll_append",libname,&nmax,NULL);CHKERRQ(ierr);
@@ -507,4 +516,3 @@ PetscErrorCode  PetscFunctionListDuplicate(PetscFunctionList fl,PetscFunctionLis
   }
   PetscFunctionReturn(0);
 }
-

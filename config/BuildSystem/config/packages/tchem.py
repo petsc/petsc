@@ -25,15 +25,15 @@ class Configure(config.package.Package):
     shareDir       = os.path.join(self.installDir, 'share')
 
     args = []
-    self.framework.pushLanguage('C')
-    args.append('CC="'+self.framework.getCompiler()+'"')
-    args.append('CFLAGS="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-    self.framework.popLanguage()
+    self.pushLanguage('C')
+    args.append('CC="'+self.getCompiler()+'"')
+    args.append('CFLAGS="'+self.updatePackageCFlags(self.getCompilerFlags())+'"')
+    self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      args.append('CXX="'+self.framework.getCompiler()+'"')
-      args.append('CXXFLAGS="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-      self.framework.popLanguage()
+      self.pushLanguage('Cxx')
+      args.append('CXX="'+self.getCompiler()+'"')
+      args.append('CXXFLAGS="'+self.updatePackageCxxFlags(self.getCompilerFlags())+'"')
+      self.popLanguage()
     args = '\n'.join(args)
 
     conffile = os.path.join(self.packageDir, self.package)

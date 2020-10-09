@@ -175,7 +175,7 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
   if (N != Nfile) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", Nfile, N);
-  
+
   ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
   rstart_t = rstart;
   N_t  = n;

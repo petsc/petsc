@@ -34,6 +34,19 @@ DMSwarmDataBucketView:
                             atomic size      = 16 [full block, bs=2]
                             atomic size/item = 8 
   Total mem. usage                           = 9.60e-05 (MB) (collective)
+n = 4
+Vec Object: DMSwarmSharedField_kinematics 1 MPI processes
+  type: seq
+0.471405
+0.
+0.942809
+0.
+Vec Object: DMSwarmSharedField_kinematics 1 MPI processes
+  type: seq
+0.471405
+0.
+0.942809
+0.
 Time     Step Part     Energy Mod Energy
 0.000000    0    0   455.1111   455.1111
 0.000000    0    1  1820.4444  1820.4444
@@ -43,6 +56,12 @@ Time     Step Part     Energy Mod Energy
 0.001000  100    1  1820.4444  1820.5188
 p0 error [3.3e-11 1.3e-07] sol [0.470439 -1.929555] exact [0.470439 -1.929555] energy/exact energy 455.111 / 455.111
 p1 error [6.6e-11 2.6e-07] sol [0.940879 -3.859110] exact [0.940879 -3.859110] energy/exact energy 1820.44 / 1820.44
+Vec Object: DMSwarmSharedField_kinematics 1 MPI processes
+  type: seq
+0.471405
+0.
+0.942809
+0.
 Time     Step Part     Energy Mod Energy
 0.000000    0    0   455.1111   455.1111
 0.000000    0    1  1820.4444  1820.4444
@@ -56,6 +75,12 @@ Time     Step Part     Energy Mod Energy
 0.001000  200    1  1820.4444  1820.4816
 p0 error [8.2e-12 3.3e-08] sol [0.470439 -1.929555] exact [0.470439 -1.929555] energy/exact energy 455.111 / 455.111
 p1 error [1.6e-11 6.6e-08] sol [0.940879 -3.859110] exact [0.940879 -3.859110] energy/exact energy 1820.44 / 1820.44
+Vec Object: DMSwarmSharedField_kinematics 1 MPI processes
+  type: seq
+0.471405
+0.
+0.942809
+0.
 Time     Step Part     Energy Mod Energy
 0.000000    0    0   455.1111   455.1111
 0.000000    0    1  1820.4444  1820.4444
@@ -77,6 +102,12 @@ Time     Step Part     Energy Mod Energy
 0.001000  400    1  1820.4444  1820.4630
 p0 error [2.1e-12 8.2e-09] sol [0.470439 -1.929555] exact [0.470439 -1.929555] energy/exact energy 455.111 / 455.111
 p1 error [4.1e-12 1.6e-08] sol [0.940879 -3.859110] exact [0.940879 -3.859110] energy/exact energy 1820.44 / 1820.44
+Vec Object: DMSwarmSharedField_kinematics 1 MPI processes
+  type: seq
+0.471405
+0.
+0.942809
+0.
 L_2 convergence rate: 2.0
 Time     Step Part     Energy Mod Energy
 0.000000    0    0   455.1111   455.1111

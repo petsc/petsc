@@ -55,12 +55,13 @@
 
 #define MATCOARSEN_MIS 'mis'
 
+#define MATCOLORINGJP      'jp'
+#define MATCOLORINGPOWER   'power'
 #define MATCOLORINGNATURAL 'natural'
 #define MATCOLORINGSL      'sl'
 #define MATCOLORINGLF      'lf'
 #define MATCOLORINGID      'id'
 #define MATCOLORINGGREEDY  'greedy'
-#define MATCOLORINGJP      'jp'
 
 #define MATORDERINGNATURAL   'natural'
 #define MATORDERINGNATURAL_OR_ND 'natural_or_nd'

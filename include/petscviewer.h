@@ -108,6 +108,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerWritable(PetscViewer,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscViewerCheckReadable(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
 
+#define PETSC_VIEWER_ASCII_VTK_ATTR        PETSC_VIEWER_ASCII_VTK        PETSC_DEPRECATED_ENUM("Legacy VTK deprecated; use PetscViewerVTKOpen() with XML (.vtr .vts .vtu) format (since 3.14)")
+#define PETSC_VIEWER_ASCII_VTK_CELL_ATTR   PETSC_VIEWER_ASCII_VTK_CELL   PETSC_DEPRECATED_ENUM("Legacy VTK deprecated; use PetscViewerVTKOpen() with XML (.vtr .vts .vtu) format (since 3.14)")
+#define PETSC_VIEWER_ASCII_VTK_COORDS_ATTR PETSC_VIEWER_ASCII_VTK_COORDS PETSC_DEPRECATED_ENUM("Legacy VTK deprecated; use PetscViewerVTKOpen() with XML (.vtr .vts .vtu) format (since 3.14)")
 /*E
     PetscViewerFormat - Way a viewer presents the object
 
@@ -127,9 +130,12 @@ typedef enum {
   PETSC_VIEWER_ASCII_INDEX,
   PETSC_VIEWER_ASCII_DENSE,
   PETSC_VIEWER_ASCII_MATRIXMARKET,
-  PETSC_VIEWER_ASCII_VTK,
-  PETSC_VIEWER_ASCII_VTK_CELL,
-  PETSC_VIEWER_ASCII_VTK_COORDS,
+  PETSC_VIEWER_ASCII_VTK_DEPRECATED,
+  PETSC_VIEWER_ASCII_VTK_ATTR = PETSC_VIEWER_ASCII_VTK_DEPRECATED,
+  PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED,
+  PETSC_VIEWER_ASCII_VTK_CELL_ATTR = PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED,
+  PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED,
+  PETSC_VIEWER_ASCII_VTK_COORDS_ATTR = PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED,
   PETSC_VIEWER_ASCII_PCICE,
   PETSC_VIEWER_ASCII_PYTHON,
   PETSC_VIEWER_ASCII_FACTOR_INFO,
@@ -152,7 +158,8 @@ typedef enum {
   PETSC_VIEWER_HDF5_XDMF,
   PETSC_VIEWER_HDF5_MAT,
   PETSC_VIEWER_NOFORMAT,
-  PETSC_VIEWER_LOAD_BALANCE
+  PETSC_VIEWER_LOAD_BALANCE,
+  PETSC_VIEWER_FAILED
   } PetscViewerFormat;
 PETSC_EXTERN const char *const PetscViewerFormats[];
 
@@ -187,7 +194,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerASCIIPushSynchronized(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPushTab(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPopTab(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer,PetscBool );
+PETSC_EXTERN PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIISetTab(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIGetTab(PetscViewer,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIAddTab(PetscViewer,PetscInt);
@@ -216,7 +223,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerSocketSetConnection(PetscViewer,const cha
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetSkipInfo(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetSkipInfo(PetscViewer,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscViewerBinarySetSkipOptions(PetscViewer,PetscBool );
+PETSC_EXTERN PetscErrorCode PetscViewerBinarySetSkipOptions(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetSkipOptions(PetscViewer,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetSkipHeader(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetSkipHeader(PetscViewer,PetscBool*);
@@ -227,7 +234,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerFileSetName(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerFileGetName(PetscViewer,const char**);
 
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetPointer(PetscViewer, FILE**);
-PETSC_EXTERN PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer, PetscBool );
+PETSC_EXTERN PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer, PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer, const char [], ...);
 PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);

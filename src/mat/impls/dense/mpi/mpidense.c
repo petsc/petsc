@@ -576,7 +576,7 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   ierr = MatDestroy(&mdn->cmat);CHKERRQ(ierr);
 
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)mat,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetLDA_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseSetLDA_C",NULL);CHKERRQ(ierr);
@@ -948,7 +948,7 @@ PetscErrorCode MatSetUp_MPIDense(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   if (!A->preallocated) {
-    ierr = MatMPIDenseSetPreallocation(A,0);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1347,13 +1347,13 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                 /*  4*/ MatMultAdd_MPIDense,
                                         MatMultTranspose_MPIDense,
                                         MatMultTransposeAdd_MPIDense,
-                                        0,
-                                        0,
-                                        0,
-                                /* 10*/ 0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 10*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                         MatTranspose_MPIDense,
                                 /* 15*/ MatGetInfo_MPIDense,
                                         MatEqual_MPIDense,
@@ -1365,129 +1365,129 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         MatSetOption_MPIDense,
                                         MatZeroEntries_MPIDense,
                                 /* 24*/ MatZeroRows_MPIDense,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 29*/ MatSetUp_MPIDense,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                         MatGetDiagonalBlock_MPIDense,
-                                        0,
+                                        NULL,
                                 /* 34*/ MatDuplicate_MPIDense,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 39*/ MatAXPY_MPIDense,
                                         MatCreateSubMatrices_MPIDense,
-                                        0,
+                                        NULL,
                                         MatGetValues_MPIDense,
-                                        0,
-                                /* 44*/ 0,
+                                        NULL,
+                                /* 44*/ NULL,
                                         MatScale_MPIDense,
                                         MatShift_Basic,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                 /* 49*/ MatSetRandom_MPIDense,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 54*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 54*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 59*/ MatCreateSubMatrix_MPIDense,
                                         MatDestroy_MPIDense,
                                         MatView_MPIDense,
-                                        0,
-                                        0,
-                                /* 64*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 69*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 74*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 79*/ 0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                /* 64*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 69*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 74*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 79*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 83*/ MatLoad_MPIDense,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 89*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 94*/ 0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 89*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 94*/ NULL,
+                                        NULL,
                                         MatMatTransposeMultSymbolic_MPIDense_MPIDense,
                                         MatMatTransposeMultNumeric_MPIDense_MPIDense,
-                                        0,
+                                        NULL,
                                 /* 99*/ MatProductSetFromOptions_MPIDense,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                         MatConjugate_MPIDense,
-                                        0,
-                                /*104*/ 0,
+                                        NULL,
+                                /*104*/ NULL,
                                         MatRealPart_MPIDense,
                                         MatImaginaryPart_MPIDense,
-                                        0,
-                                        0,
-                                /*109*/ 0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                /*109*/ NULL,
+                                        NULL,
+                                        NULL,
                                         MatGetColumnVector_MPIDense,
                                         MatMissingDiagonal_MPIDense,
-                                /*114*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /*119*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /*124*/ 0,
+                                /*114*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*119*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*124*/ NULL,
                                         MatGetColumnNorms_MPIDense,
-                                        0,
-                                        0,
-                                        0,
-                                /*129*/ 0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*129*/ NULL,
+                                        NULL,
                                         MatTransposeMatMultSymbolic_MPIDense_MPIDense,
                                         MatTransposeMatMultNumeric_MPIDense_MPIDense,
-                                        0,
-                                /*134*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /*139*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                /*134*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*139*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                         MatCreateMPIMatConcatenateSeqMat_MPIDense,
-                                /*145*/ 0,
-                                        0,
-                                        0
+                                /*145*/ NULL,
+                                        NULL,
+                                        NULL
 };
 
 PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
@@ -1874,8 +1874,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)mat),1,&mat->stash);CHKERRQ(ierr);
 
   /* stuff used for matrix vector multiply */
-  a->lvec        = 0;
-  a->Mvctx       = 0;
+  a->lvec        = NULL;
+  a->Mvctx       = NULL;
   a->roworiented = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetLDA_C",MatDenseGetLDA_MPIDense);CHKERRQ(ierr);
@@ -1937,6 +1937,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
   ierr = MatCreate_MPIDense(B);CHKERRQ(ierr);
   ierr = MatConvert_MPIDense_MPIDenseCUDA(B,MATMPIDENSECUDA,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2469,7 +2470,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *newmat = 0;
+  *newmat = NULL;
   ierr    = MatCreate(PetscObjectComm((PetscObject)A),&mat);CHKERRQ(ierr);
   ierr    = MatSetSizes(mat,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr    = MatSetType(mat,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -2704,11 +2705,11 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(Mat A,
   PetscErrorCode        ierr;
   MPI_Comm              comm;
   PetscMPIInt           rank,size, sendsiz, recvsiz, sendto, recvfrom, recvisfrom;
-  PetscScalar           *sendbuf, *recvbuf=0, *cv;
+  PetscScalar           *sendbuf, *recvbuf=NULL, *cv;
   PetscInt              i,cK=A->cmap->N,k,j,bn;
   PetscScalar           _DOne=1.0,_DZero=0.0;
   const PetscScalar     *av,*bv;
-  PetscBLASInt          cm, cn, ck, alda, blda, clda;
+  PetscBLASInt          cm, cn, ck, alda, blda = 0, clda;
   MPI_Request           reqs[2];
   const PetscInt        *ranges;
 

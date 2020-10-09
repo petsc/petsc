@@ -3,7 +3,7 @@
 #include <petscviewer.h>
 #include <petscsf.h>
 
-const char *const ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};
+const char *const ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",NULL};
 
 PetscErrorCode ISColoringReference(ISColoring coloring)
 {
@@ -81,7 +81,7 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
   PetscFunctionBegin;
   if (!*iscoloring) PetscFunctionReturn(0);
   PetscValidPointer((*iscoloring),1);
-  if (--(*iscoloring)->refct > 0) {*iscoloring = 0; PetscFunctionReturn(0);}
+  if (--(*iscoloring)->refct > 0) {*iscoloring = NULL; PetscFunctionReturn(0);}
 
   if ((*iscoloring)->is) {
     for (i=0; i<(*iscoloring)->n; i++) {
@@ -373,7 +373,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   ierr = MPIU_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
   if (nc > ncolors) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %D is less then the actual number of colors in array %D",ncolors,nc);
   (*iscoloring)->n      = nc;
-  (*iscoloring)->is     = 0;
+  (*iscoloring)->is     = NULL;
   (*iscoloring)->N      = n;
   (*iscoloring)->refct  = 1;
   (*iscoloring)->ctype  = IS_COLORING_GLOBAL;

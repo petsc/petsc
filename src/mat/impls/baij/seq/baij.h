@@ -23,7 +23,7 @@
                                                                                                      \
                                                                                                      \
   MatScalar     *idiag;            /* inverse of block diagonal  */                                \
-  PetscBool     idiagvalid         /* if above has correct/current values */ 
+  PetscBool     idiagvalid         /* if above has correct/current values */
 
 typedef struct {
   SEQAIJHEADER(MatScalar);

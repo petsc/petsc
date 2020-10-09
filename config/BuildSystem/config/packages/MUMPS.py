@@ -102,26 +102,21 @@ class Configure(config.package.Package):
     g.write('IORDERINGSF = $(ISCOTCH)\n')
 
     g.write('RM = /bin/rm -f\n')
-    self.setCompilers.pushLanguage('C')
-    g.write('CC = '+self.setCompilers.getCompiler()+'\n')
-    g.write('OPTC    = ' + self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
+    self.pushLanguage('C')
+    g.write('CC = '+self.getCompiler()+'\n')
+    g.write('OPTC    = ' + self.updatePackageCFlags(self.getCompilerFlags())+'\n')
     g.write('OUTC = -o \n')
-    self.setCompilers.popLanguage()
+    self.popLanguage()
     if not self.fortran.fortranIsF90:
       raise RuntimeError('Installing MUMPS requires a F90 compiler')
-    self.setCompilers.pushLanguage('FC')
-    g.write('FC = '+self.setCompilers.getCompiler()+'\n')
-    g.write('FL = '+self.setCompilers.getCompiler()+'\n')
-    extra_fcflags = ''
-    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker(), self.log):
-      extra_fcflags = '-dusty -dcfuns '
-    elif config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
-      extra_fcflags = '-fallow-argument-mismatch '
-    g.write('OPTF    = '+extra_fcflags+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
-    if self.blasLapack.mkl and self.blasLapack.foundversion.isdigit() and int(self.blasLapack.foundversion) >= 110300:
+    self.pushLanguage('FC')
+    g.write('FC = '+self.getCompiler()+'\n')
+    g.write('FL = '+self.getCompiler()+'\n')
+    g.write('OPTF    = '+self.updatePackageFFlags(self.getCompilerFlags())+'\n')
+    if self.blasLapack.checkForRoutine('dgemmt'):
       g.write('OPTF   += -DGEMMT_AVAILABLE \n')
     g.write('OUTF = -o \n')
-    self.setCompilers.popLanguage()
+    self.popLanguage()
 
     # set fortran name mangling
     # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
@@ -144,7 +139,7 @@ class Configure(config.package.Package):
     g.write('INCSEQ  = -I$(topdir)/libseq\n')
     g.write('LIBSEQ  =  $(LAPACK) -L$(topdir)/libseq -lmpiseq\n')
     g.write('LIBBLAS = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
-    g.write('OPTL    = '+self.setCompilers.getLinkerFlags()+'\n')
+    g.write('OPTL    = '+self.getLinkerFlags()+'\n')
     g.write('INCS = $(INCPAR)\n')
     g.write('LIBS = $(LIBPAR)\n')
     if self.argDB['with-mumps-serial']:

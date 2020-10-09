@@ -8,23 +8,28 @@ class Configure(config.package.Package):
     self.versionname       = 'CUDA_VERSION'
     self.versioninclude    = 'cuda.h'
     self.requiresversion   = 1
-    self.functions         = ['cublasInit', 'cufftDestroy','cuInit']
+    self.functions         = ['cublasInit', 'cufftDestroy']
     self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','thrust/version.h']
-    self.liblist           = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a','libcuda.a'],
-                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib','cuda.lib']]
+    self.liblist           = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a'],
+                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib']]
     self.precisions        = ['single','double']
     self.cxx               = 0
     self.complex           = 1
     self.hastests          = 0
     self.hastestsdatafiles = 0
-    self.gencodearch       = ''
     return
 
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('CUDA', '-with-cuda-gencodearch', nargs.ArgInt(None, 0, 'Cuda architecture for code generation (may be used by external packages)'))
+    help.addArgument('CUDA', '-with-cuda-gencodearch', nargs.ArgString(None, None, 'Cuda architecture for code generation, for example 70, (this may be used by external packages), use all to build a fat binary for distribution'))
     return
+
+  def __str__(self):
+    output  = config.package.Package.__str__(self)
+    if hasattr(self,'gencodearch'):
+      output += '  CUDA SM '+self.gencodearch+'\n'
+    return output
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -72,6 +77,8 @@ class Configure(config.package.Package):
         raise RuntimeError('CUDA Error: Using CUDA with PetscComplex requirs a C++ dialect at least cxx11. Use --with-cxx-dialect=xxx to specify a proper one')
       if not self.checkThrustVersion(100908):
         raise RuntimeError('CUDA Error: The thrust library is too low to support PetscComplex. Use --download-thrust or --with-thrust-dir to give a thrust >= 1.9.8')
+    if self.compilers.cxxdialect in ['C++11','C++14']: #nvcc is a C++ compiler so it is always good to add -std=xxx. It is even crucial when using thrust complex (see MR 2822)
+      self.setCompilers.CUDAFLAGS += ' -std=' + self.compilers.cxxdialect.lower()
     return
 
   def versionToStandardForm(self,ver):
@@ -98,8 +105,43 @@ class Configure(config.package.Package):
     if self.thrust.found:
       self.log.write('Overriding the thrust library in CUDAToolkit with a user-specified one\n')
       self.include = self.thrust.include+self.include
-    gencodearch = self.argDB['with-cuda-gencodearch']
-    if gencodearch:
-      self.gencodearch = str(gencodearch)
+
+    if 'with-cuda-gencodearch' in self.framework.clArgDB:
+      self.gencodearch = self.argDB['with-cuda-gencodearch']
+    else:
+      import os
+      self.pushLanguage('CUDA')
+      petscNvcc = self.getCompiler()
+      self.popLanguage()
+      self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
+      if hasattr(self,'systemNvcc'):
+        cudaDir = os.path.dirname(os.path.dirname(self.systemNvcc))
+        dq = os.path.join(cudaDir,'extras','demo_suite')
+        self.getExecutable('deviceQuery',path = dq)
+        if hasattr(self,'deviceQuery'):
+          try:
+            (out, err, ret) = Configure.executeShellCommand(self.deviceQuery + ' | grep "CUDA Capability"',timeout = 60, log = self.log, threads = 1)
+          except:
+            self.log.write('deviceQuery failed\n')
+          else:
+            try:
+              out = out.split('\n')[0]
+              sm = out[-3:]
+              self.gencodearch = str(int(10*float(sm)))
+            except:
+              self.log.write('Unable to parse CUDA capability\n')
+
+    if hasattr(self,'gencodearch'):
+      if self.gencodearch == 'all':
+        for gen in ['52','60','61','70','75']:
+          self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+gen+',code=sm_'+gen+' '
+          self.log.write(self.setCompilers.CUDAFLAGS+'\n')
+      else:
+        self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+self.gencodearch+',code=sm_'+self.gencodearch+' '
+
     self.addDefine('HAVE_CUDA','1')
+    if not self.version_tuple:
+      self.checkVersion(); # set version_tuple
+    if self.version_tuple[0] >= 11:
+      self.addDefine('HAVE_CUDA_VERSION_11PLUS','1')
     return

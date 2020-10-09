@@ -6,7 +6,7 @@ T*/
 
 /*
 This example was derived from src/ksp/ksp/tutorials ex29.c
- 
+
 Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
 
    -div \rho grad u = f,  0 < x,y < 1,
@@ -135,7 +135,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,Pe
   pi = pj = -1;
   if (_pi) {
     for (n=0; n<Mp; n++) {
-      if ( (i >= start_i[n]) && (i < start_i[n]+span_i[n]) ) {
+      if ((i >= start_i[n]) && (i < start_i[n]+span_i[n])) {
         pi = n;
         break;
       }
@@ -146,7 +146,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,Pe
 
   if (_pj) {
     for (n=0; n<Np; n++) {
-      if ( (j >= start_j[n]) && (j < start_j[n]+span_j[n]) ) {
+      if ((j >= start_j[n]) && (j < start_j[n]+span_j[n])) {
         pj = n;
         break;
       }
@@ -1145,7 +1145,7 @@ PetscErrorCode ComputeMatrix_ShellDA(KSP ksp,Mat J,Mat jac,void *ctx)
 }
 
 /*TEST
- 
+
   test:
     suffix: basic_dirichlet
     nsize: 4

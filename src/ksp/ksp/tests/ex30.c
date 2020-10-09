@@ -281,7 +281,7 @@ int main(int argc,char **args)
                          Solve system
       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /*
-     Solve linear system; 
+     Solve linear system;
     */
     if (trans) {
       ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
@@ -414,7 +414,7 @@ int main(int argc,char **args)
 
     test:
       suffix: shift_cholesky_aij
-      args: -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 
+      args: -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       output_file: output/ex30_shiftnz.out
 

@@ -2,7 +2,7 @@
 #include <petsc/private/hashmapi.h>
 #include <petsc/private/hashmapij.h>
 
-const char * const DMPlexInterpolatedFlags[] = {"none", "partial", "mixed", "full", "DMPlexInterpolatedFlag", "DMPLEX_INTERPOLATED_", 0};
+const char * const DMPlexInterpolatedFlags[] = {"none", "partial", "mixed", "full", "DMPlexInterpolatedFlag", "DMPLEX_INTERPOLATED_", NULL};
 
 /* HashIJKL */
 
@@ -1158,7 +1158,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           ierr = PetscSortSFNode(Np, (PetscSFNode *) &key);CHKERRQ(ierr);
           if (debug) {ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]    key (%D, %D) (%D, %D) (%D, %D) (%D, %D)\n", rank, key.i.rank, key.i.index, key.j.rank, key.j.index, key.k.rank, key.k.index, key.l.rank, key.l.index);CHKERRQ(ierr);}
           ierr = PetscHashIJKLRemotePut(faceTable, key, &iter, &missing);CHKERRQ(ierr);
-          if (missing) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Root %D Idx %D ought to have an assoicated face", r, idx2);
+          if (missing) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Root %D Idx %D ought to have an associated face", r, idx2);
           else        {ierr = PetscHashIJKLRemoteIterGet(faceTable, iter, &candidatesRemote[hidx]);CHKERRQ(ierr);}
         }
       }
@@ -1289,7 +1289,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   Developer Notes:
     It sets plex->interpolated = DMPLEX_INTERPOLATED_FULL.
 
-.seealso: DMPlexUninterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
+.seealso: DMPlexUninterpolate(), DMPlexCreateFromCellListPetsc(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
@@ -1497,7 +1497,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Developer Notes:
     It sets plex->interpolated = DMPLEX_INTERPOLATED_NONE.
 
-.seealso: DMPlexInterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
+.seealso: DMPlexInterpolate(), DMPlexCreateFromCellListPetsc(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
 {

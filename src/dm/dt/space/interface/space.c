@@ -271,7 +271,7 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
   if (!*sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*sp), PETSCSPACE_CLASSID, 1);
 
-  if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*sp))->refct > 0) {*sp = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*sp))->refct = 0;
   ierr = DMDestroy(&(*sp)->dm);CHKERRQ(ierr);
 

@@ -1,4 +1,3 @@
-
 static char help[] = "Tests repeated VecSetType().\n\n";
 
 #include <petscvec.h>

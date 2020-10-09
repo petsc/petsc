@@ -1274,7 +1274,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
             pv   = b->a + bdiag[row+1]+1;
             nz   = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
             for (j=0; j<nz; j++) rtmp1[pj[j]] -= mul1 * pv[j];
-            ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
+            ierr = PetscLogFlops(1+2.0*nz);CHKERRQ(ierr);
           }
           row = *bjtmp++;
         }
@@ -1358,7 +1358,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
               rtmp1[col] -= mul1 * pv[j];
               rtmp2[col] -= mul2 * pv[j];
             }
-            ierr = PetscLogFlops(2+4*nz);CHKERRQ(ierr);
+            ierr = PetscLogFlops(2+4.0*nz);CHKERRQ(ierr);
           }
           row = *bjtmp++;
         }
@@ -1399,7 +1399,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
           for (j=0; j<nz; j++) {
             col = pj[j]; rtmp2[col] -= mul1 * rtmp1[col];
           }
-          ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(1+2.0*nz);CHKERRQ(ierr);
         }
 
         /* finished row i+1; check zero pivot, then stick row i+1 into b->a */
@@ -1481,7 +1481,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
               rtmp2[col] -= mul2 * pv[j];
               rtmp3[col] -= mul3 * pv[j];
             }
-            ierr = PetscLogFlops(3+6*nz);CHKERRQ(ierr);
+            ierr = PetscLogFlops(3+6.0*nz);CHKERRQ(ierr);
           }
           row = *bjtmp++;
         }
@@ -1525,7 +1525,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
             rtmp2[col] -= mul2 * rtmp1[col];
             rtmp3[col] -= mul3 * rtmp1[col];
           }
-          ierr = PetscLogFlops(2+4*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(2+4.0*nz);CHKERRQ(ierr);
         }
 
         /* finished row i+1; check zero pivot, then stick row i+1 into b->a */
@@ -1564,7 +1564,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
             col         = pj[j];
             rtmp3[col] -= mul3 * rtmp2[col];
           }
-          ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(1+2.0*nz);CHKERRQ(ierr);
         }
 
         /* finished i+2; check zero pivot, then stick row i+2 into b->a */
@@ -1647,7 +1647,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
               rtmp3[col] -= mul3 * pv[j];
               rtmp4[col] -= mul4 * pv[j];
             }
-            ierr = PetscLogFlops(4+8*nz);CHKERRQ(ierr);
+            ierr = PetscLogFlops(4+8.0*nz);CHKERRQ(ierr);
           }
           row = *bjtmp++;
         }
@@ -1694,7 +1694,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
             rtmp3[col] -= mul3 * rtmp1[col];
             rtmp4[col] -= mul4 * rtmp1[col];
           }
-          ierr = PetscLogFlops(3+6*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(3+6.0*nz);CHKERRQ(ierr);
         }
 
         /* finished row i+1; check zero pivot, then stick row i+1 into b->a */
@@ -1736,7 +1736,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
             rtmp3[col] -= mul3 * rtmp2[col];
             rtmp4[col] -= mul4 * rtmp2[col];
           }
-          ierr = PetscLogFlops(4*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(4.0*nz);CHKERRQ(ierr);
         }
 
         /* finished i+2; check zero pivot, then stick row i+2 into b->a */
@@ -1775,7 +1775,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
             col         = pj[j];
             rtmp4[col] -= mul4 * rtmp3[col];
           }
-          ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(1+2.0*nz);CHKERRQ(ierr);
         }
 
         /* finished i+3; check zero pivot, then stick row i+3 into b->a */
@@ -1991,7 +1991,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
             mul1   = *pc1 * *pv++;
             *pc1   = mul1;
             nz_tmp = bi[prow+1] - bd[prow] - 1;
-            ierr   = PetscLogFlops(1+2*nz_tmp);CHKERRQ(ierr);
+            ierr   = PetscLogFlops(1+2.0*nz_tmp);CHKERRQ(ierr);
             for (j=0; j<nz_tmp; j++) {
               tmp          = pv[j];
               idx          = pj[j];
@@ -2057,7 +2057,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
               rtmp11[idx] -= mul1 * tmp;
               rtmp22[idx] -= mul2 * tmp;
             }
-            ierr = PetscLogFlops(2+4*nz_tmp);CHKERRQ(ierr);
+            ierr = PetscLogFlops(2+4.0*nz_tmp);CHKERRQ(ierr);
           }
           prow = *bjtmp++;
         }
@@ -2087,7 +2087,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
             tmp          = rtmp11[idx];
             rtmp22[idx] -= mul2 * tmp;
           }
-          ierr = PetscLogFlops(1+2*nz_tmp);CHKERRQ(ierr);
+          ierr = PetscLogFlops(1+2.0*nz_tmp);CHKERRQ(ierr);
         }
 
         pj  = bj + bi[row];
@@ -2160,7 +2160,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
               rtmp22[idx] -= mul2 * tmp;
               rtmp33[idx] -= mul3 * tmp;
             }
-            ierr = PetscLogFlops(3+6*nz_tmp);CHKERRQ(ierr);
+            ierr = PetscLogFlops(3+6.0*nz_tmp);CHKERRQ(ierr);
           }
           prow = *bjtmp++;
         }
@@ -2195,7 +2195,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
             rtmp22[idx] -= mul2 * tmp;
             rtmp33[idx] -= mul3 * tmp;
           }
-          ierr = PetscLogFlops(2+4*nz_tmp);CHKERRQ(ierr);
+          ierr = PetscLogFlops(2+4.0*nz_tmp);CHKERRQ(ierr);
         }
         ++prow;
 
@@ -2222,7 +2222,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
             tmp          = rtmp22[idx];
             rtmp33[idx] -= mul3 * tmp;
           }
-          ierr = PetscLogFlops(1+2*nz_tmp);CHKERRQ(ierr);
+          ierr = PetscLogFlops(1+2.0*nz_tmp);CHKERRQ(ierr);
         }
 
         pj  = bj + bi[row];
@@ -4027,7 +4027,7 @@ PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
     }
   }
-  ierr = PetscLogFlops(2*cnt);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*cnt);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4103,8 +4103,8 @@ PetscErrorCode MatSeqAIJCheckInode(Mat A)
     A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ;
     A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ;
     A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ;
-    A->ops->coloringpatch     = 0;
-    A->ops->multdiagonalblock = 0;
+    A->ops->coloringpatch     = NULL;
+    A->ops->multdiagonalblock = NULL;
 
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
@@ -4162,12 +4162,12 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
       B->ops->solve = MatSolve_SeqAIJ_Inode_inplace;
     }
   } else {
-    c->inode.size       = 0;
+    c->inode.size       = NULL;
     c->inode.node_count = 0;
   }
   c->inode.ibdiagvalid = PETSC_FALSE;
-  c->inode.ibdiag      = 0;
-  c->inode.bdiag       = 0;
+  c->inode.ibdiag      = NULL;
+  c->inode.bdiag       = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -4245,15 +4245,15 @@ PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A)
 
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
-    A->ops->mult              = 0;
-    A->ops->sor               = 0;
-    A->ops->multadd           = 0;
-    A->ops->getrowij          = 0;
-    A->ops->restorerowij      = 0;
-    A->ops->getcolumnij       = 0;
-    A->ops->restorecolumnij   = 0;
-    A->ops->coloringpatch     = 0;
-    A->ops->multdiagonalblock = 0;
+    A->ops->mult              = NULL;
+    A->ops->sor               = NULL;
+    A->ops->multadd           = NULL;
+    A->ops->getrowij          = NULL;
+    A->ops->restorerowij      = NULL;
+    A->ops->getcolumnij       = NULL;
+    A->ops->restorecolumnij   = NULL;
+    A->ops->coloringpatch     = NULL;
+    A->ops->multdiagonalblock = NULL;
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
 

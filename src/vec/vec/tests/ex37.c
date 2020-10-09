@@ -78,17 +78,17 @@ PetscErrorCode test_view(void)
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
 
   ierr = VecMax(b, &index, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-b) = %f : index = %d \n",(double) val, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-b) = %f : index = %D \n",(double) val, index);CHKERRQ(ierr);
 
   ierr = VecMin(b, &index, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-b) = %f : index = %d \n",(double) val, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-b) = %f : index = %D \n",(double) val, index);CHKERRQ(ierr);
 
   ierr = VecDestroy(&b);CHKERRQ(ierr);
 
   ierr = VecMax(X, &index, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %d \n",(double) val, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %D \n",(double) val, index);CHKERRQ(ierr);
   ierr = VecMin(X, &index, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %d \n",(double) val, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %D \n",(double) val, index);CHKERRQ(ierr);
 
   ierr = VecView(X, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -257,9 +257,9 @@ PetscErrorCode test_axpy_dot_max(void)
 
 
   ierr = VecMax(X, &index, &real);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %d \n",(double) real, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %D \n",(double) real, index);CHKERRQ(ierr);
   ierr = VecMin(X, &index, &real);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %d \n",(double) real, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %D \n",(double) real, index);CHKERRQ(ierr);
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
@@ -294,9 +294,19 @@ int main(int argc, char **args)
       nsize: 2
       args: -explicit_is 0
 
-   test:
-      suffix: 4
+   testset:
       nsize: 2
       args: -explicit_is 1
+      output_file: output/ex37_4.out
+      filter: grep -v -e "type: mpi" -e "type=mpi"
+
+      test:
+        suffix: 4
+
+      test:
+        requires: kokkos_kernels
+        suffix: kokkos
+        args: -vec_type kokkos
+
 
 TEST*/

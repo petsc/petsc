@@ -21,16 +21,16 @@ static char help[] = "Performs adjoint sensitivity analysis for the van der Pol 
    This code demonstrates the TSAdjoint interface to a DAE system.
 
    The user provides the implicit right-hand-side function
-   [ G(u',u,t) ] = [u' - f(u,t)] = [ u_1'] - [        u_2             ]
+   [ F(u',u,t) ] = [u' - f(u,t)] = [ u_1'] - [        u_2             ]
                                    [ u_2']   [ \mu ((1-u_1^2)u_2-u_1) ]
 
-   and the Jacobian of G (from the PETSc user manual)
+   and the Jacobian of F (from the PETSc user manual)
 
-              dG   dG
-   J(G) = a * -- + --
+              dF   dF
+   J(F) = a * -- + --
               du'  du
 
-   and the JacobianP of the explicit right-hand side of (2) f(u,t) ( which is equivalent to -G(0,u,t) ).
+   and the JacobianP of the explicit right-hand side of (2) f(u,t) ( which is equivalent to -F(0,u,t)).
    df   [       0               ]
    -- = [                       ]
    dp   [ (1 - u_1^2) u_2 - u_1 ].

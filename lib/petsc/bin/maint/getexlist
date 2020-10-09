@@ -184,10 +184,6 @@ sub ProcessDir
 	    # Skip current and previous directory
 	    next;
 	}
-	if ($filename eq "RCS") {
-	    # Skip RCS directories
-	    next;
-	}
 	if ($filename eq "contrib") {
 	    # Skip the contrib directories
 	    next;

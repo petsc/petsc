@@ -27,7 +27,7 @@ typedef struct _p_PetscSection *PetscSection;
 
   Level: developer
 
-.seealso: PetscSection, PetscSectionSymCreate(), PetscSectionSymDestroy(), PetscSectionSetSym(), PetscSectionGetSym(), PetscSectionSetFieldSym(), 
+.seealso: PetscSection, PetscSectionSymCreate(), PetscSectionSymDestroy(), PetscSectionSetSym(), PetscSectionGetSym(), PetscSectionSetFieldSym(),
           PetscSectionGetFieldSym(), PetscSectionGetSymPoints(), PetscSectionSymType, PetscSectionSymSetType(), PetscSectionSymGetType()
 S*/
 typedef struct _p_PetscSectionSym *PetscSectionSym;

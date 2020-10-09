@@ -225,8 +225,8 @@ PetscErrorCode read_data(PetscInt nc, Gen **pgen,Exc **pexc, Load **pload,Bus **
      }
    }
 
-   for(i = 0; i < nc; i++) {
-     for(j = 0; j < NGEN; j++) {
+   for (i = 0; i < nc; i++) {
+     for (j = 0; j < NGEN; j++) {
        /* exciter system */
        exc[i*3+j].KA = KA[j];
        exc[i*3+j].TA = TA[j];
@@ -399,19 +399,19 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
       if (key == 1) {
         bus = (Bus*)(component);
 
-	ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offset);CHKERRQ(ierr);
+        ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offset);CHKERRQ(ierr);
         xarr[offset]   = bus->vr;
         xarr[offset+1] = bus->vi;
 
         Vr = bus->vr;
         Vi = bus->vi;
-      } else if(key == 2) {
+      } else if (key == 2) {
         gen = (Gen*)(component);
-	ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offset);CHKERRQ(ierr);
+        ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offset);CHKERRQ(ierr);
         Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi);
         Vm2 = Vm*Vm;
         /* Real part of gen current */
-        IGr = (Vr*gen->PG + Vi*gen->QG)/Vm2;                                     
+        IGr = (Vr*gen->PG + Vi*gen->QG)/Vm2;
         /* Imaginary part of gen current */
         IGi = (Vi*gen->PG - Vr*gen->QG)/Vm2;
 
@@ -445,10 +445,10 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
 
         Efd = Eqp + (gen->Xd - gen->Xdp)*Id;
 
-      } else if(key == 3) {
+      } else if (key == 3) {
         exc = (Exc*)(component);
-	ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offset);CHKERRQ(ierr);
-	
+        ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offset);CHKERRQ(ierr);
+
         SE  = exc->k1*PetscExpScalar(exc->k2*Efd);
         VR  = exc->KE*Efd + SE;
         RF  = exc->KF*Efd/exc->TF;
@@ -545,7 +545,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
         const PetscInt *connedges;
 
         bus = (Bus*)(component);
-	ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetbus);CHKERRQ(ierr);
+        ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetbus);CHKERRQ(ierr);
         if (!ghostvtex) {
           Vr   = xarr[offsetbus];
           Vi   = xarr[offsetbus+1];
@@ -592,7 +592,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
           /* From bus and to bus real and imaginary voltages */
           Vfr     = xarr[offsetfrom];
           Vfi     = xarr[offsetfrom+1];
-          Vtr	  = xarr[offsetto];
+          Vtr     = xarr[offsetto];
           Vti     = xarr[offsetto+1];
 
           if (vfrom == v) {
@@ -606,13 +606,13 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
       } else if (key == 2){
         if (!ghostvtex) {
           PetscScalar    Eqp,Edp,delta,w; /* Generator variables */
-	  PetscScalar    Efd; /* Exciter field voltage */
+          PetscScalar    Efd; /* Exciter field voltage */
           PetscScalar    Id,Iq;  /* Generator dq axis currents */
           PetscScalar    IGr,IGi,Zdq_inv[4],det;
           PetscScalar    Xd,Xdp,Td0p,Xq,Xqp,Tq0p,TM,D,M,Rs; /* Generator parameters */
 
           gen = (Gen*)(component);
-	  ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetgen);CHKERRQ(ierr);
+          ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetgen);CHKERRQ(ierr);
 
           /* Generator state variables */
           Eqp   = xarr[offsetgen];
@@ -634,8 +634,8 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
           M    = gen->M;
           Rs   = gen->Rs;
 
-	  ierr = DMNetworkGetComponentVariableOffset(networkdm,v,2,&offsetexc);CHKERRQ(ierr);
-	  Efd = xarr[offsetexc];
+          ierr = DMNetworkGetComponentVariableOffset(networkdm,v,2,&offsetexc);CHKERRQ(ierr);
+          Efd = xarr[offsetexc];
 
           /* Generator differential equations */
           farr[offsetgen]   = (Eqp + (Xd - Xdp)*Id - Efd)/Td0p + xdotarr[offsetgen];
@@ -662,16 +662,16 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
           farr[offsetbus]   -= IGi;
           farr[offsetbus+1] -= IGr;
 
-	}
+        }
       } else if (key == 3) {
-	if(!ghostvtex) {
-	  PetscScalar    k1,k2,KE,TE,TF,KA,KF,Vref,TA; /* Generator parameters */
+        if (!ghostvtex) {
+          PetscScalar    k1,k2,KE,TE,TF,KA,KF,Vref,TA; /* Generator parameters */
           PetscScalar    Efd,RF,VR; /* Exciter variables */
-	  
-	  exc = (Exc*)(component);
-	  ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetexc);CHKERRQ(ierr);
 
-	  Efd   = xarr[offsetexc];
+          exc = (Exc*)(component);
+          ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetexc);CHKERRQ(ierr);
+
+          Efd   = xarr[offsetexc];
           RF    = xarr[offsetexc+1];
           VR    = xarr[offsetexc+2];
 
@@ -692,7 +692,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
           farr[offsetexc] = (KE*Efd + SE - VR)/TE + xdotarr[offsetexc];
           farr[offsetexc+1] = (RF - KF*Efd/TF)/TF + xdotarr[offsetexc+1];
           farr[offsetexc+2] = (VR - KA*RF + KA*KF*Efd/TF - KA*(Vref - Vm))/TA + xdotarr[offsetexc+2];
-	  
+
         }
       } else if (key ==4){
         if (!ghostvtex) {
@@ -716,7 +716,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
 
           Vr  = xarr[offsetbus]; /* Real part of generator terminal voltage */
           Vi  = xarr[offsetbus+1]; /* Imaginary part of the generator terminal voltage */
-          Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi); 
+          Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi);
           Vm2 = Vm*Vm;
           Vm0 = PetscSqrtScalar(Vr0*Vr0 + Vi0*Vi0);
           PD  = QD = 0.0;
@@ -727,7 +727,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
           IDr = (PD*Vr + QD*Vi)/Vm2;
           IDi = (-QD*Vr + PD*Vi)/Vm2;
 
-	  /* Load current contribution to the network */
+          /* Load current contribution to the network */
           farr[offsetbus]   += IDi;
           farr[offsetbus+1] += IDr;
         }
@@ -799,7 +799,7 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
         const PetscInt *connedges;
 
         bus = (Bus*)(component);
-	ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetbus);CHKERRQ(ierr);
+        ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetbus);CHKERRQ(ierr);
         if (!ghostvtex) {
           Vr = xarr[offsetbus];
           Vi = xarr[offsetbus+1];
@@ -859,7 +859,7 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
           PetscScalar    Xdp,Xqp,Rs;      /* Generator parameters */
 
           gen = (Gen*)(component);
-	  ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetgen);CHKERRQ(ierr);
+          ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetgen);CHKERRQ(ierr);
 
           /* Generator state variables */
           Eqp   = xarr[offsetgen];
@@ -903,14 +903,14 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
 
         }
       } else if (key == 3) {
-	if(!ghostvtex) {
-	  PetscInt offsetexc;
-	  ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetexc);CHKERRQ(ierr);
-	  /* Set exciter differential equation residual functions equal to zero*/
+        if (!ghostvtex) {
+          PetscInt offsetexc;
+          ierr = DMNetworkGetComponentVariableOffset(networkdm,v,j,&offsetexc);CHKERRQ(ierr);
+          /* Set exciter differential equation residual functions equal to zero*/
           farr[offsetexc] = 0;
           farr[offsetexc+1] = 0;
           farr[offsetexc+2] = 0;
-	}
+        }
       } else if (key == 4){
         if (!ghostvtex) {
           PetscInt    k,ld_nsegsp,ld_nsegsq;
@@ -973,11 +973,13 @@ int main(int argc,char ** argv)
   Exc            *exc;
   Load           *load;
   DM             networkdm;
+#if defined(PETSC_USE_LOG)
   PetscLogStage  stage1;
+#endif
   Userctx        user;
   KSP            ksp;
   PC             pc;
-  PetscInt       numEdges=0,numVertices=0;
+  PetscInt       numEdges = 0,numVertices = 0;
 
   ierr = PetscInitialize(&argc,&argv,"ex9busnetworkops",help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nc",&nc,NULL);CHKERRQ(ierr);
@@ -1031,10 +1033,10 @@ int main(int argc,char ** argv)
        ierr = DMNetworkSetComponentNumVariables(networkdm,i,0,2);CHKERRQ(ierr);
        if (bus[i-vStart].nofgen) {
          for (j = 0; j < bus[i-vStart].nofgen; j++) {
-	   /* Add generator */
+           /* Add generator */
            ierr = DMNetworkAddComponent(networkdm,i,componentkey[2],&gen[genj++]);CHKERRQ(ierr);
            ierr = DMNetworkSetComponentNumVariables(networkdm,i,1,6);CHKERRQ(ierr);
-	   /* Add exciter */
+           /* Add exciter */
            ierr = DMNetworkAddComponent(networkdm,i,componentkey[3],&exc[excj++]);CHKERRQ(ierr);
            ierr = DMNetworkSetComponentNumVariables(networkdm,i,2,3);CHKERRQ(ierr);
          }
@@ -1101,7 +1103,7 @@ int main(int argc,char ** argv)
   ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  /*user.alg_flg = PETSC_TRUE is the period when fault exists. We add fault admittance to Ybus matrix. 
+  /*user.alg_flg = PETSC_TRUE is the period when fault exists. We add fault admittance to Ybus matrix.
     eg, fault bus is 8. Y88(new)=Y88(old)+Yfault. */
   user.alg_flg = PETSC_FALSE;
 

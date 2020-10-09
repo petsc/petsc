@@ -1,4 +1,3 @@
-
 static char help[] = "Test PCFailedReason.\n\n";
 
 #include <petscksp.h>
@@ -27,7 +26,7 @@ int main(int argc,char **args)
   beta = 4.0;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-         Create the matrix 
+         Create the matrix
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
@@ -62,10 +61,10 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"First matrix\n");CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-  if (reason) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp() failed due to %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
-    ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
+  if (reason < 0) {
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)),PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+    ierr = KSPConvergedReasonView(ksp,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)));CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Success!\n");CHKERRQ(ierr);
   }
@@ -79,14 +78,14 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Second matrix\n");CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-  if (reason) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp() failed due to %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
-    ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
+  if (reason < 0) {
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)),PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+    ierr = KSPConvergedReasonView(ksp,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)));CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Success!\n");CHKERRQ(ierr);
     ierr = PCGetFailedReason(pc,&pcreason);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC failed reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
   }
 
   /*

@@ -7,15 +7,10 @@
 !  Processors: 1
 !T*/
 
-
-!
-! -----------------------------------------------------------------------
-
       program main
 #include <petsc/finclude/petsc.h>
       use petsc
       implicit none
-
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -42,7 +37,9 @@
       PetscScalar   pfive
       PetscReal   tol
       PetscBool   setls
+#if defined(PETSC_USE_LOG)
       PetscViewer viewer
+#endif
       double precision threshold,oldthreshold
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -75,7 +72,9 @@
       threshold = 1.0
       call PetscLogSetThreshold(threshold,oldthreshold,ierr)
 ! dummy test of logging a reduction
+#if defined(PETSC_USE_LOG)
       ierr = PetscAReduce()
+#endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'Uniprocessor example'); endif
@@ -158,6 +157,10 @@
       pfive = 0.5
       call VecSet(x,pfive,ierr)
       call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
+
+!  View solver converged reason; we could instead use the option -snes_converged_reason
+      call SNESConvergedReasonView(snes,PETSC_VIEWER_STDOUT_WORLD,ierr)
+
       call SNESGetIterationNumber(snes,its,ierr);
       if (rank .eq. 0) then
          write(6,100) its
@@ -173,10 +176,12 @@
       call VecDestroy(r,ierr)
       call MatDestroy(J,ierr)
       call SNESDestroy(snes,ierr)
+#if defined(PETSC_USE_LOG)
       call PetscViewerASCIIOpen(PETSC_COMM_WORLD,'filename.xml',viewer,ierr)
       call PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_XML,ierr)
       call PetscLogView(viewer,ierr)
       call PetscViewerDestroy(viewer,ierr)
+#endif
       call PetscFinalize(ierr)
       end
 !

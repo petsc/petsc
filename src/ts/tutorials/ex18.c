@@ -741,14 +741,14 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   if (label) {
     const PetscInt id = 1;
 
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, 1, &id, user);CHKERRQ(ierr);
   }
   ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (label && user->useFV) {
     const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
 
-    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow",  "Face Sets", 1, 0, NULL, (void (*)(void)) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", "Face Sets", 1, 0, NULL, (void (*)(void)) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow",  "Face Sets", 1, 0, NULL, (void (*)(void)) advect_inflow, NULL,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", "Face Sets", 1, 0, NULL, (void (*)(void)) advect_outflow, NULL, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

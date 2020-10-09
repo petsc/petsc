@@ -290,7 +290,7 @@
       PetscOffset     x_i
       one = 1
       two = 2
-      
+
       call VecGetArrayRead(X,x_v,x_i,ierr);CHKERRQ(ierr)
       rows(1)=0
       rows(2) = 1

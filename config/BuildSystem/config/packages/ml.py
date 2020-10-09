@@ -37,20 +37,20 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-tests')
     args.append('--enable-libcheck')
 
-    self.framework.pushLanguage('C')
-    args.append('--with-cflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+    self.pushLanguage('C')
+    args.append('--with-cflags="'+self.updatePackageCFlags(self.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.mpi.include)+'"')
-    self.framework.popLanguage()
+    self.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
-      self.framework.pushLanguage('FC')
-      args.append('--with-fflags="'+self.framework.getCompilerFlags()+' '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
-      self.framework.popLanguage()
+      self.pushLanguage('FC')
+      args.append('--with-fflags="'+self.getCompilerFlags()+' '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+      self.popLanguage()
     else:
       args.append('F77=""')
-    self.framework.pushLanguage('Cxx')
-    args.append('--with-cxxflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
-    self.framework.popLanguage()
+    self.pushLanguage('Cxx')
+    args.append('--with-cxxflags="'+self.updatePackageCxxFlags(self.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+    self.popLanguage()
 
     # ML does not have --with-mpi-include - so specify includes with cflags,fflags,cxxflags,CPPFLAGS
     args.append('--enable-mpi')

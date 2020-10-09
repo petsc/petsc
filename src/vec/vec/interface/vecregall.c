@@ -18,6 +18,11 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqCUDA(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPICUDA(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_CUDA(Vec);
 #endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+PETSC_EXTERN PetscErrorCode VecCreate_SeqKokkos(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_MPIKokkos(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_Kokkos(Vec);
+#endif
 
 /*@C
   VecRegisterAll - Registers all of the vector components in the Vec package.
@@ -52,6 +57,11 @@ PetscErrorCode VecRegisterAll(void)
   ierr = VecRegister(VECSEQCUDA,    VecCreate_SeqCUDA);CHKERRQ(ierr);
   ierr = VecRegister(VECMPICUDA,    VecCreate_MPICUDA);CHKERRQ(ierr);
   ierr = VecRegister(VECCUDA,       VecCreate_CUDA);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  ierr = VecRegister(VECSEQKOKKOS,  VecCreate_SeqKokkos);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPIKOKKOS,  VecCreate_MPIKokkos);CHKERRQ(ierr);
+  ierr = VecRegister(VECKOKKOS,     VecCreate_Kokkos);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

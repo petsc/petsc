@@ -50,7 +50,7 @@ int main(int argc,char **args)
 
   ierr = MatEqual(ABC,D,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"ABC != D");
- 
+
   ierr = MatDestroy(&ABC);CHKERRQ(ierr);
   ierr = MatDestroy(&BC);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);

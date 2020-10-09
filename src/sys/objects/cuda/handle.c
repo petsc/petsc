@@ -37,7 +37,14 @@ PetscErrorCode PetscCUBLASInitializeHandle(void)
 
   PetscFunctionBegin;
   if (!cublasv2handle) {
-    cberr = cublasCreate(&cublasv2handle);CHKERRCUBLAS(cberr);
+    for (int i=0; i<3; i++) {
+      cberr = cublasCreate(&cublasv2handle);
+      if (cberr == CUBLAS_STATUS_SUCCESS) break;
+      if (cberr != CUBLAS_STATUS_ALLOC_FAILED && cberr != CUBLAS_STATUS_NOT_INITIALIZED) CHKERRCUBLAS(cberr);
+      if (i < 2) {ierr = PetscSleep(3);CHKERRQ(ierr);}
+    }
+    if (cberr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuBLAS");
+
     /* Make sure that the handle will be destroyed properly */
     ierr = PetscRegisterFinalize(PetscCUBLASDestroyHandle);CHKERRQ(ierr);
   }
@@ -75,7 +82,13 @@ PetscErrorCode PetscCUSOLVERDnInitializeHandle(void)
 
   PetscFunctionBegin;
   if (!cusolverdnhandle) {
-    cerr = cusolverDnCreate(&cusolverdnhandle);CHKERRCUSOLVER(cerr);
+    for (int i=0; i<3; i++) {
+      cerr = cusolverDnCreate(&cusolverdnhandle);
+      if (cerr == CUSOLVER_STATUS_SUCCESS) break;
+      if (cerr != CUSOLVER_STATUS_ALLOC_FAILED) CHKERRCUSOLVER(cerr);
+      if (i < 2) {ierr = PetscSleep(3);CHKERRQ(ierr);}
+    }
+    if (cerr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuSPARSE");
     ierr = PetscRegisterFinalize(PetscCUSOLVERDnDestroyHandle);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

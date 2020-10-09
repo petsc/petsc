@@ -1,5 +1,5 @@
 !
-!  Include file for Fortran use of the SNES package in PETSc
+! Used by petscsnesmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscsnes.h"
 
@@ -106,6 +106,4 @@
       PetscEnum, parameter :: SNES_NCG_HS  = 2
       PetscEnum, parameter :: SNES_NCG_DY  = 3
       PetscEnum, parameter :: SNES_NCG_CD  = 4
-!
-!  End of Fortran include file for the SNES package in PETSc
 

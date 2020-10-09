@@ -133,6 +133,15 @@ tree_basic: ${ACTION}
 	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
 	done
 
+#This target goes through all the source directories that contains a makefile
+alltree_src: ${ACTION}
+	-@DIRS=`ls | sed -e s'?tutorials??'g -e s'?tests??g'  -e s'?docs??'g -e s'?include??'g`; \
+	for dir in $$DIRS foo ; do if [ -f $$dir/makefile ]; then \
+	(cd $$dir ; echo ${ACTION} in: `pwd`; \
+	${OMAKE}  alltree_src ACTION=${ACTION}  \
+	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
+	done
+
 #This target goes through all the dirs that contains a makefile
 alltree_makefile: ${ACTION}
 	-@DIRS=`ls`; \
@@ -207,7 +216,7 @@ getautoconfargs:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .kokkos.cxx
 
 #
 #
@@ -274,7 +283,7 @@ getautoconfargs:
 	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 
 .F.o .F90.o .F95.o:
-	${PETSC_FCOMPILE} -o $@ $<
+	${PETSC_FCOMPILE_SINGLE} `pwd`/$<
 
 .f.o .f90.o .f95.o:
 	${FC} -c ${FC_FLAGS} ${FFLAGS} -o $@ $<
@@ -284,7 +293,7 @@ getautoconfargs:
 .cpp.rm .cxx.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm .cu.rm:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 	-@${RM} *.exe *.ilk *.pdb *.tds
-.cu.PETSc .c.PETSc .cxx.PETSc:
+.cu.PETSc .kokkos.cxx.PETSc .c.PETSc .cxx.PETSc:
 	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
           grep -v "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_" | \
@@ -428,8 +437,8 @@ chk_manualpage_dir:
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
-	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/tex/doctext; export TEXTFILTER_PATH; \
+          DOCTEXT_PATH=${PETSC_DIR}/src/docs/doctext; export DOCTEXT_PATH; \
+	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/doctext; export TEXTFILTER_PATH; \
           ${DOCTEXT} -html -indexdir ../$${LMANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
 		-mpath ${LOC}/docs/manualpages/$${LMANSEC} ${SOURCED};  fi
@@ -438,10 +447,10 @@ manualpages_buildcite: chk_manualpage_dir
 manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
+          DOCTEXT_PATH=${PETSC_DIR}/src/docs/doctext; export DOCTEXT_PATH; \
 	  ${DOCTEXT} -html \
 		-mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc \
-		-defn ${PETSC_DIR}/src/docs/tex/doctext/html.def \
+		-defn ${PETSC_DIR}/src/docs/doctext/html.def \
 		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit ${SOURCED};\
 		chmod -f g+w ${LOC}/docs/manualpages/$${LMANSEC}/* ; fi
 #
@@ -557,6 +566,19 @@ checkmakefilelist:
 	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
 	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
 
+simplehtml: chk_c2html
+	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
+          loc=`pwd | sed -e s?\$${PETSC_DIR}/src?$${PETSC_DIR}/$${PETSC_ARCH}/obj?g -e s?/disks??g`;  \
+          for i in ${SOURCE} foo ; do\
+	    if [ -f $$i ]; then \
+              idir=`dirname $$i`;\
+              if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
+              ${RM} $${loc}/$$i.html; \
+              sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
+              awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' > $${loc}/$$i.html ; \
+	    fi; \
+         done
+
 html: chk_c2html
 	-@sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > /tmp/$$USER.htmlmap
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> /tmp/$$USER.htmlmap
@@ -633,73 +655,57 @@ checkbadPetscFunctionBegin:
 	${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  \
 	checkbadPetscFunctionBegin_private ; fi
 
-checkbadFileHeader:
-	-@for filename in ${SOURCEALL} makefile ${EXAMPLESC} ${EXAMPLESF}; do \
-	a=`grep 'Id:' $$filename | wc -l`; \
-	if [ $$a -ne 1 ] ; then \
-	echo "$$filename: missing RCS file header" ; \
-	fi; \
-	done
-
 checkbadSource:
 	-@${RM} -f checkbadSource.out
 	-@echo "Tabs in file -----------------------------------------" > checkbadSource.out
-	-@git --no-pager grep -l -P  '\t'  -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@git --no-pager grep -l -P  '\t'  -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
 	-@echo "White space at end of line ---------------------------" >> checkbadSource.out
-	-@git --no-pager grep -l -P ' $$' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
-#	-@echo "Space after ( ----------------------------------------" >> checkbadSource.out
-#	-@git --no-pager grep -l -P '\( ' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@git --no-pager grep -l -P ' $$' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
+	-@echo "Space after ( ----------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P '\( ' -- '*.[chF]' '*.F90' '*.cxx' | grep PetscErrorCode | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -l -P 'if \( ' -- '*.[chF]' '*.F90' '*.cxx'  | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -l -P 'for \( ' -- '*.[chF]' '*.F90' '*.cxx'  | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -l -P 'while \( ' -- '*.[chF]' '*.F90' '*.cxx'  | grep -v khash.h >> checkbadSource.out;true
 	-@echo "Space before ) ---------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -l -P ' \)' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
+	-@git --no-pager grep -l -P ' \)' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
 	-@echo "Space before CHKERRQ ---------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -l -P '; CHKERRQ' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
-	-@echo "No space after if or for -----------------------------" >> checkbadSource.out
-	-@git --no-pager grep -l -P -e 'for\(' -e 'if\(' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
-	-@echo "DOS file (with DOS newlines)--------------------------" >> checkbadSource.out
-	-@git --no-pager grep -l -P '\r' -- '*.[chF]' '*.F90' '*.cxx' >> checkbadSource.out;true
-	-@a=`cat checkbadSource.out | wc -l`; let "l=$$a-6" ;\
+	-@git --no-pager grep -l -P '; CHKERRQ\(' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
+	-@echo "No space after if, for or while -----------------------------" >> checkbadSource.out
+	-@git --no-pager grep -l -P -e '[^_]for\(' -e 'if\('  -e 'while\(' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
+	-@echo "Two ;; -----------------------------" >> checkbadSource.out
+	-@git --no-pager grep  -P -e ';;'  -- '*.[chF]' '*.F90' '*.cxx' | grep -v ' for (' | grep -v khash.h >> checkbadSource.out;true
+	-@echo "Missing if (ierr) return(ierr); -----------------------------" >> checkbadSource.out
+	-@git --no-pager grep  -P -e 'ierr = PetscInitialize\('  -- '*.[ch]' '*.cxx' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" | grep -v khash.h >> checkbadSource.out;true
+	-@echo "DOS file (with DOS newlines)--------------------------" | grep -v khash.h >> checkbadSource.out
+	-@git --no-pager grep  -l -P '\r' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
+	-@echo "{ before SETERRQ --------------------------" >> checkbadSource.out
+	-@git --no-pager grep  -l -P '{SETERRQ' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
+#	-@echo "Missing CHKERRQ  --------------------------" >> checkbadSource.out
+#	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; let "l=$$a-10" ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
+         fi;\
+         test ! $$l -gt 0
+	-@git --no-pager grep  -P  -n "[\x00-\x08\x0E-\x1F\x80-\xFF]"  -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h > badSourceChar.out;\
+         w=`cat badSourceChar.out | wc -l`;\
+         if [ $$w -gt 0 ] ; then \
+           echo "Source files with non-ASCII characters ----------------" ;\
+           cat badSourceChar.out ;\
          fi
+	@test ! -s badSourceChar.out
 
-checkTestCoverage:
-	-@for filename in ex*.c; do \
-	  if test -f $$filename; then \
-	    if ! grep run`basename $$filename .c`\: makefile 2>&1 > /dev/null; then \
-	      echo "Missing run target for `pwd`/$$filename"; \
-	    elif ! grep run`basename $$filename .c`\  makefile 2>&1 > /dev/null; then \
-	      echo "Missing test for `pwd`/$$filename"; \
-	    fi; \
-	  fi; \
-	done
-	-@for filename in ex*.f; do \
-	  if test -f $$filename; then \
-	    if ! grep run`basename $$filename .f`\: makefile 2>&1 > /dev/null; then \
-	      echo "Missing run target for `pwd`/$$filename"; \
-	    elif ! grep run`basename $$filename .f`\  makefile 2>&1 > /dev/null; then \
-	      echo "Missing test for `pwd`/$$filename"; \
-	    fi; \
-	  fi; \
-	done
-	-@for filename in ex*.F; do \
-	  if test -f $$filename; then \
-	    if ! grep run`basename $$filename .F`\: makefile 2>&1 > /dev/null; then \
-	      echo "Missing run target for `pwd`/$$filename"; \
-	    elif ! grep run`basename $$filename .F`\  makefile 2>&1 > /dev/null; then \
-	      echo "Missing test for `pwd`/$$filename"; \
-	    fi; \
-	  fi; \
-	done
-	-@for filename in ex*.f90; do \
-	  if test -f $$filename; then \
-	    if ! grep run`basename $$filename .f90`\: makefile 2>&1 > /dev/null; then \
-	      echo "Missing run target for `pwd`/$$filename"; \
-	    elif ! grep run`basename $$filename .f90`\  makefile 2>&1 > /dev/null; then \
-	      echo "Missing test for `pwd`/$$filename"; \
-	    fi; \
-	  fi; \
-	done
+# TODO: checkTestCoverage: that makes sure every tutorial test has at least one test listed in the file, perhaps handled by gmakegentest.py
+# TODO: check for PetscBeginFunctionUser in non-example source
+# TODO: check for __ at start of #define or symbol
+# TODO: checking for missing manual pages
+# TODO: check for incorrect %d
+# TODO: check for double blank lines
+# TODO: check for ill-formed manual pages
+# TODO: check for { on line after for
+# TODO: check for } then else on following line
+# TODO: check for } else { with SETERRQ on following line or if () { with SETERRQ on following line
 
 #  Lists all the URLs in the PETSc repository that are unaccessible, nonexistent, or permanently moved (301)
 #  REPLACE=1 locations marked as permanently moved (301) are replaced in the repository

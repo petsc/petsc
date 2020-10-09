@@ -42,7 +42,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm,PetscIn
   } else {
     ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
   }
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(mat,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(mat,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   aij  = (Mat_SeqAIJ*)(mat)->data;
   ierr = PetscMalloc1(m,&aij->imax);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&aij->ilen);CHKERRQ(ierr);

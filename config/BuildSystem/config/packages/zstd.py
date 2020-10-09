@@ -25,8 +25,8 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     with self.Language('C'):
-      cc = self.setCompilers.getCompiler()
-      cflags = self.setCompilers.getCompilerFlags()
+      cc = self.getCompiler()
+      cflags = self.getCompilerFlags()
     try:
       self.logPrintBox('Installing zstd; this may take several minutes')
       output,err,ret  = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['CC='+cc, 'CFLAGS='+cflags, 'PREFIX='+self.installDir, 'install'], cwd=self.packageDir, timeout=250, log=self.log)

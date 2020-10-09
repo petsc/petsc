@@ -72,7 +72,7 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
   if (is) {
     ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
     if (data->is) { /* new overlap definition resets the PC */
-      ierr = PCReset_HPDDM(pc);
+      ierr = PCReset_HPDDM(pc);CHKERRQ(ierr);
       pc->setfromoptionscalled = 0;
     }
     ierr = ISDestroy(&data->is);CHKERRQ(ierr);
@@ -368,7 +368,7 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
         if (data->levels[i]->ksp) color = 1;
         else color = 0;
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRQ(ierr);
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &rank);CHKERRQ(ierr);
+        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank);CHKERRQ(ierr);
         ierr = PetscSubcommCreate(PetscObjectComm((PetscObject)pc), &subcomm);CHKERRQ(ierr);
         ierr = PetscSubcommSetNumber(subcomm, PetscMin(size, 2));CHKERRQ(ierr);
         ierr = PetscSubcommSetTypeGeneral(subcomm, color, rank);CHKERRQ(ierr);
@@ -430,9 +430,9 @@ PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y)
   /* going from PETSc to HPDDM numbering */
   ierr = VecScatterBegin(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGetArray(ctx->v[0][0], &out);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(ctx->v[0][0], &out);CHKERRQ(ierr);
   ctx->P->deflation<false>(NULL, out, 1); /* y = Q x */
-  ierr = VecRestoreArray(ctx->v[0][0], &out);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(ctx->v[0][0], &out);CHKERRQ(ierr);
   /* going from HPDDM to PETSc numbering */
   ierr = VecScatterBegin(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
@@ -666,7 +666,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_%s_", pcpre ? pcpre : "", data->N > 1 ? "levels_1" : "coarse");CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(data->levels[0]->ksp, prefix);CHKERRQ(ierr);
     ierr = KSPSetType(data->levels[0]->ksp, KSPPREONLY);CHKERRQ(ierr);
-  } else if(data->levels[0]->ksp->pc && data->levels[0]->ksp->pc->setupcalled == 1 && data->levels[0]->ksp->pc->reusepreconditioner) {
+  } else if (data->levels[0]->ksp->pc && data->levels[0]->ksp->pc->setupcalled == 1 && data->levels[0]->ksp->pc->reusepreconditioner) {
     /* if the fine level PCSHELL exists, its setup has succeeded, and one wants to reuse it, */
     /* then just propagate the appropriate flag to the coarser levels                        */
     for (n = 0; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
@@ -683,7 +683,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   } else {
     /* reset coarser levels */
     for (n = 1; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
-      if(data->levels[n]->ksp && data->levels[n]->ksp->pc && data->levels[n]->ksp->pc->setupcalled == 1 && data->levels[n]->ksp->pc->reusepreconditioner && n < data->N) {
+      if (data->levels[n]->ksp && data->levels[n]->ksp->pc && data->levels[n]->ksp->pc->setupcalled == 1 && data->levels[n]->ksp->pc->reusepreconditioner && n < data->N) {
         reused = data->N - n;
         break;
       }
@@ -1022,11 +1022,11 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found) {
 
    This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral AMGe or PCBDDC with adaptive selection of constraints. A chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM may be found below.
 
-   The matrix to be preconditioned (Pmat) may be unassembled (MATIS) or assembled (MATMPIAIJ, MATMPIBAIJ, or MATMPISBAIJ). For multilevel preconditioning, when using an assembled Pmat, one must provide an auxiliary local Mat (unassembled local operator for GenEO) using PCHPDDMSetAuxiliaryMat. Calling this routine is not needed when using a MATIS Pmat (assembly done internally using MatConvert).
+   The matrix to be preconditioned (Pmat) may be unassembled (MATIS) or assembled (MATMPIAIJ, MATMPIBAIJ, or MATMPISBAIJ). For multilevel preconditioning, when using an assembled Pmat, one must provide an auxiliary local Mat (unassembled local operator for GenEO) using PCHPDDMSetAuxiliaryMat(). Calling this routine is not needed when using a MATIS Pmat (assembly done internally using MatConvert).
 
    Options Database Keys:
-+   -pc_hpddm_define_subdomains <true, default=false> - on the finest level, calls PCASMSetLocalSubdomains with the IS supplied in PCHPDDMSetAuxiliaryMat (only relevant with an assembled Pmat)
-.   -pc_hpddm_has_neumann <true, default=false> - on the finest level, informs the PC that the local Neumann matrix is supplied in PCHPDDMSetAuxiliaryMat 
++   -pc_hpddm_define_subdomains <true, default=false> - on the finest level, calls PCASMSetLocalSubdomains() with the IS supplied in PCHPDDMSetAuxiliaryMat() (only relevant with an assembled Pmat)
+.   -pc_hpddm_has_neumann <true, default=false> - on the finest level, informs the PC that the local Neumann matrix is supplied in PCHPDDMSetAuxiliaryMat()
 -   -pc_hpddm_coarse_correction <type, default=deflated> - determines the PCHPDDMCoarseCorrectionType when calling PCApply
 
    Options for subdomain solvers, subdomain eigensolvers (for computing deflation vectors), and the coarse solver can be set with

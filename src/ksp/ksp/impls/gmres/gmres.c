@@ -114,17 +114,26 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
 PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)(ksp->data);
-  PetscReal      res_norm,res,hapbnd,tt;
+  PetscReal      res,hapbnd,tt;
   PetscErrorCode ierr;
   PetscInt       it     = 0, max_k = gmres->max_k;
   PetscBool      hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (itcount) *itcount = 0;
-  ierr    = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
-  KSPCheckNorm(ksp,res_norm);
-  res     = res_norm;
-  *GRS(0) = res_norm;
+  ierr    = VecNormalize(VEC_VV(0),&res);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,res);
+
+  /* the constant .1 is arbitrary, just some measure at how incorrect the residuals are */
+  if ((ksp->rnorm > 0.0) && (PetscAbsReal(res-ksp->rnorm) > .1*gmres->rnorm0)) {
+      if (ksp->errorifnotconverged) SETERRQ3(PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0);
+      else {
+        ierr = PetscInfo3(ksp,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0);
+        ksp->reason =  KSP_DIVERGED_BREAKDOWN;
+        PetscFunctionReturn(0);
+      }
+  }
+  *GRS(0) = gmres->rnorm0 = res;
 
   /* check for the convergence */
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
@@ -220,7 +229,6 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   KSP_GMRES      *gmres     = (KSP_GMRES*)ksp->data;
   PetscBool      guess_zero = ksp->guess_zero;
   PetscInt       N = gmres->max_k + 1;
-  PetscBLASInt   bN;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !gmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
@@ -232,6 +240,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   itcount     = 0;
   gmres->fullcycle = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
+  ksp->rnorm  = -1.0; /* special marker for KSPGMRESCycle() */
   while (!ksp->reason) {
     ierr     = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
     ierr     = KSPGMRESCycle(&its,ksp);CHKERRQ(ierr);
@@ -245,8 +254,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
           ierr = PetscLogObjectMemory((PetscObject)ksp,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = VecDuplicateVecs(VEC_VV(0),N,&gmres->vecb);CHKERRQ(ierr);
         }
-        ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
-        ierr = PetscArraycpy(gmres->hes_ritz,gmres->hes_origin,bN*bN);CHKERRQ(ierr);
+        ierr = PetscArraycpy(gmres->hes_ritz,gmres->hes_origin,N*N);CHKERRQ(ierr);
         for (i=0; i<gmres->max_k+1; i++) {
           ierr = VecCopy(VEC_VV(i),gmres->vecb[i]);CHKERRQ(ierr);
         }

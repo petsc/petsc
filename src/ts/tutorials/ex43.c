@@ -8,35 +8,28 @@ typedef struct {
   PetscReal u0,v0;   /* initial conditions */
 } UserParams;
 
-static void Exact(PetscReal t,
-                  PetscReal omega,PetscReal xi,PetscReal u0,PetscReal v0,
-                  PetscReal *ut,PetscReal *vt)
+static void Exact(PetscReal t,PetscReal omega,PetscReal xi,PetscReal u0,PetscReal v0,PetscReal *ut,PetscReal *vt)
 {
-#define Sin  PetscSinReal
-#define Cos  PetscCosReal
-#define Exp  PetscExpReal
-#define Sqrt PetscSqrtReal
   PetscReal u,v;
   if (xi < 1) {
     PetscReal a  = xi*omega;
-    PetscReal w  = Sqrt(1-xi*xi)*omega;
+    PetscReal w  = PetscSqrtReal(1-xi*xi)*omega;
     PetscReal C1 = (v0 + a*u0)/w;
     PetscReal C2 = u0;
-    u = Exp(-a*t) * (C1*Sin(w*t) + C2*Cos(w*t));
-    v = (- a * Exp(-a*t) * (C1*Sin(w*t) + C2*Cos(w*t))
-         + w * Exp(-a*t) * (C1*Cos(w*t) - C2*Sin(w*t)));
+    u = PetscExpReal(-a*t) * (C1*PetscSinReal(w*t) + C2*PetscCosReal(w*t));
+    v = (- a * PetscExpReal(-a*t) * (C1*PetscSinReal(w*t) + C2*PetscCosReal(w*t)) + w * PetscExpReal(-a*t) * (C1*PetscCosReal(w*t) - C2*PetscSinReal(w*t)));
   } else if (xi > 1) {
-    PetscReal w  = Sqrt(xi*xi-1)*omega;
+    PetscReal w  = PetscSqrtReal(xi*xi-1)*omega;
     PetscReal C1 = (w*u0 + xi*u0 + v0)/(2*w);
     PetscReal C2 = (w*u0 - xi*u0 - v0)/(2*w);
-    u = C1*Exp((-xi+w)*t) + C2*Exp((-xi-w)*t);
-    v = C1*(-xi+w)*Exp((-xi+w)*t) + C2*(-xi-w)*Exp((-xi-w)*t);
+    u = C1*PetscExpReal((-xi+w)*t) + C2*PetscExpReal((-xi-w)*t);
+    v = C1*(-xi+w)*PetscExpReal((-xi+w)*t) + C2*(-xi-w)*PetscExpReal((-xi-w)*t);
   } else {
     PetscReal a  = xi*omega;
     PetscReal C1 = v0 + a*u0;
     PetscReal C2 = u0;
-    u = (C1*t + C2) * Exp(-a*t);
-    v = (C1 - a*(C1*t + C2)) * Exp(-a*t);
+    u = (C1*t + C2) * PetscExpReal(-a*t);
+    v = (C1 - a*(C1*t + C2)) * PetscExpReal(-a*t);
   }
   if (ut) *ut = u;
   if (vt) *vt = v;
@@ -68,13 +61,13 @@ PetscErrorCode Residual1(TS ts,PetscReal t,Vec U,Vec A,Vec R,void *ctx)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecGetArray(R,&r);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(R,&r);CHKERRQ(ierr);
 
   r[0] = a[0] + (Omega*Omega)*u[0];
 
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(R,&r);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(R);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -113,16 +106,16 @@ PetscErrorCode Residual2(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec R,void *ctx)
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
   ierr = VecGetArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecGetArray(R,&r);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(R,&r);CHKERRQ(ierr);
 
   r[0] = a[0] + (2*Xi*Omega)*v[0] + (Omega*Omega)*u[0];
 
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(R,&r);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(R);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd  (R);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -192,12 +185,12 @@ int main(int argc, char *argv[])
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,1,&U);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,1,&V);CHKERRQ(ierr);
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(V,&v);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(V,&v);CHKERRQ(ierr);
   u[0] = user.u0;
   v[0] = user.v0;
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(V,&v);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(V,&v);CHKERRQ(ierr);
 
   ierr = TS2SetSolution(ts,U,V);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

@@ -413,7 +413,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
   const PetscInt          *garray,*ndmapi;
   PetscInt                bs,i,cnt,nl,*ncount,*ndmapc;
   PetscBool               ismpiaij,ismpibaij;
-  const char *const       MatISDisassemblel2gTypes[] = {"NATURAL","MAT","ND","MatISDisassemblel2gType","MAT_IS_DISASSEMBLE_L2G_",0};
+  const char *const       MatISDisassemblel2gTypes[] = {"NATURAL","MAT","ND","MatISDisassemblel2gType","MAT_IS_DISASSEMBLE_L2G_",NULL};
   MatISDisassemblel2gType mode = MAT_IS_DISASSEMBLE_L2G_NATURAL;
   MatPartitioning         part;
   PetscSF                 sf;
@@ -1795,7 +1795,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
       for (j=0;j<ii[i+1]-ii[i];j++,jptr++) {
         PetscInt owner = row_ownership[index_row];
         PetscInt index_col = global_indices_c[*jptr];
-        if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1] ) { /* diag block */
+        if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1]) { /* diag block */
           my_dnz[i] += 1;
         } else { /* offdiag block */
           my_onz[i] += 1;
@@ -1803,7 +1803,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
         /* same as before, interchanging rows and cols */
         if (issbaij && index_col != index_row) {
           owner = row_ownership[index_col];
-          if (index_row > mat_ranges[owner]-1 && index_row < mat_ranges[owner+1] ) {
+          if (index_row > mat_ranges[owner]-1 && index_row < mat_ranges[owner+1]) {
             my_dnz[*jptr] += 1;
           } else {
             my_onz[*jptr] += 1;
@@ -1821,7 +1821,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
       for (j=0;j<ncols;j++) {
         PetscInt owner = row_ownership[index_row];
         PetscInt index_col = global_indices_c[cols[j]];
-        if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1] ) { /* diag block */
+        if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1]) { /* diag block */
           my_dnz[i] += 1;
         } else { /* offdiag block */
           my_onz[i] += 1;
@@ -1829,7 +1829,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
         /* same as before, interchanging rows and cols */
         if (issbaij && index_col != index_row) {
           owner = row_ownership[index_col];
-          if (index_row > mat_ranges[owner]-1 && index_row < mat_ranges[owner+1] ) {
+          if (index_row > mat_ranges[owner]-1 && index_row < mat_ranges[owner+1]) {
             my_dnz[cols[j]] += 1;
           } else {
             my_onz[cols[j]] += 1;
@@ -2224,7 +2224,7 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   ierr = PetscSFDestroy(&b->sf);CHKERRQ(ierr);
   ierr = PetscFree2(b->sf_rootdata,b->sf_leafdata);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMatType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",NULL);CHKERRQ(ierr);
@@ -2606,9 +2606,9 @@ static PetscErrorCode MatISZeroRowsColumnsLocal_Private(Mat A,PetscInt n,const P
     is->pure_neumann = PETSC_FALSE;
 
     if (columns) {
-      ierr = MatZeroRowsColumns(is->A,n,rows,diag,0,0);CHKERRQ(ierr);
+      ierr = MatZeroRowsColumns(is->A,n,rows,diag,NULL,NULL);CHKERRQ(ierr);
     } else {
-      ierr = MatZeroRows(is->A,n,rows,diag,0,0);CHKERRQ(ierr);
+      ierr = MatZeroRows(is->A,n,rows,diag,NULL,NULL);CHKERRQ(ierr);
     }
     if (diag != 0.) {
       const PetscScalar *array;

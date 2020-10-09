@@ -483,7 +483,8 @@ int checkInit(void) {
       if executor and str(e).find('Runaway process exceeded time limit') > -1:
         raise RuntimeError('Timeout: Unable to run MPI program with '+executor+'\n\
     (1) make sure this is the correct program to run MPI jobs\n\
-    (2) your network may be misconfigured; see https://www.mcs.anl.gov/petsc/documentation/faq.html#PetscOptionsInsertFile\n')
+    (2) your network may be misconfigured; see https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-network-misconfigure\n\
+    (3) you may have VPN running whose network settings may not play nice with MPI\n')
 
     self.setCompilers.LIBS = oldLibs
     if os.path.isfile(lib1Name) and self.framework.doCleanup: os.remove(lib1Name)

@@ -1,7 +1,7 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
 
 /*
-  Limited-memory Symmetric Broyden method for approximating both 
+  Limited-memory Symmetric Broyden method for approximating both
   the forward product and inverse application of a Jacobian.
 */
 

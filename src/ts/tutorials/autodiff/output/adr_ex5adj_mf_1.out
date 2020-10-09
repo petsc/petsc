@@ -5,4 +5,8 @@
       O(1.e-8), the hand-coded Jacobian is probably correct.
     ||J - Jfd||_F/||J||_F = 1.32937e-08, ||J - Jfd||_F = 9.15765e-07
     ---------- Testing Jacobian -------------
-    ||J - Jfd||_F/||J||_F = 1.32606e-08, ||J - Jfd||_F = 9.13489e-07
+    ||J - Jfd||_F/||J||_F = 1.32606e-08, ||J - Jfd||_F = 9.1349e-07
+    ---------- Testing Jacobian -------------
+    ||J - Jfd||_F/||J||_F = 1.32462e-08, ||J - Jfd||_F = 9.12495e-07
+    ---------- Testing Jacobian -------------
+    ||J - Jfd||_F/||J||_F = 4.53272e-05, ||J - Jfd||_F = 0.00303152

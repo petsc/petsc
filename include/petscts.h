@@ -45,6 +45,8 @@ typedef const char* TSType;
 #define TSBDF             "bdf"
 #define TSRADAU5          "radau5"
 #define TSMPRK            "mprk"
+#define TSDISCGRAD        "discgrad"
+
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -623,6 +625,17 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGSNESIterations(TS,PetscInt,PetscReal,Vec,
 PETSC_EXTERN PetscErrorCode TSMonitorLGKSPIterations(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorError(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat *);
 
+struct _n_TSMonitorLGCtxNetwork {
+  PetscInt       nlg;
+  PetscDrawLG    *lg;
+  PetscBool      semilogy;
+  PetscInt       howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+};
+typedef struct _n_TSMonitorLGCtxNetwork*  TSMonitorLGCtxNetwork;
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkCreate(TS,const char[],const char[],int,int,int,int,PetscInt,TSMonitorLGCtxNetwork*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxNetworkSolution(TS,PetscInt,PetscReal,Vec,void*);
+
 typedef struct _n_TSMonitorEnvelopeCtx*  TSMonitorEnvelopeCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorEnvelopeCtxCreate(TS,TSMonitorEnvelopeCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorEnvelope(TS,PetscInt,PetscReal,Vec,void*);
@@ -971,6 +984,8 @@ PETSC_EXTERN PetscErrorCode TSBasicSymplecticInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
 
+PETSC_EXTERN PetscErrorCode TSDiscGradSetFormulation(TS, PetscErrorCode(*)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(*)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(*)(TS, PetscReal, Vec, Vec, void *), void *);
+
 /*
        PETSc interface to Sundials
 */
@@ -988,7 +1003,7 @@ PETSC_EXTERN PetscErrorCode TSSundialsGetIterations(TS,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode TSSundialsSetGramSchmidtType(TS,TSSundialsGramSchmidtType);
 PETSC_EXTERN PetscErrorCode TSSundialsSetGMRESRestart(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSundialsSetLinearTolerance(TS,PetscReal);
-PETSC_EXTERN PetscErrorCode TSSundialsMonitorInternalSteps(TS,PetscBool );
+PETSC_EXTERN PetscErrorCode TSSundialsMonitorInternalSteps(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
 PETSC_EXTERN PetscErrorCode TSSundialsSetMaxl(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSundialsSetMaxord(TS,PetscInt);
@@ -1022,5 +1037,5 @@ PETSC_EXTERN PetscErrorCode TSComputeInitialCondition(TS, Vec);
 PETSC_EXTERN PetscErrorCode TSGetComputeExactError(TS, PetscErrorCode (**)(TS, Vec, Vec));
 PETSC_EXTERN PetscErrorCode TSSetComputeExactError(TS, PetscErrorCode (*)(TS, Vec, Vec));
 PETSC_EXTERN PetscErrorCode TSComputeExactError(TS, Vec, Vec);
-PETSC_EXTERN PetscErrorCode PetscConvEstUseTS(PetscConvEst);
+PETSC_EXTERN PetscErrorCode PetscConvEstUseTS(PetscConvEst, PetscBool);
 #endif

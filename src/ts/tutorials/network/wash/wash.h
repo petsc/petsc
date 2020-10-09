@@ -21,7 +21,7 @@ typedef struct {
 /* junction              */
 /*-----------------------*/
 struct _p_Junction{
-  PetscInt	id;        /* global index */
+  PetscInt      id;        /* global index */
   PetscInt      tag;       /* external id */
   VertexType    type;
   PetscInt      isEnd;                /* -1: left end; 0: not an end; 1: right end */
@@ -32,7 +32,7 @@ struct _p_Junction{
   /* boundary data structures */
   Reservoir     reservoir;
   Valve         valve;
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 typedef struct _p_Junction *Junction;
 
 extern PetscErrorCode JunctionCreateJacobian(DM,PetscInt,Mat*,Mat*[]);
@@ -59,7 +59,7 @@ struct _p_Wash
 
   /* Events */
   PetscInt    close_valve;
-} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 typedef struct _p_Wash *Wash;
 
 extern PetscErrorCode WashNetworkCreate(MPI_Comm,PetscInt,Wash*);

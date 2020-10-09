@@ -1131,6 +1131,42 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_EXODUSII)
+static PetscErrorCode ExodusGetCellType_Private(const char *elem_type, DMPolytopeType *ct)
+{
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *ct = DM_POLYTOPE_UNKNOWN;
+  ierr = PetscStrcmp(elem_type, "TRI", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_TRIANGLE; goto done;}
+  ierr = PetscStrcmp(elem_type, "TRI3", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_TRIANGLE; goto done;}
+  ierr = PetscStrcmp(elem_type, "QUAD", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_QUADRILATERAL; goto done;}
+  ierr = PetscStrcmp(elem_type, "QUAD4", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_QUADRILATERAL; goto done;}
+  ierr = PetscStrcmp(elem_type, "SHELL4", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_QUADRILATERAL; goto done;}
+  ierr = PetscStrcmp(elem_type, "TETRA", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_TETRAHEDRON; goto done;}
+  ierr = PetscStrcmp(elem_type, "TET4", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_TETRAHEDRON; goto done;}
+  ierr = PetscStrcmp(elem_type, "WEDGE", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_TRI_PRISM; goto done;}
+  ierr = PetscStrcmp(elem_type, "HEX", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_HEXAHEDRON; goto done;}
+  ierr = PetscStrcmp(elem_type, "HEX8", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_HEXAHEDRON; goto done;}
+  ierr = PetscStrcmp(elem_type, "HEXAHEDRON", &flg);CHKERRQ(ierr);
+  if (flg) {*ct = DM_POLYTOPE_HEXAHEDRON; goto done;}
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized element type %s", elem_type);
+  done:
+  PetscFunctionReturn(0);
+}
+#endif
+
 /*@
   DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file ID.
 
@@ -1159,7 +1195,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   PetscErrorCode ierr;
   /* Read from ex_get_init() */
   char title[PETSC_MAX_PATH_LEN+1];
-  int  dim    = 0, numVertices = 0, numCells = 0, numHybridCells = 0;
+  int  dim    = 0, dimEmbed = 0, numVertices = 0, numCells = 0, numHybridCells = 0;
   int  num_cs = 0, num_vs = 0, num_fs = 0;
 #endif
 
@@ -1172,13 +1208,12 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   /* Open EXODUS II file and read basic informations on rank 0, then broadcast to all processors */
   if (!rank) {
     ierr = PetscMemzero(title,PETSC_MAX_PATH_LEN+1);CHKERRQ(ierr);
-    PetscStackCallStandard(ex_get_init,(exoid, title, &dim, &numVertices, &numCells, &num_cs, &num_vs, &num_fs));
+    PetscStackCallStandard(ex_get_init,(exoid, title, &dimEmbed, &numVertices, &numCells, &num_cs, &num_vs, &num_fs));
     if (!num_cs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
   }
   ierr = MPI_Bcast(title, PETSC_MAX_PATH_LEN+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&dim, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, title);CHKERRQ(ierr);
-  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
   /*   We do not want this label automatically computed, instead we compute it here */
   ierr = DMCreateLabel(*dm, "celltype");CHKERRQ(ierr);
@@ -1202,39 +1237,38 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
        EXO standard requires that cells in cell sets be numbered sequentially and be pairwise disjoint. */
     /* Check for a hybrid mesh */
     for (cs = 0, num_hybrid = 0; cs < num_cs; ++cs) {
+      DMPolytopeType ct;
+      char           elem_type[PETSC_MAX_PATH_LEN];
+
+      ierr = PetscArrayzero(elem_type, sizeof(elem_type));CHKERRQ(ierr);
+      PetscStackCallStandard(ex_get_elem_type,(exoid, cs_id[cs], elem_type));
+      ierr = ExodusGetCellType_Private(elem_type, &ct);CHKERRQ(ierr);
+      dim  = PetscMax(dim, DMPolytopeTypeGetDim(ct));
       PetscStackCallStandard(ex_get_block,(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set,&num_vertex_per_cell, 0, 0, &num_attr));
-      switch (dim) {
-        case 3:
-        switch (num_vertex_per_cell) {
-          case 6:
-            cs_order[cs] = cs;
-            numHybridCells += num_cell_in_set;
-            ++num_hybrid;
+      switch (ct) {
+        case DM_POLYTOPE_TRI_PRISM:
+          cs_order[cs] = cs;
+          numHybridCells += num_cell_in_set;
+          ++num_hybrid;
           break;
-          default:
-            for (c = cs; c > cs-num_hybrid; --c) cs_order[c] = cs_order[c-1];
-            cs_order[cs-num_hybrid] = cs;
-        }
-        break;
-      default:
-        for (c = cs; c > cs-num_hybrid; --c) cs_order[c] = cs_order[c-1];
-        cs_order[cs-num_hybrid] = cs;
+        default:
+          for (c = cs; c > cs-num_hybrid; --c) cs_order[c] = cs_order[c-1];
+          cs_order[cs-num_hybrid] = cs;
       }
     }
     /* First set sizes */
     for (ncs = 0, c = 0; ncs < num_cs; ++ncs) {
+      DMPolytopeType ct;
+      char           elem_type[PETSC_MAX_PATH_LEN];
       const PetscInt cs = cs_order[ncs];
+
+      ierr = PetscArrayzero(elem_type, sizeof(elem_type));CHKERRQ(ierr);
+      PetscStackCallStandard(ex_get_elem_type,(exoid, cs_id[cs], elem_type));
+      ierr = ExodusGetCellType_Private(elem_type, &ct);CHKERRQ(ierr);
       PetscStackCallStandard(ex_get_block,(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set,&num_vertex_per_cell, 0, 0, &num_attr));
       for (c_loc = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         ierr = DMPlexSetConeSize(*dm, c, num_vertex_per_cell);CHKERRQ(ierr);
-        if (c >= numCells-numHybridCells) {
-          ierr = DMPlexSetCellType(*dm, c, DM_POLYTOPE_TRI_PRISM);CHKERRQ(ierr);
-        } else {
-          DMPolytopeType ct;
-
-          ierr = DMPlexComputeCellType_Internal(*dm, c, 1, &ct);CHKERRQ(ierr);
-          ierr = DMPlexSetCellType(*dm, c, ct);CHKERRQ(ierr);
-        }
+        ierr = DMPlexSetCellType(*dm, c, ct);CHKERRQ(ierr);
       }
     }
     for (v = numCells; v < numCells+numVertices; ++v) {ierr = DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT);CHKERRQ(ierr);}
@@ -1259,6 +1293,15 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       ierr = PetscFree2(cs_connect,cone);CHKERRQ(ierr);
     }
     ierr = PetscFree2(cs_id, cs_order);CHKERRQ(ierr);
+  }
+  {
+    PetscInt ints[] = {dim, dimEmbed};
+
+    ierr = MPI_Bcast(ints, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    ierr = DMSetDimension(*dm, ints[0]);CHKERRQ(ierr);
+    ierr = DMSetCoordinateDim(*dm, ints[1]);CHKERRQ(ierr);
+    dim      = ints[0];
+    dimEmbed = ints[1];
   }
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
@@ -1297,18 +1340,18 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   /* Read coordinates */
   ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, dimEmbed);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
   for (v = numCells; v < numCells+numVertices; ++v) {
-    ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(coordSection, v, 0, dim);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(coordSection, v, dimEmbed);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, dimEmbed);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, dimEmbed);CHKERRQ(ierr);
   ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (!rank) {
@@ -1316,14 +1359,14 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
     ierr = PetscMalloc3(numVertices,&x,numVertices,&y,numVertices,&z);CHKERRQ(ierr);
     PetscStackCallStandard(ex_get_coord,(exoid, x, y, z));
-    if (dim > 0) {
-      for (v = 0; v < numVertices; ++v) coords[v*dim+0] = x[v];
+    if (dimEmbed > 0) {
+      for (v = 0; v < numVertices; ++v) coords[v*dimEmbed+0] = x[v];
     }
-    if (dim > 1) {
-      for (v = 0; v < numVertices; ++v) coords[v*dim+1] = y[v];
+    if (dimEmbed > 1) {
+      for (v = 0; v < numVertices; ++v) coords[v*dimEmbed+1] = y[v];
     }
-    if (dim > 2) {
-      for (v = 0; v < numVertices; ++v) coords[v*dim+2] = z[v];
+    if (dimEmbed > 2) {
+      for (v = 0; v < numVertices; ++v) coords[v*dimEmbed+2] = z[v];
     }
     ierr = PetscFree3(x,y,z);CHKERRQ(ierr);
   }

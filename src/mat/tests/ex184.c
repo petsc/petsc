@@ -36,7 +36,7 @@ int main(int argc, char **args)
     ierr = MatSetUp(A);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(m/bs,&dnnz);CHKERRQ(ierr);
-    for(j = 0; j < m/bs; j++) {
+    for (j = 0; j < m/bs; j++) {
         dnnz[j] = 1;
     }
     ierr = MatXAIJSetPreallocation(A,bs,dnnz,NULL,NULL,NULL);CHKERRQ(ierr);

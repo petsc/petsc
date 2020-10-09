@@ -308,7 +308,7 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 + x - new solution
 . f - objective function value at x
 . g - gradient vector at x
-. steplength - scalar multiplier of s used ( x = x0 + steplength * x )
+. steplength - scalar multiplier of s used ( x = x0 + steplength * x)
 - reason - reason why the line-search stopped
 
   reason will be set to one of:
@@ -423,19 +423,17 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
 
    Input Parameters:
 +  ls - the TaoLineSearch context
--  type - a known method
+-  type - the TaoLineSearchType selection
 
   Available methods include:
-+ more-thuente
-. gpcg
-- unit - Do not perform any line search
-
++  more-thuente - line search with a cubic model enforcing the strong Wolfe/curvature condition
+.  armijo - simple backtracking line search enforcing only the sufficient decrease condition
+-  unit - do not perform a line search and always accept unit step length
 
   Options Database Keys:
-.   -tao_ls_type - select which method TAO should use
+.  -tao_ls_type <more-thuente, armijo, unit> - select which method TAO should use at runtime
 
   Level: beginner
-
 
 .seealso: TaoLineSearchCreate(), TaoLineSearchGetType(), TaoLineSearchApply()
 
@@ -485,7 +483,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
 
 /*@C
   TaoLineSearchMonitor - Monitor the line search steps. This routine will otuput the
-  iteration number, step length, and function value before calling the implementation 
+  iteration number, step length, and function value before calling the implementation
   specific monitor.
 
    Input Parameters:

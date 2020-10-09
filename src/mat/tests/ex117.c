@@ -23,7 +23,7 @@ int main(int argc,char **args)
 
   nnz[0]=2;nnz[1]=1;nnz[2]=1;
   ierr   = MatCreateSeqSBAIJ(PETSC_COMM_SELF,2,6,6,0,nnz,&mat);CHKERRQ(ierr);
-  
+
   ind1[0]=0;ind1[1]=1;
   temp[0]=3;temp[1]=2;temp[2]=0;temp[3]=3;
   ierr   = MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES);CHKERRQ(ierr);

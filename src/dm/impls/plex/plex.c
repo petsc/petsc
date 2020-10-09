@@ -8,7 +8,7 @@
 #include <petscdmfield.h>
 
 /* Logging support */
-PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Symmetrize, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh, DMPLEX_RebalanceSharedPoints, DMPLEX_PartSelf, DMPLEX_PartLabelInvert, DMPLEX_PartLabelCreateSF, DMPLEX_PartStratSF, DMPLEX_CreatePointSF;
+PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Symmetrize, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh, DMPLEX_RebalanceSharedPoints, DMPLEX_PartSelf, DMPLEX_PartLabelInvert, DMPLEX_PartLabelCreateSF, DMPLEX_PartStratSF, DMPLEX_CreatePointSF,DMPLEX_LocatePoints;
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
@@ -2673,10 +2673,12 @@ PetscErrorCode DMSetUp_Plex(DM dm)
   ierr = PetscSectionGetStorageSize(mesh->coneSection, &size);CHKERRQ(ierr);
   ierr = PetscMalloc1(size, &mesh->cones);CHKERRQ(ierr);
   ierr = PetscCalloc1(size, &mesh->coneOrientations);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject) dm, size*2*sizeof(PetscInt));CHKERRQ(ierr);
   if (mesh->maxSupportSize) {
     ierr = PetscSectionSetUp(mesh->supportSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(mesh->supportSection, &size);CHKERRQ(ierr);
     ierr = PetscMalloc1(size, &mesh->supports);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject) dm, size*sizeof(PetscInt));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -5565,6 +5567,7 @@ static PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscIn
   for (i = 0; i < numRIndices; i++) {ierr = PetscViewerASCIIPrintf(viewer, "[%d]mat row indices[%D] = %D\n", rank, i, rindices[i]);CHKERRQ(ierr);}
   for (i = 0; i < numCIndices; i++) {ierr = PetscViewerASCIIPrintf(viewer, "[%d]mat col indices[%D] = %D\n", rank, i, cindices[i]);CHKERRQ(ierr);}
   numCIndices = numCIndices ? numCIndices : numRIndices;
+  if (!values) PetscFunctionReturn(0);
   for (i = 0; i < numRIndices; i++) {
     ierr = PetscViewerASCIIPrintf(viewer, "[%d]", rank);CHKERRQ(ierr);
     for (j = 0; j < numCIndices; j++) {
@@ -7531,8 +7534,8 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
   ierr = DMPlexIsInterpolated(dm, &interpEnum);CHKERRQ(ierr);
   if (interpEnum == DMPLEX_INTERPOLATED_NONE) PetscFunctionReturn(0);
   if (interpEnum == DMPLEX_INTERPOLATED_PARTIAL) {
-    PetscMPIInt	rank;
-    MPI_Comm	comm;
+    PetscMPIInt rank;
+    MPI_Comm    comm;
 
     ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -7608,11 +7611,13 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
   PetscReal      detJ, J[9], refVol = 1.0;
   PetscReal      vol;
   PetscBool      periodic;
-  PetscInt       dim, depth, d, cStart, cEnd, c;
+  PetscInt       dim, depth, dE, d, cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
+  if (dim != dE) PetscFunctionReturn(0);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm, &periodic, NULL, NULL, NULL);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) refVol *= 2.0;
@@ -8645,7 +8650,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
     if (f < Nf) {
       MatNullSpace nullSpace;
 
-      ierr = (*(*subdm)->nullspaceConstructors[f])(*subdm, f, &nullSpace);CHKERRQ(ierr);
+      ierr = (*(*subdm)->nullspaceConstructors[f])(*subdm, f, f, &nullSpace);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
     }

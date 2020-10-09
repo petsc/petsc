@@ -358,11 +358,11 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
       } else if (sinfo == lu->A.ncol + 1) {
         /*
          U is nonsingular, but RCOND is less than machine
- 		      precision, meaning that the matrix is singular to
- 		      working precision. Nevertheless, the solution and
- 		      error bounds are computed because there are a number
- 		      of situations where the computed solution can be more
- 		      accurate than the value of RCOND would suggest.
+                      precision, meaning that the matrix is singular to
+                      working precision. Nevertheless, the solution and
+                      error bounds are computed because there are a number
+                      of situations where the computed solution can be more
+                      accurate than the value of RCOND would suggest.
          */
         ierr = PetscInfo1(F,"Matrix factor U is nonsingular, but is singular to working precision. The solution is computed. info %D",sinfo);CHKERRQ(ierr);
       } else { /* sinfo > lu->A.ncol + 1 */

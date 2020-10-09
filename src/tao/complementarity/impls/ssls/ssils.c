@@ -65,7 +65,7 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
     ierr = TaoMonitor(tao,tao->niter,ssls->merit,ndpsi,0.0,t);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     if (tao->reason!=TAO_CONTINUE_ITERATING) break;
-    
+
     /* Call general purpose update function */
     if (tao->ops->update) {
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);

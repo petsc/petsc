@@ -1,4 +1,4 @@
 !
-!  Include file for Fortran use of the logging package in PETSc
+!  Used by petscsysmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petsclog.h"

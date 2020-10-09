@@ -252,7 +252,7 @@ PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim)
   if (!*lim) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*lim), PETSCLIMITER_CLASSID, 1);
 
-  if (--((PetscObject)(*lim))->refct > 0) {*lim = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*lim))->refct > 0) {*lim = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*lim))->refct = 0;
 
   if ((*lim)->ops->destroy) {ierr = (*(*lim)->ops->destroy)(*lim);CHKERRQ(ierr);}
@@ -1178,7 +1178,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
   if (!*fvm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*fvm), PETSCFV_CLASSID, 1);
 
-  if (--((PetscObject)(*fvm))->refct > 0) {*fvm = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*fvm))->refct > 0) {*fvm = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*fvm))->refct = 0;
 
   for (i = 0; i < (*fvm)->numComponents; i++) {

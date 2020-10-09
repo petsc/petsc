@@ -300,7 +300,7 @@ static PetscErrorCode VecSign(Vec v, Vec s)
 
 /* these are approximate norms */
 /* NORM_2: Estimating the matrix p-norm Nicholas J. Higham
-   NORM_1/NORM_INFINITY: A block algorithm for matrix 1-norm estimation, with an application to 1-norm pseudospectra Higham, Nicholas J. and Tisseur, Françoise */
+   NORM_1/NORM_INFINITY: A block algorithm for matrix 1-norm estimation, with an application to 1-norm pseudospectra Higham, Nicholas J. and Tisseur, Francoise */
 static PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype, PetscInt normsamples, PetscReal* n)
 {
   Vec            x,y,w,z;

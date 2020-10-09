@@ -48,7 +48,7 @@ static PetscErrorCode CheckSolution(Vec,Vec);
 and to have a zero derivative for flow parallel to the boundaries. That is,
 d(ux)/dy = 0 at the top and bottom boundaries, and d(uy)/dx = 0 at the right
 and left boundaries. */
-static PetscScalar uxRef(PetscScalar x,PetscScalar y ){return 0.0*x + y*y - 2.0*y*y*y + y*y*y*y;}      /* no x-dependence  */
+static PetscScalar uxRef(PetscScalar x,PetscScalar y){return 0.0*x + y*y - 2.0*y*y*y + y*y*y*y;}      /* no x-dependence  */
 static PetscScalar uyRef(PetscScalar x,PetscScalar y) {return x*x - 2.0*x*x*x + x*x*x*x + 0.0*y;}      /* no y-dependence  */
 static PetscScalar pRef (PetscScalar x,PetscScalar y) {return -1.0*(x-0.5) + -3.0/2.0*y*y + 0.5;}    /* zero integral    */
 static PetscScalar fx   (PetscScalar x,PetscScalar y) {return 0.0*x + 2.0 -12.0*y + 12.0*y*y + 1.0;} /* no x-dependence  */
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
 
   /* Attach a constant-pressure nullspace to the operator
   (logically, this should be in CreateSystem, but we separate it here to highlight
-   the features of DMStag exposed, in particular DMStagMigrateVec() ) */
+   the features of DMStag exposed, in particular DMStagMigrateVec()) */
   if (!pinPressure) {
     ierr = AttachNullspace(dmSol,A);CHKERRQ(ierr);
   }

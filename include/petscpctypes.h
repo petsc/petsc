@@ -320,6 +320,15 @@ typedef enum {
 } PCBDDCInterfaceExtType;
 
 /*E
+  PCMGCoarseSpaceType - Function space for coarse space for adaptive interpolation
+
+  Level: beginner
+
+.seealso: PCMGSetAdaptCoarseSpaceType(), PCMG
+E*/
+typedef enum { PCMG_POLYNOMIAL, PCMG_HARMONIC, PCMG_EIGENVECTOR, PCMG_GENERALIZED_EIGENVECTOR } PCMGCoarseSpaceType;
+
+/*E
     PCPatchConstructType - The algorithm used to construct patches for the preconditioner
 
    Level: beginner
@@ -382,7 +391,7 @@ typedef enum { PC_HPDDM_COARSE_CORRECTION_DEFLATED, PC_HPDDM_COARSE_CORRECTION_A
 
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
 E*/
-typedef enum {PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTOR_NUMERIC_ZEROPIVOT,PC_FACTOR_OUTMEMORY,PC_FACTOR_OTHER,PC_SUBPC_ERROR} PCFailedReason;
+typedef enum {PC_SETUP_ERROR = -1,PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTOR_NUMERIC_ZEROPIVOT,PC_FACTOR_OUTMEMORY,PC_FACTOR_OTHER,PC_SUBPC_ERROR} PCFailedReason;
 
 /*E
     PCGAMGLayoutType - Layout for reduced grids

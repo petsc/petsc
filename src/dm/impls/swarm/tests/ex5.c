@@ -202,7 +202,7 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
   ierr = VecGetArray(Xres, &xres);CHKERRQ(ierr);
   ierr = VecGetArrayRead(V, &v);CHKERRQ(ierr);
   for (p = 0; p < Np; ++p) {
-     for(d = 0; d < dim; ++d) {
+     for (d = 0; d < dim; ++d) {
        xres[p*dim+d] = v[p*dim+d];
      }
   }
@@ -254,7 +254,7 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t , Vec U, Vec R, vo
   Np  /= 2*dim;
   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
   ierr = VecGetArray(R, &r);CHKERRQ(ierr);
-  for( p = 0; p < Np; ++p) {
+  for (p = 0; p < Np; ++p) {
     const PetscScalar rsqr = DMPlex_NormD_Internal(dim, &u[p*2*dim]);
 
     for (d = 0; d < dim; ++d) {

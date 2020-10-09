@@ -1,4 +1,4 @@
- 
+
 static char help[] = "Tests MPI parallel matrix creation. Test MatCreateRedundantMatrix() \n\n";
 
 #include <petscmat.h>
@@ -66,13 +66,13 @@ int main(int argc,char **args)
   if (flg_info)  {
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"matrix information (global sums):\nnonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
     ierr = MatGetInfo (C,MAT_GLOBAL_MAX,&info);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"matrix information (global max):\nnonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   }
-  
+
   ierr = PetscOptionsHasName(NULL,NULL,"-view_mat",&flg_mat);CHKERRQ(ierr);
   if (flg_mat) {
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -86,13 +86,13 @@ int main(int argc,char **args)
 
   ierr = PetscObjectGetComm((PetscObject)Credundant,&subcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
-    
+
   if (subsize==2 && flg_mat) {
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(subcomm),"\n[%d] Credundant:\n",rank);CHKERRQ(ierr);
     ierr = MatView(Credundant,PETSC_VIEWER_STDOUT_(subcomm));CHKERRQ(ierr);
   }
   ierr = MatDestroy(&Credundant);CHKERRQ(ierr);
-   
+
   /* Test MatCreateRedundantMatrix() with user-provided subcomm */
   {
     PetscSubcomm psubcomm;

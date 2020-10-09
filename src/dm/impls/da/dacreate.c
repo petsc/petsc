@@ -316,7 +316,7 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
   PetscErrorCode ierr;
   PetscInt dim;
   DMDAStencilType st;
-  
+
   PetscFunctionBegin;
   ierr = DMDAGetNeighbors(dm,ranks);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&st);CHKERRQ(ierr);
@@ -434,7 +434,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->createinjection             = DMCreateInjection_DA;
   da->ops->hascreateinjection          = DMHasCreateInjection_DA;
   da->ops->destroy                     = DMDestroy_DA;
-  da->ops->view                        = 0;
+  da->ops->view                        = NULL;
   da->ops->setfromoptions              = DMSetFromOptions_DA;
   da->ops->setup                       = DMSetUp_DA;
   da->ops->clone                       = DMClone_DA;
@@ -465,7 +465,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 
   Level: advanced
 
-  Developers Note: 
+  Developers Note:
   Since there exists DMDACreate1/2/3d() should this routine even exist?
 
 .seealso:  DMDASetSizes(), DMClone(),  DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
@@ -480,5 +480,3 @@ PetscErrorCode  DMDACreate(MPI_Comm comm, DM *da)
   ierr = DMSetType(*da,DMDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

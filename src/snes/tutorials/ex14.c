@@ -275,7 +275,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 
    Input Parameters:
 .  snes - the SNES context
-.  localX - input vector, this contains the ghosted region needed 
+.  localX - input vector, this contains the ghosted region needed
 .  ptr - optional user-defined context, as set by SNESSetFunction()
 
    Output Parameter:

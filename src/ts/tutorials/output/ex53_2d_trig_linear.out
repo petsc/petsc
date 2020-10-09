@@ -1,0 +1,12 @@
+L_2 Error: [0.0202792, 1.34099, 0.]
+L_2 Residual: 0.863797
+Function appears to be linear
+0 TS dt 1e-05 time 0. max 12.5664 min -13.5664
+1 TS dt 1e-05 time 0.000175 max 15.4881 min -15.1734
+2 TS dt 1e-05 time 0.000185 max 15.488 min -15.1739
+3 TS dt 1e-05 time 0.000195 max 15.4878 min -15.1744
+4 TS dt 1e-05 time 0.000205 max 15.4877 min -15.1749
+5 TS dt 1e-05 time 0.000215 max 15.4875 min -15.1754
+L_2 Error: [0.0202792, 1.34099, 4.58865e-05]
+L_2 Residual: 0.863762
+Function appears to be linear

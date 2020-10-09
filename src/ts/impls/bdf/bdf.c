@@ -458,14 +458,14 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
 
 static PetscErrorCode TSSetFromOptions_BDF(PetscOptionItems *PetscOptionsObject,TS ts)
 {
-  TS_BDF         *bdf = (TS_BDF*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"BDF ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flg;
-    PetscInt  order = bdf->order;
+    PetscInt  order;
+    ierr = TSBDFGetOrder(ts,&order);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_bdf_order","Order of the BDF method","TSBDFSetOrder",order,&order,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSBDFSetOrder(ts,order);CHKERRQ(ierr);}
   }
@@ -542,11 +542,11 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
   ierr = PetscNewLog(ts,&bdf);CHKERRQ(ierr);
   ts->data = (void*)bdf;
 
-  bdf->order  = 2;
   bdf->status = TS_STEP_COMPLETE;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSBDFSetOrder_C",TSBDFSetOrder_BDF);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSBDFGetOrder_C",TSBDFGetOrder_BDF);CHKERRQ(ierr);
+  ierr = TSBDFSetOrder(ts,2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

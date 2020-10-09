@@ -38,7 +38,7 @@
     the calls to PetscViewerGetSubViewer() and PetscViewerRestoreSubViewer(). If the user does there
     could be errors in the viewing that go undetected or crash the code.
 
-    It would be nice if the call to PetscViewerFlush() was not required and was handled by 
+    It would be nice if the call to PetscViewerFlush() was not required and was handled by
     PetscViewerRestoreSubViewer()
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerRestoreSubViewer()
@@ -94,4 +94,3 @@ PetscErrorCode  PetscViewerRestoreSubViewer(PetscViewer viewer,MPI_Comm comm,Pet
   }
   PetscFunctionReturn(0);
 }
-

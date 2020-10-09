@@ -505,4 +505,16 @@ int main(int argc, char *argv[])
       suffix: glvis_composite_da_1d
       args: -u_da_grid_x 20 -problem_type 0 -snes_monitor_solution glvis:
 
+   test:
+      suffix: cuda
+      nsize: 1
+      requires: cuda
+      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2 -pack_dm_mat_type aijcusparse -pack_dm_vec_type cuda
+
+   test:
+      suffix: viennacl
+      nsize: 1
+      requires: viennacl
+      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2 -pack_dm_mat_type aijviennacl -pack_dm_vec_type viennacl
+
 TEST*/

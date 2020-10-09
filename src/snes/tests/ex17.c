@@ -301,7 +301,7 @@ static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 static PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   const PetscScalar *xx;
-  PetscScalar       A[4];  
+  PetscScalar       A[4];
   PetscErrorCode    ierr;
   PetscInt          idx[2] = {0,1};
 

@@ -173,11 +173,11 @@ PetscErrorCode PetscLogNestedEnd(void)
 
     dftIndex - index to be found
     dftArray - sorted array of PetscLogEvent-ids
-    narray - dimension of dftArray 
+    narray - dimension of dftArray
     entry - entry in the array where dftIndex may be found;
 
      if dftArray[entry] != dftIndex, then dftIndex is not part of dftArray
-     In that case, the dftIndex can be inserted at this entry. 
+     In that case, the dftIndex can be inserted at this entry.
 */
 static PetscErrorCode PetscLogEventFindDefaultTimer(PetscLogEvent dftIndex,const PetscLogEvent *dftArray,int narray,int *entry)
 {
@@ -466,10 +466,10 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer)
   ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
 
   ierr = PetscViewerXMLStartSection(viewer, "runspecification", "Run Specification");CHKERRQ(ierr);
-  ierr = PetscViewerXMLPutString(   viewer, "executable"  , "Executable"   , pname );CHKERRQ(ierr);
-  ierr = PetscViewerXMLPutString(   viewer, "architecture", "Architecture" , arch );CHKERRQ(ierr);
+  ierr = PetscViewerXMLPutString(   viewer, "executable"  , "Executable"   , pname);CHKERRQ(ierr);
+  ierr = PetscViewerXMLPutString(   viewer, "architecture", "Architecture" , arch);CHKERRQ(ierr);
   ierr = PetscViewerXMLPutString(   viewer, "hostname"    , "Host"         , hostname);CHKERRQ(ierr);
-  ierr = PetscViewerXMLPutInt(      viewer, "nprocesses"  , "Number of processes", size );CHKERRQ(ierr);
+  ierr = PetscViewerXMLPutInt(      viewer, "nprocesses"  , "Number of processes", size);CHKERRQ(ierr);
   ierr = PetscViewerXMLPutString(   viewer, "user"        , "Run by user"  , username);CHKERRQ(ierr);
   ierr = PetscViewerXMLPutString(   viewer, "date"        , "Started at"   , date);CHKERRQ(ierr);
   ierr = PetscViewerXMLPutString(   viewer, "petscrelease", "Petsc Release", version);CHKERRQ(ierr);
@@ -528,7 +528,7 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
 
   ierr = PetscViewerXMLStartSection(viewer, name, desc);CHKERRQ(ierr);
   ierr = PetscViewerXMLPutDouble(viewer, "max", NULL, max[0], "%e");CHKERRQ(ierr);
-  ierr = PetscViewerXMLPutInt(   viewer, "maxrank"  , "rank at which max was found" , (PetscMPIInt) max[1] );CHKERRQ(ierr);
+  ierr = PetscViewerXMLPutInt(   viewer, "maxrank"  , "rank at which max was found" , (PetscMPIInt) max[1]);CHKERRQ(ierr);
   ierr = PetscViewerXMLPutDouble(viewer, "ratio", NULL, ratio, "%f");CHKERRQ(ierr);
   if (print_average) {
     ierr = PetscViewerXMLPutDouble(viewer, "average", NULL, avg, "%e");CHKERRQ(ierr);
@@ -547,10 +547,10 @@ static PetscErrorCode PetscPrintGlobalPerformance(PetscViewer viewer, PetscLogDo
 {
   PetscErrorCode  ierr;
   PetscLogDouble  flops, mem, red, mess;
-  const PetscBool print_total_yes   = PETSC_TRUE, 
-                  print_total_no    = PETSC_FALSE, 
-                  print_average_no  = PETSC_FALSE, 
-                  print_average_yes = PETSC_TRUE; 
+  const PetscBool print_total_yes   = PETSC_TRUE,
+                  print_total_no    = PETSC_FALSE,
+                  print_average_no  = PETSC_FALSE,
+                  print_average_yes = PETSC_TRUE;
 
   PetscFunctionBegin;
   /* Must preserve reduction count before we go on */
@@ -576,7 +576,7 @@ static PetscErrorCode PetscPrintGlobalPerformance(PetscViewer viewer, PetscLogDo
   /*   Memory */
   ierr = PetscMallocGetMaximumUsage(&mem);CHKERRQ(ierr);
   if (mem > 0.0) {
-    ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "memory", "Memory (MiB)", mem/1024.0/1024.0, print_average_yes, print_total_yes);CHKERRQ(ierr); 
+    ierr = PetscPrintXMLGlobalPerformanceElement(viewer, "memory", "Memory (MiB)", mem/1024.0/1024.0, print_average_yes, print_total_yes);CHKERRQ(ierr);
   }
   /*   Messages */
   mess = 0.5*(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
@@ -1406,7 +1406,7 @@ PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
   PetscFunctionBegin;
   petsc_send_ct++;
 #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
-  ierr = PetscMPITypeSize(count,MPI_Type_f2c((MPI_Fint) datatype),&petsc_send_len); CHKERRQ(ierr);
+  ierr = PetscMPITypeSize(count,MPI_Type_f2c((MPI_Fint) datatype),&petsc_send_len);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -1420,7 +1420,7 @@ PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype)
   PetscFunctionBegin;
   petsc_recv_ct++;
 #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
-  ierr = PetscMPITypeSize(count,MPI_Type_f2c((MPI_Fint) datatype),&petsc_recv_len); CHKERRQ(ierr);
+  ierr = PetscMPITypeSize(count,MPI_Type_f2c((MPI_Fint) datatype),&petsc_recv_len);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

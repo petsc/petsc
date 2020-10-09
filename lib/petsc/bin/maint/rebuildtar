@@ -5,11 +5,11 @@ export LANG=en_US
 export LC=C
 export LC_ALL=C
 
-PETSC_DIR=/home/balay/git-repo/petsc-maint.clone
+PETSC_DIR=/home/balay/git-repo/petsc-release.clone
 
 #create the tarfile
 maintdir=`dirname $0`
-${maintdir}/builddist ${PETSC_DIR} maint
+${maintdir}/builddist ${PETSC_DIR} release
 
 #determine tarball version
 version_major=`grep '^#define PETSC_VERSION_MAJOR ' ${PETSC_DIR}/include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
@@ -48,8 +48,6 @@ ssh petsc@login.mcs.anl.gov " \
 #######################################
 # M lib/petsc/bin/maint/update-docs.py
 # M include/petscversion.h
-# M src/docs/tex/manual/intro.tex
-# M src/docs/tex/manual/manual.tex
 # M src/docs/website/documentation/changes/300.html
 # M src/docs/website/documentation/changes/dev.html
 # M src/docs/website/documentation/changes/index.html

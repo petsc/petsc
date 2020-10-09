@@ -64,11 +64,11 @@ int main(int argc,char **argv)
   ierr = DMCompositeAddDM(user.packer,user.red1);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,5,1,1,NULL,&user.da1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(user.da1);CHKERRQ(ierr);
-  ierr = DMSetUp(user.da1);CHKERRQ(ierr);  
+  ierr = DMSetUp(user.da1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,user.da1);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,5,1,1,NULL,&user.da2);CHKERRQ(ierr);
   ierr = DMSetFromOptions(user.da2);CHKERRQ(ierr);
-  ierr = DMSetUp(user.da2);CHKERRQ(ierr);  
+  ierr = DMSetUp(user.da2);CHKERRQ(ierr);
   ierr = DMDASetFieldName(user.da1,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(user.da2,0,"lambda");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,user.da2);CHKERRQ(ierr);

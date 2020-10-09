@@ -73,7 +73,7 @@ PetscInt main(PetscInt argc,char **args)
 /*  if (enorm > 1.e-14) { */
   if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
-  } 
+  }
 /*      } */
 
 
@@ -95,6 +95,3 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
-

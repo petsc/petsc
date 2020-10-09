@@ -57,7 +57,7 @@ struct _MatOps {
   /*20*/
   PetscErrorCode (*assemblybegin)(Mat,MatAssemblyType);
   PetscErrorCode (*assemblyend)(Mat,MatAssemblyType);
-  PetscErrorCode (*setoption)(Mat,MatOption,PetscBool );
+  PetscErrorCode (*setoption)(Mat,MatOption,PetscBool);
   PetscErrorCode (*zeroentries)(Mat);
   /*24*/
   PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
@@ -70,7 +70,7 @@ struct _MatOps {
   PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*getdiagonalblock)(Mat,Mat*);
-  PetscErrorCode (*placeholder_33)(void);
+  PetscErrorCode (*setinf)(Mat);
   /*34*/
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*forwardsolve)(Mat,Vec,Vec);
@@ -366,8 +366,8 @@ PETSC_INTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
 PETSC_INTERN PetscErrorCode MatStashScatterEnd_Private(MatStash*);
 PETSC_INTERN PetscErrorCode MatStashSetInitialSize_Private(MatStash*,PetscInt);
 PETSC_INTERN PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
-PETSC_INTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscBool );
-PETSC_INTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscBool );
+PETSC_INTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscBool);
+PETSC_INTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscBool);
 PETSC_INTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
 PETSC_INTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
 PETSC_INTERN PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
@@ -416,6 +416,26 @@ typedef struct { /* used by MatProduct() */
   PetscErrorCode (*destroy)(void*); /* destroy routine */
 } Mat_Product;
 
+#define CSRDataStructure(datatype)  \
+  int         *i; \
+  int         *j; \
+  datatype    *a;\
+  PetscInt    n;\
+  PetscInt    ignorezeroentries;
+
+typedef struct {
+  CSRDataStructure(PetscScalar)
+} PetscCSRDataStructure;
+
+struct _p_SplitCSRMat {
+  PetscInt              cstart,cend,rstart,rend;
+  PetscCSRDataStructure diag,offdiag;
+  PetscInt              *colmap;
+  PetscBool             seq;
+  PetscMPIInt           rank;
+  PetscInt              nonzerostate;
+};
+
 struct _p_Mat {
   PETSCHEADER(struct _MatOps);
   PetscLayout            rmap,cmap;
@@ -444,7 +464,7 @@ struct _p_Mat {
   PetscBool              submat_singleis;  /* for efficient PCSetUp_ASM() */
   PetscBool              structure_only;
   PetscBool              sortedfull;       /* full, sorted rows are inserted */
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   PetscOffloadMask       offloadmask;      /* a mask which indicates where the valid matrix data is (GPU, CPU or both) */
   PetscBool              boundtocpu;
 #endif
@@ -1001,7 +1021,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   for (_k=0; _k<_nidx; _k++){\
     _entry = indices[_k];\
     nzbd++;\
-    if ( _entry== diag) im[idx_start] = nzbd;\
+    if (_entry== diag) im[idx_start] = nzbd;\
     if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
       /* search for insertion location */\
       do {\

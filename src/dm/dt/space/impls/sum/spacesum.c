@@ -73,7 +73,7 @@ PetscErrorCode PetscSpaceSumGetConcatenate(PetscSpace sp,PetscBool *concatenate)
   PetscSpaceSumSetConcatenate - Sets the concatenate flag for this space.
  A concatenated sum space will have number of components equal to the sum of the number of components of all subspaces.A non-concatenated,
  or direct sum space will have the same number of components as its subspaces .
- 
+
  Input Parameters:
   + sp - the function space object
   - concatenate - are subspaces concatenated components (true) or direct summands (false)
@@ -92,7 +92,7 @@ PetscErrorCode PetscSpaceSumSetConcatenate(PetscSpace sp,PetscBool concatenate)
 }
 
 /*@
-  PetscSpaceSumGetSubspace - Get a space in the sum 
+  PetscSpaceSumGetSubspace - Get a space in the sum
 
   Input Parameters:
   + sp - the function space object

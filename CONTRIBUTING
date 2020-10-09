@@ -1,10 +1,9 @@
-Contributions are preferred via GitLab merge request to
+Contributions are accepted via GitLab merge requests to
 
   https://gitlab.com/petsc/petsc
 
-or via patches (`git send-email` or `git format-patch`) sent to
-petsc-dev@mcs.anl.gov.  If you are planning a large contribution, we
-encourage you to discuss the concept on the mailing list and interact
+If you are planning a large contribution, we
+encourage you to discuss the concept on the petsc-dev@mcs.anl.gov mailing list and interact
 with us frequently to ensure that your effort is well-directed.
 
 PETSc is distributed under a 2-clause BSD license (see LICENSE).  The

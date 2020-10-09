@@ -56,7 +56,7 @@ PetscErrorCode FormGradient(Tao,Vec,Vec,void*);
 PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 PetscErrorCode My_Monitor(Tao, void *);
 
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
   PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
   PetscInt           Nx, Ny;              /* number of processors in x- and y- directions */
@@ -69,7 +69,7 @@ int main( int argc, char **argv )
   MatFDColoring      matfdcoloring;
 
   /* Initialize TAO */
-  ierr = PetscInitialize( &argc, &argv,(char *)0,help );if (ierr) return ierr;
+  ierr = PetscInitialize(&argc, &argv,(char *)0,help);if (ierr) return ierr;
 
   /* Specify dimension of the problem */
   user.mx = 10; user.my = 10;
@@ -278,9 +278,9 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *u
       d8 = (xt-xlt);
 
       df1dxc = d1*hydhx;
-      df2dxc = ( d1*hydhx + d4*hxdhy );
+      df2dxc = (d1*hydhx + d4*hxdhy);
       df3dxc = d3*hxdhy;
-      df4dxc = ( d2*hydhx + d3*hxdhy );
+      df4dxc = (d2*hydhx + d3*hxdhy);
       df5dxc = d2*hydhx;
       df6dxc = d4*hxdhy;
 
@@ -293,12 +293,12 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *u
       d7 *= rhy;
       d8 *= rhx;
 
-      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal(1.0 + d4*d4 + d6*d6);
 
       ft = ft + (f2 + f4);
 
@@ -309,7 +309,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *u
       df5dxc /= f5;
       df6dxc /= f6;
 
-      g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc ) * 0.5;
+      g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc) * 0.5;
 
     }
   }
@@ -319,14 +319,14 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *u
     for (j=ys; j<ys+ym; j++){
       d3=(user->left[j-ys+1] - user->left[j-ys+2])*rhy;
       d2=(user->left[j-ys+1] - x[j][0]) *rhx;
-      ft = ft+PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
+      ft = ft+PetscSqrtReal(1.0 + d3*d3 + d2*d2);
     }
   }
   if (ys==0){ /* bottom side */
     for (i=xs; i<xs+xm; i++){
       d2=(user->bottom[i+1-xs]-user->bottom[i-xs+2])*rhx;
       d3=(user->bottom[i-xs+1]-x[0][i])*rhy;
-      ft = ft+PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
+      ft = ft+PetscSqrtReal(1.0 + d3*d3 + d2*d2);
     }
   }
 
@@ -334,26 +334,26 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *u
     for (j=ys; j< ys+ym; j++){
       d1=(x[j][mx-1] - user->right[j-ys+1])*rhx;
       d4=(user->right[j-ys]-user->right[j-ys+1])*rhy;
-      ft = ft+PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
+      ft = ft+PetscSqrtReal(1.0 + d1*d1 + d4*d4);
     }
   }
   if (ys+ym==my){ /* top side */
     for (i=xs; i<xs+xm; i++){
       d1=(x[my-1][i] - user->top[i-xs+1])*rhy;
       d4=(user->top[i-xs+1] - user->top[i-xs])*rhx;
-      ft = ft+PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
+      ft = ft+PetscSqrtReal(1.0 + d1*d1 + d4*d4);
     }
   }
 
   if (ys==0 && xs==0){
     d1=(user->left[0]-user->left[1])/hy;
     d2=(user->bottom[0]-user->bottom[1])*rhx;
-    ft +=PetscSqrtReal( 1.0 + d1*d1 + d2*d2);
+    ft +=PetscSqrtReal(1.0 + d1*d1 + d2*d2);
   }
   if (ys+ym == my && xs+xm == mx){
     d1=(user->right[ym+1] - user->right[ym])*rhy;
     d2=(user->top[xm+1] - user->top[xm])*rhx;
-    ft +=PetscSqrtReal( 1.0 + d1*d1 + d2*d2);
+    ft +=PetscSqrtReal(1.0 + d1*d1 + d2*d2);
   }
 
   ft=ft*area;
@@ -365,7 +365,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *u
 
   /* Scatter values to global vector */
   ierr = DMRestoreLocalVector(user->dm,&localX);CHKERRQ(ierr);
-  ierr = PetscLogFlops(67*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(67.0*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -497,12 +497,12 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
 
-      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal(1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
@@ -548,19 +548,19 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
       col[k].j = j; col[k].i = i;
       k++;
 
-      if (i < mx-1 ){
+      if (i < mx-1){
         v[k]= hr;
         col[k].j = j; col[k].i = i+1;
         k++;
       }
 
-      if (i>0 && j < my-1 ){
+      if (i>0 && j < my-1){
         v[k]= htl;
         col[k].j = j+1; col[k].i = i-1;
         k++;
       }
 
-      if (j < my-1 ){
+      if (j < my-1){
         v[k]= ht;
         col[k].j = j+1; col[k].i = i;
         k++;
@@ -580,7 +580,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   ierr = MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(199*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(199.0*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -752,11 +752,11 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     /* Perform local computations */
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i< xs+xm; i++){
-        x[j][i] = ( ((j+1)*user->bottom[i-xs+1]+(my-j+1)*user->top[i-xs+1])/(my+2)+((i+1)*user->left[j-ys+1]+(mx-i+1)*user->right[j-ys+1])/(mx+2))/2.0;
+        x[j][i] = (((j+1)*user->bottom[i-xs+1]+(my-j+1)*user->top[i-xs+1])/(my+2)+((i+1)*user->left[j-ys+1]+(mx-i+1)*user->right[j-ys+1])/(mx+2))/2.0;
       }
     }
     ierr = DMDAVecRestoreArray(user->dm,X,(void**)&x);CHKERRQ(ierr);
-    ierr = PetscLogFlops(9*xm*ym);CHKERRQ(ierr);
+    ierr = PetscLogFlops(9.0*xm*ym);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

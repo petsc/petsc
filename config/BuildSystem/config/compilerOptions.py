@@ -97,7 +97,7 @@ class CompilerOptions(config.base.Configure):
   def getCxxFlags(self, compiler, bopt):
     import config.setCompilers
 
-    if compiler.endswith('mpiCC') or compiler.endswith('mpicxx') or compiler.endswith('mpiicxx'):
+    if compiler.endswith('mpiCC') or compiler.endswith('mpicxx') or compiler.endswith('mpiicxx') or compiler.endswith('mpiicpc'):
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPICXX_SHOW',output.strip().replace('\n','\\\\n'))
@@ -191,7 +191,7 @@ class CompilerOptions(config.base.Configure):
 
   def getFortranFlags(self, compiler, bopt):
 
-    if compiler.endswith('mpif77') or compiler.endswith('mpif90') or compiler.endswith('mpifort'):
+    if compiler.endswith('mpif77') or compiler.endswith('mpif90') or compiler.endswith('mpifort') or compiler.endswith('mpiifort'):
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPIFC_SHOW',output.strip().replace('\n','\\\\n'))
@@ -267,7 +267,7 @@ class CompilerOptions(config.base.Configure):
     flags = ''
     if language == 'C' or language == 'CUDA':
       flags = self.getCFlags(compiler, bopt, language)
-    elif language == 'Cxx':
+    elif language == 'Cxx' or language == 'HIP' or language == 'SYCL':
       flags = self.getCxxFlags(compiler, bopt)
     elif language in ['Fortran', 'FC']:
       flags = self.getFortranFlags(compiler, bopt)
@@ -283,7 +283,7 @@ class CompilerOptions(config.base.Configure):
           flags = "lslpp -L vac.C | grep vac.C | awk '{print $2}'"
         else:
           flags = compiler+' --version'
-      elif language == 'Cxx':
+      elif language == 'Cxx' or language == 'HIP' or language == 'SYCL':
         if compiler.endswith('xlC') or compiler.endswith('mpCC'):
           flags = "lslpp -L vacpp.cmp.core  | grep vacpp.cmp.core  | awk '{print $2}'"
         else:

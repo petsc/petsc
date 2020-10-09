@@ -1,0 +1,24 @@
+PetscFE Object: P1 1 MPI processes
+  type: basic
+  Basic Finite Element in 1 dimensions with 2 components
+  PetscSpace Object: P1 1 MPI processes
+    type: poly
+    Space in 1 variables with 2 components, size 4
+    Polynomial space of degree 1
+  PetscDualSpace Object: P1 1 MPI processes
+    type: lagrange
+    Dual space with 2 components, size 4
+    Discontinuous Lagrange dual space
+    Quadrature of order 3 on 2 points (dim 1)
+PetscFE Object: P3 1 MPI processes
+  type: basic
+  Basic Finite Element in 1 dimensions with 2 components
+  PetscSpace Object: P3 1 MPI processes
+    type: poly
+    Space in 1 variables with 2 components, size 8
+    Polynomial space of degree 3
+  PetscDualSpace Object: P3 1 MPI processes
+    type: lagrange
+    Dual space with 2 components, size 8
+    Discontinuous Lagrange dual space
+    Quadrature of order 7 on 4 points (dim 1)

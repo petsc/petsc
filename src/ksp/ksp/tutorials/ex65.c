@@ -11,7 +11,7 @@ with boundary conditions
 
    This uses multigrid to solve the linear system
 
-   Demonstrates how to build a DMSHELL for managing multigrid. The DMSHELL simply creates a 
+   Demonstrates how to build a DMSHELL for managing multigrid. The DMSHELL simply creates a
    DMDA1d to construct all the needed PETSc objects.
 
 */

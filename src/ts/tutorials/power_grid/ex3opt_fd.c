@@ -98,7 +98,7 @@ int main(int argc,char **argv)
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
-  if(printtofile) {
+  if (printtofile) {
     ierr = TaoSetMonitor(tao,(PetscErrorCode (*)(Tao, void*))monitor,(void *)&ctx,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = TaoSetMaximumIterations(tao,30);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ int main(int argc,char **argv)
   }
 
   /* SOLVE THE APPLICATION */
-  ierr = TaoSolve(tao); CHKERRQ(ierr);
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

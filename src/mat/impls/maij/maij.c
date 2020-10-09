@@ -145,7 +145,7 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpimaij_mpiaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_mpiaij_mpimaij_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -179,11 +179,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
 
   A->ops->setup = MatSetUp_MAIJ;
 
-  b->AIJ  = 0;
+  b->AIJ  = NULL;
   b->dof  = 0;
-  b->OAIJ = 0;
-  b->ctx  = 0;
-  b->w    = 0;
+  b->OAIJ = NULL;
+  b->ctx  = NULL;
+  b->w    = NULL;
   ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQMAIJ);CHKERRQ(ierr);
@@ -1566,7 +1566,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_9(Mat A,Vec xx,Vec yy,Vec zz)
     y[9*i+8] += sum9;
   }
 
-  ierr = PetscLogFlops(18*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(18.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1901,7 +1901,7 @@ PetscErrorCode MatMult_SeqMAIJ_11(Mat A,Vec xx,Vec yy)
     y[11*i+10] = sum11;
   }
 
-  ierr = PetscLogFlops(22*a->nz - 11*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(22.0*a->nz - 11*nonzerorow);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1966,7 +1966,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_11(Mat A,Vec xx,Vec yy,Vec zz)
     y[11*i+10] += sum11;
   }
 
-  ierr = PetscLogFlops(22*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(22.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2017,7 +2017,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_11(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  ierr = PetscLogFlops(22*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(22.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2067,7 +2067,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_11(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  ierr = PetscLogFlops(22*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(22.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);

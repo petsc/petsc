@@ -1,18 +1,15 @@
-DM Object: Distributed Mesh 5 MPI processes
+DM Object: Mesh 5 MPI processes
   type: plex
-Distributed Mesh in 2 dimensions:
-  0-cells: 15 18 15 15 9
-  1-cells: 22 24 22 22 12
-  2-cells: 8 8 8 8 4
+Mesh in 2 dimensions:
+  0-cells: 9 8 9 9 8
+  1-cells: 12 10 11 11 10
+  2-cells: 4 3 3 3 3
 Labels:
-  celltype: 3 strata with value/size (0 (15), 1 (22), 4 (8))
-  depth: 3 strata with value/size (0 (15), 1 (22), 2 (8))
-  marker: 2 strata with value/size (1 (9), 4 (5))
-  Face Sets: 2 strata with value/size (1 (6), 4 (3))
-  markerBottom: 1 strata with value/size (1 (9))
+  depth: 3 strata with value/size (0 (9), 1 (12), 2 (4))
+  celltype: 3 strata with value/size (0 (9), 1 (12), 4 (4))
+  marker: 2 strata with value/size (1 (5), 4 (5))
+  Face Sets: 2 strata with value/size (1 (3), 4 (3))
+  markerBottom: 1 strata with value/size (1 (5))
   markerRight: 0 strata with value/size ()
   markerTop: 0 strata with value/size ()
   markerLeft: 1 strata with value/size (1 (5))
-Integral of pressure: -0.0387881
-L_2 Error: 0.00418 [1.2e-05, 0.00418]
-Integral of pressure: 0.

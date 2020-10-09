@@ -1,6 +1,5 @@
 !
-!
-!  Include file for Fortran use of the IS (index set) package in PETSc
+!  Used by petscvecmod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petscis.h"
 
@@ -54,8 +53,6 @@
 !
       PetscEnum, parameter :: IS_LOCAL = 0
       PetscEnum, parameter :: IS_GLOBAL = 1
-!
-!  End of Fortran include file for the IS package in PETSc
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_IS

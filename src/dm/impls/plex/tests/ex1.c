@@ -122,20 +122,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-/* Overload time to be the sphere radius */
-static void snapToSphere(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
-{
-  PetscReal norm2 = 0.0, fac;
-  PetscInt  n = uOff[1] - uOff[0], d;
-
-  for (d = 0; d < n; ++d) norm2 += PetscSqr(PetscRealPart(u[d]));
-  fac = t/PetscSqrtReal(norm2);
-  for (d = 0; d < n; ++d) f0[d] = u[d]*fac;
-}
-
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim                  = user->dim;
@@ -167,6 +153,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
                                          68, 69, 70, 82, 83, 84, 85, 102, 103, 105, 106, 107, 108, 109, 110, 111, 112, 114, 130, 132, 134, 135, 136, 137, 139};
   size_t         len, bdlen, extlen;
   PetscMPIInt    rank, size;
+  PetscBool      periodic;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -189,7 +176,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM edm;
 
     ierr = DMPlexCreateFromFile(comm, extfilename, interpolate, &edm);CHKERRQ(ierr);
-    ierr = DMPlexExtrude(edm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexExtrude(edm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, NULL, interpolate, dm);CHKERRQ(ierr);
     ierr = DMDestroy(&edm);CHKERRQ(ierr);
   } else {
     switch (user->domainShape) {
@@ -211,41 +198,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
       break;
     case SPHERE:
-      ierr = DMPlexCreateSphereMesh(comm, dim, cellSimplex, dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateSphereMesh(comm, dim, cellSimplex, 1.0, dm);CHKERRQ(ierr);
       break;
     case BALL:
-      {
-        DM       sdm;
-        PetscInt Nr = 0, r;
-
-        ierr = DMPlexCreateSphereMesh(comm, dim-1, cellSimplex, &sdm);CHKERRQ(ierr);
-        {
-          DM       cdm;
-          PetscFE  fe;
-          PetscInt dim, dE;
-
-          ierr = DMGetCoordinateDM(sdm, &cdm);CHKERRQ(ierr);
-          ierr = DMGetDimension(sdm, &dim);CHKERRQ(ierr);
-          ierr = DMGetCoordinateDim(sdm, &dE);CHKERRQ(ierr);
-          ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, PETSC_TRUE, 1, -1, &fe);CHKERRQ(ierr);
-          ierr = DMSetField(cdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-          ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-          ierr = DMCreateDS(cdm);CHKERRQ(ierr);
-        }
-        ierr = PetscOptionsGetInt(NULL, "bd_", "-dm_refine", &Nr, NULL);CHKERRQ(ierr);
-        for (r = 0; r < Nr; ++r) {
-          DM rdm, cdm, rcdm;
-          ierr = DMRefine(sdm, PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
-          ierr = DMGetCoordinateDM(sdm, &cdm);CHKERRQ(ierr);
-          ierr = DMGetCoordinateDM(rdm, &rcdm);CHKERRQ(ierr);
-          ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
-          ierr = DMPlexRemapGeometry(rdm, 1.0, snapToSphere);CHKERRQ(ierr);
-          ierr = DMDestroy(&sdm);CHKERRQ(ierr);
-          sdm  = rdm;
-        }
-        ierr = DMPlexGenerate(sdm, NULL, interpolate, dm);CHKERRQ(ierr);
-        ierr = DMDestroy(&sdm);CHKERRQ(ierr);
-      }
+      ierr = DMPlexCreateBallMesh(comm, dim, 1.0, dm);CHKERRQ(ierr);
       break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
@@ -253,11 +209,22 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (!extlen && user->extrude_layers > 0) {
     DM edm;
 
-    ierr = DMPlexExtrude(*dm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, interpolate, &edm);CHKERRQ(ierr);
+    ierr = DMPlexExtrude(*dm, user->extrude_layers, user->extrude_thickness, user->extrude_hfirst, NULL, interpolate, &edm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = edm;
   }
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
+
+  /* For topologically periodic meshes, we first localize coordinates,
+     and then remove any information related with the
+     automatic computation of localized vertices.
+     This way, refinement operations and conversions to p4est
+     will preserve the shape of the domain in physical space */
+  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
+  ierr = DMGetPeriodicity(*dm,&periodic,NULL,NULL,NULL);CHKERRQ(ierr);
+  if (periodic) {
+    ierr = DMSetPeriodicity(*dm,PETSC_TRUE,NULL,NULL,NULL);CHKERRQ(ierr);
+  }
+
   ierr = DMViewFromOptions(*dm,NULL,"-init_dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(*dm,&dim);CHKERRQ(ierr);
 
@@ -1115,4 +1082,31 @@ int main(int argc, char **argv)
     suffix: ref_bl_3d_hyb
     nsize : 4
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_3d_cube.msh -dm_plex_check_all -dm_view -interpolate -petscpartitioner_type simple -final_diagnostics -dm_refine 1 -dm_plex_cell_refiner boundarylayer -dm_plex_refine_boundarylayer_splits 4 -dm_plex_refine_boundarylayer_progression 3.1
+
+  test:
+    suffix: sphere_0
+    args: -dim 2 -domain_shape sphere -dm_plex_check_all -dm_view ::ascii_info_detail
+
+  test:
+    suffix: sphere_1
+    args: -dim 2 -domain_shape sphere -dm_plex_check_all -dm_refine 2 -dm_view
+
+  test:
+    suffix: sphere_2
+    args: -dim 2 -cell_simplex 0 -domain_shape sphere -dm_plex_check_all -dm_view ::ascii_info_detail
+
+  test:
+    suffix: sphere_3
+    args: -dim 2 -cell_simplex 0 -domain_shape sphere -dm_plex_check_all -dm_refine 2 -dm_view
+
+  test:
+    suffix: ball_0
+    requires: ctetgen
+    args: -dim 3 -domain_shape ball -dm_plex_check_all -dm_view
+
+  test:
+    suffix: ball_1
+    requires: ctetgen
+    args: -dim 3 -domain_shape ball -bd_dm_refine 2 -dm_plex_check_all -dm_view
+
 TEST*/

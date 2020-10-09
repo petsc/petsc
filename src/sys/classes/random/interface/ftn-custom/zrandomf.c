@@ -15,11 +15,11 @@
 #define petscrandomviewfromoptions_        petscrandomviewfromoptions
 #endif
 
-PETSC_EXTERN void  petscrandomgetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr )
+PETSC_EXTERN void  petscrandomgetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr)
 {
   *ierr = PetscRandomGetSeed(*r,seed);
 }
-PETSC_EXTERN void  petscrandomsetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr )
+PETSC_EXTERN void  petscrandomsetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr)
 {
   *ierr = PetscRandomSetSeed(*r,*seed);
 }

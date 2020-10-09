@@ -409,7 +409,7 @@ static PetscErrorCode SetupProblem(DM dm,UserCtx * user)
     PetscFunctionReturn(-1);
   }
 
-  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral","marker",0,0,NULL,(void (*)(void))NULL,1,&id,user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral","marker",0,0,NULL,(void (*)(void))NULL,NULL,1,&id,user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -507,7 +507,7 @@ int main(int argc,char **argv)
    * this vector which should be zero if the H(div) spaces are implemented
    * correctly. */
   ierr           = VecGetSubVector(computed,fieldIS[2],&divErr);CHKERRQ(ierr);
-  ierr           = VecNorm(divErr,NORM_2,&divErrNorm); CHKERRQ(ierr);
+  ierr           = VecNorm(divErr,NORM_2,&divErrNorm);CHKERRQ(ierr);
   ierr           = VecRestoreSubVector(computed,fieldIS[2],&divErr);CHKERRQ(ierr);
   exampleSuccess = (PetscBool)(divErrNorm <= errTol);
 

@@ -174,7 +174,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,const 
     if (j == -1) continue; /* do not remap negative entries in ia[] */
     else if (j == -2) { /* out of range entries get mapped to -1 */
       ia[i] = -1;
-      continue; 
+      continue;
     } else if (j != rank) {
       sindices[start[j]++]  = ia[i];
     } else { /* compute my own map */
@@ -270,10 +270,10 @@ static struct _AOOps AOOps_MemoryScalable = {
   AODestroy_MemoryScalable,
   AOPetscToApplication_MemoryScalable,
   AOApplicationToPetsc_MemoryScalable,
-  0,
-  0,
-  0,
-  0
+  NULL,
+  NULL,
+  NULL,
+  NULL
 };
 
 PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const PetscInt from_array[],const PetscInt to_array[],AO ao, PetscInt *aomap_loc)

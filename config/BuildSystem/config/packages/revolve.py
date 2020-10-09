@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit = '819aca47b2b7bad9bc3fe4bfa1ec8a00b7a18e67'
+    self.gitcommit = '40a0ea2a36058b9ae94920b9479c856371935276' #master oct-03-2020
     self.download  = ['git://https://bitbucket.org/caidao22/pkg-revolve.git']
     self.functions = ['revolve_create_offline']
     self.includes  = ['revolve_c.h']
@@ -20,7 +20,7 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    self.framework.pushLanguage('Cxx')
+    self.pushLanguage('Cxx')
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('CP               = '+self.programs.cp+'\n')
     g.write('RM               = '+self.programs.RM+'\n')
@@ -33,11 +33,11 @@ class Configure(config.package.Package):
 
     g.write('PREFIX           = '+self.installDir+'\n')
 
-    g.write('CXX              = '+self.framework.getCompiler()+'\n')
-    g.write('CXXFLAGS         = '+self.removeWarningFlags(self.framework.getCompilerFlags())+'\n')
+    g.write('CXX              = '+self.getCompiler()+'\n')
+    g.write('CXXFLAGS         = '+self.updatePackageCxxFlags(self.getCompilerFlags())+'\n')
     g.close()
 
-    self.framework.popLanguage()
+    self.popLanguage()
 
     if self.installNeeded('make.inc'):
       self.logPrintBox('Configuring, compiling and installing revolve; this may take several seconds')

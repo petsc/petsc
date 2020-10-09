@@ -63,7 +63,7 @@ int main(int argc,char **argv)
       args: -options_left 0 -options_view -options_monitor
    testset:
       localrunfiles: ex55options .petscrc petscrc
-      filter: sed -Ee "s/(revision).*$/\\1/g" | egrep -e "(revision|version|help|^See)"
+      filter: egrep -e "(version|help|^See)"
       args: -options_left 0 -options_view -options_monitor
       test:
         suffix: 5a

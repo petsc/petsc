@@ -121,7 +121,7 @@ PetscErrorCode PCBDDCDestroyFETIDPPC(PC pc)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
+PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
 {
   PetscErrorCode ierr;
   PC_IS          *pcis=(PC_IS*)fetidpmat_ctx->pc->data;
@@ -343,7 +343,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       for (j=0;j<pcis->n_shared[i];j++) {
         k = pcis->shared[i][j];
         neigh_position = 0;
-        while(mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) {neigh_position++;}
+        while (mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) {neigh_position++;}
         all_factors[k][neigh_position]=recv_buffer[ptrs_buffer[i-1]+j];
       }
     }
@@ -380,7 +380,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     }
     if (all_factors) array = all_factors[aux_local_numbering_1[i]];
     n_neg_values = 0;
-    while(n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) {n_neg_values++;}
+    while (n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) {n_neg_values++;}
     n_pos_values = j - n_neg_values;
     if (fully_redundant) {
       for (s=0;s<n_neg_values;s++) {
@@ -404,10 +404,10 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
         vals_B_delta   [partial_sum+s]=0.0;
       }
       /* B_delta */
-      if ( n_neg_values > 0 ) { /* there's a rank next to me to the left */
+      if (n_neg_values > 0) { /* there's a rank next to me to the left */
         vals_B_delta   [partial_sum+n_neg_values-1]=-1.0;
       }
-      if ( n_neg_values < j ) { /* there's a rank next to me to the right */
+      if (n_neg_values < j) { /* there's a rank next to me to the right */
         vals_B_delta   [partial_sum+n_neg_values]=1.0;
       }
       /* scaling as in Klawonn-Widlund 1999 */

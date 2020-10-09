@@ -4,7 +4,7 @@
 /* Logging support */
 PetscClassId MAT_COARSEN_CLASSID;
 
-PetscFunctionList MatCoarsenList              = 0;
+PetscFunctionList MatCoarsenList              = NULL;
 PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
 /*@C
@@ -170,7 +170,7 @@ PetscErrorCode  MatCoarsenDestroy(MatCoarsen *agg)
   PetscFunctionBegin;
   if (!*agg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*agg),MAT_COARSEN_CLASSID,1);
-  if (--((PetscObject)(*agg))->refct > 0) {*agg = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*agg))->refct > 0) {*agg = NULL; PetscFunctionReturn(0);}
 
   if ((*agg)->ops->destroy) {
     ierr = (*(*agg)->ops->destroy)((*agg));CHKERRQ(ierr);
@@ -207,7 +207,7 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *newcrs = 0;
+  *newcrs = NULL;
 
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(agg, MAT_COARSEN_CLASSID,"MatCoarsen","Matrix/graph coarsen", "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView);CHKERRQ(ierr);
@@ -321,7 +321,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
     ierr =  (*coarser->ops->destroy)(coarser);CHKERRQ(ierr);
 
     coarser->ops->destroy = NULL;
-    coarser->subctx       = 0;
+    coarser->subctx       = NULL;
     coarser->setupcalled  = 0;
   }
 
@@ -384,7 +384,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
   if (!coarser->agg_lists) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
   *llist             = coarser->agg_lists;
-  coarser->agg_lists = 0; /* giving up ownership */
+  coarser->agg_lists = NULL; /* giving up ownership */
   PetscFunctionReturn(0);
 }
 

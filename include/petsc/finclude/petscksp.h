@@ -31,6 +31,7 @@
 #define KSPPIPECG 'pipecg'
 #define KSPPIPECGRR 'pipecgrr'
 #define KSPPIPELCG 'pipelcg'
+#define KSPPIPECG2 'pipecg2'
 #define KSPCGNE 'cgne'
 #define KSPNASH 'nash'
 #define KSPSTCG 'stcg'

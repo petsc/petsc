@@ -31,17 +31,22 @@ PETSC_EXTERN const char *const PCPARMSLocalTypes[];
 PETSC_EXTERN const char *const PCMGTypes[];
 PETSC_EXTERN const char *const PCMGCycleTypes[];
 PETSC_EXTERN const char *const PCMGGalerkinTypes[];
+PETSC_EXTERN const char *const PCMGCoarseSpaceTypes[];
 PETSC_EXTERN const char *const PCExoticTypes[];
 PETSC_EXTERN const char *const PCPatchConstructTypes[];
 PETSC_EXTERN const char *const PCDeflationTypes[];
-PETSC_EXTERN const char *const PCFailedReasons[];
+PETSC_EXTERN const char *const *const PCFailedReasons;
 
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
 PETSC_EXTERN PetscErrorCode PCSetType(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCGetType(PC,PCType*);
 PETSC_EXTERN PetscErrorCode PCSetUp(PC);
+
+PETSC_EXTERN PetscErrorCode PCSetFailedReason(PC,PCFailedReason);
 PETSC_EXTERN PetscErrorCode PCGetFailedReason(PC,PCFailedReason*);
 PETSC_DEPRECATED_FUNCTION("Use PCGetFailedReason() (since version 3.11)") PETSC_STATIC_INLINE PetscErrorCode PCGetSetUpFailedReason(PC pc,PCFailedReason *reason) {return PCGetFailedReason(pc,reason);}
+PETSC_EXTERN PetscErrorCode PCGetFailedReasonRank(PC,PCFailedReason*);
+
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
 PETSC_EXTERN PetscErrorCode PCApply(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCMatApply(PC,Mat,Mat);
@@ -162,8 +167,8 @@ PETSC_EXTERN PetscErrorCode PCFactorSetColumnPivot(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC,PetscReal);
 
 PETSC_EXTERN PetscErrorCode PCFactorSetMatOrderingType(PC,MatOrderingType);
-PETSC_EXTERN PetscErrorCode PCFactorSetReuseOrdering(PC,PetscBool );
-PETSC_EXTERN PetscErrorCode PCFactorSetReuseFill(PC,PetscBool );
+PETSC_EXTERN PetscErrorCode PCFactorSetReuseOrdering(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCFactorSetReuseFill(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCFactorGetUseInPlace(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCFactorSetAllowDiagonalFill(PC,PetscBool);
@@ -201,7 +206,7 @@ PETSC_EXTERN PetscErrorCode PCGASMSetSubdomains(PC,PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCGASMSetOverlap(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGASMSetUseDMSubdomains(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGASMGetUseDMSubdomains(PC,PetscBool*);
-PETSC_EXTERN PetscErrorCode PCGASMSetSortIndices(PC,PetscBool );
+PETSC_EXTERN PetscErrorCode PCGASMSetSortIndices(PC,PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCGASMSetType(PC,PCGASMType);
 PETSC_EXTERN PetscErrorCode PCGASMCreateSubdomains(Mat,PetscInt,PetscInt*,IS*[]);
@@ -291,8 +296,8 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC,PetscInt,PetscInt,PetscInt);
 
-PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType);
-PETSC_EXTERN PetscErrorCode PCGAMGGetType( PC,PCGAMGType*);
+PETSC_EXTERN PetscErrorCode PCGAMGSetType(PC,PCGAMGType);
+PETSC_EXTERN PetscErrorCode PCGAMGGetType(PC,PCGAMGType*);
 PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartition(PC,PetscBool);
@@ -364,6 +369,8 @@ PETSC_DEPRECATED_FUNCTION("Use PCMGSetCycleTypeOnLevel() (since version 3.5)") P
 PETSC_EXTERN PetscErrorCode PCMGMultiplicativeSetCycles(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetGalerkin(PC,PCMGGalerkinType);
 PETSC_EXTERN PetscErrorCode PCMGGetGalerkin(PC,PCMGGalerkinType*);
+PETSC_EXTERN PetscErrorCode PCMGSetAdaptInterpolation(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCMGGetAdaptInterpolation(PC,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode PCMGSetRhs(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGSetX(PC,PetscInt,Vec);

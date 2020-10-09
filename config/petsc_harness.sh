@@ -6,6 +6,7 @@ TIMEOUT=60
 
 if test "$PWD"!=`dirname $0`; then
   cd `dirname $0`
+  abspath_scriptdir=$PWD
 fi
 if test -d "${rundir}" && test -n "${rundir}"; then
   rm -f ${rundir}/*.tmp ${rundir}/*.err ${rundir}/*.out
@@ -30,7 +31,8 @@ Usage: $0 [options]
 
 OPTIONS
   -a <args> ......... Override default arguments
-  -c <cleanup> ...... Cleanup (remove generated files)
+  -c ................ Cleanup (remove generated files)
+  -C ................ Compile
   -d ................ Launch in debugger
   -e <args> ......... Add extra arguments to default
   -f ................ force attempt to run test that would otherwise be skipped
@@ -43,6 +45,7 @@ OPTIONS
   -o <arg> .......... Output format: 'interactive', 'err_only'
   -p ................ Print command:  Print first command and exit
   -t ................ Override the default timeout (default=$TIMEOUT sec)
+  -U ................ run cUda-memcheck
   -V ................ run Valgrind
   -v ................ Verbose: Print commands
 EOF
@@ -56,15 +59,17 @@ EOF
 output_fmt="interactive"
 verbose=false
 cleanup=false
+compile=false
 debugger=false
 printcmd=false
 force=false
 diff_flags=""
-while getopts "a:cde:fhjJ:mMn:o:pt:vV" arg
+while getopts "a:cCde:fhjJ:mMn:o:pt:UvV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
     c ) cleanup=true         ;;  
+    C ) compile=true         ;;  
     d ) debugger=true        ;;  
     e ) extra_args="$OPTARG" ;;  
     f ) force=true           ;;
@@ -77,6 +82,7 @@ do
     o ) output_fmt=$OPTARG   ;;  
     p ) printcmd=true        ;;
     t ) TIMEOUT=$OPTARG      ;;  
+    U ) mpiexec="petsc_mpiexec_cudamemcheck $mpiexec" ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
     v ) verbose=true         ;;  
     *)  # To take care of any extra args
@@ -164,6 +170,12 @@ function petsc_testrun() {
 
   eval "{ time -p $cmd ; } 2>> timing.out"
   cmd_res=$?
+  #  If it is a lack of GPU resources, then try once more 
+  #  See: src/sys/error/err.c
+  if [ $cmd_res -eq 96 ]; then
+    eval "{ time -p $cmd ; } 2>> timing.out"
+    cmd_res=$?
+  fi
   touch "$2" "$3"
   # ETIMEDOUT=110 on most systems (used by Open MPI 3.0).  MPICH uses
   # 255.  Earlier Open MPI returns 1 but outputs about MPIEXEC_TIMEOUT.
@@ -241,6 +253,21 @@ function petsc_testend() {
   fi
 }
 
+function petsc_mpiexec_cudamemcheck() {
+  _mpiexec=$1;shift
+  npopt=$1;shift
+  np=$1;shift
+
+  cudamemchk="cuda-memcheck"
+
+  $_mpiexec $npopt $np $cudamemchk $*
+}
+export LC_ALL=C
+
+if $compile; then
+    curexec=`basename ${exec}`
+    (cd $petsc_dir && make -f gmakefile.test ${abspath_scriptdir}/${curexec})
+fi
 function petsc_mpiexec_valgrind() {
   _mpiexec=$1;shift
   npopt=$1;shift
@@ -251,3 +278,9 @@ function petsc_mpiexec_valgrind() {
   $_mpiexec $npopt $np $valgrind "$@"
 }
 export LC_ALL=C
+
+if $compile; then
+    curexec=`basename ${exec}`
+    (cd $petsc_dir && make -f gmakefile.test ${abspath_scriptdir}/${curexec})
+fi
+

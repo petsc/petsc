@@ -275,7 +275,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   Mat_SeqDense      *x = (Mat_SeqDense*)X->data,*y = (Mat_SeqDense*)Y->data;
   const PetscScalar *xv;
   PetscScalar       *yv;
-  PetscBLASInt      N,m,ldax,lday,one = 1;
+  PetscBLASInt      N,m,ldax = 0,lday = 0,one = 1;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -296,7 +296,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   }
   ierr = MatDenseRestoreArrayRead(X,&xv);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(Y,&yv);CHKERRQ(ierr);
-  ierr = PetscLogFlops(PetscMax(2*N-1,0));CHKERRQ(ierr);
+  ierr = PetscLogFlops(PetscMax(2.0*N-1,0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -323,7 +323,7 @@ PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
   PetscScalar    *v;
   PetscErrorCode ierr;
-  PetscBLASInt   one = 1,j,nz,lda;
+  PetscBLASInt   one = 1,j,nz,lda = 0;
 
   PetscFunctionBegin;
   ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
@@ -443,7 +443,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactor
 
   PetscFunctionBegin;
   ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
-  ierr = (*fact->ops->lufactor)(fact,0,0,&info);CHKERRQ(ierr);
+  ierr = (*fact->ops->lufactor)(fact,NULL,NULL,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -708,7 +708,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactorI
   info.fill = 1.0;
 
   ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
-  ierr = (*fact->ops->choleskyfactor)(fact,0,&info);CHKERRQ(ierr);
+  ierr = (*fact->ops->choleskyfactor)(fact,NULL,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -745,8 +745,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftyp
   ierr = MatCreate(PetscObjectComm((PetscObject)A),fact);CHKERRQ(ierr);
   ierr = MatSetSizes(*fact,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(*fact,MATDENSE);CHKERRQ(ierr);
-  if (ftype == MAT_FACTOR_LU) {
+  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     (*fact)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqDense;
+    (*fact)->ops->ilufactorsymbolic = MatLUFactorSymbolic_SeqDense;
   } else {
     (*fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqDense;
   }
@@ -765,7 +766,7 @@ static PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType fl
   const PetscScalar *b;
   PetscErrorCode    ierr;
   PetscInt          m = A->rmap->n,i;
-  PetscBLASInt      o = 1,bm;
+  PetscBLASInt      o = 1,bm = 0;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUDA)
@@ -863,8 +864,8 @@ PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
+  ierr = VecCopy(zz,yy);CHKERRQ(ierr);
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
-  if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One));
@@ -886,8 +887,8 @@ PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
+  ierr = VecCopy(zz,yy);CHKERRQ(ierr);
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
-  if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One));
@@ -1430,7 +1431,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   ierr = MatDestroy(&l->cmat);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)mat,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetLDA_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseSetLDA_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",NULL);CHKERRQ(ierr);
@@ -2139,7 +2140,7 @@ static PetscErrorCode MatSetUp_SeqDense(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   if (!A->preallocated) {
-    ierr = MatSeqDenseSetPreallocation(A,0);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2545,7 +2546,7 @@ static PetscErrorCode MatDenseGetColumn_SeqDense(Mat A,PetscInt col,PetscScalar 
 static PetscErrorCode MatDenseRestoreColumn_SeqDense(Mat A,PetscScalar **vals)
 {
   PetscFunctionBegin;
-  *vals = 0; /* user cannot accidently use the array later */
+  *vals = NULL; /* user cannot accidently use the array later */
   PetscFunctionReturn(0);
 }
 
@@ -2557,10 +2558,10 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                 /*  4*/ MatMultAdd_SeqDense,
                                         MatMultTranspose_SeqDense,
                                         MatMultTransposeAdd_SeqDense,
-                                        0,
-                                        0,
-                                        0,
-                                /* 10*/ 0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 10*/ NULL,
                                         MatLUFactor_SeqDense,
                                         MatCholeskyFactor_SeqDense,
                                         MatSOR_SeqDense,
@@ -2575,129 +2576,129 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         MatSetOption_SeqDense,
                                         MatZeroEntries_SeqDense,
                                 /* 24*/ MatZeroRows_SeqDense,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 29*/ MatSetUp_SeqDense,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 34*/ MatDuplicate_SeqDense,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 39*/ MatAXPY_SeqDense,
                                         MatCreateSubMatrices_SeqDense,
-                                        0,
+                                        NULL,
                                         MatGetValues_SeqDense,
                                         MatCopy_SeqDense,
                                 /* 44*/ MatGetRowMax_SeqDense,
                                         MatScale_SeqDense,
                                         MatShift_Basic,
-                                        0,
+                                        NULL,
                                         MatZeroRowsColumns_SeqDense,
                                 /* 49*/ MatSetRandom_SeqDense,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 54*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 59*/ 0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 54*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 59*/ NULL,
                                         MatDestroy_SeqDense,
                                         MatView_SeqDense,
-                                        0,
-                                        0,
-                                /* 64*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                /* 64*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 69*/ MatGetRowMaxAbs_SeqDense,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 74*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /* 79*/ 0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 74*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 79*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                 /* 83*/ MatLoad_SeqDense,
                                         MatIsSymmetric_SeqDense,
                                         MatIsHermitian_SeqDense,
-                                        0,
-                                        0,
-                                        0,
-                                /* 89*/ 0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /* 89*/ NULL,
+                                        NULL,
                                         MatMatMultNumeric_SeqDense_SeqDense,
-                                        0,
-                                        0,
-                                /* 94*/ 0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                /* 94*/ NULL,
+                                        NULL,
+                                        NULL,
                                         MatMatTransposeMultNumeric_SeqDense_SeqDense,
-                                        0,
+                                        NULL,
                                 /* 99*/ MatProductSetFromOptions_SeqDense,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
                                         MatConjugate_SeqDense,
-                                        0,
-                                /*104*/ 0,
+                                        NULL,
+                                /*104*/ NULL,
                                         MatRealPart_SeqDense,
                                         MatImaginaryPart_SeqDense,
-                                        0,
-                                        0,
-                                /*109*/ 0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                /*109*/ NULL,
+                                        NULL,
                                         MatGetRowMin_SeqDense,
                                         MatGetColumnVector_SeqDense,
                                         MatMissingDiagonal_SeqDense,
-                                /*114*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /*119*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /*124*/ 0,
+                                /*114*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*119*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*124*/ NULL,
                                         MatGetColumnNorms_SeqDense,
-                                        0,
-                                        0,
-                                        0,
-                                /*129*/ 0,
-                                        0,
-                                        0,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*129*/ NULL,
+                                        NULL,
+                                        NULL,
                                         MatTransposeMatMultNumeric_SeqDense_SeqDense,
-                                        0,
-                                /*134*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                /*139*/ 0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
+                                        NULL,
+                                /*134*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                /*139*/ NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
                                         MatCreateMPIMatConcatenateSeqMat_SeqDense,
-                                /*145*/ 0,
-                                        0,
-                                        0
+                                /*145*/ NULL,
+                                        NULL,
+                                        NULL
 };
 
 /*@C

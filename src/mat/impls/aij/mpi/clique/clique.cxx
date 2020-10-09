@@ -5,7 +5,7 @@
 
   input:
 +   A     - matrix in seqaij or mpiaij format
--   reuse - denotes if the destination matrix is to be created or reused. 
+-   reuse - denotes if the destination matrix is to be created or reused.
             Use MAT_INPLACE_MATRIX for inplace conversion, otherwise use MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX.
 
   output:

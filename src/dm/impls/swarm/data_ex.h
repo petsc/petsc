@@ -8,28 +8,28 @@ typedef enum { DEOBJECT_INITIALIZED=0, DEOBJECT_FINALIZED, DEOBJECT_STATE_UNKNOW
 
 typedef struct _p_DMSwarmDataEx* DMSwarmDataEx;
 struct  _p_DMSwarmDataEx {
-	PetscInt              instance;
-	MPI_Comm              comm;
-	PetscMPIInt           rank;
-	PetscMPIInt           n_neighbour_procs;
-	PetscMPIInt           *neighbour_procs;          /* [n_neighbour_procs] */
-	PetscInt              *messages_to_be_sent;      /* [n_neighbour_procs] */
-	PetscInt              *message_offsets;          /* [n_neighbour_procs] */
-	PetscInt              *messages_to_be_recvieved; /* [n_neighbour_procs] */
-	size_t                unit_message_size;
-	void                  *send_message;
-	PetscInt              send_message_length;
-	void                  *recv_message;
-	PetscInt              recv_message_length;
-	PetscMPIInt           *send_tags, *recv_tags;
-	PetscInt              total_pack_cnt;
-	PetscInt              *pack_cnt;                 /* [n_neighbour_procs] */
-	DMSwarmDEObjectState  topology_status;
-	DMSwarmDEObjectState  message_lengths_status;
-	DMSwarmDEObjectState  packer_status;
-	DMSwarmDEObjectState  communication_status;
-	MPI_Status            *_stats;
-	MPI_Request           *_requests;
+        PetscInt              instance;
+        MPI_Comm              comm;
+        PetscMPIInt           rank;
+        PetscMPIInt           n_neighbour_procs;
+        PetscMPIInt           *neighbour_procs;          /* [n_neighbour_procs] */
+        PetscInt              *messages_to_be_sent;      /* [n_neighbour_procs] */
+        PetscInt              *message_offsets;          /* [n_neighbour_procs] */
+        PetscInt              *messages_to_be_recvieved; /* [n_neighbour_procs] */
+        size_t                unit_message_size;
+        void                  *send_message;
+        PetscInt              send_message_length;
+        void                  *recv_message;
+        PetscInt              recv_message_length;
+        PetscMPIInt           *send_tags, *recv_tags;
+        PetscInt              total_pack_cnt;
+        PetscInt              *pack_cnt;                 /* [n_neighbour_procs] */
+        DMSwarmDEObjectState  topology_status;
+        DMSwarmDEObjectState  message_lengths_status;
+        DMSwarmDEObjectState  packer_status;
+        DMSwarmDEObjectState  communication_status;
+        MPI_Status            *_stats;
+        MPI_Request           *_requests;
 };
 
 /* OBJECT_STATUS */

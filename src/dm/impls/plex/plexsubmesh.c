@@ -3031,12 +3031,14 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     DMLabel         depth;
     IS              pointIS;
     const PetscInt *points;
-    PetscInt        numPoints;
+    PetscInt        numPoints=0;
 
     ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumSize(label, value, &numPoints);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(label, value, &pointIS);CHKERRQ(ierr);
-    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    if (pointIS) {
+      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+    }
     for (p = 0; p < numPoints; ++p) {
       PetscInt *closure = NULL;
       PetscInt  closureSize, c, pdim;
@@ -3048,7 +3050,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
-    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    if (pointIS) {ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);}
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
   /* Setup chart */
@@ -3726,8 +3728,8 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
     ierr = DMGetWorkArray(dm, depth+1, MPIU_INT, &depths);CHKERRQ(ierr);
     depths[0] = depth;
     depths[1] = 0;
-    for(d = 2; d <= depth; ++d) {depths[d] = depth+1 - d;}
-    for(d = 0, off = 0; d <= depth; ++d) {
+    for (d = 2; d <= depth; ++d) {depths[d] = depth+1 - d;}
+    for (d = 0, off = 0; d <= depth; ++d) {
       const PetscInt dep = depths[d];
       PetscInt       depStart, depEnd, n;
 
@@ -3739,10 +3741,10 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
         if (!n) {
           if (d == 0) {
             /* Missing cells */
-            for(p = 0; p < depEnd-depStart; ++p, ++off) points[off] = -1;
+            for (p = 0; p < depEnd-depStart; ++p, ++off) points[off] = -1;
           } else {
             /* Missing faces */
-            for(p = 0; p < depEnd-depStart; ++p, ++off) points[off] = PETSC_MAX_INT;
+            for (p = 0; p < depEnd-depStart; ++p, ++off) points[off] = PETSC_MAX_INT;
           }
         }
       }
@@ -3752,7 +3754,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
 
         ierr = DMLabelGetStratumIS(spmap, dep, &is);CHKERRQ(ierr);
         ierr = ISGetIndices(is, &opoints);CHKERRQ(ierr);
-        for(p = 0; p < n; ++p, ++off) points[off] = opoints[p];
+        for (p = 0; p < n; ++p, ++off) points[off] = opoints[p];
         ierr = ISRestoreIndices(is, &opoints);CHKERRQ(ierr);
         ierr = ISDestroy(&is);CHKERRQ(ierr);
       }

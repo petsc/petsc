@@ -136,7 +136,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
     finishedtasks=0;
     checkedin=0;
 
-    while(finishedtasks < NOBSERVATIONS || checkedin < user->size-1) {
+    while (finishedtasks < NOBSERVATIONS || checkedin < user->size-1) {
       ierr = MPI_Recv(&f_i,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
       if (status.MPI_TAG == IDLE_TAG) {
         checkedin++;
@@ -449,7 +449,7 @@ PetscErrorCode StopWorkers(AppCtx *user)
 
   PetscFunctionBegin;
   checkedin=0;
-  while(checkedin < user->size-1) {
+  while (checkedin < user->size-1) {
     ierr = MPI_Recv(&f,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
     checkedin++;
     ierr = PetscArrayzero(x,NPARAMETERS);CHKERRQ(ierr);

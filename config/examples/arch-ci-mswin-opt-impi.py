@@ -19,6 +19,5 @@ if __name__ == '__main__':
     '--with-mpi-lib=/cygdrive/c/PROGRA~2/INTELS~1/mpi/20172~1.187/intel64/lib/impi.lib',
     '--with-mpiexec=/cygdrive/c/PROGRA~2/INTELS~1/mpi/20172~1.187/intel64/bin/mpiexec -localonly',
     '--with-shared-libraries=0',
-    'DATAFILESPATH=c:/cygwin64/home/petsc/datafiles',
   ]
   configure.petsc_configure(configure_options)

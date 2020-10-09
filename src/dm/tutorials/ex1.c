@@ -111,7 +111,7 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       requires: x
       nsize: 2

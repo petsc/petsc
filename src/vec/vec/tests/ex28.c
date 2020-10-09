@@ -151,34 +151,36 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
-
-
-
-
 /*TEST
 
    test:
       nsize: 3
 
-   test:
-      suffix: 2
-      nsize: 3
-      args: -splitreduction_async
-      output_file: output/ex28_1.out
+   testset:
+     nsize: 3
+     output_file: output/ex28_1.out
 
-   test:
-      suffix: 2_cuda
-      nsize: 3
-      args: -splitreduction_async -vec_type cuda
-      requires: cuda
-      output_file: output/ex28_1.out
+     test:
+        suffix: 2
+        args: -splitreduction_async
 
-   test:
-      suffix: cuda
-      nsize: 3
-      args: -vec_type cuda
-      requires: cuda
-      output_file: output/ex28_1.out
- 
+     test:
+        suffix: 2_cuda
+        args: -splitreduction_async -vec_type cuda
+        requires: cuda
+
+     test:
+        suffix: cuda
+        args: -vec_type cuda
+        requires: cuda
+
+     test:
+        suffix: 2_kokkos
+        args: -splitreduction_async -vec_type kokkos
+        requires: kokkos_kernels
+
+     test:
+        suffix: kokkos
+        args: -vec_type kokkos
+        requires: kokkos_kernels
 TEST*/

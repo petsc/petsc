@@ -123,29 +123,25 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *currentType, const char **defaultType)
+static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char **defaultType)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (!currentType) {
-    if (size == 1) {
-      *defaultType = PETSCPARTITIONERSIMPLE;
-    } else {
-#if defined(PETSC_HAVE_PARMETIS)
-      *defaultType = PETSCPARTITIONERPARMETIS;
-#elif defined(PETSC_HAVE_PTSCOTCH)
-      *defaultType = PETSCPARTITIONERPTSCOTCH;
-#elif defined(PETSC_HAVE_CHACO)
-      *defaultType = PETSCPARTITIONERCHACO;
-#else
-      *defaultType = PETSCPARTITIONERSIMPLE;
-#endif
-    }
+  if (size == 1) {
+    *defaultType = PETSCPARTITIONERSIMPLE;
   } else {
-    *defaultType = currentType;
+#if defined(PETSC_HAVE_PARMETIS)
+    *defaultType = PETSCPARTITIONERPARMETIS;
+#elif defined(PETSC_HAVE_PTSCOTCH)
+    *defaultType = PETSCPARTITIONERPTSCOTCH;
+#elif defined(PETSC_HAVE_CHACO)
+    *defaultType = PETSCPARTITIONERCHACO;
+#else
+    *defaultType = PETSCPARTITIONERSIMPLE;
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -169,20 +165,18 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
 @*/
 PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 {
-  const char    *defaultType;
+  const char    *currentType = NULL;
   char           name[256];
   PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  ierr = PetscPartitionerGetDefaultType(((PetscObject) part)->comm, ((PetscObject) part)->type_name,&defaultType);CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, defaultType, name, sizeof(name), &flg);CHKERRQ(ierr);
+  ierr = PetscPartitionerGetType(part, &currentType);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, currentType, name, sizeof(name), &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPartitionerSetType(part, name);CHKERRQ(ierr);
-  } else if (!((PetscObject) part)->type_name) {
-    ierr = PetscPartitionerSetType(part, defaultType);CHKERRQ(ierr);
   }
   ierr = PetscOptionsBool("-petscpartitioner_use_vertex_weights","Use vertex weights","",part->usevwgt,&part->usevwgt,NULL);CHKERRQ(ierr);
   if (part->ops->setfromoptions) {
@@ -262,7 +256,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
   if (!*part) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*part), PETSCPARTITIONER_CLASSID, 1);
 
-  if (--((PetscObject)(*part))->refct > 0) {*part = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*part))->refct > 0) {*part = NULL; PetscFunctionReturn(0);}
   ((PetscObject) (*part))->refct = 0;
 
   ierr = PetscPartitionerReset(*part);CHKERRQ(ierr);
@@ -401,8 +395,8 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   ierr = PetscPartitionerInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(p, PETSCPARTITIONER_CLASSID, "PetscPartitioner", "Graph Partitioner", "PetscPartitioner", comm, PetscPartitionerDestroy, PetscPartitionerView);CHKERRQ(ierr);
-  ierr = PetscPartitionerGetDefaultType(comm, NULL, &partitionerType);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetType(p,partitionerType);CHKERRQ(ierr);
+  ierr = PetscPartitionerGetDefaultType(comm, &partitionerType);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetType(p, partitionerType);CHKERRQ(ierr);
 
   p->edgeCut = 0;
   p->balance = 0.0;

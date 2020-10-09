@@ -20,19 +20,14 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
                you probably want a KSP type of Richardson");
   ksp->its = 0;
   ierr     = KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
-  ierr     = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
+  ierr     = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);
+  /* Note: only some ranks may have this set; this may lead to problems if the caller assumes ksp->reason is set on all processes or just uses the result */
   if (pcreason) {
+    ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   } else {
     ksp->its    = 1;
     ksp->reason = KSP_CONVERGED_ITS;
-    if (PetscDefined(USE_DEBUG)) {
-      PetscReal norm;
-      ierr = VecNorm(ksp->vec_sol,NORM_2,&norm);CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(norm)) {
-        ksp->reason = KSP_DIVERGED_NANORINF;
-      }
-    }
   }
   PetscFunctionReturn(0);
 }
@@ -51,18 +46,13 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
   ksp->its = 0;
   ierr     = PCMatApply(ksp->pc,B,X);CHKERRQ(ierr);
   ierr     = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
+  /* Note: only some ranks may have this set; this may lead to problems if the caller assumes ksp->reason is set on all processes or just uses the result */
   if (pcreason) {
+    ierr = MatSetInf(X);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   } else {
     ksp->its    = 1;
     ksp->reason = KSP_CONVERGED_ITS;
-    if (PetscDefined(USE_DEBUG)) {
-      PetscReal norm;
-      ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(norm)) {
-        ksp->reason = KSP_DIVERGED_NANORINF;
-      }
-    }
   }
   PetscFunctionReturn(0);
 }

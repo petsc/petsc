@@ -163,20 +163,6 @@ src/benchmarks/streams/OpenMPVersion
 src/benchmarks/streams/PthreadVersion
 src/benchmarks/streams/scaling.png
 horse.ply
-src/docs/tex/manual/anchors
-src/docs/tex/manual/*.aux
-src/docs/tex/manual/*.bbl
-src/docs/tex/manual/*.blg
-src/docs/tex/manual/*.idx
-src/docs/tex/manual/*.ilg
-src/docs/tex/manual/*.ind
-src/docs/tex/manual/*.out
-src/docs/tex/manual/*.toc
-src/docs/tex/manual/tmp
-src/docs/tex/manual/developerstmp.tex
-src/docs/tex/manual/acknowltmp.tex
-src/docs/tex/manual/manual1.tex
-src/docs/tex/manual/intro.pdf
 src/docs/tao_tex/manual/sindex.tex
 src/docs/tao_tex/manual/findex.tex
 src/docs/tao_tex/manual/*.aux
@@ -192,3 +178,4 @@ src/docs/tao_tex/manual/*.dvi
 **/f90module*.f90
 compile_commands.json
 .clangd/
+sphinx_docs_env

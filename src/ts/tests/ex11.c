@@ -158,7 +158,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscReal      A[1],Gamma[1] = {1.0},b[1],c[1],d[1];
-  
+
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* TaoLineSearchRegister() also has the same memory leak */
   /* TaoRegister() also has the same memory leak */
@@ -202,4 +202,3 @@ int main(int argc,char **argv)
    test:
 
 TEST*/
-

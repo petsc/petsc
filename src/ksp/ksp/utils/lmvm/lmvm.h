@@ -6,13 +6,13 @@
 
 
 /*
-  MATLMVM format - a base matrix-type that represents Limited-Memory 
+  MATLMVM format - a base matrix-type that represents Limited-Memory
   Variable Metric (LMVM) approximations of a Jacobian.
-  
-  LMVM approximations can be symmetric, symmetric positive-definite, 
-  rectangular, or otherwise square with no determinable properties. 
-  Each derived LMVM type should automatically set its matrix properties 
-  if its construction can guarantee symmetry (MAT_SYMMETRIC) or symmetric 
+
+  LMVM approximations can be symmetric, symmetric positive-definite,
+  rectangular, or otherwise square with no determinable properties.
+  Each derived LMVM type should automatically set its matrix properties
+  if its construction can guarantee symmetry (MAT_SYMMETRIC) or symmetric
   positive-definiteness (MAT_SPD).
 */
 
@@ -32,7 +32,7 @@ typedef struct {
   PetscInt m_old, m, k, nupdates, nrejects, nresets;
   Vec *S, *Y;
   Vec Xprev, Fprev;
-  
+
   /* User-defined initial Jacobian tools */
   PetscBool user_pc, user_ksp, user_scale;
   PetscReal ksp_rtol, ksp_atol;
@@ -42,10 +42,10 @@ typedef struct {
   Mat J0;
   PC J0pc;
   KSP J0ksp;
-  
+
   /* Data structures to support common Mat functions */
   PetscReal shift;
-  
+
   /* Miscellenous parameters */
   PetscBool square; /* flag for defining the LMVM approximation as a square matrix */
   PetscReal eps; /* (default: PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0)) */

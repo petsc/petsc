@@ -209,7 +209,7 @@ int main(int argc,char **argv)
   for (i=0; i<max_nonlin_its; i++) {
 
     /*
-        Compute the Jacobian matrix.  
+        Compute the Jacobian matrix.
      */
     ierr = ComputeJacobian(&user,X,J);CHKERRQ(ierr);
 
@@ -426,7 +426,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
    Notes:
    Due to grid point reordering with DMDAs, we must always work
    with the local grid points, and then transform them to the new
-   global numbering with the "ltog" mapping 
+   global numbering with the "ltog" mapping
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */

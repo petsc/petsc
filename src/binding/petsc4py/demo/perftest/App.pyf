@@ -1,0 +1,25 @@
+! -*- f90 -*-
+
+python module App
+interface
+
+   subroutine formFunction(nx, ny, nz, h, t, x, xdot, f)
+     intent(c) formFunction
+     integer, intent(in), intent(hide) :: nx = shape(x,0)
+     integer, intent(in), intent(hide) :: ny = shape(x,1)
+     integer, intent(in), intent(hide) :: nz = shape(x,2)
+     real(kind=8), intent(in)    :: h(3), t
+     real(kind=8), intent(in)    :: x(nx,ny,nz), xdot(nx,ny,nz)
+     real(kind=8), intent(inout) :: f(nx,ny,nz)
+   end subroutine formFunction
+
+   subroutine formInitial(nx, ny, nz, h, t, x)
+     intent(c) formInitial
+     integer, intent(in), intent(hide) :: nx = shape(x,0)
+     integer, intent(in), intent(hide) :: ny = shape(x,1)
+     integer, intent(in), intent(hide) :: nz = shape(x,2)
+     real(kind=8), intent(in)    :: h(3), t
+     real(kind=8), intent(inout) :: x(nx,ny,nz)
+   end subroutine formFunction
+
+end python module App

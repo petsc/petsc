@@ -126,9 +126,9 @@ void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lam
             if (k==l && i==j) g3[IDX(i,j,k,l)] += lambda;
             if (i==k && j==l) g3[IDX(i,j,k,l)] += mu;
             if (i==l && j==k) g3[IDX(i,j,k,l)] += mu;
-	    if (k==l && i==j && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += lambda;\n",IDX(i,j,k,l));
-	    if (i==k && j==l && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
-	    if (i==l && j==k && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
+            if (k==l && i==j && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += lambda;\n",IDX(i,j,k,l));
+            if (i==k && j==l && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
+            if (i==l && j==k && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
           }
         }
       }
@@ -202,20 +202,22 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 
 int main(int argc,char **args)
 {
-  Mat            Amat;
-  PetscErrorCode ierr;
-  SNES           snes;
-  KSP            ksp;
-  MPI_Comm       comm;
-  PetscMPIInt    rank;
-  PetscLogStage  stage[17];
-  PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE,attach_nearnullspace=PETSC_FALSE;
-  Vec            xx,bb;
-  PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7],run_type=1;
-  DM             dm,distdm,basedm;
-  PetscBool      flg;
-  char           convType[256];
-  PetscReal      Lx,mdisp[10],err[10];
+  Mat                Amat;
+  PetscErrorCode     ierr;
+  SNES               snes;
+  KSP                ksp;
+  MPI_Comm           comm;
+  PetscMPIInt        rank;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage      stage[17];
+#endif
+  PetscBool          test_nonzero_cols = PETSC_FALSE,use_nearnullspace = PETSC_TRUE,attach_nearnullspace = PETSC_FALSE;
+  Vec                xx,bb;
+  PetscInt           iter,i,N,dim = 3,cells[3] = {1,1,1},max_conv_its,local_sizes[7],run_type = 1;
+  DM                 dm,distdm,basedm;
+  PetscBool          flg;
+  char               convType[256];
+  PetscReal          Lx,mdisp[10],err[10];
   const char * const options[10] = {"-ex56_dm_refine 0",
                                     "-ex56_dm_refine 1",
                                     "-ex56_dm_refine 2",
@@ -409,10 +411,10 @@ int main(int argc,char **args)
       /* bcs */
       if (run_type==1) {
         PetscInt id = 1;
-        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)(void)) zero, 1, &id, NULL);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)(void)) zero, NULL, 1, &id, NULL);CHKERRQ(ierr);
       } else {
-        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", "Faces", 0, Ncomp, components, (void (*)(void)) zero, Nfid, fid, NULL);CHKERRQ(ierr);
-        ierr = DMAddBoundary(dm, DM_BC_NATURAL, "traction", "Faces", 0, Ncomp, components, NULL, Npid, pid, NULL);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", "Faces", 0, Ncomp, components, (void (*)(void)) zero, NULL, Nfid, fid, NULL);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_NATURAL, "traction", "Faces", 0, Ncomp, components, NULL, NULL, Npid, pid, NULL);CHKERRQ(ierr);
       }
       while (cdm) {
         ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
@@ -440,7 +442,7 @@ int main(int argc,char **args)
       PetscInt     fields = 0;
       PetscObject  deformation;
       ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
-      ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
+      ierr = DMPlexCreateRigidBody(subdm, 0, &nearNullSpace);CHKERRQ(ierr);
       ierr = DMGetField(dm, 0, NULL, &deformation);CHKERRQ(ierr);
       ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
       ierr = DMDestroy(&subdm);CHKERRQ(ierr);
@@ -589,13 +591,13 @@ int main(int argc,char **args)
     suffix: cuda
     nsize: 4
     requires: cuda !single
-    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ex56_dm_mat_type aijcusparse -ex56_dm_vec_type cuda -ksp_monitor_short -ksp_converged_reason -snes_converged_reason -snes_monitor_short -use_gpu_aware_mpi 0 -ex56_dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20
+    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ex56_dm_mat_type aijcusparse -ex56_dm_vec_type cuda -ksp_monitor_short -ksp_converged_reason -snes_converged_reason -snes_monitor_short -ex56_dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20
 
   test:
     suffix: viennacl
     nsize: 4
     requires: viennacl !single
-    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ex56_dm_mat_type aijviennacl -ex56_dm_vec_type viennacl -ksp_monitor_short -ksp_converged_reason -snes_converged_reason -snes_monitor_short -use_gpu_aware_mpi 0 -ex56_dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20
+    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ex56_dm_mat_type aijviennacl -ex56_dm_vec_type viennacl -ksp_monitor_short -ksp_converged_reason -snes_converged_reason -snes_monitor_short -ex56_dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20
 
 
   # Don't run AIJMKL caes with complex scalars because of convergence issues.

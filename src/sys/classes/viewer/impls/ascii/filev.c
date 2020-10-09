@@ -379,7 +379,7 @@ PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer viewer,PetscInt tabs)
 .    viewer - obtained with PetscViewerASCIIOpen()
 
     Level: intermediate
-    
+
     Notes:
     See documentation of PetscViewerASCIISynchronizedPrintf() for more details how the synchronized output should be done properly.
 
@@ -411,7 +411,7 @@ PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 .    viewer - obtained with PetscViewerASCIIOpen()
 
     Level: intermediate
-    
+
     Notes:
     See documentation of PetscViewerASCIISynchronizedPrintf() for more details how the synchronized output should be done properly.
 
@@ -906,7 +906,7 @@ $ PetscViewerASCIISynchronizedPrintf(viewer, ...);
 $ PetscViewerASCIISynchronizedPrintf(viewer, ...);
 $ ...
 $ PetscViewerFlush(viewer);
-$ PetscViewerASCIIPopSynchronized(viewer);    
+$ PetscViewerASCIIPopSynchronized(viewer);
 
     Fortran Note:
       Can only print a single character* string
@@ -1067,7 +1067,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
       ((__float128*)data)[i] = tmp;
     }
 #endif
-    else {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Data type %d not supported", (int) dtype);}
+    else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Data type %d not supported", (int) dtype);
     if (!ret) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Conversion error for data type %d", (int) dtype);
     else if (ret < 0) break; /* Proxy for EOF, need to check for it in configure */
   }
@@ -1075,4 +1075,3 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
   else if (ret < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Insufficient data, read only %D < %D items", i, num);
   PetscFunctionReturn(0);
 }
-

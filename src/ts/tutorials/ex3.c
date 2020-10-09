@@ -308,7 +308,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
     - Note that the Fortran interface to VecGetArray() differs from the
       C version.  See the users manual for details.
   */
-  ierr = VecGetArray(u,&u_localptr);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(u,&u_localptr);CHKERRQ(ierr);
 
   /*
      We initialize the solution array by simply writing the solution
@@ -320,7 +320,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(u,&u_localptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(u,&u_localptr);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
@@ -353,7 +353,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   /*
      Get a pointer to vector data.
   */
-  ierr = VecGetArray(solution,&s_localptr);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(solution,&s_localptr);CHKERRQ(ierr);
 
   /*
      Simply write the solution directly into the array locations.
@@ -367,7 +367,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(solution,&s_localptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(solution,&s_localptr);CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -422,8 +422,6 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   ierr   = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = PetscSqrtReal(appctx->h)*norm_2;
   ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
-  if (norm_2   < 1e-14) norm_2   = 0;
-  if (norm_max < 1e-14) norm_max = 0;
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %3D: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",step,(double)dt,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);

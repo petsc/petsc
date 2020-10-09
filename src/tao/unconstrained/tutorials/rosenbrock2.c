@@ -6,7 +6,7 @@
 static  char help[] = "This example demonstrates use of the TAO package to \n\
 solve an unconstrained minimization problem on a single processor.  We \n\
 minimize the extended Rosenbrock function: \n\
-   sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 ) \n\
+   sum_{i=0}^{n/2-1} (alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2) \n\
 or the chained Rosenbrock function:\n\
    sum_{i=0}^{n-1} alpha*(x_{i+1} - x_i^2)^2 + (1 - x_i)^2\n";
 
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
     recycled_its += its;
     ierr = PetscPrintf(PETSC_COMM_SELF, "-----------------------\n");CHKERRQ(ierr);
   }
-  
+
   /* Disable recycling and solve again! */
   ierr = TaoSetMaximumIterations(tao, 100);CHKERRQ(ierr);
   ierr = TaoLMVMRecycle(tao, PETSC_FALSE);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF, "-----------------------\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "recycled its: %D | oneshot its: %D\n", recycled_its, oneshot_its);CHKERRQ(ierr);
   if (recycled_its != oneshot_its) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "LMVM recycling does not work!");
-  
+
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = MatDestroy(&H);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
   ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);
   *f   = ff;
 
-  ierr = PetscLogFlops(nn*15);CHKERRQ(ierr);
+  ierr = PetscLogFlops(15.0*nn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -204,7 +204,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
   PetscFunctionBeginUser;
   /* Zero existing matrix entries */
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(H); CHKERRQ(ierr);}
+  if (assembled){ierr = MatZeroEntries(H);CHKERRQ(ierr);}
 
   /* Get a pointer to vector data */
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);

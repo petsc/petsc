@@ -219,7 +219,8 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
   if (!v->spptr) {
     try {
       v->spptr                            = new Vec_ViennaCL;
-      ((Vec_ViennaCL*)v->spptr)->GPUarray = new ViennaCLVector((PetscBLASInt)v->map->n);
+      ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated = new ViennaCLVector((PetscBLASInt)v->map->n);
+      ((Vec_ViennaCL*)v->spptr)->GPUarray = ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated;
 
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
@@ -1024,7 +1025,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
-PetscErrorCode  VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
+PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
 {
   PetscErrorCode ierr;
 
@@ -1032,6 +1033,176 @@ PetscErrorCode  VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
   ierr = VecCreate(comm,v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,n,n);CHKERRQ(ierr);
   ierr = VecSetType(*v,VECSEQVIENNACL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+   VecCreateSeqViennaCLWithArray - Creates a viennacl sequential array-style vector,
+   where the user provides the array space to store the vector values.
+
+   Collective
+
+   Input Parameter:
++  comm - the communicator, should be PETSC_COMM_SELF
+.  bs - the block size
+.  n - the vector length
+-  array - viennacl array where the vector elements are to be stored.
+
+   Output Parameter:
+.  V - the vector
+
+   Notes:
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   same type as an existing vector.
+
+   If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
+   at a later stage to SET the array for storing the vector values.
+
+   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+   The user should not free the array until the vector is destroyed.
+
+   Level: intermediate
+
+.seealso: VecCreateMPIViennaCLWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
+          VecCreateGhost(), VecCreateSeq(), VecCUDAPlaceArray(), VecCreateSeqWithArray(),
+          VecCreateMPIWithArray()
+@*/
+PETSC_EXTERN PetscErrorCode  VecCreateSeqViennaCLWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const ViennaCLVector* array,Vec *V)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = VecCreate(comm,V);CHKERRQ(ierr);
+  ierr = VecSetSizes(*V,n,n);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*V,bs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
+  ierr = VecCreate_SeqViennaCL_Private(*V,array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCreateSeqViennaCLWithArrays - Creates a ViennaCL sequential vector, where
+   the user provides the array space to store the vector values.
+
+   Collective
+
+   Input Parameter:
++  comm - the communicator, should be PETSC_COMM_SELF
+.  bs - the block size
+.  n - the vector length
+-  cpuarray - CPU memory where the vector elements are to be stored.
+-  viennaclvec - ViennaCL vector where the Vec entries are to be stored on the device.
+
+   Output Parameter:
+.  V - the vector
+
+   Notes:
+   If both cpuarray and viennaclvec are provided, the caller must ensure that
+   the provided arrays have identical values.
+
+   PETSc does NOT free the provided arrays when the vector is destroyed via
+   VecDestroy(). The user should not free the array until the vector is
+   destroyed.
+
+   Level: intermediate
+
+.seealso: VecCreateMPIViennaCLWithArrays(), VecCreate(), VecCreateSeqWithArray(),
+          VecViennaCLPlaceArray(), VecPlaceArray(), VecCreateSeqCUDAWithArrays(),
+          VecViennaCLAllocateCheckHost()
+@*/
+PetscErrorCode  VecCreateSeqViennaCLWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar cpuarray[],const ViennaCLVector* viennaclvec,Vec *V)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
+
+  // set V's viennaclvec to be viennaclvec, do not allocate memory on host yet.
+  ierr = VecCreateSeqViennaCLWithArray(comm,bs,n,viennaclvec,V);CHKERRQ(ierr);
+
+  if (cpuarray && viennaclvec) {
+    Vec_Seq *s = (Vec_Seq*)((*V)->data);
+    s->array = (PetscScalar*)cpuarray;
+    (*V)->offloadmask = PETSC_OFFLOAD_BOTH;
+  } else if (cpuarray) {
+    Vec_Seq *s = (Vec_Seq*)((*V)->data);
+    s->array = (PetscScalar*)cpuarray;
+    (*V)->offloadmask = PETSC_OFFLOAD_CPU;
+  } else if (viennaclvec) {
+    (*V)->offloadmask = PETSC_OFFLOAD_GPU;
+  } else {
+    (*V)->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
+  }
+
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecViennaCLPlaceArray - Replace the viennacl vector in a Vec with
+   the one provided by the user. This is useful to avoid a copy.
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the ViennaCL vector
+
+   Notes:
+   You can return to the original viennacl vector with a call to
+   VecViennaCLResetArray() It is not possible to use VecViennaCLPlaceArray()
+   and VecPlaceArray() at the same time on the same vector.
+
+   Level: intermediate
+
+.seealso: VecPlaceArray(), VecSetValues(), VecViennaCLResetArray(),
+          VecCUDAPlaceArray(),
+
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec vin,const ViennaCLVector* a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
+  ierr = VecViennaCLCopyToGPU(vin);CHKERRQ(ierr);
+  if (((Vec_Seq*)vin->data)->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecViennaCLPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecViennaCLResetArray()/VecResetArray()");
+  ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_ViennaCL*)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
+  ((Vec_ViennaCL*)vin->spptr)->GPUarray = (ViennaCLVector*)a;
+  vin->offloadmask = PETSC_OFFLOAD_GPU;
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecViennaCLResetArray - Resets a vector to use its default memory. Call this
+   after the use of VecViennaCLPlaceArray().
+
+   Not Collective
+
+   Input Parameters:
+.  vec - the vector
+
+   Level: developer
+
+.seealso: VecViennaCLPlaceArray(), VecResetArray(), VecCUDAResetArray(), VecPlaceArray()
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLResetArray(Vec vin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
+  ierr = VecViennaCLCopyToGPU(vin);CHKERRQ(ierr);
+  ((Vec_ViennaCL*)vin->spptr)->GPUarray = (ViennaCLVector *) ((Vec_Seq*)vin->data)->unplacedarray;
+  ((Vec_Seq*)vin->data)->unplacedarray = 0;
+  vin->offloadmask = PETSC_OFFLOAD_GPU;
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1071,7 +1242,7 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
   PetscFunctionBegin;
   try {
     if (v->spptr) {
-      delete ((Vec_ViennaCL*)v->spptr)->GPUarray;
+      delete ((Vec_ViennaCL*)v->spptr)->GPUarray_allocated;
       delete (Vec_ViennaCL*) v->spptr;
     }
   } catch(char *ex) {
@@ -1174,3 +1345,299 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  VecViennaCLGetCLContext - Get the OpenCL context in which the Vec resides.
+
+  Caller should cast (*ctx) to (const cl_context). Caller is responsible for
+  invoking clReleaseContext().
+
+
+  Input Parameters:
+.  v    - the vector
+
+  Output Parameters:
+.  ctx - pointer to the underlying CL context
+
+  Level: intermediate
+
+.seealso: VecViennaCLGetCLQueue(), VecViennaCLGetCLMemRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T* ctx)
+{
+#if !defined(PETSC_HAVE_OPENCL)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"PETSc must be configured with --with-opencl to get the associated cl_context.");
+#else
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
+
+  PetscErrorCode ierr;
+  const ViennaCLVector *v_vcl;
+  ierr = VecViennaCLGetArrayRead(v, &v_vcl);CHKERRQ(ierr);
+  try{
+    viennacl::ocl::context vcl_ctx = v_vcl->handle().opencl_handle().context();
+    const cl_context ocl_ctx = vcl_ctx.handle().get();
+    clRetainContext(ocl_ctx);
+    *ctx = (PETSC_UINTPTR_T)(ocl_ctx);
+  } catch (std::exception const & ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+  }
+
+  PetscFunctionReturn(0);
+#endif
+}
+
+/*@C
+  VecViennaCLGetCLQueue - Get the OpenCL command queue to which all
+  operations of the Vec are enqueued.
+
+  Caller should cast (*queue) to (const cl_command_queue). Caller is
+  responsible for invoking clReleaseCommandQueue().
+
+  Input Parameters:
+.  v    - the vector
+
+  Output Parameters:
+.  ctx - pointer to the CL command queue
+
+  Level: intermediate
+
+.seealso: VecViennaCLGetCLContext(), VecViennaCLGetCLMemRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T* queue)
+{
+#if !defined(PETSC_HAVE_OPENCL)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"PETSc must be configured with --with-opencl to get the associated cl_command_queue.");
+#else
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
+
+  PetscErrorCode ierr;
+  const ViennaCLVector *v_vcl;
+  ierr = VecViennaCLGetArrayRead(v, &v_vcl);CHKERRQ(ierr);
+  try{
+    viennacl::ocl::context vcl_ctx = v_vcl->handle().opencl_handle().context();
+    const viennacl::ocl::command_queue& vcl_queue = vcl_ctx.current_queue();
+    const cl_command_queue ocl_queue = vcl_queue.handle().get();
+    clRetainCommandQueue(ocl_queue);
+    *queue = (PETSC_UINTPTR_T)(ocl_queue);
+  } catch (std::exception const & ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+  }
+
+  PetscFunctionReturn(0);
+#endif
+}
+
+/*@C
+  VecViennaCLGetCLMemRead - Provides access to the the CL buffer inside a Vec.
+
+  Caller should cast (*mem) to (const cl_mem). Caller is responsible for
+  invoking clReleaseMemObject().
+
+  Input Parameters:
+.  v    - the vector
+
+  Output Parameters:
+.  mem - pointer to the device buffer
+
+  Level: intermediate
+
+.seealso: VecViennaCLGetCLContext(), VecViennaCLGetCLMemWrite()
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T* mem)
+{
+#if !defined(PETSC_HAVE_OPENCL)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"PETSc must be configured with --with-opencl to get a Vec's cl_mem");
+#else
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
+
+  PetscErrorCode ierr;
+  const ViennaCLVector *v_vcl;
+  ierr = VecViennaCLGetArrayRead(v, &v_vcl);CHKERRQ(ierr);
+  try{
+    const cl_mem ocl_mem = v_vcl->handle().opencl_handle().get();
+    clRetainMemObject(ocl_mem);
+    *mem = (PETSC_UINTPTR_T)(ocl_mem);
+  } catch (std::exception const & ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+  }
+  PetscFunctionReturn(0);
+#endif
+}
+
+/*@C
+  VecViennaCLGetCLMemWrite - Provides access to the the CL buffer inside a Vec.
+
+  Caller should cast (*mem) to (const cl_mem). Caller is responsible for
+  invoking clReleaseMemObject().
+
+  The device pointer has to be released by calling
+  VecViennaCLRestoreCLMemWrite().  Upon restoring the vector data the data on
+  the host will be marked as out of date.  A subsequent access of the host data
+  will thus incur a data transfer from the device to the host.
+
+  Input Parameters:
+.  v    - the vector
+
+  Output Parameters:
+.  mem - pointer to the device buffer
+
+  Level: intermediate
+
+.seealso: VecViennaCLGetCLContext(), VecViennaCLRestoreCLMemWrite()
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T* mem)
+{
+#if !defined(PETSC_HAVE_OPENCL)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"PETSc must be configured with --with-opencl to get a Vec's cl_mem");
+#else
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
+
+  PetscErrorCode ierr;
+  ViennaCLVector *v_vcl;
+  ierr = VecViennaCLGetArrayWrite(v, &v_vcl);CHKERRQ(ierr);
+  try{
+    const cl_mem ocl_mem = v_vcl->handle().opencl_handle().get();
+    clRetainMemObject(ocl_mem);
+    *mem = (PETSC_UINTPTR_T)(ocl_mem);
+  } catch (std::exception const & ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+  }
+
+  PetscFunctionReturn(0);
+#endif
+}
+
+/*@C
+  VecViennaCLRestoreCLMemWrite - Restores a CL buffer pointer previously
+  acquired with VecViennaCLGetCLMemWrite().
+
+   This marks the host data as out of date.  Subsequent access to the
+   vector data on the host side with for instance VecGetArray() incurs a
+   data transfer.
+
+  Input Parameters:
+.  v    - the vector
+
+  Level: intermediate
+
+.seealso: VecViennaCLGetCLContext(), VecViennaCLGetCLMemWrite()
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
+{
+#if !defined(PETSC_HAVE_OPENCL)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"PETSc must be configured with --with-opencl to restore a Vec's cl_mem");
+#else
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
+
+  PetscErrorCode ierr;
+  ierr = VecViennaCLRestoreArrayWrite(v, PETSC_NULL);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+#endif
+}
+
+
+/*@C
+  VecViennaCLGetCLMem - Provides access to the the CL buffer inside a Vec.
+
+  Caller should cast (*mem) to (const cl_mem). Caller is responsible for
+  invoking clReleaseMemObject().
+
+  The device pointer has to be released by calling VecViennaCLRestoreCLMem().
+  Upon restoring the vector data the data on the host will be marked as out of
+  date.  A subsequent access of the host data will thus incur a data transfer
+  from the device to the host.
+
+  Input Parameters:
+.  v    - the vector
+
+  Output Parameters:
+.  mem - pointer to the device buffer
+
+  Level: intermediate
+
+.seealso: VecViennaCLGetCLContext(), VecViennaCLRestoreCLMem()
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T* mem)
+{
+#if !defined(PETSC_HAVE_OPENCL)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"PETSc must be configured with --with-opencl to get a Vec's cl_mem");
+#else
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
+
+  PetscErrorCode ierr;
+  ViennaCLVector *v_vcl;
+  ierr = VecViennaCLGetArray(v, &v_vcl);CHKERRQ(ierr);
+  try{
+    const cl_mem ocl_mem = v_vcl->handle().opencl_handle().get();
+    clRetainMemObject(ocl_mem);
+    *mem = (PETSC_UINTPTR_T)(ocl_mem);
+  } catch (std::exception const & ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+  }
+
+  PetscFunctionReturn(0);
+#endif
+}
+
+/*@C
+  VecViennaCLRestoreCLMem - Restores a CL buffer pointer previously
+  acquired with VecViennaCLGetCLMem().
+
+   This marks the host data as out of date. Subsequent access to the vector
+   data on the host side with for instance VecGetArray() incurs a data
+   transfer.
+
+  Input Parameters:
+.  v    - the vector
+
+  Level: intermediate
+
+.seealso: VecViennaCLGetCLContext(), VecViennaCLGetCLMem()
+@*/
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec v)
+{
+#if !defined(PETSC_HAVE_OPENCL)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"PETSc must be configured with --with-opencl to restore a Vec's cl_mem");
+#else
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
+
+  PetscErrorCode ierr;
+  ierr = VecViennaCLRestoreArray(v, PETSC_NULL);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+#endif
+}
+
+PetscErrorCode VecCreate_SeqViennaCL_Private(Vec V,const ViennaCLVector *array)
+{
+  PetscErrorCode ierr;
+  Vec_ViennaCL   *vecviennacl;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQVIENNACL on more than one process");
+  ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQVIENNACL);CHKERRQ(ierr);
+  ierr = VecBindToCPU_SeqAIJViennaCL(V,PETSC_FALSE);CHKERRQ(ierr);
+  V->ops->bindtocpu = VecBindToCPU_SeqAIJViennaCL;
+
+  if (array) {
+    if (!V->spptr)
+      V->spptr = new Vec_ViennaCL;
+    vecviennacl = (Vec_ViennaCL*)V->spptr;
+    vecviennacl->GPUarray_allocated = 0;
+    vecviennacl->GPUarray           = (ViennaCLVector*)array;
+    V->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
+  }
+
+  PetscFunctionReturn(0);
+}

@@ -6,7 +6,7 @@ static char help[] = "Introductory example that illustrates running PETSc on a s
    Processors: 2
 
    Note that this example is not checking the error codes from the MPI calls with CHKERRQ() before PETSc is initialized
-   and after PETSc is finalized. This is because the PETSc macro CHKERRQ() will not work in those circumstances. 
+   and after PETSc is finalized. This is because the PETSc macro CHKERRQ() will not work in those circumstances.
 T*/
  #include <petscsys.h>
 

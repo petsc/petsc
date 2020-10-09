@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
   MLINK link;
   int   ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT);CHKERRQ(ierr);
   ierr = processPackets(link);CHKERRQ(ierr);
   ierr = cleanupConnection(env, link);CHKERRQ(ierr);

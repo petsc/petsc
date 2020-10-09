@@ -8,7 +8,7 @@
 
 PetscBool PCRegisterAllCalled = PETSC_FALSE;
 /*
-   Contains the list of registered KSP routines
+   Contains the list of registered PC routines
 */
 PetscFunctionList PCList = NULL;
 
@@ -269,4 +269,3 @@ PetscErrorCode  PCGetApplicationContext(PC pc,void *usrP)
   *(void**)usrP = pc->user;
   PetscFunctionReturn(0);
 }
-

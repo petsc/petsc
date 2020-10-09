@@ -1,6 +1,5 @@
-
 !
-!  Include file for Fortran use of the TAO (Optimization) package in PETSc
+!  Used by petsctaomod.F90 to create Fortran module file
 !
 #include "petsc/finclude/petsctao.h"
 

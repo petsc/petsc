@@ -29,7 +29,7 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 
     } else if (format == PETSC_VIEWER_DEFAULT) {
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-      El::Print( *a->emat, "Elemental matrix (cyclic ordering)" );
+      El::Print( *a->emat, "Elemental matrix (cyclic ordering)");
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       if (A->factortype == MAT_FACTOR_NONE){
         Mat Adense;
@@ -122,7 +122,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         P2RO(A,1,cols[j],&crank,&cidx);
         RO2E(A,1,crank,cidx,&ecol);
         if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
-        if (!a->emat->IsLocal(erow,ecol) ){ /* off-proc entry */
+        if (!a->emat->IsLocal(erow,ecol)){ /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
           if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
@@ -138,7 +138,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
     }
 
     /* printf("numQueues=%d\n",numQueues); */
-    a->emat->Reserve( numQueues );
+    a->emat->Reserve( numQueues);
     for (i=0; i<nr; i++) {
       if (rows[i] < 0) continue;
       P2RO(A,0,rows[i],&rrank,&ridx);
@@ -147,9 +147,9 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         if (cols[j] < 0) continue;
         P2RO(A,1,cols[j],&crank,&cidx);
         RO2E(A,1,crank,cidx,&ecol);
-        if ( !a->emat->IsLocal(erow,ecol) ) { /*off-proc entry*/
+        if (!a->emat->IsLocal(erow,ecol)) { /*off-proc entry*/
           /* printf("Queueing remotely update of (%d,%d)\n",erow,ecol); */
-          a->emat->QueueUpdate( erow, ecol, vals[i*nc+j] );
+          a->emat->QueueUpdate( erow, ecol, vals[i*nc+j]);
         }
       }
     }
@@ -164,7 +164,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         P2RO(A,0,rows[i],&rrank,&ridx);
         RO2E(A,0,rrank,ridx,&erow);
         if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
-        if (!a->emat->IsLocal(erow,ecol) ){ /* off-proc entry */
+        if (!a->emat->IsLocal(erow,ecol)){ /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
           if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
@@ -180,7 +180,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
     }
 
     /* printf("numQueues=%d\n",numQueues); */
-    a->emat->Reserve( numQueues );
+    a->emat->Reserve( numQueues);
     for (j=0; j<nc; j++) {
       if (cols[j] < 0) continue;
       P2RO(A,1,cols[j],&crank,&cidx);
@@ -190,9 +190,9 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         if (rows[i] < 0) continue;
         P2RO(A,0,rows[i],&rrank,&ridx);
         RO2E(A,0,rrank,ridx,&erow);
-        if ( !a->emat->IsLocal(erow,ecol) ) { /*off-proc entry*/
+        if (!a->emat->IsLocal(erow,ecol)) { /*off-proc entry*/
           /* printf("Queueing remotely update of (%d,%d)\n",erow,ecol); */
-          a->emat->QueueUpdate( erow, ecol, vals[i+j*nr] );
+          a->emat->QueueUpdate( erow, ecol, vals[i+j*nr]);
         }
       }
     }
@@ -375,6 +375,52 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Elemental(Mat C)
     break;
   default:
     break;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A,Mat B,Mat C)
+{
+  Mat            Be,Ce;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX,&Be);CHKERRQ(ierr);
+  ierr = MatMatMult(A,Be,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Ce);CHKERRQ(ierr);
+  ierr = MatConvert(Ce,MATMPIDENSE,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&Be);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ce);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMatMultSymbolic_Elemental_MPIDense(Mat A,Mat B,PetscReal fill,Mat C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetSizes(C,A->rmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
+  C->ops->matmultnumeric = MatMatMultNumeric_Elemental_MPIDense;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense_AB(Mat C)
+{
+  PetscFunctionBegin;
+  C->ops->matmultsymbolic = MatMatMultSymbolic_Elemental_MPIDense;
+  C->ops->productsymbolic = MatProductSymbolic_AB;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense(Mat C)
+{
+  PetscErrorCode ierr;
+  Mat_Product    *product = C->product;
+
+  PetscFunctionBegin;
+  if (product->type == MATPRODUCT_AB) {
+    ierr = MatProductSetFromOptions_Elemental_MPIDense_AB(C);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -602,13 +648,24 @@ static PetscErrorCode MatSolveAdd_Elemental(Mat A,Vec B,Vec Y,Vec X)
 
 static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 {
-  Mat_Elemental *a=(Mat_Elemental*)A->data;
-  Mat_Elemental *b=(Mat_Elemental*)B->data;
-  Mat_Elemental *x=(Mat_Elemental*)X->data;
-  PetscInt      pivoting = a->pivoting;
+  Mat_Elemental  *a = (Mat_Elemental*)A->data;
+  Mat_Elemental  *x;
+  Mat            C;
+  PetscInt       pivoting = a->pivoting;
+  PetscBool      flg;
+  MatType        type;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  El::Copy(*b->emat,*x->emat);
+  ierr = MatGetType(X,&type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,MATELEMENTAL,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+    x = (Mat_Elemental*)C->data;
+  } else {
+    x = (Mat_Elemental*)X->data;
+    El::Copy(*((Mat_Elemental*)B->data)->emat,*x->emat);
+  }
   switch (A->factortype) {
   case MAT_FACTOR_LU:
     if (pivoting == 0) {
@@ -625,6 +682,10 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType");
     break;
+  }
+  if (!flg) {
+    ierr = MatConvert(C,type,MAT_REUSE_MATRIX,&X);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1060,6 +1121,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_elemental_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1360,6 +1422,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   a->roworiented = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_elemental_mpidense_C",MatProductSetFromOptions_Elemental_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

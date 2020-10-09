@@ -29,7 +29,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if ( size > 4 ) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Can only use at most 4 processors.");
+  if (size > 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Can only use at most 4 processors.");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Get a partition range based on the vector size */
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   /* Construct a tri-diagonal CSR indexing */
   i = 1;
   ia[0] = 0;
-  for ( row = rstart; row < rend; row++ )
+  for (row = rstart; row < rend; row++)
   {
     ia[i] = ia[i-1];
 
@@ -65,7 +65,7 @@ int main(int argc,char **args)
 
     /* upper diagonal */
     col = row+1;
-    if (col < N )
+    if (col < N)
     {
       ja[ia[i]] = col;
       ia[i]++;

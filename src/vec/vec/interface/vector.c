@@ -388,7 +388,7 @@ PetscErrorCode  VecDestroy(Vec *v)
   PetscFunctionBegin;
   if (!*v) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
-  if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*v))->refct > 0) {*v = NULL; PetscFunctionReturn(0);}
 
   ierr = PetscObjectSAWsViewOff((PetscObject)*v);CHKERRQ(ierr);
   /* destroy the internal part */
@@ -1322,7 +1322,7 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
   v->map->N = N;
   if (v->ops->create) {
     ierr = (*v->ops->create)(v);CHKERRQ(ierr);
-    v->ops->create = 0;
+    v->ops->create = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -1894,7 +1894,7 @@ PetscErrorCode VecBindToCPU(Vec v,PetscBool flg)
 
 . -vec_pinned_memory_min <size> - minimum size (in bytes) for an allocation to use pinned memory on host.
                                   Note that this takes a PetscScalar, to accommodate large values;
-                                  specifying -1 ensures that pinned memory will always be used.
+                                  specifying -1 ensures that pinned memory will never be used.
 
   Level: developer
 
@@ -1935,4 +1935,26 @@ PetscErrorCode VecGetPinnedMemoryMin(Vec v,size_t *mbytes)
 #else
   return 0;
 #endif
+}
+
+/*@
+  VecGetOffloadMask - Get the offload mask of a Vec.
+
+  Not Collective
+
+  Input Parameters:
+.   v - the vector
+
+  Output Parameters:
+.   mask - corresponding PetscOffloadMask enum value.
+
+   Level: intermediate
+
+.seealso: VecCreateSeqCUDA(), VecCreateSeqViennaCL(), VecGetArray(), VecGetType()
+@*/
+PetscErrorCode VecGetOffloadMask(Vec v,PetscOffloadMask* mask)
+{
+  PetscFunctionBegin;
+  *mask = v->offloadmask;
+  PetscFunctionReturn(0);
 }

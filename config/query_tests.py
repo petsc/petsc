@@ -67,10 +67,10 @@ def get_inverse_dictionary(dataDict,field,srcdir):
     for root in dataDict:
       for exfile in dataDict[root]:
         for test in dataDict[root][exfile]:
+          if test in testparse.buildkeys: continue
           defroot = testparse.getDefaultOutputFileRoot(test)
           name=nameSpace(defroot,os.path.relpath(root,srcdir))
           if field == 'name':
-              if 'SKIP' in name: continue
               invDict['name'].append(name)
               continue
           if field not in dataDict[root][exfile][test]: continue
@@ -83,12 +83,21 @@ def get_inverse_dictionary(dataDict,field,srcdir):
                   invDict[val] = [name]
     return invDict
 
-def get_gmakegentest_data(testdir):
+def get_gmakegentest_data(testdir,petsc_dir,petsc_arch):
     """
      Write out the dataDict into a pickle file
     """
     # This needs to be consistent with gmakegentest.py of course
-    fd = open(os.path.join(testdir,'datatest.pkl'), 'rb')
+    pkl_file=os.path.join(testdir,'datatest.pkl')
+    # If it doesn't exist, then we need to regenerate
+    if not os.path.exists(pkl_file):
+      startdir=os.path.abspath(os.curdir)
+      os.chdir(petsc_dir)
+      args='--petsc-dir='+petsc_dir+' --petsc-arch='+petsc_arch+' --testdir='+testdir
+      buf = os.popen('config/gmakegentest.py '+args).read()
+      os.chdir(startdir)
+
+    fd = open(pkl_file, 'rb')
     dataDict=pickle.load(fd)
     fd.close()
     return dataDict
@@ -121,7 +130,7 @@ def walktree(top):
 
     return dataDict
 
-def do_query(use_source, startdir, srcdir, testdir, field, label):
+def do_query(use_source, startdir, srcdir, testdir, petsc_dir, petsc_arch, field, label):
     """
     Do the actual query
     This part of the code is placed here instead of main()
@@ -132,7 +141,7 @@ def do_query(use_source, startdir, srcdir, testdir, field, label):
     if use_source:
         dataDict=walktree(startdir)
     else:
-        dataDict=get_gmakegentest_data(testdir)
+        dataDict=get_gmakegentest_data(testdir, petsc_dir, petsc_arch)
 
     # Get inverse dictionary for searching
     invDict=get_inverse_dictionary(dataDict, field, srcdir)
@@ -151,8 +160,8 @@ def main():
     parser.add_option('-s', '--startdir', dest='startdir',
                       help='Where to start the recursion if not srcdir',
                       default='')
-    parser.add_option('-p', '--petsc_dir', dest='petsc_dir',
-                      help='Set PETSC_ARCH different from environment',
+    parser.add_option('-p', '--petsc-dir', dest='petsc_dir',
+                      help='Set PETSC_DIR different from environment',
                       default=os.environ.get('PETSC_DIR'))
     parser.add_option('-a', '--petsc-arch', dest='petsc_arch',
                       help='Set PETSC_ARCH different from environment',
@@ -217,7 +226,8 @@ def main():
             return
 
     # Do the actual query
-    do_query(opts.use_source, startdir, petsc_full_src, petsc_full_test, field, match)
+    do_query(opts.use_source, startdir, petsc_full_src, petsc_full_test,
+             petsc_dir, petsc_arch, field, match)
 
     return
 

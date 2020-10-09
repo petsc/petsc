@@ -100,7 +100,7 @@ PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, const PetscScalar mcoord
   /* TODO Check
     double range[4]; // [umin, umax, vmin, vmax]
     int    peri;
-    ierr = EG_getRange(face, range, &peri); CHKERRQ(ierr);
+    ierr = EG_getRange(face, range, &peri);CHKERRQ(ierr);
     if ((paramsNew[0] < range[0]) || (paramsNew[0] > range[1]) || (paramsNew[1] < range[2]) || (paramsNew[1] > range[3])) SETERRQ();
   */
   /* Put coordinates for new vertex in result[] */

@@ -201,7 +201,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   ierr                         = MatSetUp(*F);CHKERRQ(ierr);
 
   (*F)->ops->destroy           = MatDestroy_matlab;
-  (*F)->ops->getinfo           = MatGetInfo_External;  
+  (*F)->ops->getinfo           = MatGetInfo_External;
   (*F)->ops->lufactorsymbolic  = MatLUFactorSymbolic_Matlab;
   (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
 
@@ -271,4 +271,3 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 
 .seealso: PCFactorSetMatSolverType(), MatSolverType
 M*/
-

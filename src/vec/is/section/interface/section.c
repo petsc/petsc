@@ -3168,7 +3168,7 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
   PetscFunctionBegin;
   if (!*sym) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*sym),PETSC_SECTION_SYM_CLASSID,1);
-  if (--((PetscObject)(*sym))->refct > 0) {*sym = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*sym))->refct > 0) {*sym = NULL; PetscFunctionReturn(0);}
   if ((*sym)->ops->destroy) {
     ierr = (*(*sym)->ops->destroy)(*sym);CHKERRQ(ierr);
   }

@@ -64,7 +64,7 @@ static void f0_q_linear(PetscInt dim,PetscInt Nf,PetscInt NfAux,const PetscInt u
   PetscScalar rhs,divu=0;
   PetscInt    i;
 
-  (void)linear_divu(dim,t,x,dim,&rhs,NULL);;
+  (void)linear_divu(dim,t,x,dim,&rhs,NULL);
   for (i=0; i< dim; ++i) divu += u_x[uOff_x[0]+i*dim+i];
   f0[0] = divu-rhs;
 }
@@ -180,7 +180,7 @@ static PetscErrorCode SetupProblem(DM dm,UserCtx *user)
   ierr = PetscDSSetJacobian(prob,0,1,NULL,NULL,g2_vp,NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob,1,0,NULL,g1_qu,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral","marker",0,0,NULL,(void (*)(void))NULL,1,&id,user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral","marker",0,0,NULL,(void (*)(void))NULL,NULL,1,&id,user);CHKERRQ(ierr);
   ierr = PetscDSSetBdResidual(prob,0,f0_bd_u_linear,NULL);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob,0,linear_u,NULL);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob,1,linear_divu,NULL);CHKERRQ(ierr);

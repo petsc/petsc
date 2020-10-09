@@ -73,10 +73,10 @@
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-epsilon',eps,flg,ierr)
       ki = 2
       call PetscOptionsGetRealArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
-      if ( .not. flg ) then
+      if (.not. flg) then
          blb(1) = 0.0
          blb(2) = 0.0
-      else if ( ki .ne. 2 ) then
+      else if (ki .ne. 2) then
          print *, 'error: ', ki,' arguments read for -blob_center.  Needs to be two.'
       endif
       call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-out_matlab',out_matlab,flg,ierr)
@@ -91,24 +91,24 @@
 !  Create matrix.  When using MatCreate(), the matrix format can
 !  be specified at runtime.
       call MatCreate(PETSC_COMM_WORLD,Amat,ierr)
-      call MatSetSizes( Amat,PETSC_DECIDE, PETSC_DECIDE, M, M, ierr )
+      call MatSetSizes( Amat,PETSC_DECIDE, PETSC_DECIDE, M, M, ierr)
       call MatSetType( Amat, MATAIJ, ierr)
       call MatSetOption(Amat,MAT_SPD,PETSC_TRUE,ierr)
-      if ( size == 1 ) then
-         call MatSetType( Amat, MATAIJ, ierr )
+      if (size == 1) then
+         call MatSetType( Amat, MATAIJ, ierr)
       else
-         call MatSetType( Amat, MATMPIAIJ, ierr )
+         call MatSetType( Amat, MATMPIAIJ, ierr)
       endif
       call MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,PETSC_NULL_INTEGER, ierr)
-      call MatSetFromOptions( Amat, ierr )
-      call MatSetUp( Amat, ierr )
-      call MatGetOwnershipRange( Amat, Istart, Iend, ierr )
+      call MatSetFromOptions( Amat, ierr)
+      call MatSetUp( Amat, ierr)
+      call MatGetOwnershipRange( Amat, Istart, Iend, ierr)
 !  Create vectors.  Note that we form 1 vector from scratch and
 !  then duplicate as needed.
-      call MatCreateVecs( Amat, PETSC_NULL_VEC, xvec, ierr )
-      call VecSetFromOptions( xvec, ierr )
-      call VecDuplicate( xvec, bvec, ierr )
-      call VecDuplicate( xvec, uvec, ierr )
+      call MatCreateVecs( Amat, PETSC_NULL_VEC, xvec, ierr)
+      call VecSetFromOptions( xvec, ierr)
+      call VecDuplicate( xvec, bvec, ierr)
+      call VecDuplicate( xvec, uvec, ierr)
 !  Assemble matrix.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C (as set here in the array "col").
@@ -121,7 +121,7 @@
       do geq=Istart,Iend-1,1
          qj = geq/(ne+1); qi = mod(geq,(ne+1))
          x = h*qi - 1.0; y = h*qj - 1.0 ! lower left corner (-1,-1)
-         if ( qi < ne .and. qj < ne ) then
+         if (qi < ne .and. qj < ne) then
             coord(1,1) = x;   coord(2,1) = y
             coord(1,2) = x+h; coord(2,2) = y
             coord(1,3) = x+h; coord(2,3) = y+h
@@ -150,13 +150,13 @@
 
             idx(1) = geq; idx(2) = geq+1; idx(3) = geq+(ne+1)+1
             idx(4) = geq+(ne+1)
-            if ( qj > 0 ) then
+            if (qj > 0) then
                call MatSetValues(Amat,f4,idx,f4,idx,ss,ADD_VALUES,ierr)
             else                !     a BC
                do ki=1,4,1
                   do kj=1,4,1
-                     if (ki<3 .or. kj<3 ) then
-                        if ( ki==kj ) then
+                     if (ki<3 .or. kj<3) then
+                        if (ki==kj) then
                            ss(ki,kj) = .1*ss(ki,kj)
                         else
                            ss(ki,kj) = 0.0
@@ -167,7 +167,7 @@
                call MatSetValues(Amat,f4,idx,f4,idx,ss,ADD_VALUES,ierr)
             endif               ! BC
          endif                  ! add element
-         if ( qj > 0 ) then      ! set rhs
+         if (qj > 0) then      ! set rhs
             val = h*h*exp(-100*((x+h/2)-blb(1))**2)*exp(-100*((y+h/2)-blb(2))**2)
             call VecSetValues(bvec,one,geq,val,INSERT_VALUES,ierr)
          endif
@@ -209,7 +209,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      output
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      if ( out_matlab ) then
+      if (out_matlab) then
          call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',FILE_MODE_WRITE,viewer,ierr)
          call MatView(Amat,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
@@ -229,7 +229,7 @@
          call VecView(uvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         if ( rank == 0 ) then
+         if (rank == 0) then
             open(1,file='ex54f.m', FORM='formatted')
             write (1,*) 'A = PetscBinaryRead(''Amat'');'
             write (1,*) '[m n] = size(A);'
@@ -434,7 +434,7 @@
       PetscReal x,y,theta
       common /ex54_theta/ theta
       ex54_psi = theta
-      if ( theta < 0. ) then     ! circular
+      if (theta < 0.) then     ! circular
          if (y==0) then
             ex54_psi = 2.0*atan(1.0)
          else

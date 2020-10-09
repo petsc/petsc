@@ -166,12 +166,12 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
   ierr = DMGetCoordinatesLocal(dmSol,&coordLocal);CHKERRQ(ierr);
   ierr = DMStagVecGetArrayRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
   for (d=0; d<3; ++d) {
-    ierr = DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]       );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]      );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]      );CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]      );CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]);CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,RIGHT,  d,&icux_right[d]);CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,UP,     d,&icuy_up[d]   );CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,UP,     d,&icuy_up[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,FRONT,  d,&icuz_front[d]);CHKERRQ(ierr);
   }
 
@@ -188,11 +188,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = RIGHT; row.c = 0;
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = uxRef(
-              arrCoord[ez][ey][ex][icux_right[0]],
-              arrCoord[ez][ey][ex][icux_right[1]],
-              arrCoord[ez][ey][ex][icux_right[2]]
-              );
+          valRhs = uxRef(arrCoord[ez][ey][ex][icux_right[0]], arrCoord[ez][ey][ex][icux_right[1]], arrCoord[ez][ey][ex][icux_right[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         }
         if (ey == N[1]-1) {
@@ -202,11 +198,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = UP; row.c = 0;
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = uyRef(
-              arrCoord[ez][ey][ex][icuy_up[0]],
-              arrCoord[ez][ey][ex][icuy_up[1]],
-              arrCoord[ez][ey][ex][icuy_up[2]]
-              );
+          valRhs = uyRef(arrCoord[ez][ey][ex][icuy_up[0]],arrCoord[ez][ey][ex][icuy_up[1]],arrCoord[ez][ey][ex][icuy_up[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         }
         if (ez == N[2]-1) {
@@ -216,11 +208,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = FRONT; row.c = 0;
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = uzRef(
-              arrCoord[ez][ey][ex][icuz_front[0]],
-              arrCoord[ez][ey][ex][icuz_front[1]],
-              arrCoord[ez][ey][ex][icuz_front[2]]
-              );
+          valRhs = uzRef(arrCoord[ez][ey][ex][icuz_front[0]],arrCoord[ez][ey][ex][icuz_front[1]],arrCoord[ez][ey][ex][icuz_front[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         }
 
@@ -232,11 +220,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = LEFT; row.c = 0;
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = uxRef(
-              arrCoord[ez][ey][ex][icux[0]],
-              arrCoord[ez][ey][ex][icux[1]],
-              arrCoord[ez][ey][ex][icux[2]]
-              );
+          valRhs = uxRef(arrCoord[ez][ey][ex][icux[0]],arrCoord[ez][ey][ex][icux[1]],arrCoord[ez][ey][ex][icux[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         } else {
           /* X-momentum interior equation : (u_xx + u_yy + u_zz) - p_x = f^x */
@@ -350,11 +334,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
             col[8].i = ex  ; col[8].j = ey  ;  col[8].k = ez  ; col[8].loc = ELEMENT; col[8].c  = 0; valA[8] = -1.0 / hx;
           }
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,nEntries,col,valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = fx(
-              arrCoord[ez][ey][ex][icux[0]],
-              arrCoord[ez][ey][ex][icux[1]],
-              arrCoord[ez][ey][ex][icux[2]]
-              );
+          valRhs = fx(arrCoord[ez][ey][ex][icux[0]], arrCoord[ez][ey][ex][icux[1]], arrCoord[ez][ey][ex][icux[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         }
 
@@ -366,11 +346,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = DOWN; row.c = 0;
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = uyRef(
-              arrCoord[ez][ey][ex][icuy[0]],
-              arrCoord[ez][ey][ex][icuy[1]],
-              arrCoord[ez][ey][ex][icuy[2]]
-              );
+          valRhs = uyRef(arrCoord[ez][ey][ex][icuy[0]],arrCoord[ez][ey][ex][icuy[1]],arrCoord[ez][ey][ex][icuy[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         } else {
           /* Y-momentum equation, (v_xx + v_yy + v_zz) - p_y = f^y */
@@ -484,11 +460,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
             col[8].i = ex  ; col[8].j = ey  ;  col[8].k = ez  ; col[8].loc = ELEMENT; col[8].c  = 0; valA[8] = -1.0 / hy;
           }
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,nEntries,col,valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = fy(
-              arrCoord[ez][ey][ex][icuy[0]],
-              arrCoord[ez][ey][ex][icuy[1]],
-              arrCoord[ez][ey][ex][icuy[2]]
-              );
+          valRhs = fy(arrCoord[ez][ey][ex][icuy[0]],arrCoord[ez][ey][ex][icuy[1]],arrCoord[ez][ey][ex][icuy[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         }
 
@@ -500,11 +472,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = BACK; row.c = 0;
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = uzRef(
-              arrCoord[ez][ey][ex][icuz[0]],
-              arrCoord[ez][ey][ex][icuz[1]],
-              arrCoord[ez][ey][ex][icuz[2]]
-              );
+          valRhs = uzRef(arrCoord[ez][ey][ex][icuz[0]],arrCoord[ez][ey][ex][icuz[1]],arrCoord[ez][ey][ex][icuz[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         } else {
           /* Z-momentum equation, (w_xx + w_yy + w_zz) - p_z = f^z */
@@ -618,11 +586,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
             col[8].i = ex  ; col[8].j = ey  ;  col[8].k = ez  ; col[8].loc = ELEMENT; col[8].c  = 0; valA[8] = -1.0 / hz;
           }
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,nEntries,col,valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = fz(
-              arrCoord[ez][ey][ex][icuz[0]],
-              arrCoord[ez][ey][ex][icuz[1]],
-              arrCoord[ez][ey][ex][icuz[2]]
-              );
+          valRhs = fz(arrCoord[ez][ey][ex][icuz[0]],arrCoord[ez][ey][ex][icuz[1]],arrCoord[ez][ey][ex][icuz[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         }
 
@@ -635,11 +599,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           row.i = ex; row.j = ey; row.k = ez; row.loc  = ELEMENT; row.c = 0;
           valA = 1.0;
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = pRef(
-              arrCoord[ez][ey][ex][icp[0]],
-              arrCoord[ez][ey][ex][icp[1]],
-              arrCoord[ez][ey][ex][icp[2]]
-              );
+          valRhs = pRef(arrCoord[ez][ey][ex][icp[0]],arrCoord[ez][ey][ex][icp[1]],arrCoord[ez][ey][ex][icp[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         } else {
           DMStagStencil row,col[7];
@@ -654,11 +614,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           col[5].i = ex; col[5].j = ey; col[5].k = ez; col[5].loc = FRONT;   col[5].c = 0; valA[5] =  1.0 / hz;
           col[6]   = row;                                                                  valA[6] =  0.0;
           ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,7,col,valA,INSERT_VALUES);CHKERRQ(ierr);
-          valRhs = g(
-              arrCoord[ez][ey][ex][icp[0]],
-              arrCoord[ez][ey][ex][icp[1]],
-              arrCoord[ez][ey][ex][icp[2]]
-              );
+          valRhs = g(arrCoord[ez][ey][ex][icp[0]],arrCoord[ez][ey][ex][icp[1]],arrCoord[ez][ey][ex][icp[2]]);
           ierr = DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
@@ -721,12 +677,12 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
   ierr = DMGetCoordinates(dmSol,&coord);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocal(dmCoord,coord,INSERT_VALUES,coordLocal);CHKERRQ(ierr);
-  ierr = DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip );CHKERRQ(ierr);
+  ierr = DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip);CHKERRQ(ierr);
   ierr = DMStagGetLocationSlot(dmSol,LEFT,   0,&iux);CHKERRQ(ierr);
   ierr = DMStagGetLocationSlot(dmSol,DOWN,   0,&iuy);CHKERRQ(ierr);
   ierr = DMStagGetLocationSlot(dmSol,BACK,   0,&iuz);CHKERRQ(ierr);
   for (d=0; d<3; ++d) {
-    ierr = DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d] );CHKERRQ(ierr);
+    ierr = DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]);CHKERRQ(ierr);
     ierr = DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]);CHKERRQ(ierr);

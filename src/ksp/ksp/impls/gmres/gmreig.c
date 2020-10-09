@@ -192,7 +192,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   PetscFunctionBegin;
   /* n: size of the Hessenberg matrix */
   if (gmres->fullcycle) n = N-1;
-  /* NbrRitz: number of (harmonic) Ritz pairs to extract */ 
+  /* NbrRitz: number of (harmonic) Ritz pairs to extract */
   NbrRitz = PetscMin(*nrit,n);
 
   /* Definition of PetscBLASInt for lapack routines*/
@@ -227,9 +227,9 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
     ierr = PetscCalloc1(bn,&t);CHKERRQ(ierr);
     /* t = h^2_{m+1,m}e_m */
     if (gmres->fullcycle) {
-      t[bn-1] = PetscSqr(gmres->hes_ritz[(bn-1)*bN+bn]); 
+      t[bn-1] = PetscSqr(gmres->hes_ritz[(bn-1)*bN+bn]);
     } else {
-      t[bn-1] = PetscSqr(gmres->hes_origin[(bn-1)*bN+bn]); 
+      t[bn-1] = PetscSqr(gmres->hes_origin[(bn-1)*bN+bn]);
     }
     /* Call the LAPACK routine dgesv to compute t = H^{-T}*t */
     {
@@ -285,18 +285,18 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
     }
   }
   ierr = PetscFree(modul);CHKERRQ(ierr);
-  ierr = PetscFree(perm);CHKERRQ(ierr);  
+  ierr = PetscFree(perm);CHKERRQ(ierr);
 
-  /* Form the Ritz or Harmonic Ritz vectors S=VV*Sr, 
+  /* Form the Ritz or Harmonic Ritz vectors S=VV*Sr,
     where the columns of VV correspond to the basis of the Krylov subspace */
   if (gmres->fullcycle) {
     for (j=0; j<nb; j++) {
-      ierr = VecZeroEntries(S[j]);CHKERRQ(ierr);  
-      ierr = VecMAXPY(S[j],n,&SR[j*n],gmres->vecb);CHKERRQ(ierr); 
-    } 
+      ierr = VecZeroEntries(S[j]);CHKERRQ(ierr);
+      ierr = VecMAXPY(S[j],n,&SR[j*n],gmres->vecb);CHKERRQ(ierr);
+    }
   } else {
     for (j=0; j<nb; j++) {
-      ierr = VecZeroEntries(S[j]);CHKERRQ(ierr);  
+      ierr = VecZeroEntries(S[j]);CHKERRQ(ierr);
       ierr = VecMAXPY(S[j],n,&SR[j*n],&VEC_VV(0));CHKERRQ(ierr);
     }
   }
@@ -309,5 +309,3 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   PetscFunctionReturn(0);
 }
 #endif
-
-

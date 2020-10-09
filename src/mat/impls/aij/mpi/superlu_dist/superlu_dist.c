@@ -78,6 +78,38 @@ PetscErrorCode MatSuperluDistGetDiagU(Mat F,PetscScalar *diagU)
   PetscFunctionReturn(0);
 }
 
+/*  This allows reusing the Superlu_DIST communicator and grid when only a single SuperLU_DIST matrix is used at a time */
+typedef struct {
+  MPI_Comm   comm;
+  PetscBool  busy;
+  gridinfo_t grid;
+} PetscSuperLU_DIST;
+static PetscMPIInt Petsc_Superlu_dist_keyval = MPI_KEYVAL_INVALID;
+
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+{
+  PetscErrorCode    ierr;
+  PetscSuperLU_DIST *context = (PetscSuperLU_DIST *) attr_val;
+
+  PetscFunctionBegin;
+  if (keyval != Petsc_Superlu_dist_keyval) SETERRMPI(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Unexpected keyval");
+  ierr = PetscInfo(NULL,"Removing Petsc_Superlu_dist_keyval attribute from communicator that is being freed\n");
+  PetscStackCall("SuperLU_DIST:superlu_gridexit",superlu_gridexit(&context->grid));
+  ierr = MPI_Comm_free(&context->comm);CHKERRQ(ierr);
+  ierr = PetscFree(context);
+  PetscFunctionReturn(MPI_SUCCESS);
+}
+
+static PetscErrorCode Petsc_Superlu_dist_keyval_free(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscInfo(NULL,"Freeing Petsc_Superlu_dist_keyval\n");
+  ierr = MPI_Comm_free_keyval(&Petsc_Superlu_dist_keyval);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 {
   PetscErrorCode   ierr;
@@ -98,9 +130,20 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     PetscStackCall("SuperLU_DIST:ScalePermstructFree",ScalePermstructFree(&lu->ScalePermstruct));
     PetscStackCall("SuperLU_DIST:LUstructFree",LUstructFree(&lu->LUstruct));
 
-    /* Release the SuperLU_DIST process grid. */
-    PetscStackCall("SuperLU_DIST:superlu_gridexit",superlu_gridexit(&lu->grid));
-    ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
+    /* Release the SuperLU_DIST process grid. Only if the matrix has its own copy, this is it is not in the communicator context */
+    if (lu->comm_superlu) {
+      PetscStackCall("SuperLU_DIST:superlu_gridexit",superlu_gridexit(&lu->grid));
+      ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
+    } else {
+      PetscSuperLU_DIST *context;
+      MPI_Comm          comm;
+      PetscMPIInt       flg;
+
+      ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+      ierr = MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Communicator does not have expected Petsc_Superlu_dist_keyval attribute");
+      context->busy = PETSC_FALSE;
+    }
   }
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   /* clear composed functions */
@@ -306,9 +349,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
 #else
       PetscStackCall("SuperLU_DIST:dallocateA_dist",dallocateA_dist(Aloc->rmap->n, nz, &lu->val, &lu->col, &lu->row));
 #endif
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"options.Fact must be one of SamePattern SamePattern_SameRowPerm DOFACT");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"options.Fact must be one of SamePattern SamePattern_SameRowPerm DOFACT");
   }
 
   /* Copy AIJ matrix to superlu_dist matrix */
@@ -338,9 +379,8 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
 #endif
 
   if (sinfo > 0) {
-    if (A->erroriffailure) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
-    } else {
+    if (A->erroriffailure) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
+    else {
       if (sinfo <= lu->A_sup.ncol) {
         F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         ierr = PetscInfo1(F,"U(i,i) is exactly zero, i= %D\n",sinfo);CHKERRQ(ierr);
@@ -353,9 +393,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
         ierr = PetscInfo1(F,"Number of bytes allocated when memory allocation fails %D\n",sinfo);CHKERRQ(ierr);
       }
     }
-  } else if (sinfo < 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, argument in p*gssvx() had an illegal value", sinfo);
-  }
+  } else if (sinfo < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, argument in p*gssvx() had an illegal value", sinfo);
 
   if (lu->options.PrintStat) {
     PetscStackCall("SuperLU_DIST:PStatPrint",PStatPrint(&lu->options, &stat, &lu->grid));  /* Print the statistics. */
@@ -374,9 +412,6 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,con
   PetscInt         M   = A->rmap->N,N=A->cmap->N;
 
   PetscFunctionBegin;
-  /* Initialize the SuperLU process grid. */
-  PetscStackCall("SuperLU_DIST:superlu_gridinit",superlu_gridinit(lu->comm_superlu, lu->nprow, lu->npcol, &lu->grid));
-
   /* Initialize ScalePermstruct and LUstruct. */
   PetscStackCall("SuperLU_DIST:ScalePermstructInit",ScalePermstructInit(M, N, &lu->ScalePermstruct));
   PetscStackCall("SuperLU_DIST:LUstructInit",LUstructInit(N, &lu->LUstruct));
@@ -549,23 +584,58 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 
   ierr    = PetscNewLog(B,&lu);CHKERRQ(ierr);
   B->data = lu;
-
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(lu->comm_superlu));CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  /* Default num of process columns and rows */
-  lu->nprow = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
-  if (!lu->nprow) lu->nprow = 1;
-  while (lu->nprow > 0) {
-    lu->npcol = (int_t) (size/lu->nprow);
-    if (size == lu->nprow * lu->npcol) break;
-    lu->nprow--;
+
+  {
+    PetscMPIInt       flg;
+    MPI_Comm          comm;
+    PetscSuperLU_DIST *context = NULL;
+
+    ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+    if (Petsc_Superlu_dist_keyval == MPI_KEYVAL_INVALID) {
+      ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_Superlu_dist_keyval_Delete_Fn,&Petsc_Superlu_dist_keyval,(void*)0);CHKERRQ(ierr);
+      ierr = PetscRegisterFinalize(Petsc_Superlu_dist_keyval_free);CHKERRQ(ierr);
+    }
+    ierr = MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg);CHKERRQ(ierr);
+    if (!flg || context->busy) {
+      if (!flg) {
+        ierr = PetscNew(&context);CHKERRQ(ierr);
+        context->busy = PETSC_TRUE;
+        ierr = MPI_Comm_dup(comm,&context->comm);CHKERRQ(ierr);
+        ierr = MPI_Comm_set_attr(comm,Petsc_Superlu_dist_keyval,context);CHKERRQ(ierr);
+      } else {
+        ierr = MPI_Comm_dup(comm,&lu->comm_superlu);CHKERRQ(ierr);
+      }
+
+      /* Default num of process columns and rows */
+      lu->nprow = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
+      if (!lu->nprow) lu->nprow = 1;
+      while (lu->nprow > 0) {
+        lu->npcol = (int_t) (size/lu->nprow);
+        if (size == lu->nprow * lu->npcol) break;
+        lu->nprow--;
+      }
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,(PetscInt*)&lu->nprow,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,(PetscInt*)&lu->npcol,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      if (size != lu->nprow * lu->npcol) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %d * npcol %d",size,lu->nprow,lu->npcol);
+      PetscStackCall("SuperLU_DIST:superlu_gridinit",superlu_gridinit(context ? context->comm : lu->comm_superlu, lu->nprow, lu->npcol, &lu->grid));
+      if (context) context->grid = lu->grid;
+      ierr = PetscInfo(NULL,"Duplicating a communicator for SuperLU_DIST and calling superlu_gridinit()\n");
+      if (!flg) {
+        ierr = PetscInfo(NULL,"Storing communicator and SuperLU_DIST grid in communicator attribute\n");
+      } else {
+        ierr = PetscInfo(NULL,"Communicator attribute already in use so not saving communicator and SuperLU_DIST grid in communicator attribute \n");
+      }
+    } else {
+      ierr = PetscInfo(NULL,"Reusing communicator and superlu_gridinit() for SuperLU_DIST from communicator attribute.");
+      context->busy = PETSC_TRUE;
+      lu->grid      = context->grid;
+    }
   }
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,(PetscInt*)&lu->nprow,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,(PetscInt*)&lu->npcol,NULL);CHKERRQ(ierr);
-  if (size != lu->nprow * lu->npcol) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %d * npcol %d",size,lu->nprow,lu->npcol);
-
   ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && !flg) options.Equil = NO;
 

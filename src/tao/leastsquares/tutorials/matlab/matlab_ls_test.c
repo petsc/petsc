@@ -75,12 +75,12 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   ierr = PetscMatlabEngineGet(user->mengine,(PetscObject)X);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,X);CHKERRQ(ierr);
 
-  /* Create residuals vector and set residual function */  
+  /* Create residuals vector and set residual function */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user->m,&F);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)F,"F");CHKERRQ(ierr);
   ierr = TaoSetResidualRoutine(tao,F,EvaluateResidual,(void*)user);CHKERRQ(ierr);
 
-  /* Create Jacobian matrix and set residual Jacobian routine */  
+  /* Create Jacobian matrix and set residual Jacobian routine */
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,user->m,user->n,user->n,NULL,&J);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)J,"J");CHKERRQ(ierr);
   ierr = TaoSetJacobianResidualRoutine(tao,J,J,EvaluateJacobian,(void*)user);CHKERRQ(ierr);

@@ -240,8 +240,8 @@ static PetscErrorCode MatMultTranspose_MAmI(Mat A, Vec x, Vec y)
 
 /* HyperPower kernel:
 Y = R = x
-for i = 1 . . . l − 1 do
-  R = (I − AXk)R
+for i = 1 . . . l - 1 do
+  R = (I - AXk)R
   Y = Y + R
 Y = XkY
 */

@@ -193,7 +193,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hs;
       }
-    } else if(i == sf) {
+    } else if (i == sf) {
       u = &ctx->u[0];
       alpha[0] = hs*hf/(hs+hs)/(hs+hs+hf);
       gamma[0] = hs*(hs+hs)/(hs+hf)/(hs+hs+hf);
@@ -762,8 +762,8 @@ int main(int argc,char *argv[])
     mass_final   = 0.0;
     ierr = DMDAVecGetArrayRead(da,X0,(void*)&ptr_X0);CHKERRQ(ierr);
     ierr = DMDAVecGetArrayRead(da,X,(void*)&ptr_X);CHKERRQ(ierr);
-    for(i=xs; i<xs+xm; i++) {
-      if(i < ctx.sf || i > ctx.fs-1) {
+    for (i=xs; i<xs+xm; i++) {
+      if (i < ctx.sf || i > ctx.fs-1) {
         for (k=0; k<dof; k++) {
           mass_initial = mass_initial+hs*ptr_X0[i*dof+k];
           mass_final = mass_final+hs*ptr_X[i*dof+k];
@@ -801,8 +801,8 @@ int main(int argc,char *argv[])
       ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
       ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
       ierr = VecGetArrayRead(XR,&ptr_XR);CHKERRQ(ierr);
-      for(i=0; i<Mx; i++) {
-        if(i < count_slow/2 || i > count_slow/2+count_fast-1) nrm1 = nrm1 + hs*PetscAbs(ptr_X[i]-ptr_XR[i]);
+      for (i=0; i<Mx; i++) {
+        if (i < count_slow/2 || i > count_slow/2+count_fast-1) nrm1 = nrm1 + hs*PetscAbs(ptr_X[i]-ptr_XR[i]);
         else nrm1 = nrm1 + hf*PetscAbs(ptr_X[i]-ptr_XR[i]);
       }
       ierr = VecRestoreArrayRead(X,&ptr_X);CHKERRQ(ierr);

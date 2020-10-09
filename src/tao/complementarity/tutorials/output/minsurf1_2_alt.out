@@ -1,9 +1,9 @@
 
 ---- Minimum Surface Area Problem -----
 mx:4, my:4
-  0 TAO, Function value: 0.210376,  Residual: 0.403597 
-  1 TAO, Function value: 0.0110611,  Residual: 0.019795 
-  2 TAO, Function value: 4.46413e-05,  Residual: 8.72658e-05 
+  0 TAO,  Function value: 0.210376,  Residual: 0.403597 
+  1 TAO,  Function value: 0.0110611,  Residual: 0.019795 
+  2 TAO,  Function value: 4.46413e-05,  Residual: 8.72658e-05 
 Tao Object: 1 MPI processes
   type: ssfls
   TaoLineSearch Object: 1 MPI processes
@@ -16,43 +16,44 @@ Tao Object: 1 MPI processes
     total number of function/gradient evaluations=0
     using variable bounds
     Termination reason: 1
-    KSP Object: 1 MPI processes
-      type: gmres
-        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        happy breakdown tolerance 1e-30
-      maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
-      left preconditioning
-      using PRECONDITIONED norm type for convergence test
-    PC Object: 1 MPI processes
-      type: ilu
-        out-of-place factorization
-        0 levels of fill
-        tolerance for zero pivot 1.19209e-05
-        matrix ordering: natural
-        factor fill ratio given 1., needed 1.
-          Factored matrix follows:
-            Mat Object: 1 MPI processes
-              type: seqaij
-              rows=16, cols=16
-              package used to perform factorization: petsc
-              total: nonzeros=82, allocated nonzeros=82
-              total number of mallocs used during MatSetValues calls=0
-                not using I-node routines
-      linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
-        type: seqaij
-        rows=16, cols=16
-        total: nonzeros=82, allocated nonzeros=112
-        total number of mallocs used during MatSetValues calls=0
-          not using I-node routines
-    total KSP iterations: 9
-    Active Set subset type: subvec
-    convergence tolerances: gatol=1e-06,   steptol=0.,   gttol=0.
-    Residual in Function/Gradient:=8.72658e-05
-    convergence tolerances: function minimum=0.0001
-    Objective value=4.46413e-05
-    total number of iterations=2,                          (max: 2000)
-    total number of constraint function evaluations=5
-    total number of Jacobian evaluations=3
-    Solution converged:    Minf --  f < fmin
+  KSP Object: 1 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI processes
+    type: ilu
+      out-of-place factorization
+      0 levels of fill
+      tolerance for zero pivot 1.19209e-05
+      matrix ordering: natural
+      factor fill ratio given 1., needed 1.
+        Factored matrix follows:
+          Mat Object: 1 MPI processes
+            type: seqaij
+            rows=16, cols=16
+            package used to perform factorization: petsc
+            total: nonzeros=82, allocated nonzeros=82
+              not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI processes
+      type: seqaij
+      rows=16, cols=16
+      total: nonzeros=82, allocated nonzeros=112
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+  total KSP iterations: 9
+  Active Set subset type: subvec
+  convergence tolerances: gatol=1e-06,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=8.72658e-05
+  convergence tolerances:   catol=1e-05,   crtol=1e-05
+  Residual in Constraints:=0.
+  convergence tolerances: function minimum=0.0001
+  Objective value=4.46413e-05
+  total number of iterations=2,                          (max: 2000)
+  total number of constraint function evaluations=5
+  total number of Jacobian evaluations=3
+  Solution converged:    Minf --  f < fmin

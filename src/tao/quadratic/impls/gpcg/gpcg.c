@@ -257,7 +257,7 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
   */
   PetscFunctionBegin;
   for (i=0;i<gpcg->maxgpits;i++){
-    if ( -actred <= (gpcg->pg_ftol)*actred_max) break;
+    if (-actred <= (gpcg->pg_ftol)*actred_max) break;
     ierr = VecBoundGradientProjection(G,X,XL,XU,DX);CHKERRQ(ierr);
     ierr = VecScale(DX,-1.0);CHKERRQ(ierr);
     ierr = VecDot(DX,G,&gdx);CHKERRQ(ierr);

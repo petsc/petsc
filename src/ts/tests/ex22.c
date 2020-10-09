@@ -54,7 +54,7 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
   ierr = DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
 
-  for(i=xs; i<xs+xm;i++) {
+  for (i=xs; i<xs+xm;i++) {
     if (x[i] <= 0.1) u[i] = 0.;
     else if (x[i] > 0.1 && x[i] < 0.25) u[i] = (x[i] - 0.1)/0.15;
     else u[i] = 1.0;
@@ -76,7 +76,7 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *c
   PetscFunctionBegin;
   ierr = VecGetLocalSize(U,&lsize);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  for(i=0; i < lsize;i++) fvalue[i] = u[i] - app->uc;
+  for (i=0; i < lsize;i++) fvalue[i] = u[i] - app->uc;
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -123,7 +123,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
   ierr = DMDAVecGetArrayRead(da,Ulocal,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
-  for(i=xs; i<xs+xm;i++) {
+  for (i=xs; i<xs+xm;i++) {
     if (i == 0) {
       f[i] = u[i];
     } else if (i == M - 1) {
@@ -181,7 +181,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-  
+
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */
@@ -261,16 +261,15 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-   
+
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFree(direction);CHKERRQ(ierr);
   ierr = PetscFree(terminate);CHKERRQ(ierr);
-  
+
   ierr = PetscFree(app.sw);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
-

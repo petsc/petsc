@@ -149,7 +149,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&zctx.rank);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da,0,&M,&N,0,&zctx.m,&zctx.n,0,&w,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,NULL,&M,&N,NULL,&zctx.m,&zctx.n,NULL,&w,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,NULL);CHKERRQ(ierr);
 
   /*
@@ -348,9 +348,9 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
       zslices = da->P;
       yslices= (PetscInt)ceil(vec_size*1.0/(zslices*da->n*max_chunk_size))*yslices;
       if (yslices > da->N) {
-	/* lattice is too large in x-direction, splitting along z, y is not enough */
-	yslices = da->N;
-	xslices= (PetscInt)ceil(vec_size*1.0/(zslices*yslices*da->m*max_chunk_size))*xslices;
+        /* lattice is too large in x-direction, splitting along z, y is not enough */
+        yslices = da->N;
+        xslices= (PetscInt)ceil(vec_size*1.0/(zslices*yslices*da->m*max_chunk_size))*xslices;
       }
     }
     dim = 0;
@@ -373,32 +373,32 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
       /* only change the defaults if target_size < chunk_size */
       dim = 0;
       if (timestep >= 0) {
-	++dim;
+        ++dim;
       }
       /* prefer to split z-axis, even down to planar slices */
       if (dimension == 3) {
-	/* try splitting the z-axis to core-size bits, i.e. divide chunk size by # comm_size in z-direction */
-	if (target_size >= chunk_size/da->p) {
-	  /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
-	  chunkDims[dim] = (hsize_t) ceil(da->P*1.0/da->p);
-	} else {
-	  /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
+        /* try splitting the z-axis to core-size bits, i.e. divide chunk size by # comm_size in z-direction */
+        if (target_size >= chunk_size/da->p) {
+          /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
+          chunkDims[dim] = (hsize_t) ceil(da->P*1.0/da->p);
+        } else {
+          /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
            radical and let everyone write all they've got */
-	  chunkDims[dim++] = (hsize_t) ceil(da->P*1.0/da->p);
-	  chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
-	  chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
-	}
+          chunkDims[dim++] = (hsize_t) ceil(da->P*1.0/da->p);
+          chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
+          chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
+        }
       } else {
-	/* This is a 2D world exceeding 4GiB in size; yes, I've seen them, even used myself */
-	if (target_size >= chunk_size/da->n) {
-	  /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
-	  chunkDims[dim] = (hsize_t) ceil(da->N*1.0/da->n);
-	} else {
-	  /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
-	   radical and let everyone write all they've got */
-	  chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
-	  chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
-	}
+        /* This is a 2D world exceeding 4GiB in size; yes, I've seen them, even used myself */
+        if (target_size >= chunk_size/da->n) {
+          /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
+          chunkDims[dim] = (hsize_t) ceil(da->N*1.0/da->n);
+        } else {
+          /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
+           radical and let everyone write all they've got */
+          chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
+          chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
+        }
 
       }
       chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(double);
@@ -491,7 +491,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   ++dim;
 #endif
 
-  ierr = VecGetHDF5ChunkSize(da, xin, dimension, timestep, chunkDims); CHKERRQ(ierr);
+  ierr = VecGetHDF5ChunkSize(da, xin, dimension, timestep, chunkDims);CHKERRQ(ierr);
 
   PetscStackCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
 
@@ -668,7 +668,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 #endif
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis);CHKERRQ(ierr);
   if (isdraw) {
-    ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
     if (dim == 1) {
       ierr = VecView_MPI_Draw_DA1d(xin,viewer);CHKERRQ(ierr);
     } else if (dim == 2) {
@@ -743,7 +743,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
       ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
       ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
       ierr = PetscFPrintf(comm,info,"#$$ tmp = PetscBinaryRead(fd); \n");CHKERRQ(ierr);
       if (dim == 1) { ierr = PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d);\n",dof,ni);CHKERRQ(ierr); }
@@ -801,7 +801,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);  
+  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   dd   = (DM_DA*)da->data;
   ierr = DMGetDimension(da, &dimension);CHKERRQ(ierr);

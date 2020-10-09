@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   }
   ierr = MatAssemblyBegin(subA[5],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(subA[5],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,4,5,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[6]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[6],&mstart,&mend);CHKERRQ(ierr);
   for (row = mstart; row < mend; ++row){
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   }
   ierr = MatAssemblyBegin(subA[6],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(subA[6],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,4,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[7]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[7],&mstart,&mend);CHKERRQ(ierr);
   for (row = mstart; row < mend; ++row){

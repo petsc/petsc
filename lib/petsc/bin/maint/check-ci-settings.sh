@@ -1,10 +1,15 @@
 #!/bin/bash -ex
 
-git fetch --unshallow --no-tags origin +maint:remotes/origin/maint +master:remotes/origin/master HEAD
-base_maint=$(git merge-base --octopus origin/maint origin/master HEAD)
+if [ ! -z ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x} ]; then
+  echo Skipping as this is MR CI for ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME} branch
+  exit 0
+fi
+
+git fetch --unshallow --no-tags origin +release:remotes/origin/release +master:remotes/origin/master HEAD
+base_release=$(git merge-base --octopus origin/release origin/master HEAD)
 base_master=$(git merge-base origin/master HEAD)
-if [ ${base_maint} = ${base_master} ]; then
-    dest=origin/maint
+if [ ${base_release} = ${base_master} ]; then
+    dest=origin/release
 else
     dest=origin/master
 fi

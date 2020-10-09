@@ -170,7 +170,7 @@ PetscErrorCode VecResetArray_Seq(Vec vin)
 
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
-  v->unplacedarray = 0;
+  v->unplacedarray = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -216,7 +216,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
   const PetscScalar *xx;
   PetscErrorCode    ierr;
   PetscInt          n = xin->map->n;
-  PetscBLASInt      one = 1, bn;
+  PetscBLASInt      one = 1, bn = 0;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
@@ -303,7 +303,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)xv[i]);CHKERRQ(ierr);
 #endif
     }
-  } else if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
+  } else if (format == PETSC_VIEWER_ASCII_VTK_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED) {
     /*
        state 0: No header has been output
        state 1: Only POINT_DATA has been output
@@ -325,7 +325,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
     ierr = PetscObjectGetName((PetscObject) xin, &name);CHKERRQ(ierr);
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
     if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
-    if (format == PETSC_VIEWER_ASCII_VTK) {
+    if (format == PETSC_VIEWER_ASCII_VTK_DEPRECATED) {
       if (outputState == 0) {
         outputState = 1;
         doOutput = 1;
@@ -378,7 +378,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-  } else if (format == PETSC_VIEWER_ASCII_VTK_COORDS) {
+  } else if (format == PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED) {
     PetscInt bs, b;
 
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
@@ -773,11 +773,12 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
                                VecPointwiseMult_Seq,
                                VecPointwiseDivide_Seq,
                                VecSetValues_Seq, /* 20 */
-                               0,0,
-                               0,
+                               NULL,
+                               NULL,
+                               NULL,
                                VecGetSize_Seq,
                                VecGetSize_Seq,
-                               0,
+                               NULL,
                                VecMax_Seq,
                                VecMin_Seq,
                                VecSetRandom_Seq,
@@ -795,32 +796,32 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
                                VecLoad_Default,
                                VecReciprocal_Default,
                                VecConjugate_Seq,
-                               0,
-                               0,
+                               NULL,
+                               NULL,
                                VecResetArray_Seq,
-                               0,
+                               NULL,
                                VecMaxPointwiseDivide_Seq,
                                VecPointwiseMax_Seq,
                                VecPointwiseMaxAbs_Seq,
                                VecPointwiseMin_Seq,
                                VecGetValues_Seq,
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
                                VecStrideGather_Default,
                                VecStrideScatter_Default,
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL,
                                VecStrideSubSetGather_Default,
                                VecStrideSubSetScatter_Default,
-                               0,
-                               0
+                               NULL,
+                               NULL
 };
 
 
@@ -839,7 +840,8 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   v->data            = (void*)s;
   v->petscnative     = PETSC_TRUE;
   s->array           = (PetscScalar*)array;
-  s->array_allocated = 0;
+  s->array_allocated = NULL;
+  if (array) v->offloadmask = PETSC_OFFLOAD_CPU;
 
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQ);CHKERRQ(ierr);

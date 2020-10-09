@@ -12,7 +12,7 @@ nonlinear equations.  SNES users can set various algorithmic options
 at runtime via the options database (e.g., specifying a trust region
 method via
 <font face ="Courier">
--snes_type tr
+-snes_type newtontr
 </font face>
 ).  
 

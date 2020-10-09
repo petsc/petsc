@@ -75,8 +75,8 @@ extern PetscErrorCode RHSJacobianAdolc(TS ts,PetscReal t,Vec U,Mat A,Mat B,void 
 
 int main(int argc,char **argv)
 {
-  TS             ts;                  		/* ODE integrator */
-  Vec            x,r,xdot;             		/* solution, residual, derivative */
+  TS             ts;
+  Vec            x,r,xdot;
   PetscErrorCode ierr;
   DM             da;
   AppCtx         appctx;
@@ -141,7 +141,6 @@ int main(int argc,char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Trace function(s) just once
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = PetscMalloc1(adctx->n,&u_vec);CHKERRQ(ierr);
     if (!implicitform) {
       ierr = RHSFunctionActive(ts,1.0,x,r,&appctx);CHKERRQ(ierr);
     } else {
@@ -156,7 +155,6 @@ int main(int argc,char **argv)
       these objects once.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     if (adctx->sparse) {
-
       /*
          Generate sparsity pattern
 
@@ -395,7 +393,7 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info,PetscReal t,Field**u,Fi
       f[j][i].v = udot[j][i].v - appctx->D2*(vxx + vyy) - uc*vc*vc + (appctx->gamma + appctx->kappa)*vc;
     }
   }
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -504,12 +502,14 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
     }
   }
   trace_off();  /* End of active section */
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
 
   /* Restore vectors */
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,Udot,&udot);CHKERRQ(ierr);
+
+  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
 
   /* Destroy AFields appropriately */
   f_a += info.gys;
@@ -584,7 +584,7 @@ PetscErrorCode RHSFunctionPassive(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
      Gather global vector, using the 2-step process
         DMLocalToGlobalBegin(),DMLocalToGlobalEnd().
 
-     NOTE (2): We need to use ADD_VALUES if boundaries are not of type DM_BOUNDARY_NONE or 
+     NOTE (2): We need to use ADD_VALUES if boundaries are not of type DM_BOUNDARY_NONE or
                DM_BOUNDARY_GHOSTED, meaning we should also zero F before addition (see (1) above).
   */
   ierr = DMLocalToGlobalBegin(da,localF,ADD_VALUES,F);CHKERRQ(ierr);
@@ -597,7 +597,7 @@ PetscErrorCode RHSFunctionPassive(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localF);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -719,7 +719,7 @@ PetscErrorCode RHSFunctionActive(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
      Gather global vector, using the 2-step process
         DMLocalToGlobalBegin(),DMLocalToGlobalEnd().
 
-     NOTE (2): We need to use ADD_VALUES if boundaries are not of type DM_BOUNDARY_NONE or 
+     NOTE (2): We need to use ADD_VALUES if boundaries are not of type DM_BOUNDARY_NONE or
                DM_BOUNDARY_GHOSTED, meaning we should also zero F before addition (see (1) above).
   */
   ierr = DMLocalToGlobalBegin(da,localF,ADD_VALUES,F);CHKERRQ(ierr);
@@ -732,7 +732,7 @@ PetscErrorCode RHSFunctionActive(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localF);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
-  ierr = PetscLogFlops(16*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
 
   /* Destroy AFields appropriately */
   f_a += gys;
@@ -747,11 +747,11 @@ PetscErrorCode RHSFunctionActive(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 
 PetscErrorCode IJacobianAdolc(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  AppCtx         *appctx = (AppCtx*)ctx;
-  DM             da;
-  PetscErrorCode ierr;
-  PetscScalar    *u_vec;
-  Vec            localU;
+  AppCtx            *appctx = (AppCtx*)ctx;
+  DM                da;
+  PetscErrorCode    ierr;
+  const PetscScalar *u_vec;
+  Vec               localU;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
@@ -767,7 +767,7 @@ PetscErrorCode IJacobianAdolc(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = VecGetArray(localU,&u_vec);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(localU,&u_vec);CHKERRQ(ierr);
 
   /*
     Compute Jacobian
@@ -777,7 +777,7 @@ PetscErrorCode IJacobianAdolc(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(localU,&u_vec);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(localU,&u_vec);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -882,7 +882,7 @@ PetscErrorCode IJacobianByHand(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat 
   /*
      Restore vectors
   */
-  ierr = PetscLogFlops(19*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(19.0*xm*ym);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -993,7 +993,7 @@ PetscErrorCode RHSJacobianByHand(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
   /*
      Restore vectors
   */
-  ierr = PetscLogFlops(19*xm*ym);CHKERRQ(ierr);
+  ierr = PetscLogFlops(19.0*xm*ym);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

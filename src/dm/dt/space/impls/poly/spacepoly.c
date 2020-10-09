@@ -1,6 +1,6 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
-const char *const PetscSpacePolynomialTypes[] = {"P", "PMINUS_HDIV", "PMINUS_HCURL", "PetscSpacePolynomialType", "PETSCSPACE_POLYNOMIALTYPE_",0};
+const char *const PetscSpacePolynomialTypes[] = {"P", "PMINUS_HDIV", "PMINUS_HCURL", "PetscSpacePolynomialType", "PETSCSPACE_POLYNOMIALTYPE_", NULL};
 
 static PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
@@ -536,7 +536,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
   ierr = PetscSpaceGetNumVariables(sp, &dim);CHKERRQ(ierr);
   ierr = PetscSpaceGetDegree(sp, &order, NULL);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialGetTensor(sp, &tensor);CHKERRQ(ierr);
-  if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
+  if (height > dim || height < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
   if (!poly->subspaces) {ierr = PetscCalloc1(dim, &poly->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!poly->subspaces[height-1]) {

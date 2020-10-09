@@ -6,7 +6,7 @@ use petscvec
 implicit none
 
   PetscErrorCode ierr
-  Vec   v,s              
+  Vec   v,s
   PetscInt,parameter ::      n   = 20
   PetscScalar,parameter ::   sone = 1.0
   PetscBool :: flg
@@ -17,7 +17,7 @@ implicit none
    print*,'PetscInitialize failed'
    stop
   endif
-  
+
   call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-n",n,flg,ierr);CHKERRA(ierr)
 
 

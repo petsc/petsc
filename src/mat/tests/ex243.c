@@ -42,7 +42,7 @@ int main(int argc, char** argv)
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       if (size == 1) {
-        v[i*ncols+j] = (PetscScalar)(i+j);  
+        v[i*ncols+j] = (PetscScalar)(i+j);
       } else {
         v[i*ncols+j] = (PetscScalar)rank+j*0.1;
       }
@@ -66,9 +66,9 @@ int main(int argc, char** argv)
     Mat Aexplicit;
     ierr = MatConvert(A,MATSCALAPACK,MAT_INITIAL_MATRIX,&A_scalapack);CHKERRQ(ierr);
     ierr = MatComputeOperator(A_scalapack,isAIJ?MATAIJ:MATDENSE,&Aexplicit);CHKERRQ(ierr);
-    ierr = MatMultEqual(Aexplicit,A_scalapack,5,&flg);CHKERRQ(ierr); 
+    ierr = MatMultEqual(Aexplicit,A_scalapack,5,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Aexplicit != A_scalapack.");
-    ierr = MatDestroy(&Aexplicit);CHKERRQ(ierr); 
+    ierr = MatDestroy(&Aexplicit);CHKERRQ(ierr);
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
     ierr = MatConvert(A,MATSCALAPACK,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);

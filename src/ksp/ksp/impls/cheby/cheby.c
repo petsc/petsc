@@ -108,8 +108,14 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
         PCFailedReason pcreason;
 
         ierr = KSPGetIterationNumber(cheb->kspest,&its);CHKERRQ(ierr);
+        if (ksp->normtype == KSP_NORM_NONE) {
+          PetscInt  sendbuf,recvbuf;
+          ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);
+          sendbuf = (PetscInt)pcreason;
+          ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+          ierr = PCSetFailedReason(ksp->pc,(PCFailedReason) recvbuf);CHKERRQ(ierr);
+        }
         ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
-        if (!pcreason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSP has KSP_DIVERGED_PC_FAILED but PC has no error flag");
         ksp->reason = KSP_DIVERGED_PC_FAILED;
         ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
         ierr = PetscInfo3(ksp,"Eigen estimator failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
@@ -444,9 +450,6 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     case KSP_NORM_NATURAL:
       ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
       break;
-    case KSP_NORM_NONE:
-      rnorm = 0.0;
-      break;
     default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
     }
     ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
@@ -455,8 +458,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  }
-  else ksp->reason = KSP_CONVERGED_ITERATING;
+  } else ksp->reason = KSP_CONVERGED_ITERATING;
   if (ksp->reason || ksp->max_it==0) {
     if (ksp->max_it==0) ksp->reason = KSP_DIVERGED_ITS; /* This for a V(0,x) cycle */
     PetscFunctionReturn(0);

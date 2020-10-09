@@ -84,6 +84,7 @@ class Package(config.base.Configure):
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
     self.usesopenmp             = 'no'  # yes, no, unknow package is built to use OpenMP
+    self.cmakelistsdir          = '' # Location of CMakeLists.txt - if not located at the top level of the package dir
 
     # Outside coupling
     self.defaultInstallDir      = ''
@@ -93,7 +94,7 @@ class Package(config.base.Configure):
     self.hastests               = 0 # indicates that PETSc make alltests has tests for this package
     self.hastestsdatafiles      = 0 # indicates that PETSc make alltests has tests for this package that require DATAFILESPATH to be set
     self.makerulename           = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
-    self.installedpetsc         = 0
+    self.installedpetsc         = 0  # configure actually compiled and installed PETSc
     self.installwithbatch       = 1  # install the package even though configure in the batch mode; f2blaslapack and fblaslapack for example
     self.builtafterpetsc        = 0  # package is compiled/installed after PETSc is compiled
 
@@ -256,9 +257,30 @@ class Package(config.base.Configure):
 
   def removeWarningFlags(self,flags):
     outflags = []
-    for flag in flags.split():
-      if not flag in ['-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas','-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden','-std=c89','-pedantic']:
+    for flag in flags:
+      if not flag in ['-Werror','-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas','-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden','-std=c89','-pedantic','--coverage','-MFree','-fdefault-integer-8']:
         outflags.append(flag)
+    return outflags
+
+  def updatePackageCFlags(self,flags):
+    '''To turn off various warnings or errors the compilers may produce with external packages, remove or add appropriate compiler flags'''
+    outflags = self.removeWarningFlags(flags.split())
+    with self.Language('C'):
+      if config.setCompilers.Configure.isDarwinCatalina(self.log) and config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
+        outflags.append('-Wno-implicit-function-declaration')
+    return ' '.join(outflags)
+
+  def updatePackageFFlags(self,flags):
+    outflags = self.removeWarningFlags(flags.split())
+    with self.Language('FC'):
+      if config.setCompilers.Configure.isNAG(self.getLinker(), self.log):
+         outflags.extend(['-mismatch','-dusty','-dcfuns'])
+      if config.setCompilers.Configure.isGfortran100plus(self.getCompiler(), self.log):
+        outflags.append('-fallow-argument-mismatch')
+    return ' '.join(outflags)
+
+  def updatePackageCxxFlags(self,flags):
+    outflags = self.removeWarningFlags(flags.split())
     return ' '.join(outflags)
 
   def getDefaultLanguage(self):
@@ -323,12 +345,13 @@ class Package(config.base.Configure):
     return ['']
 
   def getInstallDir(self):
+    '''Calls self.Install() to install the package'''
     '''Returns --prefix (or the value computed from --package-prefix-hash) if provided otherwise $PETSC_DIR/$PETSC_ARCH'''
     '''Special case for packages such as sowing that are have self.publicInstall == 0 it always locates them in $PETSC_DIR/$PETSC_ARCH'''
     '''Special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
-    if not self.packageDir: self.packageDir = self.downLoad()
+    if not self.packageDir or (self.download[0].find('dir://') >= 0) or (self.download[0].find('link://') >= 0): self.packageDir = self.downLoad()
     self.updateGitDir()
     self.updatehgDir()
     if (self.publicInstall or 'package-prefix-hash' in self.argDB) and not ('package-prefix-hash' in self.argDB and (hasattr(self,'postProcess') or self.builtafterpetsc)):
@@ -586,11 +609,11 @@ class Package(config.base.Configure):
         fd.close()
       return self.getInstallDir()
     else:
-      # check if download option is set for any of the dependent packages - if so flag an error.
+      # check if download option is set for MPI dependent packages - if so flag an error.
       mesg=''
-      for pkg in self.deps:
-        if 'download-'+pkg.package in self.argDB and self.argDB['download-'+pkg.package]:
-          mesg+='Error! Cannot use --download-'+pkg.package+' when not using --download-'+self.package+'. Perhaps you need to look for a version of '+pkg.PACKAGE+' that '+self.PACKAGE+' was built with!\n'
+      if hasattr(self,'mpi') and self.mpi in self.deps:
+        if 'download-mpich' in self.argDB and self.argDB['download-mpich'] or 'download-openmpi' in self.argDB and self.argDB['download-openmpi']:
+          mesg+='Cannot use --download-mpich or --download-openmpi when not using --download-%s. Perhaps you want --download-%s.\n' % (self.package,self.package)
       if mesg:
         raise RuntimeError(mesg)
     return ''
@@ -638,7 +661,7 @@ class Package(config.base.Configure):
   def matchExcludeDir(self,dir):
     '''Check is the dir matches something in the excluded directory list'''
     for exdir in self.excludedDirs:
-      if dir.startswith(exdir):
+      if dir.lower().startswith(exdir.lower()):
         return 1
     return 0
 
@@ -718,7 +741,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       Dir.append(hgpkg)
     for d in pkgdirs:
       for j in self.downloaddirnames:
-        if d.startswith(j) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+        if d.lower().startswith(j.lower()) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
           Dir.append(d)
 
     if len(Dir) > 1:
@@ -932,6 +955,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     pass
 
   def consistencyChecks(self):
+    '''Checks run on the system and currently installed packages that need to be correct for the package now being configured'''
+    self.printTest(self.consistencyChecks)
     if 'with-'+self.package+'-dir' in self.argDB and ('with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB):
       raise RuntimeError('Specify either "--with-'+self.package+'-dir" or "--with-'+self.package+'-lib --with-'+self.package+'-include". But not both!')
 
@@ -1163,6 +1188,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
 
   def rmArgsStartsWith(self,args,rejectstarts):
     rejects = []
+    if not isinstance(rejectstarts, list): rejectstarts = [rejectstarts]
     for i in rejectstarts:
       rejects.extend([arg for arg in args if arg.startswith(i)])
     return self.rmArgs(args,rejects)
@@ -1512,7 +1538,7 @@ class GNUPackage(Package):
       args.append('CC="'+self.setCompilers.cross_cc+'"')
     else:
       args.append('CC="'+self.getCompiler()+'"')
-    args.append('CFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
+    args.append('CFLAGS="'+self.updatePackageCFlags(self.getCompilerFlags())+'"')
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
     if not self.installwithbatch and hasattr(self.setCompilers,'cross_LIBS'):
@@ -1526,7 +1552,7 @@ class GNUPackage(Package):
         args.append('CXX="'+self.setCompilers.cross_CC+'"')
       else:
         args.append('CXX="'+self.getCompiler()+'"')
-      args.append('CXXFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
+      args.append('CXXFLAGS="'+self.updatePackageCxxFlags(self.getCompilerFlags())+'"')
       self.popLanguage()
     else:
       args.append('--disable-cxx')
@@ -1547,17 +1573,17 @@ class GNUPackage(Package):
           args.append('F90="'+self.setCompilers.cross_fc+'"')
         else:
           args.append('F90="'+fc+'"')
-        args.append('F90FLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','').replace('-fdefault-integer-8','')+'"')
+        args.append('F90FLAGS="'+self.updatePackageFFlags(self.getCompilerFlags())+'"')
       else:
         args.append('--disable-f90')
-      args.append('FFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','').replace('-fdefault-integer-8','')+'"')
+      args.append('FFLAGS="'+self.updatePackageFFlags(self.getCompilerFlags())+'"')
       if not self.installwithbatch and hasattr(self.setCompilers,'cross_fc'):
         args.append('FC="'+self.setCompilers.cross_fc+'"')
         args.append('F77="'+self.setCompilers.cross_fc+'"')
       else:
         args.append('FC="'+fc+'"')
         args.append('F77="'+fc+'"')
-      args.append('FCFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','').replace('-fdefault-integer-8','')+'"')
+      args.append('FCFLAGS="'+self.updatePackageFFlags(self.getCompilerFlags())+'"')
       self.popLanguage()
     else:
       args.append('--disable-fortran')
@@ -1674,7 +1700,7 @@ class CMakePackage(Package):
     args.append('-DCMAKE_AR='+self.setCompilers.AR)
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
-    cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
+    cflags = self.updatePackageCFlags(self.setCompilers.getCompilerFlags())
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     args.append('-DCMAKE_C_FLAGS_DEBUG:STRING="'+cflags+'"')
     args.append('-DCMAKE_C_FLAGS_RELEASE:STRING="'+cflags+'"')
@@ -1682,17 +1708,17 @@ class CMakePackage(Package):
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_Fortran_FLAGS_DEBUG:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_Fortran_FLAGS_RELEASE:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_Fortran_FLAGS_DEBUG:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_Fortran_FLAGS_RELEASE:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
     if self.setCompilers.LDFLAGS:
@@ -1707,7 +1733,7 @@ class CMakePackage(Package):
   def Install(self):
     import os
     args = self.formCMakeConfigureArgs()
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
+    if self.download and 'download-'+self.downloadname.lower()+'-cmake-arguments' in self.framework.clArgDB:
        args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
@@ -1721,14 +1747,14 @@ class CMakePackage(Package):
         raise RuntimeError('CMake not found, needed to build '+self.PACKAGE+'. Rerun configure with --download-cmake.')
 
       # effectively, this is 'make clean'
-      folder = os.path.join(self.packageDir, 'petsc-build')
+      folder = os.path.join(self.packageDir, self.cmakelistsdir, 'petsc-build')
       if os.path.isdir(folder):
         import shutil
         shutil.rmtree(folder)
       os.mkdir(folder)
 
       try:
-        self.logPrintBox('Configuring '+self.PACKAGE+' with cmake, this may take several minutes')
+        self.logPrintBox('Configuring '+self.PACKAGE+' with cmake; this may take several minutes')
         output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error configuring '+self.PACKAGE+' with cmake '+str(e))

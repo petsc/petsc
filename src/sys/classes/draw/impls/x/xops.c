@@ -657,7 +657,7 @@ static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *wi
 +  -display <display> - sets the display to use
 .  -x_virtual - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work.
                 Xvfb is automatically started up in PetscSetDisplay() with this option
-.  -draw_size w,h - percentage of screeen (either 1, .5, .3, .25), or size in pixels
+.  -draw_size w,h - percentage of screen (either 1, .5, .3, .25), or size in pixels
 .  -geometry x,y,w,h - set location and size in pixels
 .  -draw_virtual - do not open a window (draw on a pixmap), -draw_save will still work
 -  -draw_double_buffer - avoid window flickering (draw on pixmap and flush to window)
@@ -780,7 +780,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
       ybottom    = 0;
     }
 
-  } /* endif(!dvirtual) */
+  } /* endif (!dvirtual) */
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
   if (!rank && (w <= 0 || h <= 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");

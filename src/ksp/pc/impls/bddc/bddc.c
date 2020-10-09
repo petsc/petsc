@@ -1419,7 +1419,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
 
   /* remove the computed solution or the initial guess from the rhs */
-  if (pcbddc->rhs_change || (ksp && pcbddc->ksp_guess_nonzero) ) {
+  if (pcbddc->rhs_change || (ksp && pcbddc->ksp_guess_nonzero)) {
     /* save the original rhs */
     if (save_rhs) {
       ierr = VecSwap(rhs,pcbddc->original_rhs);CHKERRQ(ierr);

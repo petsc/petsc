@@ -1,0 +1,10 @@
+<HTML>
+<HEAD>
+<TITLE>LANDAU Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> LANDAU</H2>
+
+The LANDAU class implements an AMR discretization of the Fokker-Planck collision operator in Landau form using DMPlex and DMForest, within TS function and Jacobian methods.
+<P>

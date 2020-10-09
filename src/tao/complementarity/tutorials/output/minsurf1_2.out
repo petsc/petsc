@@ -38,7 +38,6 @@ Tao Object: 1 MPI processes
             rows=16, cols=16
             package used to perform factorization: petsc
             total: nonzeros=82, allocated nonzeros=82
-            total number of mallocs used during MatSetValues calls=0
               not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
@@ -51,6 +50,8 @@ Tao Object: 1 MPI processes
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-16,   steptol=0.,   gttol=1e-05
   Residual in Function/Gradient:=1.80227e-09
+  convergence tolerances:   catol=1e-08,   crtol=1e-08
+  Residual in Constraints:=0.
   convergence tolerances: function minimum=1e-08
   Objective value=8.12611e-10
   total number of iterations=3,                          (max: 2000)

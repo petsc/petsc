@@ -12,8 +12,10 @@ implicit none
   PetscScalar :: v
   Vec ::         u
   PetscViewer :: viewer
+#if defined(PETSC_USE_LOG)
   PetscClassId classid
-  
+#endif
+
   PetscBool :: flg
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ
@@ -24,17 +26,19 @@ implicit none
    print*,'PetscInitialize failed'
    stop
   endif
-  
-  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr) 
-  
-  call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr);CHKERRA(ierr)  !gives number of processes in the group of comm (integer) 
-  call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr);CHKERRA(ierr) !gives the integer value for a particular option in the database. 
+
+  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+
+  call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr);CHKERRA(ierr)  !gives number of processes in the group of comm (integer)
+  call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr);CHKERRA(ierr) !gives the integer value for a particular option in the database.
 
   ! PART 1:  Generate vector, then write it in binary format */
 
+#if defined(PETSC_USE_LOG)
   call PetscLogEventRegister("Generate Vector",classid,VECTOR_GENERATE,ierr);CHKERRA(ierr)
   call PetscLogEventBegin(VECTOR_GENERATE,ierr);CHKERRA(ierr)
-  ! Generate vector 
+#endif
+  ! Create vector
   call VecCreate(PETSC_COMM_WORLD,u,ierr);CHKERRA(ierr)
   call VecSetSizes(u,PETSC_DECIDE,m,ierr);CHKERRA(ierr)
   call VecSetFromOptions(u,ierr);CHKERRA(ierr)
@@ -56,26 +60,32 @@ implicit none
   call VecDestroy(u,ierr);CHKERRA(ierr)
   call PetscOptionsSetValue(PETSC_NULL_OPTIONS,"-viewer_binary_mpiio",PETSC_NULL_CHARACTER,ierr);CHKERRA(ierr)
 
+#if defined(PETSC_USE_LOG)
   call PetscLogEventEnd(VECTOR_GENERATE,ierr);CHKERRA(ierr)
+#endif
 
-  ! PART 2:  Read in vector in binary format 
+  ! PART 2:  Read in vector in binary format
 
-  ! Read new vector in binary format 
+  ! Read new vector in binary format
+#if defined(PETSC_USE_LOG)
   call PetscLogEventRegister("Read Vector",classid,VECTOR_READ,ierr);CHKERRA(ierr)
   call PetscLogEventBegin(VECTOR_READ,ierr);CHKERRA(ierr)
+#endif
   call PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n",ierr);CHKERRA(ierr)
   call PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
   call VecCreate(PETSC_COMM_WORLD,u,ierr);CHKERRA(ierr)
   call VecLoad(u,viewer,ierr);CHKERRA(ierr)
   call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
 
+#if defined(PETSC_USE_LOG)
   call PetscLogEventEnd(VECTOR_READ,ierr);CHKERRA(ierr)
+#endif
   call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
 
-  ! Free data structures 
+  ! Free data structures
   call VecDestroy(u,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)
-  
+
 end program
 
 

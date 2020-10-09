@@ -86,7 +86,7 @@ static PetscErrorCode PetscDrawCmap_Jet(int mapsize,unsigned char R[],unsigned c
   for (i=0; i<mapsize; i++) {
     double u = (double)i/(mapsize-1);
     double m, r=0, g=0, b=0; int k = 0;
-    while(k < 4 && u > knots[k+1]) k++;
+    while (k < 4 && u > knots[k+1]) k++;
     m = (u-knots[k])/(knots[k+1]-knots[k]);
     switch(k) {
     case 0: r = 0;     g = 0;   b = (m+1)/2; break;
@@ -111,7 +111,7 @@ static PetscErrorCode PetscDrawCmap_Hot(int mapsize,unsigned char R[],unsigned c
   for (i=0; i<mapsize; i++) {
     double u = (double)i/(mapsize-1);
     double m, r=0, g=0, b=0; int k = 0;
-    while(k < 2 && u > knots[k+1]) k++;
+    while (k < 2 && u > knots[k+1]) k++;
     m = (u-knots[k])/(knots[k+1]-knots[k]);
     switch(k) {
     case 0: r = m; g = 0; b = 0; break;
@@ -198,7 +198,7 @@ PetscErrorCode  PetscDrawUtilitySetCmap(const char colormap[],int mapsize,unsign
 
   if (reverse) {
     i = 0; j = mapsize-1;
-    while(i < j) {
+    while (i < j) {
 #define SWAP(a,i,j) do { unsigned char t = a[i]; a[i] = a[j]; a[j] = t; } while (0)
       SWAP(R,i,j);
       SWAP(G,i,j);

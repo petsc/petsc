@@ -28,8 +28,8 @@ $     SETERRQ(comm,n,p,mess)
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
    PetscMPIAbortErrorHandler(), PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
 
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
-           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
+.seealso:  PetscError(), PetscPushErrorHandler(), PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(),
+           PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscTraceBackErrorHandler(), PetscEmacsClientErrorHandler(), PetscReturnErrorHandler()
  @*/
 PetscErrorCode  PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {

@@ -93,7 +93,7 @@ PetscErrorCode  AODestroy(AO *ao)
   PetscFunctionBegin;
   if (!*ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ao),AO_CLASSID,1);
-  if (--((PetscObject)(*ao))->refct > 0) {*ao = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*ao))->refct > 0) {*ao = NULL; PetscFunctionReturn(0);}
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*ao);CHKERRQ(ierr);
   ierr = ISDestroy(&(*ao)->isapp);CHKERRQ(ierr);

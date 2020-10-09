@@ -39,14 +39,14 @@ class Configure(config.package.Package):
             cc = self.compilers.CC
             line = 'CC = '+cc+'\n'
           if line.startswith('COPTFLAGS '):
-            self.setCompilers.pushLanguage('C')
-            line = 'COPTFLAGS  = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n'
-            self.setCompilers.popLanguage()
+            self.pushLanguage('C')
+            line = 'COPTFLAGS  = '+self.updatePackageCFlags(self.getCompilerFlags())+'\n'
+            self.popLanguage()
           if line.startswith('CNOOPT'):
-            self.setCompilers.pushLanguage('C')
+            self.pushLanguage('C')
             noopt = self.checkNoOptFlag()
-            line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
-            self.setCompilers.popLanguage()
+            line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.getCompilerFlags())+' '+self.getPointerSizeFlag(self.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.getCompilerFlags())+'\n'
+            self.popLanguage()
           if line.startswith('AR  '):
             line = 'AR      = '+self.setCompilers.AR+'\n'
           if line.startswith('AR_FLAGS  '):
@@ -96,7 +96,7 @@ lapack_qlib:\n\
         self.withSudo('cp', '-f', 'libf2clapack.' + self.setCompilers.AR_LIB_SUFFIX, 'libf2cblas.' + self.setCompilers.AR_LIB_SUFFIX, libdir),
         ], cwd=self.packageDir, timeout=60, log = self.log)
     except RuntimeError as e:
-      self.printLog('Error moving '+blasDir+' libraries: '+str(e))
+      self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
       raise RuntimeError('Error moving '+blasDir+' libraries')
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir

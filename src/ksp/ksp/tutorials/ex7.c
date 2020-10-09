@@ -106,12 +106,12 @@ int main(int argc,char **args)
      Set default preconditioner for this program to be block Jacobi.
      This choice can be overridden at runtime with the option
         -pc_type <type>
-        
-     IMPORTANT NOTE: Since the inners solves below are constructed to use 
+
+     IMPORTANT NOTE: Since the inners solves below are constructed to use
      iterative methods (such as KSPGMRES) the outer Krylov method should
      be set to use KSPFGMRES since it is the only Krylov method (plus KSPFCG)
      that allows the preconditioners to be nonlinear (that is have iterative methods
-     inside them). The reason these examples work is because the number of 
+     inside them). The reason these examples work is because the number of
      iterations on the inner solves is left at the default (which is 10,000)
      and the tolerance on the inner solves is set to be a tight value of around 10^-6.
   */

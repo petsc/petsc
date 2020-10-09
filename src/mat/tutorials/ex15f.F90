@@ -34,7 +34,7 @@ program main
 
   !/* Create a linear mesh */
   call MatGetOwnershipRange(A, myStart, myEnd,ierr);CHKERRA(ierr)
-  
+
   do r=myStart,myEnd-1
     if (r == 0) then
      allocate(vals(2))
@@ -50,7 +50,7 @@ program main
      call MatSetValues(A, one, r, two, cols, vals, INSERT_VALUES,ierr);CHKERRA(ierr)
      deallocate(cols)
      deallocate(vals)
-    else 
+    else
      allocate(vals(3))
      vals = 1.0
      allocate(cols(3),source=[r-1,r,r+1])
@@ -70,7 +70,7 @@ program main
   call MatPartitioningDestroy(part,ierr);CHKERRA(ierr)
   call MatDestroy(A,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)
- 
+
 end program
 
 !/*TEST
@@ -110,4 +110,3 @@ end program
 !      output_file: output/ex15_5.out
 !
 !TEST*/
-

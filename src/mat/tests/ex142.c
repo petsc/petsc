@@ -1,4 +1,4 @@
-static char help[] = "Test sequential r2c/c2r FFTW without PETSc interface \n\n"; 
+static char help[] = "Test sequential r2c/c2r FFTW without PETSc interface \n\n";
 
 /*
   Compiling the code:

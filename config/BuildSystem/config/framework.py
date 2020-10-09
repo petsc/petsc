@@ -149,7 +149,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self._tmpDir = tempfile.mkdtemp(prefix = 'petsc-')
       if not os.access(self._tmpDir, os.X_OK):
         raise RuntimeError('Cannot execute things in tmp directory '+self._tmpDir+'. Consider setting TMPDIR to something else.')
-      self.logPrint('All intermediate test results are stored in '+self._tmpDir)
     return self._tmpDir
   def setTmpDir(self, temp):
     if hasattr(self, '_tmpDir'):
@@ -193,6 +192,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if not hasattr(self, '_doCleanup'):
       return self.argDB['doCleanup']
     return self._doCleanup
+
   def setCleanup(self, doCleanup):
     self._doCleanup = doCleanup
     return
@@ -208,6 +208,27 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for child in self.childGraph.vertices:
       if hasattr(child, 'setupHelp'): child.setupHelp(self.help)
     return argDB
+
+  def outputBasics(self):
+    buf = 'Environmental variables'
+    for key,val in os.environ.items():
+      buf += '\n'+str(key)+'='+str(val)
+    self.logPrint(buf)
+    def logPrintFilesInPath(path):
+      for d in path:
+        try:
+          self.logWrite('      '+d+': '+' '.join(os.listdir(d))+'\n')
+        except Exception as e:
+          self.logWrite('      Warning accessing '+d+' gives errors: '+str(e)+'\n')
+      return
+    if os.environ['PATH'].split(os.path.pathsep):
+      self.logWrite('    Files in path provided by default path\n')
+      logPrintFilesInPath(os.environ['PATH'].split(os.path.pathsep))
+    dirs = self.argDB['with-executables-search-path']
+    if not isinstance(dirs, list): dirs = [dirs]
+    if dirs:
+      self.logWrite('    Files in path provided by --with-executables-search-path\n')
+      logPrintFilesInPath(dirs)
 
   def dumpConfFiles(self):
     '''Performs:
@@ -413,6 +434,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = output.splitlines()
     # Intel
     lines = [s for s in lines if s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0]
+    lines = [s for s in lines if s.find("[: unexpected operator") < 0]  # Deals with error in mpiicc and mpiicpc wrappers from some versions of Intel MPI.
     # IBM:
     lines = [s for s in lines if not s.startswith('cc_r:')]
     # PGI: Ignore warning about temporary license
@@ -1197,7 +1219,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           if 'with-'+dep.package in self.framework.clArgDB and self.argDB['with-'+dep.package]: found = 1
           if 'with-'+dep.package+'-lib' in self.framework.clArgDB and self.argDB['with-'+dep.package+'-lib']: found = 1
           if 'with-'+dep.package+'-dir' in self.framework.clArgDB and self.argDB['with-'+dep.package+'-dir']: found = 1
-          if not found: msg += 'Package '+child.package+' requested but dependency '+dep.package+' not requested. Perhaps you want --download-'+dep.package+'\n'
+          if not found:
+            if dep.download: emsg = '--download-'+dep.package+' or '
+            else: emsg = ''
+            msg += 'Package '+child.package+' requested but dependency '+dep.package+' not requested. \n  Perhaps you want '+emsg+'--with-'+dep.package+'-dir=directory or  --with-'+dep.package+'-lib=libraries and --with-'+dep.package+'-include=directory\n'
         if msg: raise RuntimeError(msg)
         if child.cxx and ('with-cxx' in self.framework.clArgDB) and (self.argDB['with-cxx'] == '0'): raise RuntimeError('Package '+child.package+' requested requires C++ but compiler turned off.')
         if child.fc and ('with-fc' in self.framework.clArgDB) and (self.argDB['with-fc'] == '0'): raise RuntimeError('Package '+child.package+' requested requires Fortran but compiler turned off.')
@@ -1243,6 +1268,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.setup()
     self.outputBanner()
     self.updateDependencies()
+    self.outputBasics()
     self.executeTest(self.configureExternalPackagesDir)
     self.processChildren()
     if self.argDB['with-batch']:

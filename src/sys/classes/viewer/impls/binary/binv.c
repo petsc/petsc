@@ -843,7 +843,7 @@ static PetscErrorCode PetscViewerFileClose_Binary(PetscViewer v)
   ierr = PetscViewerFileClose_BinaryMPIIO(v);CHKERRQ(ierr);
 #endif
   ierr = PetscViewerFileClose_BinarySTDIO(v);CHKERRQ(ierr);
-  ierr = PetscViewerFileClose_BinaryInfo(v); CHKERRQ(ierr);
+  ierr = PetscViewerFileClose_BinaryInfo(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

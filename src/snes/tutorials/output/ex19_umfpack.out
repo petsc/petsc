@@ -41,7 +41,6 @@ SNES Object: 1 MPI processes
             rows=676, cols=676
             package used to perform factorization: umfpack
             total: nonzeros=0, allocated nonzeros=0
-            total number of mallocs used during MatSetValues calls=0
               UMFPACK run parameters:
                 Control[UMFPACK_PRL]: 1.
                 Control[UMFPACK_STRATEGY]: 0.

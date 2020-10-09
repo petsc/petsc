@@ -33,7 +33,7 @@
       PetscScalar,pointer :: xx(:)
       PetscScalar zero,big
       SNESLineSearch ls
-      
+
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
@@ -202,7 +202,7 @@
       PetscErrorCode ierr
       PetscInt idx(2),i2
       integer dummy(*)
-      
+
 !  Declarations for use with local arrays
 
       PetscScalar lx_v(1),lf_v(1)
@@ -215,12 +215,12 @@
       call ShashiFormJacobian(lx_a(1),lf_a(1))
       call MatDenseRestoreArray(B,lf_v,lf_i,ierr)
       call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
-      
+
 !  Assemble matrix
 
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
-      
+
       return
       end
 
@@ -255,10 +255,10 @@
         PetscInt an_h(1),an_c(1)
         PetscScalar part_p(26)
         PetscInt i_cc,i_hh,i_h2o
-        PetscInt i_pwr2,i_co2_h2o 
-        
+        PetscInt i_pwr2,i_co2_h2o
+
         pt = 0.1
-        atom_c_init =6.7408177364816552D-022 
+        atom_c_init =6.7408177364816552D-022
         atom_h_init = 2.0
         atom_o_init = 1.0
         atom_n_init = 3.76
@@ -305,36 +305,36 @@
       an_r( 6) =     1.88000
       an_r(14) =     1.
 
-      
+
 #if defined(solution)
-      an_r( 1 ) =      3.802208D-33
-      an_r( 2 ) =      1.298287D-29
-      an_r( 3 ) =      2.533067D-04
-      an_r( 4 ) =      6.865078D-22
-      an_r( 5 ) =      9.993125D-01
-      an_r( 6 ) =      1.879964D+00
-      an_r( 7 ) =      4.449489D-13
-      an_r( 8 ) =      3.428687D-07
-      an_r( 9 ) =      7.105138D-05
-      an_r(10 ) =      1.094368D-04
-      an_r(11 ) =      2.362305D-06
-      an_r(12 ) =      1.107145D-09
-      an_r(13 ) =      1.276162D-24
-      an_r(14 ) =      6.315538D-04
-      an_r(15 ) =      2.356540D-09
-      an_r(16 ) =      2.048248D-09
-      an_r(17 ) =      1.966187D-22
-      an_r(18 ) =      7.856497D-29
-      an_r(19 ) =      1.987840D-36
-      an_r(20 ) =      8.182441D-22
-      an_r(21 ) =      2.684880D-16
-      an_r(22 ) =      2.680473D-16
-      an_r(23 ) =      6.594967D-18
-      an_r(24 ) =      2.509714D-21
-      an_r(25 ) =      3.096459D-21
-      an_r(26 ) =      6.149551D-18
+      an_r( 1) =      3.802208D-33
+      an_r( 2) =      1.298287D-29
+      an_r( 3) =      2.533067D-04
+      an_r( 4) =      6.865078D-22
+      an_r( 5) =      9.993125D-01
+      an_r( 6) =      1.879964D+00
+      an_r( 7) =      4.449489D-13
+      an_r( 8) =      3.428687D-07
+      an_r( 9) =      7.105138D-05
+      an_r(10) =      1.094368D-04
+      an_r(11) =      2.362305D-06
+      an_r(12) =      1.107145D-09
+      an_r(13) =      1.276162D-24
+      an_r(14) =      6.315538D-04
+      an_r(15) =      2.356540D-09
+      an_r(16) =      2.048248D-09
+      an_r(17) =      1.966187D-22
+      an_r(18) =      7.856497D-29
+      an_r(19) =      1.987840D-36
+      an_r(20) =      8.182441D-22
+      an_r(21) =      2.684880D-16
+      an_r(22) =      2.680473D-16
+      an_r(23) =      6.594967D-18
+      an_r(24) =      2.509714D-21
+      an_r(25) =      3.096459D-21
+      an_r(26) =      6.149551D-18
 #endif
-      
+
       return
       end
 
@@ -359,13 +359,13 @@
        PetscInt an_h(1),an_c(1)
        PetscScalar part_p(26),idiff
         PetscInt i_cc,i_hh,i_h2o
-        PetscInt i_pwr2,i_co2_h2o 
+        PetscInt i_pwr2,i_co2_h2o
         PetscScalar an_t,sum_h,pt_cubed,pt_five
         PetscScalar pt_four,pt_val1,pt_val2
         PetscScalar a_io2
         PetscInt i,ip
         pt = 0.1
-        atom_c_init =6.7408177364816552D-022 
+        atom_c_init =6.7408177364816552D-022
         atom_h_init = 2.0
         atom_o_init = 1.0
         atom_n_init = 3.76
@@ -378,7 +378,7 @@
         h_init = 128799.7267952987
         p_init = 0.1
         temp = 1500
-        
+
        k_eq( 1) =     1.75149D-05
        k_eq( 2) =     4.01405D-06
        k_eq( 3) =     6.04663D-14
@@ -441,7 +441,7 @@
      &          - (an_h(1)*an_r(1) + an_h_additive*an_r(2)              &
      &              + 2*an_r(5) + an_r(10) + an_r(11) + 2*an_r(14)      &
      &              + an_r(16)+ 2*an_r(17) + an_r(19)                   &
-     &              +an_r(20) + 3*an_r(22)+an_r(26)) 
+     &              +an_r(20) + 3*an_r(22)+an_r(26))
 
 
         f_eq(2) = atom_o_init                                           &
@@ -461,7 +461,7 @@
 
 
 
-        
+
         do ip = 1,26
            part_p(ip) = (an_r(ip)/an_t) * pt
         enddo
@@ -548,7 +548,7 @@
              do i = 1,26
                  write(44,*)i,f_eq(i)
               enddo
-              
+
       return
       end
 
@@ -588,7 +588,7 @@
         PetscInt j
 
         pt = 0.1
-        atom_c_init =6.7408177364816552D-022 
+        atom_c_init =6.7408177364816552D-022
         atom_h_init = 2.0
         atom_o_init = 1.0
         atom_n_init = 3.76
@@ -652,7 +652,7 @@
        H_molar(24) =    -6.07503D+03
        H_molar(25) =     1.27020D+05
        H_molar(26) =    -1.07011D+05
-       
+
 !
 !=======
       do jb = 1,26
@@ -670,24 +670,24 @@
 !====
         d_eq(1,1) = -an_h(1)
         d_eq(1,2) = -an_h_additive
-        d_eq(1,5) = -2    
-        d_eq(1,10) = -1    
-        d_eq(1,11) = -1    
-        d_eq(1,14) = -2  
-        d_eq(1,16) = -1  
+        d_eq(1,5) = -2
+        d_eq(1,10) = -1
+        d_eq(1,11) = -1
+        d_eq(1,14) = -2
+        d_eq(1,16) = -1
         d_eq(1,17) = -2
-        d_eq(1,19) = -1  
-        d_eq(1,20) = -1  
+        d_eq(1,19) = -1
+        d_eq(1,20) = -1
         d_eq(1,22) = -3
         d_eq(1,26) = -1
 
         d_eq(2,2) = -1*an_o_additive
-        d_eq(2,3) = -2 
+        d_eq(2,3) = -2
         d_eq(2,4) = -2
-        d_eq(2,5) = -1    
-        d_eq(2,8) = -1    
-        d_eq(2,9) = -1    
-        d_eq(2,10) = -1    
+        d_eq(2,5) = -1
+        d_eq(2,8) = -1
+        d_eq(2,9) = -1
+        d_eq(2,10) = -1
         d_eq(2,12) = -1
         d_eq(2,13) = -1
         d_eq(2,15) = -2
@@ -904,7 +904,7 @@
         d_eq(13,13) = d_eq(13,13)                                       &
      &            -k_eq(7)*(pt**1.5)*(sqrt(an_r(3)+1.0d-50)/const3)
 
- 
+
 
 
         d_eq(14,1) = pt*an_r(15)*(-1.0)/const2                          &
@@ -936,8 +936,8 @@
      &            -k_eq(9)*(pt**1.5)*(sqrt(an_r(14)+1.0d-50)/const3)
         d_eq(15,14) = d_eq(15,14)                                       &
      &            -k_eq(9)*(pt**1.5)*(an_r(3)/const3)                   &
-     &            *(0.5/sqrt(an_r(14)+1.0d-50))  
-        d_eq(15,16) = d_eq(15,16) + pt/an_t  
+     &            *(0.5/sqrt(an_r(14)+1.0d-50))
+        d_eq(15,16) = d_eq(15,16) + pt/an_t
 
 
         d_eq(16,1) = pt*an_r(12)*(-1.0)/const2                          &
@@ -990,7 +990,7 @@
 
 
 
-!====for eq 19 
+!====for eq 19
 
         d_eq(19,1) = an_r(3)*an_r(19)*(pt**2)*(-2/const_cube)           &
      &             - k_eq(17)*an_r(13)*an_r(10)*pt*pt * (-2/const_cube)
@@ -1003,7 +1003,7 @@
      &             - k_eq(17) *an_r(13)*pt*pt /const2
         d_eq(19,3) = d_eq(19,3) + an_r(19)*pt*pt/const2
         d_eq(19,19) = d_eq(19,19) + an_r(3)*pt*pt/const2
-!====for eq 20 
+!====for eq 20
 
         d_eq(20,1) = an_r(21)*an_r(20)*(pt**2)*(-2/const_cube)          &
      &             - k_eq(18) * an_r(19)*an_r(8)*pt*pt * (-2/const_cube)
@@ -1013,12 +1013,12 @@
         d_eq(20,8) = d_eq(20,8)                                         &
      &             - k_eq(18) *an_r(19)*pt*pt /const2
         d_eq(20,19) = d_eq(20,19)                                       &
-     &             - k_eq(18) *an_r(8)*pt*pt /const2 
+     &             - k_eq(18) *an_r(8)*pt*pt /const2
         d_eq(20,20) = d_eq(20,20) + an_r(21)*pt*pt/const2
         d_eq(20,21) = d_eq(20,21) + an_r(20)*pt*pt/const2
 
 !========
-!====for eq 21 
+!====for eq 21
 
         d_eq(21,1) = an_r(21)*an_r(23)*(pt**2)*(-2/const_cube)          &
      &             - k_eq(19)*an_r(7)*an_r(8)*pt*pt * (-2/const_cube)
@@ -1032,8 +1032,8 @@
         d_eq(21,21) = d_eq(21,21) + an_r(23)*pt*pt/const2
         d_eq(21,23) = d_eq(21,23) + an_r(21)*pt*pt/const2
 
-!======== 
-!  for 22  
+!========
+!  for 22
         d_eq(22,1) = an_r(5)*an_r(11)*(pt**2)*(-2/const_cube)           &
      &         -k_eq(20)*an_r(21)*an_r(22)*pt*pt * (-2/const_cube)
         do jj = 2,26
@@ -1048,8 +1048,8 @@
 
 
 
-!======== 
-!  for 23 
+!========
+!  for 23
 
         d_eq(23,1) = an_r(24)*(pt)*(-1/const2)                          &
      &             - k_eq(21)*an_r(21)*an_r(3)*pt*pt * (-2/const_cube)
@@ -1062,8 +1062,8 @@
      &             - k_eq(21) *an_r(3)*pt*pt /const2
         d_eq(23,24) = d_eq(23,24) + pt/(an_t)
 
-!======== 
-!  for 24 
+!========
+!  for 24
         d_eq(24,1) = an_r(3)*an_r(25)*(pt**2)*(-2/const_cube)           &
      &             - k_eq(22)*an_r(24)*an_r(8)*pt*pt * (-2/const_cube)
         do jj = 2,26
@@ -1076,9 +1076,9 @@
         d_eq(24,3) = d_eq(24,3) + an_r(25)*pt*pt/const2
         d_eq(24,25) = d_eq(24,25) + an_r(3)*pt*pt/const2
 
-!======== 
-!for 25 
-        
+!========
+!for 25
+
         d_eq(25,1) = an_r(26)*(pt)*(-1/const2)                          &
      &       - k_eq(23)*an_r(21)*an_r(10)*pt*pt * (-2/const_cube)
         do jj = 2,26
@@ -1091,13 +1091,13 @@
         d_eq(25,26) = d_eq(25,26) + pt/(an_t)
 
 !============
-!  for 26 
+!  for 26
         d_eq(26,20) = -1
-        d_eq(26,22) = -1 
+        d_eq(26,22) = -1
         d_eq(26,23) = -1
-        d_eq(26,21) = 1    
-        d_eq(26,24) = 1    
-        d_eq(26,25) = 1   
+        d_eq(26,21) = 1
+        d_eq(26,24) = 1
+        d_eq(26,25) = 1
         d_eq(26,26) = 1
 
 
@@ -1107,7 +1107,7 @@
               enddo
            enddo
 
-           
+
         return
         end
 
@@ -1135,4 +1135,3 @@
       call VecRestoreArrayF90(W,xx,ierr)
       return
       end
-      

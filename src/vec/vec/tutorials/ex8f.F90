@@ -48,19 +48,19 @@
 !     In this case we treat the vector as lying on a one dimensional grid and
 !     have one ghost point on each end of the blocks owned by each processor.
 !
-    
+
   call VecGetSize(x,M,ierr);CHKERRA(ierr)
   call VecGetOwnershipRange(x,rstart,rend,ierr);CHKERRA(ierr)
   ng = rend - rstart + 2
   allocate(gindices(0:ng-1))
   gindices(0) = rstart -1
-       
+
   do i=0,ng-2
    gindices(i+1) = gindices(i) + 1
   end do
-   
+
 ! map the first and last point as periodic
-   
+
   if (gindices(0) == -1) gindices(0) = M - 1
 
   if (gindices(ng-1) == M) gindices(ng-1) = 0
@@ -91,13 +91,13 @@
   !
   call VecAssemblyBegin(x,ierr);CHKERRA(ierr)
   call VecAssemblyEnd(x,ierr);CHKERRA(ierr)
-  ! 
+  !
   ! View the vector; then destroy it.
   !
   call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
   call VecDestroy(x,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)
-   
+
 end program
 
 !/*TEST

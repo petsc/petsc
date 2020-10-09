@@ -1,16 +1,12 @@
 #
-# stage-1 take only a few minutes and generally run on the cloud; they do not run the full test suite or external packages.
+# stage-1 take only a few minutes; they do not run the full test suite or external packages.
 #
 # stage-2 runs on MCS systems and may take 10 to 15 minutes. They run the full test suite but with limited mixture of external packages
 #
 # stage-3 runs on MCS systems and may take an hour or more. They run the full test suite and heavily test external packages, utilize valgrind etc
-#         (not yet implemented)
 #
 # The stage-(n) tests are only started if all of the stage-(n-1) tests run without error
 #   You can limit the testing by using the variable STAGE with value 1 or 2
-#
-# By default the test branch is merged to master before testing. (not yet implemented)
-#   You can limite this by using the variable MERGETOMASTER with value 0 (not yet implemented)
 #
 
 stages:
@@ -21,7 +17,7 @@ variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
   PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-  TIMEOUT: 1000
+  TIMEOUT: 450
 
 #
 # The most basic template that most tests will expand upon. In particular merge requests and branch pushes DO NOT trigger testing
@@ -36,9 +32,6 @@ variables:
 #     Set with CI/CD Pipelines - Run Pipeline
       - web
       - merge_requests
-    variables:
-      - $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
-      - $CI_MERGE_REQUEST_EVENT_TYPE == null
   dependencies: []
 
 check-ci-settings:
@@ -67,8 +60,11 @@ check-ci-settings:
     - ccache --zero-stats
     - echo ${CONFIG_OPTS}
   script:
+    - printf "PATH:$PATH\n"
+    - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
-    - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror
+    - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
     - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - date
@@ -92,6 +88,8 @@ check-ci-settings:
 
 mpich-cxx-py3:
   extends: .stage-1
+  tags:
+  - stage1, fedora
   variables:
     PYTHON: python3
     CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-clanguage=cxx --with-fc=0
@@ -113,7 +111,7 @@ c99-mlib-static-py2:
 
 checksource:
   extends: .test
-  stage: stage-1
+  stage: .pre
   tags:
     - stage1
   script:
@@ -121,9 +119,27 @@ checksource:
     - make checkbadSource SHELL=bash
     - make -f gmakefile check_output SHELL=bash
 
+pause-for-approval:
+  extends: .test
+  stage: .pre
+  tags:
+    - stage1
+  only:
+    refs:
+      - merge_requests
+    variables:
+      - $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
+      - $CI_MERGE_REQUEST_EVENT_TYPE == "detached"
+  script:
+    - echo "pause-for-approval has no script to run"
+  variables:
+    GIT_STRATEGY: none
+  when: manual
+  allow_failure: false
+
 check-py-vermin:
   extends: .test
-  stage: stage-1
+  stage: .pre
   tags:
     - stage1
   script:
@@ -137,14 +153,16 @@ check-py-vermin:
   script:
     - printf "PATH:$PATH\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - printf "./config/examples/${TEST_ARCH}.py\n"
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
-    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS}
-    - make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} check
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}"
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check
     - make updatedatafiles
-    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS=${MAKE_CFLAGS} CXXFLAGS=${MAKE_CXXFLAGS} FFLAGS=${MAKE_FFLAGS} cleantest allgtests-tap TIMEOUT=${TIMEOUT}; fi
-    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov && bash <(curl -s https://codecov.io/bash) -c; fi
+    - if [ -z ${DISABLE_PETSC4PY_TESTS+x} ]; then if [ -z ${ENABLE_PETSC4PY_LDPRELOAD+x} ]; then echo "NOT using LD_PRELOAD"; make petsc4pytest; else echo "using LD_PRELOAD"; LD_PRELOAD=${PWD}/${TEST_ARCH}/lib/libpetsc.so make petsc4pytest; fi; fi
+    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS}; fi
+    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov && bash <(curl -s https://codecov.io/bash) -c > /dev/null 2>&1; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -182,6 +200,7 @@ check-py-vermin:
     - lscpu
     - ccache --zero-stats
     - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
   after_script:
     - date
     - ccache --show-stats
@@ -282,7 +301,6 @@ linux-cuda-double:
   tags:
     - gpu:nvidia, os:linux, name:p1
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-double
 
 linux-gcc-quad-64idx-dbg:
@@ -317,7 +335,7 @@ mswin-uni:
     - .stage-2
     - .mswin_test
   tags:
-    - name:ps5-2
+    - win-stage2
   variables:
     TEST_ARCH: arch-ci-mswin-uni
 
@@ -326,7 +344,7 @@ mswin-gnu:
     - .stage-2
     - .mswin_test
   tags:
-    - name:ps5-3
+    - win-stage2
   variables:
     TEST_ARCH: arch-ci-mswin-gnu
     MAKE_CFLAGS: -Werror
@@ -371,35 +389,60 @@ freebsd-pkgs-opt:
   variables:
     TEST_ARCH: arch-ci-freebsd-pkgs-opt
 
-linux-viennacl:
+linux-hiphcc-double:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:frog
+    - os:linux, name:frog
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
-    TEST_ARCH: arch-ci-linux-viennacl
+    TEST_ARCH: arch-ci-linux-hip-double
+    DISABLE_TESTS: 1
+
+linux-sycl-double:
+  extends:
+    - .stage-3
+    - .linux_test_nofflags
+  tags:
+    - os:linux, name:pj01
+  variables:
+    TEST_ARCH: arch-ci-linux-sycl-double
+    INIT_SCRIPT: /home/glci/bin/ci-inteloneapi.sh
+    DISABLE_TESTS: 1
 
 linux-c-exodus-dbg:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux
+    - gpu:nvidia, os:linux, name:frog
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
+    RUN_GCOV: 1
+    TEST_OPTS: -j1 query=requires queryval=cuda
 
-linux-cuda-complex:
+linux-cuda11-double:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:p1
+    - gpu:nvidia, os:linux, name:frog
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
-    TEST_ARCH: arch-ci-linux-cuda-complex
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
+    TEST_ARCH: arch-ci-linux-cuda11-double
+    TEST_OPTS: -j1 query=requires queryval=cuda
+
+linux-cuda11-complex:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux, name:frog
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
+    TEST_ARCH: arch-ci-linux-cuda11-complex
+    TEST_OPTS: -j1 query=requires queryval=cuda
 
 linux-cuda-double-64idx:
   extends:
@@ -408,8 +451,8 @@ linux-cuda-double-64idx:
   tags:
     - gpu:nvidia, os:linux, name:p1
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-double-64idx
+    TEST_OPTS: -j1 query=requires queryval=cuda
 
 linux-cuda-single-cxx:
   extends:
@@ -418,18 +461,41 @@ linux-cuda-single-cxx:
   tags:
     - gpu:nvidia, os:linux
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0 -use_gpu_aware_mpi 0
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
+    TEST_OPTS: -j1 query=requires queryval=cuda
 
 linux-cuda-uni-pkgs:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:frog
+    - gpu:nvidia, os:linux
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -cuda_initialize 0
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
+    TEST_OPTS: -j4 query=requires queryval=cuda
+
+linux-viennacl:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux
+  variables:
+    TEST_ARCH: arch-ci-linux-viennacl
+    MAKE_CXXFLAGS: -Werror -Wno-ignored-attributes
+    TEST_OPTS: -j1 query=requires queryval=viennacl
+
+linux-viennacl-cuda:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gpu:nvidia, os:linux
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0
+    TEST_ARCH: arch-ci-linux-viennacl-cuda
+    MAKE_CXXFLAGS: -Werror -Wno-ignored-attributes -Wno-parentheses
 
 linux-without-fc:
   extends:
@@ -479,7 +545,7 @@ linux-knl:
 linux-intel-mkl-single:
   extends:
     - .stage-3
-    - .linux_test_noflags
+    - .linux_test_nofflags
   tags:
     - name:isdp001
   variables:
@@ -533,6 +599,7 @@ linux-pkgs-opt:
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent
     TEST_ARCH: arch-ci-linux-pkgs-opt
+    LOAD_MODULES: gcc/10.1.0-5hiqhdh
 
 linux-pkgs-gcov:
   extends:
@@ -601,12 +668,13 @@ linux-nagfor:
 linux-intel-cmplx:
   extends:
     - .stage-3
-    - .linux_test_noflags
+    - .linux_test_nofflags
   tags:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-intel-cmplx
     LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib
+    ENABLE_PETSC4PY_LDPRELOAD: 1
 
 linux-xsdk-dbg:
   extends:
@@ -709,7 +777,7 @@ mswin-intel-cxx-cmplx:
     - .stage-3
     - .mswin_test
   tags:
-    - name:ps5
+    - os:win
   variables:
     TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
 
@@ -718,7 +786,7 @@ mswin-intel:
     - .stage-3
     - .mswin_test
   tags:
-    - name:ps5
+    - os:win
   variables:
     TEST_ARCH: arch-ci-mswin-intel
 
@@ -727,10 +795,10 @@ mswin-opt-impi:
     - .stage-3
     - .mswin_test
   tags:
-    - name:ps4
+    - os:win
   variables:
     TEST_ARCH: arch-ci-mswin-opt-impi
-  allow_failure: true
+    DISABLE_TESTS: 1
 
 opensolaris-pkgs-opt:
   extends:
@@ -801,29 +869,28 @@ osx-xsdk-opt:
 analyze-pipeline:
   extends: .test
   stage: .post
-  image: jedbrown/mpich-ccache
   tags:
-    - docker
+    - gce-nfs
   dependencies:
+    - linux-c-exodus-dbg
+    - linux-pkgs-gcov
+    - linux-cmplx-gcov
+    - linux-matlab-ilp64-gcov
+    - linux-gcov
   variables:
-    PYTHON: python3
-    # Need a dummy TEST_ARCH that comes from artifacts
-    TEST_ARCH: arch-ci-linux-pkgs-gcov
-  allow_failure: true
+    PETSC_ARCH: arch-ci-analyze-pipeline
   before_script:
     - date
+    - hostname
   script:
-  - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
-#  - make mergegcov LOC=$PWD
-  - ${PYTHON} lib/petsc/bin/maint/gcov.py --merge_gcov --loc=${PWD} --petsc_arch ${TEST_ARCH}
-  - ls
-  - ls arch*/*
+  - ./configure --with-mpi=0 --with-cxx=0 --with-c2html
+  - make srchtml
+  - make mergegcov
   artifacts:
     name: "$CI_JOB_NAME"
     when: always
     paths:
-    - i*.html
-    - arch-*-gcov/*
+    - arch-ci-analyze-pipeline/*
     expire_in: 4 days
 #
 #

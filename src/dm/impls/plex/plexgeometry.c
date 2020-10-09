@@ -30,11 +30,11 @@
 
   Complexity of this function is currently O(mn) with m number of vertices to find and n number of vertices in the local mesh. This could probably be improved.
 
-.seealso: DMPlexCreate(), DMGetCoordinates()
+.seealso: DMPlexCreate(), DMGetCoordinatesLocal()
 @*/
 PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord[], PetscReal eps, PetscInt dagPoints[])
 {
-  PetscInt          c, dim, i, j, o, p, vStart, vEnd;
+  PetscInt          c, cdim, i, j, o, p, vStart, vEnd;
   Vec               allCoordsVec;
   const PetscScalar *allCoords;
   PetscReal         norm;
@@ -42,7 +42,7 @@ PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord
 
   PetscFunctionBegin;
   if (eps < 0) eps = PETSC_SQRT_MACHINE_EPSILON;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &allCoordsVec);CHKERRQ(ierr);
   ierr = VecGetArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -54,17 +54,17 @@ PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord
     ierr = DMGetCoordinateSection(dm, &cs);CHKERRQ(ierr);
     for (p = vStart; p < vEnd; p++) {
       ierr = PetscSectionGetDof(cs, p, &ndof);CHKERRQ(ierr);
-      if (PetscUnlikely(ndof != dim)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %D: ndof = %D != %D = dim", p, ndof, dim);
+      if (PetscUnlikely(ndof != cdim)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %D: ndof = %D != %D = cdim", p, ndof, cdim);
     }
   }
   if (eps == 0.0) {
-    for (i=0,j=0; i < npoints; i++,j+=dim) {
+    for (i=0,j=0; i < npoints; i++,j+=cdim) {
       dagPoints[i] = -1;
-      for (p = vStart,o=0; p < vEnd; p++,o+=dim) {
-        for (c = 0; c < dim; c++) {
+      for (p = vStart,o=0; p < vEnd; p++,o+=cdim) {
+        for (c = 0; c < cdim; c++) {
           if (coord[j+c] != PetscRealPart(allCoords[o+c])) break;
         }
-        if (c == dim) {
+        if (c == cdim) {
           dagPoints[i] = p;
           break;
         }
@@ -73,11 +73,11 @@ PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord
     ierr = VecRestoreArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  for (i=0,j=0; i < npoints; i++,j+=dim) {
+  for (i=0,j=0; i < npoints; i++,j+=cdim) {
     dagPoints[i] = -1;
-    for (p = vStart,o=0; p < vEnd; p++,o+=dim) {
+    for (p = vStart,o=0; p < vEnd; p++,o+=cdim) {
       norm = 0.0;
-      for (c = 0; c < dim; c++) {
+      for (c = 0; c < cdim; c++) {
         norm += PetscSqr(coord[j+c] - PetscRealPart(allCoords[o+c]));
       }
       norm = PetscSqrtReal(norm);
@@ -205,13 +205,14 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScala
 
 static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
-  const PetscInt embedDim = 3;
-  PetscReal      v0[3], J[9], invJ[9], detJ;
-  PetscReal      x = PetscRealPart(point[0]);
-  PetscReal      y = PetscRealPart(point[1]);
-  PetscReal      z = PetscRealPart(point[2]);
-  PetscReal      xi, eta, zeta;
-  PetscErrorCode ierr;
+  const PetscInt  embedDim = 3;
+  const PetscReal eps      = PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal       v0[3], J[9], invJ[9], detJ;
+  PetscReal       x = PetscRealPart(point[0]);
+  PetscReal       y = PetscRealPart(point[1]);
+  PetscReal       z = PetscRealPart(point[2]);
+  PetscReal       xi, eta, zeta;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
@@ -219,7 +220,7 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscSc
   eta  = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]) + invJ[1*embedDim+2]*(z - v0[2]);
   zeta = invJ[2*embedDim+0]*(x - v0[0]) + invJ[2*embedDim+1]*(y - v0[1]) + invJ[2*embedDim+2]*(z - v0[2]);
 
-  if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 2.0)) *cell = c;
+  if ((xi >= -eps) && (eta >= -eps) && (zeta >= -eps) && (xi + eta + zeta <= 2.0+eps)) *cell = c;
   else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   PetscFunctionReturn(0);
 }
@@ -635,6 +636,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_LocatePoints,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscTime(&t0);CHKERRQ(ierr);
   if (ltype == DM_POINTLOCATION_NEAREST && !hash) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Nearest point location only supported with grid hashing. Use -dm_plex_hash_location to enable it.");
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
@@ -797,6 +799,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     ierr = PetscInfo3(dm,"[DMLocatePoints_Plex] terminating_query_type : %D [outside domain] : %D [inside initial cell] : %D [brute-force]\n",terminating_query_type[0],terminating_query_type[1],terminating_query_type[2]);CHKERRQ(ierr);
   }
   ierr = PetscInfo3(dm,"[DMLocatePoints_Plex] npoints %D : time(rank0) %1.2e (sec): points/sec %1.4e\n",numPoints,t1-t0,(double)((double)numPoints/(t1-t0)));CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMPLEX_LocatePoints,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1762,7 +1765,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
   PetscFunctionReturn(0);
 }
 
-/* Centroid_i = (\sum_n A_n Cn_i ) / A */
+/* Centroid_i = (\sum_n A_n Cn_i) / A */
 static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {
   DMPolytopeType ct;
@@ -1850,7 +1853,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   PetscFunctionReturn(0);
 }
 
-/* Centroid_i = (\sum_n V_n Cn_i ) / V */
+/* Centroid_i = (\sum_n V_n Cn_i) / V */
 static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {
   DMPolytopeType  ct;
@@ -3122,6 +3125,7 @@ PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time,
   ierr = DMProjectFieldLocal(cdm, time, tmpCoords, &func, INSERT_VALUES, lCoords);CHKERRQ(ierr);
   cdm->coordinateField = NULL;
   ierr = DMRestoreLocalVector(cdm, &tmpCoords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm, lCoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3174,7 +3178,7 @@ PetscErrorCode DMPlexShearGeometry(DM dm, DMDirection direction, PetscReal multi
   ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
   ierr = PetscMalloc1(dE+1, &moduli);CHKERRQ(ierr);
   moduli[0] = dir;
-  for (d = 0, e = 0; d < dE; ++d) moduli[d] = d == dir ? 0.0 : (multipliers ? multipliers[e++] : 1.0);
+  for (d = 0, e = 0; d < dE; ++d) moduli[d+1] = d == dir ? 0.0 : (multipliers ? multipliers[e++] : 1.0);
   ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
   ierr = PetscDSGetDiscretization(cds, 0, &obj);CHKERRQ(ierr);
   ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);

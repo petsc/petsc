@@ -14,7 +14,7 @@ static char help[] = "\n\n";
     The ghost points along the bottom (directly below the three columns above) should be 0 3 and 6
     while the ghost points along the left side should be 0 1 2
 
-    Note that the ghosted local vectors extend in both the x and y directions so, for example if we have a 
+    Note that the ghosted local vectors extend in both the x and y directions so, for example if we have a
     single MPI process the ghosted vector has (in the original natural numbering)
 
      x  x  x  x  x

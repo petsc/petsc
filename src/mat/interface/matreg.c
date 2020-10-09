@@ -9,7 +9,7 @@ PetscBool MatRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered Mat routines
 */
-PetscFunctionList MatList = 0;
+PetscFunctionList MatList = NULL;
 
 /*@C
    MatSetType - Builds matrix object for a particular matrix type
@@ -205,7 +205,7 @@ PetscErrorCode  MatRegister(const char sname[],PetscErrorCode (*function)(Mat))
   PetscFunctionReturn(0);
 }
 
-MatRootName MatRootNameList = 0;
+MatRootName MatRootNameList = NULL;
 
 /*@C
       MatRegisterRootName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type. MatSetType()

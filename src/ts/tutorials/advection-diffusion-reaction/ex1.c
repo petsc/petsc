@@ -107,13 +107,13 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
   /*  The next three lines allow us to access the entries of the vectors directly */
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
   f[0] = udot[0] + ctx->k*u[0]*u[1];
   f[1] = udot[1] + ctx->k*u[0]*u[1];
   f[2] = udot[2] - ctx->k*u[0]*u[1];
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -157,14 +157,14 @@ static PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *ctx)
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(ctx->initialsolution,&uinit);CHKERRQ(ierr);
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(U,&u);CHKERRQ(ierr);
   d0   = uinit[0] - uinit[1];
   if (d0 == 0.0) q = ctx->k*t;
   else q = (1.0 - PetscExpScalar(-ctx->k*t*d0))/d0;
   u[0] = uinit[0]/(1.0 + uinit[1]*q);
   u[1] = u[0] - d0;
   u[2] = uinit[1] + uinit[2] - u[1];
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(ctx->initialsolution,&uinit);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -204,11 +204,11 @@ int main(int argc,char **argv)
   ctx.k = .9;
   ierr  = PetscOptionsGetScalar(NULL,NULL,"-k",&ctx.k,NULL);CHKERRQ(ierr);
   ierr  = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
-  ierr  = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);
+  ierr  = VecGetArrayWrite(ctx.initialsolution,&u);CHKERRQ(ierr);
   u[0]  = 1;
   u[1]  = .7;
   u[2]  = 0;
-  ierr  = VecRestoreArray(ctx.initialsolution,&u);CHKERRQ(ierr);
+  ierr  = VecRestoreArrayWrite(ctx.initialsolution,&u);CHKERRQ(ierr);
   ierr  = PetscOptionsGetVec(NULL,NULL,"-initial",ctx.initialsolution,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -276,8 +276,7 @@ int main(int argc,char **argv)
    test:
      suffix: 2
      args: -ts_monitor_lg_error -ts_monitor_lg_solution  -ts_view
-     requires: x
+     requires: x dlsym define(PETSC_HAVE_DYNAMIC_LIBRARIES)
      output_file: output/ex1_1.out
-     requires: dlsym define(PETSC_HAVE_DYNAMIC_LIBRARIES)
 
 TEST*/

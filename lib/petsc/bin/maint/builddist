@@ -6,14 +6,14 @@
 # example usages:
 #   builddist /sandbox/petsc/petsc.clone balay/foo [petsc-balay-foo.tar.bz]
 #   builddist /sandbox/petsc/petsc.clone master [petsc-master.tar.bz]
-#   builddist /sandbox/petsc/petsc.clone maint [petsc-3.4.1.tar.bz]
-#   builddist /sandbox/petsc/petsc.clone maint release-snapshot [petsc-release-snapshot.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone release [petsc-3.4.1.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone release release-snapshot [petsc-release-snapshot.tar.bz]
 #
 # Notes: version info is automatically obtained from include/petscversion.h
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
 #echo "(0) Excluded any directories not for public release"
-#echo "(1) Set the version number in manual.tex (several places), and intro.tex, website/index.html?"
+#echo "(1) Set the version number in website/index.html?"
 #echo "(2) Set the version number and release date in petscversion.h?"
 #echo "(3) Made sure Fortran include files match C ones?"
 #echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on login.mcs"
@@ -108,8 +108,9 @@ echo "Building ~/petsc$version.tar.gz and ~/petsc-lite$version.tar.gz"
 # create fortran stubdocs and cleanup
 cd $PETSC_DIR
 # we should have an option of running configure - without compilers/mpi/blas etc..
-./config/configure.py --with-mpi=0 --download-c2html=1 --download-sowing=1
+python3 ./config/configure.py --with-mpi=0 --download-c2html=1 --download-sowing=1
 make allfortranstubs
+make sphinx-docs-check-python
 make alldoc LOC=${PETSC_DIR} DOCSETDATE_PRUNE_LIST="" GONULL=""
 #
 make ACTION=clean tree_basic

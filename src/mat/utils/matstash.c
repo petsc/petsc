@@ -64,17 +64,17 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->oldnmax    = 0;
   stash->n          = 0;
   stash->reallocs   = -1;
-  stash->space_head = 0;
-  stash->space      = 0;
+  stash->space_head = NULL;
+  stash->space      = NULL;
 
-  stash->send_waits  = 0;
-  stash->recv_waits  = 0;
-  stash->send_status = 0;
+  stash->send_waits  = NULL;
+  stash->recv_waits  = NULL;
+  stash->send_status = NULL;
   stash->nsends      = 0;
   stash->nrecvs      = 0;
-  stash->svalues     = 0;
-  stash->rvalues     = 0;
-  stash->rindices    = 0;
+  stash->svalues     = NULL;
+  stash->rvalues     = NULL;
+  stash->rindices    = NULL;
   stash->nprocessed  = 0;
   stash->reproduce   = PETSC_FALSE;
   stash->blocktype   = MPI_DATATYPE_NULL;
@@ -111,7 +111,7 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
   ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
   if (stash->ScatterDestroy) {ierr = (*stash->ScatterDestroy)(stash);CHKERRQ(ierr);}
 
-  stash->space = 0;
+  stash->space = NULL;
 
   ierr = PetscFree(stash->flg_v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -165,7 +165,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
 
   ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
 
-  stash->space = 0;
+  stash->space = NULL;
 
   ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
   ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
@@ -731,7 +731,7 @@ static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode in
     if (i == n || row[i] != row[rowstart]) {         /* Sort the last row. */
       PetscInt colstart;
       ierr = PetscSortIntWithArray(i-rowstart,&col[rowstart],&perm[rowstart]);CHKERRQ(ierr);
-      for (colstart=rowstart; colstart<i; ) { /* Compress multiple insertions to the same location */
+      for (colstart=rowstart; colstart<i;) { /* Compress multiple insertions to the same location */
         PetscInt j,l;
         MatStashBlock *block;
         ierr = PetscSegBufferGet(stash->segsendblocks,1,&block);CHKERRQ(ierr);
@@ -867,7 +867,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
       stash->sendframes[i].buffer = &sendblocks[b*stash->blocktype_size];
       /* sendhdr is never actually sent, but the count is used by MatStashBTSSend_Private */
       stash->sendhdr[i].count = 0; /* Might remain empty (in which case we send a zero-sized message) if no values are communicated to that process */
-      for ( ; b<nblocks; b++) {
+      for (; b<nblocks; b++) {
         MatStashBlock *sendblock_b = (MatStashBlock*)&sendblocks[b*stash->blocktype_size];
         if (PetscUnlikely(sendblock_b->row < owners[stash->sendranks[i]])) SETERRQ2(stash->comm,PETSC_ERR_ARG_WRONG,"MAT_SUBSET_OFF_PROC_ENTRIES set, but row %D owned by %d not communicated in initial assembly",sendblock_b->row,stash->sendranks[i]);
         if (sendblock_b->row >= owners[stash->sendranks[i]+1]) break;
@@ -880,7 +880,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
 
     /* Count number of send ranks and allocate for sends */
     stash->nsendranks = 0;
-    for (rowstart=0; rowstart<nblocks; ) {
+    for (rowstart=0; rowstart<nblocks;) {
       PetscInt owner;
       MatStashBlock *sendblock_rowstart = (MatStashBlock*)&sendblocks[rowstart*stash->blocktype_size];
       ierr = PetscFindInt(sendblock_rowstart->row,stash->size+1,owners,&owner);CHKERRQ(ierr);
@@ -896,7 +896,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
 
     /* Set up sendhdrs and sendframes */
     sendno = 0;
-    for (rowstart=0; rowstart<nblocks; ) {
+    for (rowstart=0; rowstart<nblocks;) {
       PetscInt owner;
       MatStashBlock *sendblock_rowstart = (MatStashBlock*)&sendblocks[rowstart*stash->blocktype_size];
       ierr = PetscFindInt(sendblock_rowstart->row,stash->size+1,owners,&owner);CHKERRQ(ierr);
@@ -1022,7 +1022,7 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
 
   ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
 
-  stash->space = 0;
+  stash->space = NULL;
 
   PetscFunctionReturn(0);
 }

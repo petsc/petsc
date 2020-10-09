@@ -1,10 +1,10 @@
 #include <../src/tao/bound/impls/bqnk/bqnk.h>
 
 /*MC
-  TAOBQNKTL - Bounded Quasi-Newton-Krylov Trust-region with Line-search fallback, for nonlinear 
-              minimization with bound constraints. This method approximates the Hessian-vector 
-              product using a limited-memory quasi-Newton formula, and iteratively inverts the 
-              Hessian with a Krylov solver. The quasi-Newton matrix and its settings can be 
+  TAOBQNKTL - Bounded Quasi-Newton-Krylov Trust-region with Line-search fallback, for nonlinear
+              minimization with bound constraints. This method approximates the Hessian-vector
+              product using a limited-memory quasi-Newton formula, and iteratively inverts the
+              Hessian with a Krylov solver. The quasi-Newton matrix and its settings can be
               accessed via the prefix `-tao_bqnk_`
 
   Options Database Keys:
@@ -18,7 +18,7 @@ M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNKTL(Tao tao)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = TaoCreate_BQNK(tao);CHKERRQ(ierr);
   tao->ops->solve = TaoSolve_BNTL;

@@ -177,7 +177,7 @@ PetscErrorCode test_3d_nocoord(const char filename[])
 int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
-  
+
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = test_3d("3d.vtr");CHKERRQ(ierr);
   ierr = test_2d("2d.vtr");CHKERRQ(ierr);

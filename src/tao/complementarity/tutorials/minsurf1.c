@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   AppCtx         user;                    /* user-defined work context */
 
   /* Initialize PETSc, TAO */
-  ierr = PetscInitialize(&argc, &argv, (char *)0, help );if (ierr) return ierr;
+  ierr = PetscInitialize(&argc, &argv, (char *)0, help);if (ierr) return ierr;
 
   /* Specify default dimension of the problem */
   user.mx = 4; user.my = 4;
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   /* Solve the application */
-  ierr = TaoSolve(tao); CHKERRQ(ierr);
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   /* Free Tao data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
@@ -217,9 +217,9 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
       d8 = (xt-xlt);
 
       df1dxc = d1*hydhx;
-      df2dxc = ( d1*hydhx + d4*hxdhy );
+      df2dxc = (d1*hydhx + d4*hxdhy);
       df3dxc = d3*hxdhy;
-      df4dxc = ( d2*hydhx + d3*hxdhy );
+      df4dxc = (d2*hydhx + d3*hxdhy);
       df5dxc = d2*hydhx;
       df6dxc = d4*hxdhy;
 
@@ -232,12 +232,12 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
       d7 /= hy;
       d8 /= hx;
 
-      f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtScalar(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtScalar(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtScalar(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtScalar(1.0 + d4*d4 + d6*d6);
 
       df1dxc /= f1;
       df2dxc /= f2;
@@ -246,7 +246,7 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
       df5dxc /= f5;
       df6dxc /= f6;
 
-      g[row] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc )/2.0;
+      g[row] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc)/2.0;
     }
   }
 
@@ -287,7 +287,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
   /* Set various matrix options */
   ierr = MatSetOption(H,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(H); CHKERRQ(ierr);}
+  if (assembled){ierr = MatZeroEntries(H);CHKERRQ(ierr);}
 
   /* Get pointers to vector data */
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
@@ -346,12 +346,12 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
 
-      f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtScalar(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtScalar(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtScalar(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtScalar(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtScalar(1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+(-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
@@ -382,15 +382,15 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
 
       v[k]= hc; col[k]=row; k++;
 
-      if (i < mx-1 ){
+      if (i < mx-1){
         v[k]= hr; col[k]=row+1; k++;
       }
 
-      if (i>0 && j < my-1 ){
+      if (i>0 && j < my-1){
         v[k]= htl; col[k] = row+mx-1; k++;
       }
 
-      if (j < my-1 ){
+      if (j < my-1){
         v[k]= ht; col[k] = row+mx; k++;
       }
 
@@ -531,7 +531,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     for (j=0; j<my; j++){
       for (i=0; i< mx; i++){
         row=(j)*mx + (i);
-        x[row] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+ ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
+        x[row] = (((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+ ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
       }
     }
 

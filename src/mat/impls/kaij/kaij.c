@@ -381,11 +381,11 @@ PetscErrorCode MatKAIJGetScaledIdentity(Mat A,PetscBool* identity)
     for (i=0; i<a->p && *identity; i++) {
       for (j=0; j<a->p && *identity; j++) {
         if (i != j) {
-          if(a->S && PetscAbsScalar(a->S[i+j*a->p]) > PETSC_SMALL) *identity = PETSC_FALSE;
-          if(a->T && PetscAbsScalar(a->T[i+j*a->p]) > PETSC_SMALL) *identity = PETSC_FALSE;
+          if (a->S && PetscAbsScalar(a->S[i+j*a->p]) > PETSC_SMALL) *identity = PETSC_FALSE;
+          if (a->T && PetscAbsScalar(a->T[i+j*a->p]) > PETSC_SMALL) *identity = PETSC_FALSE;
         } else {
-          if(a->S && PetscAbsScalar(a->S[i*(a->p+1)]-a->S[0]) > PETSC_SMALL) *identity = PETSC_FALSE;
-          if(a->T && PetscAbsScalar(a->T[i*(a->p+1)]-a->T[0]) > PETSC_SMALL) *identity = PETSC_FALSE;
+          if (a->S && PetscAbsScalar(a->S[i*(a->p+1)]-a->S[0]) > PETSC_SMALL) *identity = PETSC_FALSE;
+          if (a->T && PetscAbsScalar(a->T[i*(a->p+1)]-a->T[0]) > PETSC_SMALL) *identity = PETSC_FALSE;
         }
       }
     }
@@ -663,7 +663,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
         }
       }
     }
-    ierr = PetscLogFlops((a->nz)*3*p);CHKERRQ(ierr);
+    ierr = PetscLogFlops(3.0*(a->nz)*p);CHKERRQ(ierr);
   } else if (t) {
     for (i=0; i<m; i++) {
       jrow = ii[i];
@@ -681,7 +681,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
      * and also that T part is hoisted outside this loop (in exchange for temporary storage) as (A \otimes I) (I \otimes T),
      * so that this multiply doesn't have to be redone for each matrix entry, but just once per column. The latter
      * transformation is much less likely to be applied, but we nonetheless count the minimum flops required. */
-    ierr = PetscLogFlops((2.0*p*q-p)*m+2*p*a->nz);CHKERRQ(ierr);
+    ierr = PetscLogFlops((2.0*p*q-p)*m+2.0*p*a->nz);CHKERRQ(ierr);
   }
   if (s) {
     for (i=0; i<m; i++) {
@@ -695,7 +695,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
         }
       }
     }
-    ierr = PetscLogFlops(m*2*p*q);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*m*p*q);CHKERRQ(ierr);
   }
 
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
@@ -1195,7 +1195,7 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   PetscBool       diag    = PETSC_FALSE;
   PetscErrorCode  ierr;
   const PetscInt  rstart=A->rmap->rstart,rend=A->rmap->rend,p=b->p,q=b->q,*garray;
-  PetscInt        nz,*idx,ncolsaij,ncolsoaij,*colsaij,*colsoaij,r,s,c,i,j,lrow;
+  PetscInt        nz,*idx,ncolsaij = 0,ncolsoaij = 0,*colsaij,*colsoaij,r,s,c,i,j,lrow;
   PetscScalar     *v,*vals,*ovals,*S=b->S,*T=b->T;
 
   PetscFunctionBegin;
@@ -1392,7 +1392,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
 
   A->ops->setup = MatSetUp_KAIJ;
 
-  b->w    = 0;
+  b->w    = NULL;
   ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ);CHKERRQ(ierr);

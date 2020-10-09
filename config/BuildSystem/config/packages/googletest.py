@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit = 'master'
+    self.gitcommit = 'fe4d5f10840c5f62b984364a4d41719f1bc079a2' # master sep-24-2020
     self.download  = ['git://https://github.com/google/googletest.git']
     self.functions = []
     self.includes  = ['gtest/gtest.h']
@@ -30,14 +30,14 @@ class Configure(config.package.CMakePackage):
     args.append('-DBUILD_GMOCK=ON')
     args.append('-DBUILD_GTEST=OFF')
     if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      self.pushLanguage('Cxx')
+      args.append('-DMPI_CXX_COMPILER="'+self.getCompiler()+'"')
+      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.getCompilerFlags())+'"')
     else:
         raise RuntimeError("googletest requires a C++ compiler\n")
-    self.framework.popLanguage()
-    self.framework.pushLanguage('C')
-    args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
-    args.append('-DCMAKE_C_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
-    self.framework.popLanguage()
+    self.popLanguage()
+    self.pushLanguage('C')
+    args.append('-DMPI_C_COMPILER="'+self.getCompiler()+'"')
+    args.append('-DCMAKE_C_FLAGS:STRING="'+self.updatePackageCFlags(self.getCompilerFlags())+'"')
+    self.popLanguage()
     return args

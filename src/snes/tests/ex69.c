@@ -22,7 +22,7 @@ typedef struct {
   PetscReal   lidvelocity,prandtl,grashof;  /* physical parameters */
   PetscBool   draw_contours;                /* flag - 1 indicates drawing contours */
   PetscBool   errorindomain;
-  PetscBool   errorindomainmf;  
+  PetscBool   errorindomainmf;
   SNES        snes;
 } AppCtx;
 
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   user.errorindomain = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_domain",&user.errorindomain,NULL);CHKERRQ(ierr);
   user.errorindomainmf = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_domainmf",&user.errorindomainmf,NULL);CHKERRQ(ierr);  
+  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_domainmf",&user.errorindomainmf,NULL);CHKERRQ(ierr);
 
   comm = PETSC_COMM_WORLD;
   ierr = SNESCreate(comm,&user.snes);CHKERRQ(ierr);

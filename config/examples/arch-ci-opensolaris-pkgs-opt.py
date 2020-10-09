@@ -13,6 +13,8 @@ configure_options = [
   'FFLAGS=-ftrap=%none',
 
   '--download-mpich=1',
+  '--download-mpich-device=ch3:sock',
+
   '--with-c2html=0',
 
   #'-download-fblaslapack=1',

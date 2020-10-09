@@ -1,5 +1,5 @@
 \chapter{Getting Started}
-\label{chapter:intro_tao}
+\label{chapter_intro_tao}
 
 TAO can be used on a personal
 computer with a single processor or within a parallel environment.  
@@ -51,10 +51,10 @@ program using TAO:
 \end{enumerate}
 
 \section{A Simple TAO Example}
-\label{sec:simple}
+\label{sec_simple}
 
 To help the user start using TAO immediately, we introduce here a simple
-uniprocessor example. Please read Section~\ref{chapter:tao_solver} for a 
+uniprocessor example. Please read Section~\ref{chapter_tao_solver} for a 
 more in-depth discussion on using the TAO solvers.
 The code presented in Figure~\ref{fig:example1} minimizes the
 extended Rosenbrock function $f: \Re^n \to \Re$ defined by
@@ -64,18 +64,18 @@ extended Rosenbrock function $f: \Re^n \to \Re$ defined by
 \]
 where $n = 2m$ is the number of variables.  Note that while we use the C 
 language to introduce the TAO software, the package is fully usable from 
-C++ and Fortran77/90.  Section~\ref{chapter:fortran} discusses additional 
+C++ and Fortran77/90.  Section~\ref{chapter_fortran} discusses additional 
 issues concerning Fortran usage.
 
 \afterpage{
 \begin{figure}[H]
   {\footnotesize \verbatiminput{rosenbrock1.c}}
-\caption{Example of Uniprocessor TAO Code\label{fig:example1}}
+\caption{Example of Uniprocessor TAO Code\label{fig_example1}}
 \end{figure}
 }
 
 
-The code in Figure~\ref{fig:example1} contains many of the components
+The code in Figure~\ref{fig_example1} contains many of the components
 needed to write most TAO programs and thus is illustrative of the
 features present in complex optimization problems.  Note that for
 display purposes we have omitted some nonessential lines of code as well as the
@@ -84,7 +84,7 @@ which evaluates the function and gradient, and the code for
 \texttt{FormHessian}, which evaluates the Hessian matrix for Rosenbrock's
 function. The complete code is available in \url{$TAO\_DIR/src/unconstrained/tutorials/rosenbrock1.c}. %$
 The following sections annotates the lines of code in
-Figure~\ref{fig:example1}.
+Figure~\ref{fig_example1}.
 
 \section{Include Files}
 
@@ -108,8 +108,8 @@ matrix.  The user then invokes TAO to solve the optimization problem and
 finally destroys
 the \texttt{Tao} context. A list of the necessary functions for 
 performing these steps
-using TAO are shown in Figure \ref{fig:tao_commands}.  Details of these commands are presented in
-Chapter~\ref{chapter:tao_solver}.
+using TAO are shown in Figure \ref{fig_tao_commands}.  Details of these commands are presented in
+Chapter~\ref{chapter_tao_solver}.
 
 \findex{TaoCreate()} \findex{TaoSetObjectiveAndGradientRoutine()}
 \findex{TaoSetRoutine()} \findex{TaoSolve()}
@@ -129,7 +129,7 @@ Chapter~\ref{chapter:tao_solver}.
    TaoDestroy(Tao tao);
 \end{verbatim}
 \caption{Commands for Solving an Unconstrained Optimization Problem
-\label{fig:tao_commands}}
+\label{fig_tao_commands}}
 \end{figure}
 
 Note that the solver algorithm selected through the function 
@@ -140,7 +140,7 @@ limited-memory variable metric, conjugate gradient, Newton with line
 search or trust region) but also can prescribe the convergence
 tolerance, set various monitoring routines, set iterative methods
 and preconditions for solving the linear systems, and so forth.  See 
-Chapter~\ref{chapter:tao_solver} for more information on the 
+Chapter~\ref{chapter_tao_solver} for more information on the 
 solver methods available in TAO.
 
 \section{Function Evaluations}
@@ -150,7 +150,7 @@ evaluations. Depending on the solver chosen, they may also have to
 write routines that evaluate the gradient vector and Hessian matrix.
 
 \section{Programming with PETSc}
-\label{sec:tao_programming}
+\label{sec_tao_programming}
 TAO relies heavily on PETSc not only for its vectors, matrices, and linear
 solvers but also for its programming utilities such as command line option 
 handling, error handling, and compiling system.  We provide here a quick 
@@ -160,7 +160,7 @@ discussion of PETSc.
 
 \subsection*{Vectors}
 
-In the example in Figure \ref{fig:example1}, the vector data structure
+In the example in Figure \ref{fig_example1}, the vector data structure
 (\texttt{Vec}) is used to store the solution and gradient for the TAO
 unconstrained minimization solvers.  A new parallel or sequential
 vector \texttt{x} of global dimension \texttt{M} is created with the
@@ -228,7 +228,7 @@ well as the details of some basic matrix manipulation routines.
 
 
 \subsection*{The Options Database}
-\label{sec:options}
+\label{sec_options}
 A TAO application can access the command line options presented at
 runtime through the PETSc options database. This database gives the application
 author the ability to set and change application parameters without
@@ -255,7 +255,7 @@ macro \texttt{CHKERRQ(ierr)} checks the value of \texttt{ierr} and calls an
 error handler upon error detection.  \texttt{CHKERRQ()} should be used after
 all subroutines to enable a complete error traceback.
 
-In Figure \ref{fig:traceback} we indicate a traceback generated by
+In Figure \ref{fig_traceback} we indicate a traceback generated by
 error detection within a sample program. The error occurred on line
 2110 of the file \texttt{\$\{PETSC\_DIR\}/src/mat/inter\-face/mat\-rix.c} in the
 routine \texttt{MatMult()} and was caused by failure to assemble the 
@@ -293,7 +293,7 @@ application called MPI_Abort(MPI_COMM_WORLD, 73) - process 0
 \end{verbatim}
 }
 \caption{Example of Error Traceback}
-\label{fig:traceback}
+\label{fig_traceback}
 \end{figure}
 
 When running the debugging version of the TAO software (PETSc configured 

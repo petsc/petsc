@@ -71,6 +71,7 @@ native MatReal
 native PetscSysInt
 native MatSTRUMPACKReordering
 native PCGAMGLayoutType
+native PetscOffloadMask
 # Some structures are like arrays and can be treated as native types
 native MatInfo
 native MatStencil

@@ -52,7 +52,7 @@ static PetscErrorCode PFSetFromOptions_Constant(PetscOptionItems *PetscOptionsOb
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Constant function options");CHKERRQ(ierr);
-  ierr = PetscOptionsScalar("-pf_constant","The constant value","None",*value,value,0);CHKERRQ(ierr);
+  ierr = PetscOptionsScalar("-pf_constant","The constant value","None",*value,value,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -80,7 +80,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Quick(PF pf,PetscErrorCode (*function)(void
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PFSet(pf,function,0,0,0,0);CHKERRQ(ierr);
+  ierr = PFSet(pf,function,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

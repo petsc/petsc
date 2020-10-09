@@ -129,7 +129,7 @@ int main(int argc,char **argv)
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
   const PetscScalar *xx;
-  PetscScalar       *ff,*FF,d,d2;  
+  PetscScalar       *ff,*FF,d,d2;
   PetscErrorCode    ierr;
   PetscInt          i,n;
 
@@ -154,7 +154,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat prejac,void *dummy)
 {
   const PetscScalar *xx;
-  PetscScalar       A[3],d,d2;  
+  PetscScalar       A[3],d,d2;
   PetscInt          i,n,j[3];
   PetscErrorCode    ierr;
 

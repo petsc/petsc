@@ -26,7 +26,6 @@ TS Object: 1 MPI processes
     total number of linear solver iterations=1
     total number of function evaluations=1
     norm schedule ALWAYS
-    Jacobian is never rebuilt
     KSP Object: 1 MPI processes
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -48,7 +47,6 @@ TS Object: 1 MPI processes
               rows=3, cols=3
               package used to perform factorization: petsc
               total: nonzeros=9, allocated nonzeros=9
-              total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 1 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes

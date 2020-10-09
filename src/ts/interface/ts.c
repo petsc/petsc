@@ -5,7 +5,7 @@
 #include <petscdraw.h>
 #include <petscconvest.h>
 
-#define SkipSmallValue(a,b,tol) if(PetscAbsScalar(a)< tol || PetscAbsScalar(b)< tol) continue;
+#define SkipSmallValue(a,b,tol) if (PetscAbsScalar(a)< tol || PetscAbsScalar(b)< tol) continue;
 
 /* Logging support */
 PetscClassId  TS_CLASSID, DMTS_CLASSID;
@@ -113,8 +113,15 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_monitor_solution_vtk <filename.vts,filename.vtu> - Save each time step to a binary file, use filename-%%03D.vts (filename-%%03D.vtu)
 -  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
 
+   Notes:
+     See SNESSetFromOptions() and KSPSetFromOptions() for how to control the nonlinear and linear solves used by the time-stepper.
+
+     Certain SNES options get reset for each new nonlinear solver, for example -snes_lag_jacobian <its> and -snes_lag_preconditioner <its>, in order
+     to retain them over the multiple nonlinear solves that TS uses you mush also provide -snes_lag_jacobian_persists true and
+     -snes_lag_preconditioner_persists true
+
    Developer Note:
-   We should unify all the -ts_monitor options in the way that -xxx_view has been unified
+     We should unify all the -ts_monitor options in the way that -xxx_view has been unified
 
    Level: beginner
 
@@ -187,12 +194,23 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
   ierr = PetscOptionsName("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",&opt);CHKERRQ(ierr);
   if (opt) {
-    TSMonitorLGCtx ctx;
     PetscInt       howoften = 1;
+    DM             dm;
+    PetscBool      net;
 
     ierr = PetscOptionsInt("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
-    ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)dm,DMNETWORK,&net);CHKERRQ(ierr);
+    if (net) {
+      TSMonitorLGCtxNetwork ctx;
+      ierr = TSMonitorLGCtxNetworkCreate(ts,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorLGCtxNetworkSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxNetworkDestroy);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-ts_monitor_lg_solution_semilogy","Plot the solution with a semi-log axis","",ctx->semilogy,&ctx->semilogy,NULL);CHKERRQ(ierr);
+    } else {
+      TSMonitorLGCtx ctx;
+      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+    }
   }
 
   ierr = PetscOptionsName("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",&opt);CHKERRQ(ierr);
@@ -555,7 +573,6 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   DMTS             tsdm;
   TSRHSJacobian    rhsjacobianfunc;
   void             *ctx;
-  TSIJacobian      ijacobianfunc;
   TSRHSFunction    rhsfunction;
 
   PetscFunctionBegin;
@@ -564,59 +581,14 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   PetscCheckSameComm(ts,1,U,3);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
-  ierr = DMTSGetRHSJacobian(dm,&rhsjacobianfunc,&ctx);CHKERRQ(ierr);
-  ierr = DMTSGetIJacobian(dm,&ijacobianfunc,NULL);CHKERRQ(ierr);
   ierr = DMTSGetRHSFunction(dm,&rhsfunction,NULL);CHKERRQ(ierr);
+  ierr = DMTSGetRHSJacobian(dm,&rhsjacobianfunc,&ctx);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
   ierr = PetscObjectGetId((PetscObject)U,&Uid);CHKERRQ(ierr);
 
-  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) {
-    /* restore back RHS Jacobian matrices if they have been shifted/scaled */
-    if (A == ts->Arhs) {
-      if (ts->rhsjacobian.shift != 0) {
-        ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
-      }
-      if (ts->rhsjacobian.scale != 1.) {
-        ierr = MatScale(A,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
-      }
-    }
-    if (B && B == ts->Brhs && A != B) {
-      if (ts->rhsjacobian.shift != 0) {
-        ierr = MatShift(B,-ts->rhsjacobian.shift);CHKERRQ(ierr);
-      }
-      if (ts->rhsjacobian.scale != 1.) {
-        ierr = MatScale(B,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
-      }
-    }
-    ts->rhsjacobian.shift = 0;
-    ts->rhsjacobian.scale = 1.;
-    PetscFunctionReturn(0);
-  }
+  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) PetscFunctionReturn(0);
 
-  if (!rhsjacobianfunc && !ijacobianfunc) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
-
-  if (ts->rhsjacobian.reuse) {
-    if (A == ts->Arhs) {
-      /* MatScale has a short path for this case.
-         However, this code path is taken the first time TSComputeRHSJacobian is called
-         and the matrices have not assembled yet */
-      if (ts->rhsjacobian.shift != 0) {
-        ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
-      }
-      if (ts->rhsjacobian.scale != 1.) {
-        ierr = MatScale(A,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
-      }
-    }
-    if (B && B == ts->Brhs && A != B) {
-      if (ts->rhsjacobian.shift != 0) {
-        ierr = MatShift(B,-ts->rhsjacobian.shift);CHKERRQ(ierr);
-      }
-      if (ts->rhsjacobian.scale != 1.) {
-        ierr = MatScale(B,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
-      }
-    }
-  }
-
+  if (ts->rhsjacobian.shift && ts->rhsjacobian.reuse) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Should not call TSComputeRHSJacobian() on a shifted matrix (shift=%lf) when RHSJacobian is reusable.",ts->rhsjacobian.shift);
   if (rhsjacobianfunc) {
     ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
     PetscStackPush("TS user Jacobian function");
@@ -904,6 +876,41 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
   PetscFunctionReturn(0);
 }
 
+/*
+   TSRecoverRHSJacobian - Recover the Jacobian matrix so that one can call TSComputeRHSJacobian() on it.
+
+   Note:
+   This routine is needed when one switches from TSComputeIJacobian() to TSComputeRHSJacobian() because the Jacobian matrix may be shifted or scaled in TSComputeIJacobian().
+
+*/
+static PetscErrorCode TSRecoverRHSJacobian(TS ts,Mat A,Mat B)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (A != ts->Arhs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Amat");
+  if (B != ts->Brhs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Bmat");
+
+  if (ts->rhsjacobian.shift) {
+    ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
+  }
+  if (ts->rhsjacobian.scale == -1.) {
+    ierr = MatScale(A,-1);CHKERRQ(ierr);
+  }
+  if (B && B == ts->Brhs && A != B) {
+    if (ts->rhsjacobian.shift) {
+      ierr = MatShift(B,-ts->rhsjacobian.shift);CHKERRQ(ierr);
+    }
+    if (ts->rhsjacobian.scale == -1.) {
+      ierr = MatScale(B,-1);CHKERRQ(ierr);
+    }
+  }
+  ts->rhsjacobian.shift = 0;
+  ts->rhsjacobian.scale = 1.;
+  PetscFunctionReturn(0);
+}
+
 /*@
    TSComputeIJacobian - Evaluates the Jacobian of the DAE
 
@@ -970,7 +977,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
         Mat Arhs = NULL;
         ierr = TSGetRHSMats_Private(ts,&Arhs,NULL);CHKERRQ(ierr);
         if (A == Arhs) {
-          if (rhsjacobian == TSComputeRHSJacobianConstant) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Unsupported operation! cannot use TSComputeRHSJacobianConstant");
+          if (rhsjacobian == TSComputeRHSJacobianConstant) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Unsupported operation! cannot use TSComputeRHSJacobianConstant"); /* there is no way to reconstruct shift*M-J since J cannot be reevaluated */
           ts->rhsjacobian.time = PETSC_MIN_REAL;
         }
       }
@@ -993,27 +1000,49 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
     }
   } else {
     Mat Arhs = NULL,Brhs = NULL;
-    if (rhsjacobian) {
+    if (rhsjacobian) { /* RHSJacobian needs to be converted to part of IJacobian if exists */
       ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
-      ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
     }
-    if (Arhs == A) {           /* No IJacobian, so we only have the RHS matrix */
-      PetscBool flg;
+    if (Arhs == A) { /* No IJacobian matrix, so we only have the RHS matrix */
+      PetscObjectState Ustate;
+      PetscObjectId    Uid;
+      TSRHSFunction    rhsfunction;
+
+      ierr = DMTSGetRHSFunction(dm,&rhsfunction,NULL);CHKERRQ(ierr);
+      ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
+      ierr = PetscObjectGetId((PetscObject)U,&Uid);CHKERRQ(ierr);
+      if ((rhsjacobian == TSComputeRHSJacobianConstant || (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && rhsfunction != TSComputeRHSFunctionLinear)) && ts->rhsjacobian.scale == -1.) { /* No need to recompute RHSJacobian */
+        ierr = MatShift(A,shift-ts->rhsjacobian.shift);CHKERRQ(ierr); /* revert the old shift and add the new shift with a single call to MatShift */
+        if (A != B) {
+          ierr = MatShift(B,shift-ts->rhsjacobian.shift);CHKERRQ(ierr);
+        }
+      } else {
+        PetscBool flg;
+
+        if (ts->rhsjacobian.reuse) { /* Undo the damage */
+          /* MatScale has a short path for this case.
+             However, this code path is taken the first time TSComputeRHSJacobian is called
+             and the matrices have not been assembled yet */
+          ierr = TSRecoverRHSJacobian(ts,A,B);CHKERRQ(ierr);
+        }
+        ierr = TSComputeRHSJacobian(ts,t,U,A,B);CHKERRQ(ierr);
+        ierr = SNESGetUseMatrixFree(ts->snes,NULL,&flg);CHKERRQ(ierr);
+        /* since -snes_mf_operator uses the full SNES function it does not need to be shifted or scaled here */
+        if (!flg) {
+          ierr = MatScale(A,-1);CHKERRQ(ierr);
+          ierr = MatShift(A,shift);CHKERRQ(ierr);
+        }
+        if (A != B) {
+          ierr = MatScale(B,-1);CHKERRQ(ierr);
+          ierr = MatShift(B,shift);CHKERRQ(ierr);
+        }
+      }
       ts->rhsjacobian.scale = -1;
       ts->rhsjacobian.shift = shift;
-      ierr = SNESGetUseMatrixFree(ts->snes,NULL,&flg);CHKERRQ(ierr);
-      /* since -snes_mf_operator uses the full SNES function it does not need to be shifted or scaled here */
-      if (!flg) {
-        ierr = MatScale(A,-1);CHKERRQ(ierr);
-        ierr = MatShift(A,shift);CHKERRQ(ierr);
-      }
-      if (A != B) {
-        ierr = MatScale(B,-1);CHKERRQ(ierr);
-        ierr = MatShift(B,shift);CHKERRQ(ierr);
-      }
-    } else if (Arhs) {          /* Both IJacobian and RHSJacobian */
+    } else if (Arhs) {  /* Both IJacobian and RHSJacobian exist or the RHS matrix provided (A) is different from the internal RHS matrix (Arhs) */
       MatStructure axpy = DIFFERENT_NONZERO_PATTERN;
-      if (!ijacobian) {         /* No IJacobian provided, but we have a separate RHS matrix */
+
+      if (!ijacobian) { /* No IJacobian provided, but we have a separate RHS matrix */
         ierr = MatZeroEntries(A);CHKERRQ(ierr);
         ierr = MatShift(A,shift);CHKERRQ(ierr);
         if (A != B) {
@@ -1021,6 +1050,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
           ierr = MatShift(B,shift);CHKERRQ(ierr);
         }
       }
+      ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
       ierr = MatAXPY(A,-1,Arhs,axpy);CHKERRQ(ierr);
       if (A != B) {
         ierr = MatAXPY(B,-1,Brhs,axpy);CHKERRQ(ierr);
@@ -1044,10 +1074,11 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 -   ctx - [optional] user-defined context for private data for the
           function evaluation routine (may be NULL)
 
-    Calling sequence of func:
-$     PetscErrorCode func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
+    Calling sequence of f:
+$     PetscErrorCode f(TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
-+   t - current timestep
++   ts - timestep context
+.   t - current timestep
 .   u - input vector
 .   F - function vector
 -   ctx - [optional] user-defined function context
@@ -1093,8 +1124,8 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 -   ctx - [optional] user-defined context for private data for the
           function evaluation routine (may be NULL)
 
-    Calling sequence of func:
-$     PetscErrorCode func (TS ts,PetscReal t,Vec u,void *ctx);
+    Calling sequence of f:
+$     PetscErrorCode f(TS ts,PetscReal t,Vec u,void *ctx);
 
 +   t - current timestep
 .   u - output vector
@@ -1188,7 +1219,7 @@ PetscErrorCode  TSSetForcingFunction(TS ts,TSForcingFunction func,void *ctx)
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of f:
-$     PetscErrorCode func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
+$     PetscErrorCode f(TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 
 +  t - current timestep
 .  u - input vector
@@ -1223,10 +1254,6 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat Amat,Mat Pmat,TSRHSJacobian f,void *c
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSSetRHSJacobian(dm,f,ctx);CHKERRQ(ierr);
-  if (f == TSComputeRHSJacobianConstant) {
-    /* Handle this case automatically for the user; otherwise user should call themselves. */
-    ierr = TSRHSJacobianSetReuse(ts,PETSC_TRUE);CHKERRQ(ierr);
-  }
   ierr = DMTSGetIJacobian(dm,&ijacobian,NULL);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!ijacobian) {
@@ -1474,7 +1501,7 @@ $     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
 
    Level: beginner
 
-.seealso: TSSetI2Jacobian()
+.seealso: TSSetI2Jacobian(), TSSetIFunction(), TSCreate(), TSSetRHSFunction()
 @*/
 PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
 {
@@ -1505,7 +1532,7 @@ PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
 
   Level: advanced
 
-.seealso: TSSetI2Function(), SNESGetFunction()
+.seealso: TSSetIFunction(), SNESGetFunction(), TSCreate()
 @*/
 PetscErrorCode TSGetI2Function(TS ts,Vec *r,TSI2Function *fun,void **ctx)
 {
@@ -1558,7 +1585,7 @@ $    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,Pet
 
    Level: beginner
 
-.seealso: TSSetI2Function()
+.seealso: TSSetI2Function(), TSGetI2Jacobian()
 @*/
 PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
 {
@@ -1594,7 +1621,7 @@ PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
 
   Level: advanced
 
-.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
+.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber(), TSSetI2Jacobian(), TSGetI2Function(), TSCreate()
 
 @*/
 PetscErrorCode  TSGetI2Jacobian(TS ts,Mat *J,Mat *P,TSI2Jacobian *jac,void **ctx)
@@ -1633,7 +1660,7 @@ PetscErrorCode  TSGetI2Jacobian(TS ts,Mat *J,Mat *P,TSI2Jacobian *jac,void **ctx
 
   Level: developer
 
-.seealso: TSSetI2Function()
+.seealso: TSSetI2Function(), TSGetI2Function()
 @*/
 PetscErrorCode TSComputeI2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F)
 {
@@ -1756,8 +1783,16 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
 
    Input Arguments:
 +  ts - time stepping context on which to change the transient variable
-.  tvar - a function that transforms in-place to transient variables
+.  tvar - a function that transforms to transient variables
 -  ctx - a context for tvar
+
+    Calling sequence of tvar:
+$     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
+
++   ts - timestep context
+.   p - input vector (primative form)
+.   c - output vector, transient variables (conservative form)
+-   ctx - [optional] user-defined function context
 
    Level: advanced
 
@@ -2472,7 +2507,7 @@ PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
   if (ts->ops->getauxsolution) {
     ierr = (*ts->ops->getauxsolution)(ts,v);CHKERRQ(ierr);
   } else {
-    ierr = VecZeroEntries(*v); CHKERRQ(ierr);
+    ierr = VecZeroEntries(*v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2601,9 +2636,30 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
   PetscFunctionReturn(0);
 }
 
+/*
+    Attempt to check/preset a default value for the exact final time option. This is needed at the beginning of TSSolve() and in TSSetUp()
+*/
+static PetscErrorCode TSSetExactFinalTimeDefault(TS ts)
+{
+  PetscErrorCode ierr;
+  PetscBool      isnone;
+
+  PetscFunctionBegin;
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetDefaultType(ts->adapt,ts->default_adapt_type);CHKERRQ(ierr);
+
+  ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
+  if (!isnone && ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) {
+    ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
+  } else if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) {
+    ts->exact_final_time = TS_EXACTFINALTIME_INTERPOLATE;
+  }
+  PetscFunctionReturn(0);
+}
+
+
 /*@
-   TSSetUp - Sets up the internal data structures for the later use
-   of a timestepper.
+   TSSetUp - Sets up the internal data structures for the later use of a timestepper.
 
    Collective on TS
 
@@ -2631,7 +2687,6 @@ PetscErrorCode  TSSetUp(TS ts)
   TSIJacobian    ijac;
   TSI2Jacobian   i2jac;
   TSRHSJacobian  rhsjac;
-  PetscBool      isnone;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2660,7 +2715,7 @@ PetscErrorCode  TSSetUp(TS ts)
   }
 
   ierr = TSGetRHSJacobian(ts,NULL,NULL,&rhsjac,NULL);CHKERRQ(ierr);
-  if (ts->rhsjacobian.reuse && rhsjac == TSComputeRHSJacobianConstant) {
+  if (rhsjac == TSComputeRHSJacobianConstant) {
     Mat Amat,Pmat;
     SNES snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
@@ -2687,10 +2742,7 @@ PetscErrorCode  TSSetUp(TS ts)
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
 
-  /* Attempt to check/preset a default value for the exact final time option */
-  ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
-  if (!isnone && ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
-    ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
+  ierr = TSSetExactFinalTimeDefault(ts);CHKERRQ(ierr);
 
   /* In the case where we've set a DMTSFunction or what have you, we need the default SNESFunction
      to be set right but can't do it elsewhere due to the overreliance on ctx=ts.
@@ -2968,7 +3020,7 @@ PetscErrorCode TSSetMaxSteps(TS ts,PetscInt maxsteps)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,maxsteps,2);
-  if (maxsteps < 0 ) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of steps must be non-negative");
+  if (maxsteps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of steps must be non-negative");
   ts->max_steps = maxsteps;
   PetscFunctionReturn(0);
 }
@@ -3838,11 +3890,11 @@ PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initConditi
 
   Level: advanced
 
-  Notes:
-  The calling sequence for the function is
-$ initCondition(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The input vector in which the initial condition is stored
+  Calling sequence for initCondition:
+$ PetscErrorCode initCondition(TS ts, Vec u)
+
++ ts - The timestepping context
+- u  - The input vector in which the initial condition is to be stored
 
 .seealso: TSGetComputeInitialCondition(), TSComputeInitialCondition()
 @*/
@@ -3865,12 +3917,6 @@ PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initConditio
 - u  - The Vec to store the condition in which will be used in TSSolve()
 
   Level: advanced
-
-  Notes:
-  The calling sequence for the function is
-$ initCondition(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The input vector in which the initial condition is stored
 
 .seealso: TSGetComputeInitialCondition(), TSSetComputeInitialCondition(), TSSolve()
 @*/
@@ -3898,12 +3944,12 @@ PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
 
   Level: advanced
 
-  Notes:
-  The calling sequence for the function is
-$ exactError(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The approximate solution vector
-$ e  - The input vector in which the error is stored
+  Calling sequence for exactError:
+$ PetscErrorCode exactError(TS ts, Vec u)
+
++ ts - The timestepping context
+. u  - The approximate solution vector
+- e  - The input vector in which the error is stored
 
 .seealso: TSGetComputeExactError(), TSComputeExactError()
 @*/
@@ -3927,12 +3973,12 @@ PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, V
 
   Level: advanced
 
-  Notes:
-  The calling sequence for the function is
-$ exactError(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The approximate solution vector
-$ e  - The input vector in which the error is stored
+  Calling sequence for exactError:
+$ PetscErrorCode exactError(TS ts, Vec u)
+
++ ts - The timestepping context
+. u  - The approximate solution vector
+- e  - The input vector in which the error is stored
 
 .seealso: TSGetComputeExactError(), TSComputeExactError()
 @*/
@@ -3956,13 +4002,6 @@ PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Ve
 - e  - The Vec used to store the error
 
   Level: advanced
-
-  Notes:
-  The calling sequence for the function is
-$ exactError(TS ts, Vec u)
-$ ts - The timestepping context
-$ u  - The approximate solution vector
-$ e  - The input vector in which the error is stored
 
 .seealso: TSGetComputeInitialCondition(), TSSetComputeInitialCondition(), TSSolve()
 @*/
@@ -4005,6 +4044,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+
+  ierr = TSSetExactFinalTimeDefault(ts);CHKERRQ(ierr);
   if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && u) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     if (!ts->vec_sol || u == ts->vec_sol) {
       ierr = VecDuplicate(u,&solution);CHKERRQ(ierr);
@@ -4065,13 +4106,15 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         DM           dm;
         PetscReal   *alpha; /* Convergence rate of the solution error for each field in the L_2 norm */
         PetscInt     Nf;
+        PetscBool    checkTemporal = PETSC_TRUE;
 
         incall = PETSC_TRUE;
+        ierr = PetscOptionsGetBool(((PetscObject)ts)->options, ((PetscObject) ts)->prefix, "-ts_convergence_temporal", &checkTemporal, &flg);CHKERRQ(ierr);
         ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
         ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
         ierr = PetscCalloc1(PetscMax(Nf, 1), &alpha);CHKERRQ(ierr);
         ierr = PetscConvEstCreate(PetscObjectComm((PetscObject) ts), &conv);CHKERRQ(ierr);
-        ierr = PetscConvEstUseTS(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstUseTS(conv, checkTemporal);CHKERRQ(ierr);
         ierr = PetscConvEstSetSolver(conv, (PetscObject) ts);CHKERRQ(ierr);
         ierr = PetscConvEstSetFromOptions(conv);CHKERRQ(ierr);
         ierr = PetscConvEstSetUp(conv);CHKERRQ(ierr);
@@ -5040,6 +5083,8 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts,PetscReal t,Vec U,Vec F,void *ct
 
   PetscFunctionBegin;
   ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
+  /* undo the damage caused by shifting */
+  ierr = TSRecoverRHSJacobian(ts,Arhs,Brhs);CHKERRQ(ierr);
   ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
   ierr = MatMult(Arhs,U,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5727,17 +5772,17 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = PetscRealPart(atol[i]);
-      if(tola>0.){
+      if (tola>0.){
         suma  += PetscSqr(diff/tola);
         na_loc++;
       }
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if(tolr>0.){
+      if (tolr>0.){
         sumr  += PetscSqr(diff/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if(tol>0.){
+      if (tol>0.){
         sum  += PetscSqr(diff/tol);
         n_loc++;
       }
@@ -5751,17 +5796,17 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = PetscRealPart(atol[i]);
-      if(tola>0.){
+      if (tola>0.){
         suma  += PetscSqr(diff/tola);
         na_loc++;
       }
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if(tolr>0.){
+      if (tolr>0.){
         sumr  += PetscSqr(diff/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if(tol>0.){
+      if (tol>0.){
         sum  += PetscSqr(diff/tol);
         n_loc++;
       }
@@ -5774,17 +5819,17 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = ts->atol;
-      if(tola>0.){
+      if (tola>0.){
         suma  += PetscSqr(diff/tola);
         na_loc++;
       }
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if(tolr>0.){
+      if (tolr>0.){
         sumr  += PetscSqr(diff/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if(tol>0.){
+      if (tol>0.){
         sum  += PetscSqr(diff/tol);
         n_loc++;
       }
@@ -5795,17 +5840,17 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = ts->atol;
-      if(tola>0.){
+      if (tola>0.){
         suma  += PetscSqr(diff/tola);
         na_loc++;
       }
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if(tolr>0.){
+      if (tolr>0.){
         sumr  += PetscSqr(diff/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if(tol>0.){
+      if (tol>0.){
         sum  += PetscSqr(diff/tol);
         n_loc++;
       }
@@ -5831,11 +5876,11 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
   nr_glb = err_glb[5];
 
   *norm  = 0.;
-  if(n_glb>0. ){*norm  = PetscSqrtReal(gsum  / n_glb );}
+  if (n_glb>0.){*norm  = PetscSqrtReal(gsum  / n_glb);}
   *norma = 0.;
-  if(na_glb>0.){*norma = PetscSqrtReal(gsuma / na_glb);}
+  if (na_glb>0.){*norma = PetscSqrtReal(gsuma / na_glb);}
   *normr = 0.;
-  if(nr_glb>0.){*normr = PetscSqrtReal(gsumr / nr_glb);}
+  if (nr_glb>0.){*normr = PetscSqrtReal(gsumr / nr_glb);}
 
   if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
@@ -5904,13 +5949,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
       tola = PetscRealPart(atol[i]);
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if(tola>0.){
+      if (tola>0.){
         maxa = PetscMax(maxa,diff / tola);
       }
-      if(tolr>0.){
+      if (tolr>0.){
         maxr = PetscMax(maxr,diff / tolr);
       }
-      if(tol>0.){
+      if (tol>0.){
         max = PetscMax(max,diff / tol);
       }
     }
@@ -5925,13 +5970,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
       tola = PetscRealPart(atol[i]);
       tolr = ts->rtol  * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if(tola>0.){
+      if (tola>0.){
         maxa = PetscMax(maxa,diff / tola);
       }
-      if(tolr>0.){
+      if (tolr>0.){
         maxr = PetscMax(maxr,diff / tolr);
       }
-      if(tol>0.){
+      if (tol>0.){
         max = PetscMax(max,diff / tol);
       }
     }
@@ -5946,13 +5991,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
       tola = ts->atol;
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if(tola>0.){
+      if (tola>0.){
         maxa = PetscMax(maxa,diff / tola);
       }
-      if(tolr>0.){
+      if (tolr>0.){
         maxr = PetscMax(maxr,diff / tolr);
       }
-      if(tol>0.){
+      if (tol>0.){
         max = PetscMax(max,diff / tol);
       }
     }
@@ -5965,13 +6010,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
       tola = ts->atol;
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if(tola>0.){
+      if (tola>0.){
         maxa = PetscMax(maxa,diff / tola);
       }
-      if(tolr>0.){
+      if (tolr>0.){
         maxr = PetscMax(maxr,diff / tolr);
       }
-      if(tol>0.){
+      if (tol>0.){
         max = PetscMax(max,diff / tol);
       }
     }
@@ -6025,7 +6070,7 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec U,Vec Y,NormType wnormtype,PetscRea
   PetscFunctionBegin;
   if (wnormtype == NORM_2) {
     ierr = TSErrorWeightedNorm2(ts,U,Y,norm,norma,normr);CHKERRQ(ierr);
-  } else if(wnormtype == NORM_INFINITY) {
+  } else if (wnormtype == NORM_INFINITY) {
     ierr = TSErrorWeightedNormInfinity(ts,U,Y,norm,norma,normr);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
   PetscFunctionReturn(0);
@@ -6094,17 +6139,17 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = PetscRealPart(atol[i]);
-      if(tola>0.){
+      if (tola>0.){
         suma  += PetscSqr(err/tola);
         na_loc++;
       }
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if(tolr>0.){
+      if (tolr>0.){
         sumr  += PetscSqr(err/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if(tol>0.){
+      if (tol>0.){
         sum  += PetscSqr(err/tol);
         n_loc++;
       }
@@ -6118,17 +6163,17 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = PetscRealPart(atol[i]);
-      if(tola>0.){
+      if (tola>0.){
         suma  += PetscSqr(err/tola);
         na_loc++;
       }
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if(tolr>0.){
+      if (tolr>0.){
         sumr  += PetscSqr(err/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if(tol>0.){
+      if (tol>0.){
         sum  += PetscSqr(err/tol);
         n_loc++;
       }
@@ -6141,17 +6186,17 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = ts->atol;
-      if(tola>0.){
+      if (tola>0.){
         suma  += PetscSqr(err/tola);
         na_loc++;
       }
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if(tolr>0.){
+      if (tolr>0.){
         sumr  += PetscSqr(err/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if(tol>0.){
+      if (tol>0.){
         sum  += PetscSqr(err/tol);
         n_loc++;
       }
@@ -6162,17 +6207,17 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = ts->atol;
-      if(tola>0.){
+      if (tola>0.){
         suma  += PetscSqr(err/tola);
         na_loc++;
       }
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if(tolr>0.){
+      if (tolr>0.){
         sumr  += PetscSqr(err/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if(tol>0.){
+      if (tol>0.){
         sum  += PetscSqr(err/tol);
         n_loc++;
       }
@@ -6199,11 +6244,11 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
   nr_glb = err_glb[5];
 
   *norm  = 0.;
-  if(n_glb>0. ){*norm  = PetscSqrtReal(gsum  / n_glb );}
+  if (n_glb>0.){*norm  = PetscSqrtReal(gsum  / n_glb);}
   *norma = 0.;
-  if(na_glb>0.){*norma = PetscSqrtReal(gsuma / na_glb);}
+  if (na_glb>0.){*norma = PetscSqrtReal(gsuma / na_glb);}
   *normr = 0.;
-  if(nr_glb>0.){*normr = PetscSqrtReal(gsumr / nr_glb);}
+  if (nr_glb>0.){*normr = PetscSqrtReal(gsumr / nr_glb);}
 
   if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
@@ -6275,13 +6320,13 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
       tola = PetscRealPart(atol[i]);
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if(tola>0.){
+      if (tola>0.){
         maxa = PetscMax(maxa,err / tola);
       }
-      if(tolr>0.){
+      if (tolr>0.){
         maxr = PetscMax(maxr,err / tolr);
       }
-      if(tol>0.){
+      if (tol>0.){
         max = PetscMax(max,err / tol);
       }
     }
@@ -6296,13 +6341,13 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
       tola = PetscRealPart(atol[i]);
       tolr = ts->rtol  * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if(tola>0.){
+      if (tola>0.){
         maxa = PetscMax(maxa,err / tola);
       }
-      if(tolr>0.){
+      if (tolr>0.){
         maxr = PetscMax(maxr,err / tolr);
       }
-      if(tol>0.){
+      if (tol>0.){
         max = PetscMax(max,err / tol);
       }
     }
@@ -6317,13 +6362,13 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
       tola = ts->atol;
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if(tola>0.){
+      if (tola>0.){
         maxa = PetscMax(maxa,err / tola);
       }
-      if(tolr>0.){
+      if (tolr>0.){
         maxr = PetscMax(maxr,err / tolr);
       }
-      if(tol>0.){
+      if (tol>0.){
         max = PetscMax(max,err / tol);
       }
     }
@@ -6336,13 +6381,13 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
       tola = ts->atol;
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if(tola>0.){
+      if (tola>0.){
         maxa = PetscMax(maxa,err / tola);
       }
-      if(tolr>0.){
+      if (tolr>0.){
         maxr = PetscMax(maxr,err / tolr);
       }
-      if(tol>0.){
+      if (tol>0.){
         max = PetscMax(max,err / tol);
       }
     }
@@ -6398,7 +6443,7 @@ PetscErrorCode TSErrorWeightedENorm(TS ts,Vec E,Vec U,Vec Y,NormType wnormtype,P
   PetscFunctionBegin;
   if (wnormtype == NORM_2) {
     ierr = TSErrorWeightedENorm2(ts,E,U,Y,norm,norma,normr);CHKERRQ(ierr);
-  } else if(wnormtype == NORM_INFINITY) {
+  } else if (wnormtype == NORM_INFINITY) {
     ierr = TSErrorWeightedENormInfinity(ts,E,U,Y,norm,norma,normr);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
   PetscFunctionReturn(0);
@@ -6918,7 +6963,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
     ierr = PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
     ierr = DMGetDimension(dm, &dim);
-    if(dim!=2) SETERRQ(PETSC_COMM_SELF, ierr, "Dimensions improper for monitor arguments! Current support: two dimensions.");CHKERRQ(ierr);
+    if (dim!=2) SETERRQ(PETSC_COMM_SELF, ierr, "Dimensions improper for monitor arguments! Current support: two dimensions.");CHKERRQ(ierr);
     ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
     Np /= 2*dim;
     ierr = PetscDrawSPSetDimension(ctx->sp, Np);CHKERRQ(ierr);

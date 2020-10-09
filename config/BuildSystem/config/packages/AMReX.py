@@ -60,13 +60,6 @@ class Configure(config.package.CMakePackage):
       args.append('-DHYPRE_ROOT='+os.path.abspath(os.path.expanduser(self.argDB['prefix'])))
     else:
       args.append('-DHYPRE_ROOT='+os.path.join(self.petscdir.dir,self.arch))
-    if hasattr(self.compilers, 'FC'):
-      self.setCompilers.pushLanguage('FC')
-      if config.setCompilers.Configure.isGfortran100plus(self.setCompilers.getCompiler(), self.log):
-        args = self.addArgStartsWith(args,'-DCMAKE_Fortran_FLAGS:STRING','-fallow-argument-mismatch')
-        args = self.addArgStartsWith(args,'-DCMAKE_Fortran_FLAGS_DEBUG:STRING','-fallow-argument-mismatch')
-        args = self.addArgStartsWith(args,'-DCMAKE_Fortran_FLAGS_RELEASE:STRING','-fallow-argument-mismatch')
-      self.setCompilers.popLanguage()
     return args
 
   def Install(self):

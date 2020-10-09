@@ -1307,8 +1307,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 
   for (ctr=0;ctr<ndim;ctr++) (fftw->dim_fftw)[ctr]=dim[ctr];
 
-  fftw->p_forward  = 0;
-  fftw->p_backward = 0;
+  fftw->p_forward  = NULL;
+  fftw->p_backward = NULL;
   fftw->p_flag     = FFTW_ESTIMATE;
 
   if (size == 1) {

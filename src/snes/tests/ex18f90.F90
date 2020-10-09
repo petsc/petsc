@@ -71,7 +71,7 @@ program ex18f90
 interface
   subroutine SNESSetFunction(snes_base,x,TestFunction,base,ierr)
     use Base_module
-    use petscsnes  
+    use petscsnes
     SNES snes_base
     Vec x
     external TestFunction

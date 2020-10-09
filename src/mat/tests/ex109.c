@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetSizes(C,am,PETSC_DECIDE,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C); CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
   ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
