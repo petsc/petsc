@@ -15,6 +15,18 @@
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat);
 #endif
 
+PETSC_INTERN PetscErrorCode MatProductSymbolic_ABt_MPIAIJ_MPIAIJ(Mat C)
+{
+  Mat_Product         *product = C->product;
+  Mat                 B=product->B;
+
+  PetscFunctionBegin;
+  PetscCall(MatTranspose(B,MAT_INITIAL_MATRIX,&product->B));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatProductSymbolic_AB_MPIAIJ_MPIAIJ(C));
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat C)
 {
   Mat_Product         *product = C->product;
@@ -2172,7 +2184,6 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
   PetscFunctionBegin;
   /* Check matrix local sizes */
   PetscCall(PetscObjectGetComm((PetscObject)C,&comm));
-  PetscCheckFalse(A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
 
   /* Set "nonscalable" as default algorithm */
   PetscCall(PetscStrcmp(C->product->alg,"default",&flg));
@@ -2215,6 +2226,14 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
   }
 
   C->ops->productsymbolic = MatProductSymbolic_AB_MPIAIJ_MPIAIJ;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatProductSetFromOptions_MPIAIJ_ABt(Mat C)
+{
+  PetscFunctionBegin;
+  PetscCall(MatProductSetFromOptions_MPIAIJ_AB(C));
+  C->ops->productsymbolic = MatProductSymbolic_ABt_MPIAIJ_MPIAIJ;
   PetscFunctionReturn(0);
 }
 
@@ -2401,6 +2420,9 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ(Mat C)
   switch (product->type) {
   case MATPRODUCT_AB:
     PetscCall(MatProductSetFromOptions_MPIAIJ_AB(C));
+    break;
+  case MATPRODUCT_ABt:
+    PetscCall(MatProductSetFromOptions_MPIAIJ_ABt(C));
     break;
   case MATPRODUCT_AtB:
     PetscCall(MatProductSetFromOptions_MPIAIJ_AtB(C));

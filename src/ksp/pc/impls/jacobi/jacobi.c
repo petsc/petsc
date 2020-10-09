@@ -432,7 +432,7 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(),
            PCJacobiSetFixDiagonal(), PCJacobiGetFixDiagonal()
-           PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(), PCPBJACOBI, PCBJACOBI, PCVPBJACOBI 
+           PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(), PCPBJACOBI, PCBJACOBI, PCVPBJACOBI
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
