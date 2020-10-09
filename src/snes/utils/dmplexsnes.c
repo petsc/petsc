@@ -5,6 +5,128 @@
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/petscfeimpl.h>
 
+static void pressure_Private(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                             const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                             const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                             PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar p[])
+{
+  p[0] = u[uOff[1]];
+}
+
+/*
+  SNESCorrectDiscretePressure_Private - Add a vector in the nullspace to make the continuum integral of the pressure field equal to zero. This is normally used only to evaluate convergence rates for the pressure accurately.
+
+  Collective on SNES
+
+  Input Parameters:
++ snes      - The SNES
+. pfield    - The field number for pressure
+. nullspace - The pressure nullspace
+. u         - The solution vector
+- ctx       - An optional user context
+
+  Output Parameter:
+. u         - The solution with a continuum pressure integral of zero
+
+  Notes:
+  If int(u) = a and int(n) = b, then int(u - a/b n) = a - a/b b = 0. We assume that the nullspace is a single vector given explicitly.
+
+  Level: developer
+
+.seealso: SNESConvergedCorrectPressure()
+*/
+static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pfield, MatNullSpace nullspace, Vec u, void *ctx)
+{
+  DM             dm;
+  PetscDS        ds;
+  const Vec     *nullvecs;
+  PetscScalar    pintd, *intc, *intn;
+  MPI_Comm       comm;
+  PetscInt       Nf, Nv;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot compute test without a SNES DM");
+  if (!nullspace) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot compute test without a Jacobian nullspace");
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSSetObjective(ds, pfield, pressure_Private);CHKERRQ(ierr);
+  ierr = MatNullSpaceGetVecs(nullspace, NULL, &Nv, &nullvecs);CHKERRQ(ierr);
+  if (Nv != 1) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Can only handle a single null vector for pressure, not %D", Nv);
+  ierr = VecDot(nullvecs[0], u, &pintd);CHKERRQ(ierr);
+  if (PetscAbsScalar(pintd) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g\n", (double) PetscRealPart(pintd));
+  ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nf, &intc, Nf, &intn);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, nullvecs[0], intn, ctx);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, u, intc, ctx);CHKERRQ(ierr);
+  ierr = VecAXPY(u, -intc[pfield]/intn[pfield], nullvecs[0]);CHKERRQ(ierr);
+#if defined (PETSC_USE_DEBUG)
+  ierr = DMPlexComputeIntegralFEM(dm, u, intc, ctx);CHKERRQ(ierr);
+  if (PetscAbsScalar(intc[pfield]) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g\n", (double) PetscRealPart(intc[pfield]));
+#endif
+  ierr = PetscFree2(intc, intn);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   SNESConvergedCorrectPressure - Convergence test that adds a vector in the nullspace to make the continuum integral of the pressure field equal to zero. This is normally used only to evaluate convergence rates for the pressure accurately. The convergence test itself just mimics SNESConvergedDefault().
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  it - the iteration (0 indicates before any Newton steps)
+.  xnorm - 2-norm of current iterate
+.  snorm - 2-norm of current step
+.  fnorm - 2-norm of function at current iterate
+-  ctx   - Optional user context
+
+   Output Parameter:
+.  reason  - SNES_CONVERGED_ITERATING, SNES_CONVERGED_ITS, or SNES_DIVERGED_FNORM_NAN
+
+   Notes:
+   In order to use this monitor, you must setup several PETSc structures. First fields must be added to the DM, and a PetscDS must be created with discretizations of those fields. We currently assume that the pressure field has index 1. The pressure field must have a nullspace, likely created using the DMSetNullSpaceConstructor() interface. Last we must be able to integrate the pressure over the domain, so the DM attached to the SNES must be a Plex at this time.
+
+   Level: advanced
+
+.seealso: SNESConvergedDefault(), SNESSetConvergenceTest(), DMSetNullSpaceConstructor()
+@*/
+PetscErrorCode SNESConvergedCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *ctx)
+{
+  PetscBool      monitorIntegral = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESConvergedDefault(snes, it, xnorm, gnorm, f, reason, ctx);CHKERRQ(ierr);
+  if (monitorIntegral) {
+    Mat          J;
+    Vec          u;
+    MatNullSpace nullspace;
+    const Vec   *nullvecs;
+    PetscScalar  pintd;
+
+    ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes, &J, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceGetVecs(nullspace, NULL, NULL, &nullvecs);CHKERRQ(ierr);
+    ierr = VecDot(nullvecs[0], u, &pintd);CHKERRQ(ierr);
+    ierr = PetscInfo1(snes, "SNES: Discrete integral of pressure: %g\n", (double) PetscRealPart(pintd));CHKERRQ(ierr);
+  }
+  if (*reason > 0) {
+    Mat          J;
+    Vec          u;
+    MatNullSpace nullspace;
+    PetscInt     pfield = 1;
+
+    ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes, &J, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
+    ierr = SNESCorrectDiscretePressure_Private(snes, pfield, nullspace, u, ctx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /************************** Interpolation *******************************/
 
 static PetscErrorCode DMSNESConvertPlex(DM dm, DM *plex, PetscBool copy)
@@ -1592,7 +1714,6 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
     ierr = MatNullSpaceTest(nullspace, J, &isNull);CHKERRQ(ierr);
     if (!isNull) SETERRQ(comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
   }
-  ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   /* Taylor test */
   {
     PetscRandom rand;

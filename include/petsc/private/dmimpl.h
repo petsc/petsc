@@ -237,7 +237,6 @@ struct _p_DM {
   PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
   DMBoundaryType         *bdtype;               /* Indicates type of topological boundary */
   /* Null spaces -- of course I should make this have a variable number of fields */
-  /*   I now believe this might not be the right way: see below */
   NullSpaceFunc           nullspaceConstructors[10];
   NullSpaceFunc           nearnullspaceConstructors[10];
   /* Fields are represented by objects */
