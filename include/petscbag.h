@@ -54,6 +54,7 @@ PETSC_EXTERN PetscErrorCode PetscBagSetOptionsPrefix(PetscBag, const char *);
 
 PETSC_EXTERN PetscErrorCode PetscBagView(PetscBag,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscBagLoad(PetscViewer,PetscBag);
+PETSC_EXTERN PetscErrorCode PetscBagViewFromOptions(PetscBag,PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscBagSetViewer(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
 PETSC_EXTERN PetscErrorCode PetscBagSetLoader(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));

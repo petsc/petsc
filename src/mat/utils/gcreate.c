@@ -237,6 +237,9 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-mat_new_nonzero_allocation_err","Generate an error if new nonzeros are allocated in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,flg);CHKERRQ(ierr);}
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_ignore_zero_entries","For AIJ/IS matrices this will stop zero values from creating a zero location in the matrix","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = MatSetOption(B,MAT_IGNORE_ZERO_ENTRIES,flg);CHKERRQ(ierr);}
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)B);CHKERRQ(ierr);

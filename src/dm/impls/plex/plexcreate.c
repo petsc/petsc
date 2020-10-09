@@ -510,6 +510,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(MPI_Comm comm,PetscInt segme
     maxCell = (PetscReal)1.1*(L/(PetscReal)PetscMax(1,segments));
     ierr = DMSetPeriodicity(*dm,PETSC_TRUE,&maxCell,&L,&bd);CHKERRQ(ierr);
   }
+  ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -980,6 +981,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(MPI_Comm comm, PetscIn
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = udm;
   }
+  ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
