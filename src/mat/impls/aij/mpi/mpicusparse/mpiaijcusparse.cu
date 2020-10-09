@@ -32,13 +32,16 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatBindToCPU(b->A,B->boundtocpu);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
-    ierr = MatSetType(b->A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
     ierr = MatBindToCPU(b->B,B->boundtocpu);CHKERRQ(ierr);
     ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetType(b->B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->B);CHKERRQ(ierr);
+  }
+  ierr = MatSetType(b->A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = MatSetType(b->B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
+  if (b->lvec) {
+    ierr = VecSetType(b->lvec,VECSEQCUDA);CHKERRQ(ierr);
   }
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
@@ -220,6 +223,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   cusparseStatus_t   stat;
 
   PetscFunctionBegin;
+  if (!cusparseStruct) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing spptr");
   if (cusparseStruct->deviceMat) {
     Mat_SeqAIJ                 *jaca = (Mat_SeqAIJ*)aij->A->data;
     Mat_SeqAIJ                 *jacb = (Mat_SeqAIJ*)aij->B->data;
@@ -272,6 +276,12 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtyp
   ierr = PetscStrallocpy(VECCUDA,&A->defaultvectype);CHKERRQ(ierr);
 
   a = (Mat_MPIAIJ*)A->data;
+  if (a->A) { ierr = MatSetType(a->A,MATSEQAIJCUSPARSE);CHKERRQ(ierr); }
+  if (a->B) { ierr = MatSetType(a->B,MATSEQAIJCUSPARSE);CHKERRQ(ierr); }
+  if (a->lvec) {
+    ierr = VecSetType(a->lvec,VECSEQCUDA);CHKERRQ(ierr);
+  }
+
   if (reuse != MAT_REUSE_MATRIX && !a->spptr) {
     a->spptr = new Mat_MPIAIJCUSPARSE;
 

@@ -1342,34 +1342,34 @@ PetscErrorCode MatDestroy_SeqAIJ_MatTransMatMult(void *data)
 
 PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat C)
 {
-  PetscErrorCode      ierr;
-  Mat                 At;
-  PetscInt            *ati,*atj;
-  Mat_Product         *product = C->product;
-  MatProductAlgorithm alg;
-  PetscBool           flg;
+  PetscErrorCode ierr;
+  Mat            At = NULL;
+  PetscInt       *ati,*atj;
+  Mat_Product    *product = C->product;
+  PetscBool      flg,def,square;
 
   PetscFunctionBegin;
-  if (product) {
-    alg = product->alg;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"!product, not supported yet");
-
+  MatCheckProduct(C,4);
+  square = (PetscBool)(A == B && A->symmetric && A->symmetric_set);
   /* outerproduct */
-  ierr = PetscStrcmp(alg,"outerproduct",&flg);CHKERRQ(ierr);
+  ierr = PetscStrcmp(product->alg,"outerproduct",&flg);CHKERRQ(ierr);
   if (flg) {
     /* create symbolic At */
-    ierr = MatGetSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
-    ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,A->cmap->n,A->rmap->n,ati,atj,NULL,&At);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(At,PetscAbs(A->cmap->bs),PetscAbs(B->cmap->bs));CHKERRQ(ierr);
-    ierr = MatSetType(At,((PetscObject)A)->type_name);CHKERRQ(ierr);
-
+    if (!square) {
+      ierr = MatGetSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
+      ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,A->cmap->n,A->rmap->n,ati,atj,NULL,&At);CHKERRQ(ierr);
+      ierr = MatSetBlockSizes(At,PetscAbs(A->cmap->bs),PetscAbs(B->cmap->bs));CHKERRQ(ierr);
+      ierr = MatSetType(At,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    }
     /* get symbolic C=At*B */
     ierr = MatProductSetAlgorithm(C,"sorted");CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(At,B,fill,C);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(square ? A : At,B,fill,C);CHKERRQ(ierr);
 
     /* clean up */
-    ierr = MatDestroy(&At);CHKERRQ(ierr);
-    ierr = MatRestoreSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
+    if (!square) {
+      ierr = MatDestroy(&At);CHKERRQ(ierr);
+      ierr = MatRestoreSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
+    }
 
     C->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ; /* outerproduct */
     ierr = MatProductSetAlgorithm(C,"outerproduct");CHKERRQ(ierr);
@@ -1377,15 +1377,18 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   }
 
   /* matmatmult */
-  ierr = PetscStrcmp(alg,"at*b",&flg);CHKERRQ(ierr);
-  if (flg) {
+  ierr = PetscStrcmp(product->alg,"default",&def);CHKERRQ(ierr);
+  ierr = PetscStrcmp(product->alg,"at*b",&flg);CHKERRQ(ierr);
+  if (flg || def) {
     Mat_MatTransMatMult *atb;
 
     if (product->data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
     ierr = PetscNew(&atb);CHKERRQ(ierr);
-    ierr = MatTranspose_SeqAIJ(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
+    if (!square) {
+      ierr = MatTranspose_SeqAIJ(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
+    }
     ierr = MatProductSetAlgorithm(C,"sorted");CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(At,B,fill,C);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(square ? A : At,B,fill,C);CHKERRQ(ierr);
     ierr = MatProductSetAlgorithm(C,"at*b");CHKERRQ(ierr);
     product->data    = atb;
     product->destroy = MatDestroy_SeqAIJ_MatTransMatMult;
@@ -1403,11 +1406,11 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr;
-  Mat_SeqAIJ     *a   =(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
-  PetscInt       am   =A->rmap->n,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
-  PetscInt       cm   =C->rmap->n,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
+  PetscInt       am=A->rmap->n,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
+  PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k;
   PetscLogDouble flops=0.0;
-  MatScalar      *aa  =a->a,*ba,*ca,*caj;
+  MatScalar      *aa=a->a,*ba,*ca,*caj;
 
   PetscFunctionBegin;
   if (!c->a) {
@@ -1926,10 +1929,10 @@ static PetscErrorCode MatProductNumeric_AtB_SeqAIJ_SeqAIJ(Mat C)
 
     if (!atb) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
     At = atb->At;
-    if (atb->updateAt) { /* At is computed in MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ() */
+    if (atb->updateAt && At) { /* At is computed in MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ() */
       ierr = MatTranspose_SeqAIJ(A,MAT_REUSE_MATRIX,&At);CHKERRQ(ierr);
     }
-    ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(At,B,C);CHKERRQ(ierr);
+    ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(At ? At : A,B,C);CHKERRQ(ierr);
     atb->updateAt = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -1996,16 +1999,10 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_AtB(Mat C)
   Mat_Product    *product = C->product;
   PetscInt       alg = 0; /* default algorithm */
   PetscBool      flg = PETSC_FALSE;
-  const char     *algTypes[2] = {"at*b","outerproduct"};
-  PetscInt       nalg = 2;
+  const char     *algTypes[3] = {"default","at*b","outerproduct"};
+  PetscInt       nalg = 3;
 
   PetscFunctionBegin;
-  /* Set default algorithm */
-  ierr = PetscStrcmp(product->alg,"default",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]);CHKERRQ(ierr);
-  }
-
   /* Get runtime option */
   if (product->api_user) {
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatTransposeMatMult","Mat");CHKERRQ(ierr);

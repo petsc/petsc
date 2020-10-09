@@ -225,11 +225,14 @@ PETSC_INTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat,PetscBool*,PetscInt*);
 PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat,PetscInt*,PetscInt**);
 
-PETSC_INTERN PetscErrorCode MatMult_SeqAIJ(Mat A,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMult_SeqAIJ(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMult_SeqAIJ_Inode(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqAIJ(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTranspose_SeqAIJ(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSOR_SeqAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+PETSC_INTERN PetscErrorCode MatSOR_SeqAIJ_Inode(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 
 PETSC_INTERN PetscErrorCode MatSetOption_SeqAIJ(Mat,MatOption,PetscBool);
 

@@ -106,8 +106,3 @@ PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat A,MatOption op,PetscBool flg)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-

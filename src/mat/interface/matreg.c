@@ -74,6 +74,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
     ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&mat->nearnullsp);CHKERRQ(ierr);
   }
+  ierr = PetscMemzero(mat->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   mat->preallocated  = PETSC_FALSE;
   mat->assembled     = PETSC_FALSE;
   mat->was_assembled = PETSC_FALSE;

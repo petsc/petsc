@@ -1,0 +1,108 @@
+  0 KSP Residual norm 4.83627 
+  1 KSP Residual norm 0.0513333 
+  2 KSP Residual norm 0.00128508 
+  3 KSP Residual norm 2.53427e-05 
+KSP Object: 1 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: gamg
+    type is MULTIPLICATIVE, levels=2 cycles=v
+      Cycles per PCApply=1
+      Using externally compute Galerkin coarse grid matrices
+      GAMG specific options
+        Threshold for dropping small values in graph on each level =  
+        Threshold scaling factor for each level not specified = 1.
+        AGG specific options
+          Symmetric graph false
+          Number of levels to square graph 1
+          Number smoothing steps 1
+        Complexity:    grid = 1.3
+  Coarse grid solver -- level -------------------------------
+    KSP Object: (mg_coarse_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (mg_coarse_) 1 MPI processes
+      type: bjacobi
+        number of blocks = 1
+        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        KSP Object: (mg_coarse_sub_) 1 MPI processes
+          type: preonly
+          maximum iterations=1, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (mg_coarse_sub_) 1 MPI processes
+          type: lu
+            out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
+            matrix ordering: nd
+            factor fill ratio given 5., needed 1.06667
+              Factored matrix follows:
+                Mat Object: 1 MPI processes
+                  type: seqaij
+                  rows=6, cols=6
+                  package used to perform factorization: petsc
+                  total: nonzeros=32, allocated nonzeros=32
+                    using I-node routines: found 3 nodes, limit used is 5
+          linear system matrix = precond matrix:
+          Mat Object: 1 MPI processes
+            type: seqaijkokkos
+            rows=6, cols=6
+            total: nonzeros=30, allocated nonzeros=30
+            total number of mallocs used during MatSetValues calls=0
+              not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: 1 MPI processes
+        type: seqaijkokkos
+        rows=6, cols=6
+        total: nonzeros=30, allocated nonzeros=30
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+  Down solver (pre-smoother) on level 1 -------------------------------
+    KSP Object: (mg_levels_1_) 1 MPI processes
+      type: chebyshev
+        eigenvalue estimates used:  min = 0.0999687, max = 1.09966
+        eigenvalues estimate via gmres min 0.413331, max 0.999687
+        eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+        KSP Object: (mg_levels_1_esteig_) 1 MPI processes
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=2, nonzero initial guess
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (mg_levels_1_) 1 MPI processes
+      type: sor
+        type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+      linear system matrix = precond matrix:
+      Mat Object: 1 MPI processes
+        type: seqaijkokkos
+        rows=24, cols=24
+        total: nonzeros=100, allocated nonzeros=120
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaijkokkos
+    rows=24, cols=24
+    total: nonzeros=100, allocated nonzeros=120
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
+Norm of error 2.70373e-05 iterations 3

@@ -13,11 +13,11 @@ struct Vec_Kokkos {
   PetscScalarKokkosDualView_t      dual_v;
 
   Vec_Kokkos(PetscInt n,PetscScalar *h_array_,PetscScalar *d_array_,PetscScalar *d_array_allocated_ = NULL)
-    : h_v(h_array_,n),
+    : d_array(d_array_),
+      d_array_allocated(d_array_allocated_),
+      h_v(h_array_,n),
       d_v(d_array_,n),
-      dual_v(d_v,h_v),
-      d_array(d_array_),
-      d_array_allocated(d_array_allocated_){}
+      dual_v(d_v,h_v){}
 
   ~Vec_Kokkos()
   {
@@ -30,9 +30,9 @@ struct Vec_Kokkos {
 #if defined(PETSC_HAVE_CUDA)
   #define WaitForKokkos() PetscCUDASynchronize ? (Kokkos::fence(),0) : 0
 #elif defined(PETSC_HAVE_HIP)
-  #define WaitForKokkos() PetscHIPSynchronize ? (Kokkos::fence(),0) : 0
-#pragma
-  #define WaitForKokkos() 0
+  #define WaitForKokkos() PetscHIPSynchronize ? (Kokkos::fence(),0) : 0;
+#else
+  #define WaitForKokkos() 0;
 #endif
 
 PETSC_INTERN PetscErrorCode VecAbs_SeqKokkos(Vec);

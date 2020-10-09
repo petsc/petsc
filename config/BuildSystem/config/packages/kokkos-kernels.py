@@ -54,6 +54,11 @@ class Configure(config.package.CMakePackage):
     if self.cuda.found:
       self.system = 'CUDA'
       args.append('-DCMAKE_CXX_COMPILER='+os.path.join(KokkosRoot,'bin','nvcc_wrapper'))
+      # as of version 3.2.00 Cuda 11 is not supported
+      # identifier "cusparseXcsrgemmNnz" is undefined
+      if self.cuda.version_tuple >= (11,0):
+        args.append('-DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF')
+
     elif self.hip.found:
       self.system = 'HIP'
       self.pushLanguage('HIP')

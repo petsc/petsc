@@ -416,10 +416,12 @@ static PetscErrorCode MatSeqAIJRestoreArray_SeqAIJViennaCL(Mat A,PetscScalar *ar
 
 static PetscErrorCode MatBindToCPU_SeqAIJViennaCL(Mat A,PetscBool flg)
 {
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  A->boundtocpu = flg;
+  A->boundtocpu  = flg;
+  aij->inode.use = flg;
   if (flg) {
     /* make sure we have an up-to-date copy on the CPU */
     ierr = MatViennaCLCopyFromGPU(A,(const ViennaCLAIJMatrix *)NULL);CHKERRQ(ierr);
@@ -447,7 +449,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
 {
   PetscErrorCode ierr;
   Mat            B;
-  Mat_SeqAIJ     *aij;
 
   PetscFunctionBegin;
 
@@ -459,10 +460,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
 
   B = *newmat;
 
-  aij             = (Mat_SeqAIJ*)B->data;
-  aij->inode.use  = PETSC_FALSE;
-
-  B->spptr        = new Mat_SeqAIJViennaCL();
+  B->spptr = new Mat_SeqAIJViennaCL();
 
   ((Mat_SeqAIJViennaCL*)B->spptr)->tempvec        = NULL;
   ((Mat_SeqAIJViennaCL*)B->spptr)->mat            = NULL;

@@ -770,7 +770,7 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
     IS       compIS;
     PetscInt c;
 
-    ierr = ISCreateStride(PETSC_COMM_SELF, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
     for (c = 0; c < bs; ++c) {
       ierr = ISStrideSetStride(compIS, (xe-xs)/bs, xs+c, bs);CHKERRQ(ierr);
       ierr = VecGetSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
@@ -841,7 +841,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
     IS       compIS;
     PetscInt c;
 
-    ierr = ISCreateStride(PETSC_COMM_SELF, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
     for (c = 0; c < bs; ++c) {
       ierr = ISStrideSetStride(compIS, (xe-xs)/bs, xs+c, bs);CHKERRQ(ierr);
       ierr = VecGetSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
