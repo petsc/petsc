@@ -1,0 +1,665 @@
+lid velocity = 0.0016, prandtl # = 1., grashof # = 1.
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 7.673330437300e-03 
+      1 KSP Residual norm 9.109009839847e-18 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 0.000000000000e+00 
+      1 KSP Residual norm 0.000000000000e+00 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 5.541508584125e-02 
+      1 KSP Residual norm 3.431454278279e-02 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.250598646441e-05 
+      1 KSP Residual norm 7.563418741743e-19 
+    0 KSP Residual norm 7.278449021246e-02 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.063041532359e-01 
+      1 KSP Residual norm 1.513393681810e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 5.300031061572e-03 
+      1 KSP Residual norm 1.021752977709e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 4.466004064235e-01 
+      1 KSP Residual norm 1.355376053260e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 3.670342625119e-04 
+      1 KSP Residual norm 1.243859349610e-17 
+    1 KSP Residual norm 5.780150568599e-02 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.829144248915e-01 
+      1 KSP Residual norm 2.112160487685e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 9.960709019598e-03 
+      1 KSP Residual norm 8.740089180033e-18 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 5.913673300829e-01 
+      1 KSP Residual norm 1.060097167255e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 5.928457171081e-04 
+      1 KSP Residual norm 1.785325320357e-17 
+    2 KSP Residual norm 5.365776231862e-02 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 2.450749243158e-01 
+      1 KSP Residual norm 3.165124258717e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 2.063221741324e-02 
+      1 KSP Residual norm 1.991476251667e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 8.322469970096e-01 
+      1 KSP Residual norm 1.277258236451e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 7.312204028259e-04 
+      1 KSP Residual norm 2.496156135376e-17 
+    3 KSP Residual norm 3.928726748740e-02 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.996596074775e-01 
+      1 KSP Residual norm 2.017994854456e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 4.600316966855e-02 
+      1 KSP Residual norm 2.999928093120e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.119669098193e+00 
+      1 KSP Residual norm 1.619860821662e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 4.873766042035e-04 
+      1 KSP Residual norm 1.527911258443e-17 
+    4 KSP Residual norm 2.159610569774e-02 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.446788381145e-01 
+      1 KSP Residual norm 8.407516969316e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 7.584962618300e-02 
+      1 KSP Residual norm 4.868486784281e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.345943805596e+00 
+      1 KSP Residual norm 2.127385676997e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.166408645469e-04 
+      1 KSP Residual norm 6.304719837273e-18 
+    5 KSP Residual norm 1.103140107297e-02 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.193626299163e-01 
+      1 KSP Residual norm 5.825490987007e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 9.702918552295e-02 
+      1 KSP Residual norm 3.310156692519e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.560402798764e+00 
+      1 KSP Residual norm 2.492189887193e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.677422086567e-04 
+      1 KSP Residual norm 3.741005050493e-18 
+    6 KSP Residual norm 5.590376307584e-03 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.537770320287e-01 
+      1 KSP Residual norm 1.371134150707e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.079080895263e-01 
+      1 KSP Residual norm 7.486644592149e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.811249686189e+00 
+      1 KSP Residual norm 2.798838573080e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 3.560936872126e-04 
+      1 KSP Residual norm 1.114172944815e-17 
+    7 KSP Residual norm 2.648431357766e-03 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.742914232943e-01 
+      1 KSP Residual norm 1.466740482616e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.068499747118e-01 
+      1 KSP Residual norm 6.205468178020e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.522522097065e+00 
+      1 KSP Residual norm 2.641931837745e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 3.884144761687e-04 
+      1 KSP Residual norm 1.168952274156e-17 
+    8 KSP Residual norm 1.163474558602e-03 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.715830532834e-01 
+      1 KSP Residual norm 9.338177368971e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.363483091547e-01 
+      1 KSP Residual norm 6.464903207052e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.469619033891e+00 
+      1 KSP Residual norm 2.400123135398e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.881724364660e-04 
+      1 KSP Residual norm 9.011114198592e-18 
+    9 KSP Residual norm 6.055164766860e-04 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.553355683749e-01 
+      1 KSP Residual norm 7.353087471003e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.565316395560e-01 
+      1 KSP Residual norm 8.239002854936e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.494783153328e+00 
+      1 KSP Residual norm 2.340160796495e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.414556653126e-04 
+      1 KSP Residual norm 2.064773430907e-19 
+   10 KSP Residual norm 3.481737686531e-04 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.785012554592e-01 
+      1 KSP Residual norm 1.394136455068e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.810042491915e-01 
+      1 KSP Residual norm 1.241739397591e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.859214308441e+00 
+      1 KSP Residual norm 2.747362922478e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.113526444422e-04 
+      1 KSP Residual norm 5.147389036732e-18 
+   11 KSP Residual norm 1.859559257946e-04 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.708473736114e-01 
+      1 KSP Residual norm 1.563699681981e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.498137960980e-01 
+      1 KSP Residual norm 8.122480412644e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.621311800163e+00 
+      1 KSP Residual norm 2.687361317148e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.988061680030e-04 
+      1 KSP Residual norm 8.704616406399e-18 
+   12 KSP Residual norm 1.017711308542e-04 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.537256667068e-01 
+      1 KSP Residual norm 9.803656613219e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.567039332502e-01 
+      1 KSP Residual norm 7.954855509200e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.492162029452e+00 
+      1 KSP Residual norm 2.491220210836e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.407834751488e-04 
+      1 KSP Residual norm 7.112617372598e-18 
+   13 KSP Residual norm 5.078600110595e-05 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.732733579326e-01 
+      1 KSP Residual norm 8.769180892371e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.919951472290e-01 
+      1 KSP Residual norm 8.553480258214e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.534814111626e+00 
+      1 KSP Residual norm 2.652218784852e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.708946073896e-04 
+      1 KSP Residual norm 3.017618877370e-18 
+   14 KSP Residual norm 2.700522941823e-05 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.869200815607e-01 
+      1 KSP Residual norm 1.402525710104e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 2.139320742564e-01 
+      1 KSP Residual norm 1.137304201886e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.724077933665e+00 
+      1 KSP Residual norm 2.795510458263e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.742238503552e-04 
+      1 KSP Residual norm 2.475185066866e-18 
+   15 KSP Residual norm 1.376643636859e-05 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.788485286987e-01 
+      1 KSP Residual norm 9.800986584005e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.965065735227e-01 
+      1 KSP Residual norm 9.613951589026e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.753771532766e+00 
+      1 KSP Residual norm 3.077888412765e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.326089170024e-04 
+      1 KSP Residual norm 6.159247272895e-18 
+   16 KSP Residual norm 6.205546538501e-06 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.574943735818e-01 
+      1 KSP Residual norm 8.487908374712e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.828661125266e-01 
+      1 KSP Residual norm 9.912437876952e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.561301898862e+00 
+      1 KSP Residual norm 2.834070529381e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.970740096045e-04 
+      1 KSP Residual norm 5.415765871679e-18 
+   17 KSP Residual norm 2.827051990366e-06 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.801493967526e-01 
+      1 KSP Residual norm 1.036613887990e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 2.321069355536e-01 
+      1 KSP Residual norm 1.016139421378e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.666624607650e+00 
+      1 KSP Residual norm 2.879324416127e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.652037375570e-04 
+      1 KSP Residual norm 2.202116173070e-18 
+   18 KSP Residual norm 1.224071529059e-06 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.848709153105e-01 
+      1 KSP Residual norm 9.881692907018e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 2.395836566503e-01 
+      1 KSP Residual norm 1.098587144978e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.728256724916e+00 
+      1 KSP Residual norm 2.766308426973e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.616706303405e-04 
+      1 KSP Residual norm 1.191009871915e-18 
+   19 KSP Residual norm 5.643498803385e-07 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 5.705918501937e-08 
+      1 KSP Residual norm 4.141575538202e-23 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 7.316945975716e-08 
+      1 KSP Residual norm 3.783949149948e-23 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 3.457334957004e-06 
+      1 KSP Residual norm 2.039275814424e-06 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 3.002945388174e-08 
+      1 KSP Residual norm 2.814257837450e-22 
+    0 KSP Residual norm 4.184582352493e-06 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 2.034200220761e-02 
+      1 KSP Residual norm 3.491598476311e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 2.273642502338e-02 
+      1 KSP Residual norm 3.526805313592e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 4.283416159862e-01 
+      1 KSP Residual norm 2.036997527266e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 7.130002505980e-03 
+      1 KSP Residual norm 6.178494791169e-17 
+    1 KSP Residual norm 2.116786452201e-06 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 7.168228378226e-02 
+      1 KSP Residual norm 1.485798233476e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 7.571296146722e-02 
+      1 KSP Residual norm 1.415377948728e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 7.024728724563e-01 
+      1 KSP Residual norm 1.365897939431e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.725282710081e-02 
+      1 KSP Residual norm 1.604294962084e-16 
+    2 KSP Residual norm 1.523536461771e-06 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.088415918156e-01 
+      1 KSP Residual norm 2.188059584755e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.150197785899e-01 
+      1 KSP Residual norm 2.236720643828e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.035400165411e+00 
+      1 KSP Residual norm 1.600467955274e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.406680322193e-02 
+      1 KSP Residual norm 2.327602700618e-16 
+    3 KSP Residual norm 1.276094471103e-06 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.073446940867e-01 
+      1 KSP Residual norm 1.324650792875e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.117670790429e-01 
+      1 KSP Residual norm 1.687169602433e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.276393847611e+00 
+      1 KSP Residual norm 2.226011843890e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.738930637078e-02 
+      1 KSP Residual norm 1.564266247385e-16 
+    4 KSP Residual norm 8.648419041198e-07 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.147928403102e-01 
+      1 KSP Residual norm 5.657065465108e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.129962997877e-01 
+      1 KSP Residual norm 5.302625723672e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.692489481960e+00 
+      1 KSP Residual norm 3.075653549243e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 8.781355933936e-04 
+      1 KSP Residual norm 7.549452642469e-18 
+    5 KSP Residual norm 5.032315108851e-07 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.389684422495e-01 
+      1 KSP Residual norm 1.213766427925e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.396738031491e-01 
+      1 KSP Residual norm 1.380148011382e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.982751368860e+00 
+      1 KSP Residual norm 3.682448923027e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.518402109765e-02 
+      1 KSP Residual norm 1.452621469632e-16 
+    6 KSP Residual norm 2.155739339100e-07 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.168160344175e-01 
+      1 KSP Residual norm 1.158460024921e-16 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.226388104518e-01 
+      1 KSP Residual norm 1.240188938765e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.303798173392e+00 
+      1 KSP Residual norm 2.666754459410e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 1.246445181134e-02 
+      1 KSP Residual norm 1.213632904063e-16 
+    7 KSP Residual norm 1.086333587250e-07 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.414219075184e-01 
+      1 KSP Residual norm 8.415450222209e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.407830642402e-01 
+      1 KSP Residual norm 1.000406833831e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.312836096394e+00 
+      1 KSP Residual norm 2.388124699076e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 6.361449178301e-03 
+      1 KSP Residual norm 5.961241496958e-17 
+    8 KSP Residual norm 5.076993964809e-08 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.670513868663e-01 
+      1 KSP Residual norm 8.328058731027e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.604473767371e-01 
+      1 KSP Residual norm 7.817658846860e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.735830323151e+00 
+      1 KSP Residual norm 2.954447768215e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 3.380279079576e-03 
+      1 KSP Residual norm 3.073269331862e-17 
+    9 KSP Residual norm 2.408555865475e-08 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.426426062662e-01 
+      1 KSP Residual norm 9.915316456134e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.457052998901e-01 
+      1 KSP Residual norm 1.201263501403e-16 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.781920948451e+00 
+      1 KSP Residual norm 3.094907821716e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 9.462765463937e-03 
+      1 KSP Residual norm 9.075915187569e-17 
+   10 KSP Residual norm 1.157308173453e-08 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.097747304016e-01 
+      1 KSP Residual norm 7.319010137661e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.120905503849e-01 
+      1 KSP Residual norm 8.050840693603e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.534436469796e+00 
+      1 KSP Residual norm 2.709431214854e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 7.125801089153e-03 
+      1 KSP Residual norm 7.128009761325e-17 
+   11 KSP Residual norm 6.115565757860e-09 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.684821722214e-01 
+      1 KSP Residual norm 8.054757619964e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.575323873059e-01 
+      1 KSP Residual norm 9.540594865189e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.597288206009e+00 
+      1 KSP Residual norm 2.756768022724e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.931648272559e-03 
+      1 KSP Residual norm 2.673494157869e-17 
+   12 KSP Residual norm 3.122694551636e-09 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.901786403609e-01 
+      1 KSP Residual norm 8.810592131349e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.756513293100e-01 
+      1 KSP Residual norm 8.669186689435e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.766243915945e+00 
+      1 KSP Residual norm 2.819323072385e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 3.125325546567e-03 
+      1 KSP Residual norm 2.848785694203e-17 
+   13 KSP Residual norm 1.632832953851e-09 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.666775780520e-01 
+      1 KSP Residual norm 8.868554347335e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.659045428967e-01 
+      1 KSP Residual norm 9.408209253411e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.819951798618e+00 
+      1 KSP Residual norm 2.861867127555e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 6.150487117564e-03 
+      1 KSP Residual norm 5.494152021286e-17 
+   14 KSP Residual norm 8.045424612562e-10 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.372935546489e-01 
+      1 KSP Residual norm 7.885032208236e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.420440684764e-01 
+      1 KSP Residual norm 8.872339394231e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.612510418068e+00 
+      1 KSP Residual norm 2.662289460252e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 6.163695513042e-03 
+      1 KSP Residual norm 5.813359976483e-17 
+   15 KSP Residual norm 4.246908275826e-10 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.565462798979e-01 
+      1 KSP Residual norm 6.802676527355e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.465776680818e-01 
+      1 KSP Residual norm 8.053323994631e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.546707716329e+00 
+      1 KSP Residual norm 2.534730319820e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 2.799008677135e-03 
+      1 KSP Residual norm 2.880233709315e-17 
+   16 KSP Residual norm 2.386411848987e-10 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 2.015364439330e-01 
+      1 KSP Residual norm 7.718622298623e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.931870620547e-01 
+      1 KSP Residual norm 9.145666672677e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.723088405785e+00 
+      1 KSP Residual norm 2.875609230650e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 8.554910149050e-04 
+      1 KSP Residual norm 7.936048016293e-18 
+   17 KSP Residual norm 1.355886035720e-10 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.883294543482e-01 
+      1 KSP Residual norm 7.863484113261e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.921378068234e-01 
+      1 KSP Residual norm 9.321546008128e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.749119601078e+00 
+      1 KSP Residual norm 2.773350500788e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 3.815127643983e-03 
+      1 KSP Residual norm 3.657060508718e-17 
+   18 KSP Residual norm 8.073039734664e-11 
+      Residual norms for fieldsplit_x_velocity_ solve.
+      0 KSP Residual norm 1.657882131238e-01 
+      1 KSP Residual norm 8.012454061981e-17 
+      Residual norms for fieldsplit_y_velocity_ solve.
+      0 KSP Residual norm 1.710384226771e-01 
+      1 KSP Residual norm 9.599820852464e-17 
+      Residual norms for fieldsplit_Omega_ solve.
+      0 KSP Residual norm 1.774039573420e+00 
+      1 KSP Residual norm 2.908690368562e-01 
+      Residual norms for fieldsplit_temperature_ solve.
+      0 KSP Residual norm 4.676291052459e-03 
+      1 KSP Residual norm 4.691534956862e-17 
+   19 KSP Residual norm 3.728984904804e-11 
+SNES Object: 1 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=38
+  total number of function evaluations=3
+  norm schedule ALWAYS
+  Jacobian is built using colored finite differences on a DMDA
+  SNESLineSearch Object: 1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI processes
+    type: fieldsplit
+      FieldSplit with MULTIPLICATIVE composition: total splits = 4
+      Solver info for each split is in the following KSP objects:
+    Split number 0 Defined by IS
+    KSP Object: (fieldsplit_x_velocity_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_x_velocity_) 1 MPI processes
+      type: lu
+        out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 5., needed 4.64959
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=625, cols=625
+              package used to perform factorization: petsc
+              total: nonzeros=14065, allocated nonzeros=14065
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_x_velocity_) 1 MPI processes
+        type: seqaij
+        rows=625, cols=625
+        total: nonzeros=3025, allocated nonzeros=3025
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+    Split number 1 Defined by IS
+    KSP Object: (fieldsplit_y_velocity_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_y_velocity_) 1 MPI processes
+      type: lu
+        out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 5., needed 4.64959
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=625, cols=625
+              package used to perform factorization: petsc
+              total: nonzeros=14065, allocated nonzeros=14065
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_y_velocity_) 1 MPI processes
+        type: seqaij
+        rows=625, cols=625
+        total: nonzeros=3025, allocated nonzeros=3025
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+    Split number 2 Defined by IS
+    KSP Object: (fieldsplit_Omega_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_Omega_) 1 MPI processes
+      type: ilu
+        out-of-place factorization
+        0 levels of fill
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: natural
+        factor fill ratio given 1., needed 1.
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=625, cols=625
+              package used to perform factorization: petsc
+              total: nonzeros=3025, allocated nonzeros=3025
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_Omega_) 1 MPI processes
+        type: seqaij
+        rows=625, cols=625
+        total: nonzeros=3025, allocated nonzeros=3025
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+    Split number 3 Defined by IS
+    KSP Object: (fieldsplit_temperature_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_temperature_) 1 MPI processes
+      type: lu
+        out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 5., needed 4.64959
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=625, cols=625
+              package used to perform factorization: petsc
+              total: nonzeros=14065, allocated nonzeros=14065
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_temperature_) 1 MPI processes
+        type: seqaij
+        rows=625, cols=625
+        total: nonzeros=3025, allocated nonzeros=3025
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI processes
+      type: seqaij
+      rows=2500, cols=2500, bs=4
+      total: nonzeros=48400, allocated nonzeros=48400
+      total number of mallocs used during MatSetValues calls=0
+        using I-node routines: found 625 nodes, limit used is 5
+Number of SNES iterations = 2

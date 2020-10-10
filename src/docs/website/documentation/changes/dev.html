@@ -120,6 +120,14 @@
       <h4>Mat:</h4>
       <h4>PC:</h4>
       <h4>KSP:</h4>
+       <ul>
+         <li>Add <tt>-all_ksp_monitor</tt> which turns on monitoring for all KSP solvers regardless of their prefix. This is useful for monitor solvers
+           with inner solvers such as PCMG, PCGAMG, PCFIELDSPLIT.
+         </li>
+         <li>Add support for monitor KSPPREONLY. This is useful for monitor solvers
+           with inner solvers such as PCMG, PCGAMG, PCFIELDSPLIT.
+         </li>
+      </ul>
       <h4>SNES:</h4>
       <ul>
         <li>Add SNESConvergedCorrectPressure(), which can be selected using <tt>-snes_convergence_test correct_pressure</tt></li>

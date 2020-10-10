@@ -29,6 +29,21 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
     ksp->its    = 1;
     ksp->reason = KSP_CONVERGED_ITS;
   }
+  if (ksp->numbermonitors) {
+    Vec       v;
+    PetscReal norm;
+    Mat       A;
+
+    ierr = VecNorm(ksp->vec_rhs,NORM_2,&norm);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,0,norm);CHKERRQ(ierr);
+    ierr = VecDuplicate(ksp->vec_rhs,&v);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,A,ksp->vec_sol,v);CHKERRQ(ierr);
+    ierr = VecAYPX(v,-1.0,ksp->vec_rhs);CHKERRQ(ierr);
+    ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
+    ierr = VecDestroy(&v);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,1,norm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
