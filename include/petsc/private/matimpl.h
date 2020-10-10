@@ -550,7 +550,6 @@ struct _MatCoarsenOps {
 struct _p_MatCoarsen {
   PETSCHEADER(struct _MatCoarsenOps);
   Mat              graph;
-  PetscInt         setupcalled;
   void             *subctx;
   /* */
   PetscBool        strict_aggs;

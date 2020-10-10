@@ -104,7 +104,6 @@ PC Object: 8 MPI processes
                       rows=18, cols=18, bs=6
                       package used to perform factorization: petsc
                       total: nonzeros=324, allocated nonzeros=324
-                      total number of mallocs used during MatSetValues calls=0
               linear system matrix = precond matrix:
               Mat Object: 1 MPI processes
                 type: seqaij
@@ -202,7 +201,6 @@ PC Object: 8 MPI processes
                       rows=18, cols=18, bs=6
                       package used to perform factorization: petsc
                       total: nonzeros=324, allocated nonzeros=324
-                      total number of mallocs used during MatSetValues calls=0
               linear system matrix = precond matrix:
               Mat Object: 1 MPI processes
                 type: seqaij

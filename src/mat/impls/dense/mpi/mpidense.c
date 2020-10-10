@@ -363,7 +363,7 @@ PetscErrorCode MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   PetscInt       nstash,reallocs;
 
   PetscFunctionBegin;
-  if (mdn->donotstash || mat->nooffprocentries) return(0);
+  if (mdn->donotstash || mat->nooffprocentries) PetscFunctionReturn(0);
 
   ierr = MatStashScatterBegin_Private(mat,&mat->stash,mat->rmap->range);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);

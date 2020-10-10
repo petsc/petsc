@@ -206,6 +206,13 @@ int main(int argc,char **argv)
       filter: grep -v type | grep -v "Mat Object"
 
    test:
+      requires: kokkos_kernels
+      suffix: 12_A_kokkos
+      args: -mat_type seqaijkokkos -rectA
+      output_file: output/ex2_12_A.out
+      filter: grep -v type | grep -v "Mat Object"
+
+   test:
       suffix: 11_B
       args: -mat_type seqaij -rectB
       filter: grep -v "Mat Object"
@@ -219,6 +226,13 @@ int main(int argc,char **argv)
       requires: cuda
       suffix: 12_B_cuda
       args: -mat_type seqdensecuda -rectB
+      output_file: output/ex2_12_B.out
+      filter: grep -v type | grep -v "Mat Object"
+
+   test:
+      requires: kokkos_kernels
+      suffix: 12_B_kokkos
+      args: -mat_type seqaijkokkos -rectB
       output_file: output/ex2_12_B.out
       filter: grep -v type | grep -v "Mat Object"
 
@@ -237,6 +251,13 @@ int main(int argc,char **argv)
       suffix: 22_cuda
       output_file: output/ex2_22.out
       args: -mat_type mpidensecuda
+      filter: grep -v type | grep -v "Mat Object"
+
+   test:
+      requires: kokkos_kernels
+      suffix: 22_kokkos
+      output_file: output/ex2_22.out
+      args: -mat_type mpiaijkokkos
       filter: grep -v type | grep -v "Mat Object"
 
    test:
@@ -267,11 +288,26 @@ int main(int argc,char **argv)
       filter: grep -v type | grep -v "MPI processes"
 
    test:
+      suffix: 2_aijkokkos_1
+      args: -mat_type mpiaijkokkos
+      output_file: output/ex2_21.out
+      requires: kokkos_kernels
+      filter: grep -v type | grep -v "MPI processes"
+
+   test:
       suffix: 2_aijcusparse_2
       nsize: 3
       args: -mat_type mpiaijcusparse
       output_file: output/ex2_23.out
       requires: cuda
+      filter: grep -v type | grep -v "MPI processes"
+
+   test:
+      suffix: 2_aijkokkos_2
+      nsize: 3
+      args: -mat_type mpiaijkokkos
+      output_file: output/ex2_23.out
+      requires: kokkos_kernels
       filter: grep -v type | grep -v "MPI processes"
 
    test:

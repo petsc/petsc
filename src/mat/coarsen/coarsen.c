@@ -90,8 +90,8 @@ $    -mat_coarsen_view
    The user can define additional coarsens; see MatCoarsenRegister().
 
 .seealso:  MatCoarsenRegister(), MatCoarsenCreate(),
-           MatCoarsenDestroy(), MatCoarsenSetAdjacency(), ISCoarsenToNumbering(),
-           ISCoarsenCount(), MatCoarsenGetData()
+           MatCoarsenDestroy(), MatCoarsenSetAdjacency()
+           MatCoarsenGetData()
 @*/
 PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
 {
@@ -317,21 +317,14 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
   ierr = PetscObjectTypeCompare((PetscObject)coarser,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (coarser->setupcalled) {
-    ierr =  (*coarser->ops->destroy)(coarser);CHKERRQ(ierr);
-
+  if (coarser->ops->destroy) {
+    ierr = (*coarser->ops->destroy)(coarser);CHKERRQ(ierr);
     coarser->ops->destroy = NULL;
-    coarser->subctx       = NULL;
-    coarser->setupcalled  = 0;
   }
+  ierr = PetscMemzero(coarser->ops,sizeof(struct _MatCoarsenOps));CHKERRQ(ierr);
 
-  ierr =  PetscFunctionListFind(MatCoarsenList,type,&r);CHKERRQ(ierr);
-
+  ierr = PetscFunctionListFind(MatCoarsenList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
-
-  coarser->ops->destroy = (PetscErrorCode (*)(MatCoarsen)) 0;
-  coarser->ops->view    = (PetscErrorCode (*)(MatCoarsen,PetscViewer)) 0;
-
   ierr = (*r)(coarser);CHKERRQ(ierr);
 
   ierr = PetscFree(((PetscObject)coarser)->type_name);CHKERRQ(ierr);
@@ -438,9 +431,3 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   ierr = MatCoarsenViewFromOptions(coarser,NULL,"-mat_coarsen_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-

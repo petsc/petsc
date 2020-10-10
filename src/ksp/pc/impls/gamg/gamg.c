@@ -425,6 +425,29 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
+{
+  PetscErrorCode ierr;
+  const char     *prefix;
+  char           addp[32];
+  PC_MG          *mg      = (PC_MG*)a_pc->data;
+  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
+
+  PetscFunctionBegin;
+  ierr = PCGetOptionsPrefix(a_pc,&prefix);CHKERRQ(ierr);
+  ierr = PetscInfo1(a_pc,"Square Graph on level %D\n",pc_gamg->current_level+1);CHKERRQ(ierr);
+  ierr = MatProductCreate(Gmat1,Gmat1,NULL,Gmat2);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(*Gmat2,prefix);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(addp,sizeof(addp),"pc_gamg_square_%d_",pc_gamg->current_level);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(*Gmat2,addp);CHKERRQ(ierr);
+  ierr = MatProductSetType(*Gmat2,MATPRODUCT_AtB);CHKERRQ(ierr);
+  ierr = MatProductSetFromOptions(*Gmat2);CHKERRQ(ierr);
+  ierr = MatProductSymbolic(*Gmat2);CHKERRQ(ierr);
+  /* we only need the sparsity, cheat and tell PETSc the matrix has been assembled */
+  (*Gmat2)->assembled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_GAMG - Prepares for the use of the GAMG preconditioner
@@ -549,6 +572,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
       /* could have failed to create new level */
       if (Prol11) {
+        const char *prefix;
+        char       addp[32];
+
         /* get new block size of coarse matrices */
         ierr = MatGetBlockSizes(Prol11, NULL, &bs);CHKERRQ(ierr);
 
@@ -563,6 +589,29 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           ierr = PetscCDGetASMBlocks(agg_lists, bs, Gmat, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);CHKERRQ(ierr);
         }
 
+        ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+        ierr = MatSetOptionsPrefix(Prol11,prefix);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(addp,sizeof(addp),"pc_gamg_prolongator_%d_",level);CHKERRQ(ierr);
+        ierr = MatAppendOptionsPrefix(Prol11,addp);CHKERRQ(ierr);
+        /* if we reuse the prolongator, then it is better to generate the transpose by default with CUDA
+           Such behaviour can be adapted with -pc_gamg_prolongator_ prefixed options */
+#if defined(PETSC_HAVE_CUDA)
+        {
+          PetscBool ismpiaij;
+
+          ierr = PetscObjectBaseTypeCompare((PetscObject)Prol11,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+          if (ismpiaij) {
+            Mat Prol_d,Prol_o;
+
+            ierr = MatMPIAIJGetSeqAIJ(Prol11,&Prol_d,&Prol_o,NULL);CHKERRQ(ierr);
+            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_d,pc_gamg->reuse_prol);CHKERRQ(ierr);
+            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_o,pc_gamg->reuse_prol);CHKERRQ(ierr);
+          } else {
+            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol11,pc_gamg->reuse_prol);CHKERRQ(ierr);
+          }
+        }
+#endif
+        ierr = MatSetFromOptions(Prol11);CHKERRQ(ierr);
         Parr[level1] = Prol11;
       } else Parr[level1] = NULL; /* failed to coarsen */
 
@@ -607,7 +656,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       break;
     }
   } /* levels */
-  ierr                  = PetscFree(pc_gamg->data);CHKERRQ(ierr);
+  ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
 
   ierr = PetscInfo2(pc,"%D levels, grid complexity = %g\n",level+1,nnztot/nnz0);CHKERRQ(ierr);
   pc_gamg->Nlevels = level + 1;
@@ -615,6 +664,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   ierr             = PCMGSetLevels(pc,pc_gamg->Nlevels,NULL);CHKERRQ(ierr);
 
   if (pc_gamg->Nlevels > 1) { /* don't setup MG if one level */
+    PetscErrorCode (*savesetfromoptions[PETSC_MG_MAXLEVELS])(PetscOptionItems*,KSP);
+
     /* set default smoothers & set operators */
     for (lidx = 1, level = pc_gamg->Nlevels-2; lidx <= fine_level; lidx++, level--) {
       KSP smoother;
@@ -664,6 +715,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       /* coarse grid */
       KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
       Mat Lmat = Aarr[(level=pc_gamg->Nlevels-1)]; lidx = 0;
+
       ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
       ierr = KSPSetOperators(smoother, Lmat, Lmat);CHKERRQ(ierr);
       if (!pc_gamg->use_parallel_coarse_grid_solver) {
@@ -691,30 +743,54 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_EXTERNAL);CHKERRQ(ierr);
 
+    /* setup cheby eigen estimates from SA */
+    if (pc_gamg->use_sa_esteig==1) {
+      for (lidx = 1, level = pc_gamg->Nlevels-2; level >= 0 ; lidx++, level--) {
+        KSP       smoother;
+        PetscBool ischeb;
+
+        savesetfromoptions[level] = NULL;
+        ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)smoother,KSPCHEBYSHEV,&ischeb);CHKERRQ(ierr);
+        if (ischeb) {
+          KSP_Chebyshev *cheb = (KSP_Chebyshev*)smoother->data;
+
+          ierr = KSPSetFromOptions(smoother);CHKERRQ(ierr); /* let command line emax override using SA's eigenvalues */
+          if (mg->max_eigen_DinvA[level] > 0 && cheb->emax == 0.) {
+            PC        subpc;
+            PetscBool isjac;
+            ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
+            ierr = PetscObjectTypeCompare((PetscObject)subpc,PCJACOBI,&isjac);CHKERRQ(ierr);
+            if (isjac && pc_gamg->use_sa_esteig==1) {
+              PetscReal emax,emin;
+
+              emin = mg->min_eigen_DinvA[level];
+              emax = mg->max_eigen_DinvA[level];
+              ierr = PetscInfo4(pc,"PCSetUp_GAMG: call KSPChebyshevSetEigenvalues on level %D (N=%D) with emax = %g emin = %g\n",level,Aarr[level]->rmap->N,(double)emax,(double)emin);CHKERRQ(ierr);
+              cheb->emin_computed = emin;
+              cheb->emax_computed = emax;
+              ierr = KSPChebyshevSetEigenvalues(smoother, cheb->tform[2]*emin + cheb->tform[3]*emax, cheb->tform[0]*emin + cheb->tform[1]*emax);CHKERRQ(ierr);
+
+              /* We have set the eigenvalues and consumed the transformation values
+                 prevent from flagging the recomputation of the eigenvalues again in PCSetUp_MG
+                 below when setfromoptions will be called again */
+              savesetfromoptions[level] = smoother->ops->setfromoptions;
+              smoother->ops->setfromoptions = NULL;
+            }
+          }
+        }
+      }
+    }
+
     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
 
-    /* setup cheby eigen estimates from SA */
-    for (lidx = 1, level = pc_gamg->Nlevels-2; level >= 0 ; lidx++, level--) {
-      KSP       smoother;
-      PetscBool ischeb;
-      ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)smoother,KSPCHEBYSHEV,&ischeb);CHKERRQ(ierr);
-      if (ischeb) {
-        KSP_Chebyshev  *cheb = (KSP_Chebyshev*)smoother->data;
-        if (mg->max_eigen_DinvA[level] > 0 && cheb->emax == 0.) { /* let command line emax override using SA's eigenvalues */
-          PC        subpc;
-          PetscBool isjac;
-          ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
-          ierr = PetscObjectTypeCompare((PetscObject)subpc,PCJACOBI,&isjac);CHKERRQ(ierr);
-          if ((isjac && pc_gamg->use_sa_esteig==-1) || pc_gamg->use_sa_esteig==1) {
-            PetscReal       emax,emin;
-            emin = mg->min_eigen_DinvA[level];
-            emax = mg->max_eigen_DinvA[level];
-            ierr = PetscInfo4(pc,"PCSetUp_GAMG: call KSPChebyshevSetEigenvalues on level %D (N=%D) with emax = %g emin = %g\n",level,Aarr[level]->rmap->N,(double)emax,(double)emin);CHKERRQ(ierr);
-            cheb->emin_computed = emin;
-            cheb->emax_computed = emax;
-            ierr = KSPChebyshevSetEigenvalues(smoother, cheb->tform[2]*emin + cheb->tform[3]*emax, cheb->tform[0]*emin + cheb->tform[1]*emax);CHKERRQ(ierr);
-          }
+    /* restore Chebyshev smoother for next calls */
+    if (pc_gamg->use_sa_esteig==1) {
+      for (lidx = 1, level = pc_gamg->Nlevels-2; level >= 0 ; lidx++, level--) {
+        if (savesetfromoptions[level]) {
+          KSP smoother;
+          ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
+          smoother->ops->setfromoptions = savesetfromoptions[level];
         }
       }
     }
@@ -724,9 +800,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = MatDestroy(&Parr[level]);CHKERRQ(ierr);
       ierr = MatDestroy(&Aarr[level]);CHKERRQ(ierr);
     }
-
   } else {
     KSP smoother;
+
     ierr = PetscInfo(pc,"One level solver used (system is seen as DD). Using default solver.\n");CHKERRQ(ierr);
     ierr = PCMGGetSmoother(pc, 0, &smoother);CHKERRQ(ierr);
     ierr = KSPSetOperators(smoother, Aarr[0], Aarr[0]);CHKERRQ(ierr);
@@ -949,7 +1025,7 @@ PetscErrorCode PCGAMGSetUseSAEstEig(PC pc, PetscBool n)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscInt n)
+static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
