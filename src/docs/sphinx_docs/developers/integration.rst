@@ -57,7 +57,7 @@ Submit merge request
 --------------------
 
 -  ``git push`` prints a URL that can be used to create a merge request.
-   Alternatively, use `GitLab's web interface <https://gitlab.com/petsc/petsc/merge_requests/new>`__.
+   Alternatively, use `GitLab's web interface <https://gitlab.com/petsc/petsc/-/merge_requests/new>`__.
 -  Select the correct target branch (:any:`sec_master_branch` or :any:`sec_release_branch`).
 -  Select appropriate `labels <https://gitlab.com/petsc/petsc/-/labels>`__ including "workflow::Pipeline-Testing"
 -  If the merge request resolves an outstanding `issue <https://gitlab.com/petsc/petsc/issues>`__), you should include a `closing

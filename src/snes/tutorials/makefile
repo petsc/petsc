@@ -6,7 +6,7 @@ FPPFLAGS         =
 LOCDIR		 = src/snes/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex9.c \
-                   ex12.c ex14.c ex15.c ex18.c ex19.c ex21.c ex22.c \
+                   ex12.c ex14.c ex15.c ex17.c ex18.c ex19.c ex21.c ex22.c \
                    ex25.c ex28.c ex30.c ex33.c \
                    ex35.c ex42.c ex46.c ex48.c \
                    ex56.c ex58.c ex59.c \

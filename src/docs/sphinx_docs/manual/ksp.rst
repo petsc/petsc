@@ -388,7 +388,7 @@ can be used by the options database command
   * - Deflated Generalized Minimal Residual
     - ``KSPDGMRES``
     - ``dgmres``
-  * - Pipelined Generalized Minimal Residual :cite:`Ghysels_Ashby_Meerbergen_Vanroose_2012`
+  * - Pipelined Generalized Minimal Residual :cite:`GhyselsAshbyMeerbergenVanroose2013`
     - ``KSPPGMRES``
     - ``pgmres``
   * - Pipelined, Flexible Generalized Minimal Residual :cite:`SananSchneppMay2016`

@@ -1135,7 +1135,7 @@ conditions and diffusion of all species. The self-explanatory examples
 are the
 `The TS tutorial extchem <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/extchem.c.html>`__
 and
-`The TS tutorial exchemfield <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/exchemfield.c.html>`__.
+`The TS tutorial extchemfield <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/extchemfield.c.html>`__.
 
 .. _sec_sundials:
 

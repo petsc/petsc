@@ -45,7 +45,7 @@ other reasons. Problem diagnosis is the single biggest bottleneck for
 development and maintenance time. Unfortunately, current systems are
 built to optimize the successful case rather than the unsuccessful. In
 PETSc, we have developed the
-`BuildSystem <https://www.bitbucket.org/petsc/BuildSystem>`__ package
+`BuildSystem package
 (BS) to remedy the shortcomings of configuration systems such as
 Autoconf, CMake, and SCons.
 
