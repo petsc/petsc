@@ -5,7 +5,7 @@ if [ ! -z ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x} ]; then
   exit 0
 fi
 
-git fetch --unshallow --no-tags origin +release:remotes/origin/release +master:remotes/origin/master HEAD
+git fetch --unshallow --no-tags origin +release:remotes/origin/release +master:remotes/origin/master
 base_release=$(git merge-base --octopus origin/release origin/master HEAD)
 base_master=$(git merge-base origin/master HEAD)
 if [ ${base_release} = ${base_master} ]; then
