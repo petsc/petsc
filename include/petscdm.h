@@ -370,6 +370,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct) {
     case DM_POLYTOPE_TRI_PRISM:
     case DM_POLYTOPE_TRI_PRISM_TENSOR:
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    case DM_POLYTOPE_PYRAMID:
       return 3;
     default: return -1;
   }
@@ -389,6 +390,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
     case DM_POLYTOPE_TRI_PRISM:          return 5;
     case DM_POLYTOPE_TRI_PRISM_TENSOR:   return 5;
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:  return 6;
+    case DM_POLYTOPE_PYRAMID:            return 5;
     default: return -1;
   }
 }
@@ -407,6 +409,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
     case DM_POLYTOPE_TRI_PRISM:          return 6;
     case DM_POLYTOPE_TRI_PRISM_TENSOR:   return 6;
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:  return 8;
+    case DM_POLYTOPE_PYRAMID:            return 5;
     default: return -1;
   }
 }
