@@ -633,6 +633,45 @@ static PetscErrorCode PCHPDDMShellDestroy(PC pc)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScalar *rhs, const unsigned short& mu)
+{
+  Mat            B, X;
+  PetscInt       n, N, i, j = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPGetOperators(ctx->ksp, &B, NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(B, &n, NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(B, &N, NULL);CHKERRQ(ierr);
+  if (ctx->parent->log_separate) {
+    j = std::distance(ctx->parent->levels, std::find(ctx->parent->levels, ctx->parent->levels + ctx->parent->N, ctx));
+    ierr = PetscLogEventBegin(PC_HPDDM_Solve[j], ctx->ksp, 0, 0, 0);CHKERRQ(ierr);
+  }
+  if (mu == 1) {
+    if (!ctx->ksp->vec_rhs) {
+      ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ctx->ksp), 1, n, N, NULL, &ctx->ksp->vec_rhs);CHKERRQ(ierr);
+      ierr = VecCreateMPI(PetscObjectComm((PetscObject)ctx->ksp), n, N, &ctx->ksp->vec_sol);CHKERRQ(ierr);
+    }
+    for (i = 0; i < mu; ++i) {
+      ierr = VecPlaceArray(ctx->ksp->vec_rhs, rhs + i * n);CHKERRQ(ierr);
+      ierr = KSPSolve(ctx->ksp, NULL, NULL);CHKERRQ(ierr);
+      ierr = VecCopy(ctx->ksp->vec_sol, ctx->ksp->vec_rhs);CHKERRQ(ierr);
+      ierr = VecResetArray(ctx->ksp->vec_rhs);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)ctx->ksp), n, PETSC_DECIDE, N, mu, rhs, &B);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)ctx->ksp), n, PETSC_DECIDE, N, mu, NULL, &X);CHKERRQ(ierr);
+    ierr = KSPMatSolve(ctx->ksp, B, X);CHKERRQ(ierr);
+    ierr = MatCopy(X, B, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDestroy(&X);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  }
+  if (ctx->parent->log_separate) {
+    ierr = PetscLogEventEnd(PC_HPDDM_Solve[j], ctx->ksp, 0, 0, 0);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc)
 {
   PC_HPDDM       *data = (PC_HPDDM*)pc->data;
