@@ -4138,13 +4138,25 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
   PetscInt       m=A->rmap->n;
 
   PetscFunctionBegin;
-  c->inode.use        = a->inode.use;
-  c->inode.limit      = a->inode.limit;
-  c->inode.max_limit  = a->inode.max_limit;
-  c->inode.node_count = a->inode.node_count;
+  c->inode.use              = a->inode.use;
+  c->inode.limit            = a->inode.limit;
+  c->inode.max_limit        = a->inode.max_limit;
+  c->inode.checked          = PETSC_FALSE;
+  c->inode.size             = NULL;
+  c->inode.node_count       = 0;
+  c->inode.ibdiagvalid      = PETSC_FALSE;
+  c->inode.ibdiag           = NULL;
+  c->inode.bdiag            = NULL;
+  c->inode.mat_nonzerostate = -1;
   if (a->inode.use) {
-    ierr = PetscMalloc1(m+1,&c->inode.size);CHKERRQ(ierr);
-    ierr = PetscArraycpy(c->inode.size,a->inode.size,m+1);CHKERRQ(ierr);
+    if (a->inode.checked && a->inode.size) {
+      ierr = PetscMalloc1(m+1,&c->inode.size);CHKERRQ(ierr);
+      ierr = PetscArraycpy(c->inode.size,a->inode.size,m+1);CHKERRQ(ierr);
+
+      c->inode.checked          = PETSC_TRUE;
+      c->inode.node_count       = a->inode.node_count;
+      c->inode.mat_nonzerostate = (*C)->nonzerostate;
+    }
     /* note the table of functions below should match that in MatSeqAIJCheckInode() */
     if (!B->factortype) {
       B->ops->getrowij          = MatGetRowIJ_SeqAIJ_Inode;
@@ -4156,13 +4168,7 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
     } else {
       B->ops->solve = MatSolve_SeqAIJ_Inode_inplace;
     }
-  } else {
-    c->inode.size       = NULL;
-    c->inode.node_count = 0;
   }
-  c->inode.ibdiagvalid = PETSC_FALSE;
-  c->inode.ibdiag      = NULL;
-  c->inode.bdiag       = NULL;
   PetscFunctionReturn(0);
 }
 
