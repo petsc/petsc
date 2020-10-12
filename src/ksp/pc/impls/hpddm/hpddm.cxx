@@ -17,6 +17,8 @@ PetscLogEvent PC_HPDDM_Strc;
 PetscLogEvent PC_HPDDM_PtAP;
 PetscLogEvent PC_HPDDM_PtBP;
 PetscLogEvent PC_HPDDM_Next;
+PetscLogEvent PC_HPDDM_SetUp[PETSC_HPDDM_MAXLEVELS];
+PetscLogEvent PC_HPDDM_Solve[PETSC_HPDDM_MAXLEVELS];
 
 static const char *PCHPDDMCoarseCorrectionTypes[] = { "deflated", "additive", "balanced" };
 
@@ -248,6 +250,11 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
     if (flg) data->correction = PCHPDDMCoarseCorrectionType(n);
     ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_has_neumann");CHKERRQ(ierr);
     ierr = PetscOptionsBool(prefix, "Is the auxiliary Mat the local Neumann matrix?", "PCHPDDMHasNeumannMat", data->Neumann, &data->Neumann, NULL);CHKERRQ(ierr);
+    data->log_separate = PETSC_FALSE;
+    if (PetscDefined(USE_LOG)) {
+      ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_log_separate");CHKERRQ(ierr);
+      ierr = PetscOptionsBool(prefix, "Log events level by level instead of inside PCSetUp()/KSPSolve()", NULL, data->log_separate, &data->log_separate, NULL);CHKERRQ(ierr);
+    }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   while (i < PETSC_HPDDM_MAXLEVELS && data->levels[i]) {
@@ -264,7 +271,13 @@ static PetscErrorCode PCApply_HPDDM(PC pc, Vec x, Vec y)
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(hpddmCitationPC, &citePC);CHKERRQ(ierr);
   if (data->levels[0]->ksp) {
+    if (data->log_separate) { /* coarser-level events are directly triggered in HPDDM */
+      ierr = PetscLogEventBegin(PC_HPDDM_Solve[0], data->levels[0]->ksp, 0, 0, 0);CHKERRQ(ierr);
+    }
     ierr = KSPSolve(data->levels[0]->ksp, x, y);CHKERRQ(ierr);
+    if (data->log_separate) {
+      ierr = PetscLogEventEnd(PC_HPDDM_Solve[0], data->levels[0]->ksp, 0, 0, 0);CHKERRQ(ierr);
+    }
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "No KSP attached to PCHPDDM");
   PetscFunctionReturn(0);
 }
@@ -1099,6 +1112,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
 @*/
 PetscErrorCode PCHPDDMInitializePackage(void)
 {
+  char           ename[32];
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1118,6 +1133,17 @@ PetscErrorCode PCHPDDMInitializePackage(void)
   ierr = PetscLogEventRegister("PCHPDDMPtBP", PC_CLASSID, &PC_HPDDM_PtBP);CHKERRQ(ierr);
   /* next level construction using PtAP and PtBP                  */
   ierr = PetscLogEventRegister("PCHPDDMNext", PC_CLASSID, &PC_HPDDM_Next);CHKERRQ(ierr);
+  static_assert(PETSC_HPDDM_MAXLEVELS <= 9, "PETSC_HPDDM_MAXLEVELS value is too high");
+  for (i = 1; i < PETSC_HPDDM_MAXLEVELS; ++i) {
+    ierr = PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSetUp L%1d", i);CHKERRQ(ierr);
+    /* events during a PCSetUp() at level #i _except_ the assembly */
+    /* of the Galerkin operator of the coarser level #(i + 1)      */
+    ierr = PetscLogEventRegister(ename, PC_CLASSID, &PC_HPDDM_SetUp[i - 1]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSolve L%1d", i);CHKERRQ(ierr);
+    /* events during a PCApply() at level #i _except_              */
+    /* the KSPSolve() of the coarser level #(i + 1)                */
+    ierr = PetscLogEventRegister(ename, PC_CLASSID, &PC_HPDDM_Solve[i - 1]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
