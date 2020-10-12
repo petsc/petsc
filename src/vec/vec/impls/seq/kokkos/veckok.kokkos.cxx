@@ -5,6 +5,7 @@
 #include "Kokkos_Macros.hpp"
 #include "Kokkos_Parallel.hpp"
 #include "Kokkos_Parallel_Reduce.hpp"
+#include <petsc/private/sfimpl.h>
 #include <petsc/private/petscimpl.h>
 #include <petscmath.h>
 #include <petscviewer.h>
@@ -121,6 +122,15 @@ PetscErrorCode VecKokkosRestoreDeviceViewWrite(Vec v,PetscScalarViewDevice_t* dv
 
 PetscErrorCode VecKokkosGetArrayInPlace(Vec v,PetscScalar** array)
 {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecKokkosGetArrayInPlace_Internal(v,array,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecKokkosGetArrayInPlace_Internal(Vec v,PetscScalar** array,PetscMemType *mtype)
+{
   Vec_Kokkos  *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
@@ -128,9 +138,11 @@ PetscErrorCode VecKokkosGetArrayInPlace(Vec v,PetscScalar** array)
   if (veckok->dual_v.need_sync_device()) {
    /* Host has newer data than device */
     *array = veckok->dual_v.view_host().data();
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
   } else {
     /* Device has newer or same data as host. We prefer returning devcie data*/
     *array = veckok->dual_v.view_device().data();
+    if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
   }
   PetscFunctionReturn(0);
 }
@@ -153,14 +165,25 @@ PetscErrorCode VecKokkosRestoreArrayInPlace(Vec v,PetscScalar** array)
 
 PetscErrorCode VecKokkosGetArrayReadInPlace(Vec v,const PetscScalar** array)
 {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecKokkosGetArrayReadInPlace_Internal(v,array,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecKokkosGetArrayReadInPlace_Internal(Vec v,const PetscScalar** array,PetscMemType *mtype)
+{
   Vec_Kokkos  *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
   VecErrorIfNotKokkos(v);
   if (veckok->dual_v.need_sync_device()) { /* Host has newer data than device */
     *array = veckok->dual_v.view_host().data();
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
   } else {
     *array = veckok->dual_v.view_device().data();
+    if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
   }
   PetscFunctionReturn(0);
 }

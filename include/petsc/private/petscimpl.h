@@ -942,4 +942,5 @@ PETSC_EXTERN PetscBool      PetscHIPInitialized;
 PETSC_EXTERN PetscBool      PetscMPIHIPAwarenessCheck(void);
 #endif
 
+PETSC_EXTERN PetscBool      PetscCreatedGpuObjects;
 #endif /* PETSCIMPL_H */

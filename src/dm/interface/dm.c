@@ -1,3 +1,4 @@
+#include <petscvec.h>
 #include <petsc/private/dmimpl.h>           /*I      "petscdm.h"          I*/
 #include <petsc/private/dmlabelimpl.h>      /*I      "petscdmlabel.h"     I*/
 #include <petsc/private/petscdsimpl.h>      /*I      "petscds.h"     I*/
@@ -2489,6 +2490,7 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   PetscErrorCode          ierr;
   DMGlobalToLocalHookLink link;
 
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   for (link=dm->gtolhook; link; link=link->next) {
@@ -2500,11 +2502,12 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   if (sf) {
     const PetscScalar *gArray;
     PetscScalar       *lArray;
+    PetscMemType      lmtype,gmtype;
 
     if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
-    ierr = VecGetArrayInPlace(l, &lArray);CHKERRQ(ierr);
-    ierr = VecGetArrayReadInPlace(g, &gArray);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
+    ierr = VecGetArrayInPlace_Internal(l, &lArray, &lmtype);CHKERRQ(ierr);
+    ierr = VecGetArrayReadInPlace_Internal(g, &gArray, &gmtype);CHKERRQ(ierr);
+    ierr = PetscSFBcastWithMemTypeBegin(sf, MPIU_SCALAR, gmtype, gArray, lmtype, lArray);CHKERRQ(ierr);
     ierr = VecRestoreArrayInPlace(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArrayReadInPlace(g, &gArray);CHKERRQ(ierr);
   } else {
@@ -2538,6 +2541,7 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   PetscScalar            *lArray;
   PetscBool               transform;
   DMGlobalToLocalHookLink link;
+  PetscMemType            lmtype,gmtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -2546,8 +2550,8 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   if (sf) {
     if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
 
-    ierr = VecGetArrayInPlace(l, &lArray);CHKERRQ(ierr);
-    ierr = VecGetArrayReadInPlace(g, &gArray);CHKERRQ(ierr);
+    ierr = VecGetArrayInPlace_Internal(l, &lArray, &lmtype);CHKERRQ(ierr);
+    ierr = VecGetArrayReadInPlace_Internal(g, &gArray, &gmtype);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
     ierr = VecRestoreArrayInPlace(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArrayReadInPlace(g, &gArray);CHKERRQ(ierr);
@@ -2715,6 +2719,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   PetscScalar            *gArray;
   PetscBool               isInsert, transform, l_inplace = PETSC_FALSE, g_inplace = PETSC_FALSE;
   PetscErrorCode          ierr;
+  PetscMemType            lmtype=PETSC_MEMTYPE_HOST,gmtype=PETSC_MEMTYPE_HOST;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -2748,17 +2753,17 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     } else if (isInsert) {
       ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
     } else {
-      ierr = VecGetArrayReadInPlace(l, &lArray);CHKERRQ(ierr);
+      ierr = VecGetArrayReadInPlace_Internal(l, &lArray, &lmtype);CHKERRQ(ierr);
       l_inplace = PETSC_TRUE;
     }
     if (s && isInsert) {
       ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
     } else {
-      ierr = VecGetArrayInPlace(g, &gArray);CHKERRQ(ierr);
+      ierr = VecGetArrayInPlace_Internal(g, &gArray, &gmtype);CHKERRQ(ierr);
       g_inplace = PETSC_TRUE;
     }
     if (sf && !isInsert) {
-      ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceWithMemTypeBegin(sf, MPIU_SCALAR, lmtype, lArray, gmtype, gArray, MPIU_SUM);CHKERRQ(ierr);
     } else if (s && isInsert) {
       PetscInt gStart, pStart, pEnd, p;
 
@@ -2861,9 +2866,9 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
       ierr = DMGetNamedLocalVector(dm, "__petsc_dm_transform_local_copy", &tmpl);CHKERRQ(ierr);
       ierr = VecGetArrayRead(tmpl, &lArray);CHKERRQ(ierr);
     } else {
-      ierr = VecGetArrayReadInPlace(l, &lArray);CHKERRQ(ierr);
+      ierr = VecGetArrayReadInPlace_Internal(l, &lArray, NULL);CHKERRQ(ierr);
     }
-    ierr = VecGetArrayInPlace(g, &gArray);CHKERRQ(ierr);
+    ierr = VecGetArrayInPlace_Internal(g, &gArray, NULL);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM);CHKERRQ(ierr);
     if (transform) {
       ierr = VecRestoreArrayRead(tmpl, &lArray);CHKERRQ(ierr);

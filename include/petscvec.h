@@ -500,14 +500,18 @@ PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode VecGetArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecGetArrayInPlace_Internal(Vec,PetscScalar**,PetscMemType*);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayInPlace(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetArrayReadInPlace(Vec,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecGetArrayReadInPlace_Internal(Vec,const PetscScalar**,PetscMemType*);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayReadInPlace(Vec,const PetscScalar**);
 
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
 PETSC_EXTERN PetscErrorCode VecKokkosGetArrayInPlace(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecKokkosGetArrayInPlace_Internal(Vec,PetscScalar**,PetscMemType*);
 PETSC_EXTERN PetscErrorCode VecKokkosRestoreArrayInPlace(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecKokkosGetArrayReadInPlace(Vec,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecKokkosGetArrayReadInPlace_Internal(Vec,const PetscScalar**,PetscMemType*);
 PETSC_STATIC_INLINE PetscErrorCode VecKokkosRestoreArrayReadInPlace(Vec v,const PetscScalar** a) {return 0;}
 PETSC_EXTERN PetscErrorCode VecKokkosSyncHost(Vec);
 PETSC_EXTERN PetscErrorCode VecKokkosModifyHost(Vec);
