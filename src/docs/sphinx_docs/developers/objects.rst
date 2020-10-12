@@ -308,7 +308,7 @@ PetscObjectList if the argument ``fl`` points to a NULL.
 
 The PETSc object ``compose()`` and ``query()`` functions are as follows
 (defined in
-`src/sys/objects/inherit.c <https://www.mcs.anl.gov/petsc/petsc-master/src/objects/inherit.c.html>`__).
+`src/sys/objects/inherit.c <https://www.mcs.anl.gov/petsc/petsc-master/src/sys/objects/inherit.c.html>`__).
 
 ::
 

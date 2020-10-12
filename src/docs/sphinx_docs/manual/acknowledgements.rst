@@ -144,10 +144,9 @@ PETSc interfaces to the following external software:
 -  | MUMPS - see page , MUltifrontal Massively Parallel sparse direct
      Solver developed by Patrick Amestoy, Iain Duff, Jacko Koster, and
      Jean-Yves L’Excellent;
-   | http://www.enseeiht.fr/lima/apo/MUMPS/credits.html
+   | http://mumps.enseeiht.fr/
 
 -  | Party - A graph partitioning package;
-   | http://www2.cs.uni-paderborn.de/cs/ag-monien/PERSONAL/ROBSY/party.html
 
 -  | PaStiX - Parallel sparse LU and Cholesky solvers;
    | http://pastix.gforge.inria.fr/
@@ -177,7 +176,7 @@ PETSc interfaces to the following external software:
    | http://wias-berlin.de/software/tetgen/
 
 -  | Trilinos/ML - Sandia’s main multigrid preconditioning package;
-   | https://software.sandia.gov//trilinos/,
+   | https://trilinos.github.io/
 
 -  | Zoltan - graph partitioners from Sandia National Laboratory;
    | http://www.cs.sandia.gov/zoltan/

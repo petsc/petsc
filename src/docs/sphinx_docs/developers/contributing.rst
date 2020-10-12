@@ -66,7 +66,6 @@ This is a shorthand version of
 For additional help use
 
 * ``git help`` or ``man git``
-* `The development wiki <https://gitlab.com/petsc/petsc/wikis/Home>`__ (which should migrate)
 * `The Pro Git book <https://git-scm.com/book/en/>`__
 
 If you absolutely cannot use git then you can access tarballs directly, as in :ref:`other_ways_to_obtain`.
