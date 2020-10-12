@@ -722,34 +722,26 @@ int main(int argc, char **argv)
   ierr = TSMonitorSet(ts,Monitor,ctx,NULL);CHKERRQ(ierr);
   ierr = TSSetPreStep(ts,PreStep);CHKERRQ(ierr);
   rectx->Ez_initial = ctx->Ez;       /* cache for induction caclulation - applied E field */
-  ierr = MatSetOption(J, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
-  { /* warm up an test just LandauIJacobian */
-#if defined(PETSC_USE_LOG)
+  if (1) { /* warm up an test just LandauIJacobian */
+    #if defined PETSC_USE_LOG
     PetscLogStage stage;
-#endif
+    #endif
     Vec           vec;
-    PetscRandom   rctx;
-    PetscInt      ii;
-
-    ierr = PetscRandomCreate(PETSC_COMM_SELF,&rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = VecDuplicate(X,&vec);CHKERRQ(ierr);
+    ierr = VecSet(vec,1.);CHKERRQ(ierr);
     /* warm up */
-    ierr = VecSetRandom(vec,rctx);CHKERRQ(ierr);
     ierr = PetscLogStageRegister("Warmup", &stage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-    ierr = LandauIJacobian(ts,0.0,vec,vec,1.0,J,J,ctx);CHKERRQ(ierr);
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    /* LandauIJacobian */
-    ierr = PetscLogStageRegister("LandauIJacobian", &stage);CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-    for (ii=0;ii<10;ii++){
-      ierr = VecSetRandom(vec,rctx);CHKERRQ(ierr);
-      ierr = LandauIJacobian(ts,0.0,vec,vec,1.0,J,J,ctx);CHKERRQ(ierr);
-    }
+    ierr = LandauIJacobian(ts, 0.0, vec, vec, 0.0, J, J, ctx);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)J, "Jacobian");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(J,NULL,"-initial_mat_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)J, "Mass + Jacobian");CHKERRQ(ierr);
+    //ierr = VecScale(vec,10.*PETSC_MACHINE_EPSILON);CHKERRQ(ierr);
+    ierr = LandauIJacobian(ts, 0.0, vec, vec, 1.0, J, J, ctx);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(J,NULL,"-initial_mat_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)J, "Jacobian");CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     ierr = VecDestroy(&vec);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   }
   ierr = VecViewFromOptions(X,NULL,"-vec_view");CHKERRQ(ierr); // inital condition (monitor plots after step)
   /* go */
