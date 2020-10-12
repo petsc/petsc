@@ -84,8 +84,8 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
   DMLabel        depthLabel;
   DMPolytopeType ct;
   PetscInt       depth, cellHeight, pStart = 0, pEnd = 0;
-  PetscInt       Nf, f, dim, d, dep, p;
-  PetscBool     *isFE;
+  PetscInt       Nf, f, Nds, n, dim, d, dep, p;
+  PetscBool     *isFE, hasHybrid = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -93,6 +93,15 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm,&depthLabel);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  for (n = 0; n < Nds; ++n) {
+    PetscDS   ds;
+    PetscBool isHybrid;
+
+    ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
+    if (isHybrid) {hasHybrid = PETSC_TRUE; break;}
+  }
   ierr = PetscMalloc1(Nf, &isFE);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
@@ -127,7 +136,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
           case DM_POLYTOPE_SEG_PRISM_TENSOR:
           case DM_POLYTOPE_TRI_PRISM_TENSOR:
           case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-            --d;break;
+            if (hasHybrid) {--d;} break;
           default: break;
         }
         dof  = d < 0 ? 0 : numDof[f*(dim+1)+d];
@@ -150,7 +159,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
             case DM_POLYTOPE_SEG_PRISM_TENSOR:
             case DM_POLYTOPE_TRI_PRISM_TENSOR:
             case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-              if (isFE[f]) continue;
+              if (hasHybrid && isFE[f]) continue;
             default: break;
           }
           ierr = PetscSectionSetFieldDof(section, p, f, dof);CHKERRQ(ierr);
