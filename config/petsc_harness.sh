@@ -170,9 +170,9 @@ function petsc_testrun() {
 
   eval "{ time -p $cmd ; } 2>> timing.out"
   cmd_res=$?
-  #  If it is a lack of GPU resources, then try once more 
+  #  If it is a lack of GPU resources, then try once more
   #  See: src/sys/error/err.c
-  if [ $cmd_res -eq 96 ]; then
+  if [ $cmd_res -eq 96 -o $cmd_res -eq 97 ]; then
     eval "{ time -p $cmd ; } 2>> timing.out"
     cmd_res=$?
   fi
