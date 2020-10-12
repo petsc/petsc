@@ -2993,6 +2993,7 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
             default: break;
           }
           break;
+        case 5: ct = DM_POLYTOPE_PYRAMID;break;
         case 6: ct = DM_POLYTOPE_TRI_PRISM_TENSOR;break;
         case 8: ct = DM_POLYTOPE_HEXAHEDRON;break;
         default: break;
@@ -3019,7 +3020,19 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
         case 3:
           switch (coneSize) {
             case 4: ct = DM_POLYTOPE_TETRAHEDRON;break;
-            case 5: ct = DM_POLYTOPE_TRI_PRISM_TENSOR;break;
+            case 5:
+            {
+              const PetscInt *cone;
+              PetscInt        faceConeSize;
+
+              ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+              ierr = DMPlexGetConeSize(dm, cone[0], &faceConeSize);CHKERRQ(ierr);
+              switch (faceConeSize) {
+                case 3: ct = DM_POLYTOPE_TRI_PRISM_TENSOR;break;
+                case 4: ct = DM_POLYTOPE_PYRAMID;break;
+              }
+            }
+            break;
             case 6: ct = DM_POLYTOPE_HEXAHEDRON;break;
             default: break;
           }

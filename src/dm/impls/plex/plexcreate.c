@@ -3735,6 +3735,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   Output Parameter:
 . refdm - The reference cell
 
+  Options Database Keys:
+. -dm_plex_ref_type <ct> - Specify the celltyoe for the reference cell
+
   Level: intermediate
 
 .seealso: DMPlexCreateReferenceCell(), DMPlexCreateBoxMesh()
@@ -3746,6 +3749,7 @@ PetscErrorCode DMPlexCreateReferenceCellByType(MPI_Comm comm, DMPolytopeType ct,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetEnum(NULL, NULL, "-dm_plex_ref_type", DMPolytopeTypes, (PetscEnum *) &ct, NULL);CHKERRQ(ierr);
   ierr = DMCreate(comm, &rdm);CHKERRQ(ierr);
   ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
   switch (ct) {
@@ -3868,6 +3872,19 @@ PetscErrorCode DMPlexCreateReferenceCellByType(MPI_Comm comm, DMPolytopeType ct,
       PetscInt    coneOrientations[8] = {0, 0, 0, 0, 0, 0, 0, 0};
       PetscScalar vertexCoords[24]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, 1.0, -1.0,
                                          -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0, 1.0,  1.0,  -1.0, 1.0,  1.0};
+
+      ierr = DMSetDimension(rdm, 3);CHKERRQ(ierr);
+      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    }
+    break;
+    case DM_POLYTOPE_PYRAMID:
+    {
+      PetscInt    numPoints[2]        = {5, 1};
+      PetscInt    coneSize[6]         = {5, 0, 0, 0, 0, 0};
+      PetscInt    cones[5]            = {1, 4, 3, 2, 5};
+      PetscInt    coneOrientations[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+      PetscScalar vertexCoords[24]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, 1.0, -1.0,
+                                          0.0,  0.0,  1.0};
 
       ierr = DMSetDimension(rdm, 3);CHKERRQ(ierr);
       ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);

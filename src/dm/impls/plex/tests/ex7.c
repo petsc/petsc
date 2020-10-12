@@ -143,11 +143,12 @@ cell   9-----31------8-----42------13 cell
 
 typedef struct {
   DM        dm;
-  PetscInt  debug;                        /* The debugging level */
   PetscInt  testNum;                      /* Indicates the mesh to create */
   PetscInt  dim;                          /* The topological mesh dimension */
   PetscBool cellSimplex;                  /* Use simplices or hexes */
   PetscBool useGenerator;                 /* Construct mesh with a mesh generator */
+  PetscBool refCell;                      /* Construct reference cell by type */
+  PetscBool femGeometry;                  /* Flag to compute FEM geometry */
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
 } AppCtx;
 
@@ -156,19 +157,21 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug        = 0;
   options->testNum      = 0;
   options->dim          = 2;
   options->cellSimplex  = PETSC_TRUE;
   options->useGenerator = PETSC_FALSE;
+  options->refCell      = PETSC_FALSE;
+  options->femGeometry  = PETSC_TRUE;
   options->filename[0]  = '\0';
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex7.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-testnum", "The mesh to create", "ex7.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex7.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex7.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex7.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ref_cell", "Create a reference cell", "ex7.c", options->refCell, &options->refCell, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-fem_geometry", "Flag to compute FEM geometry", "ex7.c", options->femGeometry, &options->femGeometry, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex7.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -350,13 +353,15 @@ PetscErrorCode CheckMesh(DM dm, AppCtx *user)
   }
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
-    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, |J| = %g", c, detJ);
-    if (user->debug) {PetscPrintf(PETSC_COMM_SELF, "FEM Volume: %g\n", detJ*refVol);CHKERRQ(ierr);}
+    if (user->femGeometry) {
+      ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
+      if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, |J| = %g", c, (double) detJ);
+      ierr = PetscInfo1(dm, "FEM Volume: %g\n", (double) detJ*refVol);CHKERRQ(ierr);
+    }
     if (depth > 1) {
       ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
-      if (vol <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, vol = %g", c, vol);
-      if (user->debug) {PetscPrintf(PETSC_COMM_SELF, "FVM Volume: %g\n", vol);CHKERRQ(ierr);}
+      if (vol <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, vol = %g", c, (double) vol);
+      ierr = PetscInfo1(dm, "FVM Volume: %g\n", (double) vol);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -408,6 +413,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
   } else if (useGenerator) {
     ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, NULL, NULL, NULL, NULL, PETSC_FALSE, dm);CHKERRQ(ierr);
+  } else if (user->refCell) {
+    ierr = DMPlexCreateReferenceCellByType(comm, DM_POLYTOPE_UNKNOWN, dm);CHKERRQ(ierr);
   } else {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
@@ -432,13 +439,24 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     }
   }
   {
-    DM idm;
+    DMPlexInterpolatedFlag interpolated;
 
     ierr = CheckMesh(*dm, user);CHKERRQ(ierr);
-    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = CompareCones(*dm, idm);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = idm;
+    ierr = DMPlexIsInterpolated(*dm, &interpolated);CHKERRQ(ierr);
+    if (interpolated == DMPLEX_INTERPOLATED_FULL) {
+      DM udm;
+
+      ierr = DMPlexUninterpolate(*dm, &udm);CHKERRQ(ierr);
+      ierr = CompareCones(udm, *dm);CHKERRQ(ierr);
+      ierr = DMDestroy(&udm);CHKERRQ(ierr);
+    } else {
+      DM idm;
+
+      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+      ierr = CompareCones(*dm, idm);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = idm;
+    }
   }
   {
     DM               distributedMesh = NULL;
@@ -455,6 +473,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Mesh");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
@@ -509,6 +528,10 @@ int main(int argc, char **argv)
   test:
     suffix: 8
     args: -dim 2 -cell_simplex 0 -testnum 1 -dm_view ascii::ascii_info_detail
+  # Reference cells
+  test:
+    suffix: 12
+    args: -ref_cell -dm_plex_ref_type pyramid -fem_geometry 0 -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces
   # TetGen meshes 9-10
   test:
     suffix: 9

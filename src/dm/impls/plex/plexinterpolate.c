@@ -280,6 +280,36 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, DMPolytopeType ct, const PetscI
         *faces = facesTmp;
       }
       break;
+    case DM_POLYTOPE_PYRAMID:
+      /*
+       4----
+       |\-\ \-----
+       | \ -\     \
+       |  1--\-----2
+       | /    \   /
+       |/      \ /
+       0--------3
+       */
+      if (numFaces) *numFaces = 5;
+      if (faceTypes) {
+        typesTmp[0] = DM_POLYTOPE_QUADRILATERAL;
+        typesTmp[1] = DM_POLYTOPE_TRIANGLE; typesTmp[2] = DM_POLYTOPE_TRIANGLE; typesTmp[3] = DM_POLYTOPE_TRIANGLE; typesTmp[4] = DM_POLYTOPE_TRIANGLE;
+        *faceTypes = typesTmp;
+      }
+      if (faceSizes) {
+        sizesTmp[0] = 4;
+        sizesTmp[1] = 3; sizesTmp[2] = 3; sizesTmp[3] = 3; sizesTmp[4] = 3;
+        *faceSizes = sizesTmp;
+      }
+      if (faces) {
+        facesTmp[0]  = cone[0]; facesTmp[1]  = cone[1]; facesTmp[2]  = cone[2]; facesTmp[3]  = cone[3]; /* Bottom */
+        facesTmp[4]  = cone[0]; facesTmp[5]  = cone[3]; facesTmp[6]  = cone[4];                         /* Front */
+        facesTmp[7]  = cone[3]; facesTmp[8]  = cone[2]; facesTmp[9]  = cone[4];                         /* Right */
+        facesTmp[10] = cone[2]; facesTmp[11] = cone[1]; facesTmp[12] = cone[4];                         /* Back */
+        facesTmp[13] = cone[1]; facesTmp[14] = cone[0]; facesTmp[15] = cone[4];                         /* Left */
+        *faces = facesTmp;
+      }
+      break;
     default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No face description for cell type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
