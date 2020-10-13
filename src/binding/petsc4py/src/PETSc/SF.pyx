@@ -1,8 +1,14 @@
 # --------------------------------------------------------------------
 
 class SFType(object):
-    BASIC  = S_(PETSCSFBASIC)
-    WINDOW = S_(PETSCSFWINDOW)
+    BASIC      = S_(PETSCSFBASIC)
+    NEIGHBOR   = S_(PETSCSFNEIGHBOR)
+    ALLGATHERV = S_(PETSCSFALLGATHERV)
+    ALLGATHER  = S_(PETSCSFALLGATHER)
+    GATHERV    = S_(PETSCSFGATHERV)
+    GATHER     = S_(PETSCSFGATHER)
+    ALLTOALL   = S_(PETSCSFALLTOALL)
+    WINDOW     = S_(PETSCSFWINDOW)
 
 # --------------------------------------------------------------------
 

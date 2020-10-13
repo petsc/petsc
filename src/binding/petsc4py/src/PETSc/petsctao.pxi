@@ -22,12 +22,16 @@ cdef extern from * nogil:
     PetscTAOType TAOGPCG
     PetscTAOType TAONM
     PetscTAOType TAOPOUNDERS
+    PetscTAOType TAOBRGN
     PetscTAOType TAOLCL
     PetscTAOType TAOSSILS
     PetscTAOType TAOSSFLS
     PetscTAOType TAOASILS
     PetscTAOType TAOASFLS
     PetscTAOType TAOIPM
+    PetscTAOType TAOPDIPM
+    PetscTAOType TAOSHELL
+    PetscTAOType TAOADMM
 
     ctypedef enum PetscTAOConvergedReason "TaoConvergedReason":
         #iterating

@@ -13,6 +13,9 @@ class VecType(object):
     CUDA       = S_(VECCUDA)
     NEST       = S_(VECNEST)
     NODE       = S_(VECNODE)
+    SEQKOKKOS  = S_(VECSEQKOKKOS)
+    MPIKOKKOS  = S_(VECMPIKOKKOS)
+    KOKKOS     = S_(VECKOKKOS)
 
 class VecOption(object):
     IGNORE_OFF_PROC_ENTRIES = VEC_IGNORE_OFF_PROC_ENTRIES

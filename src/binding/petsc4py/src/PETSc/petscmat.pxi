@@ -81,6 +81,7 @@ cdef extern from * nogil:
     PetscMatType MATLMVMSYMBADBROYDEN
     PetscMatType MATLMVMDIAGBROYDEN
     PetscMatType MATCONSTANTDIAGONAL
+    PetscMatType MATHARA
 
     ctypedef const char* PetscMatOrderingType "MatOrderingType"
     PetscMatOrderingType MATORDERINGNATURAL
@@ -102,6 +103,7 @@ cdef extern from * nogil:
     PetscMatSolverType MATSOLVERKLU
     PetscMatSolverType MATSOLVERSPARSEELEMENTAL
     PetscMatSolverType MATSOLVERELEMENTAL
+    PetscMatSolverType MATSOLVERSCALAPACK
     PetscMatSolverType MATSOLVERESSL
     PetscMatSolverType MATSOLVERLUSOL
     PetscMatSolverType MATSOLVERMUMPS
