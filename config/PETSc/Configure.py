@@ -171,6 +171,13 @@ class Configure(config.base.Configure):
         with self.setCompilers.Language('FC'):
           fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
           fd.write('fflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
+      if hasattr(self.compilers, 'CUDAC'):
+        with self.setCompilers.Language('CUDA'):
+          fd.write('cudacompiler='+self.setCompilers.getCompiler()+'\n')
+          fd.write('cudaflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
+          p = self.framework.require('config.packages.cuda', None)
+          fd.write('cudalib='+self.libraries.toStringNoDupes(p.lib)+'\n')
+          fd.write('cudainclude='+self.headers.toStringNoDupes(p.include)+'\n')
 
       fd.write('\n')
       fd.write('Name: PETSc\n')

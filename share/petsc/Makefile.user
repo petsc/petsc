@@ -28,6 +28,10 @@ CPPFLAGS := $(shell pkg-config --cflags-only-I $(PACKAGES))
 LDFLAGS := $(shell pkg-config --libs-only-L --libs-only-other $(PACKAGES))
 LDFLAGS += $(patsubst -L%, $(shell pkg-config --variable=ldflag_rpath $(PACKAGES))%, $(shell pkg-config --libs-only-L $(PACKAGES)))
 LDLIBS := $(shell pkg-config --libs-only-l $(PACKAGES)) -lm
+CUDAC := $(shell pkg-config --variable=cudacompiler $(PACKAGES))
+CUDAC_FLAGS := $(shell pkg-config --variable=cudaflags_extra $(PACKAGES))
+CUDA_LIB := $(shell pkg-config --variable=cudalib $(PACKAGES))
+CUDA_INCLUDE := $(shell pkg-config --variable=cudainclude $(PACKAGES))
 
 print:
 	@echo CC=$(CC)
@@ -39,6 +43,10 @@ print:
 	@echo CPPFLAGS=$(CPPFLAGS)
 	@echo LDFLAGS=$(LDFLAGS)
 	@echo LDLIBS=$(LDLIBS)
+	@echo CUDAC=$(CUDAC)
+	@echo CUDAC_FLAGS=$(CUDAC_FLAGS)
+	@echo CUDA_LIB=$(CUDA_LIB)
+	@echo CUDA_INCLUDE=$(CUDA_INCLUDE)
 
 # Many suffixes are covered by implicit rules, but you may need to write custom rules
 # such as these if you use suffixes that do not have implicit rules.
@@ -51,6 +59,8 @@ print:
 	$(LINK.cc) -o $@ $^ $(LDLIBS)
 %.o: %.cxx
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
+%.o : %.cu
+	$(CUDAC) -c $(CPPFLAGS) $(CUDAC_FLAGS) $(CUDA_INCLUDE) -o $@ $<
 
 # For a multi-file case, suppose you have the source files a.F90, b.c, and c.cxx
 # (with a program statement appearing in a.F90 or main() appearing in the C or
