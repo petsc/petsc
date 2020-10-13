@@ -31,7 +31,7 @@ typedef struct {
 
   /* Work vectors */
   Vec      lambdae_xfixed; /* Equality constraints lagrangian multipler vector for fixed variables */
-  Vec      lambdai_xb; /* User inequality constraints lagrangian multipler vector */
+  Vec      lambdai_xb;     /* User inequality constraints lagrangian multipler vector */
 
   /* Lagrangian equality and inequality Vec */
   Vec      ce,ci; /* equality and inequality constraints */
@@ -45,11 +45,11 @@ typedef struct {
 
   /* Matrices */
   Mat Jce_xfixed; /* Jacobian of equality constraints cebound(x) = J(nxfixed) */
-  Mat Jci_xb; /* Jacobian of inequality constraints Jci = [tao->jacobian_inequality ; J(nxub); J(nxlb); J(nxbx)] */
-  Mat K;      /* KKT matrix */
+  Mat Jci_xb;     /* Jacobian of inequality constraints Jci = [tao->jacobian_inequality ; J(nxub); J(nxlb); J(nxbx)] */
+  Mat K;          /* KKT matrix */
 
   /* Parameters */
-  PetscReal mu;     /* Barrier parameter */
+  PetscReal mu;               /* Barrier parameter */
   PetscReal mu_update_factor; /* Multiplier for mu update */
 
   /* Tolerances */
@@ -69,8 +69,9 @@ typedef struct {
   PetscReal push_init_slack;      /* Push initial slack variables (z) away from bounds */
   PetscReal push_init_lambdai;    /* Push initial inequality variables (lambdai) away from bounds */
   PetscBool solve_reduced_kkt;    /* Solve Reduced KKT with fieldsplit */
+  PetscBool solve_symmetric_kkt;  /* Solve non-reduced symmetric KKT system */
 
-  SNES           snes; /* Nonlinear solver */
+  SNES           snes;                                    /* Nonlinear solver */
   Mat            jac_equality_trans,jac_inequality_trans; /* working matrices */
 
   PetscReal      obj;  /* Objective function */

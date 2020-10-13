@@ -16,7 +16,7 @@ Input parameters include:\n\
   -snes_fd           : snes with finite difference Jacobian (needed for pdipm)\n\
   -tao_cmonitor      : convergence monitor with constraint norm \n\
   -tao_view_solution : view exact solution at each itteration\n\
-  Note: external package superlu_dist is requried to run either for ipm or pdipm. Additionally This is designed for a maximum of 2 processors, the code will error if size > 2.\n\n";
+  Note: external package mumps is requried to run either for pdipm. Additionally This is designed for a maximum of 2 processors, the code will error if size > 2.\n\n";
 
 /*
    User-defined application context - contains data needed by the
@@ -96,12 +96,12 @@ PetscErrorCode main(int argc,char **argv)
 
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
   /*
       This algorithm produces matrices with zeros along the diagonal therefore we use
-    SuperLU_DIST which provides shift to the diagonal
+    MUMPS which provides solver for indefinite matrices
   */
-  ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);  /* requires superlu_dist to solve pdipm */
+  ierr = PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);CHKERRQ(ierr);  /* requires mumps to solve pdipm */
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -426,26 +426,22 @@ PetscErrorCode FormEqualityJacobian(Tao tao,Vec X,Mat JE,Mat JEpre,void *ctx)
 /*TEST
 
    build:
-      requires: !complex !define(PETSC_USE_CXX)
+      requires: !complex !define(PETSC_USE_CXX) mumps
 
    test:
-      requires: superlu_dist
       args: -tao_converged_reason
 
    test:
       suffix: 2
-      requires: superlu_dist
       nsize: 2
       args: -tao_converged_reason
 
    test:
       suffix: 3
-      requires: superlu_dist
       args: -tao_converged_reason -no_eq
 
    test:
       suffix: 4
-      requires: superlu_dist
       nsize: 2
       args: -tao_converged_reason -no_eq
 
