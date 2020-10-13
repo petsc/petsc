@@ -56,18 +56,18 @@ class Configure(config.package.Package):
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
            '+newuser+newdir+self.python.pyexe+' setup.py clean --all && \\\n\
-           '+newuser+newdir+archflags+self.python.pyexe+' setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
+           '+newuser+newdir+archflags+self.python.pyexe+' setup.py build )  || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
+             echo "Error building petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\
              touch ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg && \\\n\
              exit 1)'])
     self.addMakeRule('petsc4pyinstall','', \
                        ['@echo "*** Installing petsc4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+self.python.pyexe+' setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
+           '+newdir+archflags+self.python.pyexe+' setup.py install --install-lib='+os.path.join(self.installDir,'lib')+')  || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
+             echo "Error building petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\

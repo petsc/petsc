@@ -63,18 +63,18 @@ class Configure(config.package.Package):
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
            '+carg+self.python.pyexe+' ./configure --with-clean --prefix='+prefix+' '+configargs+' && \\\n\
-           '+barg+'${OMAKE} '+barg+') > ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
+           '+barg+'${OMAKE} '+barg+') || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building SLEPc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
+             echo "Error building SLEPc." && \\\n\
              echo "********************************************************************" && \\\n\
              touch ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg && \\\n\
              exit 1)'])
     self.addMakeRule('slepcinstall','', \
                        ['@echo "*** Installing SLEPc ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+barg+'${OMAKE} install '+barg+') >> ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
+           '+newuser+barg+'${OMAKE} install '+barg+')  || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building SLEPc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
+             echo "Error building SLEPc." && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
