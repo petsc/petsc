@@ -23,6 +23,7 @@ class TSType(object):
     BDF             = S_(TSBDF)
     RADAU5          = S_(TSRADAU5)
     MPRK            = S_(TSMPRK)
+    DISCGRAD        = S_(TSDISCGRAD)
     # aliases
     FE = EULER
     BE = BEULER

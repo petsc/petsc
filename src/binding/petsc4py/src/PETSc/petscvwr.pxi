@@ -15,6 +15,7 @@ cdef extern from * nogil:
     PetscViewerType PETSCVIEWERGLVIS
     PetscViewerType PETSCVIEWERADIOS
     PetscViewerType PETSCVIEWERADIOS2
+    PetscViewerType PETSCVIEWEREXODUSII
 
     ctypedef enum PetscViewerFormat:
         PETSC_VIEWER_DEFAULT
@@ -36,8 +37,11 @@ cdef extern from * nogil:
         PETSC_VIEWER_ASCII_FACTOR_INFO
         PETSC_VIEWER_ASCII_LATEX
         PETSC_VIEWER_ASCII_XML
+        PETSC_VIEWER_ASCII_GLVIS
+        PETSC_VIEWER_ASCII_CSV
         PETSC_VIEWER_DRAW_BASIC
         PETSC_VIEWER_DRAW_LG
+        PETSC_VIEWER_DRAW_LG_XRANGE
         PETSC_VIEWER_DRAW_CONTOUR
         PETSC_VIEWER_DRAW_PORTS
         PETSC_VIEWER_VTK_VTS
@@ -45,9 +49,13 @@ cdef extern from * nogil:
         PETSC_VIEWER_VTK_VTU
         PETSC_VIEWER_BINARY_MATLAB
         PETSC_VIEWER_NATIVE
+        PETSC_VIEWER_HDF5_PETSC
         PETSC_VIEWER_HDF5_VIZ
         PETSC_VIEWER_HDF5_XDMF
+        PETSC_VIEWER_HDF5_MAT
         PETSC_VIEWER_NOFORMAT
+        PETSC_VIEWER_LOAD_BALANCE
+        PETSC_VIEWER_FAILED
 
     ctypedef enum PetscFileMode:
         PETSC_FILE_MODE_READ           "FILE_MODE_READ"

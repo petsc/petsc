@@ -22,6 +22,7 @@ cdef extern from * nogil:
     PetscTSType TSBDF
     PetscTSType TSRADAU5
     PetscTSType TSMPRK
+    PetscTSType TSDISCGRAD
 
     ctypedef enum PetscTSProblemType "TSProblemType":
       TS_LINEAR
