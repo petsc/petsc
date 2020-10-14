@@ -420,13 +420,16 @@ PETSC_SPHINX_DEST=docs/sphinx_docs
 
 sphinx-docs-all: sphinx-docs-manual sphinx-docs-html
 
+sphinx-docs-fast: chk_loc sphinx-docs-env
+	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
+		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} html
+
 sphinx-docs-html: chk_loc allcite sphinx-docs-env
 	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
 		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} html
 
 sphinx-docs-manual: chk_loc sphinx-docs-env
-	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
-		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} latexpdf
+	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT}  BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} latexpdf
 	@mv ${LOC}/${PETSC_SPHINX_DEST}/latex/manual.pdf ${LOC}/docs/manual.pdf
 	@${RM} -rf ${LOC}/${PETSC_SPHINX_DEST}/latex
 

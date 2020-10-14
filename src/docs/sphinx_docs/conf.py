@@ -80,6 +80,8 @@ html_static_path = ['_static']
 html_logo = os.path.join('..','website','images','PETSc-TAO_RGB.svg')
 html_favicon = os.path.join('..','website','images','PETSc_RGB-logo.png')
 
+html_css_files = ['css/pop-up.css']
+
 # -- Options for LaTeX output --------------------------------------------
 
 latex_engine = 'xelatex'
@@ -138,3 +140,4 @@ graphviz_dot = str(result)
 highlight_language = 'c'
 autosummary_generate = True
 numfig = True
+
