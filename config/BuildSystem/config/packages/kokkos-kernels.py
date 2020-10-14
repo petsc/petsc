@@ -24,6 +24,12 @@ class Configure(config.package.CMakePackage):
     if hasattr(self,'system'): output += '  Backend: '+self.system+'\n'
     return output
 
+  def setupHelp(self, help):
+    import nargs
+    config.package.Package.setupHelp(self, help)
+    help.addArgument('Kokkos-Kernels', '-with-kokkos-kernels-tpl=<bool>', nargs.ArgBool(None, 1, 'Indicate if you wish to let Kokkos-Kernels use Third-party Libraries (TPLs)'))
+    return
+
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
@@ -54,11 +60,10 @@ class Configure(config.package.CMakePackage):
     if self.cuda.found:
       self.system = 'CUDA'
       args.append('-DCMAKE_CXX_COMPILER='+os.path.join(KokkosRoot,'bin','nvcc_wrapper'))
-      # as of version 3.2.00 Cuda 11 is not supported
-      # identifier "cusparseXcsrgemmNnz" is undefined
-      if self.cuda.version_tuple >= (11,0):
+      # as of version 3.2.00 Cuda 11 is not supported, e.g., identifier "cusparseXcsrgemmNnz" is undefined
+      if not self.argDB['with-kokkos-kernels-tpl'] or self.cuda.version_tuple >= (11,0):
+        args.append('-DKokkosKernels_ENABLE_TPL_CUBLAS=OFF')
         args.append('-DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF')
-
     elif self.hip.found:
       self.system = 'HIP'
       self.pushLanguage('HIP')
