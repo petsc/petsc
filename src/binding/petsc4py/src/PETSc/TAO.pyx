@@ -25,12 +25,16 @@ class TAOType:
     GPCG     = S_(TAOGPCG)
     NM       = S_(TAONM)
     POUNDERS = S_(TAOPOUNDERS)
+    BRGN     = S_(TAOBRGN)
     LCL      = S_(TAOLCL)
     SSILS    = S_(TAOSSILS)
     SSFLS    = S_(TAOSSFLS)
     ASILS    = S_(TAOASILS)
     ASFLS    = S_(TAOASFLS)
     IPM      = S_(TAOIPM)
+    PDIPM    = S_(TAOPDIPM)
+    SHELL    = S_(TAOSHELL)
+    ADMM     = S_(TAOADMM)
 
 class TAOConvergedReason:
     """

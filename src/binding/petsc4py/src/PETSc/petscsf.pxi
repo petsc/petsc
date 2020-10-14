@@ -4,6 +4,12 @@ cdef extern from * nogil:
 
     ctypedef const char* PetscSFType
     PetscSFType PETSCSFBASIC
+    PetscSFType PETSCSFNEIGHBOR
+    PetscSFType PETSCSFALLGATHERV
+    PetscSFType PETSCSFALLGATHER
+    PetscSFType PETSCSFGATHERV
+    PetscSFType PETSCSFGATHER
+    PetscSFType PETSCSFALLTOALL
     PetscSFType PETSCSFWINDOW
 
     int PetscSFCreate(MPI_Comm,PetscSF*)

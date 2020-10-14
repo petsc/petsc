@@ -132,16 +132,9 @@ compressed out. Once the matrix has been assembled, inserting new values
 will be expensive since it will require copies and possible memory
 allocation.
 
-If one wishes to repeatedly assemble matrices that retain the same
-nonzero pattern (such as within a nonlinear or time-dependent problem),
-the option
-
-::
-
-   MatSetOption(Mat A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
-
-should be specified after the first matrix has been fully assembled.
-This option ensures that certain data structures and communication
+One may repeatedly assemble matrices that retain the same
+nonzero pattern (such as within a nonlinear or time-dependent problem).
+Where possible, data structures and communication
 information will be reused (instead of regenerated) during successive
 steps, thereby increasing efficiency. See
 `KSP Tutorial ex5 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex5.c.html>`__

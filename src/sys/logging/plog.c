@@ -1353,17 +1353,17 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm,FILE *fd)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (use_gpu_aware_mpi) PetscFunctionReturn(0);
+  if (use_gpu_aware_mpi || !PetscCreatedGpuObjects) PetscFunctionReturn(0);
   ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with GPU support but you used #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   an MPI that's not GPU-aware, such Petsc had to copy  #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   data from GPU to CPU for MPI communication. To get   #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   meaningfull timing results, please use a GPU-aware   #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   MPI instead.                                         #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      # This code was compiled with GPU support and you've     #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      # created PETSc/GPU objects, but you intentionally used  #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      # -use_gpu_aware_mpi 0, such that PETSc had to copy data #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      # from GPU to CPU for communication. To get meaningfull  #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      # timing results, please use GPU-aware MPI instead.      #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else

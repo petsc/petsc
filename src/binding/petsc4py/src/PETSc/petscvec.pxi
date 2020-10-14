@@ -15,6 +15,9 @@ cdef extern from * nogil:
     PetscVecType VECCUDA
     PetscVecType VECNEST
     PetscVecType VECNODE
+    PetscVecType VECSEQKOKKOS
+    PetscVecType VECMPIKOKKOS
+    PetscVecType VECKOKKOS
 
     ctypedef enum PetscVecOption "VecOption":
         VEC_IGNORE_OFF_PROC_ENTRIES

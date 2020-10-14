@@ -106,6 +106,7 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
     ierr = PetscCUPMValidate();CHKERRQ(ierr);
     cupmValdidateChecked = PETSC_TRUE;
   }
+  PetscCreatedGpuObjects = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

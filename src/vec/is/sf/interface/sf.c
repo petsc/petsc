@@ -1406,7 +1406,11 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
 
    Level: intermediate
 
-.seealso: PetscSFBcastAndOpEnd(), PetscSFBcastBegin(), PetscSFBcastEnd()
+   Notes:
+    When petsc is configured with device support, it will use its own mechanism to figure out whether the given data pointers
+    are host pointers or device pointers, which may incur a noticable cost. If you already knew the info, you should
+    use PetscSFBcastAndOpWithMemTypeBegin() instead.
+.seealso: PetscSFBcastAndOpEnd(), PetscSFBcastBegin(), PetscSFBcastEnd(), PetscSFBcastAndOpWithMemTypeBegin()
 @*/
 PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
 {
@@ -1419,6 +1423,39 @@ PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void *r
   ierr = PetscLogEventBegin(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
   ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
   ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
+  ierr = (*sf->ops->BcastAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscSFBcastAndOpWithMemTypeBegin - begin pointwise broadcast with root value being reduced to leaf value with explicit memory types, to be concluded with call to PetscSFBcastAndOpEnd()
+
+   Collective on PetscSF
+
+   Input Arguments:
++  sf - star forest on which to communicate
+.  unit - data type associated with each node
+.  rootmtype - memory type of rootdata
+.  rootdata - buffer to broadcast
+.  leafmtype - memory type of leafdata
+-  op - operation to use for reduction
+
+   Output Arguments:
+.  leafdata - buffer to be reduced with values from each leaf's respective root
+
+   Level: intermediate
+
+.seealso: PetscSFBcastAndOpEnd(), PetscSFBcastBegin(), PetscSFBcastEnd(),PetscSFBcastAndOpBegin()
+@*/
+PetscErrorCode PetscSFBcastAndOpWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
   ierr = (*sf->ops->BcastAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1470,7 +1507,12 @@ PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf,MPI_Datatype unit,const void *roo
 
    Level: intermediate
 
-.seealso: PetscSFBcastBegin()
+   Notes:
+    When petsc is configured with device support, it will use its own mechanism to figure out whether the given data pointers
+    are host pointers or device pointers, which may incur a noticable cost. If you already knew the info, you should
+    use PetscSFReduceWithMemTypeBegin() instead.
+
+.seealso: PetscSFBcastBegin(), PetscSFReduceWithMemTypeBegin()
 @*/
 PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
@@ -1483,6 +1525,39 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
   ierr = PetscLogEventBegin(PETSCSF_ReduceBegin,sf,0,0,0);CHKERRQ(ierr);
   ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
   ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
+  ierr = (sf->ops->ReduceBegin)(sf,unit,leafmtype,leafdata,rootmtype,rootdata,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_ReduceBegin,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscSFReduceWithMemTypeBegin - begin reduction of leafdata into rootdata with explicit memory types, to be completed with call to PetscSFReduceEnd()
+
+   Collective
+
+   Input Arguments:
++  sf - star forest
+.  unit - data type
+.  leafmtype - memory type of leafdata
+.  leafdata - values to reduce
+.  rootmtype - memory type of rootdata
+-  op - reduction operation
+
+   Output Arguments:
+.  rootdata - result of reduction of values from all leaves of each root
+
+   Level: intermediate
+
+.seealso: PetscSFBcastBegin(), PetscSFReduceBegin()
+@*/
+PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType leafmtype,const void *leafdata,PetscMemType rootmtype,void *rootdata,MPI_Op op)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSCSF_ReduceBegin,sf,0,0,0);CHKERRQ(ierr);
   ierr = (sf->ops->ReduceBegin)(sf,unit,leafmtype,leafdata,rootmtype,rootdata,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_ReduceBegin,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

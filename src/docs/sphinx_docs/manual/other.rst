@@ -1017,8 +1017,8 @@ Qt Creator Users
 This information was provided by Mohammad Mirzadeh. The Qt Creator IDE
 is part of the Qt SDK, developed for cross-platform GUI programming
 using C++. It is available under GPL v3, LGPL v2 and a commercial
-license and may be obtained, either as a part of Qt SDK or as an
-stand-alone software, via http://qt.nokia.com/downloads/. It supports
+license and may be obtained, either as part of the Qt SDK or as 
+stand-alone software. It supports
 automatic makefile generation using cross-platform ``qmake`` and
 ``cmake`` build systems as well as allowing one to import projects based
 on existing, possibly hand-written, makefiles. Qt Creator has a visual
@@ -1099,7 +1099,7 @@ In this example, keywords include:
    functionality to work, ``PETSc.pc`` must be in path which might
    require adjusting the ``PKG_CONFIG_PATH`` enviroment variable. For
    more information see
-   https://doc.qt.io/qtcreator/creator-build-settings.html#build-environment.
+   `the Qt Creator documentation <https://doc.qt.io/qtcreator/creator-build-settings.html>`__.
 
 -  ``QMAKE_CC`` and ``QMAKE_CXX``: Define which C/C++ compilers use.
 

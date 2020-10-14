@@ -59,6 +59,7 @@ PetscBool   PetscBeganKokkos              = PETSC_FALSE;
 #endif
 
 PetscBool   use_gpu_aware_mpi             = PETSC_TRUE;
+PetscBool   PetscCreatedGpuObjects        = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
