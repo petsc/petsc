@@ -4,12 +4,9 @@
 #include <petsc/private/kspimpl.h>
 
 #define PETSC_HPDDM_MAXLEVELS 9
-PETSC_EXTERN PetscLogEvent PC_HPDDM_Strc;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_PtAP;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_PtBP;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_Next;
-PETSC_EXTERN PetscLogEvent PC_HPDDM_SetUp[PETSC_HPDDM_MAXLEVELS];
-PETSC_EXTERN PetscLogEvent PC_HPDDM_Solve[PETSC_HPDDM_MAXLEVELS];
 PETSC_INTERN PetscErrorCode HPDDMLoadDL_Private(PetscBool*);
 
 namespace HPDDM {
