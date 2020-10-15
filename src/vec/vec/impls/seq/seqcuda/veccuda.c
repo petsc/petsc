@@ -404,14 +404,62 @@ PetscErrorCode  VecCreateSeqCUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec v,PetscScalar **vv)
+PetscErrorCode VecGetArray_SeqCUDA(Vec v,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (v->offloadmask == PETSC_OFFLOAD_GPU) {
+    ierr = VecCUDACopyFromGPU(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
+  }
+  *a = *((PetscScalar**)v->data);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreArray_SeqCUDA(Vec v,PetscScalar **a)
+{
+  PetscFunctionBegin;
+  v->offloadmask = PETSC_OFFLOAD_CPU;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec v,PetscScalar **a)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
-  v->offloadmask = PETSC_OFFLOAD_CPU;
-  *vv = *((PetscScalar**)v->data);
+  *a   = *((PetscScalar**)v->data);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a,PetscMemType *mtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (v->offloadmask & PETSC_OFFLOAD_GPU) { /* Prefer working on GPU when offloadmask is PETSC_OFFLOAD_BOTH */
+    *a = ((Vec_CUDA*)v->spptr)->GPUarray;
+    v->offloadmask    = PETSC_OFFLOAD_GPU; /* Change the mask once GPU gets write access, don't wait until restore array */
+    if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
+  } else {
+    ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
+    *a = *((PetscScalar**)v->data);
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a)
+{
+  PetscFunctionBegin;
+  if (v->offloadmask & PETSC_OFFLOAD_GPU) {
+    v->offloadmask = PETSC_OFFLOAD_GPU;
+  } else {
+    v->offloadmask = PETSC_OFFLOAD_CPU;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -492,6 +540,10 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = VecGetLocalVector_SeqCUDA;
     V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUDA;
     V->ops->getarraywrite          = VecGetArrayWrite_SeqCUDA;
+    V->ops->getarray               = VecGetArray_SeqCUDA;
+    V->ops->restorearray           = VecRestoreArray_SeqCUDA;
+    V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqCUDA;
+    V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqCUDA;
   }
   PetscFunctionReturn(0);
 }

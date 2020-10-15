@@ -643,7 +643,7 @@ typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
 
   Level: beginner
 
-.seealso: VecGetArrayInPlace(), PetscSFBcastAndOpWithMemTypeBegin(), PetscSFReduceWithMemTypeBegin()
+.seealso: VecGetArrayAndMemType(), PetscSFBcastAndOpWithMemTypeBegin(), PetscSFReduceWithMemTypeBegin()
 E*/
 typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE} PetscMemType;
 #endif

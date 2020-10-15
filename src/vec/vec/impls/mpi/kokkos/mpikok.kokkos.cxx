@@ -226,6 +226,10 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->getlocalvectorread     = VecGetLocalVector_SeqKokkos;
   v->ops->restorelocalvectorread = VecRestoreLocalVector_SeqKokkos;
   v->ops->getarraywrite          = VecGetArrayWrite_SeqKokkos;
+  v->ops->getarray               = VecGetArray_SeqKokkos;
+  v->ops->restorearray           = VecRestoreArray_SeqKokkos;
+  v->ops->getarrayandmemtype        = VecGetArrayAndMemType_SeqKokkos;
+  v->ops->restorearrayandmemtype    = VecRestoreArrayAndMemType_SeqKokkos;
   PetscFunctionReturn(0);
 }
 

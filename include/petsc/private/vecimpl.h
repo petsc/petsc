@@ -96,6 +96,10 @@ struct _VecOps {
   PetscErrorCode (*bindtocpu)(Vec,PetscBool);
   PetscErrorCode (*getarraywrite)(Vec,PetscScalar**);
   PetscErrorCode (*restorearraywrite)(Vec,PetscScalar**);
+  PetscErrorCode (*getarrayandmemtype)(Vec,PetscScalar**,PetscMemType*);
+  PetscErrorCode (*getarrayreadandmemtype)(Vec,const PetscScalar**,PetscMemType*);
+  PetscErrorCode (*restorearrayandmemtype)(Vec,PetscScalar**);
+  PetscErrorCode (*restorearrayreadandmemtype)(Vec,const PetscScalar**);
 };
 
 /*

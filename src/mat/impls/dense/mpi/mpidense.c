@@ -467,12 +467,12 @@ PetscErrorCode MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
   PetscMemType      axmtype,aymtype;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayReadInPlace_Internal(xx,&ax,&axmtype);CHKERRQ(ierr);
-  ierr = VecGetArrayInPlace_Internal(mdn->lvec,&ay,&aymtype);CHKERRQ(ierr);
+  ierr = VecGetArrayReadAndMemType(xx,&ax,&axmtype);CHKERRQ(ierr);
+  ierr = VecGetArrayAndMemType(mdn->lvec,&ay,&aymtype);CHKERRQ(ierr);
   ierr = PetscSFBcastWithMemTypeBegin(mdn->Mvctx,MPIU_SCALAR,axmtype,ax,aymtype,ay);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(mdn->Mvctx,MPIU_SCALAR,ax,ay);CHKERRQ(ierr);
-  ierr = VecRestoreArrayInPlace(mdn->lvec,&ay);CHKERRQ(ierr);
-  ierr = VecRestoreArrayReadInPlace(xx,&ax);CHKERRQ(ierr);
+  ierr = VecRestoreArrayAndMemType(mdn->lvec,&ay);CHKERRQ(ierr);
+  ierr = VecRestoreArrayReadAndMemType(xx,&ax);CHKERRQ(ierr);
   ierr = (*mdn->A->ops->mult)(mdn->A,mdn->lvec,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -486,12 +486,12 @@ PetscErrorCode MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
   PetscMemType      axmtype,aymtype;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayReadInPlace_Internal(xx,&ax,&axmtype);CHKERRQ(ierr);
-  ierr = VecGetArrayInPlace_Internal(mdn->lvec,&ay,&aymtype);CHKERRQ(ierr);
+  ierr = VecGetArrayReadAndMemType(xx,&ax,&axmtype);CHKERRQ(ierr);
+  ierr = VecGetArrayAndMemType(mdn->lvec,&ay,&aymtype);CHKERRQ(ierr);
   ierr = PetscSFBcastWithMemTypeBegin(mdn->Mvctx,MPIU_SCALAR,axmtype,ax,aymtype,ay);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(mdn->Mvctx,MPIU_SCALAR,ax,ay);CHKERRQ(ierr);
-  ierr = VecRestoreArrayInPlace(mdn->lvec,&ay);CHKERRQ(ierr);
-  ierr = VecRestoreArrayReadInPlace(xx,&ax);CHKERRQ(ierr);
+  ierr = VecRestoreArrayAndMemType(mdn->lvec,&ay);CHKERRQ(ierr);
+  ierr = VecRestoreArrayReadAndMemType(xx,&ax);CHKERRQ(ierr);
   ierr = (*mdn->A->ops->multadd)(mdn->A,mdn->lvec,yy,zz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -507,12 +507,12 @@ PetscErrorCode MatMultTranspose_MPIDense(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecSet(yy,0.0);CHKERRQ(ierr);
   ierr = (*a->A->ops->multtranspose)(a->A,xx,a->lvec);CHKERRQ(ierr);
-  ierr = VecGetArrayReadInPlace_Internal(a->lvec,&ax,&axmtype);CHKERRQ(ierr);
-  ierr = VecGetArrayInPlace_Internal(yy,&ay,&aymtype);CHKERRQ(ierr);
+  ierr = VecGetArrayReadAndMemType(a->lvec,&ax,&axmtype);CHKERRQ(ierr);
+  ierr = VecGetArrayAndMemType(yy,&ay,&aymtype);CHKERRQ(ierr);
   ierr = PetscSFReduceWithMemTypeBegin(a->Mvctx,MPIU_SCALAR,axmtype,ax,aymtype,ay,MPIU_SUM);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(a->Mvctx,MPIU_SCALAR,ax,ay,MPIU_SUM);CHKERRQ(ierr);
-  ierr = VecRestoreArrayReadInPlace(a->lvec,&ax);CHKERRQ(ierr);
-  ierr = VecRestoreArrayInPlace(yy,&ay);CHKERRQ(ierr);
+  ierr = VecRestoreArrayReadAndMemType(a->lvec,&ax);CHKERRQ(ierr);
+  ierr = VecRestoreArrayAndMemType(yy,&ay);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -527,12 +527,12 @@ PetscErrorCode MatMultTransposeAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
   ierr = (*a->A->ops->multtranspose)(a->A,xx,a->lvec);CHKERRQ(ierr);
-  ierr = VecGetArrayReadInPlace_Internal(a->lvec,&ax,&axmtype);CHKERRQ(ierr);
-  ierr = VecGetArrayInPlace_Internal(zz,&ay,&aymtype);CHKERRQ(ierr);
+  ierr = VecGetArrayReadAndMemType(a->lvec,&ax,&axmtype);CHKERRQ(ierr);
+  ierr = VecGetArrayAndMemType(zz,&ay,&aymtype);CHKERRQ(ierr);
   ierr = PetscSFReduceWithMemTypeBegin(a->Mvctx,MPIU_SCALAR,axmtype,ax,aymtype,ay,MPIU_SUM);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(a->Mvctx,MPIU_SCALAR,ax,ay,MPIU_SUM);CHKERRQ(ierr);
-  ierr = VecRestoreArrayReadInPlace(a->lvec,&ax);CHKERRQ(ierr);
-  ierr = VecRestoreArrayInPlace(zz,&ay);CHKERRQ(ierr);
+  ierr = VecRestoreArrayReadAndMemType(a->lvec,&ax);CHKERRQ(ierr);
+  ierr = VecRestoreArrayAndMemType(zz,&ay);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

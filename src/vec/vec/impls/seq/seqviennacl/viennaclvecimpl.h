@@ -46,6 +46,9 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqViennaCL(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqViennaCL(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqViennaCL(Vec,PetscRandom);
+PETSC_INTERN PetscErrorCode VecGetArrayWrite_SeqViennaCL(Vec,PetscScalar**);
+PETSC_INTERN PetscErrorCode VecGetArray_SeqViennaCL(Vec,PetscScalar**);
+PETSC_INTERN PetscErrorCode VecRestoreArray_SeqViennaCL(Vec,PetscScalar**);
 
 PETSC_INTERN PetscErrorCode VecCreate_MPIViennaCL_Private(Vec,PetscBool,PetscInt,const ViennaCLVector *);
 

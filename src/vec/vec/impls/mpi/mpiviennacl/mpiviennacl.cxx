@@ -241,9 +241,9 @@ PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool pin)
     vv->ops->placearray      = VecPlaceArray_SeqViennaCL;
     vv->ops->replacearray    = VecReplaceArray_SeqViennaCL;
     vv->ops->resetarray      = VecResetArray_SeqViennaCL;
-    /*
-       get values?
-    */
+    vv->ops->getarraywrite   = VecGetArrayWrite_SeqViennaCL;
+    vv->ops->getarray        = VecGetArray_SeqViennaCL;
+    vv->ops->restorearray    = VecRestoreArray_SeqViennaCL;
   }
   PetscFunctionReturn(0);
 }
