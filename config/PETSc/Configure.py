@@ -175,7 +175,7 @@ class Configure(config.base.Configure):
         with self.setCompilers.Language('CUDA'):
           fd.write('cudacompiler='+self.setCompilers.getCompiler()+'\n')
           fd.write('cudaflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
-          p = self.framework.require('config.packages.cuda', None)
+          p = self.framework.require('config.packages.cuda')
           fd.write('cudalib='+self.libraries.toStringNoDupes(p.lib)+'\n')
           fd.write('cudainclude='+self.headers.toStringNoDupes(p.include)+'\n')
 
