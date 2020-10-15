@@ -84,11 +84,9 @@ The Stokes equations
 
 .. math::
 
-    -\frac{\mu}{2} \left(\nabla u + \nabla u^T \right) + \nabla p + f = 0
-
-.. math::
-
-    \nabla\cdot u = 0
+    \begin{aligned}
+    -\nabla \cdot \left(\mu \left(\nabla u + \nabla u^T \right)\right) + \nabla p + f &= 0 \\
+    \nabla\cdot u &= 0 \end{aligned}
 
 describe slow flow of an incompressible fluid with velocity :math:`u`, pressure :math:`p`, and body force :math:`f`.
 
@@ -123,11 +121,9 @@ The incompressible Navier-Stokes equations
 
 .. math::
 
-    \frac{\partial u}{\partial t} + u\cdot\nabla u - \frac{\mu}{2} \left(\nabla u + \nabla u^T\right) + \nabla p + f = 0
-
-.. math::
-
-    \nabla\cdot u = 0
+    \begin{aligned}
+    \frac{\partial u}{\partial t} + u\cdot\nabla u - \nabla \cdot \left(\mu \left(\nabla u + \nabla u^T\right)\right) + \nabla p + f &= 0 \\
+    \nabla\cdot u &= 0 \end{aligned}
 
 are appropriate for flow of an incompressible fluid at low to moderate Reynolds number.
 
