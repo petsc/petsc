@@ -942,7 +942,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
 
     Level: beginner
 
-.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
+.seealso DMCreateLocalVector(), DMGetGlobalVector(), DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
 
 @*/
 PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
@@ -976,7 +976,7 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
 
     Level: beginner
 
-.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
+.seealso DMCreateGlobalVector(), DMGetLocalVector(), DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
 
 @*/
 PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
