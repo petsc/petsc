@@ -139,6 +139,7 @@ int main(int argc,char **argv)
   /*  export OMP_PROC_BIND="threads"  export OMP_PROC_BIND="spread" */
 
   if (!getenv("KOKKOS_NUM_THREADS")) setenv("KOKKOS_NUM_THREADS","4",1);
+  ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr); /* Init Kokkos if not yet */
 
   if (view_kokkos_configuration) {
     Kokkos::print_configuration(std::cout, true);
