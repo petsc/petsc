@@ -43,8 +43,10 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
   ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
 #elif defined(KOKKOS_ENABLE_HIP)
   ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
-#else
-  ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
 #endif
+  if (!Kokkos::is_initialized()) {
+    ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
+    PetscBeganKokkos = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }

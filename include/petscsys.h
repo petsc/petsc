@@ -533,6 +533,10 @@ PETSC_EXTERN PetscErrorCode PetscHIPInitialize(MPI_Comm,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscHIPInitializeCheck(void);
 #endif
 
+#if defined(PETSC_HAVE_KOKKOS)
+PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void);  /* Initialize Kokkos if not yet. */
+#endif
+
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalInitialized(PetscBool*);

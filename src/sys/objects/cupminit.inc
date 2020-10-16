@@ -96,10 +96,6 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
     ierr = PetscCUPMBLASInitializeHandle();CHKERRQ(ierr);
     ierr = PetscCUPMSOLVERDnInitializeHandle();CHKERRQ(ierr);
     PetscCUPMInitialized = PETSC_TRUE;
-#if defined(PETSC_HAVE_KOKKOS)
-    ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
-    PetscBeganKokkos = PETSC_TRUE;
-#endif
   }
 
   if (!cupmValdidateChecked) {
@@ -246,6 +242,10 @@ static PetscErrorCode PetscCUPMInitializeAndView(PetscBool initDevice,PetscInt d
         }
       }
       ierr = PetscCUPMInitialize(PETSC_COMM_WORLD,(PetscInt)devId);CHKERRQ(ierr);
+     #if defined(PETSC_HAVE_KOKKOS)
+      /* With -log_view, we always do eager init */
+      ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
+     #endif
     }
   }
 
@@ -282,7 +282,7 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_KOKKOS)
   ierr = PetscKokkosIsInitialized_Private(&kinited);CHKERRQ(ierr);
-  if (kinited) { /* Check if Petsc device options conform with Kokkos' device */
+  if (kinited) { /* Check if Petsc device options conform with Kokkos' device if Kokkos is init'ed before PetscInitialize() */
     ierr = PetscOptionsGetString(NULL,NULL,cupmSetDeviceStr,devStr,sizeof(devStr),&set);CHKERRQ(ierr);
     if (set) { /* If users have initialized Kokkos themselves, but also had e.g., -cuda_device XXX, for simplicity, make sure XXX is DEFAULT */
       ierr = PetscStrcasecmp("DEFAULT",devStr,&devDefault);CHKERRQ(ierr);
@@ -303,12 +303,5 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
   ierr = PetscOptionsName(cupmViewStr,"Display device information and assignments",NULL,&devView);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscCUPMInitializeAndView(initDevice,device,logView,devView);CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_KOKKOS)
-  if (PetscCUPMInitialized && !kinited) {
-    ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
-    PetscBeganKokkos = PETSC_TRUE;
-  }
-#endif
   PetscFunctionReturn(0);
 }
