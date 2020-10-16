@@ -1,7 +1,7 @@
 #if !defined(VECKOKKOSIMPL_HPP)
 #define VECKOKKOSIMPL_HPP
 
-#include <petscvec.hpp>
+#include <petscveckokkos.hpp>
 #include <Kokkos_Core.hpp>
 
 struct Vec_Kokkos {

@@ -4,7 +4,7 @@
  */
 
 #include "petsc/private/petscimpl.h"
-#include <petscvec.hpp>
+#include <petscveckokkos.hpp>
 #include <petsc/private/vecimpl.h> /* for struct Vec */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /* for VecCreate/Destroy_MPI */
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>

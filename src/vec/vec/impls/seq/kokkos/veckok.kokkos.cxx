@@ -12,7 +12,7 @@
 #include <KokkosBlas.hpp>
 
 #include <petscconf.h>
-#include <petscvec.hpp>
+#include <petscveckokkos.hpp>
 #include <petscerror.h>
 #include <../src/vec/vec/impls/dvecimpl.h> /* for VecCreate_Seq_Private */
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
