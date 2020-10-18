@@ -8,9 +8,9 @@ may become able to contribute!
 Before contributing code to PETSc, please read the :doc:`style`. You may also
 be interested to read about :doc:`design`.
 
-See :doc:`integration` for information on how to submit patches and pull requests to PETSc.
+See :doc:`integration` for how to submit merge requests.
 
-Once you have gained experience with developing PETSc source code, you
+Once you have gained experience with developing PETSc source code and submitted merge requests, you
 can become an active member of our development and push changes directly
 to the petsc repository. Send mail to petsc-maint@mcs.anl.gov to
 arrange it.
