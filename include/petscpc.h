@@ -310,6 +310,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCpuPinCoarseGrids(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseGridLayoutType(PC,PCGAMGLayoutType);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal[],PetscInt);
+PETSC_EXTERN PetscErrorCode PCGAMGSetRankReductionFactors(PC,PetscInt[],PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThresholdScale(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);

@@ -2098,6 +2098,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   if (!trans) {
     matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
+    if (!matstruct) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"SeqAIJCUSPARSE does not have a 'mat' (need to fix)");
   } else {
     if (herm || !cusparsestruct->transgen) {
       opA = herm ? CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE : CUSPARSE_OPERATION_TRANSPOSE;

@@ -30,9 +30,9 @@ typedef struct gamg_TAG {
   PetscInt  min_eq_proc;
   PetscInt  coarse_eq_limit;
   PetscReal threshold_scale;
-  PetscInt  current_level; /* stash construction state */
   PetscReal threshold[PETSC_MG_MAXLEVELS]; /* common quatity to many AMG methods so keep it up here */
-
+  PetscInt  level_reduction_factors[PETSC_MG_MAXLEVELS];
+  PetscInt  current_level; /* stash construction state */
   /* these 4 are all related to the method data and should be in the subctx */
   PetscInt  data_sz;      /* nloc*data_rows*data_cols */
   PetscInt  data_cell_rows;
