@@ -422,7 +422,7 @@ PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt
 number to the local number in the off-diagonal part of the local
 storage of the matrix.  When PETSC_USE_CTABLE is used this is scalable at
 a slightly higher hash table cost; without it it is not scalable (each processor
-has an order N integer array but is fast to acess.
+has an order N integer array but is fast to access.
 */
 PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
 {

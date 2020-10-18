@@ -990,9 +990,9 @@ PetscErrorCode PetscSFLinkSetUp_Cuda(PetscSF sf,PetscSFLink link,MPI_Datatype un
   }
   link->maxResidentThreadsPerGPU = sf->maxResidentThreadsPerGPU;
 
-  link->d_SyncDevice =  PetscSFLinkSyncDevice_Cuda;
-  link->d_SyncStream =  PetscSFLinkSyncStream_Cuda;
-  link->Memcpy       =  PetscSFLinkMemcpy_Cuda;
+  link->d_SyncDevice = PetscSFLinkSyncDevice_Cuda;
+  link->d_SyncStream = PetscSFLinkSyncStream_Cuda;
+  link->Memcpy       = PetscSFLinkMemcpy_Cuda;
   link->deviceinited = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
