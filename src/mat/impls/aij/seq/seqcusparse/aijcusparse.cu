@@ -2456,8 +2456,6 @@ static PetscErrorCode MatZeroEntries_SeqAIJCUSPARSE(Mat A)
   }
   ierr = MatZeroEntries_SeqAIJ(A);CHKERRQ(ierr);
 
-  A->offloadmask = PETSC_OFFLOAD_BOTH;
-
   PetscFunctionReturn(0);
 }
 
