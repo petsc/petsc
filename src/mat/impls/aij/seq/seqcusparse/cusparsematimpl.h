@@ -210,6 +210,10 @@ struct Mat_SeqAIJCUSPARSE {
   cusparseSpMMAlg_t            spmmAlg;
  #endif
   PetscSplitCSRDataStructure   *deviceMat;       /* Matrix on device for, eg, assembly */
+  THRUSTINTARRAY               *cooPerm;
+  THRUSTINTARRAY               *cooPerm_a;
+  THRUSTARRAY                  *cooPerm_v;
+  THRUSTARRAY                  *cooPerm_w;
 };
 
 PETSC_INTERN PetscErrorCode MatCUSPARSECopyToGPU(Mat);

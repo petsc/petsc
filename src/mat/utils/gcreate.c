@@ -456,3 +456,144 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
   PetscFunctionReturn(0);
 #endif
 }
+
+PetscErrorCode MatSetValuesCOO_Basic(Mat A,const PetscScalar coo_v[],InsertMode imode)
+{
+  IS             is_coo_i,is_coo_j;
+  const PetscInt *coo_i,*coo_j;
+  PetscInt       n,n_i,n_j;
+  PetscScalar    zero = 0.;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)A,"__PETSc_coo_i",(PetscObject*)&is_coo_i);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)A,"__PETSc_coo_j",(PetscObject*)&is_coo_j);CHKERRQ(ierr);
+  if (!is_coo_i) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_i IS");
+  if (!is_coo_j) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_j IS");
+  ierr = ISGetLocalSize(is_coo_i,&n_i);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is_coo_j,&n_j);CHKERRQ(ierr);
+  if (n_i != n_j)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_COR,"Wrong local size %D != %D",n_i,n_j);
+  ierr = ISGetIndices(is_coo_i,&coo_i);CHKERRQ(ierr);
+  ierr = ISGetIndices(is_coo_j,&coo_j);CHKERRQ(ierr);
+  for (n = 0; n < n_i; n++) {
+    ierr = MatSetValue(A,coo_i[n],coo_j[n],coo_v ? coo_v[n] : zero,imode);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(is_coo_i,&coo_i);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is_coo_j,&coo_j);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
+{
+  Mat            preallocator;
+  IS             is_coo_i,is_coo_j;
+  PetscScalar    zero = 0.0;
+  PetscInt       n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&preallocator);CHKERRQ(ierr);
+  ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
+  ierr = MatSetSizes(preallocator,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetLayouts(preallocator,A->rmap,A->cmap);CHKERRQ(ierr);
+  ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+  for (n = 0; n < ncoo; n++) {
+    ierr = MatSetValue(preallocator,coo_i[n],coo_j[n],zero,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatPreallocatorPreallocate(preallocator,PETSC_TRUE,A);CHKERRQ(ierr);
+  ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_i,PETSC_COPY_VALUES,&is_coo_i);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_j,PETSC_COPY_VALUES,&is_coo_j);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"__PETSc_coo_i",(PetscObject)is_coo_i);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"__PETSc_coo_j",(PetscObject)is_coo_j);CHKERRQ(ierr);
+  ierr = ISDestroy(&is_coo_i);CHKERRQ(ierr);
+  ierr = ISDestroy(&is_coo_j);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSetPreallocationCOO - set preallocation for matrices using a coordinate format of the entries
+
+   Collective on Mat
+
+   Input Arguments:
++  A - matrix being preallocated
+.  ncoo - number of entries in the locally owned part of the parallel matrix
+.  coo_i - row indices
+-  coo_j - column indices
+
+   Level: beginner
+
+   Notes: Entries can be repeated. Currently optimized for cuSPARSE matrices only.
+
+.seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation()
+@*/
+PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
+{
+  PetscErrorCode (*f)(Mat,PetscInt,const PetscInt[],const PetscInt[]) = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (ncoo) PetscValidIntPointer(coo_i,3);
+  if (ncoo) PetscValidIntPointer(coo_j,4);
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt i;
+    for (i = 0; i < ncoo; i++) {
+      if (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %D! Must be in [%D,%D)",coo_i[i],A->rmap->rstart,A->rmap->rend);
+      if (coo_j[i] < 0 || coo_j[i] >= A->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid col index %D! Must be in [0,%D)",coo_j[i],A->cmap->N);
+    }
+  }
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOO_C",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+  } else { /* allow fallback, very slow */
+    ierr = MatSetPreallocationCOO_Basic(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSetValuesCOO - set values at once in a matrix preallocated using MatSetPreallocationCOO
+
+   Collective on Mat
+
+   Input Arguments:
++  A - matrix being preallocated
+.  coo_v - the matrix values
+-  imode - the insert mode
+
+   Level: beginner
+
+   Notes: The values must follow the order of the indices prescribed with MatSetPreallocationCOO().
+          Currently optimized for cuSPARSE matrices only.
+
+.seealso: MatSetPreallocationCOO(), InsertMode, INSERT_VALUES, ADD_VALUES
+@*/
+PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode)
+{
+  PetscErrorCode (*f)(Mat,const PetscScalar[],InsertMode) = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  MatCheckPreallocated(A,1);
+  PetscValidLogicalCollectiveEnum(A,imode,4);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetValuesCOO_C",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,coo_v,imode);CHKERRQ(ierr);
+  } else { /* allow fallback */
+    ierr = MatSetValuesCOO_Basic(A,coo_v,imode);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

@@ -24,6 +24,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (!aij->garray) {
+    if (!aij->B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
 #if defined(PETSC_USE_CTABLE)
     /* use a table */
     ierr = PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
@@ -101,11 +102,10 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   if (!aij->lvec) {
-    /* create local vector that is used to scatter into */
-    ierr = VecCreateSeq(PETSC_COMM_SELF,ec,&aij->lvec);CHKERRQ(ierr);
-  } else {
-    ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr);
+    if (!aij->B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
+    ierr = MatCreateVecs(aij->B,&aij->lvec,NULL);CHKERRQ(ierr);
   }
+  ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr);
 
   /* create two temporary Index sets for build scatter gather */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
