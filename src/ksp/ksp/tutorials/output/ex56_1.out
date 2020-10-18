@@ -1,17 +1,17 @@
-  0 KSP Residual norm 1278.86 
-  1 KSP Residual norm 178.702 
-  2 KSP Residual norm 148.936 
-  3 KSP Residual norm 49.3714 
-  4 KSP Residual norm 40.3976 
-  5 KSP Residual norm 9.14664 
-  6 KSP Residual norm 4.99185 
-  7 KSP Residual norm 1.95768 
-  8 KSP Residual norm 1.44734 
-  9 KSP Residual norm 0.577752 
- 10 KSP Residual norm 0.264424 
- 11 KSP Residual norm 0.0584846 
- 12 KSP Residual norm 0.0217538 
- 13 KSP Residual norm 0.00679833 
+  0 KSP Residual norm 1256.28 
+  1 KSP Residual norm 187.086 
+  2 KSP Residual norm 148.893 
+  3 KSP Residual norm 53.8971 
+  4 KSP Residual norm 43.2629 
+  5 KSP Residual norm 9.9666 
+  6 KSP Residual norm 5.19949 
+  7 KSP Residual norm 1.98703 
+  8 KSP Residual norm 1.44082 
+  9 KSP Residual norm 0.620827 
+ 10 KSP Residual norm 0.293975 
+ 11 KSP Residual norm 0.0750849 
+ 12 KSP Residual norm 0.0298144 
+ 13 KSP Residual norm 0.00985124 
 Linear solve converged due to CONVERGED_RTOL iterations 13
 KSP Object: 8 MPI processes
   type: cg
@@ -33,7 +33,7 @@ PC Object: 8 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
-        Complexity:    grid = 1.11819
+        Complexity:    grid = 1.11594
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
@@ -46,15 +46,15 @@ PC Object: 8 MPI processes
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
-        rows=60, cols=60, bs=6
-        total: nonzeros=3600, allocated nonzeros=3600
+        rows=48, cols=48, bs=6
+        total: nonzeros=2304, allocated nonzeros=2304
         total number of mallocs used during MatSetValues calls=0
-          using I-node (on process 0) routines: found 6 nodes, limit used is 5
+          using I-node (on process 0) routines: found 5 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.363949, max = 1.91073
-        eigenvalues estimate via gmres min 0.0488267, max 1.81974
+        eigenvalue estimates used:  min = 0.361588, max = 1.89833
+        eigenvalues estimate via gmres min 0.061898, max 1.80794
         eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: gmres
@@ -71,7 +71,7 @@ PC Object: 8 MPI processes
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 8 MPI processes
       type: asm
-        total subdomain blocks = 10, amount of overlap = 0
+        total subdomain blocks = 12, amount of overlap = 0
         restriction/interpolation type - BASIC
         Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
       KSP Object: (mg_levels_1_sub_) 1 MPI processes
@@ -85,29 +85,28 @@ PC Object: 8 MPI processes
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5., needed 1.
+          factor fill ratio given 5., needed 1.03896
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=30, cols=30
+                rows=84, cols=84
                 package used to perform factorization: petsc
-                total: nonzeros=900, allocated nonzeros=900
-                  using I-node routines: found 6 nodes, limit used is 5
+                total: nonzeros=5760, allocated nonzeros=5760
+                  using I-node routines: found 19 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=30, cols=30
-          total: nonzeros=900, allocated nonzeros=900
+          rows=84, cols=84
+          total: nonzeros=5544, allocated nonzeros=5544
           total number of mallocs used during MatSetValues calls=0
-            using I-node routines: found 6 nodes, limit used is 5
+            using I-node routines: found 25 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=474, cols=474, bs=6
         total: nonzeros=64476, allocated nonzeros=64476
         total number of mallocs used during MatSetValues calls=0
-          using nonscalable MatPtAP() implementation
-          using I-node (on process 0) routines: found 10 nodes, limit used is 5
+          using I-node (on process 0) routines: found 33 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
@@ -174,20 +173,20 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0127886 
-  1 KSP Residual norm 0.00178702 
-  2 KSP Residual norm 0.00148936 
-  3 KSP Residual norm 0.000493714 
-  4 KSP Residual norm 0.000403976 
-  5 KSP Residual norm 9.14664e-05 
-  6 KSP Residual norm 4.99185e-05 
-  7 KSP Residual norm 1.95768e-05 
-  8 KSP Residual norm 1.44734e-05 
-  9 KSP Residual norm 5.77752e-06 
- 10 KSP Residual norm 2.64424e-06 
- 11 KSP Residual norm 5.84846e-07 
- 12 KSP Residual norm 2.17538e-07 
- 13 KSP Residual norm 6.79833e-08 
+  0 KSP Residual norm 0.0125628 
+  1 KSP Residual norm 0.00187086 
+  2 KSP Residual norm 0.00148893 
+  3 KSP Residual norm 0.000538971 
+  4 KSP Residual norm 0.000432629 
+  5 KSP Residual norm 9.9666e-05 
+  6 KSP Residual norm 5.19949e-05 
+  7 KSP Residual norm 1.98703e-05 
+  8 KSP Residual norm 1.44082e-05 
+  9 KSP Residual norm 6.20827e-06 
+ 10 KSP Residual norm 2.93975e-06 
+ 11 KSP Residual norm 7.50849e-07 
+ 12 KSP Residual norm 2.98144e-07 
+ 13 KSP Residual norm 9.85124e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 13
 KSP Object: 8 MPI processes
   type: cg
@@ -209,7 +208,7 @@ PC Object: 8 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
-        Complexity:    grid = 1.11819
+        Complexity:    grid = 1.11594
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
@@ -222,16 +221,16 @@ PC Object: 8 MPI processes
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
-        rows=60, cols=60, bs=6
-        total: nonzeros=3600, allocated nonzeros=3600
+        rows=48, cols=48, bs=6
+        total: nonzeros=2304, allocated nonzeros=2304
         total number of mallocs used during MatSetValues calls=0
           using nonscalable MatPtAP() implementation
-          using I-node (on process 0) routines: found 6 nodes, limit used is 5
+          using I-node (on process 0) routines: found 5 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.363949, max = 1.91073
-        eigenvalues estimate via gmres min 0.0488267, max 1.81974
+        eigenvalue estimates used:  min = 0.361588, max = 1.89833
+        eigenvalues estimate via gmres min 0.061898, max 1.80794
         eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: gmres
@@ -248,7 +247,7 @@ PC Object: 8 MPI processes
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 8 MPI processes
       type: asm
-        total subdomain blocks = 10, amount of overlap = 0
+        total subdomain blocks = 12, amount of overlap = 0
         restriction/interpolation type - BASIC
         Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
       KSP Object: (mg_levels_1_sub_) 1 MPI processes
@@ -262,21 +261,21 @@ PC Object: 8 MPI processes
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5., needed 1.
+          factor fill ratio given 5., needed 1.03896
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=30, cols=30
+                rows=84, cols=84
                 package used to perform factorization: petsc
-                total: nonzeros=900, allocated nonzeros=900
-                  using I-node routines: found 6 nodes, limit used is 5
+                total: nonzeros=5760, allocated nonzeros=5760
+                  using I-node routines: found 19 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=30, cols=30
-          total: nonzeros=900, allocated nonzeros=900
+          rows=84, cols=84
+          total: nonzeros=5544, allocated nonzeros=5544
           total number of mallocs used during MatSetValues calls=0
-            using I-node routines: found 6 nodes, limit used is 5
+            using I-node routines: found 25 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
@@ -284,7 +283,7 @@ PC Object: 8 MPI processes
         total: nonzeros=64476, allocated nonzeros=64476
         total number of mallocs used during MatSetValues calls=0
           using nonscalable MatPtAP() implementation
-          using I-node (on process 0) routines: found 10 nodes, limit used is 5
+          using I-node (on process 0) routines: found 33 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
@@ -351,20 +350,20 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0127886 
-  1 KSP Residual norm 0.00178702 
-  2 KSP Residual norm 0.00148936 
-  3 KSP Residual norm 0.000493714 
-  4 KSP Residual norm 0.000403976 
-  5 KSP Residual norm 9.14664e-05 
-  6 KSP Residual norm 4.99185e-05 
-  7 KSP Residual norm 1.95768e-05 
-  8 KSP Residual norm 1.44734e-05 
-  9 KSP Residual norm 5.77752e-06 
- 10 KSP Residual norm 2.64424e-06 
- 11 KSP Residual norm 5.84846e-07 
- 12 KSP Residual norm 2.17538e-07 
- 13 KSP Residual norm 6.79833e-08 
+  0 KSP Residual norm 0.0125628 
+  1 KSP Residual norm 0.00187086 
+  2 KSP Residual norm 0.00148893 
+  3 KSP Residual norm 0.000538971 
+  4 KSP Residual norm 0.000432629 
+  5 KSP Residual norm 9.9666e-05 
+  6 KSP Residual norm 5.19949e-05 
+  7 KSP Residual norm 1.98703e-05 
+  8 KSP Residual norm 1.44082e-05 
+  9 KSP Residual norm 6.20827e-06 
+ 10 KSP Residual norm 2.93975e-06 
+ 11 KSP Residual norm 7.50849e-07 
+ 12 KSP Residual norm 2.98144e-07 
+ 13 KSP Residual norm 9.85124e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 13
 KSP Object: 8 MPI processes
   type: cg
@@ -386,7 +385,7 @@ PC Object: 8 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
-        Complexity:    grid = 1.11819
+        Complexity:    grid = 1.11594
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
@@ -399,16 +398,16 @@ PC Object: 8 MPI processes
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
-        rows=60, cols=60, bs=6
-        total: nonzeros=3600, allocated nonzeros=3600
+        rows=48, cols=48, bs=6
+        total: nonzeros=2304, allocated nonzeros=2304
         total number of mallocs used during MatSetValues calls=0
           using nonscalable MatPtAP() implementation
-          using I-node (on process 0) routines: found 6 nodes, limit used is 5
+          using I-node (on process 0) routines: found 5 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.363949, max = 1.91073
-        eigenvalues estimate via gmres min 0.0488267, max 1.81974
+        eigenvalue estimates used:  min = 0.361588, max = 1.89833
+        eigenvalues estimate via gmres min 0.061898, max 1.80794
         eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: gmres
@@ -425,7 +424,7 @@ PC Object: 8 MPI processes
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 8 MPI processes
       type: asm
-        total subdomain blocks = 10, amount of overlap = 0
+        total subdomain blocks = 12, amount of overlap = 0
         restriction/interpolation type - BASIC
         Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
       KSP Object: (mg_levels_1_sub_) 1 MPI processes
@@ -439,21 +438,21 @@ PC Object: 8 MPI processes
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5., needed 1.
+          factor fill ratio given 5., needed 1.03896
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=30, cols=30
+                rows=84, cols=84
                 package used to perform factorization: petsc
-                total: nonzeros=900, allocated nonzeros=900
-                  using I-node routines: found 6 nodes, limit used is 5
+                total: nonzeros=5760, allocated nonzeros=5760
+                  using I-node routines: found 19 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=30, cols=30
-          total: nonzeros=900, allocated nonzeros=900
+          rows=84, cols=84
+          total: nonzeros=5544, allocated nonzeros=5544
           total number of mallocs used during MatSetValues calls=0
-            using I-node routines: found 6 nodes, limit used is 5
+            using I-node routines: found 25 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
@@ -461,7 +460,7 @@ PC Object: 8 MPI processes
         total: nonzeros=64476, allocated nonzeros=64476
         total number of mallocs used during MatSetValues calls=0
           using nonscalable MatPtAP() implementation
-          using I-node (on process 0) routines: found 10 nodes, limit used is 5
+          using I-node (on process 0) routines: found 33 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
@@ -528,4 +527,4 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-[0]main |b-Ax|/|b|=1.947887e-04, |b|=4.630910e+00, emax=9.968200e-01
+[0]main |b-Ax|/|b|=2.647174e-04, |b|=4.630910e+00, emax=9.962576e-01
