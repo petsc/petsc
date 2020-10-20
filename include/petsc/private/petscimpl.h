@@ -929,7 +929,6 @@ PETSC_INTERN PetscBool      PetscBeganKokkos;
 PETSC_INTERN PetscErrorCode PetscKokkosInitialize_Private(void); /* C bindings for the Kokkos C++ routines */
 PETSC_INTERN PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool*);
 PETSC_INTERN PetscErrorCode PetscKokkosFinalize_Private(void);
-PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void);  /* Check if CUDA is initialized and init CUDA if not yet. */
 #endif
 
 #if defined(PETSC_HAVE_CUDA)

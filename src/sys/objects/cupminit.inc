@@ -96,10 +96,6 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
     ierr = PetscCUPMBLASInitializeHandle();CHKERRQ(ierr);
     ierr = PetscCUPMSOLVERDnInitializeHandle();CHKERRQ(ierr);
     PetscCUPMInitialized = PETSC_TRUE;
-#if defined(PETSC_HAVE_KOKKOS)
-    ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
-    PetscBeganKokkos = PETSC_TRUE;
-#endif
   }
 
   if (!cupmValdidateChecked) {
@@ -128,7 +124,7 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
      With PETSC_{DECIDE, DEFAULT}, if there are actually no devices, the code can still run, but it will error out when trying to create device objects.
 .  -cuda_view              - view information about the devices.
 .  -cuda_synchronize       - wait at the end of asynchronize device calls so that their time gets credited to the current event. With -log_view, the default is true, otherwise false.
-.  -log_view               - logging, however if alone or combined with `-cuda_set_device DEFAULT | DECIDE | >=0 int`, will init device; if combined with `-cuda_set_device none`, won't init device.
+.  -log_view               - logging, however if alone or combined with `-cuda_device DEFAULT | DECIDE | >=0 int`, will init device; if combined with `-cuda_device none`, won't init device.
 -  -use_gpu_aware_mpi      - assume the MPI is device/GPU-aware when communicating data on devices. Default true.
 
   Level: beginner
@@ -211,7 +207,7 @@ PetscErrorCode PetscCUPMInitialize(MPI_Comm comm,PetscInt device)
   The routine works as a driver to initialize and view the device
 
   Input Parameter:
-    initDevice: True if user explicitly has -cuda/hip_set_device xxx
+    initDevice: True if user explicitly has -cuda/hip_device xxx
     device:     Significant when <initDeivce>. Basically, it is the integer presentation of the xxx above
     logView:    True if -log_view or -log_summary
     devView:    True if -{cuda,hip}_view
@@ -246,6 +242,10 @@ static PetscErrorCode PetscCUPMInitializeAndView(PetscBool initDevice,PetscInt d
         }
       }
       ierr = PetscCUPMInitialize(PETSC_COMM_WORLD,(PetscInt)devId);CHKERRQ(ierr);
+     #if defined(PETSC_HAVE_KOKKOS)
+      /* With -log_view, we always do eager init */
+      ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
+     #endif
     }
   }
 
@@ -282,13 +282,13 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_KOKKOS)
   ierr = PetscKokkosIsInitialized_Private(&kinited);CHKERRQ(ierr);
-  if (kinited) { /* Check if Petsc device options conform with Kokkos' device */
+  if (kinited) { /* Check if Petsc device options conform with Kokkos' device if Kokkos is init'ed before PetscInitialize() */
     ierr = PetscOptionsGetString(NULL,NULL,cupmSetDeviceStr,devStr,sizeof(devStr),&set);CHKERRQ(ierr);
-    if (set) { /* If users have initialized Kokkos themselves, but also had e.g., -cuda_set_device XXX, for simplicity, make sure XXX is DEFAULT */
+    if (set) { /* If users have initialized Kokkos themselves, but also had e.g., -cuda_device XXX, for simplicity, make sure XXX is DEFAULT */
       ierr = PetscStrcasecmp("DEFAULT",devStr,&devDefault);CHKERRQ(ierr);
       if (!devDefault) {ierr = PetscStrcasecmp("PETSC_DEFAULT",devStr,&devDefault);CHKERRQ(ierr);}
       if (!devDefault)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Kokkos was initialized before PetscInitialize(), but you have "cupmSetDeviceStr" %s. Remove the option or use "cupmSetDeviceStr" default.",devStr);
-    } else { /* If users did not have e.g., '-cuda_set_device XXX', insert one here so that petsc can continue its own device initialization */
+    } else { /* If users did not have e.g., '-cuda_device XXX', insert one here so that petsc can continue its own device initialization */
       ierr = PetscOptionsSetValue(NULL,cupmSetDeviceStr,"DEFAULT");CHKERRQ(ierr);
     }
   }
@@ -303,12 +303,5 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
   ierr = PetscOptionsName(cupmViewStr,"Display device information and assignments",NULL,&devView);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscCUPMInitializeAndView(initDevice,device,logView,devView);CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_KOKKOS)
-  if (PetscCUPMInitialized && !kinited) {
-    ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
-    PetscBeganKokkos = PETSC_TRUE;
-  }
-#endif
   PetscFunctionReturn(0);
 }
