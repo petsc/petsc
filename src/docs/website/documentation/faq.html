@@ -165,6 +165,8 @@ Error in first MPI collective call, this indicates a network problem, it could b
         <li><a href="#newton">Why is Newton's method (SNES) not converging, or converges slowly?</a></li>
         <li><a href="#kspdiverged">Why is the linear solver (KSP) not converging, or converges slowly?</a></li>
         <li><a href="#typebound">I get the error message:Actual argument at (1) to assumed-type dummy is of derived type with type-bound or FINAL procedures</li>
+        <li><a href="#crashvecdestroy">In C++ I get a crash on VecDestroy() (or some other PETSc object)  at the end of the program</li>
+
       </ul>
 
       <h4><a href="#debugging">Debugging</a></h4>
@@ -1835,6 +1837,24 @@ PETSC_COMM_WORLD = NewComm;
 
   </pre>
 
+      <h3><a name="crashvecdestroy">In C++ I get a crash on VecDestroy() (or some other PETSc object)  at the end of the program</a></h3>
+
+      This can happen when the destructor for a C++ class is automatically called at the end of the program after PetscFinalize(). Use the code</p>
+
+<pre>
+     main()
+     {
+         PetscInitialize()
+         {
+           your variables
+           your code
+
+           ...   /* all your destructors are called here automatically by C++ so they work correctly */
+         }
+         PetscFinalize()
+      return 0;
+     }
+  </pre>
       <hr>
 
       <h2><a name="debugging">Debugging</a></h2>
