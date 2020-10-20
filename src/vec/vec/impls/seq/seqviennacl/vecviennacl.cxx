@@ -1252,6 +1252,37 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecGetArray_SeqViennaCL(Vec v,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (v->offloadmask == PETSC_OFFLOAD_GPU) {
+    ierr = VecViennaCLCopyFromGPU(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecViennaCLAllocateCheckHost(v);CHKERRQ(ierr);
+  }
+  *a = *((PetscScalar**)v->data);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreArray_SeqViennaCL(Vec v,PetscScalar **a)
+{
+  PetscFunctionBegin;
+  v->offloadmask = PETSC_OFFLOAD_CPU;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayWrite_SeqViennaCL(Vec v,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecViennaCLAllocateCheckHost(v);CHKERRQ(ierr);
+  *a   = *((PetscScalar**)v->data);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode VecBindToCPU_SeqAIJViennaCL(Vec V,PetscBool flg)
 {
   PetscErrorCode ierr;
@@ -1319,6 +1350,9 @@ static PetscErrorCode VecBindToCPU_SeqAIJViennaCL(Vec V,PetscBool flg)
     V->ops->resetarray      = VecResetArray_SeqViennaCL;
     V->ops->destroy         = VecDestroy_SeqViennaCL;
     V->ops->duplicate       = VecDuplicate_SeqViennaCL;
+    V->ops->getarraywrite   = VecGetArrayWrite_SeqViennaCL;
+    V->ops->getarray        = VecGetArray_SeqViennaCL;
+    V->ops->restorearray    = VecRestoreArray_SeqViennaCL;
   }
   PetscFunctionReturn(0);
 }

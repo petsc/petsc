@@ -6,6 +6,8 @@
 
 #ifndef PETSCVEC_H
 #define PETSCVEC_H
+#include "petscsys.h"
+#include "petscsystypes.h"
 #include <petscis.h>
 #include <petscviewer.h>
 
@@ -498,24 +500,10 @@ PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
-
-PETSC_EXTERN PetscErrorCode VecGetArrayInPlace(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecGetArrayInPlace_Internal(Vec,PetscScalar**,PetscMemType*);
-PETSC_EXTERN PetscErrorCode VecRestoreArrayInPlace(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecGetArrayReadInPlace(Vec,const PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecGetArrayReadInPlace_Internal(Vec,const PetscScalar**,PetscMemType*);
-PETSC_EXTERN PetscErrorCode VecRestoreArrayReadInPlace(Vec,const PetscScalar**);
-
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
-PETSC_EXTERN PetscErrorCode VecKokkosGetArrayInPlace(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecKokkosGetArrayInPlace_Internal(Vec,PetscScalar**,PetscMemType*);
-PETSC_EXTERN PetscErrorCode VecKokkosRestoreArrayInPlace(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecKokkosGetArrayReadInPlace(Vec,const PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecKokkosGetArrayReadInPlace_Internal(Vec,const PetscScalar**,PetscMemType*);
-PETSC_STATIC_INLINE PetscErrorCode VecKokkosRestoreArrayReadInPlace(Vec v,const PetscScalar** a) {return 0;}
-PETSC_EXTERN PetscErrorCode VecKokkosSyncHost(Vec);
-PETSC_EXTERN PetscErrorCode VecKokkosModifyHost(Vec);
-#endif
+PETSC_EXTERN PetscErrorCode VecGetArrayAndMemType(Vec,PetscScalar**,PetscMemType*);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayAndMemType(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecGetArrayReadAndMemType(Vec,const PetscScalar**,PetscMemType*);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayReadAndMemType(Vec,const PetscScalar**);
 
 /*@C
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only

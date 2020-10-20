@@ -12,7 +12,7 @@
 #include <KokkosBlas.hpp>
 
 #include <petscconf.h>
-#include <petscvec.hpp>
+#include <petscveckokkos.hpp>
 #include <petscerror.h>
 #include <../src/vec/vec/impls/dvecimpl.h> /* for VecCreate_Seq_Private */
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
@@ -28,26 +28,6 @@
 #else
   #define VecErrorIfNotKokkos(v) do {(void)(v);} while (0)
 #endif
-
-PetscErrorCode VecKokkosSyncHost(Vec v)
-{
-  Vec_Kokkos *veckok = static_cast<Vec_Kokkos*>(v->spptr);
-
-  PetscFunctionBegin;
-  VecErrorIfNotKokkos(v);
-  veckok->dual_v.sync_host();
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecKokkosModifyHost(Vec v)
-{
-  Vec_Kokkos *veckok = static_cast<Vec_Kokkos*>(v->spptr);
-
-  PetscFunctionBegin;
-  VecErrorIfNotKokkos(v);
-  veckok->dual_v.modify_host();
-  PetscFunctionReturn(0);
-}
 
 /* TODO: Is VecGetKokkosDeviceView() a better name, if we always use -vec_type kokkos */
 PetscErrorCode VecKokkosGetDeviceView(Vec v,PetscScalarViewDevice_t* d_view)
@@ -117,74 +97,6 @@ PetscErrorCode VecKokkosRestoreDeviceViewWrite(Vec v,PetscScalarViewDevice_t* dv
   veckok->dual_v.clear_sync_state();
   veckok->dual_v.modify_device();
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecKokkosGetArrayInPlace(Vec v,PetscScalar** array)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecKokkosGetArrayInPlace_Internal(v,array,NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecKokkosGetArrayInPlace_Internal(Vec v,PetscScalar** array,PetscMemType *mtype)
-{
-  Vec_Kokkos  *veckok = static_cast<Vec_Kokkos*>(v->spptr);
-
-  PetscFunctionBegin;
-  VecErrorIfNotKokkos(v);
-  if (veckok->dual_v.need_sync_device()) {
-   /* Host has newer data than device */
-    *array = veckok->dual_v.view_host().data();
-    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
-  } else {
-    /* Device has newer or same data as host. We prefer returning devcie data*/
-    *array = veckok->dual_v.view_device().data();
-    if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecKokkosRestoreArrayInPlace(Vec v,PetscScalar** array)
-{
-  PetscErrorCode ierr;
-  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
-
-  PetscFunctionBegin;
-  VecErrorIfNotKokkos(v);
-  if (veckok->dual_v.need_sync_device()) { /* Host has newer data than device */
-    veckok->dual_v.modify_host();
-  } else {
-    veckok->dual_v.modify_device();
-  }
-  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecKokkosGetArrayReadInPlace(Vec v,const PetscScalar** array)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecKokkosGetArrayReadInPlace_Internal(v,array,NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecKokkosGetArrayReadInPlace_Internal(Vec v,const PetscScalar** array,PetscMemType *mtype)
-{
-  Vec_Kokkos  *veckok = static_cast<Vec_Kokkos*>(v->spptr);
-
-  PetscFunctionBegin;
-  VecErrorIfNotKokkos(v);
-  if (veckok->dual_v.need_sync_device()) { /* Host has newer data than device */
-    *array = veckok->dual_v.view_host().data();
-    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
-  } else {
-    *array = veckok->dual_v.view_device().data();
-    if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
-  }
   PetscFunctionReturn(0);
 }
 
@@ -864,9 +776,10 @@ PetscErrorCode VecPlaceArray_SeqKokkos(Vec vin,const PetscScalar *a)
 PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
 {
   PetscErrorCode ierr;
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(vin->spptr);
 
   PetscFunctionBegin;
-  ierr = VecKokkosSyncHost(vin);CHKERRQ(ierr); /* User wants to unhook the provided host array. Sync it so that user can get the latest */
+  veckok->dual_v.sync_host(); /* User wants to unhook the provided host array. Sync it so that user can get the latest */
   ierr = VecResetArray_Seq(vin);CHKERRQ(ierr);
   ierr = VecKokkosUpdateAfterChangingHostArray_Private(vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -877,10 +790,11 @@ PetscErrorCode VecReplaceArray_SeqKokkos(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
   Vec_Seq        *vecseq = (Vec_Seq*)vin->data;
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(vin->spptr);
 
   PetscFunctionBegin;
   /* Make sure the users array has the latest values */
-  if (vecseq->array != vecseq->array_allocated) {ierr = VecKokkosSyncHost(vin);CHKERRQ(ierr);}
+  if (vecseq->array != vecseq->array_allocated) veckok->dual_v.sync_host();
   ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
   ierr = VecKokkosUpdateAfterChangingHostArray_Private(vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -924,14 +838,63 @@ PetscErrorCode VecRestoreLocalVector_SeqKokkos(Vec v,Vec w)
   PetscFunctionReturn(0);
 }
 
-/* Get array on host to overwrite, so no need to sync host. In VecRestoreArrayWrite() we will mark host is modified. */
-PetscErrorCode VecGetArrayWrite_SeqKokkos(Vec v,PetscScalar **vv)
+PetscErrorCode VecGetArray_SeqKokkos(Vec v,PetscScalar **a)
 {
-  Vec_Kokkos       *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+
+  PetscFunctionBegin;
+  veckok->dual_v.sync_host();
+  *a = *((PetscScalar**)v->data);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreArray_SeqKokkos(Vec v,PetscScalar **a)
+{
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+
+  PetscFunctionBegin;
+  veckok->dual_v.modify_host();
+  PetscFunctionReturn(0);
+}
+
+/* Get array on host to overwrite, so no need to sync host. In VecRestoreArrayWrite() we will mark host is modified. */
+PetscErrorCode VecGetArrayWrite_SeqKokkos(Vec v,PetscScalar **a)
+{
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
   veckok->dual_v.clear_sync_state();
-  *vv = veckok->dual_v.view_host().data();
+  *a = veckok->dual_v.view_host().data();
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec v,PetscScalar** a,PetscMemType *mtype)
+{
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+
+  PetscFunctionBegin;
+  if (veckok->dual_v.need_sync_device()) {
+   /* Host has newer data than device */
+    *a = veckok->dual_v.view_host().data();
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  } else {
+    /* Device has newer or same data as host. We prefer returning devcie data*/
+    *a = veckok->dual_v.view_device().data();
+    if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec v,PetscScalar** a)
+{
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+
+  PetscFunctionBegin;
+  if (veckok->dual_v.need_sync_device()) { /* Host has newer data than device */
+    veckok->dual_v.modify_host();
+  } else {
+    veckok->dual_v.modify_device();
+  }
   PetscFunctionReturn(0);
 }
 
@@ -976,6 +939,10 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
   v->ops->getlocalvectorread     = VecGetLocalVector_SeqKokkos;
   v->ops->restorelocalvectorread = VecRestoreLocalVector_SeqKokkos;
   v->ops->getarraywrite          = VecGetArrayWrite_SeqKokkos;
+  v->ops->getarray               = VecGetArray_SeqKokkos;
+  v->ops->restorearray           = VecRestoreArray_SeqKokkos;
+  v->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqKokkos;
+  v->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqKokkos;
   PetscFunctionReturn(0);
 }
 

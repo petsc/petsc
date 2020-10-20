@@ -398,6 +398,10 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = VecGetLocalVector_SeqCUDA;
     V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUDA;
     V->ops->getarraywrite          = VecGetArrayWrite_SeqCUDA;
+    V->ops->getarray               = VecGetArray_SeqCUDA;
+    V->ops->restorearray           = VecRestoreArray_SeqCUDA;
+    V->ops->getarrayandmemtype        = VecGetArrayAndMemType_SeqCUDA;
+    V->ops->restorearrayandmemtype    = VecRestoreArrayAndMemType_SeqCUDA;
   }
   PetscFunctionReturn(0);
 }

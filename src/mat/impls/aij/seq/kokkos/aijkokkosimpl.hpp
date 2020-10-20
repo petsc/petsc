@@ -4,7 +4,7 @@
 #include "Kokkos_Core.hpp"
 #include <Kokkos_DualView.hpp>
 #include "KokkosSparse_CrsMatrix.hpp"
-#include <petscvec.hpp>
+#include <petscveckokkos.hpp>
 
 using MatRowMap_t                = PetscInt; /* RowMap, not RowOffset, to distinguish from Kokkos OffsetView */
 using MatColumnIndex_t           = PetscInt;

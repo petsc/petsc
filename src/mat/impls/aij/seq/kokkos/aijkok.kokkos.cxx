@@ -1,7 +1,7 @@
 #include "petsc/private/petscimpl.h"
 #include <petscsystypes.h>
 #include <petscerror.h>
-#include <petscvec.hpp>
+#include <petscveckokkos.hpp>
 
 #include <Kokkos_Core.hpp>
 #include <KokkosSparse_CrsMatrix.hpp>
