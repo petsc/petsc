@@ -147,5 +147,5 @@ class Configure(config.package.CMakePackage):
     import os
     config.package.Package.configureLibrary(self)
     if self.cuda.found:
-      self.addMakeMacro('KOKKOS_BIN',os.path.join(self.installDir,'bin'))
+      self.addMakeMacro('KOKKOS_BIN',os.path.join(self.directory,'bin'))
 
