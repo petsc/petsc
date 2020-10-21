@@ -4447,6 +4447,22 @@ PetscErrorCode MatSolverTypeGet(MatSolverType type,MatType mtype,MatFactorType f
     while (next) {
       inext = next->handlers;
       while (inext) {
+        ierr = PetscStrcmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
+        if (flg && inext->createfactor[(int)ftype-1]) {
+          if (foundtype) *foundtype = PETSC_TRUE;
+          if (foundmtype)   *foundmtype   = PETSC_TRUE;
+          if (createfactor) *createfactor = inext->createfactor[(int)ftype-1];
+          PetscFunctionReturn(0);
+        }
+        inext = inext->next;
+      }
+      next = next->next;
+    }
+    /* try with base classes inext->mtype */
+    next = MatSolverTypeHolders;
+    while (next) {
+      inext = next->handlers;
+      while (inext) {
         ierr = PetscStrbeginswith(mtype,inext->mtype,&flg);CHKERRQ(ierr);
         if (flg && inext->createfactor[(int)ftype-1]) {
           if (foundtype) *foundtype = PETSC_TRUE;
