@@ -7,7 +7,7 @@ The PETSc test system consists of
 *     The *test generator* (``config/gmakegentest.py``) that at the ``make`` step parses the example source files and generates the makefiles and shell scripts.
 *    The *petsc test harness* that consists of makefile and shell scripts that runs the executables with several logging and reporting features.
 
-Details on using the harness may be found in the :doc:`../manual/index`.
+Details on using the harness may be found in the :doc:`user's manual </manual/tests>`.
 
 PETSc Test Description Language
 -------------------------------
