@@ -2141,6 +2141,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz
   if (herm && !trans) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Hermitian and not transpose not supported");
   if (!a->nonzerorowcnt) {
     if (!yy) {ierr = VecSet_SeqCUDA(zz,0);CHKERRQ(ierr);}
+    else {ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
