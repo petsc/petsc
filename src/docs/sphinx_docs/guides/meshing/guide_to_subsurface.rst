@@ -42,7 +42,7 @@ which produces the following surface
 
 and the extruded mesh can be visualized using VTK. Here I make the image using Paraview, and give the extrusion 3 layers
 
-::
+.. code-block:: bash
 
   make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_1" EXTRA_OPTIONS="-dm_view hdf5:${PETSC_DIR}/mesh.h5 -dm_plex_extrude_layers 3"
   ${PETSC_DIR}/lib/petsc/bin/petsc_gen_xmdf.py mesh.h5
@@ -54,7 +54,7 @@ and the extruded mesh can be visualized using VTK. Here I make the image using P
 
 We can similarly look at this in parallel. Test 2 uses three refinements and three extrusion layers on five processes
 
-::
+.. code-block:: bash
 
   make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_2" EXTRA_OPTIONS="-dm_view hdf5:${PETSC_DIR}/mesh.h5 -dm_partition_view -petscpartitioner_type parmetis"
   ${PETSC_DIR}/lib/petsc/bin/petsc_gen_xmdf.py mesh.h5
@@ -91,7 +91,7 @@ Test 3 from `ex10` constrains the headwater cells (with marker 1) to have volume
 
 We can look at a parallel run using extra options for the test system
 
-::
+.. code-block:: bash
 
   make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_3" EXTRA_OPTIONS="-dm_view hdf5:${PETSC_DIR}/mesh.h5 -dm_partition_view -dm_distribute -petscpartitioner_type parmetis" NP=5
   ${PETSC_DIR}/lib/petsc/bin/petsc_gen_xmdf.py mesh.h5
