@@ -17,6 +17,7 @@ class Configure(config.package.Package):
     self.complex           = 1
     self.hastests          = 0
     self.hastestsdatafiles = 0
+    self.functionsDefine   = ['cusolverDnDpotri']
     return
 
   def setupHelp(self, help):

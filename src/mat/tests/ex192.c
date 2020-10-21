@@ -331,7 +331,7 @@ int main(int argc,char **args)
        args: -symmetric_solve -hermitian_solve
        output_file: output/ex192_mkl_pardiso_3.out
      test:
-       requires: cuda
+       requires: cuda define(PETSC_HAVE_CUSOLVERDNDPOTRI)
        suffix: mkl_pardiso_cuda_3
        args: -symmetric_solve -hermitian_solve -cuda_solve
        output_file: output/ex192_mkl_pardiso_3.out
@@ -361,7 +361,7 @@ int main(int argc,char **args)
        args: -symmetric_solve -hermitian_solve
        output_file: output/ex192_mumps_3.out
      test:
-       requires: cuda
+       requires: cuda define(PETSC_HAVE_CUSOLVERDNDPOTRI)
        suffix: mumps_cuda_3
        args: -symmetric_solve -hermitian_solve -cuda_solve
        output_file: output/ex192_mumps_3.out
