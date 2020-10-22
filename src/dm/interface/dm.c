@@ -4493,78 +4493,11 @@ PetscErrorCode DMSetSectionSF(DM dm, PetscSF sf)
 @*/
 PetscErrorCode DMCreateSectionSF(DM dm, PetscSection localSection, PetscSection globalSection)
 {
-  MPI_Comm       comm;
-  PetscLayout    layout;
-  const PetscInt *ranges;
-  PetscInt       *local;
-  PetscSFNode    *remote;
-  PetscInt       pStart, pEnd, p, nroots, nleaves = 0, l;
-  PetscMPIInt    size, rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(globalSection, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionGetConstrainedStorageSize(globalSection, &nroots);CHKERRQ(ierr);
-  ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(layout, nroots);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt gdof, gcdof;
-
-    ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
-    if (gcdof > (gdof < 0 ? -(gdof+1) : gdof)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d has %d constraints > %d dof", p, gcdof, (gdof < 0 ? -(gdof+1) : gdof));
-    nleaves += gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
-  }
-  ierr = PetscMalloc1(nleaves, &local);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleaves, &remote);CHKERRQ(ierr);
-  for (p = pStart, l = 0; p < pEnd; ++p) {
-    const PetscInt *cind;
-    PetscInt       dof, cdof, off, gdof, gcdof, goff, gsize, d, c;
-
-    ierr = PetscSectionGetDof(localSection, p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(localSection, p, &off);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(localSection, p, &cdof);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintIndices(localSection, p, &cind);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(globalSection, p, &goff);CHKERRQ(ierr);
-    if (!gdof) continue; /* Censored point */
-    gsize = gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
-    if (gsize != dof-cdof) {
-      if (gsize != dof) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "Global dof %d for point %d is neither the constrained size %d, nor the unconstrained %d", gsize, p, dof-cdof, dof);
-      cdof = 0; /* Ignore constraints */
-    }
-    for (d = 0, c = 0; d < dof; ++d) {
-      if ((c < cdof) && (cind[c] == d)) {++c; continue;}
-      local[l+d-c] = off+d;
-    }
-    if (gdof < 0) {
-      for (d = 0; d < gsize; ++d, ++l) {
-        PetscInt offset = -(goff+1) + d, r;
-
-        ierr = PetscFindInt(offset,size+1,ranges,&r);CHKERRQ(ierr);
-        if (r < 0) r = -(r+2);
-        if ((r < 0) || (r >= size)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d mapped to invalid process %d (%d, %d)", p, r, gdof, goff);
-        remote[l].rank  = r;
-        remote[l].index = offset - ranges[r];
-      }
-    } else {
-      for (d = 0; d < gsize; ++d, ++l) {
-        remote[l].rank  = rank;
-        remote[l].index = goff+d - ranges[rank];
-      }
-    }
-  }
-  if (l != nleaves) SETERRQ2(comm, PETSC_ERR_PLIB, "Iteration error, l %d != nleaves %d", l, nleaves);
-  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(dm->sectionSF, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphSection(dm->sectionSF, localSection, globalSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

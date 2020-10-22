@@ -659,46 +659,6 @@ PetscErrorCode PetscLayoutsCreateSF(PetscLayout rmap, PetscLayout lmap, PetscSF*
   PetscFunctionReturn(0);
 }
 
-/*@C
-   PetscSFSetGraphLayout - Set a parallel star forest via global indices and a PetscLayout
-
-   Collective
-
-   Input Arguments:
-+  sf - star forest
-.  layout - PetscLayout defining the global space
-.  nleaves - number of leaf vertices on the current process, each of these references a root on any process
-.  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
-.  localmode - copy mode for ilocal
--  iremote - remote locations of root vertices for each leaf on the current process
-
-   Level: intermediate
-
-   Developers Note: Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
-   encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
-   needed
-
-.seealso: PetscSFCreate(), PetscSFView(), PetscSFSetGraph(), PetscSFGetGraph()
-@*/
-PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nleaves,const PetscInt *ilocal,PetscCopyMode localmode,const PetscInt *iremote)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,nroots;
-  PetscSFNode    *remote;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutGetLocalSize(layout,&nroots);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
-  for (i=0; i<nleaves; i++) {
-    PetscMPIInt owner = -1;
-    ierr = PetscLayoutFindOwner(layout,iremote[i],&owner);CHKERRQ(ierr);
-    remote[i].rank  = owner;
-    remote[i].index = iremote[i] - layout->range[owner];
-  }
-  ierr = PetscSFSetGraph(sf,nroots,nleaves,ilocal,localmode,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*@
   PetscLayoutCompare - Compares two layouts
 

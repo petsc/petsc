@@ -3,7 +3,7 @@ ALL: lib
 SOURCEH	  = ../../../../include/petsc/private/sfimpl.h ../../../../include/petscsf.h ../../../../include/petscsftypes.h
 SOURCEC   =
 LIBBASE	  = libpetscvec
-DIRS	  = interface impls tests tutorials
+DIRS	  = interface impls utils tests tutorials
 LOCDIR    = src/vec/is/sf/
 MANSEC    = Vec
 SUBMANSEC = PetscSF
