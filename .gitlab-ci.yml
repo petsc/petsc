@@ -389,15 +389,15 @@ freebsd-pkgs-opt:
   variables:
     TEST_ARCH: arch-ci-freebsd-pkgs-opt
 
-linux-hiphcc-double:
+linux-hip-double:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - os:linux, name:frog
+    - gpu:amd, os:linux, name:hip-txcorp
   variables:
+    PATH: /opt/rh/devtoolset-7/root/usr/bin:/opt/rocm/bin:/opt/rocm/llvm/bin:/usr/sbin:/usr/bin:/sbin:/bin
     TEST_ARCH: arch-ci-linux-hip-double
-    DISABLE_TESTS: 1
 
 linux-sycl-double:
   extends:
