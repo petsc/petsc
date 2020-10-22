@@ -10,7 +10,10 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
-    '--with-mpi-dir=/home/petsc/soft/openmpi-4.0.2-cuda',
+    '--with-cc=/scratch/soft/mpich/bin/mpicc', 
+    '--with-cxx=/scratch/soft/mpich/bin/mpicxx', 
+    '--with-fc=/scratch/soft/mpich/bin/mpif90', 
+    'LDFLAGS=-L/opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/lib -lquadmath',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
@@ -20,6 +23,7 @@ if __name__ == '__main__':
     '--with-hip-dir=/opt/rocm',
     '--with-precision=double',
     '--with-clanguage=c',
+    '--download-fblaslapack=1',
   ]
 
   configure.petsc_configure(configure_options)
