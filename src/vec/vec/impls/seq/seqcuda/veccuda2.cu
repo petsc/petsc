@@ -1039,18 +1039,13 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal *z)
 
 PetscErrorCode VecDotNorm2_SeqCUDA(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
 {
-  PetscErrorCode    ierr;
-  cudaError_t       err;
-  PetscReal         n = s->map->n;
-  const PetscScalar *sarray,*tarray;
+  PetscErrorCode ierr;
+  cudaError_t    err;
+  PetscReal      n = s->map->n;
 
   PetscFunctionBegin;
-  ierr = VecCUDAGetArrayRead(s,&sarray);CHKERRQ(ierr);
-  ierr = VecCUDAGetArrayRead(t,&tarray);CHKERRQ(ierr);
   ierr = VecDot_SeqCUDA(s,t,dp);CHKERRQ(ierr);
   ierr = VecDot_SeqCUDA(t,t,nm);CHKERRQ(ierr);
-  ierr = VecCUDARestoreArrayRead(s,&sarray);CHKERRQ(ierr);
-  ierr = VecCUDARestoreArrayRead(t,&tarray);CHKERRQ(ierr);
   err  = WaitForCUDA();CHKERRCUDA(err);
   ierr = PetscLogGpuFlops(4.0*n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1123,7 +1118,7 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   PetscCheckTypeName(w,VECSEQCUDA);
-
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) {
       if (w->pinned_memory) {
@@ -1139,11 +1134,12 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
     ((Vec_Seq*)w->data)->unplacedarray = NULL;
   }
   if (w->spptr) {
+    PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
     if (((Vec_CUDA*)w->spptr)->GPUarray) {
       err = cudaFree(((Vec_CUDA*)w->spptr)->GPUarray);CHKERRCUDA(err);
       ((Vec_CUDA*)w->spptr)->GPUarray = NULL;
     }
-    if (((Vec_CUDA*)v->spptr)->stream) {
+    if (((Vec_CUDA*)w->spptr)->stream) {
       err = cudaStreamDestroy(((Vec_CUDA*)w->spptr)->stream);CHKERRCUDA(err);
     }
     ierr = PetscFree(w->spptr);CHKERRQ(ierr);
@@ -1172,6 +1168,7 @@ PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   PetscCheckTypeName(w,VECSEQCUDA);
 
   if (v->petscnative) {
@@ -1179,8 +1176,6 @@ PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
     v->offloadmask = w->offloadmask;
     v->pinned_memory = w->pinned_memory;
     v->spptr = w->spptr;
-    ierr = VecCUDACopyFromGPU(v);CHKERRQ(ierr);
-    ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
     w->data = 0;
     w->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
     w->spptr = 0;
