@@ -14,6 +14,15 @@
 S*/
 typedef struct _p_PetscSF* PetscSF;
 
+/*J
+    PetscSFType - String with the name of a PetscSF type
+
+   Level: beginner
+
+.seealso: PetscSFSetType(), PetscSF
+J*/
+typedef const char *PetscSFType;
+
 /*S
    PetscSFNode - specifier of owner and index
 
@@ -39,4 +48,22 @@ typedef struct {
   PetscInt index;               /* Index of node on rank */
 } PetscSFNode;
 
+/*S
+     VecScatter - Object used to manage communication of data
+       between vectors in parallel. Manages both scatters and gathers
+
+   Level: beginner
+
+.seealso:  VecScatterCreate(), VecScatterBegin(), VecScatterEnd()
+S*/
+typedef PetscSF VecScatter;
+
+/*J
+    VecScatterType - String with the name of a PETSc vector scatter type
+
+   Level: beginner
+
+.seealso: VecScatterSetType(), VecScatter, VecScatterCreate(), VecScatterDestroy()
+J*/
+typedef PetscSFType VecScatterType;
 #endif

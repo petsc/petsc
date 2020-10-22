@@ -1,8 +1,8 @@
-scatter type mpi3node
+scatter type basic
 
 SCATTER_FORWARD y:
 Vec Object: 2 MPI processes
-  type: node
+  type: mpi
 Process [0]
 2.
 5.
@@ -18,7 +18,7 @@ Process [1]
 
 SCATTER_REVERSE x:
 Vec Object: 2 MPI processes
-  type: node
+  type: mpi
 Process [0]
 0.
 9.

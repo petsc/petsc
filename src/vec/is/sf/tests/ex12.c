@@ -1,8 +1,6 @@
 
-static char help[]= "Scatters from a sequential vector to a parallel vector. \n\
+static char help[]= "Scatters from a parallel vector to a sequential vector. \n\
 uses block index sets\n\n";
-
-/* 'mpiexec -n 3 ./ex3 -vecscatter_type mpi3node' might give incorrect solution due to multiple cores write to the same variable */
 
 #include <petscvec.h>
 
@@ -16,7 +14,6 @@ int main(int argc,char **argv)
   Vec            x,y;
   IS             isx,isy;
   VecScatter     ctx;
-  PetscViewer    sviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -30,7 +27,6 @@ int main(int argc,char **argv)
   /* Create vector x over shared memory */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(x,VECNODE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(x,&low,NULL);CHKERRQ(ierr);
@@ -42,11 +38,7 @@ int main(int argc,char **argv)
 
   /* Create a sequential vector y */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&array);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    array[i] = (PetscScalar)(i + 100*rank);
-  }
-  ierr = VecRestoreArray(y,&array);CHKERRQ(ierr);
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
 
   /* Create two index sets */
   if (!rank) {
@@ -62,24 +54,26 @@ int main(int argc,char **argv)
     ierr = ISView(isx,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-  ierr = VecScatterCreate(y,isy,x,isx,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
 
   /* Test forward vecscatter */
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (rank == 0) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] y:\n",rank);CHKERRQ(ierr);
+    ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
 
   /* Test reverse vecscatter */
-  ierr = VecScale(x,-1.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  if (rank == 1) {
-    ierr = VecView(y,sviewer);CHKERRQ(ierr);
+  ierr = VecScale(y,-1.0);CHKERRQ(ierr);
+  if (rank) {
+    ierr = VecScale(y,1.0/(size - 1));CHKERRQ(ierr);
   }
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free spaces */
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
@@ -94,37 +88,6 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      nsize: 2
-      args: -vecscatter_type mpi3node
-      output_file: output/ex3_1.out
-      requires:  define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-
-   test:
-      suffix: 2
-      nsize: 2
-      args: -vecscatter_type mpi3
-      output_file: output/ex3_1.out
-      requires:  define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-
-   test:
-      suffix: 3
-      nsize: 2
-      args: -bs 2 -vecscatter_type mpi3node
-      output_file: output/ex3_3.out
-      requires:  define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-
-   test:
-      suffix: 4
-      nsize: 2
-      args: -bs 2 -vecscatter_type mpi3
-      output_file: output/ex3_3.out
-      requires:  define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-
-   test:
-      suffix: 5
       nsize: 3
-      args: -vecscatter_type mpi3
-      output_file: output/ex3_5.out
-      requires:  define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 
 TEST*/

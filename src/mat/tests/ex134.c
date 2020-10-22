@@ -117,7 +117,7 @@ int main(int argc,char *argv[])
 
    test:
       nsize: 2
-      args: -mat_ignore_lower_triangular -vecscatter_type sf
+      args: -mat_ignore_lower_triangular
       filter: sed -e "s~mem [0-9]*~mem~g"
 
 TEST*/

@@ -116,18 +116,11 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
-  if (aij->Mvctx_mpi1_flg) {
-    ierr = VecScatterDestroy(&aij->Mvctx_mpi1);CHKERRQ(ierr);
-    ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx_mpi1);CHKERRQ(ierr);
-    ierr = VecScatterSetType(aij->Mvctx_mpi1,VECSCATTERMPI1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx_mpi1);CHKERRQ(ierr);
-  } else {
-    ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
-    ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  }
+  ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   aij->garray = garray;
 
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);

@@ -579,7 +579,7 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(gtol,VEC_SCATTER_CLASSID,2);
+  PetscValidHeaderSpecific(gtol,PETSCSF_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&shell->gtol);CHKERRQ(ierr);
   shell->gtol = gtol;
@@ -606,7 +606,7 @@ PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(ltog,VEC_SCATTER_CLASSID,2);
+  PetscValidHeaderSpecific(ltog,PETSCSF_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&shell->ltog);CHKERRQ(ierr);
   shell->ltog = ltog;
@@ -633,7 +633,7 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(ltol,VEC_SCATTER_CLASSID,2);
+  PetscValidHeaderSpecific(ltol,PETSCSF_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)ltol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&shell->ltol);CHKERRQ(ierr);
   shell->ltol = ltol;

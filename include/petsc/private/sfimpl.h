@@ -65,6 +65,19 @@ typedef struct _n_PetscSFPackOpt *PetscSFPackOpt;
 
 struct _p_PetscSF {
   PETSCHEADER(struct _PetscSFOps);
+  struct { /* Fields needed to implement VecScatter behavior */
+    PetscInt          from_n,to_n;   /* Recorded local sizes of the input from/to vectors in VecScatterCreate(). Used subsequently for error checking. */
+    PetscBool         beginandendtogether;  /* Indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
+    PetscBool         packongpu;     /* For GPU vectors, pack needed entries on GPU instead of pulling the whole vector down to CPU and then packing on CPU */
+    const PetscScalar *xdata;        /* Vector data to read from */
+    PetscScalar       *ydata;        /* Vector data to write to. The two pointers are recorded in VecScatterBegin. Memory is not managed by SF. */
+    PetscSF           lsf;           /* The local part of the scatter, used in SCATTER_LOCAL. Built on demand. */
+    PetscInt          bs;            /* Block size, determined by IS passed to VecScatterCreate */
+    MPI_Datatype      unit;          /* one unit = bs PetscScalars */
+    PetscBool         logging;       /* Indicate if vscat log events are happening. If yes, avoid duplicated SF logging to have clear -log_view */
+  } vscat;
+
+  /* Fields for generic PetscSF functionality */
   PetscInt        nroots;          /* Number of root vertices on current process (candidates for incoming edges) */
   PetscInt        nleaves;         /* Number of leaf vertices on current process (this process specifies a root for each leaf) */
   PetscInt        *mine;           /* Location of leaves in leafdata arrays provided to the communication routines */
@@ -141,6 +154,12 @@ PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype,MPI_Dataty
 #define MPIU_Iallgatherv(a,b,c,d,e,f,g,h,req)  MPI_Allgatherv(a,b,c,d,e,f,g,h)
 #define MPIU_Ialltoall(a,b,c,d,e,f,g,req)      MPI_Alltoall(a,b,c,d,e,f,g)
 #endif
+
+PETSC_EXTERN PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter,PetscBool,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode PetscSFMalloc_Cuda(PetscMemType,size_t,void**);

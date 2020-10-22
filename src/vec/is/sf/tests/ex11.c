@@ -1,5 +1,5 @@
 
-static char help[]= "Scatters between parallel vectors of type VECNODE. \n\
+static char help[]= "Scatters between parallel vectors. \n\
 uses block index sets\n\n";
 
 #include <petscvec.h>
@@ -29,7 +29,6 @@ int main(int argc,char **argv)
   /* Create vector x over shared memory */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(x,VECNODE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(x,&low,NULL);CHKERRQ(ierr);
@@ -59,7 +58,6 @@ int main(int argc,char **argv)
   /* Create vector y over shared memory */
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(y,VECNODE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecGetArray(y,&array);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -128,22 +126,5 @@ int main(int argc,char **argv)
 
    test:
       nsize: 2
-      args: -vecscatter_type mpi3node
-      output_file: output/ex1_1.out
-      requires:  define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-
-   test:
-      suffix: 2
-      nsize: 4
-      args: -vecscatter_type mpi3node
-      output_file: output/ex1_2.out
-      requires:  define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-
-   test:
-      suffix: 3
-      nsize: 2
-      args: -bs 2 -vecscatter_type mpi3node
-      output_file: output/ex1_3.out
-      requires:  define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 
 TEST*/

@@ -135,58 +135,6 @@ PetscErrorCode VecResetArray_SeqCUDA_Private(Vec vin)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecCUDAAllocateCheck_Public(Vec v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecCUDACopyToGPU_Public(Vec v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-    VecCUDACopyToGPUSome_Public - Copies certain entries down to the GPU from the CPU of a vector
-
-   Input Parameters:
- +  v    - the vector
- .  ci   - the requested indices, this should be created with CUDAIndicesCreate()
- -  mode - vec scatter mode used in VecScatterBegin/End
-*/
-PetscErrorCode VecCUDACopyToGPUSome_Public(Vec v,PetscCUDAIndices ci,ScatterMode mode)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDACopyToGPUSome(v,ci,mode);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-  VecCUDACopyFromGPUSome_Public - Copies certain entries up to the CPU from the GPU of a vector
-
-  Input Parameters:
- +  v    - the vector
- .  ci   - the requested indices, this should be created with CUDAIndicesCreate()
- -  mode - vec scatter mode used in VecScatterBegin/End
-*/
-PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec v,PetscCUDAIndices ci,ScatterMode mode)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDACopyFromGPUSome(v,ci,mode);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;

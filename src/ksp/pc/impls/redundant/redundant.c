@@ -378,8 +378,8 @@ PetscErrorCode PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidHeaderSpecific(in,VEC_SCATTER_CLASSID,2);
-  PetscValidHeaderSpecific(out,VEC_SCATTER_CLASSID,3);
+  PetscValidHeaderSpecific(in,PETSCSF_CLASSID,2);
+  PetscValidHeaderSpecific(out,PETSCSF_CLASSID,3);
   ierr = PetscTryMethod(pc,"PCRedundantSetScatter_C",(PC,VecScatter,VecScatter),(pc,in,out));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
