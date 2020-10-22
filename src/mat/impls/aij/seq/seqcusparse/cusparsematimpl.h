@@ -169,8 +169,6 @@ struct Mat_SeqAIJCUSPARSETriFactorStruct {
   void                        *solveBuffer;
   size_t                      csr2cscBufferSize; /* to transpose the triangular factor (only used for CUDA >= 11.0) */
   void                        *csr2cscBuffer;
-  Mat_SeqAIJCUSPARSETriFactorStruct() :
-   csrMat(NULL),solveBuffer(NULL),csr2cscBuffer(NULL),solvePolicy(CUSPARSE_SOLVE_POLICY_USE_LEVEL) {} /* TODO: allow options database for policy */
 };
 
 /* This is a larger struct holding all the triangular factors for a solve, transpose solve, and any indices used in a reordering */
