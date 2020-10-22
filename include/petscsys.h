@@ -142,6 +142,8 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
   PetscDefined - determine whether a boolean macro is defined
 
   Notes:
+  The prefix "PETSC_" is added to the argument.
+
   Typical usage is within normal code,
 
 $   if (PetscDefined(USE_DEBUG)) { ... }
@@ -152,8 +154,12 @@ $   #if PetscDefined(USE_DEBUG)
 $     ...
 $   #else
 
-  Either way evaluates true if PETSC_USE_DEBUG is defined (merely defined or defined to 1) or undefined.  This macro
+  Either way, it evaluates true if PETSC_USE_DEBUG is defined (merely defined or defined to 1), and false if PETSC_USE_DEBUG is undefined.  This macro
   should not be used if its argument may be defined to a non-empty value other than 1.
+
+  To avoid prepending "PETSC_", say to add custom checks in user code, one can use e.g.
+
+$  #define FooDefined(d) PetscDefined_(FOO_ ## d)
 
   Developer Notes:
   Getting something that works in C and CPP for an arg that may or may not be defined is tricky.  Here, if we have
