@@ -181,7 +181,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex, const PetscInt Nq, PetscReal nu_alp
             const PetscReal     * const vj = fplpt_j->crd, wj = d_wiGlobal[jpidx];
             // reduce on g22 and g33 for IP jpidx
             landau_inner_red::ValueType gg;
-            Kokkos::parallel_reduce(Kokkos::ThreadVectorRange (team, nip), [=] (const int& ipidx, landau_inner_red::ValueType & ggg) {
+            Kokkos::parallel_reduce(Kokkos::ThreadVectorRange (team, (int)nip), [=] (const int& ipidx, landau_inner_red::ValueType & ggg) {
                 const LandauPointData * const fplpt = (LandauPointData*)(&d_ipdata(ipidx*ipdata_sz));
                 const LandauFDF * const       fdf = &fplpt->fdf[0];
                 const PetscReal             wi = d_wiGlobal[ipidx];
@@ -218,11 +218,11 @@ PetscErrorCode LandauKokkosJacobian(DM plex, const PetscInt Nq, PetscReal nu_alp
                 }
 #endif
               }, Kokkos::Sum<landau_inner_red::ValueType>(gg));
-            Kokkos::parallel_for(Kokkos::ThreadVectorRange (team, Nf), [&] (const int& fieldA) {
+            Kokkos::parallel_for(Kokkos::ThreadVectorRange (team, (int)Nf), [&] (const int& fieldA) {
                 gg.gg2[fieldA][dim-1] += d_Eq_m[fieldA];
               });
             //kkos::single(Kokkos::PerThread(team), [&]() {
-            Kokkos::parallel_for(Kokkos::ThreadVectorRange (team, Nf), [=] (const int& fieldA) {
+            Kokkos::parallel_for(Kokkos::ThreadVectorRange (team, (int)Nf), [=] (const int& fieldA) {
                 int d,d2,d3,dp;
                 //printf("%d %d %d gg2[][1]=%18.10e\n",myelem,myQi,fieldA,gg.gg2[fieldA][dim-1]);
                 /* Jacobian transform - g2, g3 - per thread (2D) */
@@ -249,7 +249,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex, const PetscInt Nq, PetscReal nu_alp
         //Kokkos::single(Kokkos::PerTeam(team), [&]() {
         { // int fieldA,blk_i;
           Kokkos::parallel_for(Kokkos::TeamThreadRange(team,0,Nb), [=] (int blk_i) {
-              Kokkos::parallel_for(Kokkos::ThreadVectorRange(team,0,Nf), [=] (int fieldA) {
+              Kokkos::parallel_for(Kokkos::ThreadVectorRange(team,0,(int)Nf), [=] (int fieldA) {
                   //for (fieldA = 0; fieldA < Nf; ++fieldA) {
                   //for (blk_i = 0; blk_i < Nb; ++blk_i) {
                   int blk_j,qj,d,d2;
@@ -299,7 +299,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex, const PetscInt Nq, PetscReal nu_alp
         ierr = DMPlexMatSetClosure(plex, section, globalSection, JacP, ej, elMat, ADD_VALUES);CHKERRQ(ierr);
         if (ej==-1) {
           int d,f;
-          printf("Kokkos Element matrix %d/%d\n",1,numCells);
+          printf("Kokkos Element matrix %d/%d\n",1,(int)numCells);
           for (d = 0; d < totDim; ++d){
             for (f = 0; f < totDim; ++f) printf(" %17.9e",  PetscRealPart(elMat[d*totDim + f]));
             printf("\n");
