@@ -139,15 +139,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
   ierr = MatGetBlockSize(A, &bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)A, &match, MATSEQKAIJ, MATMPIKAIJ, "");CHKERRQ(ierr);
   if (match) n /= bs;
-#if defined(PETSC_PKG_HPDDM_VERSION_MAJOR)
-#if PETSC_PKG_HPDDM_VERSION_LT(2, 0, 4)
-  data->op = new HPDDM::PETScOperator(ksp, n, 1);
-#else
   data->op = new HPDDM::PETScOperator(ksp, n);
-#endif
-#else
-  data->op = new HPDDM::PETScOperator(ksp, n, 1);
-#endif
   if (PetscUnlikely(!ksp->setfromoptionscalled || data->cntl[0] == static_cast<char>(PETSC_DECIDE))) { /* what follows is basically a copy/paste of KSPSetFromOptions_HPDDM, with no call to PetscOptions() */
     ierr = PetscInfo(ksp, "KSPSetFromOptions() not called or uninitialized internal structure, hardwiring default KSPHPDDM options\n");CHKERRQ(ierr);
     if (data->cntl[0] == static_cast<char>(PETSC_DECIDE))
@@ -290,15 +282,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
     if (!flg) i *= n; /* S and T are not scaled identities, cannot use block methods */
     if (i != j) { /* switching between block and standard methods */
       delete data->op;
-#if defined(PETSC_PKG_HPDDM_VERSION_MAJOR)
-#if PETSC_PKG_HPDDM_VERSION_LT(2, 0, 4)
-      data->op = new HPDDM::PETScOperator(ksp, i, 1);
-#else
       data->op = new HPDDM::PETScOperator(ksp, i);
-#endif
-#else
-      data->op = new HPDDM::PETScOperator(ksp, i, 1);
-#endif
     }
     if (flg && n > 1) {
       ierr = PetscMalloc1(i * n, &bt);CHKERRQ(ierr);
