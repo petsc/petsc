@@ -1,0 +1,40 @@
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 8
+[0] 0 8
+[0] 1 9
+[0] 2 10
+[0] 3 11
+[0] 4 24
+[0] 5 25
+[0] 6 26
+[0] 7 27
+[1] Number of indices in set 8
+[1] 0 40
+[1] 1 41
+[1] 2 42
+[1] 3 43
+[1] 4 56
+[1] 5 57
+[1] 6 58
+[1] 7 59
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+-8.
+-4.
+0.
+4.
+92.
+96.
+100.
+104.
+Process [1]
+192.
+196.
+200.
+204.
+292.
+296.
+300.
+304.

@@ -1,0 +1,18 @@
+IS Object: 3 MPI processes
+  type: general
+[0] Number of indices in set 2
+[0] 0 2
+[0] 1 6
+[1] Number of indices in set 1
+[1] 0 10
+[2] Number of indices in set 1
+[2] 0 14
+Vec Object: 3 MPI processes
+  type: mpi
+Process [0]
+0.
+0.
+Process [1]
+0.
+Process [2]
+0.
