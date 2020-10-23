@@ -1842,17 +1842,17 @@ PETSC_COMM_WORLD = NewComm;
       This can happen when the destructor for a C++ class is automatically called at the end of the program after PetscFinalize(). Use the code</p>
 
 <pre>
-     main()
-     {
-         PetscInitialize()
-         {
-           your variables
-           your code
+    main()
+    {
+        PetscInitialize()
+        {
+          your variables
+          your code
 
            ...   /* all your destructors are called here automatically by C++ so they work correctly */
-         }
-         PetscFinalize()
-      return 0;
+        }
+        PetscFinalize()
+        return 0;
      }
   </pre>
       <hr>
