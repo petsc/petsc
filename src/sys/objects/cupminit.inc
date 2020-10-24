@@ -244,7 +244,7 @@ static PetscErrorCode PetscCUPMInitializeAndView(PetscBool initDevice,PetscInt d
       ierr = PetscCUPMInitialize(PETSC_COMM_WORLD,(PetscInt)devId);CHKERRQ(ierr);
      #if defined(PETSC_HAVE_KOKKOS)
       /* With -log_view, we always do eager init */
-      ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
+      ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
      #endif
     }
   }

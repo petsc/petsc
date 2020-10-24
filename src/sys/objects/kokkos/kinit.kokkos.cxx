@@ -2,23 +2,6 @@
 #include <petsc/private/petscimpl.h>
 #include <Kokkos_Core.hpp>
 
-/* These wrappers are used as C bindings for the Kokkos routines */
-PetscErrorCode PetscKokkosInitialize_Private(void)
-{
-  Kokkos::InitArguments args;
-  int                   devId = -1;
-
-  PetscFunctionBegin;
-#if defined(KOKKOS_ENABLE_CUDA)
-  cudaGetDevice(&devId);
-#elif defined(KOKKOS_ENABLE_HIP) /* Kokkos does not support CUDA and HIP at the same time */
-  hipGetDevice(&devId);
-#endif
-  args.device_id = devId;
-  Kokkos::initialize(args);
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode PetscKokkosFinalize_Private(void)
 {
   PetscFunctionBegin;
@@ -33,19 +16,24 @@ PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool *isInitialized)
   PetscFunctionReturn(0);
 }
 
-/* Initialize the device lazily just before creating the first device object. */
+/* Initialize Kokkos if not yet */
 PetscErrorCode PetscKokkosInitializeCheck(void)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode        ierr;
+  Kokkos::InitArguments args;
+  int                   devId = -1;
 
   PetscFunctionBegin;
-#if defined(KOKKOS_ENABLE_CUDA)
-  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
-#elif defined(KOKKOS_ENABLE_HIP)
-  ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
-#endif
   if (!Kokkos::is_initialized()) {
-    ierr = PetscKokkosInitialize_Private();CHKERRQ(ierr);
+   #if defined(KOKKOS_ENABLE_CUDA)
+    ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+    cudaGetDevice(&devId);
+   #elif defined(KOKKOS_ENABLE_HIP) /* Kokkos does not support CUDA and HIP at the same time */
+    ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
+    hipGetDevice(&devId);
+   #endif
+    args.device_id   = devId;
+    Kokkos::initialize(args);
     PetscBeganKokkos = PETSC_TRUE;
   }
   PetscFunctionReturn(0);

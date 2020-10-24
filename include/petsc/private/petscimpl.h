@@ -926,7 +926,6 @@ PETSC_EXTERN int64_t Petsc_adios_group;
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_INTERN PetscBool      PetscBeganKokkos;
-PETSC_INTERN PetscErrorCode PetscKokkosInitialize_Private(void); /* C bindings for the Kokkos C++ routines */
 PETSC_INTERN PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool*);
 PETSC_INTERN PetscErrorCode PetscKokkosFinalize_Private(void);
 #endif
