@@ -3,11 +3,14 @@
 cdef extern from * nogil:
 
     ctypedef const char* PetscScatterType "VecScatterType"
-    PetscScatterType VECSCATTERSEQ
-    PetscScatterType VECSCATTERMPI1
-    PetscScatterType VECSCATTERMPI3
-    PetscScatterType VECSCATTERMPI3NODE
-    PetscScatterType VECSCATTERSF
+    PetscScatterType PETSCSFBASIC
+    PetscScatterType PETSCSFNEIGHBOR
+    PetscScatterType PETSCSFALLGATHERV
+    PetscScatterType PETSCSFALLGATHER
+    PetscScatterType PETSCSFGATHERV
+    PetscScatterType PETSCSFGATHER
+    PetscScatterType PETSCSFALLTOALL
+    PetscScatterType PETSCSFWINDOW
 
     int VecScatterView(PetscScatter,PetscViewer)
     int VecScatterDestroy(PetscScatter*)
