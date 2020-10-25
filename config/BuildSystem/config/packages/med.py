@@ -9,7 +9,7 @@ class Configure(config.package.CMakePackage):
     self.downloaddirnames  = ['petsc-pkg-med']
     self.functions         = ['MEDfileOpen']
     self.includes          = ['med.h']
-    self.liblist           = [['libmedC.a','libmed.a']]
+    self.liblist           = [['libmedC.a','libmed.a'],['libmedC.a']]
     self.needsMath         = 1
     self.precisions        = ['double'];
     return
