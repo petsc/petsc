@@ -129,6 +129,14 @@
         <li>Add PCGAMGSetRankReductionFactors(), provide an array, <tt>-pc_gamg_rank_reduction_factors factors</tt>, tp specify factor by which to reduce active processors on coarse grids in PCGAMG that overrides default heuristics </li>
       </ul>
       <h4>KSP:</h4>
+       <ul>
+         <li>Add <tt>-all_ksp_monitor</tt> which turns on monitoring for all KSP solvers regardless of their prefix. This is useful for monitor solvers
+           with inner solvers such as PCMG, PCGAMG, PCFIELDSPLIT.
+         </li>
+         <li>Add support for monitor KSPPREONLY. This is useful for monitor solvers
+           with inner solvers such as PCMG, PCGAMG, PCFIELDSPLIT.
+         </li>
+      </ul>
       <h4>SNES:</h4>
       <ul>
         <li>Add SNESConvergedCorrectPressure(), which can be selected using <tt>-snes_convergence_test correct_pressure</tt></li>
