@@ -34,8 +34,12 @@ cdef extern from * nogil:
 
     int VecCreateSeq(MPI_Comm,PetscInt,PetscVec*)
     int VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscVec*)
+    int VecCreateSeqCUDAWithArrays(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
+    int VecCreateSeqViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
     int VecCreateMPI(MPI_Comm,PetscInt,PetscInt,PetscVec*)
     int VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscVec*)
+    int VecCreateMPICUDAWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
+    int VecCreateMPIViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
     int VecCreateGhost(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscVec*)
     int VecCreateGhostWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscScalar[],PetscVec*)
     int VecCreateGhostBlock(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscVec*)
@@ -162,6 +166,17 @@ cdef extern from * nogil:
     int VecCUDARestoreArrayRead(PetscVec,const PetscScalar*[])
     int VecCUDARestoreArrayWrite(PetscVec,PetscScalar*[])
     int VecCUDARestoreArray(PetscVec,PetscScalar*[])
+
+    int VecBindToCPU(PetscVec,PetscBool)
+    int VecGetOffloadMask(PetscVec,PetscOffloadMask*)
+
+    int VecViennaCLGetCLContext(PetscVec,Py_uintptr_t*)
+    int VecViennaCLGetCLQueue(PetscVec,Py_uintptr_t*)
+    int VecViennaCLGetCLMemRead(PetscVec,Py_uintptr_t*)
+    int VecViennaCLGetCLMemWrite(PetscVec,Py_uintptr_t*)
+    int VecViennaCLRestoreCLMemWrite(PetscVec)
+    int VecViennaCLGetCLMem(PetscVec,Py_uintptr_t*)
+    int VecViennaCLRestoreCLMem(PetscVec)
 
 # --------------------------------------------------------------------
 

@@ -212,6 +212,84 @@ cdef class Vec(Object):
         self.set_attr('__array__', array)
         return self
 
+    def createCUDAWithArrays(self, cpuarray=None, cudahandle=None, size=None, bsize=None, comm=None):
+        """
+        Returns an instance of :class:`Vec`, a VECCUDA with user provided
+        memory spaces for CPU and GPU arrays.
+
+        :arg cpuarray: A :class:`numpy.ndarray`. Will be lazily allocated if
+            *None*.
+        :arg cudahandle: Address of the array on the GPU. Will be lazily
+            allocated if *None*.
+        :arg size: A :class:`int` denoting the size of the Vec.
+        :arg bsize: A :class:`int` denoting the block size.
+        """
+        cdef PetscInt na=0
+        cdef PetscScalar *sa=NULL
+        cdef PetscScalar *gpuarray = NULL
+        if cudahandle:
+            gpuarray = <PetscScalar*>(<Py_uintptr_t>cudahandle)
+        if cpuarray is not None:
+            cpuarray = iarray_s(cpuarray, &na, &sa)
+
+        if size is None: size = (toInt(na), toInt(PETSC_DECIDE))
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt bs=0, n=0, N=0
+        Vec_Sizes(size, bsize, &bs, &n, &N)
+        Sys_Layout(ccomm, bs, &n, &N)
+        if bs == PETSC_DECIDE: bs = 1
+        if na < n:  raise ValueError(
+            "array size %d and vector local size %d block size %d" %
+            (toInt(na), toInt(n), toInt(bs)))
+        cdef PetscVec newvec = NULL
+        if comm_size(ccomm) == 1:
+            CHKERR( VecCreateSeqCUDAWithArrays(ccomm,bs,N,sa,gpuarray,&newvec) )
+        else:
+            CHKERR( VecCreateMPICUDAWithArrays(ccomm,bs,n,N,sa,gpuarray,&newvec) )
+        PetscCLEAR(self.obj); self.vec = newvec
+
+        if cpuarray is not None:
+            self.set_attr('__array__', cpuarray)
+        return self
+
+    def createViennaCLWithArrays(self, cpuarray=None, viennaclvechandle=None, size=None, bsize=None, comm=None):
+        """
+        Returns an instance :class:`Vec`, a VECVIENNACL with user provided memory
+        spaces for CPU and GPU arrays.
+
+        :arg cpuarray: A :class:`numpy.ndarray`. Will be lazily allocated if
+            *None*.
+        :arg viennaclvechandle: Address of the array on the GPU. Will be lazily
+            allocated if *None*.
+        :arg size: A :class:`int` denoting the size of the Vec.
+        :arg size: A :class:`int` denoting the block size.
+        """
+        cdef PetscInt na=0
+        cdef PetscScalar *sa=NULL
+        cdef PetscScalar *vclvec = NULL
+        if viennaclvechandle:
+            vclvec = <PetscScalar*>(<Py_uintptr_t>viennaclvechandle)
+        if cpuarray is not None:
+            cpuarray = iarray_s(cpuarray, &na, &sa)
+
+        if size is None: size = (toInt(na), toInt(PETSC_DECIDE))
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt bs=0, n=0, N=0
+        Vec_Sizes(size, bsize, &bs, &n, &N)
+        Sys_Layout(ccomm, bs, &n, &N)
+        if bs == PETSC_DECIDE: bs = 1
+        if na < n:  raise ValueError( "array size %d and vector local size %d block size %d" % (toInt(na), toInt(n), toInt(bs)))
+        cdef PetscVec newvec = NULL
+        if comm_size(ccomm) == 1:
+            CHKERR( VecCreateSeqViennaCLWithArrays(ccomm,bs,N,sa,vclvec,&newvec) )
+        else:
+            CHKERR( VecCreateMPIViennaCLWithArrays(ccomm,bs,n,N,sa,vclvec,&newvec) )
+        PetscCLEAR(self.obj); self.vec = newvec
+
+        if cpuarray is not None:
+            self.set_attr('__array__', cpuarray)
+        return self
+
     def createGhost(self, ghosts, size, bsize=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt ng=0, *ig=NULL
@@ -393,6 +471,18 @@ cdef class Vec(Object):
         self.set_attr('__placed_array__', None)
         return array
 
+    def bindToCPU(self, flg):
+        """
+        If *flg* is *True*, all subsequent operations of *self* would be
+        performed on CPU. If *flg* is *False*, all subsequent operations of
+        *self* would be offloaded to the device, provided that the VecType is
+        capable of offloading.
+
+        :arg flg: An instance of :class:`bool`.
+        """
+        cdef PetscBool bindFlg = asBool(flg)
+        CHKERR( VecBindToCPU(self.vec, bindFlg) )
+
     def getCUDAHandle(self, mode='rw'):
         cdef PetscScalar *hdl = NULL
         cdef const char *m = NULL
@@ -419,6 +509,68 @@ cdef class Vec(Object):
             CHKERR( VecCUDARestoreArrayWrite(self.vec, &hdl) )
         else:
             raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
+
+    def getOffloadMask(self):
+        """
+        Returns :class:`int` of the Vec's PetscOffloadMask enum value.
+        """
+        cdef PetscOffloadMask mask
+        CHKERR( VecGetOffloadMask(self.vec, &mask) )
+        return mask
+
+    def getCLContextHandle(self):
+        """
+        Returns a Vec's CL Context as :class:`int`.
+
+        To interface with :mod:`pyopencl` refer
+        :meth:`pyopencl.Context.from_int_ptr`
+        """
+        cdef Py_uintptr_t ctxhdl = 0
+        CHKERR( VecViennaCLGetCLContext(self.vec, &ctxhdl) )
+        return ctxhdl
+
+    def getCLQueueHandle(self):
+        """
+        Returns a Vec's CL Context as :class:`int`.
+
+        To interface with :mod:`pyopencl` refer
+        :meth:`pyopencl.Context.from_int_ptr`
+        """
+        cdef Py_uintptr_t queuehdl = 0
+        CHKERR( VecViennaCLGetCLQueue(self.vec, &queuehdl) )
+        return queuehdl
+
+    def getCLMemHandle(self, mode='rw'):
+        """
+        Returns a Vec's CL buffer as :class:`int`.
+
+        To interface with :mod:`pyopencl` refer
+        :meth:`pyopencl.MemoryObject.from_int_ptr`.
+
+        :arg mode: An instance of class:`str` denoting the intended access
+            usage to the CL buffer. Can be one of 'r'(read-only), 'w'
+            (write-only) or 'rw' (read-write). See also
+            :meth:`Vec.restoreCLMemHandle`.
+        """
+        cdef Py_uintptr_t memhdl = 0
+        cdef const char *m = NULL
+        mode = str2bytes(mode, &m)
+        if m == NULL or (m[0] == c'r' and m[1] == c'w'):
+            CHKERR( VecViennaCLGetCLMem(self.vec, &memhdl) )
+        elif m[0] == c'r':
+            CHKERR( VecViennaCLGetCLMemRead(self.vec, &memhdl) )
+        elif m[0] == c'w':
+            CHKERR( VecViennaCLGetCLMemWrite(self.vec, &memhdl) )
+        else:
+            raise ValueError("Invalid mode: expected 'r', 'w' or 'rw'")
+        return memhdl
+
+    def restoreCLMemHandle(self):
+        """
+        To be called after accessing a Vec's cl_mem in 'w' or 'rw' modes.
+        See also :meth:`Vec.getCLMemHandle`.
+        """
+        CHKERR( VecViennaCLRestoreCLMemWrite(self.vec) )
 
     def duplicate(self, array=None):
         cdef Vec vec = type(self)()
