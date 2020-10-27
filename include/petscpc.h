@@ -280,10 +280,6 @@ PETSC_EXTERN PetscErrorCode PCGalerkinSetComputeSubmatrix(PC,PetscErrorCode (*)(
 
 PETSC_EXTERN PetscErrorCode PCPythonSetType(PC,const char[]);
 
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetTolerance(PC,PetscReal);
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetIterations(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetUseVerboseMonitor(PC,PetscBool);
-
 PETSC_EXTERN PetscErrorCode PCAINVCUSPSetDropTolerance(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCAINVCUSPUseScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCAINVCUSPSetNonzeros(PC,PetscInt);
@@ -412,8 +408,6 @@ PETSC_EXTERN PetscErrorCode PCPatchSetPrecomputeElementTensors(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCPatchGetPrecomputeElementTensors(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCPatchSetPartitionOfUnity(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCPatchGetPartitionOfUnity(PC, PetscBool *);
-PETSC_EXTERN PetscErrorCode PCPatchSetMultiplicative(PC, PetscBool);
-PETSC_EXTERN PetscErrorCode PCPatchGetMultiplicative(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCPatchSetSubMatType(PC, MatType);
 PETSC_EXTERN PetscErrorCode PCPatchGetSubMatType(PC, MatType *);
 PETSC_EXTERN PetscErrorCode PCPatchSetCellNumbering(PC, PetscSection);

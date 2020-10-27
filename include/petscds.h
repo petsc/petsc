@@ -79,8 +79,6 @@ PETSC_EXTERN PetscErrorCode PetscDSAddDiscretization(PetscDS, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscDSGetQuadrature(PetscDS, PetscQuadrature*);
 PETSC_EXTERN PetscErrorCode PetscDSGetImplicit(PetscDS, PetscInt, PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscDSSetImplicit(PetscDS, PetscInt, PetscBool);
-PETSC_EXTERN PetscErrorCode PetscDSGetAdjacency(PetscDS, PetscInt, PetscBool*, PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscDSSetAdjacency(PetscDS, PetscInt, PetscBool,  PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDSGetConstants(PetscDS, PetscInt *, const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode PetscDSSetConstants(PetscDS, PetscInt, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetObjective(PetscDS, PetscInt,

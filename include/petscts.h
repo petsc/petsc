@@ -554,8 +554,6 @@ PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*)
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,TSForcingFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,TSForcingFunction*,void**);
-PETSC_EXTERN PetscErrorCode DMTSGetMinRadius(DM,PetscReal*);
-PETSC_EXTERN PetscErrorCode DMTSSetMinRadius(DM,PetscReal);
 PETSC_EXTERN PetscErrorCode DMTSCheckFromOptions(TS, Vec);
 
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,Vec,void*),void*);
@@ -576,7 +574,6 @@ PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*),void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexTSGetGeometryFVM(DM,Vec*,Vec*,PetscReal*);
-PETSC_EXTERN PetscErrorCode DMPlexTSGetGradientDM(DM,PetscFV,DM*);
 
 typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 typedef struct {
