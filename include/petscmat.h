@@ -74,7 +74,6 @@ typedef const char* MatType;
 #define MATSBAIJ           "sbaij"
 #define MATSEQSBAIJ        "seqsbaij"
 #define MATMPISBAIJ        "mpisbaij"
-#define MATDAAD            "daad"
 #define MATMFFD            "mffd"
 #define MATNORMAL          "normal"
 #define MATNORMALHERMITIAN "normalh"
@@ -1120,8 +1119,6 @@ PETSC_EXTERN PetscErrorCode MatBlockMatSetPreallocation(Mat,PetscInt,PetscInt,co
 
 PETSC_EXTERN PetscErrorCode MatStoreValues(Mat);
 PETSC_EXTERN PetscErrorCode MatRetrieveValues(Mat);
-
-PETSC_EXTERN PetscErrorCode MatDAADSetCtx(Mat,void*);
 
 PETSC_EXTERN PetscErrorCode MatFindNonzeroRows(Mat,IS*);
 PETSC_EXTERN PetscErrorCode MatFindZeroRows(Mat,IS*);

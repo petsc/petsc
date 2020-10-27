@@ -110,8 +110,6 @@ PETSC_EXTERN PetscErrorCode MatSNESMFSetReuseBase(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatSNESMFGetReuseBase(Mat,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMFFDComputeJacobian(SNES,Vec,Mat,Mat,void*);
 
-PETSC_EXTERN PetscErrorCode MatDAADSetSNES(Mat,SNES);
-
 PETSC_EXTERN PetscErrorCode SNESGetType(SNES,SNESType*);
 PETSC_EXTERN PetscErrorCode SNESMonitorDefault(SNES,PetscInt,PetscReal,PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorScaling(SNES,PetscInt,PetscReal,PetscViewerAndFormat *);
