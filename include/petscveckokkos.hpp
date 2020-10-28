@@ -7,6 +7,14 @@
   #include <Kokkos_Core.hpp>
   #include <Kokkos_DualView.hpp>
 
+ #if defined(PETSC_HAVE_CUDA)
+  #define WaitForKokkos() PetscCUDASynchronize ? (Kokkos::fence(),0) : 0
+ #elif defined(PETSC_HAVE_HIP)
+  #define WaitForKokkos() PetscHIPSynchronize ? (Kokkos::fence(),0) : 0
+ #else
+  #define WaitForKokkos() 0
+ #endif
+
   using DeviceExecutionSpace               = Kokkos::DefaultExecutionSpace;
   using DeviceMemorySpace                  = typename DeviceExecutionSpace::memory_space;
   using HostMemorySpace                    = Kokkos::HostSpace;
