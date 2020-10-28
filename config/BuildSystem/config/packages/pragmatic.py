@@ -35,20 +35,15 @@ class Configure(config.package.CMakePackage):
     args.append('-DENABLE_OPENMP=OFF')
     args.append('-DEIGEN_INCLUDE_DIR='+self.eigen.include[0])
 
-    # prevent Pragmatic from linking to MPI it finds by itself
-    args.append('-DMPI_C_COMPILER:STRING="'+self.getCompiler()+'"')
     args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
     args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')
     args.append('-DMPI_C_LINK_FLAGS:STRING=""')
     args.append('-DMPI_C_LIBRARIES:STRING=""')
-    args.append('-DMPI_CXX_COMPILER:STRING="'+self.getCompiler('Cxx')+'"')
     args.append('-DMPI_CXX_INCLUDE_PATH:STRING=""')
     args.append('-DMPI_CXX_COMPILE_FLAGS:STRING=""')
     args.append('-DMPI_CXX_LINK_FLAGS:STRING=""')
     args.append('-DMPI_CXX_LIBRARIES:STRING=""')
 
-    if not self.compilerFlags.debugging:
-      args.append('-DCMAKE_BUILD_TYPE=Release')
     if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.indexTypes.integerSize == 64:

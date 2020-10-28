@@ -37,9 +37,6 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     if self.compilerFlags.debugging:
       args.append('-DEL_ZERO_INIT=ON')
-      args.append('-DCMAKE_BUILD_TYPE:STRING="Debug"')
-    else:
-      args.append('-DCMAKE_BUILD_TYPE:STRING="Release"')
     args.append('-DEL_DISABLE_VALGRIND=ON')
     args.append('-DEL_USE_QT5=OFF') # otherwise we would need Qt5 include paths to compile
     args.append('-DEL_FORCE_METIS_BUILD=OFF')
@@ -50,7 +47,6 @@ class Configure(config.package.CMakePackage):
     args.append('-DPARMETIS_TEST_RUNS=TRUE')
     args.append('-DEL_DISABLE_SCALAPACK=ON')
     args.append('-DEL_DISABLE_MPFR=ON')
-    args.append('-DCMAKE_INSTALL_LIBDIR:STRING="lib"')
 
     if self.metis.include:
       args.append('-DMETIS_INCLUDE_DIR:STRING="'+self.metis.include[0]+'"')
@@ -61,24 +57,14 @@ class Configure(config.package.CMakePackage):
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     if self.setCompilers.isDarwin(self.log):
       # shared library build doesn't work on Apple
-      args.append('-DBUILD_SHARED_LIBS=off')
-    if not self.checkSharedLibrariesEnabled():
+      args = self.rmArgsStartsWith(args,'-DBUILD_SHARED_LIBS')
       args.append('-DBUILD_SHARED_LIBS=off')
 
-    self.pushLanguage('C')
-    args.append('-DMPI_C_COMPILER="'+self.getCompiler()+'"')
     if self.argDB['with-64-bit-indices']:
       args.append('-DEL_USE_64BIT_INTS=ON')
-    self.popLanguage()
 
     self.pushLanguage('Cxx')
     if config.setCompilers.Configure.isSolaris(self.log):
        raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
-    args.append('-DMPI_CXX_COMPILER="'+self.getCompiler()+'"')
     self.popLanguage()
-
-    if hasattr(self.compilers, 'FC'):
-      self.pushLanguage('FC')
-      args.append('-DMPI_Fortran_COMPILER="'+self.getCompiler()+'"')
-      self.popLanguage()
     return args

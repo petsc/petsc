@@ -1698,9 +1698,16 @@ class CMakePackage(Package):
     import shlex
 
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
+    args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
+    args.append('-DCMAKE_INSTALL_LIBDIR:STRING="lib"')
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
+    if self.compilerFlags.debugging:
+      args.append('-DCMAKE_BUILD_TYPE=Debug')
+    else:
+      args.append('-DCMAKE_BUILD_TYPE=Release')
     self.framework.pushLanguage('C')
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
+    args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
     args.append('-DCMAKE_AR='+self.setCompilers.AR)
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
@@ -1712,6 +1719,7 @@ class CMakePackage(Package):
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
+      args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
       args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
       args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
@@ -1720,6 +1728,7 @@ class CMakePackage(Package):
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
+      args.append('-DMPI_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
       args.append('-DCMAKE_Fortran_FLAGS_DEBUG:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
       args.append('-DCMAKE_Fortran_FLAGS_RELEASE:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
@@ -1729,9 +1738,9 @@ class CMakePackage(Package):
       args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+self.setCompilers.LDFLAGS+'"')
 
     if self.checkSharedLibrariesEnabled():
-      args.append('-DBUILD_SHARED_LIBS=on')
+      args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
     else:
-      args.append('-DBUILD_SHARED_LIBS=off')
+      args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
     return args
 
   def Install(self):

@@ -65,10 +65,4 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DPnetcdf_LIBRARY_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'lib'))
       args.append('-DPnetcdf_INCLUDE_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'include'))
-    if self.checkSharedLibrariesEnabled():
-      args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
-    if self.compilerFlags.debugging:
-      args.append('-DCMAKE_BUILD_TYPE=Debug')
-    else:
-      args.append('-DCMAKE_BUILD_TYPE=Release')
     return args
