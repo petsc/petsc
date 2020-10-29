@@ -4,10 +4,10 @@
   on a grid. They have more mathematical structure then simple arrays.
 */
 
-#ifndef PETSCVEC_H
+#if !defined(PETSCVEC_H)
 #define PETSCVEC_H
-#include "petscsys.h"
-#include "petscsystypes.h"
+#include <petscsys.h>
+#include <petscsftypes.h> /* for VecScatter, VecScatterType */
 #include <petscis.h>
 #include <petscviewer.h>
 
@@ -19,16 +19,6 @@
 .seealso:  VecCreate(), VecType, VecSetType()
 S*/
 typedef struct _p_Vec*         Vec;
-
-/*S
-     VecScatter - Object used to manage communication of data
-       between vectors in parallel. Manages both scatters and gathers
-
-   Level: beginner
-
-.seealso:  VecScatterCreate(), VecScatterBegin(), VecScatterEnd()
-S*/
-typedef struct _p_VecScatter*  VecScatter;
 
 /*E
   ScatterMode - Determines the direction of a scatter
@@ -107,36 +97,18 @@ typedef const char* VecType;
 #define VECMPIKOKKOS   "mpikokkos"
 #define VECKOKKOS      "kokkos"     /* seqkokkos on one process and mpikokkos on several */
 
-/*J
-    VecScatterType - String with the name of a PETSc vector scatter type
-
-   Level: beginner
-
-.seealso: VecScatterSetType(), VecScatter, VecScatterCreate(), VecScatterDestroy()
-J*/
-typedef const char* VecScatterType;
-#define VECSCATTERSEQ       "seq"
-#define VECSCATTERMPI1      "mpi1"
-#define VECSCATTERMPI3      "mpi3"     /* use MPI3 on-node shared memory */
-#define VECSCATTERMPI3NODE  "mpi3node" /* use MPI3 on-node shared memory for vector type VECNODE */
-#define VECSCATTERSF        "sf"       /* use StarForest */
-
 /* Dynamic creation and loading functions */
-PETSC_EXTERN PetscFunctionList VecScatterList;
 PETSC_EXTERN PetscErrorCode VecScatterSetType(VecScatter, VecScatterType);
-PETSC_EXTERN PetscErrorCode VecScatterGetType(VecScatter, VecScatterType *);
+PETSC_EXTERN PetscErrorCode VecScatterGetType(VecScatter, VecScatterType*);
 PETSC_EXTERN PetscErrorCode VecScatterSetFromOptions(VecScatter);
 PETSC_EXTERN PetscErrorCode VecScatterRegister(const char[],PetscErrorCode (*)(VecScatter));
 PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter*);
-PETSC_EXTERN PetscErrorCode VecScatterInitializePackage(void);
-PETSC_EXTERN PetscErrorCode VecScatterFinalizePackage(void);
 
 /* Logging support */
 #define    REAL_FILE_CLASSID 1211213
 #define    VEC_FILE_CLASSID 1211214
 PETSC_EXTERN PetscClassId VEC_CLASSID;
-PETSC_EXTERN PetscClassId VEC_SCATTER_CLASSID;
-
+PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
 PETSC_EXTERN PetscErrorCode VecInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecFinalizePackage(void);
@@ -682,13 +654,6 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCL(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCL(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 #if defined(PETSC_HAVE_CUDA)
-typedef struct _p_PetscCUDAIndices* PetscCUDAIndices;
-typedef struct _p_VecScatterCUDAIndices_StoS* VecScatterCUDAIndices_StoS;
-typedef struct _p_VecScatterCUDAIndices_PtoP* VecScatterCUDAIndices_PtoP;
-PETSC_EXTERN PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,PetscCUDAIndices,ScatterMode);
-PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec,PetscCUDAIndices,ScatterMode);
-PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec);
-PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUDA(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);

@@ -159,8 +159,6 @@ PetscErrorCode  VecInitializePackage(void)
   PetscFunctionBegin;
   if (VecPackageInitialized) PetscFunctionReturn(0);
   VecPackageInitialized = PETSC_TRUE;
-  /* Initialize subpackage */
-  ierr = VecScatterInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Vector",&VEC_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
@@ -235,7 +233,7 @@ PetscErrorCode  VecInitializePackage(void)
   if (opt) {
     ierr = PetscStrInList("vec",logList,',',&pkg);CHKERRQ(ierr);
     if (pkg) {ierr = PetscLogEventExcludeClass(VEC_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventExcludeClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCSF_CLASSID);CHKERRQ(ierr);}
   }
 
   /*
@@ -269,7 +267,6 @@ PetscErrorCode  VecFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&VecList);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&VecScatterList);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MAXINDEX_OP);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MININDEX_OP);CHKERRQ(ierr);

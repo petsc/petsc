@@ -13,7 +13,6 @@ static PetscErrorCode PetscInitializePackageAll(void)
   ierr = PFInitializePackage();CHKERRQ(ierr);
   ierr = PetscSFInitializePackage();CHKERRQ(ierr);
   ierr = VecInitializePackage();CHKERRQ(ierr);
-  ierr = VecScatterInitializePackage();CHKERRQ(ierr);
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PCInitializePackage();CHKERRQ(ierr);
   ierr = KSPInitializePackage();CHKERRQ(ierr);

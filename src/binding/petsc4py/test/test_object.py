@@ -189,15 +189,6 @@ class TestObjectVec(BaseTestObject, unittest.TestCase):
         BaseTestObject.setUp(self)
         self.obj.assemble()
 
-class TestObjectScatter(BaseTestObject, unittest.TestCase):
-    CLASS  = PETSc.Scatter
-    FACTORY = 'create'
-    def setUp(self):
-        v1, v2 = PETSc.Vec().createSeq(0), PETSc.Vec().createSeq(0)
-        i1, i2 = PETSc.IS().createGeneral([]), PETSc.IS().createGeneral([])
-        self.obj = PETSc.Scatter().create(v1, i1, v2, i2)
-        del v1, v2, i1, i2
-
 class TestObjectMat(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.Mat
     FACTORY = 'createAIJ'

@@ -1,11 +1,14 @@
 # --------------------------------------------------------------------
 
 class ScatterType(object):
-   SEQ       = S_(VECSCATTERSEQ)
-   MPI1      = S_(VECSCATTERMPI1)
-   MPI3      = S_(VECSCATTERMPI3)
-   MPI3NODE  = S_(VECSCATTERMPI3NODE)
-   SF        = S_(VECSCATTERSF)
+   BASIC      = S_(PETSCSFBASIC)
+   NEIGHBOR   = S_(PETSCSFNEIGHBOR)
+   ALLGATHERV = S_(PETSCSFALLGATHERV)
+   ALLGATHER  = S_(PETSCSFALLGATHER)
+   GATHERV    = S_(PETSCSFGATHERV)
+   GATHER     = S_(PETSCSFGATHER)
+   ALLTOALL   = S_(PETSCSFALLTOALL)
+   WINDOW     = S_(PETSCSFWINDOW)
 
 # --------------------------------------------------------------------
 

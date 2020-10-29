@@ -361,7 +361,6 @@ cdef extern from *:
     PetscClassId PETSC_LGMAP_CLASSID       "IS_LTOGM_CLASSID"
     PetscClassId PETSC_SF_CLASSID          "PETSCSF_CLASSID"
     PetscClassId PETSC_VEC_CLASSID         "VEC_CLASSID"
-    PetscClassId PETSC_SCATTER_CLASSID     "VEC_SCATTER_CLASSID"
     PetscClassId PETSC_SECTION_CLASSID     "PETSC_SECTION_CLASSID"
     PetscClassId PETSC_MAT_CLASSID         "MAT_CLASSID"
     PetscClassId PETSC_NULLSPACE_CLASSID   "MAT_NULLSPACE_CLASSID"
@@ -412,7 +411,6 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_LGMAP_CLASSID,       LGMap)
     PyPetscType_Register(PETSC_SF_CLASSID,          SF)
     PyPetscType_Register(PETSC_VEC_CLASSID,         Vec)
-    PyPetscType_Register(PETSC_SCATTER_CLASSID,     Scatter)
     PyPetscType_Register(PETSC_SECTION_CLASSID,     Section)
     PyPetscType_Register(PETSC_MAT_CLASSID,         Mat)
     PyPetscType_Register(PETSC_NULLSPACE_CLASSID,   NullSpace)

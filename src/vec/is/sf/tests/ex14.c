@@ -58,6 +58,7 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,2,ix,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,2,iy,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
   ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);
 
   ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event1,0,0,0,0);CHKERRQ(ierr);
@@ -114,6 +115,8 @@ int main(int argc,char **argv)
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,iy,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
+   /* Call SetUp explicitly, otherwise messages in implicit SetUp will be counted in events below */
+  ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);
 
   ierr = PetscLogStagePush(stage2);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event2,0,0,0,0);CHKERRQ(ierr);
@@ -168,12 +171,4 @@ int main(int argc,char **argv)
       args:
       requires: double define(PETSC_USE_LOG)
 
-   test:
-      suffix: 2
-      nsize: 4
-      args: -vecscatter_type mpi3
-      # have this filter since some messages might go through shared memory and PETSc have not yet
-      # implemented message logging for them. Add this test to just test mpi3 VecScatter type works.
-      filter: grep -v "VecScatter(bs="
-      requires: double define(PETSC_USE_LOG) define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 TEST*/

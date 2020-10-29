@@ -4,19 +4,11 @@
 #if !defined(PETSCSF_H)
 #define PETSCSF_H
 #include <petscsys.h>
-#include <petscis.h>
 #include <petscsftypes.h>
+#include <petscvec.h> /* for Vec, VecScatter etc */
 
 PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
-/*J
-    PetscSFType - String with the name of a PetscSF type
-
-   Level: beginner
-
-.seealso: PetscSFSetType(), PetscSF
-J*/
-typedef const char *PetscSFType;
 #define PETSCSFBASIC      "basic"
 #define PETSCSFNEIGHBOR   "neighbor"
 #define PETSCSFALLGATHERV "allgatherv"

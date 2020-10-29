@@ -55,49 +55,6 @@ PETSC_INTERN PetscErrorCode VecCopy_SeqCUDA_Private(Vec xin,Vec yin);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUDA_Private(Vec xin,PetscRandom r);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqCUDA_Private(Vec v);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqCUDA_Private(Vec vin);
-PETSC_INTERN PetscErrorCode VecCUDACopyToGPU_Public(Vec);
-PETSC_INTERN PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
-PETSC_INTERN PetscErrorCode VecCUDACopyToGPUSome(Vec,PetscCUDAIndices,ScatterMode);
-PETSC_INTERN PetscErrorCode VecCUDACopyFromGPUSome(Vec,PetscCUDAIndices,ScatterMode);
-
-PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesCreate_PtoP(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUDAIndices*);
-PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesCreate_StoS(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscCUDAIndices*);
-PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesDestroy(PetscCUDAIndices*);
-PETSC_INTERN PetscErrorCode VecScatterCUDA_StoS(Vec,Vec,PetscCUDAIndices,InsertMode,ScatterMode);
-
-typedef enum {VEC_SCATTER_CUDA_STOS, VEC_SCATTER_CUDA_PTOP} VecCUDAScatterType;
-typedef enum {VEC_SCATTER_CUDA_GENERAL, VEC_SCATTER_CUDA_STRIDED} VecCUDASequentialScatterMode;
-
-struct  _p_VecScatterCUDAIndices_PtoP {
-  PetscInt ns;
-  PetscInt sendLowestIndex;
-  PetscInt nr;
-  PetscInt recvLowestIndex;
-};
-
-struct  _p_VecScatterCUDAIndices_StoS {
-  /* from indices data */
-  PetscInt *fslots;
-  PetscInt fromFirst;
-  PetscInt fromStep;
-  VecCUDASequentialScatterMode fromMode;
-
-  /* to indices data */
-  PetscInt *tslots;
-  PetscInt toFirst;
-  PetscInt toStep;
-  VecCUDASequentialScatterMode toMode;
-
-  PetscInt n;
-  PetscInt MAX_BLOCKS;
-  PetscInt MAX_CORESIDENT_THREADS;
-  cudaStream_t stream;
-};
-
-struct  _p_PetscCUDAIndices {
-  void * scatter;
-  VecCUDAScatterType scatterType;
-};
 
 /* complex single */
 #if defined(PETSC_USE_COMPLEX)
