@@ -160,19 +160,31 @@ static PetscErrorCode DMPlexEGADSPrintModel(ego model)
       ierr = EG_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);
 
       for (e = 0; e < Ne; ++e) {
-        ego    edge     = objs[e];
-        double range[4] = {0., 0., 0., 0.};
-        double point[3] = {0., 0., 0.};
+        ego    edge      = objs[e];
+        double range[4]  = {0., 0., 0., 0.};
+        double point[3]  = {0., 0., 0.};
+        double params[3] = {0., 0., 0.};
+        double result[18];
         int    peri;
 
-        id = EG_indexBodyTopo(body, edge);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF, "            EDGE ID: %d\n", id);CHKERRQ(ierr);
+        id   = EG_indexBodyTopo(body, edge);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "            EDGE ID: %d (%d)\n", id, e);CHKERRQ(ierr);
 
-        ierr = EG_getRange(objs[e], range, &peri);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF, " Range = %lf, %lf, %lf, %lf \n", range[0], range[1], range[2], range[3]);
+        ierr = EG_getRange(edge, range, &peri);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "  Range = %lf, %lf, %lf, %lf \n", range[0], range[1], range[2], range[3]);
 
         /* Get NODE info which associated with the current EDGE */
         ierr = EG_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);CHKERRQ(ierr);
+        if (mtype == DEGENERATE) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "  EDGE %d is DEGENERATE \n", id);CHKERRQ(ierr);
+        } else {
+          params[0] = range[0];
+          ierr = EG_evaluate(edge, params, result);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "   between (%lf, %lf, %lf)", result[0], result[1], result[2]);
+          params[0] = range[1];
+          ierr = EG_evaluate(edge, params, result);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF, " and (%lf, %lf, %lf)\n", result[0], result[1], result[2]);
+        }
 
         for (v = 0; v < Nv; ++v) {
           ego    vertex = nobjs[v];
@@ -221,6 +233,8 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (!rank) {
+    const PetscInt debug = 0;
+
     /* ---------------------------------------------------------------------------------------------------
     Generate Petsc Plex
       Get all Nodes in model, record coordinates in a correctly formatted array
@@ -277,9 +291,6 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
     ierr = PetscHMapIGetSize(edgeMap, &numEdges);CHKERRQ(ierr);
     newVertices  = numEdges + numQuads;
     numVertices += newVertices;
-    ierr = PetscPrintf(PETSC_COMM_SELF, "\nPLEX Input Array Checkouts\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF, " Total Number of Unique Vertices = %D (%D) \n", numVertices, newVertices);CHKERRQ(ierr);
 
     dim        = 2; /* Assume 3D Models :: Need to update to handle 2D Models in the future */
     cdim       = 3; /* Assume 3D Models :: Need to update to handle 2D Models in the future */
@@ -302,8 +313,6 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
         coords[(id-1)*cdim+0] = limits[0];
         coords[(id-1)*cdim+1] = limits[1];
         coords[(id-1)*cdim+2] = limits[2];
-        ierr = PetscPrintf(PETSC_COMM_SELF, "    Node ID = %d (%d)\n", id, id-1);
-        ierr = PetscPrintf(PETSC_COMM_SELF, "      (x,y,z) = (%lf, %lf, %lf) \n \n", coords[(id-1)*cdim+0], coords[(id-1)*cdim+1],coords[(id-1)*cdim+2]);
       }
       EG_free(nobjs);
     }
@@ -345,34 +354,25 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
             coords[v*cdim+0] = result[0];
             coords[v*cdim+1] = result[1];
             coords[v*cdim+2] = result[2];
-            ierr = PetscPrintf(PETSC_COMM_SELF, "    Edge ID = %d (%D) \n", eid, v);
-            ierr = PetscPrintf(PETSC_COMM_SELF, "      (x,y,z) = (%lf, %lf, %lf)\n", coords[v*cdim+0], coords[v*cdim+1],coords[v*cdim+2]);
-            params[0] = range[0];
-            ierr = EG_evaluate(edge, params, result);CHKERRQ(ierr);
-            ierr = PetscPrintf(PETSC_COMM_SELF, "      between (%lf, %lf, %lf)", result[0], result[1], result[2]);
-            params[0] = range[1];
-            ierr = EG_evaluate(edge, params, result);CHKERRQ(ierr);
-            ierr = PetscPrintf(PETSC_COMM_SELF, " and (%lf, %lf, %lf)\n\n", result[0], result[1], result[2]);
           }
         }
         if (Ner == 4) {
           PetscInt v = fOff + numQuads++;
-          ego     *fobjs;
+          ego     *fobjs, face;
           double   range[4], params[3] = {0., 0., 0.}, result[18];
-          int      Nf, face, periodic[2];
+          int      Nf, fid, periodic[2];
 
           ierr = EG_getBodyTopos(body, loop, FACE, &Nf, &fobjs);CHKERRQ(ierr);
-          if (Nf != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1", lid-1, Nf);
-          face = EG_indexBodyTopo(body, fobjs[0]);CHKERRQ(ierr);
-          ierr = EG_getRange(fobjs[0], range, periodic);CHKERRQ(ierr);
+          face = fobjs[0];
+          fid  = EG_indexBodyTopo(body, face);CHKERRQ(ierr);
+          if (Nf != 1) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1 (%d)", lid-1, Nf, fid);
+          ierr = EG_getRange(face, range, periodic);CHKERRQ(ierr);
           params[0] = 0.5*(range[0] + range[1]);
           params[1] = 0.5*(range[2] + range[3]);
-          ierr = EG_evaluate(fobjs[0], params, result);CHKERRQ(ierr);
+          ierr = EG_evaluate(face, params, result);CHKERRQ(ierr);
           coords[v*cdim+0] = result[0];
           coords[v*cdim+1] = result[1];
           coords[v*cdim+2] = result[2];
-          ierr = PetscPrintf(PETSC_COMM_SELF, "    Face ID = %d (%D) \n", face-1, v);
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      (x,y,z) = (%lf, %lf, %lf) \n \n", coords[v*cdim+0], coords[v*cdim+1],coords[v*cdim+2]);
         }
       }
     }
@@ -392,7 +392,6 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
         int lid, Ner = 0, Ne, e, nc = 0, c, Nt, t;
 
         lid  = EG_indexBodyTopo(body, loop);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF, "    LOOP ID: %d \n", lid);CHKERRQ(ierr);
         ierr = EG_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);
 
         for (e = 0; e < Ne; ++e) {
@@ -401,10 +400,9 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
           int eid, Nv, v, tmp;
 
           eid  = EG_indexBodyTopo(body, edge);
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      EDGE ID: %d \n", eid);CHKERRQ(ierr);
           ierr = EG_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);
-          if (mtype == DEGENERATE) {ierr = PetscPrintf(PETSC_COMM_SELF, "        EGDE %d is DEGENERATE \n", eid);CHKERRQ(ierr); continue;}
-          else                     {++Ner;}
+          if (mtype == DEGENERATE) continue;
+          else                     ++Ner;
           if (Nv != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Edge %d has %d vertices != 2", eid, Nv);
 
           for (v = 0; v < Nv; ++v) {
@@ -502,13 +500,15 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
             break;
           default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d edges, which we do not support", lid, Ner);
         }
-        for (t = 0; t < Nt; ++t) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "      LOOP Corner NODEs Triangle %D (", t);CHKERRQ(ierr);
-          for (c = 0; c < numCorners; ++c) {
-            if (c > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
-            ierr = PetscPrintf(PETSC_COMM_SELF, "%D", cells[(cOff-Nt+t)*numCorners+c]);CHKERRQ(ierr);
+        if (debug) {
+          for (t = 0; t < Nt; ++t) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "  LOOP Corner NODEs Triangle %D (", t);CHKERRQ(ierr);
+            for (c = 0; c < numCorners; ++c) {
+              if (c > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
+              ierr = PetscPrintf(PETSC_COMM_SELF, "%D", cells[(cOff-Nt+t)*numCorners+c]);CHKERRQ(ierr);
+            }
+            ierr = PetscPrintf(PETSC_COMM_SELF, ")\n");CHKERRQ(ierr);
           }
-          ierr = PetscPrintf(PETSC_COMM_SELF, ")\n");CHKERRQ(ierr);
         }
       }
       EG_free(lobjs);
@@ -517,6 +517,8 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
   if (cOff != numCells) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
   ierr = DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numVertices, numCorners, PETSC_TRUE, cells, cdim, coords, &dm);CHKERRQ(ierr);
   ierr = PetscFree3(coords, cells, cone);CHKERRQ(ierr);
+  ierr = PetscInfo2(dm, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells);CHKERRQ(ierr);
+  ierr = PetscInfo2(dm, " Total Number of Unique Vertices = %D (%D)\n", numVertices, newVertices);CHKERRQ(ierr);
   /* Embed EGADS model in DM */
   {
     PetscContainer modelObj, contextObj;
@@ -646,7 +648,7 @@ PetscErrorCode DMPlexCreateEGADSFromFile(MPI_Comm comm, const char filename[], D
 #if defined(PETSC_HAVE_EGADS)
   ego            context= NULL, model = NULL;
 #endif
-  PetscBool      printModel;
+  PetscBool      printModel = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
