@@ -678,6 +678,10 @@ class Package(config.base.Configure):
   def updateGitDir(self):
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
+      if not (hasattr(self, 'gitcommit') and self.gitcommit):
+        raise RuntimeError('Trying to update '+self.package+' package source directory '+self.packageDir+' which is supposed to be a git repository, but no gitcommit is set for this package.\n\
+Try to delete '+self.packageDir+' and rerun configure.\n\
+If the problem persists, please send your configure.log to petsc-maint@mcs.anl.gov')
       # verify that packageDir is actually a git clone
       if not os.path.isdir(os.path.join(self.packageDir,'.git')):
         raise RuntimeError(self.packageDir +': is not a git repository! '+os.path.join(self.packageDir,'.git')+' not found!')
