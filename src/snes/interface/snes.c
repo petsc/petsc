@@ -3289,7 +3289,7 @@ PetscErrorCode  SNESDestroy(SNES *snes)
 
    Input Parameters:
 +  snes - the SNES context
--  lag - -1 indicates NEVER rebuild, 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
+-  lag - 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
          the Jacobian is built etc. -2 indicates rebuild preconditioner at next chance but then never rebuild after that
 
    Options Database Keys:
@@ -3301,7 +3301,8 @@ PetscErrorCode  SNESDestroy(SNES *snes)
    Notes:
    The default is 1
    The preconditioner is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1 or SNESSetLagPreconditionerPersists() was called
-   If  -1 is used before the very first nonlinear solve the preconditioner is still built because there is no previous preconditioner to use
+
+   SNESSetLagPreconditionerPersists() allows using the same uniform lagging (for example every second solve) across multiple solves.
 
    Level: intermediate
 
@@ -3518,7 +3519,7 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
 }
 
 /*@
-   SNESSetLagPreconditionerPersists - Set whether or not the preconditioner lagging persists through multiple solves
+   SNESSetLagPreconditionerPersists - Set whether or not the preconditioner lagging persists through multiple nonlinear solves
 
    Logically Collective on SNES
 
