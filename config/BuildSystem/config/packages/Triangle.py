@@ -55,6 +55,7 @@ class Configure(config.package.Package):
     cflags = self.updatePackageCFlags(self.getCompilerFlags())
     cflags += ' '+self.headers.toString('.')
     cflags += ' -fPIC'
+    cflags += ' -DNO_TIMER'
 
     g.write('CC             = '+self.getCompiler()+'\n')
     g.write('CFLAGS         = '+cflags+'\n')
