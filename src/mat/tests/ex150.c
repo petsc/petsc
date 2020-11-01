@@ -4,7 +4,7 @@ static char help[]="This program illustrates the use of PETSc-fftw interface for
 
 extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
 extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;

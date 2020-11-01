@@ -4,7 +4,7 @@ static char help[]="This program illustrates the use of parallel real multi-dime
 #include <fftw3.h>
 #include <fftw3-mpi.h>
 
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   ptrdiff_t      N0=2,N1=2,N2=2,N3=2,dim[4],N,D;
   fftw_plan      bplan,fplan;

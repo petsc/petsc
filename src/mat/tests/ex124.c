@@ -5,8 +5,7 @@ Input parameters include\n\
 
 #include <petscmat.h>
 
-#undef WRITEFILE
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,B;
   PetscViewer    fd;

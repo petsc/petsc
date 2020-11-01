@@ -12,7 +12,7 @@ static char help[] = "Test sequential USFFT interface on a 3-dof field over a un
 #include <petscmat.h>
 #include <petscdm.h>
 #include <petscdmda.h>
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
   const char     *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};

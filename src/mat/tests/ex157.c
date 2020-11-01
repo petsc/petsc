@@ -1,7 +1,7 @@
 static char help[]="This program illustrates the use of PETSc-fftw interface for parallel real DFT\n";
 #include <petscmat.h>
 #include <fftw3-mpi.h>
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
