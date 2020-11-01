@@ -19,7 +19,9 @@ PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool *isInitialized)
 /* Initialize Kokkos if not yet */
 PetscErrorCode PetscKokkosInitializeCheck(void)
 {
+#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP)
   PetscErrorCode        ierr;
+#endif
   Kokkos::InitArguments args;
   int                   devId = -1;
 
