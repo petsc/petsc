@@ -416,7 +416,7 @@ typedef struct { /* used by MatProduct() */
   char           *alg;
   Mat            A,B,C,Dwork;
   PetscReal      fill;
-  PetscBool      api_user; /* used by MatProductSetFromOptions_xxx() to distinguish command line options */
+  PetscBool      api_user; /* used to distinguish command line options and to indicate the matrix values are ready to be consumed at symbolic phase if needed */
 
   /* Some products may display the information on the algorithm used */
   PetscErrorCode (*view)(Mat,PetscViewer);
