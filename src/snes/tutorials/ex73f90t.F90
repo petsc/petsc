@@ -739,7 +739,7 @@
 !/*TEST
 !
 !   build:
-!      requires: !single !pgf90_compiler !complex
+!      requires: !single !complex
 !
 !   test:
 !      nsize: 4

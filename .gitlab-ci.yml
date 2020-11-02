@@ -642,6 +642,7 @@ linux-pgi:
     - gce-nfs, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pgi
+    LOAD_MODULES: hpc_sdk/20.9
 
 linux-nagfor:
   extends:

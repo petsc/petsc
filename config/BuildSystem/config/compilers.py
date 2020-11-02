@@ -997,12 +997,10 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       loc2 = output.find(' -lpgf90rtl -lpgftnrtl')
       if loc2 >= -1:
         output = output[0:loc] + ' -lpgf90rtl -lpgftnrtl' + output[loc:]
-      self.addDefine('HAVE_PGF90_COMPILER','1')
     elif output.find(' -lpgf90rtl -lpgftnrtl') >= 0:
       # somehow doing this hacky thing appears to get rid of error with undefined __hpf_exit
       self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in librarylist')
       output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
-      self.addDefine('HAVE_PGF90_COMPILER','1')
 
     # PGI: kill anything enclosed in single quotes
     if output.find('\'') >= 0:
