@@ -187,7 +187,7 @@ PetscErrorCode  VecGhostRestoreLocalForm(Vec g,Vec *l)
 .ve
 
    To accumulate the ghost region values onto the owning processors and then update
-   the ghost regions correctly, call the later followed by the former, i.e.,
+   the ghost regions correctly, call the latter followed by the former, i.e.,
 .vb
        VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
        VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
