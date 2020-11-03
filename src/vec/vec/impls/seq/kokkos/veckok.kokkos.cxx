@@ -300,14 +300,19 @@ PetscErrorCode VecShift_SeqKokkos(Vec xin,PetscScalar shift)
 PetscErrorCode VecAXPY_SeqKokkos(Vec yin,PetscScalar alpha,Vec xin)
 {
   PetscErrorCode               ierr;
-  PetscBool                    xiskok;
+  PetscBool                    xiskok,yiskok;
   PetscScalarViewDevice_t      yv;
   ConstPetscScalarViewDevice_t xv;
 
   PetscFunctionBegin;
   if (alpha == (PetscScalar)0.0) PetscFunctionReturn(0);
+  if (yin == xin) {
+    ierr = VecScale_SeqKokkos(yin,alpha+1);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = PetscObjectTypeCompareAny((PetscObject)xin,&xiskok,VECSEQKOKKOS,VECMPIKOKKOS,"");CHKERRQ(ierr);
-  if (xiskok) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)yin,&yiskok,VECSEQKOKKOS,VECMPIKOKKOS,"");CHKERRQ(ierr);
+  if (xiskok && yiskok) {
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     ierr = VecKokkosGetDeviceViewRead(xin,&xv);CHKERRQ(ierr);
     ierr = VecKokkosGetDeviceView(yin,&yv);CHKERRQ(ierr);
@@ -646,25 +651,32 @@ PetscErrorCode VecMAXPY_SeqKokkos(Vec yin, PetscInt nv,const PetscScalar *alpha,
 /* y = alpha x + beta y */
 PetscErrorCode VecAXPBY_SeqKokkos(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
-  PetscErrorCode                  ierr;
-  ConstPetscScalarViewDevice_t    xv;
-  PetscScalarViewDevice_t         yv;
+  PetscErrorCode               ierr;
+  ConstPetscScalarViewDevice_t xv;
+  PetscScalarViewDevice_t      yv;
+  PetscBool                    xiskok,yiskok;
 
   PetscFunctionBegin;
-  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-  ierr = VecKokkosGetDeviceViewRead(xin,&xv);CHKERRQ(ierr);
-  ierr = VecKokkosGetDeviceView(yin,&yv);CHKERRQ(ierr);
-  KokkosBlas::axpby(alpha,xv,beta,yv);
-  ierr = WaitForKokkos();CHKERRQ(ierr);
-  ierr = VecKokkosRestoreDeviceViewRead(xin,&xv);CHKERRQ(ierr);
-  ierr = VecKokkosRestoreDeviceView(yin,&yv);CHKERRQ(ierr);
-  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-  if (alpha == (PetscScalar)0.0 || beta == (PetscScalar)0.0) {
-    ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
-  } else if (beta == (PetscScalar)1.0 || alpha == (PetscScalar)1.0) {
-    ierr = PetscLogGpuFlops(2.0*xin->map->n);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)xin,&xiskok,VECSEQKOKKOS,VECMPIKOKKOS,"");CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)yin,&yiskok,VECSEQKOKKOS,VECMPIKOKKOS,"");CHKERRQ(ierr);
+  if (xiskok && yiskok) {
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+    ierr = VecKokkosGetDeviceViewRead(xin,&xv);CHKERRQ(ierr);
+    ierr = VecKokkosGetDeviceView(yin,&yv);CHKERRQ(ierr);
+    KokkosBlas::axpby(alpha,xv,beta,yv);
+    ierr = WaitForKokkos();CHKERRQ(ierr);
+    ierr = VecKokkosRestoreDeviceViewRead(xin,&xv);CHKERRQ(ierr);
+    ierr = VecKokkosRestoreDeviceView(yin,&yv);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    if (alpha == (PetscScalar)0.0 || beta == (PetscScalar)0.0) {
+      ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
+    } else if (beta == (PetscScalar)1.0 || alpha == (PetscScalar)1.0) {
+      ierr = PetscLogGpuFlops(2.0*xin->map->n);CHKERRQ(ierr);
+    } else {
+      ierr = PetscLogGpuFlops(3.0*xin->map->n);CHKERRQ(ierr);
+    }
   } else {
-    ierr = PetscLogGpuFlops(3.0*xin->map->n);CHKERRQ(ierr);
+    ierr = VecAXPBY_Seq(yin,alpha,beta,xin);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
