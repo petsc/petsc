@@ -638,7 +638,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         ierr = MatSetOptionsPrefix(Prol11,prefix);CHKERRQ(ierr);
         ierr = PetscSNPrintf(addp,sizeof(addp),"pc_gamg_prolongator_%d_",(int)level);CHKERRQ(ierr);
         ierr = MatAppendOptionsPrefix(Prol11,addp);CHKERRQ(ierr);
-        /* if we reuse the prolongator, then it is better to generate the transpose by default with CUDA
+        /* Always generate the transpose with CUDA
            Such behaviour can be adapted with -pc_gamg_prolongator_ prefixed options */
 #if defined(PETSC_HAVE_CUDA)
         {
@@ -649,10 +649,10 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
             Mat Prol_d,Prol_o;
 
             ierr = MatMPIAIJGetSeqAIJ(Prol11,&Prol_d,&Prol_o,NULL);CHKERRQ(ierr);
-            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_d,pc_gamg->reuse_prol);CHKERRQ(ierr);
-            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_o,pc_gamg->reuse_prol);CHKERRQ(ierr);
+            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_d,PETSC_TRUE);CHKERRQ(ierr);
+            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_o,PETSC_TRUE);CHKERRQ(ierr);
           } else {
-            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol11,pc_gamg->reuse_prol);CHKERRQ(ierr);
+            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol11,PETSC_TRUE);CHKERRQ(ierr);
           }
         }
 #endif
