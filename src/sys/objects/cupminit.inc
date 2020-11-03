@@ -75,15 +75,17 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
   PetscFunctionBegin;
   if (PetscNotUseCUPM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You asserted the code wouldn't use devices with -device_set none, but now trying to create a device object. Remove this option or see manpage of PetscCUPMInitialize().");
   if (!PetscCUPMInitialized) {
-    cerr = cupmGetDeviceCount(&devCount);CHKERRCUPM(cerr);
-    if (devCount > 1) {
+    cerr = cupmGetDeviceCount(&devCount);
+    cupmGetLastError(); /* Reset the last error */
+    if (cerr != cupmSuccess) devCount = 0;
+    if (devCount > 0) {
       cerr = cupmSetDeviceFlags(cupmDeviceMapHost);
       cupmGetLastError(); /* Reset the last error */
       if (cerr == cupmSuccess) { /* It implies device runtime has not been initialized? */
         ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
         devId = rank % devCount;
         for (int i=0; i<3; i++) {
-          cerr  = cupmSetDevice(devId);
+          cerr = cupmSetDevice(devId);
           if (cerr == cupmSuccess) break;
           if (cerr != cupmErrorMemoryAllocation && cerr != cupmErrorLaunchOutOfResources) CHKERRCUPM(cerr);
           if (i < 2) {ierr = PetscSleep(3);CHKERRQ(ierr);}
