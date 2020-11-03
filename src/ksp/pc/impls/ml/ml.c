@@ -831,6 +831,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   gridctx[fine_level].A = A;
 
   level = fine_level - 1;
+  /* TODO: support for GPUs */
   if (size == 1) { /* convert ML P, R and A into seqaij format */
     for (mllevel=1; mllevel<Nlevels; mllevel++) {
       mlmat = &(ml_object->Pmat[mllevel]);

@@ -81,6 +81,9 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
 
+  /* TODO GPU: these calls are potentially expensive if matrices are large and we want to use the GPU */
+  /* A solution consists in providing a new API, MatAIJGetCollapsedAIJ, and each class can provide a fast
+     implementation */
   if (bs > 1) {
     const PetscScalar *vals;
     const PetscInt    *idx;
@@ -219,6 +222,8 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   ierr = MatDiagonalScale(Gmat, diag, diag);CHKERRQ(ierr);
   ierr = VecDestroy(&diag);CHKERRQ(ierr);
 
+  /* TODO GPU: optimization proposal, each class provides fast implementation of this
+     procedure via MatAbs API */
   if (vfilter < 0.0 && !symm) {
     /* Just use the provided matrix as the graph but make all values positive */
     MatInfo     info;
@@ -249,6 +254,9 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
     PetscFunctionReturn(0);
   }
 
+  /* TODO GPU: this can be called when filter = 0 -> Probably provide MatAIJThresholdCompress that compresses the entries below a threshold?
+               Also, if the matrix is symmetric, can we skip this
+               operation? It can be very expensive on large matrices. */
   ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);

@@ -485,6 +485,7 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
   ierr = MatSetOptionsPrefix(*Gmat2,prefix);CHKERRQ(ierr);
   ierr = PetscSNPrintf(addp,sizeof(addp),"pc_gamg_square_%d_",pc_gamg->current_level);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(*Gmat2,addp);CHKERRQ(ierr);
+  /* TODO: if we know the matrix is symmetric we can pass MATPRODUCT_AB */
   ierr = MatProductSetType(*Gmat2,MATPRODUCT_AtB);CHKERRQ(ierr);
   ierr = MatProductSetFromOptions(*Gmat2);CHKERRQ(ierr);
   ierr = MatProductSymbolic(*Gmat2);CHKERRQ(ierr);
