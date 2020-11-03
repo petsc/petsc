@@ -394,6 +394,9 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
   mat->ops->productsymbolic = NULL;
   mat->ops->productnumeric = NULL;
   if (product->type == MATPRODUCT_UNSPECIFIED) PetscFunctionReturn(0);
+  if (!A) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing A mat");
+  if (!B) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing B mat");
+  if (product->type == MATPRODUCT_ABC && !C) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing C mat");
   if (product->type != MATPRODUCT_ABC) C = NULL; /* do not use C if not needed */
   if (product->type == MATPRODUCT_RARt) bname = Bnames[1];
   else if (product->type == MATPRODUCT_PtAP) bname = Bnames[2];
@@ -766,7 +769,6 @@ PetscErrorCode MatProductSymbolic(Mat mat)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   MatCheckProduct(mat,1);
   if (mat->product->data) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Cannot run symbolic phase. Product data not empty");
-
   /* log event */
   switch (mat->product->type) {
   case MATPRODUCT_AB:
@@ -1029,22 +1031,15 @@ PetscErrorCode MatProductCreate(Mat A,Mat B,Mat C,Mat *D)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
-  MatCheckPreallocated(A,1);
-  if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
   PetscValidType(B,2);
-  MatCheckPreallocated(B,2);
-  if (!B->assembled) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (B->factortype) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix A");
+  if (B->factortype) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix B");
 
   if (C) {
     PetscValidHeaderSpecific(C,MAT_CLASSID,3);
     PetscValidType(C,3);
-    MatCheckPreallocated(C,3);
-    if (!C->assembled) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-    if (C->factortype) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+    if (C->factortype) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix C");
   }
 
   PetscValidPointer(D,4);
