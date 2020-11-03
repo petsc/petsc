@@ -1641,7 +1641,7 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"    GAMG specific options\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"      Threshold for dropping small values in graph on each level =");CHKERRQ(ierr);
-  for (i=0;i<pc_gamg->current_level;i++) {
+  for (i=0;i<mg->nlevels; i++) {
     ierr = PetscViewerASCIIPrintf(viewer," %g",(double)pc_gamg->threshold[i]);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
