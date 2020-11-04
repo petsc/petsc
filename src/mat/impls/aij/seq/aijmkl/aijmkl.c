@@ -1064,10 +1064,10 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_PtAP(Mat C)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  /* By setting C->ops->productsymbolic to NULL, we ensure that MatProductSymbolic_Basic() will be used.
-   * We do this in several other locations in this file. This works for the time being, but the _Basic()
+  /* By setting C->ops->productsymbolic to NULL, we ensure that MatProductSymbolic_Unsafe() will be used.
+   * We do this in several other locations in this file. This works for the time being, but these
    * routines are considered unsafe and may be removed from the MatProduct code in the future.
-   * TODO: Add proper MATSEQAIJMKL implementations, instead of relying on the _Basic() routines. */
+   * TODO: Add proper MATSEQAIJMKL implementations */
   C->ops->productsymbolic = NULL;
 #else
   /* AIJMKL only has an optimized routine for PtAP when A is symmetric and real. */
@@ -1076,7 +1076,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_PtAP(Mat C)
     C->ops->productsymbolic = MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal;
     PetscFunctionReturn(0);
   } else {
-    C->ops->productsymbolic = NULL; /* MatProductSymbolic_Basic() will be used. */
+    C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
   }
   /* Note that we don't set C->ops->productnumeric here, as this must happen in MatProductSymbolic_PtAP_XXX(),
    * depending on whether the algorithm for the general case vs. the real symmetric one is used. */
@@ -1087,14 +1087,14 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_PtAP(Mat C)
 static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_RARt(Mat C)
 {
   PetscFunctionBegin;
-  C->ops->productsymbolic = NULL; /* MatProductSymbolic_Basic() will be used. */
+  C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_ABC(Mat C)
 {
   PetscFunctionBegin;
-  C->ops->productsymbolic = NULL; /* MatProductSymbolic_Basic() will be used. */
+  C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
   PetscFunctionReturn(0);
 }
 

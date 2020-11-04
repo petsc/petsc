@@ -382,19 +382,11 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
  @*/
 PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
-  PetscScalar    one = 1.0;
   PetscErrorCode ierr;
-  PetscInt       mX,mY,nX,nY;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
-  PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-  PetscValidLogicalCollectiveScalar(Y,a,2);
-  ierr = MatGetSize(X,&mX,&nX);CHKERRQ(ierr);
-  ierr = MatGetSize(X,&mY,&nY);CHKERRQ(ierr);
-  if (mX != mY || nX != nY) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrices: %D %D first %D %D second",mX,mY,nX,nY);
   ierr = MatScale(Y,a);CHKERRQ(ierr);
-  ierr = MatAXPY(Y,one,X,str);CHKERRQ(ierr);
+  ierr = MatAXPY(Y,1.0,X,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
