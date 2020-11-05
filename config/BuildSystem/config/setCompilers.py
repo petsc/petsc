@@ -371,7 +371,7 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
-      if output.find('The Portland Group') >= 0:
+      if output.find('The Portland Group') >= 0 or output.find('PGI Compilers and Tools') >= 0:
         return 1
     except RuntimeError:
       pass

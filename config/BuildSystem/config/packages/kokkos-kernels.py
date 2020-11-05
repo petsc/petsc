@@ -57,6 +57,8 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     KokkosRoot = self.kokkos.directory
     args.append('-DKokkos_ROOT='+KokkosRoot)
+    # By default it installs in lib64, change it to lib
+    args.append('-DCMAKE_INSTALL_LIBDIR:STRING=lib')
     if self.cuda.found:
       self.system = 'CUDA'
       args.append('-DCMAKE_CXX_COMPILER='+os.path.join(KokkosRoot,'bin','nvcc_wrapper'))

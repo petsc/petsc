@@ -221,6 +221,7 @@ class CompilerOptions(config.base.Configure):
     else:
       # Portland Group Fortran 90
       if config.setCompilers.Configure.isPGI(compiler, self.log):
+        self.framework.addDefine('PETSC_HAVE_PGF90_COMPILER','1')
         if bopt == '':
           flags.append('-Mfree')
         elif bopt == 'O':

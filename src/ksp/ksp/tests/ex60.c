@@ -49,11 +49,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /* Setup Solve */
-  ierr = VecCreate(PETSC_COMM_WORLD, &b);CHKERRQ(ierr);
-  ierr = VecSetSizes(b, m*n, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b, &u);CHKERRQ(ierr);
-  ierr = VecDuplicate(b, &x);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, &x, &b);CHKERRQ(ierr);
+  ierr = VecDuplicate(x, &u);CHKERRQ(ierr);
   ierr = VecSet(u, 1.0);CHKERRQ(ierr);
   ierr = MatMult(A, u, b);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
@@ -96,13 +93,47 @@ int main(int argc,char **args)
       args: -ksp_view
 
    test:
+      requires: kokkos_kernels
+      suffix: 0_kokkos
+      args: -ksp_view -mat_type aijkokkos
+
+   test:
+      requires: cuda
+      suffix: 0_cuda
+      args: -ksp_view -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
+
+   test:
       suffix: 1
       nsize: 4
       args: -ksp_view
 
    test:
+      requires: kokkos_kernels
+      suffix: 1_kokkos
+      nsize: 4
+      args: -ksp_view -mat_type aijkokkos
+
+   test:
+      requires: cuda
+      suffix: 1_cuda
+      nsize: 4
+      args: -ksp_view -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
+
+   test:
       suffix: 2
       nsize: 4
-      args: -user_subdomains -ksp_view ${ARGS}
+      args: -user_subdomains -ksp_view
+
+   test:
+      requires: kokkos_kernels
+      suffix: 2_kokkos
+      nsize: 4
+      args: -user_subdomains -ksp_view -mat_type aijkokkos
+
+   test:
+      requires: cuda
+      suffix: 2_cuda
+      nsize: 4
+      args: -user_subdomains -ksp_view -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
 
 TEST*/
