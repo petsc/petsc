@@ -77,6 +77,8 @@ class Configure(config.package.CMakePackage):
 
     # Trilinos cmake does not set this variable (as it should) so cmake install does not properly reset the -id and rpath of --prefix installed Trilinos libraries
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
+    # By default it installs in lib64, change it to lib
+    args.append('-DCMAKE_INSTALL_LIBDIR:STRING=lib')
 
     if self.mpi.found:
       args.append('-DKokkos_ENABLE_MPI=ON')

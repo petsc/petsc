@@ -279,8 +279,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
     ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
     ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF, m, &osm->lx);CHKERRQ(ierr);
-    ierr = VecDuplicate(osm->lx, &osm->ly);CHKERRQ(ierr);
 
     scall = MAT_INITIAL_MATRIX;
   } else {
@@ -313,6 +311,8 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   }
 
   if (!pc->setupcalled) {
+    VecType vtype;
+
     /* Create the local work vectors (from the local matrices) and scatter contexts */
     ierr = MatCreateVecs(pc->pmat,&vec,NULL);CHKERRQ(ierr);
 
@@ -326,9 +326,13 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
     ierr = ISGetLocalSize(osm->lis,&m);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
+    ierr = MatGetVecType(osm->pmat[0],&vtype);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF,&osm->lx);CHKERRQ(ierr);
+    ierr = VecSetSizes(osm->lx,m,m);CHKERRQ(ierr);
+    ierr = VecSetType(osm->lx,vtype);CHKERRQ(ierr);
+    ierr = VecDuplicate(osm->lx, &osm->ly);CHKERRQ(ierr);
     ierr = VecScatterCreate(vec,osm->lis,osm->lx,isl,&osm->restriction);CHKERRQ(ierr);
     ierr = ISDestroy(&isl);CHKERRQ(ierr);
-
 
     for (i=0; i<osm->n_local_true; ++i) {
       ISLocalToGlobalMapping ltog;
@@ -1816,9 +1820,8 @@ PetscErrorCode  PCASMGetDMSubdomains(PC pc,PetscBool* flg)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidBoolPointer(flg,2);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
-  if (match) {
-    if (flg) *flg = osm->dm_subdomains;
-  }
+  if (match) *flg = osm->dm_subdomains;
+  else *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1837,9 +1840,12 @@ PetscErrorCode  PCASMGetDMSubdomains(PC pc,PetscBool* flg)
 
 .seealso: PCASMSetSubMatType(), PCASM, PCSetType(), VecSetType(), MatType, Mat
 @*/
-PetscErrorCode  PCASMGetSubMatType(PC pc,MatType *sub_mat_type) {
+PetscErrorCode  PCASMGetSubMatType(PC pc,MatType *sub_mat_type)
+{
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscTryMethod(pc,"PCASMGetSubMatType_C",(PC,MatType*),(pc,sub_mat_type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1867,6 +1873,8 @@ PetscErrorCode PCASMSetSubMatType(PC pc,MatType sub_mat_type)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscTryMethod(pc,"PCASMSetSubMatType_C",(PC,MatType),(pc,sub_mat_type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

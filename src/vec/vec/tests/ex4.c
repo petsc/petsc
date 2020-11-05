@@ -53,8 +53,10 @@ int main(int argc,char **argv)
    test:
       nsize: 2
       filter: grep -v type
+      diff_args: -j
 
    test:
+      diff_args: -j
       suffix: cuda
       args: -vec_type cuda
       output_file: output/ex4_1.out
@@ -62,11 +64,29 @@ int main(int argc,char **argv)
       requires: cuda
 
    test:
+      diff_args: -j
       suffix: cuda2
       nsize: 2
       args: -vec_type cuda
       output_file: output/ex4_1.out
       filter: grep -v type
       requires: cuda
+
+   test:
+      diff_args: -j
+      suffix: kokkos
+      args: -vec_type kokkos
+      output_file: output/ex4_1.out
+      filter: grep -v type
+      requires: kokkos_kernels
+
+   test:
+      diff_args: -j
+      suffix: kokkos2
+      nsize: 2
+      args: -vec_type kokkos
+      output_file: output/ex4_1.out
+      filter: grep -v type
+      requires: kokkos_kernels
 
 TEST*/
