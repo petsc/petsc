@@ -269,8 +269,8 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
 void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
 {
   if (PetscUnlikely(*err)) {
-    PetscMPIInt len;
-    char        errstring[MPI_MAX_ERROR_STRING];
+    PETSC_UNUSED PetscMPIInt len;
+    char                     errstring[MPI_MAX_ERROR_STRING];
 
     MPI_Error_string(*err,errstring,&len);
     PetscError(MPI_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_MPI_ERROR_CODE,PETSC_ERROR_INITIAL,"Internal error in MPI: %s",errstring);

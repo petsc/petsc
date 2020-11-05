@@ -2008,7 +2008,8 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General*,VecScatt
 PetscErrorCode VecScatterCreateLocal_PtoS_MPI1(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
-  PetscMPIInt            size,rank,imdex,tag,n;
+  PetscMPIInt            size,rank,tag,n;
+  PETSC_UNUSED PetscMPIInt imdex;
   PetscInt               *source = NULL,*owners = NULL,nxr;
   PetscInt               *lowner = NULL,*start = NULL,lengthy,lengthx;
   PetscMPIInt            *nprocs = NULL,nrecvs;
@@ -2371,7 +2372,8 @@ PetscErrorCode VecScatterCreateLocal_StoP_MPI1(PetscInt nx,const PetscInt *inidx
 PetscErrorCode VecScatterCreateLocal_PtoP_MPI1(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size,rank,tag,imdex,n;
+  PetscMPIInt    size,rank,tag,n;
+  PETSC_UNUSED PetscMPIInt imdex;
   PetscInt       *owners = xin->map->range;
   PetscMPIInt    *nprocs = NULL;
   PetscInt       i,j,idx,nsends,*local_inidx = NULL,*local_inidy = NULL;

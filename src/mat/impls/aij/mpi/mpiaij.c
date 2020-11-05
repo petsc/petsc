@@ -5694,7 +5694,8 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
   PetscScalar            *b_otha,*bufa,*bufA,*vals = NULL;
   MPI_Request            *rwaits = NULL,*swaits = NULL;
   MPI_Status             rstatus;
-  PetscMPIInt            jj,size,tag,rank,nsends_mpi,nrecvs_mpi;
+  PetscMPIInt            size,tag,rank,nsends_mpi,nrecvs_mpi;
+  PETSC_UNUSED PetscMPIInt jj;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
