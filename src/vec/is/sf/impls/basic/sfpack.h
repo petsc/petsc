@@ -11,6 +11,12 @@
   #include <hip/hip_runtime.h>  /* For hipStream_t */
 #endif
 
+/* In terms of function overloading, long long int is a different type than int64_t, which PetscInt might be defined to.
+   We perfer long long int over PetscInt (int64_t), since CUDA atomics are built around (unsigned) long long int.
+ */
+typedef long long int          llint;
+typedef unsigned long long int ullint;
+
 /* We separate SF communications for SFBasic and SFNeighbor in two parts: local (self,intra-rank) and remote (inter-rank) */
 typedef enum {PETSCSF_LOCAL=0, PETSCSF_REMOTE} PetscSFScope;
 
