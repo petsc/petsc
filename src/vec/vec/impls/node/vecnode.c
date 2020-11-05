@@ -8,7 +8,6 @@ PetscErrorCode VecSetValues_Node(Vec xin,PetscInt ni,const PetscInt ix[],const P
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_SUP,"Not implemented yet");
-  PetscFunctionReturn(0);
 }
 
 /* check all blocks are filled */
@@ -114,7 +113,6 @@ static PetscErrorCode VecAXPBY_Node(Vec y,PetscScalar alpha,PetscScalar beta,Vec
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Not implemented yet");
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode VecAXPBYPCZ_Node(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec x,Vec y)
@@ -133,7 +131,6 @@ static PetscErrorCode VecConjugate_Node(Vec x)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Not implemented yet");
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode VecWAXPY_Node(Vec w,PetscScalar alpha,Vec x,Vec y)
@@ -151,14 +148,12 @@ static PetscErrorCode VecMax_Node(Vec x,PetscInt *p,PetscReal *max)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Not implemented yet");
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode VecMin_Node(Vec x,PetscInt *p,PetscReal *min)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Not implemented yet");
-  PetscFunctionReturn(0);
 }
 
 /* supports nested blocks */

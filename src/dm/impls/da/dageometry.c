@@ -217,7 +217,6 @@ PetscErrorCode DMLocatePoints_DA_Regular(DM dm,Vec pos,DMPointLocationType ltype
   switch (dim) {
     case 1:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support not provided for 1D");
-      break;
     case 2:
       ierr = private_DMDALocatePointsIS_2D_Regular(dm,pos,&iscell);CHKERRQ(ierr);
       break;
@@ -226,7 +225,6 @@ PetscErrorCode DMLocatePoints_DA_Regular(DM dm,Vec pos,DMPointLocationType ltype
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupport spatial dimension");
-      break;
   }
 
   ierr = VecGetLocalSize(pos,&npoints);CHKERRQ(ierr);

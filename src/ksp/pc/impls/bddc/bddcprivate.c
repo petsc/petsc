@@ -3531,7 +3531,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
               break;
             default:
               SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Unknown recipe %D",recipe);
-              break;
             }
           }
         } else if (!same_data) { /* this is just to see all the eigenvalues */
@@ -7883,7 +7882,6 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
         break;
       default:
         SETERRQ2(comm,PETSC_ERR_SUP,"Unsupported private type %d in %s",new_local_type_private,PETSC_FUNCTION_NAME);
-        break;
     }
   } else { /* by default, new_local_type is seqaij */
     new_local_type = MATSEQAIJ;

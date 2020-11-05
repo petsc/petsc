@@ -906,7 +906,6 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled dimension %d",dim);
-    break;
   }
   dm->prealloc_only = flg;
   PetscFunctionReturn(0);

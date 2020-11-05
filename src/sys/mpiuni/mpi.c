@@ -127,7 +127,6 @@ int MPI_Type_get_contents(MPI_Datatype datatype,int max_integers,int max_address
   switch (comb) {
   case MPI_COMBINER_NAMED:
     return MPIUni_Abort(MPI_COMM_SELF,1);
-    break;
   case MPI_COMBINER_DUP:
     if (max_datatypes < 1) return MPIUni_Abort(MPI_COMM_SELF,1);
     array_of_datatypes[0] = datatype & 0x0fffffff;

@@ -1323,7 +1323,6 @@ static PetscErrorCode PetscLogViewWarnSync(MPI_Comm comm,FILE *fd)
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)

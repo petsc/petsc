@@ -319,10 +319,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat,MatAssemblyType mode)
   */
   if (!((Mat_SeqSELL*)sell->B->data)->nonew) {
     ierr = MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
-    if (mat->was_assembled && !other_disassembled) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDisAssemble not implemented yet\n");
-      ierr = MatDisAssemble_MPISELL(mat);CHKERRQ(ierr);
-    }
+    if (mat->was_assembled && !other_disassembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDisAssemble not implemented yet\n");
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPISELL(mat);CHKERRQ(ierr);

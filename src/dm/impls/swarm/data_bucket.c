@@ -631,13 +631,10 @@ PetscErrorCode DMSwarmDataBucketView_SEQ(MPI_Comm comm,DMSwarmDataBucket db,cons
     break;
   case DATABUCKET_VIEW_ASCII:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for ascii output");
-    break;
   case DATABUCKET_VIEW_BINARY:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for binary output");
-    break;
   case DATABUCKET_VIEW_HDF5:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5 output");
-    break;
   default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer method requested");
   }
   PetscFunctionReturn(0);
@@ -654,13 +651,10 @@ PetscErrorCode DMSwarmDataBucketView_MPI(MPI_Comm comm,DMSwarmDataBucket db,cons
     break;
   case DATABUCKET_VIEW_ASCII:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for ascii output");
-    break;
   case DATABUCKET_VIEW_BINARY:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for binary output");
-    break;
   case DATABUCKET_VIEW_HDF5:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5 output");
-    break;
   default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer method requested");
   }
   PetscFunctionReturn(0);

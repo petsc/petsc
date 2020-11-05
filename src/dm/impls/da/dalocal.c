@@ -299,7 +299,6 @@ PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
     break;
   case 3:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
-    break;
   }
   PetscFunctionReturn(0);
 }
@@ -345,7 +344,6 @@ PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
     break;
   case 3:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
-    break;
   }
   PetscFunctionReturn(0);
 }

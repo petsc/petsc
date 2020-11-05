@@ -387,7 +387,7 @@ static PetscErrorCode DMPlexBasisTransformSetUp_Rotation_Internal(DM dm, void *c
     rc->R[0] =  c1;rc->R[1] = s1;
     rc->R[2] = -s1;rc->R[3] = c1;
     ierr = PetscArraycpy(rc->RT, rc->R, PetscSqr(dim));CHKERRQ(ierr);
-    DMPlex_Transpose2D_Internal(rc->RT);break;
+    DMPlex_Transpose2D_Internal(rc->RT);
     break;
   case 3:
     c1 = PetscCosReal(rc->alpha);s1 = PetscSinReal(rc->alpha);
@@ -397,7 +397,7 @@ static PetscErrorCode DMPlexBasisTransformSetUp_Rotation_Internal(DM dm, void *c
     rc->R[3] = -c1*s3 - c2*c3*s1;rc->R[4] =  c1*c2*c3 - s1*s3;   rc->R[5] = c3*s2;
     rc->R[6] =  s1*s2;           rc->R[7] = -c1*s2;              rc->R[8] = c2;
     ierr = PetscArraycpy(rc->RT, rc->R, PetscSqr(dim));CHKERRQ(ierr);
-    DMPlex_Transpose3D_Internal(rc->RT);break;
+    DMPlex_Transpose3D_Internal(rc->RT);
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
   }

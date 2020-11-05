@@ -698,7 +698,6 @@ static PetscErrorCode MatSolve_ScaLAPACK(Mat A,Vec B,Vec X)
       break;
     default:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType");
-      break;
   }
 
   /* redistribute x from a column of a 2d matrix */
@@ -746,7 +745,6 @@ static PetscErrorCode MatMatSolve_ScaLAPACK(Mat A,Mat B,Mat X)
       break;
     default:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType");
-      break;
   }
   PetscFunctionReturn(0);
 }

@@ -149,7 +149,6 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     ierr = TaoBNCGConductIteration(tao, gnorm);CHKERRQ(ierr);
     if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
   }
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TaoSetUp_BNCG(Tao tao)

@@ -50,10 +50,10 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
   }
   ierr = DMPlexCreateCGNS(comm, cgid, interpolate, dm);CHKERRQ(ierr);
   if (!rank) {ierr = cg_close(cgid);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires CGNS support. Reconfigure using --with-cgns-dir");
 #endif
-  PetscFunctionReturn(0);
 }
 
 /*@
@@ -378,8 +378,8 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
     }
     ierr = PetscFree2(cellStart, vertStart);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires CGNS support. Reconfigure using --with-cgns-dir");
 #endif
-  PetscFunctionReturn(0);
 }

@@ -318,7 +318,6 @@ complete_request:
       break;
     default:
       SETERRQ1(PetscObjectComm((PetscObject)guess),PETSC_ERR_PLIB,"Invalid number of outstanding dots operations: %D",pod->ndots_iallreduce);
-      break;
     }
   }
   pod->ndots_iallreduce = 0;

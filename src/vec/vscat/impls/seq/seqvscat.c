@@ -19,10 +19,11 @@ static PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,co
   PetscInt i;
 
   PetscFunctionBegin;
-  if (!PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
-  for (i=0; i<n; i++) {
-    if (idx[i] < 0)     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative index %D at %D location",idx[i],i);
-    if (idx[i] >= nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D at %D location greater than max %D",idx[i],i,nmax);
+  if (PetscDefined(USE_DEBUG)) {
+    for (i=0; i<n; i++) {
+      if (idx[i] < 0)     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative index %D at %D location",idx[i],i);
+      if (idx[i] >= nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D at %D location greater than max %D",idx[i],i,nmax);
+    }
   }
   PetscFunctionReturn(0);
 }

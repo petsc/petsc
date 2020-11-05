@@ -1373,7 +1373,6 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",rktype);
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)

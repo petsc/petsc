@@ -296,20 +296,20 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Dataty
   case PETSC_BUILDTWOSIDED_IBARRIER:
 #if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
     ierr = PetscCommBuildTwoSided_Ibarrier(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
+    break;
 #else
     SETERRQ(comm,PETSC_ERR_PLIB,"MPI implementation does not provide MPI_Ibarrier (part of MPI-3)");
 #endif
-    break;
   case PETSC_BUILDTWOSIDED_ALLREDUCE:
     ierr = PetscCommBuildTwoSided_Allreduce(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
     break;
   case PETSC_BUILDTWOSIDED_REDSCATTER:
 #if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
     ierr = PetscCommBuildTwoSided_RedScatter(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
+    break;
 #else
     SETERRQ(comm,PETSC_ERR_PLIB,"MPI implementation does not provide MPI_Reduce_scatter_block (part of MPI-2.2)");
 #endif
-    break;
   default: SETERRQ(comm,PETSC_ERR_PLIB,"Unknown method for building two-sided communication");
   }
   ierr = PetscLogEventEnd(PETSC_BuildTwoSided,0,0,0,0);CHKERRQ(ierr);
@@ -570,10 +570,10 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
   case PETSC_BUILDTWOSIDED_IBARRIER:
 #if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
     f = PetscCommBuildTwoSidedFReq_Ibarrier;
+    break;
 #else
     SETERRQ(comm,PETSC_ERR_PLIB,"MPI implementation does not provide MPI_Ibarrier (part of MPI-3)");
 #endif
-    break;
   case PETSC_BUILDTWOSIDED_ALLREDUCE:
   case PETSC_BUILDTWOSIDED_REDSCATTER:
     f = PetscCommBuildTwoSidedFReq_Reference;
