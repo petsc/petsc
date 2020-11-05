@@ -23,6 +23,8 @@ using MatRowMapViewHost_t        = MatRowMapViewDevice_t::HostMirror;
 using MatValueViewHost_t         = MatValueViewDevice_t::HostMirror;
 
 using MatValueDualView_t         = Kokkos::DualView<MatValue_t*>;
+//#include "KokkosSparse_spgemm.hpp"
+//using MatMatKernelHandle_t       = KokkosKernels::Experimental::KokkosKernelsHandle<MatRowMap_t, MatColumnIndex_t, MatValue_t, MatDevice_t, DeviceMemorySpace, DeviceMemorySpace>;
 
 struct Mat_SeqAIJKokkos {
   MatRowMapViewHost_t        i_h;
