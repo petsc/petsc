@@ -27,14 +27,6 @@ struct Vec_Kokkos {
   }
 };
 
-#if defined(PETSC_HAVE_CUDA)
-  #define WaitForKokkos() PetscCUDASynchronize ? (Kokkos::fence(),0) : 0
-#elif defined(PETSC_HAVE_HIP)
-  #define WaitForKokkos() PetscHIPSynchronize ? (Kokkos::fence(),0) : 0;
-#else
-  #define WaitForKokkos() 0;
-#endif
-
 PETSC_INTERN PetscErrorCode VecAbs_SeqKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecReciprocal_SeqKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqKokkos(Vec,Vec,PetscScalar*, PetscScalar*);

@@ -61,6 +61,7 @@ static PetscErrorCode MatMult_SeqAIJKokkos(Mat A,Vec xx,Vec yy)
   ierr   = VecKokkosRestoreDeviceViewRead(xx,&xv);CHKERRQ(ierr);
   ierr   = VecKokkosRestoreDeviceView(yy,&yv);CHKERRQ(ierr);
   /* 2.0*aijkok->csr.nnz()-aijkok->csr.numRows() seems more accurate here but assumes there are no zero-rows. So a little sloopy here. */
+  ierr   = WaitForKokkos();CHKERRQ(ierr);
   ierr   = PetscLogGpuFlops(2.0*aijkok->csr.nnz());CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -81,6 +82,7 @@ static PetscErrorCode MatMultTranspose_SeqAIJKokkos(Mat A,Vec xx,Vec yy)
   KokkosSparse::spmv("T",1.0/*alpha*/,aijkok->csr,xv,0.0/*beta*/,yv); /* y = alpha A^T x + beta y */
   ierr = VecKokkosRestoreDeviceViewRead(xx,&xv);CHKERRQ(ierr);
   ierr = VecKokkosRestoreDeviceView(yy,&yv);CHKERRQ(ierr);
+  ierr = WaitForKokkos();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(2.0*aijkok->csr.nnz());CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -101,6 +103,7 @@ static PetscErrorCode MatMultHermitianTranspose_SeqAIJKokkos(Mat A,Vec xx,Vec yy
   KokkosSparse::spmv("C",1.0/*alpha*/,aijkok->csr,xv,0.0/*beta*/,yv); /* y = alpha A^H x + beta y */
   ierr = VecKokkosRestoreDeviceViewRead(xx,&xv);CHKERRQ(ierr);
   ierr = VecKokkosRestoreDeviceView(yy,&yv);CHKERRQ(ierr);
+  ierr = WaitForKokkos();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(2.0*aijkok->csr.nnz());CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -124,6 +127,7 @@ static PetscErrorCode MatMultAdd_SeqAIJKokkos(Mat A,Vec xx,Vec yy, Vec zz)
   ierr = VecKokkosRestoreDeviceViewRead(xx,&xv);CHKERRQ(ierr);
   ierr = VecKokkosRestoreDeviceViewRead(yy,&yv);CHKERRQ(ierr);
   ierr = VecKokkosRestoreDeviceView(zz,&zv);CHKERRQ(ierr);
+  ierr = WaitForKokkos();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(2.0*aijkok->csr.nnz());CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -147,6 +151,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJKokkos(Mat A,Vec xx,Vec yy,Vec z
   ierr = VecKokkosRestoreDeviceViewRead(xx,&xv);CHKERRQ(ierr);
   ierr = VecKokkosRestoreDeviceViewRead(yy,&yv);CHKERRQ(ierr);
   ierr = VecKokkosRestoreDeviceView(zz,&zv);CHKERRQ(ierr);
+  ierr = WaitForKokkos();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(2.0*aijkok->csr.nnz());CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -170,6 +175,7 @@ static PetscErrorCode MatMultHermitianTransposeAdd_SeqAIJKokkos(Mat A,Vec xx,Vec
   ierr = VecKokkosRestoreDeviceViewRead(xx,&xv);CHKERRQ(ierr);
   ierr = VecKokkosRestoreDeviceViewRead(yy,&yv);CHKERRQ(ierr);
   ierr = VecKokkosRestoreDeviceView(zz,&zv);CHKERRQ(ierr);
+  ierr = WaitForKokkos();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(2.0*aijkok->csr.nnz());CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
