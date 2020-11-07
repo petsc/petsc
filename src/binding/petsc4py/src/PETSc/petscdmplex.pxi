@@ -95,8 +95,6 @@ cdef extern from * nogil:
     int DMPlexGetAdjacencyUseAnchors(PetscDM,PetscBool*)
     int DMPlexGetAdjacency(PetscDM,PetscInt,PetscInt*,PetscInt*[])
     #int DMPlexCreateNeighborCSR(PetscDM,PetscInt,PetscInt*,PetscInt**,PetscInt**)
-    #int DMPlexCreatePartition(PetscDM,const char[],PetscInt,PetscBool,PetscSection*,PetscIS*,PetscSection*,PetscIS*)
-    #int DMPlexCreatePartitionClosure(PetscDM,PetscSection,PetscIS,PetscSection*,PetscIS*)
     int DMPlexRebalanceSharedPoints(PetscDM,PetscInt,PetscBool,PetscBool,PetscBool*)
     int DMPlexDistribute(PetscDM,PetscInt,PetscSF*,PetscDM*)
     int DMPlexDistributeOverlap(PetscDM,PetscInt,PetscSF*,PetscDM*)

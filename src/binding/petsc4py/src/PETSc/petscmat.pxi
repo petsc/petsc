@@ -46,7 +46,6 @@ cdef extern from * nogil:
     PetscMatType MATSBAIJ
     PetscMatType   MATSEQSBAIJ
     PetscMatType   MATMPISBAIJ
-    PetscMatType MATDAAD
     PetscMatType MATMFFD
     PetscMatType MATNORMAL
     PetscMatType MATNORMALHERMITIAN

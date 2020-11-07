@@ -46,7 +46,6 @@ class MatType(object):
     SBAIJ           = S_(MATSBAIJ)
     SEQSBAIJ        = S_(MATSEQSBAIJ)
     MPISBAIJ        = S_(MATMPISBAIJ)
-    DAAD            = S_(MATDAAD)
     MFFD            = S_(MATMFFD)
     NORMAL          = S_(MATNORMAL)
     NORMALHERMITIAN = S_(MATNORMALHERMITIAN)

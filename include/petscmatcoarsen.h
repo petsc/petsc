@@ -73,7 +73,6 @@ PETSC_EXTERN PetscErrorCode PetscCDAppendID(PetscCoarsenData*,PetscInt,PetscInt)
 PETSC_EXTERN PetscErrorCode PetscCDAppendRemove(PetscCoarsenData*,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscCDAppendNode(PetscCoarsenData*,PetscInt,PetscCDIntNd*);
 PETSC_EXTERN PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData*,PetscInt,PetscCDIntNd*);
-PETSC_EXTERN PetscErrorCode PetscCDRemoveAllAt(PetscCoarsenData*,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscCDSizeAt(const PetscCoarsenData*,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData*,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscCDSetChuckSize(PetscCoarsenData*,PetscInt);

@@ -1,5 +1,5 @@
 
-#include <petsc/private/kspimpl.h>
+#include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
 typedef struct {
   PetscInt    restart;
@@ -181,6 +181,9 @@ static PetscErrorCode KSPDestroy_GCR(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPReset_GCR(ksp);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetRestart_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRGetRestart_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -261,12 +264,63 @@ static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp,PetscInt restart)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  KSPGCRSetRestart(KSP ksp, PetscInt restart)
+static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp,PetscInt *restart)
+{
+  KSP_GCR *ctx;
+
+  PetscFunctionBegin;
+  ctx      = (KSP_GCR*)ksp->data;
+  *restart = ctx->restart;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPGCRSetRestart - Sets number of iterations at which GCR restarts.
+
+   Not Collective
+
+   Input Parameter:
++  ksp - the Krylov space context
+-  restart - integer restart value
+
+   Note: The default value is 30.
+
+   Level: intermediate
+
+.seealso: KSPSetTolerances(), KSPGCRGetRestart(), KSPGMRESSetRestart()
+@*/
+PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscTryMethod(ksp,"KSPGCRSetRestart_C",(KSP,PetscInt),(ksp,restart));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPGCRGetRestart - Gets number of iterations at which GCR restarts.
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - the Krylov space context
+
+   Output Parameter:
+.   restart - integer restart value
+
+   Note: The default value is 30.
+
+   Level: intermediate
+
+.seealso: KSPSetTolerances(), KSPGCRSetRestart(), KSPGMRESGetRestart()
+@*/
+PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(ksp,"KSPGCRGetRestart_C",(KSP,PetscInt*),(ksp,restart));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -366,6 +420,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidual_GCR;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetRestart_C",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRGetRestart_C",KSPGCRGetRestart_GCR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

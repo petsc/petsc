@@ -5174,7 +5174,7 @@ PetscBool MatSeqAIJRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-  Developers Note: CUSP and CUSPARSE do not yet support the  MatConvert_SeqAIJ..() paradigm and thus cannot be registered here
+  Developers Note: CUSPARSE does not yet support the MatConvert_SeqAIJ..() paradigm and thus cannot be registered here
 
 .seealso:  MatRegisterAll(), MatSeqAIJRegister()
 @*/

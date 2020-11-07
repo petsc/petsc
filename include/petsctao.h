@@ -333,7 +333,6 @@ PETSC_EXTERN PetscErrorCode TaoAddLineSearchCounts(Tao);
 PETSC_EXTERN PetscErrorCode TaoDefaultConvergenceTest(Tao,void*);
 PETSC_EXTERN PetscErrorCode TaoSetConvergenceTest(Tao, PetscErrorCode (*)(Tao, void*),void *);
 
-PETSC_EXTERN PetscErrorCode TaoSQPCONSetStateDesignIS(Tao, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoLCLSetStateDesignIS(Tao, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoMonitor(Tao, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal);
 typedef struct _n_TaoMonitorDrawCtx* TaoMonitorDrawCtx;
