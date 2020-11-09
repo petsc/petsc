@@ -32,5 +32,3 @@ cdef extern from * nogil:
     int PetscDSAddDiscretization(PetscDS,PetscObject)
     int PetscDSGetImplicit(PetscDS,PetscInt,PetscBool*)
     int PetscDSSetImplicit(PetscDS,PetscInt,PetscBool)
-    int PetscDSGetAdjacency(PetscDS,PetscInt,PetscBool*,PetscBool*)
-    int PetscDSSetAdjacency(PetscDS,PetscInt,PetscBool,PetscBool)

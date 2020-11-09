@@ -15,8 +15,6 @@
 . cell - the local cell number
 
   Level: developer
-
-.seealso: DMDAVecGetClosure()
 @*/
 PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
 {
