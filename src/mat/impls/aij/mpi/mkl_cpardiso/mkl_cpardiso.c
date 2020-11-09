@@ -73,7 +73,7 @@ typedef struct {
    */
   void         *pt[IPARM_SIZE];
 
-  MPI_Comm     comm_mkl_cpardiso;
+  MPI_Fint     comm_mkl_cpardiso;
 
   /* Basic mkl_cpardiso info*/
   INT_TYPE     phase, maxfct, mnum, mtype, n, nrhs, msglvl, err;
@@ -316,6 +316,7 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij_MKL_CPARDISO(Mat A, MatReus
 PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
 {
   Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->data;
+  MPI_Comm         comm;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -346,7 +347,8 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
   if (mat_mkl_cpardiso->ConvertToTriples != MatCopy_seqaij_seqaij_MKL_CPARDISO) {
     ierr = PetscFree3(mat_mkl_cpardiso->ia,mat_mkl_cpardiso->ja,mat_mkl_cpardiso->a);CHKERRQ(ierr);
   }
-  ierr = MPI_Comm_free(&(mat_mkl_cpardiso->comm_mkl_cpardiso));CHKERRQ(ierr);
+  comm = MPI_Comm_f2c(mat_mkl_cpardiso->comm_mkl_cpardiso);
+  ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -594,11 +596,13 @@ PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpa
   PetscInt        bs;
   PetscBool       match;
   PetscMPIInt     size;
+  MPI_Comm        comm;
 
   PetscFunctionBegin;
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(mat_mkl_cpardiso->comm_mkl_cpardiso));CHKERRQ(ierr);
-  ierr = MPI_Comm_size(mat_mkl_cpardiso->comm_mkl_cpardiso, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  mat_mkl_cpardiso->comm_mkl_cpardiso = MPI_Comm_c2f(comm);
 
   mat_mkl_cpardiso->CleanUp = PETSC_FALSE;
   mat_mkl_cpardiso->maxfct = 1;
