@@ -28,7 +28,7 @@ PETSC_EXTERN void petscsfview_(PetscSF *sf, PetscViewer *vin, PetscErrorCode *ie
 }
 
 
-PETSC_EXTERN void  petscsfgetgraph_(PetscSF *sf,PetscInt *nroots,PetscInt *nleaves, F90Array1d  *ailocal, F90Array1d  *airemote, int *ierr PETSC_F90_2PTR_PROTO(pilocal) PETSC_F90_2PTR_PROTO(piremote))
+PETSC_EXTERN void  petscsfgetgraph_(PetscSF *sf,PetscInt *nroots,PetscInt *nleaves, F90Array1d  *ailocal, F90Array1d  *airemote, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(pilocal) PETSC_F90_2PTR_PROTO(piremote))
 {
   const PetscInt    *ilocal;
   const PetscSFNode *iremote;
@@ -40,7 +40,7 @@ PETSC_EXTERN void  petscsfgetgraph_(PetscSF *sf,PetscInt *nroots,PetscInt *nleav
 }
 
 #if defined(PETSC_HAVE_F90_ASSUMED_TYPE_NOT_PTR)
-PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit, const void *rptr, void *lptr, int *ierr)
+PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit, const void *rptr, void *lptr, PetscErrorCode *ierr)
 {
   MPI_Datatype dtype;
 
@@ -49,7 +49,7 @@ PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit, const void *rp
 }
 
 
-PETSC_EXTERN void petscsfbcastend_(PetscSF *sf, MPI_Fint *unit, const void *rptr, void *lptr, int *ierr)
+PETSC_EXTERN void petscsfbcastend_(PetscSF *sf, MPI_Fint *unit, const void *rptr, void *lptr, PetscErrorCode *ierr)
 {
   MPI_Datatype dtype;
 
@@ -59,7 +59,7 @@ PETSC_EXTERN void petscsfbcastend_(PetscSF *sf, MPI_Fint *unit, const void *rptr
 
 #else
 
-PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rptr, F90Array1d *lptr, int *ierr PETSC_F90_2PTR_PROTO(rptrd) PETSC_F90_2PTR_PROTO(lptrd))
+PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rptr, F90Array1d *lptr, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(rptrd) PETSC_F90_2PTR_PROTO(lptrd))
 {
   MPI_Datatype dtype;
   const void   *rootdata;
@@ -72,7 +72,7 @@ PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rpt
   *ierr = PetscSFBcastBegin(*sf, dtype, rootdata, leafdata);
 }
 
-PETSC_EXTERN void petscsfbcastend_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rptr, F90Array1d *lptr, int *ierr PETSC_F90_2PTR_PROTO(rptrd) PETSC_F90_2PTR_PROTO(lptrd))
+PETSC_EXTERN void petscsfbcastend_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rptr, F90Array1d *lptr, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(rptrd) PETSC_F90_2PTR_PROTO(lptrd))
 {
   MPI_Datatype dtype;
   const void   *rootdata;
