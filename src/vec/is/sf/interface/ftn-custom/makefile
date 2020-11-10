@@ -2,7 +2,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zsf.c
+SOURCEC  = zsf.c zvscat.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =
