@@ -22,15 +22,15 @@ class Configure(config.package.CMakePackage):
     return
 
   def __str__(self):
-    output  = config.package.Package.__str__(self)
+    output  = config.package.CMakePackage.__str__(self)
     if hasattr(self,'system'): output += '  Backend: '+self.system+'\n'
     return output
 
   def setupHelp(self, help):
     import nargs
-    config.package.Package.setupHelp(self, help)
-    help.addArgument('Kokkos', '-with-kokkos-cuda-arch', nargs.ArgString(None, 0, 'One of KEPLER30, KEPLER32, KEPLER35, KEPLER37, MAXWELL50, MAXWELL52, MAXWELL53, PASCAL60, PASCAL61, VOLTA70, VOLTA72, TURING75, AMPERE80, use nvidia-smi'))
-    help.addArgument('Kokkos', '-with-kokkos-hip-arch',  nargs.ArgString(None, 0, 'One of VEGA900, VEGA906, VEGA908'))
+    config.package.CMakePackage.setupHelp(self, help)
+    help.addArgument('KOKKOS', '-with-kokkos-cuda-arch', nargs.ArgString(None, 0, 'One of KEPLER30, KEPLER32, KEPLER35, KEPLER37, MAXWELL50, MAXWELL52, MAXWELL53, PASCAL60, PASCAL61, VOLTA70, VOLTA72, TURING75, AMPERE80, use nvidia-smi'))
+    help.addArgument('KOKKOS', '-with-kokkos-hip-arch',  nargs.ArgString(None, 0, 'One of VEGA900, VEGA906, VEGA908'))
     return
 
   def setupDependencies(self, framework):
@@ -147,7 +147,7 @@ class Configure(config.package.CMakePackage):
 
   def configureLibrary(self):
     import os
-    config.package.Package.configureLibrary(self)
+    config.package.CMakePackage.configureLibrary(self)
     if self.cuda.found:
       self.addMakeMacro('KOKKOS_BIN',os.path.join(self.directory,'bin'))
 

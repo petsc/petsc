@@ -20,14 +20,14 @@ class Configure(config.package.CMakePackage):
     return
 
   def __str__(self):
-    output  = config.package.Package.__str__(self)
+    output  = config.package.CMakePackage.__str__(self)
     if hasattr(self,'system'): output += '  Backend: '+self.system+'\n'
     return output
 
   def setupHelp(self, help):
     import nargs
-    config.package.Package.setupHelp(self, help)
-    help.addArgument('Kokkos-Kernels', '-with-kokkos-kernels-tpl=<bool>', nargs.ArgBool(None, 1, 'Indicate if you wish to let Kokkos-Kernels use Third-party Libraries (TPLs)'))
+    config.package.CMakePackage.setupHelp(self, help)
+    help.addArgument('KOKKOS-KERNELS', '-with-kokkos-kernels-tpl=<bool>', nargs.ArgBool(None, 1, 'Indicate if you wish to let Kokkos-Kernels use Third-Party Libraries (TPLs)'))
     return
 
   def setupDependencies(self, framework):
