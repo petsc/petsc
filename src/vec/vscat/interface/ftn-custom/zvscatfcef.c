@@ -14,13 +14,13 @@
 #define vecscattercreatetozero_   vecscattercreatetozero
 #endif
 
-PETSC_EXTERN void  vecscattercreatetoall_(Vec *vin,VecScatter *ctx,Vec *vout, int *ierr)
+PETSC_EXTERN void  vecscattercreatetoall_(Vec *vin,VecScatter *ctx,Vec *vout, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(vout);
   *ierr = VecScatterCreateToAll(*vin,ctx,vout);
 }
 
-PETSC_EXTERN void  vecscattercreatetozero_(Vec *vin,VecScatter *ctx,Vec *vout, int *ierr)
+PETSC_EXTERN void  vecscattercreatetozero_(Vec *vin,VecScatter *ctx,Vec *vout, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(vout);
   *ierr = VecScatterCreateToZero(*vin,ctx,vout);
@@ -33,7 +33,7 @@ PETSC_EXTERN void vecscatterview_(VecScatter *vecscatter,PetscViewer *viewer,Pet
   *ierr = VecScatterView(*vecscatter,v);
 }
 
-PETSC_EXTERN void vecscatterremap_(VecScatter *scat,PetscInt *rto,PetscInt *rfrom, int *ierr)
+PETSC_EXTERN void vecscatterremap_(VecScatter *scat,PetscInt *rto,PetscInt *rfrom, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(rto);
   CHKFORTRANNULLINTEGER(rfrom);
