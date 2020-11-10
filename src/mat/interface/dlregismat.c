@@ -23,10 +23,11 @@ const char       *MatOptions_Shifted[] = {"UNUSED_NONZERO_LOCATION_ERR",
                                   "NO_OFF_PROC_ENTRIES",
                                   "NEW_NONZERO_LOCATIONS",
                                   "NEW_NONZERO_ALLOCATION_ERR",
-                                  "MAT_SUBSET_OFF_PROC_ENTRIES",
-                                  "MAT_SUBMAT_SINGLEIS",
-                                  "MAT_STRUCTURE_ONLY",
-                                  "MAT_SORTED_FULL",
+                                  "SUBSET_OFF_PROC_ENTRIES",
+                                  "SUBMAT_SINGLEIS",
+                                  "STRUCTURE_ONLY",
+                                  "SORTED_FULL",
+                                  "FORM_EXPLICIT_TRANSPOSE",
                                   "MatOption","MAT_",NULL};
 const char *const* MatOptions = MatOptions_Shifted+2;
 const char *const MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",NULL};
