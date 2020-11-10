@@ -1736,7 +1736,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal fill,Mat C)
 {
   PetscErrorCode      ierr;
-  Mat                 A_loc,POt,PDt;
+  Mat                 A_loc;
   Mat_APMPI           *ptap;
   PetscFreeSpaceList  free_space=NULL,current_space=NULL;
   Mat_MPIAIJ          *p=(Mat_MPIAIJ*)P->data,*a=(Mat_MPIAIJ*)A->data;
@@ -1756,7 +1756,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   PetscInt            *ai,*aj,*Jptr,anz,*prmap=p->garray,pon,nspacedouble=0,j;
   PetscReal           afill  =1.0,afill_tmp;
   PetscInt            rstart = P->cmap->rstart,rmax,aN=A->cmap->N,Armax;
-  Mat_SeqAIJ          *a_loc,*pdt,*pot;
+  Mat_SeqAIJ          *a_loc;
   PetscTable          ta;
   MatType             mtype;
 
@@ -1781,15 +1781,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   /* determine symbolic Co=(p->B)^T*A - send to others */
   /*----------------------------------------------------*/
-  ierr = MatTransposeSymbolic_SeqAIJ(p->A,&PDt);CHKERRQ(ierr);
-  pdt  = (Mat_SeqAIJ*)PDt->data;
-  pdti = pdt->i; pdtj = pdt->j;
-
-  ierr = MatTransposeSymbolic_SeqAIJ(p->B,&POt);CHKERRQ(ierr);
-  pot  = (Mat_SeqAIJ*)POt->data;
-  poti = pot->i; potj = pot->j;
-
-  /* then, compute symbolic Co = (p->B)^T*A */
+  ierr = MatGetSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
+  ierr = MatGetSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
   pon = (p->B)->cmap->n; /* total num of rows to be sent to other processors
                          >= (num of nonzero rows of C_seq) - pn */
   ierr   = PetscMalloc1(pon+1,&coi);CHKERRQ(ierr);
@@ -2034,9 +2027,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = PetscLLCondensedDestroy_Scalable(lnk);CHKERRQ(ierr);
   ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
-
-  ierr = MatDestroy(&POt);CHKERRQ(ierr);
-  ierr = MatDestroy(&PDt);CHKERRQ(ierr);
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
 
   /* create symbolic parallel matrix C - why cannot be assembled in Numeric part   */
   /*-------------------------------------------------------------------------------*/
