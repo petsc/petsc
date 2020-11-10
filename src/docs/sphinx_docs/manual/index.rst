@@ -5,7 +5,7 @@ PETSc Users Manual
 
 **Mathematics and Computer Science Division**
 
-Highly recommended resource: `PETSc for Partial Differential Equations: Numerical Solutions in C and Python, By Ed Bueler <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__,
+Highly recommended resource: Ed Bueler, `PETSc for Partial Differential Equations: Numerical Solutions in C and Python <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__ or as a `Google Play E-book <https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ>`__.
 
 --------------
 
