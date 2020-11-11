@@ -5165,8 +5165,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm,Mat seqmat,PetscInt m,Pets
      This means that one can preallocate the proper sequential matrix first and then call this routine with MAT_REUSE_MATRIX to safely
      modify the values of the returned A_loc.
 
-.seealso: MatGetOwnershipRange(), MatMPIAIJGetLocalMatCondensed()
-
+.seealso: MatGetOwnershipRange(), MatMPIAIJGetLocalMatCondensed(), MatMPIAIJGetLocalMatMerge()
 @*/
 PetscErrorCode MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 {
@@ -5258,6 +5257,129 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
       }
     }
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
+  ierr = PetscLogEventEnd(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+     MatMPIAIJGetLocalMatMerge - Creates a SeqAIJ from a MATMPIAIJ matrix by taking all its local rows and putting them into a sequential matrix with
+          mlocal rows and n columns. Where n is the sum of the number of columns of the diagonal and offdiagonal part
+
+    Not Collective
+
+   Input Parameters:
++    A - the matrix
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
++    glob - sequential IS with global indices associated with the columns of the local sequential matrix generated (can be NULL)
+-    A_loc - the local sequential matrix generated
+
+    Level: developer
+
+   Notes:
+     This is different from MatMPIAIJGetLocalMat since the first columns in the returning matrix are those associated with the diagonal part, then those associated with the offdiagonal part (in its local ordering)
+
+.seealso: MatGetOwnershipRange(), MatMPIAIJGetLocalMat(), MatMPIAIJGetLocalMatCondensed()
+
+@*/
+PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat A,MatReuse scall,IS *glob,Mat *A_loc)
+{
+  PetscErrorCode ierr;
+  Mat            Ao,Ad;
+  const PetscInt *cmap;
+  PetscMPIInt    size;
+  PetscErrorCode (*f)(Mat,MatReuse,IS*,Mat*);
+
+  PetscFunctionBegin;
+  ierr = MatMPIAIJGetSeqAIJ(A,&Ad,&Ao,&cmap);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    if (scall == MAT_INITIAL_MATRIX) {
+      ierr = PetscObjectReference((PetscObject)Ad);CHKERRQ(ierr);
+      *A_loc = Ad;
+    } else if (scall == MAT_REUSE_MATRIX) {
+      ierr = MatCopy(Ad,*A_loc,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    if (glob) { ierr = ISCreateStride(PetscObjectComm((PetscObject)Ad),Ad->cmap->n,Ad->cmap->rstart,1,glob);CHKERRQ(ierr); }
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJGetLocalMatMerge_C",&f);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,scall,glob,A_loc);CHKERRQ(ierr);
+  } else {
+    Mat_SeqAIJ        *a = (Mat_SeqAIJ*)Ad->data;
+    Mat_SeqAIJ        *b = (Mat_SeqAIJ*)Ao->data;
+    Mat_SeqAIJ        *c;
+    PetscInt          *ai = a->i, *aj = a->j;
+    PetscInt          *bi = b->i, *bj = b->j;
+    PetscInt          *ci,*cj;
+    const PetscScalar *aa,*ba;
+    PetscScalar       *ca;
+    PetscInt          i,j,am,dn,on;
+
+    ierr = MatGetLocalSize(Ad,&am,&dn);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(Ao,NULL,&on);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArrayRead(Ad,&aa);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArrayRead(Ao,&ba);CHKERRQ(ierr);
+    if (scall == MAT_INITIAL_MATRIX) {
+      PetscInt k;
+      ierr = PetscMalloc1(1+am,&ci);CHKERRQ(ierr);
+      ierr = PetscMalloc1(ai[am]+bi[am],&cj);CHKERRQ(ierr);
+      ierr = PetscMalloc1(ai[am]+bi[am],&ca);CHKERRQ(ierr);
+      ci[0] = 0;
+      for (i=0,k=0; i<am; i++) {
+        const PetscInt ncols_o = bi[i+1] - bi[i];
+        const PetscInt ncols_d = ai[i+1] - ai[i];
+        ci[i+1] = ci[i] + ncols_o + ncols_d;
+        /* diagonal portion of A */
+        for (j=0; j<ncols_d; j++,k++) {
+          cj[k] = *aj++;
+          ca[k] = *aa++;
+        }
+        /* off-diagonal portion of A */
+        for (j=0; j<ncols_o; j++,k++) {
+          cj[k] = dn + *bj++;
+          ca[k] = *ba++;
+        }
+      }
+      /* put together the new matrix */
+      ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,am,dn+on,ci,cj,ca,A_loc);CHKERRQ(ierr);
+      /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
+      /* Since these are PETSc arrays, change flags to free them as necessary. */
+      c          = (Mat_SeqAIJ*)(*A_loc)->data;
+      c->free_a  = PETSC_TRUE;
+      c->free_ij = PETSC_TRUE;
+      c->nonew   = 0;
+      ierr = MatSetType(*A_loc,((PetscObject)Ad)->type_name);CHKERRQ(ierr);
+    } else if (scall == MAT_REUSE_MATRIX) {
+#if defined(PETSC_HAVE_DEVICE)
+      (*A_loc)->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
+      c  = (Mat_SeqAIJ*)(*A_loc)->data;
+      ca = c->a;
+      for (i=0; i<am; i++) {
+        const PetscInt ncols_d = ai[i+1] - ai[i];
+        const PetscInt ncols_o = bi[i+1] - bi[i];
+        /* diagonal portion of A */
+        for (j=0; j<ncols_d; j++) *ca++ = *aa++;
+        /* off-diagonal portion of A */
+        for (j=0; j<ncols_o; j++) *ca++ = *ba++;
+      }
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
+    ierr = MatSeqAIJRestoreArrayRead(Ad,&aa);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArrayRead(Ao,&aa);CHKERRQ(ierr);
+    if (glob) {
+      PetscInt cst, *gidx;
+
+      ierr = MatGetOwnershipRangeColumn(A,&cst,NULL);CHKERRQ(ierr);
+      ierr = PetscMalloc1(dn+on,&gidx);CHKERRQ(ierr);
+      for (i=0; i<dn; i++) gidx[i]    = cst + i;
+      for (i=0; i<on; i++) gidx[i+dn] = cmap[i];
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)Ad),dn+on,gidx,PETSC_OWN_POINTER,glob);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscLogEventEnd(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

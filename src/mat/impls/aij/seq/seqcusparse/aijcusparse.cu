@@ -3630,3 +3630,374 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
   A->was_assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat A, const PetscScalar** a)
+{
+  Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
+  CsrMatrix          *csr;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(a,2);
+  PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  if (!cusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
+  if (cusp->format == MAT_CUSPARSE_ELL || cusp->format == MAT_CUSPARSE_HYB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+  ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
+  csr = (CsrMatrix*)cusp->mat->mat;
+  if (!csr->values) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing CUDA memory");
+  *a = csr->values->data().get();
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat A, const PetscScalar** a)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(a,2);
+  PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  *a = NULL;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar** a)
+{
+  Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
+  CsrMatrix          *csr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(a,2);
+  PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  if (!cusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
+  if (cusp->format == MAT_CUSPARSE_ELL || cusp->format == MAT_CUSPARSE_HYB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+  csr = (CsrMatrix*)cusp->mat->mat;
+  if (!csr->values) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing CUDA memory");
+  *a = csr->values->data().get();
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat A, PetscScalar** a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(a,2);
+  PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
+  A->offloadmask = PETSC_OFFLOAD_GPU;
+  *a = NULL;
+  PetscFunctionReturn(0);
+}
+
+struct IJCompare4
+{
+  __host__ __device__
+  inline bool operator() (const thrust::tuple<int, int, PetscScalar, bool> &t1, const thrust::tuple<int, int, PetscScalar, bool> &t2)
+  {
+    if (t1.get<0>() < t2.get<0>()) return true;
+    if (t1.get<0>() == t2.get<0>()) return t1.get<1>() < t2.get<1>();
+    return false;
+  }
+};
+
+struct Shift
+{
+  int _shift;
+
+  Shift(int shift) : _shift(shift) {}
+  __host__ __device__
+  inline int operator() (const int &c)
+  {
+    return c + _shift;
+  }
+};
+
+/* merges to SeqAIJCUSPARSE matrices, [A';B']' operation in matlab notation */
+PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
+{
+  PetscErrorCode               ierr;
+  Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data, *b = (Mat_SeqAIJ*)B->data, *c;
+  Mat_SeqAIJCUSPARSE           *Acusp = (Mat_SeqAIJCUSPARSE*)A->spptr, *Bcusp = (Mat_SeqAIJCUSPARSE*)B->spptr, *Ccusp;
+  Mat_SeqAIJCUSPARSEMultStruct *Cmat;
+  CsrMatrix                    *Acsr,*Bcsr,*Ccsr;
+  PetscInt                     Annz,Bnnz;
+  cusparseStatus_t             stat;
+  PetscInt                     i,m,n,zero = 0;
+  cudaError_t                  cerr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
+  PetscValidPointer(C,4);
+  PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  PetscCheckTypeName(B,MATSEQAIJCUSPARSE);
+  if (A->rmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Invalid number or rows %D != %D",A->rmap->n,B->rmap->n);
+  if (reuse == MAT_INPLACE_MATRIX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MAT_INPLACE_MATRIX not supported");
+  if (Acusp->format == MAT_CUSPARSE_ELL || Acusp->format == MAT_CUSPARSE_HYB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+  if (Bcusp->format == MAT_CUSPARSE_ELL || Bcusp->format == MAT_CUSPARSE_HYB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+  if (reuse == MAT_INITIAL_MATRIX) {
+    m     = A->rmap->n;
+    n     = A->cmap->n + B->cmap->n;
+    ierr  = MatCreate(PETSC_COMM_SELF,C);CHKERRQ(ierr);
+    ierr  = MatSetSizes(*C,m,n,m,n);CHKERRQ(ierr);
+    ierr  = MatSetType(*C,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
+    c     = (Mat_SeqAIJ*)(*C)->data;
+    Ccusp = (Mat_SeqAIJCUSPARSE*)(*C)->spptr;
+    Cmat  = new Mat_SeqAIJCUSPARSEMultStruct;
+    Ccsr  = new CsrMatrix;
+    Cmat->cprowIndices      = NULL;
+    c->compressedrow.use    = PETSC_FALSE;
+    c->compressedrow.nrows  = 0;
+    c->compressedrow.i      = NULL;
+    c->compressedrow.rindex = NULL;
+    Ccusp->workVector       = NULL;
+    Ccusp->nrows    = m;
+    Ccusp->mat      = Cmat;
+    Ccusp->mat->mat = Ccsr;
+    Ccsr->num_rows  = m;
+    Ccsr->num_cols  = n;
+    stat = cusparseCreateMatDescr(&Cmat->descr);CHKERRCUSPARSE(stat);
+    stat = cusparseSetMatIndexBase(Cmat->descr, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSPARSE(stat);
+    stat = cusparseSetMatType(Cmat->descr, CUSPARSE_MATRIX_TYPE_GENERAL);CHKERRCUSPARSE(stat);
+    cerr = cudaMalloc((void **)&(Cmat->alpha_one),sizeof(PetscScalar));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void **)&(Cmat->beta_zero),sizeof(PetscScalar));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void **)&(Cmat->beta_one), sizeof(PetscScalar));CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(Cmat->alpha_one,&PETSC_CUSPARSE_ONE, sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(Cmat->beta_zero,&PETSC_CUSPARSE_ZERO,sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(Cmat->beta_one, &PETSC_CUSPARSE_ONE, sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSECopyToGPU(B);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEGenerateTransposeForMult(A);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEGenerateTransposeForMult(B);CHKERRQ(ierr);
+    if (!Acusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
+    if (!Bcusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
+
+    Acsr = (CsrMatrix*)Acusp->mat->mat;
+    Bcsr = (CsrMatrix*)Bcusp->mat->mat;
+    Annz = (PetscInt)Acsr->column_indices->size();
+    Bnnz = (PetscInt)Bcsr->column_indices->size();
+    c->nz = Annz + Bnnz;
+    Ccsr->row_offsets = new THRUSTINTARRAY32(m+1);
+    Ccsr->column_indices = new THRUSTINTARRAY32(c->nz);
+    Ccsr->values = new THRUSTARRAY(c->nz);
+    Ccsr->num_entries = c->nz;
+    Ccusp->cooPerm = new THRUSTINTARRAY(c->nz);
+
+    if (c->nz) {
+      THRUSTINTARRAY32 Acoo(Annz);
+      THRUSTINTARRAY32 Bcoo(Bnnz);
+      THRUSTINTARRAY32 *roff;
+      if (a->compressedrow.use) { /* need full row offset */
+        if (!Acusp->rowoffsets_gpu) {
+          Acusp->rowoffsets_gpu  = new THRUSTINTARRAY32(A->rmap->n + 1);
+          Acusp->rowoffsets_gpu->assign(a->i,a->i + A->rmap->n + 1);
+          ierr = PetscLogCpuToGpu((A->rmap->n + 1)*sizeof(PetscInt));CHKERRQ(ierr);
+        }
+        roff = Acusp->rowoffsets_gpu;
+      } else roff = Acsr->row_offsets;
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+      stat = cusparseXcsr2coo(Acusp->handle,
+                              roff->data().get(),
+                              Annz,
+                              m,
+                              Acoo.data().get(),
+                              CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSPARSE(stat);
+      cerr = WaitForCUDA();CHKERRCUDA(cerr);
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+      if (b->compressedrow.use) { /* need full row offset */
+        if (!Bcusp->rowoffsets_gpu) {
+          Bcusp->rowoffsets_gpu  = new THRUSTINTARRAY32(B->rmap->n + 1);
+          Bcusp->rowoffsets_gpu->assign(b->i,b->i + B->rmap->n + 1);
+          ierr = PetscLogCpuToGpu((B->rmap->n + 1)*sizeof(PetscInt));CHKERRQ(ierr);
+        }
+        roff = Bcusp->rowoffsets_gpu;
+      } else roff = Bcsr->row_offsets;
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+      stat = cusparseXcsr2coo(Bcusp->handle,
+                              roff->data().get(),
+                              Bnnz,
+                              m,
+                              Bcoo.data().get(),
+                              CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSPARSE(stat);
+      cerr = WaitForCUDA();CHKERRCUDA(cerr);
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+      THRUSTINTARRAY32 Ccoo(c->nz);
+      auto Aperm = thrust::make_constant_iterator(true);
+      auto Bperm = thrust::make_constant_iterator(false);
+      auto Bcib = thrust::make_transform_iterator(Bcsr->column_indices->begin(),Shift(A->cmap->n));
+      auto Bcie = thrust::make_transform_iterator(Bcsr->column_indices->end(),Shift(A->cmap->n));
+      thrust::device_vector<bool> wPerm(Annz+Bnnz);
+      auto Azb = thrust::make_zip_iterator(thrust::make_tuple(Acoo.begin(),Acsr->column_indices->begin(),Acsr->values->begin(),Aperm));
+      auto Aze = thrust::make_zip_iterator(thrust::make_tuple(Acoo.end(),Acsr->column_indices->end(),Acsr->values->end(),Aperm));
+      auto Bzb = thrust::make_zip_iterator(thrust::make_tuple(Bcoo.begin(),Bcib,Bcsr->values->begin(),Bperm));
+      auto Bze = thrust::make_zip_iterator(thrust::make_tuple(Bcoo.end(),Bcie,Bcsr->values->end(),Bperm));
+      auto Czb = thrust::make_zip_iterator(thrust::make_tuple(Ccoo.begin(),Ccsr->column_indices->begin(),Ccsr->values->begin(),wPerm.begin()));
+      auto p1 = Ccusp->cooPerm->begin();
+      auto p2 = Ccusp->cooPerm->begin();
+      thrust::advance(p2,Annz);
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+      thrust::merge(Azb,Aze,Bzb,Bze,Czb,IJCompare4());
+      thrust::partition_copy(thrust::make_counting_iterator(zero),thrust::make_counting_iterator(c->nz),wPerm.begin(),p1,p2,thrust::identity<bool>());
+      stat = cusparseXcoo2csr(Ccusp->handle,
+                              Ccoo.data().get(),
+                              c->nz,
+                              m,
+                              Ccsr->row_offsets->data().get(),
+                              CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSPARSE(stat);
+      cerr = WaitForCUDA();CHKERRCUDA(cerr);
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+      stat = cusparseCreateCsr(&Cmat->matDescr, Ccsr->num_rows, Ccsr->num_cols, Ccsr->num_entries,
+                               Ccsr->row_offsets->data().get(), Ccsr->column_indices->data().get(), Ccsr->values->data().get(),
+                               CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+                               CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype);CHKERRCUSPARSE(stat);
+#endif
+      if (Acusp->transgen && Bcusp->transgen) { /* if A and B have the transpose, generate C transpose too */
+        PetscBool AT = Acusp->matTranspose ? PETSC_TRUE : PETSC_FALSE, BT = Bcusp->matTranspose ? PETSC_TRUE : PETSC_FALSE;
+        Mat_SeqAIJCUSPARSEMultStruct *CmatT = new Mat_SeqAIJCUSPARSEMultStruct;
+        CsrMatrix *CcsrT = new CsrMatrix;
+        CsrMatrix *AcsrT = AT ? (CsrMatrix*)Acusp->matTranspose->mat : NULL;
+        CsrMatrix *BcsrT = BT ? (CsrMatrix*)Bcusp->matTranspose->mat : NULL;
+
+        Ccusp->transgen = PETSC_TRUE;
+        CmatT->cprowIndices  = NULL;
+        CmatT->mat = CcsrT;
+        CcsrT->num_rows = n;
+        CcsrT->num_cols = m;
+        CcsrT->num_entries = c->nz;
+
+        CcsrT->row_offsets = new THRUSTINTARRAY32(n+1);
+        CcsrT->column_indices = new THRUSTINTARRAY32(c->nz);
+        CcsrT->values = new THRUSTARRAY(c->nz);
+
+        ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+        auto rT = CcsrT->row_offsets->begin();
+        if (AT) {
+          rT = thrust::copy(AcsrT->row_offsets->begin(),AcsrT->row_offsets->end(),rT);
+          thrust::advance(rT,-1);
+        }
+        if (BT) {
+          auto titb = thrust::make_transform_iterator(BcsrT->row_offsets->begin(),Shift(a->nz));
+          auto tite = thrust::make_transform_iterator(BcsrT->row_offsets->end(),Shift(a->nz));
+          thrust::copy(titb,tite,rT);
+        }
+        auto cT = CcsrT->column_indices->begin();
+        if (AT) cT = thrust::copy(AcsrT->column_indices->begin(),AcsrT->column_indices->end(),cT);
+        if (BT) thrust::copy(BcsrT->column_indices->begin(),BcsrT->column_indices->end(),cT);
+        auto vT = CcsrT->values->begin();
+        if (AT) vT = thrust::copy(AcsrT->values->begin(),AcsrT->values->end(),vT);
+        if (BT) thrust::copy(BcsrT->values->begin(),BcsrT->values->end(),vT);
+        cerr = WaitForCUDA();CHKERRCUDA(cerr);
+        ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+
+        stat = cusparseCreateMatDescr(&CmatT->descr);CHKERRCUSPARSE(stat);
+        stat = cusparseSetMatIndexBase(CmatT->descr, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSPARSE(stat);
+        stat = cusparseSetMatType(CmatT->descr, CUSPARSE_MATRIX_TYPE_GENERAL);CHKERRCUSPARSE(stat);
+        cerr = cudaMalloc((void **)&(CmatT->alpha_one),sizeof(PetscScalar));CHKERRCUDA(cerr);
+        cerr = cudaMalloc((void **)&(CmatT->beta_zero),sizeof(PetscScalar));CHKERRCUDA(cerr);
+        cerr = cudaMalloc((void **)&(CmatT->beta_one), sizeof(PetscScalar));CHKERRCUDA(cerr);
+        cerr = cudaMemcpy(CmatT->alpha_one,&PETSC_CUSPARSE_ONE, sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+        cerr = cudaMemcpy(CmatT->beta_zero,&PETSC_CUSPARSE_ZERO,sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+        cerr = cudaMemcpy(CmatT->beta_one, &PETSC_CUSPARSE_ONE, sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+        stat = cusparseCreateCsr(&CmatT->matDescr, CcsrT->num_rows, CcsrT->num_cols, CcsrT->num_entries,
+                                 CcsrT->row_offsets->data().get(), CcsrT->column_indices->data().get(), CcsrT->values->data().get(),
+                                 CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+                                 CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype);CHKERRCUSPARSE(stat);
+#endif
+        Ccusp->matTranspose = CmatT;
+      }
+    }
+
+    c->singlemalloc = PETSC_FALSE;
+    c->free_a       = PETSC_TRUE;
+    c->free_ij      = PETSC_TRUE;
+    ierr = PetscMalloc1(m+1,&c->i);CHKERRQ(ierr);
+    ierr = PetscMalloc1(c->nz,&c->j);CHKERRQ(ierr);
+    if (PetscDefined(USE_64BIT_INDICES)) { /* 32 to 64 bit conversion on the GPU and then copy to host (lazy) */
+      THRUSTINTARRAY ii(Ccsr->row_offsets->size());
+      THRUSTINTARRAY jj(Ccsr->column_indices->size());
+      ii   = *Ccsr->row_offsets;
+      jj   = *Ccsr->column_indices;
+      cerr = cudaMemcpy(c->i,ii.data().get(),Ccsr->row_offsets->size()*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+      cerr = cudaMemcpy(c->j,jj.data().get(),Ccsr->column_indices->size()*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+    } else {
+      cerr = cudaMemcpy(c->i,Ccsr->row_offsets->data().get(),Ccsr->row_offsets->size()*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+      cerr = cudaMemcpy(c->j,Ccsr->column_indices->data().get(),Ccsr->column_indices->size()*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+    }
+    ierr = PetscLogGpuToCpu((Ccsr->column_indices->size() + Ccsr->row_offsets->size())*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&c->ilen);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&c->imax);CHKERRQ(ierr);
+    c->maxnz = c->nz;
+    c->nonzerorowcnt = 0;
+    c->rmax = 0;
+    for (i = 0; i < m; i++) {
+      const PetscInt nn = c->i[i+1] - c->i[i];
+      c->ilen[i] = c->imax[i] = nn;
+      c->nonzerorowcnt += (PetscInt)!!nn;
+      c->rmax = PetscMax(c->rmax,nn);
+    }
+    ierr = MatMarkDiagonal_SeqAIJ(*C);CHKERRQ(ierr);
+    ierr = PetscMalloc1(c->nz,&c->a);CHKERRQ(ierr);
+    (*C)->nonzerostate++;
+    ierr = PetscLayoutSetUp((*C)->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp((*C)->cmap);CHKERRQ(ierr);
+    Ccusp->nonzerostate = (*C)->nonzerostate;
+    (*C)->preallocated  = PETSC_TRUE;
+  } else {
+    if ((*C)->rmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Invalid number or rows %D != %D",(*C)->rmap->n,B->rmap->n);
+    c = (Mat_SeqAIJ*)(*C)->data;
+    if (c->nz) {
+      Ccusp = (Mat_SeqAIJCUSPARSE*)(*C)->spptr;
+      if (!Ccusp->cooPerm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing cooPerm");
+      if (Ccusp->format == MAT_CUSPARSE_ELL || Ccusp->format == MAT_CUSPARSE_HYB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+      if (Ccusp->nonzerostate != (*C)->nonzerostate) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Wrong nonzerostate");
+      ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
+      ierr = MatSeqAIJCUSPARSECopyToGPU(B);CHKERRQ(ierr);
+      if (!Acusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
+      if (!Bcusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
+      Acsr = (CsrMatrix*)Acusp->mat->mat;
+      Bcsr = (CsrMatrix*)Bcusp->mat->mat;
+      Ccsr = (CsrMatrix*)Ccusp->mat->mat;
+      if (Acsr->num_entries != (PetscInt)Acsr->values->size()) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_COR,"A nnz %D != %D",Acsr->num_entries,(PetscInt)Acsr->values->size());
+      if (Bcsr->num_entries != (PetscInt)Bcsr->values->size()) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_COR,"B nnz %D != %D",Bcsr->num_entries,(PetscInt)Bcsr->values->size());
+      if (Ccsr->num_entries != (PetscInt)Ccsr->values->size()) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_COR,"C nnz %D != %D",Ccsr->num_entries,(PetscInt)Ccsr->values->size());
+      if (Ccsr->num_entries != Acsr->num_entries + Bcsr->num_entries) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_COR,"C nnz %D != %D + %D",Ccsr->num_entries,Acsr->num_entries,Bcsr->num_entries);
+      if (Ccusp->cooPerm->size() != Ccsr->values->size()) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_COR,"permSize %D != %D",(PetscInt)Ccusp->cooPerm->size(),(PetscInt)Ccsr->values->size());
+      auto pmid = Ccusp->cooPerm->begin();
+      thrust::advance(pmid,Acsr->num_entries);
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+      auto zibait = thrust::make_zip_iterator(thrust::make_tuple(Acsr->values->begin(),
+                                                                 thrust::make_permutation_iterator(Ccsr->values->begin(),Ccusp->cooPerm->begin())));
+      auto zieait = thrust::make_zip_iterator(thrust::make_tuple(Acsr->values->end(),
+                                                                 thrust::make_permutation_iterator(Ccsr->values->begin(),pmid)));
+      thrust::for_each(zibait,zieait,VecCUDAEquals());
+      auto zibbit = thrust::make_zip_iterator(thrust::make_tuple(Bcsr->values->begin(),
+                                                                 thrust::make_permutation_iterator(Ccsr->values->begin(),pmid)));
+      auto ziebit = thrust::make_zip_iterator(thrust::make_tuple(Bcsr->values->end(),
+                                                                 thrust::make_permutation_iterator(Ccsr->values->begin(),Ccusp->cooPerm->end())));
+      thrust::for_each(zibbit,ziebit,VecCUDAEquals());
+      if (Acusp->transgen && Bcusp->transgen && Ccusp->transgen) {
+        if (!Ccusp->matTranspose) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing transpose Mat_SeqAIJCUSPARSEMultStruct");
+        PetscBool AT = Acusp->matTranspose ? PETSC_TRUE : PETSC_FALSE, BT = Bcusp->matTranspose ? PETSC_TRUE : PETSC_FALSE;
+        CsrMatrix *AcsrT = AT ? (CsrMatrix*)Acusp->matTranspose->mat : NULL;
+        CsrMatrix *BcsrT = BT ? (CsrMatrix*)Bcusp->matTranspose->mat : NULL;
+        CsrMatrix *CcsrT = (CsrMatrix*)Ccusp->matTranspose->mat;
+        auto vT = CcsrT->values->begin();
+        if (AT) vT = thrust::copy(AcsrT->values->begin(),AcsrT->values->end(),vT);
+        if (BT) thrust::copy(BcsrT->values->begin(),BcsrT->values->end(),vT);
+      }
+      cerr = WaitForCUDA();CHKERRCUDA(cerr);
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscObjectStateIncrease((PetscObject)*C);CHKERRQ(ierr);
+  (*C)->assembled     = PETSC_TRUE;
+  (*C)->was_assembled = PETSC_FALSE;
+  (*C)->offloadmask   = PETSC_OFFLOAD_GPU;
+  /* we can remove this call when MatSeqAIJGetArray operations are used everywhere! */
+  ierr = MatSeqAIJCUSPARSECopyFromGPU(*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
