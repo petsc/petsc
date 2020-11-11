@@ -19,13 +19,14 @@ PetscClassId MATLABENGINE_CLASSID = -1;
 
     Input Parameters:
 +   comm - a separate MATLAB engine is started for each process in the communicator
--   machine - name of machine where MATLAB engine is to be run (usually NULL)
+-   host - name of machine where MATLAB engine is to be run (usually NULL)
 
     Output Parameter:
 .   mengine - the resulting object
 
    Options Database:
-.    -matlab_engine_graphics - allow the MATLAB engine to display graphics
++    -matlab_engine_graphics - allow the MATLAB engine to display graphics
+-    -matlab_engine_host - hostname, machine to run the MATLAB engine on
 
    Level: advanced
 
@@ -33,46 +34,62 @@ PetscClassId MATLABENGINE_CLASSID = -1;
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscMatlabEngine *mengine)
+PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char host[],PetscMatlabEngine *mengine)
 {
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size;
   char              buffer[256];
   PetscMatlabEngine e;
-  PetscBool         flg = PETSC_FALSE,mgiven = PETSC_TRUE;
+  PetscBool         flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (MATLABENGINE_CLASSID == -1) {
     ierr = PetscClassIdRegister("MATLAB Engine",&MATLABENGINE_CLASSID);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetBool(NULL,NULL,"-matlab_engine_graphics",&flg,NULL);CHKERRQ(ierr);
-
   ierr = PetscHeaderCreate(e,MATLABENGINE_CLASSID,"MatlabEngine","MATLAB Engine","Sys",comm,PetscMatlabEngineDestroy,NULL);CHKERRQ(ierr);
 
-  if (!machine) {
-    machine = "\0";
-    mgiven  = PETSC_FALSE;
+  if (!host) {
+    char lhost[64];
+
+    ierr = PetscOptionsGetString(NULL,NULL,"-matlab_engine_host",lhost,sizeof(lhost),&flg);CHKERRQ(ierr);
+    if (flg) {host = lhost;}
   }
-  ierr = PetscStrncpy(buffer,PETSC_MATLAB_COMMAND,sizeof(buffer));CHKERRQ(ierr);
-  if (!flg) {
-    ierr = PetscStrlcat(buffer," -nodisplay ",sizeof(buffer));CHKERRQ(ierr);
-  }
-  ierr  = PetscStrlcat(buffer," -nosplash ",sizeof(buffer));CHKERRQ(ierr);
-  if (mgiven) {
-    ierr  = PetscInfo2(0,"Starting MATLAB engine on %s with command %s\n",machine,buffer);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matlab_engine_graphics",&flg,NULL);CHKERRQ(ierr);
+
+  if (host) {
+    ierr  = PetscInfo1(0,"Starting MATLAB engine on %s\n",host);CHKERRQ(ierr);
   } else {
-    ierr  = PetscInfo1(0,"Starting MATLAB engine with command %s\n",buffer);CHKERRQ(ierr);
+
   }
+  if (host) {
+    ierr = PetscStrcpy(buffer,"ssh ");CHKERRQ(ierr);
+    ierr = PetscStrcat(buffer,host);CHKERRQ(ierr);
+    ierr = PetscStrcat(buffer," \"");CHKERRQ(ierr);
+    ierr = PetscStrlcat(buffer,PETSC_MATLAB_COMMAND,sizeof(buffer));CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscStrlcat(buffer," -nodisplay ",sizeof(buffer));CHKERRQ(ierr);
+    }
+    ierr  = PetscStrlcat(buffer," -nosplash ",sizeof(buffer));CHKERRQ(ierr);
+    ierr = PetscStrcat(buffer,"\"");CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrncpy(buffer,PETSC_MATLAB_COMMAND,sizeof(buffer));CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscStrlcat(buffer," -nodisplay ",sizeof(buffer));CHKERRQ(ierr);
+    }
+    ierr  = PetscStrlcat(buffer," -nosplash ",sizeof(buffer));CHKERRQ(ierr);
+  }
+  ierr  = PetscInfo1(0,"Starting MATLAB engine with command %s\n",buffer);CHKERRQ(ierr);
   e->ep = engOpen(buffer);
-  if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine on %s",machine);
+  if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine with %s",buffer);
   engOutputBuffer(e->ep,e->buffer,1024);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   sprintf(buffer,"MPI_Comm_rank = %d; MPI_Comm_size = %d;\n",rank,size);
   engEvalString(e->ep, buffer);
-  if (mgiven) {
-    ierr = PetscInfo1(0,"Started MATLAB engine on %s\n",machine);CHKERRQ(ierr);
+  if (host) {
+    ierr = PetscInfo1(0,"Started MATLAB engine on %s\n",host);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(0,"Started MATLAB engine\n");CHKERRQ(ierr);
   }
@@ -170,6 +187,7 @@ PetscErrorCode  PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char s
 PetscErrorCode  PetscMatlabEngineGetOutput(PetscMatlabEngine mengine,char **string)
 {
   PetscFunctionBegin;
+  if (!mengine) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_MATLAB_ENGINE_() failed");
   *string = mengine->buffer;
   PetscFunctionReturn(0);
 }
@@ -194,6 +212,7 @@ PetscErrorCode  PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
+  if (!mengine) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_MATLAB_ENGINE_() failed");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mengine),&rank);CHKERRQ(ierr);
   ierr = PetscSynchronizedFPrintf(PetscObjectComm((PetscObject)mengine),fd,"[%d]%s",rank,mengine->buffer);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PetscObjectComm((PetscObject)mengine),fd);CHKERRQ(ierr);
@@ -224,6 +243,7 @@ PetscErrorCode  PetscMatlabEnginePut(PetscMatlabEngine mengine,PetscObject obj)
   PetscErrorCode ierr,(*put)(PetscObject,void*);
 
   PetscFunctionBegin;
+  if (!mengine) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_MATLAB_ENGINE_() failed");
   ierr = PetscObjectQueryFunction(obj,"PetscMatlabEnginePut_C",&put);CHKERRQ(ierr);
   if (!put) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Object %s cannot be put into MATLAB engine",obj->class_name);
   ierr = PetscInfo(0,"Putting MATLAB object\n");CHKERRQ(ierr);
@@ -255,6 +275,7 @@ PetscErrorCode  PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
   PetscErrorCode ierr,(*get)(PetscObject,void*);
 
   PetscFunctionBegin;
+  if (!mengine) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_MATLAB_ENGINE_() failed");
   if (!obj->name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot get object that has no name");
   ierr = PetscObjectQueryFunction(obj,"PetscMatlabEngineGet_C",&get);CHKERRQ(ierr);
   if (!get) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Object %s cannot be gotten from MATLAB engine",obj->class_name);
@@ -272,13 +293,15 @@ static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
 
 /*@C
-   PETSC_MATLAB_ENGINE_ - Creates a matlab engine shared by all processors
-                    in a communicator.
+   PETSC_MATLAB_ENGINE_ - Creates a matlab engine on each process in a communicator.
 
    Not Collective
 
    Input Parameter:
 .  comm - the MPI communicator to share the engine
+
+   Options Database:
+.  -matlab_engine_host - hostname
 
    Level: developer
 
@@ -302,22 +325,17 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Matlab_Engine_keyval,0);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(NULL);}
   }
   ierr = MPI_Comm_get_attr(comm,Petsc_Matlab_Engine_keyval,(void**)&mengine,(int*)&flg);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(NULL);}
   if (!flg) { /* viewer not yet created */
-    char *machinename = 0,machine[64];
-
-    ierr = PetscOptionsGetString(NULL,NULL,"-matlab_engine_machine",machine,sizeof(machine),&flg);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
-    if (flg) machinename = machine;
-    ierr = PetscMatlabEngineCreate(comm,machinename,&mengine);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
+    ierr = PetscMatlabEngineCreate(comm,NULL,&mengine);
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_REPEAT," ");PetscFunctionReturn(NULL);}
     ierr = PetscObjectRegisterDestroy((PetscObject)mengine);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_REPEAT," ");PetscFunctionReturn(NULL);}
     ierr = MPI_Comm_set_attr(comm,Petsc_Matlab_Engine_keyval,mengine);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_REPEAT," ");PetscFunctionReturn(NULL);}
   }
   PetscFunctionReturn(mengine);
 }
@@ -346,6 +364,7 @@ PetscErrorCode  PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,
   mxArray        *mat;
 
   PetscFunctionBegin;
+  if (!mengine) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_MATLAB_ENGINE_() failed");
   ierr = PetscInfo1(0,"Putting MATLAB array %s\n",name);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   mat = mxCreateDoubleMatrix(m,n,mxREAL);
@@ -382,6 +401,7 @@ PetscErrorCode  PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,
   mxArray        *mat;
 
   PetscFunctionBegin;
+  if (!mengine) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_MATLAB_ENGINE_() failed");
   ierr = PetscInfo1(0,"Getting MATLAB array %s\n",name);CHKERRQ(ierr);
   mat  = engGetVariable(mengine->ep,name);
   if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
