@@ -53,7 +53,7 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 
   PetscFunctionBegin;
   ierr = PetscNew(map);CHKERRQ(ierr);
-
+  ierr = MPI_Comm_size(comm, &(*map)->size);CHKERRQ(ierr);
   (*map)->comm        = comm;
   (*map)->bs          = -1;
   (*map)->n           = -1;
@@ -169,18 +169,17 @@ PetscErrorCode PetscLayoutDestroy(PetscLayout *map)
 PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm,const PetscInt range[],PetscCopyMode mode,PetscInt bs,PetscLayout *newmap)
 {
   PetscLayout    map;
-  PetscMPIInt    rank,size;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscLayoutCreate(comm, &map);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(map, bs);CHKERRQ(ierr);
   switch (mode) {
     case PETSC_COPY_VALUES:
-      ierr = PetscMalloc1(size+1, &map->range);CHKERRQ(ierr);
-      ierr = PetscArraycpy(map->range, range, size+1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(map->size+1, &map->range);CHKERRQ(ierr);
+      ierr = PetscArraycpy(map->range, range, map->size+1);CHKERRQ(ierr);
       break;
     case PETSC_USE_POINTER:
       map->range_alloc = PETSC_FALSE;
@@ -191,7 +190,7 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm,const PetscInt range[],
   map->rstart = map->range[rank];
   map->rend   = map->range[rank+1];
   map->n      = map->rend - map->rstart;
-  map->N      = map->range[size];
+  map->N      = map->range[map->size];
   if (PetscDefined(USE_DEBUG)) {  /* just check that n, N and bs are consistent */
     PetscInt tmp;
     ierr = MPIU_Allreduce(&map->n,&tmp,1,MPIU_INT,MPI_SUM,map->comm);CHKERRQ(ierr);
@@ -240,7 +239,7 @@ $ PetscLayoutGetSize(PetscLayout,PetscInt *);
 @*/
 PetscErrorCode PetscLayoutSetUp(PetscLayout map)
 {
-  PetscMPIInt    rank,size;
+  PetscMPIInt    rank;
   PetscInt       p;
   PetscErrorCode ierr;
 
@@ -255,7 +254,6 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
     if (map->N % map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Global size %D must be divisible by blocksize %D",map->N,map->bs);
   }
 
-  ierr = MPI_Comm_size(map->comm, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(map->comm, &rank);CHKERRMPI(ierr);
   if (map->n > 0) map->n = map->n/PetscAbs(map->bs);
   if (map->N > 0) map->N = map->N/PetscAbs(map->bs);
@@ -263,12 +261,12 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   map->n = map->n*PetscAbs(map->bs);
   map->N = map->N*PetscAbs(map->bs);
   if (!map->range) {
-    ierr = PetscMalloc1(size+1, &map->range);CHKERRQ(ierr);
+    ierr = PetscMalloc1(map->size+1, &map->range);CHKERRQ(ierr);
   }
   ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRMPI(ierr);
 
   map->range[0] = 0;
-  for (p = 2; p <= size; p++) map->range[p] += map->range[p-1];
+  for (p = 2; p <= map->size; p++) map->range[p] += map->range[p-1];
 
   map->rstart = map->range[rank];
   map->rend   = map->range[rank+1];
@@ -301,20 +299,17 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
 @*/
 PetscErrorCode PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
 {
-  PetscMPIInt    size;
   PetscErrorCode ierr;
   MPI_Comm       comm = in->comm;
 
   PetscFunctionBegin;
   ierr = PetscLayoutDestroy(out);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
   if (in->range) {
-    ierr = PetscMalloc1(size+1,&(*out)->range);CHKERRQ(ierr);
-    ierr = PetscArraycpy((*out)->range,in->range,size+1);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*out)->size+1,&(*out)->range);CHKERRQ(ierr);
+    ierr = PetscArraycpy((*out)->range,in->range,(*out)->size+1);CHKERRQ(ierr);
   }
-
   (*out)->refcnt = 0;
   PetscFunctionReturn(0);
 }
@@ -681,14 +676,11 @@ PetscErrorCode PetscLayoutsCreateSF(PetscLayout rmap, PetscLayout lmap, PetscSF*
 PetscErrorCode PetscLayoutCompare(PetscLayout mapa,PetscLayout mapb,PetscBool *congruent)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    sizea,sizeb;
 
   PetscFunctionBegin;
   *congruent = PETSC_FALSE;
-  ierr = MPI_Comm_size(mapa->comm,&sizea);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(mapb->comm,&sizeb);CHKERRMPI(ierr);
-  if (mapa->N == mapb->N && mapa->range && mapb->range && sizea == sizeb) {
-    ierr = PetscArraycmp(mapa->range,mapb->range,sizea+1,congruent);CHKERRQ(ierr);
+  if (mapa->N == mapb->N && mapa->range && mapb->range && mapa->size == mapb->size) {
+    ierr = PetscArraycmp(mapa->range,mapb->range,mapa->size+1,congruent);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

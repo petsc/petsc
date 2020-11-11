@@ -25,17 +25,27 @@
 PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nleaves,const PetscInt *ilocal,PetscCopyMode localmode,const PetscInt *iremote)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nroots;
+  const PetscInt *range;
+  PetscInt       i, nroots, ls = -1, ln = -1;
+  PetscMPIInt    lr = -1;
   PetscSFNode    *remote;
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(layout,&nroots);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(layout,&range);CHKERRQ(ierr);
   ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+  if (nleaves) { ls = iremote[0] + 1; }
   for (i=0; i<nleaves; i++) {
-    PetscMPIInt owner = -1;
-    ierr = PetscLayoutFindOwner(layout,iremote[i],&owner);CHKERRQ(ierr);
-    remote[i].rank  = owner;
-    remote[i].index = iremote[i] - layout->range[owner];
+    const PetscInt idx = iremote[i] - ls;
+    if (idx < 0 || idx >= ln) { /* short-circuit the search */
+      ierr = PetscLayoutFindOwnerIndex(layout,iremote[i],&lr,&remote[i].index);CHKERRQ(ierr);
+      remote[i].rank = lr;
+      ls = range[lr];
+      ln = range[lr+1] - ls;
+    } else {
+      remote[i].rank  = lr;
+      remote[i].index = idx;
+    }
   }
   ierr = PetscSFSetGraph(sf,nroots,nleaves,ilocal,localmode,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
