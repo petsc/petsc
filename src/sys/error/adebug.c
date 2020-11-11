@@ -14,7 +14,7 @@
 static char      PetscDebugger[PETSC_MAX_PATH_LEN];
 static char      DebugTerminal[PETSC_MAX_PATH_LEN];
 static PetscBool Xterm = PETSC_TRUE;
-PetscBool        petscwaitonerror = PETSC_FALSE;
+PetscBool        petscwaitonerrorflg = PETSC_FALSE;
 PetscBool        petscindebugger  = PETSC_FALSE;
 
 /*@C
@@ -181,7 +181,7 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 @*/
 PetscErrorCode  PetscWaitOnError()
 {
-  petscwaitonerror  = PETSC_TRUE;
+  petscwaitonerrorflg  = PETSC_TRUE;
   return 0;
 }
 
