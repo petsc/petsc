@@ -475,8 +475,11 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A,const PetscScalar coo_v[],InsertMode 
   if (n_i != n_j)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_COR,"Wrong local size %D != %D",n_i,n_j);
   ierr = ISGetIndices(is_coo_i,&coo_i);CHKERRQ(ierr);
   ierr = ISGetIndices(is_coo_j,&coo_j);CHKERRQ(ierr);
+  if (imode != ADD_VALUES) {
+    ierr = MatZeroEntries(A);CHKERRQ(ierr);
+  }
   for (n = 0; n < n_i; n++) {
-    ierr = MatSetValue(A,coo_i[n],coo_j[n],coo_v ? coo_v[n] : zero,imode);CHKERRQ(ierr);
+    ierr = MatSetValue(A,coo_i[n],coo_j[n],coo_v ? coo_v[n] : zero,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(is_coo_i,&coo_i);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is_coo_j,&coo_j);CHKERRQ(ierr);
@@ -575,6 +578,8 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
    Level: beginner
 
    Notes: The values must follow the order of the indices prescribed with MatSetPreallocationCOO().
+          The imode flag indicates if coo_v must be summed to the current values of the matrix (ADD_VALUES) or overwritten (INSERT_VALUES).
+          When repeated entries are specified in the COO indices, coo_v values are first summed and then insertion or addition is performed,
           Currently optimized for cuSPARSE matrices only.
 
 .seealso: MatSetPreallocationCOO(), InsertMode, INSERT_VALUES, ADD_VALUES
@@ -595,5 +600,6 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
   } else { /* allow fallback */
     ierr = MatSetValuesCOO_Basic(A,coo_v,imode);CHKERRQ(ierr);
   }
+  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

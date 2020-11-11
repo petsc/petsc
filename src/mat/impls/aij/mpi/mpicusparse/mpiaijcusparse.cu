@@ -8,9 +8,6 @@
 #include <../src/mat/impls/aij/mpi/mpicusparse/mpicusparsematimpl.h>
 #include <thrust/advance.h>
 
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],const PetscInt[]);
-PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
-
 struct VecCUDAEquals
 {
   template <typename Tuple>
@@ -31,14 +28,17 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat A, const PetscScalar v[
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_CUSPARSESetVCOO,A,0,0,0);CHKERRQ(ierr);
-  if (cusp->coo_p) {
+  if (cusp->coo_p && v) {
+    THRUSTARRAY *w;
     ierr = PetscLogCpuToGpu(n*sizeof(PetscScalar));CHKERRQ(ierr);
-    THRUSTARRAY w(v,v+n);
-    auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(w.begin(),cusp->coo_p->begin()),
+    w = new THRUSTARRAY(n);
+    w->assign(v,v+n);
+    auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(w->begin(),cusp->coo_p->begin()),
                                                               cusp->coo_pw->begin()));
-    auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(w.begin(),cusp->coo_p->end()),
+    auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(w->begin(),cusp->coo_p->end()),
                                                               cusp->coo_pw->end()));
     thrust::for_each(zibit,zieit,VecCUDAEquals());
+    delete w;
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->A,cusp->coo_pw->data().get(),imode);CHKERRQ(ierr);
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->B,cusp->coo_pw->data().get()+cusp->coo_nd,imode);CHKERRQ(ierr);
   } else {
