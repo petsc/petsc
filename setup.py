@@ -15,16 +15,15 @@ all message-passing communication.
    To install ``PETSc`` and ``petsc4py`` (``mpi4py`` is optional
    but highly recommended) use::
 
-     $ pip install numpy mpi4py
-     $ pip install petsc petsc4py
+     $ python -m pip install numpy mpi4py  (or pip install numpy mpi4py)
+     $ python -m pip install petsc petsc4py (or pip install petsc petsc4py)
 
 .. tip::
 
   You can also install the in-development versions with::
 
-    $ pip install Cython numpy mpi4py
-    $ pip install --no-deps https://gitlab.com/petsc/petsc/-/archive/master/petsc-master.tar.gz
-    $ pip install --no-deps https://bitbucket.org/petsc/petsc4py/get/master.tar.gz
+    $ python -m pip install Cython numpy mpi4py
+    $ python -m pip install --no-deps https://gitlab.com/petsc/petsc/-/archive/master/petsc-master.tar.gz
 
   To set the MPI compilers use the environmental variables ``MPICC``, ``MPICXX``, ``MPIF90``.
 

@@ -16,3 +16,10 @@ PETSc |version| Documentation
    manual/index
    guides/guide_to_examples
    developers/index
+
+
+.. raw:: html
+
+    <a href="../../../src/binding/petsc4py/docs/usrman/index.html">PETSc4py documentation</a>
+
+
