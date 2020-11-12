@@ -402,15 +402,44 @@ int main(int argc,char **args)
      output_file: output/ex62_1.out
 
    test:
+     suffix: 14_mpiaijcusparse_seq
+     nsize: 1
+     requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_cusparse_transgen -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+     output_file: output/ex62_1.out
+
+   test:
+     suffix: 14_mpiaijcusparse
+     nsize: 3
+     requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_cusparse_transgen -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+     output_file: output/ex62_1.out
+
+   test:
      suffix: 14_seqaijkokkos
      requires: kokkos_kernels !complex double !define(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type aijkokkos -B_mat_type aijkokkos -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
      output_file: output/ex62_1.out
 
-   # this tests use matrices with many zero rows
+   # these tests use matrices with many zero rows
    test:
      suffix: 15_seqaijcusparse
      requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES) datafilespath
      args: -A_mat_type aijcusparse -mat_cusparse_transgen -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
      output_file: output/ex62_1.out
+
+   test:
+     suffix: 15_mpiaijcusparse_seq
+     nsize: 1
+     requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES) datafilespath
+     args: -A_mat_type mpiaijcusparse -mat_cusparse_transgen -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
+     output_file: output/ex62_1.out
+
+   test:
+     nsize: 3
+     suffix: 15_mpiaijcusparse
+     requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES) datafilespath
+     args: -A_mat_type mpiaijcusparse -mat_cusparse_transgen -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
+     output_file: output/ex62_1.out
+
 TEST*/
