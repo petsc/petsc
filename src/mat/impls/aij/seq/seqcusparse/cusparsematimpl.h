@@ -15,6 +15,7 @@
 #include <thrust/transform.h>
 #include <thrust/functional.h>
 #include <thrust/sequence.h>
+#include <thrust/system/system_error.h>
 
 #if (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) /* According to cuda/10.1.168 on OLCF Summit */
 #define CHKERRCUSPARSE(stat) \
@@ -28,6 +29,14 @@ do { \
 #else
 #define CHKERRCUSPARSE(stat) do {if (PetscUnlikely(stat)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_GPU,"cusparse error %d",(int)stat);} while (0)
 #endif
+
+#define PetscStackCallThrust(body) do {                                     \
+    try {                                                                   \
+      body;                                                                 \
+    } catch(thrust::system_error& e) {                                      \
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in Thrust %s",e.what());\
+    }                                                                       \
+  } while (0)
 
 #if defined(PETSC_USE_COMPLEX)
   #if defined(PETSC_USE_REAL_SINGLE)
