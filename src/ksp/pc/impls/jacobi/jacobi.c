@@ -352,6 +352,30 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
+{
+  PC_Jacobi     *jac = (PC_Jacobi *) pc->data;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {
+    PCJacobiType      type;
+    PetscBool         useAbs;
+    PetscViewerFormat format;
+
+    ierr = PCJacobiGetType(pc, &type);CHKERRQ(ierr);
+    ierr = PCJacobiGetUseAbs(pc, &useAbs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  type %s%s\n", PCJacobiTypes[type], useAbs ? ", using absolute value of entries" : "");CHKERRQ(ierr);
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      ierr = VecView(jac->diag, viewer);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
    PCCreate_Jacobi - Creates a Jacobi preconditioner context, PC_Jacobi,
@@ -421,7 +445,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
   pc->ops->reset               = PCReset_Jacobi;
   pc->ops->destroy             = PCDestroy_Jacobi;
   pc->ops->setfromoptions      = PCSetFromOptions_Jacobi;
-  pc->ops->view                = NULL;
+  pc->ops->view                = PCView_Jacobi;
   pc->ops->applyrichardson     = NULL;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
