@@ -1322,6 +1322,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   Mat_SeqAIJ        *A   = (Mat_SeqAIJ*)aij->A->data;
   Mat_SeqAIJ        *B   = (Mat_SeqAIJ*)aij->B->data;
   const PetscInt    *garray = aij->garray;
+  const PetscScalar *aa,*ba;
   PetscInt          header[4],M,N,m,rs,cs,nz,cnt,i,ja,jb;
   PetscInt          *rowlens;
   PetscInt          *colidxs;
@@ -1367,17 +1368,21 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   ierr = PetscFree(colidxs);CHKERRQ(ierr);
 
   /* fill in and store nonzero values */
+  ierr = MatSeqAIJGetArrayRead(aij->A,&aa);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(aij->B,&ba);CHKERRQ(ierr);
   ierr = PetscMalloc1(nz,&matvals);CHKERRQ(ierr);
   for (cnt=0, i=0; i<m; i++) {
     for (jb=B->i[i]; jb<B->i[i+1]; jb++) {
       if (garray[B->j[jb]] > cs) break;
-      matvals[cnt++] = B->a[jb];
+      matvals[cnt++] = ba[jb];
     }
     for (ja=A->i[i]; ja<A->i[i+1]; ja++)
-      matvals[cnt++] = A->a[ja];
+      matvals[cnt++] = aa[ja];
     for (; jb<B->i[i+1]; jb++)
-      matvals[cnt++] = B->a[jb];
+      matvals[cnt++] = ba[jb];
   }
+  ierr = MatSeqAIJRestoreArrayRead(aij->A,&aa);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(aij->B,&ba);CHKERRQ(ierr);
   if (cnt != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Internal PETSc error: cnt = %D nz = %D",cnt,nz);
   ierr = PetscViewerBinaryWriteAll(viewer,matvals,nz,PETSC_DETERMINE,PETSC_DETERMINE,PETSC_SCALAR);CHKERRQ(ierr);
   ierr = PetscFree(matvals);CHKERRQ(ierr);
@@ -3515,7 +3520,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
           PetscFunctionReturn(0);
         }
       } else { /* call == MAT_REUSE_MATRIX */
-        IS    iscol_sub;
+        IS iscol_sub;
         ierr = PetscObjectQuery((PetscObject)*newmat,"SubIScol",(PetscObject*)&iscol_sub);CHKERRQ(ierr);
         if (iscol_sub) {
           ierr = MatCreateSubMatrix_MPIAIJ_SameRowDist(mat,isrow,iscol,NULL,call,newmat);CHKERRQ(ierr);
@@ -3653,7 +3658,6 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,I
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-
   if (call == MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubIScol",(PetscObject*)&iscol_sub);CHKERRQ(ierr);
     if (!iscol_sub) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"SubIScol passed in was not used before, cannot reuse");
@@ -3810,7 +3814,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,I
   ierr = MatGetOwnershipRange(M,&rstart,NULL);CHKERRQ(ierr);
 
   jj   = aij->j;
-  aa   = aij->a;
+  ierr = MatSeqAIJGetArrayRead(Msub,(const PetscScalar**)&aa);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     row = rstart + i;
     nz  = ii[i+1] - ii[i];
@@ -3818,15 +3822,16 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,I
     ierr  = MatSetValues_MPIAIJ(M,1,&row,nz,colsub,aa,INSERT_VALUES);CHKERRQ(ierr);
     jj += nz; aa += nz;
   }
+  ierr = MatSeqAIJRestoreArrayRead(Msub,(const PetscScalar**)&aa);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscmap,&cmap);CHKERRQ(ierr);
 
-  ierr    = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr    = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscFree(colsub);CHKERRQ(ierr);
 
   /* save Msub, iscol_sub and iscmap used in processor for next request */
-  if (call ==  MAT_INITIAL_MATRIX) {
+  if (call == MAT_INITIAL_MATRIX) {
     *newmat = M;
     ierr = PetscObjectCompose((PetscObject)(*newmat),"SubMatrix",(PetscObject)Msub);CHKERRQ(ierr);
     ierr = MatDestroy(&Msub);CHKERRQ(ierr);
@@ -3954,14 +3959,17 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat,IS isrow,IS iscol,P
   aij  = (Mat_SeqAIJ*)(Mreuse)->data;
   ii   = aij->i;
   jj   = aij->j;
-  aa   = aij->a;
+
+  /* trigger copy to CPU if needed */
+  ierr = MatSeqAIJGetArrayRead(Mreuse,(const PetscScalar**)&aa);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     row   = rstart + i;
     nz    = ii[i+1] - ii[i];
-    cwork = jj;     jj += nz;
-    vwork = aa;     aa += nz;
+    cwork = jj; jj += nz;
+    vwork = aa; aa += nz;
     ierr  = MatSetValues_MPIAIJ(M,1,&row,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
   }
+  ierr = MatSeqAIJRestoreArrayRead(Mreuse,(const PetscScalar**)&aa);CHKERRQ(ierr);
 
   ierr    = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr    = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -5952,6 +5960,9 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
     bufa     = *bufa_ptr;
     b_oth    = (Mat_SeqAIJ*)(*B_oth)->data;
     b_otha   = b_oth->a;
+#if defined(PETSC_HAVE_DEVICE)
+    (*B_oth)->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
 
   /* a-array */
