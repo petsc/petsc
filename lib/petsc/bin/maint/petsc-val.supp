@@ -26,3 +26,38 @@
    fun:MPIDI_CH3i_Progress_wait
    fun:MPIDI_CH3I_Progress
 }
+{
+   name1
+   Memcheck:Leak
+   ...
+   fun:_notify_fork_child
+   ...
+}
+{
+   name2
+   Memcheck:Leak
+   ...
+   fun:xpc_payload_alloc
+   ...
+}
+{
+   name3
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/libobjc.A.dylib
+   ...
+}
+{
+   name4
+   Memcheck:Leak
+   ...
+   fun:ConnectToServer
+   ...
+}
+{
+   name5
+   Memcheck:Leak
+   ...
+   fun:_XcmsLookupColorName 
+   ...
+}

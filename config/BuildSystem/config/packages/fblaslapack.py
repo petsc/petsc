@@ -14,6 +14,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.valgrind = framework.require('config.packages.valgrind',self)
     return
 
   def configureLibrary(self):
@@ -22,6 +23,12 @@ class Configure(config.package.Package):
     if hasattr(self.argDB,'known-64-bit-blas-indices') and self.argDB['known-64-bit-blas-indices']:
       raise RuntimeError('fblaslapack does not support -known-64-bit-blas-indices')
     config.package.Package.configureLibrary(self)
+
+  def alternateConfigureLibrary(self):
+    '''The Apple Accelerate library uses threads that valgrind cannot handle'''
+    if self.valgrind.found and config.setCompilers.Configure.isDarwin(self.log):
+      if not 'download-f2cblaslapack' in self.argDB:
+        raise RuntimeError('When using valgrind on Apple you must use --download-fblaslapack or --download-f2cblaslapack')
 
   def Install(self):
     import os
