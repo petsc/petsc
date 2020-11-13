@@ -33,7 +33,7 @@ def getPathArchPETSc(arch=None):
     Undocumented.
     """
     import sys, os
-    path = os.path.dirname(__file__)
+    path = os.path.abspath(os.path.dirname(__file__))
     rcvar, rcfile  =  'PETSC_ARCH', 'petsc.cfg'
     path, arch = getPathArch(path, arch, rcvar, rcfile)
     return (path, arch)

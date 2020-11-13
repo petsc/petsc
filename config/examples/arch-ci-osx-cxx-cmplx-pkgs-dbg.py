@@ -30,7 +30,7 @@ configure_options = [
   '--download-mumps=1',
   '--download-hdf5',
   '--download-zlib=1',
-  '--download-petsc4py=1',
+  '--with-petsc4py=1',
   '--download-mpi4py=1',
   '--download-elemental=1'
   #'--download-sundials2=1',
