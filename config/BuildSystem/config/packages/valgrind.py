@@ -4,9 +4,11 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.functions = []
-    self.includes  = ['valgrind/valgrind.h']
-    self.required  = 1
+    self.functions      = []
+    self.includes       = ['valgrind/valgrind.h']
+    self.versioninclude = 'valgrind/config.h'
+    self.versionname    = 'VERSION'
+    self.required       = 1
     return
 
   def setupDependencies(self, framework):
@@ -32,7 +34,6 @@ class Configure(config.package.Package):
   def configure(self):
     '''By default we look for valgrind, but do not stop if it is not found'''
     self.consistencyChecks()
-    found = 0
     if self.argDB['with-'+self.package]:
       if self.cxx:
         self.libraries.pushLanguage('C++')
@@ -43,14 +44,14 @@ class Configure(config.package.Package):
         oldFlags = self.compilers.CPPFLAGS
         self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
         if self.checkCompile('#include <valgrind/valgrind.h>', 'RUNNING_ON_VALGRIND;\n'):
-          found = 1
+          self.found = 1
           self.addDefine('HAVE_VALGRIND', 1)
         self.compilers.CPPFLAGS = oldFlags
       except:
         pass
       self.libraries.popLanguage()
 
-    if found and config.setCompilers.Configure.isDarwin(self.log):
+    if self.found and config.setCompilers.Configure.isDarwin(self.log):
       self.addDefine('HAVE_VALGRIND_DARWIN', 1)
       langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPCC','SYCL':'SYCLCXX'}
       languages = ['C']
@@ -67,11 +68,12 @@ class Configure(config.package.Package):
             setattr(self.setCompilers,linker_flag_var,val)
         self.setCompilers.popLanguage()
 
-    if not found and self.setCompilers.isLinux(self.log):
+    if self.found:
+      self.checkVersion()
+
+    if not self.found and self.setCompilers.isLinux(self.log):
       self.logPrintBox('It appears you do not have valgrind installed on your system.\n\
 We HIGHLY recommend you install it from www.valgrind.org\n\
 Or install valgrind-devel or equivalent using your package manager.\n\
 Then rerun ./configure')
-    else:
-      self.executeTest(self.alternateConfigureLibrary)
-    return
+
