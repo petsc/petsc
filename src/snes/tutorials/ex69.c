@@ -3481,7 +3481,7 @@ int main(int argc, char **argv)
       suffix: aij
       args: -matis_localmat_type aij
     test:
-      requires: viennacl
+      requires: viennacl !CUDA_VERSION_11PLUS
       suffix: aijviennacl
       args: -matis_localmat_type aijviennacl
     test:
@@ -3508,7 +3508,7 @@ int main(int argc, char **argv)
       suffix: aij_seqdense
       args: -matis_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
     test:
-      requires: viennacl
+      requires: viennacl !CUDA_VERSION_11PLUS
       suffix: aijviennacl
       args: -matis_localmat_type aijviennacl
     test:
@@ -3535,7 +3535,7 @@ int main(int argc, char **argv)
       suffix: aij_seqdense
       args: -matis_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
     test:
-      requires: viennacl
+      requires: viennacl !CUDA_VERSION_11PLUS
       suffix: aijviennacl
       args: -matis_localmat_type aijviennacl
     test:

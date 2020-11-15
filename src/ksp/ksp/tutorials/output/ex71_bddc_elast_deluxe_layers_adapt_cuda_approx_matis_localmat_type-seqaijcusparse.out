@@ -67,7 +67,7 @@ PC Object: 8 MPI processes
           Cycles per PCApply=1
           Using externally compute Galerkin coarse grid matrices
           GAMG specific options
-            Threshold for dropping small values in graph on each level =      
+            Threshold for dropping small values in graph on each level =       0.       0.      
             Threshold scaling factor for each level not specified = 1.
             AGG specific options
               Symmetric graph false
@@ -101,26 +101,26 @@ PC Object: 8 MPI processes
                   Factored matrix follows:
                     Mat Object: 1 MPI processes
                       type: seqaij
-                      rows=18, cols=18, bs=6
-                      package used to perform factorization: petsc
+                      rows=18, cols=18
+                      package used to perform factorization: cusparse
                       total: nonzeros=324, allocated nonzeros=324
               linear system matrix = precond matrix:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=18, cols=18, bs=6
+                rows=18, cols=18
                 total: nonzeros=324, allocated nonzeros=324
                 total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqaij
-            rows=18, cols=18, bs=6
+            rows=18, cols=18
             total: nonzeros=324, allocated nonzeros=324
             total number of mallocs used during MatSetValues calls=0
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI processes
           type: chebyshev
-            eigenvalue estimates used:  min = 0.099995, max = 1.09995
-            eigenvalues estimate via cg min 0.505856, max 0.99995
+            eigenvalue estimates used:  min = 0.0999942, max = 1.09994
+            eigenvalues estimate via cg min 0.505801, max 0.999942
             eigenvalues estimated using cg with translations  [0. 0.1; 0. 1.1]
             KSP Object: (pc_bddc_dirichlet_mg_levels_1_esteig_) 1 MPI processes
               type: cg
@@ -164,7 +164,7 @@ PC Object: 8 MPI processes
           Cycles per PCApply=1
           Using externally compute Galerkin coarse grid matrices
           GAMG specific options
-            Threshold for dropping small values in graph on each level =      
+            Threshold for dropping small values in graph on each level =       0.       0.      
             Threshold scaling factor for each level not specified = 1.
             AGG specific options
               Symmetric graph false
@@ -198,26 +198,26 @@ PC Object: 8 MPI processes
                   Factored matrix follows:
                     Mat Object: 1 MPI processes
                       type: seqaij
-                      rows=18, cols=18, bs=6
-                      package used to perform factorization: petsc
+                      rows=18, cols=18
+                      package used to perform factorization: cusparse
                       total: nonzeros=324, allocated nonzeros=324
               linear system matrix = precond matrix:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=18, cols=18, bs=6
+                rows=18, cols=18
                 total: nonzeros=324, allocated nonzeros=324
                 total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqaij
-            rows=18, cols=18, bs=6
+            rows=18, cols=18
             total: nonzeros=324, allocated nonzeros=324
             total number of mallocs used during MatSetValues calls=0
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI processes
           type: chebyshev
-            eigenvalue estimates used:  min = 0.0999428, max = 1.09937
-            eigenvalues estimate via cg min 0.133777, max 0.999428
+            eigenvalue estimates used:  min = 0.099938, max = 1.09932
+            eigenvalues estimate via cg min 0.130861, max 0.99938
             eigenvalues estimated using cg with translations  [0. 0.1; 0. 1.1]
             KSP Object: (pc_bddc_neumann_mg_levels_1_esteig_) 1 MPI processes
               type: cg
