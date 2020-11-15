@@ -288,7 +288,7 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
     if (set) { /* If users have initialized Kokkos themselves, but also had e.g., -cuda_device XXX, for simplicity, make sure XXX is DEFAULT */
       ierr = PetscStrcasecmp("DEFAULT",devStr,&devDefault);CHKERRQ(ierr);
       if (!devDefault) {ierr = PetscStrcasecmp("PETSC_DEFAULT",devStr,&devDefault);CHKERRQ(ierr);}
-      if (!devDefault)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Kokkos was initialized before PetscInitialize(), but you have "cupmSetDeviceStr" %s. Remove the option or use "cupmSetDeviceStr" default.",devStr);
+      if (!devDefault) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Kokkos was initialized before PetscInitialize(), but you have %s %s. Remove the option or use %s default.",cupmSetDeviceStr,devStr,cupmSetDeviceStr);
     } else { /* If users did not have e.g., '-cuda_device XXX', insert one here so that petsc can continue its own device initialization */
       ierr = PetscOptionsSetValue(NULL,cupmSetDeviceStr,"DEFAULT");CHKERRQ(ierr);
     }
