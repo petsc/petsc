@@ -46,7 +46,7 @@ static PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
 }
 
 /* Construct the change of basis from prime basis to nodal basis */
-PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
+PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
   PetscReal     *work;
   PetscBLASInt  *pivots;
@@ -124,7 +124,7 @@ static PetscErrorCode TensorContract_Private(PetscInt m,PetscInt n,PetscInt p,Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
+PETSC_INTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
 {
   DM               dm;
   PetscInt         pdim; /* Dimension of FE space P */
