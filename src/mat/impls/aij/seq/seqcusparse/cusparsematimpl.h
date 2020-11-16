@@ -251,4 +251,20 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat,PetscScalar**);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat,PetscScalar**);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat,Mat,MatReuse,Mat*);
 
+PETSC_STATIC_INLINE bool isCudaMem(const void *data)
+{
+  cudaError_t                  cerr;
+  struct cudaPointerAttributes attr;
+  enum cudaMemoryType          mtype;
+  cerr = cudaPointerGetAttributes(&attr,data); /* Do not check error since before CUDA 11.0, passing a host pointer returns cudaErrorInvalidValue */
+  cudaGetLastError(); /* Reset the last error */
+  #if (CUDART_VERSION < 10000)
+    mtype = attr.memoryType;
+  #else
+    mtype = attr.type;
+  #endif
+  if (cerr == cudaSuccess && mtype == cudaMemoryTypeDevice) return true;
+  else return false;
+}
+
 #endif

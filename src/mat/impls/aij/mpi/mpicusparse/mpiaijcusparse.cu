@@ -29,15 +29,26 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat A, const PetscScalar v[
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_CUSPARSESetVCOO,A,0,0,0);CHKERRQ(ierr);
   if (cusp->coo_p && v) {
-    THRUSTARRAY *w;
-    ierr = PetscLogCpuToGpu(n*sizeof(PetscScalar));CHKERRQ(ierr);
-    w = new THRUSTARRAY(n);
-    w->assign(v,v+n);
-    auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(w->begin(),cusp->coo_p->begin()),
+    thrust::device_ptr<const PetscScalar> d_v;
+    THRUSTARRAY                           *w = NULL;
+
+    if (isCudaMem(v)) {
+      d_v = thrust::device_pointer_cast(v);
+    } else {
+      w = new THRUSTARRAY(n);
+      w->assign(v,v+n);
+      ierr = PetscLogCpuToGpu(n*sizeof(PetscScalar));CHKERRQ(ierr);
+      d_v = w->data();
+    }
+
+    auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(d_v,cusp->coo_p->begin()),
                                                               cusp->coo_pw->begin()));
-    auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(w->begin(),cusp->coo_p->end()),
+    auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(d_v,cusp->coo_p->end()),
                                                               cusp->coo_pw->end()));
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     thrust::for_each(zibit,zieit,VecCUDAEquals());
+    cerr = WaitForCUDA();CHKERRCUDA(cerr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     delete w;
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->A,cusp->coo_pw->data().get(),imode);CHKERRQ(ierr);
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->B,cusp->coo_pw->data().get()+cusp->coo_nd,imode);CHKERRQ(ierr);
@@ -45,7 +56,6 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat A, const PetscScalar v[
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->A,v,imode);CHKERRQ(ierr);
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->B,v ? v+cusp->coo_nd : NULL,imode);CHKERRQ(ierr);
   }
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogEventEnd(MAT_CUSPARSESetVCOO,A,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   A->num_ass++;
@@ -122,6 +132,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, c
   delete cusp->coo_pw;
   cusp->coo_p = NULL;
   cusp->coo_pw = NULL;
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   auto firstoffd = thrust::find_if(thrust::device,d_j.begin(),d_j.end(),IsOffDiag(B->cmap->rstart,B->cmap->rend));
   auto firstdiag = thrust::find_if_not(thrust::device,firstoffd,d_j.end(),IsOffDiag(B->cmap->rstart,B->cmap->rend));
   if (firstoffd != d_j.end() && firstdiag != d_j.end()) {
@@ -139,14 +150,19 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, c
   /* from global to local */
   thrust::transform(thrust::device,d_i.begin(),d_i.end(),d_i.begin(),GlobToLoc(B->rmap->rstart));
   thrust::transform(thrust::device,d_j.begin(),firstoffd,d_j.begin(),GlobToLoc(B->cmap->rstart));
+  cerr = WaitForCUDA();CHKERRCUDA(cerr);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
   /* copy offdiag column indices to map on the CPU */
   ierr = PetscMalloc1(cusp->coo_no,&jj);CHKERRQ(ierr);
   cerr = cudaMemcpy(jj,d_j.data().get()+cusp->coo_nd,cusp->coo_no*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
   auto o_j = d_j.begin();
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   thrust::advance(o_j,cusp->coo_nd);
   thrust::sort(thrust::device,o_j,d_j.end());
   auto wit = thrust::unique(thrust::device,o_j,d_j.end());
+  cerr = WaitForCUDA();CHKERRCUDA(cerr);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   noff = thrust::distance(o_j,wit);
   ierr = PetscMalloc1(noff+1,&b->garray);CHKERRQ(ierr);
   cerr = cudaMemcpy(b->garray,d_j.data().get()+cusp->coo_nd,noff*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
@@ -180,7 +196,6 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, c
   ierr = MatSetUpMultiply_MPIAIJ(B);CHKERRQ(ierr);
   B->preallocated = PETSC_TRUE;
   B->nonzerostate++;
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogEventEnd(MAT_CUSPARSEPreallCOO,B,0,0,0);CHKERRQ(ierr);
 
   ierr = MatBindToCPU(b->A,B->boundtocpu);CHKERRQ(ierr);

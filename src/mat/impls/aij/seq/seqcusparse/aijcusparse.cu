@@ -3457,13 +3457,14 @@ struct IJSum
 #include <thrust/iterator/discard_iterator.h>
 PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], InsertMode imode)
 {
-  Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  THRUSTARRAY        *cooPerm_v = NULL,*cooPerm_w;
-  CsrMatrix          *matrix;
-  PetscErrorCode     ierr;
-  cudaError_t        cerr;
-  PetscInt           n;
+  Mat_SeqAIJCUSPARSE                    *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
+  Mat_SeqAIJ                            *a = (Mat_SeqAIJ*)A->data;
+  THRUSTARRAY                           *cooPerm_v = NULL,*cooPerm_w;
+  thrust::device_ptr<const PetscScalar> d_v;
+  CsrMatrix                             *matrix;
+  PetscErrorCode                        ierr;
+  cudaError_t                           cerr;
+  PetscInt                              n;
 
   PetscFunctionBegin;
   if (!cusp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing CUSPARSE struct");
@@ -3481,31 +3482,36 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
     goto finalize;
   }
   n = cusp->cooPerm->size();
-  cooPerm_v = new THRUSTARRAY(n);
-  cooPerm_v->assign(v,v+n);
-  ierr = PetscLogCpuToGpu(n*sizeof(PetscScalar));CHKERRQ(ierr);
+  if (isCudaMem(v)) {
+    d_v = thrust::device_pointer_cast(v);
+  } else {
+    cooPerm_v = new THRUSTARRAY(n);
+    cooPerm_v->assign(v,v+n);
+    d_v = cooPerm_v->data();
+    ierr = PetscLogCpuToGpu(n*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
   if (imode == ADD_VALUES) { /* ADD VALUES means add to existing ones */
     if (cusp->cooPerm_a) {
       cooPerm_w = new THRUSTARRAY(matrix->values->size());
-      auto vbit = thrust::make_permutation_iterator(cooPerm_v->begin(),cusp->cooPerm->begin());
+      auto vbit = thrust::make_permutation_iterator(d_v,cusp->cooPerm->begin());
       thrust::reduce_by_key(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),vbit,thrust::make_discard_iterator(),cooPerm_w->begin(),thrust::equal_to<PetscInt>(),thrust::plus<PetscScalar>());
       thrust::transform(cooPerm_w->begin(),cooPerm_w->end(),matrix->values->begin(),matrix->values->begin(),thrust::plus<PetscScalar>());
       delete cooPerm_w;
     } else {
-      auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(cooPerm_v->begin(),cusp->cooPerm->begin()),
+      auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(d_v,cusp->cooPerm->begin()),
                                                                 matrix->values->begin()));
-      auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(cooPerm_v->begin(),cusp->cooPerm->end()),
+      auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(d_v,cusp->cooPerm->end()),
                                                                 matrix->values->end()));
       thrust::for_each(zibit,zieit,VecCUDAPlusEquals());
     }
   } else {
     if (cusp->cooPerm_a) { /* repeated entries in COO, with INSERT_VALUES -> reduce */
-      auto vbit = thrust::make_permutation_iterator(cooPerm_v->begin(),cusp->cooPerm->begin());
+      auto vbit = thrust::make_permutation_iterator(d_v,cusp->cooPerm->begin());
       thrust::reduce_by_key(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),vbit,thrust::make_discard_iterator(),matrix->values->begin(),thrust::equal_to<PetscInt>(),thrust::plus<PetscScalar>());
     } else {
-      auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(cooPerm_v->begin(),cusp->cooPerm->begin()),
+      auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(d_v,cusp->cooPerm->begin()),
                                                                 matrix->values->begin()));
-      auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(cooPerm_v->begin(),cusp->cooPerm->end()),
+      auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(d_v,cusp->cooPerm->end()),
                                                                 matrix->values->end()));
       thrust::for_each(zibit,zieit,VecCUDAEquals());
     }
@@ -3564,6 +3570,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
     auto fkey = thrust::make_zip_iterator(thrust::make_tuple(d_i.begin(),d_j.begin()));
     auto ekey = thrust::make_zip_iterator(thrust::make_tuple(d_i.end(),d_j.end()));
 
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     thrust::sequence(thrust::device, cusp->cooPerm->begin(), cusp->cooPerm->end(), 0);
     thrust::sort_by_key(fkey, ekey, cusp->cooPerm->begin(), IJCompare());
     *cusp->cooPerm_a = d_i;
@@ -3585,6 +3592,8 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
     thrust::upper_bound(d_i.begin(), nekey.get_iterator_tuple().get<0>(),
                         search_begin, search_begin + A->rmap->n,
                         ii.begin());
+    cerr = WaitForCUDA();CHKERRCUDA(cerr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
     ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
     a->singlemalloc = PETSC_FALSE;
@@ -3613,7 +3622,6 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
   } else {
     ierr = MatSeqAIJSetPreallocation(A,0,NULL);CHKERRQ(ierr);
   }
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogEventEnd(MAT_CUSPARSEPreallCOO,A,0,0,0);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
