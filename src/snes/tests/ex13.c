@@ -166,19 +166,28 @@ int main(int argc, char **argv)
   /* Benchmark system */
   if (user.nit) {
 #if defined(PETSC_USE_LOG)
-    PetscLogStage stage;
+    PetscLogStage kspstage,pcstage;
 #endif
     KSP       ksp;
+    PC        pc;
+    Mat       A,P;
     Vec       b;
     PetscInt  i;
     ierr = PetscOptionsClearValue(NULL,"-ksp_monitor");CHKERRQ(ierr);
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes, &A, &P, NULL, NULL);CHKERRQ(ierr);
     ierr = VecSet(u, 0.0);CHKERRQ(ierr);
     ierr = SNESGetFunction(snes, &b, NULL, NULL);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, u, b);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("KSP Solve only", &stage);CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes, u, A, P);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("PCSetUp", &pcstage);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(pcstage);CHKERRQ(ierr);
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("KSP Solve only", &kspstage);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(kspstage);CHKERRQ(ierr);
     for (i=0;i<user.nit;i++) {
       ierr = VecZeroEntries(u);CHKERRQ(ierr);
       ierr = KSPSolve(ksp, b, u);CHKERRQ(ierr);
@@ -205,13 +214,32 @@ int main(int argc, char **argv)
           -potential_petscspace_degree 2 -ksp_type cg -pc_type gamg -benchmark_it 1 -dm_view -snes_rtol 1.e-4
 
   test:
-   suffix: cuda
-   nsize: 4
-   requires: cuda
-   args: -dm_plex_box_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
-     -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple \
-     -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
-     -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijcusparse -dm_vec_type cuda -mat_cusparse_transgen
+    suffix: comparison
+    nsize: 4
+    args: -dm_plex_box_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
+      -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple \
+      -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4
+
+  test:
+    suffix: cuda
+    nsize: 4
+    requires: cuda
+    output_file: output/ex13_comparison.out
+    args: -dm_plex_box_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
+      -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple \
+      -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijcusparse -dm_vec_type cuda -mat_cusparse_transgen
+
+  test:
+    suffix: kokkos_comp
+    nsize: 4
+    requires: kokkos_kernels
+    output_file: output/ex13_comparison.out
+    args: -dm_plex_box_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
+      -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple \
+      -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijkokkos -dm_vec_type kokkos
 
   test:
     nsize: 4
