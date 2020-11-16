@@ -115,6 +115,10 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
 
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
+    PetscBool avoidTensor;
+
+    ierr = DMGetFieldAvoidTensor(dm, f, &avoidTensor);CHKERRQ(ierr);
+    avoidTensor = (avoidTensor || hasHybrid) ? PETSC_TRUE : PETSC_FALSE;
     if (label && label[f]) {
       IS              pointIS;
       const PetscInt *points;
@@ -159,7 +163,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
             case DM_POLYTOPE_SEG_PRISM_TENSOR:
             case DM_POLYTOPE_TRI_PRISM_TENSOR:
             case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-              if (hasHybrid && isFE[f]) continue;
+              if (avoidTensor && isFE[f]) continue;
             default: break;
           }
           ierr = PetscSectionSetFieldDof(section, p, f, dof);CHKERRQ(ierr);
