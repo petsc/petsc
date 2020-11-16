@@ -20,7 +20,6 @@ struct _PCGAMGOps {
 typedef struct gamg_TAG {
   PCGAMGType type;
   PetscInt  Nlevels;
-  PetscInt  setup_count;
   PetscBool repart;
   PetscBool reuse_prol;
   PetscBool use_aggs_in_asm;
