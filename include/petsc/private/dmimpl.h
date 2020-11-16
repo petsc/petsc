@@ -160,6 +160,7 @@ typedef struct _n_Field {
   PetscObject disc;         /* Field discretization, or a PetscContainer with the field name */
   DMLabel     label;        /* Label defining the domain of definition of the field */
   PetscBool   adjacency[2]; /* Flags for defining variable influence (adjacency) for each field [use cone() or support() first, use the transitive closure] */
+  PetscBool   avoidTensor;  /* Flag to avoid defining field over tensor cells */
 } RegionField;
 
 typedef struct _n_Space {

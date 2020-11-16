@@ -4576,7 +4576,7 @@ static PetscErrorCode DMFieldEnlarge_Static(DM dm, PetscInt NfNew)
   if (Nf >= NfNew) PetscFunctionReturn(0);
   ierr = PetscMalloc1(NfNew, &tmpr);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) tmpr[f] = dm->fields[f];
-  for (f = Nf; f < NfNew; ++f) {tmpr[f].disc = NULL; tmpr[f].label = NULL;}
+  for (f = Nf; f < NfNew; ++f) {tmpr[f].disc = NULL; tmpr[f].label = NULL; tmpr[f].avoidTensor = PETSC_FALSE;}
   ierr = PetscFree(dm->fields);CHKERRQ(ierr);
   dm->Nf     = NfNew;
   dm->fields = tmpr;
@@ -4771,6 +4771,52 @@ PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject field)
   ierr = PetscObjectReference((PetscObject) field);CHKERRQ(ierr);
   ierr = DMSetDefaultAdjacency_Private(dm, Nf, field);CHKERRQ(ierr);
   ierr = DMClearDS(dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSetFieldAvoidTensor - Set flag to avoid defining the field on tensor cells
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm          - The DM
+. f           - The field index
+- avoidTensor - The flag to avoid defining the field on tensor cells
+
+  Level: intermediate
+
+.seealso: DMGetFieldAvoidTensor(), DMSetField(), DMGetField()
+@*/
+PetscErrorCode DMSetFieldAvoidTensor(DM dm, PetscInt f, PetscBool avoidTensor)
+{
+  PetscFunctionBegin;
+  if ((f < 0) || (f >= dm->Nf)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Field %D is not in [0, %D)", f, dm->Nf);
+  dm->fields[f].avoidTensor = avoidTensor;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMGetFieldAvoidTensor - Get flag to avoid defining the field on tensor cells
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm          - The DM
+- f           - The field index
+
+  Output Parameter:
+. avoidTensor - The flag to avoid defining the field on tensor cells
+
+  Level: intermediate
+
+.seealso: DMSetFieldAvoidTensor(), DMSetField(), DMGetField()
+@*/
+PetscErrorCode DMGetFieldAvoidTensor(DM dm, PetscInt f, PetscBool *avoidTensor)
+{
+  PetscFunctionBegin;
+  if ((f < 0) || (f >= dm->Nf)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Field %D is not in [0, %D)", f, dm->Nf);
+  *avoidTensor = dm->fields[f].avoidTensor;
   PetscFunctionReturn(0);
 }
 
