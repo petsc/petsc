@@ -710,6 +710,40 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJCUSPARSE(Mat mat)
   PetscFunctionReturn(0);
 }
 
+/*@
+   MatAIJCUSPARSESetGenerateTranspose - Sets the flag to explicitly generate the transpose matrix before calling MatMultTranspose
+
+   Not collective
+
+   Input Parameters:
++  A - Matrix of type SEQAIJCUSPARSE or MPIAIJCUSPARSE
+-  gen - the boolean flag
+
+   Level: intermediate
+
+.seealso: MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE
+@*/
+PetscErrorCode  MatAIJCUSPARSESetGenerateTranspose(Mat A, PetscBool gen)
+{
+  PetscErrorCode ierr;
+  PetscBool      ismpiaij;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  MatCheckPreallocated(A,1);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+  if (ismpiaij) {
+    Mat A_d,A_o;
+
+    ierr = MatMPIAIJGetSeqAIJ(A,&A_d,&A_o,NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSESetGenerateTranspose(A_d,gen);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSESetGenerateTranspose(A_o,gen);CHKERRQ(ierr);
+  } else {
+    ierr = MatSeqAIJCUSPARSESetGenerateTranspose(A,gen);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;

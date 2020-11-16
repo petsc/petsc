@@ -431,6 +431,9 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       ierr = ISSetBlockSize(findices,f_bs);CHKERRQ(ierr);
       ierr = MatCreateSubMatrix(Pold, findices, new_eq_indices, MAT_INITIAL_MATRIX, &Pnew);CHKERRQ(ierr);
       ierr = ISDestroy(&findices);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+      ierr = MatAIJCUSPARSESetGenerateTranspose(Pnew,PETSC_TRUE);CHKERRQ(ierr);
+#endif
 
 #if defined PETSC_GAMG_USE_LOG
       ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
@@ -650,20 +653,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         /* Always generate the transpose with CUDA
            Such behaviour can be adapted with -pc_gamg_prolongator_ prefixed options */
 #if defined(PETSC_HAVE_CUDA)
-        {
-          PetscBool ismpiaij;
-
-          ierr = PetscObjectBaseTypeCompare((PetscObject)Prol11,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
-          if (ismpiaij) {
-            Mat Prol_d,Prol_o;
-
-            ierr = MatMPIAIJGetSeqAIJ(Prol11,&Prol_d,&Prol_o,NULL);CHKERRQ(ierr);
-            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_d,PETSC_TRUE);CHKERRQ(ierr);
-            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol_o,PETSC_TRUE);CHKERRQ(ierr);
-          } else {
-            ierr = MatSeqAIJCUSPARSESetGenerateTranspose(Prol11,PETSC_TRUE);CHKERRQ(ierr);
-          }
-        }
+        ierr = MatAIJCUSPARSESetGenerateTranspose(Prol11,PETSC_TRUE);CHKERRQ(ierr);
 #endif
         ierr = MatSetFromOptions(Prol11);CHKERRQ(ierr);
         Parr[level1] = Prol11;
