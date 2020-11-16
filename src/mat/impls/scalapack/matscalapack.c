@@ -8,6 +8,16 @@
 */
 static PetscMPIInt Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID;
 
+static PetscErrorCode Petsc_ScaLAPACK_keyval_free(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscInfo(NULL,"Freeing Petsc_ScaLAPACK_keyval\n");CHKERRQ(ierr);
+  ierr = MPI_Comm_free_keyval(&Petsc_ScaLAPACK_keyval);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatView_ScaLAPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -1189,7 +1199,7 @@ static PetscErrorCode MatDestroy_ScaLAPACK(Mat A)
     Cblacs_gridexit(grid->ictxrow);
     Cblacs_gridexit(grid->ictxcol);
     ierr = PetscFree(grid);CHKERRQ(ierr);
-    ierr = MPI_Comm_free_keyval(&Petsc_ScaLAPACK_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_delete_attr(icomm,Petsc_ScaLAPACK_keyval);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
@@ -1736,6 +1746,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_ScaLAPACK_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_ScaLAPACK_keyval,(void*)0);CHKERRQ(ierr);
+    ierr = PetscRegisterFinalize(Petsc_ScaLAPACK_keyval_free);CHKERRQ(ierr);
   }
   ierr = PetscCommDuplicate(PetscObjectComm((PetscObject)A),&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_get_attr(icomm,Petsc_ScaLAPACK_keyval,(void**)&grid,(int*)&flg);CHKERRQ(ierr);
@@ -1757,7 +1768,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
     grid->npcol = size/grid->nprow;
     ierr = PetscBLASIntCast(grid->nprow,&nprow);CHKERRQ(ierr);
     ierr = PetscBLASIntCast(grid->npcol,&npcol);CHKERRQ(ierr);
-    Cblacs_get(-1,0,&grid->ictxt);
+    grid->ictxt = Csys2blacs_handle(icomm);
     Cblacs_gridinit(&grid->ictxt,"R",nprow,npcol);
     Cblacs_gridinfo(grid->ictxt,&nprow,&npcol,&myrow,&mycol);
     grid->grid_refct = 1;
@@ -1766,9 +1777,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
     grid->myrow      = myrow;
     grid->mycol      = mycol;
     /* auxiliary 1d BLACS contexts for 1xsize and sizex1 grids */
-    Cblacs_get(-1,0,&grid->ictxrow);
+    grid->ictxrow = Csys2blacs_handle(icomm);
     Cblacs_gridinit(&grid->ictxrow,"R",1,size);
-    Cblacs_get(-1,0,&grid->ictxcol);
+    grid->ictxcol = Csys2blacs_handle(icomm);
     Cblacs_gridinit(&grid->ictxcol,"R",size,1);
     ierr = MPI_Comm_set_attr(icomm,Petsc_ScaLAPACK_keyval,(void*)grid);CHKERRQ(ierr);
 
