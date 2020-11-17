@@ -4,6 +4,7 @@
 TESTMODE = testexamples
 ALLTESTS_CHECK_FAILURES = no
 ALLTESTS_MAKEFILE = gmakefile.test
+VALGRIND=0
 alltests: ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
 	-@${RM} -rf ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	+@if [ -f ${PETSC_DIR}/share/petsc/examples/gmakefile.test ] ; then \
@@ -14,7 +15,7 @@ alltests: ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
             ALLTESTSLOG=${PETSC_ARCH}/lib/petsc/conf/alltests.log ;\
             ln -s $${ALLTESTSLOG} alltests.log ;\
           fi; \
-          ${OMAKE} allgtest ALLTESTS_MAKEFILE=$${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee $${ALLTESTSLOG};\
+          ${OMAKE} allgtest ALLTESTS_MAKEFILE=$${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} VALGRIND=${VALGRIND} 2>&1 | tee $${ALLTESTSLOG};\
           if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
             cat $${ALLTESTSLOG} | egrep '(^not ok|not remade because of errors|^# No tests run)' | wc -l | grep '^[ ]*0$$' > /dev/null; \
           fi;
