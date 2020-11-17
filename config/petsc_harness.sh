@@ -62,6 +62,7 @@ cleanup=false
 compile=false
 debugger=false
 printcmd=false
+mpiexec_function=false
 force=false
 diff_flags=""
 while getopts "a:cCde:fhjJ:mMn:o:pt:UvV" arg
@@ -82,8 +83,12 @@ do
     o ) output_fmt=$OPTARG   ;;  
     p ) printcmd=true        ;;
     t ) TIMEOUT=$OPTARG      ;;  
-    U ) mpiexec="petsc_mpiexec_cudamemcheck $mpiexec" ;;  
-    V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
+    U ) mpiexec="petsc_mpiexec_cudamemcheck $mpiexec" 
+        mpiexec_function=true
+        ;;  
+    V ) mpiexec="petsc_mpiexec_valgrind $mpiexec"
+        mpiexec_function=true
+        ;;  
     v ) verbose=true         ;;  
     *)  # To take care of any extra args
       if test -n "$OPTARG"; then
@@ -120,6 +125,16 @@ total=0
 todo=-1; skip=-1
 job_level=0
 
+if $compile; then
+   curexec=`basename ${exec}`
+   fullexec=${abspath_scriptdir}/${curexec}
+   maketarget=`echo ${fullexec} | sed "s#${petsc_dir}/##"`
+   (cd $petsc_dir && make -f gmakefile.test ${maketarget})
+fi
+
+###
+##   Rest of code is functions
+#
 function petsc_report_tapoutput() {
   notornot=$1
   test_label=$2
@@ -147,6 +162,10 @@ function printcmd() {
   cmd="$1"
   basedir=`dirname ${PWD} | sed "s#${petsc_dir}/##"`
   modcmd=`echo ${cmd} | sed -e "s#\.\.#${basedir}#" | sed s#\>.*##`
+  if $mpiexec_function; then
+     # Have to expand valgrind/cudamemchk
+     modcmd=`eval "$modcmd"`
+  fi
   printf "${modcmd}\n" 
   exit
 }
@@ -262,25 +281,18 @@ function petsc_mpiexec_cudamemcheck() {
 
   $_mpiexec $npopt $np $cudamemchk $*
 }
-export LC_ALL=C
 
-if $compile; then
-    curexec=`basename ${exec}`
-    (cd $petsc_dir && make -f gmakefile.test ${abspath_scriptdir}/${curexec})
-fi
 function petsc_mpiexec_valgrind() {
   _mpiexec=$1;shift
   npopt=$1;shift
   np=$1;shift
-
+ 
   valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_bindir/maint/petsc-val.supp --error-exitcode=10"
 
-  $_mpiexec $npopt $np $valgrind "$@"
+  if $printcmd; then
+     echo $_mpiexec $npopt $np $valgrind "$@"
+  else
+     $_mpiexec $npopt $np $valgrind "$@"
+  fi
 }
 export LC_ALL=C
-
-if $compile; then
-    curexec=`basename ${exec}`
-    (cd $petsc_dir && make -f gmakefile.test ${abspath_scriptdir}/${curexec})
-fi
-
