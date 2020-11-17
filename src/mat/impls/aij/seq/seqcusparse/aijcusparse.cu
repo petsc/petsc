@@ -2285,8 +2285,6 @@ finalize:
   C->info.nz_unneeded = 0;
   C->assembled = C->was_assembled = PETSC_TRUE;
   C->num_ass++;
-  /* we can remove this call when MatSeqAIJGetArray operations are used everywhere! */
-  ierr = MatSeqAIJCUSPARSECopyFromGPU(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3536,8 +3534,6 @@ finalize:
   A->info.nz_unneeded = 0;
   A->assembled = A->was_assembled = PETSC_TRUE;
   A->num_ass++;
-  /* we can remove this call when MatSeqAIJGetArray operations are used everywhere! */
-  ierr = MatSeqAIJCUSPARSECopyFromGPU(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4010,7 +4006,5 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
   (*C)->assembled     = PETSC_TRUE;
   (*C)->was_assembled = PETSC_FALSE;
   (*C)->offloadmask   = PETSC_OFFLOAD_GPU;
-  /* we can remove this call when MatSeqAIJGetArray operations are used everywhere! */
-  ierr = MatSeqAIJCUSPARSECopyFromGPU(*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
