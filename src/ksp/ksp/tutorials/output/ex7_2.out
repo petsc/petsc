@@ -69,6 +69,7 @@ PC Object: 2 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: (sub_) 1 MPI processes
       type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
@@ -88,6 +89,7 @@ PC Object: 2 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: (sub_) 1 MPI processes
       type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij

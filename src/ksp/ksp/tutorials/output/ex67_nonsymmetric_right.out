@@ -15,6 +15,7 @@ KSP Object: 1 MPI processes
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes
   type: jacobi
+    type DIAGONAL
   linear system matrix = precond matrix:
   Mat Object: 1 MPI processes
     type: seqaij
@@ -40,6 +41,7 @@ KSP Object: 1 MPI processes
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes
   type: jacobi
+    type DIAGONAL
   linear system matrix = precond matrix:
   Mat Object: 1 MPI processes
     type: seqaij

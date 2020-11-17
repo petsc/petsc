@@ -1,36 +1,36 @@
-  0 KSP Residual norm 0.707107 
-  1 KSP Residual norm 0.316228 
-  2 KSP Residual norm 0.188982 
-  3 KSP Residual norm 0.129099 
-  4 KSP Residual norm 0.0953462 
-  5 KSP Residual norm 4.80548e-07 
-  6 KSP Residual norm 3.39798e-07 
-  7 KSP Residual norm 2.77444e-07 
-  8 KSP Residual norm 2.40274e-07 
-  9 KSP Residual norm 2.14907e-07 
- 10 KSP Residual norm 1.96183e-07 
- 11 KSP Residual norm 1.8163e-07 
- 12 KSP Residual norm 1.69899e-07 
- 13 KSP Residual norm 1.60182e-07 
- 14 KSP Residual norm 1.51962e-07 
- 15 KSP Residual norm 1.44891e-07 
- 16 KSP Residual norm 1.38722e-07 
- 17 KSP Residual norm 1.3328e-07 
- 18 KSP Residual norm 1.28432e-07 
- 19 KSP Residual norm 1.24077e-07 
- 20 KSP Residual norm 1.20137e-07 
- 21 KSP Residual norm 1.1655e-07 
- 22 KSP Residual norm 1.13266e-07 
- 23 KSP Residual norm 1.10245e-07 
- 24 KSP Residual norm 1.07454e-07 
- 25 KSP Residual norm 1.04864e-07 
- 26 KSP Residual norm 1.02453e-07 
- 27 KSP Residual norm 1.00201e-07 
- 28 KSP Residual norm 9.80913e-08 
- 29 KSP Residual norm 9.61095e-08 
- 30 KSP Residual norm 5.34784e-07 
- 31 KSP Residual norm 1.15656e-07 
- 32 KSP Residual norm 7.00905e-08 
+  0 KSP Residual norm 0.707107
+  1 KSP Residual norm 0.316228
+  2 KSP Residual norm 0.188982
+  3 KSP Residual norm 0.129099
+  4 KSP Residual norm 0.0953462
+  5 KSP Residual norm 4.80548e-07
+  6 KSP Residual norm 3.39798e-07
+  7 KSP Residual norm 2.77444e-07
+  8 KSP Residual norm 2.40274e-07
+  9 KSP Residual norm 2.14907e-07
+ 10 KSP Residual norm 1.96183e-07
+ 11 KSP Residual norm 1.8163e-07
+ 12 KSP Residual norm 1.69899e-07
+ 13 KSP Residual norm 1.60182e-07
+ 14 KSP Residual norm 1.51962e-07
+ 15 KSP Residual norm 1.44891e-07
+ 16 KSP Residual norm 1.38722e-07
+ 17 KSP Residual norm 1.3328e-07
+ 18 KSP Residual norm 1.28432e-07
+ 19 KSP Residual norm 1.24077e-07
+ 20 KSP Residual norm 1.20137e-07
+ 21 KSP Residual norm 1.1655e-07
+ 22 KSP Residual norm 1.13266e-07
+ 23 KSP Residual norm 1.10245e-07
+ 24 KSP Residual norm 1.07454e-07
+ 25 KSP Residual norm 1.04864e-07
+ 26 KSP Residual norm 1.02453e-07
+ 27 KSP Residual norm 1.00201e-07
+ 28 KSP Residual norm 9.80913e-08
+ 29 KSP Residual norm 9.61095e-08
+ 30 KSP Residual norm 5.34784e-07
+ 31 KSP Residual norm 1.15656e-07
+ 32 KSP Residual norm 7.00905e-08
 Linear solve converged due to CONVERGED_RTOL iterations 32
 KSP Object: 1 MPI processes
   type: gmres
@@ -42,6 +42,7 @@ KSP Object: 1 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes
   type: jacobi
+    type DIAGONAL
   linear system matrix = precond matrix:
   Mat Object: 1 MPI processes
     type: seqaij

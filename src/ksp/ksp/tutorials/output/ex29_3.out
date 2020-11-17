@@ -89,6 +89,7 @@ PC Object: 1 MPI processes
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_up_) 1 MPI processes
       type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
@@ -146,6 +147,7 @@ PC Object: 1 MPI processes
       using NONE norm type for convergence test
     PC Object: (mg_levels_2_up_) 1 MPI processes
       type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
