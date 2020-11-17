@@ -1,15 +1,15 @@
-  0 SNES Function norm 18.865 
-    0 SNES Function norm 18.865 
-    1 SNES Function norm 0.000140897 
-      0 SNES Function norm 0.000152779 
-      1 SNES Function norm 1.07314e-09 
-        0 SNES Function norm 1.14977e-09 
+  0 SNES Function norm 18.865
+    0 SNES Function norm 18.865
+    1 SNES Function norm 0.000140897
+      0 SNES Function norm 0.000152779
+      1 SNES Function norm 1.07314e-09
+        0 SNES Function norm 1.14977e-09
         1 SNES Function norm < 1.e-11
-      0 SNES Function norm 8.114e-10 
+      0 SNES Function norm 8.114e-10
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.000458332 
-    1 SNES Function norm 3.46405e-09 
-  1 SNES Function norm 3.46405e-09 
+    0 SNES Function norm 0.000458332
+    1 SNES Function norm 3.46405e-09
+  1 SNES Function norm 3.46405e-09
 L_2 Error: 5.26417e-10
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
@@ -36,6 +36,7 @@ SNES Object: 1 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 1 MPI processes
         type: jacobi
+          type DIAGONAL
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
@@ -66,6 +67,7 @@ SNES Object: 1 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 1 MPI processes
         type: jacobi
+          type DIAGONAL
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
@@ -97,6 +99,7 @@ SNES Object: 1 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_2_) 1 MPI processes
         type: jacobi
+          type DIAGONAL
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij

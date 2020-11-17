@@ -1,8 +1,8 @@
-  0 KSP Residual norm 1.41421 
-  1 KSP Residual norm 0.632456 
-  2 KSP Residual norm 0.377964 
-  3 KSP Residual norm 0.258199 
-  4 KSP Residual norm 0.190693 
+  0 KSP Residual norm 1.41421
+  1 KSP Residual norm 0.632456
+  2 KSP Residual norm 0.377964
+  3 KSP Residual norm 0.258199
+  4 KSP Residual norm 0.190693
   5 KSP Residual norm < 1.e-11
 KSP Object: 2 MPI processes
   type: pipefgmres
@@ -15,6 +15,7 @@ KSP Object: 2 MPI processes
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes
   type: jacobi
+    type DIAGONAL
   linear system matrix = precond matrix:
   Mat Object: 2 MPI processes
     type: mpiaij

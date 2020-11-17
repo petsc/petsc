@@ -1,17 +1,17 @@
-  0 KSP Residual norm 1256.28 
-  1 KSP Residual norm 187.086 
-  2 KSP Residual norm 148.893 
-  3 KSP Residual norm 53.8971 
-  4 KSP Residual norm 43.2629 
-  5 KSP Residual norm 9.9666 
-  6 KSP Residual norm 5.19949 
-  7 KSP Residual norm 1.98703 
-  8 KSP Residual norm 1.44082 
-  9 KSP Residual norm 0.620827 
- 10 KSP Residual norm 0.293975 
- 11 KSP Residual norm 0.0750849 
- 12 KSP Residual norm 0.0298144 
- 13 KSP Residual norm 0.00985124 
+  0 KSP Residual norm 1256.28
+  1 KSP Residual norm 187.086
+  2 KSP Residual norm 148.893
+  3 KSP Residual norm 53.8971
+  4 KSP Residual norm 43.2629
+  5 KSP Residual norm 9.9666
+  6 KSP Residual norm 5.19949
+  7 KSP Residual norm 1.98703
+  8 KSP Residual norm 1.44082
+  9 KSP Residual norm 0.620827
+ 10 KSP Residual norm 0.293975
+ 11 KSP Residual norm 0.0750849
+ 12 KSP Residual norm 0.0298144
+ 13 KSP Residual norm 0.00985124
 Linear solve converged due to CONVERGED_RTOL iterations 13
 KSP Object: 8 MPI processes
   type: cg
@@ -25,7 +25,7 @@ PC Object: 8 MPI processes
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
-        Threshold for dropping small values in graph on each level =   -0.01  
+        Threshold for dropping small values in graph on each level =   -0.01
         Threshold scaling factor for each level not specified = 1.
         Using aggregates from coarsening process to define subdomains for PCASM
         Using parallel coarse grid solver (all coarse grid equations not put on one process)
@@ -43,6 +43,7 @@ PC Object: 8 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: (mg_coarse_) 8 MPI processes
       type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
@@ -173,20 +174,20 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0125628 
-  1 KSP Residual norm 0.00187086 
-  2 KSP Residual norm 0.00148893 
-  3 KSP Residual norm 0.000538971 
-  4 KSP Residual norm 0.000432629 
-  5 KSP Residual norm 9.9666e-05 
-  6 KSP Residual norm 5.19949e-05 
-  7 KSP Residual norm 1.98703e-05 
-  8 KSP Residual norm 1.44082e-05 
-  9 KSP Residual norm 6.20827e-06 
- 10 KSP Residual norm 2.93975e-06 
- 11 KSP Residual norm 7.50849e-07 
- 12 KSP Residual norm 2.98144e-07 
- 13 KSP Residual norm 9.85124e-08 
+  0 KSP Residual norm 0.0125628
+  1 KSP Residual norm 0.00187086
+  2 KSP Residual norm 0.00148893
+  3 KSP Residual norm 0.000538971
+  4 KSP Residual norm 0.000432629
+  5 KSP Residual norm 9.9666e-05
+  6 KSP Residual norm 5.19949e-05
+  7 KSP Residual norm 1.98703e-05
+  8 KSP Residual norm 1.44082e-05
+  9 KSP Residual norm 6.20827e-06
+ 10 KSP Residual norm 2.93975e-06
+ 11 KSP Residual norm 7.50849e-07
+ 12 KSP Residual norm 2.98144e-07
+ 13 KSP Residual norm 9.85124e-08
 Linear solve converged due to CONVERGED_RTOL iterations 13
 KSP Object: 8 MPI processes
   type: cg
@@ -200,7 +201,7 @@ PC Object: 8 MPI processes
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
-        Threshold for dropping small values in graph on each level =   -0.01  
+        Threshold for dropping small values in graph on each level =   -0.01
         Threshold scaling factor for each level not specified = 1.
         Using aggregates from coarsening process to define subdomains for PCASM
         Using parallel coarse grid solver (all coarse grid equations not put on one process)
@@ -218,6 +219,7 @@ PC Object: 8 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: (mg_coarse_) 8 MPI processes
       type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
@@ -350,20 +352,20 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0125628 
-  1 KSP Residual norm 0.00187086 
-  2 KSP Residual norm 0.00148893 
-  3 KSP Residual norm 0.000538971 
-  4 KSP Residual norm 0.000432629 
-  5 KSP Residual norm 9.9666e-05 
-  6 KSP Residual norm 5.19949e-05 
-  7 KSP Residual norm 1.98703e-05 
-  8 KSP Residual norm 1.44082e-05 
-  9 KSP Residual norm 6.20827e-06 
- 10 KSP Residual norm 2.93975e-06 
- 11 KSP Residual norm 7.50849e-07 
- 12 KSP Residual norm 2.98144e-07 
- 13 KSP Residual norm 9.85124e-08 
+  0 KSP Residual norm 0.0125628
+  1 KSP Residual norm 0.00187086
+  2 KSP Residual norm 0.00148893
+  3 KSP Residual norm 0.000538971
+  4 KSP Residual norm 0.000432629
+  5 KSP Residual norm 9.9666e-05
+  6 KSP Residual norm 5.19949e-05
+  7 KSP Residual norm 1.98703e-05
+  8 KSP Residual norm 1.44082e-05
+  9 KSP Residual norm 6.20827e-06
+ 10 KSP Residual norm 2.93975e-06
+ 11 KSP Residual norm 7.50849e-07
+ 12 KSP Residual norm 2.98144e-07
+ 13 KSP Residual norm 9.85124e-08
 Linear solve converged due to CONVERGED_RTOL iterations 13
 KSP Object: 8 MPI processes
   type: cg
@@ -377,7 +379,7 @@ PC Object: 8 MPI processes
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
-        Threshold for dropping small values in graph on each level =   -0.01  
+        Threshold for dropping small values in graph on each level =   -0.01
         Threshold scaling factor for each level not specified = 1.
         Using aggregates from coarsening process to define subdomains for PCASM
         Using parallel coarse grid solver (all coarse grid equations not put on one process)
@@ -395,6 +397,7 @@ PC Object: 8 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: (mg_coarse_) 8 MPI processes
       type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
