@@ -17,16 +17,17 @@ PETSC_EXTERN PetscErrorCode LandauIJacobian(TS, PetscReal,Vec,Vec,PetscReal,Mat,
 #define LANDAU_DIM 2
 #endif
 #if !defined(LANDAU_MAX_SPECIES)
+#if LANDAU_DIM==2
 #define LANDAU_MAX_SPECIES 10
+#else
+#define LANDAU_MAX_SPECIES 3
+#endif
 #endif
 #if !defined(LANDAU_MAX_NQ)
+#if LANDAU_DIM==2
 #define LANDAU_MAX_NQ 25
-#endif
-#if !defined(LANDAU_MAX_SUB_THREAD_BLOCKS)
-#if defined(PETSC_HAVE_CUDA)
-#define LANDAU_MAX_SUB_THREAD_BLOCKS 4
 #else
-#define LANDAU_MAX_SUB_THREAD_BLOCKS 1
+#define LANDAU_MAX_NQ 27
 #endif
 #endif
 typedef enum {LANDAU_CUDA, LANDAU_KOKKOS, LANDAU_CPU} LandauDeviceType;
@@ -49,7 +50,6 @@ typedef struct {
   PetscInt       nZRefine2;          /* origin refinement after origin AMR refinement */
   PetscInt       maxRefIts;         /* normal AMR - refine from origin */
   PetscInt       postAMRRefine;     /* uniform refinement of AMR */
-  PetscBool      quarter3DDomain;   /* bilateral symetry, 1/4 x-y domain */
   /* discretization - AMR */
   PetscErrorCode (*errorIndicator)(PetscInt, PetscReal, PetscReal [], PetscInt, const PetscInt[], const PetscScalar[], const PetscScalar[], PetscReal *, void *);
   PetscReal      refineTol[LANDAU_MAX_SPECIES];
@@ -86,30 +86,32 @@ typedef struct {
   PetscInt       subThreadBlockSize;
 } LandauCtx;
 
+typedef PetscReal LandauIPReal;
 typedef struct {
-  PetscReal     f;
-  PetscReal     df[LANDAU_DIM];
-} LandauFDF;
-
-typedef struct {
-  /* coordinate */
-  PetscReal   crd[LANDAU_DIM];
-  /* f; df data [Nc] */
-  LandauFDF     fdf[LANDAU_MAX_SPECIES];
-} LandauPointData;
+  LandauIPReal  *w_data;
+  LandauIPReal  *x;
+  LandauIPReal  *y;
+  LandauIPReal  *z;
+  LandauIPReal  *f;
+  LandauIPReal  *dfx;
+  LandauIPReal  *dfy;
+  LandauIPReal  *dfz;
+  int            dim_,ns_,nip_;
+} LandauIPData;
 
 PETSC_EXTERN PetscErrorCode LandauAssembleOpenMP(PetscInt cStart, PetscInt cEnd, PetscInt totDim, DM plex, PetscSection section, PetscSection globalSection, Mat JacP, PetscScalar elemMats[], PetscContainer container);
 PETSC_EXTERN PetscErrorCode LandauCreateColoring(Mat, DM, PetscContainer *);
 PETSC_EXTERN PetscErrorCode LandauFormJacobian_Internal(Vec, Mat, const PetscInt, void *);
+PETSC_EXTERN int LandauGetIPDataSize(const LandauIPData *const);
 #if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode LandauCUDAJacobian(DM, const PetscInt, const PetscReal [], const PetscReal [], const PetscReal[], const PetscReal[],
-                                             const PetscReal * const, const PetscReal[], const PetscReal [],const PetscInt, const PetscLogEvent[], PetscBool, Mat);
+  PETSC_EXTERN PetscErrorCode LandauCUDAJacobian(DM, const PetscInt, const PetscReal [], const PetscReal [], const PetscReal[], const PetscReal[],
+                                                 const LandauIPData *const, const PetscReal [],const PetscInt, const PetscLogEvent[], Mat);
 #endif
 #if defined(PETSC_HAVE_KOKKOS)
-/* TODO: this won't work if PETSc is built with C++ */
+  /* TODO: this won't work if PETSc is built with C++ */
 #if !defined(__cplusplus)
 PETSC_EXTERN PetscErrorCode LandauKokkosJacobian(DM, const PetscInt, const PetscReal [], const PetscReal [], const PetscReal[], const PetscReal[],
-                                               const PetscReal * const, const PetscReal[], const PetscReal [],const PetscInt, const PetscLogEvent[], PetscBool, Mat);
+                                                 const LandauIPData *const, const PetscReal [],const PetscInt, const PetscLogEvent[], Mat);
 #endif
 #endif
 

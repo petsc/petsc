@@ -1,9 +1,10 @@
 #define LANDAU_INVSQRT(q) (1./PetscSqrtReal(q))
 #define LANDAU_SQRT(q) PetscSqrtReal(q)
 
+#if LANDAU_DIM==2
 /* elliptic functions
  */
-PETSC_DEVICE_FUNC_DECL PetscReal polevl_10(PetscReal x, PetscReal coef[])
+PETSC_DEVICE_FUNC_DECL PetscReal polevl_10(PetscReal x, const PetscReal coef[])
 {
   PetscReal ans;
   PetscInt  i;
@@ -11,7 +12,7 @@ PETSC_DEVICE_FUNC_DECL PetscReal polevl_10(PetscReal x, PetscReal coef[])
   for (i=1; i<11; i++) ans = ans * x + coef[i];
   return(ans);
 }
-PETSC_DEVICE_FUNC_DECL PetscReal polevl_9(PetscReal x, PetscReal coef[])
+PETSC_DEVICE_FUNC_DECL PetscReal polevl_9(PetscReal x, const PetscReal coef[])
 {
   PetscReal ans;
   PetscInt  i;
@@ -25,7 +26,7 @@ PETSC_DEVICE_FUNC_DECL PetscReal polevl_9(PetscReal x, PetscReal coef[])
 PETSC_DEVICE_FUNC_DECL void ellipticE(PetscReal x,PetscReal *ret)
 {
 #if defined(PETSC_USE_REAL_SINGLE)
-  static PetscReal P2[] = {
+  static const PetscReal P2[] = {
     1.53552577301013293365E-4F,
     2.50888492163602060990E-3F,
     8.68786816565889628429E-3F,
@@ -38,7 +39,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticE(PetscReal x,PetscReal *ret)
     4.43147180560990850618E-1F,
     1.00000000000000000299E0F
   };
-  static PetscReal Q2[] = {
+  static const PetscReal Q2[] = {
     3.27954898576485872656E-5F,
     1.00962792679356715133E-3F,
     6.50609489976927491433E-3F,
@@ -51,7 +52,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticE(PetscReal x,PetscReal *ret)
     2.49999999999888314361E-1F
   };
 #else
-  static PetscReal P2[] = {
+  static const PetscReal P2[] = {
     1.53552577301013293365E-4,
     2.50888492163602060990E-3,
     8.68786816565889628429E-3,
@@ -64,7 +65,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticE(PetscReal x,PetscReal *ret)
     4.43147180560990850618E-1,
     1.00000000000000000299E0
   };
-  static PetscReal Q2[] = {
+  static const PetscReal Q2[] = {
     3.27954898576485872656E-5,
     1.00962792679356715133E-3,
     6.50609489976927491433E-3,
@@ -86,7 +87,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticE(PetscReal x,PetscReal *ret)
 PETSC_DEVICE_FUNC_DECL void ellipticK(PetscReal x,PetscReal *ret)
 {
 #if defined(PETSC_USE_REAL_SINGLE)
-  static PetscReal P1[] =
+  static const PetscReal P1[] =
     {
       1.37982864606273237150E-4F,
       2.28025724005875567385E-3F,
@@ -100,7 +101,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticK(PetscReal x,PetscReal *ret)
       9.65735902811690126535E-2F,
       1.38629436111989062502E0F
     };
-  static PetscReal Q1[] =
+  static const PetscReal Q1[] =
     {
       2.94078955048598507511E-5F,
       9.14184723865917226571E-4F,
@@ -115,7 +116,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticK(PetscReal x,PetscReal *ret)
       4.99999999999999999821E-1F
     };
 #else
-  static PetscReal P1[] =
+  static const PetscReal P1[] =
     {
       1.37982864606273237150E-4,
       2.28025724005875567385E-3,
@@ -129,7 +130,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticK(PetscReal x,PetscReal *ret)
       9.65735902811690126535E-2,
       1.38629436111989062502E0
     };
-  static PetscReal Q1[] =
+  static const PetscReal Q1[] =
     {
       2.94078955048598507511E-5,
       9.14184723865917226571E-4,
@@ -147,32 +148,6 @@ PETSC_DEVICE_FUNC_DECL void ellipticK(PetscReal x,PetscReal *ret)
   x = 1 - x; /* where m = 1 - m1 */
   *ret = polevl_10(x,P1) - PetscLogReal(x) * polevl_10(x,Q1);
 }
-
-
-/* integration point functions */
-/* Evaluates the tensor U=(I-(x-y)(x-y)/(x-y)^2)/|x-y| at point x,y */
-/* if x==y we will return zero. This is not the correct result */
-/* since the tensor diverges for x==y but when integrated */
-/* the divergent part is antisymmetric and vanishes. This is not  */
-/* trivial, but can be proven. */
-#if LANDAU_DIM==3
-PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal xp, const PetscReal yp, const PetscReal zp, PetscReal U[][3], PetscReal mask)
-{
-  PetscReal dx[3],inorm3,inorm,inorm2,norm2,x2[] = {xp,yp,zp};
-  PetscInt  d;
-  for (d = 0, norm2 = PETSC_MACHINE_EPSILON; d < 3; ++d) {
-    dx[d] = x2[d] - x1[d];
-    norm2 += dx[d] * dx[d];
-  }
-  inorm2 = mask/norm2;
-  inorm = LANDAU_SQRT(inorm2);
-  inorm3 = inorm2*inorm;
-  for (d = 0; d < 3; ++d) U[d][d] = inorm - inorm3 * dx[d] * dx[d];
-  U[1][0] = U[0][1] = -inorm3 * dx[0] * dx[1];
-  U[1][2] = U[2][1] = -inorm3 * dx[2] * dx[1];
-  U[2][0] = U[0][2] = -inorm3 * dx[0] * dx[2];
-}
-#else
 PETSC_DEVICE_FUNC_DECL void LandauTensor2D(const PetscReal x[], const PetscReal rp, const PetscReal zp, PetscReal Ud[][2], PetscReal Uk[][2], const PetscReal mask)
 {
   PetscReal l,s,r=x[0],z=x[1],i1func,i2func,i3func,ks,es,pi4pow,sqrt_1s,r2,rp2,r2prp2,zmzp,zmzp2,tt;
@@ -205,5 +180,28 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor2D(const PetscReal x[], const PetscReal 
   Uk[1][1]=Ud[1][1]=           pi4pow*((r2prp2)*i2func-2*r*rp*i3func)*mask;
   Uk[0][0]=                    pi4pow*(zmzp2*i3func+r*rp*i1func);
   Uk[1][0]=                   -pi4pow*(zmzp)*(r*i3func-rp*i2func); /* 48 mults + 21 + 21 = 90 mults and divs */
+}
+#else
+/* integration point functions */
+/* Evaluates the tensor U=(I-(x-y)(x-y)/(x-y)^2)/|x-y| at point x,y */
+/* if x==y we will return zero. This is not the correct result */
+/* since the tensor diverges for x==y but when integrated */
+/* the divergent part is antisymmetric and vanishes. This is not  */
+/* trivial, but can be proven. */
+PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal xp, const PetscReal yp, const PetscReal zp, PetscReal U[][3], PetscReal mask)
+{
+  PetscReal dx[3],inorm3,inorm,inorm2,norm2,x2[] = {xp,yp,zp};
+  PetscInt  d;
+  for (d = 0, norm2 = PETSC_MACHINE_EPSILON; d < 3; ++d) {
+    dx[d] = x2[d] - x1[d];
+    norm2 += dx[d] * dx[d];
+  }
+  inorm2 = mask/norm2;
+  inorm = LANDAU_SQRT(inorm2);
+  inorm3 = inorm2*inorm;
+  for (d = 0; d < 3; ++d) U[d][d] = inorm - inorm3 * dx[d] * dx[d];
+  U[1][0] = U[0][1] = -inorm3 * dx[0] * dx[1];
+  U[1][2] = U[2][1] = -inorm3 * dx[2] * dx[1];
+  U[2][0] = U[0][2] = -inorm3 * dx[0] * dx[2];
 }
 #endif
