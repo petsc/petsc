@@ -27,7 +27,7 @@
 #define TAOBQNKLS   "bqnkls"
 #define TAOBQNKTR   "bqnktr"
 #define TAOBQNKTL   "bqnktl"
-#define TAOQBNLS    "bqnls"
+#define TAOBQNLS    "bqnls"
 #define TAOBRGN     "brgn"
 #define TAOBQPIP    "bqpip"
 #define TAOGPCG     "gpcg"
@@ -39,6 +39,7 @@
 #define TAOASILS    "asils"
 #define TAOASFLS    "asfls"
 #define TAOIPM      "ipm"
+#define TAOPDIPM    "pdipm"
 #define TAOADMM     "admm"
 #define TAOFDTEST   "test"
 
