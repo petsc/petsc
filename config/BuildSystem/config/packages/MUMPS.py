@@ -113,6 +113,8 @@ class Configure(config.package.Package):
     g.write('FC = '+self.getCompiler()+'\n')
     g.write('FL = '+self.getCompiler()+'\n')
     g.write('OPTF    = '+self.updatePackageFFlags(self.getCompilerFlags())+'\n')
+    if self.openmp.found:
+      g.write('OPTF   += -DBLR_MT\n')
     if self.blasLapack.checkForRoutine('dgemmt'):
       g.write('OPTF   += -DGEMMT_AVAILABLE \n')
     g.write('OUTF = -o \n')
