@@ -207,7 +207,7 @@ define macos-firewall-register
     if ! echo $$ANS | grep "$$APP" &> /dev/null; then \
       if ! sudo -n true 2>/dev/null; then echo "Asking for sudo password to add new firewall rule for\n  $$APP:"; fi; \
       sudo $$FW --add $$APP && \
-      sudo $$FW --block $$APP; \
+      sudo $$FW --blockapp $$APP; \
     else \
       echo $$ANS; \
     fi
