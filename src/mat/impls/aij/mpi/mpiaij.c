@@ -5286,7 +5286,7 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
     Level: developer
 
    Notes:
-     This is different from MatMPIAIJGetLocalMat since the first columns in the returning matrix are those associated with the diagonal part, then those associated with the offdiagonal part (in its local ordering)
+     This is different from MatMPIAIJGetLocalMat() since the first columns in the returning matrix are those associated with the diagonal part, then those associated with the offdiagonal part (in its local ordering)
 
 .seealso: MatGetOwnershipRange(), MatMPIAIJGetLocalMat(), MatMPIAIJGetLocalMatCondensed()
 

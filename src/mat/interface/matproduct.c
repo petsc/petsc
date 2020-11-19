@@ -1055,8 +1055,7 @@ PetscErrorCode MatProductCreate(Mat A,Mat B,Mat C,Mat *D)
    They only use the MatProduct API and are currently used by
    cuSPARSE and KOKKOS-KERNELS backends
 */
-typedef struct
-{
+typedef struct {
   Mat BC;
   Mat ABC;
 } MatMatMatPrivate;
@@ -1084,13 +1083,13 @@ static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat)
   if (!mat->product->data) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Product data empty");
   mmabc = (MatMatMatPrivate *)mat->product->data;
   if (!mmabc->BC->ops->productnumeric) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric stage");
-  /* use function pointer directly to prevent from logging */
+  /* use function pointer directly to prevent logging */
   ierr = (*mmabc->BC->ops->productnumeric)(mmabc->BC);CHKERRQ(ierr);
   /* swap ABC product stuff with that of ABC for the numeric phase on mat */
   mat->product = mmabc->ABC->product;
   mat->ops->productnumeric = mmabc->ABC->ops->productnumeric;
   if (!mat->ops->productnumeric) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric stage");
-  /* use function pointer directly to prevent from logging */
+  /* use function pointer directly to prevent logging */
   ierr = (*mat->ops->productnumeric)(mat);CHKERRQ(ierr);
   mat->ops->productnumeric = MatProductNumeric_ABC_Basic;
   mat->product = product;
