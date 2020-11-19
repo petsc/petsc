@@ -139,10 +139,12 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
   ierr = PetscStrallocpy(VECKOKKOS,&B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJKOKKOS);CHKERRQ(ierr);
 
-  B->ops->assemblyend    = MatAssemblyEnd_MPIAIJKokkos;
-  B->ops->mult           = MatMult_MPIAIJKokkos;
-  B->ops->multadd        = MatMultAdd_MPIAIJKokkos;
-  B->ops->multtranspose  = MatMultTranspose_MPIAIJKokkos;
+  B->ops->assemblyend           = MatAssemblyEnd_MPIAIJKokkos;
+  B->ops->mult                  = MatMult_MPIAIJKokkos;
+  B->ops->multadd               = MatMultAdd_MPIAIJKokkos;
+  B->ops->multtranspose         = MatMultTranspose_MPIAIJKokkos;
+  // Needs an efficient implementation of the COO preallocation routines
+  //B->ops->productsetfromoptions = MatProductSetFromOptions_MPIAIJBACKEND;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJKokkos);CHKERRQ(ierr);
   PetscFunctionReturn(0);

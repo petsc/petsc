@@ -2091,6 +2091,13 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_PtAP_MPIAIJ_MPIAIJ(Mat C)
     goto next;
   }
 
+  /* backend general code */
+  ierr = PetscStrcmp(alg,"backend",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatProductSymbolic_MPIAIJBACKEND(C);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   /* hypre */
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscStrcmp(alg,"hypre",&flg);CHKERRQ(ierr);

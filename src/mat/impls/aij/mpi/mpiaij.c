@@ -2984,7 +2984,7 @@ PetscErrorCode  MatRetrieveValues_MPIAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ     *b;
   PetscErrorCode ierr;
@@ -6475,4 +6475,588 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[]
     }
   }
   PetscFunctionReturnVoid();
+}
+
+typedef struct {
+  Mat       *mp;    /* intermediate products */
+  PetscBool *mptmp; /* is the intermediate product temporary ? */
+  PetscInt  cp;     /* number of intermediate products */
+
+  /* support for MatGetBrowsOfAoCols_MPIAIJ for P_oth */
+  PetscInt    *startsj_s,*startsj_r;
+  PetscScalar *bufa;
+  Mat         P_oth;
+
+  /* may take advantage of merging product->B */
+  Mat Bloc;
+
+  /* cusparse does not have support to split between symbolic and numeric phases
+     When api_user is true, we don't need to update the numerical values
+     of the temporary storage */
+  PetscBool reusesym;
+
+  /* support for COO values insertion */
+  PetscScalar *coo_v,*coo_w;
+  PetscInt    **own;
+  PetscInt    **off;
+  PetscSF     sf; /* if present, non-local values insertion (i.e. AtB or PtAP) */
+
+  /* customization */
+  PetscBool abmerge;
+} MatMatMPIAIJBACKEND;
+
+PetscErrorCode MatDestroy_MatMatMPIAIJBACKEND(void *data)
+{
+  MatMatMPIAIJBACKEND *mmdata = (MatMatMPIAIJBACKEND*)data;
+  PetscInt            i;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree2(mmdata->startsj_s,mmdata->startsj_r);CHKERRQ(ierr);
+  ierr = PetscFree(mmdata->bufa);CHKERRQ(ierr);
+  ierr = PetscFree(mmdata->coo_v);CHKERRQ(ierr);
+  ierr = PetscFree(mmdata->coo_w);CHKERRQ(ierr);
+  ierr = MatDestroy(&mmdata->P_oth);CHKERRQ(ierr);
+  ierr = MatDestroy(&mmdata->Bloc);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&mmdata->sf);CHKERRQ(ierr);
+  for (i = 0; i < mmdata->cp; i++) {
+    ierr = MatDestroy(&mmdata->mp[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(mmdata->mp);CHKERRQ(ierr);
+  ierr = PetscFree(mmdata->mptmp);CHKERRQ(ierr);
+  ierr = PetscFree(mmdata->own[0]);CHKERRQ(ierr);
+  ierr = PetscFree(mmdata->own);CHKERRQ(ierr);
+  ierr = PetscFree(mmdata->off[0]);CHKERRQ(ierr);
+  ierr = PetscFree(mmdata->off);CHKERRQ(ierr);
+  ierr = PetscFree(mmdata);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatProductNumeric_MPIAIJBACKEND(Mat C)
+{
+  MatMatMPIAIJBACKEND *mmdata;
+  PetscInt            i,n_d,n_o;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C,1);
+  if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  mmdata = (MatMatMPIAIJBACKEND*)C->product->data;
+  if (!mmdata->reusesym) { /* update temporary matrices */
+    if (mmdata->P_oth) {
+      ierr = MatGetBrowsOfAoCols_MPIAIJ(C->product->A,C->product->B,MAT_REUSE_MATRIX,&mmdata->startsj_s,&mmdata->startsj_r,&mmdata->bufa,&mmdata->P_oth);CHKERRQ(ierr);
+    }
+    if (mmdata->Bloc) {
+      ierr = MatMPIAIJGetLocalMatMerge(C->product->B,MAT_REUSE_MATRIX,NULL,&mmdata->Bloc);CHKERRQ(ierr);
+    }
+  }
+  mmdata->reusesym = PETSC_FALSE;
+  for (i = 0, n_d = 0, n_o = 0; i < mmdata->cp; i++) {
+    Mat_SeqAIJ        *mm = (Mat_SeqAIJ*)mmdata->mp[i]->data;
+    const PetscScalar *vv;
+    PetscInt          noff = mmdata->off[i+1] - mmdata->off[i];
+
+    if (!mmdata->mp[i]->ops->productnumeric) SETERRQ1(PetscObjectComm((PetscObject)mmdata->mp[i]),PETSC_ERR_PLIB,"Missing numeric op for %s",MatProductTypes[mmdata->mp[i]->product->type]);
+    ierr = (*mmdata->mp[i]->ops->productnumeric)(mmdata->mp[i]);CHKERRQ(ierr);
+    if (mmdata->mptmp[i]) continue;
+    /* TODO: add support for using GPU data directly? */
+    ierr = MatSeqAIJGetArrayRead(mmdata->mp[i],&vv);CHKERRQ(ierr);
+    if (noff) {
+      PetscScalar *w = mmdata->coo_w + n_o;
+      PetscScalar *v = mmdata->coo_v + n_d;
+      PetscInt    *oi = mmdata->off[i];
+      PetscInt    *di = mmdata->own[i];
+      PetscInt    j, nown = mmdata->own[i+1] - mmdata->own[i];
+      for (j = 0; j < noff; j++) *w++ = vv[*oi++];
+      for (j = 0; j < nown; j++) *v++ = vv[*di++];
+      n_o += noff;
+      n_d += nown;
+    } else {
+      ierr = PetscArraycpy(mmdata->coo_v + n_d,vv,mm->nz);CHKERRQ(ierr);
+      n_d += mm->nz;
+    }
+    ierr = MatSeqAIJRestoreArrayRead(mmdata->mp[i],&vv);CHKERRQ(ierr);
+  }
+  if (mmdata->sf) { /* offprocess insertion */
+    ierr = PetscSFGatherBegin(mmdata->sf,MPIU_SCALAR,mmdata->coo_w,mmdata->coo_v+n_d);CHKERRQ(ierr);
+    ierr = PetscSFGatherEnd(mmdata->sf,MPIU_SCALAR,mmdata->coo_w,mmdata->coo_v+n_d);CHKERRQ(ierr);
+  }
+  ierr = MatSetValuesCOO(C,mmdata->coo_v,INSERT_VALUES);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Support for Pt * A, A * P, or Pt * A * P */
+#define MAX_NUMBER_INTERMEDIATE 4
+PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
+{
+  Mat_Product            *product = C->product;
+  Mat                    A,P,mp[MAX_NUMBER_INTERMEDIATE];
+  Mat_MPIAIJ             *a,*p;
+  MatMatMPIAIJBACKEND    *mmdata;
+  ISLocalToGlobalMapping P_oth_l2g = NULL;
+  IS                     glob = NULL;
+  const char             *prefix;
+  char                   pprefix[256];
+  const PetscInt         *globidx,*P_oth_idx;
+  const PetscInt         *cmapa[MAX_NUMBER_INTERMEDIATE],*rmapa[MAX_NUMBER_INTERMEDIATE];
+  PetscInt               cp = 0,m,n,M,N,ncoo,ncoo_d,ncoo_o,ncoo_oown,*coo_i,*coo_j,cmapt[MAX_NUMBER_INTERMEDIATE],rmapt[MAX_NUMBER_INTERMEDIATE],i,j;
+  MatProductType         ptype;
+  PetscBool              mptmp[MAX_NUMBER_INTERMEDIATE],hasoffproc = PETSC_FALSE,flg;
+  PetscMPIInt            size;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C,1);
+  if (product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  ptype = product->type;
+  if (product->A->symmetric && ptype == MATPRODUCT_AtB) ptype = MATPRODUCT_AB;
+  switch (ptype) {
+  case MATPRODUCT_AB:
+    A = product->A;
+    P = product->B;
+    m = A->rmap->n;
+    n = P->cmap->n;
+    M = A->rmap->N;
+    N = P->cmap->N;
+    break;
+  case MATPRODUCT_AtB:
+    P = product->A;
+    A = product->B;
+    m = P->cmap->n;
+    n = A->cmap->n;
+    M = P->cmap->N;
+    N = A->cmap->N;
+    hasoffproc = PETSC_TRUE;
+    break;
+  case MATPRODUCT_PtAP:
+    A = product->A;
+    P = product->B;
+    m = P->cmap->n;
+    n = P->cmap->n;
+    M = P->cmap->N;
+    N = P->cmap->N;
+    hasoffproc = PETSC_TRUE;
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Not for product type %s",MatProductTypes[ptype]);
+  }
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)C),&size);CHKERRQ(ierr);
+  if (size == 1) hasoffproc = PETSC_FALSE;
+
+  /* defaults */
+  for (i=0;i<MAX_NUMBER_INTERMEDIATE;i++) {
+    mp[i]    = NULL;
+    mptmp[i] = PETSC_FALSE;
+    rmapt[i] = -1;
+    cmapt[i] = -1;
+    rmapa[i] = NULL;
+    cmapa[i] = NULL;
+  }
+
+  /* customization */
+  ierr = PetscNew(&mmdata);CHKERRQ(ierr);
+  mmdata->reusesym = product->api_user;
+  if (ptype == MATPRODUCT_AB) {
+    if (product->api_user) {
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatMult","Mat");CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-matmatmult_backend_mergeB","Merge product->B local matrices","MatMatMult",mmdata->abmerge,&mmdata->abmerge,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    } else {
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_AB","Mat");CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-matproduct_ab_backend_mergeB","Merge product->B local matrices","MatMatMult",mmdata->abmerge,&mmdata->abmerge,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    }
+  }
+
+  a = (Mat_MPIAIJ*)A->data;
+  p = (Mat_MPIAIJ*)P->data;
+  ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(C->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(C->cmap);CHKERRQ(ierr);
+  ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatGetOptionsPrefix(C,&prefix);CHKERRQ(ierr);
+  switch (ptype) {
+  case MATPRODUCT_AB: /* A * P */
+    ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&mmdata->startsj_s,&mmdata->startsj_r,&mmdata->bufa,&mmdata->P_oth);CHKERRQ(ierr);
+
+    if (mmdata->abmerge) { /* A_diag * P_loc and A_off * P_oth */
+      /* P is product->B */
+      ierr = MatMPIAIJGetLocalMatMerge(P,MAT_INITIAL_MATRIX,&glob,&mmdata->Bloc);CHKERRQ(ierr);
+      ierr = MatProductCreate(a->A,mmdata->Bloc,NULL,&mp[cp]);CHKERRQ(ierr);
+      ierr = MatProductSetType(mp[cp],MATPRODUCT_AB);CHKERRQ(ierr);
+      ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+      mp[cp]->product->api_user = product->api_user;
+      ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+      if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+      ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+      ierr = ISGetIndices(glob,&globidx);CHKERRQ(ierr);
+      rmapt[cp] = 1;
+      cmapt[cp] = 2;
+      cmapa[cp] = globidx;
+      mptmp[cp] = PETSC_FALSE;
+      cp++;
+    } else { /* A_diag * P_diag and A_diag * P_off and A_off * P_oth */
+      ierr = MatProductCreate(a->A,p->A,NULL,&mp[cp]);CHKERRQ(ierr);
+      ierr = MatProductSetType(mp[cp],MATPRODUCT_AB);CHKERRQ(ierr);
+      ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+      mp[cp]->product->api_user = product->api_user;
+      ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+      if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+      ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+      rmapt[cp] = 1;
+      cmapt[cp] = 1;
+      mptmp[cp] = PETSC_FALSE;
+      cp++;
+      ierr = MatProductCreate(a->A,p->B,NULL,&mp[cp]);CHKERRQ(ierr);
+      ierr = MatProductSetType(mp[cp],MATPRODUCT_AB);CHKERRQ(ierr);
+      ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+      mp[cp]->product->api_user = product->api_user;
+      ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+      if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+      ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+      rmapt[cp] = 1;
+      cmapt[cp] = 2;
+      cmapa[cp] = p->garray;
+      mptmp[cp] = PETSC_FALSE;
+      cp++;
+    }
+    if (mmdata->P_oth) {
+      ierr = MatSeqAIJCompactOutExtraColumns_SeqAIJ(mmdata->P_oth,&P_oth_l2g);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(P_oth_l2g,&P_oth_idx);CHKERRQ(ierr);
+      ierr = MatSetType(mmdata->P_oth,((PetscObject)(a->B))->type_name);CHKERRQ(ierr);
+      ierr = MatProductCreate(a->B,mmdata->P_oth,NULL,&mp[cp]);CHKERRQ(ierr);
+      ierr = MatProductSetType(mp[cp],MATPRODUCT_AB);CHKERRQ(ierr);
+      ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+      mp[cp]->product->api_user = product->api_user;
+      ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+      if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+      ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+      rmapt[cp] = 1;
+      cmapt[cp] = 2;
+      cmapa[cp] = P_oth_idx;
+      mptmp[cp] = PETSC_FALSE;
+      cp++;
+    }
+    break;
+  case MATPRODUCT_AtB: /* (P^t * A): P_diag * A_loc + P_off * A_loc */
+    /* A is product->B */
+    ierr = MatMPIAIJGetLocalMatMerge(A,MAT_INITIAL_MATRIX,&glob,&mmdata->Bloc);CHKERRQ(ierr);
+    if (A == P) {
+      ierr = MatProductCreate(mmdata->Bloc,mmdata->Bloc,NULL,&mp[cp]);CHKERRQ(ierr);
+      ierr = MatProductSetType(mp[cp],MATPRODUCT_AtB);CHKERRQ(ierr);
+      ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+      mp[cp]->product->api_user = product->api_user;
+      ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+      if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+      ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+      ierr = ISGetIndices(glob,&globidx);CHKERRQ(ierr);
+      rmapt[cp] = 2;
+      rmapa[cp] = globidx;
+      cmapt[cp] = 2;
+      cmapa[cp] = globidx;
+      mptmp[cp] = PETSC_FALSE;
+      cp++;
+    } else {
+      ierr = MatProductCreate(p->A,mmdata->Bloc,NULL,&mp[cp]);CHKERRQ(ierr);
+      ierr = MatProductSetType(mp[cp],MATPRODUCT_AtB);CHKERRQ(ierr);
+      ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+      mp[cp]->product->api_user = product->api_user;
+      ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+      if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+      ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+      ierr = ISGetIndices(glob,&globidx);CHKERRQ(ierr);
+      rmapt[cp] = 1;
+      cmapt[cp] = 2;
+      cmapa[cp] = globidx;
+      mptmp[cp] = PETSC_FALSE;
+      cp++;
+      ierr = MatProductCreate(p->B,mmdata->Bloc,NULL,&mp[cp]);CHKERRQ(ierr);
+      ierr = MatProductSetType(mp[cp],MATPRODUCT_AtB);CHKERRQ(ierr);
+      ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+      mp[cp]->product->api_user = product->api_user;
+      ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+      if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+      ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+      rmapt[cp] = 2;
+      rmapa[cp] = p->garray;
+      cmapt[cp] = 2;
+      cmapa[cp] = globidx;
+      mptmp[cp] = PETSC_FALSE;
+      cp++;
+    }
+    break;
+  case MATPRODUCT_PtAP:
+    ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&mmdata->startsj_s,&mmdata->startsj_r,&mmdata->bufa,&mmdata->P_oth);CHKERRQ(ierr);
+    /* P is product->B */
+    ierr = MatMPIAIJGetLocalMatMerge(P,MAT_INITIAL_MATRIX,&glob,&mmdata->Bloc);CHKERRQ(ierr);
+    ierr = MatProductCreate(a->A,mmdata->Bloc,NULL,&mp[cp]);CHKERRQ(ierr);
+    ierr = MatProductSetType(mp[cp],MATPRODUCT_PtAP);CHKERRQ(ierr);
+    ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+    ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+    mp[cp]->product->api_user = product->api_user;
+    ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+    if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+    ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+    ierr = ISGetIndices(glob,&globidx);CHKERRQ(ierr);
+    rmapt[cp] = 2;
+    rmapa[cp] = globidx;
+    cmapt[cp] = 2;
+    cmapa[cp] = globidx;
+    mptmp[cp] = PETSC_FALSE;
+    cp++;
+    if (mmdata->P_oth) {
+      ierr = MatSeqAIJCompactOutExtraColumns_SeqAIJ(mmdata->P_oth,&P_oth_l2g);CHKERRQ(ierr);
+      ierr = MatSetType(mmdata->P_oth,((PetscObject)(a->B))->type_name);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(P_oth_l2g,&P_oth_idx);CHKERRQ(ierr);
+      ierr = MatProductCreate(a->B,mmdata->P_oth,NULL,&mp[cp]);CHKERRQ(ierr);
+      ierr = MatProductSetType(mp[cp],MATPRODUCT_AB);CHKERRQ(ierr);
+      ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+      mp[cp]->product->api_user = product->api_user;
+      ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+      if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+      ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+      mptmp[cp] = PETSC_TRUE;
+      cp++;
+      ierr = MatProductCreate(mmdata->Bloc,mp[1],NULL,&mp[cp]);CHKERRQ(ierr);
+      ierr = MatProductSetType(mp[cp],MATPRODUCT_AtB);CHKERRQ(ierr);
+      ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(pprefix,sizeof(pprefix),"backend_p%D_",cp);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(mp[cp],prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(mp[cp],pprefix);CHKERRQ(ierr);
+      mp[cp]->product->api_user = product->api_user;
+      ierr = MatProductSetFromOptions(mp[cp]);CHKERRQ(ierr);
+      if (!mp[cp]->ops->productsymbolic) SETERRQ1(PetscObjectComm((PetscObject)mp[cp]),PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[mp[cp]->product->type]);
+      ierr = (*mp[cp]->ops->productsymbolic)(mp[cp]);CHKERRQ(ierr);
+      rmapt[cp] = 2;
+      rmapa[cp] = globidx;
+      cmapt[cp] = 2;
+      cmapa[cp] = P_oth_idx;
+      mptmp[cp] = PETSC_FALSE;
+      cp++;
+    }
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Not for product type %s",MatProductTypes[ptype]);
+  }
+  /* sanity check */
+  if (size > 1) for (i = 0; i < cp; i++) if (rmapt[i] == 2 && !hasoffproc) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected offproc map type for product %D",i);
+
+  ierr = PetscMalloc1(cp,&mmdata->mp);CHKERRQ(ierr);
+  for (i = 0; i < cp; i++) mmdata->mp[i] = mp[i];
+  ierr = PetscMalloc1(cp,&mmdata->mptmp);CHKERRQ(ierr);
+  for (i = 0; i < cp; i++) mmdata->mptmp[i] = mptmp[i];
+  mmdata->cp = cp;
+  C->product->data       = mmdata;
+  C->product->destroy    = MatDestroy_MatMatMPIAIJBACKEND;
+  C->ops->productnumeric = MatProductNumeric_MPIAIJBACKEND;
+
+  /* prepare coo coordinates for values insertion */
+  for (cp = 0, ncoo_d = 0, ncoo_o = 0, ncoo_oown = 0; cp < mmdata->cp; cp++) {
+    Mat_SeqAIJ *mm = (Mat_SeqAIJ*)mp[cp]->data;
+    if (mptmp[cp]) continue;
+    if (rmapt[cp] == 2 && hasoffproc) {
+      const PetscInt *rmap = rmapa[cp];
+      const PetscInt mr = mp[cp]->rmap->n;
+      const PetscInt rs = C->rmap->rstart;
+      const PetscInt re = C->rmap->rend;
+      const PetscInt *ii  = mm->i;
+      for (i = 0; i < mr; i++) {
+        const PetscInt gr = rmap[i];
+        const PetscInt nz = ii[i+1] - ii[i];
+        if (gr < rs || gr >= re) ncoo_o += nz;
+        else ncoo_oown += nz;
+      }
+    } else ncoo_d += mm->nz;
+  }
+  ierr = PetscCalloc1(mmdata->cp+1,&mmdata->off);CHKERRQ(ierr);
+  ierr = PetscCalloc1(mmdata->cp+1,&mmdata->own);CHKERRQ(ierr);
+  if (hasoffproc) { /* handle offproc values insertion */
+    PetscSF  msf;
+    PetscInt ncoo2,*coo_i2,*coo_j2;
+
+    ierr = PetscMalloc1(ncoo_o,&mmdata->off[0]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ncoo_oown,&mmdata->own[0]);CHKERRQ(ierr);
+    ierr = PetscMalloc2(ncoo_o,&coo_i,ncoo_o,&coo_j);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ncoo_o,&mmdata->coo_w);CHKERRQ(ierr);
+    for (cp = 0, ncoo_o = 0; cp < mmdata->cp; cp++) {
+      Mat_SeqAIJ *mm = (Mat_SeqAIJ*)mp[cp]->data;
+      PetscInt   *idxoff = mmdata->off[cp];
+      PetscInt   *idxown = mmdata->own[cp];
+      if (!mptmp[cp] && rmapt[cp] == 2) {
+        const PetscInt *rmap = rmapa[cp];
+        const PetscInt *cmap = cmapa[cp];
+        const PetscInt *ii  = mm->i;
+        PetscInt       *coi = coo_i + ncoo_o;
+        PetscInt       *coj = coo_j + ncoo_o;
+        const PetscInt mr = mp[cp]->rmap->n;
+        const PetscInt rs = C->rmap->rstart;
+        const PetscInt re = C->rmap->rend;
+        const PetscInt cs = C->cmap->rstart;
+        for (i = 0; i < mr; i++) {
+          const PetscInt *jj = mm->j + ii[i];
+          const PetscInt gr  = rmap[i];
+          const PetscInt nz  = ii[i+1] - ii[i];
+          if (gr < rs || gr >= re) {
+            for (j = ii[i]; j < ii[i+1]; j++) {
+              *coi++ = gr;
+              *idxoff++ = j;
+            }
+            if (!cmapt[cp]) { /* already global */
+              for (j = 0; j < nz; j++) *coj++ = jj[j];
+            } else if (cmapt[cp] == 1) { /* local to global for owned columns of C */
+              for (j = 0; j < nz; j++) *coj++ = jj[j] + cs;
+            } else { /* offdiag */
+              for (j = 0; j < nz; j++) *coj++ = cmap[jj[j]];
+            }
+            ncoo_o += nz;
+          } else {
+            for (j = ii[i]; j < ii[i+1]; j++) *idxown++ = j;
+          }
+        }
+      }
+      mmdata->off[cp + 1] = idxoff;
+      mmdata->own[cp + 1] = idxown;
+    }
+
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)C),&mmdata->sf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(mmdata->sf,C->rmap,ncoo_o,NULL,PETSC_OWN_POINTER,coo_i);CHKERRQ(ierr);
+    ierr = PetscSFGetMultiSF(mmdata->sf,&msf);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(msf,&ncoo2,NULL,NULL,NULL);CHKERRQ(ierr);
+    ncoo = ncoo_d + ncoo_oown + ncoo2;
+    ierr = PetscMalloc2(ncoo,&coo_i2,ncoo,&coo_j2);CHKERRQ(ierr);
+    ierr = PetscSFGatherBegin(mmdata->sf,MPIU_INT,coo_i,coo_i2 + ncoo_d + ncoo_oown);CHKERRQ(ierr);
+    ierr = PetscSFGatherEnd(mmdata->sf,MPIU_INT,coo_i,coo_i2 + ncoo_d + ncoo_oown);CHKERRQ(ierr);
+    ierr = PetscSFGatherBegin(mmdata->sf,MPIU_INT,coo_j,coo_j2 + ncoo_d + ncoo_oown);CHKERRQ(ierr);
+    ierr = PetscSFGatherEnd(mmdata->sf,MPIU_INT,coo_j,coo_j2 + ncoo_d + ncoo_oown);CHKERRQ(ierr);
+    ierr = PetscFree2(coo_i,coo_j);CHKERRQ(ierr);
+    coo_i = coo_i2;
+    coo_j = coo_j2;
+  } else { /* no offproc values insertion */
+    ncoo = ncoo_d;
+    ierr = PetscMalloc2(ncoo,&coo_i,ncoo,&coo_j);CHKERRQ(ierr);
+  }
+  ierr = PetscMalloc1(ncoo,&mmdata->coo_v);CHKERRQ(ierr);
+
+  /* on-process indices */
+  for (cp = 0, ncoo_d = 0; cp < mmdata->cp; cp++) {
+    Mat_SeqAIJ     *mm = (Mat_SeqAIJ*)mp[cp]->data;
+    PetscInt       *coi = coo_i + ncoo_d;
+    PetscInt       *coj = coo_j + ncoo_d;
+    const PetscInt *jj  = mm->j;
+    const PetscInt *ii  = mm->i;
+    const PetscInt *cmap = cmapa[cp];
+    const PetscInt *rmap = rmapa[cp];
+    const PetscInt mr = mp[cp]->rmap->n;
+    const PetscInt rs = C->rmap->rstart;
+    const PetscInt re = C->rmap->rend;
+    const PetscInt cs = C->cmap->rstart;
+
+    if (mptmp[cp]) continue;
+    if (rmapt[cp] == 1) {
+      for (i = 0; i < mr; i++) {
+        const PetscInt gr = i + rs;
+        for (j = ii[i]; j < ii[i+1]; j++) coi[j] = gr;
+      }
+      /* columns coo */
+      if (!cmapt[cp]) {
+        ierr = PetscArraycpy(coj,jj,mm->nz);CHKERRQ(ierr);
+      } else if (cmapt[cp] == 1) { /* local to global for owned columns of C */
+        for (j = 0; j < mm->nz; j++) coj[j] = jj[j] + cs;
+      } else { /* offdiag */
+        for (j = 0; j < mm->nz; j++) coj[j] = cmap[jj[j]];
+      }
+      ncoo_d += mm->nz;
+    } else if (rmapt[cp] == 2) {
+      for (i = 0; i < mr; i++) {
+        const PetscInt *jj = mm->j + ii[i];
+        const PetscInt gr  = rmap[i];
+        const PetscInt nz  = ii[i+1] - ii[i];
+        if (gr >= rs && gr < re) {
+          for (j = ii[i]; j < ii[i+1]; j++) *coi++ = gr;
+          if (!cmapt[cp]) { /* already global */
+            for (j = 0; j < nz; j++) *coj++ = jj[j];
+          } else if (cmapt[cp] == 1) { /* local to global for owned columns of C */
+            for (j = 0; j < nz; j++) *coj++ = jj[j] + cs;
+          } else { /* offdiag */
+            for (j = 0; j < nz; j++) *coj++ = cmap[jj[j]];
+          }
+          ncoo_d += nz;
+        }
+      }
+    }
+  }
+  if (glob) {
+    ierr = ISRestoreIndices(glob,&globidx);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&glob);CHKERRQ(ierr);
+  if (P_oth_l2g) {
+    ierr = ISLocalToGlobalMappingRestoreIndices(P_oth_l2g,&P_oth_idx);CHKERRQ(ierr);
+  }
+  ierr = ISLocalToGlobalMappingDestroy(&P_oth_l2g);CHKERRQ(ierr);
+
+  /* preallocate with COO data */
+  ierr = MatSetPreallocationCOO(C,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+  ierr = PetscFree2(coo_i,coo_j);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatProductSetFromOptions_MPIAIJBACKEND(Mat mat)
+{
+  Mat_Product    *product = mat->product;
+  PetscErrorCode ierr;
+#if defined(PETSC_HAVE_DEVICE)
+  PetscBool      match = PETSC_FALSE;
+#else
+  PetscBool      match = PETSC_TRUE;
+#endif
+
+  PetscFunctionBegin;
+  MatCheckProduct(mat,1);
+#if defined(PETSC_HAVE_DEVICE)
+  if (!product->A->boundtocpu && !product->B->boundtocpu) {
+    ierr = PetscObjectTypeCompare((PetscObject)product->B,((PetscObject)product->A)->type_name,&match);CHKERRQ(ierr);
+  }
+#endif
+  if (match) {
+    switch (product->type) {
+    case MATPRODUCT_AB:
+    case MATPRODUCT_AtB:
+    case MATPRODUCT_PtAP:
+      mat->ops->productsymbolic = MatProductSymbolic_MPIAIJBACKEND;
+      break;
+    default:
+      break;
+    }
+  }
+  /* fallback to MPIAIJ ops */
+  if (!mat->ops->productsymbolic) {
+    ierr = MatProductSetFromOptions_MPIAIJ(mat);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }

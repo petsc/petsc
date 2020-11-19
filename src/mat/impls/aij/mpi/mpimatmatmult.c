@@ -46,6 +46,13 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat C)
     PetscFunctionReturn(0);
   }
 
+  /* backend general code */
+  ierr = PetscStrcmp(alg,"backend",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatProductSymbolic_MPIAIJBACKEND(C);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscStrcmp(alg,"hypre",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -2116,6 +2123,13 @@ static PetscErrorCode MatProductSymbolic_AtB_MPIAIJ_MPIAIJ(Mat C)
     goto next;
   }
 
+  /* backend general code */
+  ierr = PetscStrcmp(product->alg,"backend",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatProductSymbolic_MPIAIJBACKEND(C);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProduct type is not supported");
 
 next:
@@ -2131,11 +2145,11 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
   Mat_Product    *product = C->product;
   Mat            A=product->A,B=product->B;
 #if defined(PETSC_HAVE_HYPRE)
-  const char     *algTypes[4] = {"scalable","nonscalable","seqmpi","hypre"};
-  PetscInt       nalg = 4;
+  const char     *algTypes[5] = {"scalable","nonscalable","seqmpi","backend","hypre"};
+  PetscInt       nalg = 5;
 #else
-  const char     *algTypes[3] = {"scalable","nonscalable","seqmpi"};
-  PetscInt       nalg = 3;
+  const char     *algTypes[4] = {"scalable","nonscalable","seqmpi","backend",};
+  PetscInt       nalg = 4;
 #endif
   PetscInt       alg = 1; /* set nonscalable algorithm as default */
   PetscBool      flg;
@@ -2196,8 +2210,8 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
   PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   Mat            A=product->A,B=product->B;
-  const char     *algTypes[3] = {"scalable","nonscalable","at*b"};
-  PetscInt       nalg = 3;
+  const char     *algTypes[4] = {"scalable","nonscalable","at*b","backend"};
+  PetscInt       nalg = 4;
   PetscInt       alg = 1; /* set default algorithm  */
   PetscBool      flg;
   MPI_Comm       comm;
@@ -2260,11 +2274,11 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
   PetscBool      flg;
   PetscInt       alg=1; /* set default algorithm */
 #if !defined(PETSC_HAVE_HYPRE)
-  const char     *algTypes[4] = {"scalable","nonscalable","allatonce","allatonce_merged"};
-  PetscInt       nalg=4;
-#else
-  const char     *algTypes[5] = {"scalable","nonscalable","allatonce","allatonce_merged","hypre"};
+  const char     *algTypes[5] = {"scalable","nonscalable","allatonce","allatonce_merged","backend"};
   PetscInt       nalg=5;
+#else
+  const char     *algTypes[6] = {"scalable","nonscalable","allatonce","allatonce_merged","backend","hypre"};
+  PetscInt       nalg=6;
 #endif
   PetscInt       pN=P->cmap->N;
 
