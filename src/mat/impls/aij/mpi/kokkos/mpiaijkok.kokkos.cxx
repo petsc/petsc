@@ -21,39 +21,55 @@ PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
-  PetscErrorCode     ierr;
-  PetscInt           i;
-  Mat_MPIAIJ         *mpiaij = (Mat_MPIAIJ*)mat->data;
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *mpiaij = (Mat_MPIAIJ*)mat->data;
 
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
   if (d_nnz) {
+    PetscInt i;
     for (i=0; i<mat->rmap->n; i++) {
       if (d_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %D value %D",i,d_nnz[i]);
     }
   }
   if (o_nnz) {
+    PetscInt i;
     for (i=0; i<mat->rmap->n; i++) {
       if (o_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %D value %D",i,o_nnz[i]);
     }
   }
-  if (!mat->preallocated) {
-    /* Explicitly create 2 MATSEQAIJKOKKOS matrices. */
+#endif
+#if defined(PETSC_USE_CTABLE)
+  ierr = PetscTableDestroy(&mpiaij->colmap);CHKERRQ(ierr);
+#else
+  ierr = PetscFree(mpiaij->colmap);CHKERRQ(ierr);
+#endif
+  ierr = PetscFree(mpiaij->garray);CHKERRQ(ierr);
+  ierr = VecDestroy(&mpiaij->lvec);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&mpiaij->Mvctx);CHKERRQ(ierr);
+  /* Because the B will have been resized we simply destroy it and create a new one each time */
+  ierr = MatDestroy(&mpiaij->B);CHKERRQ(ierr);
+
+  if (!mpiaij->A) {
     ierr = MatCreate(PETSC_COMM_SELF,&mpiaij->A);CHKERRQ(ierr);
     ierr = MatSetSizes(mpiaij->A,mat->rmap->n,mat->cmap->n,mat->rmap->n,mat->cmap->n);CHKERRQ(ierr);
-    ierr = MatSetType(mpiaij->A,MATSEQAIJKOKKOS);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)mpiaij->A);CHKERRQ(ierr);
+  }
+  if (!mpiaij->B) {
+    PetscMPIInt size;
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&mpiaij->B);CHKERRQ(ierr);
-    ierr = MatSetSizes(mpiaij->B,mat->rmap->n,mat->cmap->N,mat->rmap->n,mat->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetType(mpiaij->B,MATSEQAIJKOKKOS);CHKERRQ(ierr);
+    ierr = MatSetSizes(mpiaij->B,mat->rmap->n,size > 1 ? mat->cmap->N : 0,mat->rmap->n,size > 1 ? mat->cmap->N : 0);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)mpiaij->B);CHKERRQ(ierr);
   }
+  ierr = MatSetType(mpiaij->A,MATSEQAIJKOKKOS);CHKERRQ(ierr);
+  ierr = MatSetType(mpiaij->B,MATSEQAIJKOKKOS);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mpiaij->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mpiaij->B,o_nz,o_nnz);CHKERRQ(ierr);
-
   mat->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
