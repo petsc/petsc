@@ -1588,10 +1588,13 @@ PetscErrorCode PetscSFSetUpPackFields(PetscSF sf)
 
 #if defined(PETSC_HAVE_DEVICE)
     /* Check dups in indices so that CUDA unpacking kernels can use cheaper regular instructions instead of atomics when they know there are no data race chances */
-  if (!sf->leafcontig[0])  {ierr = PetscCheckDupsInt(sf->leafbuflen[0],  sf->rmine,                                 &sf->leafdups[0]);CHKERRQ(ierr);}
-  if (!sf->leafcontig[1])  {ierr = PetscCheckDupsInt(sf->leafbuflen[1],  sf->rmine+sf->roffset[sf->ndranks],        &sf->leafdups[1]);CHKERRQ(ierr);}
-  if (!bas->rootcontig[0]) {ierr = PetscCheckDupsInt(bas->rootbuflen[0], bas->irootloc,                             &bas->rootdups[0]);CHKERRQ(ierr);}
-  if (!bas->rootcontig[1]) {ierr = PetscCheckDupsInt(bas->rootbuflen[1], bas->irootloc+bas->ioffset[bas->ndiranks], &bas->rootdups[1]);CHKERRQ(ierr);}
+  if (PetscDefined(HAVE_DEVICE)) {
+    PetscBool ismulti = (sf->multi == sf) ? PETSC_TRUE : PETSC_FALSE;
+    if (!sf->leafcontig[0]  && !ismulti) {ierr = PetscCheckDupsInt(sf->leafbuflen[0],  sf->rmine,                                 &sf->leafdups[0]);CHKERRQ(ierr);}
+    if (!sf->leafcontig[1]  && !ismulti) {ierr = PetscCheckDupsInt(sf->leafbuflen[1],  sf->rmine+sf->roffset[sf->ndranks],        &sf->leafdups[1]);CHKERRQ(ierr);}
+    if (!bas->rootcontig[0] && !ismulti) {ierr = PetscCheckDupsInt(bas->rootbuflen[0], bas->irootloc,                             &bas->rootdups[0]);CHKERRQ(ierr);}
+    if (!bas->rootcontig[1] && !ismulti) {ierr = PetscCheckDupsInt(bas->rootbuflen[1], bas->irootloc+bas->ioffset[bas->ndiranks], &bas->rootdups[1]);CHKERRQ(ierr);}
+  }
 #endif
 
   PetscFunctionReturn(0);

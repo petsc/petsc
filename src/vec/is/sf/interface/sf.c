@@ -158,6 +158,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   ierr = PetscFree(sf->degree);CHKERRQ(ierr);
   if (sf->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->ingroup);CHKERRMPI(ierr);}
   if (sf->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->outgroup);CHKERRMPI(ierr);}
+  if (sf->multi) sf->multi->multi = NULL;
   ierr = PetscSFDestroy(&sf->multi);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&sf->map);CHKERRQ(ierr);
   sf->setupcalled = PETSC_FALSE;
@@ -1204,6 +1205,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
   if (sf->nroots < 0) {         /* Graph has not been set yet; why do we need this? */
     ierr   = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,&sf->multi);CHKERRQ(ierr);
     *multi = sf->multi;
+    sf->multi->multi = sf->multi;
     PetscFunctionReturn(0);
   }
   if (!sf->multi) {
@@ -1231,6 +1233,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
       remote[i].index = outoffset[sf->mine ? sf->mine[i] : i];
     }
     ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,&sf->multi);CHKERRQ(ierr);
+    sf->multi->multi = sf->multi;
     ierr = PetscSFSetGraph(sf->multi,inoffset[sf->nroots],sf->nleaves,sf->mine,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     if (sf->rankorder) {        /* Sort the ranks */
       PetscMPIInt rank;
