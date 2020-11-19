@@ -57,12 +57,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-  if (!aijmkl->no_SpMV2) {
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
-#endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
-  }
-
   /* Free everything in the Mat_SeqAIJMKL data structure. Currently, this
    * simply involves destroying the MKL sparse matrix handle and then freeing
    * the spptr pointer. */
@@ -1213,14 +1207,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
 #endif
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
-
-  if (!aijmkl->no_SpMV2) {
-#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqaijmkl_seqaijmkl_C",MatProductSetFromOptions_SeqAIJMKL);CHKERRQ(ierr);
-#endif
-#endif
-  }
 
   ierr    = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJMKL);CHKERRQ(ierr);
   *newmat = B;

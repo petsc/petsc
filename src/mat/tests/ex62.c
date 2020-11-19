@@ -362,6 +362,12 @@ int main(int argc,char **args)
      output_file: output/ex62_1.out
 
    test:
+     suffix: 9_mkl
+     requires: mkl datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -A_mat_type aijmkl -B_mat_type aijmkl
+     output_file: output/ex62_1.out
+
+   test:
      suffix: 10
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
      nsize: 3
