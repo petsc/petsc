@@ -186,6 +186,7 @@ PETSC_EXTERN void vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)
   PetscViewer v;
 
   PetscPatchDefaultViewers_Fortran(vin,v);
+  if (!v) {*ierr = PETSC_ERR_SYS; return;}
   *ierr = VecView(*x,v);
 }
 

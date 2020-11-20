@@ -186,7 +186,7 @@ for l=1:narg
     end
 
   else 
-    disp(['Found unrecogonized header ' int2str(header) ' in file. If your file contains complex numbers'])
+    disp(['Found unrecognized header ' int2str(header) ' in file. If your file contains complex numbers'])
     disp(' then call PetscBinaryRead() with "complex",true as two additional arguments')
     return
   end
