@@ -3711,7 +3711,8 @@ struct IJCompare4
   }
 };
 
-struct Shift {
+struct Shift
+{
   int _shift;
 
   Shift(int shift) : _shift(shift) {}
@@ -3834,8 +3835,15 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
       THRUSTINTARRAY32 Ccoo(c->nz);
       auto Aperm = thrust::make_constant_iterator(true);
       auto Bperm = thrust::make_constant_iterator(false);
+#if PETSC_PKG_CUDA_VERSION_GE(10,0,0)
       auto Bcib = thrust::make_transform_iterator(Bcsr->column_indices->begin(),Shift(A->cmap->n));
       auto Bcie = thrust::make_transform_iterator(Bcsr->column_indices->end(),Shift(A->cmap->n));
+#else
+      /* there are issues instantiating the merge operation using a transform iterator for the columns of B */
+      auto Bcib = Bcsr->column_indices->begin();
+      auto Bcie = Bcsr->column_indices->end();
+      thrust::transform(Bcib,Bcie,Bcib,Shift(A->cmap->n));
+#endif
       thrust::device_vector<bool> wPerm(Annz+Bnnz);
       auto Azb = thrust::make_zip_iterator(thrust::make_tuple(Acoo.begin(),Acsr->column_indices->begin(),Acsr->values->begin(),Aperm));
       auto Aze = thrust::make_zip_iterator(thrust::make_tuple(Acoo.end(),Acsr->column_indices->end(),Acsr->values->end(),Aperm));
@@ -3847,6 +3855,9 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
       thrust::advance(p2,Annz);
       ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       thrust::merge(Azb,Aze,Bzb,Bze,Czb,IJCompare4());
+#if PETSC_PKG_CUDA_VERSION_LT(10,0,0)
+      thrust::transform(Bcib,Bcie,Bcib,Shift(-A->cmap->n));
+#endif
       thrust::partition_copy(thrust::make_counting_iterator(zero),thrust::make_counting_iterator(c->nz),wPerm.begin(),p1,p2,thrust::identity<bool>());
       stat = cusparseXcoo2csr(Ccusp->handle,
                               Ccoo.data().get(),
