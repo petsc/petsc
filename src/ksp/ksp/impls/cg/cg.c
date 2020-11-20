@@ -63,11 +63,11 @@ static PetscErrorCode KSPSetUp_CG(KSP ksp)
   ierr = KSPSetWorkVecs(ksp,nwork);CHKERRQ(ierr);
 
   /*
-     If user requested computations of eigenvalues then allocate work
+     If user requested computations of eigenvalues then allocate
      work space needed
   */
   if (ksp->calc_sings) {
-    /* get space to store tridiagonal matrix for Lanczos */
+    ierr = PetscFree4(cgP->e,cgP->d,cgP->ee,cgP->dd);CHKERRQ(ierr);
     ierr = PetscMalloc4(maxit+1,&cgP->e,maxit+1,&cgP->d,maxit+1,&cgP->ee,maxit+1,&cgP->dd);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
 
@@ -431,10 +431,7 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* free space used for singular value calculations */
-  if (ksp->calc_sings) {
-    ierr = PetscFree4(cg->e,cg->d,cg->ee,cg->dd);CHKERRQ(ierr);
-  }
+  ierr = PetscFree4(cg->e,cg->d,cg->ee,cg->dd);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C",NULL);CHKERRQ(ierr);
