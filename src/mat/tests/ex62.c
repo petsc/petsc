@@ -376,6 +376,13 @@ int main(int argc,char **args)
      output_file: output/ex62_1.out
 
    test:
+     suffix: 10_backend
+     requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+     nsize: 3
+     args: -fA ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via backend -matmatmult_via backend -AtB_matproduct_atb_via backend -mattransposematmult_via backend -PtAP_matproduct_ptap_via backend -matptap_via backend
+     output_file: output/ex62_1.out
+
+   test:
      suffix: 11_ab_scalable
      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
      nsize: 3
