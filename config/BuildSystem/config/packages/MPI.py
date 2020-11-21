@@ -81,7 +81,7 @@ class Configure(config.package.Package):
   def generateLibList(self, directory):
     if self.setCompilers.usedMPICompilers:
       self.liblist = []
-      self.libdir  = []
+      self.libdir  = ''
     return config.package.Package.generateLibList(self,directory)
 
   # search many obscure locations for MPI
