@@ -1142,7 +1142,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   mmabc->BC->product->api_user = product->api_user;
   ierr = MatProductSetFromOptions(mmabc->BC);CHKERRQ(ierr);
   if (!mmabc->BC->ops->productsymbolic) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Symbolic ProductType %s not supported with %s and %s",MatProductTypes[p1],((PetscObject)B)->type_name,((PetscObject)C)->type_name);
-  /* use function pointer directly to prevent from logging */
+  /* use function pointer directly to prevent logging */
   ierr = (*mmabc->BC->ops->productsymbolic)(mmabc->BC);CHKERRQ(ierr);
 
   ierr = MatProductCreate(A,mmabc->BC,NULL,&mmabc->ABC);CHKERRQ(ierr);
@@ -1155,7 +1155,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   /* swap ABC product stuff with that of ABC for the symbolic phase on mat */
   mat->product = mmabc->ABC->product;
   mat->ops->productsymbolic = mmabc->ABC->ops->productsymbolic;
-  /* use function pointer directly to prevent from logging */
+  /* use function pointer directly to prevent logging */
   ierr = (*mat->ops->productsymbolic)(mat);CHKERRQ(ierr);
   mmabc->ABC->ops->productnumeric = mat->ops->productnumeric;
   mat->ops->productsymbolic       = MatProductSymbolic_ABC_Basic;

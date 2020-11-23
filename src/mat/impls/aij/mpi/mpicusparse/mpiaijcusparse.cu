@@ -28,7 +28,6 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat A, const PetscScalar v[
   cudaError_t        cerr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MAT_CUSPARSESetVCOO,A,0,0,0);CHKERRQ(ierr);
   if (cusp->coo_p && v) {
     thrust::device_ptr<const PetscScalar> d_v;
     THRUSTARRAY                           *w = NULL;
@@ -57,7 +56,6 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat A, const PetscScalar v[
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->A,v,imode);CHKERRQ(ierr);
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->B,v ? v+cusp->coo_nd : NULL,imode);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(MAT_CUSPARSESetVCOO,A,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   A->num_ass++;
   A->assembled        = PETSC_TRUE;
@@ -116,7 +114,6 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, c
   cudaError_t            cerr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MAT_CUSPARSEPreallCOO,B,0,0,0);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   if (b->A) { ierr = MatCUSPARSEClearHandle(b->A);CHKERRQ(ierr); }
@@ -197,7 +194,6 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, c
   ierr = MatSetUpMultiply_MPIAIJ(B);CHKERRQ(ierr);
   B->preallocated = PETSC_TRUE;
   B->nonzerostate++;
-  ierr = PetscLogEventEnd(MAT_CUSPARSEPreallCOO,B,0,0,0);CHKERRQ(ierr);
 
   ierr = MatBindToCPU(b->A,B->boundtocpu);CHKERRQ(ierr);
   ierr = MatBindToCPU(b->B,B->boundtocpu);CHKERRQ(ierr);

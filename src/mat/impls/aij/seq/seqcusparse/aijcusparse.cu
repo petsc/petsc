@@ -2489,7 +2489,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
                                        Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
                                        cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT,
                                        mmdata->spgemmDesc, &bufSize2, NULL);CHKERRCUSPARSE(stat);
-  cerr = cudaMalloc((void**) &mmdata->mmBuffer2, bufSize2);CHKERRCUSPARSE(stat);
+  cerr = cudaMalloc((void**) &mmdata->mmBuffer2, bufSize2);CHKERRCUDA(cerr);
   /* inspect the matrices A and B to understand the memory requirement for the next step */
   stat = cusparseSpGEMM_workEstimation(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                        Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
@@ -2505,7 +2505,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
      mmdata->mmBuffer2 does not appear anywhere in the compute/copy API
      it only appears for the workEstimation stuff, but it seems it is needed in compute, so probably the address
      is stored in the descriptor! What a messy API... */
-  cerr = cudaMalloc((void**) &mmdata->mmBuffer, mmdata->mmBufferSize);CHKERRCUSPARSE(stat);
+  cerr = cudaMalloc((void**) &mmdata->mmBuffer, mmdata->mmBufferSize);CHKERRCUDA(cerr);
   /* compute the intermediate product of A * B */
   stat = cusparseSpGEMM_compute(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                 Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
@@ -3462,7 +3462,7 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
 {
   Mat_SeqAIJCUSPARSE                    *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJ                            *a = (Mat_SeqAIJ*)A->data;
-  THRUSTARRAY                           *cooPerm_v = NULL,*cooPerm_w;
+  THRUSTARRAY                           *cooPerm_v = NULL;
   thrust::device_ptr<const PetscScalar> d_v;
   CsrMatrix                             *matrix;
   PetscErrorCode                        ierr;
@@ -3479,7 +3479,6 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
   }
   matrix = (CsrMatrix*)cusp->mat->mat;
   if (!matrix->values) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing CUDA memory");
-  ierr = PetscLogEventBegin(MAT_CUSPARSESetVCOO,A,0,0,0);CHKERRQ(ierr);
   if (!v) {
     if (imode == INSERT_VALUES) thrust::fill(thrust::device,matrix->values->begin(),matrix->values->end(),0.);
     goto finalize;
@@ -3493,9 +3492,10 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
     d_v = cooPerm_v->data();
     ierr = PetscLogCpuToGpu(n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   if (imode == ADD_VALUES) { /* ADD VALUES means add to existing ones */
     if (cusp->cooPerm_a) {
-      cooPerm_w = new THRUSTARRAY(matrix->values->size());
+      THRUSTARRAY *cooPerm_w = new THRUSTARRAY(matrix->values->size());
       auto vbit = thrust::make_permutation_iterator(d_v,cusp->cooPerm->begin());
       thrust::reduce_by_key(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),vbit,thrust::make_discard_iterator(),cooPerm_w->begin(),thrust::equal_to<PetscInt>(),thrust::plus<PetscScalar>());
       thrust::transform(cooPerm_w->begin(),cooPerm_w->end(),matrix->values->begin(),matrix->values->begin(),thrust::plus<PetscScalar>());
@@ -3520,7 +3520,7 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
     }
   }
   cerr = WaitForCUDA();CHKERRCUDA(cerr);
-  ierr = PetscLogEventEnd(MAT_CUSPARSESetVCOO,A,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 finalize:
   delete cooPerm_v;
   A->offloadmask = PETSC_OFFLOAD_GPU;
@@ -3547,7 +3547,6 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
   cudaError_t        cerr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MAT_CUSPARSEPreallCOO,A,0,0,0);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   cooPerm_n = cusp->cooPerm ? cusp->cooPerm->size() : 0;
@@ -3623,7 +3622,6 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
   } else {
     ierr = MatSeqAIJSetPreallocation(A,0,NULL);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(MAT_CUSPARSEPreallCOO,A,0,0,0);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   /* We want to allocate the CUSPARSE struct for matvec now.
