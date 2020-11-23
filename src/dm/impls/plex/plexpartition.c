@@ -1962,8 +1962,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   }
   if (success) *success = PETSC_TRUE;
   ierr = PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 #else
   SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
 #endif
-  PetscFunctionReturn(0);
 }

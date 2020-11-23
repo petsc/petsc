@@ -580,7 +580,6 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void 
     }
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Requested window not in use");
-  PetscFunctionReturn(0);
 }
 
 /*

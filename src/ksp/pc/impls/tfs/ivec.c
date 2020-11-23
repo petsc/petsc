@@ -221,7 +221,7 @@ PetscErrorCode PCTFS_ivec_sort(PetscInt *ar,  PetscInt size)
   PetscInt **top_a = (PetscInt**) offset_stack;
   PetscInt *top_s  = size_stack, *bottom_s = size_stack;
 
-
+  PetscFunctionBegin;
   /* we're really interested in the offset of the last element */
   /* ==> length of the list is now size + 1                    */
   size--;
@@ -293,7 +293,6 @@ PetscErrorCode PCTFS_ivec_sort(PetscInt *ar,  PetscInt size)
       size = *(--top_s);
     }
   }
-  PetscFunctionReturn(0);
 }
 
 /******************************************************************************/
@@ -393,7 +392,6 @@ PetscErrorCode PCTFS_ivec_sort_companion(PetscInt *ar,  PetscInt *ar2,  PetscInt
       size = *(--top_s);
     }
   }
-  PetscFunctionReturn(0);
 }
 
 /******************************************************************************/
@@ -493,7 +491,6 @@ PetscErrorCode PCTFS_ivec_sort_companion_hack(PetscInt *ar,  PetscInt **ar2, Pet
       size = *(--top_s);
     }
   }
-  PetscFunctionReturn(0);
 }
 
 /******************************************************************************/

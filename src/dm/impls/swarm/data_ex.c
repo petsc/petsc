@@ -111,7 +111,7 @@ PetscErrorCode DMSwarmDataExCreate(MPI_Comm comm,const PetscInt count, DMSwarmDa
   d->message_offsets          = NULL;
   d->messages_to_be_recvieved = NULL;
 
-  d->unit_message_size   = -1;
+  d->unit_message_size   = (size_t)-1;
   d->send_message        = NULL;
   d->send_message_length = -1;
   d->recv_message        = NULL;

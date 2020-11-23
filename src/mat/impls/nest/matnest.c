@@ -576,7 +576,6 @@ static PetscErrorCode MatNestFindIS(Mat A,PetscInt n,const IS list[],IS is,Petsc
     }
   }
   SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Could not find index set");
-  PetscFunctionReturn(0);
 }
 
 /* Get a block row as a new MatNest */
@@ -679,7 +678,6 @@ static PetscErrorCode MatCreateSubMatrix_Nest(Mat A,IS isrow,IS iscol,MatReuse r
     break;
   case MAT_INPLACE_MATRIX:       /* Nothing to do */
     SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX is not supported yet");
-    break;
   }
   PetscFunctionReturn(0);
 }

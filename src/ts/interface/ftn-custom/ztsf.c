@@ -73,7 +73,6 @@ static PetscErrorCode ourprestep(TS ts)
   PetscObjectGetFortranCallback((PetscObject)ts,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function_pgiptr,NULL,&ptr);
 #endif
   PetscObjectUseFortranCallback(ts,_cb.prestep,(TS*,PetscErrorCode* /* PETSC_F90_2PTR_PROTO_NOVAR */),(&ts,&ierr /* PETSC_F90_2PTR_PARAM(ptr) */));
-  return 0;
 }
 static PetscErrorCode ourpoststep(TS ts)
 {
@@ -82,7 +81,6 @@ static PetscErrorCode ourpoststep(TS ts)
   PetscObjectGetFortranCallback((PetscObject)ts,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function_pgiptr,NULL,&ptr);
 #endif
   PetscObjectUseFortranCallback(ts,_cb.poststep,(TS*,PetscErrorCode* /* PETSC_F90_2PTR_PROTO_NOVAR */),(&ts,&ierr /* PETSC_F90_2PTR_PARAM(ptr) */));
-  return 0;
 }
 static PetscErrorCode ourrhsfunction(TS ts,PetscReal d,Vec x,Vec f,void *ctx)
 {
@@ -91,7 +89,6 @@ static PetscErrorCode ourrhsfunction(TS ts,PetscReal d,Vec x,Vec f,void *ctx)
   PetscObjectGetFortranCallback((PetscObject)ts,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function_pgiptr,NULL,&ptr);
 #endif
   PetscObjectUseFortranCallback(ts,_cb.rhsfunction,(TS*,PetscReal*,Vec*, Vec*, void*,PetscErrorCode* /* PETSC_F90_2PTR_PROTO_NOVAR */),(&ts,&d,&x,&f,_ctx,&ierr /* PETSC_F90_2PTR_PARAM(ptr) */));
-  return 0;
 }
 static PetscErrorCode ourifunction(TS ts,PetscReal d,Vec x,Vec xdot,Vec f,void *ctx)
 {
@@ -100,7 +97,6 @@ static PetscErrorCode ourifunction(TS ts,PetscReal d,Vec x,Vec xdot,Vec f,void *
   PetscObjectGetFortranCallback((PetscObject)ts,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function_pgiptr,NULL,&ptr);
 #endif
   PetscObjectUseFortranCallback(ts,_cb.ifunction,(TS*,PetscReal*,Vec*, Vec*, Vec*, void*,PetscErrorCode* /* PETSC_F90_2PTR_PROTO_NOVAR */),(&ts,&d,&x,&xdot,&f,_ctx,&ierr /* PETSC_F90_2PTR_PARAM(ptr) */));
-  return 0;
 }
 static PetscErrorCode ourrhsjacobian(TS ts,PetscReal d,Vec x,Mat m,Mat p,void *ctx)
 {
@@ -109,7 +105,6 @@ static PetscErrorCode ourrhsjacobian(TS ts,PetscReal d,Vec x,Mat m,Mat p,void *c
   PetscObjectGetFortranCallback((PetscObject)ts,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function_pgiptr,NULL,&ptr);
 #endif
   PetscObjectUseFortranCallback(ts,_cb.rhsjacobian,(TS*,PetscReal*, Vec*, Mat*, Mat*, void*,PetscErrorCode* /* PETSC_F90_2PTR_PROTO_NOVAR */),(&ts,&d,&x,&m,&p,_ctx,&ierr /* PETSC_F90_2PTR_PARAM(ptr) */));
-  return 0;
 }
 static PetscErrorCode ourijacobian(TS ts,PetscReal d,Vec x,Vec xdot,PetscReal shift,Mat m,Mat p,void *ctx)
 {
@@ -118,7 +113,6 @@ static PetscErrorCode ourijacobian(TS ts,PetscReal d,Vec x,Vec xdot,PetscReal sh
   PetscObjectGetFortranCallback((PetscObject)ts,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function_pgiptr,NULL,&ptr);
 #endif
   PetscObjectUseFortranCallback(ts,_cb.ijacobian,(TS*,PetscReal*,Vec*, Vec*, PetscReal *,Mat*, Mat*, void*,PetscErrorCode* /* PETSC_F90_2PTR_PROTO_NOVAR */),(&ts,&d,&x,&xdot,&shift,&m,&p,_ctx,&ierr /* PETSC_F90_2PTR_PARAM(ptr) */));
-  return 0;
 }
 
 static PetscErrorCode ourmonitordestroy(void **ctx)
@@ -133,7 +127,6 @@ static PetscErrorCode ourmonitordestroy(void **ctx)
 static PetscErrorCode ourmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void *ctx)
 {
   PetscObjectUseFortranCallback(ts,_cb.monitor,(TS*,PetscInt*,PetscReal*,Vec *,void*,PetscErrorCode*),(&ts,&i,&d,&v,_ctx,&ierr));
-  return 0;
 }
 
 /*

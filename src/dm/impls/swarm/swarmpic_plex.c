@@ -648,7 +648,6 @@ PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt pro
       break;
     case 3:
       SETERRQ(PetscObjectComm((PetscObject)swarm),PETSC_ERR_SUP,"No support for 3D");
-      break;
     default:
       break;
   }
@@ -690,7 +689,6 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only support for 2D, 3D");
-      break;
   }
 
   /* check points provided fail inside the reference cell */

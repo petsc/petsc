@@ -45,7 +45,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   MPI_Comm          comm;
   PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt,dcnt,*drows;
   PetscLayout       map,nmap;
-  PetscMPIInt       size,imdex,tag,n;
+  PetscMPIInt       size,tag,n;
+  PETSC_UNUSED PetscMPIInt imdex;
   PetscInt          *source = NULL;
   PetscMPIInt       *sizes = NULL,nrecvs;
   PetscInt          j,nsends;

@@ -141,7 +141,6 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscIn
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"A valid DMSwarmPIC layout must be provided");
-      break;
   }
 
   ierr = DMDAGetElements(dmc,&nel,&npe,&element_list);CHKERRQ(ierr);
@@ -232,7 +231,6 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm,DM celldm,DMSwarm
   switch (etype) {
     case DMDA_ELEMENT_P1:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DA support is not currently available for DMDA_ELEMENT_P1");
-      break;
     case DMDA_ELEMENT_Q1:
       if (dim == 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only available for dim = 2, 3");
       ierr = private_DMSwarmInsertPointsUsingCellDM_DA_Q1(dm,celldm,layout_param,layout);CHKERRQ(ierr);
@@ -350,7 +348,6 @@ PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt proje
       break;
     case 3:
       SETERRQ(PetscObjectComm((PetscObject)swarm),PETSC_ERR_SUP,"No support for 3D");
-      break;
     default:
       break;
   }

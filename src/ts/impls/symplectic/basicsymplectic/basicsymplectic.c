@@ -437,7 +437,6 @@ static PetscErrorCode TSBasicSymplecticSetType_BasicSymplectic(TS ts,TSBasicSymp
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",bsymptype);
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  TSBasicSymplecticGetType_BasicSymplectic(TS ts,TSBasicSymplecticType *bsymptype)

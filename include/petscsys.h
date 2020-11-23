@@ -386,7 +386,7 @@ M*/
 
 #if defined(__INTEL_COMPILER) && !defined(_WIN32)
 #  define PetscPragmaSIMD _Pragma("vector")
-#elif defined(__GNUC__) && __GNUC__ >= 5
+#elif defined(__GNUC__) && __GNUC__ >= 5 && !defined(__PGI)
 #  define PetscPragmaSIMD _Pragma("GCC ivdep")
 #elif defined(_OPENMP) && _OPENMP >= 201307
 #  define PetscPragmaSIMD _Pragma("omp simd")

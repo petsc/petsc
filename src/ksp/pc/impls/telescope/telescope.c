@@ -494,8 +494,8 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
     sred->pctelescope_matnullspacecreate_type = PCTelescopeMatNullSpaceCreate_dmda;
     sred->pctelescope_reset_type              = PCReset_Telescope_dmda;
     break;
-  case TELESCOPE_DMPLEX: SETERRQ(comm,PETSC_ERR_SUP,"Support for DMPLEX is currently not available");
-    break;
+  case TELESCOPE_DMPLEX:
+    SETERRQ(comm,PETSC_ERR_SUP,"Support for DMPLEX is currently not available");
   case TELESCOPE_COARSEDM:
     pc->ops->apply                            = PCApply_Telescope_CoarseDM;
     pc->ops->applyrichardson                  = PCApplyRichardson_Telescope_CoarseDM;
@@ -504,8 +504,8 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
     sred->pctelescope_matnullspacecreate_type = NULL; /* PCTelescopeMatNullSpaceCreate_CoarseDM; */
     sred->pctelescope_reset_type              = PCReset_Telescope_CoarseDM;
     break;
-  default: SETERRQ(comm,PETSC_ERR_SUP,"Support only provided for: repartitioning an operator; repartitioning a DMDA; or using a coarse DM");
-    break;
+  default:
+    SETERRQ(comm,PETSC_ERR_SUP,"Support only provided for: repartitioning an operator; repartitioning a DMDA; or using a coarse DM");
   }
 
   /* subcomm definition */

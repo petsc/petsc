@@ -595,7 +595,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                 break;
               default:
                 SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
-                break;
             }
             break;
           case 3:
@@ -604,7 +603,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                 vpc = 4;
                 dof = tetv;
                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled tethraedral case");
-                break;
               case 6:
                 if (cellvertex) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: vertices per cell %D",fpc);
                 vpc = 8;
@@ -617,12 +615,10 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                 break;
               default:
                 SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
-                break;
             }
             break;
           default:
             SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled dim");
-            break;
         }
         ierr = DMPlexReorderCell(dm,cStart,vids);CHKERRQ(ierr);
       }

@@ -290,7 +290,6 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);
-    break;
   }
   ierr = MatFactorRestoreSchurComplement(F,&S,schurstatus);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);

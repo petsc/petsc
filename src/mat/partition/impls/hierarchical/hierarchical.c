@@ -489,8 +489,10 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
   Mat                           mat = part->adj, adj;
   PetscBool                    flg;
-  PetscInt                     *vertex_weights;
   const char                   *prefix;
+#if defined(PETSC_HAVE_PARMETIS)
+  PetscInt                     *vertex_weights;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
@@ -511,11 +513,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)hpart->improver,"hierarch_improver_");CHKERRQ(ierr);
   /* Only parmetis supports to refine a partition */
 #if defined(PETSC_HAVE_PARMETIS)
-    ierr = MatPartitioningSetType(hpart->improver,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
-#else
-    SETERRQ(PetscObjectComm((PetscObject)adj),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis\n");
-#endif
-
+  ierr = MatPartitioningSetType(hpart->improver,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(hpart->improver,adj);CHKERRQ(ierr);
   ierr = MatPartitioningSetNParts(hpart->improver, part->n);CHKERRQ(ierr);
   /* copy over vertex weights */
@@ -527,6 +525,9 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   ierr = MatPartitioningImprove(hpart->improver,partitioning);CHKERRQ(ierr);
   ierr = MatDestroy(&adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+#else
+  SETERRQ(PetscObjectComm((PetscObject)adj),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis\n");
+#endif
 }
 
 

@@ -121,10 +121,8 @@ PetscErrorCode PetscFormatConvert(const char *format,char *newformat)
         break;
       case 'G':
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%%G format is no longer supported, use %%g and cast the argument to double");
-        break;
       case 'F':
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%%F format is no longer supported, use %%f and cast the argument to double");
-        break;
       default:
         newformat[j++] = format[i];
         break;

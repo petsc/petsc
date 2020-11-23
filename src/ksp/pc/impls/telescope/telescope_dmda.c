@@ -354,8 +354,8 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors(PC pc,PC_Telescope sred
   ierr = PetscInfo(pc,"PCTelescope: setting up the coordinates (DMDA)\n");CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   switch (dim) {
-  case 1: SETERRQ(comm,PETSC_ERR_SUP,"Telescope: DMDA (1D) repartitioning not provided");
-    break;
+  case 1:
+    SETERRQ(comm,PETSC_ERR_SUP,"Telescope: DMDA (1D) repartitioning not provided");
   case 2: ierr = PCTelescopeSetUp_dmda_repart_coors2d(sred,dm,subdm);CHKERRQ(ierr);
     break;
   case 3: ierr = PCTelescopeSetUp_dmda_repart_coors3d(sred,dm,subdm);CHKERRQ(ierr);
@@ -715,8 +715,8 @@ PetscErrorCode PCTelescopeSetUp_dmda(PC pc,PC_Telescope sred)
   PCTelescopeSetUp_dmda_repart(pc,sred,ctx);
   PCTelescopeSetUp_dmda_repart_coors(pc,sred,ctx);
   switch (dim) {
-  case 1: SETERRQ(comm,PETSC_ERR_SUP,"Telescope: DMDA (1D) repartitioning not provided");
-    break;
+  case 1:
+    SETERRQ(comm,PETSC_ERR_SUP,"Telescope: DMDA (1D) repartitioning not provided");
   case 2: ierr = PCTelescopeSetUp_dmda_permutation_2d(pc,sred,ctx);CHKERRQ(ierr);
     break;
   case 3: ierr = PCTelescopeSetUp_dmda_permutation_3d(pc,sred,ctx);CHKERRQ(ierr);

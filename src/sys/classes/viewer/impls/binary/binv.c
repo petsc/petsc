@@ -1047,12 +1047,13 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,const void *data,PetscI
 
 static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer,PetscBool write,void *data,PetscInt count,PetscInt start,PetscInt total,PetscDataType dtype)
 {
-  MPI_Comm       comm = PetscObjectComm((PetscObject)viewer);
-  PetscMPIInt    size,rank;
-  MPI_Datatype   mdtype;
-  MPI_Aint       lb,dsize;
-  PetscBool      useMPIIO;
-  PetscErrorCode ierr;
+  MPI_Comm              comm = PetscObjectComm((PetscObject)viewer);
+  PetscMPIInt           size,rank;
+  MPI_Datatype          mdtype;
+  PETSC_UNUSED MPI_Aint lb;
+  MPI_Aint              dsize;
+  PetscBool             useMPIIO;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer,PETSC_VIEWER_CLASSID,1,PETSCVIEWERBINARY);

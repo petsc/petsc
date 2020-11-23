@@ -82,7 +82,6 @@ PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint sz,PetscMPIInt szind,MPI_Info i
   tmp += ((size_t)tmp) % szind ? szind/4 - ((((size_t)tmp) % szind)/4) : 0;
   *(void**)ptr = (void*)tmp;
   PetscFunctionReturn(0);
-  return 0;
 }
 
 PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win,PetscMPIInt rank,MPI_Aint *sz,PetscMPIInt *szind,void *ptr)

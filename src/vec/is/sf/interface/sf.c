@@ -1917,16 +1917,17 @@ static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (!PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
-  ierr = PetscSFGetGraph(sf,NULL,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
-  ierr = PetscHSetICreate(&seen);CHKERRQ(ierr);
-  for (i = 0; i < nleaves; i++) {
-    const PetscInt leaf = ilocal ? ilocal[i] : i;
-    ierr = PetscHSetIAdd(seen,leaf);CHKERRQ(ierr);
+  if (PetscDefined(USE_DEBUG)) {
+    ierr = PetscSFGetGraph(sf,NULL,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
+    ierr = PetscHSetICreate(&seen);CHKERRQ(ierr);
+    for (i = 0; i < nleaves; i++) {
+      const PetscInt leaf = ilocal ? ilocal[i] : i;
+      ierr = PetscHSetIAdd(seen,leaf);CHKERRQ(ierr);
+    }
+    ierr = PetscHSetIGetSize(seen,&n);CHKERRQ(ierr);
+    if (n != nleaves) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided leaves have repeated values: all leaves must be unique");
+    ierr = PetscHSetIDestroy(&seen);CHKERRQ(ierr);
   }
-  ierr = PetscHSetIGetSize(seen,&n);CHKERRQ(ierr);
-  if (n != nleaves) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided leaves have repeated values: all leaves must be unique");
-  ierr = PetscHSetIDestroy(&seen);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
