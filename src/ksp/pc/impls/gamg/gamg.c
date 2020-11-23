@@ -484,17 +484,21 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
   PetscFunctionBegin;
   ierr = PCGetOptionsPrefix(a_pc,&prefix);CHKERRQ(ierr);
   ierr = PetscInfo1(a_pc,"Square Graph on level %D\n",pc_gamg->current_level+1);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-  ierr = MatAIJCUSPARSESetGenerateTranspose(Gmat1,PETSC_TRUE);CHKERRQ(ierr);
-#endif
   ierr = MatProductCreate(Gmat1,Gmat1,NULL,Gmat2);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(*Gmat2,prefix);CHKERRQ(ierr);
   ierr = PetscSNPrintf(addp,sizeof(addp),"pc_gamg_square_%d_",pc_gamg->current_level);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(*Gmat2,addp);CHKERRQ(ierr);
-  /* TODO: if we know the matrix is symmetric we can pass MATPRODUCT_AB */
-  ierr = MatProductSetType(*Gmat2,MATPRODUCT_AtB);CHKERRQ(ierr);
+  if ((*Gmat2)->structurally_symmetric) {
+    ierr = MatProductSetType(*Gmat2,MATPRODUCT_AB);CHKERRQ(ierr);
+  } else {
+#if defined(PETSC_HAVE_CUDA)
+    ierr = MatAIJCUSPARSESetGenerateTranspose(Gmat1,PETSC_TRUE);CHKERRQ(ierr);
+#endif
+    ierr = MatProductSetType(*Gmat2,MATPRODUCT_AtB);CHKERRQ(ierr);
+  }
   ierr = MatProductSetFromOptions(*Gmat2);CHKERRQ(ierr);
   ierr = MatProductSymbolic(*Gmat2);CHKERRQ(ierr);
+  ierr = MatProductClear(*Gmat2);CHKERRQ(ierr);
   /* we only need the sparsity, cheat and tell PETSc the matrix has been assembled */
   (*Gmat2)->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);

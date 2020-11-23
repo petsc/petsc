@@ -1171,19 +1171,22 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 #endif
 
     /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
-    ierr  = MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat);CHKERRQ(ierr);
-    ierr  = MatCreateVecs(Amat, &diag, NULL);CHKERRQ(ierr);
-    ierr  = MatGetDiagonal(Amat, diag);CHKERRQ(ierr); /* effectively PCJACOBI */
-    ierr  = VecReciprocal(diag);CHKERRQ(ierr);
-    ierr  = MatDiagonalScale(tMat, diag, NULL);CHKERRQ(ierr);
-    ierr  = VecDestroy(&diag);CHKERRQ(ierr);
-    if (emax == 0.0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Computed maximum singular value as zero");
+    ierr = MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat);CHKERRQ(ierr);
+    ierr = MatProductClear(tMat);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Amat, &diag, NULL);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(Amat, diag);CHKERRQ(ierr); /* effectively PCJACOBI */
+    ierr = VecReciprocal(diag);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(tMat, diag, NULL);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr);
+
     /* TODO: Set a PCFailedReason and exit the building of the AMG preconditioner */
+    if (emax == 0.0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Computed maximum singular value as zero");
     /* TODO: Document the 1.4 and don't hardwire it in this routine */
     alpha = -1.4/emax;
-    ierr  = MatAYPX(tMat, alpha, Prol, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr  = MatDestroy(&Prol);CHKERRQ(ierr);
-    Prol  = tMat;
+
+    ierr = MatAYPX(tMat, alpha, Prol, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDestroy(&Prol);CHKERRQ(ierr);
+    Prol = tMat;
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
 #endif
