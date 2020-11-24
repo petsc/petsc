@@ -152,6 +152,7 @@
         <li>Change PCCompositeAddPC() to PCCompositeAddPCType(), now PCCompositeAddPC() adds a specific PC object</li>
         <li>Add a Compatible Relaxation (CR) viewer PCMG with -pc_mg_adapt_cr</li>
         <li>Experimental: Add support for assembling AIJ (CUSPARSE and KOKKOS) matrix on the Cuda device with MatSetValuesDevice(), MatCUSPARSEGetDeviceMatWrite(), and Kokkos with MatKokkosGetDeviceMatWrite</li>
+        <li>Add PCMGSetResidualTranspose() to support transposed linear solve using PCMG and GAMG</li>
       </ul>
       <h4>KSP:</h4>
        <ul>
