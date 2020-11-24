@@ -341,13 +341,14 @@ PetscErrorCode PetscDrawImageCheckFormat(const char *ext[])
     *ext = PetscDrawImageSaveTable[0].extension;
     PetscFunctionReturn(0);
   }
-  /* check the extension mathes a supported format otherwise */
+  /* check the extension matches a supported format */
   PetscValidCharPointer(*ext,1);
   for (k=0; k<sizeof(PetscDrawImageSaveTable)/sizeof(PetscDrawImageSaveTable[0]); k++) {
     ierr = PetscStrcasecmp(*ext,PetscDrawImageSaveTable[k].extension,&match);CHKERRQ(ierr);
     if (match && PetscDrawImageSaveTable[k].SaveImage) PetscFunctionReturn(0);
   }
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Image extension %s not supported, use .ppm",*ext);
+  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Image extension %s not supported, use .ppm or see PetscDrawSetSave() for what ./configure option you may need",*ext);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscDrawImageSave(const char basename[],const char ext[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
