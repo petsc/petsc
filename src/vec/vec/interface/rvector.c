@@ -1728,9 +1728,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  if (x->ops->getarrayread) { /* VECNODE; TODO: Delete this line after we remove VECNODE */
-    ierr = (*x->ops->getarrayread)(x,a);CHKERRQ(ierr);
-  } else if (x->ops->getarray) { /* VECNEST, VECCUDA, VECKOKKOS etc */
+  if (x->ops->getarray) { /* VECNEST, VECCUDA, VECKOKKOS etc */
     ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   } else if (x->petscnative) { /* VECSTANDARD */
     *a = *((PetscScalar**)x->data);

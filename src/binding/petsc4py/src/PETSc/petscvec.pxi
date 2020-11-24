@@ -14,7 +14,6 @@ cdef extern from * nogil:
     PetscVecType VECMPICUDA
     PetscVecType VECCUDA
     PetscVecType VECNEST
-    PetscVecType VECNODE
     PetscVecType VECSEQKOKKOS
     PetscVecType VECMPIKOKKOS
     PetscVecType VECKOKKOS

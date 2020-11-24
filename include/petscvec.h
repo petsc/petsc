@@ -92,7 +92,6 @@ typedef const char* VecType;
 #define VECMPICUDA     "mpicuda"
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
 #define VECNEST        "nest"
-#define VECNODE        "node"       /* use on-node shared memory */
 #define VECSEQKOKKOS   "seqkokkos"
 #define VECMPIKOKKOS   "mpikokkos"
 #define VECKOKKOS      "kokkos"     /* seqkokkos on one process and mpikokkos on several */

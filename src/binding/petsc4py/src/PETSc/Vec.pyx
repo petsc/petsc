@@ -12,7 +12,6 @@ class VecType(object):
     MPICUDA    = S_(VECMPICUDA)
     CUDA       = S_(VECCUDA)
     NEST       = S_(VECNEST)
-    NODE       = S_(VECNODE)
     SEQKOKKOS  = S_(VECSEQKOKKOS)
     MPIKOKKOS  = S_(VECMPIKOKKOS)
     KOKKOS     = S_(VECKOKKOS)
@@ -836,7 +835,7 @@ cdef class Vec(Object):
 
     def setValuesStagStencil(self, indices, values, addv=None):
         raise NotImplementedError('setValuesStagStencil not yet implemented in petsc4py')
-        
+
     def setLGMap(self, LGMap lgmap):
         CHKERR( VecSetLocalToGlobalMapping(self.vec, lgmap.lgm) )
 

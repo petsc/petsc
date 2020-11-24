@@ -1,5 +1,5 @@
 Vec Object: 3 MPI processes
-  type: node
+  type: mpi
 Process [0]
 0.
 0.

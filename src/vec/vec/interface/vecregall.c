@@ -45,9 +45,6 @@ PetscErrorCode VecRegisterAll(void)
   ierr = VecRegister(VECMPI,        VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegister(VECSTANDARD,   VecCreate_Standard);CHKERRQ(ierr);
   ierr = VecRegister(VECSHARED,     VecCreate_Shared);CHKERRQ(ierr);
-#if defined PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY
-  ierr = VecRegister(VECNODE,       VecCreate_Node);CHKERRQ(ierr);
-#endif
 #if defined PETSC_HAVE_VIENNACL
   ierr = VecRegister(VECSEQVIENNACL,    VecCreate_SeqViennaCL);CHKERRQ(ierr);
   ierr = VecRegister(VECMPIVIENNACL,    VecCreate_MPIViennaCL);CHKERRQ(ierr);
