@@ -35,9 +35,12 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS
   PetscScalar    *a, *dw;
   const PetscInt *ia, *ja;
   PetscInt       job = 5;
-  PetscInt       *perm, nrow, ncol, nnz, liw, *iw, ldw, i;
-  PetscBool       done;
-  PetscErrorCode  ierr;
+  PetscInt       *perm, nrow, ncol, nnz, liw, *iw, ldw;
+  PetscBool      done;
+  PetscErrorCode ierr;
+#if defined(PETSC_HAVE_SUPERLU_DIST)
+  PetscInt       num, info[10], icntl[10], i;
+#endif
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
@@ -55,21 +58,14 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS
 
   ierr = PetscMalloc3(liw,&iw,ldw,&dw,nrow,&perm);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  {
-    PetscInt        num, info[10], icntl[10];
-
-    ierr = mc64id_dist(icntl);
-    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HSL mc64id_dist returned %d\n",ierr);
-    icntl[0] = 0;              /* allow printing error messages (f2c'd code uses if non-negative, ignores value otherwise) */
-    icntl[1] = -1;             /* suppress warnings */
-    icntl[2] = -1;             /* ignore diagnostic output [default] */
-    icntl[3] = 0;              /* perform consistency checks [default] */
-    ierr = mc64ad_dist(&job, &nrow, &nnz, ia, ja, a, &num, perm, &liw, iw, &ldw, dw, icntl, info);
-    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HSL mc64ad_dist returned %d\n",ierr);
-  }
-#else
-  SETERRQ(PetscObjectComm((PetscObject) mat), PETSC_ERR_SUP, "WBM using MC64 does not support complex numbers");
-#endif
+  ierr = mc64id_dist(icntl);
+  if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HSL mc64id_dist returned %d\n",ierr);
+  icntl[0] = 0;              /* allow printing error messages (f2c'd code uses if non-negative, ignores value otherwise) */
+  icntl[1] = -1;             /* suppress warnings */
+  icntl[2] = -1;             /* ignore diagnostic output [default] */
+  icntl[3] = 0;              /* perform consistency checks [default] */
+  ierr = mc64ad_dist(&job, &nrow, &nnz, ia, ja, a, &num, perm, &liw, iw, &ldw, dw, icntl, info);
+  if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HSL mc64ad_dist returned %d\n",ierr);
   ierr = MatRestoreRowIJ(mat, 1, PETSC_TRUE, PETSC_TRUE, NULL, &ia, &ja, &done);CHKERRQ(ierr);
   for (i = 0; i < nrow; ++i) perm[i]--;
   /* If job == 5, dw[0..ncols] contains the column scaling and dw[ncols..ncols+nrows] contains the row scaling */
@@ -77,4 +73,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,col);CHKERRQ(ierr);
   ierr = PetscFree3(iw,dw,perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+#else
+  SETERRQ(PetscObjectComm((PetscObject) mat), PETSC_ERR_SUP, "WBM using MC64 does not support complex numbers");
+#endif
 }

@@ -439,7 +439,6 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm,const char *name,Vec *X)
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
-  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -581,5 +580,4 @@ PetscErrorCode DMRestoreNamedLocalVector(DM dm,const char *name,Vec *X)
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
-  PetscFunctionReturn(0);
 }

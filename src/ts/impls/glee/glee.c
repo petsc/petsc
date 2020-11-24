@@ -1029,7 +1029,6 @@ PetscErrorCode  TSGLEESetType_GLEE(TS ts,TSGLEEType gleetype)
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",gleetype);
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  TSGetStages_GLEE(TS ts,PetscInt *ns,Vec **Y)

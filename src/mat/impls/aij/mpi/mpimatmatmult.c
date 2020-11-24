@@ -1222,7 +1222,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   PetscInt            pn=P->cmap->n,aN=A->cmap->N,an=A->cmap->n;
   PetscInt            *lnk,i,k,nsend,rstart;
   PetscBT             lnkbt;
-  PetscMPIInt         tagi,tagj,*len_si,*len_s,*len_ri,icompleted=0,nrecv;
+  PetscMPIInt         tagi,tagj,*len_si,*len_s,*len_ri,nrecv;
+  PETSC_UNUSED PetscMPIInt icompleted=0;
   PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
   PetscInt            len,proc,*dnz,*onz,*owners,nzi;
   PetscInt            nrows,*buf_s,*buf_si,*buf_si_i,**nextrow,**nextci;
@@ -1873,7 +1874,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   /* receives and sends of coj are complete */
   ierr = PetscMalloc1(size,&sstatus);CHKERRQ(ierr);
   for (i=0; i<merge->nrecv; i++) {
-    PetscMPIInt icompleted;
+    PETSC_UNUSED PetscMPIInt icompleted;
     ierr = MPI_Waitany(merge->nrecv,rwaits,&icompleted,&rstatus);CHKERRQ(ierr);
   }
   ierr = PetscFree(rwaits);CHKERRQ(ierr);
@@ -1921,7 +1922,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   }
   i = merge->nrecv;
   while (i--) {
-    PetscMPIInt icompleted;
+    PETSC_UNUSED PetscMPIInt icompleted;
     ierr = MPI_Waitany(merge->nrecv,rwaits,&icompleted,&rstatus);CHKERRQ(ierr);
   }
   ierr = PetscFree(rwaits);CHKERRQ(ierr);

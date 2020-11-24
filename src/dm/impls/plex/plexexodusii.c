@@ -1125,10 +1125,10 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
   }
   ierr = DMPlexCreateExodus(comm, exoid, interpolate, dm);CHKERRQ(ierr);
   if (!rank) {PetscStackCallStandard(ex_close,(exoid));}
+  PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif
-  PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_HAVE_EXODUSII)
@@ -1417,8 +1417,8 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     }
     ierr = PetscFree(fs_id);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif
-  PetscFunctionReturn(0);
 }

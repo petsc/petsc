@@ -1305,13 +1305,10 @@ PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
       break;
     case DMSWARM_MIGRATE_DMCELLEXACT:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE_DMCELLEXACT not implemented");
-      break;
     case DMSWARM_MIGRATE_USER:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE_USER not implemented");
-      break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE type unknown");
-      break;
   }
   ierr = PetscLogEventEnd(DMSWARM_Migrate,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1363,13 +1360,10 @@ PetscErrorCode DMSwarmCollectViewCreate(DM dm)
       break;
     case DMSWARM_COLLECT_DMDABOUNDINGBOX:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT_DMDABOUNDINGBOX not implemented");
-      break;
     case DMSWARM_COLLECT_GENERAL:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT_GENERAL not implemented");
-      break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT type unknown");
-      break;
   }
   swarm->collect_view_active = PETSC_TRUE;
   swarm->collect_view_reset_nlocal = ng;

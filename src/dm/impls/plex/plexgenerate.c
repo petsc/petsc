@@ -200,7 +200,6 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
     else if (boundary->dim+1 == 3) suggestions = " You may need to add --download-ctetgen or --download-tetgen in your ./configure options";
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid generator of dimension %D registered%s",boundary->dim+1,suggestions);
   }
-  PetscFunctionReturn(0);
 }
 
 /*@C

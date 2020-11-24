@@ -80,14 +80,12 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not implemented yet");
-  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented");
-  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering(const PetscInt *ai,const PetscInt *aj,const MatScalar *aa,PetscInt mbs,PetscInt bs,PetscScalar *x)
@@ -2216,9 +2214,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
     ai         = a->i; aj = a->j;
   } else { /*  non-trivial permutation */
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
-    a->permute = PETSC_TRUE;
-    ierr       = MatReorderingSeqSBAIJ(A, perm);CHKERRQ(ierr);
-    ai         = a->inew; aj = a->jnew;
   }
 
   /* initialization */

@@ -349,8 +349,8 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = PetscLayoutDestroy(&vLayout);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&cLayout);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfVertices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires Med mesh reader support. Reconfigure using --download-med");
 #endif
-  PetscFunctionReturn(0);
 }

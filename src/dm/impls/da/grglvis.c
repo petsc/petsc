@@ -194,7 +194,6 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       break;
     default:
       SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
-      break;
     }
     ierr = DMSetApplicationContext(daview,dactx);CHKERRQ(ierr);
     ierr = DMSetApplicationContextDestroy(daview,DMDAGhostedDestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
@@ -437,7 +436,6 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
-    break;
   }
   ierr = PetscViewerASCIIPrintf(viewer,"\nboundary\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",0);CHKERRQ(ierr);

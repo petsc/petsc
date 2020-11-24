@@ -739,7 +739,6 @@ PetscErrorCode PetscSFLinkGetInUse(PetscSF sf,MPI_Datatype unit,const void *root
     }
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Could not find pack");
-  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscSFLinkReclaim(PetscSF sf,PetscSFLink *link)
@@ -802,14 +801,15 @@ PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,
   PetscBool         match;
 
   PetscFunctionBegin;
-  if (!PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
-  /* Look up links in use and error out if there is a match. When both rootdata and leafdata are NULL, ignore
-     the potential overlapping since this process does not participate in communication. Overlapping is harmless.
-  */
-  if (rootdata || leafdata) {
-    for (p=&bas->inuse; (link=*p); p=&link->next) {
-      ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-      if (match && (rootdata == link->rootdata) && (leafdata == link->leafdata)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Overlapped PetscSF with the same rootdata(%p), leafdata(%p) and data type. Undo the overlapping to avoid the error.",rootdata,leafdata);
+  if (PetscDefined(USE_DEBUG)) {
+    /* Look up links in use and error out if there is a match. When both rootdata and leafdata are NULL, ignore
+       the potential overlapping since this process does not participate in communication. Overlapping is harmless.
+    */
+    if (rootdata || leafdata) {
+      for (p=&bas->inuse; (link=*p); p=&link->next) {
+        ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
+        if (match && (rootdata == link->rootdata) && (leafdata == link->leafdata)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Overlapped PetscSF with the same rootdata(%p), leafdata(%p) and data type. Undo the overlapping to avoid the error.",rootdata,leafdata);
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -1149,10 +1149,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(Petsc
       ierr = MPI_Reduce_local(buf,(char*)data+start*link->unitbytes,n,link->unit,op);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
 #endif
-  PetscFunctionReturn(0);
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt srcStart,const PetscInt *srcIdx,const void *src,PetscInt dstStart,const PetscInt *dstIdx,void *dst,MPI_Op op)
@@ -1171,10 +1171,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(Pets
       }
     }
   }
+  PetscFunctionReturn(0);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
 #endif
-  PetscFunctionReturn(0);
 }
 
 /*=============================================================================

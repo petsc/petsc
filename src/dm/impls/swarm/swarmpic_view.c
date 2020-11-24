@@ -170,7 +170,6 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   switch (dim) {
     case 1:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for 1D");
-      break;
     case 2:
       ierr = PetscViewerASCIIPrintf(viewer,"<Geometry Type=\"XY\">\n");CHKERRQ(ierr);
       break;

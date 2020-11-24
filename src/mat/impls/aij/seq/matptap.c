@@ -61,7 +61,6 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat C)
 #endif
 
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProductType is not supported");
-  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fill,Mat C)
