@@ -189,7 +189,7 @@ $     NORM_2 denotes sqrt(sum_i |x_i|^2)
 $     NORM_INFINITY denotes max_i |x_i|
 
       For complex numbers NORM_1 will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1
-      norm of the absolutely values of the complex entries. In PETSc 3.6 and earlier releases it returned the 1 norm of
+      norm of the absolute values of the complex entries. In PETSc 3.6 and earlier releases it returned the 1 norm of
       the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most
       people expect the former.
 
