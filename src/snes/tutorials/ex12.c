@@ -1598,25 +1598,10 @@ int main(int argc, char **argv)
 
   # Full solve simplex: Convergence
   test:
-    suffix: tet_conv_p1_r0
+    suffix: 3d_p1_conv
     requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
-  test:
-    suffix: tet_conv_p1_r2
-    requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
-  test:
-    suffix: tet_conv_p1_r3
-    requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
-  test:
-    suffix: tet_conv_p2_r0
-    requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
-  test:
-    suffix: tet_conv_p2_r2
-    requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
+    args: -run_type full -dim 3 -cells 1,1,1 -dm_refine 1 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 \
+      -snes_convergence_estimate -convest_num_refine 1 -pc_type lu
 
   # Full solve simplex: PCBDDC
   test:

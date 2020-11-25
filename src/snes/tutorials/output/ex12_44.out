@@ -55,6 +55,7 @@
       1 SNES Function norm 2.4063e-07 
         0 SNES Function norm 1.98295e-07 
         1 SNES Function norm < 1.e-11
+        2 SNES Function norm < 1.e-11
       0 SNES Function norm 1.73039e-07 
       1 SNES Function norm < 1.e-11
     0 SNES Function norm 0.00208614 
@@ -71,8 +72,8 @@ SNES Object: 2 MPI processes
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-      total number of linear solver iterations=1
-      total number of function evaluations=1
+      total number of linear solver iterations=2
+      total number of function evaluations=2
       SNESLineSearch Object: (fas_coarse_) 2 MPI processes
         type: basic
         maxstep=1.000000e+08, minlambda=1.000000e-12

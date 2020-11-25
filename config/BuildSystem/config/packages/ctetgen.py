@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'ctetgen-0.7'
+    self.gitcommit         = 'ctetgen-0.9'
     self.download          = ['git://https://bitbucket.org/petsc/ctetgen','https://bitbucket.org/petsc/ctetgen/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['ctetgen','petsc-ctetgen']
     self.functions         = []

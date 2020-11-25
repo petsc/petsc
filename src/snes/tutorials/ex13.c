@@ -542,10 +542,10 @@ int main(int argc, char **argv)
     suffix: 2d_q3_shear_conv
     args: -dm_plex_box_simplex 0 -shear -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
   test:
-    # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 1.7
+    # Using -convest_num_refine 3 we get L_2 convergence rate: 1.7
     suffix: 3d_p1_conv
     requires: ctetgen
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1
+    args: -dm_plex_box_dim 3 -dm_refine 1 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1
   test:
     # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 2.8
     suffix: 3d_p2_conv
