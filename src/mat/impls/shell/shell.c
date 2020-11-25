@@ -1695,9 +1695,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
 
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-
   b->ctx                 = NULL;
   b->vshift              = 0.0;
   b->vscale              = 1.0;
