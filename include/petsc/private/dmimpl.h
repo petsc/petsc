@@ -169,6 +169,18 @@ typedef struct _n_Space {
   IS      fields; /* Map from DS field numbers to original field numbers in the DM */
 } DMSpace;
 
+struct _p_UniversalLabel {
+  DMLabel    label;   /* The universal label */
+  PetscInt   Nl;      /* Number of labels encoded */
+  char     **names;   /* The label names */
+  PetscInt  *indices; /* The original indices in the input DM */
+  PetscInt   Nv;      /* Total number of values in all the labels */
+  PetscInt  *bits;    /* Starting bit for values of each label */
+  PetscInt  *masks;   /* Masks to pull out label value bits for each label */
+  PetscInt  *offsets; /* Starting offset for label values for each label */
+  PetscInt  *values;  /* Original label values before renumbering */
+};
+
 PETSC_INTERN PetscErrorCode DMDestroyLabelLinkList_Internal(DM);
 
 #define MAXDMMONITORS 5
@@ -470,5 +482,11 @@ PETSC_INTERN PetscErrorCode DMConstructBasisTransform_Internal(DM);
 
 PETSC_INTERN PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM, PetscReal[], PetscReal[]);
 PETSC_INTERN PetscErrorCode DMSetField_Internal(DM, PetscInt, DMLabel, PetscObject);
+
+PETSC_EXTERN PetscErrorCode DMUniversalLabelCreate(DM, DMUniversalLabel *);
+PETSC_EXTERN PetscErrorCode DMUniversalLabelDestroy(DMUniversalLabel *);
+PETSC_EXTERN PetscErrorCode DMUniversalLabelGetLabel(DMUniversalLabel, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMUniversalLabelCreateLabels(DMUniversalLabel, PetscBool, DM);
+PETSC_EXTERN PetscErrorCode DMUniversalLabelSetLabelValue(DMUniversalLabel, DM, PetscBool, PetscInt, PetscInt);
 
 #endif

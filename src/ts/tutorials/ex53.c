@@ -1461,12 +1461,12 @@ static void f0_cryer_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                     PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscReal P_0 = PetscRealPart(constants[5]);
-  const PetscReal R   = PetscSqrtReal(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
+  //const PetscReal R   = PetscSqrtReal(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
   PetscInt        d;
 
   for (d = 0; d < dim; ++d) f0[d] = -P_0*n[d];
   //PetscPrintf(PETSC_COMM_SELF, "R: %g P_0: %g n: (%g, %g, %g) hat n (%g, %g, %g)\n", R, P_0, n[0], n[1], n[2], x[0]/R, x[1]/R, x[2]/R);
-  for (d = 0; d < dim; ++d) if (PetscAbsReal(n[d] - x[d]/R) > 1.0) PetscPrintf(PETSC_COMM_SELF, "WTF? R: %g P_0: %g n: (%g, %g, %g) hat n (%g, %g, %g)\n", R, P_0, n[0], n[1], n[2], x[0]/R, x[1]/R, x[2]/R);
+  //for (d = 0; d < dim; ++d) if (PetscAbsReal(n[d] - x[d]/R) > 1.0) PetscPrintf(PETSC_COMM_SELF, "WTF? R: %g P_0: %g n: (%g, %g, %g) hat n (%g, %g, %g)\n", R, P_0, n[0], n[1], n[2], x[0]/R, x[1]/R, x[2]/R);
   //for (d = 0; d < dim; ++d) f0[d] = -P_0*x[d]/R;
 }
 
@@ -2563,7 +2563,7 @@ int main(int argc, char **argv)
     requires: ctetgen !complex
     args: -sol_type cryer \
       -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
-      -ts_dt 0.0028666667 -ts_max_time 0.014333 -ts_max_steps 2 -dmts_check .0001 -pc_type lu -pc_factor_shift_type nonzero
+      -ts_dt 0.0028666667 -ts_max_time 0.014333 -ts_max_steps 2 -dmts_check .0001 -pc_type svd
 
   test:
     # Displacement and Pressure converge. The analytic expression for trace strain is inaccurate at the origin

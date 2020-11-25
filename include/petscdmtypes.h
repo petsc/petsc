@@ -164,4 +164,11 @@ typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CU
 S*/
 typedef struct _p_DMField* DMField;
 
+/*S
+    DMUniversalLabel - A label that encodes a set of DMLabels, bijectively
+
+    Level: developer
+S*/
+typedef struct _p_UniversalLabel* DMUniversalLabel;
+
 #endif

@@ -19,20 +19,41 @@ Vec Object: 1 MPI processes
 0.833333
 0.166667
 0.833333
-0.833333
 1.5
+0.833333
+0.208333
+0.0416667
+0.0416667
 0.333333
+0.708333
+0.708333
 1.
-1.
+0.354167
 0.333333
-0.333333
+0.708333
+0.708333
 1.
+1.375
+1.04167
+1.
+0.780093
+0.356771
+0.113426
+0.106771
+1.04167
+1.375
+0.356771
+0.780093
+1.02344
+0.690104
 0.5
+0.630787
+1.02344
 Initial guess
 Vec Object: potential 1 MPI processes
   type: seq
 0.5
-L_2 Error: 0.0845613
+L_2 Error: 0.065101
 Residual:
 Vec Object: 1 MPI processes
   type: seq
@@ -62,12 +83,33 @@ Vec Object: 1 MPI processes
 0.
 0.
 0.
-0.5
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.301239
+0.
+0.
 Initial Residual
 Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
-0.5
-L_2 Residual: 0.5
+0.301239
+L_2 Residual: 0.301239
 Residual:
 Vec Object: 1 MPI processes
   type: seq
@@ -97,9 +139,30 @@ Vec Object: 1 MPI processes
 0.
 0.
 0.
--1.5
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+-1.43786
+0.
+0.
 Au - b = Au + F(0)
 Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
-0.5
-Linear L_2 Residual: 0.5
+0.301239
+Linear L_2 Residual: 0.301239

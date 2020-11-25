@@ -628,97 +628,8 @@ subface ver 2, mark 6:
       [1] NULL.
       [2] NULL.
       [3] 0. (*)
-[0] TetGenMeshFlip22():     Flip edge (8, 6) to (9, 7) T22.
-[0] TetGenMeshFlip22Sub():     Flip subedge (8, 6) to (9, 7).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(0):
-      [0] loc(1).
-      [1] loc(0).
-      [2] Outer space.
-      [3] loc(2).
-      Org [1] (1,1,1) 7
-      Dest[3] (0,1,0.5) 9
-      Apex[2] (0.5,1,0) 8
-      Oppo[0] (0,0,1) 4
-      [0] NULL.
-      [1] NULL.
-      [2] 4. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(4):
-      [0] loc(1).
-      [1] Outer space.
-      [2] Outer space.
-      [3] Outer space.
-      Org [2] (0,1,0.5) 9
-      Dest[1] (1,1,1) 7
-      Apex[3] (0,1,1) 6
-      Oppo[0] (0,0,1) 4
-      [0] NULL.
-      [1] 0.
-      [2] 0. (*)
-      [3] 2.
-[0] TetGenMeshFlip23():     Do T23 on face (4, 7, 8) 9, 5.
-[0] TetGenMeshFlip23():     Updating edab Tetra with loc(0) and ver(0):
-      [0] loc(1).
-      [1] loc(0).
-      [2] loc(0).
-      [3] Outer space.
-      Org [0] (1,0,1) 5
-      Dest[1] (0,1,0.5) 9
-      Apex[2] (0,0,1) 4
-      Oppo[3] (1,1,1) 7
-      [0] NULL. (*)
-      [1] NULL.
-      [2] NULL.
-      [3] 0.
-[0] TetGenMeshFlip23():     Updating edbc Tetra with loc(0) and ver(0):
-      [0] loc(1).
-      [1] loc(0).
-      [2] Outer space.
-      [3] loc(0).
-      Org [0] (1,0,1) 5
-      Dest[1] (0,1,0.5) 9
-      Apex[2] (1,1,1) 7
-      Oppo[3] (0.5,1,0) 8
-      [0] NULL. (*)
-      [1] NULL.
-      [2] 4.
-      [3] NULL.
-[0] TetGenMeshFlip23():     Creating edca Tetra with loc(0) and ver(0):
-      [0] loc(1).
-      [1] loc(0).
-      [2] loc(2).
-      [3] loc(0).
-      Org [0] (1,0,1) 5
-      Dest[1] (0,1,0.5) 9
-      Apex[2] (0.5,1,0) 8
-      Oppo[3] (0,0,1) 4
-[0] TetGenMeshFlip32():     Do T32 on edge (4, 8) 9, 5, 0.
-[0] TetGenMeshFlip32():     Updating abcd Tetra with loc(0) and ver(0):
-      [0] loc(0).
-      [1] loc(1).
-      [2] loc(1).
-      [3] loc(3).
-      Org [0] (0,1,0.5) 9
-      Dest[1] (1,0,1) 5
-      Apex[2] (0,0,0) 0
-      Oppo[3] (0.5,1,0) 8
-[0] TetGenMeshFlip32():     Updating bace Tetra with loc(0) and ver(0):
-      [0] loc(0).
-      [1] loc(0).
-      [2] Outer space.
-      [3] Outer space.
-      Org [0] (1,0,1) 5
-      Dest[1] (0,1,0.5) 9
-      Apex[2] (0,0,0) 0
-      Oppo[3] (0,0,1) 4
-      [0] NULL. (*)
-      [1] NULL.
-      [2] 0.
-      [3] 0.
-[0] TetGenMeshFlip32():     Deleting edca [0] TetGenMeshLawson3D():     4 flips.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (7, 6, 4, 9), ratio 1.5, qnum 0.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (7, 4, 5, 9), ratio 0.75, qnum 0.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (8, 7, 5, 9), ratio 1.09291, qnum 0.
+[0] TetGenMeshLawson3D():     1 flips.
+[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (4, 0, 8, 9), ratio 1.13192, qnum 0.
 [0] TetGenMeshRepairEncSegs():   Get an enc-seg (7, 3)
 [0] TetGenMeshSplitTetEdge():   Inserting point 10 on edge (3, 7).
 [0] TetGenMeshSplitSubEdge_queue():   Inserting point 10 on subedge (3, 7) (seg).
@@ -737,7 +648,7 @@ subface ver 4, mark 1:
       [10]= 0
 [0] TetGenMeshSplitSubEdge_queue():     Creating vbc:
 subface ver 4, mark 1:
-      [0] = 0
+      [0] = 2
       [1] =  0
       [2] =  3
       Org [2] = (1,1,0.5) 10
@@ -800,7 +711,35 @@ subface ver 3, mark 5:
       [1] 2.
       [2] NULL.
       [3] 4.
-[0] TetGenMeshLawson3D():     Lawson flip: 1 faces.
+[0] TetGenMeshLawson3D():     Lawson flip: 4 faces.
+[0] TetGenMeshFlip22():     Flip edge (8, 6) to (9, 7) T22.
+[0] TetGenMeshFlip22Sub():     Flip subedge (8, 6) to (9, 7).
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(0):
+      [0] loc(1).
+      [1] loc(0).
+      [2] Outer space.
+      [3] loc(2).
+      Org [1] (1,1,1) 7
+      Dest[3] (0,1,0.5) 9
+      Apex[2] (0.5,1,0) 8
+      Oppo[0] (0,0,1) 4
+      [0] NULL.
+      [1] NULL.
+      [2] 4. (*)
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(4):
+      [0] loc(1).
+      [1] Outer space.
+      [2] Outer space.
+      [3] Outer space.
+      Org [2] (0,1,0.5) 9
+      Dest[1] (1,1,1) 7
+      Apex[3] (0,1,1) 6
+      Oppo[0] (0,0,1) 4
+      [0] NULL.
+      [1] 0.
+      [2] 0. (*)
+      [3] 2.
 [0] TetGenMeshFlip22():     Flip edge (1, 7) to (10, 5) T22.
 [0] TetGenMeshFlip22Sub():     Flip subedge (1, 7) to (10, 5).
 [0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(4):
@@ -829,9 +768,58 @@ subface ver 3, mark 5:
       [1] NULL.
       [2] NULL.
       [3] 0. (*)
-[0] TetGenMeshFlip22():     Flip edge (7, 8) to (10, 9) T22.
-[0] TetGenMeshFlip22Sub():     Flip subedge (7, 8) to (10, 9).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(0):
+[0] TetGenMeshFlip23():     Do T23 on face (4, 7, 8) 9, 5.
+[0] TetGenMeshFlip23():     Updating edab Tetra with loc(0) and ver(0):
+      [0] loc(1).
+      [1] loc(0).
+      [2] loc(0).
+      [3] Outer space.
+      Org [0] (1,0,1) 5
+      Dest[1] (0,1,0.5) 9
+      Apex[2] (0,0,1) 4
+      Oppo[3] (1,1,1) 7
+      [0] NULL. (*)
+      [1] NULL.
+      [2] NULL.
+      [3] 0.
+[0] TetGenMeshFlip23():     Updating edbc Tetra with loc(0) and ver(0):
+      [0] loc(1).
+      [1] loc(0).
+      [2] Outer space.
+      [3] loc(1).
+      Org [0] (1,0,1) 5
+      Dest[1] (0,1,0.5) 9
+      Apex[2] (1,1,1) 7
+      Oppo[3] (0.5,1,0) 8
+      [0] NULL. (*)
+      [1] NULL.
+      [2] 4.
+      [3] NULL.
+[0] TetGenMeshFlip23():     Creating edca Tetra with loc(0) and ver(0):
+      [0] loc(1).
+      [1] loc(0).
+      [2] loc(2).
+      [3] loc(0).
+      Org [0] (1,0,1) 5
+      Dest[1] (0,1,0.5) 9
+      Apex[2] (0.5,1,0) 8
+      Oppo[3] (0,0,1) 4
+[0] TetGenMeshFlip22():     Flip edge (8, 7) to (9, 10) T22.
+[0] TetGenMeshFlip22Sub():     Flip subedge (8, 7) to (9, 10).
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(2):
+      [0] loc(0).
+      [1] loc(0).
+      [2] Outer space.
+      [3] loc(1).
+      Org [3] (1,1,0.5) 10
+      Dest[2] (0,1,0.5) 9
+      Apex[1] (0.5,1,0) 8
+      Oppo[0] (1,0,1) 5
+      [0] NULL.
+      [1] NULL.
+      [2] 4. (*)
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(0):
       [0] Outer space.
       [1] loc(3).
       [2] Outer space.
@@ -844,21 +832,40 @@ subface ver 3, mark 5:
       [1] NULL.
       [2] 0.
       [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(2):
-      [0] loc(1).
+[0] TetGenMeshFlip32():     Do T32 on edge (4, 8) 9, 5, 0.
+[0] TetGenMeshFlip32():     Updating abcd Tetra with loc(0) and ver(0):
+      [0] loc(0).
+      [1] loc(0).
+      [2] loc(1).
+      [3] loc(3).
+      Org [0] (0,1,0.5) 9
+      Dest[1] (1,0,1) 5
+      Apex[2] (0,0,0) 0
+      Oppo[3] (0.5,1,0) 8
+[0] TetGenMeshFlip32():     Updating bace Tetra with loc(0) and ver(0):
+      [0] loc(0).
       [1] loc(0).
       [2] Outer space.
-      [3] loc(1).
-      Org [3] (1,1,0.5) 10
-      Dest[2] (0,1,0.5) 9
-      Apex[1] (0.5,1,0) 8
-      Oppo[0] (1,0,1) 5
-      [0] NULL.
+      [3] Outer space.
+      Org [0] (1,0,1) 5
+      Dest[1] (0,1,0.5) 9
+      Apex[2] (0,0,0) 0
+      Oppo[3] (0,0,1) 4
+      [0] NULL. (*)
       [1] NULL.
-      [2] 4. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Flip edge (8, 5) to (10, 0) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(4):
+      [2] 0.
+      [3] 0.
+[0] TetGenMeshFlip32():     Deleting edca [0] TetGenMeshFlip22():     Flip edge (5, 8) to (0, 10) T44.
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(0):
+      [0] loc(1).
+      [1] loc(0).
+      [2] loc(1).
+      [3] loc(0).
+      Org [1] (1,1,0.5) 10
+      Dest[3] (0,0,0) 0
+      Apex[2] (1,0,1) 5
+      Oppo[0] (0,1,0.5) 9
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(1) and ver(4):
       [0] loc(1).
       [1] loc(0).
       [2] loc(3).
@@ -871,29 +878,7 @@ subface ver 3, mark 5:
       [1] NULL. (*)
       [2] NULL.
       [3] 4.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(0):
-      [0] loc(1).
-      [1] loc(0).
-      [2] loc(1).
-      [3] loc(0).
-      Org [1] (1,1,0.5) 10
-      Dest[3] (0,0,0) 0
-      Apex[2] (1,0,1) 5
-      Oppo[0] (0,1,0.5) 9
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(0) and ver(2):
-      [0] loc(1).
-      [1] loc(3).
-      [2] loc(0).
-      [3] Outer space.
-      Org [1] (1,1,0.5) 10
-      Dest[2] (0,0,0) 0
-      Apex[0] (0.5,1,0) 8
-      Oppo[3] (1,0,0) 1
-      [0] NULL. (*)
-      [1] NULL.
-      [2] NULL.
-      [3] 0.
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(1) and ver(4):
+[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(1) and ver(4):
       [0] loc(2).
       [1] loc(2).
       [2] Outer space.
@@ -906,6 +891,19 @@ subface ver 3, mark 5:
       [1] NULL. (*)
       [2] 0.
       [3] 2.
+[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(0) and ver(2):
+      [0] loc(1).
+      [1] loc(3).
+      [2] loc(0).
+      [3] Outer space.
+      Org [1] (1,1,0.5) 10
+      Dest[2] (0,0,0) 0
+      Apex[0] (0.5,1,0) 8
+      Oppo[3] (1,0,0) 1
+      [0] NULL. (*)
+      [1] NULL.
+      [2] NULL.
+      [3] 0.
 [0] TetGenMeshFlip22():     Flip edge (5, 9) to (10, 4) T44.
 [0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(4):
       [0] loc(1).
@@ -987,7 +985,7 @@ subface ver 3, mark 5:
       [1] 2.
       [2] 0. (*)
       [3] NULL.
-[0] TetGenMeshLawson3D():     5 flips.
+[0] TetGenMeshLawson3D():     8 flips.
 [0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (7, 4, 6, 10), ratio 1.5, qnum 0.
 [0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (6, 9, 4, 10), ratio 1.5, qnum 0.
 [0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (9, 8, 0, 10), ratio 1.13192, qnum 0.
@@ -1614,37 +1612,7 @@ subface ver 2, mark 2:
       [1] NULL.
       [2] 2.
       [3] NULL.
-[0] TetGenMeshFlip22():     Flip edge (12, 1) to (13, 5) T22.
-[0] TetGenMeshFlip22Sub():     Flip subedge (12, 1) to (13, 5).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(2):
-      [0] loc(0).
-      [1] loc(0).
-      [2] Outer space.
-      [3] loc(3).
-      Org [3] (1,0,1) 5
-      Dest[2] (0.5,0,0) 13
-      Apex[1] (0,0,0.5) 12
-      Oppo[0] (1,1,0.5) 10
-      [0] NULL.
-      [1] NULL.
-      [2] 0. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(2):
-      [0] Outer space.
-      [1] loc(1).
-      [2] Outer space.
-      [3] loc(3).
-      Org [3] (0.5,0,0) 13
-      Dest[2] (1,0,1) 5
-      Apex[1] (1,0,0) 1
-      Oppo[0] (1,1,0.5) 10
-      [0] 2.
-      [1] NULL.
-      [2] 0. (*)
-      [3] NULL.
-[0] TetGenMeshLawson3D():     2 flips.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (1, 10, 5, 13), ratio 1.34629, qnum 0.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (10, 12, 5, 13), ratio 1.02062, qnum 0.
+[0] TetGenMeshLawson3D():     1 flips.
 [0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (12, 10, 8, 13), ratio 1., qnum 0.
 [0] TetGenMeshRepairEncSegs():   Get an enc-seg (5, 4)
 [0] TetGenMeshSplitTetEdge():   Inserting point 14 on edge (4, 5).
@@ -1666,7 +1634,7 @@ subface ver 2, mark 3:
 subface ver 2, mark 3:
       [0] = 4
       [1] =  5
-      [2] =  2
+      [2] =  0
       Org [1] = (0.5,0,1) 14
       Dest[2] = (1,0,1) 5
       Apex[0] = (0,0,0.5) 12
@@ -1727,7 +1695,35 @@ subface ver 5, mark 4:
       [1] 4.
       [2] NULL.
       [3] 2.
-[0] TetGenMeshLawson3D():     Lawson flip: 2 faces.
+[0] TetGenMeshLawson3D():     Lawson flip: 6 faces.
+[0] TetGenMeshFlip22():     Flip edge (12, 1) to (13, 5) T22.
+[0] TetGenMeshFlip22Sub():     Flip subedge (12, 1) to (13, 5).
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(2):
+      [0] loc(0).
+      [1] loc(0).
+      [2] Outer space.
+      [3] loc(3).
+      Org [3] (1,0,1) 5
+      Dest[2] (0.5,0,0) 13
+      Apex[1] (0,0,0.5) 12
+      Oppo[0] (1,1,0.5) 10
+      [0] NULL.
+      [1] NULL.
+      [2] 0. (*)
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(2):
+      [0] Outer space.
+      [1] loc(1).
+      [2] Outer space.
+      [3] loc(3).
+      Org [3] (0.5,0,0) 13
+      Dest[2] (1,0,1) 5
+      Apex[1] (1,0,0) 1
+      Oppo[0] (1,1,0.5) 10
+      [0] 2.
+      [1] NULL.
+      [2] 0. (*)
+      [3] NULL.
 [0] TetGenMeshFlip23():     Do T23 on face (5, 11, 12) 14, 10.
 [0] TetGenMeshFlip23():     Updating edab Tetra with loc(0) and ver(0):
       [0] loc(1).
@@ -1792,34 +1788,90 @@ subface ver 5, mark 4:
       [1] NULL.
       [2] 0. (*)
       [3] NULL.
-[0] TetGenMeshFlip22():     Flip edge (5, 13) to (14, 1) T22.
-[0] TetGenMeshFlip22Sub():     Flip subedge (5, 13) to (14, 1).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(0):
+[0] TetGenMeshLawson3D():     3 flips.
+[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (10, 13, 12, 14), ratio 1., qnum 0.
+[0] TetGenMeshRepairEncSegs():   Get an enc-seg (1, 5)
+[0] TetGenMeshSplitTetEdge():   Inserting point 15 on edge (5, 1).
+[0] TetGenMeshSplitSubEdge_queue():   Inserting point 15 on subedge (5, 1) (seg).
+[0] TetGenMeshSplitSubEdge_queue():     Updating abc:
+subface ver 0, mark 3: (queued)
+      [0] = 4
+      [1] =  4
+      [2] =  2
+      Org [0] = (1,0,1) 5
+      Dest[1] = (1,0,0.5) 15
+      Apex[2] = (0.5,0,0) 13
+      [6] = 2
+      [7] = Outer space
+      [8] = 0
+      [9] = No subsegment
+      [10]= No subsegment
+[0] TetGenMeshSplitSubEdge_queue():     Creating vbc:
+subface ver 0, mark 3:
+      [0] = 5
+      [1] =  2
+      [2] =  2
+      Org [0] = (1,0,0.5) 15
+      Dest[1] = (1,0,0) 1
+      Apex[2] = (0.5,0,0) 13
+      [6] = 3
+      [7] = Outer space
+      [8] = 0
+      [9] = 0
+      [10]= No subsegment
+[0] TetGenMeshSplitSubEdge_queue():     Updating abc:
+subface ver 5, mark 5:
+      [0] = 3
+      [1] =  1
+      [2] =  0
+      Org [0] = (1,0,1) 5
+      Dest[2] = (1,0,0.5) 15
+      Apex[1] = (1,1,0.5) 10
+      [6] = 0
+      [7] = Outer space
+      [8] = No subsegment
+      [9] = No subsegment
+      [10]= 0
+[0] TetGenMeshSplitSubEdge_queue():     Creating vbc:
+subface ver 5, mark 5:
+      [0] = 3
+      [1] =  1
+      [2] =  0
+      Org [0] = (1,0,0.5) 15
+      Dest[2] = (1,0,0) 1
+      Apex[1] = (1,1,0.5) 10
+      [6] = 1
+      [7] = Outer space
+      [8] = No subsegment
+      [9] = No subsegment
+      [10]= 0
+    Updating bots[0] Tetra with loc(3) and ver(0):
       [0] Outer space.
-      [1] loc(3).
-      [2] Outer space.
-      [3] loc(0).
-      Org [1] (1,0,0) 1
-      Dest[3] (0.5,0,1) 14
-      Apex[2] (1,0,1) 5
-      Oppo[0] (1,1,0.5) 10
-      [0] 2.
-      [1] NULL.
-      [2] 2. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(2):
-      [0] loc(1).
-      [1] loc(1).
+      [1] loc(2).
       [2] Outer space.
       [3] loc(1).
-      Org [3] (0.5,0,1) 14
-      Dest[2] (1,0,0) 1
-      Apex[1] (0.5,0,0) 13
-      Oppo[0] (1,1,0.5) 10
-      [0] NULL.
+      Org [2] (1,0,1) 5
+      Dest[3] (0.5,0,0) 13
+      Apex[0] (1,1,0.5) 10
+      Oppo[1] (1,0,0.5) 15
+      [0] 2.
       [1] NULL.
-      [2] 0. (*)
-      [3] NULL.
+      [2] 0.
+      [3] NULL. (*)
+    Creating newtops[0] Tetra with loc(0) and ver(0):
+      [0] loc(1).
+      [1] Outer space.
+      [2] loc(1).
+      [3] Outer space.
+      Org [0] (1,0,0) 1
+      Dest[1] (1,1,0.5) 10
+      Apex[2] (0.5,0,0) 13
+      Oppo[3] (1,0,0.5) 15
+      [0] NULL. (*)
+      [1] 4.
+      [2] NULL.
+      [3] 0.
+[0] TetGenMeshLawson3D():     Lawson flip: 6 faces.
 [0] TetGenMeshFlip22():     Flip edge (12, 10) to (14, 8) T44.
 [0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(4):
       [0] loc(1).
@@ -1836,7 +1888,7 @@ subface ver 5, mark 4:
       [3] NULL.
 [0] TetGenMeshFlip22():     Updating bade Tetra with loc(3) and ver(4):
       [0] loc(3).
-      [1] loc(1).
+      [1] loc(3).
       [2] loc(0).
       [3] loc(3).
       Org [0] (0.5,0,1) 14
@@ -1869,6 +1921,87 @@ subface ver 5, mark 4:
       [1] NULL.
       [2] 4.
       [3] NULL. (*)
+[0] TetGenMeshFlip22():     Flip edge (13, 5) to (15, 14) T22.
+[0] TetGenMeshFlip22Sub():     Flip subedge (13, 5) to (15, 14).
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(2):
+      [0] loc(2).
+      [1] loc(1).
+      [2] Outer space.
+      [3] loc(1).
+      Org [3] (0.5,0,1) 14
+      Dest[2] (1,0,0.5) 15
+      Apex[1] (0.5,0,0) 13
+      Oppo[0] (1,1,0.5) 10
+      [0] NULL.
+      [1] NULL.
+      [2] 0. (*)
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(0):
+      [0] Outer space.
+      [1] loc(3).
+      [2] Outer space.
+      [3] loc(0).
+      Org [1] (1,0,0.5) 15
+      Dest[3] (0.5,0,1) 14
+      Apex[2] (1,0,1) 5
+      Oppo[0] (1,1,0.5) 10
+      [0] 2.
+      [1] NULL.
+      [2] 2. (*)
+      [3] NULL.
+[0] TetGenMeshFlip22():     Flip edge (13, 10) to (15, 8) T44.
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(4):
+      [0] loc(1).
+      [1] Outer space.
+      [2] loc(0).
+      [3] Outer space.
+      Org [2] (0.5,1,0) 8
+      Dest[1] (1,0,0.5) 15
+      Apex[3] (0.5,0,0) 13
+      Oppo[0] (1,0,0) 1
+      [0] NULL.
+      [1] 0.
+      [2] NULL. (*)
+      [3] 2.
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(0):
+      [0] loc(2).
+      [1] loc(0).
+      [2] loc(3).
+      [3] Outer space.
+      Org [0] (1,0,0.5) 15
+      Dest[1] (0.5,1,0) 8
+      Apex[2] (1,1,0.5) 10
+      Oppo[3] (1,0,0) 1
+      [0] NULL. (*)
+      [1] NULL.
+      [2] NULL.
+      [3] 4.
+[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(0) and ver(0):
+      [0] loc(2).
+      [1] loc(1).
+      [2] loc(3).
+      [3] Outer space.
+      Org [0] (1,0,0.5) 15
+      Dest[1] (0.5,1,0) 8
+      Apex[2] (0.5,0,0) 13
+      Oppo[3] (0.5,0,1) 14
+      [0] NULL. (*)
+      [1] NULL.
+      [2] NULL.
+      [3] 0.
+[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(2) and ver(0):
+      [0] loc(3).
+      [1] loc(1).
+      [2] loc(0).
+      [3] loc(1).
+      Org [1] (0.5,1,0) 8
+      Dest[3] (1,0,0.5) 15
+      Apex[2] (1,1,0.5) 10
+      Oppo[0] (0.5,0,1) 14
+      [0] NULL.
+      [1] NULL.
+      [2] NULL. (*)
+      [3] NULL.
 [0] TetGenMeshFlip22():     Flip edge (12, 11) to (14, 9) T44.
 [0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(2):
       [0] loc(2).
@@ -1918,188 +2051,21 @@ subface ver 5, mark 4:
       [1] NULL.
       [2] NULL. (*)
       [3] NULL.
-[0] TetGenMeshLawson3D():     5 flips.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (10, 1, 13, 14), ratio 1.34629, qnum 0.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (13, 8, 10, 14), ratio 1., qnum 0.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (8, 13, 12, 14), ratio 1., qnum 0.
-[0] TetGenMeshRepairEncSegs():   Get an enc-seg (1, 5)
-[0] TetGenMeshSplitTetEdge():   Inserting point 15 on edge (5, 1).
-[0] TetGenMeshSplitSubEdge_queue():   Inserting point 15 on subedge (5, 1) (seg).
-[0] TetGenMeshSplitSubEdge_queue():     Updating abc:
-subface ver 0, mark 3:
-      [0] = 4
-      [1] =  4
-      [2] =  5
-      Org [0] = (1,0,1) 5
-      Dest[1] = (1,0,0.5) 15
-      Apex[2] = (0.5,0,1) 14
-      [6] = 2
-      [7] = Outer space
-      [8] = 0
-      [9] = No subsegment
-      [10]= 0
-[0] TetGenMeshSplitSubEdge_queue():     Creating vbc:
-subface ver 0, mark 3:
-      [0] = 5
-      [1] =  4
-      [2] =  2
-      Org [0] = (1,0,0.5) 15
-      Dest[1] = (1,0,0) 1
-      Apex[2] = (0.5,0,1) 14
-      [6] = 3
-      [7] = Outer space
-      [8] = 0
-      [9] = No subsegment
-      [10]= No subsegment
-[0] TetGenMeshSplitSubEdge_queue():     Updating abc:
-subface ver 5, mark 5:
-      [0] = 3
-      [1] =  1
-      [2] =  0
-      Org [0] = (1,0,1) 5
-      Dest[2] = (1,0,0.5) 15
-      Apex[1] = (1,1,0.5) 10
-      [6] = 0
-      [7] = Outer space
-      [8] = No subsegment
-      [9] = No subsegment
-      [10]= 0
-[0] TetGenMeshSplitSubEdge_queue():     Creating vbc:
-subface ver 5, mark 5:
-      [0] = 3
-      [1] =  1
-      [2] =  0
-      Org [0] = (1,0,0.5) 15
-      Dest[2] = (1,0,0) 1
-      Apex[1] = (1,1,0.5) 10
-      [6] = 1
-      [7] = Outer space
-      [8] = No subsegment
-      [9] = No subsegment
-      [10]= 0
-    Updating bots[0] Tetra with loc(3) and ver(0):
-      [0] Outer space.
-      [1] loc(2).
-      [2] Outer space.
-      [3] loc(0).
-      Org [2] (1,0,1) 5
-      Dest[3] (0.5,0,1) 14
-      Apex[0] (1,1,0.5) 10
-      Oppo[1] (1,0,0.5) 15
-      [0] 2.
-      [1] NULL.
-      [2] 2.
-      [3] NULL. (*)
-    Creating newtops[0] Tetra with loc(0) and ver(0):
-      [0] loc(3).
-      [1] Outer space.
-      [2] loc(1).
-      [3] Outer space.
-      Org [0] (1,0,0) 1
-      Dest[1] (1,1,0.5) 10
-      Apex[2] (0.5,0,1) 14
-      Oppo[3] (1,0,0.5) 15
-      [0] NULL. (*)
-      [1] 4.
-      [2] NULL.
-      [3] 0.
-[0] TetGenMeshLawson3D():     Lawson flip: 2 faces.
-[0] TetGenMeshFlip22():     Flip edge (1, 14) to (15, 13) T22.
-[0] TetGenMeshFlip22Sub():     Flip subedge (1, 14) to (15, 13).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(3) and ver(4):
-      [0] loc(3).
-      [1] loc(1).
-      [2] Outer space.
-      [3] Outer space.
-      Org [0] (0.5,0,0) 13
-      Dest[2] (1,0,0.5) 15
-      Apex[3] (1,0,0) 1
-      Oppo[1] (1,1,0.5) 10
-      [0] NULL.
-      [1] NULL.
-      [2] 4.
-      [3] 0. (*)
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(2):
-      [0] loc(1).
-      [1] loc(1).
-      [2] Outer space.
-      [3] loc(0).
-      Org [3] (1,0,0.5) 15
-      Dest[2] (0.5,0,0) 13
-      Apex[1] (0.5,0,1) 14
-      Oppo[0] (1,1,0.5) 10
-      [0] NULL.
-      [1] NULL.
-      [2] 0. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Flip edge (13, 10) to (15, 8) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(0):
-      [0] loc(3).
-      [1] loc(1).
-      [2] Outer space.
-      [3] Outer space.
-      Org [0] (0.5,1,0) 8
-      Dest[1] (1,0,0.5) 15
-      Apex[2] (0.5,0,0) 13
-      Oppo[3] (1,0,0) 1
-      [0] NULL. (*)
-      [1] NULL.
-      [2] 0.
-      [3] 2.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(0):
-      [0] loc(2).
-      [1] loc(1).
-      [2] loc(3).
-      [3] Outer space.
-      Org [0] (1,0,0.5) 15
-      Dest[1] (0.5,1,0) 8
-      Apex[2] (1,1,0.5) 10
-      Oppo[3] (1,0,0) 1
-      [0] NULL. (*)
-      [1] NULL.
-      [2] NULL.
-      [3] 4.
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(3) and ver(4):
-      [0] loc(1).
-      [1] Outer space.
-      [2] loc(3).
-      [3] loc(0).
-      Org [0] (1,0,0.5) 15
-      Dest[2] (0.5,1,0) 8
-      Apex[3] (0.5,0,0) 13
-      Oppo[1] (0.5,0,1) 14
-      [0] NULL.
-      [1] 0.
-      [2] NULL.
-      [3] NULL. (*)
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(2) and ver(0):
-      [0] loc(3).
-      [1] loc(0).
-      [2] loc(0).
-      [3] loc(1).
-      Org [1] (0.5,1,0) 8
-      Dest[3] (1,0,0.5) 15
-      Apex[2] (1,1,0.5) 10
-      Oppo[0] (0.5,0,1) 14
-      [0] NULL.
-      [1] NULL.
-      [2] NULL. (*)
-      [3] NULL.
 [0] TetGenMeshFlip22():     Flip edge (13, 14) to (15, 12) T22.
 [0] TetGenMeshFlip22Sub():     Flip subedge (13, 14) to (15, 12).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(2):
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(3) and ver(0):
       [0] loc(0).
-      [1] Outer space.
+      [1] loc(2).
       [2] loc(3).
-      [3] loc(0).
-      Org [3] (0,0,0.5) 12
-      Dest[1] (1,0,0.5) 15
+      [3] Outer space.
+      Org [2] (0,0,0.5) 12
+      Dest[3] (1,0,0.5) 15
       Apex[0] (0.5,0,0) 13
-      Oppo[2] (0.5,1,0) 8
+      Oppo[1] (0.5,1,0) 8
       [0] NULL.
-      [1] 0. (*)
+      [1] NULL.
       [2] NULL.
-      [3] NULL.
+      [3] 0. (*)
 [0] TetGenMeshFlip22():     Updating bade Tetra with loc(1) and ver(0):
       [0] loc(1).
       [1] Outer space.
@@ -2113,42 +2079,43 @@ subface ver 5, mark 5:
       [1] 0. (*)
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshLawson3D():     3 flips.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (8, 13, 12, 15), ratio 1., qnum 0.
+[0] TetGenMeshLawson3D():     5 flips.
 [0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (10, 8, 14, 15), ratio 1., qnum 0.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (8, 12, 14, 15), ratio 1., qnum 0.
-[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (15, 14, 8, 12), ratio 1., qnum 0.
-[0] TetGenMeshRepairBadTets():     Dequeuing btet (8, 13, 12, 15).
+[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (12, 8, 13, 15), ratio 1., qnum 0.
+[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (14, 8, 12, 15), ratio 1., qnum 0.
+[0] TetGenMeshRepairBadTets():     Dequeuing btet (10, 8, 14, 15).
 [0] TetGenMeshRepairBadTets():     loc = 2.
 [0] TetGenMeshFormBowatCavityQuad():     Collect BC_i(16): 18 tets, 28 faces.
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (14, 15, 12) [0].
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (12, 15, 13) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (10, 11, 8) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (14, 15, 12) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (1, 15, 10) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (10, 15, 5) [0].
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (4, 12, 9) [0].
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (12, 0, 9) [0].
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (9, 8, 11) [0].
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (13, 1, 8) [0].
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (8, 0, 13) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (5, 14, 11) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (9, 8, 11) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (13, 12, 15) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (13, 1, 8) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (1, 3, 8) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (1, 10, 3) [0].
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (4, 11, 14) [0].
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (0, 2, 9) [0].
-[0] TetGenMeshEnqueueEncSub():     Queuing subface (8, 2, 0) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (5, 11, 7) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (7, 10, 5) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (4, 11, 14) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (4, 12, 9) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (12, 0, 9) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (8, 0, 13) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (6, 4, 9) [0].
 [0] TetGenMeshEnqueueEncSub():     Queuing subface (6, 11, 4) [0].
-[0] TetGenMeshRepairEncSubs():     Dequeuing ensub (14, 15, 12) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (0, 2, 9) [0].
+[0] TetGenMeshEnqueueEncSub():     Queuing subface (8, 2, 0) [0].
+[0] TetGenMeshRepairEncSubs():     Dequeuing ensub (10, 11, 8) [0].
 [0] TetGenMeshFormBowatCavitySub():     Collect CBC(16): 6 subfaces, 8 edges.
 [0] TetGenMeshFormBowatCavityQuad():     Collect BC_i(16): 18 tets, 22 faces.
-[0] TetGenMeshBowatInsertSite():     Insert point 16 (0.5, 0, 0.5)[0] TetGenMeshBowatInsertSite():  on facet.
-[0] TetGenMeshRepairEncSubs():     Dequeuing ensub (10, 11, 8) [0].
+[0] TetGenMeshBowatInsertSite():     Insert point 16 (0.5, 1, 0.5)[0] TetGenMeshBowatInsertSite():  on facet.
+[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (15, 12, 14, 16), ratio 0.883883, qnum 0.
+[0] TetGenMeshEnqueueBadTet():     Queueing bad tet: (12, 15, 13, 16), ratio 0.883883, qnum 0.
+[0] TetGenMeshRepairEncSubs():     Dequeuing ensub (14, 15, 12) [0].
 [0] TetGenMeshFormBowatCavitySub():     Collect CBC(17): 6 subfaces, 8 edges.
 [0] TetGenMeshFormBowatCavityQuad():     Collect BC_i(17): 22 tets, 24 faces.
-[0] TetGenMeshBowatInsertSite():     Insert point 17 (0.5, 1, 0.5)[0] TetGenMeshBowatInsertSite():  on facet.
+[0] TetGenMeshBowatInsertSite():     Insert point 17 (0.5, 0, 0.5)[0] TetGenMeshBowatInsertSite():  on facet.
 [0] TetGenMeshRepairEncSubs():     Dequeuing ensub (1, 15, 10) [0].
 [0] TetGenMeshFormBowatCavitySub():     Collect CBC(18): 4 subfaces, 6 edges.
 [0] TetGenMeshFormBowatCavityQuad():     Collect BC_i(18): 12 tets, 16 faces.
@@ -2212,25 +2179,25 @@ subface ver 5, mark 5:
       [0] Outer space.
       [1] loc(3).
       [2] loc(2).
-      [3] loc(2).
+      [3] loc(3).
       Org [0] (1,0,0) 1
       Dest[2] (0.5,1,0) 8
-      Apex[3] (0.5,1,0.5) 17
+      Apex[3] (0.5,0,0.5) 17
       Oppo[1] (1,0.5,0) 18
       [0] 0.
       [1] NULL.
       [2] NULL.
       [3] NULL. (*)
     Creating newtops[0] Tetra with loc(0) and ver(0):
-      [0] Outer space.
+      [0] loc(3).
       [1] loc(3).
       [2] loc(2).
       [3] Outer space.
       Org [0] (1,1,0) 3
-      Dest[1] (0.5,1,0.5) 17
+      Dest[1] (0.5,0,0.5) 17
       Apex[2] (0.5,1,0) 8
       Oppo[3] (1,0.5,0) 18
-      [0] 0. (*)
+      [0] NULL. (*)
       [1] NULL.
       [2] NULL.
       [3] 0.
@@ -2240,7 +2207,7 @@ subface ver 5, mark 5:
       [2] loc(2).
       [3] loc(1).
       Org [0] (1,0,0) 1
-      Dest[3] (0.5,1,0.5) 17
+      Dest[3] (0.5,0,0.5) 17
       Apex[1] (1,1,0.5) 10
       Oppo[2] (1,0.5,0) 18
       [0] 0.
@@ -2248,235 +2215,129 @@ subface ver 5, mark 5:
       [2] NULL.
       [3] NULL.
     Creating newtops[1] Tetra with loc(0) and ver(0):
-      [0] Outer space.
+      [0] loc(3).
       [1] Outer space.
       [2] loc(2).
       [3] loc(1).
       Org [0] (1,1,0) 3
       Dest[1] (1,1,0.5) 10
-      Apex[2] (0.5,1,0.5) 17
+      Apex[2] (0.5,0,0.5) 17
       Oppo[3] (1,0.5,0) 18
-      [0] 0. (*)
+      [0] NULL. (*)
       [1] 4.
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshLawson3D():     Lawson flip: 2 faces.
+[0] TetGenMeshLawson3D():     Lawson flip: 4 faces.
 [0] TetGenMeshFlip22():     Flip edge (8, 1) to (18, 13) T22.
 [0] TetGenMeshFlip22Sub():     Flip subedge (8, 1) to (18, 13).
 [0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(4):
       [0] Outer space.
       [1] loc(2).
       [2] loc(3).
-      [3] loc(2).
+      [3] loc(3).
       Org [2] (0.5,0,0) 13
       Dest[0] (1,0.5,0) 18
       Apex[1] (0.5,1,0) 8
-      Oppo[3] (0.5,1,0.5) 17
+      Oppo[3] (0.5,0,0.5) 17
       [0] 0. (*)
       [1] NULL.
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(2):
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(4):
       [0] Outer space.
-      [1] loc(3).
+      [1] Outer space.
       [2] loc(3).
       [3] loc(3).
-      Org [1] (1,0.5,0) 18
-      Dest[2] (0.5,0,0) 13
-      Apex[0] (1,0,0) 1
-      Oppo[3] (0.5,1,0.5) 17
+      Org [2] (1,0.5,0) 18
+      Dest[0] (0.5,0,0) 13
+      Apex[1] (1,0,0) 1
+      Oppo[3] (0.5,0,0.5) 17
       [0] 2. (*)
+      [1] 0.
+      [2] NULL.
+      [3] NULL.
+[0] TetGenMeshFlip22():     Flip edge (17, 3) to (18, 16) T44.
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(4):
+      [0] loc(3).
+      [1] loc(3).
+      [2] loc(1).
+      [3] loc(1).
+      Org [1] (0.5,1,0.5) 16
+      Dest[0] (1,0.5,0) 18
+      Apex[3] (0.5,0,0.5) 17
+      Oppo[2] (0.5,1,0) 8
+      [0] NULL.
+      [1] NULL. (*)
+      [2] NULL.
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(1) and ver(0):
+      [0] Outer space.
+      [1] loc(2).
+      [2] Outer space.
+      [3] loc(0).
+      Org [0] (1,0.5,0) 18
+      Dest[3] (0.5,1,0.5) 16
+      Apex[1] (1,1,0) 3
+      Oppo[2] (0.5,1,0) 8
+      [0] 0.
+      [1] NULL. (*)
+      [2] 0.
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(3) and ver(4):
+      [0] loc(3).
+      [1] loc(2).
+      [2] loc(2).
+      [3] loc(1).
+      Org [0] (1,0.5,0) 18
+      Dest[2] (0.5,1,0.5) 16
+      Apex[3] (0.5,0,0.5) 17
+      Oppo[1] (1,1,0.5) 10
+      [0] NULL.
       [1] NULL.
       [2] NULL.
+      [3] NULL. (*)
+[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(2) and ver(2):
+      [0] Outer space.
+      [1] Outer space.
+      [2] loc(1).
+      [3] loc(0).
+      Org [3] (0.5,1,0.5) 16
+      Dest[2] (1,0.5,0) 18
+      Apex[1] (1,1,0) 3
+      Oppo[0] (1,1,0.5) 10
+      [0] 4.
+      [1] 0.
+      [2] NULL. (*)
       [3] NULL.
 [0] TetGenMeshFlip22():     Flip edge (1, 10) to (18, 15) T22.
 [0] TetGenMeshFlip22Sub():     Flip subedge (1, 10) to (18, 15).
 [0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(0):
       [0] Outer space.
       [1] loc(1).
-      [2] loc(1).
-      [3] loc(3).
+      [2] loc(2).
+      [3] Outer space.
       Org [0] (1,0,0.5) 15
       Dest[1] (1,0.5,0) 18
       Apex[2] (1,0,0) 1
-      Oppo[3] (0.5,1,0.5) 17
+      Oppo[3] (0.5,0,0.5) 17
       [0] 0. (*)
       [1] NULL.
       [2] NULL.
-      [3] NULL.
+      [3] 0.
 [0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(0):
       [0] Outer space.
       [1] loc(1).
       [2] loc(1).
-      [3] loc(2).
+      [3] loc(1).
       Org [0] (1,0.5,0) 18
       Dest[1] (1,0,0.5) 15
       Apex[2] (1,1,0.5) 10
-      Oppo[3] (0.5,1,0.5) 17
+      Oppo[3] (0.5,0,0.5) 17
       [0] 4. (*)
       [1] NULL.
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshFlip22():     Flip edge (1, 17) to (18, 16) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(0):
-      [0] Outer space.
-      [1] loc(2).
-      [2] Outer space.
-      [3] loc(3).
-      Org [0] (0.5,0,0.5) 16
-      Dest[3] (1,0.5,0) 18
-      Apex[1] (1,0,0) 1
-      Oppo[2] (0.5,0,0) 13
-      [0] 0.
-      [1] NULL. (*)
-      [2] 2.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(2):
-      [0] loc(2).
-      [1] loc(3).
-      [2] loc(1).
-      [3] loc(3).
-      Org [3] (1,0.5,0) 18
-      Dest[2] (0.5,0,0.5) 16
-      Apex[1] (0.5,1,0.5) 17
-      Oppo[0] (0.5,0,0) 13
-      [0] NULL.
-      [1] NULL.
-      [2] NULL. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(2) and ver(2):
-      [0] Outer space.
-      [1] Outer space.
-      [2] loc(1).
-      [3] loc(3).
-      Org [3] (1,0.5,0) 18
-      Dest[2] (0.5,0,0.5) 16
-      Apex[1] (1,0,0) 1
-      Oppo[0] (1,0,0.5) 15
-      [0] 0.
-      [1] 0.
-      [2] NULL. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(1) and ver(0):
-      [0] loc(1).
-      [1] loc(2).
-      [2] loc(1).
-      [3] loc(3).
-      Org [0] (0.5,0,0.5) 16
-      Dest[3] (1,0.5,0) 18
-      Apex[1] (0.5,1,0.5) 17
-      Oppo[2] (1,0,0.5) 15
-      [0] NULL.
-      [1] NULL. (*)
-      [2] NULL.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Flip edge (13, 17) to (16, 8) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(0):
-      [0] loc(2).
-      [1] loc(3).
-      [2] loc(3).
-      [3] Outer space.
-      Org [0] (0.5,1,0) 8
-      Dest[1] (0.5,0,0.5) 16
-      Apex[2] (0.5,0,0) 13
-      Oppo[3] (1,0.5,0) 18
-      [0] NULL. (*)
-      [1] NULL.
-      [2] NULL.
-      [3] 0.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(2):
-      [0] loc(2).
-      [1] loc(1).
-      [2] loc(3).
-      [3] loc(1).
-      Org [3] (0.5,0,0.5) 16
-      Dest[2] (0.5,1,0) 8
-      Apex[1] (0.5,1,0.5) 17
-      Oppo[0] (1,0.5,0) 18
-      [0] NULL.
-      [1] NULL.
-      [2] NULL. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(2) and ver(2):
-      [0] Outer space.
-      [1] Outer space.
-      [2] loc(0).
-      [3] loc(2).
-      Org [3] (0.5,0,0.5) 16
-      Dest[2] (0.5,1,0) 8
-      Apex[1] (0.5,0,0) 13
-      Oppo[0] (0,0,0) 0
-      [0] 0.
-      [1] 0.
-      [2] NULL. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(3) and ver(0):
-      [0] loc(1).
-      [1] loc(2).
-      [2] loc(3).
-      [3] loc(2).
-      Org [2] (0.5,1,0) 8
-      Dest[3] (0.5,0,0.5) 16
-      Apex[0] (0.5,1,0.5) 17
-      Oppo[1] (0,0,0) 0
-      [0] NULL.
-      [1] NULL.
-      [2] NULL.
-      [3] NULL. (*)
-[0] TetGenMeshFlip22():     Flip edge (17, 15) to (16, 10) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(2):
-      [0] loc(1).
-      [1] loc(2).
-      [2] loc(1).
-      [3] loc(1).
-      Org [1] (1,1,0.5) 10
-      Dest[2] (0.5,0,0.5) 16
-      Apex[0] (0.5,1,0.5) 17
-      Oppo[3] (1,0.5,0) 18
-      [0] NULL. (*)
-      [1] NULL.
-      [2] NULL.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(0):
-      [0] loc(3).
-      [1] loc(2).
-      [2] loc(1).
-      [3] Outer space.
-      Org [1] (0.5,0,0.5) 16
-      Dest[3] (1,1,0.5) 10
-      Apex[2] (1,0,0.5) 15
-      Oppo[0] (1,0.5,0) 18
-      [0] NULL.
-      [1] NULL.
-      [2] NULL. (*)
-      [3] 4.
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(1) and ver(0):
-      [0] loc(1).
-      [1] loc(0).
-      [2] loc(3).
-      [3] loc(2).
-      Org [0] (0.5,0,0.5) 16
-      Dest[3] (1,1,0.5) 10
-      Apex[1] (0.5,1,0.5) 17
-      Oppo[2] (1,0,1) 5
-      [0] NULL.
-      [1] NULL. (*)
-      [2] NULL.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(1) and ver(2):
-      [0] Outer space.
-      [1] loc(2).
-      [2] loc(3).
-      [3] Outer space.
-      Org [3] (1,1,0.5) 10
-      Dest[1] (0.5,0,0.5) 16
-      Apex[0] (1,0,0.5) 15
-      Oppo[2] (1,0,1) 5
-      [0] 0.
-      [1] NULL. (*)
-      [2] NULL.
-      [3] 2.
-[0] TetGenMeshLawson3D():     5 flips.
+[0] TetGenMeshLawson3D():     3 flips.
 [0] TetGenMeshRepairEncSubs():     Dequeuing ensub (10, 15, 5) [0].
 [0] TetGenMeshFormBowatCavitySub():     Collect CBC(19): 3 subfaces, 5 edges.
 [0] TetGenMeshFormBowatCavityQuad():     Collect BC_i(19): 8 tets, 11 faces.
@@ -2538,15 +2399,15 @@ subface ver 5, mark 5:
       [10]= 0
     Updating bots[0] Tetra with loc(1) and ver(4):
       [0] Outer space.
-      [1] Outer space.
+      [1] loc(3).
       [2] loc(1).
       [3] loc(2).
       Org [1] (1,1,1) 7
       Dest[0] (0.5,1,1) 11
-      Apex[3] (0.5,1,0.5) 17
+      Apex[3] (0.5,0,0.5) 17
       Oppo[2] (1,0.5,1) 19
       [0] 0.
-      [1] 0. (*)
+      [1] NULL. (*)
       [2] NULL.
       [3] NULL.
     Creating newtops[0] Tetra with loc(0) and ver(0):
@@ -2555,7 +2416,7 @@ subface ver 5, mark 5:
       [2] loc(3).
       [3] Outer space.
       Org [0] (1,0,1) 5
-      Dest[1] (0.5,1,0.5) 17
+      Dest[1] (0.5,0,0.5) 17
       Apex[2] (0.5,1,1) 11
       Oppo[3] (1,0.5,1) 19
       [0] NULL. (*)
@@ -2565,198 +2426,145 @@ subface ver 5, mark 5:
     Updating bots[1] Tetra with loc(2) and ver(0):
       [0] Outer space.
       [1] loc(2).
-      [2] Outer space.
+      [2] loc(3).
       [3] loc(2).
       Org [1] (1,1,1) 7
-      Dest[3] (0.5,1,0.5) 17
+      Dest[3] (0.5,0,0.5) 17
       Apex[2] (1,1,0.5) 10
       Oppo[0] (1,0.5,1) 19
       [0] 0.
       [1] NULL.
-      [2] 0. (*)
+      [2] NULL. (*)
       [3] NULL.
     Creating newtops[1] Tetra with loc(0) and ver(0):
-      [0] loc(2).
+      [0] loc(3).
       [1] Outer space.
       [2] loc(3).
       [3] loc(1).
       Org [0] (1,0,1) 5
       Dest[1] (1,1,0.5) 10
-      Apex[2] (0.5,1,0.5) 17
+      Apex[2] (0.5,0,0.5) 17
       Oppo[3] (1,0.5,1) 19
       [0] NULL. (*)
       [1] 4.
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshLawson3D():     Lawson flip: 2 faces.
+[0] TetGenMeshLawson3D():     Lawson flip: 4 faces.
+[0] TetGenMeshFlip22():     Flip edge (7, 17) to (19, 16) T44.
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(0):
+      [0] Outer space.
+      [1] loc(3).
+      [2] loc(1).
+      [3] Outer space.
+      Org [1] (0.5,1,0.5) 16
+      Dest[3] (1,0.5,1) 19
+      Apex[2] (1,1,1) 7
+      Oppo[0] (0.5,1,1) 11
+      [0] 0.
+      [1] NULL.
+      [2] NULL. (*)
+      [3] 0.
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(2):
+      [0] loc(2).
+      [1] loc(2).
+      [2] loc(1).
+      [3] loc(1).
+      Org [3] (1,0.5,1) 19
+      Dest[2] (0.5,1,0.5) 16
+      Apex[1] (0.5,0,0.5) 17
+      Oppo[0] (0.5,1,1) 11
+      [0] NULL.
+      [1] NULL.
+      [2] NULL. (*)
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(1) and ver(2):
+      [0] Outer space.
+      [1] loc(2).
+      [2] loc(3).
+      [3] Outer space.
+      Org [3] (1,0.5,1) 19
+      Dest[1] (0.5,1,0.5) 16
+      Apex[0] (1,1,1) 7
+      Oppo[2] (1,1,0.5) 10
+      [0] 0.
+      [1] NULL. (*)
+      [2] NULL.
+      [3] 0.
+[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(1) and ver(0):
+      [0] loc(2).
+      [1] loc(2).
+      [2] loc(2).
+      [3] loc(2).
+      Org [0] (0.5,1,0.5) 16
+      Dest[3] (1,0.5,1) 19
+      Apex[1] (0.5,0,0.5) 17
+      Oppo[2] (1,1,0.5) 10
+      [0] NULL.
+      [1] NULL. (*)
+      [2] NULL.
+      [3] NULL.
 [0] TetGenMeshFlip22():     Flip edge (5, 11) to (19, 14) T22.
 [0] TetGenMeshFlip22Sub():     Flip subedge (5, 11) to (19, 14).
 [0] TetGenMeshFlip22():     Updating abce Tetra with loc(3) and ver(4):
       [0] loc(2).
-      [1] loc(3).
+      [1] Outer space.
       [2] loc(3).
       [3] Outer space.
       Org [0] (0.5,0,1) 14
       Dest[2] (1,0.5,1) 19
       Apex[3] (1,0,1) 5
-      Oppo[1] (0.5,1,0.5) 17
+      Oppo[1] (0.5,0,0.5) 17
       [0] NULL.
-      [1] NULL.
+      [1] 0.
       [2] NULL.
       [3] 4. (*)
 [0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(2):
       [0] Outer space.
-      [1] loc(3).
+      [1] loc(1).
       [2] loc(0).
       [3] loc(2).
       Org [1] (1,0.5,1) 19
       Dest[2] (0.5,0,1) 14
       Apex[0] (0.5,1,1) 11
-      Oppo[3] (0.5,1,0.5) 17
+      Oppo[3] (0.5,0,0.5) 17
       [0] 4. (*)
       [1] NULL.
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshFlip22():     Flip edge (5, 17) to (19, 16) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(3) and ver(4):
-      [0] loc(2).
-      [1] loc(2).
-      [2] Outer space.
-      [3] loc(2).
-      Org [0] (0.5,0,0.5) 16
-      Dest[2] (1,0.5,1) 19
-      Apex[3] (1,0,1) 5
-      Oppo[1] (1,1,0.5) 10
-      [0] NULL.
-      [1] NULL.
-      [2] 4.
-      [3] NULL. (*)
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(2):
-      [0] loc(1).
-      [1] loc(3).
-      [2] loc(0).
-      [3] loc(0).
-      Org [1] (1,0.5,1) 19
-      Dest[2] (0.5,0,0.5) 16
-      Apex[0] (0.5,1,0.5) 17
-      Oppo[3] (1,1,0.5) 10
-      [0] NULL. (*)
-      [1] NULL.
-      [2] NULL.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(2) and ver(0):
-      [0] Outer space.
-      [1] loc(3).
-      [2] loc(3).
-      [3] Outer space.
-      Org [1] (1,0.5,1) 19
-      Dest[3] (0.5,0,0.5) 16
-      Apex[2] (1,0,1) 5
-      Oppo[0] (0.5,0,1) 14
-      [0] 4.
-      [1] NULL.
-      [2] NULL. (*)
-      [3] 0.
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(1) and ver(0):
-      [0] loc(1).
-      [1] loc(0).
-      [2] loc(2).
-      [3] loc(1).
-      Org [0] (0.5,0,0.5) 16
-      Dest[3] (1,0.5,1) 19
-      Apex[1] (0.5,1,0.5) 17
-      Oppo[2] (0.5,0,1) 14
-      [0] NULL.
-      [1] NULL. (*)
-      [2] NULL.
-      [3] NULL.
 [0] TetGenMeshFlip22():     Flip edge (10, 5) to (19, 15) T22.
 [0] TetGenMeshFlip22Sub():     Flip subedge (10, 5) to (19, 15).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(0):
-      [0] loc(2).
-      [1] loc(2).
-      [2] Outer space.
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(4):
+      [0] loc(3).
+      [1] Outer space.
+      [2] loc(2).
       [3] loc(2).
       Org [1] (1,0,0.5) 15
-      Dest[3] (1,0.5,1) 19
-      Apex[2] (1,1,0.5) 10
-      Oppo[0] (0.5,0,0.5) 16
+      Dest[0] (1,0.5,1) 19
+      Apex[3] (1,1,0.5) 10
+      Oppo[2] (0.5,0,0.5) 17
       [0] NULL.
-      [1] NULL.
-      [2] 4. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(3) and ver(0):
-      [0] loc(2).
-      [1] Outer space.
-      [2] loc(1).
-      [3] Outer space.
-      Org [2] (1,0.5,1) 19
-      Dest[3] (1,0,0.5) 15
-      Apex[0] (1,0,1) 5
-      Oppo[1] (0.5,0,0.5) 16
-      [0] NULL.
-      [1] 0.
-      [2] NULL.
-      [3] 2. (*)
-[0] TetGenMeshFlip22():     Flip edge (17, 14) to (16, 11) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(2):
-      [0] loc(1).
-      [1] loc(3).
-      [2] loc(2).
-      [3] loc(0).
-      Org [1] (0.5,1,1) 11
-      Dest[2] (0.5,0,0.5) 16
-      Apex[0] (0.5,1,0.5) 17
-      Oppo[3] (1,0.5,1) 19
-      [0] NULL. (*)
-      [1] NULL.
+      [1] 4. (*)
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(3) and ver(0):
-      [0] loc(1).
-      [1] Outer space.
-      [2] loc(2).
-      [3] loc(2).
-      Org [2] (0.5,0,0.5) 16
-      Dest[3] (0.5,1,1) 11
-      Apex[0] (0.5,0,1) 14
-      Oppo[1] (1,0.5,1) 19
-      [0] NULL.
-      [1] 4.
-      [2] NULL.
-      [3] NULL. (*)
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(1) and ver(0):
-      [0] loc(1).
-      [1] loc(0).
-      [2] loc(3).
-      [3] loc(3).
-      Org [0] (0.5,0,0.5) 16
-      Dest[3] (0.5,1,1) 11
-      Apex[1] (0.5,1,0.5) 17
-      Oppo[2] (0,0,1) 4
-      [0] NULL.
-      [1] NULL. (*)
-      [2] NULL.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(2) and ver(2):
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(4):
       [0] Outer space.
       [1] Outer space.
-      [2] loc(3).
-      [3] loc(3).
-      Org [3] (0.5,1,1) 11
-      Dest[2] (0.5,0,0.5) 16
-      Apex[1] (0.5,0,1) 14
-      Oppo[0] (0,0,1) 4
-      [0] 0.
+      [2] loc(2).
+      [3] loc(0).
+      Org [2] (1,0.5,1) 19
+      Dest[0] (1,0,0.5) 15
+      Apex[1] (1,0,1) 5
+      Oppo[3] (0.5,0,0.5) 17
+      [0] 2. (*)
       [1] 0.
-      [2] NULL. (*)
+      [2] NULL.
       [3] NULL.
-[0] TetGenMeshLawson3D():     4 flips.
-[0] TetGenMeshRepairEncSubs():     Dequeuing ensub (4, 12, 9) [0].
-[0] TetGenMeshFormBowatCavitySub():     Collect CBC(20): 4 subfaces, 6 edges.
-[0] TetGenMeshFormBowatCavityQuad():     Collect BC_i(20): 14 tets, 18 faces.
-[0] TetGenMeshCheckSeg4Encroach():     Queuing encroaching subsegment (4, 6).
-[0] TetGenMeshRepairEncSegs():   Get an enc-seg (4, 6)
+[0] TetGenMeshLawson3D():     3 flips.
+[0] TetGenMeshRepairEncSubs():     Dequeuing ensub (4, 11, 14) [0].
+[0] TetGenMeshFormBowatCavitySub():     Collect CBC(20): 3 subfaces, 5 edges.
+[0] TetGenMeshFormBowatCavityQuad():     Collect BC_i(20): 8 tets, 11 faces.
+[0] TetGenMeshCheckSeg4Encroach():     Queuing encroaching subsegment (6, 4).
+[0] TetGenMeshRepairEncSegs():   Get an enc-seg (6, 4)
 [0] TetGenMeshSplitTetEdge():   Inserting point 20 on edge (4, 6).
 [0] TetGenMeshSplitSubEdge_queue():   Inserting point 20 on subedge (4, 6) (seg).
 [0] TetGenMeshSplitSubEdge_queue():     Updating abc:
@@ -2815,25 +2623,25 @@ subface ver 3, mark 6:
       [0] Outer space.
       [1] loc(2).
       [2] loc(2).
-      [3] loc(2).
+      [3] loc(1).
       Org [0] (0,0,1) 4
       Dest[2] (0.5,1,1) 11
-      Apex[3] (0.5,1,0.5) 17
+      Apex[3] (0.5,0,0.5) 17
       Oppo[1] (0,0.5,1) 20
       [0] 4.
       [1] NULL.
       [2] NULL.
       [3] NULL. (*)
     Creating newtops[0] Tetra with loc(0) and ver(0):
-      [0] Outer space.
+      [0] loc(3).
       [1] loc(3).
       [2] loc(2).
       [3] Outer space.
       Org [0] (0,1,1) 6
-      Dest[1] (0.5,1,0.5) 17
+      Dest[1] (0.5,0,0.5) 17
       Apex[2] (0.5,1,1) 11
       Oppo[3] (0,0.5,1) 20
-      [0] 0. (*)
+      [0] NULL. (*)
       [1] NULL.
       [2] NULL.
       [3] 2.
@@ -2843,7 +2651,7 @@ subface ver 3, mark 6:
       [2] loc(1).
       [3] loc(2).
       Org [2] (0,0,1) 4
-      Dest[3] (0.5,1,0.5) 17
+      Dest[3] (0.5,0,0.5) 17
       Apex[0] (0,1,0.5) 9
       Oppo[1] (0,0.5,1) 20
       [0] 2.
@@ -2851,182 +2659,129 @@ subface ver 3, mark 6:
       [2] NULL.
       [3] NULL. (*)
     Creating newtops[1] Tetra with loc(0) and ver(0):
-      [0] Outer space.
+      [0] loc(3).
       [1] Outer space.
       [2] loc(1).
       [3] loc(1).
       Org [0] (0,1,1) 6
       Dest[1] (0,1,0.5) 9
-      Apex[2] (0.5,1,0.5) 17
+      Apex[2] (0.5,0,0.5) 17
       Oppo[3] (0,0.5,1) 20
-      [0] 0. (*)
+      [0] NULL. (*)
       [1] 2.
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshLawson3D():     Lawson flip: 2 faces.
-[0] TetGenMeshFlip22():     Flip edge (4, 9) to (20, 12) T22.
-[0] TetGenMeshFlip22Sub():     Flip subedge (4, 9) to (20, 12).
+[0] TetGenMeshLawson3D():     Lawson flip: 4 faces.
+[0] TetGenMeshFlip22():     Flip edge (11, 4) to (20, 14) T22.
+[0] TetGenMeshFlip22Sub():     Flip subedge (11, 4) to (20, 14).
 [0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(4):
-      [0] Outer space.
-      [1] loc(1).
-      [2] loc(3).
-      [3] loc(2).
-      Org [2] (0,0,0.5) 12
-      Dest[0] (0,0.5,1) 20
-      Apex[1] (0,0,1) 4
-      Oppo[3] (0.5,1,0.5) 17
-      [0] 2. (*)
-      [1] NULL.
-      [2] NULL.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(2):
       [0] Outer space.
       [1] loc(2).
       [2] loc(3).
-      [3] loc(3).
-      Org [1] (0,0.5,1) 20
-      Dest[2] (0,0,0.5) 12
-      Apex[0] (0,1,0.5) 9
-      Oppo[3] (0.5,1,0.5) 17
-      [0] 0. (*)
+      [3] loc(1).
+      Org [2] (0.5,0,1) 14
+      Dest[0] (0,0.5,1) 20
+      Apex[1] (0.5,1,1) 11
+      Oppo[3] (0.5,0,0.5) 17
+      [0] 4. (*)
       [1] NULL.
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshFlip22():     Flip edge (17, 4) to (20, 16) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(2):
-      [0] loc(2).
-      [1] loc(1).
-      [2] loc(3).
-      [3] loc(1).
-      Org [3] (0.5,0,0.5) 16
-      Dest[1] (0,0.5,1) 20
-      Apex[0] (0.5,1,0.5) 17
-      Oppo[2] (0,0,0.5) 12
-      [0] NULL.
-      [1] NULL. (*)
-      [2] NULL.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(1) and ver(0):
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(0):
       [0] Outer space.
-      [1] loc(0).
+      [1] loc(3).
       [2] Outer space.
       [3] loc(2).
       Org [0] (0,0.5,1) 20
-      Dest[3] (0.5,0,0.5) 16
-      Apex[1] (0,0,1) 4
-      Oppo[2] (0,0,0.5) 12
-      [0] 2.
-      [1] NULL. (*)
+      Dest[1] (0.5,0,1) 14
+      Apex[2] (0,0,1) 4
+      Oppo[3] (0.5,0,0.5) 17
+      [0] 0. (*)
+      [1] NULL.
       [2] 0.
       [3] NULL.
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(1) and ver(0):
-      [0] loc(2).
-      [1] loc(1).
+[0] TetGenMeshFlip22():     Flip edge (17, 6) to (20, 16) T44.
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(4):
+      [0] loc(3).
+      [1] loc(3).
       [2] loc(0).
-      [3] loc(2).
-      Org [0] (0,0.5,1) 20
-      Dest[3] (0.5,0,0.5) 16
-      Apex[1] (0.5,1,0.5) 17
+      [3] loc(1).
+      Org [1] (0.5,1,0.5) 16
+      Dest[0] (0,0.5,1) 20
+      Apex[3] (0.5,0,0.5) 17
       Oppo[2] (0.5,1,1) 11
       [0] NULL.
       [1] NULL. (*)
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(0) and ver(2):
-      [0] loc(1).
-      [1] loc(3).
-      [2] loc(3).
-      [3] Outer space.
-      Org [1] (0.5,0,0.5) 16
-      Dest[2] (0,0.5,1) 20
-      Apex[0] (0,0,1) 4
-      Oppo[3] (0.5,1,1) 11
-      [0] NULL. (*)
-      [1] NULL.
-      [2] NULL.
-      [3] 4.
-[0] TetGenMeshFlip22():     Flip edge (17, 12) to (16, 9) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(3) and ver(4):
-      [0] loc(2).
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(1) and ver(0):
+      [0] Outer space.
       [1] loc(2).
-      [2] loc(1).
+      [2] Outer space.
+      [3] loc(0).
+      Org [0] (0,0.5,1) 20
+      Dest[3] (0.5,1,0.5) 16
+      Apex[1] (0,1,1) 6
+      Oppo[2] (0.5,1,1) 11
+      [0] 2.
+      [1] NULL. (*)
+      [2] 0.
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(3) and ver(4):
+      [0] loc(3).
+      [1] loc(1).
+      [2] loc(2).
       [3] loc(1).
-      Org [0] (0,1,0.5) 9
-      Dest[2] (0.5,0,0.5) 16
-      Apex[3] (0.5,1,0.5) 17
-      Oppo[1] (0,0.5,1) 20
+      Org [0] (0,0.5,1) 20
+      Dest[2] (0.5,1,0.5) 16
+      Apex[3] (0.5,0,0.5) 17
+      Oppo[1] (0,1,0.5) 9
       [0] NULL.
       [1] NULL.
       [2] NULL.
       [3] NULL. (*)
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(3) and ver(0):
-      [0] loc(3).
+[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(2) and ver(2):
+      [0] Outer space.
       [1] Outer space.
-      [2] loc(0).
-      [3] loc(3).
-      Org [2] (0.5,0,0.5) 16
-      Dest[3] (0,1,0.5) 9
-      Apex[0] (0,0,0.5) 12
-      Oppo[1] (0,0.5,1) 20
-      [0] NULL.
+      [2] loc(1).
+      [3] loc(0).
+      Org [3] (0.5,1,0.5) 16
+      Dest[2] (0,0.5,1) 20
+      Apex[1] (0,1,1) 6
+      Oppo[0] (0,1,0.5) 9
+      [0] 2.
       [1] 0.
-      [2] NULL.
-      [3] NULL. (*)
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(1) and ver(0):
-      [0] loc(1).
-      [1] loc(3).
-      [2] loc(3).
-      [3] loc(1).
-      Org [0] (0.5,0,0.5) 16
-      Dest[3] (0,1,0.5) 9
-      Apex[1] (0.5,1,0.5) 17
-      Oppo[2] (0,0,0) 0
-      [0] NULL.
-      [1] NULL. (*)
-      [2] NULL.
+      [2] NULL. (*)
       [3] NULL.
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(3) and ver(2):
+[0] TetGenMeshFlip22():     Flip edge (4, 9) to (20, 12) T22.
+[0] TetGenMeshFlip22Sub():     Flip subedge (4, 9) to (20, 12).
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(0) and ver(4):
       [0] Outer space.
       [1] loc(3).
       [2] Outer space.
-      [3] loc(3).
-      Org [3] (0,1,0.5) 9
-      Dest[0] (0.5,0,0.5) 16
-      Apex[2] (0,0,0.5) 12
-      Oppo[1] (0,0,0) 0
-      [0] 0.
-      [1] NULL.
-      [2] 0.
-      [3] NULL. (*)
-[0] TetGenMeshFlip22():     Flip edge (11, 4) to (20, 14) T22.
-[0] TetGenMeshFlip22Sub():     Flip subedge (11, 4) to (20, 14).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(3) and ver(2):
-      [0] loc(3).
-      [1] loc(3).
-      [2] loc(3).
-      [3] Outer space.
-      Org [3] (0.5,0,1) 14
+      [3] loc(2).
+      Org [2] (0,0,0.5) 12
       Dest[0] (0,0.5,1) 20
-      Apex[2] (0.5,1,1) 11
-      Oppo[1] (0.5,0,0.5) 16
-      [0] NULL.
-      [1] NULL.
-      [2] NULL.
-      [3] 4. (*)
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(1) and ver(0):
-      [0] loc(1).
-      [1] Outer space.
-      [2] Outer space.
-      [3] loc(1).
-      Org [0] (0,0.5,1) 20
-      Dest[3] (0.5,0,1) 14
       Apex[1] (0,0,1) 4
-      Oppo[2] (0.5,0,0.5) 16
-      [0] NULL.
-      [1] 0. (*)
+      Oppo[3] (0.5,0,0.5) 17
+      [0] 2. (*)
+      [1] NULL.
       [2] 0.
       [3] NULL.
-[0] TetGenMeshLawson3D():     4 flips.
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(2):
+      [0] Outer space.
+      [1] loc(1).
+      [2] loc(3).
+      [3] loc(3).
+      Org [1] (0,0.5,1) 20
+      Dest[2] (0,0,0.5) 12
+      Apex[0] (0,1,0.5) 9
+      Oppo[3] (0.5,0,0.5) 17
+      [0] 0. (*)
+      [1] NULL.
+      [2] NULL.
+      [3] NULL.
+[0] TetGenMeshLawson3D():     3 flips.
 [0] TetGenMeshRepairEncSubs():     Dequeuing ensub (12, 0, 9) [0].
 [0] TetGenMeshFormBowatCavitySub():     Collect CBC(21): 3 subfaces, 5 edges.
 [0] TetGenMeshFormBowatCavityQuad():     Collect BC_i(21): 10 tets, 13 faces.
@@ -3089,23 +2844,23 @@ subface ver 2, mark 2:
     Updating bots[0] Tetra with loc(2) and ver(4):
       [0] Outer space.
       [1] loc(2).
-      [2] Outer space.
+      [2] loc(3).
       [3] loc(1).
       Org [2] (0,1,0) 2
       Dest[1] (0.5,1,0) 8
-      Apex[3] (0.5,1,0.5) 17
+      Apex[3] (0.5,0,0.5) 17
       Oppo[0] (0,0.5,0) 21
       [0] 0.
       [1] NULL.
-      [2] 0. (*)
+      [2] NULL. (*)
       [3] NULL.
     Creating newtops[0] Tetra with loc(0) and ver(0):
-      [0] loc(0).
+      [0] loc(1).
       [1] loc(3).
       [2] loc(1).
       [3] Outer space.
       Org [0] (0,0,0) 0
-      Dest[1] (0.5,1,0.5) 17
+      Dest[1] (0.5,0,0.5) 17
       Apex[2] (0.5,1,0) 8
       Oppo[3] (0,0.5,0) 21
       [0] NULL. (*)
@@ -3115,15 +2870,15 @@ subface ver 2, mark 2:
     Updating bots[1] Tetra with loc(2) and ver(0):
       [0] Outer space.
       [1] loc(3).
-      [2] Outer space.
+      [2] loc(3).
       [3] loc(2).
       Org [1] (0,1,0) 2
-      Dest[3] (0.5,1,0.5) 17
+      Dest[3] (0.5,0,0.5) 17
       Apex[2] (0,1,0.5) 9
       Oppo[0] (0,0.5,0) 21
       [0] 0.
       [1] NULL.
-      [2] 0. (*)
+      [2] NULL. (*)
       [3] NULL.
     Creating newtops[1] Tetra with loc(0) and ver(0):
       [0] loc(2).
@@ -3132,121 +2887,121 @@ subface ver 2, mark 2:
       [3] loc(1).
       Org [0] (0,0,0) 0
       Dest[1] (0,1,0.5) 9
-      Apex[2] (0.5,1,0.5) 17
+      Apex[2] (0.5,0,0.5) 17
       Oppo[3] (0,0.5,0) 21
       [0] NULL. (*)
       [1] 0.
       [2] NULL.
       [3] NULL.
-[0] TetGenMeshLawson3D():     Lawson flip: 2 faces.
-[0] TetGenMeshFlip22():     Flip edge (17, 0) to (21, 16) T44.
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(4):
-      [0] loc(0).
-      [1] loc(3).
-      [2] loc(2).
-      [3] loc(1).
-      Org [1] (0.5,0,0.5) 16
-      Dest[0] (0,0.5,0) 21
-      Apex[3] (0.5,1,0.5) 17
-      Oppo[2] (0.5,1,0) 8
-      [0] NULL.
-      [1] NULL. (*)
-      [2] NULL.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(1) and ver(4):
-      [0] loc(0).
-      [1] loc(0).
-      [2] Outer space.
-      [3] loc(3).
-      Org [1] (0,0.5,0) 21
-      Dest[0] (0.5,0,0.5) 16
-      Apex[3] (0,0,0) 0
-      Oppo[2] (0.5,1,0) 8
-      [0] NULL.
-      [1] NULL. (*)
-      [2] 2.
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(3) and ver(4):
-      [0] loc(2).
-      [1] loc(3).
+[0] TetGenMeshLawson3D():     Lawson flip: 4 faces.
+[0] TetGenMeshFlip22():     Flip edge (2, 17) to (21, 16) T44.
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(3) and ver(0):
+      [0] Outer space.
+      [1] Outer space.
       [2] loc(3).
       [3] loc(1).
-      Org [0] (0,0.5,0) 21
-      Dest[2] (0.5,0,0.5) 16
-      Apex[3] (0.5,1,0.5) 17
-      Oppo[1] (0,1,0.5) 9
-      [0] NULL.
-      [1] NULL.
+      Org [2] (0.5,1,0.5) 16
+      Dest[3] (0,0.5,0) 21
+      Apex[0] (0,1,0) 2
+      Oppo[1] (0.5,1,0) 8
+      [0] 0.
+      [1] 0.
       [2] NULL.
       [3] NULL. (*)
-[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(0) and ver(2):
-      [0] loc(1).
-      [1] loc(1).
-      [2] loc(0).
-      [3] Outer space.
-      Org [1] (0.5,0,0.5) 16
-      Dest[2] (0,0.5,0) 21
-      Apex[0] (0,0,0) 0
-      Oppo[3] (0,1,0.5) 9
-      [0] NULL. (*)
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(2):
+      [0] loc(2).
+      [1] loc(2).
+      [2] loc(1).
+      [3] loc(2).
+      Org [3] (0,0.5,0) 21
+      Dest[2] (0.5,1,0.5) 16
+      Apex[1] (0.5,0,0.5) 17
+      Oppo[0] (0.5,1,0) 8
+      [0] NULL.
       [1] NULL.
+      [2] NULL. (*)
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bacf Tetra with loc(1) and ver(2):
+      [0] Outer space.
+      [1] loc(3).
+      [2] loc(3).
+      [3] Outer space.
+      Org [3] (0,0.5,0) 21
+      Dest[1] (0.5,1,0.5) 16
+      Apex[0] (0,1,0) 2
+      Oppo[2] (0,1,0.5) 9
+      [0] 0.
+      [1] NULL. (*)
       [2] NULL.
       [3] 0.
+[0] TetGenMeshFlip22():     Updating abdf Tetra with loc(1) and ver(0):
+      [0] loc(2).
+      [1] loc(2).
+      [2] loc(2).
+      [3] loc(2).
+      Org [0] (0.5,1,0.5) 16
+      Dest[3] (0,0.5,0) 21
+      Apex[1] (0.5,0,0.5) 17
+      Oppo[2] (0,1,0.5) 9
+      [0] NULL.
+      [1] NULL. (*)
+      [2] NULL.
+      [3] NULL.
 [0] TetGenMeshFlip22():     Flip edge (0, 8) to (21, 13) T22.
 [0] TetGenMeshFlip22Sub():     Flip subedge (0, 8) to (21, 13).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(2) and ver(2):
-      [0] loc(0).
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(3) and ver(4):
+      [0] loc(1).
       [1] Outer space.
-      [2] Outer space.
-      [3] loc(3).
-      Org [3] (0.5,0,0) 13
+      [2] loc(3).
+      [3] Outer space.
+      Org [0] (0.5,0,0) 13
       Dest[2] (0,0.5,0) 21
-      Apex[1] (0,0,0) 0
-      Oppo[0] (0.5,0,0.5) 16
+      Apex[3] (0,0,0) 0
+      Oppo[1] (0.5,0,0.5) 17
       [0] NULL.
       [1] 0.
-      [2] 2. (*)
-      [3] NULL.
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(4):
+      [2] NULL.
+      [3] 2. (*)
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(0):
       [0] Outer space.
       [1] loc(0).
-      [2] loc(0).
-      [3] loc(3).
-      Org [2] (0,0.5,0) 21
-      Dest[0] (0.5,0,0) 13
-      Apex[1] (0.5,1,0) 8
-      Oppo[3] (0.5,0,0.5) 16
+      [2] loc(2).
+      [3] loc(1).
+      Org [0] (0,0.5,0) 21
+      Dest[1] (0.5,0,0) 13
+      Apex[2] (0.5,1,0) 8
+      Oppo[3] (0.5,0,0.5) 17
       [0] 0. (*)
       [1] NULL.
       [2] NULL.
       [3] NULL.
 [0] TetGenMeshFlip22():     Flip edge (9, 0) to (21, 12) T22.
 [0] TetGenMeshFlip22Sub():     Flip subedge (9, 0) to (21, 12).
-[0] TetGenMeshFlip22():     Updating abce Tetra with loc(3) and ver(2):
-      [0] loc(0).
-      [1] loc(1).
+[0] TetGenMeshFlip22():     Updating abce Tetra with loc(1) and ver(4):
+      [0] loc(2).
+      [1] Outer space.
       [2] loc(3).
-      [3] Outer space.
-      Org [3] (0,0,0.5) 12
+      [3] loc(2).
+      Org [1] (0,0,0.5) 12
       Dest[0] (0,0.5,0) 21
-      Apex[2] (0,1,0.5) 9
-      Oppo[1] (0.5,0,0.5) 16
+      Apex[3] (0,1,0.5) 9
+      Oppo[2] (0.5,0,0.5) 17
       [0] NULL.
-      [1] NULL.
+      [1] 0. (*)
       [2] NULL.
-      [3] 0. (*)
-[0] TetGenMeshFlip22():     Updating bade Tetra with loc(2) and ver(0):
-      [0] loc(0).
-      [1] loc(1).
-      [2] Outer space.
+      [3] NULL.
+[0] TetGenMeshFlip22():     Updating bade Tetra with loc(0) and ver(2):
+      [0] Outer space.
+      [1] loc(2).
+      [2] loc(0).
       [3] Outer space.
       Org [1] (0,0.5,0) 21
-      Dest[3] (0,0,0.5) 12
-      Apex[2] (0,0,0) 0
-      Oppo[0] (0.5,0,0.5) 16
-      [0] NULL.
+      Dest[2] (0,0,0.5) 12
+      Apex[0] (0,0,0) 0
+      Oppo[3] (0.5,0,0.5) 17
+      [0] 0. (*)
       [1] NULL.
-      [2] 0. (*)
+      [2] NULL.
       [3] 0.
 [0] TetGenMeshLawson3D():     3 flips.
 [0] TetGenMeshEnforceQuality():   14 refinement points.
@@ -3262,264 +3017,264 @@ DM Object: Simplicial Mesh 1 MPI processes
 Simplicial Mesh in 3 dimensions:
 Supports:
 [0] Max support size: 24
-[0]: 32 ----> 28
-[0]: 32 ----> 30
-[0]: 33 ----> 4
-[0]: 33 ----> 13
-[0]: 34 ----> 7
-[0]: 34 ----> 14
-[0]: 35 ----> 21
-[0]: 35 ----> 25
+[0]: 32 ----> 14
+[0]: 32 ----> 22
+[0]: 33 ----> 9
+[0]: 33 ----> 26
+[0]: 34 ----> 28
+[0]: 34 ----> 30
+[0]: 35 ----> 8
+[0]: 35 ----> 27
+[0]: 36 ----> 3
 [0]: 36 ----> 5
-[0]: 36 ----> 27
-[0]: 37 ----> 6
-[0]: 37 ----> 18
-[0]: 38 ----> 19
-[0]: 38 ----> 23
+[0]: 37 ----> 10
+[0]: 37 ----> 19
+[0]: 38 ----> 13
+[0]: 38 ----> 15
 [0]: 39 ----> 1
-[0]: 39 ----> 10
-[0]: 40 ----> 2
-[0]: 40 ----> 3
+[0]: 39 ----> 4
 [0]: 40 ----> 7
-[0]: 40 ----> 20
-[0]: 40 ----> 25
+[0]: 40 ----> 8
+[0]: 40 ----> 11
+[0]: 40 ----> 24
+[0]: 40 ----> 28
 [0]: 40 ----> 29
-[0]: 41 ----> 8
-[0]: 41 ----> 14
-[0]: 41 ----> 19
-[0]: 41 ----> 24
-[0]: 41 ----> 26
+[0]: 41 ----> 6
+[0]: 41 ----> 15
+[0]: 41 ----> 20
+[0]: 41 ----> 23
+[0]: 41 ----> 30
 [0]: 41 ----> 31
 [0]: 42 ----> 1
-[0]: 42 ----> 12
-[0]: 42 ----> 15
-[0]: 42 ----> 17
-[0]: 42 ----> 21
-[0]: 42 ----> 22
+[0]: 42 ----> 2
+[0]: 42 ----> 16
+[0]: 42 ----> 18
+[0]: 42 ----> 25
+[0]: 42 ----> 27
 [0]: 43 ----> 0
-[0]: 43 ----> 9
-[0]: 43 ----> 10
-[0]: 43 ----> 11
-[0]: 43 ----> 16
-[0]: 43 ----> 23
-[0]: 44 ----> 26
-[0]: 44 ----> 27
-[0]: 44 ----> 30
-[0]: 44 ----> 31
-[0]: 45 ----> 3
-[0]: 45 ----> 13
-[0]: 45 ----> 28
-[0]: 45 ----> 29
-[0]: 46 ----> 0
+[0]: 43 ----> 4
+[0]: 43 ----> 12
+[0]: 43 ----> 13
+[0]: 43 ----> 17
+[0]: 43 ----> 21
+[0]: 44 ----> 3
+[0]: 44 ----> 6
+[0]: 44 ----> 14
+[0]: 44 ----> 23
+[0]: 45 ----> 7
+[0]: 45 ----> 9
+[0]: 45 ----> 11
+[0]: 45 ----> 22
 [0]: 46 ----> 5
-[0]: 46 ----> 16
-[0]: 46 ----> 18
-[0]: 47 ----> 4
-[0]: 47 ----> 6
-[0]: 47 ----> 15
-[0]: 47 ----> 22
+[0]: 46 ----> 12
+[0]: 46 ----> 17
+[0]: 46 ----> 19
+[0]: 47 ----> 10
+[0]: 47 ----> 16
+[0]: 47 ----> 18
+[0]: 47 ----> 26
 [0]: 48 ----> 0
+[0]: 48 ----> 1
 [0]: 48 ----> 2
-[0]: 48 ----> 3
 [0]: 48 ----> 4
-[0]: 48 ----> 5
-[0]: 48 ----> 6
 [0]: 48 ----> 8
-[0]: 48 ----> 9
-[0]: 48 ----> 11
-[0]: 48 ----> 12
 [0]: 48 ----> 13
 [0]: 48 ----> 15
-[0]: 48 ----> 16
-[0]: 48 ----> 17
-[0]: 48 ----> 18
 [0]: 48 ----> 20
-[0]: 48 ----> 22
+[0]: 48 ----> 21
 [0]: 48 ----> 24
-[0]: 48 ----> 26
+[0]: 48 ----> 25
 [0]: 48 ----> 27
 [0]: 48 ----> 28
 [0]: 48 ----> 29
 [0]: 48 ----> 30
 [0]: 48 ----> 31
-[0]: 49 ----> 1
+[0]: 49 ----> 0
 [0]: 49 ----> 2
+[0]: 49 ----> 3
+[0]: 49 ----> 5
+[0]: 49 ----> 6
 [0]: 49 ----> 7
-[0]: 49 ----> 8
 [0]: 49 ----> 9
 [0]: 49 ----> 10
 [0]: 49 ----> 11
 [0]: 49 ----> 12
 [0]: 49 ----> 14
+[0]: 49 ----> 16
 [0]: 49 ----> 17
+[0]: 49 ----> 18
 [0]: 49 ----> 19
 [0]: 49 ----> 20
 [0]: 49 ----> 21
+[0]: 49 ----> 22
 [0]: 49 ----> 23
 [0]: 49 ----> 24
 [0]: 49 ----> 25
-[0]: 50 ----> 2
-[0]: 50 ----> 3
-[0]: 50 ----> 4
-[0]: 50 ----> 12
-[0]: 50 ----> 13
-[0]: 50 ----> 15
-[0]: 50 ----> 21
+[0]: 49 ----> 26
+[0]: 49 ----> 29
+[0]: 49 ----> 31
+[0]: 50 ----> 8
+[0]: 50 ----> 9
+[0]: 50 ----> 11
+[0]: 50 ----> 16
+[0]: 50 ----> 24
 [0]: 50 ----> 25
+[0]: 50 ----> 26
+[0]: 50 ----> 27
+[0]: 51 ----> 0
 [0]: 51 ----> 1
-[0]: 51 ----> 6
-[0]: 51 ----> 9
+[0]: 51 ----> 2
+[0]: 51 ----> 4
 [0]: 51 ----> 10
-[0]: 51 ----> 16
 [0]: 51 ----> 17
 [0]: 51 ----> 18
-[0]: 51 ----> 22
-[0]: 52 ----> 0
+[0]: 51 ----> 19
+[0]: 52 ----> 3
 [0]: 52 ----> 5
-[0]: 52 ----> 8
-[0]: 52 ----> 11
-[0]: 52 ----> 19
-[0]: 52 ----> 23
-[0]: 52 ----> 26
-[0]: 52 ----> 27
+[0]: 52 ----> 6
+[0]: 52 ----> 12
+[0]: 52 ----> 13
+[0]: 52 ----> 15
+[0]: 52 ----> 20
+[0]: 52 ----> 21
 [0]: 53 ----> 7
 [0]: 53 ----> 14
-[0]: 53 ----> 20
-[0]: 53 ----> 24
+[0]: 53 ----> 22
+[0]: 53 ----> 23
 [0]: 53 ----> 28
 [0]: 53 ----> 29
 [0]: 53 ----> 30
 [0]: 53 ----> 31
 Cones:
 [0] Max cone size: 4
-[0]: 0 <---- 48 (0)
-[0]: 0 <---- 52 (0)
+[0]: 0 <---- 49 (0)
 [0]: 0 <---- 43 (0)
-[0]: 0 <---- 46 (0)
+[0]: 0 <---- 48 (0)
+[0]: 0 <---- 51 (0)
+[0]: 1 <---- 48 (0)
 [0]: 1 <---- 39 (0)
-[0]: 1 <---- 51 (0)
 [0]: 1 <---- 42 (0)
-[0]: 1 <---- 49 (0)
+[0]: 1 <---- 51 (0)
 [0]: 2 <---- 49 (0)
-[0]: 2 <---- 50 (0)
-[0]: 2 <---- 40 (0)
 [0]: 2 <---- 48 (0)
-[0]: 3 <---- 48 (0)
-[0]: 3 <---- 40 (0)
-[0]: 3 <---- 45 (0)
-[0]: 3 <---- 50 (0)
-[0]: 4 <---- 33 (0)
-[0]: 4 <---- 47 (0)
+[0]: 2 <---- 42 (0)
+[0]: 2 <---- 51 (0)
+[0]: 3 <---- 36 (0)
+[0]: 3 <---- 52 (0)
+[0]: 3 <---- 44 (0)
+[0]: 3 <---- 49 (0)
 [0]: 4 <---- 48 (0)
-[0]: 4 <---- 50 (0)
-[0]: 5 <---- 36 (0)
-[0]: 5 <---- 52 (0)
-[0]: 5 <---- 48 (0)
+[0]: 4 <---- 43 (0)
+[0]: 4 <---- 39 (0)
+[0]: 4 <---- 51 (0)
 [0]: 5 <---- 46 (0)
-[0]: 6 <---- 48 (0)
-[0]: 6 <---- 37 (0)
-[0]: 6 <---- 51 (0)
-[0]: 6 <---- 47 (0)
-[0]: 7 <---- 40 (0)
+[0]: 5 <---- 52 (0)
+[0]: 5 <---- 36 (0)
+[0]: 5 <---- 49 (0)
+[0]: 6 <---- 52 (0)
+[0]: 6 <---- 41 (0)
+[0]: 6 <---- 44 (0)
+[0]: 6 <---- 49 (0)
+[0]: 7 <---- 45 (0)
 [0]: 7 <---- 53 (0)
-[0]: 7 <---- 34 (0)
+[0]: 7 <---- 40 (0)
 [0]: 7 <---- 49 (0)
-[0]: 8 <---- 52 (0)
-[0]: 8 <---- 41 (0)
+[0]: 8 <---- 35 (0)
+[0]: 8 <---- 50 (0)
+[0]: 8 <---- 40 (0)
 [0]: 8 <---- 48 (0)
-[0]: 8 <---- 49 (0)
-[0]: 9 <---- 43 (0)
+[0]: 9 <---- 33 (0)
+[0]: 9 <---- 45 (0)
+[0]: 9 <---- 50 (0)
 [0]: 9 <---- 49 (0)
-[0]: 9 <---- 48 (0)
-[0]: 9 <---- 51 (0)
-[0]: 10 <---- 39 (0)
-[0]: 10 <---- 43 (0)
+[0]: 10 <---- 37 (0)
+[0]: 10 <---- 47 (0)
 [0]: 10 <---- 51 (0)
 [0]: 10 <---- 49 (0)
+[0]: 11 <---- 40 (0)
+[0]: 11 <---- 50 (0)
+[0]: 11 <---- 45 (0)
 [0]: 11 <---- 49 (0)
-[0]: 11 <---- 52 (0)
-[0]: 11 <---- 43 (0)
-[0]: 11 <---- 48 (0)
-[0]: 12 <---- 42 (0)
+[0]: 12 <---- 43 (0)
+[0]: 12 <---- 52 (0)
+[0]: 12 <---- 46 (0)
 [0]: 12 <---- 49 (0)
-[0]: 12 <---- 48 (0)
-[0]: 12 <---- 50 (0)
-[0]: 13 <---- 33 (0)
+[0]: 13 <---- 38 (0)
+[0]: 13 <---- 52 (0)
+[0]: 13 <---- 43 (0)
 [0]: 13 <---- 48 (0)
-[0]: 13 <---- 45 (0)
-[0]: 13 <---- 50 (0)
-[0]: 14 <---- 34 (0)
 [0]: 14 <---- 53 (0)
-[0]: 14 <---- 41 (0)
+[0]: 14 <---- 32 (0)
+[0]: 14 <---- 44 (0)
 [0]: 14 <---- 49 (0)
+[0]: 15 <---- 38 (0)
+[0]: 15 <---- 41 (0)
+[0]: 15 <---- 52 (0)
 [0]: 15 <---- 48 (0)
-[0]: 15 <---- 50 (0)
-[0]: 15 <---- 47 (0)
-[0]: 15 <---- 42 (0)
-[0]: 16 <---- 51 (0)
-[0]: 16 <---- 46 (0)
-[0]: 16 <---- 48 (0)
-[0]: 16 <---- 43 (0)
+[0]: 16 <---- 47 (0)
+[0]: 16 <---- 50 (0)
+[0]: 16 <---- 42 (0)
+[0]: 16 <---- 49 (0)
 [0]: 17 <---- 51 (0)
+[0]: 17 <---- 43 (0)
+[0]: 17 <---- 46 (0)
 [0]: 17 <---- 49 (0)
-[0]: 17 <---- 48 (0)
-[0]: 17 <---- 42 (0)
+[0]: 18 <---- 47 (0)
 [0]: 18 <---- 51 (0)
-[0]: 18 <---- 46 (0)
-[0]: 18 <---- 37 (0)
-[0]: 18 <---- 48 (0)
-[0]: 19 <---- 41 (0)
-[0]: 19 <---- 38 (0)
+[0]: 18 <---- 49 (0)
+[0]: 18 <---- 42 (0)
 [0]: 19 <---- 49 (0)
-[0]: 19 <---- 52 (0)
+[0]: 19 <---- 46 (0)
+[0]: 19 <---- 51 (0)
+[0]: 19 <---- 37 (0)
+[0]: 20 <---- 41 (0)
+[0]: 20 <---- 52 (0)
 [0]: 20 <---- 48 (0)
-[0]: 20 <---- 53 (0)
-[0]: 20 <---- 40 (0)
 [0]: 20 <---- 49 (0)
-[0]: 21 <---- 42 (0)
-[0]: 21 <---- 35 (0)
+[0]: 21 <---- 48 (0)
+[0]: 21 <---- 52 (0)
+[0]: 21 <---- 43 (0)
 [0]: 21 <---- 49 (0)
-[0]: 21 <---- 50 (0)
-[0]: 22 <---- 47 (0)
-[0]: 22 <---- 48 (0)
-[0]: 22 <---- 42 (0)
-[0]: 22 <---- 51 (0)
+[0]: 22 <---- 49 (0)
+[0]: 22 <---- 45 (0)
+[0]: 22 <---- 53 (0)
+[0]: 22 <---- 32 (0)
+[0]: 23 <---- 44 (0)
+[0]: 23 <---- 53 (0)
 [0]: 23 <---- 49 (0)
-[0]: 23 <---- 38 (0)
-[0]: 23 <---- 43 (0)
-[0]: 23 <---- 52 (0)
-[0]: 24 <---- 41 (0)
-[0]: 24 <---- 53 (0)
+[0]: 23 <---- 41 (0)
 [0]: 24 <---- 48 (0)
+[0]: 24 <---- 50 (0)
+[0]: 24 <---- 40 (0)
 [0]: 24 <---- 49 (0)
-[0]: 25 <---- 49 (0)
-[0]: 25 <---- 35 (0)
-[0]: 25 <---- 40 (0)
+[0]: 25 <---- 42 (0)
 [0]: 25 <---- 50 (0)
-[0]: 26 <---- 52 (0)
-[0]: 26 <---- 44 (0)
-[0]: 26 <---- 48 (0)
-[0]: 26 <---- 41 (0)
-[0]: 27 <---- 36 (0)
-[0]: 27 <---- 52 (0)
-[0]: 27 <---- 44 (0)
+[0]: 25 <---- 48 (0)
+[0]: 25 <---- 49 (0)
+[0]: 26 <---- 50 (0)
+[0]: 26 <---- 47 (0)
+[0]: 26 <---- 33 (0)
+[0]: 26 <---- 49 (0)
+[0]: 27 <---- 35 (0)
+[0]: 27 <---- 42 (0)
+[0]: 27 <---- 50 (0)
 [0]: 27 <---- 48 (0)
-[0]: 28 <---- 32 (0)
+[0]: 28 <---- 40 (0)
+[0]: 28 <---- 34 (0)
 [0]: 28 <---- 48 (0)
 [0]: 28 <---- 53 (0)
-[0]: 28 <---- 45 (0)
+[0]: 29 <---- 49 (0)
 [0]: 29 <---- 40 (0)
-[0]: 29 <---- 45 (0)
-[0]: 29 <---- 53 (0)
 [0]: 29 <---- 48 (0)
-[0]: 30 <---- 53 (0)
+[0]: 29 <---- 53 (0)
 [0]: 30 <---- 48 (0)
-[0]: 30 <---- 32 (0)
-[0]: 30 <---- 44 (0)
+[0]: 30 <---- 34 (0)
+[0]: 30 <---- 41 (0)
+[0]: 30 <---- 53 (0)
+[0]: 31 <---- 49 (0)
 [0]: 31 <---- 48 (0)
-[0]: 31 <---- 53 (0)
 [0]: 31 <---- 41 (0)
-[0]: 31 <---- 44 (0)
+[0]: 31 <---- 53 (0)
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
@@ -3539,8 +3294,8 @@ Process 0:
   (  45) dim  3 offset  39 0.5 0. 0.
   (  46) dim  3 offset  42 0.5 0. 1.
   (  47) dim  3 offset  45 1. 0. 0.5
-  (  48) dim  3 offset  48 0.5 0. 0.5
-  (  49) dim  3 offset  51 0.5 1. 0.5
+  (  48) dim  3 offset  48 0.5 1. 0.5
+  (  49) dim  3 offset  51 0.5 0. 0.5
   (  50) dim  3 offset  54 1. 0.5 0.
   (  51) dim  3 offset  57 1. 0.5 1.
   (  52) dim  3 offset  60 0. 0.5 1.
@@ -3626,30 +3381,30 @@ Label 'celltype':
 [0] DMPlexCheckGeometry(): Cell 0 FEM Volume 0.25
 [0] DMPlexCheckGeometry(): Cell 1 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 2 FEM Volume 0.25
-[0] DMPlexCheckGeometry(): Cell 3 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 3 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 4 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 5 FEM Volume 0.125
-[0] DMPlexCheckGeometry(): Cell 6 FEM Volume 0.125
-[0] DMPlexCheckGeometry(): Cell 7 FEM Volume 0.125
-[0] DMPlexCheckGeometry(): Cell 8 FEM Volume 0.25
-[0] DMPlexCheckGeometry(): Cell 9 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 6 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 7 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 8 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 9 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 10 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 11 FEM Volume 0.25
 [0] DMPlexCheckGeometry(): Cell 12 FEM Volume 0.25
 [0] DMPlexCheckGeometry(): Cell 13 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 14 FEM Volume 0.125
-[0] DMPlexCheckGeometry(): Cell 15 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 15 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 16 FEM Volume 0.25
 [0] DMPlexCheckGeometry(): Cell 17 FEM Volume 0.25
-[0] DMPlexCheckGeometry(): Cell 18 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 18 FEM Volume 0.25
 [0] DMPlexCheckGeometry(): Cell 19 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 20 FEM Volume 0.25
-[0] DMPlexCheckGeometry(): Cell 21 FEM Volume 0.125
-[0] DMPlexCheckGeometry(): Cell 22 FEM Volume 0.25
-[0] DMPlexCheckGeometry(): Cell 23 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 21 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 22 FEM Volume 0.125
+[0] DMPlexCheckGeometry(): Cell 23 FEM Volume 0.25
 [0] DMPlexCheckGeometry(): Cell 24 FEM Volume 0.25
-[0] DMPlexCheckGeometry(): Cell 25 FEM Volume 0.125
-[0] DMPlexCheckGeometry(): Cell 26 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 25 FEM Volume 0.25
+[0] DMPlexCheckGeometry(): Cell 26 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 27 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 28 FEM Volume 0.125
 [0] DMPlexCheckGeometry(): Cell 29 FEM Volume 0.25

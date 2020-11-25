@@ -146,7 +146,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerateRegister(const char[],PetscErrorCode (
 PETSC_EXTERN PetscErrorCode DMPlexGenerateRegisterAll(void);
 PETSC_EXTERN PetscErrorCode DMPlexGenerateRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode DMPlexCopyCoordinates(DM, DM);
-PETSC_EXTERN PetscErrorCode DMPlexCreateDoublet(MPI_Comm, PetscInt, PetscBool, PetscBool, PetscBool, PetscReal, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateDoublet(MPI_Comm, PetscInt, PetscBool, PetscBool, PetscReal, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSquareBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCubeBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
 PETSC_EXTERN PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool, DM *);
