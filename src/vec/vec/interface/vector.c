@@ -1155,7 +1155,7 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
 .vb
      PetscRandomCreate(PETSC_COMM_WORLD,&rctx);
      VecSetRandom(x,rctx);
-     PetscRandomDestroy(rctx);
+     PetscRandomDestroy(&rctx);
 .ve
 
    Level: intermediate
