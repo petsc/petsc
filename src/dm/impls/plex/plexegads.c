@@ -664,8 +664,8 @@ PetscErrorCode DMPlexCreateEGADSFromFile(MPI_Comm comm, const char filename[], D
 
   }
   ierr = DMPlexCreateEGADS(comm, context, model, dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires EGADSLite support. Reconfigure using --download-egads");
 #endif
-  PetscFunctionReturn(0);
 }
