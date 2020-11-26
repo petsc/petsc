@@ -204,12 +204,16 @@ PetscErrorCode  PetscWaitOnError()
 
    Not Collective
 
+   Options Database Keys:
+-  -start_in_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] [-debugger_ranks m,n] -debug_terminal xterm or Terminal (for Apple)
+.  -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] - Activates debugger attachment
+
    Level: advanced
 
    Developer Notes:
     Since this can be called by the error handler should it be calling SETERRQ() and CHKERRQ()?
 
-.seealso: PetscSetDebugger(), PetscSetDefaultDebugger(), PetscSetDebugTerminal()
+.seealso: PetscSetDebugger(), PetscSetDefaultDebugger(), PetscSetDebugTerminal(), PetscAttachDebuggerErrorHandler(), PetscStopForDebugger()
 @*/
 PetscErrorCode  PetscAttachDebugger(void)
 {
@@ -495,6 +499,9 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
          debugger to attach.
 
    Not Collective
+
+   Options Database:
+.   -stop_for_debugger - will stop for you to attach the debugger when PetscInitialize() is called
 
    Level: developer
 
