@@ -936,10 +936,8 @@ static PetscErrorCode adapt(DM *dm, LandauCtx *ctx, Vec *uu)
     for (adaptIter = 0; adaptIter<limits[type];adaptIter++) {
       DM  dmNew = NULL;
       ierr = adaptToleranceFEM(ctx->fe[0], *uu, ctx->refineTol, ctx->coarsenTol, type, ctx, &dmNew);CHKERRQ(ierr);
-      if (!dmNew) {
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"should not happen");
-        break;
-      } else {
+      if (!dmNew) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"should not happen");
+      else {
         ierr = DMDestroy(dm);CHKERRQ(ierr);
         ierr = VecDestroy(uu);CHKERRQ(ierr);
         ierr = DMCreateGlobalVector(dmNew,uu);CHKERRQ(ierr);
