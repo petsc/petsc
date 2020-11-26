@@ -231,16 +231,16 @@ PetscErrorCode  PetscAttachDebugger(void)
   ierr = PetscGetProgramName(program,sizeof(program));CHKERRQ(ierr);
   if (ierr) {
     (*PetscErrorPrintf)("Cannot determine program name\n");
-    PetscFunctionReturn(1);
+    PetscFunctionReturn(PETSC_ERR_SYS);
   }
   if (!program[0]) {
     (*PetscErrorPrintf)("Cannot determine program name\n");
-    PetscFunctionReturn(1);
+    PetscFunctionReturn(PETSC_ERR_SYS);
   }
   child = (int)fork();
   if (child < 0) {
-    (*PetscErrorPrintf)("Error in fork() attaching debugger\n");
-    PetscFunctionReturn(1);
+    (*PetscErrorPrintf)("Error in fork() prior to attaching debugger\n");
+    PetscFunctionReturn(PETSC_ERR_SYS);
   }
   petscindebugger = PETSC_TRUE;
 
