@@ -8,6 +8,7 @@ Additional Information
    matlab
    profiling
    performance
+   blas-lapack
    other
    advanced
    tests
