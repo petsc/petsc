@@ -154,7 +154,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   for (j = 0; j < nvec; j++) {
     len = nloc - j;
     Ajj = Qloc[j*nloc+j];
-    rho = -PetscSign(Ajj) * BLASnrm2_(&len, &(Qloc[j*nloc+j]), &pas);
+    PetscStackCallBLAS("BLASnrm2",rho = -PetscSign(Ajj) * BLASnrm2_(&len, &(Qloc[j*nloc+j]), &pas));
     if (rho == 0.0) tloc[j] = 0.0;
     else {
       tloc[j] = (Ajj - rho) / rho;

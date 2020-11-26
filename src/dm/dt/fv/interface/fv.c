@@ -2030,7 +2030,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   ierr = PetscBLASIntCast(mstride,&lda);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info);
+  PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
   R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
@@ -2101,12 +2101,12 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
 #if defined(PETSC_USE_COMPLEX)
   rworkSize = 5 * PetscMin(M,N);
   ierr  = PetscMalloc1(rworkSize,&rwork);CHKERRQ(ierr);
-  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info);
+  PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   ierr = PetscFree(rwork);CHKERRQ(ierr);
 #else
   nrhs  = M;
-  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info);
+  PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
 #endif
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");

@@ -1254,7 +1254,6 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
     }
     if (usecprow) z = zarray + bs*ridx[i];
     PetscKernel_w_gets_Ar_times_v(bs,ncols,work,v,z);
-    /* BLASgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DZero,z,&_One); */
     v += n*bs2;
     if (!usecprow) z += bs;
   }
@@ -1914,7 +1913,6 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     }
     if (usecprow) z = zarray + bs*ridx[i];
     PetscKernel_w_gets_w_plus_Ar_times_v(bs,ncols,work,v,z);
-    /* BLASgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DOne,z,&_One); */
     v += n*bs2;
     if (!usecprow) z += bs;
   }
@@ -2076,7 +2074,6 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
         ierr  = PetscArrayzero(work,ncols);CHKERRQ(ierr);
         if (usecprow) xtmp = x + bs*ridx[i];
         PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,xtmp,v,work);
-        /* BLASgemv_("T",&bs,&ncols,&_DOne,v,&bs,xtmp,&_One,&_DOne,work,&_One); */
         v += n*bs2;
         if (!usecprow) xtmp += bs;
         workt = work;
@@ -2222,7 +2219,6 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       ierr  = PetscArrayzero(work,ncols);CHKERRQ(ierr);
       if (usecprow) xtmp = x + bs*ridx[i];
       PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,xtmp,v,work);
-      /* BLASgemv_("T",&bs,&ncols,&_DOne,v,&bs,xtmp,&_One,&_DOne,work,&_One); */
       v += n*bs2;
       if (!usecprow) xtmp += bs;
       workt = work;
@@ -2267,7 +2263,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
   if (type == NORM_FROBENIUS) {
 #if defined(PETSC_USE_REAL___FP16)
     PetscBLASInt one = 1,cnt = bs2*nz;
-    *norm = BLASnrm2_(&cnt,v,&one);
+    PetscStackCallBLAS("BLASnrm2",*norm = BLASnrm2_(&cnt,v,&one));
 #else
     for (i=0; i<bs2*nz; i++) {
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
