@@ -57,8 +57,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 }
 
 /*@
-   ISStrideGetInfo - Returns the first index in a stride index set and
-   the stride width.
+   ISStrideGetInfo - Returns the first index in a stride index set and the stride width.
 
    Not Collective
 
@@ -76,7 +75,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
    should not be needed by most users.
 
 
-.seealso: ISCreateStride(), ISGetSize()
+.seealso: ISCreateStride(), ISGetSize(), ISSTRIDE
 @*/
 PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
 {
@@ -348,7 +347,7 @@ static struct _ISOps myops = { ISGetIndices_Stride,
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
+.seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather(), ISSTRIDE, ISCreateStride(), ISStrideGetInfo()
 @*/
 PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
@@ -406,7 +405,7 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
+.seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather(), ISSTRIDE
 @*/
 PetscErrorCode  ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is)
 {
