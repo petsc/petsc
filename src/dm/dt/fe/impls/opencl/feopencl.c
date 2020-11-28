@@ -490,7 +490,7 @@ static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscI
     *y = Nblocks / *x;
     if (*x * *y == (size_t)Nblocks) break;
   }
-  if (*x * *y != (size_t)Nblocks) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %d with block size %d", N, blockSize);
+  if (*x * *y != (size_t)Nblocks) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %D with block size %D", N, blockSize);
   PetscFunctionReturn(0);
 }
 
