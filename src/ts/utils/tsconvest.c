@@ -118,7 +118,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   DM            *dm;
   PetscObject    disc;
   PetscReal     *x, *y, slope, intercept;
-  PetscInt      *dof, Nr = ce->Nr, r, Nf = ce->Nf, f, dim, oldlevel, oldnlev;
+  PetscInt       Nr = ce->Nr, r, Nf = ce->Nf, f, dim, oldlevel, oldnlev;
   void          *ctx;
   PetscErrorCode ierr;
 
@@ -128,7 +128,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMGetRefineLevel(ce->idm, &oldlevel);CHKERRQ(ierr);
-  ierr = PetscMalloc2((Nr+1), &dm, (Nr+1)*Nf, &dof);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Nr+1), &dm);CHKERRQ(ierr);
   ierr = TSGetSolution(ts, &uInitial);CHKERRQ(ierr);
   /* Loop over meshes */
   dm[0] = ce->idm;
@@ -185,8 +185,8 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
       ierr = DMGetLocalSection(dm[r], &s);CHKERRQ(ierr);
       ierr = PetscSectionGetField(s, f, &fs);CHKERRQ(ierr);
       ierr = PetscSectionGetConstrainedStorageSize(fs, &lsize);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&lsize, &dof[r*Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) ts));CHKERRQ(ierr);
-      ierr = PetscLogEventSetDof(ce->event, f, dof[r*Nf+f]);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&lsize, &ce->dofs[r*Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) ts));CHKERRQ(ierr);
+      ierr = PetscLogEventSetDof(ce->event, f, ce->dofs[r*Nf+f]);CHKERRQ(ierr);
       ierr = PetscLogEventSetError(ce->event, f, ce->errors[r*Nf+f]);CHKERRQ(ierr);
     }
     /* Monitor */
@@ -213,7 +213,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   ierr = PetscMalloc2(Nr+1, &x, Nr+1, &y);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     for (r = 0; r <= Nr; ++r) {
-      x[r] = PetscLog10Real(dof[r*Nf+f]);
+      x[r] = PetscLog10Real(ce->dofs[r*Nf+f]);
       y[r] = PetscLog10Real(ce->errors[r*Nf+f]);
     }
     ierr = PetscLinearRegression(Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
     alpha[f] = -slope * dim;
   }
   ierr = PetscFree2(x, y);CHKERRQ(ierr);
-  ierr = PetscFree2(dm, dof);CHKERRQ(ierr);
+  ierr = PetscFree(dm);CHKERRQ(ierr);
   /* Restore solver */
   ierr = TSReset(ts);CHKERRQ(ierr);
   {

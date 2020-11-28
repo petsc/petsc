@@ -31,6 +31,7 @@ struct _p_PetscConvEst
   /* Outputs */
   PetscLogEvent event;
   PetscBool     monitor;
+  PetscInt     *dofs;
   PetscReal    *errors;
 };
 
