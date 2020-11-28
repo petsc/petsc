@@ -490,6 +490,11 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = dmOverlap
         return sf
 
+    def isDistributed(self):
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( DMPlexIsDistributed(self.dm, &flag) )
+        return toBool(flag)
+
     def interpolate(self):
         cdef PetscDM newdm = NULL
         CHKERR( DMPlexInterpolate(self.dm, &newdm) )
