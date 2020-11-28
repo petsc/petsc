@@ -181,8 +181,8 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           </li>
 
           <li>
-            If BLAS, LAPACK, MPI sources (in &quot;-devel&quot; packages in most distros) are already installed in default system/compiler locations and mpicc,
-            mpif90, mpiexec are available via PATH - configure does not require any additional options.
+            If BLAS, LAPACK, MPI sources (in &quot;-devel&quot; packages in most distributions) are already installed in default system/compiler locations and mpicc,
+            mpif90, mpiexec are available in the users PATH - configure does not require any additional options.
             <ul>
               <li>./configure</li>
             </ul>
@@ -482,7 +482,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
         <ul>
           <li>
-            Configure will automatically look for blas/lapack in certain standard
+            Configure will automatically look for BLAS/LAPACK in certain standard
             locations, on most systems you should not need to provide any
             information about BLAS/LAPACK in the ./configure command.
           </li>
@@ -508,6 +508,8 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <b>Notes:</b>
 
         <ul>
+          <li> Additional information on the use of BLAS/LAPACK may be found in the <a href="https://docs.petsc.org/en/master/manual/">PETSc users manual</a>.
+          </li>
           <li> <h4> Intel MKL</h4>
             Intel provides BLAS/LAPACK via  the <a href="https://software.intel.com/en-us/mkl">MKL</a> library.
             It usually works from GNU/Intel compilers on Linux and Microsoft/Intel compilers on Microsoft Windows.
