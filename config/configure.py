@@ -52,7 +52,8 @@ def check_for_option_changed(opts):
             ('c-blas-lapack','f2cblaslapack'),
             ('cholmod','suitesparse'),
             ('umfpack','suitesparse'),
-            ('matlabengine','matlab-engine'),            
+            ('matlabengine','matlab-engine'),
+            ('sundials','sundials2'),
             ('f-blas-lapack','fblaslapack'),
             ('with-cuda-arch',
              'CUDAFLAGS=-arch'),
@@ -64,7 +65,7 @@ def check_for_option_changed(opts):
   for opt in opts[1:]:
     optname = opt.split('=')[0].strip('-')
     for oldname,newname in optMap:
-      if optname.find(oldname) >=0:
+      if optname.find(oldname) >=0 and not optname.find(newname):
         raise ValueError('The option '+opt+' should probably be '+opt.replace(oldname,newname))
   return
 

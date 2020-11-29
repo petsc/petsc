@@ -3,18 +3,19 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version      = '2.5.0'
-    self.maxversion   = '2.5.100000'
-    self.versionname  = 'SUNDIALS_PACKAGE_VERSION'
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-'+self.version+'p1.tar.gz']
-    self.functions    = ['CVSpgmr']
-    self.includes     = ['sundials/sundials_nvector.h']
-    self.liblist      = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
-    self.license      = 'http://www.llnl.gov/CASC/sundials/download/download.html'
-    self.parallelMake = 0  # uses recursive make so better be safe and not use make -j np
-    self.complex      = 0
-    self.precisions   = ['double']
-    self.hastests     = 1
+    self.version          = '2.5.0'
+    self.maxversion       = '2.5.100000'
+    self.versionname      = 'SUNDIALS_PACKAGE_VERSION'
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-'+self.version+'p1.tar.gz']
+    self.downloaddirnames = ['sundials']
+    self.functions        = ['CVSpgmr']
+    self.includes         = ['sundials/sundials_nvector.h']
+    self.liblist          = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
+    self.license          = 'http://www.llnl.gov/CASC/sundials/download/download.html'
+    self.parallelMake     = 0  # uses recursive make so better be safe and not use make -j np
+    self.complex          = 0
+    self.precisions       = ['double']
+    self.hastests         = 1
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
@@ -27,6 +28,7 @@ class Configure(config.package.GNUPackage):
     import os
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
 
+    self.logPrintBox('Installing SUNDIALS 2.5 (April 2012) which is a very old version of SUNDIALS. PETSc does not directly interface with newer versions of SUNDIALS.')
     self.pushLanguage('C')
     # use --with-mpi-root if we know it works
     if self.mpi.directory and (os.path.realpath(self.getCompiler())).find(os.path.realpath(self.mpi.directory)) >=0:
