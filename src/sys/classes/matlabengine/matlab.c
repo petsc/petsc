@@ -1,5 +1,5 @@
 
-#include <engine.h>   /* Matlab include file */
+#include <engine.h>   /* MATLAB include file */
 #include <petscsys.h>
 #include <petscmatlab.h>               /*I   "petscmatlab.h"  I*/
 #include <petsc/private/petscimpl.h>
@@ -26,7 +26,8 @@ PetscClassId MATLABENGINE_CLASSID = -1;
 
    Options Database:
 +    -matlab_engine_graphics - allow the MATLAB engine to display graphics
--    -matlab_engine_host - hostname, machine to run the MATLAB engine on
+.    -matlab_engine_host - hostname, machine to run the MATLAB engine on
+-    -info - print out all requests to MATLAB and all if its responses (for debugging)
 
    Level: advanced
 
@@ -82,23 +83,22 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char host[],PetscMat
   ierr  = PetscInfo1(0,"Starting MATLAB engine with command %s\n",buffer);CHKERRQ(ierr);
   e->ep = engOpen(buffer);
   if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine with %s",buffer);
-  engOutputBuffer(e->ep,e->buffer,1024);
-
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  sprintf(buffer,"MPI_Comm_rank = %d; MPI_Comm_size = %d;\n",rank,size);
-  engEvalString(e->ep, buffer);
+  engOutputBuffer(e->ep,e->buffer,sizeof(e->buffer));
   if (host) {
     ierr = PetscInfo1(0,"Started MATLAB engine on %s\n",host);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(0,"Started MATLAB engine\n");CHKERRQ(ierr);
   }
+
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(e,"MPI_Comm_rank = %d; MPI_Comm_size = %d;\n",rank,size);
   *mengine = e;
   PetscFunctionReturn(0);
 }
 
 /*@
-   PetscMatlabEngineDestroy - Shuts down a Matlab engine.
+   PetscMatlabEngineDestroy - Shuts down a MATLAB engine.
 
    Collective on PetscMatlabEngine
 
@@ -136,6 +136,9 @@ PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine *v)
 +   mengine - the MATLAB engine
 -   string - format as in a printf()
 
+   Notes:
+     Run the PETSc program with -info to always have printed back MATLAB's response to the string evaluation
+
    Level: advanced
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
@@ -151,18 +154,18 @@ PetscErrorCode  PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char s
 
   PetscFunctionBegin;
   va_start(Argp,string);
-  ierr = PetscVSNPrintf(buffer,1024-9-5,string,&fullLength,Argp);CHKERRQ(ierr);
+  ierr = PetscVSNPrintf(buffer,sizeof(buffer)-9-5,string,&fullLength,Argp);CHKERRQ(ierr);
   va_end(Argp);
 
   ierr = PetscInfo1(0,"Evaluating MATLAB string: %s\n",buffer);CHKERRQ(ierr);
   engEvalString(mengine->ep, buffer);
+  ierr = PetscInfo1(0,"Done evaluating MATLAB string: %s\n",buffer);CHKERRQ(ierr);
+  ierr = PetscInfo1(0,"  MATLAB output message: %s\n",mengine->buffer);CHKERRQ(ierr);
 
   /*
      Check for error in MATLAB: indicated by ? as first character in engine->buffer
   */
   if (mengine->buffer[4] == '?') SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in evaluating MATLAB command:%s\n%s",string,mengine->buffer);
-
-  ierr = PetscInfo1(0,"Done evaluating Matlab string: %s\n",buffer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -293,7 +296,7 @@ static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
 
 /*@C
-   PETSC_MATLAB_ENGINE_ - Creates a matlab engine on each process in a communicator.
+   PETSC_MATLAB_ENGINE_ - Creates a MATLAB engine on each process in a communicator.
 
    Not Collective
 
@@ -379,12 +382,12 @@ PetscErrorCode  PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,
 }
 
 /*@C
-    PetscMatlabEngineGetArray - Gets a variable from Matlab into an array
+    PetscMatlabEngineGetArray - Gets a variable from MATLAB into an array
 
     Not Collective
 
     Input Parameters:
-+    mengine - the Matlab engine
++    mengine - the MATLAB engine
 .    m,n - the dimensions of the array
 .    array - the array (represented in one dimension)
 -    name - the name of the array
@@ -405,8 +408,8 @@ PetscErrorCode  PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,
   ierr = PetscInfo1(0,"Getting MATLAB array %s\n",name);CHKERRQ(ierr);
   mat  = engGetVariable(mengine->ep,name);
   if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
-  if (mxGetM(mat) != (size_t) m) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"Array %s in matlab first dimension %d does not match requested size %d",name,(int)mxGetM(mat),m);
-  if (mxGetN(mat) != (size_t) n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"Array %s in matlab second dimension %d does not match requested size %d",name,(int)mxGetN(mat),m);
+  if (mxGetM(mat) != (size_t) m) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"Array %s in MATLAB first dimension %d does not match requested size %d",name,(int)mxGetM(mat),m);
+  if (mxGetN(mat) != (size_t) n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"Array %s in MATLAB second dimension %d does not match requested size %d",name,(int)mxGetN(mat),m);
   ierr = PetscArraycpy(array,mxGetPr(mat),m*n);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Got MATLAB array %s\n",name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
