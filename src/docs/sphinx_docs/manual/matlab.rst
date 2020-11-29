@@ -191,3 +191,43 @@ or
 
 There is a short-cut to starting the MATLAB engine with
 ``PETSC_MATLAB_ENGINE_(MPI_Comm)``.
+
+
+If you are running PETSc on a cluster (or machine) that does not have a license for MATLAB, you might able to run MATLAB on the
+``head node`` of the cluster or some other machine accessible to the cluster using the ``-matlab_engine_host hostname`` option.
+
+Licensing the MATLAB Compute Engine on a cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To activate MATLAB on head node which does not have access to the internet.
+(see also: https://www.mathworks.com/matlabcentral/answers/259627-how-do-i-activate-matlab-or-other-mathworks-products-without-an-internet-connection)
+
+First ssh into the head node using the command:    ssh node_name
+
+Obtain the Host Id using the command:     ip addr | grep ether      (More details found on:  http://www.mathworks.com/matlabcentral/answers/101892)
+You will see something like this:  link/ether xx:xx:xx:xx:xx:xx ABC yy:yy:yy:yy:yy:yy
+Note the value: xx:xx:xx:xx:xx:xx
+
+Login to your MathWorks Account from a computer which has internet access. You will see the available license that your account has. Select a license from the list.
+
+.. figure:: images/mathworks-account.png
+
+Then, select Install and Activate option and select the Activate to Retrieve License File option.
+
+ .. figure:: images/mathworks-account-2.png
+
+Enter the information and click Continue.
+
+.. figure:: images/mathworks-account-3.png
+
+An option to download the License file will appear. Download it and copy the license file to the cluster (your home directory).
+Now, launch MATLAB where you have sshed into your head node.
+
+.. figure:: images/mathworks-account-4.png
+
+Select the Activate manually without the internet option and click Next >.
+Browse and locate the license file.
+
+.. figure:: images/mathworks-account-5.png
+
+MATLAB is activated and ready to use.
