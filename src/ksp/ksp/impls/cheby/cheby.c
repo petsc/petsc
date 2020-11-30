@@ -117,7 +117,6 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
         }
         ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
         ksp->reason = KSP_DIVERGED_PC_FAILED;
-        ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
         ierr = PetscInfo3(ksp,"Eigen estimator failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else if (reason == KSP_CONVERGED_RTOL || reason == KSP_CONVERGED_ATOL) {
