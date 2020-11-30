@@ -3,11 +3,14 @@
 
 static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *svmin, PetscReal *z)
 {
-  PetscBLASInt blas1=1, blasn=n, blasnmi, blasj, blasldr = ldr;
-  PetscInt     i,j;
-  PetscReal    e,temp,w,wm,ynorm,znorm,s,sm;
+  PetscBLASInt   blas1=1, blasn, blasnmi, blasj, blasldr;
+  PetscInt       i,j;
+  PetscReal      e,temp,w,wm,ynorm,znorm,s,sm;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscBLASIntCast(n,&blasn);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(ldr,&blasldr);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
     z[i]=0.0;
   }
@@ -32,20 +35,20 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
       if (r[i + ldr*i] == 0.0) {
         w = wm = 1.0;
       } else {
-        w = (e - z[i]) / r[i + ldr*i];
+        w  = (e - z[i]) / r[i + ldr*i];
         wm = - (e + z[i]) / r[i + ldr*i];
       }
 
       /*  Chose y[i] based on the predicted value of y[j] for j>i */
-      s = PetscAbs(e - z[i]);
+      s  = PetscAbs(e - z[i]);
       sm = PetscAbs(e + z[i]);
       for (j=i+1;j<n;j++) {
         sm += PetscAbs(z[j] + wm * r[i + ldr*j]);
       }
       if (i < n-1) {
-        blasnmi = n-i-1;
+        ierr = PetscBLASIntCast(n-i-1,&blasnmi);CHKERRQ(ierr);
         PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasnmi, &w, &r[i + ldr*(i+1)], &blasldr, &z[i+1], &blas1));
-        s += BLASasum_(&blasnmi, &z[i+1], &blas1);
+        PetscStackCallBLAS("BLASasum",s += BLASasum_(&blasnmi, &z[i+1], &blas1));
       }
       if (s < sm) {
         temp = wm - w;
@@ -57,7 +60,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
       z[i] = w;
     }
 
-    ynorm = BLASnrm2_(&blasn, z, &blas1);
+    PetscStackCallBLAS("BLASnrm2",ynorm = BLASnrm2_(&blasn, z, &blas1));
 
     /* Solve R*z = y */
     for (j=n-1; j>=0; j--) {
@@ -73,12 +76,12 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
         z[j] = z[j] / r[j + ldr*j];
       }
       temp = -z[j];
-      blasj=j;
+      ierr = PetscBLASIntCast(j,&blasj);CHKERRQ(ierr);
       PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasj,&temp,&r[0+ldr*j],&blas1,z,&blas1));
     }
 
     /* Compute svmin and normalize z */
-    znorm = 1.0 / BLASnrm2_(&blasn, z, &blas1);
+    PetscStackCallBLAS("BLASnrm2",znorm = 1.0 / BLASnrm2_(&blasn, z, &blas1));
     *svmin = ynorm*znorm;
     PetscStackCallBLAS("BLASscal",BLASscal_(&blasn, &znorm, z, &blas1));
   }
@@ -225,14 +228,17 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
   PetscReal      f=0.0,p001=0.001,p5=0.5,minusone=-1,delta2=delta*delta;
   PetscInt       iter, j, rednc,info;
   PetscBLASInt   indef;
-  PetscBLASInt   blas1=1, blasn=n, iblas, blaslda = lda,blasldap1=lda+1,blasinfo;
+  PetscBLASInt   blas1=1, blasn, iblas, blaslda, blasldap1, blasinfo;
   PetscReal      alpha, anorm, bnorm, parc, parf, parl, pars, par=*retpar,paru, prod, rxnorm, rznorm=0.0, temp, xnorm;
 
   PetscFunctionBegin;
-  parf = 0.0;
-  xnorm = 0.0;
+  ierr = PetscBLASIntCast(n,&blasn);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(lda,&blaslda);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(lda+1,&blasldap1);CHKERRQ(ierr);
+  parf   = 0.0;
+  xnorm  = 0.0;
   rxnorm = 0.0;
-  rednc = 0;
+  rednc  = 0;
   for (j=0; j<n; j++) {
     x[j] = 0.0;
     z[j] = 0.0;
@@ -241,7 +247,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
   /* Copy the diagonal and save A in its lower triangle */
   PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn,a,&blasldap1, wa1, &blas1));
   for (j=0;j<n-1;j++) {
-    iblas = n - j - 1;
+    ierr = PetscBLASIntCast(n - j - 1,&iblas);CHKERRQ(ierr);
     PetscStackCallBLAS("BLAScopy",BLAScopy_(&iblas,&a[j + lda*(j+1)], &blaslda, &a[j+1 + lda*j], &blas1));
   }
 
@@ -249,15 +255,13 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
    l2-norm of b */
   anorm = 0.0;
   for (j=0;j<n;j++) {
-    wa2[j] = BLASasum_(&blasn, &a[0 + lda*j], &blas1);
-    CHKMEMQ;
+    PetscStackCallBLAS("BLASasum",wa2[j] = BLASasum_(&blasn, &a[0 + lda*j], &blas1));CHKMEMQ;
     anorm = PetscMax(anorm,wa2[j]);
   }
   for (j=0;j<n;j++) {
     wa2[j] = wa2[j] - PetscAbs(wa1[j]);
   }
-  bnorm = BLASnrm2_(&blasn,b,&blas1);
-  CHKMEMQ;
+  PetscStackCallBLAS("BLASnrm2",bnorm = BLASnrm2_(&blasn,b,&blas1));CHKMEMQ;
   /* Calculate a lower bound, pars, for the domain of the problem.
    Also calculate an upper bound, paru, and a lower bound, parl,
    for the Lagrange multiplier. */
@@ -289,67 +293,57 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
       par = PetscMax(p001, PetscSqrtScalar(parl/paru)) * paru;
     }
 
-    /* Copy the lower triangle of A into its upper triangle and
-     compute A + par*I */
+    /* Copy the lower triangle of A into its upper triangle and  compute A + par*I */
 
     for (j=0;j<n-1;j++) {
-      iblas = n - j - 1;
+      ierr = PetscBLASIntCast(n - j - 1,&iblas);CHKERRQ(ierr);
       PetscStackCallBLAS("BLAScopy",BLAScopy_(&iblas,&a[j+1 + j*lda], &blas1,&a[j + (j+1)*lda], &blaslda));
     }
     for (j=0;j<n;j++) {
       a[j + j*lda] = wa1[j] + par;
     }
 
-    /* Attempt the Cholesky factorization of A without referencing
-     the lower triangular part. */
+    /* Attempt the Cholesky factorization of A without referencing the lower triangular part. */
     PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("U",&blasn,a,&blaslda,&indef));
 
     /* Case 1: A + par*I is pos. def. */
     if (indef == 0) {
 
-      /* Compute an approximate solution x and save the
-       last value of par with A + par*I pos. def. */
+      /* Compute an approximate solution x and save the last value of par with A + par*I pos. def. */
 
       parf = par;
       PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn, b, &blas1, wa2, &blas1));
       PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
-      rxnorm = BLASnrm2_(&blasn, wa2, &blas1);
+      if (blasinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACKtrtrs() returned info %d",blasinfo);
+      PetscStackCallBLAS("BLASnrm2",rxnorm = BLASnrm2_(&blasn, wa2, &blas1));
       PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","N","N",&blasn,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
+      if (blasinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACKtrtrs() returned info %d",blasinfo);
 
       PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn, wa2, &blas1, x, &blas1));
       PetscStackCallBLAS("BLASscal",BLASscal_(&blasn, &minusone, x, &blas1));
-      xnorm = BLASnrm2_(&blasn, x, &blas1);
-      CHKMEMQ;
+      PetscStackCallBLAS("BLASnrm2",xnorm = BLASnrm2_(&blasn, x, &blas1));CHKMEMQ;
 
       /* Test for convergence */
-      if (PetscAbs(xnorm - delta) <= rtol*delta ||
-          (par == 0  && xnorm <= (1.0+rtol)*delta)) {
+      if (PetscAbs(xnorm - delta) <= rtol*delta || (par == 0  && xnorm <= (1.0+rtol)*delta)) {
         info = 1;
       }
 
-      /* Compute a direction of negative curvature and use this
-       information to improve pars. */
-
-      iblas=blasn*blasn;
-
-      ierr = estsv(n,a,lda,&rznorm,z);CHKERRQ(ierr);
-      CHKMEMQ;
+      /* Compute a direction of negative curvature and use this information to improve pars. */
+      ierr = estsv(n,a,lda,&rznorm,z);CHKERRQ(ierr);CHKMEMQ;
       pars = PetscMax(pars, par-rznorm*rznorm);
 
-      /* Compute a negative curvature solution of the form
-       x + alpha*z,  where norm(x+alpha*z)==delta */
+      /* Compute a negative curvature solution of the form x + alpha*z,  where norm(x+alpha*z)==delta */
 
       rednc = 0;
       if (xnorm < delta) {
         /* Compute alpha */
-        prod = BLASdot_(&blasn, z, &blas1, x, &blas1) / delta;
+        PetscStackCallBLAS("BLASdot",prod = BLASdot_(&blasn, z, &blas1, x, &blas1)/delta);
         temp = (delta - xnorm)*((delta + xnorm)/delta);
         alpha = temp/(PetscAbs(prod) + PetscSqrtScalar(prod*prod + temp/delta));
         if (prod >= 0) alpha = PetscAbs(alpha);
         else alpha =-PetscAbs(alpha);
 
-                /* Test to decide if the negative curvature step
-                   produces a larger reduction than with z=0 */
+        /* Test to decide if the negative curvature step produces a larger reduction than with z=0 */
         rznorm = PetscAbs(alpha) * rznorm;
         if ((rznorm*rznorm + par*xnorm*xnorm)/(delta2) <= par) {
           rednc = 1;
@@ -370,7 +364,8 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
         temp = 1.0/xnorm;
         PetscStackCallBLAS("BLASscal",BLASscal_(&blasn, &temp, wa2, &blas1));
         PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&blasn, &blas1, a, &blaslda, wa2, &blasn, &blasinfo));
-        temp = BLASnrm2_(&blasn, wa2, &blas1);
+        if (blasinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACKtrtrs() returned info %d",blasinfo);
+        PetscStackCallBLAS("BLASnrm2",temp = BLASnrm2_(&blasn, wa2, &blas1));
         parc = (xnorm - delta)/(delta*temp*temp);
       }
 
@@ -383,8 +378,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
     } else {
       /* Case 2: A + par*I is not pos. def. */
 
-      /* Use the rank information from the Cholesky
-       decomposition to update par. */
+      /* Use the rank information from the Cholesky decomposition to update par. */
 
       if (indef > 1) {
         /* Restore column indef to A + par*I. */
@@ -392,19 +386,20 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
         PetscStackCallBLAS("BLAScopy",BLAScopy_(&iblas,&a[indef-1 + 0*lda],&blaslda,&a[0 + (indef-1)*lda],&blas1));
         a[indef-1 + (indef-1)*lda] = wa1[indef-1] + par;
 
-                /* compute parc. */
+        /* compute parc. */
         PetscStackCallBLAS("BLAScopy",BLAScopy_(&iblas,&a[0 + (indef-1)*lda], &blas1, wa2, &blas1));
         PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
+        if (blasinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACKtrtrs() returned info %d",blasinfo);
         PetscStackCallBLAS("BLAScopy",BLAScopy_(&iblas,wa2,&blas1,&a[0 + (indef-1)*lda],&blas1));
-        temp = BLASnrm2_(&iblas,&a[0 + (indef-1)*lda],&blas1);
-        CHKMEMQ;
+        PetscStackCallBLAS("BLASnrm2",temp = BLASnrm2_(&iblas,&a[0 + (indef-1)*lda],&blas1));CHKMEMQ;
         a[indef-1 + (indef-1)*lda] -= temp*temp;
         PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","N","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
+        if (blasinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACKtrtrs() returned info %d",blasinfo);
       }
 
       wa2[indef-1] = -1.0;
       iblas = indef;
-      temp = BLASnrm2_(&iblas,wa2,&blas1);
+      PetscStackCallBLAS("BLASnrm2",temp = BLASnrm2_(&iblas,wa2,&blas1));
       parc = - a[indef-1 + (indef-1)*lda]/(temp*temp);
       pars = PetscMax(pars,par+parc);
 
@@ -438,19 +433,19 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
       }
       /* Restore the upper triangle of A */
       for (j = 0; j<n; j++) {
-        iblas = n - j - 1;
+        ierr = PetscBLASIntCast(n - j - 1,&iblas);CHKERRQ(ierr);
         PetscStackCallBLAS("BLAScopy",BLAScopy_(&iblas,&a[j+1 + j*lda],&blas1, &a[j + (j+1)*lda],&blaslda));
       }
-      iblas = lda+1;
+      ierr = PetscBLASIntCast(lda+1,&iblas);CHKERRQ(ierr);
       PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn,wa1,&blas1,a,&iblas));
       break;
     }
     par = PetscMax(parl,par+parc);
   }
-  *retpar = par;
-  *retf = f;
+  *retpar  = par;
+  *retf    = f;
   *retinfo = info;
-  *retits = iter;
+  *retits  = iter;
   CHKMEMQ;
   PetscFunctionReturn(0);
 }

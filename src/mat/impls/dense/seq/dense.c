@@ -1653,7 +1653,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
     } else {
 #if defined(PETSC_USE_REAL___FP16)
       PetscBLASInt one = 1,cnt = A->cmap->n*A->rmap->n;
-      *nrm = BLASnrm2_(&cnt,v,&one);
+      PetscStackCallBLAS("BLASnrm2",*nrm = BLASnrm2_(&cnt,v,&one));
     }
 #else
       for (i=0; i<A->cmap->n*A->rmap->n; i++) {

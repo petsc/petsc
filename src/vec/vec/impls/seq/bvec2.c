@@ -223,9 +223,9 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
 #if defined(PETSC_USE_REAL___FP16)
-    *z   = BLASnrm2_(&bn,xx,&one);
+    PetscStackCallBLAS("BLASnrm2",*z = BLASnrm2_(&bn,xx,&one));
 #else
-    *z   = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));
+    PetscStackCallBLAS("BLASdot",*z   = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one)));
     *z   = PetscSqrtReal(*z);
 #endif
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
