@@ -515,9 +515,7 @@ PetscErrorCode ISSetUp_General(IS is)
    distributed sets of indices and thus certain operations on them are
    collective.
 
-
    Level: beginner
-
 
 .seealso: ISCreateStride(), ISCreateBlock(), ISAllGather(), PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER, PetscCopyMode
 @*/
@@ -545,8 +543,7 @@ PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],Pe
 
    Level: beginner
 
-
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISBlockSetIndices(), ISGENERAL, PetscCopyMode
 @*/
 PetscErrorCode  ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
@@ -613,7 +610,7 @@ static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt en
 }
 
 /*@
-   ISGeneralFilter - Remove all points outside of [start, end)
+   ISGeneralFilter - Remove all indices outside of [start, end)
 
    Collective on IS
 
