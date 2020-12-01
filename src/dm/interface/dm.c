@@ -8045,13 +8045,14 @@ PetscErrorCode DMUniversalLabelCreate(DM dm, DMUniversalLabel *universal)
 
     for (l = 0, m = 0; l < Nl; ++l) {
       DMLabel  label;
-      PetscInt val, defval, loc, nv = ul->offsets[m+1]-ul->offsets[m];
+      PetscInt val, defval, loc, nv;
 
       if (!active[l]) continue;
       ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
       ierr = DMLabelGetValue(label, p, &val);CHKERRQ(ierr);
       ierr = DMLabelGetDefaultValue(label, &defval);CHKERRQ(ierr);
       if (val == defval) {++m; continue;}
+      nv = ul->offsets[m+1]-ul->offsets[m];
       marked = PETSC_TRUE;
       ierr = PetscFindInt(val, nv, &ul->values[ul->offsets[m]], &loc);CHKERRQ(ierr);
       if (loc < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label value %D not found in compression array", val);
