@@ -22,18 +22,15 @@ class Configure(config.base.Configure):
     if not self.isDarwin:
       return
     config.base.Configure.setupDependencies(self, framework)
-    self.mpi = framework.require('config.packages.MPI', self)
 
   def setupHelp(self, help):
     if not self.isDarwin:
       return
     import nargs
-    help.addArgument('PETSc', '-%s=<bool>' % self.optionName, nargs.ArgBool(None, 0, 'Activates automatic addition of firewall rules (blocking incoming connections) during testing on macOS to prevent firewall popup windows. Uses sudo so gmakefile.test will ask for your password.'))
+    help.addArgument('PETSc', '-%s=<bool>' % self.optionName, nargs.ArgBool(None, 0, 'On macOS, activates automatic addition of firewall rules (blocking incoming connections) to prevent firewall popup windows during testing. Uses sudo so gmakefile.test will ask for your password.'))
 
   def configure(self):
     self.isEnabled = self.isDarwin and self.argDB[self.optionName]
     if not self.isEnabled:
       return
-    # self.mpi.mpiexecExecutable is already absolute path but realpath also removes symlinks
-    mpiexec = os.path.realpath(self.mpi.mpiexecExecutable)
-    self.addMakeMacro('MACOS_FIREWALL_MPIEXEC', mpiexec)
+    self.addMakeMacro('MACOS_FIREWALL', 1)
