@@ -115,6 +115,13 @@
           <li>Make Terminal the default device to display the debugger on Apple instead of xterm</li>
         </ul>
       <h4>Configure/Build:</h4>
+        <ul>
+          <li>On macOS, <code>MACOS_FIREWALL=1</code> or <code>MACOS_FIREWALL_REFRESH=1</code> can be passed to make
+            to automatically add firewall rules preventing firewall popups during testing.
+            See <code>make -f gmakefile.test help</code> for details.
+          </li>
+          <li><code>./configure --with-macos-firewall-rules</code> makes <code>MACOS_FIREWALL=1</code> the default.</li>
+        </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>VecScatter / PetscSF:</h4>
