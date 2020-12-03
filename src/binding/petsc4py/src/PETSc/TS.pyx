@@ -636,6 +636,50 @@ cdef class TS(Object):
             CHKERR( TSGetSolution(self.ts, &uvec) )
         CHKERR( TSMonitor(self.ts, ival, rval, uvec) )
 
+    # --- event handling ---
+
+    def setEventHandler(self, direction, terminate, eventhandler, postevent=None, args=None, kargs=None):
+        cdef PetscInt  ndirs = 0
+        cdef PetscInt *idirs = NULL
+        direction = iarray_i(direction, &ndirs, &idirs)
+
+        cdef PetscInt   nterm = 0
+        cdef PetscBool *iterm = NULL
+        terminate = iarray_b(terminate, &nterm, &iterm)
+        assert nterm == ndirs
+
+        cdef PetscInt nevents = ndirs
+        if eventhandler is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            self.set_attr('__eventhandler__', (eventhandler, args, kargs))
+            if postevent is not None:
+                self.set_attr('__postevent__', (postevent, args, kargs))
+                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_EventHandler, TS_PostEvent, <void*>NULL) )
+            else:
+                self.set_attr('__postevent__', None)
+                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_EventHandler, NULL, <void*>NULL) )
+        else:
+            CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, NULL, NULL, <void*>NULL) )
+
+    def setEventTolerances(self, tol=None, vtol=None):
+        cdef PetscInt  nevents = 0
+        cdef PetscReal tolr = PETSC_DEFAULT
+        cdef PetscInt  ntolr = 0
+        cdef PetscReal *vtolr = NULL
+        if tol is not None:
+            tolr = asReal(tol)
+        if vtol is not None:
+            CHKERR( TSGetNumEvents(self.ts, &nevents) )
+            vtol = iarray_r(vtol, &ntolr,  &vtolr)
+            assert ntolr == nevents
+        CHKERR( TSSetEventTolerances(self.ts, tolr, vtolr) )
+
+    def getNumEvents(self):
+        cdef PetscInt nevents = 0
+        CHKERR( TSGetNumEvents(self.ts, &nevents) )
+        return toInt(nevents)
+
     # --- solving ---
 
     def setPreStep(self, prestep, args=None, kargs=None):

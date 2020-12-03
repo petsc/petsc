@@ -47,8 +47,8 @@ cdef extern from "petsc4py/numpy.h":
 
     ctypedef struct PyObject
     ctypedef struct PyTypeObject
-    PyObject* PyArray_New(PyTypeObject*,int,npy_intp[],int,npy_intp[],void*,int,int,PyObject*)
-    PyObject* PyArray_SimpleNewFromData(int,npy_intp[],int,void*)
+    ndarray PyArray_New(PyTypeObject*,int,npy_intp[],int,npy_intp[],void*,int,int,PyObject*)
+    ndarray PyArray_SimpleNewFromData(int,npy_intp[],int,void*)
 
 
 cdef extern from "petsc4py/numpy.h":
@@ -56,6 +56,7 @@ cdef extern from "petsc4py/numpy.h":
     enum: NPY_INT
     enum: NPY_DOUBLE
 
+    enum: NPY_PETSC_BOOL
     enum: NPY_PETSC_INT
     enum: NPY_PETSC_REAL
     enum: NPY_PETSC_SCALAR
@@ -109,6 +110,13 @@ cdef inline ndarray array_r(PetscInt size, const PetscReal* data):
         memcpy(PyArray_DATA(ary), data, <size_t>size*sizeof(PetscReal))
     return ary
 
+cdef inline ndarray array_b(PetscInt size, const PetscBool* data):
+    cdef npy_intp s = <npy_intp> size
+    cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_BOOL, 0)
+    if data != NULL:
+        memcpy(PyArray_DATA(ary), data, <size_t>size*sizeof(PetscBool))
+    return ary
+
 cdef inline ndarray array_s(PetscInt size, const PetscScalar* data):
     cdef npy_intp s = <npy_intp> size
     cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_SCALAR, 0)
@@ -135,6 +143,12 @@ cdef inline ndarray iarray_r(object ob, PetscInt* size, PetscReal** data):
     cdef ndarray ary = iarray(ob, NPY_PETSC_REAL)
     if size != NULL: size[0] = <PetscInt>   PyArray_SIZE(ary)
     if data != NULL: data[0] = <PetscReal*> PyArray_DATA(ary)
+    return ary
+
+cdef inline ndarray iarray_b(object ob, PetscInt* size, PetscBool** data):
+    cdef ndarray ary = iarray(ob, NPY_PETSC_BOOL)
+    if size != NULL: size[0] = <PetscInt>   PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscBool*> PyArray_DATA(ary)
     return ary
 
 cdef inline ndarray iarray_s(object ob, PetscInt* size, PetscScalar** data):

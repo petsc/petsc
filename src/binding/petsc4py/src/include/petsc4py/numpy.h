@@ -28,6 +28,8 @@
 
 #include "petsc.h"
 
+#  define NPY_PETSC_BOOL NPY_INT
+
 #if defined(PETSC_USE_64BIT_INDICES)
 #  define NPY_PETSC_INT  NPY_LONGLONG
 #else
