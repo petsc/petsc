@@ -1993,7 +1993,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
 
       <p>
         Sometimes it can mean an argument to a function is invalid. In Fortran
-        this may be caused by forgeting to list an argument in the call,
+        this may be caused by forgetting to list an argument in the call,
         especially the final ierr.
       </p>
 
@@ -2007,31 +2007,44 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         crash to determine exactly what line is causing the problem.
       </p>
 
+      <p>
       If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X machines
-      - you can try using <a href="http://valgrind.org/">http://valgrind.org</a>
-      to look for memory corruption. - Make sure valgrind is installed
+      - you can use <a href="https://valgrind.org/">http://valgrind.org</a>.
+      </p>
 
-      You might also consider using <a href="http://drmemory.org">http://drmemory.org</a> which has
-      support for GNU/Linux, Apple Mac OS and Microsoft Windows machines. (Note we haven't tried this ourselves).
+     <p style="color:rgb(255,0,0);">Follow the instructions below.</p>
 
       <ul>
-        <li>Recommend building PETSc with <code>--download-mpich --with-debugging</code> [debugging is enabled by default]</li>
-        <li>Compile application code with this build of PETSc</li>
-        <li>run with valgrind using: <code>${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME  PROGRAMOPTIONS</code></li>
-        <li>or invoke valgrind directly with: <code>mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</code></li>
+        <li><code>configure</code> PETSc with <code>--download-mpich --with-debugging</code>.</li>
+        <li>On macOS you need to
+          <ul>
+            <li>use valgrind from <a href="https://github.com/LouisBrunner/valgrind-macos">https://github.com/LouisBrunner/valgrind-macos</a>. 
+            Follow the Usage instructions in the README.md on that page (no need to clone the repository).</li>
+            <li>use the additional <code>./configure</code> options <code>--download-fblaslapack</code> or <code>--download-f2cblaslapack</code></li>
+            <li>use the additional valgrind option <code>--dsymutil=yes</code></li>
+          </ul>
+        </li>
+        <li>Compile your application code with this build of PETSc.</li>
+        <li>Run with valgrind 
+          <ul> 
+            <li>using: <code>${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME  PROGRAMOPTIONS</code></li>
+            <li>or with: <code>mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 --suppressions=${PETSC_DIR}/lib/petsc/bin/maint/petsc-val.supp --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</code></li>
+          </ul> 
+        </li>
       </ul>
 
       Notes:
 
       <ul>
         <li>option <code>--with-debugging</code> enables valgrind to give stack trace with additional source-file:line-number info.</li>
-        <li>option <code>--download-mpich</code> gives valgrind clean MPI - hence the recommendation.</li>
-        <li>Wrt Other MPI impls, Open MPI should also work. MPICH1 will not work.</li>
-        <li>if <code>--download-mpich</code> is used - mpiexec will be in PETSC_ARCH/bin</li>
-        <li><code>--log-file=valgrind.log.%p</code> option tells valgrind to store the output from each proc in a different file [as %p i.e PID, is different for each MPI proc].</li>
-        <li>On Apple you need the additional valgrind option <code>--dsymutil=yes</code></li>
+        <li>option <code>--download-mpich</code> is valgrind clean, other MPI builds are not valgrind clean. </li>
+        <li>when <code>--download-mpich</code> is used - mpiexec will be in PETSC_ARCH/bin</li>
+        <li><code>--log-file=valgrind.log.%p</code> option tells valgrind to store the output from each process in a different file [as %p i.e PID, is different for each MPI process.</li>
         <li>memcheck will not find certain array access that violate static array declarations so if memcheck runs clean you can try the <code>--tool=exp-ptrcheck</code> instead.</li>
       </ul>
+
+       You might also consider using <a href="http://drmemory.org">http://drmemory.org</a> which has
+       support for GNU/Linux, Apple Mac OS and Microsoft Windows machines. (Note we haven't tried this ourselves).
 
       <h3><a name="zeropivot">What does <code>Detected zero pivot in LU factorization</code> mean?</a></h3>
 

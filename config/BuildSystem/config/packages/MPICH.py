@@ -17,6 +17,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.cuda            = framework.require('config.packages.cuda',self)
+    self.valgrind        = framework.require('config.packages.valgrind',self)    
     return
 
   def setupHelp(self, help):
@@ -60,7 +61,7 @@ class Configure(config.package.GNUPackage):
     args.append('--with-device='+mpich_device)
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')
-    if not self.sharedLibraries.useShared and config.setCompilers.Configure.isDarwin(self.log):
+    if (not self.sharedLibraries.useShared or self.valgrind.found) and config.setCompilers.Configure.isDarwin(self.log):
       args.append('--disable-opencl')
 
     # MPICH configure errors out on certain standard configure arguments
