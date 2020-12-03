@@ -45,7 +45,7 @@ def description():
 name     = name()
 version  = version()
 
-url      = 'https://gitlab.com/petsc/petsc4py'
+url      = 'https://gitlab.com/petsc/petsc'
 pypiroot = 'https://pypi.io/packages/source/%s/%s/' % (name[0], name)
 download = pypiroot + '%(name)s-%(version)s.tar.gz' % vars()
 

@@ -202,6 +202,12 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           </li>
 
           <li>
+            Build PETSc4py with PETSc:
+            <ul>
+              <li>./configure --download-petsc4py</li>
+            </ul>
+          </li>
+          <li>
             Build Complex version of PETSc [using c++ compiler]:
             <ul>
               <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --with-clanguage=cxx --download-fblaslapack --download-mpich --with-scalar-type=complex</li>
