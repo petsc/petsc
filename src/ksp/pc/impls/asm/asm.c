@@ -291,6 +291,14 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
   }
 
+  /* Destroy previous submatrices of a different type than pc->pmat since MAT_REUSE_MATRIX won't work in that case */
+  if ((scall == MAT_REUSE_MATRIX) && osm->sub_mat_type) {
+    if (osm->n_local_true > 0) {
+      ierr = MatDestroySubMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
+    }
+    scall = MAT_INITIAL_MATRIX;
+  }
+
   /*
      Extract out the submatrices
   */
