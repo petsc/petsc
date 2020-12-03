@@ -177,7 +177,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
     PetscBool  ismain;
     static int cnt = 1;
 
-    if (p == PETSC_ERROR_INITIAL) {
+    if (cnt == 1) {
       PetscErrorPrintfHilight();
       (*PetscErrorPrintf)("--------------------- Error Message --------------------------------------------------------------\n");
       PetscErrorPrintfNormal();
