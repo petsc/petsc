@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'v3.14'
+    self.gitcommit              = 'aef19c0' # release dec-04-2020
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -53,8 +53,13 @@ class Configure(config.package.Package):
 
     if 'download-slepc-configure-arguments' in self.argDB and self.argDB['download-slepc-configure-arguments']:
       configargs = self.argDB['download-slepc-configure-arguments']
+      if '--download-slepc4py' in self.argDB['download-slepc-configure-arguments']:
+        ppath = 'PYTHONPATH='+os.path.join(self.installDir,'lib')+':${PYTHONPATH}'
+      else:
+        ppath = ''
     else:
       configargs = ''
+      ppath = ''
 
     self.addDefine('HAVE_SLEPC',1)
     self.addMakeMacro('SLEPC','yes')
@@ -72,7 +77,7 @@ class Configure(config.package.Package):
     self.addMakeRule('slepcinstall','', \
                        ['@echo "*** Installing SLEPc ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+barg+'${OMAKE} install '+barg+') >> ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
+           '+newuser+barg+'${OMAKE} install '+ppath+' '+barg+') >> ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building SLEPc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
              echo "********************************************************************" && \\\n\
