@@ -509,14 +509,13 @@ __global__ void VecMDot_SeqCUDA_kernel8(const PetscScalar *x,const PetscScalar *
 PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
   PetscErrorCode    ierr;
-  PetscInt          nv1 = ((nv % 4) == 1) ? nv-1: nv,i,n = xin->map->n,current_y_index = 0;
+  PetscInt          i,n = xin->map->n,current_y_index = 0;
   const PetscScalar *xptr,*y0ptr,*y1ptr,*y2ptr,*y3ptr,*y4ptr,*y5ptr,*y6ptr,*y7ptr;
-  PetscScalar       *group_results_gpu;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscInt          j;
-  PetscScalar       group_results_cpu[nv1*MDOT_WORKGROUP_NUM];
-#endif
+  PetscInt          nv1 = ((nv % 4) == 1) ? nv-1: nv,j;
+  PetscScalar       *group_results_gpu,group_results_cpu[nv1*MDOT_WORKGROUP_NUM];
   cudaError_t       cuda_ierr;
+#endif
   PetscBLASInt      one = 1,bn = 0;
   cublasHandle_t    cublasv2handle;
   cublasStatus_t    cberr;
