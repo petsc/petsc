@@ -577,6 +577,13 @@ prepend-path PATH "%s"
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
 
+  def delGenFiles(self):
+    '''Delete generated files'''
+    delfile = os.path.join(self.arch.arch,'lib','petsc','conf','files')
+    try:
+      os.unlink(delfile)
+    except: pass
+
   def configureAtoll(self):
     '''Checks if atoll exists'''
     if self.checkLink('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>','long v = atoll("25")') or self.checkLink ('#include <stdlib.h>','long v = atoll("25")'):
@@ -961,6 +968,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.Dump()
     self.dumpConfigInfo()
     self.dumpMachineInfo()
+    self.delGenFiles()
     # need to save the current state of BuildSystem so that postProcess() packages can read it in and perhaps run make install
     self.framework.storeSubstitutions(self.framework.argDB)
     self.framework.argDB['configureCache'] = pickle.dumps(self.framework)
