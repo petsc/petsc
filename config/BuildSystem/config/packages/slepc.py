@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'e7097336a66e31606855770a5b9eb3f8634fe7ee' # master Sep-30-2020
+    self.gitcommit              = '82a73cc2944f37cad2a0e0b64aa7660b84c486ab' # master Dec-04-2020
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -53,8 +53,13 @@ class Configure(config.package.Package):
 
     if 'download-slepc-configure-arguments' in self.argDB and self.argDB['download-slepc-configure-arguments']:
       configargs = self.argDB['download-slepc-configure-arguments']
+      if '--download-slepc4py' in self.argDB['download-slepc-configure-arguments']:
+        ppath = 'PYTHONPATH='+os.path.join(self.installDir,'lib')+':${PYTHONPATH}'
+      else:
+        ppath = ''
     else:
       configargs = ''
+      ppath = ''
 
     self.addDefine('HAVE_SLEPC',1)
     self.addMakeMacro('SLEPC','yes')
@@ -72,7 +77,7 @@ class Configure(config.package.Package):
     self.addMakeRule('slepcinstall','', \
                        ['@echo "*** Installing SLEPc ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+barg+'${OMAKE} install '+barg+')  || \\\n\
+           '+newuser+barg+'${OMAKE} install '+ppath+' '+barg+')  || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building SLEPc." && \\\n\
              echo "********************************************************************" && \\\n\

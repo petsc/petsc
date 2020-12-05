@@ -31,6 +31,8 @@ if __name__ == '__main__':
     '--download-p4est',
     '--download-parmetis',
     '--download-petsc4py',
+    '--download-slepc',
+    '--download-slepc-configure-arguments="--download-slepc4py"',
     '--download-scalapack',
     '--download-strumpack',
     '--download-suitesparse',
