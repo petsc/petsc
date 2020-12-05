@@ -199,7 +199,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   PetscErrorCode    ierr;
   PetscInt          Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
   PetscMPIInt       rank;
-  Mat               Gmat  = *a_Gmat, tGmat, matTrans;
+  Mat               Gmat  = *a_Gmat, tGmat;
   MPI_Comm          comm;
   const PetscScalar *vals;
   const PetscInt    *idx;
@@ -208,13 +208,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-  /* scale Gmat for all values between -1 and 1 */
-  ierr = MatCreateVecs(Gmat, &diag, NULL);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(Gmat, diag);CHKERRQ(ierr);
-  ierr = VecReciprocal(diag);CHKERRQ(ierr);
-  ierr = VecSqrtAbs(diag);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(Gmat, diag, diag);CHKERRQ(ierr);
-  ierr = VecDestroy(&diag);CHKERRQ(ierr);
 
   /* TODO GPU: optimization proposal, each class provides fast implementation of this
      procedure via MatAbs API */
@@ -256,8 +249,19 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   ierr = MatGetSize(Gmat, &MM, &NN);CHKERRQ(ierr);
 
   if (symm) {
+    Mat matTrans;
     ierr = MatTranspose(Gmat, MAT_INITIAL_MATRIX, &matTrans);CHKERRQ(ierr);
+    ierr = MatAXPY(Gmat, 1.0, matTrans, Gmat->structurally_symmetric ? SAME_NONZERO_PATTERN : DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDestroy(&matTrans);CHKERRQ(ierr);
   }
+
+  /* scale Gmat for all values between -1 and 1 */
+  ierr = MatCreateVecs(Gmat, &diag, NULL);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(Gmat, diag);CHKERRQ(ierr);
+  ierr = VecReciprocal(diag);CHKERRQ(ierr);
+  ierr = VecSqrtAbs(diag);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(Gmat, diag, diag);CHKERRQ(ierr);
+  ierr = VecDestroy(&diag);CHKERRQ(ierr);
 
   /* Determine upper bound on nonzeros needed in new filtered matrix */
   ierr = PetscMalloc2(nloc, &d_nnz,nloc, &o_nnz);CHKERRQ(ierr);
@@ -266,12 +270,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
     d_nnz[jj] = ncols;
     o_nnz[jj] = ncols;
     ierr      = MatRestoreRow(Gmat,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
-    if (symm) {
-      ierr       = MatGetRow(matTrans,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
-      d_nnz[jj] += ncols;
-      o_nnz[jj] += ncols;
-      ierr       = MatRestoreRow(matTrans,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
-    }
     if (d_nnz[jj] > nloc) d_nnz[jj] = nloc;
     if (o_nnz[jj] > (MM-nloc)) o_nnz[jj] = MM - nloc;
   }
@@ -281,13 +279,8 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   ierr = MatSetType(tGmat, MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(tGmat,0,d_nnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(tGmat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+  ierr = MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
-  if (symm) {
-    ierr = MatDestroy(&matTrans);CHKERRQ(ierr);
-  } else {
-    /* all entries are generated locally so MatAssembly will be slightly faster for large process counts */
-    ierr = MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  }
 
   for (Ii = Istart, nnz0 = nnz1 = 0; Ii < Iend; Ii++) {
     ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals);CHKERRQ(ierr);
@@ -295,13 +288,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
       PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
       if (PetscRealPart(sv) > vfilter) {
         nnz1++;
-        if (symm) {
-          sv  *= 0.5;
-          ierr = MatSetValues(tGmat,1,&Ii,1,&idx[jj],&sv,ADD_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValues(tGmat,1,&idx[jj],1,&Ii,&sv,ADD_VALUES);CHKERRQ(ierr);
-        } else {
-          ierr = MatSetValues(tGmat,1,&Ii,1,&idx[jj],&sv,ADD_VALUES);CHKERRQ(ierr);
-        }
+        ierr = MatSetValues(tGmat,1,&Ii,1,&idx[jj],&sv,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,&vals);CHKERRQ(ierr);
