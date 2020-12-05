@@ -3701,7 +3701,7 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat A, PetscScalar** a)
 struct IJCompare4
 {
   __host__ __device__
-  inline bool operator() (const thrust::tuple<int, int, PetscScalar, bool> &t1, const thrust::tuple<int, int, PetscScalar, bool> &t2)
+  inline bool operator() (const thrust::tuple<int, int, PetscScalar, int> &t1, const thrust::tuple<int, int, PetscScalar, int> &t2)
   {
     if (t1.get<0>() < t2.get<0>()) return true;
     if (t1.get<0>() == t2.get<0>()) return t1.get<1>() < t2.get<1>();
@@ -3791,48 +3791,44 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
     Ccsr->values = new THRUSTARRAY(c->nz);
     Ccsr->num_entries = c->nz;
     Ccusp->cooPerm = new THRUSTINTARRAY(c->nz);
-
     if (c->nz) {
-      THRUSTINTARRAY32 Acoo(Annz);
-      THRUSTINTARRAY32 Bcoo(Bnnz);
-      THRUSTINTARRAY32 *roff;
+      auto Acoo = new THRUSTINTARRAY32(Annz);
+      auto Bcoo = new THRUSTINTARRAY32(Bnnz);
+      auto Ccoo = new THRUSTINTARRAY32(c->nz);
+      THRUSTINTARRAY32 *Aroff,*Broff;
+
       if (a->compressedrow.use) { /* need full row offset */
         if (!Acusp->rowoffsets_gpu) {
           Acusp->rowoffsets_gpu  = new THRUSTINTARRAY32(A->rmap->n + 1);
           Acusp->rowoffsets_gpu->assign(a->i,a->i + A->rmap->n + 1);
           ierr = PetscLogCpuToGpu((A->rmap->n + 1)*sizeof(PetscInt));CHKERRQ(ierr);
         }
-        roff = Acusp->rowoffsets_gpu;
-      } else roff = Acsr->row_offsets;
-      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-      stat = cusparseXcsr2coo(Acusp->handle,
-                              roff->data().get(),
-                              Annz,
-                              m,
-                              Acoo.data().get(),
-                              CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSPARSE(stat);
-      cerr = WaitForCUDA();CHKERRCUDA(cerr);
-      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+        Aroff = Acusp->rowoffsets_gpu;
+      } else Aroff = Acsr->row_offsets;
       if (b->compressedrow.use) { /* need full row offset */
         if (!Bcusp->rowoffsets_gpu) {
           Bcusp->rowoffsets_gpu  = new THRUSTINTARRAY32(B->rmap->n + 1);
           Bcusp->rowoffsets_gpu->assign(b->i,b->i + B->rmap->n + 1);
           ierr = PetscLogCpuToGpu((B->rmap->n + 1)*sizeof(PetscInt));CHKERRQ(ierr);
         }
-        roff = Bcusp->rowoffsets_gpu;
-      } else roff = Bcsr->row_offsets;
+        Broff = Bcusp->rowoffsets_gpu;
+      } else Broff = Bcsr->row_offsets;
       ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+      stat = cusparseXcsr2coo(Acusp->handle,
+                              Aroff->data().get(),
+                              Annz,
+                              m,
+                              Acoo->data().get(),
+                              CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSPARSE(stat);
       stat = cusparseXcsr2coo(Bcusp->handle,
-                              roff->data().get(),
+                              Broff->data().get(),
                               Bnnz,
                               m,
-                              Bcoo.data().get(),
+                              Bcoo->data().get(),
                               CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSPARSE(stat);
-      cerr = WaitForCUDA();CHKERRCUDA(cerr);
-      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-      THRUSTINTARRAY32 Ccoo(c->nz);
-      auto Aperm = thrust::make_constant_iterator(true);
-      auto Bperm = thrust::make_constant_iterator(false);
+      /* Issues when using bool with large matrices on SUMMIT 10.2.89 */
+      auto Aperm = thrust::make_constant_iterator(1);
+      auto Bperm = thrust::make_constant_iterator(0);
 #if PETSC_PKG_CUDA_VERSION_GE(10,0,0)
       auto Bcib = thrust::make_transform_iterator(Bcsr->column_indices->begin(),Shift(A->cmap->n));
       auto Bcie = thrust::make_transform_iterator(Bcsr->column_indices->end(),Shift(A->cmap->n));
@@ -3842,29 +3838,40 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
       auto Bcie = Bcsr->column_indices->end();
       thrust::transform(Bcib,Bcie,Bcib,Shift(A->cmap->n));
 #endif
-      thrust::device_vector<bool> wPerm(Annz+Bnnz);
-      auto Azb = thrust::make_zip_iterator(thrust::make_tuple(Acoo.begin(),Acsr->column_indices->begin(),Acsr->values->begin(),Aperm));
-      auto Aze = thrust::make_zip_iterator(thrust::make_tuple(Acoo.end(),Acsr->column_indices->end(),Acsr->values->end(),Aperm));
-      auto Bzb = thrust::make_zip_iterator(thrust::make_tuple(Bcoo.begin(),Bcib,Bcsr->values->begin(),Bperm));
-      auto Bze = thrust::make_zip_iterator(thrust::make_tuple(Bcoo.end(),Bcie,Bcsr->values->end(),Bperm));
-      auto Czb = thrust::make_zip_iterator(thrust::make_tuple(Ccoo.begin(),Ccsr->column_indices->begin(),Ccsr->values->begin(),wPerm.begin()));
+      auto wPerm = new THRUSTINTARRAY32(Annz+Bnnz);
+      auto Azb = thrust::make_zip_iterator(thrust::make_tuple(Acoo->begin(),Acsr->column_indices->begin(),Acsr->values->begin(),Aperm));
+      auto Aze = thrust::make_zip_iterator(thrust::make_tuple(Acoo->end(),Acsr->column_indices->end(),Acsr->values->end(),Aperm));
+      auto Bzb = thrust::make_zip_iterator(thrust::make_tuple(Bcoo->begin(),Bcib,Bcsr->values->begin(),Bperm));
+      auto Bze = thrust::make_zip_iterator(thrust::make_tuple(Bcoo->end(),Bcie,Bcsr->values->end(),Bperm));
+      auto Czb = thrust::make_zip_iterator(thrust::make_tuple(Ccoo->begin(),Ccsr->column_indices->begin(),Ccsr->values->begin(),wPerm->begin()));
       auto p1 = Ccusp->cooPerm->begin();
       auto p2 = Ccusp->cooPerm->begin();
       thrust::advance(p2,Annz);
-      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-      thrust::merge(Azb,Aze,Bzb,Bze,Czb,IJCompare4());
+      PetscStackCallThrust(thrust::merge(thrust::device,Azb,Aze,Bzb,Bze,Czb,IJCompare4()));
 #if PETSC_PKG_CUDA_VERSION_LT(10,0,0)
       thrust::transform(Bcib,Bcie,Bcib,Shift(-A->cmap->n));
 #endif
-      thrust::partition_copy(thrust::make_counting_iterator(zero),thrust::make_counting_iterator(c->nz),wPerm.begin(),p1,p2,thrust::identity<bool>());
+      auto cci = thrust::make_counting_iterator(zero);
+      auto cce = thrust::make_counting_iterator(c->nz);
+#if 0 //Errors on SUMMIT cuda 11.1.0
+      PetscStackCallThrust(thrust::partition_copy(thrust::device,cci,cce,wPerm->begin(),p1,p2,thrust::identity<int>()));
+#else
+      auto pred = thrust::identity<int>();
+      PetscStackCallThrust(thrust::copy_if(thrust::device,cci,cce,wPerm->begin(),p1,pred));
+      PetscStackCallThrust(thrust::remove_copy_if(thrust::device,cci,cce,wPerm->begin(),p2,pred));
+#endif
       stat = cusparseXcoo2csr(Ccusp->handle,
-                              Ccoo.data().get(),
+                              Ccoo->data().get(),
                               c->nz,
                               m,
                               Ccsr->row_offsets->data().get(),
                               CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSPARSE(stat);
       cerr = WaitForCUDA();CHKERRCUDA(cerr);
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+      delete wPerm;
+      delete Acoo;
+      delete Bcoo;
+      delete Ccoo;
 #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
       stat = cusparseCreateCsr(&Cmat->matDescr, Ccsr->num_rows, Ccsr->num_cols, Ccsr->num_entries,
                                Ccsr->row_offsets->data().get(), Ccsr->column_indices->data().get(), Ccsr->values->data().get(),
