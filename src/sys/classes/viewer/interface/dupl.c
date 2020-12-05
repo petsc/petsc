@@ -46,16 +46,11 @@
 PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(outviewer,2);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr       = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
-    *outviewer = viewer;
-  } else if (viewer->ops->getsubviewer) {
+  if (viewer->ops->getsubviewer) {
     ierr = (*viewer->ops->getsubviewer)(viewer,comm,outviewer);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get SubViewer PetscViewer for type %s",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
@@ -80,17 +75,11 @@ PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscVi
 PetscErrorCode  PetscViewerRestoreSubViewer(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
-    if (outviewer) *outviewer = NULL;
-  } else if (viewer->ops->restoresubviewer) {
+  if (viewer->ops->restoresubviewer) {
     ierr = (*viewer->ops->restoresubviewer)(viewer,comm,outviewer);CHKERRQ(ierr);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore SubViewer PetscViewer for type %s",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
