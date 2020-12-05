@@ -6503,6 +6503,7 @@ typedef struct {
 
   /* customization */
   PetscBool abmerge;
+  PetscBool P_oth_bind;
 } MatMatMPIAIJBACKEND;
 
 PetscErrorCode MatDestroy_MatMatMPIAIJBACKEND(void *data)
@@ -6551,13 +6552,16 @@ static PetscErrorCode MatProductNumeric_MPIAIJBACKEND(Mat C)
     }
   }
   mmdata->reusesym = PETSC_FALSE;
+
+  for (i = 0; i < mmdata->cp; i++) {
+    if (!mmdata->mp[i]->ops->productnumeric) SETERRQ1(PetscObjectComm((PetscObject)mmdata->mp[i]),PETSC_ERR_PLIB,"Missing numeric op for %s",MatProductTypes[mmdata->mp[i]->product->type]);
+    ierr = (*mmdata->mp[i]->ops->productnumeric)(mmdata->mp[i]);CHKERRQ(ierr);
+  }
   for (i = 0, n_d = 0, n_o = 0; i < mmdata->cp; i++) {
     Mat_SeqAIJ        *mm = (Mat_SeqAIJ*)mmdata->mp[i]->data;
     const PetscScalar *vv;
     PetscInt          noff = mmdata->off[i+1] - mmdata->off[i];
 
-    if (!mmdata->mp[i]->ops->productnumeric) SETERRQ1(PetscObjectComm((PetscObject)mmdata->mp[i]),PETSC_ERR_PLIB,"Missing numeric op for %s",MatProductTypes[mmdata->mp[i]->product->type]);
-    ierr = (*mmdata->mp[i]->ops->productnumeric)(mmdata->mp[i]);CHKERRQ(ierr);
     if (mmdata->mptmp[i]) continue;
     /* TODO: add support for using GPU data directly? */
     ierr = MatSeqAIJGetArrayRead(mmdata->mp[i],&vv);CHKERRQ(ierr);
@@ -6601,7 +6605,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   const PetscInt         *cmapa[MAX_NUMBER_INTERMEDIATE],*rmapa[MAX_NUMBER_INTERMEDIATE];
   PetscInt               cp = 0,m,n,M,N,ncoo,ncoo_d,ncoo_o,ncoo_oown,*coo_i,*coo_j,cmapt[MAX_NUMBER_INTERMEDIATE],rmapt[MAX_NUMBER_INTERMEDIATE],i,j;
   MatProductType         ptype;
-  PetscBool              mptmp[MAX_NUMBER_INTERMEDIATE],hasoffproc = PETSC_FALSE,flg;
+  PetscBool              mptmp[MAX_NUMBER_INTERMEDIATE],hasoffproc = PETSC_FALSE;
   PetscMPIInt            size;
   PetscErrorCode         ierr;
 
@@ -6659,15 +6663,26 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   if (ptype == MATPRODUCT_AB) {
     if (product->api_user) {
       ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatMult","Mat");CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-matmatmult_backend_mergeB","Merge product->B local matrices","MatMatMult",mmdata->abmerge,&mmdata->abmerge,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-matmatmult_backend_mergeB","Merge product->B local matrices","MatMatMult",mmdata->abmerge,&mmdata->abmerge,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-matmatmult_backend_pothbind","Bind P_oth to CPU","MatBindToCPU",mmdata->P_oth_bind,&mmdata->P_oth_bind,NULL);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
     } else {
       ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_AB","Mat");CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-matproduct_ab_backend_mergeB","Merge product->B local matrices","MatMatMult",mmdata->abmerge,&mmdata->abmerge,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-matproduct_ab_backend_mergeB","Merge product->B local matrices","MatMatMult",mmdata->abmerge,&mmdata->abmerge,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-matproduct_ab_backend_pothbind","Bind P_oth to CPU","MatBindToCPU",mmdata->P_oth_bind,&mmdata->P_oth_bind,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    }
+  } else if (ptype == MATPRODUCT_PtAP) {
+    if (product->api_user) {
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatPtAP","Mat");CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-matptap_backend_pothbind","Bind P_oth to CPU","MatBindToCPU",mmdata->P_oth_bind,&mmdata->P_oth_bind,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    } else {
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_PtAP","Mat");CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-matproduct_ptap_backend_pothbind","Bind P_oth to CPU","MatBindToCPU",mmdata->P_oth_bind,&mmdata->P_oth_bind,NULL);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
     }
   }
-
   a = (Mat_MPIAIJ*)A->data;
   p = (Mat_MPIAIJ*)P->data;
   ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
@@ -6733,6 +6748,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
       ierr = MatSeqAIJCompactOutExtraColumns_SeqAIJ(mmdata->P_oth,&P_oth_l2g);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingGetIndices(P_oth_l2g,&P_oth_idx);CHKERRQ(ierr);
       ierr = MatSetType(mmdata->P_oth,((PetscObject)(a->B))->type_name);CHKERRQ(ierr);
+      ierr = MatBindToCPU(mmdata->P_oth,mmdata->P_oth_bind);CHKERRQ(ierr);
       ierr = MatProductCreate(a->B,mmdata->P_oth,NULL,&mp[cp]);CHKERRQ(ierr);
       ierr = MatProductSetType(mp[cp],MATPRODUCT_AB);CHKERRQ(ierr);
       ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
@@ -6829,8 +6845,9 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
     cp++;
     if (mmdata->P_oth) {
       ierr = MatSeqAIJCompactOutExtraColumns_SeqAIJ(mmdata->P_oth,&P_oth_l2g);CHKERRQ(ierr);
-      ierr = MatSetType(mmdata->P_oth,((PetscObject)(a->B))->type_name);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingGetIndices(P_oth_l2g,&P_oth_idx);CHKERRQ(ierr);
+      ierr = MatSetType(mmdata->P_oth,((PetscObject)(a->B))->type_name);CHKERRQ(ierr);
+      ierr = MatBindToCPU(mmdata->P_oth,mmdata->P_oth_bind);CHKERRQ(ierr);
       ierr = MatProductCreate(a->B,mmdata->P_oth,NULL,&mp[cp]);CHKERRQ(ierr);
       ierr = MatProductSetType(mp[cp],MATPRODUCT_AB);CHKERRQ(ierr);
       ierr = MatProductSetFill(mp[cp],product->fill);CHKERRQ(ierr);
@@ -7032,6 +7049,7 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJBACKEND(Mat mat)
   PetscErrorCode ierr;
 #if defined(PETSC_HAVE_DEVICE)
   PetscBool      match = PETSC_FALSE;
+  PetscBool      usecpu = PETSC_FALSE;
 #else
   PetscBool      match = PETSC_TRUE;
 #endif
@@ -7041,6 +7059,46 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJBACKEND(Mat mat)
 #if defined(PETSC_HAVE_DEVICE)
   if (!product->A->boundtocpu && !product->B->boundtocpu) {
     ierr = PetscObjectTypeCompare((PetscObject)product->B,((PetscObject)product->A)->type_name,&match);CHKERRQ(ierr);
+  }
+  if (match) { /* we can always fallback to CPU in case an operation is not performing on the device */
+    switch (product->type) {
+    case MATPRODUCT_AB:
+      if (product->api_user) {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatMatMult","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matmatmult_backend_cpu","Use CPU code","MatMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      } else {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AB","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matproduct_ab_backend_cpu","Use CPU code","MatMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      }
+      break;
+    case MATPRODUCT_AtB:
+      if (product->api_user) {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatTransposeMatMult","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-mattransposematmult_backend_cpu","Use CPU code","MatTransposeMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      } else {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AtB","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matproduct_atb_backend_cpu","Use CPU code","MatTransposeMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      }
+      break;
+    case MATPRODUCT_PtAP:
+      if (product->api_user) {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatPtAP","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matptap_backend_cpu","Use CPU code","MatMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      } else {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_PtAP","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matproduct_ptap_backend_cpu","Use CPU code","MatPtAP",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      }
+      break;
+    default:
+      break;
+    }
+    match = (PetscBool)!usecpu;
   }
 #endif
   if (match) {
