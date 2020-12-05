@@ -126,6 +126,7 @@ class Configure(config.package.Package):
       args.append('CF="'+cflags+'"')
       args.append('CHOLMOD_CONFIG="'+flg+'"')
       args.append('CUDA=no')
+      args.append('CUDA_PATH=')
 
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
