@@ -77,9 +77,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs;
 
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
 
   /* TODO GPU: these calls are potentially expensive if matrices are large and we want to use the GPU */
   /* A solution consists in providing a new API, MatAIJGetCollapsedAIJ, and each class can provide a fast
@@ -172,9 +170,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
   }
   ierr = MatPropagateSymmetryOptions(Amat, Gmat);CHKERRQ(ierr);
 
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
 
   *a_Gmat = Gmat;
   PetscFunctionReturn(0);
@@ -211,9 +207,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   Vec               diag;
 
   PetscFunctionBegin;
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
   /* scale Gmat for all values between -1 and 1 */
   ierr = MatCreateVecs(Gmat, &diag, NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(Gmat, diag);CHKERRQ(ierr);
@@ -248,9 +242,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
       for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
       ierr = MatSeqAIJRestoreArray(aij->B,&avals);CHKERRQ(ierr);
     }
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
     PetscFunctionReturn(0);
   }
 
@@ -321,9 +313,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   } else {
     ierr = MatPropagateSymmetryOptions(Gmat,tGmat);CHKERRQ(ierr);
   }
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
 
 #if defined(PETSC_USE_INFO)
   {

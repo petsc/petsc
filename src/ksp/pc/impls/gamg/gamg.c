@@ -14,11 +14,8 @@
   #include <hip/hip_runtime.h>
 #endif
 
-#if defined PETSC_GAMG_USE_LOG
 PetscLogEvent petsc_gamg_setup_events[NUM_SET];
-#endif
-
-#if defined PETSC_USE_LOG
+PetscLogEvent petsc_gamg_setup_matmat_events[PETSC_MG_MAXLEVELS][3];
 PetscLogEvent PC_GAMGGraph_AGG;
 PetscLogEvent PC_GAMGGraph_GEO;
 PetscLogEvent PC_GAMGCoarsen_AGG;
@@ -26,10 +23,9 @@ PetscLogEvent PC_GAMGCoarsen_GEO;
 PetscLogEvent PC_GAMGProlongator_AGG;
 PetscLogEvent PC_GAMGProlongator_GEO;
 PetscLogEvent PC_GAMGOptProlongator_AGG;
-#endif
 
 /* #define GAMG_STAGES */
-#if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
+#if defined(GAMG_STAGES)
 static PetscLogStage gamg_stages[PETSC_MG_MAXLEVELS];
 #endif
 
@@ -88,7 +84,9 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MatGetBlockSize(Amat_fine, &f_bs);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1],0,0,0,0);CHKERRQ(ierr);
   ierr = MatPtAP(Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1],0,0,0,0);CHKERRQ(ierr);
 
   if (Pcolumnperm) *Pcolumnperm = NULL;
 
@@ -192,9 +190,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         PetscFunctionReturn(0);
       }
     }
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
-#endif
     /* make 'is_eq_newproc' */
     ierr = PetscMalloc1(size, &counts);CHKERRQ(ierr);
     if (pc_gamg->repart) {
@@ -385,9 +381,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       ierr = VecDestroy(&dest_crd);CHKERRQ(ierr);
     }
     /* move A and P (columns) with new layout */
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
-#endif
     /*
       Invert for MatCreateSubMatrix
     */
@@ -402,10 +396,8 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       *Pcolumnperm = new_eq_indices;
     }
     ierr = ISDestroy(&is_eq_num);CHKERRQ(ierr);
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
-#endif
     /* 'a_Amat_crs' output */
     {
       Mat mat;
@@ -414,9 +406,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     }
     ierr = MatDestroy(&Cmat);CHKERRQ(ierr);
 
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
-#endif
     /* prolongator */
     {
       IS       findices;
@@ -424,9 +414,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       Mat      Pnew;
 
       ierr = MatGetOwnershipRange(Pold, &Istart, &Iend);CHKERRQ(ierr);
-#if defined PETSC_GAMG_USE_LOG
       ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
-#endif
       ierr = ISCreateStride(comm,Iend-Istart,Istart,1,&findices);CHKERRQ(ierr);
       ierr = ISSetBlockSize(findices,f_bs);CHKERRQ(ierr);
       ierr = MatCreateSubMatrix(Pold, findices, new_eq_indices, MAT_INITIAL_MATRIX, &Pnew);CHKERRQ(ierr);
@@ -435,9 +423,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       ierr = MatAIJCUSPARSESetGenerateTranspose(Pnew,PETSC_TRUE);CHKERRQ(ierr);
 #endif
 
-#if defined PETSC_GAMG_USE_LOG
       ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
-#endif
       ierr = MatDestroy(a_P_inout);CHKERRQ(ierr);
 
       /* output - repartitioned */
@@ -466,9 +452,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         }
       }
     }
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
-#endif
   }
   PetscFunctionReturn(0);
 }
@@ -497,7 +481,9 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
     ierr = MatProductSetType(*Gmat2,MATPRODUCT_AtB);CHKERRQ(ierr);
   }
   ierr = MatProductSetFromOptions(*Gmat2);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][0],0,0,0,0);CHKERRQ(ierr);
   ierr = MatProductSymbolic(*Gmat2);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][0],0,0,0,0);CHKERRQ(ierr);
   ierr = MatProductClear(*Gmat2);CHKERRQ(ierr);
   /* we only need the sparsity, cheat and tell PETSc the matrix has been assembled */
   (*Gmat2)->assembled = PETSC_TRUE;
@@ -544,12 +530,13 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       Mat          B,dA,dB;
 
       if (pc_gamg->Nlevels > 1) {
+        PetscInt gl;
         /* currently only handle case where mat and pmat are the same on coarser levels */
         ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB);CHKERRQ(ierr);
         /* (re)set to get dirty flag */
         ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB);CHKERRQ(ierr);
 
-        for (level=pc_gamg->Nlevels-2; level>=0; level--) {
+        for (level=pc_gamg->Nlevels-2,gl=0; level>=0; level--,gl++) {
           MatReuse reuse = MAT_INITIAL_MATRIX ;
 
           /* matrix structure can change from repartitioning or process reduction but don't know if we have process reduction here. Should fix */
@@ -565,7 +552,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           } else {
             ierr = PetscInfo1(pc,"RAP after first solve, new matrix level %D\n",level);CHKERRQ(ierr);
           }
+          ierr = PetscLogEventBegin(petsc_gamg_setup_matmat_events[gl][1],0,0,0,0);CHKERRQ(ierr);
           ierr = MatPtAP(dB,mglevels[level+1]->interpolate,reuse,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+          ierr = PetscLogEventEnd(petsc_gamg_setup_matmat_events[gl][1],0,0,0,0);CHKERRQ(ierr);
           mglevels[level]->A = B;
           ierr = KSPSetOperators(mglevels[level]->smoothd,B,B);CHKERRQ(ierr);
           dB   = B;
@@ -616,11 +605,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     pc_gamg->current_level = level;
     if (level >= PETSC_MG_MAXLEVELS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Too many levels %D",level);
     level1 = level + 1;
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
-#if (defined GAMG_STAGES)
+#if defined(GAMG_STAGES)
     ierr = PetscLogStagePush(gamg_stages[level]);CHKERRQ(ierr);
-#endif
 #endif
     { /* construct prolongator */
       Mat              Gmat;
@@ -666,35 +653,29 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = MatDestroy(&Gmat);CHKERRQ(ierr);
       ierr = PetscCDDestroy(agg_lists);CHKERRQ(ierr);
     } /* construct prolongator scope */
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
-#endif
     if (!level) Aarr[0] = Pmat; /* use Pmat for finest level setup */
     if (!Parr[level1]) { /* failed to coarsen */
-      ierr =  PetscInfo1(pc,"Stop gridding, level %D\n",level);CHKERRQ(ierr);
-#if defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES
+      ierr = PetscInfo1(pc,"Stop gridding, level %D\n",level);CHKERRQ(ierr);
+#if defined(GAMG_STAGES)
       ierr = PetscLogStagePop();CHKERRQ(ierr);
 #endif
       break;
     }
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
-#endif
     ierr = MatGetSize(Parr[level1], &M, &N);CHKERRQ(ierr); /* N is next M, a loop test variables */
     if (is_last) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Is last ?");
     if (N <= pc_gamg->coarse_eq_limit) is_last = PETSC_TRUE;
     if (level1 == pc_gamg->Nlevels-1) is_last = PETSC_TRUE;
     ierr = pc_gamg->ops->createlevel(pc, Aarr[level], bs, &Parr[level1], &Aarr[level1], &nactivepe, NULL, is_last);CHKERRQ(ierr);
 
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
-#endif
     ierr = MatGetSize(Aarr[level1], &M, &N);CHKERRQ(ierr); /* M is loop test variables */
     ierr = MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
     nnztot += info.nz_used;
     ierr = PetscInfo5(pc,"%D) N=%D, n data cols=%D, nnz/row (ave)=%d, %D active pes\n",level1,M,pc_gamg->data_cell_cols,(int)(info.nz_used/(PetscReal)M),nactivepe);CHKERRQ(ierr);
 
-#if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
+#if defined(GAMG_STAGES)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 #endif
     /* stop if one node or one proc -- could pull back for singular problems */
@@ -1867,6 +1848,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 PetscErrorCode PCGAMGInitializePackage(void)
 {
   PetscErrorCode ierr;
+  PetscInt       l;
 
   PetscFunctionBegin;
   if (PCGAMGPackageInitialized) PetscFunctionReturn(0);
@@ -1885,7 +1867,6 @@ PetscErrorCode PCGAMGInitializePackage(void)
   ierr = PetscLogEventRegister("PCGAMGProl_GEO", PC_CLASSID, &PC_GAMGProlongator_GEO);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCGAMGPOpt_AGG", PC_CLASSID, &PC_GAMGOptProlongator_AGG);CHKERRQ(ierr);
 
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventRegister("GAMG: createProl", PC_CLASSID, &petsc_gamg_setup_events[SET1]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("  Graph", PC_CLASSID, &petsc_gamg_setup_events[GRAPH]);CHKERRQ(ierr);
   /* PetscLogEventRegister("    G.Mat", PC_CLASSID, &petsc_gamg_setup_events[GRAPH_MAT]); */
@@ -1903,12 +1884,21 @@ PetscErrorCode PCGAMGInitializePackage(void)
   ierr = PetscLogEventRegister("  Invert-Sort", PC_CLASSID, &petsc_gamg_setup_events[SET13]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("  Move A", PC_CLASSID, &petsc_gamg_setup_events[SET14]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("  Move P", PC_CLASSID, &petsc_gamg_setup_events[SET15]);CHKERRQ(ierr);
+  for (l=0;l<PETSC_MG_MAXLEVELS;l++) {
+    char ename[32];
 
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCGAMG Squ l%02d",l);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename, PC_CLASSID, &petsc_gamg_setup_matmat_events[l][0]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCGAMG Gal l%02d",l);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename, PC_CLASSID, &petsc_gamg_setup_matmat_events[l][1]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCGAMG Opt l%02d",l);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename, PC_CLASSID, &petsc_gamg_setup_matmat_events[l][2]);CHKERRQ(ierr);
+  }
   /* PetscLogEventRegister(" PL move data", PC_CLASSID, &petsc_gamg_setup_events[SET13]); */
   /* PetscLogEventRegister("GAMG: fix", PC_CLASSID, &petsc_gamg_setup_events[SET10]); */
   /* PetscLogEventRegister("GAMG: set levels", PC_CLASSID, &petsc_gamg_setup_events[SET11]); */
   /* create timer stages */
-#if defined GAMG_STAGES
+#if defined(GAMG_STAGES)
   {
     char     str[32];
     PetscInt lidx;
@@ -1919,7 +1909,6 @@ PetscErrorCode PCGAMGInitializePackage(void)
       ierr = PetscLogStageRegister(str, &gamg_stages[lidx]);CHKERRQ(ierr);
     }
   }
-#endif
 #endif
   PetscFunctionReturn(0);
 }
