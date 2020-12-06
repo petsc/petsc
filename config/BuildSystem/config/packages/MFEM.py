@@ -31,8 +31,9 @@ class Configure(config.package.Package):
     self.mpi   = framework.require('config.packages.MPI',self)
     self.metis = framework.require('config.packages.metis',self)
     self.slepc = framework.require('config.packages.slepc',self)
+    self.ceed  = framework.require('config.packages.libceed',self)
     self.deps  = [self.mpi,self.hypre,self.metis]
-    self.odeps = [self.slepc]
+    self.odeps = [self.slepc,self.ceed]
     return
 
   def Install(self):
@@ -138,6 +139,11 @@ class Configure(config.package.Package):
           makedepend = 'slepc-install'
         else:
           makedepend = 'slepc-build'
+      if self.ceed.found:
+        g.write('MFEM_USE_CEED = YES\n')
+        g.write('CEED_DIR = '+self.ceed.directory+'\n')
+        g.write('CEED_OPT = '+self.headers.toString(self.ceed.include)+'\n')
+        g.write('CEED_LIB = '+self.libraries.toString(self.ceed.lib)+'\n')
       g.close()
 
     #  if installing as Superuser than want to return to regular user for clean and build
