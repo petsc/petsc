@@ -1,0 +1,22 @@
+DM Object: Mesh 2 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 7 7
+  1-cells: 10 10
+  2-cells: 4 4
+Labels:
+  depth: 3 strata with value/size (0 (7), 1 (10), 2 (4))
+  celltype: 3 strata with value/size (0 (7), 1 (10), 3 (4))
+  marker: 1 strata with value/size (1 (10))
+  Face Sets: 1 strata with value/size (1 (4))
+DM Object: Adapted Mesh 2 MPI processes
+  type: plex
+Adapted Mesh in 2 dimensions:
+  0-cells: 12 10
+  1-cells: 22 16
+  2-cells: 11 7
+Labels:
+  celltype: 3 strata with value/size (1 (22), 3 (11), 0 (12))
+  depth: 3 strata with value/size (0 (12), 1 (22), 2 (11))
+  marker: 1 strata with value/size (1 (10))
+  Face Sets: 1 strata with value/size (1 (4))
