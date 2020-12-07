@@ -923,7 +923,7 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
         PetscBool isNest = PETSC_FALSE;
 
         if (!bA->m[i][j]) {
-          CHKERRQ(ierr);PetscViewerASCIIPrintf(viewer, "(%D,%D) : NULL \n",i,j);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "(%D,%D) : NULL \n",i,j);CHKERRQ(ierr);
           continue;
         }
         ierr = MatGetSize(bA->m[i][j],&NR,&NC);CHKERRQ(ierr);
