@@ -26,21 +26,20 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM, double*, DM*);
 @*/
 PetscErrorCode  DMPlexGenerateRegisterAll(void)
 {
-#if defined(PETSC_HAVE_TRIANGLE) || defined(PETSC_HAVE_CTETGEN) || defined(PETSC_HAVE_TETGEN)
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
   if (DMPlexGenerateRegisterAllCalled) PetscFunctionReturn(0);
   DMPlexGenerateRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_TRIANGLE)
-  ierr = DMPlexGenerateRegister("triangle",DMPlexGenerate_Triangle,DMPlexRefine_Triangle,1);CHKERRQ(ierr);
+  ierr = DMPlexGenerateRegister("triangle",DMPlexGenerate_Triangle,DMPlexRefine_Triangle,NULL,1);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CTETGEN)
-  ierr = DMPlexGenerateRegister("ctetgen",DMPlexGenerate_CTetgen,DMPlexRefine_CTetgen,2);CHKERRQ(ierr);
+  ierr = DMPlexGenerateRegister("ctetgen",DMPlexGenerate_CTetgen,DMPlexRefine_CTetgen,NULL,2);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_TETGEN)
-  ierr = DMPlexGenerateRegister("tetgen",DMPlexGenerate_Tetgen,DMPlexRefine_Tetgen,2);CHKERRQ(ierr);
+  ierr = DMPlexGenerateRegister("tetgen",DMPlexGenerate_Tetgen,DMPlexRefine_Tetgen,NULL,2);CHKERRQ(ierr);
 #endif
+  ierr = DMPlexGenerateRegister("cellrefiner",NULL,NULL,DMPlexCellRefinerAdaptLabel,-1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

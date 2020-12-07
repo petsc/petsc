@@ -44,8 +44,8 @@ PETSC_EXTERN PetscLogEvent DMPLEX_LocatePoints;
 
 typedef struct _DMPlexCellRefinerOps *DMPlexCellRefinerOps;
 struct _DMPlexCellRefinerOps {
-  PetscErrorCode (*refine)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
-  PetscErrorCode (*mapsubcells)(DMPlexCellRefiner, DMPolytopeType, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
+  PetscErrorCode (*refine)(DMPlexCellRefiner, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
+  PetscErrorCode (*mapsubcells)(DMPlexCellRefiner, DMPolytopeType, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
   PetscErrorCode (*getaffinetransforms)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
   PetscErrorCode (*getaffinefacetransforms)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[], PetscReal *[]);
   PetscErrorCode (*getcellvertices)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[]);
@@ -55,18 +55,30 @@ struct _DMPlexCellRefinerOps {
   PetscErrorCode (*destroy)(DMPlexCellRefiner);
 };
 
+typedef struct _n_PlexGeneratorFunctionList *PlexGeneratorFunctionList;
+struct _n_PlexGeneratorFunctionList {
+  PetscErrorCode    (*generate)(DM, PetscBool, DM*);
+  PetscErrorCode    (*refine)(DM, PetscReal*, DM*);
+  PetscErrorCode    (*adaptlabel)(DM, DMLabel, DM*);
+  char              *name;
+  PetscInt          dim;
+  PlexGeneratorFunctionList next;
+};
+
 struct _p_DMPlexCellRefiner {
   PETSCHEADER(struct _DMPlexCellRefinerOps);
   DM                    dm;          /* The original DM */
   PetscBool             setupcalled;
   DMPlexCellRefinerType type;
+  DMLabel               refineType;  /* The refinement type of each point, since there are multiple ways to refine a cell */
   PetscInt              *ctOrder;    /* [i] = ct: An array with cell types in depth order */
   PetscInt              *ctOrderInv; /* [ct] = i: An array with the ordinal numbers for each cell type */
-  PetscInt              *ctStart;    /* The number for the first cell of each polytope type in the original mesh, indexed by cell type */
-  PetscInt              *ctStartNew; /* The number for the first cell of each polytope type in the new mesh, indexed by cell type */
-  PetscInt              *offset;     /* [ct][ctNew]: The offset in the new point numbering of a point of type ctNew produced from an old point of type ct */
+  PetscInt              *ctStart;    /* [ct]: The number for the first cell of each polytope type in the original mesh */
+  PetscInt              *ctStartNew; /* [ctNew]: The number for the first cell of each polytope type in the new mesh */
+  PetscInt              *offset;     /* [ct/rt][ctNew]: The offset in the new point numbering of a point of type ctNew produced from an old point of type ct or refine type rt */
   PetscFE               *coordFE;    /* Finite element for each cell type, used for localized coordinate interpolation */
   PetscFEGeom           **refGeom;   /* Geometry of the reference cell for each cell type */
+  DMLabel               adaptLabel;  /* Optional label indicating cells to be refined */
   void                  *data;       /* refiner private data */
 };
 
@@ -257,6 +269,7 @@ PETSC_INTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,Pe
 PETSC_INTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM,DMPolytopeType,const PetscInt[],PetscInt*,const DMPolytopeType*[],const PetscInt*[],const PetscInt*[]);
 PETSC_INTERN PetscErrorCode DMPlexRestoreRawFaces_Internal(DM,DMPolytopeType,const PetscInt[],PetscInt*,const DMPolytopeType*[],const PetscInt*[],const PetscInt*[]);
 PETSC_INTERN PetscErrorCode CellRefinerInCellTest_Internal(DMPolytopeType, const PetscReal[], PetscBool *);
+PETSC_INTERN PetscErrorCode DMPlexCellRefinerAdaptLabel(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexComputeCellType_Internal(DM, PetscInt, PetscInt, DMPolytopeType *);
 PETSC_INTERN PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DMPolytopeType, PetscInt *[], PetscInt *[]);
 PETSC_INTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscScalar[], InsertMode);
@@ -554,6 +567,8 @@ PETSC_STATIC_INLINE PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScal
 PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const PetscReal *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
 
 PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
+
+PETSC_STATIC_INLINE PetscReal DMPlex_DistD_Internal(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += PetscRealPart(PetscConj(x[d] - y[d])*(x[d] - y[d])); return PetscSqrtReal(sum);}
 
 PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Translate_Private(PetscInt ornt, PetscInt *start, PetscBool *reverse)
 {

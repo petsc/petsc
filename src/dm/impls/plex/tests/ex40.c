@@ -1,9 +1,5 @@
 static const char help[] = "Tests for regular refinement";
 
-/* TODO
-  - Add in simplex-to-hex tests
-*/
-
 #include <petscdmplex.h>
 #include <petscsf.h>
 

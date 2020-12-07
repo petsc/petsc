@@ -160,28 +160,20 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
 /*
    Contains the list of registered DMPlexGenerators routines
 */
-extern PetscFunctionList DMPlexGenerateList;
-
-struct _n_PetscFunctionList {
-  PetscErrorCode    (*generate)(DM, PetscBool, DM*);
-  PetscErrorCode    (*refine)(DM,PetscReal*, DM*);
-  char              *name;               /* string to identify routine */
-  PetscInt          dim;
-  PetscFunctionList next;                /* next pointer */
-};
+extern PlexGeneratorFunctionList DMPlexGenerateList;
 
 PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
 {
-  PetscErrorCode    (*refinementFunc)(const PetscReal [], PetscReal *);
-  PetscReal         refinementLimit;
-  PetscInt          dim, cStart, cEnd;
-  char              genname[1024], *name = NULL;
-  PetscBool         flg, localized;
-  PetscErrorCode    ierr;
-  PetscErrorCode    (*refine)(DM,PetscReal*,DM*);
-  PetscFunctionList fl;
-  PetscReal         *maxVolumes;
-  PetscInt          c;
+  PlexGeneratorFunctionList fl;
+  PetscErrorCode          (*refine)(DM,PetscReal*,DM*);
+  PetscErrorCode          (*adapt)(DM,DMLabel,DM*);
+  PetscErrorCode          (*refinementFunc)(const PetscReal [], PetscReal *);
+  char                      genname[PETSC_MAX_PATH_LEN], *name = NULL;
+  PetscReal                 refinementLimit;
+  PetscReal                *maxVolumes;
+  PetscInt                  dim, cStart, cEnd, c;
+  PetscBool                 flg, flg2, localized;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
@@ -190,8 +182,12 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
   if (refinementLimit == 0.0 && !refinementFunc && !adaptLabel) PetscFunctionReturn(0);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_generator", genname, sizeof(genname), &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_adaptor", genname, sizeof(genname), &flg);CHKERRQ(ierr);
   if (flg) name = genname;
+  else {
+    ierr = PetscOptionsGetString(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_generator", genname, sizeof(genname), &flg2);CHKERRQ(ierr);
+    if (flg2) name = genname;
+  }
 
   fl = DMPlexGenerateList;
   if (name) {
@@ -199,6 +195,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       ierr = PetscStrcmp(fl->name,name,&flg);CHKERRQ(ierr);
       if (flg) {
         refine = fl->refine;
+        adapt  = fl->adaptlabel;
         goto gotit;
       }
       fl = fl->next;
@@ -208,6 +205,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
     while (fl) {
       if (dim-1 == fl->dim) {
         refine = fl->refine;
+        adapt  = fl->adaptlabel;
         goto gotit;
       }
       fl = fl->next;
@@ -215,45 +213,31 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid refiner of dimension %D registered",dim);
   }
 
-  gotit: switch (dim) {
-  case 2:
-      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      if (adaptLabel) {
-        ierr = DMPlexLabelToVolumeConstraint(dm, adaptLabel, cStart, cEnd, PETSC_DEFAULT, maxVolumes);CHKERRQ(ierr);
-      } else if (refinementFunc) {
-        for (c = cStart; c < cEnd; ++c) {
-          PetscReal vol, centroid[3];
-          PetscReal maxVol;
-
-          ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
-          ierr = (*refinementFunc)(centroid, &maxVol);CHKERRQ(ierr);
-          maxVolumes[c - cStart] = (double) maxVol;
-        }
+  gotit:
+  switch (dim) {
+    case 2:
+    case 3:
+      if (adapt) {
+        ierr = (*adapt)(dm, adaptLabel, dmRefined);CHKERRQ(ierr);
       } else {
-        for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
-      }
-      ierr = (*refine)(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-      ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
-    break;
-  case 3:
-      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      if (adaptLabel) {
-        ierr = DMPlexLabelToVolumeConstraint(dm, adaptLabel, cStart, cEnd, PETSC_DEFAULT, maxVolumes);CHKERRQ(ierr);
-      } else if (refinementFunc) {
-        for (c = cStart; c < cEnd; ++c) {
-          PetscReal vol, centroid[3];
+        ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
+        if (adaptLabel) {
+          ierr = DMPlexLabelToVolumeConstraint(dm, adaptLabel, cStart, cEnd, PETSC_DEFAULT, maxVolumes);CHKERRQ(ierr);
+        } else if (refinementFunc) {
+          for (c = cStart; c < cEnd; ++c) {
+            PetscReal vol, centroid[3];
 
-          ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
-          ierr = (*refinementFunc)(centroid, &maxVolumes[c-cStart]);CHKERRQ(ierr);
+            ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
+            ierr = (*refinementFunc)(centroid, &maxVolumes[c-cStart]);CHKERRQ(ierr);
+          }
+        } else {
+          for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
         }
-      } else {
-        for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
+        ierr = (*refine)(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+        ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
       }
-      ierr = (*refine)(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-      ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %D is not supported.", dim);
+      break;
+    default: SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %D is not supported.", dim);
   }
   ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
   if (localized) {ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);}

@@ -57,7 +57,7 @@ find_temp_path(int dfd, char *path, int slen, int stat_base_dir,
                 find_temp_path_action_t action, void *action_ctx, void *action_result)
  {
         char *start, *trv, *suffp, *carryp;
-        char *pad;
+        const char *pad;
         struct stat sbuf;
         int rval;
         uint32_t rand;
