@@ -3,7 +3,7 @@
 
 /*@
    KSPInitialResidual - Computes the residual. Either b - A*C*u = b - A*x with right
-     preconditioning or C*(b - A*x) with left preconditioning; that later
+     preconditioning or C*(b - A*x) with left preconditioning; the latter
      residual is often called the "preconditioned residual".
 
    Collective on ksp
