@@ -260,7 +260,7 @@ Some other useful options are listed below.
    trajectory for visualization. It stores the solution and the time,
    but no stage values. The binary files generated can be read into
    MATLAB via the script
-   ``${PETSC_DIR}/share/petsc/matlab/PetscReadBinaryTrajectory.m``.
+   ``$PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m``.
 
 Solving Steady-State Problems with Pseudo-Timestepping
 ------------------------------------------------------

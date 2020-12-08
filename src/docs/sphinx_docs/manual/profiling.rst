@@ -476,7 +476,7 @@ PETSc logging of individual events, one uses the commands
    PetscLogEventDeactivate(int event);
 
 The ``event`` may be either a predefined PETSc event (as listed in the
-file ``${PETSC_DIR}/include/petsclog.h``) or one obtained with
+file ``$PETSC_DIR/include/petsclog.h``) or one obtained with
 ``PetscLogEventRegister()`` (as described in
 :any:`sec_profileuser`).
 

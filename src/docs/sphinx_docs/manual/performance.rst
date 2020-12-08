@@ -393,7 +393,7 @@ pitfalls can be avoided in the future.
 Debug vs. Optimized Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PETSc’s ``./configure`` defaults to building PETSc with debug mode
+PETSc’s ``configure`` defaults to building PETSc with debug mode
 enabled. Any code development should be done in this mode, because it
 provides handy debugging facilities such as accurate stack traces,
 memory leak checks, or memory corruption checks. Note that PETSc has no
@@ -408,7 +408,7 @@ debug run. In the case that a user requests profiling information via
          #                          WARNING!!!                    #
          #                                                        #
          #   This code was compiled with a debugging option,      #
-         #   To get timing results run ./configure                #
+         #   To get timing results run configure                  #
          #   using --with-debugging=no, the performance will      #
          #   be generally two or three times faster.              #
          #                                                        #
@@ -430,7 +430,7 @@ Only once the new code is thoroughly tested and ready for production,
 one should disable debugging facilities by passing
 ``--with-debugging=no`` to
 
-``./configure``. One should also ensure that an appropriate compiler
+``configure``. One should also ensure that an appropriate compiler
 optimization level is set. Note that some compilers (e.g., Intel)
 default to fairly comprehensive optimization levels, while others (e.g.,
 GCC) default to no optimization at all. The best optimization flags will

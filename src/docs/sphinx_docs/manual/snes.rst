@@ -227,7 +227,7 @@ matrix entries to zero by calling ``MatZeroEntries()``. See
 :any:`sec_othermat` for details on the reuse of the matrix
 context.
 
-The directory ``${PETSC_DIR}/src/snes/tutorials`` provides a variety of
+The directory ``$PETSC_DIR/src/snes/tutorials`` provides a variety of
 examples.
 
 .. _sec_nlsolvers:

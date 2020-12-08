@@ -73,7 +73,7 @@ more complex cases, such as using a ``DMDA``. For an example, see
 In MATLAB (R2015b), one may then generate a useful structure. For
 example:
 
-.. code-block:: bash
+.. code-block:: matlab
 
    setenv('PETSC_DIR','~/petsc');
    setenv('PETSC_ARCH','arch-darwin-double-debug');
@@ -107,8 +107,8 @@ where ``machine`` and ``script`` may be ``NULL``. It is also possible to
 start your PETSc program from MATLAB via ``launch()``.
 
 To receive the objects in MATLAB, make sure that
-``${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab`` and
-``${PETSC_DIR}/share/petsc/matlab`` are in the MATLAB path. Use
+``$PETSC_DIR/$PETSC_ARCH/lib/petsc/matlab`` and
+``$PETSC_DIR/share/petsc/matlab`` are in the MATLAB path. Use
 ``p = PetscOpenSocket();`` (or ``p = PetscOpenSocket(portnum)`` if you
 provided a port number in your call to ``PetscViewerSocketOpen()``), and
 then ``a = PetscBinaryRead(p);`` returns the object passed from PETSc.

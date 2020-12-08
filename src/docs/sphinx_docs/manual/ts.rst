@@ -1128,7 +1128,7 @@ TChem [6]_ is a package originally developed at Sandia National
 Laboratory that can read in CHEMKIN [7]_ data files and compute the
 right hand side function and its Jacobian for a reaction ODE system. To
 utilize PETSc’s ODE solvers for these systems, first install PETSc with
-the additional ``./configure`` option ``--download-tchem``. We currently
+the additional ``configure`` option ``--download-tchem``. We currently
 provide two examples of its use; one for single cell reaction and one
 for an “artificial” one dimensional problem with periodic boundary
 conditions and diffusion of all species. The self-explanatory examples

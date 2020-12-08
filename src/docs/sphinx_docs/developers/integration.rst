@@ -487,22 +487,22 @@ To stay oriented when working with branches, we encourage configuring
 In the following, we will include the directory, branch name, and
 PETSC_ARCH in our prompt, e.g.
 
-.. code-block:: bash
+.. code-block:: console
 
    ~/Src/petsc (master=) arch-complex
-   $ git checkout release
+   > git checkout release
     ~/Src/petsc (release<) arch-complex
 
 The ``<`` indicates that our copy of release is behind the repository we are
 pulling from. To achieve this we have the following in our ``.profile`` (for
 bash)
 
-.. code-block:: bash
+.. code-block:: console
 
-   source ~/bin/git-prompt.sh  (point this to the location of your git-prompt.sh)
-   export GIT_PS1_SHOWDIRTYSTATE=1
-   export GIT_PS1_SHOWUPSTREAM="auto"
-   export PS1='\w\[\e[1m\]\[\e[35m\]$(__git_ps1 " (%s)")\[\e[0m\] ${PETSC_ARCH}\n\$ '
+   > source ~/bin/git-prompt.sh  (point this to the location of your git-prompt.sh)
+   > export GIT_PS1_SHOWDIRTYSTATE=1
+   > export GIT_PS1_SHOWUPSTREAM="auto"
+   > export PS1='\w\[\e[1m\]\[\e[35m\]$(__git_ps1 " (%s)")\[\e[0m\] ${PETSC_ARCH}\n\$ '
 
 Git tab completion
 ^^^^^^^^^^^^^^^^^^
@@ -569,9 +569,9 @@ fall behind the ``master`` branch.
 You can move your changes to the top
 of the latest ``master`` using
 
-.. code-block:: bash
+.. code-block:: console
 
-    $ git rebase master (while in your branch)
+    > git rebase master (while in your branch)
 
 Quick summary of Git commands
 -----------------------------
