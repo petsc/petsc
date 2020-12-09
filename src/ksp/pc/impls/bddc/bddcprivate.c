@@ -14,12 +14,14 @@ static PetscErrorCode MatMPIAIJRestrict(Mat,MPI_Comm,Mat*);
    if range is false, it returns B s.t. range(B) _|_ range(A) */
 PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, PetscInt lw, PetscScalar *work, PetscReal *rwork, Mat *B)
 {
-#if !defined(PETSC_USE_COMPLEX)
   PetscScalar    *uwork,*data,*U, ds = 0.;
   PetscReal      *sing;
   PetscBLASInt   bM,bN,lwork,lierr,di = 1;
   PetscInt       ulw,i,nr,nc,n;
   PetscErrorCode ierr;
+#if defined(PETSC_USE_COMPLEX)
+  PetscReal      *rwork2;
+#endif
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
@@ -47,7 +49,13 @@ PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, Petsc
   ierr = PetscBLASIntCast(ulw,&lwork);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A,&data);CHKERRQ(ierr);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
   PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","N",&bM,&bN,data,&bM,sing,U,&bM,&ds,&di,uwork,&lwork,&lierr));
+#else
+  ierr = PetscMalloc1(5*n,&rwork2);CHKERRQ(ierr);
+  PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","N",&bM,&bN,data,&bM,sing,U,&bM,&ds,&di,uwork,&lwork,rwork2,&lierr));
+  ierr = PetscFree(rwork2);CHKERRQ(ierr);
+#endif
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
   ierr = MatDenseRestoreArray(A,&data);CHKERRQ(ierr);
@@ -70,10 +78,6 @@ PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, Petsc
   }
   ierr = MatDenseRestoreArray(*B,&data);CHKERRQ(ierr);
   ierr = PetscFree(U);CHKERRQ(ierr);
-#else /* PETSC_USE_COMPLEX */
-  PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for complexes");
-#endif
   PetscFunctionReturn(0);
 }
 
