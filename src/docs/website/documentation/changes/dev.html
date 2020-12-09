@@ -143,6 +143,9 @@
       <h4>Mat:</h4>
       <ul>
         <li>Add MatSetPreallocationCOO and MatSetValuesCOO to preallocate and set values in a matrix using COO format. Currently efficiently implemented only for MATCUSPARSE</li>
+        <li>Add the option MAT_FORCE_DIAGONAL_ENTRIES for MatSetOption(). It forces allocation of all diagonal entries.</li>
+        <li>MAT_NEW_DIAGONALS is removed from MatOption.
+      </ul>
       </ul>
       <h4>PC:</h4>
       <ul>

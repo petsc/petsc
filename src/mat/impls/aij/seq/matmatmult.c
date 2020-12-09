@@ -179,6 +179,10 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,PetscRea
       /* add non-zero cols of B into the sorted linked list lnk */
       ierr = PetscLLCondensedAddSorted(bnzj,bj,lnk,lnkbt);CHKERRQ(ierr);
     }
+    /* add possible missing diagonal entry */
+    if (C->force_diagonals) {
+      ierr = PetscLLCondensedAddSorted(1,&i,lnk,lnkbt);CHKERRQ(ierr);
+    }
     cnzi = lnk[0];
 
     /* If free space is not available, make more free space */
@@ -404,6 +408,10 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A,Mat B,PetscR
       /* add non-zero cols of B into the sorted linked list lnk */
       ierr = PetscLLCondensedAddSorted_fast(bnzj,bj,lnk);CHKERRQ(ierr);
     }
+    /* add possible missing diagonal entry */
+    if (C->force_diagonals) {
+      ierr = PetscLLCondensedAddSorted_fast(1,&i,lnk);CHKERRQ(ierr);
+    }
     cnzi = lnk[1];
 
     /* If free space is not available, make more free space */
@@ -494,7 +502,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   ierr = PetscLLCondensedCreate_Scalable(Crmax,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
-  ierr          = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ai[am],bi[bm])),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ai[am],bi[bm])),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine ci and cj */
@@ -508,6 +516,11 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
       /* add non-zero cols of B into the sorted linked list lnk */
       ierr = PetscLLCondensedAddSorted_Scalable(bnzj,bj,lnk);CHKERRQ(ierr);
     }
+    /* add possible missing diagonal entry */
+    if (C->force_diagonals) {
+      ierr = PetscLLCondensedAddSorted_Scalable(1,&i,lnk);CHKERRQ(ierr);
+    }
+
     cnzi = lnk[0];
 
     /* If free space is not available, make more free space */
@@ -1068,7 +1081,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A,Mat B,PetscReal fil
   PetscErrorCode ierr;
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   const PetscInt *ai = a->i,*bi=b->i,*aj=a->j,*bj=b->j;
-  PetscInt       *ci,*cj;
+  PetscInt       *ci,*cj,bcol;
   PetscInt       am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
   PetscReal      afill;
   PetscInt       i,j,ndouble = 0;
@@ -1089,11 +1102,12 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A,Mat B,PetscReal fil
     const PetscInt anzi  = ai[i+1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
     const PetscInt *acol = aj + ai[i]; /* column indices of nonzero entries in this row */
     PetscInt packlen = 0,*PETSC_RESTRICT crow;
+
     /* Pack segrow */
     for (j=0; j<anzi; j++) {
       PetscInt brow = acol[j],bjstart = bi[brow],bjend = bi[brow+1],k;
       for (k=bjstart; k<bjend; k++) {
-        PetscInt bcol = bj[k];
+        bcol = bj[k];
         if (!seen[bcol]) { /* new entry */
           PetscInt *PETSC_RESTRICT slot;
           ierr = PetscSegBufferGetInts(segrow,1,&slot);CHKERRQ(ierr);
@@ -1103,6 +1117,16 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A,Mat B,PetscReal fil
         }
       }
     }
+
+    /* Check i-th diagonal entry */
+    if (C->force_diagonals && !seen[i]) {
+      PetscInt *PETSC_RESTRICT slot;
+      ierr = PetscSegBufferGetInts(segrow,1,&slot);CHKERRQ(ierr);
+      *slot   = i;
+      seen[i] = 1;
+      packlen++;
+    }
+
     ierr = PetscSegBufferGetInts(seg,packlen,&crow);CHKERRQ(ierr);
     ierr = PetscSegBufferExtractTo(segrow,crow);CHKERRQ(ierr);
     ierr = PetscSortInt(packlen,crow);CHKERRQ(ierr);

@@ -231,6 +231,11 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
       Jptr = pj_oth + pi_oth[row];
       ierr = PetscLLCondensedAddSorted(pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
     }
+    /* add possible missing diagonal entry */
+    if (C->force_diagonals) {
+      j = i + rstart; /* column index */
+      ierr = PetscLLCondensedAddSorted(1,&j,lnk,lnkbt);CHKERRQ(ierr);
+    }
 
     apnz     = lnk[0];
     api[i+1] = api[i] + apnz;
@@ -747,7 +752,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat C
   Mat_SeqAIJ         *ad = (Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*p_loc,*p_oth;
   PetscInt           *pi_loc,*pj_loc,*pi_oth,*pj_oth,*dnz,*onz;
   PetscInt           *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,rstart=A->rmap->rstart;
-  PetscInt           i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi,*lnk,apnz_max=0;
+  PetscInt           i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi,*lnk,apnz_max=1;
   PetscInt           am=A->rmap->n,pn=P->cmap->n,pm=P->rmap->n,lsize=pn+20;
   PetscReal          afill;
   MatType            mtype;
@@ -805,7 +810,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat C
       ierr = PetscLLCondensedAddSorted_Scalable(pnz,Jptr,lnk);CHKERRQ(ierr);
       apnz     = *lnk; /* The first element in the list is the number of items in the list */
       api[i+1] = api[i] + apnz;
-      if (apnz > apnz_max) apnz_max = apnz;
+      if (apnz > apnz_max) apnz_max = apnz + 1; /* '1' for diagonal entry */
     }
     /* off-diagonal portion of A */
     nzi = aoi[i+1] - aoi[i];
@@ -822,8 +827,15 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat C
       ierr = PetscLLCondensedAddSorted_Scalable(pnz,Jptr,lnk);CHKERRQ(ierr);
       apnz     = *lnk;  /* The first element in the list is the number of items in the list */
       api[i+1] = api[i] + apnz;
-      if (apnz > apnz_max) apnz_max = apnz;
+      if (apnz > apnz_max) apnz_max = apnz + 1; /* '1' for diagonal entry */
     }
+
+    /* add missing diagonal entry */
+    if (C->force_diagonals) {
+      j = i + rstart; /* column index */
+      ierr = PetscLLCondensedAddSorted_Scalable(1,&j,lnk);CHKERRQ(ierr);
+    }
+
     apnz     = *lnk;
     api[i+1] = api[i] + apnz;
     if (apnz > apnz_max) apnz_max = apnz;
@@ -1050,6 +1062,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   ierr = MatProductSetAlgorithm(adpd,"sorted");CHKERRQ(ierr);
   ierr = MatProductSetFill(adpd,fill);CHKERRQ(ierr);
   ierr = MatProductSetFromOptions(adpd);CHKERRQ(ierr);
+
+  adpd->force_diagonals = C->force_diagonals;
   ierr = MatProductSymbolic(adpd);CHKERRQ(ierr);
 
   adpd_seq = (Mat_SeqAIJ*)((adpd)->data);
@@ -1224,7 +1238,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   PetscBT             lnkbt;
   PetscMPIInt         tagi,tagj,*len_si,*len_s,*len_ri,nrecv;
   PETSC_UNUSED PetscMPIInt icompleted=0;
-  PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
+  PetscInt            **buf_rj,**buf_ri,**buf_ri_k,row,ncols,*cols;
   PetscInt            len,proc,*dnz,*onz,*owners,nzi;
   PetscInt            nrows,*buf_s,*buf_si,*buf_si_i,**nextrow,**nextci;
   MPI_Request         *swaits,*rwaits;
@@ -1408,7 +1422,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   ierr = MatPreallocateInitialize(comm,pn,an,dnz,onz);CHKERRQ(ierr);
   ierr = PetscLLCondensedCreate(Crmax,aN,&lnk,&lnkbt);CHKERRQ(ierr);
-  for (i=0; i<pn; i++) {
+  for (i=0; i<pn; i++) { /* for each local row of C */
     /* add C_loc into C */
     nzi  = c_loc->i[i+1] - c_loc->i[i];
     Jptr = c_loc->j + c_loc->i[i];
@@ -1423,6 +1437,13 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
         nextrow[k]++; nextci[k]++;
       }
     }
+
+    /* add missing diagonal entry */
+    if (C->force_diagonals) {
+      k = i + owners[rank]; /* column index */
+      ierr = PetscLLCondensedAddSorted(1,&k,lnk,lnkbt);CHKERRQ(ierr);
+    }
+
     nzi = lnk[0];
 
     /* copy data into free space, then initialize lnk */
@@ -1443,16 +1464,20 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /* add C_loc and C_oth to C */
   ierr = MatGetOwnershipRange(C,&rstart,NULL);CHKERRQ(ierr);
   for (i=0; i<pn; i++) {
-    const PetscInt ncols = c_loc->i[i+1] - c_loc->i[i];
-    const PetscInt *cols = c_loc->j + c_loc->i[i];
-    const PetscInt row = rstart + i;
-    ierr = MatSetValues(C,1,&row,ncols,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
+    ncols = c_loc->i[i+1] - c_loc->i[i];
+    cols  = c_loc->j + c_loc->i[i];
+    row   = rstart + i;
+    ierr = MatSetValues(C,1,(const PetscInt*)&row,(const PetscInt)ncols,(const PetscInt*)cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
+
+    if (C->force_diagonals) {
+      ierr = MatSetValues(C,1,(const PetscInt*)&row,1,(const PetscInt*)&row,NULL,INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
   for (i=0; i<con; i++) {
-    const PetscInt ncols = c_oth->i[i+1] - c_oth->i[i];
-    const PetscInt *cols = c_oth->j + c_oth->i[i];
-    const PetscInt row = prmap[i];
-    ierr = MatSetValues(C,1,&row,ncols,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
+    ncols = c_oth->i[i+1] - c_oth->i[i];
+    cols  = c_oth->j + c_oth->i[i];
+    row   = prmap[i];
+    ierr = MatSetValues(C,1,(const PetscInt*)&row,(const PetscInt)ncols,(const PetscInt*)cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1976,6 +2001,13 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
         nextrow[k]++; nextci[k]++;
       }
     }
+
+    /* add missing diagonal entry */
+    if (C->force_diagonals) {
+      k = i + owners[rank]; /* column index */
+      ierr = PetscLLCondensedAddSorted_Scalable(1,&k,lnk);CHKERRQ(ierr);
+    }
+
     nnz = lnk[0];
 
     /* if free space is not available, make more free space */
