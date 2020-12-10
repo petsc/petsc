@@ -308,17 +308,17 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 
 PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,start,end;
-  PetscScalar    *v;
+  PetscErrorCode    ierr;
+  PetscInt          i,start,end;
+  const PetscScalar *v;
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
-  ierr = VecGetArray(D,&v);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(D,&v);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,is);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(D,&v);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
