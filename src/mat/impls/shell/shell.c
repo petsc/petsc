@@ -856,16 +856,15 @@ static PetscErrorCode MatShellSetMatProductOperation_Private(Mat A,MatProductTyp
     while (entry) {
       ierr = PetscStrcmp(composedname,entry->composedname,&flg);CHKERRQ(ierr);
       flg  = (PetscBool)(flg && (entry->ptype == ptype));
-      if (flg) break;
+      if (flg) goto set;
       matmat = entry;
       entry = entry->next;
     }
-    if (!flg) {
-      ierr = PetscNew(&matmat->next);CHKERRQ(ierr);
-      matmat = matmat->next;
-    } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
+    ierr = PetscNew(&matmat->next);CHKERRQ(ierr);
+    matmat = matmat->next;
   }
 
+set:
   matmat->symbolic = symbolic;
   matmat->numeric  = numeric;
   matmat->destroy  = destroy;
