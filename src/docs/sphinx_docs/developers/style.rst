@@ -377,7 +377,7 @@ Usage of PETSc Functions and Macros
    ``malloc()`` and ``free()``.
 
 #. MPI routines and macros that are not part of the 1.0 or 1.1 standard
-   should not be used in PETSc without appropriate ``./configure``
+   should not be used in PETSc without appropriate ``configure``
    checks and ``#if defined()`` checks. Code should also be provided
    that works if the MPI feature is not available, for example,
 

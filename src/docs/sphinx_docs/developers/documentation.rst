@@ -18,7 +18,7 @@ Building Main Documentation
 ===========================
 
 The documentation tools listed below (except for pdflatex) are
-automatically downloaded and installed by ``./configure``.
+automatically downloaded and installed by ``configure``.
 
 * `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: a text processing tool developed by Bill Gropp.  This produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
 * `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: A text processing package. This generates the HTML versions of all the source code.
@@ -28,21 +28,21 @@ Note: Sowing and c2html have additional dependencies like gcc, g++, and flex and
 use compilers specified to PETSc configure. [Windows users please install the corresponding
 cygwin packages]
 
-Once pdflatex is in your ``PATH``, you can build the documentation with:
+Once pdflatex is in your ``$PATH``, you can build the documentation with:
 
-.. code-block:: bash
+.. code-block:: console
 
-    make alldoc LOC=${PETSC_DIR}
+    > make alldoc LOC=${PETSC_DIR}
 
 (Note that this does not include :ref:`sphinx_documentation`).
 
 To get a quick preview of manual pages from a single source directory (mainly to debug the manual page syntax):
 
-.. code-block:: bash
+.. code-block:: console
 
-    cd $PETSC_DIR/src/snes/interface
-    make LOC=$PETSC_DIR manualpages_buildcite
-    browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
+    > cd $PETSC_DIR/src/snes/interface
+    > make LOC=$PETSC_DIR manualpages_buildcite
+     browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
 
 .. _sphinx_documentation:
 
@@ -78,15 +78,129 @@ using the usual guidelines in :doc:`integration` (note the options for speedy re
 Building the Sphinx docs locally
 --------------------------------
 
-* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/master/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/master/src/docs/sphinx_docs/requirements.txt>`__ [#f1]. e.g. with pip, `pip install -r $PETSC_DIR/src/docs/sphinx_docs/requirements.txt`.
+* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/master/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/master/src/docs/sphinx_docs/requirements.txt>`__ [#f1]. e.g. with pip:
+
+  .. code-block:: console
+
+     > python -m pip install -r $PETSC_DIR/src/docs/sphinx_docs/requirements.txt
+
 * Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``$PETSC_DIR/src/docs/sphinx_docs``).
+
 * ``make html``
+
 * Open ``_build/html/index.html`` with your browser.
 
 .. _sphinx_guidelines:
 
 Sphinx Documentation Guidelines
 -------------------------------
+
+* Use the ``.. code-block::`` `directive
+  <https://www.sphinx-doc.org/en/1.5/markup/code.html>`__ instead of the ``.. code::``
+  `directive <https://docutils.sourceforge.io/docs/ref/rst/directives.html#code>`__ for
+  any example code that is not included literally using ``.. literalinclude::``. See
+  :ref:`below <doc_devdoc_guide_litinc>` for more details on ``.. literalinclude``.
+
+* Any invocable command line statements longer than a few words should be in
+  ``.. code-block::`` sections. Any such statements not in code-block statements must be
+  enclosed by double backticks "``". For example ``make all`` is acceptable but
+
+  .. code-block:: console
+
+     > make PETSC_DIR=/my/path/to/petsc PETSC_ARCH=my-petsc-arch all
+
+  should be in a block.
+
+* All code blocks showing invocation of command line must use the "console" block
+  directive. E.g.
+
+  .. code-block:: rst
+
+     .. code-block:: console
+
+        > cd $PETSC_DIR/src/snes/interface
+        > ./someprog
+        output1
+        output2
+
+  The only exception of this is when displaying raw output, i.e. with no preceding
+  commands. Then one may use just the "::" directive to improve visibility E.g.
+
+  .. code-block:: rst
+
+     ::
+
+        output1
+        output2
+
+  which renders as
+
+  ::
+
+     output1
+     output2
+
+  Notice that now "output1" and "output2" are not greyed out as previously.
+
+* Any code blocks that show command line invocations must be preceded by the ">"
+  character. E.g.
+
+  .. code-block:: rst
+
+     .. code-block:: console
+
+        > ./configure --some-args
+        > make libs
+        > make ./ex1
+        > ./ex1 --some-args
+
+
+* All environment variables such as ``$PETSC_DIR`` or ``$PATH`` must be preceded by the
+  "$" character and be enclosed in double backticks "``". E.g.
+
+  .. code-block:: rst
+
+     Lorem ipsum dolor sit ``$PETSC_DIR``, consectetur adipiscing ``$PETSC_ARCH``...
+
+* When referring to configuration of PETSc, specifically the ``$PETSC_DIR/configure``
+  script in plain text (not code blocks), it should always be lower-case, enclosed in
+  double backticks "``" and not include "./". E.g.
+
+  .. code-block:: rst
+
+     Lorem ipsum dolor sit ``configure``, consectetur adipiscing elit...
+
+* If using internal section links to to jump to other places within the documentation, use
+  explicit labels and namespace them appropriately. Do not use `autosectionlabel
+  <https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html>`__
+  extension, and do not use implicit links. E.g.
+
+  .. code-block:: rst
+
+     .. _doc_mydoc:
+
+     ======================
+     Start Document Heading
+     ======================
+
+     .. _doc_mydoc_internalheadline:
+
+     Internal Headline
+     =================
+
+  And in some other file
+
+  .. code-block:: rst
+
+     .. _tut_mytutorial:
+
+     ======================
+     Start Tutorial Heading
+     ======================
+
+     A link- :ref:`my link name <doc_mydoc_internalheadline>`
+
+.. _doc_devdoc_guide_litinc:
 
 * Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code, as in
   the following example. Note that an "absolute" path has been used, which means
@@ -178,7 +292,7 @@ be converted to RST by `Pandoc <pandoc.org>`__.
 * Save a copy of this file, say ``manual_to_process.tex``.
 * Perform some global cleanup operations, as with this script
 
-  .. code-block:: bash
+  .. code-block:: console
 
       #!/usr/bin/env bash
 
@@ -216,7 +330,7 @@ be converted to RST by `Pandoc <pandoc.org>`__.
 Next, one must examine the output, ideally comparing to the original rendered LaTeX, and make fixes on the ``.rst`` file, including but not limited to:
 
 * Check links
-* Add correct code block languages when not C, e.g. replace ``::`` with ``.. code-block:: bash``
+* Add correct code block languages when not C, e.g. replace ``::`` with ``.. code-block:: console``
 * Re-add citations with ``:cite:`` and add per-chapter bibliography sections (see existing examples)
 * Fix footnotes
 * Fix section labels and links
