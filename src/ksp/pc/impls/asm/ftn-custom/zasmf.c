@@ -4,6 +4,12 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define pcasmgetsubksp1_           PCASMGETSUBKSP1
 #define pcasmgetsubksp2_           PCASMGETSUBKSP2
+#define pcasmgetsubksp3_           PCASMGETSUBKSP3
+#define pcasmgetsubksp4_           PCASMGETSUBKSP4
+#define pcasmgetsubksp5_           PCASMGETSUBKSP5
+#define pcasmgetsubksp6_           PCASMGETSUBKSP6
+#define pcasmgetsubksp7_           PCASMGETSUBKSP7
+#define pcasmgetsubksp8_           PCASMGETSUBKSP8
 #define pcasmsetlocalsubdomains_   PCASMSETLOCALSUBDOMAINS
 #define pcasmsetglobalsubdomains_  PCASMSETGLOBALSUBDOMAINS
 #define pcasmgetlocalsubmatrices_  PCASMGETLOCALSUBMATRICES
@@ -13,6 +19,12 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcasmgetsubksp1_           pcasmgetsubksp1
 #define pcasmgetsubksp2_           pcasmgetsubksp2
+#define pcasmgetsubksp3_           pcasmgetsubksp3
+#define pcasmgetsubksp4_           pcasmgetsubksp4
+#define pcasmgetsubksp5_           pcasmgetsubksp5
+#define pcasmgetsubksp6_           pcasmgetsubksp6
+#define pcasmgetsubksp7_           pcasmgetsubksp7
+#define pcasmgetsubksp8_           pcasmgetsubksp8
 #define pcasmsetlocalsubdomains_   pcasmsetlocalsubdomains
 #define pcasmsetglobalsubdomains_  pcasmsetglobalsubdomains
 #define pcasmgetlocalsubmatrices_  pcasmgetlocalsubmatrices
@@ -56,6 +68,36 @@ PETSC_EXTERN void pcasmgetsubksp1_(PC *pc,PetscInt *n_local,PetscInt *first_loca
 }
 
 PETSC_EXTERN void pcasmgetsubksp2_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+{
+  pcasmgetsubksp1_(pc,n_local,first_local,ksp,ierr);
+}
+
+PETSC_EXTERN void pcasmgetsubksp3_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+{
+  pcasmgetsubksp1_(pc,n_local,first_local,ksp,ierr);
+}
+
+PETSC_EXTERN void pcasmgetsubksp4_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+{
+  pcasmgetsubksp1_(pc,n_local,first_local,ksp,ierr);
+}
+
+PETSC_EXTERN void pcasmgetsubksp5_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+{
+  pcasmgetsubksp1_(pc,n_local,first_local,ksp,ierr);
+}
+
+PETSC_EXTERN void pcasmgetsubksp6_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+{
+  pcasmgetsubksp1_(pc,n_local,first_local,ksp,ierr);
+}
+
+PETSC_EXTERN void pcasmgetsubksp7_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+{
+  pcasmgetsubksp1_(pc,n_local,first_local,ksp,ierr);
+}
+
+PETSC_EXTERN void pcasmgetsubksp8_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
   pcasmgetsubksp1_(pc,n_local,first_local,ksp,ierr);
 }
