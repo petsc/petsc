@@ -229,6 +229,78 @@ Sphinx Documentation Guidelines
 
         Ghost Points
 
+* By default the theme used by PETSc docs will only uniquely color 2 sets of `admonitions
+  <https://docutils.sourceforge.io/docs/ref/rst/directives.html#admonitions>`__,
+  ``.. warning::`` and everything else. E.g.
+
+  .. code-block:: rst
+
+     .. note::
+
+        Can be any one of "attention", "caution", "danger", "error", "hint", "important",
+        "note", "tip", "warning", "admonition".
+
+     .. warning::
+
+        Scary!
+
+  Renders as:
+
+  .. note::
+
+     Can be any one of "attention", "caution", "danger", "error", "hint", "important",
+     "note", "tip", "warning", "admonition".
+
+  .. warning::
+
+     Scary!
+
+  However, it is possible to add custom colors to generic admonition ``.. admonition::``
+  by using the ``:class:`` directive option.  The "classes" to which this option refer to
+  may be defined in ``$PETSC_DIR/src/docs/sphinx_docs/_static/css``.  Currently only 1
+  valid option exists:
+
+  .. code-block:: rst
+
+     .. admonition:: My title
+        :class: yellow
+
+        We all live in a yellow submarine.
+
+  Which renders as:
+
+  .. admonition:: My title
+        :class: yellow
+
+        We all live in a yellow submarine.
+
+  And is defined in ``$PETSC_DIR/src/docs/sphinx_docs/_static/css/colorbox.css``. In order
+  to define additional colors for use as an admonition class, for example a pink box we
+  shall call ``examplebox`` with a fancy border, one may add the following to
+  ``colorbox.css``:
+
+  .. literalinclude:: /_static/css/colorbox.css
+     :language: css
+     :start-at: div.examplebox {
+     :end-at: border: 5px ridge #e195a2;
+     :append: }
+
+  Then
+
+  .. code-block:: rst
+
+     .. admonition:: Oh no
+        :class: examplebox
+
+        Something very important
+
+  Renders as:
+
+  .. admonition:: Oh no
+     :class: examplebox
+
+     Something very important
+
 * Prefer formatting styles that are easy to modify and maintain.  In particular, use of `list-table <https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table>`_ is recommended.
 
   .. code-block:: rst

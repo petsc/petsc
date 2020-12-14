@@ -46,6 +46,8 @@ BLAS/LAPACK. The configure option ``-with-openmp`` will trigger PETSc to try to 
 Certain external packages such as MUMPS may benefit from using parallel BLAS/LAPACK operations. See the manual page MATSOLVERMUMPS for details on
 how one can restrict the number of MPI processes while running MUMPS to utilize parallel BLAS/LAPACK.
 
+.. _ch_blas-lapack_avail-libs:
+
 Available BLAS/LAPACK libraries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

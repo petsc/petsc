@@ -20,11 +20,28 @@ import datetime
 
 sys.path.append(os.path.abspath('./ext'))
 
+
+# -- Sphinx Version and Config -----------------------------------------------
+# Sphinx will error and refuse to build if not equal to version
+needs_sphinx='2.4.4'
+
+# Sphinx-build fails for any broken __internal__ links. For external use make linkcheck.
+nitpicky = True
+
 # -- Project information -----------------------------------------------------
 
 project = 'PETSc'
 copyright = '1991-%d, UChicago Argonne, LLC and the PETSc Development Team' % datetime.date.today().year
 author = 'The PETSc Development Team'
+
+# Allow todo's to be emitted, turn off for build!
+todo_include_todos=True
+todo_emit_warnings=True
+
+# Little copy-and-paste button by code blocks, from sphinx_copybutton package
+# https://sphinx-copybutton.readthedocs.io/en/latest/
+copybutton_prompt_text = r"[>]{1,3}"
+copybutton_prompt_is_regexp = True
 
 with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as version_file:
     buf = version_file.read()
@@ -41,13 +58,14 @@ with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as ve
         version = '.'.join([major_version, minor_version])
         release = '.'.join([major_version,minor_version,subminor_version])
 
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx_copybutton',
+    'sphinx.ext.todo',
     'sphinx.ext.graphviz',
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
@@ -79,8 +97,6 @@ html_static_path = ['_static']
 
 html_logo = os.path.join('..','website','images','PETSc-TAO_RGB.svg')
 html_favicon = os.path.join('..','website','images','PETSc_RGB-logo.png')
-
-html_css_files = ['css/pop-up.css']
 
 # -- Options for LaTeX output --------------------------------------------
 
@@ -141,3 +157,9 @@ highlight_language = 'c'
 autosummary_generate = True
 numfig = True
 
+# Supposedly the safer way to add additional css files. Setting html_css_files will
+# overwrite previous versions of the variable that some extension may have set. This will
+# add our css files in addition to it.
+def setup(app):
+    app.add_css_file('css/pop-up.css')
+    app.add_css_file('css/colorbox.css')

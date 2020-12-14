@@ -1,6 +1,6 @@
-============================================
-Communication Channels for PETSc Development
-============================================
+===========================================
+Communication Channels for PETSc Developers
+===========================================
 
 GitLab
 ======
@@ -14,7 +14,7 @@ and more. Also see :doc:`integration`.
 Mailing Lists
 =============
 
-Please consider joining the `mailing lists <https://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html>`__.
+Please consider joining the :ref:`mailing lists <doc_mail>`.
 
 Comments and questions regarding PETSc design and development should go to petsc-dev@mcs.anl.gov.
 
