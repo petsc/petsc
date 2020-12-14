@@ -308,7 +308,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
                 self.logPrintBox('***** WARNING: mpiexec may not work on your system due to network issues.\n\
 Perhaps you have VPN running whose network settings may not work with mpiexec or your network is misconfigured')
           else:
-            elf.logPrintBox('***** WARNING: mpiexec may not work on your system due to network issues.\n\
+            self.logPrintBox('***** WARNING: mpiexec may not work on your system due to network issues.\n\
 Unable to run hostname to check the network')
           self.logPrintDivider()
 
