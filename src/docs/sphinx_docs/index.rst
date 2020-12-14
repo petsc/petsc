@@ -13,9 +13,11 @@ Highly recommended resource: Ed Bueler, `PETSc for Partial Differential Equation
 .. toctree::
    :maxdepth: 1
 
+   install/index
    manual/index
    guides/guide_to_examples
    developers/index
+   contact/index
 
 
 .. raw:: html
@@ -23,3 +25,4 @@ Highly recommended resource: Ed Bueler, `PETSc for Partial Differential Equation
     <a href="../../../src/binding/petsc4py/docs/usrman/index.html">PETSc4py documentation</a>
 
 
+.. todolist::

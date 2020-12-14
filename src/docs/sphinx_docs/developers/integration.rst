@@ -2,7 +2,7 @@
 Getting your code and documentation into PETSc
 ==============================================
 
-PETSc uses :any:`git <git>`, `GitLab <https:gitlab.com/petsc/petsc>`__, and its testing system, for its source code management.
+PETSc uses :any:`git <git>`, `GitLab <https://gitlab.com/petsc/petsc>`__, and its testing system, for its source code management.
 All new code in PETSc is accepted via merge requests (MRs).
 
 Integration branches
@@ -519,7 +519,7 @@ Starting a new feature branch
 
 -  Obtain the PETSc source
    
-   - If you have write access to the PETSc `GitLab <https:gitlab.com/petsc/petsc>`__ repository
+   - If you have write access to the PETSc `GitLab <https://gitlab.com/petsc/petsc>`__ repository
 
      - ``git clone git@gitlab.com/petsc/petsc``  (or just use a clone you already have)
 
