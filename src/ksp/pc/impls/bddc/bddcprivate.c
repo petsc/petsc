@@ -1920,7 +1920,9 @@ PetscErrorCode PCBDDCBenignRemoveInterior(PC pc,Vec r,Vec z)
   }
   ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
   ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecSet(z,0.);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -5791,6 +5793,7 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
       ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][1],pc,0,0,0);CHKERRQ(ierr);
   if (!reuse_solver || pcbddc->switch_static) {
     if (applytranspose) {
       ierr = KSPSolveTranspose(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
@@ -5807,6 +5810,7 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
       ierr = MatFactorSolveSchurComplement(reuse_solver->F,reuse_solver->rhs_B,reuse_solver->sol_B);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][1],pc,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(inout_B,0.);CHKERRQ(ierr);
   if (!pcbddc->switch_static) {
     if (!reuse_solver) {
@@ -5900,7 +5904,9 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL);CHKERRQ(ierr);
     if (applytranspose) {
       if (pcbddc->benign_apply_coarse_only) SETERRQ(PetscObjectComm((PetscObject)pcbddc->coarse_ksp),PETSC_ERR_SUP,"Not yet implemented");
+      ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0);CHKERRQ(ierr);
       ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0);CHKERRQ(ierr);
       ierr = KSPCheckSolve(pcbddc->coarse_ksp,pc,sol);CHKERRQ(ierr);
       ierr = MatGetTransposeNullSpace(coarse_mat,&nullsp);CHKERRQ(ierr);
       if (nullsp) {
@@ -5919,7 +5925,9 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
         ierr = PCBDDCBenignRemoveInterior(coarse_pc,rhs,sol);CHKERRQ(ierr);
         ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
       } else {
+        ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0);CHKERRQ(ierr);
         ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+        ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0);CHKERRQ(ierr);
         ierr = KSPCheckSolve(pcbddc->coarse_ksp,pc,sol);CHKERRQ(ierr);
         if (nullsp) {
           ierr = MatNullSpaceRemove(nullsp,sol);CHKERRQ(ierr);
