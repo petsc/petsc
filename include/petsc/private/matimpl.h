@@ -466,6 +466,7 @@ struct _p_Mat {
   PetscBool              submat_singleis;  /* for efficient PCSetUp_ASM() */
   PetscBool              structure_only;
   PetscBool              sortedfull;       /* full, sorted rows are inserted */
+  PetscBool              force_diagonals;  /* set by MAT_FORCE_DIAGONAL_ENTRIES */
 #if defined(PETSC_HAVE_DEVICE)
   PetscOffloadMask       offloadmask;      /* a mask which indicates where the valid matrix data is (GPU, CPU or both) */
   PetscBool              boundtocpu;
