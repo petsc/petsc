@@ -3413,8 +3413,17 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
   Vec            b,x;
   PetscInt       m,N,i;
   PetscScalar    *bb,*xx;
+  PetscErrorCode (*f)(Mat,Vec,Vec);
 
   PetscFunctionBegin;
+  if (A->factorerrortype) {
+    ierr = PetscInfo1(A,"MatFactorError %D\n",A->factorerrortype);CHKERRQ(ierr);
+    ierr = MatSetInf(X);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  f = trans ? A->ops->solvetranspose : A->ops->solve;
+  if (!f) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type %s",((PetscObject)A)->type_name);
+
   ierr = MatDenseGetArrayRead(B,(const PetscScalar**)&bb);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);  /* number local rows */
@@ -3423,11 +3432,7 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
   for (i=0; i<N; i++) {
     ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
-    if (trans) {
-      ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
-    } else {
-      ierr = MatSolve(A,b,x);CHKERRQ(ierr);
-    }
+    ierr = (*f)(A,b,x);CHKERRQ(ierr);
     ierr = VecResetArray(x);CHKERRQ(ierr);
     ierr = VecResetArray(b);CHKERRQ(ierr);
   }
