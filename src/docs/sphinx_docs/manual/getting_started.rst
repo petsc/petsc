@@ -74,7 +74,7 @@ The manual is divided into three parts:
 presents two simple examples of solving linear systems with PETSc. This
 section conveys the typical style used throughout the library and
 enables the application programmer to begin using the software
-immediately. 
+immediately.
 
 :doc:`programming` explains in detail the use of the various PETSc libraries, such
 as vectors, matrices, index sets, linear and nonlinear solvers, and

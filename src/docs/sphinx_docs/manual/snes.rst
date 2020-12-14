@@ -1157,6 +1157,8 @@ option ``-snes_vi_monitor`` turns on extra monitoring of the active set
 associated with the bounds and ``-snes_vi_type`` allows selecting from
 several VI solvers, the default is preferred.
 
+.. _sec_snespc:
+
 Nonlinear Preconditioning
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

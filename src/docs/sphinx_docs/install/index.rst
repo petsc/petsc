@@ -13,6 +13,7 @@ Information and tutorials on setting up a PETSc installation.
    windowsinstall_documentation
    multibuild_documentation
    externalsoftware_documentation
+   license_documentation
 
 Change Logs
 ===========

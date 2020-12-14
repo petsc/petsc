@@ -1,6 +1,6 @@
-================================
-Guide to PETSc Tutorial Examples
-================================
+===============
+PETSc Tutorials
+===============
 
 PETSc has many tutorial examples, found in ``tutorials/``
 directories throughout the ``src/`` tree. Since these do not have informative

@@ -4,6 +4,10 @@ PETSc in a nutshell
 
 PETSc/TAO is a tool for writing, analyzing, and optimizing properties of large-scale numerical simulations.
 
+.. image:: ../manual/images/library_structure.svg
+   :alt: PETSc Structure Diagram
+   :align: center
+
 Algebraic objects
 =================
 
@@ -52,4 +56,3 @@ Utilities
 - Monitor - monitoring of solution progress
 
 - ``Profiling`` - profiling of the performance of the simulation solution process
-

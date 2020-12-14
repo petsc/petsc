@@ -33,20 +33,16 @@ minimize recompiling and relinking.
 Why is configure necessary?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The *configure* program is designed to assemble all information and
-preconditions necessary for the build stage. This is a far more
-complicated task, heavily dependent on the local hardware and software
-environment. It is also the source of nearly every build problem. The
-most crucial aspect of a configure system is not performance,
-scalability, or even functionality, it is *debuggability*. Configuration
-failure is at least as common as success, due to broken tools, operating
-system upgrades, hardware incompatibilities, user error, and a host of
-other reasons. Problem diagnosis is the single biggest bottleneck for
-development and maintenance time. Unfortunately, current systems are
-built to optimize the successful case rather than the unsuccessful. In
-PETSc, we have developed the
-`BuildSystem package
-(BS) to remedy the shortcomings of configuration systems such as
+The ``configure`` program is designed to assemble all information and preconditions
+necessary for the build stage. This is a far more complicated task, heavily dependent on
+the local hardware and software environment. It is also the source of nearly every build
+problem. The most crucial aspect of a configure system is not performance, scalability, or
+even functionality, it is *debuggability*. Configuration failure is at least as common as
+success, due to broken tools, operating system upgrades, hardware incompatibilities, user
+error, and a host of other reasons. Problem diagnosis is the single biggest bottleneck for
+development and maintenance time. Unfortunately, current systems are built to optimize the
+successful case rather than the unsuccessful. In PETSc, we have developed the
+``BuildSystem`` package (BS) to remedy the shortcomings of configuration systems such as
 Autoconf, CMake, and SCons.
 
 First, BS provides consistent namespacing for tests and test results.
@@ -65,12 +61,11 @@ flag.
 Why use PETSc BuildSystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PETSc provides a fully functional configure model implemented in Python,
-named BuildSystem (BS), which has also been used as the configuration
-tool for other open sources packages. As more than a few configuration
-tools currently exist, it is instructive to consider why PETSc would
-choose to create another from scratch. Below we list features and design
-considerations which lead us to prefer BuildSystem to the alternatives.
+PETSc's fully functional configure model ``BuildSystem`` has also been used as the
+configuration tool for other open sources packages. As more than a few configuration tools
+currently exist, it is instructive to consider why PETSc would choose to create another
+from scratch. Below we list features and design considerations which lead us to prefer
+``BuildSystem`` to the alternatives.
 
 Namespacing
 ^^^^^^^^^^^
