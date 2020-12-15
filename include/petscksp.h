@@ -221,6 +221,7 @@ PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetUnrollW(KSP,PetscBool*);
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPGMRESSetHapTol(KSP,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP,PetscReal);
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetPreAllocateVectors(KSP);
 PETSC_EXTERN PetscErrorCode KSPGMRESSetOrthogonalization(KSP,PetscErrorCode (*)(KSP,PetscInt));
