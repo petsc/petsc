@@ -125,7 +125,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   KSPCheckNorm(ksp,res);
 
   /* the constant .1 is arbitrary, just some measure at how incorrect the residuals are */
-  if ((ksp->rnorm > 0.0) && (PetscAbsReal(res-ksp->rnorm) > .1*gmres->rnorm0)) {
+  if ((ksp->rnorm > 0.0) && (PetscAbsReal(res-ksp->rnorm) > gmres->breakdowntol*gmres->rnorm0)) {
       if (ksp->errorifnotconverged) SETERRQ3(PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0);
       else {
         ierr = PetscInfo3(ksp,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0);
@@ -320,6 +320,7 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetRestart_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetBreakdownTolerance_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -581,7 +582,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP 
 {
   PetscErrorCode ierr;
   PetscInt       restart;
-  PetscReal      haptol;
+  PetscReal      haptol,breakdowntol;
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscBool      flg;
 
@@ -591,6 +592,8 @@ PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP 
   if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
   ierr = PetscOptionsReal("-ksp_gmres_haptol","Tolerance for exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
+  ierr = PetscOptionsReal("-ksp_gmres_breakdown_tolerance","Divergence breakdown tolerance during GMRES restart","KSPGMRESSetBreakdownTolerance",gmres->breakdowntol,&breakdowntol,&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPGMRESSetBreakdownTolerance(ksp,breakdowntol);CHKERRQ(ierr); }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-ksp_gmres_preallocate","Preallocate Krylov vectors","KSPGMRESSetPreAllocateVectors",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
@@ -618,6 +621,20 @@ PetscErrorCode  KSPGMRESSetHapTol_GMRES(KSP ksp,PetscReal tol)
   PetscFunctionBegin;
   if (tol < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   gmres->haptol = tol;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode  KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp,PetscReal tol)
+{
+  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+
+  PetscFunctionBegin;
+  if (tol == PETSC_DEFAULT) {
+    gmres->breakdowntol = 0.1;
+    PetscFunctionReturn(0);
+  }
+  if (tol < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Breakdown tolerance must be non-negative");
+  gmres->breakdowntol = tol;
   PetscFunctionReturn(0);
 }
 
@@ -835,6 +852,35 @@ PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
   PetscFunctionReturn(0);
 }
 
+/*@
+   KSPGMRESSetBreakdownTolerance - Sets tolerance for determining divergence breakdown in GMRES.
+
+   Logically Collective on ksp
+
+   Input Parameters:
++  ksp - the Krylov space context
+-  tol - the tolerance
+
+  Options Database:
+.  -ksp_gmres_breakdown_tolerance <positive real value>
+
+   Note: divergence breakdown occurs when GMRES residual increases significantly
+         during restart
+
+   Level: intermediate
+
+.seealso: KSPSetTolerances(), KSPGMRESSetHapTol()
+@*/
+PetscErrorCode  KSPGMRESSetBreakdownTolerance(KSP ksp,PetscReal tol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(ksp,tol,2);
+  ierr = PetscTryMethod((ksp),"KSPGMRESSetBreakdownTolerance_C",(KSP,PetscReal),(ksp,tol));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
      KSPGMRES - Implements the Generalized Minimal Residual method.
                 (Saad and Schultz, 1986) with restart
@@ -900,10 +946,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetRestart_C",KSPGMRESGetRestart_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetBreakdownTolerance_C",KSPGMRESSetBreakdownTolerance_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
 
   gmres->haptol         = 1.0e-30;
+  gmres->breakdowntol   = 0.1;
   gmres->q_preallocate  = 0;
   gmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   gmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
@@ -915,4 +963,3 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   gmres->orthogwork     = NULL;
   PetscFunctionReturn(0);
 }
-
