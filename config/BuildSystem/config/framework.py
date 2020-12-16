@@ -49,6 +49,7 @@ import graph
 
 import os
 import re
+import sys
 import platform
 from functools import reduce
 # workarround for python2.2 which does not have pathsep
@@ -665,7 +666,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.actions.addArgument('Framework', 'RDict update', 'Substitutions were stored in RDict with parent '+str(argDB.parentDirectory))
     return
 
-  def outputDefine(self, f, name, value = None):
+  def outputDefine(self, f, name, value = None, petscconf = None):
     '''Define "name" to "value" in the configuration header'''
     # we need to keep the libraries in this list and simply not print them at the end
     # because libraries.havelib() is used to find library in this list we had to list the libraries in the
@@ -734,9 +735,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.defineDict.update({item[0] : item})
     return
 
-  def outputDefines(self, f):
+  def outputDefines(self, f, petscconf=False):
     for item in sorted(self.defineDict):
+      if petscconf and 'HIP_PLATFORM' in item:
+        f.write('#if (defined(__clang__) && !defined(__HIP__))\n')
       self.outputDefine(f, *self.defineDict[item])
+      if petscconf and 'HIP_PLATFORM' in item: f.write('#endif\n')
 
   def outputPkgVersion(self, f, child):
     '''If the child contains a tuple named "version_tuple", the entries are output in the config package header.'''
@@ -850,7 +854,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.processDefines(self, prefix)
     for child in self.childGraph.vertices:
       self.processDefines(child, prefix)
-    self.outputDefines(f)
+    petscconf=(True if 'petscconf.h' in filename or filename == 'Unknown' else
+              False)
+    self.outputDefines(f,petscconf)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif\n')

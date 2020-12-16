@@ -8,6 +8,10 @@
 #include <cuda_runtime.h>
 #include <petsccublas.h>
 #endif
+#if defined(PETSC_HAVE_HIP)
+#include <hip/hip_runtime.h>
+#include <petschipblas.h>
+#endif
 /*
  * MPI_Reduce_local is not really useful because it can't handle sparse data and it vectorizes "in the wrong direction",
  * therefore we pack data types manually. This file defines packing routines for the standard data types.
@@ -580,6 +584,9 @@ found:
     #if defined(PETSC_HAVE_CUDA)
       if (sf->backend == PETSCSF_BACKEND_CUDA)   {ierr = PetscSFLinkSetUp_Cuda(sf,link,unit);CHKERRQ(ierr);}
     #endif
+    #if defined(PETSC_HAVE_HIP)
+      if (sf->backend == PETSCSF_BACKEND_HIP)   {ierr = PetscSFLinkSetUp_Hip(sf,link,unit);CHKERRQ(ierr);}
+    #endif
     #if defined(PETSC_HAVE_KOKKOS)
       if (sf->backend == PETSCSF_BACKEND_KOKKOS) {ierr = PetscSFLinkSetUp_Kokkos(sf,link,unit);CHKERRQ(ierr);}
     #endif
@@ -780,10 +787,11 @@ PetscErrorCode PetscSFLinkDestroy(PetscSF sf,PetscSFLink *avail)
     }
   #if defined(PETSC_HAVE_DEVICE)
     if (link->Destroy) {ierr = (*link->Destroy)(link);CHKERRQ(ierr);}
+   /*TODO:  Make runtime */
    #if defined(PETSC_HAVE_CUDA)
     if (link->stream) {cudaError_t cerr = cudaStreamDestroy(link->stream);CHKERRCUDA(cerr); link->stream = NULL;}
    #elif defined(PETSC_HAVE_HIP)
-    if (link->stream) {hipError_t  cerr = hipStreamDestroy(link->stream);CHKERRQ(cerr); link->stream = NULL;} /* TODO: CHKERRHIP? */
+    if (link->stream) {hipError_t  cerr = hipStreamDestroy(link->stream);CHKERRHIP(cerr); link->stream = NULL;}
    #endif
   #endif
     ierr = PetscFree(link);CHKERRQ(ierr);
@@ -1202,6 +1210,7 @@ PetscErrorCode PetscSFLinkPackRootData(PetscSF sf,PetscSFLink link,PetscSFScope 
   PetscMemType     rootmtype = link->rootmtype;
   PetscSFPackOpt   opt = NULL;
 
+  /*TODO: SEK Problems are in here*/
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PETSCSF_Pack,sf,0,0,0);CHKERRQ(ierr);
   if (scope == PETSCSF_REMOTE) {ierr = PetscSFLinkSyncDeviceBeforePackData(sf,link);CHKERRQ(ierr);}

@@ -37,7 +37,7 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
   v->array_gotten = PETSC_FALSE;
   v->petscnative  = PETSC_FALSE;
   v->offloadmask  = PETSC_OFFLOAD_UNALLOCATED;
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   v->minimum_bytes_pinned_memory = 0;
   v->pinned_memory = PETSC_FALSE;
 #endif

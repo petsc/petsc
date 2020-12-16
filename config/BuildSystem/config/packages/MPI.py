@@ -635,7 +635,10 @@ to remove this warning message *****')
 
   def findMPIInc(self):
     '''Find MPI include paths from "mpicc -show" and use with CUDAC_FLAGS'''
-    if not hasattr(self.compilers, 'CUDAC'): return
+    needInclude=False
+    if hasattr(self.compilers, 'CUDAC'): needInclude=True
+    if hasattr(self.compilers, 'HIPCC'): needInclude=True
+    if not needInclude: return
     import re
     output = ''
     try:
@@ -651,9 +654,14 @@ to remove this warning message *****')
         m = re.match(r'^-I.*$', arg)
         if m:
           self.logPrint('Found include option: '+arg, 4, 'compilers')
-          self.setCompilers.pushLanguage('CUDA')
-          self.setCompilers.addCompilerFlag(arg)
-          self.setCompilers.popLanguage()
+          if hasattr(self.compilers, 'CUDAC'):
+            self.setCompilers.pushLanguage('CUDA')
+            self.setCompilers.addCompilerFlag(arg)
+            self.setCompilers.popLanguage()
+          if hasattr(self.compilers, 'HIPCC'):
+            self.setCompilers.pushLanguage('HIP')
+            self.setCompilers.addCompilerFlag(arg)
+            self.setCompilers.popLanguage()
           continue
     except StopIteration:
       pass

@@ -177,8 +177,9 @@ class Configure(script.Script):
 
   def delDefine(self, name):
     '''Designate that "name" should be deleted (never put in)  configuration header'''
-    self.logPrint('Deleting "'+name+'"')
-    if name in self.defines: del self.defines[name]
+    if name in self.defines: 
+      self.logPrint('Deleting "'+name+'"')
+      del self.defines[name]
     return
 
   def addTypedef(self, name, value):

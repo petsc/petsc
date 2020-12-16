@@ -8,7 +8,7 @@ SOURCEF =
 SOURCEH =
 MANSEC  = Sys
 LIBBASE = libpetscsys
-DIRS    = cuda
+DIRS    = cuda hip
 LOCDIR  = src/sys/memory/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
