@@ -8,7 +8,6 @@ class Configure(config.package.GNUPackage):
     self.functions = ['yaml_parser_initialize']
     self.includes  = ['yaml.h']
     self.liblist   = [['libyaml.a']]
-    self.pkgname   = 'yaml-0.1'
     return
 
 

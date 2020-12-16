@@ -732,7 +732,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for pair in child.defines.items():
       if not pair[1]: continue
       item = (self.getFullDefineName(child, pair[0], prefix), pair[1])
-      self.defineDict.update({item[0] : item})
+      self.defineDict[item[0]] = item
     return
 
   def outputDefines(self, f, petscconf=False):
@@ -834,6 +834,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       f.close()
     return
 
+  def processPackageListDefine(self):
+    key = 'PETSC_HAVE_PACKAGES'
+    pkglist = sorted([pkg.pkgname.lower() for pkg in self.packages])
+    str = '":' + ':'.join(pkglist) + ':"'
+    self.defineDict[key] = (key, str)
+
   def outputHeader(self, name, prefix = None):
     '''Write the configuration header'''
     if hasattr(name, 'close'):
@@ -856,6 +862,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.processDefines(child, prefix)
     petscconf=(True if 'petscconf.h' in filename or filename == 'Unknown' else
               False)
+    if (petscconf):
+      self.processPackageListDefine()
     self.outputDefines(f,petscconf)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')

@@ -2769,4 +2769,9 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,
 PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS;
 PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
 
+/*
+    List of external packages and queries on it
+*/
+PETSC_EXTERN PetscErrorCode  PetscHasExternalPackage(const char[],PetscBool*);
+
 #endif
