@@ -1467,7 +1467,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
     ncols = c_loc->i[i+1] - c_loc->i[i];
     cols  = c_loc->j + c_loc->i[i];
     row   = rstart + i;
-    ierr = MatSetValues(C,1,(const PetscInt*)&row,(const PetscInt)ncols,(const PetscInt*)cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(C,1,(const PetscInt*)&row,ncols,(const PetscInt*)cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
 
     if (C->force_diagonals) {
       ierr = MatSetValues(C,1,(const PetscInt*)&row,1,(const PetscInt*)&row,NULL,INSERT_VALUES);CHKERRQ(ierr);
@@ -1477,7 +1477,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
     ncols = c_oth->i[i+1] - c_oth->i[i];
     cols  = c_oth->j + c_oth->i[i];
     row   = prmap[i];
-    ierr = MatSetValues(C,1,(const PetscInt*)&row,(const PetscInt)ncols,(const PetscInt*)cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(C,1,(const PetscInt*)&row,ncols,(const PetscInt*)cols,NULL,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
