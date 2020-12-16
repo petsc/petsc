@@ -34,7 +34,7 @@ PETSC_EXTERN PetscLogEvent PETSCSF_Unpack;
 typedef enum {PETSCSF_ROOT2LEAF=0, PETSCSF_LEAF2ROOT} PetscSFDirection;
 typedef enum {PETSCSF_BCAST=0, PETSCSF_REDUCE, PETSCSF_FETCH} PetscSFOperation;
 /* When doing device-aware MPI, a backend refers to the SF/device interface */
-typedef enum {PETSCSF_BACKEND_INVALID=0,PETSCSF_BACKEND_CUDA,PETSCSF_BACKEND_KOKKOS} PetscSFBackend;
+typedef enum {PETSCSF_BACKEND_INVALID=0,PETSCSF_BACKEND_CUDA,PETSCSF_BACKEND_HIP,PETSCSF_BACKEND_KOKKOS} PetscSFBackend;
 
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
@@ -117,7 +117,7 @@ struct _p_PetscSF {
   PetscBool       use_default_stream;  /* If true, SF assumes root/leafdata is on the default stream upon input and will also leave them there upon output */
   PetscBool       use_gpu_aware_mpi;   /* If true, SF assumes it can pass GPU pointers to MPI */
   PetscBool       use_stream_aware_mpi;/* If true, SF assumes the underlying MPI is cuda-stream aware and we won't sync streams for send/recv buffers passed to MPI */
-#if defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   PetscInt        maxResidentThreadsPerGPU;
 #endif
   PetscSFBackend  backend;         /* The device backend (if any) SF will use */
@@ -165,16 +165,21 @@ PETSC_EXTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter,Pe
 PETSC_EXTERN PetscErrorCode PetscSFMalloc_Cuda(PetscMemType,size_t,void**);
 PETSC_EXTERN PetscErrorCode PetscSFFree_Cuda(PetscMemType,void*);
 #endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscErrorCode PetscSFMalloc_HIP(PetscMemType,size_t,void**);
+PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType,void*);
+#endif
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
 PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
 #endif
 
+
 /* SF only supports CUDA and Kokkos devices. Even VIENNACL is a device, its device pointers are invisible to SF.
    Through VecGetArray(), we copy data of VECVIENNACL from device to host and pass host pointers to SF.
  */
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS) || defined(PETSC_HAVE_HIP)
   #define PetscSFMalloc(sf,mtype,sz,ptr)  ((*(sf)->ops->Malloc)(mtype,sz,ptr))
   /* Free memory and set ptr to NULL when succeeded */
   #define PetscSFFree(sf,mtype,ptr)       ((ptr) && ((*(sf)->ops->Free)(mtype,ptr) || ((ptr)=NULL,0)))

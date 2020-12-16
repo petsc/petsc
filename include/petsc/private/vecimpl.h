@@ -191,6 +191,10 @@ PETSC_EXTERN PetscLogEvent VEC_CUDACopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyToGPUSome;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPUSome;
+PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPU;
+PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPU;
+PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPUSome;
+PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPUSome;
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 #if defined(PETSC_HAVE_VIENNACL)
@@ -200,6 +204,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode VecCUDAAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
+#endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscErrorCode VecHIPAllocateCheckHost(Vec v);
+PETSC_EXTERN PetscErrorCode VecHIPCopyFromGPU(Vec v);
 #endif
 
 

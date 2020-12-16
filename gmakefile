@@ -181,6 +181,7 @@ $(OBJDIR)/%.o : src/%.kokkos.cxx | $$(@D)/.DIR
 $(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
+#$(OBJDIR)/%.hip.o : src/%.hip.cpp | $$(@D)/.DIR
 $(OBJDIR)/%.o : src/%.hip.cpp | $$(@D)/.DIR
 	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
 
@@ -229,6 +230,7 @@ $(OBJDIR)/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/ts/f90-mod/petsctsmod.o
 # F2003 interface
 $(OBJDIR)/sys/objects/f2003-src/fsrc/optionenum.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
 $(OBJDIR)/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/sys/f90-mod/petscsysmod.o
+src/sys/objects/init.c   : src/sys/objects/cupminit.inc
 
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)

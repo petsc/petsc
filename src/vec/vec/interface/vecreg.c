@@ -56,6 +56,13 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
     if (match) PetscFunctionReturn(0);
   }
 #endif
+#if defined(PETSC_HAVE_HIP)
+  ierr = PetscStrcmp(method,VECHIP,&match);CHKERRQ(ierr);
+  if (match) {
+    ierr = PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPIHIP : VECSEQHIP, &match);CHKERRQ(ierr);
+    if (match) PetscFunctionReturn(0);
+  }
+#endif
 #if defined(PETSC_HAVE_VIENNACL)
   ierr = PetscStrcmp(method,VECVIENNACL,&match);CHKERRQ(ierr);
   if (match) {

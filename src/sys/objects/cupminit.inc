@@ -62,7 +62,7 @@ PETSC_EXTERN PetscErrorCode PetscCUDAInitializeCheck(void);
 
   .seealso: PetscHIPInitialize(), PetscCUDAInitialize(), PetscCUDAInitializeCheck()
 @*/
-PETSC_EXTERN PetscErrorCode PetscCUDAInitializeCheck(void);
+PETSC_EXTERN PetscErrorCode PetscHIPInitializeCheck(void);
 
 PetscErrorCode PetscCUPMInitializeCheck(void)
 {
@@ -140,7 +140,6 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
    .seealso: PetscCUDAInitializeCheck(), PetscHIPInitialize(), PetscHIPInitializeCheck()
 @*/
 PETSC_EXTERN PetscErrorCode PetscCUDAInitialize(MPI_Comm comm,PetscInt device);
-
 /*@C
      PetscHIPInitialize - Initializes HIP (eagerly in PetscInitialize() or soon after PetscInitialize()) and hipBLAS/hipSPARSE libraries on the device
 

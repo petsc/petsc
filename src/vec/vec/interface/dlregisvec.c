@@ -206,6 +206,13 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventRegister("VecCopyToSome",    VEC_CLASSID,&VEC_CUDACopyToGPUSome);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecCopyFromSome",  VEC_CLASSID,&VEC_CUDACopyFromGPUSome);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_HIP)
+  ierr = PetscLogEventRegister("VecHIPCopyTo",    VEC_CLASSID,&VEC_HIPCopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecHIPCopyFrom",  VEC_CLASSID,&VEC_HIPCopyFromGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCopyToSome",    VEC_CLASSID,&VEC_HIPCopyToGPUSome);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCopyFromSome",  VEC_CLASSID,&VEC_HIPCopyFromGPUSome);CHKERRQ(ierr);
+#endif
+
 
   /* Mark non-collective events */
   ierr = PetscLogEventSetCollective(VEC_SetValues,           PETSC_FALSE);CHKERRQ(ierr);
@@ -218,6 +225,12 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventSetCollective(VEC_CUDACopyFromGPU,     PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetCollective(VEC_CUDACopyToGPUSome,   PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetCollective(VEC_CUDACopyFromGPUSome, PETSC_FALSE);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HIP)
+  ierr = PetscLogEventSetCollective(VEC_HIPCopyToGPU,       PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetCollective(VEC_HIPCopyFromGPU,     PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetCollective(VEC_HIPCopyToGPUSome,   PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetCollective(VEC_HIPCopyFromGPUSome, PETSC_FALSE);CHKERRQ(ierr);
 #endif
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_SetValues, PETSC_FALSE);CHKERRQ(ierr);

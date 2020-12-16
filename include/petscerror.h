@@ -561,6 +561,10 @@ M*/
 #if defined(PETSC_HAVE_CUDA)
 #define CHKERRCUSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSOLVER error %d",err);} while (0)
 #endif
+/* TODO: SEK:  Need to figure out the hipsolver issues */
+#if defined(PETSC_HAVE_HIP)
+#define CHKERRHIPSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HIPSOLVER error %d",err);} while (0)
+#endif
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
 

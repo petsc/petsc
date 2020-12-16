@@ -1,15 +1,16 @@
-
+#requirespackage 'PETSC_HAVE_HIP'
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = pbvec.c pdvec.c pvec2.c vmpicr.c commonmpvec.c
+SOURCEC  =
+SOURCEHIP = sfhip.hip.cpp
 SOURCEF  =
-SOURCEH  = pvecimpl.h
+SOURCEH  =
 LIBBASE  = libpetscvec
-MANSEC   = Vec
-DIRS     = mpiviennacl mpiviennaclcuda mpicuda kokkos mpihip
-LOCDIR   = src/vec/vec/impls/mpi/
+MANSEC   = PetscSF
+LOCDIR   = src/vec/is/sf/impls/basic/hip
+DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

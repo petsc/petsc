@@ -376,6 +376,14 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF sf,PetscInt ns
   }
 #endif
 
+#if defined(PETSC_HAVE_HIP)
+  /* TODO: Needs debugging */
+  if (esf->backend == PETSCSF_BACKEND_HIP) {
+    esf->ops->Malloc = PetscSFMalloc_HIP;
+    esf->ops->Free   = PetscSFFree_HIP;
+  }
+#endif
+
 #if defined(PETSC_HAVE_KOKKOS)
   if (esf->backend == PETSCSF_BACKEND_KOKKOS) {
     esf->ops->Malloc = PetscSFMalloc_Kokkos;

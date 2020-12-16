@@ -23,6 +23,11 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqKokkos(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPIKokkos(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_Kokkos(Vec);
 #endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscErrorCode VecCreate_SeqHIP(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_MPIHIP(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_HIP(Vec);
+#endif
 
 /*@C
   VecRegisterAll - Registers all of the vector components in the Vec package.
@@ -59,6 +64,11 @@ PetscErrorCode VecRegisterAll(void)
   ierr = VecRegister(VECSEQKOKKOS,  VecCreate_SeqKokkos);CHKERRQ(ierr);
   ierr = VecRegister(VECMPIKOKKOS,  VecCreate_MPIKokkos);CHKERRQ(ierr);
   ierr = VecRegister(VECKOKKOS,     VecCreate_Kokkos);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HIP)
+  ierr = VecRegister(VECSEQHIP,    VecCreate_SeqHIP);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPIHIP,    VecCreate_MPIHIP);CHKERRQ(ierr);
+  ierr = VecRegister(VECHIP,       VecCreate_HIP);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

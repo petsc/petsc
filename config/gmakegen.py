@@ -60,7 +60,7 @@ class Mistakes(object):
         if NOWARNDIRS.intersection(pathsplit(root)):
             return
         smsources = set(msources)
-        ssources  = set(f for f in files if getlangext(f) in ['.c', '.kokkos.cxx','.cxx', '.cc', '.cu', '.cpp', '.F', '.F90'])
+        ssources  = set(f for f in files if getlangext(f) in ['.c', '.kokkos.cxx','.cxx', '.cc', '.cu', '.cpp', '.F', '.F90', '.hip.cpp', '.sycl.cxx'])
         if not smsources.issubset(ssources):
             self.mistakes.append('Makefile contains file not on filesystem: %s: %r' % (root, sorted(smsources - ssources)))
         if not self.verbose: return
@@ -83,7 +83,8 @@ def stripsplit(line):
 
 PetscPKGS = 'sys vec mat dm ksp snes ts tao'.split()
 # the key is actually the language suffix, it won't work for suffixes such as 'kokkos.cxx' so use an _ and replace the _ as needed with . 
-LANGS = dict(kokkos_cxx='KOKKOS', c='C', cxx='CXX', cpp='CPP', cu='CU', F='F', F90='F90', hip='HIP.CPP', sycl='SYCL.CXX')
+LANGS = dict(kokkos_cxx='KOKKOS', c='C', cxx='CXX', cpp='CPP', cu='CU', F='F',
+             F90='F90', hip_cpp='HIP', sycl_cxx='SYCL.CXX')
 
 class debuglogger(object):
     def __init__(self, log):
@@ -189,6 +190,11 @@ class Petsc(object):
         source = dict()
         for lang, sourcelang in LANGS.items():
             source[lang] = [f for f in makevars.get('SOURCE'+sourcelang,'').split() if f.endswith(lang.replace('_','.'))]
+
+            #source[lang] = [f for f in makevars.get('SOURCE'+sourcelang,'').split() if f.endswith(lang)]
+#SEK            source[lang] = [f for f in
+#SEK                            makevars.get('SOURCE'+sourcelang,'').split() if
+#SEK                            f.endswith(LANGSEXT[lang])]
         return source
 
     def gen_pkg(self, pkg):
