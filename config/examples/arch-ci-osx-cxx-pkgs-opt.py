@@ -47,6 +47,7 @@ configure_options = [
   '--download-tetgen=1',
   '--download-mfem=1',
   '--download-glvis=1',
+  '--download-hpddm=1',
   '--with-opengl=1',
   '--download-adolc',
   '--download-colpack',

@@ -100,13 +100,24 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm com
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
+/*
+   Performs MPI_Comm_free_keyval() on Petsc_Superlu_dist_keyval but keeps the global variable for
+   users who do not destroy all PETSc objects before PetscFinalize().
+
+   The value Petsc_Superlu_dist_keyval is retained so that Petsc_Superlu_dist_keyval_Delete_Fn()
+   can still check that the keyval associated with the MPI communicator is correct when the MPI
+   communicator is destroyed.
+
+   This is called in PetscFinalize()
+*/
 static PetscErrorCode Petsc_Superlu_dist_keyval_free(void)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    Petsc_Superlu_dist_keyval_temp = Petsc_Superlu_dist_keyval;
 
   PetscFunctionBegin;
   ierr = PetscInfo(NULL,"Freeing Petsc_Superlu_dist_keyval\n");
-  ierr = MPI_Comm_free_keyval(&Petsc_Superlu_dist_keyval);CHKERRQ(ierr);
+  ierr = MPI_Comm_free_keyval(&Petsc_Superlu_dist_keyval_temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
