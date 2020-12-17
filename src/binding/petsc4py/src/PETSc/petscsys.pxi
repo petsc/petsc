@@ -52,6 +52,8 @@ cdef extern from * nogil:
 
     int PetscCitationsRegister(const char[],PetscBool*)
 
+    int PetscHasExternalPackage(const char[],PetscBool*)
+
 
 cdef inline int Sys_Sizes(
     object size, object bsize,
