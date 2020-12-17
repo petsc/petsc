@@ -9,7 +9,8 @@
 typedef struct {
   /* context for time stepping */
   PetscReal    stage_time;
-  Vec          X0,X,Xdot;                /* Storage for stage solution, u^n + dt a_{11} k_1, and time derivative u^{n+1}_t */
+  Vec          Stages[2];                 /* Storage for stage solutions */
+  Vec          X0,X,Xdot;                /* Storage for u^n, u^n + dt a_{11} k_1, and time derivative u^{n+1}_t */
   Vec          affine;                   /* Affine vector needed for residual at beginning of step in endpoint formulation */
   PetscReal    Theta;
   PetscReal    shift;                    /* Shift parameter for SNES Jacobian, used by forward, TLM and adjoint */
@@ -26,6 +27,7 @@ typedef struct {
   Vec          *VecsDeltaLam;            /* Increment of the adjoint sensitivity w.r.t IC at stage */
   Vec          *VecsDeltaMu;             /* Increment of the adjoint sensitivity w.r.t P at stage */
   Vec          *VecsSensiTemp;           /* Vector to be multiplied with Jacobian transpose */
+  Mat          MatFwdStages[2];          /* TLM Stages */
   Mat          MatDeltaFwdSensip;        /* Increment of the forward sensitivity at stage */
   Vec          VecDeltaFwdSensipCol;     /* Working vector for holding one column of the sensitivity matrix */
   Mat          MatFwdSensip0;            /* backup for roll-backs due to events */
@@ -891,14 +893,21 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSForwardGetStages_Theta(TS ts,PetscInt *ns,Mat **stagesensip)
+static PetscErrorCode TSForwardGetStages_Theta(TS ts,PetscInt *ns,Mat *stagesensip[])
 {
-  TS_Theta *th = (TS_Theta*)ts->data;
+  TS_Theta       *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  if (ns) *ns = 1;
+  if (ns) *ns = 2;
   if (stagesensip) {
-    *stagesensip = (!th->endpoint && th->Theta != 1.0) ? &(th->MatDeltaFwdSensip) : &(th->MatFwdSensip0);
+    if (!th->endpoint && th->Theta != 1.0) {
+      th->MatFwdStages[0] = th->MatFwdSensip0;
+      th->MatFwdStages[1] = th->MatDeltaFwdSensip;
+    } else {
+      th->MatFwdStages[0] = th->MatFwdSensip0;
+      th->MatFwdStages[1] = ts->mat_sensip; /* stiffly accurate */
+    }
+    *stagesensip = th->MatFwdStages;
   }
   PetscFunctionReturn(0);
 }
@@ -1087,6 +1096,8 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
     ierr = VecDuplicate(ts->vec_sol,&th->vec_lte_work);CHKERRQ(ierr);
   }
   ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
+
+  ts->stifflyaccurate = (!th->endpoint && th->Theta != 1.0) ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1203,14 +1214,21 @@ static PetscErrorCode TSComputeLinearStability_Theta(TS ts,PetscReal xr,PetscRea
 }
 #endif
 
-static PetscErrorCode TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
+static PetscErrorCode TSGetStages_Theta(TS ts,PetscInt *ns,Vec *Y[])
 {
-  TS_Theta     *th = (TS_Theta*)ts->data;
+  TS_Theta       *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  if (ns) *ns = 1;
+  if (ns) *ns = 2;
   if (Y) {
-    *Y = (!th->endpoint && th->Theta != 1.0) ? &(th->X) : &(th->X0);
+    if (!th->endpoint && th->Theta != 1.0) {
+      th->Stages[0] = th->X0; /* useful for recovering Xdot, which is needed for sensitivity analysis of systems involving a parameterized mass matrix. */
+      th->Stages[1] = th->X;
+    } else {
+      th->Stages[0] = th->X0;
+      th->Stages[1] = ts->vec_sol; /* stiffly accurate */
+    }
+    *Y = th->Stages;
   }
   PetscFunctionReturn(0);
 }

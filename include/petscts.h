@@ -376,7 +376,7 @@ PETSC_EXTERN PetscErrorCode TSForwardReset(TS);
 PETSC_EXTERN PetscErrorCode TSForwardCostIntegral(TS);
 PETSC_EXTERN PetscErrorCode TSForwardStep(TS);
 PETSC_EXTERN PetscErrorCode TSForwardSetInitialSensitivities(TS,Mat);
-PETSC_EXTERN PetscErrorCode TSForwardGetStages(TS,PetscInt*,Mat**);
+PETSC_EXTERN PetscErrorCode TSForwardGetStages(TS,PetscInt*,Mat*[]);
 
 PETSC_EXTERN PetscErrorCode TSSetMaxSteps(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSGetMaxSteps(TS,PetscInt*);
@@ -428,7 +428,7 @@ PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRestartStep(TS);
 PETSC_EXTERN PetscErrorCode TSRollBack(TS);
 
-PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec**);
+PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec*[]);
 
 PETSC_EXTERN PetscErrorCode TSGetTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetTime(TS,PetscReal);

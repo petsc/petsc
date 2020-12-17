@@ -462,4 +462,17 @@ int main(int argc,char **argv)
       suffix: 22
       args: -ts_type beuler -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_solution_only
       output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 23
+      requires: cams
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_checkpoint_units 5 -ts_trajectory_solution_only -ts_trajectory_monitor
+      output_file: output/ex20adj_3.out
+
+    test:
+      suffix: 24
+      requires: cams
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_checkpoint_units 5 -ts_trajectory_solution_only 0 -ts_trajectory_monitor
+      output_file: output/ex20adj_4.out
+
 TEST*/
