@@ -100,6 +100,7 @@ html_favicon = os.path.join('..','website','images','PETSc_RGB-logo.png')
 
 # -- Options for LaTeX output --------------------------------------------
 
+bibtex_bibfiles = ['../tex/petsc.bib','../tex/petscapp.bib']
 latex_engine = 'xelatex'
 
 # Specify how to arrange the documents into LaTeX files.
