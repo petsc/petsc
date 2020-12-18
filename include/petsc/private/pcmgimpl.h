@@ -27,6 +27,9 @@ typedef struct {
   Mat           A;                             /* matrix used in forming residual*/
   KSP           smoothd;                       /* pre smoother */
   KSP           smoothu;                       /* post smoother */
+  KSP           cr;                            /* post compatible relaxation (cr) */
+  Vec           crx;                           /* cr solution */
+  Vec           crb;                           /* cr rhs */
   Mat           interpolate;
   Mat           restrct;                       /* restrict is a reserved word in C99 and on Cray */
   Mat           inject;                        /* Used for moving state if provided. */
@@ -52,6 +55,8 @@ typedef struct {
   PetscInt            Nc;                     /* The number of vectors in coarseSpace */
   PetscInt            eigenvalue;             /* Key for storing the eigenvalue as a scalar in the eigenvector Vec */
   PetscBool           mespMonitor;            /* flag to monitor the multilevel eigensolver */
+
+  PetscBool           compatibleRelaxation;   /* flag to monitor the coarse space quality using an auxiliary solve with compatible relaxation */
 
   PetscInt     nlevels;
   PC_MG_Levels **levels;
