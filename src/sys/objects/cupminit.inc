@@ -7,6 +7,9 @@ cupmStream_t  PetscDefaultCupmStream = NULL;
 
 static PetscBool PetscNotUseCUPM   = PETSC_FALSE; /* Assert the code will not use this type of devices */
 
+cupmEvent_t petsc_gputimer_begin = NULL; /* The GPU event for begin */
+cupmEvent_t petsc_gputimer_end   = NULL; /* The GPU event for end */
+
 /* Device validation after it is lazily initialized */
 static PetscErrorCode PetscCUPMValidate(void)
 {
@@ -103,8 +106,10 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
     ierr = PetscCUPMBLASInitializeHandle();CHKERRQ(ierr);
     ierr = PetscCUPMSOLVERDnInitializeHandle();CHKERRQ(ierr);
     PetscCUPMInitialized = PETSC_TRUE;
+    /* Initialize CUDA event timers */
+    cerr = cupmEventCreate(&petsc_gputimer_begin);CHKERRCUPM(cerr);
+    cerr = cupmEventCreate(&petsc_gputimer_end);CHKERRCUPM(cerr);
   }
-
   if (!cupmValdidateChecked) {
     ierr = PetscCUPMValidate();CHKERRQ(ierr);
     cupmValdidateChecked = PETSC_TRUE;
@@ -209,6 +214,9 @@ PetscErrorCode PetscCUPMInitialize(MPI_Comm comm,PetscInt device)
       ierr = PetscCUPMSOLVERDnInitializeHandle();CHKERRQ(ierr);
       PetscCUPMInitialized = PETSC_TRUE;
     }
+    /* Initialize CUDA event timers */
+    cerr = cupmEventCreate(&petsc_gputimer_begin);CHKERRCUPM(cerr);
+    cerr = cupmEventCreate(&petsc_gputimer_end);CHKERRCUPM(cerr);
   }
   PetscFunctionReturn(0);
 }

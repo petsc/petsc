@@ -160,7 +160,6 @@ PETSC_EXTERN PetscErrorCode VecAXPY_SeqHIP(Vec yin,PetscScalar alpha,Vec xin)
   hipblasHandle_t   hipblasv2handle;
   hipblasStatus_t   hberr;
   PetscBool         yiship,xiship;
-  hipError_t       err;
 
   PetscFunctionBegin;
   if (alpha == (PetscScalar)0.0) PetscFunctionReturn(0);
@@ -192,7 +191,6 @@ PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqHIP(Vec win, Vec xin, Vec yin)
   thrust::device_ptr<const PetscScalar> xptr,yptr;
   thrust::device_ptr<PetscScalar>       wptr;
   PetscErrorCode                        ierr;
-  hipError_t                           err;
 
   PetscFunctionBegin;
   ierr = VecHIPGetArrayWrite(win,&warray);CHKERRQ(ierr);
@@ -872,7 +870,6 @@ PETSC_INTERN PetscErrorCode VecSwap_SeqHIP(Vec xin,Vec yin)
   PetscScalar    *xarray,*yarray;
   hipblasHandle_t hipblasv2handle;
   hipblasStatus_t hberr;
-  hipError_t    err;
 
   PetscFunctionBegin;
   ierr = PetscHIPBLASGetHandle(&hipblasv2handle);CHKERRQ(ierr);

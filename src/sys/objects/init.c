@@ -272,6 +272,7 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
   typedef cudaError_t                             cupmError_t;
   typedef struct cudaDeviceProp                   cupmDeviceProp;
   typedef cudaStream_t                            cupmStream_t;
+  typedef cudaEvent_t                             cupmEvent_t;
   #define cupmGetDeviceCount(x)                   cudaGetDeviceCount(x)
   #define cupmGetDevice(x)                        cudaGetDevice(x)
   #define cupmSetDevice(x)                        cudaSetDevice(x)
@@ -301,6 +302,7 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
   #define PetscOptionsCheckCUPM                   PetscOptionsCheckCUDA
   #define PetscMPICUPMAwarenessCheck              PetscMPICUDAAwarenessCheck
   #define PetscDefaultCupmStream                  PetscDefaultCudaStream
+  #define cupmEventCreate(x)                      cudaEventCreate(x)
   #include "cupminit.inc"
 #endif
 
@@ -308,12 +310,14 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
   typedef hipError_t                              cupmError_t;
   typedef hipDeviceProp_t                         cupmDeviceProp;
   typedef hipStream_t                             cupmStream_t;
+  typedef hipEvent_t                              cupmEvent_t;
   #define cupmGetDeviceCount(x)                   hipGetDeviceCount(x)
   #define cupmGetDevice(x)                        hipGetDevice(x)
   #define cupmSetDevice(x)                        hipSetDevice(x)
   #define cupmSetDeviceFlags(x)                   hipSetDeviceFlags(x)
   #define cupmGetDeviceProperties(x,y)            hipGetDeviceProperties(x,y)
   #define cupmStreamCreate(x)                     hipStreamCreate(x)
+  #define cupmEventCreate(x)                      hipEventCreate(x);
   #define cupmGetLastError()                      hipGetLastError()
   #define cupmDeviceMapHost                       hipDeviceMapHost
   #define cupmSuccess                             hipSuccess
