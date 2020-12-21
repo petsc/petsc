@@ -802,7 +802,7 @@ PetscErrorCode  PetscLogEventExcludeClass(PetscClassId classid)
 
   Level: advanced
 
-.seealso: PlogEventDeactivate()
+.seealso: PlogEventDeactivate(), PlogEventDeactivatePush(), PetscLogEventDeactivatePop()
 @*/
 PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
 {
@@ -839,7 +839,7 @@ PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
 
   Level: advanced
 
-.seealso: PlogEventActivate()
+.seealso: PetscLogEventActivate(), PetscLogEventDeactivatePush(), PetscLogEventDeactivatePop()
 @*/
 PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
 {
@@ -851,6 +851,80 @@ PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   ierr = PetscEventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscLogEventDeactivatePush - Indicates that a particular event should not be logged.
+
+  Not Collective
+
+  Input Parameter:
+. event - The event id
+
+  Usage:
+.vb
+      PetscLogEventDeactivatePush(VEC_SetValues);
+        [code where you do not want to log VecSetValues()]
+      PetscLogEventDeactivatePop(VEC_SetValues);
+        [code where you do want to log VecSetValues()]
+.ve
+
+  Note:
+  The event may be either a pre-defined PETSc event (found in
+  include/petsclog.h) or an event number obtained with PetscLogEventRegister()).
+
+  Level: advanced
+
+.seealso: PetscLogEventActivate(), PetscLogEventDeactivatePop()
+@*/
+PetscErrorCode  PetscLogEventDeactivatePush(PetscLogEvent event)
+{
+  PetscStageLog  stageLog;
+  int            stage;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+  ierr = PetscEventPerfLogDeactivatePush(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscLogEventDeactivatePop - Indicates that a particular event shouldbe logged.
+
+  Not Collective
+
+  Input Parameter:
+. event - The event id
+
+  Usage:
+.vb
+      PetscLogEventDeactivatePush(VEC_SetValues);
+        [code where you do not want to log VecSetValues()]
+      PetscLogEventDeactivatePop(VEC_SetValues);
+        [code where you do want to log VecSetValues()]
+.ve
+
+  Note:
+  The event may be either a pre-defined PETSc event (found in
+  include/petsclog.h) or an event number obtained with PetscLogEventRegister()).
+
+  Level: advanced
+
+.seealso: PetscLogEventActivate(), PetscLogEventDeactivatePush()
+@*/
+PetscErrorCode  PetscLogEventDeactivatePop(PetscLogEvent event)
+{
+  PetscStageLog  stageLog;
+  int            stage;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+  ierr = PetscEventPerfLogDeactivatePop(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -637,8 +637,6 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
 
-  ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
-
   if (ksp->guess) {
     PetscObjectState ostate,state;
 
@@ -660,6 +658,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 
   ierr = VecSetErrorIfLocked(ksp->vec_sol,3);CHKERRQ(ierr);
 
+  ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
