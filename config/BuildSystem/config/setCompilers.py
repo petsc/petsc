@@ -145,7 +145,7 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.languages = framework.require('PETSc.options.languages', self)
     self.libraries = self.framework.getChild('config.libraries')
-    self.headers   = self.framework.getChild('config.headers')    
+    self.headers   = self.framework.getChild('config.headers')
     return
 
   @staticmethod
@@ -155,6 +155,7 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
       if output.find('NAGWare Fortran') >= 0 or output.find('The Numerical Algorithms Group Ltd') >= 0:
+        if log: log.write('Detected NAG Fortran compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -166,6 +167,7 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v',checkCommand = noCheck, log = log)
       output = output + error
       if output.find('w64-mingw32') >= 0:
+        if log: log.write('Detected MINGW GCC compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -176,7 +178,7 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20 ', log = log)
       output = output + error
-      return (any([s in output for s in ['www.gnu.org',
+      found = (any([s in output for s in ['www.gnu.org',
                                          'bugzilla.redhat.com',
                                          'gcc.gnu.org',
                                          'gcc version',
@@ -190,6 +192,9 @@ class Configure(config.base.Configure):
               and not any([s in output for s in ['Intel(R)',
                                                  'Unrecognised option --help passed to ld', # NAG f95 compiler
                                                  ]]))
+      if found:
+        if log: log.write('Detected GNU compiler\n')
+        return 1
     except RuntimeError:
       pass
 
@@ -199,7 +204,10 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 500', log = log, logOutputflg = False)
       output = output + error
-      return any([s in output for s in ['Emit Clang AST']])
+      found = any([s in output for s in ['Emit Clang AST']])
+      if found:
+        if log: log.write('Detected CLANG compiler\n')
+        return 1
     except RuntimeError:
       pass
 
@@ -211,6 +219,7 @@ class Configure(config.base.Configure):
       output = output +  error
       import re
       if re.match(r'GNU Fortran \(.*\) (4.5.\d+|4.6.0 20100703)', output):
+        if log: log.write('Detected GFortran45x compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -226,6 +235,7 @@ class Configure(config.base.Configure):
       if strmatch:
         VMAJOR,VMINOR = strmatch.groups()
         if (int(VMAJOR),int(VMINOR)) >= (4,6):
+          if log: log.write('Detected GFortran46plus compiler\n')
           return 1
     except RuntimeError:
       pass
@@ -241,6 +251,7 @@ class Configure(config.base.Configure):
       if strmatch:
         VMAJOR,VMINOR = strmatch.groups()
         if (int(VMAJOR),int(VMINOR)) >= (4,7):
+          if log: log.write('Detected GFortran47plus compiler\n')
           return 1
     except RuntimeError:
       pass
@@ -256,6 +267,7 @@ class Configure(config.base.Configure):
       if strmatch:
         VMAJOR,VMINOR = strmatch.groups()
         if (int(VMAJOR),int(VMINOR)) >= (10,0):
+          if log: log.write('Detected GFortran100plus compiler\n')
           return 1
     except RuntimeError:
       pass
@@ -271,6 +283,7 @@ class Configure(config.base.Configure):
       if strmatch:
         VMAJOR,VMINOR = strmatch.groups()
         if (int(VMAJOR),int(VMINOR)) >= (8,0):
+          if log: log.write('Detected GFortran8plus compiler\n')
           return 1
     except RuntimeError:
       pass
@@ -284,6 +297,7 @@ class Configure(config.base.Configure):
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
       if output.find('http://www.g95.org') >= 0:
+        if log: log.write('Detected g95 compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -297,6 +311,7 @@ class Configure(config.base.Configure):
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
       if output.find('Compaq Visual Fortran') >= 0 or output.find('Digital Visual Fortran') >=0 :
+        if log: log.write('Detected Compaq Visual Fortran compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -308,6 +323,7 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
       if output.find(' Sun ') >= 0:
+        if log: log.write('Detected Sun/Oracle compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -319,6 +335,7 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -qversion', log = log)
       output = output + error
       if 'IBM XL' in output:
+        if log: log.write('Detected IBM compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -329,7 +346,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
-      if output.find('Intel Corporation') >= 0 :
+      if output.find('Intel') >= 0:
+        if log: log.write('Detected Intel compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -339,6 +357,7 @@ class Configure(config.base.Configure):
     '''Returns true if the compiler is a compiler for KNL running on a Cray'''
     x = os.getenv('PE_PRODUCT_LIST')
     if x and x.find('CRAYPE_MIC-KNL') > -1:
+      if log: log.write('Detected Cray KNL compiler\n')
       return 1
 
   @staticmethod
@@ -348,6 +367,7 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V', log = log)
       output = output + error
       if output.find('Cray Standard C') >= 0 or output.find('Cray C++') >= 0 or output.find('Cray Fortran') >= 0:
+        if log: log.write('Detected Cray compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -361,6 +381,7 @@ class Configure(config.base.Configure):
       if not status and output.find('x86') >= 0:
         return 0
       elif not status:
+        if log: log.write('Detected Cray vector compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -372,6 +393,7 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
       if output.find('The Portland Group') >= 0 or output.find('PGI Compilers and Tools') >= 0:
+        if log: log.write('Detected PGI compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -403,6 +425,7 @@ class Configure(config.base.Configure):
     '''Returns true if system is linux'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status and output.lower().strip().find('linux') >= 0:
+      if log: log.write('Detected Linux OS')
       return 1
 
   @staticmethod
@@ -410,6 +433,7 @@ class Configure(config.base.Configure):
     '''Returns true if system is cygwin'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status and output.lower().strip().find('cygwin') >= 0:
+      if log: log.write('Detected Cygwin\n')
       return 1
 
   @staticmethod
@@ -417,6 +441,7 @@ class Configure(config.base.Configure):
     '''Returns true if system is solaris'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status and output.lower().strip().find('sunos') >= 0:
+      if log: log.write('Detected Solaris OS\n')
       return 1
 
   @staticmethod
@@ -424,7 +449,10 @@ class Configure(config.base.Configure):
     '''Returns true if system is Darwin/MacOSX'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status:
-      return output.lower().strip() == 'darwin'
+      found = (output.lower().strip() == 'darwin')
+      if found:
+        if log: log.write('Detected Darwin/MacOSX OS\n\n')
+      return found
 
   @staticmethod
   def isDarwinCatalina(log):
@@ -433,6 +461,7 @@ class Configure(config.base.Configure):
     if platform.system() != 'Darwin': return 0
     v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
     if v < (10,15,0): return 0
+    if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
     return 1
 
   @staticmethod
@@ -440,16 +469,22 @@ class Configure(config.base.Configure):
     '''Returns true if system is FreeBSD'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
     if not status:
-      return output.lower().strip() == 'freebsd'
+      found = output.lower().strip() == 'freebsd'
+      if found:
+        if log: log.write('Detected FreeBSD OS\n')
+      return found
 
   @staticmethod
   def isWindows(compiler, log):
     '''Returns true if the compiler is a Windows compiler'''
     if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
+      if log: log.write('Detected Windows OS\n')
       return 1
     if compiler in ['ifort','f90'] and Configure.isCygwin(log):
+      if log: log.write('Detected Windows OS\n')
       return 1
     if compiler in ['lib', 'tlib']:
+      if log: log.write('Detected Windows OS\n')
       return 1
 
   @staticmethod
