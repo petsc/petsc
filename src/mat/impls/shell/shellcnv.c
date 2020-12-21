@@ -239,6 +239,9 @@ PetscErrorCode MatConvertFrom_Shell(Mat A, MatType newtype,MatReuse reuse,Mat *B
     ierr = PetscObjectComposeFunction((PetscObject)M,"MatProductSetFromOptions_anytype_C",MatProductSetFromOptions_CF);CHKERRQ(ierr);
     ierr = PetscFree(M->defaultvectype);CHKERRQ(ierr);
     ierr = PetscStrallocpy(A->defaultvectype,&M->defaultvectype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_DEVICE)
+    ierr = MatBindToCPU(M,A->boundtocpu);CHKERRQ(ierr);
+#endif
     *B = M;
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not implemented");
   PetscFunctionReturn(0);

@@ -313,6 +313,9 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
   ierr = MatGetVecType(A,&vtype);CHKERRQ(ierr);
   ierr = MatSetVecType(*N,vtype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_DEVICE)
+  ierr = MatBindToCPU(*N,A->boundtocpu);CHKERRQ(ierr);
+#endif
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
