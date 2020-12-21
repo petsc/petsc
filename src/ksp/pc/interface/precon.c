@@ -945,6 +945,9 @@ PetscErrorCode PCGetFailedReasonRank(PC pc,PCFailedReason *reason)
   PetscFunctionReturn(0);
 }
 
+/*  Next line needed to deactivate KSP_Solve logging */
+#include <petsc/private/kspimpl.h>
+
 /*
       a setupcall of 0 indicates never setup,
                      1 indicates has been previously setup
@@ -1006,7 +1009,12 @@ PetscErrorCode  PCSetUp(PC pc)
   ierr = MatSetErrorIfFailure(pc->mat,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (pc->ops->setup) {
+    /* do not log solves and applications of preconditioners while constructing preconditioners; perhaps they should be logged separately from the regular solves */
+    ierr = PetscLogEventDeactivatePush(KSP_Solve);CHKERRQ(ierr);
+    ierr = PetscLogEventDeactivatePush(PC_Apply);CHKERRQ(ierr);
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
+    ierr = PetscLogEventDeactivatePop(KSP_Solve);CHKERRQ(ierr);
+    ierr = PetscLogEventDeactivatePop(PC_Apply);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (!pc->setupcalled) pc->setupcalled = 1;
