@@ -489,6 +489,7 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
 
   Level: intermediate
 
+.seealso: KSPConvergedReasonView()
 @*/
 PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
 {
@@ -504,6 +505,74 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
     ierr = KSPConvergedReasonView(ksp, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  KSPConvergedRateView - Displays the reason a KSP solve converged or diverged to a viewer
+
+  Collective on ksp
+
+  Input Parameters:
++  ksp    - iterative context obtained from KSPCreate()
+-  viewer - the viewer to display the reason
+
+  Options Database Keys:
+. -ksp_converged_rate - print reason for convergence or divergence and the convergence rate (or 0.0 for divergence)
+
+  Notes:
+  To change the format of the output, call PetscViewerPushFormat(viewer,format) before this call.
+
+  Suppose that the residual is reduced linearly, $r_k = c^k r_0$, which means $log r_k = log r_0 + k log c$. After linear regression,
+  the slope is $\log c$. The coefficient of determination is given by $1 - \frac{\sum_i (y_i - f(x_i))^2}{\sum_i (y_i - \bar y)}$,
+  see also https://en.wikipedia.org/wiki/Coefficient_of_determination
+
+  Level: intermediate
+
+.seealso: KSPConvergedReasonView(), KSPGetConvergedRate(), KSPSetTolerances(), KSPConvergedDefault()
+@*/
+PetscErrorCode KSPConvergedRateView(KSP ksp, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscBool         isAscii;
+  PetscReal         rrate, rRsq, erate, eRsq;
+  PetscInt          its;
+  const char       *prefix, *reason = KSPConvergedReasons[ksp->reason];
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPGetOptionsPrefix(ksp, &prefix);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp, &its);CHKERRQ(ierr);
+  ierr = KSPComputeConvergenceRate(ksp, &rrate, &rRsq, &erate, &eRsq);CHKERRQ(ierr);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp));
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isAscii);CHKERRQ(ierr);
+  if (isAscii) {
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+    if (ksp->reason > 0) {
+      if (prefix) {ierr = PetscViewerASCIIPrintf(viewer, "Linear %s solve converged due to %s iterations %D", prefix, reason, its);CHKERRQ(ierr);}
+      else        {ierr = PetscViewerASCIIPrintf(viewer, "Linear solve converged due to %s iterations %D", reason, its);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+      if (rRsq >= 0.0) {ierr = PetscViewerASCIIPrintf(viewer, " res rate %g R^2 %g", rrate, rRsq);CHKERRQ(ierr);}
+      if (eRsq >= 0.0) {ierr = PetscViewerASCIIPrintf(viewer, " error rate %g R^2 %g", erate, eRsq);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+    } else if (ksp->reason <= 0) {
+      if (prefix) {ierr = PetscViewerASCIIPrintf(viewer, "Linear %s solve did not converge due to %s iterations %D", prefix, reason, its);CHKERRQ(ierr);}
+      else        {ierr = PetscViewerASCIIPrintf(viewer, "Linear solve did not converge due to %s iterations %D", reason, its);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+      if (rRsq >= 0.0) {ierr = PetscViewerASCIIPrintf(viewer, " res rate %g R^2 %g", rrate, rRsq);CHKERRQ(ierr);}
+      if (eRsq >= 0.0) {ierr = PetscViewerASCIIPrintf(viewer, " error rate %g R^2 %g", erate, eRsq);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
+        PCFailedReason reason;
+        ierr = PCGetFailedReason(ksp->pc,&reason);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"               PC failed due to %s \n",PCFailedReasons[reason]);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -636,6 +705,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
+  if (ksp->err_hist_reset) ksp->err_hist_len = 0;
 
   if (ksp->guess) {
     PetscObjectState ostate,state;
@@ -732,6 +802,11 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
     ierr = PetscViewerPushFormat(ksp->viewerReason,ksp->formatReason);CHKERRQ(ierr);
     ierr = KSPConvergedReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(ksp->viewerReason);CHKERRQ(ierr);
+  }
+  if (ksp->viewRate) {
+    ierr = PetscViewerPushFormat(ksp->viewerRate,ksp->formatRate);CHKERRQ(ierr);
+    ierr = KSPConvergedRateView(ksp, ksp->viewerRate);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(ksp->viewerRate);CHKERRQ(ierr);
   }
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
@@ -1024,6 +1099,11 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
         ierr = KSPConvergedReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
         ierr = PetscViewerPopFormat(ksp->viewerReason);CHKERRQ(ierr);
       }
+      if (ksp->viewRate) {
+        ierr = PetscViewerPushFormat(ksp->viewerRate,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+        ierr = KSPConvergedRateView(ksp, ksp->viewerRate);CHKERRQ(ierr);
+        ierr = PetscViewerPopFormat(ksp->viewerRate);CHKERRQ(ierr);
+      }
     } else {
       for (n2 = 0; n2 < N2; n2 += Bbn) {
         ierr = MatDenseGetSubMatrix(B, n2, PetscMin(n2+Bbn, N2), &vB);CHKERRQ(ierr);
@@ -1036,6 +1116,11 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
           ierr = PetscViewerPushFormat(ksp->viewerReason,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
           ierr = KSPConvergedReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
           ierr = PetscViewerPopFormat(ksp->viewerReason);CHKERRQ(ierr);
+        }
+        if (ksp->viewRate) {
+          ierr = PetscViewerPushFormat(ksp->viewerRate,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+          ierr = KSPConvergedRateView(ksp, ksp->viewerRate);CHKERRQ(ierr);
+          ierr = PetscViewerPopFormat(ksp->viewerRate);CHKERRQ(ierr);
         }
         ierr = MatDenseRestoreSubMatrix(B, &vB);CHKERRQ(ierr);
         ierr = MatDenseRestoreSubMatrix(X, &vX);CHKERRQ(ierr);
@@ -1128,6 +1213,7 @@ PetscErrorCode  KSPResetViewers(KSP ksp)
   ierr = PetscViewerDestroy(&ksp->viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&ksp->viewerPre);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&ksp->viewerReason);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerRate);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&ksp->viewerMat);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&ksp->viewerPMat);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&ksp->viewerRhs);CHKERRQ(ierr);
@@ -1234,6 +1320,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   ierr = DMDestroy(&(*ksp)->dm);CHKERRQ(ierr);
   ierr = PCDestroy(&(*ksp)->pc);CHKERRQ(ierr);
   ierr = PetscFree((*ksp)->res_hist_alloc);CHKERRQ(ierr);
+  ierr = PetscFree((*ksp)->err_hist_alloc);CHKERRQ(ierr);
   if ((*ksp)->convergeddestroy) {
     ierr = (*(*ksp)->convergeddestroy)((*ksp)->cnvP);CHKERRQ(ierr);
   }
@@ -2019,16 +2106,14 @@ PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
    Level: advanced
 
    Notes:
-    The array is NOT freed by PETSc so the user needs to keep track of
-           it and destroy once the KSP object is destroyed.
-
+   If provided, he array is NOT freed by PETSc so the user needs to keep track of it and destroy once the KSP object is destroyed.
    If 'a' is NULL then space is allocated for the history. If 'na' PETSC_DECIDE or PETSC_DEFAULT then a
    default array of length 10000 is allocated.
 
 .seealso: KSPGetResidualHistory(), KSP
 
 @*/
-PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBool reset)
+PetscErrorCode KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBool reset)
 {
   PetscErrorCode ierr;
 
@@ -2067,6 +2152,7 @@ PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBoo
    Level: advanced
 
    Notes:
+     This array is borrowed and should not be freed by the caller.
      Can only be called after a KSPSetResidualHistory() otherwise a and na are set to zero
 
      The Fortran version of this routine has a calling sequence
@@ -2075,15 +2161,170 @@ $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
     to access the residual values from this Fortran array you provided. Only the na (number of
     residual norms currently held) is set.
 
-.seealso: KSPGetResidualHistory(), KSP
+.seealso: KSPSetResidualHistory(), KSP
 
 @*/
-PetscErrorCode  KSPGetResidualHistory(KSP ksp,PetscReal *a[],PetscInt *na)
+PetscErrorCode KSPGetResidualHistory(KSP ksp, const PetscReal *a[],PetscInt *na)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (a) *a = ksp->res_hist;
   if (na) *na = ksp->res_hist_len;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  KSPSetErrorHistory - Sets the array used to hold the error history. If set, this array will contain the error norms computed at each iteration of the solver.
+
+  Not Collective
+
+  Input Parameters:
++ ksp   - iterative context obtained from KSPCreate()
+. a     - array to hold history
+. na    - size of a
+- reset - PETSC_TRUE indicates the history counter is reset to zero for each new linear solve
+
+  Level: advanced
+
+  Notes:
+  If provided, the array is NOT freed by PETSc so the user needs to keep track of it and destroy once the KSP object is destroyed.
+  If 'a' is NULL then space is allocated for the history. If 'na' PETSC_DECIDE or PETSC_DEFAULT then a default array of length 10000 is allocated.
+
+.seealso: KSPGetErrorHistory(), KSPSetResidualHistory(), KSP
+@*/
+PetscErrorCode KSPSetErrorHistory(KSP ksp, PetscReal a[], PetscInt na, PetscBool reset)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+
+  ierr = PetscFree(ksp->err_hist_alloc);CHKERRQ(ierr);
+  if (na != PETSC_DECIDE && na != PETSC_DEFAULT && a) {
+    ksp->err_hist     = a;
+    ksp->err_hist_max = na;
+  } else {
+    if (na != PETSC_DECIDE && na != PETSC_DEFAULT) ksp->err_hist_max = na;
+    else                                           ksp->err_hist_max = 10000; /* like default ksp->max_it */
+    ierr = PetscCalloc1(ksp->err_hist_max, &ksp->err_hist_alloc);CHKERRQ(ierr);
+
+    ksp->err_hist = ksp->err_hist_alloc;
+  }
+  ksp->err_hist_len   = 0;
+  ksp->err_hist_reset = reset;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPGetErrorHistory - Gets the array used to hold the error history and the number of residuals it contains.
+
+  Not Collective
+
+  Input Parameter:
+. ksp - iterative context obtained from KSPCreate()
+
+  Output Parameters:
++ a  - pointer to array to hold history (or NULL)
+- na - number of used entries in a (or NULL)
+
+  Level: advanced
+
+  Notes:
+  This array is borrowed and should not be freed by the caller.
+  Can only be called after a KSPSetErrorHistory() otherwise a and na are set to zero
+  The Fortran version of this routine has a calling sequence
+$   call KSPGetErrorHistory(KSP ksp, integer na, integer ierr)
+  note that you have passed a Fortran array into KSPSetErrorHistory() and you need
+  to access the residual values from this Fortran array you provided. Only the na (number of
+  residual norms currently held) is set.
+
+.seealso: KSPSetErrorHistory(), KSPGetResidualHistory(), KSP
+@*/
+PetscErrorCode KSPGetErrorHistory(KSP ksp, const PetscReal *a[], PetscInt *na)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (a)  *a  = ksp->err_hist;
+  if (na) *na = ksp->err_hist_len;
+  PetscFunctionReturn(0);
+}
+
+/*
+  KSPComputeConvergenceRate - Compute the convergence rate for the iteration
+
+  Not collective
+
+  Input Parameter:
+. ksp - The KSP
+
+  Output Parameters:
++ cr   - The residual contraction rate
+. rRsq - The coefficient of determination, R^2, indicating the linearity of the data
+. ce   - The error contraction rate
+- eRsq - The coefficient of determination, R^2, indicating the linearity of the data
+
+  Note:
+  Suppose that the residual is reduced linearly, $r_k = c^k r_0$, which means $log r_k = log r_0 + k log c$. After linear regression,
+  the slope is $\log c$. The coefficient of determination is given by $1 - \frac{\sum_i (y_i - f(x_i))^2}{\sum_i (y_i - \bar y)}$,
+  see also https://en.wikipedia.org/wiki/Coefficient_of_determination
+
+  Level: advanced
+
+.seealso: KSPConvergedRateView()
+*/
+PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq, PetscReal *ce, PetscReal *eRsq)
+{
+  PetscReal     *hist, *x, *y, slope, intercept, mean = 0.0, var = 0.0, res = 0.0;
+  PetscInt       n, k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (cr || rRsq) {
+    ierr = KSPGetResidualHistory(ksp, &hist, &n);CHKERRQ(ierr);
+    if (!n) {
+      if (cr)   *cr   =  0.0;
+      if (rRsq) *rRsq = -1.0;
+    } else {
+      ierr = PetscMalloc2(n, &x, n, &y);CHKERRQ(ierr);
+      for (k = 0; k < n; ++k) {
+        x[k] = k;
+        y[k] = PetscLogReal(hist[k]);
+        mean += y[k];
+      }
+      mean /= n;
+      ierr = PetscLinearRegression(n, x, y, &slope, &intercept);CHKERRQ(ierr);
+      for (k = 0; k < n; ++k) {
+        res += PetscSqr(y[k] - (slope*x[k] + intercept));
+        var += PetscSqr(y[k] - mean);
+      }
+      ierr = PetscFree2(x, y);CHKERRQ(ierr);
+      if (cr)   *cr   = PetscExpReal(slope);
+      if (rRsq) *rRsq = var < PETSC_MACHINE_EPSILON ? 0.0 : 1.0 - (res / var);
+    }
+  }
+  if (ce || eRsq) {
+    ierr = KSPGetErrorHistory(ksp, &hist, &n);CHKERRQ(ierr);
+    if (!n) {
+      if (ce)   *ce   =  0.0;
+      if (eRsq) *eRsq = -1.0;
+    } else {
+      ierr = PetscMalloc2(n, &x, n, &y);CHKERRQ(ierr);
+      for (k = 0; k < n; ++k) {
+        x[k] = k;
+        y[k] = PetscLogReal(hist[k]);
+        mean += y[k];
+      }
+      mean /= n;
+      ierr = PetscLinearRegression(n, x, y, &slope, &intercept);CHKERRQ(ierr);
+      for (k = 0; k < n; ++k) {
+        res += PetscSqr(y[k] - (slope*x[k] + intercept));
+        var += PetscSqr(y[k] - mean);
+      }
+      ierr = PetscFree2(x, y);CHKERRQ(ierr);
+      if (ce)   *ce   = PetscExpReal(slope);
+      if (eRsq) *eRsq = var < PETSC_MACHINE_EPSILON ? 0.0 : 1.0 - (res / var);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

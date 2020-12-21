@@ -399,8 +399,8 @@ int main(int argc,char **args)
     KSP ksprich;
     ierr = PCSetType(pc,PCCOMPOSITE);CHKERRQ(ierr);
     ierr = PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
-    ierr = PCCompositeAddPC(pc,PCBDDC);CHKERRQ(ierr);
-    ierr = PCCompositeAddPC(pc,PCKSP);CHKERRQ(ierr);
+    ierr = PCCompositeAddPCType(pc,PCBDDC);CHKERRQ(ierr);
+    ierr = PCCompositeAddPCType(pc,PCKSP);CHKERRQ(ierr);
     ierr = PCCompositeGetPC(pc,1,&pcksp);CHKERRQ(ierr);
     ierr = PCKSPGetKSP(pcksp,&ksprich);CHKERRQ(ierr);
     ierr = KSPSetType(ksprich,KSPRICHARDSON);CHKERRQ(ierr);

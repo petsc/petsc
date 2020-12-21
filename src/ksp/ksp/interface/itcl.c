@@ -310,7 +310,9 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
                                            useful for PCFIELDSPLIT, PCMG, etc that have inner solvers and you wish to track the convergence of all the solvers
 .   -ksp_monitor_lg_residualnorm - plot residual norm at each iteration
 .   -ksp_monitor_solution [ascii binary or draw][:filename][:format option] - plot solution at each iteration
--   -ksp_monitor_singular_value - monitor extreme singular values at each iteration
+.   -ksp_monitor_singular_value - monitor extreme singular values at each iteration
+.   -ksp_converged_reason - view the convergence state at the end of the solve
+-   -ksp_converged_rate - view the convergence rate at the end of the solve
 
    Notes:
    To see all options, run your program with the -help option
@@ -551,9 +553,19 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
   /* TODO Do these show up in help? */
+  ierr = PetscOptionsHasName(((PetscObject) ksp)->options, prefix, "-ksp_converged_rate", &flg);CHKERRQ(ierr);
+  if (flg) {
+    const char *RateTypes[] = {"default", "residual", "error", "PetscRateType", "RATE_", NULL};
+    PetscEnum rtype = (PetscEnum) 1;
+
+    ierr = PetscOptionsGetEnum(((PetscObject) ksp)->options, prefix, "-ksp_converged_rate_type", RateTypes, &rtype, &flg);CHKERRQ(ierr);
+    if (rtype == (PetscEnum) 0 || rtype == (PetscEnum) 1) {ierr = KSPSetResidualHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE);CHKERRQ(ierr);}
+    if (rtype == (PetscEnum) 0 || rtype == (PetscEnum) 2) {ierr = KSPSetErrorHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE);CHKERRQ(ierr);}
+  }
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",&ksp->viewer,&ksp->format,&ksp->view);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pre",&ksp->viewerPre,&ksp->formatPre,&ksp->viewPre);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_reason",&ksp->viewerReason,&ksp->formatReason,&ksp->viewReason);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_rate",&ksp->viewerRate,&ksp->formatRate,&ksp->viewRate);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",&ksp->viewerMat,&ksp->formatMat,&ksp->viewMat);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pmat",&ksp->viewerPMat,&ksp->formatPMat,&ksp->viewPMat);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_rhs",&ksp->viewerRhs,&ksp->formatRhs,&ksp->viewRhs);CHKERRQ(ierr);

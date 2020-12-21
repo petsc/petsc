@@ -1424,8 +1424,8 @@ preconditioners of type ``type1`` and ``type2``. The preconditioner
 ::
 
    PCSetType(pc,PCCOMPOSITE);
-   PCCompositeAddPC(pc,type1);
-   PCCompositeAddPC(pc,type2);
+   PCCompositeAddPCType(pc,type1);
+   PCCompositeAddPCType(pc,type2);
 
 Any number of preconditioners may added in this way.
 

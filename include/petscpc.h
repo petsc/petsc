@@ -217,7 +217,8 @@ PETSC_EXTERN PetscErrorCode PCGASMGetSubmatrices(PC,PetscInt*,Mat*[]);
 
 PETSC_EXTERN PetscErrorCode PCCompositeSetType(PC,PCCompositeType);
 PETSC_EXTERN PetscErrorCode PCCompositeGetType(PC,PCCompositeType*);
-PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC,PCType);
+PETSC_EXTERN PetscErrorCode PCCompositeAddPCType(PC,PCType);
+PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC,PC);
 PETSC_EXTERN PetscErrorCode PCCompositeGetNumberPC(PC,PetscInt *);
 PETSC_EXTERN PetscErrorCode PCCompositeGetPC(PC,PetscInt,PC *);
 PETSC_EXTERN PetscErrorCode PCCompositeSpecialSetAlpha(PC,PetscScalar);
@@ -363,6 +364,8 @@ PETSC_EXTERN PetscErrorCode PCMGSetGalerkin(PC,PCMGGalerkinType);
 PETSC_EXTERN PetscErrorCode PCMGGetGalerkin(PC,PCMGGalerkinType*);
 PETSC_EXTERN PetscErrorCode PCMGSetAdaptInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCMGGetAdaptInterpolation(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCMGSetAdaptCR(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCMGGetAdaptCR(PC,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode PCMGSetRhs(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGSetX(PC,PetscInt,Vec);

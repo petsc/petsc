@@ -208,7 +208,8 @@ cdef extern from * nogil:
 
     int PCCompositeSetType(PetscPC,PetscPCCompositeType)
     int PCCompositeGetPC(PetscPC,PetscInt,PetscPC*)
-    int PCCompositeAddPC(PetscPC,PetscPCType)
+    int PCCompositeAddPCType(PetscPC,PetscPCType)
+    int PCCompositeAddPC(PetscPC,PetscPC)
 
     int PCKSPGetKSP(PetscPC,PetscKSP*)
 
