@@ -1099,12 +1099,12 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer,PetscBool
   {
     int         fdes;
     char        *workbuf = NULL;
-    PetscInt    maxcount=0,message_count,flowcontrolcount;
+    PetscInt    tcount = !rank ? 0 : count,maxcount=0,message_count,flowcontrolcount;
     PetscMPIInt tag,cnt,maxcnt,scnt=0,rcnt=0,j;
     MPI_Status  status;
 
     ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
-    ierr = MPI_Reduce(&count,&maxcount,1,MPIU_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&tcount,&maxcount,1,MPIU_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(maxcount,&maxcnt);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(count,&cnt);CHKERRQ(ierr);
 

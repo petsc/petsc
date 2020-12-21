@@ -344,6 +344,8 @@ static PetscErrorCode StackLoadAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   }
   ierr = PetscSNPrintf(filename,sizeof filename,"%s/TS-STACK%06d.bin",tj->dirname,id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinarySetSkipInfo(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   for (i=0;i<stack->stacksize;i++) {
     ierr = ElementCreate(ts,stack,&e);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -390,6 +392,8 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt 
 
   ierr = PetscSNPrintf(filename,sizeof filename,"%s/TS-STACK%06d.bin",tj->dirname,id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinarySetSkipInfo(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetUseMPIIO(viewer,&usempiio);CHKERRQ(ierr);
   if (usempiio) {
@@ -457,7 +461,8 @@ static PetscErrorCode LoadSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   }
   ierr = PetscSNPrintf(filename,sizeof filename,"%s/TS-CPS%06d.bin",tj->dirname,id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-
+  ierr = PetscViewerBinarySetSkipInfo(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
