@@ -49,7 +49,6 @@ int main(int argc,char **args)
     ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
 
     ierr = MatProductSymbolic(B);CHKERRQ(ierr);
-    ierr = MatSetOption(B,MAT_FORCE_DIAGONAL_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatProductNumeric(B);CHKERRQ(ierr);
 
     ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
