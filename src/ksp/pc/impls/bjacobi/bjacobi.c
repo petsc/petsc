@@ -210,6 +210,9 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
         }
         ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
         ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+        /*  extra call needed because of the two calls to PetscViewerASCIIPushSynchronized() in PetscViewerGetSubViewer() */
+        ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
       } else if (mpjac && jac->ksp && mpjac->psubcomm) {
         ierr = PetscViewerGetSubViewer(viewer,mpjac->psubcomm->child,&sviewer);CHKERRQ(ierr);
         if (!mpjac->psubcomm->color) {
@@ -219,10 +222,12 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
         }
         ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
         ierr = PetscViewerRestoreSubViewer(viewer,mpjac->psubcomm->child,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+        /*  extra call needed because of the two calls to PetscViewerASCIIPushSynchronized() in PetscViewerGetSubViewer() */
+        ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       }
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      /*  extra call needed because of the two calls to PetscViewerASCIIPushSynchronized() in PetscViewerGetSubViewer() */
-      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     } else {
       PetscInt n_global;
       ierr = MPIU_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
