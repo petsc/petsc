@@ -42,6 +42,10 @@ cdef class DM(Object):
         if viewer is not None: vwr = viewer.vwr
         CHKERR( DMView(self.dm, vwr) )
 
+    def load(self, Viewer viewer):
+        CHKERR( DMLoad(self.dm, viewer.vwr) )
+        return self
+
     def destroy(self):
         CHKERR( DMDestroy(&self.dm) )
         return self
@@ -93,6 +97,13 @@ cdef class DM(Object):
 
     def setFromOptions(self):
         CHKERR( DMSetFromOptions(self.dm) )
+
+    def viewFromOptions(self, name, Object obj=None):
+        cdef const char *cname = NULL
+        _ = str2bytes(name, &cname)
+        cdef PetscObject  cobj = NULL
+        if obj is not None: cobj = obj.obj[0]
+        CHKERR( DMViewFromOptions(self.dm, cobj, cname) )
 
     def setUp(self):
         CHKERR( DMSetUp(self.dm) )
