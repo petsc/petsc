@@ -2103,7 +2103,7 @@ static PetscErrorCode MatAssemblyEnd_SeqDense(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
+PetscErrorCode MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
 {
   Mat_SeqDense      *a = (Mat_SeqDense*)A->data,*b = (Mat_SeqDense*)B->data;
   PetscErrorCode    ierr;

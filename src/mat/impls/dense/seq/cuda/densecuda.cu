@@ -170,6 +170,39 @@ PetscErrorCode MatSeqDenseCUDACopyToGPU(Mat A)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatCopy_SeqDenseCUDA(Mat A,Mat B,MatStructure str)
+{
+  Mat_SeqDense      *a = (Mat_SeqDense*)A->data,*b = (Mat_SeqDense*)B->data;
+  PetscErrorCode    ierr;
+  const PetscScalar *va;
+  PetscScalar       *vb;
+  PetscInt          lda1=a->lda,lda2=b->lda, m=A->rmap->n,n=A->cmap->n, j;
+  cudaError_t       cerr;
+
+  PetscFunctionBegin;
+  /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
+  if (A->ops->copy != B->ops->copy) {
+    ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (m != B->rmap->n || n != B->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
+  ierr = MatDenseCUDAGetArrayRead(A,&va);CHKERRQ(ierr);
+  ierr = MatDenseCUDAGetArrayWrite(B,&vb);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  if (lda1>m || lda2>m) {
+    for (j=0; j<n; j++) {
+      cerr = cudaMemcpy(vb+j*lda2,va+j*lda1,m*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
+    }
+  } else {
+    cerr = cudaMemcpy(vb,va,m*(n*sizeof(PetscScalar)),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
+  }
+  cerr = WaitForCUDA();CHKERRCUDA(cerr);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArray(B,&vb);CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArrayRead(A,&va);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDenseCUDAPlaceArray_SeqDenseCUDA(Mat A, const PetscScalar *a)
 {
   Mat_SeqDense     *aa = (Mat_SeqDense*)A->data;
@@ -1221,6 +1254,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     A->ops->productsetfromoptions   = MatProductSetFromOptions_SeqDenseCUDA;
     A->ops->getcolumnvector         = MatGetColumnVector_SeqDenseCUDA;
     A->ops->scale                   = MatScale_SeqDenseCUDA;
+    A->ops->copy                    = MatCopy_SeqDenseCUDA;
   } else {
     /* make sure we have an up-to-date copy on the CPU */
     ierr = MatSeqDenseCUDACopyFromGPU(A);CHKERRQ(ierr);
@@ -1252,6 +1286,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     A->ops->productsetfromoptions   = MatProductSetFromOptions_SeqDense;
     A->ops->getcolumnvector         = MatGetColumnVector_SeqDense;
     A->ops->scale                   = MatScale_SeqDense;
+    A->ops->copy                    = MatCopy_SeqDense;
   }
   if (a->cmat) {
     ierr = MatBindToCPU(a->cmat,flg);CHKERRQ(ierr);
