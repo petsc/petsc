@@ -126,7 +126,7 @@ cdef class Viewer(Object):
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
-        if mode is not None: filemode(mode)
+        if mode is not None: cmode = filemode(mode)
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
