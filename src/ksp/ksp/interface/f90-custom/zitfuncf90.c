@@ -10,8 +10,8 @@
 
 PETSC_EXTERN void kspgetresidualhistoryf90_(KSP *ksp,F90Array1d *indices,PetscInt *n,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscReal *hist;
+  PetscReal const *hist;
   *ierr = KSPGetResidualHistory(*ksp,&hist,n); if (*ierr) return;
-  *ierr = F90Array1dCreate(hist,MPIU_REAL,1,*n,indices PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate((void*)hist,MPIU_REAL,1,*n,indices PETSC_F90_2PTR_PARAM(ptrd));
 }
 
