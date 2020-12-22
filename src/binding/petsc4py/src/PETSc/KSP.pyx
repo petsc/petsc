@@ -277,7 +277,7 @@ cdef class KSP(Object):
         CHKERR( KSPSetResidualHistory(self.ksp, data, size, flag) )
 
     def getConvergenceHistory(self):
-        cdef PetscReal *data = NULL
+        cdef const PetscReal *data = NULL
         cdef PetscInt   size = 0
         CHKERR( KSPGetResidualHistory(self.ksp, &data, &size) )
         return array_r(size, data)

@@ -509,7 +509,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   KSPConvergedRateView - Displays the reason a KSP solve converged or diverged to a viewer
 
   Collective on ksp
@@ -2274,7 +2274,8 @@ PetscErrorCode KSPGetErrorHistory(KSP ksp, const PetscReal *a[], PetscInt *na)
 */
 PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq, PetscReal *ce, PetscReal *eRsq)
 {
-  PetscReal     *hist, *x, *y, slope, intercept, mean = 0.0, var = 0.0, res = 0.0;
+  PetscReal      const *hist;
+  PetscReal      *x, *y, slope, intercept, mean = 0.0, var = 0.0, res = 0.0;
   PetscInt       n, k;
   PetscErrorCode ierr;
 
