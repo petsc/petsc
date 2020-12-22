@@ -1283,8 +1283,12 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       const PetscScalar *x;
       PetscInt          state = 0;
       PetscBool         isstd;
+      PetscBool         isnotdone = PETSC_TRUE;
 #if defined(PETSC_HAVE_CUDA)
       PetscBool         iscuda;
+#endif
+#if defined(PETSC_HAVE_HIP)
+      PetscBool         iship;
 #endif
 
       ierr = PetscObjectTypeCompareAny((PetscObject)X,&isstd,VECSEQ,VECMPI,VECSTANDARD,"");CHKERRQ(ierr);
@@ -1307,10 +1311,32 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
           ierr = VecCreateMPICUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
         }
         Z->offloadmask = flg;
-      } else if (isstd) {
-#else
-      if (isstd) { /* standard CPU: use CreateWithArray pattern */
+        isnotdone = PETSC_FALSE;
+      } 
 #endif
+#if defined(PETSC_HAVE_HIP)
+      ierr = PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
+      if (iship) {
+        const PetscScalar *x_d;
+        PetscMPIInt       size;
+        PetscOffloadMask  flg;
+
+        ierr = VecHIPGetArrays_Private(X,&x,&x_d,&flg);CHKERRQ(ierr);
+        if (flg == PETSC_OFFLOAD_UNALLOCATED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for PETSC_OFFLOAD_UNALLOCATED");
+        if (n && !x && !x_d) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
+        if (x) x += start;
+        if (x_d) x_d += start;
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
+        if (size == 1) {
+          ierr = VecCreateSeqHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,x,x_d,&Z);CHKERRQ(ierr);
+        } else {
+          ierr = VecCreateMPIHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
+        }
+        Z->offloadmask = flg;
+        isnotdone = PETSC_FALSE;
+      }
+#endif
+      if (isstd) { /* standard CPU: use CreateWithArray pattern */
         PetscMPIInt size;
 
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRMPI(ierr);
@@ -1322,7 +1348,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
           ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x,&Z);CHKERRQ(ierr);
         }
         ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-      } else { /* default implementation: use place array */
+      } else if (isnotdone) { /* default implementation: use place array */
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
         ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
         ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
@@ -1394,6 +1420,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
     if (!valid) {
       VecScatter scatter;
       PetscInt   state;
+      PetscBool isstd = PETSC_TRUE;
 
       ierr = VecLockGet(X,&state);CHKERRQ(ierr);
       if (state != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vec X is locked for read-only or read/write access");
@@ -1436,11 +1463,51 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
             break;
           }
+          isstd = PETSC_FALSE;
         } else {
-#else
-        {
+          isstd = PETSC_TRUE;
+        }
 #endif
-          /* If OpenCL vecs updated the device memory, this triggers a copy on the CPU */
+#if defined(PETSC_HAVE_HIP)
+        PetscBool iship;
+
+        ierr = PetscObjectTypeCompareAny((PetscObject)*Y,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
+        if (iship) {
+          PetscOffloadMask ymask = (*Y)->offloadmask;
+
+          /* The offloadmask of X dictates where to move memory
+             If X GPU data is valid, then move Y data on GPU if needed
+             Otherwise, move back to the CPU */
+          switch (X->offloadmask) {
+          case PETSC_OFFLOAD_BOTH:
+            if (ymask == PETSC_OFFLOAD_CPU) {
+              ierr = VecHIPResetArray(*Y);CHKERRQ(ierr);
+            } else if (ymask == PETSC_OFFLOAD_GPU) {
+              X->offloadmask = PETSC_OFFLOAD_GPU;
+            }
+            break;
+          case PETSC_OFFLOAD_GPU:
+            if (ymask == PETSC_OFFLOAD_CPU) {
+              ierr = VecHIPResetArray(*Y);CHKERRQ(ierr);
+            }
+            break;
+          case PETSC_OFFLOAD_CPU:
+            if (ymask == PETSC_OFFLOAD_GPU) {
+              ierr = VecResetArray(*Y);CHKERRQ(ierr);
+            }
+            break;
+          case PETSC_OFFLOAD_UNALLOCATED:
+          case PETSC_OFFLOAD_VECKOKKOS:
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+            break;
+          }
+          isstd = PETSC_FALSE;
+        } else {
+          isstd = PETSC_TRUE;
+        }
+#endif
+        /* If OpenCL vecs updated the device memory, this triggers a copy on the CPU */
+        if (isstd) {
           ierr = VecResetArray(*Y);CHKERRQ(ierr);
         }
         ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);

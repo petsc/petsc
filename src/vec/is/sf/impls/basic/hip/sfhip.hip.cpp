@@ -2,8 +2,6 @@
 #include <hip/hip_runtime.h>
 #include <petschipblas.h> /* For CHKERRHIP */
 
-/* TODO - there are warnings with hipcc unused-function with device code that
- * are not well documented.  Need to work with AMD on this  */
 
 /* Map a thread id to an index in root/leaf space through a series of 3D subdomains. See PetscSFPackOpt. */
 __device__ static inline PetscInt MapTidToIndex(const PetscInt *opt,PetscInt tid)
@@ -293,11 +291,15 @@ __device__ static llint atomicMult(llint* address,llint val)
 
 template<typename Type> struct AtomicMult {__device__ Type operator() (Type& x,Type y) const {return atomicMult(&x,y);}};
 
+
 /*
   Atomic Min/Max operations
 
-  See CUDA version
+  See CUDA version for comments.
  */
+
+
+
 
 #if defined(PETSC_USE_REAL_DOUBLE)
 __device__ static double atomicMin(double* address, double val)
@@ -345,13 +347,69 @@ __device__ static float atomicMax(float* address,float val)
 }
 #endif
 
+/* As of ROCm 3.10 llint atomicMin/Max(llint*, llint) is not supported */
+__device__ static llint atomicMin(llint* address,llint val)
+{
+  ullint *address_as_ull = (ullint*)(address);
+  ullint old = *address_as_ull, assumed;
+  do {
+    assumed = old;
+    old     = atomicCAS(address_as_ull, assumed, (ullint)(PetscMin(val,(llint)assumed)));
+  } while (assumed != old);
+  return (llint)old;
+}
+
+__device__ static llint atomicMax(llint* address,llint val)
+{
+  ullint *address_as_ull = (ullint*)(address);
+  ullint old = *address_as_ull, assumed;
+  do {
+    assumed = old;
+    old     = atomicCAS(address_as_ull, assumed, (ullint)(PetscMax(val,(llint)assumed)));
+  } while (assumed != old);
+  return (llint)old;
+}
+
+
 template<typename Type> struct AtomicMin {__device__ Type operator() (Type& x,Type y) const {return atomicMin(&x,y);}};
 template<typename Type> struct AtomicMax {__device__ Type operator() (Type& x,Type y) const {return atomicMax(&x,y);}};
 
 /*
   Atomic bitwise operations
-
+  As of ROCm 3.10, the llint atomicAnd/Or/Xor(llint*, llint) is not supported
 */
+
+__device__ static llint atomicAnd(llint* address,llint val)
+{
+  ullint *address_as_ull = (ullint*)(address);
+  ullint old = *address_as_ull, assumed;
+  do {
+    assumed = old;
+    old     = atomicCAS(address_as_ull, assumed, (ullint)(val & (llint)assumed));
+  } while (assumed != old);
+  return (llint)old;
+}
+__device__ static llint atomicOr(llint* address,llint val)
+{
+  ullint *address_as_ull = (ullint*)(address);
+  ullint old = *address_as_ull, assumed;
+  do {
+    assumed = old;
+    old     = atomicCAS(address_as_ull, assumed, (ullint)(val | (llint)assumed));
+  } while (assumed != old);
+  return (llint)old;
+}
+
+__device__ static llint atomicXor(llint* address,llint val)
+{
+  ullint *address_as_ull = (ullint*)(address);
+  ullint old = *address_as_ull, assumed;
+  do {
+    assumed = old;
+    old     = atomicCAS(address_as_ull, assumed, (ullint)(val ^ (llint)assumed));
+  } while (assumed != old);
+  return (llint)old;
+}
 
 template<typename Type> struct AtomicBAND {__device__ Type operator() (Type& x,Type y) const {return atomicAnd(&x,y);}};
 template<typename Type> struct AtomicBOR  {__device__ Type operator() (Type& x,Type y) const {return atomicOr (&x,y);}};
@@ -414,12 +472,12 @@ static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,PetscS
   hipError_t         err;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
-/*  const PetscInt     *iarray=opt ? opt->array : NULL; */
+  const PetscInt     *iarray=opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-/* TODO  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_Pack<Type,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, count,idx,link->bs,unpacked,packed); */
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_Pack<Type,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(const Type*)data,(Type*)buf);
   err = hipGetLastError();CHKERRHIP(err);
   PetscFunctionReturn(0);
 }
@@ -430,12 +488,12 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start
   hipError_t        cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
-/*  const PetscInt     *iarray=opt ? opt->array : NULL; */
+  const PetscInt     *iarray=opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-/* TODO  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_UnpackAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(Type*)data,(const Type*)buf);  */
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_UnpackAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(Type*)data,(const Type*)buf);
   cerr = hipGetLastError();CHKERRHIP(cerr);
   PetscFunctionReturn(0);
 }
@@ -504,13 +562,13 @@ static PetscErrorCode FetchAndOpLocal(PetscSFLink link,PetscInt count,PetscInt r
   hipError_t       cerr;
   PetscInt          nthreads=256;
   PetscInt          nblocks=(count+nthreads-1)/nthreads;
-/*  const PetscInt    *rarray = rootopt ? rootopt->array : NULL;
-  const PetscInt    *larray = leafopt ? leafopt->array : NULL; */
+  const PetscInt    *rarray = rootopt ? rootopt->array : NULL;
+  const PetscInt    *larray = leafopt ? leafopt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-/*  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_FetchAndOpLocal<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,rootstart,rarray,rootidx,(Type*)rootdata,leafstart,larray,leafidx,(const Type*)leafdata,(Type*)leafupdate); */
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_FetchAndOpLocal<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,rootstart,rarray,rootidx,(Type*)rootdata,leafstart,larray,leafidx,(const Type*)leafdata,(Type*)leafupdate);
   cerr = hipGetLastError();CHKERRHIP(cerr);
   PetscFunctionReturn(0);
 }

@@ -27,10 +27,10 @@ int main(int argc,char **argv)
      since we want to have y's memory on host pinned (i.e.,non-pagable), to really trigger asynchronous
      cudaMemcpyDeviceToHost.
    */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
-  ierr = VecSetType(x,VECSEQCUDA);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
-  ierr = VecSetType(y,VECSEQCUDA);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_WORLD,n,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_WORLD,n,&y);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
 
   /* Init x, y, and push them to GPU (their offloadmask = PETSC_OFFLOAD_GPU) */
   ierr = VecGetArray(x,&val);CHKERRQ(ierr);
@@ -72,6 +72,15 @@ int main(int argc,char **argv)
    test:
     requires: cuda
     #make sure the host memory is pinned
-    args: -vec_pinned_memory_min 0
+    # sf_backend cuda is not needed if compiling only with cuda
+    args: -vec_type cuda -sf_backend cuda -vec_pinned_memory_min 0
+
+   test:
+    suffix: hip
+    requires: hip
+    output_file: output/ex2_1.out
+    #make sure the host memory is pinned
+    # sf_backend hip is not needed if compiling only with hip
+    args:  -vec_type hip -sf_backend hip -vec_pinned_memory_min 0
 
 TEST*/
