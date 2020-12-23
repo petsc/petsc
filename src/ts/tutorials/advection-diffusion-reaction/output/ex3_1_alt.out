@@ -46,6 +46,8 @@ TS Object: 1 MPI processes
     Nonstiff abscissa     c =  0.000000  0.871733  0.600000  1.000000 
   maximum steps=1000
   maximum time=0.3
+  total number of RHS function evaluations=192
+  total number of RHS Jacobian evaluations=192
   total number of nonlinear solver iterations=288
   total number of linear solver iterations=576
   total number of nonlinear solve failures=0

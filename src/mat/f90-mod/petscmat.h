@@ -91,8 +91,9 @@
 !  Flags for MatCopy, MatAXPY
 !
       PetscEnum, parameter :: DIFFERENT_NONZERO_PATTERN = 0
-      PetscEnum, parameter :: SUBSET_NONZERO_PATTERN=1
+      PetscEnum, parameter :: SUBSET_NONZERO_PATTERN = 1
       PetscEnum, parameter :: SAME_NONZERO_PATTERN = 2
+      PetscEnum, parameter :: UNKNOWN_NONZERO_PATTERN = 3
 
 #include "../src/mat/f90-mod/petscmatinfosize.h"
 

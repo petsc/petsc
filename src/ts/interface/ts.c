@@ -594,6 +594,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
     PetscStackPush("TS user Jacobian function");
     ierr = (*rhsjacobianfunc)(ts,t,U,A,B,ctx);CHKERRQ(ierr);
     PetscStackPop;
+    ts->rhsjacs++;
     ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
   } else {
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
@@ -646,18 +647,18 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
 
   if (!rhsfunction && !ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
 
-  ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
   if (rhsfunction) {
+    ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
     ierr = VecLockReadPush(U);CHKERRQ(ierr);
     PetscStackPush("TS user right-hand-side function");
     ierr = (*rhsfunction)(ts,t,U,y,ctx);CHKERRQ(ierr);
     PetscStackPop;
     ierr = VecLockReadPop(U);CHKERRQ(ierr);
+    ts->rhsfuncs++;
+    ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
   } else {
     ierr = VecZeroEntries(y);CHKERRQ(ierr);
   }
-
-  ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -770,6 +771,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
     if (!ts->Arhs) {
       if (ijacobian) {
         ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&ts->Arhs);CHKERRQ(ierr);
+        ierr = TSSetMatStructure(ts,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       } else {
         ts->Arhs = A;
         ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
@@ -856,6 +858,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
     PetscStackPush("TS user implicit function");
     ierr = (*ifunction)(ts,t,U,Udot,Y,ctx);CHKERRQ(ierr);
     PetscStackPop;
+    ts->ifuncs++;
   }
   if (imex) {
     if (!ifunction) {
@@ -968,6 +971,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   if (ijacobian) {
     PetscStackPush("TS user implicit Jacobian");
     ierr = (*ijacobian)(ts,t,U,Udot,shift,A,B,ctx);CHKERRQ(ierr);
+    ts->ijacs++;
     PetscStackPop;
   }
   if (imex) {
@@ -1039,10 +1043,8 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
       }
       ts->rhsjacobian.scale = -1;
       ts->rhsjacobian.shift = shift;
-    } else if (Arhs) {  /* Both IJacobian and RHSJacobian exist or the RHS matrix provided (A) is different from the internal RHS matrix (Arhs) */
-      MatStructure axpy = DIFFERENT_NONZERO_PATTERN;
-
-      if (!ijacobian) { /* No IJacobian provided, but we have a separate RHS matrix */
+    } else if (Arhs) {          /* Both IJacobian and RHSJacobian */
+      if (!ijacobian) {         /* No IJacobian provided, but we have a separate RHS matrix */
         ierr = MatZeroEntries(A);CHKERRQ(ierr);
         ierr = MatShift(A,shift);CHKERRQ(ierr);
         if (A != B) {
@@ -1051,9 +1053,9 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
         }
       }
       ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
-      ierr = MatAXPY(A,-1,Arhs,axpy);CHKERRQ(ierr);
+      ierr = MatAXPY(A,-1,Arhs,ts->axpy_pattern);CHKERRQ(ierr);
       if (A != B) {
-        ierr = MatAXPY(B,-1,Brhs,axpy);CHKERRQ(ierr);
+        ierr = MatAXPY(B,-1,Brhs,ts->axpy_pattern);CHKERRQ(ierr);
       }
     }
   }
@@ -1765,11 +1767,11 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
   PetscStackPop;
 
   if (rhsjacobian) {
-    Mat Jrhs,Prhs; MatStructure axpy = DIFFERENT_NONZERO_PATTERN;
+    Mat Jrhs,Prhs;
     ierr = TSGetRHSMats_Private(ts,&Jrhs,&Prhs);CHKERRQ(ierr);
     ierr = TSComputeRHSJacobian(ts,t,U,Jrhs,Prhs);CHKERRQ(ierr);
-    ierr = MatAXPY(J,-1,Jrhs,axpy);CHKERRQ(ierr);
-    if (P != J) {ierr = MatAXPY(P,-1,Prhs,axpy);CHKERRQ(ierr);}
+    ierr = MatAXPY(J,-1,Jrhs,ts->axpy_pattern);CHKERRQ(ierr);
+    if (P != J) {ierr = MatAXPY(P,-1,Prhs,ts->axpy_pattern);CHKERRQ(ierr);}
   }
 
   ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,J,P);CHKERRQ(ierr);
@@ -2097,6 +2099,18 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
     if (ts->max_time < PETSC_MAX_REAL) {
       ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",(double)ts->max_time);CHKERRQ(ierr);
+    }
+    if (ts->ifuncs) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of I function evaluations=%D\n",ts->ifuncs);CHKERRQ(ierr);
+    }
+    if (ts->ijacs) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of I Jacobian evaluations=%D\n",ts->ijacs);CHKERRQ(ierr);
+    }
+    if (ts->rhsfuncs) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of RHS function evaluations=%D\n",ts->rhsfuncs);CHKERRQ(ierr);
+    }
+    if (ts->rhsjacs) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of RHS Jacobian evaluations=%D\n",ts->rhsjacs);CHKERRQ(ierr);
     }
     if (ts->usessnes) {
       PetscBool lin;
@@ -7709,5 +7723,29 @@ PetscErrorCode TSGetUseSplitRHSFunction(TS ts, PetscBool *use_splitrhsfunction)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   *use_splitrhsfunction = ts->use_splitrhsfunction;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    TSSetMatStructure - sets the relationship between the nonzero structure of the RHS Jacobian matrix to the IJacobian matrix.
+
+   Logically  Collective on ts
+
+   Input Parameters:
++  ts - the time-stepper
+-  str - the structure (the default is UNKNOWN_NONZERO_PATTERN)
+
+   Level: intermediate
+
+   Notes:
+     When the relationship between the nonzero structures is known and supplied the solution process can be much faster
+
+.seealso: MatAXPY(), MatStructure
+ @*/
+PetscErrorCode TSSetMatStructure(TS ts,MatStructure str)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->axpy_pattern = str;
   PetscFunctionReturn(0);
 }

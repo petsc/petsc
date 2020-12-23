@@ -72,7 +72,7 @@ Mat Object: symm_conv_copy_subnnz 1 MPI processes
       block size is 2
 Mat Object: symm_conv_copy_diffnnz 1 MPI processes
   type: seqsbaij
-  rows=10, cols=10
-  total: nonzeros=31, allocated nonzeros=31
+  rows=10, cols=10, bs=2
+  total: nonzeros=36, allocated nonzeros=36
   total number of mallocs used during MatSetValues calls=0
-      block size is 1
+      block size is 2

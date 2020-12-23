@@ -20,6 +20,7 @@ TS Object: 1 MPI processes
     Scheme: rks2
   maximum steps=1000
   maximum time=2.
+  total number of RHS function evaluations=15
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
   TSAdapt Object: 1 MPI processes

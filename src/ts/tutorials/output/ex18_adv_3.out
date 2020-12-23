@@ -21,6 +21,7 @@ TS Object: 1 MPI processes
   type: beuler
   maximum steps=1000
   maximum time=2
+  total number of RHS function evaluations=100
   total number of nonlinear solver iterations=106
   total number of nonlinear solve failures=0
   total number of linear solver iterations=108

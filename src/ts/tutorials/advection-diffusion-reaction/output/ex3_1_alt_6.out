@@ -12,29 +12,30 @@
 11 TS dt 0.0134682 time 0.102523
 12 TS dt 0.0134977 time 0.115991
 13 TS dt 0.0135237 time 0.129489
-14 TS dt 0.00491431 time 0.133773
-15 TS dt 0.0100893 time 0.138687
-16 TS dt 0.0135711 time 0.148777
-17 TS dt 0.0136066 time 0.162348
-18 TS dt 0.00442413 time 0.165974
-19 TS dt 0.00848341 time 0.170398
-20 TS dt 0.0135303 time 0.178881
-21 TS dt 0.0136941 time 0.192411
-22 TS dt 0.0053962 time 0.197183
-23 TS dt 0.010941 time 0.20258
-24 TS dt 0.0137452 time 0.213521
-25 TS dt 0.0137594 time 0.227266
-26 TS dt 0.0035759 time 0.229752
-27 TS dt 0.00563902 time 0.233328
-28 TS dt 0.0108807 time 0.238967
-29 TS dt 0.0138263 time 0.249848
-30 TS dt 0.0138145 time 0.263674
-31 TS dt 0.00325521 time 0.2658
-32 TS dt 0.00480587 time 0.269055
-33 TS dt 0.0087816 time 0.273861
-34 TS dt 0.0138188 time 0.282642
-35 TS dt 0.0139722 time 0.296461
-36 TS dt 0.00473778 time 0.300051
+14 TS dt 0.00490871 time 0.133782
+15 TS dt 0.010074 time 0.138691
+16 TS dt 0.0135707 time 0.148765
+17 TS dt 0.013607 time 0.162336
+18 TS dt 0.00443555 time 0.165994
+19 TS dt 0.00853853 time 0.17043
+20 TS dt 0.0135363 time 0.178968
+21 TS dt 0.0136954 time 0.192504
+22 TS dt 0.00535735 time 0.197245
+23 TS dt 0.0108939 time 0.202602
+24 TS dt 0.0137448 time 0.213496
+25 TS dt 0.0137631 time 0.227241
+26 TS dt 0.00362895 time 0.229783
+27 TS dt 0.00578029 time 0.233412
+28 TS dt 0.0111986 time 0.239193
+29 TS dt 0.013832 time 0.250391
+30 TS dt 0.013781 time 0.264223
+31 TS dt 0.00305704 time 0.26618
+32 TS dt 0.0043779 time 0.269237
+33 TS dt 0.0076831 time 0.273615
+34 TS dt 0.0135611 time 0.281298
+35 TS dt 0.0139794 time 0.29486
+36 TS dt 0.00580298 time 0.299731
+37 TS dt 0.0115935 time 0.305534
 TS Object: 1 MPI processes
   type: arkimex
     ARK IMEX 3
@@ -46,10 +47,10 @@ TS Object: 1 MPI processes
     Nonstiff abscissa     c =  0.000000  0.871733  0.600000  1.000000 
   maximum steps=1000
   maximum time=0.3
-  total number of RHS function evaluations=192
-  total number of RHS Jacobian evaluations=192
-  total number of nonlinear solver iterations=288
-  total number of linear solver iterations=576
+  total number of RHS function evaluations=196
+  total number of RHS Jacobian evaluations=196
+  total number of nonlinear solver iterations=294
+  total number of linear solver iterations=588
   total number of nonlinear solve failures=0
   total number of rejected steps=12
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
