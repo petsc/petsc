@@ -148,6 +148,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticK(PetscReal x,PetscReal *ret)
   x = 1 - x; /* where m = 1 - m1 */
   *ret = polevl_10(x,P1) - PetscLogReal(x) * polevl_10(x,Q1);
 }
+/* flip sign. papers use du/dt = C, PETSc uses form G(u) = du/dt - C(u) = 0 */
 PETSC_DEVICE_FUNC_DECL void LandauTensor2D(const PetscReal x[], const PetscReal rp, const PetscReal zp, PetscReal Ud[][2], PetscReal Uk[][2], const PetscReal mask)
 {
   PetscReal l,s,r=x[0],z=x[1],i1func,i2func,i3func,ks,es,pi4pow,sqrt_1s,r2,rp2,r2prp2,zmzp,zmzp2,tt;
@@ -175,11 +176,11 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor2D(const PetscReal x[], const PetscReal 
   i2func = 2./((1-s)*sqrt_1s) * es;
   i1func = 4./(PetscSqr(s)*sqrt_1s + PETSC_MACHINE_EPSILON) * mask * (ks - (1.+s) * es);
   i3func = 2./((1-s)*(s)*sqrt_1s + PETSC_MACHINE_EPSILON) * (es - (1-s) * ks);
-  Ud[0][0]=                    pi4pow*(rp2*i1func+PetscSqr(zmzp)*i2func);
-  Ud[0][1]=Ud[1][0]=Uk[0][1]= -pi4pow*(zmzp)*(r*i2func-rp*i3func);
-  Uk[1][1]=Ud[1][1]=           pi4pow*((r2prp2)*i2func-2*r*rp*i3func)*mask;
-  Uk[0][0]=                    pi4pow*(zmzp2*i3func+r*rp*i1func);
-  Uk[1][0]=                   -pi4pow*(zmzp)*(r*i3func-rp*i2func); /* 48 mults + 21 + 21 = 90 mults and divs */
+  Ud[0][0]=                   -pi4pow*(rp2*i1func+PetscSqr(zmzp)*i2func);
+  Ud[0][1]=Ud[1][0]=Uk[0][1]=  pi4pow*(zmzp)*(r*i2func-rp*i3func);
+  Uk[1][1]=Ud[1][1]=          -pi4pow*((r2prp2)*i2func-2*r*rp*i3func)*mask;
+  Uk[0][0]=                   -pi4pow*(zmzp2*i3func+r*rp*i1func);
+  Uk[1][0]=                    pi4pow*(zmzp)*(r*i3func-rp*i2func); /* 48 mults + 21 + 21 = 90 mults and divs */
 }
 #else
 /* integration point functions */
@@ -200,8 +201,8 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal
   inorm = LANDAU_SQRT(inorm2);
   inorm3 = inorm2*inorm;
   for (d = 0; d < 3; ++d) U[d][d] = inorm - inorm3 * dx[d] * dx[d];
-  U[1][0] = U[0][1] = -inorm3 * dx[0] * dx[1];
-  U[1][2] = U[2][1] = -inorm3 * dx[2] * dx[1];
-  U[2][0] = U[0][2] = -inorm3 * dx[0] * dx[2];
+  U[1][0] = U[0][1] = inorm3 * dx[0] * dx[1];
+  U[1][2] = U[2][1] = inorm3 * dx[2] * dx[1];
+  U[2][0] = U[0][2] = inorm3 * dx[0] * dx[2];
 }
 #endif

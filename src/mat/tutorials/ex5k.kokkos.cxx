@@ -1,39 +1,18 @@
-static char help[] = "Test of Cuda matrix assemble with 1D Laplacian.\n\n";
-
-// This a minimal example of the use of the Cuda and Kokkos MatAIJ metadata for assembly.
-//
-// The matrix must be a type 'aijcusparse' or 'aijkokkos' and must first be assembled
-// to get the AIJ metadata, which is created in MatAssemblyEnd on the host. Next, get a
-// pointer to simple CSR mirror (PetscSplitCSRDataStructure) of the matrix data on
-// the device with Mat[CUSPARSE/Kokkos]GetDeviceMatWrite. Then use this object to populate
-// the matrix on the device with the standard MatSetValues for the device
-// (MatSetValuesDevice). Finaly one calls MatAssemblyBegin/End on the host and the
-// matrix is ready to use on the device without matrix data movement between the
-// host and device. N.B., after MatXGetDeviceMatWrite has been called you can not call
-// MatSetValues (Host) again.
+static char help[] = "Test of Kokkos matrix assemble with 1D Laplacian. Kokkos version of ex5cu \n\n";
 
 #include <petscconf.h>
 #include <petscmat.h>
-#include <petsccublas.h>
+//#include <petsccublas.h>
 
-// hack to avoid configure problems in CI. Delete when resolved
-#define atomicAdd(e, f) (*e) += f
+/*
+    Include Kokkos files
+*/
+#include <Kokkos_Core.hpp>
+#include <Kokkos_OffsetView.hpp>
 
-#define PETSC_DEVICE_FUNC_DECL __device__
+#define PETSC_DEVICE_FUNC_DECL KOKKOS_INLINE_FUNCTION
+#define atomicAdd(e, f) Kokkos::atomic_fetch_add(e, f)
 #include <petscaijdevice.h>
-
-__global__
-void assemble_device(PetscSplitCSRDataStructure *d_mat, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank, PetscErrorCode *ierr)
-{
-  const PetscInt  inc = blockDim.x, my0 = threadIdx.x;
-  PetscInt        i;
-  PetscScalar     values[] = {1,-1,-1,1.1};
-  for (i=start+my0; i<end; i+=inc) {
-    PetscInt js[] = {i-1, i};
-    MatSetValuesDevice(d_mat,2,js,2,js,values,ADD_VALUES,ierr);
-    if (*ierr) return;
-  }
-}
 
 void assemble_mat(Mat A, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank)
 {
@@ -47,7 +26,7 @@ void assemble_mat(Mat A, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt 
   }
 }
 
-int main(int argc,char **args)
+int main(int argc,char **argv)
 {
   PetscErrorCode               ierr;
   Mat                          A;
@@ -55,10 +34,14 @@ int main(int argc,char **args)
   PetscSplitCSRDataStructure   *d_mat;
   PetscLogEvent                event;
   Vec                          x,y;
-  cudaError_t                  cerr;
   PetscMPIInt                  rank;
+  PetscBool                    view_kokkos_configuration = PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-view_kokkos_configuration",&view_kokkos_configuration,NULL);CHKERRQ(ierr);
+
   ierr = PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL);CHKERRQ(ierr); // for debugging, will be wrong if nz<3
   ierr = PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-num_threads", &num_threads, NULL);CHKERRQ(ierr);
@@ -69,7 +52,11 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("GPU operator", MAT_CLASSID, &event);CHKERRQ(ierr);
-  ierr = MatCreateAIJCUSPARSE(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,nz,NULL,nz-1,NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
+  ierr = MatSetType(A, MATAIJKOKKOS);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A, nz, NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A, nz,NULL,nz-1, NULL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
@@ -87,11 +74,15 @@ int main(int argc,char **args)
   // assemble on GPU
   if (Iend<N) Iend++; // elements, ignore off processor entries so do redundent
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatCUSPARSEGetDeviceMatWrite(A,&d_mat);CHKERRQ(ierr);
+  ierr = MatKokkosGetDeviceMatWrite(A,&d_mat);CHKERRQ(ierr);
   ierr = MatZeroEntries(A);CHKERRQ(ierr); // needed?
-  assemble_device<<<1,num_threads>>>(d_mat, Istart, Iend, N, rank, &ierr);
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
-  fflush(stdout);
+  Kokkos:: parallel_for (Kokkos::RangePolicy<> (Istart,Iend), KOKKOS_LAMBDA ( int i) {
+      PetscErrorCode               ierr2;
+      PetscScalar                  values[] = {1,-1,-1,1.1};
+      PetscInt js[] = {i-1, i};
+      MatSetValuesDevice(d_mat,2,js,2,js,values,ADD_VALUES,&ierr2);
+      if (ierr2) printf("MatSetValuesDevice Error %d",ierr2);
+    });
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -103,18 +94,27 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_COR,"Kokkos kernels required");
+#endif
   ierr = PetscFinalize();
   return ierr;
 }
 
+/*
+     The first test works for Kokkos wtih OpenMP and PThreads, the second with CUDA.
+
+*/
+
 /*TEST
 
    build:
-      requires: cuda !define(PETSC_USE_CTABLE)
+     requires: kokkos_kernels !define(PETSC_USE_CTABLE)
 
    test:
-      suffix: 0
-      args: -n 11 -vec_view
-      nsize:  2
+     suffix: 0
+     requires: kokkos_kernels double !complex !single
+     args: -view_kokkos_configuration -n 11 -vec_view
+     nsize:  2
 
 TEST*/

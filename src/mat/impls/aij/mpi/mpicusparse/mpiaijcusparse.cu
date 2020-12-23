@@ -375,17 +375,12 @@ PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A,MatAssemblyType mode)
   Mat_MPIAIJ                 *mpiaij = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJCUSPARSE         *cusparseStruct = (Mat_MPIAIJCUSPARSE*)mpiaij->spptr;
   PetscSplitCSRDataStructure *d_mat = cusparseStruct->deviceMat;
-  PetscInt                   nnz_state = A->nonzerostate;
   PetscFunctionBegin;
-  if (d_mat) {
-    cudaError_t                err;
-    err = cudaMemcpy( &nnz_state, &d_mat->nonzerostate, sizeof(PetscInt), cudaMemcpyDeviceToHost);CHKERRCUDA(err);
-  }
   ierr = MatAssemblyEnd_MPIAIJ(A,mode);CHKERRQ(ierr);
   if (!A->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = VecSetType(mpiaij->lvec,VECSEQCUDA);CHKERRQ(ierr);
   }
-  if (nnz_state > A->nonzerostate) {
+  if (d_mat) {
     A->offloadmask = PETSC_OFFLOAD_GPU; // if we assembled on the device
   }
 
@@ -679,19 +674,15 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure **
     *B = *p_d_mat = d_mat; // return it, set it in Mat, and set it up
     if (size == 1) {
       jaca = (Mat_SeqAIJ*)A->data;
-      h_mat.nonzerostate = A->nonzerostate;
       h_mat.rstart = 0; h_mat.rend = A->rmap->n;
       h_mat.cstart = 0; h_mat.cend = A->cmap->n;
       h_mat.offdiag.i = h_mat.offdiag.j = NULL;
       h_mat.offdiag.a = NULL;
-      h_mat.seq = PETSC_TRUE;
     } else {
       Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)A->data;
       Mat_SeqAIJ  *jacb;
-      h_mat.seq = PETSC_FALSE; // for MatAssemblyEnd_SeqAIJCUSPARSE
       jaca = (Mat_SeqAIJ*)aij->A->data;
       jacb = (Mat_SeqAIJ*)aij->B->data;
-      h_mat.nonzerostate = aij->A->nonzerostate; // just keep one nonzero state?
       if (!aij->garray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
       if (aij->B->rmap->n != aij->A->rmap->n) SETERRQ(comm,PETSC_ERR_SUP,"Only support aij->B->rmap->n == aij->A->rmap->n");
       // create colmap - this is ussually done (lazy) in MatSetValues
