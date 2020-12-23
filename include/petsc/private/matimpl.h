@@ -433,9 +433,7 @@ struct _p_SplitCSRMat {
   PetscInt              cstart,cend,rstart,rend;
   PetscCSRDataStructure diag,offdiag;
   PetscInt              *colmap;
-  PetscBool             seq;
   PetscMPIInt           rank;
-  PetscInt              nonzerostate;
 };
 
 struct _p_Mat {

@@ -24,7 +24,6 @@ using MatValueViewHost_t         = MatValueViewDevice_t::HostMirror;
 
 using MatValueDualView_t         = Kokkos::DualView<MatValue_t*>;
 
-
 struct Mat_SeqAIJKokkos {
   MatRowMapViewHost_t        i_h;
   MatColumnIndexViewHost_t   j_h;
@@ -39,6 +38,10 @@ struct Mat_SeqAIJKokkos {
   KokkosCsrMatrix_t          csr;
   PetscObjectState           nonzerostate; /* State of the nonzero pattern (graph) on device */
 
+  Kokkos::View<PetscInt*>    *i_uncompressed_d;
+  Kokkos::View<PetscInt*>    *colmap_d; // ugh, this is a parallel construct
+  Kokkos::View<PetscSplitCSRDataStructure,DeviceMemorySpace> device_mat_d;
+
   Mat_SeqAIJKokkos(MatColumnIndex_t nrows,MatColumnIndex_t ncols,MatRowMap_t nnz,MatRowMap_t *i,MatColumnIndex_t *j,MatValue_t *a)
    : i_h(i,nrows+1),
      j_h(j,nnz),
@@ -47,8 +50,11 @@ struct Mat_SeqAIJKokkos {
      j_d(Kokkos::create_mirror_view_and_copy(DeviceMemorySpace(),j_h)),
      a_d(Kokkos::create_mirror_view_and_copy(DeviceMemorySpace(),a_h)),
      a_dual(a_d,a_h),
-     csr("AIJKokkos",nrows,ncols,nnz,a_d,i_d,j_d)
-     {};
+     csr("AIJKokkos",nrows,ncols,nnz,a_d,i_d,j_d),
+     i_uncompressed_d(NULL),
+     colmap_d(NULL),
+     device_mat_d(NULL)
+  {};
 };
 
 #endif

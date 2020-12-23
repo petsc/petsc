@@ -2,28 +2,28 @@
 masses:        e= 9.109e-31; ions in proton mass units:    2.000e+00  4.000e+00 ...
 charges:       e=-1.602e-19; charges in elementary units:  1.000e+00  1.800e+01
 thermal T (K): e= 5.802e+07 i= 5.802e+07 imp= 5.802e+06. v_0= 2.965e+07 n_0= 1.000e+20 t_0= 6.469e-05 domain= 5.000e+00
-  0) species-0: charge density= -1.6024250714143e+01 z-momentum=  1.6873130648150e-19 energy=  1.2018267949397e+05
-  0) species-1: charge density=  1.6021676664193e+01 z-momentum=  1.2622477594652e-17 energy=  1.2017223194844e+05
-  0) species-2: charge density=  2.8822941386019e-03 z-momentum=  3.1878631058130e-22 energy=  1.2030899911623e-01
-	  0) Total: charge density=  3.0824418843250e-04, momentum=  1.2791527687444e-17, energy=  2.4035503175141e+05 (m_i[0]/m_e = 3670.94, 56 cells)
+  0) species-0: charge density= -1.6025746508216e+01 z-momentum= -1.0311357618314e-19 energy=  1.2010145623921e+05
+  0) species-1: charge density=  1.6019688792405e+01 z-momentum=  6.6175781883080e-18 energy=  1.2010737217299e+05
+  0) species-2: charge density=  2.9011751620055e-03 z-momentum=  7.3038233593184e-23 energy=  1.1657292078981e-01
+	  0) Total: charge density= -3.1565406492432e-03, momentum=  6.5145376503585e-18, energy=  2.4020894498512e+05 (m_i[0]/m_e = 3670.94, 56 cells)
 [0] DMGetDMSNES(): Creating new DMSNES
 [0] DMGetDMTS(): Creating new DMTS
 [0] DMGetDMSNESWrite(): Copying DMSNES due to write
 0 TS dt 1e-06 time 0.
 [0] DMGetDMKSP(): Creating new DMKSP
-[0]FormLandau: 1400 IPs, 56 cells, TENSOR elements, totDim=75, Nb=25, Nq=25, elemMatSize=5625, dim=2, Tab: Nb=25 Nf=3 Np=25 cdim=2 N=2667 N_loc=3339
-    0 SNES Function norm 1.071936445738e-03 
-    1 SNES Function norm 6.444300944151e-10 
+[0]FormLandau: 896 IPs, 56 cells, totDim=48, Nb=16, Nq=16, elemMatSize=2304, dim=2, Tab: Nb=16 Nf=3 Np=16 cdim=2 N=1497 N+hang=1977
+    0 SNES Function norm 4.980259039526e-03 
+    1 SNES Function norm 1.085123715230e-09 
   Nonlinear ex1_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-    0 SNES Function norm 1.071864893575e-03 
-    1 SNES Function norm 3.260098750155e-10 
+    0 SNES Function norm 4.980170778096e-03 
+    1 SNES Function norm 5.453530035395e-10 
   Nonlinear ex1_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-    0 SNES Function norm 1.071900414527e-03 
-    1 SNES Function norm 3.238237217763e-10 
+    0 SNES Function norm 4.980214579931e-03 
+    1 SNES Function norm 5.462739928785e-10 
   Nonlinear ex1_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-[0] TSAdaptChoose_Basic(): Estimated scaled local truncation error 8.49532e-06, accepting step of size 1e-06
+[0] TSAdaptChoose_Basic(): Estimated scaled local truncation error 8.72501e-06, accepting step of size 1e-06
 1 TS dt 1.25e-06 time 1e-06
-  1) species-0: charge density= -1.6024250714143e+01 z-momentum=  2.8121884413584e-20 energy=  1.2018267949393e+05
-  1) species-1: charge density=  1.6021676664193e+01 z-momentum= -5.2729727715281e-18 energy=  1.2017223194562e+05
-  1) species-2: charge density=  2.8822941386019e-03 z-momentum=  3.0222050618396e-22 energy=  1.2031186918869e-01
-	  1) Total: charge density=  3.0824418842540e-04, momentum= -5.2445486666083e-18, energy=  2.4035503175141e+05 (m_i[0]/m_e = 3670.94, 56 cells)
+  1) species-0: charge density= -1.6025746508216e+01 z-momentum=  2.9059280560703e-19 energy=  1.2010145623914e+05
+  1) species-1: charge density=  1.6019688792405e+01 z-momentum= -3.2009261906425e-18 energy=  1.2010737217017e+05
+  1) species-2: charge density=  2.9011751620055e-03 z-momentum=  7.7221805895296e-23 energy=  1.1657581399897e-01
+	  1) Total: charge density= -3.1565406492503e-03, momentum= -2.9102561632295e-18, energy=  2.4020894498512e+05 (m_i[0]/m_e = 3670.94, 56 cells)

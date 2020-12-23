@@ -1,0 +1,30 @@
+Vec Object: 2 MPI processes
+  type: mpikokkos
+Process [0]
+1.1
+0.1
+0.1
+0.1
+0.1
+0.1
+Process [1]
+0.1
+0.1
+0.1
+0.1
+0.1
+Vec Object: 2 MPI processes
+  type: mpikokkos
+Process [0]
+1.1
+0.1
+0.1
+0.1
+0.1
+0.1
+Process [1]
+0.1
+0.1
+0.1
+0.1
+0.1
