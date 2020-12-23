@@ -25,8 +25,8 @@ F*/
 #include <petscds.h>
 #include <petscbag.h>
 
-typedef enum {SOL_QUADRATIC, SOL_CUBIC, SOL_CUBIC_TRIG, NUM_SOL_TYPES} SolType;
-const char *solTypes[NUM_SOL_TYPES+1] = {"quadratic", "cubic", "cubic_trig",  "unknown"};
+typedef enum {SOL_QUADRATIC, SOL_CUBIC, SOL_CUBIC_TRIG, SOL_TAYLOR_GREEN, NUM_SOL_TYPES} SolType;
+const char *solTypes[NUM_SOL_TYPES+1] = {"quadratic", "cubic", "cubic_trig", "taylor_green", "unknown"};
 
 typedef struct {
   PetscReal nu;    /* Kinematic viscosity */
@@ -309,6 +309,128 @@ static void f0_cubic_trig_w(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[0] += u_t[uOff[2]] - (100.*PetscCosReal(t)*X[0] + 100.*PetscSinReal(t)*(X[1] - 1.) + X[0]*X[0]*X[0]*X[0] + 2.0*X[0]*X[0]*X[0]*X[1] - 3.0*X[0]*X[0]*X[1]*X[1] + X[0]*X[1]*X[1]*X[1] - 2.0*alpha);
 }
 
+/*
+  CASE: taylor-green vortex
+  In 2D we use exact solution:
+
+    u = 1 - cos(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t)
+    v = 1 + sin(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t)
+    p = -1/4 [cos(2 \pi(x - t)) + cos(2 \pi(y - t))] exp(-4 \pi^2 \nu t)
+    T = t + x + y
+    f = <\nu \pi^2 exp(-2\nu \pi^2 t) cos(\pi(x-t)) sin(\pi(y-t)), -\nu \pi^2 exp(-2\nu \pi^2 t) sin(\pi(x-t)) cos(\pi(y-t))  >
+    Q = 3 + sin(\pi(x-y)) exp(-2\nu \pi^2 t)
+
+  so that
+
+  \nabla \cdot u = \pi sin(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t) - \pi sin(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t) = 0
+
+  f = du/dt + u \cdot \nabla u - \nu \Delta u + \nabla p
+    = <-\pi (sin(\pi(x - t)) sin(\pi(y - t)) - cos(\pi(x - t)) cos(\pi(y - t)) - 2\pi cos(\pi(x - t)) sin(\pi(y - t))) exp(-2 \pi^2 \nu t),
+        \pi (sin(\pi(x - t)) sin(\pi(y - t)) - cos(\pi(x - t)) cos(\pi(y - t)) - 2\pi sin(\pi(x - t)) cos(\pi(y - t))) exp(-2 \pi^2 \nu t)>
+    + < \pi (1 - cos(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t)) sin(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t),
+        \pi (1 - cos(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t)) cos(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t)>
+    + <-\pi (1 + sin(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t)) cos(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t),
+       -\pi (1 + sin(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t)) sin(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t)>
+    + <-2\pi^2 cos(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t),
+        2\pi^2 sin(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t)>
+    + < \pi/2 sin(2\pi(x - t)) exp(-4 \pi^2 \nu t),
+        \pi/2 sin(2\pi(y - t)) exp(-4 \pi^2 \nu t)>
+    = <-\pi (sin(\pi(x - t)) sin(\pi(y - t)) - cos(\pi(x - t)) cos(\pi(y - t)) - 2\pi cos(\pi(x - t)) sin(\pi(y - t))) exp(-2 \pi^2 \nu t),
+        \pi (sin(\pi(x - t)) sin(\pi(y - t)) - cos(\pi(x - t)) cos(\pi(y - t)) - 2\pi sin(\pi(x - t)) cos(\pi(y - t))) exp(-2 \pi^2 \nu t)>
+    + < \pi sin(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t),
+        \pi cos(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t)>
+    + <-\pi cos(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t),
+       -\pi sin(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t)>
+    + <-\pi/2 sin(2\pi(x - t)) exp(-4 \pi^2 \nu t),
+       -\pi/2 sin(2\pi(y - t)) exp(-4 \pi^2 \nu t)>
+    + <-2\pi^2 cos(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t),
+        2\pi^2 sin(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t)>
+    + < \pi/2 sin(2\pi(x - t)) exp(-4 \pi^2 \nu t),
+        \pi/2 sin(2\pi(y - t)) exp(-4 \pi^2 \nu t)>
+    = <-\pi (sin(\pi(x - t)) sin(\pi(y - t)) - cos(\pi(x - t)) cos(\pi(y - t))) exp(-2 \pi^2 \nu t),
+        \pi (sin(\pi(x - t)) sin(\pi(y - t)) - cos(\pi(x - t)) cos(\pi(y - t))) exp(-2 \pi^2 \nu t)>
+    + < \pi sin(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t),
+        \pi cos(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t)>
+    + <-\pi cos(\pi(x - t)) cos(\pi(y - t)) exp(-2 \pi^2 \nu t),
+       -\pi sin(\pi(x - t)) sin(\pi(y - t)) exp(-2 \pi^2 \nu t)>
+    = < \pi cos(\pi(x - t)) cos(\pi(y - t)),
+        \pi sin(\pi(x - t)) sin(\pi(y - t))>
+    + <-\pi cos(\pi(x - t)) cos(\pi(y - t)),
+       -\pi sin(\pi(x - t)) sin(\pi(y - t))> = 0
+  Q = dT/dt + u \cdot \nabla T - \alpha \Delta T
+    = 1 + u \cdot <1, 1> - 0
+    = 1 + u + v
+*/
+
+static PetscErrorCode taylor_green_u(PetscInt Dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  u[0] = 1 - PetscCosReal(PETSC_PI*(X[0]-time))*PetscSinReal(PETSC_PI*(X[1]-time))*PetscExpReal(-2*PETSC_PI*PETSC_PI*time);
+  u[1] = 1 + PetscSinReal(PETSC_PI*(X[0]-time))*PetscCosReal(PETSC_PI*(X[1]-time))*PetscExpReal(-2*PETSC_PI*PETSC_PI*time);
+  return 0;
+}
+static PetscErrorCode taylor_green_u_t(PetscInt Dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  u[0] = -PETSC_PI*(PetscSinReal(PETSC_PI*(X[0]-time))*PetscSinReal(PETSC_PI*(X[1]-time))
+                  - PetscCosReal(PETSC_PI*(X[0]-time))*PetscCosReal(PETSC_PI*(X[1]-time))
+                  - 2*PETSC_PI*PetscCosReal(PETSC_PI*(X[0]-time))*PetscSinReal(PETSC_PI*(X[1]-time)))*PetscExpReal(-2*PETSC_PI*PETSC_PI*time);
+  u[1] =  PETSC_PI*(PetscSinReal(PETSC_PI*(X[0]-time))*PetscSinReal(PETSC_PI*(X[1]-time))
+                  - PetscCosReal(PETSC_PI*(X[0]-time))*PetscCosReal(PETSC_PI*(X[1]-time))
+                  - 2*PETSC_PI*PetscSinReal(PETSC_PI*(X[0]-time))*PetscCosReal(PETSC_PI*(X[1]-time)))*PetscExpReal(-2*PETSC_PI*PETSC_PI*time);
+  return 0;
+}
+
+static PetscErrorCode taylor_green_p(PetscInt Dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, void *ctx)
+{
+  p[0] = -0.25*(PetscCosReal(2*PETSC_PI*(X[0]-time)) + PetscCosReal(2*PETSC_PI*(X[1]-time)))*PetscExpReal(-4*PETSC_PI*PETSC_PI*time);
+  return 0;
+}
+
+static PetscErrorCode taylor_green_p_t(PetscInt Dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, void *ctx)
+{
+  p[0] = PETSC_PI*(0.5*(PetscSinReal(2*PETSC_PI*(X[0]-time)) + PetscSinReal(2*PETSC_PI*(X[1]-time)))
+                 + PETSC_PI*(PetscCosReal(2*PETSC_PI*(X[0]-time)) + PetscCosReal(2*PETSC_PI*(X[1]-time))))*PetscExpReal(-4*PETSC_PI*PETSC_PI*time);
+  return 0;
+}
+
+static PetscErrorCode taylor_green_T(PetscInt Dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, void *ctx)
+{
+  T[0] = time + X[0] + X[1];
+  return 0;
+}
+static PetscErrorCode taylor_green_T_t(PetscInt Dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, void *ctx)
+{
+  T[0] = 1.0;
+  return 0;
+}
+
+static void f0_taylor_green_v(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                            PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscInt        Nc = dim;
+  PetscInt        c, d;
+
+  for (d = 0; d < dim; ++d) f0[d] = u_t[uOff[0]+d];
+
+  for (c = 0; c < Nc; ++c) {
+    for (d = 0; d < dim; ++d) f0[c] += u[d]*u_x[c*dim+d];
+  }
+}
+
+static void f0_taylor_green_w(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                            PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscScalar vel[2];
+  PetscInt    d;
+
+  taylor_green_u(dim, t, X, Nf, vel, NULL);
+  for (d = 0, f0[0] = 0; d < dim; ++d) f0[0] += u[uOff[0]+d]*u_x[uOff_x[2]+d];
+  f0[0] += u_t[uOff[2]] - (1.0 + vel[0] + vel[1]);
+}
+
 static void f0_q(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -331,7 +453,6 @@ static void f1_v(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (c = 0; c < Nc; ++c) {
     for (d = 0; d < dim; ++d) {
       f1[c*dim+d] = nu*(u_x[c*dim+d] + u_x[d*dim+c]);
-      //f1[c*dim+d] = nu*u_x[c*dim+d];
     }
     f1[c*dim+c] -= u[uOff[1]];
   }
@@ -415,8 +536,8 @@ static void g3_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   for (c = 0; c < Nc; ++c) {
     for (d = 0; d < dim; ++d) {
-      g3[((c*Nc+c)*dim+d)*dim+d] += nu; // gradU
-      g3[((c*Nc+d)*dim+d)*dim+c] += nu; // gradU transpose
+      g3[((c*Nc+c)*dim+d)*dim+d] += nu;
+      g3[((c*Nc+d)*dim+d)*dim+c] += nu;
     }
   }
 }
@@ -548,6 +669,17 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     exactFuncs_t[0] = cubic_trig_u_t;
     exactFuncs_t[1] = NULL;
     exactFuncs_t[2] = cubic_trig_T_t;
+    break;
+  case SOL_TAYLOR_GREEN:
+    ierr = PetscDSSetResidual(prob, 0, f0_taylor_green_v, f1_v);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(prob, 2, f0_taylor_green_w, f1_w);CHKERRQ(ierr);
+
+    exactFuncs[0]   = taylor_green_u;
+    exactFuncs[1]   = taylor_green_p;
+    exactFuncs[2]   = taylor_green_T;
+    exactFuncs_t[0] = taylor_green_u_t;
+    exactFuncs_t[1] = taylor_green_p_t;
+    exactFuncs_t[2] = taylor_green_T_t;
     break;
    default: SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", solTypes[PetscMin(user->solType, NUM_SOL_TYPES)], user->solType);
   }
@@ -736,13 +868,11 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [%2.3g, %2.3g, %2.3g]\n", (int) step, (double) crtime, (double) ferrors[0], (double) ferrors[1], (double) ferrors[2]);CHKERRQ(ierr);
 
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  //ierr = TSGetSolution(ts, &u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Numerical Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
 
   ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
-  // ierr = VecSet(v, 0.0);CHKERRQ(ierr);
   ierr = DMProjectFunction(dm, 0.0, exactFuncs, ctxs, INSERT_ALL_VALUES, v);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) v, "Exact Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(v, NULL, "-exact_vec_view");CHKERRQ(ierr);
@@ -849,6 +979,32 @@ int main(int argc, char **argv)
       -dmts_check .001 -ts_max_steps 4 -ts_dt 0.1 \
       -snes_convergence_test correct_pressure \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_0_fields 0,2 -pc_fieldsplit_1_fields 1 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_0_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+
+  test:
+    # Using -dm_refine 3 -convest_num_refine 3 gives L_2 convergence rate: [3.0, 2.1, 3.1]
+    suffix: 2d_tri_p2_p1_p1_tg_sconv
+    requires: triangle !single
+    args: -dm_plex_separate_marker -sol_type taylor_green -dm_refine 0 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
+      -ts_max_steps 1 -ts_dt 1e-8 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
+      -snes_error_if_not_converged -snes_convergence_test correct_pressure \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_atol 1e-16 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_0_fields 0,2 -pc_fieldsplit_1_fields 1 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_0_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+
+  test:
+    # Using -dm_refine 3 -convest_num_refine 2 gives L_2 convergence rate: [1.2, 1.5, 1.2]
+    suffix: 2d_tri_p2_p1_p1_tg_tconv
+    requires: triangle !single
+    args: -dm_plex_separate_marker -sol_type taylor_green -dm_refine 0 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
+      -ts_max_steps 4 -ts_dt 0.1 -ts_convergence_estimate -convest_num_refine 1 \
+      -snes_error_if_not_converged -snes_convergence_test correct_pressure \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_atol 1e-16 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_0_fields 0,2 -pc_fieldsplit_1_fields 1 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_0_pc_type lu \
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
