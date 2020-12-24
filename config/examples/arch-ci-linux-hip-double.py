@@ -17,7 +17,6 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
-    'HIPOPTFLAGS=-Wno-unused-function',
     '--with-cuda=0',
     '--with-hip=1',
     '--with-hipcc=hipcc',

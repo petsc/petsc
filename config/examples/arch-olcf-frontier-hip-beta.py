@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # Optimized flags:
     'COPTFLAGS=-g -fast',
     'CXXOPTFLAGS=-g -fast',
-    'HIPCCOPTFLAGS=-Ofast --amdgpu-target=gfx906,gfx908',
+    'HIPOPTFLAGS=-Ofast --amdgpu-target=gfx906,gfx908',
     'FOPTFLAGS=-g -fast',
 
   ]
