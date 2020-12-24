@@ -14,7 +14,7 @@ class Configure(config.package.CMakePackage):
     self.functions        = ['']
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
     self.cxx              = 1
-    self.requirescxx11    = 1
+    self.requirescxx14    = 1
     self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
