@@ -200,7 +200,7 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal
   inorm2 = mask/norm2;
   inorm = LANDAU_SQRT(inorm2);
   inorm3 = inorm2*inorm;
-  for (d = 0; d < 3; ++d) U[d][d] = inorm - inorm3 * dx[d] * dx[d];
+  for (d = 0; d < 3; ++d) U[d][d] = -(inorm - inorm3 * dx[d] * dx[d]);
   U[1][0] = U[0][1] = inorm3 * dx[0] * dx[1];
   U[1][2] = U[2][1] = inorm3 * dx[2] * dx[1];
   U[2][0] = U[0][2] = inorm3 * dx[0] * dx[2];
