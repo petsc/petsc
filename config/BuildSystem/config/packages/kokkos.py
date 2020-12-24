@@ -72,6 +72,11 @@ class Configure(config.package.CMakePackage):
     if not self.compilerFlags.debugging:
       args.append('-DXSDK_ENABLE_DEBUG=NO')
 
+    if self.checkSharedLibrariesEnabled():
+      args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
+      args.append('-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON')
+    args.append('-DCMAKE_CXX_STANDARD=' + self.compilers.cxxdialect[-2:])
+
     if self.mpi.found:
       args.append('-DKokkos_ENABLE_MPI=ON')
 
@@ -121,16 +126,17 @@ class Configure(config.package.CMakePackage):
     elif self.hip.found:
       self.system = 'HIP'
       args.append('-DKokkos_ENABLE_HIP=ON')
-      self.pushLanguage('HIP')
-      petscHipcc = self.getCompiler()
-      hipFlags = self.getCompilerFlags()
-      self.popLanguage()
+      with self.Language('HIP'):
+        petscHipcc = self.getCompiler()
+        hipFlags = self.updatePackageCFlags(self.getCompilerFlags())
       args.append('-DKOKKOS_HIP_OPTIONS="'+hipFlags.replace(' ',';')+'"')
       self.getExecutable(petscHipcc,getFullPath=1,resultName='systemHipcc')
       if not hasattr(self,'systemHipcc'):
         raise RuntimeError('HIP error: could not find path of hipcc')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.systemHipcc)
+      args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
+      args.append('-DCMAKE_CXX_FLAGS="' + hipFlags + '"')
       if not 'with-kokkos-hip-arch' in self.framework.clArgDB:
         raise RuntimeError('You must set -with-kokkos-hip-arch=VEGA900, VEGA906, VEGA908 etc.')
       args.append('-DKokkos_ARCH_'+self.argDB['with-kokkos-hip-arch']+'=ON')

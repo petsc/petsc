@@ -59,7 +59,8 @@ class Configure(config.package.CMakePackage):
     args.append('-DKokkos_ROOT='+KokkosRoot)
     # By default it installs in lib64, change it to lib
     if self.checkSharedLibrariesEnabled():
-      args.append('-DCMAKE_INSTALL_RPATH:PATH='+os.path.join(KokkosRoot,self.kokkos.libdir))
+      args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
+      args.append('-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON')
     if self.cuda.found:
       self.system = 'CUDA'
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
@@ -70,12 +71,14 @@ class Configure(config.package.CMakePackage):
         args.append('-DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF')
     elif self.hip.found:
       self.system = 'HIP'
-      self.pushLanguage('HIP')
-      petscHipcc = self.getCompiler()
-      self.popLanguage()
+      with self.Language('HIP'):
+        petscHipcc = self.getCompiler()
+        hipFlags = self.updatePackageCFlags(self.getCompilerFlags())
       self.getExecutable(petscHipcc,getFullPath=1,resultName='systemHipcc')
       if not hasattr(self,'systemHipcc'):
         raise RuntimeError('HIP error: could not find path of hipcc')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.systemHipcc)
+      args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
+      args.append('-DCMAKE_CXX_FLAGS="' + hipFlags + '"')
     return args
