@@ -316,7 +316,7 @@ ifdef i
    searchin = $(i)
 endif
 ifdef gmakesearch
-  TESTTARGETS := $(filter $(search),$(alltesttargets))
+  TESTTARGETS := $(filter $(gmakesearch),$(alltesttargets))
   ifdef gmakesearchin
     TESTTARGETS2 := $(foreach v,$(TESTTARGETS),$(if $(findstring $(gmakesearchin),$(v)),$(v)))
     TESTTARGETS := $(TESTTARGETS2)
