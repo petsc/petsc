@@ -232,39 +232,40 @@ PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
     mglevels[i]->eventinterprestrict = 0;
 
     if (comms) comm = comms[i];
-    ierr = KSPCreate(comm,&mglevels[i]->smoothd);CHKERRQ(ierr);
-    ierr = KSPSetErrorIfNotConverged(mglevels[i]->smoothd,pc->erroriffailure);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)mglevels[i]->smoothd,(PetscObject)pc,levels-i);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(mglevels[i]->smoothd,prefix);CHKERRQ(ierr);
-    ierr = PetscObjectComposedDataSetInt((PetscObject) mglevels[i]->smoothd, PetscMGLevelId, mglevels[i]->level);CHKERRQ(ierr);
-    if (i || levels == 1) {
-      char tprefix[128];
+    if (comm != MPI_COMM_NULL) {
+      ierr = KSPCreate(comm,&mglevels[i]->smoothd);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(mglevels[i]->smoothd,pc->erroriffailure);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)mglevels[i]->smoothd,(PetscObject)pc,levels-i);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(mglevels[i]->smoothd,prefix);CHKERRQ(ierr);
+      ierr = PetscObjectComposedDataSetInt((PetscObject) mglevels[i]->smoothd, PetscMGLevelId, mglevels[i]->level);CHKERRQ(ierr);
+      if (i || levels == 1) {
+        char tprefix[128];
 
-      ierr = KSPSetType(mglevels[i]->smoothd,KSPCHEBYSHEV);CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(mglevels[i]->smoothd,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);
-      ierr = KSPSetNormType(mglevels[i]->smoothd,KSP_NORM_NONE);CHKERRQ(ierr);
-      ierr = KSPGetPC(mglevels[i]->smoothd,&ipc);CHKERRQ(ierr);
-      ierr = PCSetType(ipc,PCSOR);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(mglevels[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, mg->default_smoothd);CHKERRQ(ierr);
+        ierr = KSPSetType(mglevels[i]->smoothd,KSPCHEBYSHEV);CHKERRQ(ierr);
+        ierr = KSPSetConvergenceTest(mglevels[i]->smoothd,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);
+        ierr = KSPSetNormType(mglevels[i]->smoothd,KSP_NORM_NONE);CHKERRQ(ierr);
+        ierr = KSPGetPC(mglevels[i]->smoothd,&ipc);CHKERRQ(ierr);
+        ierr = PCSetType(ipc,PCSOR);CHKERRQ(ierr);
+        ierr = KSPSetTolerances(mglevels[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, mg->default_smoothd);CHKERRQ(ierr);
 
-      sprintf(tprefix,"mg_levels_%d_",(int)i);
-      ierr = KSPAppendOptionsPrefix(mglevels[i]->smoothd,tprefix);CHKERRQ(ierr);
-    } else {
-      ierr = KSPAppendOptionsPrefix(mglevels[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
-
-      /* coarse solve is (redundant) LU by default; set shifttype NONZERO to avoid annoying zero-pivot in LU preconditioner */
-      ierr = KSPSetType(mglevels[0]->smoothd,KSPPREONLY);CHKERRQ(ierr);
-      ierr = KSPGetPC(mglevels[0]->smoothd,&ipc);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-      if (size > 1) {
-        ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(tprefix,128,"mg_levels_%d_",(int)i);CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(mglevels[i]->smoothd,tprefix);CHKERRQ(ierr);
       } else {
-        ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
-      }
-      ierr = PCFactorSetShiftType(ipc,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
-    }
-    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mglevels[i]->smoothd);CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(mglevels[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
 
+        /* coarse solve is (redundant) LU by default; set shifttype NONZERO to avoid annoying zero-pivot in LU preconditioner */
+        ierr = KSPSetType(mglevels[0]->smoothd,KSPPREONLY);CHKERRQ(ierr);
+        ierr = KSPGetPC(mglevels[0]->smoothd,&ipc);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+        if (size > 1) {
+          ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
+        } else {
+          ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
+        }
+        ierr = PCFactorSetShiftType(ipc,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
+      }
+      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mglevels[i]->smoothd);CHKERRQ(ierr);
+    }
     mglevels[i]->smoothu = mglevels[i]->smoothd;
     mg->rtol             = 0.0;
     mg->abstol           = 0.0;
@@ -287,13 +288,32 @@ PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
 +  pc - the preconditioner context
 .  levels - the number of levels
 -  comms - optional communicators for each level; this is to allow solving the coarser problems
-           on smaller sets of processors.
+           on smaller sets of processes. For processes that are not included in the computation
+           you must pass MPI_COMM_NULL.
 
    Level: intermediate
 
    Notes:
      If the number of levels is one then the multigrid uses the -mg_levels prefix
-  for setting the level options rather than the -mg_coarse prefix.
+     for setting the level options rather than the -mg_coarse prefix.
+
+     You can free the information in comms after this routine is called.
+
+     The array of MPI communicators must contain MPI_COMM_NULL for those ranks that at each level
+     are not participating in the coarser solve. For example, with 2 levels and 1 and 2 ranks on
+     the two levels, rank 0 in the original communicator will pass in an array of 2 communicators
+     of size 2 and 1, while rank 1 in the original communicator will pass in array of 2 communicators
+     the first of size 2 and the second of value MPI_COMM_NULL since the rank 1 does not participate
+     in the coarse grid solve.
+
+     Since each coarser level may have a new MPI_Comm with fewer ranks than the previous, one
+     must take special care in providing the restriction and interpolation operation. We recommend
+     providing these as two step operations; first perform a standard restriction or interpolation on
+     the full number of ranks for that level and then use an MPI call to copy the resulting vector
+     array entries (after calls to VecGetArray()) to the smaller or larger number of ranks, not in both
+     cases the MPI calls must be made on the larger of the two communicators. Traditional MPI send and
+     recieves or MPI_AlltoAllv() could be used to do the reshuffling of the vector entries.
+
 
 .seealso: PCMGSetType(), PCMGGetLevels()
 @*/
