@@ -733,9 +733,10 @@ PetscErrorCode  DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt
 -    refine_z - ratio of fine grid to coarse in z direction (2 by default)
 
   Options Database:
-+  -da_refine_x - refinement ratio in x direction
-.  -da_refine_y - refinement ratio in y direction
--  -da_refine_z - refinement ratio in z direction
++  -da_refine_x refine_x - refinement ratio in x direction
+.  -da_refine_y rafine_y - refinement ratio in y direction
+.  -da_refine_z refine_z - refinement ratio in z direction
+-  -da_refine <n> - refine the DMDA object n times when it is created.
 
   Level: intermediate
 

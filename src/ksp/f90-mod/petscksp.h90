@@ -54,6 +54,54 @@
        KSP d(*) ! KSP
        PetscErrorCode z
       end subroutine
+      subroutine PCASMGetSubKSP3(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b(*) ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCASMGetSubKSP4(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b(*) ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d(*) ! KSP
+       PetscErrorCode z
+      end subroutine
+     subroutine PCASMGetSubKSP5(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c(*) ! PetscInt
+       KSP d ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCASMGetSubKSP6(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c(*) ! PetscInt
+       KSP d(*) ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCASMGetSubKSP7(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b(*) ! PetscInt
+       PetscInt c(*) ! PetscInt
+       KSP d ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCASMGetSubKSP8(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b(*) ! PetscInt
+       PetscInt c(*) ! PetscInt
+       KSP d(*) ! KSP
+       PetscErrorCode z
+      end subroutine
       end Interface
 
       Interface PCGASMGetSubKSP
@@ -70,6 +118,54 @@
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
+       KSP d(*) ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCGASMGetSubKSP3(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b(*) ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCGASMGetSubKSP4(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b(*) ! PetscInt
+       PetscInt c ! PetscInt
+       KSP d(*) ! KSP
+       PetscErrorCode z
+      end subroutine
+     subroutine PCGASMGetSubKSP5(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c(*) ! PetscInt
+       KSP d ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCGASMGetSubKSP6(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b ! PetscInt
+       PetscInt c(*) ! PetscInt
+       KSP d(*) ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCGASMGetSubKSP7(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b(*) ! PetscInt
+       PetscInt c(*) ! PetscInt
+       KSP d ! KSP
+       PetscErrorCode z
+      end subroutine
+      subroutine PCGASMGetSubKSP8(a,b,c,d,z)
+       use petsckspdef
+       PC a ! PC
+       PetscInt b(*) ! PetscInt
+       PetscInt c(*) ! PetscInt
        KSP d(*) ! KSP
        PetscErrorCode z
       end subroutine
