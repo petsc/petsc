@@ -1103,7 +1103,7 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     DMCreateInterpolation - Gets interpolation matrix between two DM objects
 
     Collective on dmc
