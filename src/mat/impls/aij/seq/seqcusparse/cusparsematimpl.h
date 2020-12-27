@@ -102,14 +102,22 @@ do { \
   #if defined(PETSC_USE_COMPLEX)
     #if defined(PETSC_USE_REAL_SINGLE)
       #define cusparse_scalartype CUDA_C_32F
+      #define cusparse_csr_spgeam(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t)            cusparseCcsrgeam2(a,b,c,(cuComplex*)d,e,f,(cuComplex*)g,h,i,(cuComplex*)j,k,l,(cuComplex*)m,n,o,p,(cuComplex*)q,r,s,t)
+      #define cusparse_csr_spgeam_bufferSize(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) cusparseCcsrgeam2_bufferSizeExt(a,b,c,(cuComplex*)d,e,f,(cuComplex*)g,h,i,(cuComplex*)j,k,l,(cuComplex*)m,n,o,p,(cuComplex*)q,r,s,t)
     #elif defined(PETSC_USE_REAL_DOUBLE)
       #define cusparse_scalartype CUDA_C_64F
+      #define cusparse_csr_spgeam(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t)            cusparseZcsrgeam2(a,b,c,(cuDoubleComplex*)d,e,f,(cuDoubleComplex*)g,h,i,(cuDoubleComplex*)j,k,l,(cuDoubleComplex*)m,n,o,p,(cuDoubleComplex*)q,r,s,t)
+      #define cusparse_csr_spgeam_bufferSize(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) cusparseZcsrgeam2_bufferSizeExt(a,b,c,(cuDoubleComplex*)d,e,f,(cuDoubleComplex*)g,h,i,(cuDoubleComplex*)j,k,l,(cuDoubleComplex*)m,n,o,p,(cuDoubleComplex*)q,r,s,t)
     #endif
   #else /* not complex */
     #if defined(PETSC_USE_REAL_SINGLE)
       #define cusparse_scalartype CUDA_R_32F
+      #define cusparse_csr_spgeam            cusparseScsrgeam2
+      #define cusparse_csr_spgeam_bufferSize cusparseScsrgeam2_bufferSizeExt
     #elif defined(PETSC_USE_REAL_DOUBLE)
       #define cusparse_scalartype CUDA_R_64F
+      #define cusparse_csr_spgeam            cusparseDcsrgeam2
+      #define cusparse_csr_spgeam_bufferSize cusparseDcsrgeam2_bufferSizeExt
     #endif
   #endif
 #else
@@ -122,6 +130,7 @@ do { \
       #define cusparse_csr2hyb(a,b,c,d,e,f,g,h,i,j)              cusparseCcsr2hyb((a),(b),(c),(d),(cuComplex*)(e),(f),(g),(h),(i),(j))
       #define cusparse_hyb2csr(a,b,c,d,e,f)                      cusparseChyb2csr((a),(b),(c),(cuComplex*)(d),(e),(f))
       #define cusparse_csr_spgemm(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) cusparseCcsrgemm(a,b,c,d,e,f,g,h,(cuComplex*)i,j,k,l,m,(cuComplex*)n,o,p,q,(cuComplex*)r,s,t)
+      #define cusparse_csr_spgeam(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s)   cusparseCcsrgeam(a,b,c,(cuComplex*)d,e,f,(cuComplex*)g,h,i,(cuComplex*)j,k,l,(cuComplex*)m,n,o,p,(cuComplex*)q,r,s)
     #elif defined(PETSC_USE_REAL_DOUBLE)
       #define cusparse_csr_spmv(a,b,c,d,e,f,g,h,i,j,k,l,m)       cusparseZcsrmv((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(cuDoubleComplex*)(h),(i),(j),(cuDoubleComplex*)(k),(cuDoubleComplex*)(l),(cuDoubleComplex*)(m))
       #define cusparse_csr_spmm(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) cusparseZcsrmm((a),(b),(c),(d),(e),(f),(cuDoubleComplex*)(g),(h),(cuDoubleComplex*)(i),(j),(k),(cuDoubleComplex*)(l),(m),(cuDoubleComplex*)(n),(cuDoubleComplex*)(o),(p))
@@ -130,6 +139,7 @@ do { \
       #define cusparse_csr2hyb(a,b,c,d,e,f,g,h,i,j)              cusparseZcsr2hyb((a),(b),(c),(d),(cuDoubleComplex*)(e),(f),(g),(h),(i),(j))
       #define cusparse_hyb2csr(a,b,c,d,e,f)                      cusparseZhyb2csr((a),(b),(c),(cuDoubleComplex*)(d),(e),(f))
       #define cusparse_csr_spgemm(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) cusparseZcsrgemm(a,b,c,d,e,f,g,h,(cuDoubleComplex*)i,j,k,l,m,(cuDoubleComplex*)n,o,p,q,(cuDoubleComplex*)r,s,t)
+      #define cusparse_csr_spgeam(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s)   cusparseZcsrgeam(a,b,c,(cuDoubleComplex*)d,e,f,(cuDoubleComplex*)g,h,i,(cuDoubleComplex*)j,k,l,(cuDoubleComplex*)m,n,o,p,(cuDoubleComplex*)q,r,s)
     #endif
   #else
     #if defined(PETSC_USE_REAL_SINGLE)
@@ -139,7 +149,8 @@ do { \
       #define cusparse_hyb_spmv cusparseShybmv
       #define cusparse_csr2hyb  cusparseScsr2hyb
       #define cusparse_hyb2csr  cusparseShyb2csr
-      #define cusparse_csr_spgemm  cusparseScsrgemm
+      #define cusparse_csr_spgemm cusparseScsrgemm
+      #define cusparse_csr_spgeam cusparseScsrgeam
     #elif defined(PETSC_USE_REAL_DOUBLE)
       #define cusparse_csr_spmv cusparseDcsrmv
       #define cusparse_csr_spmm cusparseDcsrmm
@@ -148,6 +159,7 @@ do { \
       #define cusparse_csr2hyb  cusparseDcsr2hyb
       #define cusparse_hyb2csr  cusparseDhyb2csr
       #define cusparse_csr_spgemm cusparseDcsrgemm
+      #define cusparse_csr_spgeam cusparseDcsrgeam
     #endif
   #endif
 #endif
@@ -258,6 +270,8 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat,const PetscScalar*
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat,const PetscScalar**);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat,PetscScalar**);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat,PetscScalar**);
+PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat,PetscScalar**);
+PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat,PetscScalar**);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat,Mat,MatReuse,Mat*);
 
 PETSC_STATIC_INLINE bool isCudaMem(const void *data)

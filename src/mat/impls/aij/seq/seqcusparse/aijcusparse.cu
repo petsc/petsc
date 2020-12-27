@@ -1235,7 +1235,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
     matrixT->column_indices = new THRUSTINTARRAY32(a->nz);
     matrixT->values = new THRUSTARRAY(a->nz);
 
-    cusparsestruct->rowoffsets_gpu = new THRUSTINTARRAY32(A->rmap->n+1);
+    if (!cusparsestruct->rowoffsets_gpu) { cusparsestruct->rowoffsets_gpu = new THRUSTINTARRAY32(A->rmap->n+1); }
     cusparsestruct->rowoffsets_gpu->assign(a->i,a->i+A->rmap->n+1);
 
     /* compute the transpose, i.e. the CSC */
@@ -3042,77 +3042,99 @@ static PetscErrorCode MatDuplicate_SeqAIJCUSPARSE(Mat A,MatDuplicateOption cpval
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatAXPY_SeqAIJCUSPARSE(Mat Y,PetscScalar a,Mat X,MatStructure str) // put axpy in aijcusparse, etc.
+static PetscErrorCode MatAXPY_SeqAIJCUSPARSE(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *x = (Mat_SeqAIJ*)X->data,*y = (Mat_SeqAIJ*)Y->data;
-  PetscBool      flgx,flgy;
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *x = (Mat_SeqAIJ*)X->data,*y = (Mat_SeqAIJ*)Y->data;
+  Mat_SeqAIJCUSPARSE *cy;
+  Mat_SeqAIJCUSPARSE *cx;
+  PetscScalar        *ay;
+  const PetscScalar  *ax;
+  CsrMatrix          *csry,*csrx;
+  cudaError_t        cerr;
 
   PetscFunctionBegin;
-  if (a == (PetscScalar)0.0) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
-  ierr = PetscObjectTypeCompare((PetscObject)Y,MATSEQAIJCUSPARSE,&flgy);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQAIJCUSPARSE,&flgx);CHKERRQ(ierr);
-  if (!flgx || !flgy) {
-    ierr = MatAXPY_SeqAIJ( Y, a, X, str);CHKERRQ(ierr);
+  if (X->ops->axpy != Y->ops->axpy) {
+    ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (Y->factortype != MAT_FACTOR_NONE || X->factortype != MAT_FACTOR_NONE) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_PLIB,"both matrices must be MAT_FACTOR_NONE");
-  if (str == DIFFERENT_NONZERO_PATTERN) {
-    if (x->nz == y->nz) {
-      PetscBool e;
-      ierr = PetscArraycmp(x->i,y->i,Y->rmap->n+1,&e);CHKERRQ(ierr);
-      if (e) {
-        ierr = PetscArraycmp(x->j,y->j,y->nz,&e);CHKERRQ(ierr);
-        if (e) {
-          str = SAME_NONZERO_PATTERN;
-        }
-      }
+  /* if we are here, it means both matrices are bound to GPU */
+  ierr = MatSeqAIJCUSPARSECopyToGPU(Y);CHKERRQ(ierr);
+  ierr = MatSeqAIJCUSPARSECopyToGPU(X);CHKERRQ(ierr);
+  cy   = (Mat_SeqAIJCUSPARSE*)Y->spptr;
+  cx   = (Mat_SeqAIJCUSPARSE*)X->spptr;
+  if (cy->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_PLIB,"only MAT_CUSPARSE_CSR supported");
+  if (cx->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_PLIB,"only MAT_CUSPARSE_CSR supported");
+  csry = (CsrMatrix*)cy->mat->mat;
+  csrx = (CsrMatrix*)cx->mat->mat;
+  /* see if we can turn this into a cublas axpy */
+  if (str != SAME_NONZERO_PATTERN && x->nz == y->nz && !x->compressedrow.use && !y->compressedrow.use) {
+    bool eq = thrust::equal(thrust::device,csry->row_offsets->begin(),csry->row_offsets->end(),csrx->row_offsets->begin());
+    if (eq) {
+      eq = thrust::equal(thrust::device,csry->column_indices->begin(),csry->column_indices->end(),csrx->column_indices->begin());
     }
+    if (eq) str = SAME_NONZERO_PATTERN;
   }
-  if (str != SAME_NONZERO_PATTERN) {
-    ierr = MatAXPY_SeqAIJ( Y, a, X, str);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+
+  if (str == SUBSET_NONZERO_PATTERN) {
+    cusparseStatus_t stat;
+    PetscScalar      b = 1.0;
+#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+    size_t           bufferSize;
+    void             *buffer;
+#endif
+
+    ierr = MatSeqAIJCUSPARSEGetArrayRead(X,&ax);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEGetArray(Y,&ay);CHKERRQ(ierr);
+    stat = cusparseSetPointerMode(cy->handle, CUSPARSE_POINTER_MODE_HOST);CHKERRCUSPARSE(stat);
+#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+    stat = cusparse_csr_spgeam_bufferSize(cy->handle,Y->rmap->n,Y->cmap->n,
+                                          &a,cx->mat->descr,x->nz,ax,csrx->row_offsets->data().get(),csrx->column_indices->data().get(),
+                                          &b,cy->mat->descr,y->nz,ay,csry->row_offsets->data().get(),csry->column_indices->data().get(),
+                                             cy->mat->descr,      ay,csry->row_offsets->data().get(),csry->column_indices->data().get(),&bufferSize);CHKERRCUSPARSE(stat);
+    cerr = cudaMalloc(&buffer,bufferSize);CHKERRCUDA(cerr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+    stat = cusparse_csr_spgeam(cy->handle,Y->rmap->n,Y->cmap->n,
+                               &a,cx->mat->descr,x->nz,ax,csrx->row_offsets->data().get(),csrx->column_indices->data().get(),
+                               &b,cy->mat->descr,y->nz,ay,csry->row_offsets->data().get(),csry->column_indices->data().get(),
+                                  cy->mat->descr,      ay,csry->row_offsets->data().get(),csry->column_indices->data().get(),buffer);CHKERRCUSPARSE(stat);
+    cerr = WaitForCUDA();CHKERRCUDA(cerr);
+    ierr = PetscLogGpuFlops(x->nz + y->nz);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    cerr = cudaFree(buffer);CHKERRCUDA(cerr);
+#else
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+    stat = cusparse_csr_spgeam(cy->handle,Y->rmap->n,Y->cmap->n,
+                               &a,cx->mat->descr,x->nz,ax,csrx->row_offsets->data().get(),csrx->column_indices->data().get(),
+                               &b,cy->mat->descr,y->nz,ay,csry->row_offsets->data().get(),csry->column_indices->data().get(),
+                                  cy->mat->descr,      ay,csry->row_offsets->data().get(),csry->column_indices->data().get());CHKERRCUSPARSE(stat);
+    cerr = WaitForCUDA();CHKERRCUDA(cerr);
+    ierr = PetscLogGpuFlops(x->nz + y->nz);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+#endif
+    stat = cusparseSetPointerMode(cy->handle, CUSPARSE_POINTER_MODE_DEVICE);CHKERRCUSPARSE(stat);
+    ierr = MatSeqAIJCUSPARSERestoreArrayRead(X,&ax);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSERestoreArray(Y,&ay);CHKERRQ(ierr);
+    ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
+  } else if (str == SAME_NONZERO_PATTERN) {
+    cublasHandle_t cublasv2handle;
+    cublasStatus_t berr;
+    PetscBLASInt   one = 1, bnz = 1;
+
+    ierr = MatSeqAIJCUSPARSEGetArrayRead(X,&ax);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEGetArray(Y,&ay);CHKERRQ(ierr);
+    ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+    berr = cublasXaxpy(cublasv2handle,bnz,&a,ax,one,ay,one);CHKERRCUBLAS(berr);
+    cerr = WaitForCUDA();CHKERRCUDA(cerr);
+    ierr = PetscLogGpuFlops(2.0*bnz);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSERestoreArrayRead(X,&ax);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSERestoreArray(Y,&ay);CHKERRQ(ierr);
+    ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
   } else {
-    Mat_SeqAIJCUSPARSE           *cusparsestruct_y = (Mat_SeqAIJCUSPARSE*)Y->spptr;
-    Mat_SeqAIJCUSPARSE           *cusparsestruct_x = (Mat_SeqAIJCUSPARSE*)X->spptr;
-    if (cusparsestruct_y->format!=MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_PLIB,"only MAT_CUSPARSE_CSR supported");
-    if (cusparsestruct_x->format!=MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_PLIB,"only MAT_CUSPARSE_CSR supported");
-    if (!cusparsestruct_y->mat || !cusparsestruct_x->mat) {
-      if (Y->offloadmask == PETSC_OFFLOAD_UNALLOCATED || Y->offloadmask == PETSC_OFFLOAD_GPU) {
-        ierr = MatSeqAIJCUSPARSECopyFromGPU(Y);CHKERRQ(ierr);
-      }
-      if (X->offloadmask == PETSC_OFFLOAD_UNALLOCATED || X->offloadmask == PETSC_OFFLOAD_GPU) {
-        ierr = MatSeqAIJCUSPARSECopyFromGPU(X);CHKERRQ(ierr);
-      }
-      ierr = MatAXPY_SeqAIJ(Y,a,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatSeqAIJCUSPARSECopyToGPU(Y);CHKERRQ(ierr);
-      ierr = MatSeqAIJCUSPARSECopyToGPU(X);CHKERRQ(ierr);
-    } else {
-      cublasHandle_t cublasv2handle;
-      cublasStatus_t cberr;
-      cudaError_t    err;
-      PetscScalar    alpha = a;
-      PetscBLASInt   one = 1, bnz = 1;
-      CsrMatrix      *matrix_y = (CsrMatrix*)cusparsestruct_y->mat->mat;
-      CsrMatrix      *matrix_x = (CsrMatrix*)cusparsestruct_x->mat->mat;
-      PetscScalar    *aa_y, *aa_x;
-      aa_y = matrix_y->values->data().get();
-      aa_x = matrix_x->values->data().get();
-      ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
-      ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
-      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-      cberr = cublasXaxpy(cublasv2handle,bnz,&alpha,aa_x,one,aa_y,one);CHKERRCUBLAS(cberr);
-      err  = WaitForCUDA();CHKERRCUDA(err);
-      ierr = PetscLogGpuFlops(2.0*bnz);CHKERRQ(ierr);
-      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-      ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
-      ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
-      if (Y->offloadmask == PETSC_OFFLOAD_BOTH) Y->offloadmask = PETSC_OFFLOAD_GPU;
-      else if (Y->offloadmask != PETSC_OFFLOAD_GPU) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_PLIB,"wrong state");
-      ierr = MatSeqAIJCUSPARSECopyFromGPU(Y);CHKERRQ(ierr);
-    }
+    ierr = MatAXPY_SeqAIJ(Y,a,X,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3674,6 +3696,39 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat A, const PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat A, PetscScalar** a)
+{
+  Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
+  CsrMatrix          *csr;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(a,2);
+  PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  if (!cusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
+  if (cusp->format == MAT_CUSPARSE_ELL || cusp->format == MAT_CUSPARSE_HYB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+  ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
+  csr = (CsrMatrix*)cusp->mat->mat;
+  if (!csr->values) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing CUDA memory");
+  *a = csr->values->data().get();
+  A->offloadmask = PETSC_OFFLOAD_GPU;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar** a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(a,2);
+  PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
+  *a = NULL;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar** a)
 {
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -3688,6 +3743,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar** a)
   csr = (CsrMatrix*)cusp->mat->mat;
   if (!csr->values) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing CUDA memory");
   *a = csr->values->data().get();
+  A->offloadmask = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
 }
 
@@ -3700,7 +3756,6 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat A, PetscScalar** a)
   PetscValidPointer(a,2);
   PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
-  A->offloadmask = PETSC_OFFLOAD_GPU;
   *a = NULL;
   PetscFunctionReturn(0);
 }
