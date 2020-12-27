@@ -3162,15 +3162,13 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   Mat_SeqAIJ     *x = (Mat_SeqAIJ*)X->data,*y = (Mat_SeqAIJ*)Y->data;
 
   PetscFunctionBegin;
-  if (str == UNKNOWN_NONZERO_PATTERN) {
-    if (x->nz == y->nz) {
-      PetscBool e;
-      ierr = PetscArraycmp(x->i,y->i,Y->rmap->n+1,&e);CHKERRQ(ierr);
+  if (str == UNKNOWN_NONZERO_PATTERN && x->nz == y->nz) {
+    PetscBool e;
+    ierr = PetscArraycmp(x->i,y->i,Y->rmap->n+1,&e);CHKERRQ(ierr);
+    if (e) {
+      ierr = PetscArraycmp(x->j,y->j,y->nz,&e);CHKERRQ(ierr);
       if (e) {
-        ierr = PetscArraycmp(x->j,y->j,y->nz,&e);CHKERRQ(ierr);
-        if (e) {
-          str = SAME_NONZERO_PATTERN;
-        }
+        str = SAME_NONZERO_PATTERN;
       }
     }
   }
@@ -3185,13 +3183,12 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa,&one,ya,&one));
     ierr = MatSeqAIJRestoreArrayRead(X,&xa);CHKERRQ(ierr);
     ierr = MatSeqAIJRestoreArray(Y,&ya);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*bnz);CHKERRQ(ierr);
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
     /* the MatAXPY_Basic* subroutines calls MatAssembly, so the matrix on the GPU will be updated */
 #if defined(PETSC_HAVE_DEVICE)
-    if (Y->offloadmask != PETSC_OFFLOAD_UNALLOCATED) {
-      Y->offloadmask = PETSC_OFFLOAD_CPU;
-    }
+    if (Y->offloadmask != PETSC_OFFLOAD_UNALLOCATED) Y->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
