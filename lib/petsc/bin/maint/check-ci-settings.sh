@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-if [ ! -z ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x} ]; then
+if [ ! -z ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x} -a ${CI_MERGE_REQUEST_EVENT_TYPE} != detached ]; then
   echo Skipping as this is MR CI for ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME} branch
   exit 0
 fi
