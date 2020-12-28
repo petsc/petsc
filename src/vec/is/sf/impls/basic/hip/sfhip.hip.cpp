@@ -713,7 +713,10 @@ PETSC_EXTERN PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype,size_t size,voi
 {
   PetscFunctionBegin;
   if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
-  else if (mtype == PETSC_MEMTYPE_DEVICE) {hipError_t err = hipMalloc(ptr,size);CHKERRHIP(err);}
+  else if (mtype == PETSC_MEMTYPE_DEVICE) {
+    if (!PetscHIPInitialized) { PetscErrorCode ierr = PetscHIPInitializeCheck();CHKERRQ(ierr); }
+    hipError_t err = hipMalloc(ptr,size);CHKERRHIP(err);
+  }
   else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
 }

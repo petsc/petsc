@@ -284,9 +284,6 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-
-
-
 /*@
    PetscSFSetUp - set up communication structures
 

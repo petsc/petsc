@@ -2,6 +2,8 @@
 #include <petsc/private/petscimpl.h>
 #include <Kokkos_Core.hpp>
 
+PetscBool PetscKokkosInitialized = PETSC_FALSE;
+
 PetscErrorCode PetscKokkosFinalize_Private(void)
 {
   PetscFunctionBegin;
@@ -38,5 +40,6 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     Kokkos::initialize(args);
     PetscBeganKokkos = PETSC_TRUE;
   }
+  PetscKokkosInitialized = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

@@ -1554,6 +1554,7 @@ PetscErrorCode  PetscFinalize(void)
   if (PetscBeganKokkos) {
     ierr = PetscKokkosFinalize_Private();CHKERRQ(ierr);
     PetscBeganKokkos = PETSC_FALSE;
+    PetscKokkosInitialized = PETSC_FALSE;
   }
 #endif
 

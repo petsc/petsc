@@ -447,7 +447,10 @@ PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype,size_t size,void** ptr)
 {
   PetscFunctionBegin;
   if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
-  else if (mtype == PETSC_MEMTYPE_DEVICE) {*ptr = Kokkos::kokkos_malloc<DeviceMemorySpace>(size);}
+  else if (mtype == PETSC_MEMTYPE_DEVICE) {
+    if (!PetscKokkosInitialized) { PetscErrorCode ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr); }
+    *ptr = Kokkos::kokkos_malloc<DeviceMemorySpace>(size);
+  }
   else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
 }
