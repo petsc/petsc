@@ -17,8 +17,8 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
 
   ierr = PetscOptionsHead(PetscOptionsObject,"DMDA Options");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL,1);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL,1);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL,1);CHKERRQ(ierr);
+  if (dim > 1) {ierr = PetscOptionsBoundedInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL,1);CHKERRQ(ierr);}
+  if (dim > 2) {ierr = PetscOptionsBoundedInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL,1);CHKERRQ(ierr);}
 
   ierr = PetscOptionsBoundedInt("-da_overlap","Decomposition overlap in all directions","DMDASetOverlap",dd->xol,&dd->xol,&flg,0);CHKERRQ(ierr);
   if (flg) {ierr = DMDASetOverlap(da,dd->xol,dd->xol,dd->xol);CHKERRQ(ierr);}

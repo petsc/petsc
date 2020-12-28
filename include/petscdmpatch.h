@@ -14,7 +14,7 @@
 S*/
 PETSC_EXTERN PetscErrorCode DMPatchCreate(MPI_Comm, DM*);
 
-PETSC_EXTERN PetscErrorCode DMPatchZoom(DM,Vec,MatStencil,MatStencil,MPI_Comm,DM*,PetscSF*,PetscSF*);
+PETSC_EXTERN PetscErrorCode DMPatchZoom(DM,MatStencil,MatStencil,MPI_Comm,DM*,PetscSF*,PetscSF*);
 PETSC_EXTERN PetscErrorCode DMPatchSolve(DM);
 PETSC_EXTERN PetscErrorCode DMPatchGetPatchSize(DM,MatStencil*);
 PETSC_EXTERN PetscErrorCode DMPatchSetPatchSize(DM,MatStencil);

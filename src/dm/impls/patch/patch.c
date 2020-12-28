@@ -18,28 +18,26 @@ Solver loop to update \tau:
   TauCoarse = Rcoarse - Rcoarse_restricted
 */
 
-/*
-  DMPatchZoom - Create a version of the coarse patch (identified by rank) with halo on communicator commz
+/*@C
+  DMPatchZoom - Create patches of a DMDA on subsets of processes, indicated by commz
 
   Collective on dm
 
   Input Parameters:
   + dm - the DM
-  . rank - the rank which holds the given patch
-  - commz - the new communicator for the patch
+  . lower,upper - the upper right corner and the lower left corner of the requested patch
+  - commz - the new communicator for the patch, MPI_COMM_NULL indicates that the given rank will not own a patch
 
   Output Parameters:
   + dmz  - the patch DM
-  . sfz  - the PetscSF mapping the patch+halo to the zoomed version
-  . sfzr - the PetscSF mapping the patch to the restricted zoomed version
+  . sfz  - the PetscSF mapping the patch+halo to the zoomed version (optional)
+  - sfzr - the PetscSF mapping the patch to the restricted zoomed version
 
   Level: intermediate
 
-  Note: All processes in commz should have the same rank (could autosplit comm)
-
-.seealso: DMPatchSolve()
-*/
-PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI_Comm commz, DM *dmz, PetscSF *sfz, PetscSF *sfzr)
+.seealso: DMPatchSolve(), DMDACreatePatchIS()
+@*/
+PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm commz, DM *dmz, PetscSF *sfz, PetscSF *sfzr)
 {
   DMDAStencilType st;
   MatStencil      blower, bupper, loclower, locupper;
@@ -48,12 +46,14 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   PetscInt        *localPoints  = NULL;
   PetscSFNode     *remotePoints = NULL;
   PetscInt        dim, dof;
-  PetscInt        M, N, P, rM, rN, rP, halo = 1, sxb, syb, szb, sxr, syr, szr, exr, eyr, ezr, mxb, myb, mzb, i, j, k, q;
+  PetscInt        M, N, P, rM, rN, rP, halo = 1, sxb, syb, szb, sxr, syr, szr, exr, eyr, ezr, mxb, myb, mzb, i, j, k, l, q;
   PetscMPIInt     size;
   PetscBool       patchis_offproc = PETSC_TRUE;
   PetscErrorCode  ierr;
+  Vec             X;
 
   PetscFunctionBegin;
+  if (!sfz) halo = 0;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
   /* Create patch DM */
   ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, NULL,NULL,NULL, &dof, NULL,NULL,NULL,NULL, &st);CHKERRQ(ierr);
@@ -85,12 +85,13 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
     exr  = PetscMin(sxb+mxb, upper.i - blower.i);
     eyr  = PetscMin(syb+myb, upper.j - blower.j);
     ezr  = PetscMin(szb+mzb, upper.k - blower.k);
-    ierr = PetscMalloc2(rM*rN*rP,&localPoints,rM*rN*rP,&remotePoints);CHKERRQ(ierr);
+    ierr = PetscMalloc2(dof*rM*rN*PetscMax(rP,1),&localPoints,dof*rM*rN*PetscMax(rP,1),&remotePoints);CHKERRQ(ierr);
   } else {
     sxr = syr = szr = exr = eyr = ezr = sxb = syb = szb = mxb = myb = mzb = 0;
   }
 
   /* Create SF for restricted map */
+  ierr = DMCreateGlobalVector(dm,&X);CHKERRQ(ierr);
   ierr = VecGetOwnershipRanges(X,&ranges);CHKERRQ(ierr);
 
   loclower.i = blower.i + sxr; locupper.i = blower.i + exr;
@@ -100,22 +101,25 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   ierr = DMDACreatePatchIS(dm, &loclower, &locupper, &is, patchis_offproc);CHKERRQ(ierr);
   ierr = ISGetIndices(is, &indices);CHKERRQ(ierr);
 
+  if (dim < 3) {mzb = 1; ezr = 1;}
   q = 0;
   for (k = szb; k < szb+mzb; ++k) {
     if ((k < szr) || (k >= ezr)) continue;
     for (j = syb; j < syb+myb; ++j) {
       if ((j < syr) || (j >= eyr)) continue;
       for (i = sxb; i < sxb+mxb; ++i) {
-        const PetscInt lp = ((k-szb)*rN + (j-syb))*rM + i-sxb;
-        PetscInt       r;
+        for (l=0; l<dof; l++) {
+          const PetscInt lp = l + dof*(((k-szb)*rN + (j-syb))*rM + i-sxb);
+          PetscInt       r;
 
-        if ((i < sxr) || (i >= exr)) continue;
-        localPoints[q]        = lp;
-        ierr = PetscFindInt(indices[q], size+1, ranges, &r);CHKERRQ(ierr);
+          if ((i < sxr) || (i >= exr)) continue;
+          localPoints[q]        = lp;
+          ierr = PetscFindInt(indices[q], size+1, ranges, &r);CHKERRQ(ierr);
 
-        remotePoints[q].rank  = r < 0 ? -(r+1) - 1 : r;
-        remotePoints[q].index = indices[q] - ranges[remotePoints[q].rank];
-        ++q;
+          remotePoints[q].rank  = r < 0 ? -(r+1) - 1 : r;
+          remotePoints[q].index = indices[q] - ranges[remotePoints[q].rank];
+          ++q;
+        }
       }
     }
   }
@@ -123,35 +127,38 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfzr);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *sfzr, "Restricted Map");CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sfzr, M*N*P, q, localPoints, PETSC_COPY_VALUES, remotePoints, PETSC_COPY_VALUES);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfzr, dof*M*N*P, q, localPoints, PETSC_COPY_VALUES, remotePoints, PETSC_COPY_VALUES);CHKERRQ(ierr);
 
-  /* Create SF for buffered map */
-  loclower.i = blower.i + sxb; locupper.i = blower.i + sxb+mxb;
-  loclower.j = blower.j + syb; locupper.j = blower.j + syb+myb;
-  loclower.k = blower.k + szb; locupper.k = blower.k + szb+mzb;
+  if (sfz) {
+    /* Create SF for buffered map */
+    loclower.i = blower.i + sxb; locupper.i = blower.i + sxb+mxb;
+    loclower.j = blower.j + syb; locupper.j = blower.j + syb+myb;
+    loclower.k = blower.k + szb; locupper.k = blower.k + szb+mzb;
 
-  ierr = DMDACreatePatchIS(dm, &loclower, &locupper, &is, patchis_offproc);CHKERRQ(ierr);
-  ierr = ISGetIndices(is, &indices);CHKERRQ(ierr);
+    ierr = DMDACreatePatchIS(dm, &loclower, &locupper, &is, patchis_offproc);CHKERRQ(ierr);
+    ierr = ISGetIndices(is, &indices);CHKERRQ(ierr);
 
-  q = 0;
-  for (k = szb; k < szb+mzb; ++k) {
-    for (j = syb; j < syb+myb; ++j) {
-      for (i = sxb; i < sxb+mxb; ++i, ++q) {
-        PetscInt r;
+    q = 0;
+    for (k = szb; k < szb+mzb; ++k) {
+      for (j = syb; j < syb+myb; ++j) {
+        for (i = sxb; i < sxb+mxb; ++i, ++q) {
+          PetscInt r;
 
-        localPoints[q]        = q;
-        ierr = PetscFindInt(indices[q], size+1, ranges, &r);CHKERRQ(ierr);
-        remotePoints[q].rank  = r < 0 ? -(r+1) - 1 : r;
-        remotePoints[q].index = indices[q] - ranges[remotePoints[q].rank];
+          localPoints[q]        = q;
+          ierr = PetscFindInt(indices[q], size+1, ranges, &r);CHKERRQ(ierr);
+          remotePoints[q].rank  = r < 0 ? -(r+1) - 1 : r;
+          remotePoints[q].index = indices[q] - ranges[remotePoints[q].rank];
+        }
       }
     }
+    ierr = ISRestoreIndices(is, &indices);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfz);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) *sfz, "Buffered Map");CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(*sfz, M*N*P, q, localPoints, PETSC_COPY_VALUES, remotePoints, PETSC_COPY_VALUES);CHKERRQ(ierr);
   }
-  ierr = ISRestoreIndices(is, &indices);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfz);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *sfz, "Buffered Map");CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sfz, M*N*P, q, localPoints, PETSC_COPY_VALUES, remotePoints, PETSC_COPY_VALUES);CHKERRQ(ierr);
 
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = PetscFree2(localPoints, remotePoints);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -215,11 +222,11 @@ PetscErrorCode DMPatchSolve(DM dm)
   for (k = 0; k < P; k += PetscMax(patchSize.k, 1)) {
     for (j = 0; j < N; j += PetscMax(patchSize.j, 1)) {
       for (i = 0; i < M; i += PetscMax(patchSize.i, 1), ++p) {
-        MPI_Comm commp = MPI_COMM_NULL;
-        DM       dmz   = NULL;
+        MPI_Comm    commp = MPI_COMM_NULL;
+        DM          dmz   = NULL;
 #if 0
-        DM  dmf     = NULL;
-        Mat interpz = NULL;
+        DM          dmf     = NULL;
+        Mat         interpz = NULL;
 #endif
         Vec         XZ       = NULL;
         PetscScalar *xcarray = NULL;
@@ -234,11 +241,10 @@ PetscErrorCode DMPatchSolve(DM dm)
         /* Zoom to coarse patch */
         lower.i = i; lower.j = j; lower.k = k;
         upper.i = i + patchSize.i; upper.j = j + patchSize.j; upper.k = k + patchSize.k;
-        ierr    = DMPatchZoom(dmc, XC, lower, upper, commp, &dmz, &sfz, &sfzr);CHKERRQ(ierr);
+        ierr    = DMPatchZoom(dmc, lower, upper, commp, &dmz, &sfz, &sfzr);CHKERRQ(ierr);
         lower.c = 0; /* initialize member, otherwise compiler issues warnings */
         upper.c = 0; /* initialize member, otherwise compiler issues warnings */
-        /* Debug */
-        ierr = PetscPrintf(comm, "Patch %d: (%d, %d, %d)--(%d, %d, %d)\n", p, lower.i, lower.j, lower.k, upper.i, upper.j, upper.k);CHKERRQ(ierr);
+        if (debug) {ierr = PetscPrintf(comm, "Patch %d: (%d, %d, %d)--(%d, %d, %d)\n", p, lower.i, lower.j, lower.k, upper.i, upper.j, upper.k);CHKERRQ(ierr);}
         if (dmz) {ierr = DMView(dmz, PETSC_VIEWER_STDOUT_(commz));CHKERRQ(ierr);}
         ierr = PetscSFView(sfz,  PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
         ierr = PetscSFView(sfzr, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
@@ -280,7 +286,7 @@ PetscErrorCode DMPatchSolve(DM dm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPatchView_Ascii(DM dm, PetscViewer viewer)
+PetscErrorCode DMPatchView_ASCII(DM dm, PetscViewer viewer)
 {
   DM_Patch          *mesh = (DM_Patch*) dm->data;
   PetscViewerFormat format;
@@ -310,11 +316,7 @@ PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
   if (iascii) {
-    ierr = DMPatchView_Ascii(dm, viewer);CHKERRQ(ierr);
-#if 0
-  } else if (isbinary) {
-    ierr = DMPatchView_Binary(dm, viewer);CHKERRQ(ierr);
-#endif
+    ierr = DMPatchView_ASCII(dm, viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

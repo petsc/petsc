@@ -114,7 +114,10 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
     b->backend = PETSCSF_BACKEND_HIP;
   #endif
 #endif
-  *sf = b;
+  b->vscat.from_n = -1;
+  b->vscat.to_n   = -1;
+  b->vscat.unit   = MPIU_SCALAR;
+ *sf = b;
   PetscFunctionReturn(0);
 }
 
