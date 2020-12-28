@@ -13,7 +13,7 @@ if [ ${base_release} = ${base_master} ]; then
 else
     dest=origin/master
 fi
-if git diff --exit-code HEAD...${dest} -- .gitlab-ci.yml; then
+if git diff --exit-code HEAD...${dest} -- .gitlab-ci.yml lib/petsc/conf/rules; then
     printf "Success! Using current CI settings as in gitlab-ci.yml in ${dest}!\n"
 else
     printf "ERROR! Using old CI settings in gitlab-ci.yml! Please rebase to ${dest} to use current CI settings.\n"
