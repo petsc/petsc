@@ -6480,10 +6480,12 @@ typedef struct {
   PetscBool reusesym;
 
   /* support for COO values insertion */
-  PetscScalar *coo_v,*coo_w;
-  PetscInt    **own;
-  PetscInt    **off;
-  PetscSF     sf; /* if present, non-local values insertion (i.e. AtB or PtAP) */
+  PetscScalar  *coo_v,*coo_w;
+  PetscInt     **own;
+  PetscInt     **off;
+  PetscBool    hasoffproc; /* if true, non-local values insertion (i.e. AtB or PtAP) */
+  PetscSF      sf; /* used for non-local values insertion and memory malloc */
+  PetscMemType mtype;
 
   /* customization */
   PetscBool abmerge;
@@ -6499,8 +6501,8 @@ PetscErrorCode MatDestroy_MatMatMPIAIJBACKEND(void *data)
   PetscFunctionBegin;
   ierr = PetscFree2(mmdata->startsj_s,mmdata->startsj_r);CHKERRQ(ierr);
   ierr = PetscFree(mmdata->bufa);CHKERRQ(ierr);
-  ierr = PetscFree(mmdata->coo_v);CHKERRQ(ierr);
-  ierr = PetscFree(mmdata->coo_w);CHKERRQ(ierr);
+  ierr = PetscSFFree(mmdata->sf,mmdata->mtype,mmdata->coo_v);CHKERRQ(ierr);
+  ierr = PetscSFFree(mmdata->sf,mmdata->mtype,mmdata->coo_w);CHKERRQ(ierr);
   ierr = MatDestroy(&mmdata->P_oth);CHKERRQ(ierr);
   ierr = MatDestroy(&mmdata->Bloc);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&mmdata->sf);CHKERRQ(ierr);
@@ -6514,6 +6516,33 @@ PetscErrorCode MatDestroy_MatMatMPIAIJBACKEND(void *data)
   ierr = PetscFree(mmdata->off[0]);CHKERRQ(ierr);
   ierr = PetscFree(mmdata->off);CHKERRQ(ierr);
   ierr = PetscFree(mmdata);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSeqAIJCopySubArray(Mat A, PetscInt n, const PetscInt idx[], PetscScalar v[])
+{
+  PetscErrorCode (*f)(Mat,PetscInt,const PetscInt[],PetscScalar[]);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJCopySubArray_C",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,n,idx,v);CHKERRQ(ierr);
+  } else {
+    const PetscScalar *vv;
+
+    ierr = MatSeqAIJGetArrayRead(A,&vv);CHKERRQ(ierr);
+    if (n && idx) {
+      PetscScalar    *w = v;
+      const PetscInt *oi = idx;
+      PetscInt       j;
+
+      for (j = 0; j < n; j++) *w++ = vv[*oi++];
+    } else {
+      ierr = PetscArraycpy(v,vv,n);CHKERRQ(ierr);
+    }
+    ierr = MatSeqAIJRestoreArrayRead(A,&vv);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -6542,30 +6571,24 @@ static PetscErrorCode MatProductNumeric_MPIAIJBACKEND(Mat C)
     ierr = (*mmdata->mp[i]->ops->productnumeric)(mmdata->mp[i]);CHKERRQ(ierr);
   }
   for (i = 0, n_d = 0, n_o = 0; i < mmdata->cp; i++) {
-    Mat_SeqAIJ        *mm = (Mat_SeqAIJ*)mmdata->mp[i]->data;
-    const PetscScalar *vv;
-    PetscInt          noff = mmdata->off[i+1] - mmdata->off[i];
+    PetscInt noff = mmdata->off[i+1] - mmdata->off[i];
 
     if (mmdata->mptmp[i]) continue;
-    /* TODO: add support for using GPU data directly? */
-    ierr = MatSeqAIJGetArrayRead(mmdata->mp[i],&vv);CHKERRQ(ierr);
     if (noff) {
-      PetscScalar *w = mmdata->coo_w + n_o;
-      PetscScalar *v = mmdata->coo_v + n_d;
-      PetscInt    *oi = mmdata->off[i];
-      PetscInt    *di = mmdata->own[i];
-      PetscInt    j, nown = mmdata->own[i+1] - mmdata->own[i];
-      for (j = 0; j < noff; j++) *w++ = vv[*oi++];
-      for (j = 0; j < nown; j++) *v++ = vv[*di++];
+      PetscInt nown = mmdata->own[i+1] - mmdata->own[i];
+
+      ierr = MatSeqAIJCopySubArray(mmdata->mp[i],noff,mmdata->off[i],mmdata->coo_w + n_o);CHKERRQ(ierr);
+      ierr = MatSeqAIJCopySubArray(mmdata->mp[i],nown,mmdata->own[i],mmdata->coo_v + n_d);CHKERRQ(ierr);
       n_o += noff;
       n_d += nown;
     } else {
-      ierr = PetscArraycpy(mmdata->coo_v + n_d,vv,mm->nz);CHKERRQ(ierr);
+      Mat_SeqAIJ *mm = (Mat_SeqAIJ*)mmdata->mp[i]->data;
+
+      ierr = MatSeqAIJCopySubArray(mmdata->mp[i],mm->nz,NULL,mmdata->coo_v + n_d);CHKERRQ(ierr);
       n_d += mm->nz;
     }
-    ierr = MatSeqAIJRestoreArrayRead(mmdata->mp[i],&vv);CHKERRQ(ierr);
   }
-  if (mmdata->sf) { /* offprocess insertion */
+  if (mmdata->hasoffproc) { /* offprocess insertion */
     ierr = PetscSFGatherBegin(mmdata->sf,MPIU_SCALAR,mmdata->coo_w,mmdata->coo_v+n_d);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(mmdata->sf,MPIU_SCALAR,mmdata->coo_w,mmdata->coo_v+n_d);CHKERRQ(ierr);
   }
@@ -6589,7 +6612,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   const PetscInt         *cmapa[MAX_NUMBER_INTERMEDIATE],*rmapa[MAX_NUMBER_INTERMEDIATE];
   PetscInt               cp = 0,m,n,M,N,ncoo,ncoo_d,ncoo_o,ncoo_oown,*coo_i,*coo_j,cmapt[MAX_NUMBER_INTERMEDIATE],rmapt[MAX_NUMBER_INTERMEDIATE],i,j;
   MatProductType         ptype;
-  PetscBool              mptmp[MAX_NUMBER_INTERMEDIATE],hasoffproc = PETSC_FALSE;
+  PetscBool              mptmp[MAX_NUMBER_INTERMEDIATE],hasoffproc = PETSC_FALSE,iscuda,iskokk;
   PetscMPIInt            size;
   PetscErrorCode         ierr;
 
@@ -6877,6 +6900,14 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   C->product->destroy    = MatDestroy_MatMatMPIAIJBACKEND;
   C->ops->productnumeric = MatProductNumeric_MPIAIJBACKEND;
 
+  /* memory type */
+  mmdata->mtype = PETSC_MEMTYPE_HOST;
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&iscuda,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,"");CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)C,&iskokk,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,"");CHKERRQ(ierr);
+  if (iscuda) mmdata->mtype = PETSC_MEMTYPE_CUDA;
+  // enable the line below MatSeqAIJCopySubArray_SeqAIJKokkos is implemented
+  //else if (iskokk) mmdata->mtype = PETSC_MEMTYPE_DEVICE;
+
   /* prepare coo coordinates for values insertion */
   for (cp = 0, ncoo_d = 0, ncoo_o = 0, ncoo_oown = 0; cp < mmdata->cp; cp++) {
     Mat_SeqAIJ *mm = (Mat_SeqAIJ*)mp[cp]->data;
@@ -6904,7 +6935,6 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
     ierr = PetscMalloc1(ncoo_o,&mmdata->off[0]);CHKERRQ(ierr);
     ierr = PetscMalloc1(ncoo_oown,&mmdata->own[0]);CHKERRQ(ierr);
     ierr = PetscMalloc2(ncoo_o,&coo_i,ncoo_o,&coo_j);CHKERRQ(ierr);
-    ierr = PetscMalloc1(ncoo_o,&mmdata->coo_w);CHKERRQ(ierr);
     for (cp = 0, ncoo_o = 0; cp < mmdata->cp; cp++) {
       Mat_SeqAIJ *mm = (Mat_SeqAIJ*)mp[cp]->data;
       PetscInt   *idxoff = mmdata->off[cp];
@@ -6956,13 +6986,18 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
     ierr = PetscSFGatherBegin(mmdata->sf,MPIU_INT,coo_j,coo_j2 + ncoo_d + ncoo_oown);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(mmdata->sf,MPIU_INT,coo_j,coo_j2 + ncoo_d + ncoo_oown);CHKERRQ(ierr);
     ierr = PetscFree2(coo_i,coo_j);CHKERRQ(ierr);
+    ierr = PetscSFMalloc(mmdata->sf,mmdata->mtype,ncoo_o*sizeof(PetscScalar),(void**)&mmdata->coo_w);CHKERRQ(ierr);
     coo_i = coo_i2;
     coo_j = coo_j2;
   } else { /* no offproc values insertion */
     ncoo = ncoo_d;
     ierr = PetscMalloc2(ncoo,&coo_i,ncoo,&coo_j);CHKERRQ(ierr);
+
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)C),&mmdata->sf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(mmdata->sf,0,0,NULL,PETSC_OWN_POINTER,NULL,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(mmdata->sf);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc1(ncoo,&mmdata->coo_v);CHKERRQ(ierr);
+  mmdata->hasoffproc = hasoffproc;
 
   /* on-process indices */
   for (cp = 0, ncoo_d = 0; cp < mmdata->cp; cp++) {
@@ -7020,6 +7055,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
     ierr = ISLocalToGlobalMappingRestoreIndices(P_oth_l2g,&P_oth_idx);CHKERRQ(ierr);
   }
   ierr = ISLocalToGlobalMappingDestroy(&P_oth_l2g);CHKERRQ(ierr);
+  ierr = PetscSFMalloc(mmdata->sf,mmdata->mtype,ncoo*sizeof(PetscScalar),(void**)&mmdata->coo_v);CHKERRQ(ierr);
 
   /* preallocate with COO data */
   ierr = MatSetPreallocationCOO(C,ncoo,coo_i,coo_j);CHKERRQ(ierr);

@@ -86,6 +86,8 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyFromGPU(Mat);
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],const PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
 
+static PetscErrorCode MatSeqAIJCopySubArray_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],PetscScalar[]);
+
 PetscErrorCode MatCUSPARSESetStream(Mat A,const cudaStream_t stream)
 {
   cusparseStatus_t   stat;
@@ -3019,6 +3021,7 @@ static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
     }
     err = cudaFree(d_mat);CHKERRCUDA(err);
   }
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJCopySubArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdensecuda_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdense_C",NULL);CHKERRQ(ierr);
@@ -3190,6 +3193,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
     A->ops->multhermitiantranspose    = NULL;
     A->ops->multhermitiantransposeadd = NULL;
     A->ops->productsetfromoptions     = MatProductSetFromOptions_SeqAIJ;
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJCopySubArray_C",NULL);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdensecuda_C",NULL);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdense_C",NULL);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL);CHKERRQ(ierr);
@@ -3206,6 +3210,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
     A->ops->multhermitiantranspose    = MatMultHermitianTranspose_SeqAIJCUSPARSE;
     A->ops->multhermitiantransposeadd = MatMultHermitianTransposeAdd_SeqAIJCUSPARSE;
     A->ops->productsetfromoptions     = MatProductSetFromOptions_SeqAIJCUSPARSE;
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJCopySubArray_C",MatSeqAIJCopySubArray_SeqAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdensecuda_C",MatProductSetFromOptions_SeqAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdense_C",MatProductSetFromOptions_SeqAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_SeqAIJCUSPARSE);CHKERRQ(ierr);
@@ -4083,5 +4088,45 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
   (*C)->assembled     = PETSC_TRUE;
   (*C)->was_assembled = PETSC_FALSE;
   (*C)->offloadmask   = PETSC_OFFLOAD_GPU;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSeqAIJCopySubArray_SeqAIJCUSPARSE(Mat A, PetscInt n, const PetscInt idx[], PetscScalar v[])
+{
+  PetscErrorCode    ierr;
+  bool              dmem;
+  const PetscScalar *av;
+  cudaError_t       cerr;
+
+  PetscFunctionBegin;
+  dmem = isCudaMem(v);
+  ierr = MatSeqAIJCUSPARSEGetArrayRead(A,&av);CHKERRQ(ierr);
+  if (n && idx) {
+    THRUSTINTARRAY widx(n);
+    widx.assign(idx,idx+n);
+    ierr = PetscLogCpuToGpu(n*sizeof(PetscInt));CHKERRQ(ierr);
+
+    THRUSTARRAY *w = NULL;
+    thrust::device_ptr<PetscScalar> dv;
+    if (dmem) {
+      dv = thrust::device_pointer_cast(v);
+    } else {
+      w = new THRUSTARRAY(n);
+      dv = w->data();
+    }
+    thrust::device_ptr<const PetscScalar> dav = thrust::device_pointer_cast(av);
+
+    auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(dav,widx.begin()),dv));
+    auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(dav,widx.end()),dv+n));
+    thrust::for_each(zibit,zieit,VecCUDAEquals());
+    if (w) {
+      cerr = cudaMemcpy(v,w->data().get(),n*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+    }
+    delete w;
+  } else {
+    cerr = cudaMemcpy(v,av,n*sizeof(PetscScalar),dmem ? cudaMemcpyDeviceToDevice : cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+  }
+  if (!dmem) { ierr = PetscLogCpuToGpu(n*sizeof(PetscScalar));CHKERRQ(ierr); }
+  ierr = MatSeqAIJCUSPARSERestoreArrayRead(A,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
