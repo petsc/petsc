@@ -128,7 +128,7 @@ job_level=0
 if $compile; then
    curexec=`basename ${exec}`
    fullexec=${abspath_scriptdir}/${curexec}
-   maketarget=`echo ${fullexec} | sed "s#${petsc_dir}/##"`
+   maketarget=`echo ${fullexec} | sed "s#${petsc_dir}/*##"`
    (cd $petsc_dir && make -f gmakefile.test ${maketarget})
 fi
 
