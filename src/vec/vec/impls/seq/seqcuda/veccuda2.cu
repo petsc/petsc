@@ -14,6 +14,7 @@
 #include <thrust/device_ptr.h>
 #include <thrust/transform.h>
 #include <thrust/functional.h>
+#include <thrust/reduce.h>
 
 /*
     Allocates space for the vector array on the GPU if it does not exist.
@@ -1137,5 +1138,151 @@ PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
       ierr = PetscFree(w->spptr);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+struct petscrealpart : public thrust::unary_function<PetscScalar,PetscReal>
+{
+  __host__ __device__
+  PetscReal operator()(PetscScalar x) {
+    return PetscRealPart(x);
+  }
+};
+
+struct petscrealparti : public thrust::unary_function<thrust::tuple<PetscScalar, PetscInt>,thrust::tuple<PetscReal, PetscInt>>
+{
+  __host__ __device__
+  thrust::tuple<PetscReal, PetscInt> operator()(thrust::tuple<PetscScalar, PetscInt> x) {
+    return thrust::make_tuple(PetscRealPart(x.get<0>()), x.get<1>());
+  }
+};
+
+struct petscmax : public thrust::binary_function<PetscReal,PetscReal,PetscReal>
+{
+  __host__ __device__
+  PetscReal operator()(PetscReal x, PetscReal y) {
+    return x < y ? y : x;
+  }
+};
+
+struct petscmaxi : public thrust::binary_function<thrust::tuple<PetscReal, PetscInt>,thrust::tuple<PetscReal, PetscInt>,thrust::tuple<PetscReal, PetscInt>>
+{
+  __host__ __device__
+  thrust::tuple<PetscReal, PetscInt> operator()(thrust::tuple<PetscReal, PetscInt> x, thrust::tuple<PetscReal, PetscInt> y) {
+    return x.get<0>() < y.get<0>() ? thrust::make_tuple(y.get<0>(), y.get<1>()) :
+           (x.get<0>() != y.get<0>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) :
+           (x.get<1>() < y.get<1>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) : thrust::make_tuple(y.get<0>(), y.get<1>())));
+  }
+};
+
+struct petscmin : public thrust::binary_function<PetscReal,PetscReal,PetscReal>
+{
+  __host__ __device__
+  PetscReal operator()(PetscReal x, PetscReal y) {
+    return x < y ? x : y;
+  }
+};
+
+struct petscmini : public thrust::binary_function<thrust::tuple<PetscReal, PetscInt>,thrust::tuple<PetscReal, PetscInt>,thrust::tuple<PetscReal, PetscInt>>
+{
+  __host__ __device__
+  thrust::tuple<PetscReal, PetscInt> operator()(thrust::tuple<PetscReal, PetscInt> x, thrust::tuple<PetscReal, PetscInt> y) {
+    return x.get<0>() > y.get<0>() ? thrust::make_tuple(y.get<0>(), y.get<1>()) :
+           (x.get<0>() != y.get<0>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) :
+           (x.get<1>() < y.get<1>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) : thrust::make_tuple(y.get<0>(), y.get<1>())));
+  }
+};
+
+PetscErrorCode VecMax_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
+{
+  PetscErrorCode                        ierr;
+  PetscInt                              n = v->map->n;
+  const PetscScalar                     *av;
+  thrust::device_ptr<const PetscScalar> avpt;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+  if (!n) {
+    *m = PETSC_MIN_REAL;
+    if (p) *p = -1;
+    PetscFunctionReturn(0);
+  }
+  ierr = VecCUDAGetArrayRead(v,&av);CHKERRQ(ierr);
+  avpt = thrust::device_pointer_cast(av);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  if (p) {
+    thrust::tuple<PetscReal,PetscInt> res(PETSC_MIN_REAL,-1);
+    auto zibit = thrust::make_zip_iterator(thrust::make_tuple(avpt,thrust::counting_iterator<PetscInt>(0)));
+    try {
+#if defined(PETSC_USE_COMPLEX)
+      res = thrust::transform_reduce(zibit,zibit+n,petscrealparti(),res,petscmaxi());
+#else
+      res = thrust::reduce(zibit,zibit+n,res,petscmaxi());
+#endif
+    } catch (char *ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    }
+    *m = res.get<0>();
+    *p = res.get<1>();
+  } else {
+    try {
+#if defined(PETSC_USE_COMPLEX)
+      *m = thrust::transform_reduce(avpt,avpt+n,petscrealpart(),PETSC_MIN_REAL,petscmax());
+#else
+      *m = thrust::reduce(avpt,avpt+n,PETSC_MIN_REAL,petscmax());
+#endif
+    } catch (char *ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    }
+  }
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = VecCUDARestoreArrayRead(v,&av);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecMin_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
+{
+  PetscErrorCode                        ierr;
+  PetscInt                              n = v->map->n;
+  const PetscScalar                     *av;
+  thrust::device_ptr<const PetscScalar> avpt;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+  if (!n) {
+    *m = PETSC_MAX_REAL;
+    if (p) *p = -1;
+    PetscFunctionReturn(0);
+  }
+  ierr = VecCUDAGetArrayRead(v,&av);CHKERRQ(ierr);
+  avpt = thrust::device_pointer_cast(av);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  if (p) {
+    thrust::tuple<PetscReal,PetscInt> res(PETSC_MAX_REAL,-1);
+    auto zibit = thrust::make_zip_iterator(thrust::make_tuple(avpt,thrust::counting_iterator<PetscInt>(0)));
+    try {
+#if defined(PETSC_USE_COMPLEX)
+      res = thrust::transform_reduce(zibit,zibit+n,petscrealparti(),res,petscmini());
+#else
+      res = thrust::reduce(zibit,zibit+n,res,petscmini());
+#endif
+    } catch (char *ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    }
+    *m = res.get<0>();
+    *p = res.get<1>();
+  } else {
+    try {
+#if defined(PETSC_USE_COMPLEX)
+      *m = thrust::transform_reduce(avpt,avpt+n,petscrealpart(),PETSC_MAX_REAL,petscmin());
+#else
+      *m = thrust::reduce(avpt,avpt+n,PETSC_MAX_REAL,petscmin());
+#endif
+    } catch (char *ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    }
+  }
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = VecCUDARestoreArrayRead(v,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

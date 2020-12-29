@@ -130,11 +130,3 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
