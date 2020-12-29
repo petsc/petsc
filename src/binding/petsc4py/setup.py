@@ -27,6 +27,7 @@ if pyver == (2, 6) or pyver == (3, 2):
 # --------------------------------------------------------------------
 
 topdir = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, topdir)
 
 from conf.metadata import metadata
 
@@ -96,7 +97,7 @@ from conf.petscconf import setup, Extension
 from conf.petscconf import config, build, build_src, build_ext, install
 from conf.petscconf import clean, test, sdist
 
-CYTHON = '0.22'
+CYTHON = '0.24'
 
 def run_setup():
     setup_args = metadata.copy()
@@ -184,14 +185,16 @@ def chk_cython(VERSION):
     #
     return True
 
-def run_cython(source, depends=(), includes=(),
+def run_cython(source, target=None,
+               depends=(), includes=(),
                destdir_c=None, destdir_h=None,
                wdir=None, force=False, VERSION=None):
     from glob import glob
     from distutils import log
     from distutils import dep_util
     from distutils.errors import DistutilsError
-    target = os.path.splitext(source)[0]+'.c'
+    if target is None:
+        target = os.path.splitext(source)[0]+'.c'
     cwd = os.getcwd()
     try:
         if wdir: os.chdir(wdir)
@@ -208,7 +211,7 @@ def run_cython(source, depends=(), includes=(),
         raise DistutilsError("requires Cython>=%s" % VERSION)
     log.info("cythonizing '%s' -> '%s'", source, target)
     from conf.cythonize import cythonize
-    err = cythonize(source,
+    err = cythonize(source, target,
                     includes=includes,
                     destdir_c=destdir_c,
                     destdir_h=destdir_h,
@@ -224,12 +227,14 @@ def build_sources(cmd):
         not cmd.force): return
     # petsc4py.PETSc
     source = 'petsc4py.PETSc.pyx'
+    target = 'petsc4py.PETSc.c'
     depends = ('include/*/*.pxd',
                'PETSc/*.pyx',
                'PETSc/*.pxi',)
     includes = ['include']
     destdir_h = os.path.join('include', 'petsc4py')
-    run_cython(source, depends, includes,
+    run_cython(source, target,
+               depends=depends, includes=includes,
                destdir_c=None, destdir_h=destdir_h, wdir='src',
                force=cmd.force, VERSION=CYTHON)
     # libpetsc4py
@@ -238,7 +243,8 @@ def build_sources(cmd):
                'libpetsc4py/*.pyx',
                'libpetsc4py/*.pxi']
     includes = ['include']
-    run_cython(source, depends, includes,
+    run_cython(source,
+               depends=depends, includes=includes,
                destdir_c=None, destdir_h=None, wdir='src',
                force=cmd.force, VERSION=CYTHON)
 
