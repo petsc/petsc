@@ -2523,6 +2523,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   /* get matrix C non-zero entries C_nnz1 */
   stat = cusparseSpMatGetSize(Cmat->matDescr, &C_num_rows1, &C_num_cols1, &C_nnz1);CHKERRCUSPARSE(stat);
   c->nz = (PetscInt) C_nnz1;
+  ierr = PetscInfo9(C,"Buffer sizes for type %s, result %D x %D (k %D, nzA %D, nzB %D, nzC %D) are: %ldKB %ldKB\n",MatProductTypes[ptype],m,n,k,a->nz,b->nz,c->nz,bufSize2/1024,mmdata->mmBufferSize/1024);CHKERRQ(ierr);
   Ccsr->column_indices = new THRUSTINTARRAY32(c->nz);
   CHKERRCUDA(cudaPeekAtLastError()); /* catch out of memory errors */
   Ccsr->values = new THRUSTARRAY(c->nz);
