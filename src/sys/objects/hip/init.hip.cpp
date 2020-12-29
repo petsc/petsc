@@ -12,7 +12,7 @@
 
 /*
      PetscHIPInitializeLogView - Initializes the HIP device for the case when -log_view is called
-     This is to do costly hip runtime initialization early so that not to distort the timing later. 
+     This is to do costly hip runtime initialization early so that not to distort the timing later.
 @*/
 PETSC_EXTERN PetscErrorCode PetscHIPInitializeLogView(MPI_Comm comm, PetscInt device)
 {

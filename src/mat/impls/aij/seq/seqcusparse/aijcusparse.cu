@@ -362,9 +362,9 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILULowerTriMatrix(Mat A)
       /* first figure out the number of nonzeros in the lower triangular matrix including 1's on the diagonal. */
       nzLower=n+ai[n]-ai[1];
       if (!loTriFactor) {
-	PetscScalar                       *AALo;
+        PetscScalar                       *AALo;
 
-	cerr = cudaMallocHost((void**) &AALo, nzLower*sizeof(PetscScalar));CHKERRCUDA(cerr);
+        cerr = cudaMallocHost((void**) &AALo, nzLower*sizeof(PetscScalar));CHKERRCUDA(cerr);
 
         /* Allocate Space for the lower triangular matrix */
         cerr = cudaMallocHost((void**) &AiLo, (n+1)*sizeof(PetscInt));CHKERRCUDA(cerr);
@@ -455,14 +455,14 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILULowerTriMatrix(Mat A)
 
         /* assign the pointer */
         ((Mat_SeqAIJCUSPARSETriFactors*)A->spptr)->loTriFactorPtr = loTriFactor;
-	loTriFactor->AA_h = AALo;
+        loTriFactor->AA_h = AALo;
         cerr = cudaFreeHost(AiLo);CHKERRCUDA(cerr);
         cerr = cudaFreeHost(AjLo);CHKERRCUDA(cerr);
         ierr = PetscLogCpuToGpu((n+1+nzLower)*sizeof(int)+nzLower*sizeof(PetscScalar));CHKERRQ(ierr);
       } else { /* update values only */
-	if (!loTriFactor->AA_h) {
-	  cerr = cudaMallocHost((void**) &loTriFactor->AA_h, nzLower*sizeof(PetscScalar));CHKERRCUDA(cerr);
-	}
+        if (!loTriFactor->AA_h) {
+          cerr = cudaMallocHost((void**) &loTriFactor->AA_h, nzLower*sizeof(PetscScalar));CHKERRCUDA(cerr);
+        }
         /* Fill the lower triangular matrix */
         loTriFactor->AA_h[0]  = 1.0;
         v        = aa;
@@ -507,9 +507,9 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(Mat A)
       /* next, figure out the number of nonzeros in the upper triangular matrix. */
       nzUpper = adiag[0]-adiag[n];
       if (!upTriFactor) {
-	PetscScalar *AAUp;
+        PetscScalar *AAUp;
 
-	cerr = cudaMallocHost((void**) &AAUp, nzUpper*sizeof(PetscScalar));CHKERRCUDA(cerr);
+        cerr = cudaMallocHost((void**) &AAUp, nzUpper*sizeof(PetscScalar));CHKERRCUDA(cerr);
 
         /* Allocate Space for the upper triangular matrix */
         cerr = cudaMallocHost((void**) &AiUp, (n+1)*sizeof(PetscInt));CHKERRCUDA(cerr);
@@ -597,14 +597,14 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(Mat A)
 
         /* assign the pointer */
         ((Mat_SeqAIJCUSPARSETriFactors*)A->spptr)->upTriFactorPtr = upTriFactor;
-	upTriFactor->AA_h = AAUp;
+        upTriFactor->AA_h = AAUp;
         cerr = cudaFreeHost(AiUp);CHKERRCUDA(cerr);
         cerr = cudaFreeHost(AjUp);CHKERRCUDA(cerr);
         ierr = PetscLogCpuToGpu((n+1+nzUpper)*sizeof(int)+nzUpper*sizeof(PetscScalar));CHKERRQ(ierr);
       } else {
-	if (!upTriFactor->AA_h) {
-	  cerr = cudaMallocHost((void**) &upTriFactor->AA_h, nzUpper*sizeof(PetscScalar));CHKERRCUDA(cerr);
-	}
+        if (!upTriFactor->AA_h) {
+          cerr = cudaMallocHost((void**) &upTriFactor->AA_h, nzUpper*sizeof(PetscScalar));CHKERRCUDA(cerr);
+        }
         /* Fill the upper triangular matrix */
         offset = nzUpper;
         for (i=n-1; i>=0; i--) {
@@ -2580,10 +2580,10 @@ static PetscErrorCode MatAXPY_SeqAIJCUSPARSE(Mat Y,PetscScalar a,Mat X,MatStruct
     if (cusparsestruct_x->format!=MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_PLIB,"only MAT_CUSPARSE_CSR supported");
     if (!cusparsestruct_y->mat || !cusparsestruct_x->mat) {
       if (Y->offloadmask == PETSC_OFFLOAD_UNALLOCATED || Y->offloadmask == PETSC_OFFLOAD_GPU) {
-	ierr = MatSeqAIJCUSPARSECopyFromGPU(Y);CHKERRQ(ierr);
+        ierr = MatSeqAIJCUSPARSECopyFromGPU(Y);CHKERRQ(ierr);
       }
       if (X->offloadmask == PETSC_OFFLOAD_UNALLOCATED || X->offloadmask == PETSC_OFFLOAD_GPU) {
-	ierr = MatSeqAIJCUSPARSECopyFromGPU(X);CHKERRQ(ierr);
+        ierr = MatSeqAIJCUSPARSECopyFromGPU(X);CHKERRQ(ierr);
       }
       ierr = MatAXPY_SeqAIJ(Y,a,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatSeqAIJCUSPARSECopyToGPU(Y);CHKERRQ(ierr);
