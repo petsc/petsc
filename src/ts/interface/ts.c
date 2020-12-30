@@ -2056,6 +2056,8 @@ PetscErrorCode  TSViewFromOptions(TS A,PetscObject obj,const char name[])
     The user can open an alternative visualization context with
     PetscViewerASCIIOpen() - output to a specified file.
 
+    In the debugger you can do "call TSView(ts,0)" to display the TS solver. (The same holds for any PETSc object viewer).
+
     Level: beginner
 
 .seealso: PetscViewerASCIIOpen()
