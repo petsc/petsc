@@ -1055,7 +1055,7 @@ PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
   ierr = VecCUDAGetArray(win,&warray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(yin,&yarray);CHKERRQ(ierr);
-  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr); 
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   try {
     wptr = thrust::device_pointer_cast(warray);
     xptr = thrust::device_pointer_cast(xarray);
