@@ -4,12 +4,18 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
+    self.versionname      = 'XORG_VERSION_MAJOR.XORG_VERSION_MINOR.XORG_VERSION_PATCH.XORG_VERSION_SNAP'
+    self.versioninclude   = ['xorg/xorg-server.h','xorg/xorgVersion.h']
     self.functions        = ['XSetWMName']
     self.includes         = ['X11/Xlib.h']
     self.liblist          = [['libX11.a']]
     self.lookforbydefault = 1
     self.pkgname          = 'x11'
     return
+
+  def versionToStandardForm(self,ver):
+    '''Completes the arithmetic needed to compute the version number from the numerical strings'''
+    return '.'.join([str(eval(i)) for i in ver.split('.')])
 
   def getSearchDirectories(self):
     '''Generate list of possible locations of X11'''

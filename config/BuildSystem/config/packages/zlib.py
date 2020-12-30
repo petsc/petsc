@@ -3,8 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://www.zlib.net/zlib-1.2.11.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zlib-1.2.11.tar.gz']
+    self.version      = "1.2.11"
+    self.versionname  = 'ZLIB_VERSION'
+    self.download     = ['http://www.zlib.net/zlib-'+self.version+'.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zlib-'+self.version+'.tar.gz']
     self.functions    = ['compress', 'uncompress']
     self.includes     = ['zlib.h']
     self.liblist      = [['libz.a'],['zlib.lib']]
