@@ -18,7 +18,7 @@ do {                                                                  \
     cudaError_t err = call;                                           \
     if (cudaSuccess != err) {                                         \
         fprintf (stderr, "Cuda error in file '%s' in line %i : %s.\n",\
-                 __FILE__, __LINE__, cudaGetErrorString(err) );       \
+                 __FILE__, __LINE__, cudaGetErrorString(err));        \
         exit(EXIT_FAILURE);                                           \
     }                                                                 \
 } while (0)
@@ -29,14 +29,14 @@ do {                                                                  \
     cudaError_t err = cudaGetLastError();                             \
     if (cudaSuccess != err) {                                         \
         fprintf (stderr, "Cuda error in file '%s' in line %i : %s.\n",\
-                 __FILE__, __LINE__, cudaGetErrorString(err) );       \
+                 __FILE__, __LINE__, cudaGetErrorString(err));        \
         exit(EXIT_FAILURE);                                           \
     }                                                                 \
     /* Check asynchronous errors, i.e. kernel failed (ULF) */         \
     err = cudaDeviceSynchronize();                                    \
     if (cudaSuccess != err) {                                         \
         fprintf (stderr, "Cuda error in file '%s' in line %i : %s.\n",\
-                 __FILE__, __LINE__, cudaGetErrorString( err) );      \
+                 __FILE__, __LINE__, cudaGetErrorString( err));       \
         exit(EXIT_FAILURE);                                           \
     }                                                                 \
 } while (0)
@@ -47,12 +47,12 @@ do {                                                                  \
 //
 __global__
 void landau_kernel(const PetscInt nip, const PetscInt dim, const PetscInt totDim, const PetscInt Nf, const PetscInt Nb, const PetscReal invJj[],
-		 const PetscReal nu_alpha[], const PetscReal nu_beta[], const PetscReal invMass[], const PetscReal Eq_m[],
-		 const PetscReal * const BB, const PetscReal * const DD, const PetscReal * const IPDataGlobal, const PetscReal wiGlobal[],
+                   const PetscReal nu_alpha[], const PetscReal nu_beta[], const PetscReal invMass[], const PetscReal Eq_m[],
+                   const PetscReal * const BB, const PetscReal * const DD, const PetscReal * const IPDataGlobal, const PetscReal wiGlobal[],
 #if !defined(LANDAU_USE_SHARED_GPU_MEM)
-		 PetscReal *g2arr, PetscReal *g3arr,
+                   PetscReal *g2arr, PetscReal *g3arr,
 #endif
-		 PetscBool quarter3DDomain, PetscScalar elemMats_out[])
+                   PetscBool quarter3DDomain, PetscScalar elemMats_out[])
 {
   const PetscInt  Nq = blockDim.x, myelem = blockIdx.x;
 #if defined(LANDAU_USE_SHARED_GPU_MEM)
@@ -77,10 +77,10 @@ void landau_kernel(const PetscInt nip, const PetscInt dim, const PetscInt totDim
 }
 static PetscErrorCode LandauAssembleCuda(PetscInt cStart, PetscInt cEnd, PetscInt totDim, DM plex, PetscSection section, PetscSection globalSection, Mat JacP, PetscScalar elemMats[], PetscContainer container, const PetscLogEvent events[]);
 __global__ void assemble_kernel(const PetscInt nidx_arr[], PetscInt *idx_arr[], PetscScalar *el_mats[], const ISColoringValue colors[], Mat_SeqAIJ mats[]);
-PetscErrorCode LandauCUDAJacobian( DM plex, const PetscInt Nq, const PetscReal nu_alpha[],const PetscReal nu_beta[],
-				 const PetscReal invMass[], const PetscReal Eq_m[], const PetscReal * const IPDataGlobal,
-				 const PetscReal wiGlobal[], const PetscReal invJj[], const PetscInt num_sub_blocks, const PetscLogEvent events[], PetscBool quarter3DDomain,
-				 Mat JacP)
+PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, const PetscReal nu_alpha[],const PetscReal nu_beta[],
+                                  const PetscReal invMass[], const PetscReal Eq_m[], const PetscReal * const IPDataGlobal,
+                                  const PetscReal wiGlobal[], const PetscReal invJj[], const PetscInt num_sub_blocks, const PetscLogEvent events[], PetscBool quarter3DDomain,
+                                  Mat JacP)
 {
   PetscErrorCode    ierr;
   PetscInt          ii,ej,*Nbf,Nb,nip_dim2,cStart,cEnd,Nf,dim,numGCells,totDim,nip,szf=sizeof(PetscReal);
@@ -109,7 +109,7 @@ PetscErrorCode LandauCUDAJacobian( DM plex, const PetscInt Nq, const PetscReal n
   ierr = DMGetLocalSection(plex, &section);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(plex, &globalSection);CHKERRQ(ierr);
   // create data
-  CUDA_SAFE_CALL(cudaMalloc((void **)&d_IPDataGlobal, nip*(dim + Nf*(dim+1))*szf )); // kernel input
+  CUDA_SAFE_CALL(cudaMalloc((void **)&d_IPDataGlobal, nip*(dim + Nf*(dim+1))*szf)); // kernel input
   CUDA_SAFE_CALL(cudaMalloc((void **)&d_nu_alpha, Nf*szf)); // kernel input
   CUDA_SAFE_CALL(cudaMalloc((void **)&d_nu_beta,  Nf*szf)); // kernel input
   CUDA_SAFE_CALL(cudaMalloc((void **)&d_invMass,  Nf*szf)); // kernel input
@@ -140,8 +140,8 @@ PetscErrorCode LandauCUDAJacobian( DM plex, const PetscInt Nq, const PetscReal n
     ii = LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_DIM*(1+LANDAU_DIM)*LANDAU_MAX_SUB_THREAD_BLOCKS;
 #if defined(LANDAU_USE_SHARED_GPU_MEM)
     // PetscPrintf(PETSC_COMM_SELF,"Call land_kernel with %D kB shared memory\n",ii*8/1024);
-    landau_kernel<<<numGCells,dimBlock,ii*szf>>>( nip,dim,totDim,Nf,Nb,d_invJj,d_nu_alpha,d_nu_beta,d_invMass,d_Eq_m,
-						d_BB, d_DD, d_IPDataGlobal, d_wiGlobal, quarter3DDomain, d_elemMats);
+    landau_kernel<<<numGCells,dimBlock,ii*szf>>>(nip,dim,totDim,Nf,Nb,d_invJj,d_nu_alpha,d_nu_beta,d_invMass,d_Eq_m,
+                                                 d_BB, d_DD, d_IPDataGlobal, d_wiGlobal, quarter3DDomain, d_elemMats);
     CHECK_LAUNCH_ERROR();
 #else
     PetscReal  *d_g2g3;
@@ -149,7 +149,7 @@ PetscErrorCode LandauCUDAJacobian( DM plex, const PetscInt Nq, const PetscReal n
     PetscReal  *g2 = &d_g2g3[0];
     PetscReal  *g3 = &d_g2g3[LANDAU_MAX_SUB_THREAD_BLOCKS*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_DIM*numGCells];
     landau_kernel<<<numGCells,dimBlock>>>(nip,dim,totDim,Nf,Nb,d_invJj,d_nu_alpha,d_nu_beta,d_invMass,d_Eq_m,
-					d_BB, d_DD, d_IPDataGlobal, d_wiGlobal, g2, g3, quarter3DDomain, d_elemMats);
+                                          d_BB, d_DD, d_IPDataGlobal, d_wiGlobal, g2, g3, quarter3DDomain, d_elemMats);
     CHECK_LAUNCH_ERROR();
     CUDA_SAFE_CALL (cudaDeviceSynchronize());
     CUDA_SAFE_CALL(cudaFree(d_g2g3));
@@ -178,13 +178,13 @@ PetscErrorCode LandauCUDAJacobian( DM plex, const PetscInt Nq, const PetscReal n
     for (ej = cStart, elMat = elemMats ; ej < cEnd; ++ej, elMat += totDim*totDim) {
       ierr = DMPlexMatSetClosure(plex, section, globalSection, JacP, ej, elMat, ADD_VALUES);CHKERRQ(ierr);
       if (ej==-1) {
-	int d,f;
-	printf("GPU Element matrix\n");
-	for (d = 0; d < totDim; ++d){
-	  for (f = 0; f < totDim; ++f) printf(" %17.10e",  PetscRealPart(elMat[d*totDim + f]));
-	  printf("\n");
-	}
-	exit(12);
+        int d,f;
+        printf("GPU Element matrix\n");
+        for (d = 0; d < totDim; ++d) {
+          for (f = 0; f < totDim; ++f) printf(" %17.10e",  PetscRealPart(elMat[d*totDim + f]));
+          printf("\n");
+        }
+        exit(12);
       }
     }
   } else {
@@ -225,8 +225,8 @@ void assemble_kernel(const PetscInt nidx_arr[], PetscInt *idx_arr[], PetscScalar
     high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       /* if (in[l] < 0) { */
-      /* 	printf("\t\tin[l] < 0 ?????\n"); */
-      /* 	continue; */
+      /*   printf("\t\tin[l] < 0 ?????\n"); */
+      /*   continue; */
       /* } */
       while (l<n && (value = v[l + k*n], PetscAbsScalar(value)==0.0)) l++;
       if (l==n) break;
@@ -242,8 +242,8 @@ void assemble_kernel(const PetscInt nidx_arr[], PetscInt *idx_arr[], PetscScalar
       for (i=low; i<high; i++) {
         // if (rp[i] > col) break;
         if (rp[i] == col) {
-	  ap[i] += value;
-	  low = i + 1;
+          ap[i] += value;
+          low = i + 1;
           goto noinsert;
         }
       }
