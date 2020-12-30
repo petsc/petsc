@@ -349,7 +349,7 @@ static PetscErrorCode MatMatMultNumeric_Hyper(Mat M, Mat X, Mat Y,void *ctx)
   PetscFunctionReturn(0);
 }
 
-/* Basic Newton-Schultz sampler: (2 * I - M * A ) * M */
+/* Basic Newton-Schultz sampler: (2 * I - M * A) * M */
 static PetscErrorCode MatMultKernel_NS(Mat M, Vec x, Vec y, PetscBool t)
 {
   PC             pc;
@@ -394,7 +394,7 @@ static PetscErrorCode MatMultTranspose_NS(Mat M, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-/* (2 * I - M * A ) * M, MatMat version */
+/* (2 * I - M * A) * M, MatMat version */
 static PetscErrorCode MatMatMultKernel_NS(Mat M, Mat X, Mat Y, PetscBool t)
 {
   PC             pc;

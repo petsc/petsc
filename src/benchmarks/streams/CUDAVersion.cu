@@ -638,7 +638,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   ierr = cudaFree(d_a);CHKERRQ(ierr);
   ierr = cudaFree(d_b);CHKERRQ(ierr);
   ierr = cudaFree(d_c);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 

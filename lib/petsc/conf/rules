@@ -574,7 +574,7 @@ simplehtml: chk_c2html
               idir=`dirname $$i`;\
               if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
               ${RM} $${loc}/$$i.html; \
-              sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
+              sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g" -e "s/ierr [ ]*= //g" -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' > $${loc}/$$i.html ; \
 	    fi; \
          done
@@ -652,35 +652,36 @@ cleangcov:
 #----------------------------------------------------------------------------------
 checkbadPetscFunctionBegin:
 	-@if [ "${SOURCED}" != "" ] ; then \
-	${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  \
+	${OMAKE} PETSC_ARCH=${PETSC_ARCH} \
 	checkbadPetscFunctionBegin_private ; fi
 
+GITSRC = '*.[chF]' '*.F90' '*.cpp' '*.cxx' '*.cu'
 checkbadSource:
 	-@${RM} -f checkbadSource.out
 	-@echo "Tabs in file -----------------------------------------" > checkbadSource.out
-	-@git --no-pager grep -n -P  '\t'  -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '\t' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
 	-@echo "White space at end of line ---------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P ' $$' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P ' $$' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
 	-@echo "Space after ( ----------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '\( ' -- '*.[chF]' '*.F90' '*.cxx' | grep PetscErrorCode | grep -v khash.h >> checkbadSource.out;true
-	-@git --no-pager grep -n -P 'if \( ' -- '*.[chF]' '*.F90' '*.cxx'  | grep -v khash.h >> checkbadSource.out;true
-	-@git --no-pager grep -n -P 'for \( ' -- '*.[chF]' '*.F90' '*.cxx'  | grep -v khash.h >> checkbadSource.out;true
-	-@git --no-pager grep -n -P 'while \( ' -- '*.[chF]' '*.F90' '*.cxx'  | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '\( ' -- ${GITSRC} | grep PetscErrorCode | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'if \( ' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'for \( ' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'while \( ' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
 	-@echo "Space before ) ---------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P ' \)' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
-	-@echo "Space before CHKERRQ ---------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '; CHKERRQ\(' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
-	-@echo "No space after if, for or while -----------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '[^_]for\(' -e 'if\('  -e 'while\(' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
-	-@echo "Two ;; -----------------------------" >> checkbadSource.out
-	-@git --no-pager grep  -P -e ';;'  -- '*.[chF]' '*.F90' '*.cxx' | grep -v ' for (' | grep -v khash.h >> checkbadSource.out;true
-	-@echo "Missing if (ierr) return(ierr); -----------------------------" >> checkbadSource.out
-	-@git --no-pager grep  -P -e 'ierr = PetscInitialize\('  -- '*.[ch]' '*.cxx' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" | grep -v khash.h >> checkbadSource.out;true
-	-@echo "DOS file (with DOS newlines)--------------------------" | grep -v khash.h >> checkbadSource.out
-	-@git --no-pager grep  -n -P '\r' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
-	-@echo "{ before SETERRQ --------------------------" >> checkbadSource.out
-	-@git --no-pager grep  -n -P '{SETERRQ' -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h >> checkbadSource.out;true
-#	-@echo "Missing CHKERRQ  --------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P ' \)' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@echo "Space before CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE) ----------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '; CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE)\(' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@echo "No space after if, for or while ----------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e '[^_]for\(' -e '[^_]if\(' -e 'while\(' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@echo "Two ;; -----------------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' | grep -v khash.h >> checkbadSource.out;true
+	-@echo "Missing if (ierr) return(ierr); ----------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" | grep -v khash.h >> checkbadSource.out;true
+	-@echo "DOS file (with DOS newlines) -------------------------" | grep -v khash.h >> checkbadSource.out
+	-@git --no-pager grep -n -P '\r' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@echo "{ before SETERRQ -------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+#	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
 	@a=`cat checkbadSource.out | wc -l`; let "l=$$a-10" ;\
          if [ $$l -gt 0 ] ; then \
@@ -688,7 +689,7 @@ checkbadSource:
            cat checkbadSource.out ;\
          fi;\
          test ! $$l -gt 0
-	-@git --no-pager grep  -P  -n "[\x00-\x08\x0E-\x1F\x80-\xFF]"  -- '*.[chF]' '*.F90' '*.cxx' | grep -v khash.h > badSourceChar.out;\
+	-@git --no-pager grep -P -n "[\x00-\x08\x0E-\x1F\x80-\xFF]" -- ${GITSRC} | grep -v khash.h > badSourceChar.out;\
          w=`cat badSourceChar.out | wc -l`;\
          if [ $$w -gt 0 ] ; then \
            echo "Source files with non-ASCII characters ----------------" ;\
@@ -718,30 +719,30 @@ checkbadSource:
 #    The code recursively follows the permanently moved (301) redirections until it reaches the final URL
 #    For DropBox we need to check the validity of the new URL but do not want to return to user the internal "raw" URL
 checkbadURLS:
-	-@x=`git grep "http[s]*://" -- '*.[chF]' '*.html' '*.cxx' '*.F90' '*.py' '*.tex' | egrep -v "(config/packages|HandsOnExercises)" | tr '[[:blank:]]' '\n' | grep 'http[s]*://' |  sed 's!.*(\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\))!\1!g' | sed 's!.*\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\).*!\1!g' | sed 's/\.$$//g' | sort | uniq| awk '{ print length, $$0 }' | sort -r -n -s | cut -d" " -f2` ;  \
+	-@x=`git grep "http[s]*://" -- '*.[chF]' '*.html' '*.cpp' '*.cxx' '*.cu' '*.F90' '*.py' '*.tex' | egrep -v "(config/packages|HandsOnExercises)" | tr '[[:blank:]]' '\n' | grep 'http[s]*://' | sed 's!.*(\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\))!\1!g' | sed 's!.*\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\).*!\1!g' | sed 's/\.$$//g' | sort | uniq| awk '{ print length, $$0 }' | sort -r -n -s | cut -d" " -f2` ; \
         for i in $$x; do \
           url=$$i; \
           msg=''; \
           while [[ "$${msg}D" == "D" ]] ; do \
-            y1=`curl  --connect-timeout 5 --head --silent $${url} | head -n 1`; \
+            y1=`curl --connect-timeout 5 --head --silent $${url} | head -n 1`; \
             y2=`echo $${y1} | grep ' 4[0-9]* '`; \
             y3=`echo $${y1} | grep ' 301 '`; \
-            if [[ "$${y1}D" == "D" ]] ; then  \
+            if [[ "$${y1}D" == "D" ]] ; then \
               msg="Unable to reach site" ; \
-            elif [[ "$${y2}D" != "D" ]] ; then  \
+            elif [[ "$${y2}D" != "D" ]] ; then \
               msg=$${y1} ; \
-            elif [[ "$${y3}D" != "D" ]] ; then  \
+            elif [[ "$${y3}D" != "D" ]] ; then \
               l=`curl --connect-timeout 5 --head --silent $${url} | grep ocation | sed 's/.*ocation:[[:blank:]]\(.*\)/\1/g' | tr -d '\r'` ; \
               w=`echo $$l | grep 'http'` ; \
-              if [[ "$${w}D" != "D" ]] ; then  \
+              if [[ "$${w}D" != "D" ]] ; then \
                 url=$$l ; \
-              else  \
+              else \
                 ws=`echo $${url} | sed 's!\(http[s]*://[-a-zA-Z0-9_.]*\)/.*!\1!g'` ; \
                 dp=`echo $${ws}$${l} | grep "dropbox.com/s/raw"` ; \
-                if [[ "$${dp}D" != "D" ]] ; then  \
-                  b=`curl  --connect-timeout 5 --head --silent $${ws}$$l | head -n 1` ; \
+                if [[ "$${dp}D" != "D" ]] ; then \
+                  b=`curl --connect-timeout 5 --head --silent $${ws}$$l | head -n 1` ; \
                   c=`echo $${b} | egrep "( 2[0-9]* | 302 )"` ; \
-                  if [[ "$${c}D" == "D" ]] ; then  \
+                  if [[ "$${c}D" == "D" ]] ; then \
                     msg=`echo "dropbox file doesn't exist" $${c}` ; \
                   else \
                     break ; \
@@ -756,7 +757,7 @@ checkbadURLS:
           done;\
           if [[ "$${msg}D" == "D" && "$${url}" != "$$i" ]] ; then \
             echo "URL" $$i "has moved to valid final location:" $${url} ; \
-            if [[ "$${REPLACE}D" != "D" ]] ; then  \
+            if [[ "$${REPLACE}D" != "D" ]] ; then \
               git psed $$i $$l ;\
             fi; \
           elif [[ "$${msg}D" != "D" && "$${url}" != "$$i" ]] ; then \
@@ -775,7 +776,7 @@ sourcelist:
         done
 
 #
-#  Remove trailing blanks from source code
+# Remove trailing blanks from source code
 rmtrailingblanks:
 	@for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF}; do \
 	  sed -i '' s"/[ ]*$$//"g $$i; \

@@ -449,7 +449,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILULowerTriMatrix(Mat A)
                                #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                                  ,loTriFactor->solvePolicy, loTriFactor->solveBuffer
                                #endif
-                                );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
         cerr = WaitForCUDA();CHKERRCUDA(cerr);
         ierr = PetscLogEventEnd(MAT_CUSPARSESolveAnalysis,A,0,0,0);CHKERRQ(ierr);
 
@@ -591,7 +591,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(Mat A)
                                #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                                  ,upTriFactor->solvePolicy, upTriFactor->solveBuffer
                                #endif
-                                );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
         cerr = WaitForCUDA();CHKERRCUDA(cerr);
         ierr = PetscLogEventEnd(MAT_CUSPARSESolveAnalysis,A,0,0,0);CHKERRQ(ierr);
 
@@ -783,7 +783,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildICCTriMatrices(Mat A)
                                 #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                                  ,upTriFactor->solvePolicy, upTriFactor->solveBuffer
                                 #endif
-                                );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
         cerr = WaitForCUDA();CHKERRCUDA(cerr);
         ierr = PetscLogEventEnd(MAT_CUSPARSESolveAnalysis,A,0,0,0);CHKERRQ(ierr);
 
@@ -843,7 +843,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildICCTriMatrices(Mat A)
                                 #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                                  ,loTriFactor->solvePolicy, loTriFactor->solveBuffer
                                 #endif
-                                );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
         cerr = WaitForCUDA();CHKERRCUDA(cerr);
         ierr = PetscLogEventEnd(MAT_CUSPARSESolveAnalysis,A,0,0,0);CHKERRQ(ierr);
 
@@ -1062,7 +1062,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEAnalyzeTransposeForSolve(Mat A)
                           loTriFactorT->csrMat->column_indices->data().get(), loTriFactorT->csrMat->row_offsets->data().get(),
                           CUSPARSE_ACTION_NUMERIC, indexBase
                         #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
   cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogEventBegin(MAT_CUSPARSEGenerateTranspose,A,0,0,0);CHKERRQ(ierr);
 
@@ -1086,7 +1086,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEAnalyzeTransposeForSolve(Mat A)
                           #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                            ,loTriFactorT->solvePolicy, loTriFactorT->solveBuffer
                           #endif
-                          );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
   cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogEventEnd(MAT_CUSPARSESolveAnalysis,A,0,0,0);CHKERRQ(ierr);
 
@@ -1156,7 +1156,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEAnalyzeTransposeForSolve(Mat A)
                           upTriFactorT->csrMat->column_indices->data().get(), upTriFactorT->csrMat->row_offsets->data().get(),
                           CUSPARSE_ACTION_NUMERIC, indexBase
                         #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
   cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogEventBegin(MAT_CUSPARSEGenerateTranspose,A,0,0,0);CHKERRQ(ierr);
 
@@ -1180,7 +1180,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEAnalyzeTransposeForSolve(Mat A)
                           #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                            ,upTriFactorT->solvePolicy, upTriFactorT->solveBuffer
                           #endif
-                          );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
   cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogEventEnd(MAT_CUSPARSESolveAnalysis,A,0,0,0);CHKERRQ(ierr);
 
@@ -1261,7 +1261,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
                             matrixT->column_indices->data().get(), matrixT->row_offsets->data().get(),
                             CUSPARSE_ACTION_NUMERIC, indexBase
                           #endif
-                           );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
     matstructT->mat = matrixT;
 
    #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
@@ -1399,7 +1399,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
                       #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                         ,upTriFactorT->solvePolicy, upTriFactorT->solveBuffer
                       #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
 
   /* Then, solve L */
   stat = cusparse_solve(cusparseTriFactors->handle, loTriFactorT->solveOp,
@@ -1416,7 +1416,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
                       #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                         ,loTriFactorT->solvePolicy, loTriFactorT->solveBuffer
                       #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
 
   /* Last, copy the solution, xGPU, into a temporary with the column permutation ... can't be done in place. */
   thrust::copy(thrust::make_permutation_iterator(xGPU, cusparseTriFactors->cpermIndices->begin()),
@@ -1475,7 +1475,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec
                       #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                         ,upTriFactorT->solvePolicy, upTriFactorT->solveBuffer
                       #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
 
   /* Then, solve L */
   stat = cusparse_solve(cusparseTriFactors->handle, loTriFactorT->solveOp,
@@ -1492,7 +1492,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec
                       #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                         ,loTriFactorT->solvePolicy, loTriFactorT->solveBuffer
                       #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
 
   /* restore */
   ierr = VecCUDARestoreArrayRead(bb,&barray);CHKERRQ(ierr);
@@ -1546,7 +1546,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
                       #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                         ,loTriFactor->solvePolicy, loTriFactor->solveBuffer
                       #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
 
   /* Then, solve U */
   stat = cusparse_solve(cusparseTriFactors->handle, upTriFactor->solveOp,
@@ -1563,7 +1563,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
                       #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                         ,upTriFactor->solvePolicy, upTriFactor->solveBuffer
                       #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
 
   /* Last, reorder with the column permutation */
   thrust::copy(thrust::make_permutation_iterator(tempGPU->begin(), cusparseTriFactors->cpermIndices->begin()),
@@ -1611,7 +1611,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec x
                       #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                         ,loTriFactor->solvePolicy, loTriFactor->solveBuffer
                       #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
 
   /* Next, solve U */
   stat = cusparse_solve(cusparseTriFactors->handle, upTriFactor->solveOp,
@@ -1628,7 +1628,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec x
                       #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
                         ,upTriFactor->solvePolicy, upTriFactor->solveBuffer
                       #endif
-                        );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
 
   ierr = VecCUDARestoreArrayRead(bb,&barray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(xx,&xarray);CHKERRQ(ierr);
@@ -1714,7 +1714,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
                             matrixT->column_indices->data().get(), matrixT->row_offsets->data().get(),
                             CUSPARSE_ACTION_NUMERIC, indexBase
                           #endif
-                           );CHKERRCUSPARSE(stat);
+);CHKERRCUSPARSE(stat);
         err  = WaitForCUDA();CHKERRCUDA(err);
         ierr = PetscLogEventEnd(MAT_CUSPARSEGenerateTranspose,A,0,0,0);CHKERRQ(ierr);
       }

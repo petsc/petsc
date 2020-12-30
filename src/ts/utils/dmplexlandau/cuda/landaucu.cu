@@ -23,7 +23,7 @@ do {                                                                  \
     cudaError_t err = call;                                           \
     if (cudaSuccess != err) {                                         \
         fprintf (stderr, "Cuda error in file '%s' in line %i : %s.\n",\
-                 __FILE__, __LINE__, cudaGetErrorString(err) );       \
+                 __FILE__, __LINE__, cudaGetErrorString(err));        \
         exit(EXIT_FAILURE);                                           \
     }                                                                 \
 } while (0)
@@ -34,14 +34,14 @@ do {                                                                  \
     cudaError_t err = cudaGetLastError();                             \
     if (cudaSuccess != err) {                                         \
         fprintf (stderr, "Cuda error in file '%s' in line %i : %s.\n",\
-                 __FILE__, __LINE__, cudaGetErrorString(err) );       \
+                 __FILE__, __LINE__, cudaGetErrorString(err));        \
         exit(EXIT_FAILURE);                                           \
     }                                                                 \
     /* Check asynchronous errors, i.e. kernel failed (ULF) */         \
     err = cudaDeviceSynchronize();                                    \
     if (cudaSuccess != err) {                                         \
         fprintf (stderr, "Cuda error in file '%s' in line %i : %s.\n",\
-                 __FILE__, __LINE__, cudaGetErrorString( err) );      \
+                 __FILE__, __LINE__, cudaGetErrorString( err));       \
         exit(EXIT_FAILURE);                                           \
     }                                                                 \
 } while (0)
@@ -80,11 +80,11 @@ PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps *pMaps)
 //
 __global__
 void __launch_bounds__(256,1) landau_form_fdf(const PetscInt nip, const PetscInt dim, const PetscInt Nf, const PetscInt Nb, const PetscReal invJ_a[],
-					      const PetscReal * const BB, const PetscReal * const DD, LandauIPReal *IPDataRaw, LandauIPReal d_f[], LandauIPReal d_dfdx[], LandauIPReal d_dfdy[], 
+                   const PetscReal * const BB, const PetscReal * const DD, LandauIPReal *IPDataRaw, LandauIPReal d_f[], LandauIPReal d_dfdx[], LandauIPReal d_dfdy[], 
 #if LANDAU_DIM==3
-					      LandauIPReal d_dfdz[],
+                   LandauIPReal d_dfdz[],
 #endif
-					      PetscErrorCode *ierr) // output
+                   PetscErrorCode *ierr) // output
 {
   const PetscInt  Nq = blockDim.y, myelem = blockIdx.x;
   const PetscInt  myQi = threadIdx.y;
@@ -470,7 +470,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, const PetscReal nu
   ierr = DMGetGlobalSection(plex, &globalSection);CHKERRQ(ierr);
   ipdatasz = LandauGetIPDataSize(IPData);
   // create data
-  CUDA_SAFE_CALL(cudaMalloc((void **)&d_IPDataRaw,ipdatasz*szf )); // kernel input
+  CUDA_SAFE_CALL(cudaMalloc((void **)&d_IPDataRaw,ipdatasz*szf)); // kernel input
   CUDA_SAFE_CALL(cudaMalloc((void **)&d_nu_alpha, Nf*szf)); // kernel input
   CUDA_SAFE_CALL(cudaMalloc((void **)&d_nu_beta,  Nf*szf)); // kernel input
   CUDA_SAFE_CALL(cudaMalloc((void **)&d_invMass,  Nf*szf)); // kernel input
