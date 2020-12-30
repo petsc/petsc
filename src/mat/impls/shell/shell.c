@@ -954,7 +954,7 @@ PetscErrorCode MatShellSetMatProductOperation_Shell(Mat A,MatProductType ptype,P
     if (flg) break;
     Cnames = Cnames->next;
   }
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   Btype = Bnames ? (size > 1 ? Bnames->mname : Bnames->sname) : Btype;
   Ctype = Cnames ? (size > 1 ? Cnames->mname : Cnames->sname) : Ctype;
   ierr = PetscSNPrintf(composedname,sizeof(composedname),"MatProductSetFromOptions_%s_%s_C",((PetscObject)A)->type_name,Btype);CHKERRQ(ierr);

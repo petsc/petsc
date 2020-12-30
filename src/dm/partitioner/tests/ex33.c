@@ -18,8 +18,8 @@ int main(int argc, char **argv)
   PetscBool        pwgts = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   nparts = size;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nparts",&nparts,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-vwgts",&vwgts,NULL);CHKERRQ(ierr);

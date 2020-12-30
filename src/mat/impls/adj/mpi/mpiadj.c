@@ -158,9 +158,9 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
     if (subcomm){
       ierr = PetscObjectGetComm((PetscObject)irow[i],&scomm_row);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)icol[i],&scomm_col);CHKERRQ(ierr);
-      ierr = MPI_Comm_compare(scomm_row,scomm_col,&issame);CHKERRQ(ierr);
+      ierr = MPI_Comm_compare(scomm_row,scomm_col,&issame);CHKERRMPI(ierr);
       if (issame != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row index set must have the same comm as the col index set\n");
-      ierr = MPI_Comm_compare(scomm_row,PETSC_COMM_SELF,&issame);CHKERRQ(ierr);
+      ierr = MPI_Comm_compare(scomm_row,PETSC_COMM_SELF,&issame);CHKERRMPI(ierr);
       if (issame == MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," can not use PETSC_COMM_SELF as comm when extracting a parallel submatrix\n");
     } else {
       scomm_row = PETSC_COMM_SELF;
@@ -192,7 +192,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
        Mat                sadj = *(submat[i]);
        Mat_MPIAdj         *sa  = (Mat_MPIAdj*)((sadj)->data);
        ierr = PetscObjectGetComm((PetscObject)sadj,&scomm_mat);CHKERRQ(ierr);
-       ierr = MPI_Comm_compare(scomm_row,scomm_mat,&issame);CHKERRQ(ierr);
+       ierr = MPI_Comm_compare(scomm_row,scomm_mat,&issame);CHKERRMPI(ierr);
        if (issame != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"submatrix  must have the same comm as the col index set\n");
        ierr = PetscArraycpy(sa->i,sxadj,irow_n+1);CHKERRQ(ierr);
        ierr = PetscArraycpy(sa->j,sadjncy,sxadj[irow_n]);CHKERRQ(ierr);
@@ -687,12 +687,12 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat *B)
   for (i=0,nranks=0; i<size; i++) {
     if (ranges[i+1] - ranges[i] > 0) ranks[nranks++] = i;
   }
-  ierr = MPI_Comm_group(acomm,&agroup);CHKERRQ(ierr);
-  ierr = MPI_Group_incl(agroup,nranks,ranks,&bgroup);CHKERRQ(ierr);
+  ierr = MPI_Comm_group(acomm,&agroup);CHKERRMPI(ierr);
+  ierr = MPI_Group_incl(agroup,nranks,ranks,&bgroup);CHKERRMPI(ierr);
   ierr = PetscFree(ranks);CHKERRQ(ierr);
-  ierr = MPI_Comm_create(acomm,bgroup,&bcomm);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&agroup);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&bgroup);CHKERRQ(ierr);
+  ierr = MPI_Comm_create(acomm,bgroup,&bcomm);CHKERRMPI(ierr);
+  ierr = MPI_Group_free(&agroup);CHKERRMPI(ierr);
+  ierr = MPI_Group_free(&bgroup);CHKERRMPI(ierr);
   if (bcomm != MPI_COMM_NULL) {
     PetscInt   m,N;
     Mat_MPIAdj *b;
@@ -715,34 +715,34 @@ PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
   PetscMPIInt    mnz,mm,*allnz,*allm,size,*dispnz,*dispm;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   nz   = adj->nz;
   if (adj->i[m] != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nz %D not correct i[m] %d",nz,adj->i[m]);
-  ierr = MPI_Allreduce(&nz,&NZ,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&nz,&NZ,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
 
   ierr = PetscMPIIntCast(nz,&mnz);CHKERRQ(ierr);
   ierr = PetscMalloc2(size,&allnz,size,&dispnz);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&mnz,1,MPI_INT,allnz,1,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPI_Allgather(&mnz,1,MPI_INT,allnz,1,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   dispnz[0] = 0; for (i=1; i<size; i++) dispnz[i] = dispnz[i-1]+ allnz[i-1];
   if (adj->values) {
     ierr = PetscMalloc1(NZ,&Values);CHKERRQ(ierr);
-    ierr = MPI_Allgatherv(adj->values,mnz,MPIU_INT,Values,allnz,dispnz,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr = MPI_Allgatherv(adj->values,mnz,MPIU_INT,Values,allnz,dispnz,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   }
   ierr = PetscMalloc1(NZ,&J);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(adj->j,mnz,MPIU_INT,J,allnz,dispnz,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(adj->j,mnz,MPIU_INT,J,allnz,dispnz,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   ierr = PetscFree2(allnz,dispnz);CHKERRQ(ierr);
-  ierr = MPI_Scan(&nz,&nzstart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPI_Scan(&nz,&nzstart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   nzstart -= nz;
   /* shift the i[] values so they will be correct after being received */
   for (i=0; i<m; i++) adj->i[i] += nzstart;
   ierr = PetscMalloc1(M+1,&II);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(m,&mm);CHKERRQ(ierr);
   ierr = PetscMalloc2(size,&allm,size,&dispm);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&mm,1,MPI_INT,allm,1,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPI_Allgather(&mm,1,MPI_INT,allm,1,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   dispm[0] = 0; for (i=1; i<size; i++) dispm[i] = dispm[i-1]+ allm[i-1];
-  ierr = MPI_Allgatherv(adj->i,mm,MPIU_INT,II,allm,dispm,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(adj->i,mm,MPIU_INT,II,allm,dispm,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   ierr = PetscFree2(allm,dispm);CHKERRQ(ierr);
   II[M] = NZ;
   /* shift the i[] values back */

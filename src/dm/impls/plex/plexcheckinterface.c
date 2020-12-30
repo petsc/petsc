@@ -14,31 +14,31 @@ static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Type_size(dt, &unitsize);CHKERRQ(ierr);
+  ierr = MPI_Type_size(dt, &unitsize);CHKERRMPI(ierr);
   ierr = PetscObjectGetComm(obj, &comm);CHKERRQ(ierr);
   ierr = PetscMalloc2(nrranks, &rsize, nrranks, &rarr);CHKERRQ(ierr);
   ierr = PetscMalloc2(nrranks, &rreq, nsranks, &sreq);CHKERRQ(ierr);
   /* exchange array size */
   ierr = PetscObjectGetNewTag(obj,&tag);CHKERRQ(ierr);
   for (r=0; r<nrranks; r++) {
-    ierr = MPI_Irecv(&rsize[r], 1, MPIU_INT, rranks[r], tag, comm, &rreq[r]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(&rsize[r], 1, MPIU_INT, rranks[r], tag, comm, &rreq[r]);CHKERRMPI(ierr);
   }
   for (r=0; r<nsranks; r++) {
-    ierr = MPI_Isend(&ssize[r], 1, MPIU_INT, sranks[r], tag, comm, &sreq[r]);CHKERRQ(ierr);
+    ierr = MPI_Isend(&ssize[r], 1, MPIU_INT, sranks[r], tag, comm, &sreq[r]);CHKERRMPI(ierr);
   }
-  ierr = MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
+  ierr = MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   /* exchange array */
   ierr = PetscObjectGetNewTag(obj,&tag);CHKERRQ(ierr);
   for (r=0; r<nrranks; r++) {
     ierr = PetscMalloc(rsize[r]*unitsize, &rarr[r]);CHKERRQ(ierr);
-    ierr = MPI_Irecv(rarr[r], rsize[r], dt, rranks[r], tag, comm, &rreq[r]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rarr[r], rsize[r], dt, rranks[r], tag, comm, &rreq[r]);CHKERRMPI(ierr);
   }
   for (r=0; r<nsranks; r++) {
-    ierr = MPI_Isend(sarr[r], ssize[r], dt, sranks[r], tag, comm, &sreq[r]);CHKERRQ(ierr);
+    ierr = MPI_Isend(sarr[r], ssize[r], dt, sranks[r], tag, comm, &sreq[r]);CHKERRMPI(ierr);
   }
-  ierr = MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
+  ierr = MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   ierr = PetscFree2(rreq, sreq);CHKERRQ(ierr);
   *rsize_out = rsize;
   *rarr_out = rarr;
@@ -201,8 +201,8 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &myrank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &myrank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &commsize);CHKERRMPI(ierr);
   if (commsize < 2) PetscFunctionReturn(0);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   if (!sf) PetscFunctionReturn(0);

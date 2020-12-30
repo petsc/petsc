@@ -43,7 +43,7 @@ PetscErrorCode VecView_Binary(Vec vec,PetscViewer viewer)
     const char        *name,*pre;
 
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)vec),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)vec),&rank);CHKERRMPI(ierr);
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_BINARY_MATLAB) {

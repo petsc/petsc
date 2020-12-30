@@ -25,7 +25,7 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
   ierr = ISCreateStride(comm,2,r,1,is0);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,2,r+2,1,is1);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   {
     PetscInt    rows[4],cols0[5],cols1[5],cols2[3],cols3[3];

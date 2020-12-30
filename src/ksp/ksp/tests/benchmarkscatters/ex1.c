@@ -77,8 +77,8 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"numProcs   = %d\n",size);CHKERRQ(ierr);
 
@@ -105,7 +105,7 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"                Time     Min to Max Range   Proportion of KSP\n");CHKERRQ(ierr);
 
   eventInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
-  ierr = MPI_Allreduce(&eventInfo[KSP_Solve].time,&ksptime,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&eventInfo[KSP_Solve].time,&ksptime,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   ksptime = ksptime/size;
 
   for (i=0; i<(int)(sizeof(events)/sizeof(int)); i++) {
@@ -116,9 +116,9 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
     stats[MESSLEN] = eventInfo[event].messageLength;
     stats[REDUCT]  = eventInfo[event].numReductions;
     stats[FLOPS]   = eventInfo[event].flops;
-    ierr = MPI_Allreduce(stats,maxstats,6,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(stats,minstats,6,MPIU_PETSCLOGDOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(stats,sumstats,6,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(stats,maxstats,6,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(stats,minstats,6,MPIU_PETSCLOGDOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(stats,sumstats,6,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
 
     avetime  = sumstats[1]/size;
     ierr = PetscViewerASCIIPrintf(viewer,"%s %4.2e   -%5.1f %% %5.1f %%   %4.2e %%\n",stageLog->eventLog->eventInfo[event].name,

@@ -17,8 +17,8 @@ int main(int argc,char **argv)
   PetscBool      world2subs = PETSC_FALSE;  /* Copy a vector from WORLD to multiple subcomms? */
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&grank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&grank);CHKERRMPI(ierr);
 
   if (nproc < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"This test must have at least two processes to run");
 
@@ -135,7 +135,7 @@ int main(int argc,char **argv)
       MPI_Comm          intercomm,parentcomm;
       PetscMPIInt       lrank;
 
-      ierr = MPI_Comm_rank(subcomm,&lrank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(subcomm,&lrank);CHKERRMPI(ierr);
       ierr = VecCreateMPI(subcomm,PETSC_DECIDE,N,&x);CHKERRQ(ierr); /* x is on subcomm */
       ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
 
@@ -147,15 +147,15 @@ int main(int argc,char **argv)
       ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
       ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
-      ierr = MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,1,100/*tag*/,&intercomm);CHKERRQ(ierr);
+      ierr = MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,1,100/*tag*/,&intercomm);CHKERRMPI(ierr);
 
       /* Tell rank 0 of subcomm1 the global size of x */
-      if (!lrank) {ierr = MPI_Send(&N,1,MPIU_INT,0/*receiver's rank in remote comm, i.e., subcomm1*/,200/*tag*/,intercomm);CHKERRQ(ierr);}
+      if (!lrank) {ierr = MPI_Send(&N,1,MPIU_INT,0/*receiver's rank in remote comm, i.e., subcomm1*/,200/*tag*/,intercomm);CHKERRMPI(ierr);}
 
       /* Create an intracomm Petsc can work on. Ranks in subcomm0 are ordered before ranks in subcomm1 in parentcomm.
         But this order actually does not matter, since what we care is vector y, which is defined on subcomm1.
       */
-      ierr = MPI_Intercomm_merge(intercomm,0/*low*/,&parentcomm);CHKERRQ(ierr);
+      ierr = MPI_Intercomm_merge(intercomm,0/*low*/,&parentcomm);CHKERRMPI(ierr);
 
       /* Create a vector xg on parentcomm, which shares memory with x */
       ierr = VecGetArrayRead(x,&xvalue);CHKERRQ(ierr);
@@ -183,8 +183,8 @@ int main(int argc,char **argv)
       ierr = VecDestroy(&xg);CHKERRQ(ierr);
       ierr = VecDestroy(&yg);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
-      ierr = MPI_Comm_free(&intercomm);CHKERRQ(ierr);
-      ierr = MPI_Comm_free(&parentcomm);CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&intercomm);CHKERRMPI(ierr);
+      ierr = MPI_Comm_free(&parentcomm);CHKERRMPI(ierr);
     } else if (mycolor == 1) { /* subcomm 1, containing ranks 1, 4, 7, ... in PETSC_COMM_WORLD */
       PetscInt    n,N;
       Vec         y,xg,yg;
@@ -194,16 +194,16 @@ int main(int argc,char **argv)
       MPI_Comm    intercomm,parentcomm;
       PetscMPIInt lrank;
 
-      ierr = MPI_Comm_rank(subcomm,&lrank);CHKERRQ(ierr);
-      ierr = MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,0/*remote_leader*/,100/*tag*/,&intercomm);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(subcomm,&lrank);CHKERRMPI(ierr);
+      ierr = MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,0/*remote_leader*/,100/*tag*/,&intercomm);CHKERRMPI(ierr);
 
       /* Two rank-0 are talking */
-      if (!lrank) {ierr = MPI_Recv(&N,1,MPIU_INT,0/*sender's rank in remote comm, i.e. subcomm0*/,200/*tag*/,intercomm,MPI_STATUS_IGNORE);CHKERRQ(ierr);}
+      if (!lrank) {ierr = MPI_Recv(&N,1,MPIU_INT,0/*sender's rank in remote comm, i.e. subcomm0*/,200/*tag*/,intercomm,MPI_STATUS_IGNORE);CHKERRMPI(ierr);}
       /* Rank 0 of subcomm1 bcasts N to its members */
-      ierr = MPI_Bcast(&N,1,MPIU_INT,0/*local root*/,subcomm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&N,1,MPIU_INT,0/*local root*/,subcomm);CHKERRMPI(ierr);
 
       /* Create a intracomm Petsc can work on */
-      ierr = MPI_Intercomm_merge(intercomm,1/*high*/,&parentcomm);CHKERRQ(ierr);
+      ierr = MPI_Intercomm_merge(intercomm,1/*high*/,&parentcomm);CHKERRMPI(ierr);
 
       /* Ranks in subcomm1 have nothing on xg, so they simply have n=0, array=NULL.*/
       ierr = VecCreateMPIWithArray(parentcomm,1/*bs*/,0/*n*/,N,NULL/*array*/,&xg);CHKERRQ(ierr);
@@ -241,8 +241,8 @@ int main(int argc,char **argv)
       ierr = VecDestroy(&xg);CHKERRQ(ierr);
       ierr = VecDestroy(&yg);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
-      ierr = MPI_Comm_free(&intercomm);CHKERRQ(ierr);
-      ierr = MPI_Comm_free(&parentcomm);CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&intercomm);CHKERRMPI(ierr);
+      ierr = MPI_Comm_free(&parentcomm);CHKERRMPI(ierr);
     } else if (mycolor == 2) { /* subcomm2 */
       /* Processes in subcomm2 do not participate in the VecScatter. They can freely do unrelated things on subcomm2 */
     }
@@ -306,7 +306,7 @@ int main(int argc,char **argv)
     ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
   } /* world2subs */
 
-  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRMPI(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

@@ -98,7 +98,7 @@ static PetscErrorCode PetscML_comm(double p[],void *ML_data)
   const PetscScalar *array;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) PetscFunctionReturn(0);
 
   ierr = VecPlaceArray(ml->y,p);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ static int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = VecPlaceArray(ml->x,p);CHKERRQ(ierr);
   } else {
@@ -355,7 +355,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
     /* keep track of block size for A matrices */
     ierr = MatSetBlockSize (A,mlmat->num_PDEs);CHKERRQ(ierr);
     ierr = PetscMalloc3(m,&nnzA,m,&nnzB,m,&nnz);CHKERRQ(ierr);
-    ierr = MPI_Scan(&m,&rstart,1,MPIU_INT,MPI_SUM,mlmat->comm->USR_comm);CHKERRQ(ierr);
+    ierr = MPI_Scan(&m,&rstart,1,MPIU_INT,MPI_SUM,mlmat->comm->USR_comm);CHKERRMPI(ierr);
     rstart -= m;
 
     for (i=0; i<m; i++) {
@@ -532,7 +532,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PetscFunctionBegin;
   ierr = PetscCitationsRegister("@TechReport{ml_users_guide,\n  author = {M. Sala and J.J. Hu and R.S. Tuminaro},\n  title = {{ML}3.1 {S}moothed {A}ggregation {U}ser's {G}uide},\n  institution =  {Sandia National Laboratories},\n  number = {SAND2004-4821},\n  year = 2004\n}\n",&cite);CHKERRQ(ierr);
   A    = pc->pmat;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
 
   if (pc->setupcalled) {
     if (pc->flag == SAME_NONZERO_PATTERN && pc_ml->reuse_interpolation) {
@@ -972,7 +972,7 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"ML options");CHKERRQ(ierr);
 
   PrintLevel = 0;

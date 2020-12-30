@@ -27,7 +27,7 @@ int main(int argc,char *argv[])
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, 0,0,0, &m,&n,&p, 0,0, 0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&vw);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(vw,"[%d] lx ly%s\n",rank,dim>2 ? " lz" : "");CHKERRQ(ierr);

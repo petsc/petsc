@@ -86,7 +86,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,2);
   ierr = PetscDrawIsNull(lg->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRMPI(ierr);
 
   draw = lg->win;
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
@@ -461,7 +461,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   ierr = PetscDrawIsNull(lg->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRMPI(ierr);
 
   draw = lg->win;
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);

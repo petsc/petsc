@@ -1365,7 +1365,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
       case 2: color =            stag->rank[0]       +            stag->nRanks[0]*stag->rank[1]     ; break;
       default: SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP,"Unsupported dimension index %D",d);
     }
-    ierr = MPI_Comm_split(PetscObjectComm((PetscObject)dm),color,key,&subcomm);CHKERRQ(ierr);
+    ierr = MPI_Comm_split(PetscObjectComm((PetscObject)dm),color,key,&subcomm);CHKERRMPI(ierr);
 
     /* Create sub-DMs living on these new communicators (which are destroyed by DMProduct) */
     ierr = DMStagCreate1d(subcomm,stag->boundaryType[d],stag->N[d],dof0,dof1,stag->stencilType,stag->stencilWidth,stag->l[d],&subdm);CHKERRQ(ierr);
@@ -1385,7 +1385,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
     ierr = DMProductSetDM(dmc,d,subdm);CHKERRQ(ierr);
     ierr = DMProductSetDimensionIndex(dmc,d,0);CHKERRQ(ierr);
     ierr = DMDestroy(&subdm);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&subcomm);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }

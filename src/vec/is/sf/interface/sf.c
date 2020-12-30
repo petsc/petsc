@@ -156,8 +156,8 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 #endif
   sf->degreeknown = PETSC_FALSE;
   ierr = PetscFree(sf->degree);CHKERRQ(ierr);
-  if (sf->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->ingroup);CHKERRQ(ierr);}
-  if (sf->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->outgroup);CHKERRQ(ierr);}
+  if (sf->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->ingroup);CHKERRMPI(ierr);}
+  if (sf->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->outgroup);CHKERRMPI(ierr);}
   ierr = PetscSFDestroy(&sf->multi);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&sf->map);CHKERRQ(ierr);
   sf->setupcalled = PETSC_FALSE;
@@ -271,7 +271,7 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
   PetscFunctionBegin;
   if (!sf->graphset || !PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
   ierr = PetscSFGetGraph(sf,NULL,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRMPI(ierr);
   for (i = 0; i < nleaves; i++) {
     const PetscInt rank = iremote[i].rank;
     const PetscInt remote = iremote[i].index;
@@ -578,8 +578,8 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf,PetscLayout map,PetscSFPatt
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
   if (pattern < PETSCSF_PATTERN_ALLGATHER || pattern > PETSCSF_PATTERN_ALLTOALL) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unsupported PetscSFPattern %D\n",pattern);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   if (pattern == PETSCSF_PATTERN_ALLTOALL) {
     type = PETSCSFALLTOALL;
@@ -669,7 +669,7 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
   maxlocal = sf->maxleaf+1; /* TODO: We should use PetscSFGetLeafRange() */
 
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
   ierr = PetscMalloc2(nroots,&roots,maxlocal,&leaves);CHKERRQ(ierr);
   for (i=0; i<maxlocal; i++) {
     leaves[i].rank  = rank;
@@ -892,7 +892,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%D, leaves=%D, remote ranks=%D\n",rank,sf->nroots,sf->nleaves,sf->nranks);CHKERRQ(ierr);
       for (i=0; i<sf->nleaves; i++) {
@@ -1031,7 +1031,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sf,1);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRMPI(ierr);
   ierr = PetscTableCreate(10,size,&table);CHKERRQ(ierr);
   for (i=0; i<sf->nleaves; i++) {
     /* Log 1-based rank */
@@ -1051,13 +1051,13 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
   {
     MPI_Group group = MPI_GROUP_NULL;
     PetscMPIInt *dgroupranks;
-    ierr = MPI_Comm_group(PetscObjectComm((PetscObject)sf),&group);CHKERRQ(ierr);
-    ierr = MPI_Group_size(dgroup,&groupsize);CHKERRQ(ierr);
+    ierr = MPI_Comm_group(PetscObjectComm((PetscObject)sf),&group);CHKERRMPI(ierr);
+    ierr = MPI_Group_size(dgroup,&groupsize);CHKERRMPI(ierr);
     ierr = PetscMalloc1(groupsize,&dgroupranks);CHKERRQ(ierr);
     ierr = PetscMalloc1(groupsize,&groupranks);CHKERRQ(ierr);
     for (i=0; i<groupsize; i++) dgroupranks[i] = i;
-    if (groupsize) {ierr = MPI_Group_translate_ranks(dgroup,groupsize,dgroupranks,group,groupranks);CHKERRQ(ierr);}
-    ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+    if (groupsize) {ierr = MPI_Group_translate_ranks(dgroup,groupsize,dgroupranks,group,groupranks);CHKERRMPI(ierr);}
+    ierr = MPI_Group_free(&group);CHKERRMPI(ierr);
     ierr = PetscFree(dgroupranks);CHKERRQ(ierr);
   }
 
@@ -1152,22 +1152,22 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
     ierr = PetscSFComputeDegreeEnd(bgcount,&indegree);CHKERRQ(ierr);
     /* Enumerate the incoming ranks */
     ierr = PetscMalloc2(indegree[0],&inranks,sf->nranks,&outranks);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
     for (i=0; i<sf->nranks; i++) outranks[i] = rank;
     ierr = PetscSFGatherBegin(bgcount,MPI_INT,outranks,inranks);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(bgcount,MPI_INT,outranks,inranks);CHKERRQ(ierr);
-    ierr = MPI_Comm_group(PetscObjectComm((PetscObject)sf),&group);CHKERRQ(ierr);
-    ierr = MPI_Group_incl(group,indegree[0],inranks,&sf->ingroup);CHKERRQ(ierr);
-    ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+    ierr = MPI_Comm_group(PetscObjectComm((PetscObject)sf),&group);CHKERRMPI(ierr);
+    ierr = MPI_Group_incl(group,indegree[0],inranks,&sf->ingroup);CHKERRMPI(ierr);
+    ierr = MPI_Group_free(&group);CHKERRMPI(ierr);
     ierr = PetscFree2(inranks,outranks);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&bgcount);CHKERRQ(ierr);
   }
   *incoming = sf->ingroup;
 
   if (sf->outgroup == MPI_GROUP_NULL) {
-    ierr = MPI_Comm_group(PetscObjectComm((PetscObject)sf),&group);CHKERRQ(ierr);
-    ierr = MPI_Group_incl(group,sf->nranks,sf->ranks,&sf->outgroup);CHKERRQ(ierr);
-    ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+    ierr = MPI_Comm_group(PetscObjectComm((PetscObject)sf),&group);CHKERRMPI(ierr);
+    ierr = MPI_Group_incl(group,sf->nranks,sf->ranks,&sf->outgroup);CHKERRMPI(ierr);
+    ierr = MPI_Group_free(&group);CHKERRMPI(ierr);
   }
   *outgoing = sf->outgroup;
   PetscFunctionReturn(0);
@@ -1236,7 +1236,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
       PetscMPIInt rank;
       PetscInt    *inranks,*newoffset,*outranks,*newoutoffset,*tmpoffset,maxdegree;
       PetscSFNode *newremote;
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
       for (i=0,maxdegree=0; i<sf->nroots; i++) maxdegree = PetscMax(maxdegree,indegree[i]);
       ierr = PetscMalloc5(sf->multi->nroots,&inranks,sf->multi->nroots,&newoffset,maxlocal,&outranks,maxlocal,&newoutoffset,maxdegree,&tmpoffset);CHKERRQ(ierr);
       for (i=0; i<maxlocal; i++) outranks[i] = rank;
@@ -2178,7 +2178,7 @@ PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF sf,PetscSF *out)
   } else {
     /* Could use PetscSFCreateEmbeddedLeafSF, but since we know the comm is PETSC_COMM_SELF, we can make it fast */
     ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&myrank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&myrank);CHKERRMPI(ierr);
 
     /* Find out local edges and build a local SF */
     ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);

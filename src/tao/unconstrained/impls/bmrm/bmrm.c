@@ -70,7 +70,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   lambda = bmrm->lambda;
 
   /* Check Stopping Condition */
@@ -163,8 +163,8 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
     ierr = TaoComputeObjectiveAndGradient(tao, W, &f, G);CHKERRQ(ierr);
 
-    ierr = MPI_Bcast(&jtwt,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
-    ierr = MPI_Bcast(&reg,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&jtwt,1,MPIU_REAL,0,comm);CHKERRMPI(ierr);
+    ierr = MPI_Bcast(&reg,1,MPIU_REAL,0,comm);CHKERRMPI(ierr);
 
     jw = reg + f;                                       /* J(w) = regularizer + Remp(w) */
     if (jw < min_jw) min_jw = jw;

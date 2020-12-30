@@ -100,8 +100,8 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
   len_loc += 2*(1 + eEnd-eStart + vEnd-vStart);
 
   /* values = [nedges, nvertices; id, nvar, xedge; ...; id, nvars, xvertex;...], to be sent to proc[0] */
-  ierr = MPI_Allreduce(&len_loc,&len,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&len_loc,&len,1,MPIU_INT,MPI_MAX,comm);CHKERRMPI(ierr);
   ierr = PetscCalloc1(len,&values);CHKERRQ(ierr);
 
   if (!rank) {
@@ -168,7 +168,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
     for (j=1; j<size; j++) {
       ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",j);CHKERRQ(ierr);
 
-      ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,comm,&status);CHKERRMPI(ierr);
 
       ne = (PetscInt)PetscAbsScalar(values[0]);
       nv = (PetscInt)PetscAbsScalar(values[1]);
@@ -194,7 +194,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
     }
   } else {
     /* sends values to proc[0] */
-    ierr = MPI_Send((void*)values,k,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+    ierr = MPI_Send((void*)values,k,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
   }
 
   ierr = PetscFree(values);CHKERRQ(ierr);

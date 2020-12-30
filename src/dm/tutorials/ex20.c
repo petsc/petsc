@@ -69,7 +69,7 @@ PetscErrorCode pic_insert_DMDA(PetscInt dim)
     PetscInt    npoints,*list;
     PetscMPIInt rank;
 
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
     ierr = DMSwarmSortGetAccess(swarm);CHKERRQ(ierr);
     ierr = DMSwarmSortGetNumberOfPointsPerCell(swarm,0,&npoints);CHKERRQ(ierr);
     ierr = DMSwarmSortGetPointsPerCell(swarm,rank,&npoints,&list);CHKERRQ(ierr);

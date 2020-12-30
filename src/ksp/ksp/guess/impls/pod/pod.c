@@ -51,7 +51,7 @@ static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
   pod->curr = 0;
   /* need to wait for completion of outstanding requests */
   if (pod->ndots_iallreduce) {
-    ierr = MPI_Wait(&pod->req_iallreduce,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Wait(&pod->req_iallreduce,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
   }
   pod->ndots_iallreduce = 0;
   /* destroy vectors if the size of the linear system has changed */
@@ -145,7 +145,7 @@ static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess)
 #endif
   /* need to wait for completion before destroying dots_iallreduce */
   if (pod->ndots_iallreduce) {
-    ierr = MPI_Wait(&pod->req_iallreduce,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Wait(&pod->req_iallreduce,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
   }
   ierr = PetscFree(pod->dots_iallreduce);CHKERRQ(ierr);
   ierr = PetscFree(pod->swork);CHKERRQ(ierr);
@@ -202,7 +202,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
       PetscMPIInt rank;
       Mat         L;
 
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)guess),&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)guess),&rank);CHKERRMPI(ierr);
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,pod->nen,pod->nen,pod->low,&L);CHKERRQ(ierr);
       if (!rank) {
         ierr = MatView(L,NULL);CHKERRQ(ierr);
@@ -261,7 +261,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
 #if !defined(PETSC_HAVE_MPI_IALLREDUCE)
     ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
 #else
-    ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
+    ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRMPI(ierr);
     pod->ndots_iallreduce = 1;
 #endif
   } else {
@@ -284,7 +284,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
 #if !defined(PETSC_HAVE_MPI_IALLREDUCE)
       ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
 #else
-      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
+      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRMPI(ierr);
       pod->ndots_iallreduce = 3;
 #endif
     } else {
@@ -292,7 +292,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
       ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,2*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
       for (i=0;i<pod->n;i++) pod->swork[5*pod->n + i] = pod->swork[4*pod->n + i];
 #else
-      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,2*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
+      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,2*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRMPI(ierr);
       pod->ndots_iallreduce = 2;
 #endif
     }
@@ -301,7 +301,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
 
 complete_request:
   if (pod->ndots_iallreduce) {
-    ierr = MPI_Wait(&pod->req_iallreduce,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Wait(&pod->req_iallreduce,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
     switch (pod->ndots_iallreduce) {
     case 3:
       for (i=0;i<pod->n;i++) pod->swork[3*pod->n + i] = pod->dots_iallreduce[         i];

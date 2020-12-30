@@ -53,7 +53,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *options, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
     ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ static PetscErrorCode test2(DM dm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRMPI(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF, rank ? 0 : 1, 0, 1, &cells);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX_t);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ static PetscErrorCode test6(DM dm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRMPI(ierr);
   locX_t = NULL;
   locA = NULL;
   ierr = ISCreateStride(PETSC_COMM_SELF, rank ? 0 : 1, 0, 1, &cells);CHKERRQ(ierr);

@@ -94,8 +94,8 @@ int main(int argc,char **args)
   comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
@@ -755,7 +755,7 @@ int GetLocalOrdering(GRID *grid)
       fclose(fptr);
     }
   }
-  ierr = MPI_Bcast(v2p,nnodes,MPI_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(v2p,nnodes,MPI_INT,0,comm);CHKERRMPI(ierr);
   for (inode = 0; inode < nnodes; inode++) {
     if (v2p[inode] == rank) {
       l2a[nnodesLoc] = inode;
@@ -1657,9 +1657,9 @@ int GetLocalOrdering(GRID *grid)
       partSum[i] = 0;
     }
 
-    ierr = MPI_Allreduce(partLoc,partMax,7,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(partLoc,partMin,7,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(partLoc,partSum,7,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(partLoc,partMax,7,MPI_INT,MPI_MAX,comm);CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(partLoc,partMin,7,MPI_INT,MPI_MIN,comm);CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(partLoc,partSum,7,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
     ierr = PetscPrintf(comm,"==============================\n");CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Partitioning quality info ....\n");CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"==============================\n");CHKERRQ(ierr);
@@ -1802,7 +1802,7 @@ int GetLocalOrdering(GRID *grid)
 
 /* Free the temporary arrays */
   ierr = PetscFree(a2l);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1831,7 +1831,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
     size_t count;
     int    bytes;
@@ -2204,8 +2204,8 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   PetscFunctionBegin;
   ierr = GridCompleteOverlap(user->grid,&nvertices,&nedgeLoc,&eptr);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 #if defined(PETSC_USE_COMPLEX) || !defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_64BIT_INDICES)
   SETERRQ(comm,PETSC_ERR_SUP,"This function is only implemented for scalar-type=real precision=double, 32-bit indices");
 #endif

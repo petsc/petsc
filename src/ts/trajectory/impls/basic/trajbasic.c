@@ -108,7 +108,7 @@ PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj,TS ts)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)tj,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
     char      *dir = tj->dirname;
     PetscBool flg;

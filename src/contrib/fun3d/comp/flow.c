@@ -95,8 +95,8 @@ int main(int argc,char **args)
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(MPI_COMM_WORLD,&CommSize);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&CommSize);CHKERRMPI(ierr);
 
   /*PetscPrintf(MPI_COMM_WORLD, " Program name is %s\n",
                 OptionsGetProgramName());*/
@@ -825,7 +825,7 @@ int GetLocalOrdering(GRID *grid)
       fclose(fptr);
     }
   }
-  ierr = MPI_Bcast(v2p,nnodes,MPI_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(v2p,nnodes,MPI_INT,0,comm);CHKERRMPI(ierr);
   for (inode = 0; inode < nnodes; inode++) {
     if (v2p[inode] == rank) {
       l2a[nnodesLoc] = inode ;
@@ -1121,7 +1121,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i+= nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   }
 
   FCALLOC(nvertices, &grid->y);
@@ -1171,7 +1171,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i+= nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   }
 
   ierr = PetscFree(ftmp);CHKERRQ(ierr);
@@ -2355,17 +2355,17 @@ int WriteRestartFile(GRID *grid, int timeStep)
     for (i = 1; i < CommSize; i++) {
       if (rank == i) {
         ierr = VecGetArray(qnodeLoc, &qnode);
-        ierr = MPI_Send(&nnodesLoc,1,MPI_INT,0,0,MPI_COMM_WORLD);CHKERRQ(ierr);
-        ierr = MPI_Send(qnode,bs*nnodesLoc,MPI_DOUBLE,0,1,MPI_COMM_WORLD);CHKERRQ(ierr);
+        ierr = MPI_Send(&nnodesLoc,1,MPI_INT,0,0,MPI_COMM_WORLD);CHKERRMPI(ierr);
+        ierr = MPI_Send(qnode,bs*nnodesLoc,MPI_DOUBLE,0,1,MPI_COMM_WORLD);CHKERRMPI(ierr);
         ierr = VecRestoreArray(qnodeLoc, &qnode);CHKERRQ(ierr);
       }
       if (!rank) {
         int        nnodesLocIpr;
         MPI_Status mstatus;
 
-        ierr = MPI_Recv(&nnodesLocIpr,1,MPI_INT,i,0,MPI_COMM_WORLD,&mstatus);CHKERRQ(ierr);
+        ierr = MPI_Recv(&nnodesLocIpr,1,MPI_INT,i,0,MPI_COMM_WORLD,&mstatus);CHKERRMPI(ierr);
         FCALLOC(bs*nnodesLocIpr, &qnode);
-        ierr = MPI_Recv(qnode,bs*nnodesLocIpr,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&mstatus);CHKERRQ(ierr);
+        ierr = MPI_Recv(qnode,bs*nnodesLocIpr,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&mstatus);CHKERRMPI(ierr);
         ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLocIpr,PETSC_SCALAR);CHKERRQ(ierr);
         /* Write the solution vector in vtk (Visualization Toolkit) format*/
         if (flg_vtk != 0) {
@@ -2431,16 +2431,16 @@ int ReadRestartFile(GRID *grid)
   for (i = 1; i < CommSize; i++) {
     if (rank == i) {
       ierr = VecGetArray(qnodeLoc, &qnode);
-      ierr = MPI_Send(&nnodesLoc,1,MPI_INT,0,0,MPI_COMM_WORLD);CHKERRQ(ierr);
-      ierr = MPI_Recv(qnode,bs*nnodesLoc,MPI_DOUBLE,0,1,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
+      ierr = MPI_Send(&nnodesLoc,1,MPI_INT,0,0,MPI_COMM_WORLD);CHKERRMPI(ierr);
+      ierr = MPI_Recv(qnode,bs*nnodesLoc,MPI_DOUBLE,0,1,MPI_COMM_WORLD,&status);CHKERRMPI(ierr);
       ierr = VecRestoreArray(qnodeLoc, &qnode);CHKERRQ(ierr);
     }
     if (!rank) {
       int nnodesLocIpr;
-      ierr = MPI_Recv(&nnodesLocIpr,1,MPI_INT,i,0,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(&nnodesLocIpr,1,MPI_INT,i,0,MPI_COMM_WORLD,&status);CHKERRMPI(ierr);
       FCALLOC(bs*nnodesLocIpr, &qnode);
       ierr = PetscBinaryRead(fdes,qnode,bs*nnodesLocIpr,PETSC_SCALAR);CHKERRQ(ierr);
-      ierr = MPI_Send(qnode,bs*nnodesLocIpr,MPI_DOUBLE,i,1,MPI_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Send(qnode,bs*nnodesLocIpr,MPI_DOUBLE,i,1,MPI_COMM_WORLD);CHKERRMPI(ierr);
       ierr = PetscFree(qnode);CHKERRQ(ierr);
     }
     ierr = MPI_Barrier(MPI_COMM_WORLD);

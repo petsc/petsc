@@ -249,7 +249,7 @@ static PetscErrorCode PetscCUPMInitializeAndView(PetscBool initDevice,PetscInt d
   }
 
   if (devView) {
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
     cerr = cupmGetDeviceCount(&devCount);CHKERRCUPM(cerr);
     for (devId = 0; devId < devCount; ++devId) {
       cerr = cupmGetDeviceProperties(&prop,devId);CHKERRCUPM(cerr);

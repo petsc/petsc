@@ -149,7 +149,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
   }
   if (vertSection) {ierr = PetscInfo(part,"PETSCPARTITIONERSIMPLE ignores vertex weights\n");CHKERRQ(ierr);}
   ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   if (targetSection) {
     ierr = MPIU_Allreduce(&numVertices, &numVerticesGlobal, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
     ierr = PetscCalloc1(nparts,&tpwgts);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
       ierr = VecCreate(comm,&v);CHKERRQ(ierr);
       ierr = VecSetSizes(v,numVertices,numVerticesGlobal);CHKERRQ(ierr);
       ierr = VecSetType(v,VECSTANDARD);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
       for (np = 0,st = 0; np < nparts; ++np) {
         if (rank == np || (rank == size-1 && size < nparts && np >= size)) {
           for (j = 0; j < tpwgts[np]; j++) {
@@ -213,12 +213,12 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
 
       ierr = PetscMalloc1(size+1,&offsets);CHKERRQ(ierr);
       offsets[0] = 0;
-      ierr = MPI_Allgather(&numVertices,1,MPIU_INT,&offsets[1],1,MPIU_INT,comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&numVertices,1,MPIU_INT,&offsets[1],1,MPIU_INT,comm);CHKERRMPI(ierr);
       for (np = 2; np <= size; np++) {
         offsets[np] += offsets[np-1];
       }
       nvGlobal = offsets[size];
-      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
       myFirst = offsets[rank];
       myLast  = offsets[rank + 1] - 1;
       ierr = PetscFree(offsets);CHKERRQ(ierr);

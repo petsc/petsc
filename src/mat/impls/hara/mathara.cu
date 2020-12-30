@@ -814,7 +814,7 @@ static PetscErrorCode MatSetUpMultiply_HARA(Mat A)
   PetscFunctionBegin;
   if (a->multsetup) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size > 1) {
     iidx = MatHaraGetThrustPointer(a->dist_hmatrix->basis_tree.basis_branch.index_map);
     n    = a->dist_hmatrix->basis_tree.basis_branch.index_map.size();
@@ -865,7 +865,7 @@ static PetscErrorCode MatAssemblyEnd_HARA(Mat A, MatAssemblyType asstype)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   /* TODO REUSABILITY of geometric construction */
   delete a->hmatrix;
   delete a->dist_hmatrix;
@@ -1008,7 +1008,7 @@ static PetscErrorCode MatZeroEntries_HARA(Mat A)
   Mat_HARA       *a = (Mat_HARA*)A->data;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size > 1) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not yet supported");
   else {
     a->hmatrix->clearData();
@@ -1098,7 +1098,7 @@ static PetscErrorCode MatView_HARA(Mat A, PetscViewer view)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(view,&format);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(view,"  H-Matrix constructed from %s\n",hara->sampler ? "Mat" : (hara->spacedim ? "Kernel" : "None"));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(view,"  PointCloud dim %D\n",hara->spacedim);CHKERRQ(ierr);
@@ -1141,13 +1141,13 @@ static PetscErrorCode MatHaraSetCoords_HARA(Mat A, PetscInt spacedim, const Pets
   ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
   if (!cong) SETERRQ(comm,PETSC_ERR_SUP,"Only for square matrices with congruent layouts");
   N    = A->rmap->N;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size > 1) {
     PetscSF      sf;
     MPI_Datatype dtype;
 
-    ierr = MPI_Type_contiguous(spacedim,MPIU_REAL,&dtype);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&dtype);CHKERRQ(ierr);
+    ierr = MPI_Type_contiguous(spacedim,MPIU_REAL,&dtype);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&dtype);CHKERRMPI(ierr);
 
     ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
     ierr = PetscSFSetGraphWithPattern(sf,A->rmap,PETSCSF_PATTERN_ALLGATHER);CHKERRQ(ierr);
@@ -1155,7 +1155,7 @@ static PetscErrorCode MatHaraSetCoords_HARA(Mat A, PetscInt spacedim, const Pets
     ierr = PetscSFBcastBegin(sf,dtype,coords,gcoords);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf,dtype,coords,gcoords);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-    ierr = MPI_Type_free(&dtype);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&dtype);CHKERRMPI(ierr);
   } else gcoords = (PetscReal*)coords;
 
   delete hara->ptcloud1;
@@ -1206,7 +1206,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HARA(Mat A)
   a->norm_max_samples = 10;
   haraCreateDistributedHandleComm(&a->handle,PetscObjectComm((PetscObject)A));
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATHARA);CHKERRQ(ierr);
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 

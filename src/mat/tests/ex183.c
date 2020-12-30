@@ -25,8 +25,8 @@ int main(int argc, char **args)
   PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex183","Mat");CHKERRQ(ierr);
   m = 5;
@@ -85,9 +85,9 @@ int main(int argc, char **args)
   */
   k = size/total_subdomains + (size%total_subdomains>0); /* There are up to k ranks to a color */
   color = rank/k;
-  ierr = MPI_Comm_split(PETSC_COMM_WORLD,color,rank,&subcomm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
+  ierr = MPI_Comm_split(PETSC_COMM_WORLD,color,rank,&subcomm);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(subcomm,&subsize);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRMPI(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   nis = 1;
   ierr = PetscMalloc2(rend-rstart,&rowindices,rend-rstart,&colindices);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ int main(int argc, char **args)
         ++s;
       }
     }
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = ISSort(rowis[0]);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ int main(int argc, char **args)
         ++s;
       }
     }
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   if (rep == 1) goto cleanup;
@@ -193,7 +193,7 @@ int main(int argc, char **args)
         ++s;
       }
     }
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   cleanup:
@@ -206,7 +206,7 @@ int main(int argc, char **args)
     ierr = ISDestroy(colis+k);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRMPI(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

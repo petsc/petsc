@@ -53,7 +53,7 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRMPI(ierr);
   if (!rank) {
     err = fflush(vu->fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
@@ -80,7 +80,7 @@ PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
   ierr = PetscViewerFileClose_VU(viewer);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRMPI(ierr);
   if (rank != 0) PetscFunctionReturn(0);
   ierr = PetscStrallocpy(name, &vu->filename);CHKERRQ(ierr);
   ierr = PetscFixFilename(name, fname);CHKERRQ(ierr);

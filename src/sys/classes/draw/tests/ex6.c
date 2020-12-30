@@ -31,8 +31,8 @@ static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
 
   PetscFunctionBegin;
   ierr = PetscDrawGetWindowSize(draw,&w,&h);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   for (j=rank; j<h; j+=size) {

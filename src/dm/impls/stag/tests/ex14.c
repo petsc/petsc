@@ -22,7 +22,7 @@ int main(int argc,char **argv)
     PetscInt ly[3] = {3,8,2}, ranksy = 3, my = 13;
     PetscInt lz[2] = {2,4},   ranksz = 2, mz = 6;
 
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
     switch (dim) {
       case 1:
         if (size != ranksx) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 1 -setSizes",ranksx);

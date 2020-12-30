@@ -100,7 +100,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
   PetscMPIInt       rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
   ierr = VecGetArrayRead(l,&lv);CHKERRQ(ierr);
   ierr = VecGetArray(g,&gv);CHKERRQ(ierr);
   switch (imode) {
@@ -123,7 +123,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
       if (imode == MAX_VALUES) for (i=0; i<red->N; i++) buffer[i] = PetscMax(gv[i],lv[i]);
 #endif
     } else source = (void*)lv;
-    ierr = MPI_Reduce(source,gv,red->N,MPIU_SCALAR,(imode == ADD_VALUES) ? MPIU_SUM : MPIU_MAX,red->rank,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr = MPI_Reduce(source,gv,red->N,MPIU_SCALAR,(imode == ADD_VALUES) ? MPIU_SUM : MPIU_MAX,red->rank,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
 #if !defined(PETSC_HAVE_MPI_IN_PLACE)
     if (rank == red->rank) {ierr = PetscFree(buffer);CHKERRQ(ierr);}
 #endif
@@ -157,7 +157,7 @@ static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm,Vec g,InsertMode imod
   switch (imode) {
   case INSERT_VALUES:
     if (red->n) {ierr = PetscArraycpy(lv,gv,red->n);CHKERRQ(ierr);}
-    ierr = MPI_Bcast(lv,red->N,MPIU_SCALAR,red->rank,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr = MPI_Bcast(lv,red->N,MPIU_SCALAR,red->rank,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"InsertMode not supported");
   }
@@ -226,7 +226,7 @@ static PetscErrorCode DMRefine_Redundant(DM dmc,MPI_Comm comm,DM *dmf)
   if (comm == MPI_COMM_NULL) {
     ierr = PetscObjectGetComm((PetscObject)dmc,&comm);CHKERRQ(ierr);
   }
-  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dmc),comm,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dmc),comm,&flag);CHKERRMPI(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"cannot change communicators");
   ierr = DMRedundantCreate(comm,redc->rank,redc->N,dmf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -242,7 +242,7 @@ static PetscErrorCode DMCoarsen_Redundant(DM dmf,MPI_Comm comm,DM *dmc)
   if (comm == MPI_COMM_NULL) {
     ierr = PetscObjectGetComm((PetscObject)dmf,&comm);CHKERRQ(ierr);
   }
-  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dmf),comm,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dmf),comm,&flag);CHKERRMPI(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
   ierr = DMRedundantCreate(comm,redf->rank,redf->N,dmc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -257,7 +257,7 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
   PetscInt       i,rstart,rend;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dmc),PetscObjectComm((PetscObject)dmf),&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dmc),PetscObjectComm((PetscObject)dmf),&flag);CHKERRMPI(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
   if (redc->rank != redf->rank) SETERRQ(PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Owning rank does not match");
   if (redc->N != redf->N) SETERRQ(PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Global size does not match");

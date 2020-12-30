@@ -41,7 +41,7 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
   /* Return if asked for VECSTANDARD and Vec is already VECSEQ on 1 process or VECMPI on more.
      Otherwise, we free the Vec array in the call to destroy below and never reallocate it,
      since the VecType will be the same and VecSetType(v,VECSEQ) will return when called from VecCreate_Standard */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size);CHKERRMPI(ierr);
   ierr = PetscStrcmp(method,VECSTANDARD,&match);CHKERRQ(ierr);
   if (match) {
 

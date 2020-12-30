@@ -26,8 +26,8 @@ int main(int argc,char **argv)
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr = PetscLogStageRegister("Scatter(bs=1)", &stage1);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecScatter(bs=1)", PETSC_OBJECT_CLASSID, &event1);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* check if we found wrong values on any processors */
-  ierr = MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %d\n",bs);CHKERRQ(ierr); }
 
   /* print out event log of VecScatter(bs=1) */
@@ -139,7 +139,7 @@ int main(int argc,char **argv)
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* check if we found wrong values on any processors */
-  ierr = MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %d\n",bs);CHKERRQ(ierr); }
 
   /* print out event log of VecScatter(bs=4) */

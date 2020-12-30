@@ -66,10 +66,10 @@ PetscErrorCode PetscViewer_SAWS_Destroy(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Viewer_SAWs_keyval == MPI_KEYVAL_INVALID) PetscFunctionReturn(0);
 
-  ierr = MPI_Comm_get_attr(comm,Petsc_Viewer_SAWs_keyval,(void**)&viewer,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Viewer_SAWs_keyval,(void**)&viewer,&flag);CHKERRMPI(ierr);
   if (flag) {
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = MPI_Comm_delete_attr(comm,Petsc_Viewer_SAWs_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_delete_attr(comm,Petsc_Viewer_SAWs_keyval);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }

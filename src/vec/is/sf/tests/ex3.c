@@ -19,8 +19,8 @@ int main(int argc,char **argv)
   PetscBool      flag,isreplace,issum;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr = PetscOptionsGetString(NULL,NULL,"-op",opname,sizeof(opname),&flag);CHKERRQ(ierr);
   ierr = PetscStrcmp(opname,"replace",&isreplace);CHKERRQ(ierr);

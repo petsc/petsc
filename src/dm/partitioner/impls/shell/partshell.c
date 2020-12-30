@@ -80,7 +80,7 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, Pet
     PetscInt   *sizes, *points, v, p;
     PetscMPIInt rank;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) part), &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) part), &rank);CHKERRMPI(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) nparts);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);

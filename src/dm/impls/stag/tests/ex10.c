@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscMPIInt     rank;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   dof0 = 1;
   dof1 = 1;
   dof2 = 1;

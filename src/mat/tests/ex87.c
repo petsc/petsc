@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = MatCreateSubMatrices(SBAIJ,n,irow,icol,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
   ierr = MatCreateSubMatrices(SBAIJ,n,irow,icol,MAT_REUSE_MATRIX,&subSBAIJ);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = MatView(subBAIJ[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     ierr = MatView(subSBAIJ[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

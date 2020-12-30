@@ -55,7 +55,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = DMPlexCreateBoxMesh(comm, dim, simplex, faces, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);
 
@@ -120,9 +120,9 @@ int main(int argc, char **argv)
     ierr = PetscSectionGetStorageSize(gsection, &gSizeBefore);CHKERRQ(ierr);
     minBefore = gSizeBefore;
     maxBefore = gSizeBefore;
-    ierr = MPI_Allreduce(MPI_IN_PLACE, &gSizeBefore, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE, &minBefore, 1, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE, &maxBefore, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &gSizeBefore, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &minBefore, 1, MPIU_INT, MPI_MIN, comm);CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &maxBefore, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
     ierr = PetscSectionDestroy(&gsection);CHKERRQ(ierr);
   }
 
@@ -133,9 +133,9 @@ int main(int argc, char **argv)
     ierr = PetscSectionGetStorageSize(gsection, &gSizeAfter);CHKERRQ(ierr);
     minAfter = gSizeAfter;
     maxAfter = gSizeAfter;
-    ierr = MPI_Allreduce(MPI_IN_PLACE, &gSizeAfter, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE, &minAfter, 1, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE, &maxAfter, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &gSizeAfter, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &minAfter, 1, MPIU_INT, MPI_MIN, comm);CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &maxAfter, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
     if (gSizeAfter != gSizeBefore) SETERRQ(comm, PETSC_ERR_PLIB, "Global section has not the same size before and after.");
     if (!(minAfter >= minBefore && maxAfter <= maxBefore && (minAfter > minBefore || maxAfter < maxBefore))) SETERRQ(comm, PETSC_ERR_PLIB, "DMPlexRebalanceSharedPoints did not improve mesh point balance.");
     ierr = PetscSectionDestroy(&gsection);CHKERRQ(ierr);

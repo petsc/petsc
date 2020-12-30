@@ -269,7 +269,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   dir->col                              = NULL;
   dir->row                              = NULL;
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = PetscStrallocpy(MATORDERINGND,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   } else {

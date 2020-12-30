@@ -62,7 +62,8 @@
 #define PETSC_ERR_USER_INPUT       95  /* missing or incorrect user input */
 #define PETSC_ERR_GPU_RESOURCE     96  /* unable to load a GPU resource, for example cuBLAS */
 #define PETSC_ERR_GPU              97  /* An error from a GPU call, this may be due to lack of resources on the GPU or a true error in the call */
-#define PETSC_ERR_MAX_VALUE        98  /* this is always the one more than the largest error code */
+#define PETSC_ERR_MPI              98  /* general MPI error */
+#define PETSC_ERR_MAX_VALUE        99  /* this is always the one more than the largest error code */
 
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
@@ -95,9 +96,18 @@
       SETERRQ() may be called from Fortran subroutines but SETERRA() must be called from the
       Fortran main program.
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), CHKERRMPI()
 M*/
 #define SETERRQ(comm,ierr,s) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s)
+
+/*
+    Returned from PETSc functions that are called from MPI, such as related to attributes
+      Do not confuse PETSC_MPI_ERROR_CODE and PETSC_ERR_MPI, the first is registered with MPI and returned to MPI as
+      an error code, the latter is a regular PETSc error code passed within PETSc code indicating an error was detected in an MPI call.
+*/
+PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS;
+PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
+
 
 /*MC
    SETERRMPI - Macro to be called when an error has been detected within an MPI callback function
@@ -431,7 +441,7 @@ M*/
 #define SETERRABORT(comm,ierr,s) do {PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s);MPI_Abort(comm,ierr);} while (0)
 
 /*MC
-   CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
+   CHKERRQ - Checks error code returned from PETSc function, if non-zero it calls the error handler and then returns. Use CHKERRMPI() for checking errors from MPI calls
 
    Synopsis:
    #include <petscsys.h>
@@ -509,7 +519,7 @@ M*/
    } while (0)
 
 /*MC
-   CHKERRMPI - Checks error code, if non-zero it calls the error handler and then returns
+   CHKERRMPI - Checks error code returned from MPI calls, if non-zero it calls the error handler and then returns
 
    Synopsis:
    #include <petscsys.h>
@@ -520,15 +530,22 @@ M*/
    Input Parameters:
 .  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 
-  Level: developer
+  Level: intermediate
 
    Notes:
-    This macro is FOR USE IN MPI CALLBACK FUNCTIONS ONLY, such as those passed to MPI_Comm_create_keyval(). It always returns the error code PETSC_MPI_ERROR_CODE
-    which is registered with MPI_Add_error_code() when PETSc is initialized.
+    Always returns the error code PETSC_ERR_MPI; the MPI error code and string are embedded in the string error message
 
-.seealso: CHKERRQ(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
+.seealso: CHKERRQ(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2(), SETERRMPI()
 M*/
-#define CHKERRMPI(ierr)        do {if (PetscUnlikely(ierr)) return (PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," "),PETSC_MPI_ERROR_CODE);} while (0)
+#define CHKERRMPI(ierr) \
+do {                       \
+  if (PetscUnlikely(ierr)) { \
+    char        name[MPI_MAX_ERROR_STRING]; \
+    PetscMPIInt dlength;\
+    MPI_Error_string(ierr,(char*)name,&dlength);                        \
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)ierr,name); \
+  } \
+} while (0)
 
 #ifdef PETSC_CLANGUAGE_CXX
 

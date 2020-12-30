@@ -274,7 +274,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
   ierr = PetscDrawIsNull(hist->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)hist),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)hist),&rank);CHKERRMPI(ierr);
 
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);

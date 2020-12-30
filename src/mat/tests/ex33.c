@@ -14,8 +14,8 @@ PetscErrorCode Print_memory(PetscLogDouble mem)
   double         max_mem,min_mem;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Reduce(&mem, &max_mem, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&mem, &min_mem, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&mem, &max_mem, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);CHKERRMPI(ierr);
+  ierr = MPI_Reduce(&mem, &min_mem, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);CHKERRMPI(ierr);
   max_mem = max_mem / 1024.0 / 1024.0;
   min_mem = min_mem / 1024.0 / 1024.0;
   ierr = PetscPrintf(MPI_COMM_WORLD, " max and min memory across all processors %.4f Mb, %.4f Mb.\n", (double)max_mem,(double)min_mem);CHKERRQ(ierr);
@@ -36,20 +36,20 @@ PetscErrorCode TestMPIDerivedDataType()
   PetscMPIInt       rank,size,disp[2];
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_size(MPI_COMM_WORLD, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD, &size);CHKERRMPI(ierr);
   if (size < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use at least 2 processors");
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);CHKERRMPI(ierr);
 
   if (rank == 0) {
     /* proc[0] sends 2 rows to proc[1] */
     for (i=0; i<24; i++) buffer[i] = (PetscScalar)i;
 
     disp[0] = 0;  disp[1] = 2;
-    ierr = MPI_Type_create_indexed_block(2, 1, (const PetscMPIInt *)disp, MPIU_SCALAR, &type1);CHKERRQ(ierr);
+    ierr = MPI_Type_create_indexed_block(2, 1, (const PetscMPIInt *)disp, MPIU_SCALAR, &type1);CHKERRMPI(ierr);
     /* one column has 4 entries */
-    ierr = MPI_Type_create_resized(type1,0,4*sizeof(PetscScalar),&type2);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&type2);CHKERRQ(ierr);
-    ierr = MPI_Send(buffer, 6, type2, 1, 123, MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Type_create_resized(type1,0,4*sizeof(PetscScalar),&type2);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&type2);CHKERRMPI(ierr);
+    ierr = MPI_Send(buffer, 6, type2, 1, 123, MPI_COMM_WORLD);CHKERRMPI(ierr);
 
   } else if (rank == 1) {
     /* proc[1] receives 2 rows from proc[0], and put them into contiguous rows, starting at the row 1 (disp[0]) */
@@ -57,11 +57,11 @@ PetscErrorCode TestMPIDerivedDataType()
     for (i=0; i<24; i++) buffer[i] = 0.0;
 
     disp[0] = 1;
-    ierr = MPI_Type_create_indexed_block(1, blen, (const PetscMPIInt *)disp, MPIU_SCALAR, &rtype1);CHKERRQ(ierr);
-    ierr = MPI_Type_create_resized(rtype1, 0, 4*sizeof(PetscScalar), &rtype2);CHKERRQ(ierr);
+    ierr = MPI_Type_create_indexed_block(1, blen, (const PetscMPIInt *)disp, MPIU_SCALAR, &rtype1);CHKERRMPI(ierr);
+    ierr = MPI_Type_create_resized(rtype1, 0, 4*sizeof(PetscScalar), &rtype2);CHKERRMPI(ierr);
 
-    ierr = MPI_Type_commit(&rtype2);CHKERRQ(ierr);
-    ierr = MPI_Recv(buffer, 6, rtype2, 0, 123, MPI_COMM_WORLD, &status);CHKERRQ(ierr);
+    ierr = MPI_Type_commit(&rtype2);CHKERRMPI(ierr);
+    ierr = MPI_Recv(buffer, 6, rtype2, 0, 123, MPI_COMM_WORLD, &status);CHKERRMPI(ierr);
     for (i=0; i<4; i++) {
       for (j=0; j<6; j++) {
         ierr = PetscPrintf(MPI_COMM_SELF,"  %g", (double)PetscRealPart(buffer[i+j*4]));
@@ -71,13 +71,13 @@ PetscErrorCode TestMPIDerivedDataType()
   }
 
   if (rank == 0) {
-    ierr = MPI_Type_free(&type1);CHKERRQ(ierr);
-    ierr = MPI_Type_free(&type2);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&type1);CHKERRMPI(ierr);
+    ierr = MPI_Type_free(&type2);CHKERRMPI(ierr);
   } else if (rank == 1) {
-    ierr = MPI_Type_free(&rtype1);CHKERRQ(ierr);
-    ierr = MPI_Type_free(&rtype2);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&rtype1);CHKERRMPI(ierr);
+    ierr = MPI_Type_free(&rtype2);CHKERRMPI(ierr);
   }
-  ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -591,7 +591,7 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
   lambda[11]= delta[0];
   lambda[12] = dps;
 
-  ierr = MPI_Iallreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRQ(ierr);
+  ierr = MPI_Iallreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRMPI(ierr);
 
   ierr = KSP_PCApply(ksp,W,M);CHKERRQ(ierr);                    /*  m <- Bw  */
   ierr = KSP_MatMult(ksp,Amat,M,N);CHKERRQ(ierr);               /*  n <- Am  */
@@ -602,7 +602,7 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
   ierr = KSP_PCApply(ksp,H[0],E);CHKERRQ(ierr);                 /*  e <- Bh  */
   ierr = KSP_MatMult(ksp,Amat,E,F);CHKERRQ(ierr);               /*  f <- Ae  */
 
-  ierr = MPI_Wait(&req,&stat);CHKERRQ(ierr);
+  ierr = MPI_Wait(&req,&stat);CHKERRMPI(ierr);
 
   gamma[0] = lambda[10];
   delta[0] = lambda[11];
@@ -654,7 +654,7 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
     gamma[0] = gamma[1];
     delta[0] = delta[1];
 
-    ierr = MPI_Iallreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRQ(ierr);  /* Calculating the lambdas, gamma, delta and dp */
+    ierr = MPI_Iallreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRMPI(ierr);
 
     ierr = KSP_PCApply(ksp,N,G[0]);CHKERRQ(ierr);                       /*  g <- Bn  */
     ierr = KSP_MatMult(ksp,Amat,G[0],H[0]);CHKERRQ(ierr);               /*  h <- Ag  */
@@ -662,7 +662,7 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
     ierr = KSP_PCApply(ksp,H[0],E);CHKERRQ(ierr);               /*  e <- Bh  */
     ierr = KSP_MatMult(ksp,Amat,E,F);CHKERRQ(ierr);             /*  f <- Ae */
 
-    ierr = MPI_Wait(&req,&stat);CHKERRQ(ierr);
+    ierr = MPI_Wait(&req,&stat);CHKERRMPI(ierr);
 
     gamma[1] = lambda[10];
     delta[1] = lambda[11];

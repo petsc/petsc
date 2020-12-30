@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   MatColoring    coloring;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   ierr= MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr= MatSetSizes(J, PETSC_DECIDE, PETSC_DECIDE, M, M);CHKERRQ(ierr);

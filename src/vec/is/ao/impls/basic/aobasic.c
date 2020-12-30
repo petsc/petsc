@@ -23,7 +23,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ao),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ao),&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
     if (iascii) {
@@ -194,10 +194,10 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 
   /* transmit all lengths to all processors */
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscMalloc2(size, &lens,size,&disp);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRMPI(ierr);
   N    =  0;
   for (i = 0; i < size; i++) {
     ierr = PetscMPIIntCast(N,disp+i);CHKERRQ(ierr); /* = sum(lens[j]), j< i */
@@ -220,8 +220,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 
   /* get all indices on all processors */
   ierr = PetscMalloc2(N,&allpetsc,N,&allapp);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(petsc, count, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)myapp, count, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(petsc, count, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRMPI(ierr);
+  ierr = MPI_Allgatherv((void*)myapp, count, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRMPI(ierr);
   ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
 
   if (PetscDefined(USE_DEBUG)) {

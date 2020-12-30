@@ -72,7 +72,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-save",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
     sprintf(filename,"local.%d",rank);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
 
   ierr = VecAXPY(local_copy,-1.0,local);CHKERRQ(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",(double)norm);CHKERRQ(ierr);
 
   ierr = VecDestroy(&local_copy);CHKERRQ(ierr);

@@ -64,7 +64,7 @@ int main(int argc, char **argv)
   k = ((PetscInt64) 1) << (log2d * t);
   if ((size_t)log2n > sizeof(size_t) * 8 - 1) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of samples per process (2^%D) is too big for size_t.", log2n);
   n = ((size_t) 1) << log2n;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   N    = size;
   lambda = PetscPowRealInt(2.,(3 * log2n - (2 + log2d * t)));
 
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
     Y += (X[i + 1] == X[i]);
   }
 
-  ierr = MPI_Allreduce(MPI_IN_PLACE, &Y, 1, MPIU_INT, MPI_SUM, MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(MPI_IN_PLACE, &Y, 1, MPIU_INT, MPI_SUM, MPI_COMM_WORLD);CHKERRMPI(ierr);
   ierr = PoissonTailProbability(N*lambda,Y,&p);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%D total collisions counted: that many or more should occur with probabilty %g.\n",Y,(double)p);CHKERRQ(ierr);
 

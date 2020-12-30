@@ -441,7 +441,7 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
   PetscBool      isdir,alias=PETSC_FALSE,valid;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = PetscMemzero(tokens,sizeof(tokens));CHKERRQ(ierr);
   if (!rank) {
     cnt        = 0;
@@ -556,7 +556,7 @@ destroy:
     ierr = PetscMalloc1(2+acnt+cnt,&packed);CHKERRQ(ierr);
   }
   if (acnt || cnt) {
-    ierr = MPI_Bcast(packed,2+acnt+cnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(packed,2+acnt+cnt,MPI_CHAR,0,comm);CHKERRMPI(ierr);
     astring = packed;
     vstring = packed + acnt + 1;
   }
@@ -769,7 +769,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
 
   PetscFunctionBegin;
   if (hasArgs && !(args && *args)) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_NULL, "*argc > 1 but *args not given");
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   if (!options) {
     ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
@@ -803,13 +803,13 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
       ierr     = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
       ierr     = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     } else {
-      ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
       if (len) {
         ierr = PetscMalloc1(len+1,&eoptions);CHKERRQ(ierr);
       }
     }
     if (len) {
-      ierr = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
       if (rank) eoptions[len] = 0;
       ierr = PetscOptionsInsertString(options,eoptions);CHKERRQ(ierr);
       if (rank) {ierr = PetscFree(eoptions);CHKERRQ(ierr);}
@@ -825,13 +825,13 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
       ierr     = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
       ierr     = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     } else {
-      ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
       if (len) {
         ierr = PetscMalloc1(len+1,&eoptions);CHKERRQ(ierr);
       }
     }
     if (len) {
-      ierr = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
       if (rank) eoptions[len] = 0;
       ierr = PetscOptionsInsertStringYAML(options,eoptions);CHKERRQ(ierr);
       if (rank) {ierr = PetscFree(eoptions);CHKERRQ(ierr);}

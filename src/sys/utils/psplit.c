@@ -38,8 +38,8 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
     ierr = MPIU_Allreduce(n,N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   } else if (*n == PETSC_DECIDE) {
     PetscInt Nbs = *N/bs;
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
     *n   = bs*(Nbs/size + ((Nbs % size) > rank));
   }
   PetscFunctionReturn(0);
@@ -80,7 +80,7 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
     PetscMPIInt l[2],g[2];
     l[0] = (*n == PETSC_DECIDE) ? 1 : 0;
     l[1] = (*N == PETSC_DECIDE) ? 1 : 0;
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     ierr = MPIU_Allreduce(l,g,2,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     if (g[0] && g[0] != size) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for local size");
     if (g[1] && g[1] != size) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for global size");
@@ -92,8 +92,8 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
     if (M > PETSC_MAX_INT) SETERRQ1(comm,PETSC_ERR_INT_OVERFLOW,"Global size overflow %" PetscInt64_FMT ". You may consider ./configure PETSc with --with-64-bit-indices for the case you are running", M);
     else *N = (PetscInt)M;
   } else if (*n == PETSC_DECIDE) {
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
     *n   = *N/size + ((*N % size) > rank);
   } else if (PetscDefined(USE_DEBUG)) {
     PetscInt tmp;
@@ -142,7 +142,7 @@ PetscErrorCode  PetscSplitOwnershipEqual(MPI_Comm comm,PetscInt *n,PetscInt *N)
     PetscMPIInt l[2],g[2];
     l[0] = (*n == PETSC_DECIDE) ? 1 : 0;
     l[1] = (*N == PETSC_DECIDE) ? 1 : 0;
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     ierr = MPIU_Allreduce(l,g,2,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     if (g[0] && g[0] != size) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for local size");
     if (g[1] && g[1] != size) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for global size");
@@ -154,8 +154,8 @@ PetscErrorCode  PetscSplitOwnershipEqual(MPI_Comm comm,PetscInt *n,PetscInt *N)
     if (M > PETSC_MAX_INT) SETERRQ1(comm,PETSC_ERR_INT_OVERFLOW,"Global size overflow %" PetscInt64_FMT ". You may consider ./configure PETSc with --with-64-bit-indices for the case you are running", M);
     else *N = (PetscInt)M;
   } else if (*n == PETSC_DECIDE) {
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
     *n = *N/size;
     if (*N % size) {
       if ((rank+1)*(*n+1)<=*N)  *n = *n+1;

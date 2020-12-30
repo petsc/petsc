@@ -203,7 +203,7 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_GlobalToNaturalBegin,dm,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
   if (dm->sfNatural) {
     ierr = VecGetArray(nv, &outarray);CHKERRQ(ierr);
     ierr = VecGetArrayRead(gv, &inarray);CHKERRQ(ierr);
@@ -245,7 +245,7 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_GlobalToNaturalEnd,dm,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
   if (dm->sfNatural) {
     ierr = VecGetArrayRead(gv, &inarray);CHKERRQ(ierr);
     ierr = VecGetArray(nv, &outarray);CHKERRQ(ierr);
@@ -286,7 +286,7 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_NaturalToGlobalBegin,dm,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
   if (dm->sfNatural) {
     /* We only have acces to the SF that goes from Global to Natural.
        Instead of inverting dm->sfNatural, we can call PetscSFReduceBegin/End with MPI_Op MPI_SUM.
@@ -332,7 +332,7 @@ PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_NaturalToGlobalEnd,dm,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
   if (dm->sfNatural) {
     ierr = VecGetArrayRead(nv, &inarray);CHKERRQ(ierr);
     ierr = VecGetArray(gv, &outarray);CHKERRQ(ierr);

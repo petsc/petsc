@@ -54,7 +54,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic *c)
   if ((*c)->ops->destroy) {
     ierr = (*(*c)->ops->destroy)((*c));CHKERRQ(ierr);
   }
-  ierr = MPI_Type_free(&(*c)->itemType);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&(*c)->itemType);CHKERRMPI(ierr);
   ierr = PetscFree((*c)->queue);CHKERRQ(ierr);
   ierr = PetscFree((*c)->queueLocal);CHKERRQ(ierr);
   ierr = PetscFree((*c)->queueRemote);CHKERRQ(ierr);
@@ -336,7 +336,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
   PetscFunctionBegin;
   c->queueSize = 0;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank);CHKERRMPI(ierr);
   ierr = DMDAGetNeighborsRank(da, neighbors);CHKERRQ(ierr);
   ierr = CharacteristicSetNeighbors(c, 9, neighbors);CHKERRQ(ierr);
   ierr = CharacteristicSetUp(c);CHKERRQ(ierr);
@@ -574,18 +574,18 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank);CHKERRMPI(ierr);
   ierr = CharacteristicHeapSort(c, c->queue, c->queueSize);CHKERRQ(ierr);
   ierr = PetscArrayzero(c->needCount, c->numNeighbors);CHKERRQ(ierr);
   for (i = 0;  i < c->queueSize; i++) c->needCount[c->queue[i].proc]++;
   c->fillCount[0] = 0;
   for (n = 1; n < c->numNeighbors; n++) {
-    ierr = MPI_Irecv(&(c->fillCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n-1]));CHKERRQ(ierr);
+    ierr = MPI_Irecv(&(c->fillCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n-1]));CHKERRMPI(ierr);
   }
   for (n = 1; n < c->numNeighbors; n++) {
-    ierr = MPI_Send(&(c->needCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c));CHKERRQ(ierr);
+    ierr = MPI_Send(&(c->needCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c));CHKERRMPI(ierr);
   }
-  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRQ(ierr);
+  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRMPI(ierr);
   /* Initialize the remote queue */
   c->queueLocalMax  = c->localOffsets[0]  = 0;
   c->queueRemoteMax = c->remoteOffsets[0] = 0;
@@ -607,11 +607,11 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
   /* Send and Receive requests for values at t_n+1/2, giving the coordinates for interpolation */
   for (n = 1; n < c->numNeighbors; n++) {
     ierr = PetscInfo2(NULL, "Receiving %d requests for values from proc %d\n", c->fillCount[n], c->neighbors[n]);CHKERRQ(ierr);
-    ierr = MPI_Irecv(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n-1]));CHKERRQ(ierr);
+    ierr = MPI_Irecv(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n-1]));CHKERRMPI(ierr);
   }
   for (n = 1; n < c->numNeighbors; n++) {
     ierr = PetscInfo2(NULL, "Sending %d requests for values from proc %d\n", c->needCount[n], c->neighbors[n]);CHKERRQ(ierr);
-    ierr = MPI_Send(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c));CHKERRQ(ierr);
+    ierr = MPI_Send(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c));CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -625,9 +625,9 @@ PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRQ(ierr);
+  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRMPI(ierr);
 #if 0
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank);CHKERRMPI(ierr);
   for (n = 0; n < c->queueRemoteSize; n++) {
     if (c->neighbors[c->queueRemote[n].proc] == rank) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "This is messed up, n = %d proc = %d", n, c->queueRemote[n].proc);
   }
@@ -644,10 +644,10 @@ PetscErrorCode CharacteristicGetValuesBegin(Characteristic c)
   PetscFunctionBegin;
   /* SEND AND RECIEVE FILLED REQUESTS for velocities at t_n+1/2 */
   for (n = 1; n < c->numNeighbors; n++) {
-    ierr = MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n-1]));CHKERRQ(ierr);
+    ierr = MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n-1]));CHKERRMPI(ierr);
   }
   for (n = 1; n < c->numNeighbors; n++) {
-    ierr = MPI_Send(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c));CHKERRQ(ierr);
+    ierr = MPI_Send(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c));CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -657,7 +657,7 @@ PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRQ(ierr);
+  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRMPI(ierr);
   /* Free queue of requests from other procs */
   ierr = PetscFree(c->queueRemote);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -740,7 +740,7 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = DMDAGetInfo(da, NULL, NULL, NULL, NULL, &PI,&PJ, NULL, NULL, NULL, &bx, &by,NULL, NULL);CHKERRQ(ierr);
 
   if (bx == DM_BOUNDARY_PERIODIC) IPeriodic = PETSC_TRUE;

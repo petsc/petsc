@@ -431,7 +431,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
     ierr = PetscObjectBaseTypeCompare((PetscObject)*B,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
     if (!ismpiaij && !isseqaij) SETERRQ(comm,PETSC_ERR_SUP,"Only MATMPIAIJ or MATSEQAIJ are supported");
   }
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   PetscStackCallStandard(HYPRE_IJMatrixGetObject,(hA->ij,(void**)&parcsr));
   hdiag = hypre_ParCSRMatrixDiag(parcsr);
@@ -1150,7 +1150,7 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
     if (!hA->inner_free) hypre_IJMatrixObject(hA->ij) = NULL;
     PetscStackCallStandard(HYPRE_IJMatrixDestroy,(hA->ij));
   }
-  if (hA->comm) { ierr = MPI_Comm_free(&hA->comm);CHKERRQ(ierr); }
+  if (hA->comm) {ierr = MPI_Comm_free(&hA->comm);CHKERRMPI(ierr);}
 
   ierr = MatStashDestroy_Private(&A->stash);CHKERRQ(ierr);
 
@@ -1369,7 +1369,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
   } else {
     hdnnz = (HYPRE_Int*)dnnz;
   }
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size > 1) {
     hypre_AuxParCSRMatrix *aux_matrix;
     if (!onnz) {
@@ -1543,7 +1543,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
 
     /* make sure we always have row_starts and col_starts available */
     if (HYPRE_AssumedPartitionCheck()) {
-      ierr = MPI_Comm_rank(comm,&myid);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(comm,&myid);CHKERRMPI(ierr);
     }
     if (!hypre_ParCSRMatrixOwnsColStarts(parcsr)) {
       PetscLayout map;
@@ -1917,7 +1917,7 @@ static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
     if (!isascii) SETERRQ1(PetscObjectComm((PetscObject)view),PETSC_ERR_SUP,"PetscViewerType %s: native HYPRE format needs PETSCVIEWERASCII",((PetscObject)view)->type_name);
     ierr = PetscViewerFileGetName(view,&filename);CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_IJMatrixPrint,(hA->ij,filename));
-    ierr = MPI_Comm_size(hA->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(hA->comm,&size);CHKERRMPI(ierr);
     if (size > 1) {
       ierr = PetscViewerASCIIPrintf(view,"Matrix files: %s.%05d ... %s.%05d\n",filename,0,filename,size-1);CHKERRQ(ierr);
     } else {
@@ -2117,7 +2117,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)B),1,&B->stash);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&hB->comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&hB->comm);CHKERRMPI(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_hypre_aij_C",MatConvert_HYPRE_AIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_hypre_is_C",MatConvert_HYPRE_IS);CHKERRQ(ierr);

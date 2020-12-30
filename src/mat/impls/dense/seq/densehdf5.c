@@ -43,8 +43,8 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
 #endif
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscObjectGetName((PetscObject)mat,&mat_name);CHKERRQ(ierr);
 
   /* Convert user-defined rmap and cmap to the dataset layout */

@@ -283,7 +283,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
   *owner = -1;                  /* GCC erroneously issues warning about possibly uninitialized use when error condition */
   if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
   if (idx < 0 || idx > map->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D is out of range",idx);
-  ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(map->comm,&hi);CHKERRMPI(ierr);
   while (hi - lo > 1) {
     t = lo + (hi - lo) / 2;
     if (idx < map->range[t]) hi = t;
@@ -320,7 +320,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,Pet
   PetscFunctionBegin;
   if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
   if (idx < 0 || idx > map->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D is out of range",idx);
-  ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(map->comm,&hi);CHKERRMPI(ierr);
   while (hi - lo > 1) {
     t = lo + (hi - lo) / 2;
     if (idx < map->range[t]) hi = t;

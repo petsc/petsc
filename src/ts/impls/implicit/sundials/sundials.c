@@ -247,7 +247,7 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
 
   PetscFunctionBegin;
   ierr = TSReset_Sundials(ts);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRMPI(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxl_C",NULL);CHKERRQ(ierr);
@@ -926,7 +926,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   cvode->linear_tol  = .05;
   cvode->monitorstep = PETSC_TRUE;
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)ts),&(cvode->comm_sundials));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)ts),&(cvode->comm_sundials));CHKERRMPI(ierr);
 
   cvode->mindt = -1.;
   cvode->maxdt = -1.;

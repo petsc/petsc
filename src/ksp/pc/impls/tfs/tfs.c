@@ -169,7 +169,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
   PetscMPIInt    cmp;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_compare(PETSC_COMM_WORLD,PetscObjectComm((PetscObject)pc),&cmp);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(PETSC_COMM_WORLD,PetscObjectComm((PetscObject)pc),&cmp);CHKERRMPI(ierr);
   if (cmp != MPI_IDENT && cmp != MPI_CONGRUENT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"TFS only works with PETSC_COMM_WORLD objects");
   ierr = PetscNewLog(pc,&tfs);CHKERRQ(ierr);
 

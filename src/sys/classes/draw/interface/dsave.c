@@ -189,7 +189,7 @@ PetscErrorCode  PetscDrawSave(PetscDraw draw)
   if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
   if (draw->ops->save) {ierr = (*draw->ops->save)(draw);CHKERRQ(ierr); goto finally;}
   if (!draw->savefilename || !draw->saveimageext) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
 
   saveindex = draw->savefilecount++;
 
@@ -226,7 +226,7 @@ PetscErrorCode  PetscDrawSave(PetscDraw draw)
   /* only the first process handles the saving business */
   if (!rank) {ierr = PetscDrawImageSave(basename,draw->saveimageext,palette,w,h,pixels);CHKERRQ(ierr);}
   ierr = PetscFree(pixels);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+  ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
 
 finally:
 #if defined(PETSC_HAVE_SAWS)
@@ -261,13 +261,13 @@ PetscErrorCode PetscDrawSaveMovie(PetscDraw draw)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
   if (!draw->savefilename || !draw->savemovieext || draw->savesinglefile) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
   {
     const char *fname = draw->savefilename;
     const char *imext = draw->saveimageext;
     const char *mvext = draw->savemovieext;
     if (!rank) {ierr = PetscDrawMovieSave(fname,draw->savefilecount,imext,draw->savemoviefps,mvext);CHKERRQ(ierr);}
-    ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+    ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }

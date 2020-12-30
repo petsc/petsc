@@ -182,7 +182,7 @@ VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
   for (i=start; i<n; i+=bs) sum += x[i];
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&sum,a,1,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&sum,a,1,MPIU_SCALAR,MPIU_SUM,comm);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 

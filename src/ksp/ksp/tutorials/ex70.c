@@ -717,7 +717,7 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp,DM dm_mpoint)
       cnt++;
     }
   }
-  ierr = MPI_Allreduce(&cnt,&cnt_g,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cnt,&cnt_g,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   if (cnt_g > 0) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... ....pop cont: adjusted %D cells\n",cnt_g);CHKERRQ(ierr);
   }
@@ -1034,7 +1034,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     PetscRandom r;
     PetscMPIInt rank;
 
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
     ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(r,-randomize_fac*dh,randomize_fac*dh);CHKERRQ(ierr);

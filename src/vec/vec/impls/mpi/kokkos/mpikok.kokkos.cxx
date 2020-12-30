@@ -333,7 +333,7 @@ PetscErrorCode VecCreate_Kokkos(Vec v)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRMPI(ierr);
   if (size == 1) {ierr = VecSetType(v,VECSEQKOKKOS);CHKERRQ(ierr);}
   else {ierr = VecSetType(v,VECMPIKOKKOS);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

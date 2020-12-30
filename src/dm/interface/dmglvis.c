@@ -26,8 +26,8 @@ PetscErrorCode DMView_GLVis(DM dm, PetscViewer viewer, PetscErrorCode (*DMView_G
       PetscInt    sdim;
       const char* name;
 
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRMPI(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
       ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject)dm,&name);CHKERRQ(ierr);
 

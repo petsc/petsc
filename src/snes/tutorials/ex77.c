@@ -314,8 +314,8 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRMPI(ierr);
   ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
@@ -422,8 +422,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscInt         cEnd;
       PetscMPIInt      rank, size;
 
-      ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+      ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
       ierr = DMPlexGetHeightStratum(*dm, 0, NULL, &cEnd);CHKERRQ(ierr);
       if (!rank) {
         if (dim == 2 && user->simplex && size == 2 && cEnd == 8) {

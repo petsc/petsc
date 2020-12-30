@@ -217,7 +217,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   ierr = ISCreateGeneral(comm,Bnbs,c->garray,PETSC_COPY_VALUES,&garray_local);CHKERRQ(ierr);
   ierr = ISAllGather(garray_local, &garray_gl);CHKERRQ(ierr);
   ierr = ISDestroy(&garray_local);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&Bnbs,1,MPIU_INT,Bowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&Bnbs,1,MPIU_INT,Bowners+1,1,MPIU_INT,comm);CHKERRMPI(ierr);
 
   Bowners[0] = 0;
   for (i=0; i<size; i++) Bowners[i+1] += Bowners[i];
@@ -306,7 +306,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   k    = 0;
   for (proc_id=0; proc_id<size; proc_id++) {  /* send data1 to processor [proc_id] */
     if (len_s[proc_id]) {
-      ierr = MPI_Isend(data1_start[proc_id],len_s[proc_id],MPIU_INT,proc_id,tag1,comm,s_waits1+k);CHKERRQ(ierr);
+      ierr = MPI_Isend(data1_start[proc_id],len_s[proc_id],MPIU_INT,proc_id,tag1,comm,s_waits1+k);CHKERRMPI(ierr);
       k++;
     }
   }
@@ -338,7 +338,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   k = 0;
   while (k < nrqr) {
     /* Receive messages */
-    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag1,comm,&flag,&r_status);CHKERRQ(ierr);
+    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag1,comm,&flag,&r_status);CHKERRMPI(ierr);
     if (flag) {
       ierr    = MPI_Get_count(&r_status,MPIU_INT,&len);CHKERRQ(ierr);
       proc_id = r_status.MPI_SOURCE;
@@ -360,7 +360,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
       for (i=0; i<odata2[0]; i++) len += odata2[1 + i];
 
       /* Send messages back */
-      ierr = MPI_Isend(odata2,len,MPIU_INT,proc_id,tag2,comm,s_waits2+k);CHKERRQ(ierr);
+      ierr = MPI_Isend(odata2,len,MPIU_INT,proc_id,tag2,comm,s_waits2+k);CHKERRMPI(ierr);
       k++;
       odata2        += len;
       len_unused    -= len;
@@ -394,14 +394,14 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   k = 0;
   while (k < nrqs) {
     /* Receive messages */
-    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag2,comm,&flag,&r_status);CHKERRQ(ierr);
+    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag2,comm,&flag,&r_status);CHKERRMPI(ierr);
     if (flag) {
-      ierr = MPI_Get_count(&r_status,MPIU_INT,&len);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&r_status,MPIU_INT,&len);CHKERRMPI(ierr);
 
       proc_id = r_status.MPI_SOURCE;
 
-      ierr = MPI_Irecv(data2,len,MPIU_INT,proc_id,r_status.MPI_TAG,comm,&r_req);CHKERRQ(ierr);
-      ierr = MPI_Wait(&r_req,&r_status);CHKERRQ(ierr);
+      ierr = MPI_Irecv(data2,len,MPIU_INT,proc_id,r_status.MPI_TAG,comm,&r_req);CHKERRMPI(ierr);
+      ierr = MPI_Wait(&r_req,&r_status);CHKERRMPI(ierr);
       if (len > 1+is_max) { /* Add data2 into data */
         data2_i = data2 + 1 + is_max;
         for (i=0; i<is_max; i++) {
@@ -424,11 +424,11 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
 
   /* phase 1 sends are complete */
   ierr = PetscMalloc1(size,&s_status);CHKERRQ(ierr);
-  if (nrqs) {ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);}
+  if (nrqs) {ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRMPI(ierr);}
   ierr = PetscFree(data1);CHKERRQ(ierr);
 
   /* phase 2 sends are complete */
-  if (nrqr) {ierr = MPI_Waitall(nrqr,s_waits2,s_status);CHKERRQ(ierr);}
+  if (nrqr) {ierr = MPI_Waitall(nrqr,s_waits2,s_status);CHKERRMPI(ierr);}
   ierr = PetscFree2(s_waits1,s_waits2);CHKERRQ(ierr);
   ierr = PetscFree(s_status);CHKERRQ(ierr);
 

@@ -35,7 +35,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   /* get a global communicator, where mat should be a global matrix  */
   ierr = PetscObjectGetComm((PetscObject)mat,&gcomm);CHKERRQ(ierr);
   ierr = (*mat->ops->increaseoverlap)(mat,1,is,ov);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(gcomm,scomm,&issamecomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(gcomm,scomm,&issamecomm);CHKERRMPI(ierr);
   /* if the sub-communicator is the same as the global communicator,
    * user does not want to use a sub-communicator
    * */
@@ -46,14 +46,14 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   /* if the sub-communicator is petsc_comm_self,
    * user also does not care the sub-communicator
    * */
-  ierr = MPI_Comm_compare(scomm,PETSC_COMM_SELF,&issamecomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(scomm,PETSC_COMM_SELF,&issamecomm);CHKERRMPI(ierr);
   if (issamecomm == MPI_IDENT || issamecomm == MPI_CONGRUENT){
     ierr = PetscCommDestroy(&scomm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = MPI_Comm_rank(scomm,&srank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(scomm,&ssize);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(gcomm,&grank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(scomm,&srank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(scomm,&ssize);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(gcomm,&grank);CHKERRMPI(ierr);
   /* create a new IS based on sub-communicator
    * since the old IS is often based on petsc_comm_self
    * */
@@ -72,7 +72,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   /* gather local sizes */
   ierr = PetscMalloc1(ssize,&localsizes_sc);CHKERRQ(ierr);
   /* get individual local sizes for all index sets */
-  ierr = MPI_Gather(&nindx,1,MPIU_INT,localsizes_sc,1,MPIU_INT,0,scomm);CHKERRQ(ierr);
+  ierr = MPI_Gather(&nindx,1,MPIU_INT,localsizes_sc,1,MPIU_INT,0,scomm);CHKERRMPI(ierr);
   /* only root does these computations */
   if (!srank){
    /* get local size for the big index set */
@@ -132,7 +132,7 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
    sources_sc_rd = NULL;
   }
   /* scatter sizes to everybody */
-  ierr = MPI_Scatter(localsizes_sc,1, MPIU_INT,&nroots,1, MPIU_INT,0,scomm);CHKERRQ(ierr);
+  ierr = MPI_Scatter(localsizes_sc,1, MPIU_INT,&nroots,1, MPIU_INT,0,scomm);CHKERRMPI(ierr);
   ierr = PetscFree(localsizes_sc);CHKERRQ(ierr);
   ierr = PetscCalloc1(nroots,&indices_recv);CHKERRQ(ierr);
   /* set data back to every body */

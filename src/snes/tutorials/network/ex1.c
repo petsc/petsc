@@ -32,7 +32,7 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 #if 0
   if (!rank) {
     PetscInt       subsnes_id = user->subsnes_id;
@@ -67,7 +67,7 @@ PetscErrorCode FormJacobian_subPower(SNES snes,Vec X, Mat J,Mat Jpre,void *appct
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&localF);CHKERRQ(ierr);
@@ -338,8 +338,8 @@ int main(int argc,char **argv)
   PetscInt            *edgelist_couple = NULL;
 
   ierr = PetscInitialize(&argc,&argv,"ex1options",help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   /* (1) Read Data - Only rank 0 reads the data */
   /*--------------------------------------------*/
@@ -366,7 +366,7 @@ int main(int argc,char **argv)
     ierr = GetListofEdges_Power(pfdata,edgelist_power);CHKERRQ(ierr);
   }
   /* Broadcast power Sbase to all processors */
-  ierr = MPI_Bcast(&Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   appctx_power->Sbase = Sbase;
   appctx_power->jac_error = PETSC_FALSE;
   /* If external option activated. Introduce error in jacobian */
@@ -397,7 +397,7 @@ int main(int argc,char **argv)
 
   /* (2) Create network */
   /*--------------------*/
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
   ierr = PetscLogStageRegister("Net Setup",&stage[1]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
 
@@ -519,7 +519,7 @@ int main(int argc,char **argv)
   }
 
   /* Test DMNetworkGetSubnetworkCoupleInfo() */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
   if (test) {
     for (i=0; i<nsubnetCouple; i++) {
       ierr = DMNetworkGetSubnetworkCoupleInfo(networkdm,0,&ne,&edges);CHKERRQ(ierr);

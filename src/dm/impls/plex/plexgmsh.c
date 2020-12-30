@@ -1373,7 +1373,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
 
   /* Determine Gmsh file type (ASCII or binary) from file header */
   if (!rank) {
@@ -1398,7 +1398,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     if (version > 4.1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
     ierr = PetscViewerDestroy(&gmsh->viewer);CHKERRQ(ierr);
   }
-  ierr = MPI_Bcast(&fileType, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&fileType, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
   vtype = (fileType == 0) ? PETSCVIEWERASCII : PETSCVIEWERBINARY;
 
   /* Create appropriate viewer and build plex */
@@ -1450,7 +1450,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)viewer);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Gmsh options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_gmsh_hybrid", "Generate hybrid cell bounds", "DMPlexCreateGmsh", hybrid, &hybrid, NULL);CHKERRQ(ierr);
@@ -1571,7 +1571,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     buf[4] = isHybrid;
     buf[5] = hasTetra;
 
-    ierr = MPI_Bcast(buf, 6, MPI_INT, 0, comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(buf, 6, MPI_INT, 0, comm);CHKERRMPI(ierr);
 
     dim       = buf[0];
     order     = buf[1];

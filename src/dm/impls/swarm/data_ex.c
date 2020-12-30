@@ -94,8 +94,8 @@ PetscErrorCode DMSwarmDataExCreate(MPI_Comm comm,const PetscInt count, DMSwarmDa
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(struct _p_DMSwarmDataEx), &d);CHKERRQ(ierr);
   ierr = PetscMemzero(d, sizeof(struct _p_DMSwarmDataEx));CHKERRQ(ierr);
-  ierr = MPI_Comm_dup(comm,&d->comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(d->comm,&d->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(comm,&d->comm);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(d->comm,&d->rank);CHKERRMPI(ierr);
 
   d->instance = count;
 
@@ -176,7 +176,7 @@ PetscErrorCode DMSwarmDataExDestroy(DMSwarmDataEx d)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_free(&d->comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&d->comm);CHKERRMPI(ierr);
   if (d->neighbour_procs) {ierr = PetscFree(d->neighbour_procs);CHKERRQ(ierr);}
   if (d->messages_to_be_sent) {ierr = PetscFree(d->messages_to_be_sent);CHKERRQ(ierr);}
   if (d->message_offsets) {ierr = PetscFree(d->message_offsets);CHKERRQ(ierr);}
@@ -224,7 +224,7 @@ PetscErrorCode DMSwarmDataExTopologyAddNeighbour(DMSwarmDataEx d,const PetscMPII
   /* error on negative entries */
   if (proc_id < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour with a rank < 0");
   /* error on ranks larger than number of procs in communicator */
-  ierr = MPI_Comm_size(d->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(d->comm,&size);CHKERRMPI(ierr);
   if (proc_id >= size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour %d with a rank >= size %d",proc_id,size);
   if (d->n_neighbour_procs == 0) {ierr = PetscMalloc1(1, &d->neighbour_procs);CHKERRQ(ierr);}
   /* check for proc_id */
@@ -308,8 +308,8 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt 
   for (i = 0; i < n_; ++i) {
     proc_neighbours_[i] = proc_neighbours[i];
   }
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   rank_ = rank;
 
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
@@ -353,7 +353,7 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
   ierr = PetscFree(proc_neighbours_);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -385,7 +385,7 @@ PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
   if (!d->send_tags) {ierr = PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->send_tags);CHKERRQ(ierr);}
   if (!d->recv_tags) {ierr = PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->recv_tags);CHKERRQ(ierr);}
   /* compute message tags */
-  ierr = MPI_Comm_size(d->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(d->comm,&size);CHKERRMPI(ierr);
   r0 = d->rank;
   for (n = 0; n < d->n_neighbour_procs; ++n) {
     PetscMPIInt r1 = d->neighbour_procs[n];
@@ -590,12 +590,12 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
   }
   /* figure out the recv counts here */
   for (i = 0; i < np; ++i) {
-    ierr = MPI_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]);CHKERRQ(ierr);
+    ierr = MPI_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]);CHKERRMPI(ierr);
   }
   for (i = 0; i < np; ++i) {
-    ierr = MPI_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i]);CHKERRMPI(ierr);
   }
-  ierr = MPI_Waitall(2*np, de->_requests, de->_stats);CHKERRQ(ierr);
+  ierr = MPI_Waitall(2*np, de->_requests, de->_stats);CHKERRMPI(ierr);
   /* create space for the data to be recvieved */
   total = 0;
   for (i = 0; i < np; ++i) {
@@ -632,7 +632,7 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
   for (i = 0; i < np; ++i) {
     length = de->messages_to_be_sent[i] * de->unit_message_size;
     dest = ((char*)de->send_message) + de->unit_message_size * de->message_offsets[i];
-    ierr = MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]);CHKERRQ(ierr);
+    ierr = MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]);CHKERRMPI(ierr);
   }
   ierr = PetscLogEventEnd(DMSWARM_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -664,9 +664,9 @@ PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
   for (i = 0; i < np; ++i) {
     length = de->messages_to_be_recvieved[i] * de->unit_message_size;
     dest = ((char*)de->recv_message) + de->unit_message_size * message_recv_offsets[i];
-    ierr = MPI_Irecv( dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i]);CHKERRQ(ierr);
+    ierr = MPI_Irecv( dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i]);CHKERRMPI(ierr);
   }
-  ierr = MPI_Waitall( 2*np, de->_requests, de->_stats);CHKERRQ(ierr);
+  ierr = MPI_Waitall( 2*np, de->_requests, de->_stats);CHKERRMPI(ierr);
   ierr = PetscFree(message_recv_offsets);CHKERRQ(ierr);
   de->communication_status = DEOBJECT_FINALIZED;
   ierr = PetscLogEventEnd(DMSWARM_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);

@@ -326,7 +326,7 @@ PetscErrorCode MatSetUp_LMVM(Mat B)
   ierr = MatGetSize(B, &M, &N);CHKERRQ(ierr);
   if (M == 0 && N == 0) SETERRQ(comm, PETSC_ERR_ORDER, "MatSetSizes() must be called before MatSetUp()");
   if (!lmvm->allocated) {
-    ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
     if (size == 1) {
       ierr = VecCreateSeq(comm, N, &lmvm->Xprev);CHKERRQ(ierr);
       ierr = VecCreateSeq(comm, M, &lmvm->Fprev);CHKERRQ(ierr);

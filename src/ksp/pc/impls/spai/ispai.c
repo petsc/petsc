@@ -143,7 +143,7 @@ static PetscErrorCode PCDestroy_SPAI(PC pc)
 
   PetscFunctionBegin;
   ierr = MatDestroy(&ispai->PM);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&(ispai->comm_spai));CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&(ispai->comm_spai));CHKERRMPI(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -628,14 +628,14 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   struct compressed_lines *rows;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MatGetSize(A,&n,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&mnl,&nnl);CHKERRQ(ierr);
 
   /*
     not sure why a barrier is required. commenting out
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
   */
 
   M = new_matrix((SPAI_Comm)comm);
@@ -650,7 +650,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   M->block_sizes   = (int*)malloc(sizeof(int)*n);
   for (i=0; i<n; i++) M->block_sizes[i] = 1;
 
-  ierr = MPI_Allgather(&mnl,1,MPI_INT,M->mnls,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&mnl,1,MPI_INT,M->mnls,1,MPI_INT,comm);CHKERRMPI(ierr);
 
   M->start_indices[0] = 0;
   for (i=1; i<size; i++) M->start_indices[i] = M->start_indices[i-1] + M->mnls[i-1];
@@ -757,8 +757,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   PetscScalar    val;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   m    = n = B->mnls[rank];
   d_nz = o_nz = 0;
@@ -815,8 +815,8 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
   int            m,M,i,*mnls,*start_indices,*global_indices;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   m = v->mnl;
   M = v->n;
@@ -825,7 +825,7 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
   ierr = VecCreateMPI(comm,m,M,Pv);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(size,&mnls);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&v->mnl,1,MPI_INT,mnls,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&v->mnl,1,MPI_INT,mnls,1,MPI_INT,comm);CHKERRMPI(ierr);
 
   ierr = PetscMalloc1(size,&start_indices);CHKERRQ(ierr);
 

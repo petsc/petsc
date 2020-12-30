@@ -512,7 +512,7 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
     }
   }
   ierr = PetscLogFlops(12.0*info->ym*info->xm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&lobj,obj,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&lobj,obj,1,MPIU_REAL,MPIU_SUM,comm);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 

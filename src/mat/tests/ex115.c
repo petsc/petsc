@@ -28,7 +28,7 @@ int main(int argc,char **args)
   if (!flg) { /* Create a matrix and test MatSetValues */
     PetscMPIInt size;
 
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ int main(int argc,char **args)
         const PetscInt *ranges;
         PetscMPIInt    rank;
 
-        ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+        ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
         ierr = MatGetOwnershipRanges(A,&ranges);CHKERRQ(ierr);
         rows[0] = ranges[(rank+1)%size];
         rows[1] = ranges[(rank+1)%size + 1];

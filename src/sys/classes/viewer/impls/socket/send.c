@@ -445,7 +445,7 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
     ierr = PetscStrncpy(mach,machine,sizeof(mach));CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = PetscStrcmp(mach,"server",&tflg);CHKERRQ(ierr);
     if (tflg) {

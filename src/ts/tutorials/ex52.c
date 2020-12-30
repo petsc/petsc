@@ -305,7 +305,7 @@ int main(int argc, char **argv)
 
     /* Initialize program */
     ierr = PetscInitialize(&argc, &argv, (char *) 0, help);if (ierr) return ierr;
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
     /* Create distributed array (DMPLEX) to manage parallel grid and vectors */
     ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
     ierr = CreateMesh(PETSC_COMM_WORLD, &user, &da);CHKERRQ(ierr);

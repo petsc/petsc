@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,M*N,&localall);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     value = 5.0*rank;

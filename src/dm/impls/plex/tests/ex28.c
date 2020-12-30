@@ -23,7 +23,7 @@ int main(int argc, char **args)
   /*load matrix*/
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,sizeof(filein),&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewer view;

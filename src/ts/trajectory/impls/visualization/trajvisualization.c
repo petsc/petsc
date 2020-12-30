@@ -25,7 +25,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
   if (stepnum == 0) {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
     if (!rank) {
       ierr = PetscRMTree("Visualization-data");CHKERRQ(ierr);
       ierr = PetscMkdir("Visualization-data");CHKERRQ(ierr);

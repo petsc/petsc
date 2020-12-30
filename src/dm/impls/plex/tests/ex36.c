@@ -27,8 +27,8 @@ static PetscErrorCode redistribute_vec(DM dist_dm, PetscSF sf, Vec *v)
     ierr = DMSetLocalSection(dist_v_dm, dist_section);CHKERRQ(ierr);
 
     ierr = PetscObjectViewFromOptions((PetscObject) section, NULL, "-rd_section_view");CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
     for (p = 0; p < size; ++p) {
       if (p == rank) {
         ierr = PetscObjectViewFromOptions((PetscObject) *v, NULL, "-rd_vec_view");CHKERRQ(ierr);}
@@ -66,7 +66,7 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
     PetscErrorCode     ierr;
 
     PetscFunctionBegin;
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
 
     /* cells */
     ierr = DMPlexGetHeightStratum(dm, 0, &start_cell, &end_cell);CHKERRQ(ierr);
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
   PetscErrorCode   ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
   if (0) {
     ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
   } else {

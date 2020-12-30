@@ -211,7 +211,7 @@ PetscErrorCode VecCreate_CUDA(Vec v)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = VecSetType(v,VECSEQCUDA);CHKERRQ(ierr);
   } else {

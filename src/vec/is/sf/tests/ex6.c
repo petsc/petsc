@@ -16,8 +16,8 @@ int main(int argc,char **argv)
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   if (nproc != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test must run with exactly two MPI ranks\n");
 
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,rstart,1,&ix);CHKERRQ(ierr);
 
   /* Create newcomm that reverses processes in x's comm, and then create y2 on it*/
-  ierr = MPI_Comm_split(PETSC_COMM_WORLD,0/*color*/,-rank/*key*/,&newcomm);CHKERRQ(ierr); /* use -rank as key to reverse processes in newcomm */
+  ierr = MPI_Comm_split(PETSC_COMM_WORLD,0/*color*/,-rank/*key*/,&newcomm);CHKERRMPI(ierr);
   ierr = VecCreateMPI(newcomm,n,PETSC_DECIDE,&y2);CHKERRQ(ierr);
 
   /* It looks vscat1/2 are the same, but actually not. y2 is on a different communicator than x */
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&y2);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&vscat1);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&vscat2);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&newcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&newcomm);CHKERRMPI(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

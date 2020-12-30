@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
   int         ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-m", &m, NULL);CHKERRQ(ierr);
 
   /* PART 1:  Generate vector, then write it to Mathematica */
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
   ierr = PetscLogEventEnd(VECTOR_GENERATE, 0, 0, 0, 0);CHKERRQ(ierr);
 
   /* All processors wait until test vector has been dumped */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
   ierr = PetscSleep(10);CHKERRQ(ierr);
 
   /* PART 2:  Read in vector in from Mathematica */

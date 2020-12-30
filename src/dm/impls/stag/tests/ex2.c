@@ -74,7 +74,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
     const PetscScalar *arrLocal;
     PetscMPIInt       rank;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dmstag),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dmstag),&rank);CHKERRMPI(ierr);
     ierr = VecGetSize(vecLocal,&entriesGhost);CHKERRQ(ierr); /* entriesGhost happens to always be 216 here */
     ierr = PetscMalloc1(entriesGhost,&arrLocalExpected);CHKERRQ(ierr);
 

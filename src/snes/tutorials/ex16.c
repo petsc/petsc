@@ -1028,8 +1028,8 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
   PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
@@ -1047,7 +1047,7 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
         }
       }
     }
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
   }
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);

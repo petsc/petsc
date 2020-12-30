@@ -56,7 +56,7 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
   ierr = PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MatAssembled(B,&assembled);CHKERRQ(ierr);
   if (assembled) {
     ierr = MatZeroEntries(B);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
       root--;
       if (i>=ranges[j]) break;
     }
-    ierr = MPI_Bcast(&wscale,1,MPIU_SCALAR,root,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&wscale,1,MPIU_SCALAR,root,comm);CHKERRMPI(ierr);
 
     ierr = VecScale(j2a,wscale);CHKERRQ(ierr);
     ierr = VecNorm(j2a,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;

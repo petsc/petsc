@@ -388,7 +388,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     IS            aIS;
     MPI_Comm      comm = PetscObjectComm((PetscObject)dm);
 
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     if (size > 1) SETERRQ(comm,PETSC_ERR_SUP,"Local constraint test can only be performed in serial");
 
     /* we are going to test constraints by using them to enforce periodicity
@@ -579,7 +579,7 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user)
 
     ierr = DMPlexComputeInjectorReferenceTree(refTree,&inj);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)inj,"Reference Tree Injector");CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
     if (!rank) {
       ierr = MatView(inj,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
@@ -604,7 +604,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   comm = PetscObjectComm((PetscObject)dm);
   /* duplicate DM, give dup. a FV discretization */
   ierr = DMSetBasicAdjacency(dm,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   dmRedist = NULL;
   if (size > 1) {
     ierr = DMPlexDistributeOverlap(dm,1,NULL,&dmRedist);CHKERRQ(ierr);
@@ -689,7 +689,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       FrobDiff = PetscSqrtReal(FrobDiff);
       maxDiff  = PetscMax(maxDiff,FrobDiff);
     }
-    ierr = MPI_Allreduce(&maxDiff,&maxDiffGlob,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&maxDiff,&maxDiffGlob,1,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
     allVecMaxDiff = PetscMax(allVecMaxDiff,maxDiffGlob);
     ierr = VecRestoreArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmfv,&locX);CHKERRQ(ierr);

@@ -767,7 +767,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
         ierr = DMDestroy(&connDM);CHKERRQ(ierr);
       } else if (depth != P4EST_DIM) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Base plex is neither interpolated nor uninterpolated? depth %D, expected 2 or %d",depth,P4EST_DIM + 1);
-      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
       if (size > 1) {
         DM      dmRedundant;
         PetscSF sf;
@@ -883,7 +883,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (adaptLabel) {
       /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
       ierr = DMLabelGetNumValues(adaptLabel,&numValues);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&numValues,&numValuesGlobal,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)adaptFrom));CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&numValues,&numValuesGlobal,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)adaptFrom));CHKERRMPI(ierr);
       ierr = DMLabelGetDefaultValue(adaptLabel,&defaultValue);CHKERRQ(ierr);
       if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN_LAST) { /* uniform coarsen of the last level only (equivalent to DM_ADAPT_COARSEN for conforming grids)  */
         ierr                          = DMForestGetMinimumRefinement(dm,&ctx.minLevel);CHKERRQ(ierr);
@@ -1122,8 +1122,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   { /* repartitioning and overlap */
     PetscMPIInt size, rank;
 
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRMPI(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
     if ((size > 1) && (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity != 1. || forest->weightsFactor != 1.)) {
       PetscBool      copyForest   = PETSC_FALSE;
       p4est_t        *forest_copy = NULL;
@@ -1334,7 +1334,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   forest->preCoarseToFine = preCoarseToFine;
   forest->coarseToPreFine = coarseToPreFine;
   dm->setupcalled         = PETSC_TRUE;
-  ierr = MPI_Allreduce(&ctx.anyChange,&(pforest->adaptivitySuccess),1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ctx.anyChange,&(pforest->adaptivitySuccess),1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
   ierr = DMPforestGetPlex(dm,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2181,7 +2181,7 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   ierr                   = DMPlexCreateReferenceTree_Union(dmRoot,dmRefined,"identity",dm);CHKERRQ(ierr);
   mesh                   = (DM_Plex*) (*dm)->data;
   mesh->getchildsymmetry = DMReferenceTreeGetChildSymmetry_pforest;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = DMViewFromOptions(dmRoot,   NULL,"-dm_p4est_ref_root_view");CHKERRQ(ierr);
     ierr = DMViewFromOptions(dmRefined,NULL,"-dm_p4est_ref_refined_view");CHKERRQ(ierr);
@@ -2260,7 +2260,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
       continue;
     }
 
-    ierr = MPI_Irecv(&recv[2*(p-startC)],2,MPIU_INT,p,tag,comm,&recvReqs[p-startC]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(&recv[2*(p-startC)],2,MPIU_INT,p,tag,comm,&recvReqs[p-startC]);CHKERRMPI(ierr);
   }
   ierr = DMPforestComputeOverlappingRanks(p4estC->mpisize,p4estC->mpirank,p4estC,p4estF,&startF,&endF);CHKERRQ(ierr);
   ierr = PetscMalloc2(2*(endF-startF),&send,endF-startF,&sendReqs);CHKERRQ(ierr);
@@ -2313,7 +2313,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
     send[2*(p-startF)+1] = lastCell - firstCell;
     ierr                 = MPI_Isend(&send[2*(p-startF)],2,MPIU_INT,p,tag,comm,&sendReqs[p-startF]);CHKERRQ(ierr);
   }
-  ierr = MPI_Waitall((PetscMPIInt)(endC-startC),recvReqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall((PetscMPIInt)(endC-startC),recvReqs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   ierr = PetscSectionCreate(PETSC_COMM_SELF,&section);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(section,startC,endC);CHKERRQ(ierr);
   for (p = startC; p < endC; p++) {
@@ -2439,8 +2439,8 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
   p4estF   = pforestF->forest;
   if (pforestC->topo != pforestF->topo) SETERRQ(PetscObjectComm((PetscObject)coarse),PETSC_ERR_ARG_INCOMP,"DM's must have the same base DM");
   comm = PetscObjectComm((PetscObject)coarse);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = DMPforestGetPlex(fine,&plexF);CHKERRQ(ierr);
   ierr = DMPlexGetChart(plexF,&pStartF,&pEndF);CHKERRQ(ierr);
   ierr = DMPforestGetPlex(coarse,&plexC);CHKERRQ(ierr);
@@ -2484,11 +2484,11 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
   /* count the number of closure points that have dofs and create a list */
   numClosureIndices = P4EST_INSUL;
   /* create the datatype */
-  ierr = MPI_Type_contiguous(2,MPIU_INT,&nodeType);CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&nodeType);CHKERRQ(ierr);
-  ierr = MPI_Op_create(DMPforestMaxSFNode,PETSC_FALSE,&sfNodeReduce);CHKERRQ(ierr);
-  ierr = MPI_Type_contiguous(numClosureIndices*2,MPIU_INT,&nodeClosureType);CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&nodeClosureType);CHKERRQ(ierr);
+  ierr = MPI_Type_contiguous(2,MPIU_INT,&nodeType);CHKERRMPI(ierr);
+  ierr = MPI_Type_commit(&nodeType);CHKERRMPI(ierr);
+  ierr = MPI_Op_create(DMPforestMaxSFNode,PETSC_FALSE,&sfNodeReduce);CHKERRMPI(ierr);
+  ierr = MPI_Type_contiguous(numClosureIndices*2,MPIU_INT,&nodeClosureType);CHKERRMPI(ierr);
+  ierr = MPI_Type_commit(&nodeClosureType);CHKERRMPI(ierr);
   /* everything has to go through cells: for each cell, create a list of the sfnodes in its closure */
   /* get lists of closure point SF nodes for every cell */
   ierr = DMPforestGetCellSFNodes(coarse,numClosureIndices,&numClosurePointsC,&closurePointsC,PETSC_TRUE);CHKERRQ(ierr);
@@ -2959,9 +2959,9 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
   ierr = PetscFree(coverQuads);CHKERRQ(ierr);
   ierr = PetscFree(closurePointsC);CHKERRQ(ierr);
   ierr = PetscFree(closurePointsF);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&nodeClosureType);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&sfNodeReduce);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&nodeType);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&nodeClosureType);CHKERRMPI(ierr);
+  ierr = MPI_Op_free(&sfNodeReduce);CHKERRMPI(ierr);
+  ierr = MPI_Type_free(&nodeType);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2983,8 +2983,8 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   pforestF = (DM_Forest_pforest*) ((DM_Forest*) fine->data)->data;
   if (pforestC->topo != pforestF->topo) SETERRQ(PetscObjectComm((PetscObject)coarse),PETSC_ERR_ARG_INCOMP,"DM's must have the same base DM");
   comm = PetscObjectComm((PetscObject)coarse);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   /* count the number of closure points that have dofs and create a list */
   numClosureIndices = 0;
@@ -4273,7 +4273,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   if (!pforest->plex) {
     PetscMPIInt size;
 
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     ierr = DMCreate(comm,&newPlex);CHKERRQ(ierr);
     ierr = DMSetType(newPlex,DMPLEX);CHKERRQ(ierr);
     ierr = DMSetMatType(newPlex,dm->mattype);CHKERRQ(ierr);
@@ -4746,7 +4746,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     const PetscScalar *inArray;
     PetscScalar       *outArray;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)basec), &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)basec), &rank);CHKERRMPI(ierr);
     ierr = DMPlexGetChart(basec, &bStart, &bEnd);CHKERRQ(ierr);
     nroots = PetscMax(bEnd - bStart, 0);
     ierr = DMPlexGetChart(plex, &iStart, &iEnd);CHKERRQ(ierr);

@@ -25,15 +25,15 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   PetscInt       *edgelist = wash->edgelist,*nvtx=NULL,*vtxDone=NULL;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size == 1) PetscFunctionReturn(0);
 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   numEdges    = wash->nedge;
   numVertices = wash->nvertex;
 
   /* (1) all processes get global and local number of edges */
-  ierr = MPI_Bcast(&numEdges,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&numEdges,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
   nedges = numEdges/size; /* local nedges */
   if (!rank) {
     nedges += numEdges - size*(numEdges/size);
@@ -43,7 +43,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] nedges %d, numEdges %d\n",rank,nedges,numEdges);CHKERRQ(ierr); */
 
   ierr = PetscCalloc3(size+1,&eowners,size,&nvtx,numVertices,&vtxDone);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&nedges,1,MPIU_INT,eowners+1,1,MPIU_INT,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&nedges,1,MPIU_INT,eowners+1,1,MPIU_INT,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   eowners[0] = 0;
   for (i=2; i<=size; i++) {
     eowners[i] += eowners[i-1];
@@ -58,18 +58,18 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
     vtype = wash->vtype;
     for (i=1; i<size; i++) {
       /* proc[0] sends edgelist to proc[i] */
-      ierr = MPI_Send(edgelist+2*eowners[i],2*(eowners[i+1]-eowners[i]),MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(edgelist+2*eowners[i],2*(eowners[i+1]-eowners[i]),MPIU_INT,i,tag,comm);CHKERRMPI(ierr);
 
       /* proc[0] sends vtype to proc[i] */
-      ierr = MPI_Send(vtype+2*eowners[i],2*(eowners[i+1]-eowners[i]),MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(vtype+2*eowners[i],2*(eowners[i+1]-eowners[i]),MPIU_INT,i,tag,comm);CHKERRMPI(ierr);
     }
   } else {
     MPI_Status      status;
     ierr = PetscMalloc1(2*(eend-estart),&vtype);CHKERRQ(ierr);
     ierr = PetscMalloc1(2*(eend-estart),&edgelist);CHKERRQ(ierr);
 
-    ierr = MPI_Recv(edgelist,2*(eend-estart),MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
-    ierr = MPI_Recv(vtype,2*(eend-estart),MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(edgelist,2*(eend-estart),MPIU_INT,0,tag,comm,&status);CHKERRMPI(ierr);
+    ierr = MPI_Recv(vtype,2*(eend-estart),MPIU_INT,0,tag,comm,&status);CHKERRMPI(ierr);
   }
 
   wash->edgelist = edgelist;
@@ -89,8 +89,8 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
       }
     }
   }
-  ierr = MPI_Bcast(&numVertices,1,MPIU_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Scatter(nvtx,1,MPIU_INT,&nvertices,1,MPIU_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&numVertices,1,MPIU_INT,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  ierr = MPI_Scatter(nvtx,1,MPIU_INT,&nvertices,1,MPIU_INT,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   ierr = PetscFree3(eowners,nvtx,vtxDone);CHKERRQ(ierr);
 
   wash->Nvertex = numVertices;
@@ -320,7 +320,7 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
   VecScatter           ctx_q,ctx_h;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   /* get num of local and global total nnodes */
   nidx = wash->nnodes_loc;
@@ -399,7 +399,7 @@ PetscErrorCode WashNetworkCleanUp(Wash wash)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(wash->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wash->comm,&rank);CHKERRMPI(ierr);
   ierr = PetscFree(wash->edgelist);CHKERRQ(ierr);
   ierr = PetscFree(wash->vtype);CHKERRQ(ierr);
   if (!rank) {
@@ -421,7 +421,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   PetscBool      washdist=PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   ierr = PetscCalloc1(1,&wash);CHKERRQ(ierr);
   wash->comm = comm;
@@ -635,8 +635,8 @@ int main(int argc,char ** argv)
   /*------------------*/
   ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   if (size == 1 && monipipes) {
     ierr = DMNetworkMonitorCreate(networkdm,&monitor);CHKERRQ(ierr);

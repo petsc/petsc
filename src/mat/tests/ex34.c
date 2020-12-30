@@ -13,7 +13,7 @@ int main(int argc, char ** argv)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
   if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use 2 processors");
 
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);

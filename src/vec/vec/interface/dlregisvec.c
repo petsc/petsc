@@ -252,9 +252,9 @@ PetscErrorCode  VecInitializePackage(void)
   /*
     Create the special MPI reduction operation that may be used by VecNorm/DotBegin()
   */
-  ierr = MPI_Op_create(PetscSplitReduction_Local,1,&PetscSplitReduction_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_create(MPIU_MaxIndex_Local,2,&MPIU_MAXINDEX_OP);CHKERRQ(ierr);
-  ierr = MPI_Op_create(MPIU_MinIndex_Local,2,&MPIU_MININDEX_OP);CHKERRQ(ierr);
+  ierr = MPI_Op_create(PetscSplitReduction_Local,1,&PetscSplitReduction_Op);CHKERRMPI(ierr);
+  ierr = MPI_Op_create(MPIU_MaxIndex_Local,2,&MPIU_MAXINDEX_OP);CHKERRMPI(ierr);
+  ierr = MPI_Op_create(MPIU_MinIndex_Local,2,&MPIU_MININDEX_OP);CHKERRMPI(ierr);
 
   /* Register the different norm types for cached norms */
   for (i=0; i<4; i++) {
@@ -280,11 +280,11 @@ PetscErrorCode  VecFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&VecList);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&MPIU_MAXINDEX_OP);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&MPIU_MININDEX_OP);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRMPI(ierr);
+  ierr = MPI_Op_free(&MPIU_MAXINDEX_OP);CHKERRMPI(ierr);
+  ierr = MPI_Op_free(&MPIU_MININDEX_OP);CHKERRMPI(ierr);
   if (Petsc_Reduction_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Reduction_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Reduction_keyval);CHKERRMPI(ierr);
   }
   VecPackageInitialized = PETSC_FALSE;
   VecRegisterAllCalled  = PETSC_FALSE;

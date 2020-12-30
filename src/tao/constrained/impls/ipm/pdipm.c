@@ -193,7 +193,7 @@ PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
   sendbuf[3] = pdipm->nxbox;
   sendbuf[4] = pdipm->nxfree;
 
-  ierr = MPI_Allreduce(sendbuf,recvbuf,5,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(sendbuf,recvbuf,5,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   pdipm->Nxlb    = recvbuf[0];
   pdipm->Nxub    = recvbuf[1];
   pdipm->Nxfixed = recvbuf[2];
@@ -315,8 +315,8 @@ PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, void *ctx
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&size);CHKERRMPI(ierr);
 
   ierr = MatGetOwnershipRanges(Jpre,&Jranges);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Jpre,&Jrstart,NULL);CHKERRQ(ierr);
@@ -659,7 +659,7 @@ PetscErrorCode PDIPMLineSearch(SNESLineSearch linesearch,void *ctx)
   ierr = VecRestoreArray(X,&Xarr);CHKERRQ(ierr);
 
   /* alpha = min(alpha) over all processes */
-  ierr = MPI_Allreduce(alpha,alpha+2,2,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)tao));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(alpha,alpha+2,2,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)tao));CHKERRMPI(ierr);
 
   alpha_p = alpha[2];
   alpha_d = alpha[3];
@@ -821,8 +821,8 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   /* (1) Setup Bounds and create Tao vectors */
   ierr = TaoPDIPMSetUpBounds(tao);CHKERRQ(ierr);
@@ -1009,15 +1009,15 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   ierr = PetscMalloc1(size,&pdipm->nce_all);CHKERRQ(ierr);
 
   /* Get rstart of KKT matrix */
-  ierr = MPI_Scan(&pdipm->n,&rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Scan(&pdipm->n,&rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   rstart -= pdipm->n;
 
-  ierr = MPI_Allgather(&pdipm->nce,1,MPIU_INT,pdipm->nce_all,1,MPIU_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&pdipm->nce,1,MPIU_INT,pdipm->nce_all,1,MPIU_INT,comm);CHKERRMPI(ierr);
 
   ierr = PetscMalloc3(size,&ng_all,size,&nh_all,size,&Jranges);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&rstart,1,MPIU_INT,Jranges,1,MPIU_INT,comm);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&pdipm->nh,1,MPIU_INT,nh_all,1,MPIU_INT,comm);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&pdipm->ng,1,MPIU_INT,ng_all,1,MPIU_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&rstart,1,MPIU_INT,Jranges,1,MPIU_INT,comm);CHKERRMPI(ierr);
+  ierr = MPI_Allgather(&pdipm->nh,1,MPIU_INT,nh_all,1,MPIU_INT,comm);CHKERRMPI(ierr);
+  ierr = MPI_Allgather(&pdipm->ng,1,MPIU_INT,ng_all,1,MPIU_INT,comm);CHKERRMPI(ierr);
 
   ierr = MatGetOwnershipRanges(tao->hessian,&rranges);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangesColumn(tao->hessian,&cranges);CHKERRQ(ierr);

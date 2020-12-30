@@ -91,7 +91,7 @@ int main(int argc,char ** argv)
   SNES             snes;
 
   ierr = PetscInitialize(&argc,&argv,"poweroptions",help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   {
     /* introduce the const crank so the clang static analyzer realizes that if it enters any of the if (crank) then it must have entered the first */
     /* this is an experiment to see how the analyzer reacts */
@@ -127,7 +127,7 @@ int main(int argc,char ** argv)
     ierr = PetscOptionsHasName(NULL,NULL, "-jac_error", &User.jac_error);CHKERRQ(ierr);
 
     PetscLogStagePop();
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
     ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
     PetscLogStagePush(stage2);
     /* Set number of nodes/edges */
@@ -215,7 +215,7 @@ int main(int argc,char ** argv)
     }
 #endif
     /* Broadcast Sbase to all processors */
-    ierr = MPI_Bcast(&User.Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&User.Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
 
     ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
     ierr = VecDuplicate(X,&F);CHKERRQ(ierr);

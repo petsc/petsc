@@ -82,7 +82,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
 
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
 
   /* load the apply function from the dynamic library */
   ierr = PetscGetUserName(username,64);CHKERRQ(ierr);

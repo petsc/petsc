@@ -133,7 +133,7 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[],PetscB
   size_t         rd;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
     source = fopen(fname,"r");
@@ -150,12 +150,12 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[],PetscB
       fclose(source);
       optionsStr[yamlLength] = '\0';
     } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open YAML option file %s\n",fname);
-    ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);CHKERRQ(ierr);
-    ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);CHKERRMPI(ierr);
+    ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRMPI(ierr);
   } else {
-    ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);CHKERRMPI(ierr);
     ierr = PetscMalloc1(yamlLength+1,&optionsStr);CHKERRQ(ierr);
-    ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRMPI(ierr);
   }
   ierr = PetscOptionsInsertStringYAML(NULL, (const char *) optionsStr);CHKERRQ(ierr);
   ierr = PetscFree(optionsStr);CHKERRQ(ierr);
