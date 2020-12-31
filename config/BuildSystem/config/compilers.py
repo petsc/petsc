@@ -1426,7 +1426,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     }
     """
     self.setCompilers.pushLanguage('C')
-    flags_to_try = ['','-std=c99','-std=gnu99','-std=c11''-std=gnu11','-c99']
+    flags_to_try = ['','-std=c99','-std=gnu99','-std=c11','-std=gnu11','-c99']
     for flag in flags_to_try:
       self.setCompilers.saveLog()
       if self.setCompilers.checkCompilerFlag(flag, includes, body):
@@ -1438,7 +1438,10 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       else:
         self.logWrite(self.setCompilers.restoreLog())
     self.setCompilers.popLanguage()
-    if self.c99flag is None: raise RuntimeError('PETSc requires c99 compiler! Configure could not determine compatible compiler flag. Perhaps you can specify via CFLAGS')
+    if self.c99flag is None:
+      if self.isGCC: additionalErrorMsg = '\nPerhaps you have an Intel compiler environment or module set that is interferring with the GNU compilers.\nTry removing that environment or module and running ./configure again.'
+      else: additionalErrorMsg = ''
+      raise RuntimeError('PETSc requires c99 compiler! Configure could not determine compatible compiler flag.\nPerhaps you can specify it via CFLAGS.'+additionalErrorMsg)
     return
 
   def configure(self):

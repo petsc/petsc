@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '82eaaac017d082986e9eb180901a778619f6298b' # master Dec-20-2020
+    self.gitcommit              = 'origin/barry/2012-01-01/fix-cuda-ccbin-wrong-arguments'
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
