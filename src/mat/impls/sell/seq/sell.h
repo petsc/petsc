@@ -6,6 +6,14 @@
 #include <petsc/private/hashmapi.h>
 
 /*
+ For NVIDIA GPUs each slice should be padded to the boundary of 16 elements for best performance.
+ The optimal memory alignment in device memory is 128 bytes, 64 bytes, 32 bytes for double precision, single precision and half precision.
+*/
+#if defined(PETSC_HAVE_DEVICE)
+  #define DEVICE_MEM_ALIGN 16
+#endif
+
+/*
  Struct header for SeqSELL matrix format
 */
 #define SEQSELLHEADER(datatype) \
@@ -72,11 +80,11 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
   return PETSC_SUCCESS;
 }
 
-#define MatSeqXSELLReallocateSELL(Amat, AM, BS2, WIDTH, SIDX, SH, SID, ROW, COL, COLIDX, VAL, CP, VP, NONEW, datatype) \
+#define MatSeqXSELLReallocateSELL(Amat, AM, BS2, WIDTH, SIDX, SH, SID, ROW, COL, COLIDX, VAL, CP, VP, NONEW, datatype, MUL) \
   if (WIDTH >= (SIDX[SID + 1] - SIDX[SID]) / SH) { \
     Mat_SeqSELL *Ain = (Mat_SeqSELL *)Amat->data; \
     /* there is no extra room in row, therefore enlarge 1 slice column */ \
-    PetscInt  new_size = Ain->maxallocmat + SH, *new_colidx; \
+    PetscInt  new_size = Ain->maxallocmat + SH * MUL, *new_colidx; \
     datatype *new_val; \
 \
     PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
@@ -86,10 +94,10 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
     /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
     PetscCall(PetscArraycpy(new_val, VAL, SIDX[SID + 1])); \
     PetscCall(PetscArraycpy(new_colidx, COLIDX, SIDX[SID + 1])); \
-    PetscCall(PetscArraycpy(new_val + SIDX[SID + 1] + SH, VAL + SIDX[SID + 1], SIDX[Ain->totalslices] - SIDX[SID + 1])); \
-    PetscCall(PetscArraycpy(new_colidx + SIDX[SID + 1] + SH, COLIDX + SIDX[SID + 1], SIDX[Ain->totalslices] - SIDX[SID + 1])); \
+    PetscCall(PetscArraycpy(new_val + SIDX[SID + 1] + SH * MUL, VAL + SIDX[SID + 1], SIDX[Ain->totalslices] - SIDX[SID + 1])); \
+    PetscCall(PetscArraycpy(new_colidx + SIDX[SID + 1] + SH * MUL, COLIDX + SIDX[SID + 1], SIDX[Ain->totalslices] - SIDX[SID + 1])); \
     /* update slice_idx */ \
-    for (ii = SID + 1; ii <= Ain->totalslices; ii++) { SIDX[ii] += SH; } \
+    for (ii = SID + 1; ii <= Ain->totalslices; ii++) { SIDX[ii] += SH * MUL; } \
     /* update pointers. Notice that they point to the FIRST postion of the row */ \
     CP = new_colidx + SIDX[SID] + (ROW % SH); \
     VP = new_val + SIDX[SID] + (ROW % SH); \
@@ -100,7 +108,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
     Ain->singlemalloc = PETSC_TRUE; \
     Ain->maxallocmat  = new_size; \
     Ain->reallocs++; \
-    if (WIDTH >= Ain->maxallocrow) Ain->maxallocrow++; \
+    if (WIDTH >= Ain->maxallocrow) Ain->maxallocrow += MUL; \
     if (WIDTH >= Ain->rlenmax) Ain->rlenmax++; \
   }
 

@@ -89,7 +89,10 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
 {
   Mat_SeqSELL *b;
   PetscInt     i, j, totalslices;
-  PetscBool    skipallocation = PETSC_FALSE, realalloc = PETSC_FALSE;
+#if defined(PETSC_HAVE_CUDA)
+  PetscInt rlenmax = 0;
+#endif
+  PetscBool skipallocation = PETSC_FALSE, realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (maxallocrow >= 0 || rlen) realalloc = PETSC_TRUE;
@@ -133,19 +136,36 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
     if (!rlen) { /* if rlen is not provided, allocate same space for all the slices */
       if (maxallocrow == PETSC_DEFAULT || maxallocrow == PETSC_DECIDE) maxallocrow = 10;
       else if (maxallocrow < 0) maxallocrow = 1;
+#if defined(PETSC_HAVE_CUDA)
+      rlenmax = maxallocrow;
+      /* Pad the slice to DEVICE_MEM_ALIGN */
+      while (b->sliceheight * maxallocrow % DEVICE_MEM_ALIGN) maxallocrow++;
+#endif
       for (i = 0; i <= totalslices; i++) b->sliidx[i] = b->sliceheight * i * maxallocrow;
     } else {
+#if defined(PETSC_HAVE_CUDA)
+      PetscInt mul = DEVICE_MEM_ALIGN / b->sliceheight;
+#endif
       maxallocrow  = 0;
       b->sliidx[0] = 0;
       for (i = 1; i < totalslices; i++) {
         b->sliidx[i] = 0;
         for (j = 0; j < b->sliceheight; j++) { b->sliidx[i] = PetscMax(b->sliidx[i], rlen[b->sliceheight * (i - 1) + j]); }
+#if defined(PETSC_HAVE_CUDA)
+        rlenmax = PetscMax(b->sliidx[i], rlenmax);
+        /* Pad the slice to DEVICE_MEM_ALIGN */
+        b->sliidx[i] = ((b->sliidx[i] - 1) / mul + 1) * mul;
+#endif
         maxallocrow = PetscMax(b->sliidx[i], maxallocrow);
         PetscCall(PetscIntSumError(b->sliidx[i - 1], b->sliceheight * b->sliidx[i], &b->sliidx[i]));
       }
       /* last slice */
       b->sliidx[totalslices] = 0;
       for (j = b->sliceheight * (totalslices - 1); j < B->rmap->n; j++) b->sliidx[totalslices] = PetscMax(b->sliidx[totalslices], rlen[j]);
+#if defined(PETSC_HAVE_CUDA)
+      rlenmax                = PetscMax(b->sliidx[i], rlenmax);
+      b->sliidx[totalslices] = ((b->sliidx[totalslices] - 1) / mul + 1) * mul;
+#endif
       maxallocrow            = PetscMax(b->sliidx[totalslices], maxallocrow);
       b->sliidx[totalslices] = b->sliidx[totalslices - 1] + b->sliceheight * b->sliidx[totalslices];
     }
@@ -166,9 +186,13 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
     b->free_colidx = PETSC_FALSE;
   }
 
-  b->nz               = 0;
-  b->maxallocrow      = maxallocrow;
-  b->rlenmax          = maxallocrow;
+  b->nz          = 0;
+  b->maxallocrow = maxallocrow;
+#if defined(PETSC_HAVE_CUDA)
+  b->rlenmax = rlenmax;
+#else
+  b->rlenmax = maxallocrow;
+#endif
   b->maxallocmat      = b->sliidx[totalslices];
   B->info.nz_unneeded = (double)b->maxallocmat;
   if (realalloc) PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
@@ -1492,6 +1516,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
   MatScalar   *vp, value;
 #if defined(PETSC_HAVE_CUDA)
   PetscBool inserted = PETSC_FALSE;
+  PetscInt  mul      = DEVICE_MEM_ALIGN / a->sliceheight;
 #endif
 
   PetscFunctionBegin;
@@ -1541,8 +1566,12 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
       if (value == 0.0 && a->ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
       PetscCheck(nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero (%" PetscInt_FMT ", %" PetscInt_FMT ") in the matrix", row, col);
+#if defined(PETSC_HAVE_CUDA)
+      MatSeqXSELLReallocateSELL(A, A->rmap->n, 1, nrow, a->sliidx, a->sliceheight, row / a->sliceheight, row, col, a->colidx, a->val, cp, vp, nonew, MatScalar, mul);
+#else
       /* If the current row length exceeds the slice width (e.g. nrow==slice_width), allocate a new space, otherwise do nothing */
-      MatSeqXSELLReallocateSELL(A, A->rmap->n, 1, nrow, a->sliidx, a->sliceheight, row / a->sliceheight, row, col, a->colidx, a->val, cp, vp, nonew, MatScalar);
+      MatSeqXSELLReallocateSELL(A, A->rmap->n, 1, nrow, a->sliidx, a->sliceheight, row / a->sliceheight, row, col, a->colidx, a->val, cp, vp, nonew, MatScalar, 1);
+#endif
       /* add the new nonzero to the high position, shift the remaining elements in current row to the right by one slot */
       for (ii = nrow - 1; ii >= i; ii--) {
         *(cp + a->sliceheight * (ii + 1)) = *(cp + a->sliceheight * ii);
@@ -1990,6 +2019,9 @@ PetscErrorCode MatSeqSELLSetSliceHeight_SeqSELL(Mat A, PetscInt sliceheight)
   if (A->preallocated) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(a->sliceheight <= 0 || a->sliceheight == sliceheight, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot change slice height %" PetscInt_FMT " to %" PetscInt_FMT, a->sliceheight, sliceheight);
   a->sliceheight = sliceheight;
+#if defined(PETSC_HAVE_CUDA)
+  PetscCheck(DEVICE_MEM_ALIGN % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "DEVICE_MEM_ALIGN is not divisible by the slice height %" PetscInt_FMT, sliceheight);
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
