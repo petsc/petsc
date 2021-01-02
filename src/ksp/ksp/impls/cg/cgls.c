@@ -140,6 +140,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp)
   ksp->ops->view           = NULL;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"This is not supported for complex numbers");
-#endif
+#else
   PetscFunctionReturn(0);
+#endif
 }

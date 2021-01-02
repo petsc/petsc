@@ -342,7 +342,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   Mat            J,dJ,dJdense;
   PetscErrorCode ierr;
   PetscErrorCode (*func)(SNES,Vec,Mat,Mat,void*);
-  PetscInt       n,i;
+  PetscInt       n;
   PetscBLASInt   nb = 0,lwork;
   PetscReal      *eigr,*eigi;
   PetscScalar    *work;
@@ -369,17 +369,15 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
 #if !defined(PETSC_USE_COMPLEX)
   {
     PetscBLASInt lierr;
+    PetscInt     i;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&nb,a,&nb,eigr,eigi,NULL,&nb,NULL,&nb,work,&lwork,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"geev() error %d",lierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  }
-#else
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
-#endif
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Eigenvalues of J_%d - J_%d:\n",it,it-1);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"%5d: %20.5g + %20.5gi\n",i,(double)eigr[i],(double)eigi[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Eigenvalues of J_%d - J_%d:\n",it,it-1);CHKERRQ(ierr);
+    for (i=0;i<n;i++) {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"%5d: %20.5g + %20.5gi\n",i,(double)eigr[i],(double)eigi[i]);CHKERRQ(ierr);
+    }
   }
   ierr = MatDenseRestoreArray(dJdense,&a);CHKERRQ(ierr);
   ierr = MatDestroy(&dJ);CHKERRQ(ierr);
@@ -388,6 +386,9 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   ierr = PetscFree(eigi);CHKERRQ(ierr);
   ierr = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+#else
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
+#endif
 #endif
 }
 
