@@ -538,12 +538,13 @@ M*/
 .seealso: CHKERRQ(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2(), SETERRMPI()
 M*/
 #define CHKERRMPI(ierr) \
-do {                       \
-  if (PetscUnlikely(ierr)) { \
-    char        name[MPI_MAX_ERROR_STRING]; \
-    PetscMPIInt dlength;\
-    MPI_Error_string(ierr,(char*)name,&dlength);                        \
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)ierr,name); \
+do { \
+  PetscErrorCode _7_errorcode = (ierr); \
+  if (PetscUnlikely(_7_errorcode)) { \
+    char        _7_errorstring[MPI_MAX_ERROR_STRING]; \
+    PetscMPIInt _7_resultlen; \
+    MPI_Error_string(_7_errorcode,(char*)_7_errorstring,&_7_resultlen); \
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)_7_errorcode,_7_errorstring); \
   } \
 } while (0)
 
