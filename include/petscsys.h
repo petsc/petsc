@@ -2503,6 +2503,7 @@ typedef const char* PetscRandomType;
 #define PETSCSPRNG      "sprng"
 #define PETSCRANDER48   "rander48"
 #define PETSCRANDOM123  "random123"
+#define PETSCCURAND     "curand"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;
@@ -2513,15 +2514,17 @@ PETSC_EXTERN PetscErrorCode PetscRandomInitializePackage(void);
 PETSC_EXTERN PetscFunctionList PetscRandomList;
 
 PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(PetscRandom));
-PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
+PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom,PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
-PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);
+PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom,PetscRandomType*);
 PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscRandomView(PetscRandom,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandom*);
 PETSC_EXTERN PetscErrorCode PetscRandomGetValue(PetscRandom,PetscScalar*);
 PETSC_EXTERN PetscErrorCode PetscRandomGetValueReal(PetscRandom,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscRandomGetValues(PetscRandom,PetscInt,PetscScalar*);
+PETSC_EXTERN PetscErrorCode PetscRandomGetValuesReal(PetscRandom,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscRandomGetInterval(PetscRandom,PetscScalar*,PetscScalar*);
 PETSC_EXTERN PetscErrorCode PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScalar);
 PETSC_EXTERN PetscErrorCode PetscRandomSetSeed(PetscRandom,unsigned long);

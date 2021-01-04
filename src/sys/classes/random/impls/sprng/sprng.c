@@ -44,13 +44,13 @@ PetscErrorCode  PetscRandomGetValueReal_Sprng(PetscRandom r,PetscReal *val)
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
-  /* 0 */
   PetscRandomSeed_Sprng,
   PetscRandomGetValue_Sprng,
   PetscRandomGetValueReal_Sprng,
-  0,
-  /* 5 */
-  0
+  NULL,
+  NULL,
+  NULL,
+  NULL
 };
 
 /*MC

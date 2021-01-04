@@ -108,13 +108,13 @@ PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r)
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
-  /* 0 */
   PetscRandomSeed_Random123,
   PetscRandomGetValue_Random123,
   PetscRandomGetValueReal_Random123,
+  NULL,
+  NULL,
   PetscRandomDestroy_Random123,
-  /* 5 */
-  0
+  NULL
 };
 
 /*MC

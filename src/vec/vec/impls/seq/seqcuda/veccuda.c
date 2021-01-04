@@ -86,17 +86,26 @@ PetscErrorCode VecCopy_SeqCUDA_Private(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-/* this is an exact copy of VecSetRandom_Seq */
 PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
-  PetscInt       n = xin->map->n,i;
+  PetscInt       n = xin->map->n;
+  PetscBool      iscurand;
   PetscScalar    *xx;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayWrite(xin,&xx);CHKERRQ(ierr);
-  for (i=0; i<n; i++) { ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr); }
-  ierr = VecRestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)r,PETSCCURAND,&iscurand);CHKERRQ(ierr);
+  if (iscurand) {
+    ierr = VecCUDAGetArrayWrite(xin,&xx);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArrayWrite(xin,&xx);CHKERRQ(ierr);
+  }
+  ierr = PetscRandomGetValues(r,n,xx);CHKERRQ(ierr);
+  if (iscurand) {
+    ierr = VecCUDARestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
+  } else {
+    ierr = VecRestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -447,6 +456,10 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->getarraywrite          = NULL;
     V->ops->max                    = VecMax_Seq;
     V->ops->min                    = VecMin_Seq;
+
+    /* default random number generator */
+    ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(PETSCRANDER48,&V->defaultrandtype);CHKERRQ(ierr);
   } else {
     V->ops->dot                    = VecDot_SeqCUDA;
     V->ops->norm                   = VecNorm_SeqCUDA;
@@ -487,6 +500,10 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqCUDA;
     V->ops->max                    = VecMax_SeqCUDA;
     V->ops->min                    = VecMin_SeqCUDA;
+
+    /* default random number generator */
+    ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(PETSCCURAND,&V->defaultrandtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

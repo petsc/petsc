@@ -397,6 +397,7 @@ PetscErrorCode  VecDestroy(Vec *v)
   if ((*v)->ops->destroy) {
     ierr = (*(*v)->ops->destroy)(*v);CHKERRQ(ierr);
   }
+  ierr = PetscFree((*v)->defaultrandtype);CHKERRQ(ierr);
   /* destroy the external/common part */
   ierr = PetscLayoutDestroy(&(*v)->map);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
@@ -1164,7 +1165,6 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
 
    Level: intermediate
 
-
 .seealso: VecSet(), VecSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
 PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
@@ -1180,9 +1180,8 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
 
   if (!rctx) {
-    MPI_Comm comm;
-    ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(comm,&randObj);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PetscObjectComm((PetscObject)x),&randObj);CHKERRQ(ierr);
+    ierr = PetscRandomSetType(randObj,x->defaultrandtype);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(randObj);CHKERRQ(ierr);
     rctx = randObj;
   }

@@ -84,6 +84,8 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
     vec->ops->destroy = NULL;
   }
   ierr = PetscMemzero(vec->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
+  ierr = PetscFree(vec->defaultrandtype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSCRANDER48,&vec->defaultrandtype);CHKERRQ(ierr);
   if (vec->map->n < 0 && vec->map->N < 0) {
     vec->ops->create = r;
     vec->ops->load   = VecLoad_Default;

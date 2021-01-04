@@ -96,12 +96,12 @@ static PetscErrorCode  PetscRandomDestroy_Rander48(PetscRandom r)
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
-  /* 0 */
   PetscRandomSeed_Rander48,
   PetscRandomGetValue_Rander48,
   PetscRandomGetValueReal_Rander48,
+  NULL,
+  NULL,
   PetscRandomDestroy_Rander48,
-  /* 5 */
   NULL
 };
 
@@ -122,7 +122,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 
   Level: beginner
 
-.seealso: RandomCreate(), RandomSetType(), PETSCRAND, PETSCRAND48, PETSCRANDER48, PETSCSPRNG, PetscRandomSetSeed(), PetscRandomSeed()
+.seealso: PetscRandomCreate(), PetscRandomSetType(), PETSCRAND, PETSCRAND48, PETSCRANDER48, PETSCSPRNG, PetscRandomSetSeed(), PetscRandomSeed()
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom r)
