@@ -78,7 +78,7 @@
             <li><a href="../license.html">License</a></li>
             <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
             <li><a href="../nonlinearsolvertable.html">Nonlinear Solver Table</a></li>
-	    <li><a href="../taosolvertable.html">TAO Solver Table</a></li>
+            <li><a href="../taosolvertable.html">TAO Solver Table</a></li>
           </ul>
         </li>
         <li><a href="../../publications/index.html">Applications/Publications</a></li>
@@ -119,12 +119,10 @@
         <ul>
           <li>On macOS, <code>MACOS_FIREWALL=1</code> or <code>MACOS_FIREWALL_REFRESH=1</code> can be passed to make
             to automatically add firewall rules preventing firewall popups during testing.
-            See <code>make -f gmakefile.test help</code> for details.
+            See <code>make -f gmakefile.test help</code> for details
           </li>
-          <li><code>./configure --with-macos-firewall-rules</code> makes <code>MACOS_FIREWALL=1</code> the default.</li>
-        </ul>
-        <ul>
-          <li>Change -download-petsc4py to --with-petsc4py to have PETSc build and use petsc4py</li>
+          <li><code>./configure --with-macos-firewall-rules</code> makes <code>MACOS_FIREWALL=1</code> the default</li>
+          <li>Change --download-petsc4py to --with-petsc4py to have PETSc build and use petsc4py</li>
         </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
@@ -144,13 +142,13 @@
       <h4>Mat:</h4>
       <ul>
         <li>Add MatSetPreallocationCOO and MatSetValuesCOO to preallocate and set values in a matrix using COO format. Currently efficiently implemented only for MATCUSPARSE</li>
-        <li>Add the option MAT_FORCE_DIAGONAL_ENTRIES for MatSetOption(). It forces allocation of all diagonal entries.</li>
-        <li>MAT_NEW_DIAGONALS is removed from MatOption.
-          <li>Add UNKNOW_NONZERO_PATTERN as new value for MatStructure. It indicates that the relationship is unknown, when set the AIJ matrices check if the two matrices have identical patterns and if so use the faster code.</li>
-        </ul>
+        <li>Add the option MAT_FORCE_DIAGONAL_ENTRIES for MatSetOption(). It forces allocation of all diagonal entries</li>
+        <li>Remove MAT_NEW_DIAGONALS from MatOption.
+        <li>Add UNKNOW_NONZERO_PATTERN as new value for MatStructure. It indicates that the relationship is unknown, when set the AIJ matrices check if the two matrices have identical patterns and if so use the faster code</li>
+      </ul>
       <h4>PC:</h4>
       <ul>
-        <li>Add PCGAMGSetRankReductionFactors(), provide an array, <tt>-pc_gamg_rank_reduction_factors factors</tt>, tp specify factor by which to reduce active processors on coarse grids in PCGAMG that overrides default heuristics </li>
+        <li>Add PCGAMGSetRankReductionFactors(), provide an array, <tt>-pc_gamg_rank_reduction_factors factors</tt>, tp specify factor by which to reduce active processors on coarse grids in PCGAMG that overrides default heuristics</li>
         <li>Change PCCompositeAddPC() to PCCompositeAddPCType(), now PCCompositeAddPC() adds a specific PC object</li>
         <li>Add a Compatible Relaxation (CR) viewer PCMG with -pc_mg_adapt_cr</li>
         <li>Experimental: Add support for assembling AIJ (CUSPARSE and KOKKOS) matrix on the Cuda device with MatSetValuesDevice(), MatCUSPARSEGetDeviceMatWrite(), and Kokkos with MatKokkosGetDeviceMatWrite</li>
@@ -179,18 +177,18 @@
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <ul>
-        <li>Change to --download-sundials2 to indicate the version of SUNDIALS PETSc downloads, which is very old and out-dated.</li>
+        <li>Change to --download-sundials2 to indicate the version of SUNDIALS PETSc downloads, which is very old and out-dated</li>
       </ul>
       <h4>TAO:</h4>
         <ul>
-          <li>Add TSSetMatStructure() to indicate the relationship between the nonzero structures of the I Jacobian and the RHS Jacobian.</li>
-          <li>Automatically set the MatStructure flag of TS to SAME_NONZERO_PATTERN if the RHS matrix is obtained with a MatDuplicate() from the I Jacobian.</li>
+          <li>Add TSSetMatStructure() to indicate the relationship between the nonzero structures of the I Jacobian and the RHS Jacobian</li>
+          <li>Automatically set the MatStructure flag of TS to SAME_NONZERO_PATTERN if the RHS matrix is obtained with a MatDuplicate() from the I Jacobian</li>
         </ul>
       <h4>DM/DA:</h4>
       <ul>
-        <li>Removed unneeded Vec argument from DMPatchZoom() </li>
-        <li>Change DMDACreatePatchIS() to collective operation and add an extra argument to indicate whether off processor values will be returned.
-        <li>DMSwarmViewXDMF can now use a full path for the filename </li>
+        <li>Remove unneeded Vec argument from DMPatchZoom()</li>
+        <li>Change DMDACreatePatchIS() to collective operation and add an extra argument to indicate whether off processor values will be returned</li>
+        <li>DMSwarmViewXDMF() can now use a full path for the filename</li>
       </ul>
       <h4>DMPlex:</h4>
       <ul>
