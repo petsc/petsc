@@ -3080,6 +3080,8 @@ static PetscErrorCode MatAXPY_SeqAIJCUSPARSE(Mat Y,PetscScalar a,Mat X,MatStruct
     }
     if (eq) str = SAME_NONZERO_PATTERN;
   }
+  /* spgeam is buggy with one column */
+  if (Y->cmap->n == 1 && str != SAME_NONZERO_PATTERN) str = DIFFERENT_NONZERO_PATTERN;
 
   if (str == SUBSET_NONZERO_PATTERN) {
     cusparseStatus_t stat;
@@ -3139,7 +3141,7 @@ static PetscErrorCode MatAXPY_SeqAIJCUSPARSE(Mat Y,PetscScalar a,Mat X,MatStruct
     ierr = MatSeqAIJCUSPARSERestoreArray(Y,&ay);CHKERRQ(ierr);
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
   } else {
-    ierr = MatAXPY_SeqAIJ(Y,a,X,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
