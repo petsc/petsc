@@ -171,10 +171,10 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
     }
     ierr = VecReciprocal(diag);CHKERRQ(ierr);
     ierr = VecGetLocalSize(diag,&n);CHKERRQ(ierr);
-    ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
     if (jac->useabs) {
-      for (i=0; i<n; i++) x[i] = PetscAbsScalar(x[i]);
+      ierr = VecAbs(diag);CHKERRQ(ierr);
     }
+    ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if (x[i] == 0.0) {
         x[i]     = 1.0;
