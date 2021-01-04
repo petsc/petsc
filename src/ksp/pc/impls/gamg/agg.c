@@ -1079,7 +1079,6 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   Vec            bb, xx;
   PC             epc;
   PetscReal      alpha, emax, emin;
-  PetscRandom    random;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
@@ -1096,9 +1095,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 
       ierr = MatCreateVecs(Amat, &bb, NULL);CHKERRQ(ierr);
       ierr = MatCreateVecs(Amat, &xx, NULL);CHKERRQ(ierr);
-      ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
-      ierr = VecSetRandom(bb,random);CHKERRQ(ierr);
-      ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
+      ierr = VecSetRandom(bb,NULL);CHKERRQ(ierr);
 
       ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
