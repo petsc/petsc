@@ -187,13 +187,13 @@ PetscErrorCode MatPtAPSymbolic_SeqDense_SeqDense(Mat A,Mat P,PetscReal fill,Mat 
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
-  Mat            B = NULL;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqDense   *b;
-  PetscErrorCode ierr;
-  PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->N,i;
-  MatScalar      *av=a->a;
-  PetscBool      isseqdense;
+  Mat             B = NULL;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqDense    *b;
+  PetscErrorCode  ierr;
+  PetscInt        *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->N,i;
+  const MatScalar *av;
+  PetscBool       isseqdense;
 
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
@@ -210,6 +210,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,Mat
     b    = (Mat_SeqDense*)((*newmat)->data);
     ierr = PetscArrayzero(b->v,m*n);CHKERRQ(ierr);
   }
+  ierr = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     PetscInt j;
     for (j=0;j<ai[1]-ai[0];j++) {
@@ -219,6 +220,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,Mat
     }
     ai++;
   }
+  ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
 
   if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

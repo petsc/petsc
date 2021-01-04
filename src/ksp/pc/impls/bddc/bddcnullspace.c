@@ -77,6 +77,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscContainer           c;
   PetscInt                 basis_size;
   IS                       zerorows;
+  PetscBool                iscusp;
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
@@ -104,9 +105,14 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   ierr = MatGetOption(local_mat,MAT_SYMMETRIC,&shell_ctx->symm);CHKERRQ(ierr);
 
   /* explicit construct (Phi^T K Phi)^-1 */
+  ierr = PetscObjectTypeCompare((PetscObject)local_mat,MATSEQAIJCUSPARSE,&iscusp);CHKERRQ(ierr);
+  if (iscusp) {
+    ierr = MatConvert(shell_ctx->basis_mat,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&shell_ctx->basis_mat);CHKERRQ(ierr);
+  }
   ierr = MatMatMult(local_mat,shell_ctx->basis_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Kbasis_mat);CHKERRQ(ierr);
   ierr = MatTransposeMatMult(Kbasis_mat,shell_ctx->basis_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&shell_ctx->inv_smat);CHKERRQ(ierr);
   ierr = MatDestroy(&Kbasis_mat);CHKERRQ(ierr);
+  ierr = MatBindToCPU(shell_ctx->inv_smat,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatFindZeroRows(shell_ctx->inv_smat,&zerorows);CHKERRQ(ierr);
   if (zerorows) { /* linearly dependent basis */
     const PetscInt *idxs;
@@ -121,7 +127,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     ierr = MatAssemblyBegin(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-
   ierr = MatLUFactor(shell_ctx->inv_smat,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = MatSeqDenseInvertFactors_Private(shell_ctx->inv_smat);CHKERRQ(ierr);
   if (zerorows) { /* linearly dependent basis */

@@ -32,10 +32,6 @@ PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A,PetscInt nrows,Mat_Compr
   /* in case this is being reused, delete old space */
   ierr = PetscFree2(compressedrow->i,compressedrow->rindex);CHKERRQ(ierr);
 
-  compressedrow->i      = NULL;
-  compressedrow->rindex = NULL;
-
-
   /* compute number of zero rows */
   nrows = mbs - nrows;
 

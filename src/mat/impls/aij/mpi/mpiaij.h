@@ -97,6 +97,8 @@ PETSC_INTERN PetscErrorCode MatLoad_MPIAIJ_Binary(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat);
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJBACKEND(Mat);
+PETSC_INTERN PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat);
 PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat);
 
 PETSC_INTERN PetscErrorCode MatProductSymbolic_PtAP_MPIAIJ_MPIAIJ(Mat);

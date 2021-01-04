@@ -75,15 +75,17 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
   PetscFunctionBegin;
   if (PetscNotUseCUPM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You asserted the code wouldn't use devices with -device_set none, but now trying to create a device object. Remove this option or see manpage of PetscCUPMInitialize().");
   if (!PetscCUPMInitialized) {
-    cerr = cupmGetDeviceCount(&devCount);CHKERRCUPM(cerr);
-    if (devCount > 1) {
+    cerr = cupmGetDeviceCount(&devCount);
+    cupmGetLastError(); /* Reset the last error */
+    if (cerr != cupmSuccess) devCount = 0;
+    if (devCount > 0) {
       cerr = cupmSetDeviceFlags(cupmDeviceMapHost);
       cupmGetLastError(); /* Reset the last error */
       if (cerr == cupmSuccess) { /* It implies device runtime has not been initialized? */
         ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
         devId = rank % devCount;
         for (int i=0; i<3; i++) {
-          cerr  = cupmSetDevice(devId);
+          cerr = cupmSetDevice(devId);
           if (cerr == cupmSuccess) break;
           if (cerr != cupmErrorMemoryAllocation && cerr != cupmErrorLaunchOutOfResources) CHKERRCUPM(cerr);
           if (i < 2) {ierr = PetscSleep(3);CHKERRQ(ierr);}
@@ -286,7 +288,7 @@ static PetscErrorCode PetscOptionsCheckCUPM(PetscBool logView)
     if (set) { /* If users have initialized Kokkos themselves, but also had e.g., -cuda_device XXX, for simplicity, make sure XXX is DEFAULT */
       ierr = PetscStrcasecmp("DEFAULT",devStr,&devDefault);CHKERRQ(ierr);
       if (!devDefault) {ierr = PetscStrcasecmp("PETSC_DEFAULT",devStr,&devDefault);CHKERRQ(ierr);}
-      if (!devDefault)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Kokkos was initialized before PetscInitialize(), but you have "cupmSetDeviceStr" %s. Remove the option or use "cupmSetDeviceStr" default.",devStr);
+      if (!devDefault) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Kokkos was initialized before PetscInitialize(), but you have %s %s. Remove the option or use %s default.",cupmSetDeviceStr,devStr,cupmSetDeviceStr);
     } else { /* If users did not have e.g., '-cuda_device XXX', insert one here so that petsc can continue its own device initialization */
       ierr = PetscOptionsSetValue(NULL,cupmSetDeviceStr,"DEFAULT");CHKERRQ(ierr);
     }

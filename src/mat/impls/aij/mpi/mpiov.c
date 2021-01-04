@@ -1057,12 +1057,10 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
   PetscMPIInt    size,rank,*recvcounts = NULL,*displs = NULL;
   PetscInt       sendcount,i,*rstarts = A->rmap->range,n,cnt,j;
   PetscInt       m,*b_sendj,*garray = a->garray,*lens,*jsendbuf,*a_jsendbuf,*b_jsendbuf;
-  MatScalar      *sendbuf,*recvbuf,*a_sendbuf,*b_sendbuf;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRMPI(ierr);
-
   if (scall == MAT_INITIAL_MATRIX) {
     /* ----------------------------------------------------------------
          Tell every processor the number of nonzeros per row
@@ -1071,7 +1069,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
     for (i=A->rmap->rstart; i<A->rmap->rend; i++) {
       lens[i] = ad->i[i-A->rmap->rstart+1] - ad->i[i-A->rmap->rstart] + bd->i[i-A->rmap->rstart+1] - bd->i[i-A->rmap->rstart];
     }
-    ierr      = PetscMalloc2(size,&recvcounts,size,&displs);CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,&recvcounts,size,&displs);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       recvcounts[i] = A->rmap->range[i+1] - A->rmap->range[i];
       displs[i]     = A->rmap->range[i];
@@ -1104,7 +1102,6 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
     n          = A->rmap->rend - A->rmap->rstart;
     cnt        = 0;
     for (i=0; i<n; i++) {
-
       /* put in lower diagonal portion */
       m = bd->i[i+1] - bd->i[i];
       while (m > 0) {
@@ -1167,15 +1164,19 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
        Copy my part of matrix numerical values into the values location
   */
   if (flag == MAT_GET_VALUES) {
+    const PetscScalar *ada,*bda,*a_sendbuf,*b_sendbuf;
+    MatScalar         *sendbuf,*recvbuf;
+
+    ierr = MatSeqAIJGetArrayRead(a->A,&ada);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArrayRead(a->B,&bda);CHKERRQ(ierr);
     sendcount = ad->nz + bd->nz;
     sendbuf   = b->a + b->i[rstarts[rank]];
-    a_sendbuf = ad->a;
-    b_sendbuf = bd->a;
+    a_sendbuf = ada;
+    b_sendbuf = bda;
     b_sendj   = bd->j;
     n         = A->rmap->rend - A->rmap->rstart;
     cnt       = 0;
     for (i=0; i<n; i++) {
-
       /* put in lower diagonal portion */
       m = bd->i[i+1] - bd->i[i];
       while (m > 0) {
@@ -1218,6 +1219,8 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
 #else
     ierr = MPI_Allgatherv(sendbuf,sendcount,MPIU_SCALAR,recvbuf,recvcounts,displs,MPIU_SCALAR,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
 #endif
+    ierr = MatSeqAIJRestoreArrayRead(a->A,&ada);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArrayRead(a->B,&bda);CHKERRQ(ierr);
   }  /* endof (flag == MAT_GET_VALUES) */
   ierr = PetscFree2(recvcounts,displs);CHKERRQ(ierr);
 
@@ -1254,7 +1257,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
 #endif
   PetscInt       ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*sbuf1_i,*rbuf2_i,*rbuf3_i;
   PetscInt       *cworkB,lwrite,*subcols,*row2proc;
-  PetscScalar    *vworkA,*vworkB,*a_a = a->a,*b_a = b->a,*subvals=NULL;
+  PetscScalar    *vworkA,*vworkB,*a_a,*b_a,*subvals=NULL;
   MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
   MPI_Request    *r_waits4,*s_waits3 = NULL,*s_waits4;
   MPI_Status     *r_status1,*r_status2,*s_status1,*s_status3 = NULL,*s_status2;
@@ -1269,7 +1272,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
   PetscValidLogicalCollectiveInt(C,ismax,2);
   PetscValidLogicalCollectiveEnum(C,scall,5);
   if (ismax != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This routine only works when all processes have ismax=1");
-
+  ierr = MatSeqAIJGetArrayRead(A,(const PetscScalar**)&a_a);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(B,(const PetscScalar**)&b_a);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
   size = c->size;
   rank = c->rank;
@@ -1778,7 +1782,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
         /* diagonal part A = c->A */
         ncols = ai[Crow+1] - ai[Crow];
         cols  = aj + ai[Crow];
-        vals  = a->a + ai[Crow];
+        vals  = a_a + ai[Crow];
         i     = 0;
         for (k=0; k<ncols; k++) {
           subcols[i]   = cols[k] + cstart;
@@ -1788,7 +1792,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
         /* off-diagonal part B = c->B */
         ncols = bi[Crow+1] - bi[Crow];
         cols  = bj + bi[Crow];
-        vals  = b->a + bi[Crow];
+        vals  = b_a + bi[Crow];
         for (k=0; k<ncols; k++) {
           subcols[i]   = bmap[cols[k]];
           subvals[i++] = vals[k];
@@ -1801,7 +1805,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
         /* diagonal part A = c->A */
         ncols = ai[Crow+1] - ai[Crow];
         cols  = aj + ai[Crow];
-        vals  = a->a + ai[Crow];
+        vals  = a_a + ai[Crow];
         i     = 0;
         for (k=0; k<ncols; k++) {
           tcol = cmap_loc[cols[k]];
@@ -1814,7 +1818,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
         /* off-diagonal part B = c->B */
         ncols = bi[Crow+1] - bi[Crow];
         cols  = bj + bi[Crow];
-        vals  = b->a + bi[Crow];
+        vals  = b_a + bi[Crow];
         for (k=0; k<ncols; k++) {
           ierr = PetscTableFind(cmap,bmap[cols[k]]+1,&tcol);CHKERRQ(ierr);
           if (tcol) {
@@ -1826,7 +1830,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
         /* diagonal part A = c->A */
         ncols = ai[Crow+1] - ai[Crow];
         cols  = aj + ai[Crow];
-        vals  = a->a + ai[Crow];
+        vals  = a_a + ai[Crow];
         i     = 0;
         for (k=0; k<ncols; k++) {
           tcol = cmap[cols[k]+cstart];
@@ -1839,7 +1843,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
         /* off-diagonal part B = c->B */
         ncols = bi[Crow+1] - bi[Crow];
         cols  = bj + bi[Crow];
-        vals  = b->a + bi[Crow];
+        vals  = b_a + bi[Crow];
         for (k=0; k<ncols; k++) {
           tcol = cmap[bmap[cols[k]]];
           if (tcol) {
@@ -1943,6 +1947,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
     ierr = PetscFree(sbuf_aj[0]);CHKERRQ(ierr);
     ierr = PetscFree(sbuf_aj);CHKERRQ(ierr);
   }
+  ierr = MatSeqAIJRestoreArrayRead(A,(const PetscScalar**)&a_a);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(B,(const PetscScalar**)&b_a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2394,9 +2400,11 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
           kmax = rbuf1[i][2*j];
           for (k=0; k<kmax; k++,ct1++) {
             row    = rbuf1_i[ct1] - rstart;
-            nzA    = a_i[row+1] - a_i[row]; nzB = b_i[row+1] - b_i[row];
+            nzA    = a_i[row+1] - a_i[row];
+            nzB    = b_i[row+1] - b_i[row];
             ncols  = nzA + nzB;
-            cworkA = a_j + a_i[row]; cworkB = b_j + b_i[row];
+            cworkA = a_j + a_i[row];
+            cworkB = b_j + b_i[row];
 
             /* load the column indices for this row into cols */
             cols = sbuf_aj_i + ct2;
@@ -2673,8 +2681,10 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
     PetscInt    cstart = C->cmap->rstart,rstart = C->rmap->rstart,*bmap = c->garray;
     PetscInt    cend   = C->cmap->rend;
     PetscInt    *b_j   = b->j;
-    PetscScalar *vworkA,*vworkB,*a_a = a->a,*b_a = b->a;
+    PetscScalar *vworkA,*vworkB,*a_a,*b_a;
 
+    ierr = MatSeqAIJGetArrayRead(A,(const PetscScalar**)&a_a);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArrayRead(c->B,(const PetscScalar**)&b_a);CHKERRQ(ierr);
     for (i=0; i<nrqr; i++) {
       rbuf1_i   = rbuf1[i];
       sbuf_aa_i = sbuf_aa[i];
@@ -2684,7 +2694,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
         kmax = rbuf1_i[2*j];
         for (k=0; k<kmax; k++,ct1++) {
           row    = rbuf1_i[ct1] - rstart;
-          nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
+          nzA    = a_i[row+1] - a_i[row];
+          nzB    = b_i[row+1] - b_i[row];
           ncols  = nzA + nzB;
           cworkB = b_j + b_i[row];
           vworkA = a_a + a_i[row];
@@ -2707,6 +2718,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
       }
       ierr = MPI_Isend(sbuf_aa_i,req_size[i],MPIU_SCALAR,req_source1[i],tag4,comm,s_waits4+i);CHKERRMPI(ierr);
     }
+    ierr = MatSeqAIJRestoreArrayRead(A,(const PetscScalar**)&a_a);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArrayRead(c->B,(const PetscScalar**)&b_a);CHKERRQ(ierr);
   }
 
   /* Assemble the matrices */

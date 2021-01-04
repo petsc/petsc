@@ -245,19 +245,22 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,PetscRea
 
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A,Mat B,Mat C)
 {
-  PetscErrorCode ierr;
-  PetscLogDouble flops=0.0;
-  Mat_SeqAIJ     *a   = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ     *b   = (Mat_SeqAIJ*)B->data;
-  Mat_SeqAIJ     *c   = (Mat_SeqAIJ*)C->data;
-  PetscInt       *ai  =a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
-  PetscInt       am   =A->rmap->n,cm=C->rmap->n;
-  PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
-  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca,valtmp;
-  PetscScalar    *ab_dense;
-  PetscContainer cab_dense;
+  PetscErrorCode    ierr;
+  PetscLogDouble    flops=0.0;
+  Mat_SeqAIJ        *a   = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ        *b   = (Mat_SeqAIJ*)B->data;
+  Mat_SeqAIJ        *c   = (Mat_SeqAIJ*)C->data;
+  PetscInt          *ai  =a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
+  PetscInt          am   =A->rmap->n,cm=C->rmap->n;
+  PetscInt          i,j,k,anzi,bnzi,cnzi,brow;
+  PetscScalar       *ca,valtmp;
+  PetscScalar       *ab_dense;
+  PetscContainer    cab_dense;
+  const PetscScalar *aa,*ba,*baj;
 
   PetscFunctionBegin;
+  ierr = MatSeqAIJGetArrayRead(A,&aa);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(B,&ba);CHKERRQ(ierr);
   if (!c->a) { /* first call of MatMatMultNumeric_SeqAIJ_SeqAIJ, allocate ca and matmult_abdense */
     ierr      = PetscMalloc1(ci[cm]+1,&ca);CHKERRQ(ierr);
     c->a      = ca;
@@ -308,26 +311,34 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A,Mat B,Mat C)
     flops += cnzi;
     cj    += cnzi; ca += cnzi;
   }
+#if defined(PETSC_HAVE_DEVICE)
+  if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(A,&aa);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(B,&ba);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Mat C)
 {
-  PetscErrorCode ierr;
-  PetscLogDouble flops=0.0;
-  Mat_SeqAIJ     *a   = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ     *b   = (Mat_SeqAIJ*)B->data;
-  Mat_SeqAIJ     *c   = (Mat_SeqAIJ*)C->data;
-  PetscInt       *ai  = a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
-  PetscInt       am   = A->rmap->N,cm=C->rmap->N;
-  PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
-  PetscScalar    *aa=a->a,*ba=b->a,*baj,*ca=c->a,valtmp;
-  PetscInt       nextb;
+  PetscErrorCode    ierr;
+  PetscLogDouble    flops=0.0;
+  Mat_SeqAIJ        *a   = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ        *b   = (Mat_SeqAIJ*)B->data;
+  Mat_SeqAIJ        *c   = (Mat_SeqAIJ*)C->data;
+  PetscInt          *ai  = a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
+  PetscInt          am   = A->rmap->N,cm=C->rmap->N;
+  PetscInt          i,j,k,anzi,bnzi,cnzi,brow;
+  PetscScalar       *ca=c->a,valtmp;
+  const PetscScalar *aa,*ba,*baj;
+  PetscInt          nextb;
 
   PetscFunctionBegin;
+  ierr = MatSeqAIJGetArrayRead(A,&aa);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(B,&ba);CHKERRQ(ierr);
   if (!ca) { /* first call of MatMatMultNumeric_SeqAIJ_SeqAIJ, allocate ca and matmult_abdense */
     ierr      = PetscMalloc1(ci[cm]+1,&ca);CHKERRQ(ierr);
     c->a      = ca;
@@ -360,9 +371,14 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Mat C)
     aj += anzi; aa += anzi;
     cj += cnzi; ca += cnzi;
   }
+#if defined(PETSC_HAVE_DEVICE)
+  if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(A,&aa);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(B,&ba);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

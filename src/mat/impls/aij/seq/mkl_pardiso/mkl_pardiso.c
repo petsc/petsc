@@ -243,7 +243,6 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, Pet
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
   ierr = MatFactorGetSchurComplement(F,&S,&schurstatus);CHKERRQ(ierr);
   if (X == B && schurstatus == MAT_FACTOR_SCHUR_INVERTED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"X and B cannot point to the same address");
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,mpardiso->schur_size,mpardiso->nrhs,B,&Bmat);CHKERRQ(ierr);
@@ -472,6 +471,8 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
   if (mat_mkl_pardiso->schur) { /* solve Schur complement and expand solution */
     PetscInt shift = mat_mkl_pardiso->schur_size;
 
+    ierr = MatFactorFactorizeSchurComplement(A);CHKERRQ(ierr);
+
     /* if inverted, uses BLAS *MM subroutines, otherwise LAPACK *TRS */
     if (A->schur_status != MAT_FACTOR_SCHUR_INVERTED) shift = 0;
 
@@ -578,6 +579,8 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
       PetscScalar *o_schur_work = NULL;
       PetscInt    shift = mat_mkl_pardiso->schur_size*mat_mkl_pardiso->nrhs,scale;
       PetscInt    mem = mat_mkl_pardiso->n*mat_mkl_pardiso->nrhs;
+
+      ierr = MatFactorFactorizeSchurComplement(A);CHKERRQ(ierr);
 
       /* allocate extra memory if it is needed */
       scale = 1;

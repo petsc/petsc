@@ -58,7 +58,9 @@ class Configure(config.package.CMakePackage):
     KokkosRoot = self.kokkos.directory
     args.append('-DKokkos_ROOT='+KokkosRoot)
     # By default it installs in lib64, change it to lib
-    args.append('-DCMAKE_INSTALL_LIBDIR:STRING=lib')
+    args.append('-DCMAKE_INSTALL_LIBDIR:STRING='+self.libdir)
+    if self.checkSharedLibrariesEnabled():
+      args.append('-DCMAKE_INSTALL_RPATH:PATH='+os.path.join(KokkosRoot,self.kokkos.libdir))
     if self.cuda.found:
       self.system = 'CUDA'
       args.append('-DCMAKE_CXX_COMPILER='+os.path.join(KokkosRoot,'bin','nvcc_wrapper'))

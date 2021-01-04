@@ -885,9 +885,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   ierr = PetscFree(bIndexSet);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm);CHKERRQ(ierr);
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
-#endif
   ierr = MatCoarsenCreate(comm, &crs);CHKERRQ(ierr);
   ierr = MatCoarsenSetFromOptions(crs);CHKERRQ(ierr);
   ierr = MatCoarsenSetGreedyOrdering(crs, perm);CHKERRQ(ierr);
@@ -899,9 +897,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
 
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
   ierr = PetscFree(permute);CHKERRQ(ierr);
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
-#endif
 
   /* smooth aggs */
   if (Gmat2 != Gmat1) {
@@ -994,9 +990,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
   if ((kk/col_bs-myCrs0) != nLocalSelected) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(kk %D/col_bs %D - myCrs0 %D) != nLocalSelected %D)",kk,col_bs,myCrs0,nLocalSelected);
 
   /* create global vector of data in 'data_w_ghost' */
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET7],0,0,0,0);CHKERRQ(ierr);
-#endif
   if (size > 1) { /*  */
     PetscReal *tmp_gdata,*tmp_ldata,*tp2;
     ierr = PetscMalloc1(nloc, &tmp_ldata);CHKERRQ(ierr);
@@ -1041,10 +1035,8 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
     ierr = PetscMalloc1(nloc, &flid_fgid);CHKERRQ(ierr);
     for (kk=0; kk<nloc; kk++) flid_fgid[kk] = my0 + kk;
   }
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET7],0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET8],0,0,0,0);CHKERRQ(ierr);
-#endif
   {
     PetscReal *data_out = NULL;
     ierr = formProl0(agg_lists, bs, col_bs, myCrs0, nbnodes,data_w_ghost, flid_fgid, &data_out, Prol);CHKERRQ(ierr);
@@ -1054,9 +1046,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
     pc_gamg->data_cell_rows = col_bs;
     pc_gamg->data_sz        = col_bs*col_bs*nLocalSelected;
   }
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET8],0,0,0,0);CHKERRQ(ierr);
-#endif
   if (size > 1) {ierr = PetscFree(data_w_ghost);CHKERRQ(ierr);}
   ierr = PetscFree(flid_fgid);CHKERRQ(ierr);
 
@@ -1163,30 +1153,31 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 
   /* smooth P0 */
   for (jj = 0; jj < pc_gamg_agg->nsmooths; jj++) {
-    Mat       tMat;
-    Vec       diag;
+    Mat tMat;
+    Vec diag;
 
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
-#endif
 
     /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
-    ierr  = MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat);CHKERRQ(ierr);
-    ierr  = MatCreateVecs(Amat, &diag, NULL);CHKERRQ(ierr);
-    ierr  = MatGetDiagonal(Amat, diag);CHKERRQ(ierr); /* effectively PCJACOBI */
-    ierr  = VecReciprocal(diag);CHKERRQ(ierr);
-    ierr  = MatDiagonalScale(tMat, diag, NULL);CHKERRQ(ierr);
-    ierr  = VecDestroy(&diag);CHKERRQ(ierr);
-    if (emax == 0.0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Computed maximum singular value as zero");
+    ierr = PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][2],0,0,0,0);CHKERRQ(ierr);
+    ierr = MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][2],0,0,0,0);CHKERRQ(ierr);
+    ierr = MatProductClear(tMat);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Amat, &diag, NULL);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(Amat, diag);CHKERRQ(ierr); /* effectively PCJACOBI */
+    ierr = VecReciprocal(diag);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(tMat, diag, NULL);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr);
+
     /* TODO: Set a PCFailedReason and exit the building of the AMG preconditioner */
+    if (emax == 0.0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Computed maximum singular value as zero");
     /* TODO: Document the 1.4 and don't hardwire it in this routine */
     alpha = -1.4/emax;
-    ierr  = MatAYPX(tMat, alpha, Prol, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr  = MatDestroy(&Prol);CHKERRQ(ierr);
-    Prol  = tMat;
-#if defined PETSC_GAMG_USE_LOG
+
+    ierr = MatAYPX(tMat, alpha, Prol, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDestroy(&Prol);CHKERRQ(ierr);
+    Prol = tMat;
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
-#endif
   }
   ierr = PetscLogEventEnd(PC_GAMGOptProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
   *a_P = Prol;

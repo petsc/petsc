@@ -1702,7 +1702,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat Cmpi
 
   /* Create AP_loc for reuse */
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,am,pN,api,apj,apv,&ptap->AP_loc);CHKERRQ(ierr);
-
+  ierr = MatSetType(ptap->AP_loc,((PetscObject)p->A)->type_name);CHKERRQ(ierr);
 #if defined(PETSC_USE_INFO)
   if (ao) {
     apfill = (PetscReal)api[am]/(ad->i[am]+ao->i[am]+p_loc->i[pm]+1);
@@ -1726,12 +1726,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat Cmpi
   ierr = MatGetOptionsPrefix(A,&prefix);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(ptap->Ro,prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(ptap->Ro,"inner_offdiag_");CHKERRQ(ierr);
-
   ierr = MatProductCreate(ptap->Ro,ptap->AP_loc,NULL,&ptap->C_oth);CHKERRQ(ierr);
   ierr = MatGetOptionsPrefix(Cmpi,&prefix);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(ptap->C_oth,prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(ptap->C_oth,"inner_C_oth_");CHKERRQ(ierr);
-
   ierr = MatProductSetType(ptap->C_oth,MATPRODUCT_AB);CHKERRQ(ierr);
   ierr = MatProductSetAlgorithm(ptap->C_oth,"default");CHKERRQ(ierr);
   ierr = MatProductSetFill(ptap->C_oth,fill);CHKERRQ(ierr);
@@ -1793,12 +1791,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat Cmpi
   /* ---------------------------------------- */
   ierr = MatSetOptionsPrefix(ptap->Rd,prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(ptap->Rd,"inner_diag_");CHKERRQ(ierr);
-
   ierr = MatProductCreate(ptap->Rd,ptap->AP_loc,NULL,&ptap->C_loc);CHKERRQ(ierr);
   ierr = MatGetOptionsPrefix(Cmpi,&prefix);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(ptap->C_loc,prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(ptap->C_loc,"inner_C_loc_");CHKERRQ(ierr);
-
   ierr = MatProductSetType(ptap->C_loc,MATPRODUCT_AB);CHKERRQ(ierr);
   ierr = MatProductSetAlgorithm(ptap->C_loc,"default");CHKERRQ(ierr);
   ierr = MatProductSetFill(ptap->C_loc,fill);CHKERRQ(ierr);
@@ -2089,6 +2085,13 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_PtAP_MPIAIJ_MPIAIJ(Mat C)
   if (flg) {
     ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(A,P,fill,C);CHKERRQ(ierr);
     goto next;
+  }
+
+  /* backend general code */
+  ierr = PetscStrcmp(alg,"backend",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatProductSymbolic_MPIAIJBACKEND(C);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
 
   /* hypre */

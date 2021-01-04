@@ -267,8 +267,6 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetSymTransR",MAT_CLASSID,&MAT_Getsymtransreduced);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPARSCopyTo",MAT_CLASSID,&MAT_CUSPARSECopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPARSCopyFr",MAT_CLASSID,&MAT_CUSPARSECopyFromGPU);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPARSPreCOO",MAT_CLASSID,&MAT_CUSPARSEPreallCOO);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPARSValCOO",MAT_CLASSID,&MAT_CUSPARSESetVCOO);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPARSSolAnl",MAT_CLASSID,&MAT_CUSPARSESolveAnalysis);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPARSGenT",MAT_CLASSID,&MAT_CUSPARSEGenerateTranspose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatVCLCopyTo",  MAT_CLASSID,&MAT_ViennaCLCopyToGPU);CHKERRQ(ierr);
@@ -282,6 +280,9 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatColoringIS",MAT_COLORING_CLASSID,&MATCOLORING_ISCreate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatColoringSetUp",MAT_COLORING_CLASSID,&MATCOLORING_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatColoringWeights",MAT_COLORING_CLASSID,&MATCOLORING_Weights);CHKERRQ(ierr);
+
+  ierr = PetscLogEventRegister("MatSetPreallCOO",MAT_CLASSID,&MAT_PreallCOO);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSetValuesCOO",MAT_CLASSID,&MAT_SetVCOO);CHKERRQ(ierr);
 
   /* Mark non-collective events */
   ierr = PetscLogEventSetCollective(MAT_SetValues,      PETSC_FALSE);CHKERRQ(ierr);

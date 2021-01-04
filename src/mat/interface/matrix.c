@@ -31,7 +31,8 @@ PetscLogEvent MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_GetBrowsOfAcols;
 PetscLogEvent MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
 PetscLogEvent MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
 PetscLogEvent MAT_GetMultiProcBlock;
-PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_CUSPARSECopyFromGPU, MAT_CUSPARSEGenerateTranspose, MAT_CUSPARSEPreallCOO, MAT_CUSPARSESetVCOO, MAT_CUSPARSESolveAnalysis;
+PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_CUSPARSECopyFromGPU, MAT_CUSPARSEGenerateTranspose, MAT_CUSPARSESolveAnalysis;
+PetscLogEvent MAT_PreallCOO, MAT_SetVCOO;
 PetscLogEvent MAT_SetValuesBatch;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
 PetscLogEvent MAT_DenseCopyToGPU, MAT_DenseCopyFromGPU;
@@ -561,6 +562,7 @@ PetscErrorCode MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *co
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!mat->ops->getrow) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
+  if (row < mat->rmap->rstart || row >= mat->rmap->rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Only for local rows, %D not in [%D,%D)",row,mat->rmap->rstart,mat->rmap->rend);
   ierr = PetscLogEventBegin(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getrow)(mat,row,&incols,(PetscInt**)cols,(PetscScalar**)vals);CHKERRQ(ierr);
   if (ncols) *ncols = incols;
@@ -3411,8 +3413,17 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
   Vec            b,x;
   PetscInt       m,N,i;
   PetscScalar    *bb,*xx;
+  PetscErrorCode (*f)(Mat,Vec,Vec);
 
   PetscFunctionBegin;
+  if (A->factorerrortype) {
+    ierr = PetscInfo1(A,"MatFactorError %D\n",A->factorerrortype);CHKERRQ(ierr);
+    ierr = MatSetInf(X);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  f = trans ? A->ops->solvetranspose : A->ops->solve;
+  if (!f) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type %s",((PetscObject)A)->type_name);
+
   ierr = MatDenseGetArrayRead(B,(const PetscScalar**)&bb);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);  /* number local rows */
@@ -3421,11 +3432,7 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
   for (i=0; i<N; i++) {
     ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
-    if (trans) {
-      ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
-    } else {
-      ierr = MatSolve(A,b,x);CHKERRQ(ierr);
-    }
+    ierr = (*f)(A,b,x);CHKERRQ(ierr);
     ierr = VecResetArray(x);CHKERRQ(ierr);
     ierr = VecResetArray(b);CHKERRQ(ierr);
   }

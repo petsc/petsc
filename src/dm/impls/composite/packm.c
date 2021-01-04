@@ -102,8 +102,8 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
     maxnc = 0;
     for (i=0; i<mA; i++) {
       ierr  = MatGetRow(Atmp,rstart+i,&nc,NULL,NULL);CHKERRQ(ierr);
-      ierr  = MatRestoreRow(Atmp,rstart+i,NULL,NULL,NULL);CHKERRQ(ierr);
       maxnc = PetscMax(nc,maxnc);
+      ierr  = MatRestoreRow(Atmp,rstart+i,&nc,NULL,NULL);CHKERRQ(ierr);
     }
     ierr = PetscMalloc1(maxnc,&ccols);CHKERRQ(ierr);
     for (i=0; i<mA; i++) {

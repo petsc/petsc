@@ -1,0 +1,26 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  0-cells: 729
+  1-cells: 1944
+  2-cells: 1728
+  3-cells: 512
+Labels:
+  celltype: 4 strata with value/size (0 (729), 1 (1944), 4 (1728), 7 (512))
+  depth: 4 strata with value/size (0 (729), 1 (1944), 2 (1728), 3 (512))
+  marker: 1 strata with value/size (1 (1440))
+  Face Sets: 6 strata with value/size (6 (144), 5 (144), 3 (144), 4 (144), 1 (144), 2 (144))
+  0 SNES Function norm 3.40596 
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  1 SNES Function norm 8.85992e-06 
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  Linear solve converged due to CONVERGED_RTOL iterations 5

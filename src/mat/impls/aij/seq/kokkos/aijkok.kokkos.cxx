@@ -4,6 +4,7 @@
 #include <petscveckokkos.hpp>
 
 #include <Kokkos_Core.hpp>
+#include <KokkosBlas.hpp>
 #include <KokkosSparse_CrsMatrix.hpp>
 #include <KokkosSparse_spmv.hpp>
 #include <KokkosSparse_spmv.hpp>
@@ -30,11 +31,12 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJKokkos(Mat A,MatAssemblyType mode)
 
 static PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat A)
 {
-  Mat_SeqAIJ                *aijseq = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJKokkos          *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
-  PetscInt                  nrows   = A->rmap->n,ncols = A->cmap->n,nnz = aijseq->nz;
+  Mat_SeqAIJ       *aijseq = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  PetscInt         nrows   = A->rmap->n,ncols = A->cmap->n,nnz = aijseq->nz;
 
   PetscFunctionBegin;
+  PetscCheckTypeName(A,MATSEQAIJKOKKOS);
   /* If aijkok is not built yet or the nonzero pattern on CPU has changed, build aijkok from the scratch */
   if (!aijkok || aijkok->nonzerostate != A->nonzerostate) {
     delete aijkok;
@@ -45,6 +47,32 @@ static PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat A)
     Kokkos::deep_copy(aijkok->a_d,aijkok->a_h);
   }
   A->offloadmask = PETSC_OFFLOAD_BOTH;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSeqAIJKokkosSyncHost(Mat A)
+{
+  Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+
+  PetscFunctionBegin;
+  PetscCheckTypeName(A,MATSEQAIJKOKKOS);
+  if (A->offloadmask == PETSC_OFFLOAD_GPU) {
+    if (!aijkok) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing AIJKOK");
+    Kokkos::deep_copy(aijkok->a_h,aijkok->a_d);
+    A->offloadmask = PETSC_OFFLOAD_BOTH;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSeqAIJGetArray_SeqAIJKokkos(Mat A,PetscScalar *array[])
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSeqAIJKokkosSyncHost(A);CHKERRQ(ierr);
+  *array = a->a;
+  A->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -218,11 +246,12 @@ static PetscErrorCode MatMultHermitianTransposeAdd_SeqAIJKokkos(Mat A,Vec xx,Vec
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat A, MatType mtype, MatReuse reuse, Mat* newmat)
 {
-  PetscErrorCode   ierr;
-  Mat              B;
-  Mat_SeqAIJ       *aij;
+  PetscErrorCode ierr;
+  Mat            B;
+  Mat_SeqAIJ     *aij;
 
   PetscFunctionBegin;
+  ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) { /* Build a new mat */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,newmat);CHKERRQ(ierr);
   } else if (reuse == MAT_REUSE_MATRIX) { /* Reuse the mat created before */
@@ -234,6 +263,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat A, MatType mtype,
   ierr = PetscStrallocpy(VECKOKKOS,&B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJKOKKOS);CHKERRQ(ierr);
   ierr = MatSetOps_SeqAIJKokkos(B);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJGetArray_C",MatSeqAIJGetArray_SeqAIJKokkos);CHKERRQ(ierr);
   /* TODO: see ViennaCL and CUSPARSE once we have a BindToCPU? */
   aij  = (Mat_SeqAIJ*)B->data;
   aij->inode.use = PETSC_FALSE;
@@ -263,9 +293,223 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
     delete aijkok->i_uncompressed_d;
   }
   delete aijkok;
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJGetArray_C",NULL);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if 0
+static PetscErrorCode MatMatKernelHandleDestroy_Private(void* data)
+{
+  MatMatKernelHandle_t *kh = static_cast<MatMatKernelHandle_t *>(data);
+
+  PetscFunctionBegin;
+  delete kh;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatProductNumeric_SeqAIJKokkos_SeqAIJKokkos(Mat C)
+{
+  Mat_Product          *product = C->product;
+  Mat                  A,B;
+  MatProductType       ptype;
+  Mat_SeqAIJKokkos     *akok,*bkok,*ckok;
+  bool                 tA,tB;
+  PetscErrorCode       ierr;
+  MatMatKernelHandle_t *kh;
+  Mat_SeqAIJ           *c;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C,1);
+  if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  A = product->A;
+  B = product->B;
+  ierr = MatSeqAIJKokkosSyncDevice(A);CHKERRQ(ierr);
+  ierr = MatSeqAIJKokkosSyncDevice(B);CHKERRQ(ierr);
+  akok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  bkok = static_cast<Mat_SeqAIJKokkos*>(B->spptr);
+  ckok = static_cast<Mat_SeqAIJKokkos*>(C->spptr);
+  kh   = static_cast<MatMatKernelHandle_t*>(C->product->data);
+  ptype = product->type;
+  if (A->symmetric && ptype == MATPRODUCT_AtB) ptype = MATPRODUCT_AB;
+  if (B->symmetric && ptype == MATPRODUCT_ABt) ptype = MATPRODUCT_AB;
+  switch (ptype) {
+  case MATPRODUCT_AB:
+    tA = false;
+    tB = false;
+    break;
+  case MATPRODUCT_AtB:
+    tA = true;
+    tB = false;
+    break;
+  case MATPRODUCT_ABt:
+    tA = false;
+    tB = true;
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Unsupported product type %s",MatProductTypes[product->type]);
+  }
+
+  KokkosSparse::spgemm_numeric(*kh, akok->csr, tA, bkok->csr, tB, ckok->csr);
+  C->offloadmask = PETSC_OFFLOAD_GPU;
+  /* shorter version of MatAssemblyEnd_SeqAIJ */
+  c = (Mat_SeqAIJ*)C->data;
+  ierr = PetscInfo3(C,"Matrix size: %D X %D; storage space: 0 unneeded,%D used\n",C->rmap->n,C->cmap->n,c->nz);CHKERRQ(ierr);
+  ierr = PetscInfo(C,"Number of mallocs during MatSetValues() is 0\n");CHKERRQ(ierr);
+  ierr = PetscInfo1(C,"Maximum nonzeros in any row is %D\n",c->rmax);CHKERRQ(ierr);
+  c->reallocs         = 0;
+  C->info.mallocs    += 0;
+  C->info.nz_unneeded = 0;
+  C->assembled = C->was_assembled = PETSC_TRUE;
+  C->num_ass++;
+  /* we can remove these calls when MatSeqAIJGetArray operations are used everywhere! */
+  // TODO JZ, copy from device to host since most of Petsc code for AIJ matrices does not use MatSeqAIJGetArray()
+  C->offloadmask = PETSC_OFFLOAD_BOTH;
+  // Also, we should add support to copy back from device to host
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C)
+{
+  Mat_Product          *product = C->product;
+  Mat                  A,B;
+  MatProductType       ptype;
+  Mat_SeqAIJKokkos     *akok,*bkok,*ckok;
+  PetscInt             m,n,k;
+  bool                 tA,tB;
+  PetscErrorCode       ierr;
+  Mat_SeqAIJ           *c;
+  MatMatKernelHandle_t *kh;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C,1);
+  if (C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  A = product->A;
+  B = product->B;
+  // TODO only copy the i,j data, not the values
+  ierr = MatSeqAIJKokkosSyncDevice(A);CHKERRQ(ierr);
+  ierr = MatSeqAIJKokkosSyncDevice(B);CHKERRQ(ierr);
+  akok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  bkok = static_cast<Mat_SeqAIJKokkos*>(B->spptr);
+  ptype = product->type;
+  if (A->symmetric && ptype == MATPRODUCT_AtB) ptype = MATPRODUCT_AB;
+  if (B->symmetric && ptype == MATPRODUCT_ABt) ptype = MATPRODUCT_AB;
+  switch (ptype) {
+  case MATPRODUCT_AB:
+    tA = false;
+    tB = false;
+    m = A->rmap->n;
+    n = B->cmap->n;
+    break;
+  case MATPRODUCT_AtB:
+    tA = true;
+    tB = false;
+    m = A->cmap->n;
+    n = B->cmap->n;
+    break;
+  case MATPRODUCT_ABt:
+    tA = false;
+    tB = true;
+    m = A->rmap->n;
+    n = B->rmap->n;
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Unsupported product type %s",MatProductTypes[product->type]);
+  }
+  ierr = MatSetSizes(C,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATSEQAIJKOKKOS);CHKERRQ(ierr);
+  c = (Mat_SeqAIJ*)C->data;
+
+  kh = new MatMatKernelHandle_t;
+  // TODO SZ: ADD RUNTIME SELECTION OF THESE
+  kh->set_team_work_size(16);
+  kh->set_dynamic_scheduling(true);
+  // Select an spgemm algorithm, limited by configuration at compile-time and
+  // set via the handle Some options: {SPGEMM_KK_MEMORY, SPGEMM_KK_SPEED,
+  // SPGEMM_KK_MEMSPEED, /*SPGEMM_CUSPARSE, */ SPGEMM_MKL}
+  std::string myalg("SPGEMM_KK_MEMORY");
+  kh->create_spgemm_handle(KokkosSparse::StringToSPGEMMAlgorithm(myalg));
+
+  /////////////////////////////////////
+  // TODO JZ
+  ckok = NULL; //new Mat_SeqAIJKokkos();
+  C->spptr = ckok;
+  KokkosCsrMatrix_t ccsr; // here only to have the code compile
+  KokkosSparse::spgemm_symbolic(*kh, akok->csr, tA, bkok->csr, tB, ccsr);
+  //cerr = WaitForKOKKOS();CHKERRCUDA(cerr);
+  //c->nz = get_nnz_from_ccsr
+  //////////////////////////////////////
+  c->singlemalloc = PETSC_FALSE;
+  c->free_a       = PETSC_TRUE;
+  c->free_ij      = PETSC_TRUE;
+  ierr = PetscMalloc1(m+1,&c->i);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->nz,&c->j);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->nz,&c->a);CHKERRQ(ierr);
+  ////////////////////////////////////
+  // TODO JZ copy from device to c->i and c->j
+  ////////////////////////////////////
+  ierr = PetscMalloc1(m,&c->ilen);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&c->imax);CHKERRQ(ierr);
+  c->maxnz = c->nz;
+  c->nonzerorowcnt = 0;
+  c->rmax = 0;
+  for (k = 0; k < m; k++) {
+    const PetscInt nn = c->i[k+1] - c->i[k];
+    c->ilen[k] = c->imax[k] = nn;
+    c->nonzerorowcnt += (PetscInt)!!nn;
+    c->rmax = PetscMax(c->rmax,nn);
+  }
+
+  C->nonzerostate++;
+  ierr = PetscLayoutSetUp(C->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(C->cmap);CHKERRQ(ierr);
+  ierr = MatMarkDiagonal_SeqAIJ(C);CHKERRQ(ierr);
+  ckok->nonzerostate = C->nonzerostate;
+  C->offloadmask   = PETSC_OFFLOAD_UNALLOCATED;
+  C->preallocated  = PETSC_TRUE;
+  C->assembled     = PETSC_FALSE;
+  C->was_assembled = PETSC_FALSE;
+
+  C->ops->productnumeric = MatProductNumeric_SeqAIJKokkos_SeqAIJKokkos;
+  C->product->data = kh;
+  C->product->destroy = MatMatKernelHandleDestroy_Private;
+  PetscFunctionReturn(0);
+}
+
+/* handles sparse matrix matrix ops */
+PETSC_UNUSED static PetscErrorCode MatProductSetFromOptions_SeqAIJKokkos(Mat mat)
+{
+  Mat_Product    *product = mat->product;
+  PetscErrorCode ierr;
+  PetscBool      Biskok = PETSC_FALSE,Ciskok = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  MatCheckProduct(mat,1);
+  ierr = PetscObjectTypeCompare((PetscObject)product->B,MATSEQAIJKOKKOS,&Biskok);CHKERRQ(ierr);
+  if (product->type == MATPRODUCT_ABC) {
+    ierr = PetscObjectTypeCompare((PetscObject)product->C,MATSEQAIJKOKKOS,&Ciskok);CHKERRQ(ierr);
+  }
+  if (Biskok && Ciskok) {
+    switch (product->type) {
+    case MATPRODUCT_AB:
+    case MATPRODUCT_AtB:
+    case MATPRODUCT_ABt:
+      mat->ops->productsymbolic = MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos;
+      break;
+    case MATPRODUCT_PtAP:
+    case MATPRODUCT_RARt:
+    case MATPRODUCT_ABC:
+      mat->ops->productsymbolic = MatProductSymbolic_ABC_Basic;
+      break;
+    default:
+      break;
+    }
+  } else { /* fallback for AIJ */
+    ierr = MatProductSetFromOptions_SeqAIJ(mat);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJKokkos(Mat A)
 {
@@ -290,76 +534,81 @@ static PetscErrorCode MatSetValues_SeqAIJKokkos(Mat A,PetscInt m,const PetscInt 
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatScale_SeqAIJKokkos(Mat A, PetscScalar a)
+{
+  PetscErrorCode   ierr;
+  Mat_SeqAIJKokkos *aijkok;
+
+  PetscFunctionBegin;
+  ierr = MatSeqAIJKokkosSyncDevice(A);CHKERRQ(ierr);
+  aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  KokkosBlas::scal(aijkok->a_d,a,aijkok->a_d);
+  A->offloadmask = PETSC_OFFLOAD_GPU;
+  ierr = WaitForKokkos();CHKERRQ(ierr);
+  ierr = PetscLogGpuFlops(aijkok->a_d.size());CHKERRQ(ierr);
+  // TODO Remove: this can be removed once we implement matmat operations with KOKKOS
+  ierr = MatSeqAIJKokkosSyncHost(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatZeroEntries_SeqAIJKokkos(Mat A)
 {
-  PetscErrorCode             ierr;
-  PetscBool                  both = PETSC_FALSE;
-  Mat_SeqAIJKokkos           *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
-  Mat_SeqAIJ                 *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode   ierr;
+  PetscBool        both = PETSC_FALSE;
+  Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  Mat_SeqAIJ       *a = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
   if (aijkok && aijkok->a_d.data()) {
-    Kokkos::parallel_for (aijkok->a_d.size(), KOKKOS_LAMBDA (int i) { aijkok->a_d(i) = 0; });
+    KokkosBlas::fill(aijkok->a_d,0.0);
     both = PETSC_TRUE;
   }
   ierr = PetscArrayzero(a->a,a->i[A->rmap->n]);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   if (both) A->offloadmask = PETSC_OFFLOAD_BOTH;
   else A->offloadmask = PETSC_OFFLOAD_CPU;
-
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar a,Mat X,MatStructure str) // put axpy in aijcusparse, etc.
+static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *x = (Mat_SeqAIJ*)X->data,*y = (Mat_SeqAIJ*)Y->data;
-  PetscBool      flgx,flgy;
 
   PetscFunctionBegin;
-  if (a == (PetscScalar)0.0) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
-  ierr = PetscObjectTypeCompare((PetscObject)Y,MATSEQAIJKOKKOS,&flgy);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQAIJKOKKOS,&flgx);CHKERRQ(ierr);
-  if (!flgx || !flgy) {
-    ierr = MatAXPY_SeqAIJ( Y, a, X, str);CHKERRQ(ierr);
+  if (X->ops->axpy != Y->ops->axpy) {
+    ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (str == DIFFERENT_NONZERO_PATTERN) {
-    if (x->nz == y->nz) {
-      PetscBool e;
-      ierr = PetscArraycmp(x->i,y->i,Y->rmap->n+1,&e);CHKERRQ(ierr);
-      if (e) {
-        ierr = PetscArraycmp(x->j,y->j,y->nz,&e);CHKERRQ(ierr);
-        if (e) {
-          str = SAME_NONZERO_PATTERN;
-        }
-      }
+  if (str != SAME_NONZERO_PATTERN && x->nz == y->nz) {
+    PetscBool e;
+    ierr = PetscArraycmp(x->i,y->i,Y->rmap->n+1,&e);CHKERRQ(ierr);
+    if (e) {
+      ierr = PetscArraycmp(x->j,y->j,y->nz,&e);CHKERRQ(ierr);
+      if (e) str = SAME_NONZERO_PATTERN;
     }
   }
   if (str != SAME_NONZERO_PATTERN) {
-    ierr = MatAXPY_SeqAIJ( Y, a, X, str);CHKERRQ(ierr);
+    ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else {
-    if (Y->offloadmask==PETSC_OFFLOAD_CPU && X->offloadmask==PETSC_OFFLOAD_CPU) {
-      ierr = MatAXPY_SeqAIJ( Y, a, X, str);CHKERRQ(ierr);
+    if (Y->offloadmask == PETSC_OFFLOAD_CPU && X->offloadmask == PETSC_OFFLOAD_CPU) {
+      ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
       PetscFunctionReturn(0);
-    } else if ((Y->offloadmask==PETSC_OFFLOAD_GPU || Y->offloadmask==PETSC_OFFLOAD_BOTH) && X->offloadmask == PETSC_OFFLOAD_CPU) {
-      ierr    = MatSeqAIJKokkosSyncDevice(X);CHKERRQ(ierr);
-    } else if ((X->offloadmask==PETSC_OFFLOAD_GPU || X->offloadmask==PETSC_OFFLOAD_BOTH) && Y->offloadmask == PETSC_OFFLOAD_CPU) {
-      ierr    = MatSeqAIJKokkosSyncDevice(Y);CHKERRQ(ierr); /* promote Y */
+    } else {
+      ierr = MatSeqAIJKokkosSyncDevice(X);CHKERRQ(ierr);
+      ierr = MatSeqAIJKokkosSyncDevice(Y);CHKERRQ(ierr);
     }
-    {
-      Mat_SeqAIJKokkos *aijkokY = static_cast<Mat_SeqAIJKokkos*>(Y->spptr);
-      Mat_SeqAIJKokkos *aijkokX = static_cast<Mat_SeqAIJKokkos*>(X->spptr);
-      if (aijkokY && aijkokX && aijkokY->a_d.data() && aijkokX->a_d.data()) {
-        Kokkos::parallel_for (aijkokY->a_d.size(), KOKKOS_LAMBDA (int i) { aijkokY->a_d(i) += a*aijkokX->a_d(i); });
-        Kokkos::deep_copy(aijkokY->a_h,aijkokY->a_d); // we could not copy and keep GPU
-        Y->offloadmask = PETSC_OFFLOAD_BOTH;
-        ierr = PetscLogGpuFlops(2.0*aijkokY->a_d.size());CHKERRQ(ierr);
-      } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"no Mat_SeqAIJKokkos ???");
-    }
+    Mat_SeqAIJKokkos *aijkokY = static_cast<Mat_SeqAIJKokkos*>(Y->spptr);
+    Mat_SeqAIJKokkos *aijkokX = static_cast<Mat_SeqAIJKokkos*>(X->spptr);
+    if (aijkokY && aijkokX && aijkokY->a_d.data() && aijkokX->a_d.data()) {
+      KokkosBlas::axpy(a,aijkokX->a_d,aijkokY->a_d);
+      Y->offloadmask = PETSC_OFFLOAD_GPU;
+      ierr = WaitForKokkos();CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops(2.0*aijkokY->a_d.size());CHKERRQ(ierr);
+      // TODO Remove: this can be removed once we implement matmat operations with KOKKOS
+      ierr = MatSeqAIJKokkosSyncHost(Y);CHKERRQ(ierr);
+    } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"no Mat_SeqAIJKokkos ???");
   }
   PetscFunctionReturn(0);
 }
@@ -371,9 +620,10 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   A->ops->assemblyend               = MatAssemblyEnd_SeqAIJKokkos;
   A->ops->destroy                   = MatDestroy_SeqAIJKokkos;
   A->ops->duplicate                 = MatDuplicate_SeqAIJKokkos;
-
   A->ops->axpy                      = MatAXPY_SeqAIJKokkos;
+  A->ops->scale                     = MatScale_SeqAIJKokkos;
   A->ops->zeroentries               = MatZeroEntries_SeqAIJKokkos;
+  //A->ops->productsetfromoptions     = MatProductSetFromOptions_SeqAIJKokkos;
   A->ops->mult                      = MatMult_SeqAIJKokkos;
   A->ops->multadd                   = MatMultAdd_SeqAIJKokkos;
   A->ops->multtranspose             = MatMultTranspose_SeqAIJKokkos;

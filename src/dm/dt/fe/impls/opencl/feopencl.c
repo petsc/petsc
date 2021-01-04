@@ -488,9 +488,9 @@ static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscI
   *y = 1;
   for (*x = (size_t) (PetscSqrtReal(Nblocks) + 0.5); *x > 0; --*x) {
     *y = Nblocks / *x;
-    if (*x * *y == Nblocks) break;
+    if (*x * *y == (size_t)Nblocks) break;
   }
-  if (*x * *y != Nblocks) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %d with block size %d", N, blockSize);
+  if (*x * *y != (size_t)Nblocks) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %D with block size %D", N, blockSize);
   PetscFunctionReturn(0);
 }
 
@@ -772,8 +772,8 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscInt fie
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscFESetUp_Basic(PetscFE);
-PETSC_EXTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE, PetscInt, const PetscReal [], PetscInt, PetscTabulation);
+PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE);
+PETSC_INTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE, PetscInt, const PetscReal [], PetscInt, PetscTabulation);
 
 static PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 {

@@ -241,6 +241,10 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat,MatType,MatReuse,Mat*
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_Basic(Mat,PetscInt,const PetscInt[],const PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_Basic(Mat,const PetscScalar[],InsertMode);
 
+/* these callbacks rely on the old matrix function pointers for
+   matmat operations. They are unsafe, and should be removed.
+   However, the amount of work needed to clean up all the
+   implementations is not negligible */
 PETSC_INTERN PetscErrorCode MatProductSymbolic_AB(Mat);
 PETSC_INTERN PetscErrorCode MatProductNumeric_AB(Mat);
 PETSC_INTERN PetscErrorCode MatProductSymbolic_AtB(Mat);
@@ -251,7 +255,12 @@ PETSC_INTERN PetscErrorCode MatProductNumeric_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatProductNumeric_RARt(Mat);
 PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC(Mat);
 PETSC_INTERN PetscErrorCode MatProductNumeric_ABC(Mat);
+
 PETSC_INTERN PetscErrorCode MatProductCreate_Private(Mat,Mat,Mat,Mat);
+/* this callback handles all the different triple products and
+   does not rely on the function pointers; used by cuSPARSE and KOKKOS-KERNELS */
+PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
+
 
 #if defined(PETSC_USE_DEBUG)
 #  define MatCheckPreallocated(A,arg) do {                              \
@@ -407,7 +416,7 @@ typedef struct { /* used by MatProduct() */
   char           *alg;
   Mat            A,B,C,Dwork;
   PetscReal      fill;
-  PetscBool      api_user; /* used by MatProductSetFromOptions_xxx() to distinguish command line options */
+  PetscBool      api_user; /* used to distinguish command line options and to indicate the matrix values are ready to be consumed at symbolic phase if needed */
 
   /* Some products may display the information on the algorithm used */
   PetscErrorCode (*view)(Mat,PetscViewer);
@@ -1783,8 +1792,6 @@ PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyFromGPU;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSEGenerateTranspose;
-PETSC_EXTERN PetscLogEvent MAT_CUSPARSEPreallCOO;
-PETSC_EXTERN PetscLogEvent MAT_CUSPARSESetVCOO;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSESolveAnalysis;
 PETSC_EXTERN PetscLogEvent MAT_SetValuesBatch;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
@@ -1795,6 +1802,8 @@ PETSC_EXTERN PetscLogEvent MAT_Residual;
 PETSC_EXTERN PetscLogEvent MAT_SetRandom;
 PETSC_EXTERN PetscLogEvent MAT_FactorFactS;
 PETSC_EXTERN PetscLogEvent MAT_FactorInvS;
+PETSC_EXTERN PetscLogEvent MAT_PreallCOO;
+PETSC_EXTERN PetscLogEvent MAT_SetVCOO;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Apply;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Comm;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Local;

@@ -75,6 +75,10 @@ int main(int argc,char **args)
   ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
   ierr = MatDestroy(&AAt);CHKERRQ(ierr);
   ierr = MatDestroy(&At);CHKERRQ(ierr);
+  /* INSERT_VALUES will overwrite matrix entries but
+     still perform the sum of the repeated entries */
+  ierr = MatSetValuesCOO(A,v2,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
 
   /* test with unique entries */
   ierr = MatSetPreallocationCOO(A,n2,i2,j2);CHKERRQ(ierr);

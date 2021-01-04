@@ -1302,6 +1302,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M,MatType type,MatReuse reus
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
   if (reuse == MAT_REUSE_MATRIX || reuse == MAT_INITIAL_MATRIX) {
     /* TODO these cases should be optimized */
     ierr = MatConvert_Basic(M,type,reuse,newmat);CHKERRQ(ierr);

@@ -46,6 +46,13 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat C)
     PetscFunctionReturn(0);
   }
 
+  /* backend general code */
+  ierr = PetscStrcmp(alg,"backend",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatProductSymbolic_MPIAIJBACKEND(C);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscStrcmp(alg,"hypre",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -1736,7 +1743,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal fill,Mat C)
 {
   PetscErrorCode      ierr;
-  Mat                 A_loc,POt,PDt;
+  Mat                 A_loc;
   Mat_APMPI           *ptap;
   PetscFreeSpaceList  free_space=NULL,current_space=NULL;
   Mat_MPIAIJ          *p=(Mat_MPIAIJ*)P->data,*a=(Mat_MPIAIJ*)A->data;
@@ -1756,7 +1763,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   PetscInt            *ai,*aj,*Jptr,anz,*prmap=p->garray,pon,nspacedouble=0,j;
   PetscReal           afill  =1.0,afill_tmp;
   PetscInt            rstart = P->cmap->rstart,rmax,aN=A->cmap->N,Armax;
-  Mat_SeqAIJ          *a_loc,*pdt,*pot;
+  Mat_SeqAIJ          *a_loc;
   PetscTable          ta;
   MatType             mtype;
 
@@ -1781,15 +1788,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   /* determine symbolic Co=(p->B)^T*A - send to others */
   /*----------------------------------------------------*/
-  ierr = MatTransposeSymbolic_SeqAIJ(p->A,&PDt);CHKERRQ(ierr);
-  pdt  = (Mat_SeqAIJ*)PDt->data;
-  pdti = pdt->i; pdtj = pdt->j;
-
-  ierr = MatTransposeSymbolic_SeqAIJ(p->B,&POt);CHKERRQ(ierr);
-  pot  = (Mat_SeqAIJ*)POt->data;
-  poti = pot->i; potj = pot->j;
-
-  /* then, compute symbolic Co = (p->B)^T*A */
+  ierr = MatGetSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
+  ierr = MatGetSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
   pon = (p->B)->cmap->n; /* total num of rows to be sent to other processors
                          >= (num of nonzero rows of C_seq) - pn */
   ierr   = PetscMalloc1(pon+1,&coi);CHKERRQ(ierr);
@@ -2034,9 +2034,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = PetscLLCondensedDestroy_Scalable(lnk);CHKERRQ(ierr);
   ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
-
-  ierr = MatDestroy(&POt);CHKERRQ(ierr);
-  ierr = MatDestroy(&PDt);CHKERRQ(ierr);
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
 
   /* create symbolic parallel matrix C - why cannot be assembled in Numeric part   */
   /*-------------------------------------------------------------------------------*/
@@ -2124,6 +2123,13 @@ static PetscErrorCode MatProductSymbolic_AtB_MPIAIJ_MPIAIJ(Mat C)
     goto next;
   }
 
+  /* backend general code */
+  ierr = PetscStrcmp(product->alg,"backend",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatProductSymbolic_MPIAIJBACKEND(C);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProduct type is not supported");
 
 next:
@@ -2139,11 +2145,11 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
   Mat_Product    *product = C->product;
   Mat            A=product->A,B=product->B;
 #if defined(PETSC_HAVE_HYPRE)
-  const char     *algTypes[4] = {"scalable","nonscalable","seqmpi","hypre"};
-  PetscInt       nalg = 4;
+  const char     *algTypes[5] = {"scalable","nonscalable","seqmpi","backend","hypre"};
+  PetscInt       nalg = 5;
 #else
-  const char     *algTypes[3] = {"scalable","nonscalable","seqmpi"};
-  PetscInt       nalg = 3;
+  const char     *algTypes[4] = {"scalable","nonscalable","seqmpi","backend",};
+  PetscInt       nalg = 4;
 #endif
   PetscInt       alg = 1; /* set nonscalable algorithm as default */
   PetscBool      flg;
@@ -2204,8 +2210,8 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
   PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   Mat            A=product->A,B=product->B;
-  const char     *algTypes[3] = {"scalable","nonscalable","at*b"};
-  PetscInt       nalg = 3;
+  const char     *algTypes[4] = {"scalable","nonscalable","at*b","backend"};
+  PetscInt       nalg = 4;
   PetscInt       alg = 1; /* set default algorithm  */
   PetscBool      flg;
   MPI_Comm       comm;
@@ -2268,11 +2274,11 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
   PetscBool      flg;
   PetscInt       alg=1; /* set default algorithm */
 #if !defined(PETSC_HAVE_HYPRE)
-  const char     *algTypes[4] = {"scalable","nonscalable","allatonce","allatonce_merged"};
-  PetscInt       nalg=4;
-#else
-  const char     *algTypes[5] = {"scalable","nonscalable","allatonce","allatonce_merged","hypre"};
+  const char     *algTypes[5] = {"scalable","nonscalable","allatonce","allatonce_merged","backend"};
   PetscInt       nalg=5;
+#else
+  const char     *algTypes[6] = {"scalable","nonscalable","allatonce","allatonce_merged","backend","hypre"};
+  PetscInt       nalg=6;
 #endif
   PetscInt       pN=P->cmap->N;
 

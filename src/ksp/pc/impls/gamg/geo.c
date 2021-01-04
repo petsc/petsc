@@ -280,9 +280,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
       level++;
     }
   }
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[FIND_V],0,0,0,0);CHKERRQ(ierr);
-#endif
   { /* form P - setup some maps */
     PetscInt clid,mm,*nTri,*node_tri;
 
@@ -412,9 +410,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
 
     ierr = PetscFree2(node_tri,nTri);CHKERRQ(ierr);
   }
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[FIND_V],0,0,0,0);CHKERRQ(ierr);
-#endif
   free(mid.trianglelist);
   free(mid.neighborlist);
   free(mid.segmentlist);
@@ -731,15 +727,11 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
 
     if (dim != data_cols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim %D != data_cols %D",dim,data_cols);
     /* grow ghost data for better coarse grid cover of fine grid */
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
-#endif
     /* messy method, squares graph and gets some data */
     ierr = getGIDsOnSquareGraph(pc, nLocalSelected, clid_flid, Gmat, &selected_2, &Gmat2, &crsGID);CHKERRQ(ierr);
     /* llist is now not valid wrt squared graph, but will work as iterator in 'triangulateAndFormProl' */
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
-#endif
     /* create global vector of coorindates in 'coords' */
     if (size > 1) {
       ierr = PCGAMGGetDataWithGhosts(Gmat2, dim, pc_gamg->data, &data_stride, &coords);CHKERRQ(ierr);
@@ -752,13 +744,9 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
     /* triangulate */
     if (dim == 2) {
       PetscReal metric,tm;
-#if defined PETSC_GAMG_USE_LOG
       ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET6],0,0,0,0);CHKERRQ(ierr);
-#endif
       ierr = triangulateAndFormProl(selected_2, data_stride, coords,nLocalSelected, clid_flid, agg_lists, crsGID, bs, Prol, &metric);CHKERRQ(ierr);
-#if defined PETSC_GAMG_USE_LOG
       ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET6],0,0,0,0);CHKERRQ(ierr);
-#endif
       ierr = PetscFree(crsGID);CHKERRQ(ierr);
 
       /* clean up and create coordinates for coarse grid (output) */

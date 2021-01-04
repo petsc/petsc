@@ -926,12 +926,13 @@ PETSC_EXTERN int64_t Petsc_adios_group;
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_INTERN PetscBool      PetscBeganKokkos;
+PETSC_EXTERN PetscBool      PetscKokkosInitialized;
 PETSC_INTERN PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool*);
 PETSC_INTERN PetscErrorCode PetscKokkosFinalize_Private(void);
 #endif
 
 #if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscBool      PetscCUDAInitialized;  /* Has petsc initialized CUDA? One can use this flag to guard CUDA calls. */
+PETSC_EXTERN PetscBool      PetscCUDAInitialized;  /* Is CUDA initialized? One can use this flag to guard CUDA calls. */
 PETSC_EXTERN PetscBool      PetscMPICUDAAwarenessCheck(void);
 #endif
 
