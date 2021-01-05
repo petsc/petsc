@@ -4,7 +4,7 @@
 static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg,PetscBool t,PetscBool add)
 {
   PetscErrorCode ierr;
-  Vec            Ax,Bx,s1,s2,Ay = NULL, By = NULL;
+  Vec            Ax = NULL,Bx = NULL,s1 = NULL,s2 = NULL,Ay = NULL, By = NULL;
   PetscRandom    rctx;
   PetscReal      r1,r2,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscInt       am,an,bm,bn,k;

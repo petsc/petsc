@@ -5,13 +5,13 @@ static char help[] = "Test MatAXPY()\n\n";
 
 int main(int argc,char **args)
 {
-  Mat            C,C1,C2;           /* matrix */
+  Mat            C,C1,C2,CU;
   PetscScalar    v;
   PetscInt       Ii,J,Istart,Iend;
   PetscErrorCode ierr;
   PetscInt       i,j,m = 3,n;
   PetscMPIInt    size;
-  PetscBool      mat_nonsymmetric = PETSC_FALSE;
+  PetscBool      mat_nonsymmetric = PETSC_FALSE,flg;
   MatInfo        info;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = PetscObjectSetName((PetscObject)C,"C");CHKERRQ(ierr);
   ierr = MatViewFromOptions(C,NULL,"-view");CHKERRQ(ierr);
 
-  /* C1 = 2.0*C1 + C, C1 has different non-zeros than C */
+  /* C1 = 2.0*C1 + C, C1 is anti-diagonal and has different non-zeros than C */
   ierr = MatCreate(PETSC_COMM_WORLD,&C1);CHKERRQ(ierr);
   ierr = MatSetSizes(C1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C1);CHKERRQ(ierr);
@@ -69,14 +69,24 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)C1,"C1");CHKERRQ(ierr);
   ierr = MatViewFromOptions(C1,NULL,"-view");CHKERRQ(ierr);
+  ierr = MatDuplicate(C1,MAT_COPY_VALUES,&CU);CHKERRQ(ierr);
+
   ierr = PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C1,2.0,C,DIFFERENT_NONZERO_PATTERN)...\n");CHKERRQ(ierr);
   ierr = MatAXPY(C1,2.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAXPY(CU,2.0,C,UNKNOWN_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatGetInfo(C1,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," C1: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);CHKERRQ(ierr);
   ierr = MatViewFromOptions(C1,NULL,"-view");CHKERRQ(ierr);
+  ierr = MatMultEqual(CU,C1,10,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error UNKNOWN_NONZERO_PATTERN (supposedly DIFFERENT_NONZERO_PATTERN)\n");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(CU,NULL,"-view");CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&CU);CHKERRQ(ierr);
 
-  /* Secondly, create C1 = 2.0*C2 + C1, C2 has non-zero pattern of C */
+  /* Secondly, compute C1 = 2.0*C2 + C1, C2 has non-zero pattern of C */
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&C2);CHKERRQ(ierr);
+  ierr = MatDuplicate(C1,MAT_COPY_VALUES,&CU);CHKERRQ(ierr);
 
   for (Ii=Istart; Ii<Iend; Ii++) {
     v    = 1.0;
@@ -88,16 +98,31 @@ int main(int argc,char **args)
   ierr = MatViewFromOptions(C2,NULL,"-view");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C1,2.0,C2,SUBSET_NONZERO_PATTERN)...\n");CHKERRQ(ierr);
   ierr = MatAXPY(C1,2.0,C2,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAXPY(CU,2.0,C2,UNKNOWN_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatGetInfo(C1,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," C1: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);CHKERRQ(ierr);
   ierr = MatViewFromOptions(C1,NULL,"-view");CHKERRQ(ierr);
+  ierr = MatMultEqual(CU,C1,10,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error UNKNOWN_NONZERO_PATTERN (supposedly SUBSET_NONZERO_PATTERN)\n");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(CU,NULL,"-view");CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&CU);CHKERRQ(ierr);
 
-  /* Test SAME_NONZERO_PATTERN */
+  /* Test SAME_NONZERO_PATTERN computing C2 = C2 + 2.0 * C */
+  ierr = MatDuplicate(C2,MAT_COPY_VALUES,&CU);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C2,2.0,C,SAME_NONZERO_PATTERN)...\n");CHKERRQ(ierr);
-  ierr = MatAXPY(C2,2.0,C,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAXPY(C2,2.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAXPY(CU,2.0,C,UNKNOWN_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatGetInfo(C2,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," C2: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);CHKERRQ(ierr);
   ierr = MatViewFromOptions(C2,NULL,"-view");CHKERRQ(ierr);
+  ierr = MatMultEqual(CU,C2,10,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error UNKNOWN_NONZERO_PATTERN (supposedly SUBSET_NONZERO_PATTERN)\n");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(CU,NULL,"-view");CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&CU);CHKERRQ(ierr);
 
   ierr = MatDestroy(&C1);CHKERRQ(ierr);
   ierr = MatDestroy(&C2);CHKERRQ(ierr);
