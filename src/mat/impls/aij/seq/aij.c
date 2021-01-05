@@ -2832,19 +2832,18 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
 
 PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
 {
-  Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)inA->data;
-  PetscScalar    oalpha = alpha;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)inA->data;
+  PetscScalar    *v;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bnz;
 
   PetscFunctionBegin;
+  ierr = MatSeqAIJGetArray(inA,&v);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(a->nz,&bnz);CHKERRQ(ierr);
-  PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&oalpha,a->a,&one));
+  PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&alpha,v,&one));
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(inA,&v);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(inA);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DEVICE)
-  if (inA->offloadmask != PETSC_OFFLOAD_UNALLOCATED) inA->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
   PetscFunctionReturn(0);
 }
 
