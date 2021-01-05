@@ -3,8 +3,7 @@
    This file contains routines for basic map object implementation.
 */
 
-#include <petscis.h> /*I "petscis.h" I*/
-#include <petsc/private/isimpl.h>
+#include <petsc/private/isimpl.h> /*I "petscis.h" I*/
 
 /*@
   PetscLayoutCreate - Allocates PetscLayout space and sets the PetscLayout contents to the default.
