@@ -130,7 +130,7 @@
         <ul>
           <li>VecScatter is now the same type as PetscSF, in other words, we have typedef PetscSF VecScatter</li>
           <li>Remove VecScatter types VECSCATTER{SEQ,MPI1,MPI3,MPI3NODE,SF}. One can use all PetcSF types as VecScatter types</li>
-          <li>Rename PetscLayoutsCreateSF() to PetscSFCreateFromLayouts()</li>
+          <li>Rename PetscLayoutsCreateSF() to PetscSFCreateFromLayouts() and move its declaration from petscis.h to petscsf.h</li>
         </ul>
       <h4>PF:</h4>
       <h4>Vec:</h4>
