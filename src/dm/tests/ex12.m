@@ -1,13 +1,16 @@
 function ex12(np,opt)
 %
-%   ex12(np)
-% creates a series of vectors in PETSc and displays them in Matlab
+% From Matlab run  ex12(np)
+%
+% ex12.c creates a series of vectors in PETSc and displays them in Matlab
 %
 % Run with option -on_error_attach_debugger to debug
 %
-%  Requires the Matlab mex routines in ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/matlab.
-%  Make sure that ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/matlab is in your MATLABPATH or
-%  $prefix/share/petsc/matlab and $prefix/lib/matlab if you ran ./configure with --prefix
+%  Requires the Matlab mex routines in ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab
+%  to create these run ./configure --with-matlab
+%
+%  Make sure that ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab is in your MATLABPATH or
+%  $prefix/share/petsc/matlab and $prefix/lib/petsc/matlab if you ran ./configure with --prefix
 %
 if (nargin < 1)
   np = 1;

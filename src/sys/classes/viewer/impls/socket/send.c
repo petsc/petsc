@@ -491,8 +491,8 @@ $    -viewer_socket_port <port>
 -   PETSC_VIEWER_SOCKET_MACHINE - machine name
 
      Notes:
-     Unlike almost all other PETSc routines, PetscViewer_SOCKET_ does not return
-     an error code.  The socket PetscViewer is usually used in the form
+     Unlike almost all other PETSc routines, Petsc_VIEWER_SOCKET_ does not return
+     an error code, it returns NULL if it fails. The socket PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 
      Currently the only socket client available is MATLAB. See

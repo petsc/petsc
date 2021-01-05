@@ -56,12 +56,20 @@ docs-html: rst2html sphinx-html epydoc-html
 docs-pdf:  sphinx-pdf epydoc-pdf
 docs-misc: sphinx-man sphinx-info
 
+#it appears some of the documentation requires a python2 installation to build
+PYTHON2 = python2
+
+checkdocutils:
+	@${PYTHON} -c $$'try:\n  import docutils\nexcept:\n  print("Run python -m pip install docutils and then try this command again");exit(1)'
+	@${PYTHON2} -c $$'try:\n  import docutils\nexcept:\n  print("Run python2 -m pip install docutils or pip2 install docutils or [sudo] easy_install docutils and then try the command again");exit(1)'
+	@${PYTHON2} -c $$'try:\n  import epydoc\nexcept:\n  print("Run python2 -m pip install epydoc or pip2 install epydoc or [sudo] easy_install epydoc and then try the command again");exit(1)'
+
 RST2HTML = $(shell command -v rst2html || command -v rst2html.py || false)
 RST2HTMLOPTS  = --input-encoding=utf-8
 RST2HTMLOPTS += --no-compact-lists
 RST2HTMLOPTS += --cloak-email-addresses
 .PHONY: rst2html
-rst2html:
+rst2html: checkdocutils
 	${RST2HTML} ${RST2HTMLOPTS} ./LICENSE.rst  > docs/LICENSE.html
 	${RST2HTML} ${RST2HTMLOPTS} ./CHANGES.rst  > docs/CHANGES.html
 	${RST2HTML} ${RST2HTMLOPTS} docs/index.rst > docs/index.html
@@ -93,7 +101,6 @@ sphinx-info:
 	${MAKE} -C build/texinfo info > /dev/null
 	mv build/texinfo/*.info docs/
 
-PYTHON2 = python2
 EPYDOCBUILD = ${PYTHON2} ./conf/epydocify.py
 EPYDOCOPTS  =
 .PHONY: epydoc epydoc-html epydoc-pdf

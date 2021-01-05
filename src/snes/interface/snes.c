@@ -356,6 +356,8 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
    The user can open an alternative visualization context with
    PetscViewerASCIIOpen() - output to a specified file.
 
+  In the debugger you can do "call SNESView(snes,0)" to display the SNES solver. (The same holds for any PETSc object viewer).
+
    Level: beginner
 
 .seealso: PetscViewerASCIIOpen()

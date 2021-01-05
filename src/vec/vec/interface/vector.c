@@ -533,6 +533,8 @@ PetscErrorCode  VecViewFromOptions(Vec A,PetscObject obj,const char name[])
    Notes:
     You can pass any number of vector objects, or other PETSc objects to the same viewer.
 
+    In the debugger you can do "call VecView(v,0)" to display the vector. (The same holds for any PETSc object viewer).
+
    Notes for binary viewer:
      If you pass multiple vectors to a binary viewer you can read them back in in the same order
      with VecLoad().

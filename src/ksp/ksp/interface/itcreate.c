@@ -94,6 +94,8 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
    The user can open an alternative visualization context with
    PetscViewerASCIIOpen() - output to a specified file.
 
+  In the debugger you can do "call KSPView(ksp,0)" to display the KSP. (The same holds for any PETSc object viewer).
+
    Level: beginner
 
 .seealso: PCView(), PetscViewerASCIIOpen()

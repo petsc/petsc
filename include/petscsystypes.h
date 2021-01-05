@@ -332,7 +332,7 @@ typedef double PetscLogDouble;
    It would be nice if we could always just use MPI Datatypes, why can we not?
 
    If you change any values in PetscDatatype make sure you update their usage in
-   share/petsc/matlab/PetscBagRead.m
+   share/petsc/matlab/PetscBagRead.m and share/petsc/matlab/@PetscOpenSocket/read/write.m
 
    TODO: Add PETSC_INT32 and remove use of improper PETSC_ENUM
 

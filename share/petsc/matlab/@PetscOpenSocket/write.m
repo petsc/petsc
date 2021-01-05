@@ -4,7 +4,7 @@ function write(sreader,data,datatype)
 %
   switch (datatype)
   case 'int32'
-    datatype = 0;
+    datatype = 16;
   case 'double'
     datatype = 1;
   case 'float64'
