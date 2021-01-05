@@ -46,12 +46,6 @@ TS Object: 1 MPI processes
     Nonstiff abscissa     c =  0.000000  0.871733  0.600000  1.000000 
   maximum steps=1000
   maximum time=0.3
-  total number of RHS function evaluations=192
-  total number of RHS Jacobian evaluations=192
-  total number of nonlinear solver iterations=288
-  total number of linear solver iterations=576
-  total number of nonlinear solve failures=0
-  total number of rejected steps=12
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
 TSAdapt Object: 1 MPI processes
   type: basic
@@ -66,8 +60,6 @@ SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=4
-  total number of function evaluations=3
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
     type: bt
@@ -115,7 +107,6 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=60, cols=60
           total: nonzeros=180, allocated nonzeros=180
-          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
@@ -144,7 +135,6 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=120, cols=120
           total: nonzeros=360, allocated nonzeros=360
-          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
@@ -174,7 +164,6 @@ SNES Object: 1 MPI processes
           type: seqaij
           rows=240, cols=240
           total: nonzeros=720, allocated nonzeros=720
-          total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
@@ -182,5 +171,4 @@ SNES Object: 1 MPI processes
       type: seqaij
       rows=240, cols=240
       total: nonzeros=720, allocated nonzeros=720
-      total number of mallocs used during MatSetValues calls=0
         not using I-node routines
