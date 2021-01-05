@@ -7,7 +7,7 @@ The PETSc test system consists of
 *     The *test generator* (``config/gmakegentest.py``) that at the ``make`` step parses the example source files and generates the makefiles and shell scripts.
 *    The *petsc test harness* that consists of makefile and shell scripts that runs the executables with several logging and reporting features.
 
-Details on using the harness may be found in the :doc:`user's manual </manual/tests>`.
+Details on using the harness may be found in the :ref:`user's manual <sec_runningtests>`.
 
 
 In the examples below, we often make use of this command:  ``make -f gmakefile ...`` or 
@@ -19,6 +19,15 @@ when testing, we have the equivalent of ``make -f gmakefile.test ...``.  Here is
 
 where ``ptmake`` stands for "petsc test make".  We will use this syntax below to make 
 the commands nicer.
+
+Getting help
+------------
+
+First of all, to find help for the test harness options and available targets, do
+
+.. code-block:: console
+
+   > ptmake help
 
 Determining the failed jobs of a given run
 ------------------------------------------
@@ -377,7 +386,7 @@ For our language, a *test* is associated with the following
 
 * A single shell script
 * A single makefile
-* A single output file that represents the *expected esults*
+* A single output file that represents the *expected results*
 
 Two or more command tests, usually, one or more mpiexec tests that run
 the executable, and one or more diff tests to compare output with the
