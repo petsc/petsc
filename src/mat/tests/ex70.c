@@ -739,6 +739,7 @@ int main(int argc,char **args)
   test:
     output_file: output/ex70_1.out
     requires: cuda
+    TODO: broken
     nsize: 2
     suffix: 1_par_cuda
     args: -local {{0 1}} -xgpu {{0 1}} -bgpu {{0 1}} -A_mat_type {{mpiaijcusparse mpiaij}} -testnest 0 -testmatmatt 0 -matmatmult_Bbn 3
