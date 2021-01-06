@@ -901,14 +901,7 @@ PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf,MPI_Datatype unit,PetscMemTy
     MPI_Aint tdp = target_disp ? target_disp[i] : 0;
 
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRMPI(ierr);}
-    ierr = MPI_Accumulate((void*)leafdata,1,mine[i],ranks[i],tdp,1,remote[i],op,win);
-    if (ierr) { /* intercept the MPI error since the combination of unit and op is not supported */
-      PetscMPIInt len;
-      char        errstring[MPI_MAX_ERROR_STRING];
-
-      MPI_Error_string(ierr,errstring,&len);
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Internal error in MPI: %s",errstring);
-    }
+    ierr = MPI_Accumulate((void*)leafdata,1,mine[i],ranks[i],tdp,1,remote[i],op,win);CHKERRMPI(ierr);
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRMPI(ierr);}
   }
   PetscFunctionReturn(0);
@@ -960,25 +953,11 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
 #if !defined(PETSC_HAVE_MPI_GET_ACCUMULATE)
     ierr = MPI_Win_lock(MPI_LOCK_EXCLUSIVE,ranks[i],0,win);CHKERRMPI(ierr);
     ierr = MPI_Get(leafupdate,1,mine[i],ranks[i],tdp,1,remote[i],win);CHKERRMPI(ierr);
-    ierr = MPI_Accumulate((void*)leafdata,1,mine[i],ranks[i],tdp,1,remote[i],op,win);
-    if (ierr) { /* intercept the MPI error since the combination of unit and op is not supported */
-      PetscMPIInt len;
-      char        errstring[MPI_MAX_ERROR_STRING];
-
-      MPI_Error_string(ierr,errstring,&len);
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Internal error in MPI: %s",errstring);
-    }
+    ierr = MPI_Accumulate((void*)leafdata,1,mine[i],ranks[i],tdp,1,remote[i],op,win);CHKERRMPI(ierr);
     ierr = MPI_Win_unlock(ranks[i],win);CHKERRMPI(ierr);
 #else
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],0,win);CHKERRMPI(ierr);}
-    ierr = MPI_Get_accumulate((void*)leafdata,1,mine[i],leafupdate,1,mine[i],ranks[i],tdp,1,remote[i],op,win);
-    if (ierr) { /* intercept the MPI error since the combination of unit and op is not supported */
-      PetscMPIInt len;
-      char        errstring[MPI_MAX_ERROR_STRING];
-
-      MPI_Error_string(ierr,errstring,&len);
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Internal error in MPI: %s",errstring);
-    }
+    ierr = MPI_Get_accumulate((void*)leafdata,1,mine[i],leafupdate,1,mine[i],ranks[i],tdp,1,remote[i],op,win);CHKERRMPI(ierr);
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {ierr = MPI_Win_unlock(ranks[i],win);CHKERRMPI(ierr);}
 #endif
   }
