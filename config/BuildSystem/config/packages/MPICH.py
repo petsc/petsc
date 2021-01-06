@@ -4,8 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['https://www.mpich.org/static/downloads/3.3.2/mpich-3.3.2.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3.2.tar.gz']
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.4-petsc1.tar.gz']
     self.download_31      = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
     self.downloaddirnames  = ['mpich']
@@ -15,9 +14,9 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.compilerFlags   = framework.require('config.compilerFlags', self)
+    self.compilerFlags   = framework.require('config.compilerFlags',self)
     self.cuda            = framework.require('config.packages.cuda',self)
-    self.valgrind        = framework.require('config.packages.valgrind',self)    
+    self.valgrind        = framework.require('config.packages.valgrind',self)
     return
 
   def setupHelp(self, help):
@@ -49,6 +48,7 @@ class Configure(config.package.GNUPackage):
     '''MPICH has many specific extra configure arguments'''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
+    args.append('--disable-java')
     # make sure MPICH does not build with optimization for debug version of PETSc, so we can debug through MPICH
     if self.compilerFlags.debugging:
       args.append("--enable-fast=no")
