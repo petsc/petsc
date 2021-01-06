@@ -391,7 +391,7 @@ PetscErrorCode VecGetArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a,PetscMemType 
   if (v->offloadmask & PETSC_OFFLOAD_GPU) { /* Prefer working on GPU when offloadmask is PETSC_OFFLOAD_BOTH */
     *a = ((Vec_CUDA*)v->spptr)->GPUarray;
     v->offloadmask    = PETSC_OFFLOAD_GPU; /* Change the mask once GPU gets write access, don't wait until restore array */
-    if (mtype) *mtype = PETSC_MEMTYPE_CUDA;
+    if (mtype) *mtype = ((Vec_CUDA*)v->spptr)->nvshmem ? PETSC_MEMTYPE_NVSHMEM : PETSC_MEMTYPE_CUDA;
   } else {
     ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
     *a = *((PetscScalar**)v->data);

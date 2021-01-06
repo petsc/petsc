@@ -58,6 +58,11 @@ PetscMPIInt PetscGlobalSize               = -1;
 PetscBool   PetscBeganKokkos              = PETSC_FALSE;
 #endif
 
+#if defined(PETSC_HAVE_NVSHMEM)
+PetscBool   PetscBeganNvshmem             = PETSC_FALSE;
+PetscBool   PetscNvshmemInitialized       = PETSC_FALSE;
+#endif
+
 PetscBool   use_gpu_aware_mpi             = PETSC_TRUE;
 PetscBool   PetscCreatedGpuObjects        = PETSC_FALSE;
 

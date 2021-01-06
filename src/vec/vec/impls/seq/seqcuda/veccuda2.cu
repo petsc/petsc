@@ -1003,13 +1003,21 @@ PetscErrorCode VecDotNorm2_SeqCUDA(Vec s, Vec t, PetscScalar *dp, PetscScalar *n
 PetscErrorCode VecDestroy_SeqCUDA(Vec v)
 {
   PetscErrorCode ierr;
-  cudaError_t    err;
+  cudaError_t    cerr;
+  Vec_CUDA       *veccuda = (Vec_CUDA*)v->spptr;
 
   PetscFunctionBegin;
   if (v->spptr) {
-    if (((Vec_CUDA*)v->spptr)->GPUarray_allocated) {
-      err = cudaFree(((Vec_CUDA*)v->spptr)->GPUarray_allocated);CHKERRCUDA(err);
-      ((Vec_CUDA*)v->spptr)->GPUarray_allocated = NULL;
+    if (veccuda->GPUarray_allocated) {
+     #if defined(PETSC_HAVE_NVSHMEM)
+      if (veccuda->nvshmem) {
+        ierr = PetscNvshmemFree(veccuda->GPUarray_allocated);CHKERRQ(ierr);
+        veccuda->nvshmem = PETSC_FALSE;
+      }
+      else
+     #endif
+      {cerr = cudaFree(veccuda->GPUarray_allocated);CHKERRCUDA(cerr);}
+      veccuda->GPUarray_allocated = NULL;
     }
     if (veccuda->stream) {
       cerr = cudaStreamDestroy(veccuda->stream);CHKERRCUDA(cerr);
@@ -1287,3 +1295,26 @@ PetscErrorCode VecMin_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
   ierr = VecCUDARestoreArrayRead(v,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#if defined(PETSC_HAVE_NVSHMEM)
+/* Free old CUDA array and re-allocate a new one from nvshmem symmetric heap.
+   New array does not retain values in the old array. The offload mask is not changed.
+
+   Note: the function is only meant to be used in MatAssemblyEnd_MPIAIJCUSPARSE.
+ */
+PetscErrorCode  VecAllocateNVSHMEM_SeqCUDA(Vec v)
+{
+  PetscErrorCode ierr;
+  cudaError_t    cerr;
+  Vec_CUDA       *veccuda = (Vec_CUDA*)v->spptr;
+  PetscInt       n;
+
+  PetscFunctionBegin;
+  cerr = cudaFree(veccuda->GPUarray_allocated);CHKERRCUDA(cerr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,&n,1,MPIU_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  ierr = PetscNvshmemMalloc(n*sizeof(PetscScalar),(void**)&veccuda->GPUarray_allocated);CHKERRQ(ierr);
+  veccuda->GPUarray = veccuda->GPUarray_allocated;
+  veccuda->nvshmem  = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+#endif

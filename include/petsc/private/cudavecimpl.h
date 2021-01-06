@@ -9,6 +9,7 @@ typedef struct {
   PetscScalar  *GPUarray;           /* this always holds the GPU data */
   PetscScalar  *GPUarray_allocated; /* if the array was allocated by PETSc this is its pointer */
   cudaStream_t stream;              /* A stream for doing asynchronous data transfers */
+  PetscBool    nvshmem;             /* Is GPUarray_allocated allocated in nvshmem? It is used to allocate Mvctx->lvec in nvshmem */
 } Vec_CUDA;
 
 PETSC_INTERN PetscErrorCode VecCUDAGetArrays_Private(Vec,const PetscScalar**,const PetscScalar**,PetscOffloadMask*);
@@ -56,6 +57,18 @@ PETSC_INTERN PetscErrorCode VecDestroy_SeqCUDA_Private(Vec);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqCUDA_Private(Vec);
 PETSC_INTERN PetscErrorCode VecMax_SeqCUDA(Vec,PetscInt*,PetscReal*);
 PETSC_INTERN PetscErrorCode VecMin_SeqCUDA(Vec,PetscInt*,PetscReal*);
+
+#if defined(PETSC_HAVE_NVSHMEM)
+PETSC_EXTERN PetscErrorCode PetscNvshmemInitializeCheck(void);
+PETSC_EXTERN PetscErrorCode PetscNvshmemMalloc(size_t,void**);
+PETSC_EXTERN PetscErrorCode PetscNvshmemCalloc(size_t,void**);
+PETSC_EXTERN PetscErrorCode PetscNvshmemFree_Private(void*);
+#define      PetscNvshmemFree(ptr)      ((ptr) && (PetscNvshmemFree_Private(ptr),(ptr)=NULL,0))
+PETSC_INTERN PetscErrorCode PetscNvshmemSum(PetscInt,PetscScalar*,const PetscScalar*);
+PETSC_INTERN PetscErrorCode PetscNvshmemMax(PetscInt,PetscReal*,const PetscReal*);
+PETSC_INTERN PetscErrorCode VecNormAsync_NVSHMEM(Vec,NormType,PetscReal*);
+PETSC_INTERN PetscErrorCode VecAllocateNVSHMEM_SeqCUDA(Vec);
+#endif
 
 /* complex single */
 #if defined(PETSC_USE_COMPLEX)

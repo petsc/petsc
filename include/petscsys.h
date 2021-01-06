@@ -545,6 +545,12 @@ PETSC_EXTERN PetscErrorCode PetscHIPInitializeCheck(void);
 PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void);  /* Initialize Kokkos if not yet. */
 #endif
 
+#if defined(PETSC_HAVE_NVSHMEM)
+PETSC_EXTERN PetscBool      PetscBeganNvshmem;
+PETSC_EXTERN PetscBool      PetscNvshmemInitialized;
+PETSC_EXTERN PetscErrorCode PetscNvshmemFinalize(void);
+#endif
+
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalInitialized(PetscBool*);
