@@ -208,6 +208,13 @@ cdef extern from * nogil:
     int TSMonitorCancel(PetscTS)
     int TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
 
+    ctypedef int (*PetscTSEventHandler)(PetscTS,PetscReal,PetscVec,PetscScalar[],void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSPostEvent)(PetscTS,PetscInt,PetscInt[],PetscReal,PetscVec, PetscBool, void*) except PETSC_ERR_PYTHON
+
+    int TSSetEventHandler(PetscTS, PetscInt, PetscInt[], PetscBool[], PetscTSEventHandler, PetscTSPostEvent, void*)
+    int TSSetEventTolerances(PetscTS, PetscReal, PetscReal[])
+    int TSGetNumEvents(PetscTS, PetscInt*)
+
     ctypedef int (*PetscTSAdjointR)(PetscTS,PetscReal,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscTSAdjointDRDY)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscTSAdjointDRDP)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) except PETSC_ERR_PYTHON
@@ -477,6 +484,44 @@ cdef int TS_Monitor(
     return 0
 
 # -----------------------------------------------------------------------------
+
+cdef int TS_EventHandler(
+    PetscTS     ts,
+    PetscReal   time,
+    PetscVec    u,
+    PetscScalar fvalue[],
+    void*       ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef TS  Ts = ref_TS(ts)
+    cdef Vec Vu = ref_Vec(u)
+    cdef object context = Ts.get_attr('__eventhandler__')
+    if context is None: return 0
+    (eventhandler, args, kargs) = context
+    cdef PetscInt nevents = 0
+    CHKERR( TSGetNumEvents(ts, &nevents) )
+    cdef npy_intp s = <npy_intp> nevents
+    fvalue_array = PyArray_SimpleNewFromData(1, &s, NPY_PETSC_SCALAR, fvalue)
+    eventhandler(Ts, toReal(time), Vu, fvalue_array, *args, **kargs)
+    return 0
+
+cdef int TS_PostEvent(
+    PetscTS   ts,
+    PetscInt  nevents_zero,
+    PetscInt  events_zero[],
+    PetscReal time,
+    PetscVec  u,
+    PetscBool forward,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef TS  Ts = ref_TS(ts)
+    cdef Vec Vu = ref_Vec(u)
+    cdef object context = Ts.get_attr('__postevent__')
+    if context is None: return 0
+    (postevent, args, kargs) = context
+    cdef npy_intp s = <npy_intp> nevents_zero
+    events_zero_array = PyArray_SimpleNewFromData(1, &s, NPY_PETSC_INT, events_zero)
+    postevent(Ts, events_zero_array, toReal(time), Vu, toBool(forward), *args, **kargs)
+    return 0
 
 cdef int TS_PreStep(
     PetscTS ts,
