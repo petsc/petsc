@@ -760,8 +760,10 @@ static PetscErrorCode PetscSFLinkMemcpy_HIP(PetscSFLink link,PetscMemType dstmty
   if (n) {
     if (dstmtype == PETSC_MEMTYPE_HOST && srcmtype == PETSC_MEMTYPE_HOST) { /* Separate HostToHost so that pure-cpu code won't call hip runtime */
       PetscErrorCode ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);
-    } else { /* Assume PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE=1 */
-      hipError_t err = hipMemcpyAsync(dst,src,n,kinds[srcmtype][dstmtype],link->stream);CHKERRHIP(err);
+    } else {
+      int stype = PetscMemTypeDevice(srcmtype) ? 1 : 0;
+      int dtype = PetscMemTypeDevice(dstmtype) ? 1 : 0;
+      hipError_t cerr = hipMemcpyAsync(dst,src,n,kinds[stype][dtype],link->stream);CHKERRHIP(cerr);
     }
   }
   PetscFunctionReturn(0);

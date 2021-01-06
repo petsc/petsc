@@ -1312,7 +1312,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
         }
         Z->offloadmask = flg;
         isnotdone = PETSC_FALSE;
-      } 
+      }
 #endif
 #if defined(PETSC_HAVE_HIP)
       ierr = PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
