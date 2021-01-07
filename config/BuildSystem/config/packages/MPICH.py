@@ -61,6 +61,8 @@ class Configure(config.package.GNUPackage):
     args.append('--with-device='+mpich_device)
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')
+    if not self.setCompilers.isDarwin(self.log) and config.setCompilers.Configure.isClang(self.setCompilers.CC, self.log):
+      args.append('pac_cv_have_float16=no')
     if (not self.sharedLibraries.useShared or self.valgrind.found) and config.setCompilers.Configure.isDarwin(self.log):
       args.append('--disable-opencl')
 
