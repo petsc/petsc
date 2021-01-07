@@ -494,7 +494,7 @@ PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const PetscInt dim
           for (f = 0 ; f < numindices ; ++f) { // look for a non-zero on the diagonal
             if (PetscAbsReal(PetscRealPart(elMat[f*numindices + f])) > PETSC_MACHINE_EPSILON) {
               // found it
-              if (PetscAbsReal(PetscRealPart(elMat[f*numindices + f] - 1.)) < PETSC_MACHINE_EPSILON) {
+              if (PetscAbs(PetscRealPart(elMat[f*numindices + f] - 1.)) < PETSC_MACHINE_EPSILON) {
                 maps->gIdx[eidx][fieldA][q] = (LandauIdx)indices[f]; // normal vertex 1.0
                 //ierr = PetscPrintf(PETSC_COMM_SELF,"\t\t f=%D e=%D q=%D Found normal gid=%D %d\n",fieldA,eidx,q,indices[f],maps->gIdx[fieldA][eidx][q]);CHKERRQ(ierr);
               } else { //found a constraint
@@ -521,12 +521,12 @@ PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const PetscInt dim
                   pointMaps[maps->num_reduced][jj].gid = -1;
                   //ierr = PetscPrintf(PETSC_COMM_SELF,"\t\t\t\t\t maps[%d,%d].scale = %g\n",maps->num_reduced,jj,pointMaps[maps->num_reduced][jj].scale);CHKERRQ(ierr);
                 }
-                if (PetscAbsReal(sum-1.0)>PETSC_MACHINE_EPSILON*2.0) { // debug
+                if (PetscAbs(sum-1.0)>PETSC_MACHINE_EPSILON*2.0) { // debug
                   int       d,f;
                   PetscReal tmp = 0;
                   PetscPrintf(PETSC_COMM_SELF,"\t\t%D.%D.%D) ERROR total I = %22.16e (LANDAU_MAX_Q_FACE=%d, #face=%D)\n",eidx,q,fieldA,tmp,LANDAU_MAX_Q_FACE,maps->num_face);
                   for (d = 0, tmp = 0; d < numindices; ++d){
-                    if (tmp!=0 && PetscAbsReal(tmp-1.0)>2*PETSC_MACHINE_EPSILON) ierr = PetscPrintf(PETSC_COMM_WORLD,"%3D) %3D: ",d,indices[d]);CHKERRQ(ierr);
+                    if (tmp!=0 && PetscAbs(tmp-1.0)>2*PETSC_MACHINE_EPSILON) ierr = PetscPrintf(PETSC_COMM_WORLD,"%3D) %3D: ",d,indices[d]);CHKERRQ(ierr);
                     for (f = 0; f < numindices; ++f) {
                       // ierr = PetscPrintf(PETSC_COMM_SELF," %8.2e",  PetscRealPart(elMat[d*numindices + f]));CHKERRQ(ierr);
                       tmp += PetscRealPart(elMat[d*numindices + f]);
