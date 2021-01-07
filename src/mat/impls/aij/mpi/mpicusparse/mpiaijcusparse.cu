@@ -189,8 +189,10 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, c
   ierr = MatCUSPARSESetFormat(b->B,MAT_CUSPARSE_MULT,cusp->offdiagGPUMatFormat);CHKERRQ(ierr);
   ierr = MatCUSPARSESetHandle(b->A,cusp->handle);CHKERRQ(ierr);
   ierr = MatCUSPARSESetHandle(b->B,cusp->handle);CHKERRQ(ierr);
+  /*
   ierr = MatCUSPARSESetStream(b->A,cusp->stream);CHKERRQ(ierr);
   ierr = MatCUSPARSESetStream(b->B,cusp->stream);CHKERRQ(ierr);
+  */
   ierr = MatSetUpMultiply_MPIAIJ(B);CHKERRQ(ierr);
   B->preallocated = PETSC_TRUE;
   B->nonzerostate++;
@@ -278,9 +280,10 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,cons
   ierr = MatCUSPARSESetFormat(b->B,MAT_CUSPARSE_MULT,cusparseStruct->offdiagGPUMatFormat);CHKERRQ(ierr);
   ierr = MatCUSPARSESetHandle(b->A,cusparseStruct->handle);CHKERRQ(ierr);
   ierr = MatCUSPARSESetHandle(b->B,cusparseStruct->handle);CHKERRQ(ierr);
+  /* Let A, B use b's handle with pre-set stream
   ierr = MatCUSPARSESetStream(b->A,cusparseStruct->stream);CHKERRQ(ierr);
   ierr = MatCUSPARSESetStream(b->B,cusparseStruct->stream);CHKERRQ(ierr);
-
+  */
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -495,9 +498,11 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
     if (aij->A) { ierr = MatCUSPARSEClearHandle(aij->A);CHKERRQ(ierr); }
     if (aij->B) { ierr = MatCUSPARSEClearHandle(aij->B);CHKERRQ(ierr); }
     stat = cusparseDestroy(cusparseStruct->handle);CHKERRCUSPARSE(stat);
+    /* We want cusparseStruct to use PetscDefaultCudaStream
     if (cusparseStruct->stream) {
       err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUDA(err);
     }
+    */
     delete cusparseStruct->coo_p;
     delete cusparseStruct->coo_pw;
     delete cusparseStruct;
@@ -547,8 +552,9 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtyp
     cusparseStruct->offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
     cusparseStruct->coo_p               = NULL;
     cusparseStruct->coo_pw              = NULL;
-    cusparseStruct->stream              = 0;
+    cusparseStruct->stream              = 0; /* We should not need cusparseStruct->stream */
     stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUSPARSE(stat);
+    stat = cusparseSetStream(cusparseStruct->handle,PetscDefaultCudaStream);CHKERRCUSPARSE(stat);
     cusparseStruct->deviceMat = NULL;
   }
 

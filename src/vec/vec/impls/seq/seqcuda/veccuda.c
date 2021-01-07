@@ -527,10 +527,8 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
   if (array) {
     if (!V->spptr) {
       PetscReal pinned_memory_min;
-      ierr = PetscMalloc(sizeof(Vec_CUDA),&V->spptr);CHKERRQ(ierr);
+      ierr = PetscCalloc(sizeof(Vec_CUDA),&V->spptr);CHKERRQ(ierr);
       veccuda = (Vec_CUDA*)V->spptr;
-      veccuda->stream = 0; /* using default stream */
-      veccuda->GPUarray_allocated = 0;
       V->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
       pinned_memory_min = 0;
