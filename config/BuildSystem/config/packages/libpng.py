@@ -3,8 +3,10 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['https://sourceforge.net/projects/libpng/files/libpng16/1.6.37/libpng-1.6.37.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/libpng-1.6.37.tar.gz']
+    self.versionname      = 'PNG_HEADER_VERSION_STRING'
+    self.version          = '1.6.37'
+    self.download         = ['https://sourceforge.net/projects/libpng/files/libpng16/'+self.version+'/libpng-1.6.37.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/libpng-'+self.version+'.tar.gz']
     self.includes         = ['png.h']
     self.liblist          = [['libpng.a']]
     self.functions        = ['png_create_write_struct']
@@ -16,6 +18,10 @@ class Configure(config.package.GNUPackage):
     self.zlib           = framework.require('config.packages.zlib',self)
     self.deps           = [self.mathlib,self.zlib]
     return
+
+  def versionToStandardForm(self,ver):
+    import re
+    return re.compile('[=A-Za-z]([\.0-9]*)-[A-Za-z]*').search(ver).group(1)
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
