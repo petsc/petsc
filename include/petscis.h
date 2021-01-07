@@ -352,7 +352,6 @@ PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout,const PetscInt *[])
 PETSC_EXTERN PetscErrorCode PetscLayoutCompare(PetscLayout,PetscLayout,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode PetscLayoutMapLocal(PetscLayout,PetscInt,const PetscInt[],PetscInt*,PetscInt**,PetscInt**);
-PETSC_EXTERN PetscErrorCode PetscLayoutsCreateSF(PetscLayout,PetscLayout,PetscSF*);
 
 PETSC_EXTERN PetscErrorCode PetscParallelSortInt(PetscLayout, PetscLayout, PetscInt*, PetscInt*);
 

@@ -112,7 +112,15 @@ PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);
 
+/* Build PetscSF from PetscLayout */
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSFCreateFromLayouts(PetscLayout,PetscLayout,PetscSF*);
+PETSC_DEPRECATED_FUNCTION("Use PetscSFCreateFromLayouts (since v3.15)")
+PETSC_STATIC_INLINE PetscErrorCode PetscLayoutsCreateSF(PetscLayout rmap, PetscLayout lmap, PetscSF* sf) {
+  return PetscSFCreateFromLayouts(rmap, lmap, sf);
+}
+
+/* PetscSection interoperability */
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphSection(PetscSF,PetscSection,PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF, PetscSection, PetscSection, PetscInt **);
 PETSC_EXTERN PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, PetscInt **, PetscSection);
