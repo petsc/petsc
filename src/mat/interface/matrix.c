@@ -4355,7 +4355,7 @@ struct _MatSolverTypeHolder {
 static MatSolverTypeHolder MatSolverTypeHolders = NULL;
 
 /*@C
-   MatSolveTypeRegister - Registers a MatSolverType that works for a particular matrix type
+   MatSolverTypeRegister - Registers a MatSolverType that works for a particular matrix type
 
    Input Parameters:
 +    package - name of the package, for example petsc or superlu

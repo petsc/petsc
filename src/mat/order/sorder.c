@@ -103,7 +103,7 @@ $     MatOrderingSetType(part,"my_order)
    or at runtime via the option
 $     -pc_factor_mat_ordering_type my_order
 
-.seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
+.seealso: MatOrderingRegisterAll()
 @*/
 PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function)(Mat,MatOrderingType,IS*,IS*))
 {

@@ -79,7 +79,7 @@ PETSC_EXTERN PetscErrorCode PCModifySubMatrices(PC,PetscInt,const IS[],const IS[
 
 PETSC_EXTERN PetscErrorCode PCSetOperators(PC,Mat,Mat);
 PETSC_EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*);
-PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool *,PetscBool *);
+PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool*,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode PCView(PC,PetscViewer);
 PETSC_EXTERN PetscErrorCode PCLoad(PC,PetscViewer);

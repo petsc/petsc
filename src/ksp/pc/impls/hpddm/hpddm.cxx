@@ -844,7 +844,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         ierr = MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C);CHKERRQ(ierr);
         break;
       case 1:
-        /* MatCreateSubMatrices does not work with MATSBAIJ and unsorted ISes, so convert to MPIBAIJ */
+        /* MatCreateSubMatrices() does not work with MATSBAIJ and unsorted ISes, so convert to MPIBAIJ */
         ierr = MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C);CHKERRQ(ierr);
         ierr = MatSetOption(C, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
         break;
@@ -889,8 +889,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         if (!data->Neumann) {
           ierr = PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flag);CHKERRQ(ierr);
           if (flag) {
-            /* maybe better to ISSort(is[0]), MatCreateSubMatrices, and then MatPermute */
-            /* but there is no MatPermute_SeqSBAIJ, so as before, just use MATMPIBAIJ   */
+            /* maybe better to ISSort(is[0]), MatCreateSubMatrices(), and then MatPermute() */
+            /* but there is no MatPermute_SeqSBAIJ(), so as before, just use MATMPIBAIJ     */
             ierr = MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &uaux);CHKERRQ(ierr);
             flag = PETSC_FALSE;
           }
@@ -1015,7 +1015,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   if (requested != data->N + reused) {
     ierr = PetscInfo5(pc, "%D levels requested, only %D built + %D reused. Options for level(s) > %D, including -%spc_hpddm_coarse_ will not be taken into account\n", requested, data->N, reused, data->N, pcpre ? pcpre : "");CHKERRQ(ierr);
     ierr = PetscInfo2(pc, "It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%D_eps_threshold so that at least one local deflation vector will be selected\n", pcpre ? pcpre : "", data->N);CHKERRQ(ierr);
-    /* cannot use PCHPDDMShellDestroy because PCSHELL not set for unassembled levels */
+    /* cannot use PCHPDDMShellDestroy() because PCSHELL not set for unassembled levels */
     for (n = data->N - 1; n < requested - 1; ++n) {
       if (data->levels[n]->P) {
         ierr = HPDDM::Schwarz<PetscScalar>::destroy(data->levels[n], PETSC_TRUE);CHKERRQ(ierr);
@@ -1034,8 +1034,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     }
     if (PetscDefined(USE_DEBUG)) SETERRQ7(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "%D levels requested, only %D built + %D reused. Options for level(s) > %D, including -%spc_hpddm_coarse_ will not be taken into account. It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%D_eps_threshold so that at least one local deflation vector will be selected. If you don't want this to error out, compile --with-debugging=0", requested, data->N, reused, data->N, pcpre ? pcpre : "", pcpre ? pcpre : "", data->N);
   }
-
-  /* these solvers are created after PCSetFromOptions is called */
+  /* these solvers are created after PCSetFromOptions() is called */
   if (pc->setfromoptionscalled) {
     for (n = 0; n < data->N; ++n) {
       if (data->levels[n]->ksp) {
@@ -1129,7 +1128,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found) {
   if (*found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, dlib);CHKERRQ(ierr);
 #if defined(SLEPC_LIB_DIR) /* this variable is passed during SLEPc ./configure since    */
-  } else {                 /* slepcconf.h is not yet build (and thus can't be included) */
+  } else {                 /* slepcconf.h is not yet built (and thus can't be included) */
     ierr = PetscStrcpy(dir, HPDDM_STR(SLEPC_LIB_DIR));CHKERRQ(ierr);
     ierr = PetscSNPrintf(lib, sizeof(lib), "%s/libhpddm_petsc", dir);CHKERRQ(ierr);
     ierr = PetscDLLibraryRetrieve(PETSC_COMM_SELF, lib, dlib, 1024, found);CHKERRQ(ierr);
@@ -1146,7 +1145,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found) {
 /*MC
      PCHPDDM - Interface with the HPDDM library.
 
-   This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral AMGe or PCBDDC with adaptive selection of constraints. A chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM may be found below.
+   This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral AMGe or PCBDDC with adaptive selection of constraints. A chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM may be found below. The interface is explained in details in [2021].
 
    The matrix to be preconditioned (Pmat) may be unassembled (MATIS) or assembled (MATMPIAIJ, MATMPIBAIJ, or MATMPISBAIJ). For multilevel preconditioning, when using an assembled Pmat, one must provide an auxiliary local Mat (unassembled local operator for GenEO) using PCHPDDMSetAuxiliaryMat(). Calling this routine is not needed when using a MATIS Pmat (assembly done internally using MatConvert).
 
@@ -1176,7 +1175,8 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found) {
 +   2011 - A robust two-level domain decomposition preconditioner for systems of PDEs. Spillane, Dolean, Hauret, Nataf, Pechstein, and Scheichl. Comptes Rendus Mathematique.
 .   2013 - Scalable Domain Decomposition Preconditioners For Heterogeneous Elliptic Problems. Jolivet, Hecht, Nataf, and Prud'homme. SC13.
 .   2015 - An Introduction to Domain Decomposition Methods: Algorithms, Theory, and Parallel Implementation. Dolean, Jolivet, and Nataf. SIAM.
--   2019 - A Multilevel Schwarz Preconditioner Based on a Hierarchy of Robust Coarse Spaces. Al Daas, Grigori, Jolivet, and Tournier.
+.   2019 - A Multilevel Schwarz Preconditioner Based on a Hierarchy of Robust Coarse Spaces. Al Daas, Grigori, Jolivet, and Tournier.
+-   2021 - KSPHPDDM and PCHPDDM: extending PETSc with advanced Krylov methods and robust multilevel overlapping Schwarz preconditioners. Jolivet, Roman, and Zampini. Computer & Mathematics with Applications.
 
    Level: intermediate
 
