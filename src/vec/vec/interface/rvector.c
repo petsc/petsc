@@ -1282,19 +1282,13 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
     if (red[0]) { /* We can do a no-copy implementation */
       const PetscScalar *x;
       PetscInt          state = 0;
-      PetscBool         isstd;
-      PetscBool         isnotdone = PETSC_TRUE;
-#if defined(PETSC_HAVE_CUDA)
-      PetscBool         iscuda;
-#endif
-#if defined(PETSC_HAVE_HIP)
-      PetscBool         iship;
-#endif
+      PetscBool         isstd,iscuda,iship;
 
       ierr = PetscObjectTypeCompareAny((PetscObject)X,&isstd,VECSEQ,VECMPI,VECSTANDARD,"");CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
       ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
       if (iscuda) {
+#if defined(PETSC_HAVE_CUDA)
         const PetscScalar *x_d;
         PetscMPIInt       size;
         PetscOffloadMask  flg;
@@ -1311,12 +1305,9 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
           ierr = VecCreateMPICUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
         }
         Z->offloadmask = flg;
-        isnotdone = PETSC_FALSE;
-      }
 #endif
+      } else if (iship) {
 #if defined(PETSC_HAVE_HIP)
-      ierr = PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
-      if (iship) {
         const PetscScalar *x_d;
         PetscMPIInt       size;
         PetscOffloadMask  flg;
@@ -1333,10 +1324,8 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
           ierr = VecCreateMPIHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
         }
         Z->offloadmask = flg;
-        isnotdone = PETSC_FALSE;
-      }
 #endif
-      if (isstd) { /* standard CPU: use CreateWithArray pattern */
+      } else if (isstd) {
         PetscMPIInt size;
 
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRMPI(ierr);
@@ -1348,7 +1337,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
           ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x,&Z);CHKERRQ(ierr);
         }
         ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-      } else if (isnotdone) { /* default implementation: use place array */
+      } else { /* default implementation: use place array */
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
         ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
         ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
@@ -1420,7 +1409,6 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
     if (!valid) {
       VecScatter scatter;
       PetscInt   state;
-      PetscBool isstd = PETSC_TRUE;
 
       ierr = VecLockGet(X,&state);CHKERRQ(ierr);
       if (state != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vec X is locked for read-only or read/write access");
@@ -1430,11 +1418,12 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
         ierr = VecScatterBegin(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         ierr = VecScatterEnd(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       } else {
-#if defined(PETSC_HAVE_CUDA)
-        PetscBool iscuda;
+        PetscBool         iscuda,iship;
+        ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
 
-        ierr = PetscObjectTypeCompareAny((PetscObject)*Y,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
         if (iscuda) {
+#if defined(PETSC_HAVE_CUDA)
           PetscOffloadMask ymask = (*Y)->offloadmask;
 
           /* The offloadmask of X dictates where to move memory
@@ -1463,16 +1452,9 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
             break;
           }
-          isstd = PETSC_FALSE;
-        } else {
-          isstd = PETSC_TRUE;
-        }
 #endif
+        } else if (iship) {
 #if defined(PETSC_HAVE_HIP)
-        PetscBool iship;
-
-        ierr = PetscObjectTypeCompareAny((PetscObject)*Y,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
-        if (iship) {
           PetscOffloadMask ymask = (*Y)->offloadmask;
 
           /* The offloadmask of X dictates where to move memory
@@ -1501,13 +1483,9 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
             break;
           }
-          isstd = PETSC_FALSE;
-        } else {
-          isstd = PETSC_TRUE;
-        }
 #endif
-        /* If OpenCL vecs updated the device memory, this triggers a copy on the CPU */
-        if (isstd) {
+        } else {
+          /* If OpenCL vecs updated the device memory, this triggers a copy on the CPU */
           ierr = VecResetArray(*Y);CHKERRQ(ierr);
         }
         ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
