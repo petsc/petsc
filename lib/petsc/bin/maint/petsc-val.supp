@@ -11,7 +11,7 @@
 }
 
 {
-   <mpich-3.3a2 issue with runex2_window in src/vec/is/sf/tutorials>
+   <mpich-3.4, mpich-3.3a2 issue-1 with runex2_window in src/vec/is/sf/tutorials>
    Memcheck:Param
    writev(vector[...])
    fun:writev
@@ -21,11 +21,37 @@
    fun:issue_get_op
    fun:issue_rma_op
    fun:issue_ops_target
-   fun:issue_ops_win
-   fun:MPIDI_CH3I_RMA_Make_progress_global
-   fun:MPIDI_CH3i_Progress_wait
-   fun:MPIDI_CH3I_Progress
 }
+
+{
+   <mpich-3.4 issue-2 with runex2_window in src/vec/is/sf/tutorials>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   fun:MPL_large_writev
+   fun:MPIDI_CH3I_Sock_writev
+   fun:MPIDI_CH3_iSendv
+   fun:issue_from_origin_buffer
+   fun:issue_acc_op
+   fun:issue_rma_op
+   fun:issue_ops_target
+}
+
+{
+   <mpich-3.4 issue-3 in src/vec/is/sf/tutorials>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   fun:MPL_large_writev
+   fun:MPIDI_CH3I_Sock_writev
+   fun:MPIDI_CH3_iSendv
+   fun:MPIDI_CH3_SendNoncontig_iov
+   fun:issue_from_origin_buffer
+   fun:issue_acc_op
+   fun:issue_rma_op
+   fun:issue_ops_target
+}
+
 {
    name1
    Memcheck:Leak
@@ -58,6 +84,6 @@
    name5
    Memcheck:Leak
    ...
-   fun:_XcmsLookupColorName 
+   fun:_XcmsLookupColorName
    ...
 }
