@@ -37,7 +37,7 @@ PETSC_COMPILE_SINGLE    = ${PCC} -o $*.o -c ${PCC_FLAGS} ${PFLAGS} ${CCPPFLAGS}
 PETSC_CCOMPILE_SINGLE   = ${CC} -o $*.o -c ${CC_FLAGS} ${FLAGS} ${CPPFLAGS}
 PETSC_CXXCOMPILE_SINGLE = ${CXX} -o $*.o -c ${CXX_FLAGS} ${CXXFLAGS} ${CXXCPPFLAGS}
 PETSC_FCOMPILE_SINGLE   = ${FC} -o $*.o -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}
-PETSC_CUCOMPILE_SINGLE  = ${CUDAC} -o $*.o ${CUDAC_FLAGS} ${CUFLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}"
+PETSC_CUCOMPILE_SINGLE  = ${CUDAC} -o $*.o ${CUDAC_FLAGS} ${CUFLAGS} -c --compiler-options="${PETSC_CCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}"
 #
 # The following additional variables are used by PETSc targets and should not be redefined
 #
