@@ -119,6 +119,9 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf,MPI_Datatype unit
     /* REPLACE is only meaningful when all processes have the same leafdata to reduce. Therefore copying from local leafdata is fine */
     ierr = PetscLayoutGetRange(sf->map,&rstart,NULL);CHKERRQ(ierr);
     ierr = (*link->Memcpy)(link,rootmtype,rootdata,leafmtype,(const char*)leafdata+(size_t)rstart*link->unitbytes,(size_t)sf->nroots*link->unitbytes);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_DEVICE)
+    if (PetscMemTypeHost(rootmtype)  && PetscMemTypeDevice(leafmtype)) {ierr = (*link->d_SyncStream)(link);CHKERRQ(ierr);}
+#endif
   } else {
     /* Reduce leafdata, then scatter to rootdata */
     ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);

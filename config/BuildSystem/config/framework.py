@@ -740,7 +740,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for item in sorted(defineDict):
       cond = None
       if petscconf and 'HIP_PLATFORM' in item:
-        cond = 'defined(__clang__) && !defined(__HIP__)'
+        cond = '!defined(__HIP__)'
       self.outputDefine(f, *defineDict[item], condition=cond)
 
   def outputPkgVersion(self, f, child):

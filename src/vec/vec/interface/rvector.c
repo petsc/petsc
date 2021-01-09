@@ -1282,15 +1282,13 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
     if (red[0]) { /* We can do a no-copy implementation */
       const PetscScalar *x;
       PetscInt          state = 0;
-      PetscBool         isstd;
-#if defined(PETSC_HAVE_CUDA)
-      PetscBool         iscuda;
-#endif
+      PetscBool         isstd,iscuda,iship;
 
       ierr = PetscObjectTypeCompareAny((PetscObject)X,&isstd,VECSEQ,VECMPI,VECSTANDARD,"");CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
       ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
       if (iscuda) {
+#if defined(PETSC_HAVE_CUDA)
         const PetscScalar *x_d;
         PetscMPIInt       size;
         PetscOffloadMask  flg;
@@ -1307,10 +1305,27 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
           ierr = VecCreateMPICUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
         }
         Z->offloadmask = flg;
-      } else if (isstd) {
-#else
-      if (isstd) { /* standard CPU: use CreateWithArray pattern */
 #endif
+      } else if (iship) {
+#if defined(PETSC_HAVE_HIP)
+        const PetscScalar *x_d;
+        PetscMPIInt       size;
+        PetscOffloadMask  flg;
+
+        ierr = VecHIPGetArrays_Private(X,&x,&x_d,&flg);CHKERRQ(ierr);
+        if (flg == PETSC_OFFLOAD_UNALLOCATED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for PETSC_OFFLOAD_UNALLOCATED");
+        if (n && !x && !x_d) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
+        if (x) x += start;
+        if (x_d) x_d += start;
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
+        if (size == 1) {
+          ierr = VecCreateSeqHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,x,x_d,&Z);CHKERRQ(ierr);
+        } else {
+          ierr = VecCreateMPIHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
+        }
+        Z->offloadmask = flg;
+#endif
+      } else if (isstd) {
         PetscMPIInt size;
 
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRMPI(ierr);
@@ -1403,11 +1418,12 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
         ierr = VecScatterBegin(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         ierr = VecScatterEnd(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       } else {
-#if defined(PETSC_HAVE_CUDA)
-        PetscBool iscuda;
+        PetscBool         iscuda,iship;
+        ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
 
-        ierr = PetscObjectTypeCompareAny((PetscObject)*Y,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
         if (iscuda) {
+#if defined(PETSC_HAVE_CUDA)
           PetscOffloadMask ymask = (*Y)->offloadmask;
 
           /* The offloadmask of X dictates where to move memory
@@ -1436,10 +1452,39 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
             break;
           }
-        } else {
-#else
-        {
 #endif
+        } else if (iship) {
+#if defined(PETSC_HAVE_HIP)
+          PetscOffloadMask ymask = (*Y)->offloadmask;
+
+          /* The offloadmask of X dictates where to move memory
+             If X GPU data is valid, then move Y data on GPU if needed
+             Otherwise, move back to the CPU */
+          switch (X->offloadmask) {
+          case PETSC_OFFLOAD_BOTH:
+            if (ymask == PETSC_OFFLOAD_CPU) {
+              ierr = VecHIPResetArray(*Y);CHKERRQ(ierr);
+            } else if (ymask == PETSC_OFFLOAD_GPU) {
+              X->offloadmask = PETSC_OFFLOAD_GPU;
+            }
+            break;
+          case PETSC_OFFLOAD_GPU:
+            if (ymask == PETSC_OFFLOAD_CPU) {
+              ierr = VecHIPResetArray(*Y);CHKERRQ(ierr);
+            }
+            break;
+          case PETSC_OFFLOAD_CPU:
+            if (ymask == PETSC_OFFLOAD_GPU) {
+              ierr = VecResetArray(*Y);CHKERRQ(ierr);
+            }
+            break;
+          case PETSC_OFFLOAD_UNALLOCATED:
+          case PETSC_OFFLOAD_VECKOKKOS:
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+            break;
+          }
+#endif
+        } else {
           /* If OpenCL vecs updated the device memory, this triggers a copy on the CPU */
           ierr = VecResetArray(*Y);CHKERRQ(ierr);
         }
