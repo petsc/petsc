@@ -2,15 +2,7 @@
 
 cdef extern from * nogil:
 
-    ctypedef const char* PetscScatterType "VecScatterType"
-    PetscScatterType PETSCSFBASIC
-    PetscScatterType PETSCSFNEIGHBOR
-    PetscScatterType PETSCSFALLGATHERV
-    PetscScatterType PETSCSFALLGATHER
-    PetscScatterType PETSCSFGATHERV
-    PetscScatterType PETSCSFGATHER
-    PetscScatterType PETSCSFALLTOALL
-    PetscScatterType PETSCSFWINDOW
+    ctypedef PetscSFType PetscScatterType  "VecScatterType"
 
     int VecScatterView(PetscScatter,PetscViewer)
     int VecScatterDestroy(PetscScatter*)
