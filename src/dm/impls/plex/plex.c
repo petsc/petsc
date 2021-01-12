@@ -8427,12 +8427,14 @@ static PetscErrorCode DMPlexCreateConstraintSection_Anchors(DM dm, PetscSection 
 
 static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection section, PetscSection cSec, Mat *cMat)
 {
-  PetscSection aSec;
-  PetscInt pStart, pEnd, p, dof, aDof, aOff, off, nnz, annz, m, n, q, a, offset, *i, *j;
+  PetscSection   aSec;
+  PetscInt       pStart, pEnd, p, dof, aDof, aOff, off, nnz, annz, m, n, q, a, offset, *i, *j;
   const PetscInt *anchors;
-  PetscInt numFields, f;
-  IS aIS;
+  PetscInt       numFields, f;
+  IS             aIS;
   PetscErrorCode ierr;
+  MatType        mtype;
+  PetscBool      iscuda,iskokkos;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -8440,7 +8442,14 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
   ierr = PetscSectionGetStorageSize(section, &n);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,cMat);CHKERRQ(ierr);
   ierr = MatSetSizes(*cMat,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(*cMat,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = PetscStrcmp(dm->mattype,MATSEQAIJCUSPARSE,&iscuda);CHKERRQ(ierr);
+  if (!iscuda) { ierr = PetscStrcmp(dm->mattype,MATMPIAIJCUSPARSE,&iscuda);CHKERRQ(ierr); }
+  ierr = PetscStrcmp(dm->mattype,MATSEQAIJKOKKOS,&iskokkos);CHKERRQ(ierr);
+  if (!iskokkos) { ierr = PetscStrcmp(dm->mattype,MATMPIAIJKOKKOS,&iskokkos);CHKERRQ(ierr); }
+  if (iscuda) mtype = MATSEQAIJCUSPARSE;
+  else if (iskokkos) mtype = MATSEQAIJKOKKOS;
+  else mtype = MATSEQAIJ;
+  ierr = MatSetType(*cMat,mtype);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
   ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   /* cSec will be a subset of aSec and section */
