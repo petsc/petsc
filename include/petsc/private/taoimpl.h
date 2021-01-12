@@ -171,6 +171,7 @@ struct _p_Tao {
     PetscBool bounded;
     PetscBool constrained;
     PetscBool header_printed;
+    PetscBool recycle;
 
     TaoSubsetType subset_type;
     PetscInt      hist_max;/* Number of iteration histories to keep */

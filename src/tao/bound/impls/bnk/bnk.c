@@ -238,7 +238,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
           if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
           /* active BNCG recycling early because we have a stepdirection computed */
-          ierr = TaoBNCGSetRecycleFlag(bnk->bncg, PETSC_TRUE);CHKERRQ(ierr);
+          ierr = TaoSetRecycleHistory(bnk->bncg, PETSC_TRUE);CHKERRQ(ierr);
         }
       }
       tao->trust = PetscMax(tao->trust, max_radius);

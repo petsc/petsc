@@ -160,7 +160,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
       /* count the accepted step type */
       ierr = TaoBNKAddStepCounts(tao, stepType);CHKERRQ(ierr);
       /* active BNCG recycling for next iteration */
-      ierr = TaoBNCGSetRecycleFlag(bnk->bncg, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = TaoSetRecycleHistory(bnk->bncg, PETSC_TRUE);CHKERRQ(ierr);
     }
 
     /*  Check for termination */

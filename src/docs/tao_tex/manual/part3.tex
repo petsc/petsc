@@ -119,3 +119,26 @@ One should run a TAO program with the option
 for details.  Users may write their own customized line search codes
 by modeling them after one of the defaults provided.
 
+\section{Recycling History} \sindex{recycle}
+\label{sec_TaoRecycleHistory}
+
+Some TAO algorithms can re-use information accumulated in the previous 
+{\tt TaoSolve()} call to hot-start the new solution. This can be 
+enabled using the {\tt -tao\_recycle\_history} flag, or in code via 
+the {\tt TaoSetRecycleHistory()} interface.
+
+For the nonlinear conjugate gradient solver ({\tt TAOBNCG}), this 
+option re-uses the latest search direction from the previous 
+{\tt TaoSolve()} call to compute the initial search direction of a 
+new {\tt TaoSolve()}. By default, the feature is disabled and the 
+algorithm sets the initial direction as the negative gradient.
+
+For the quasi-Newton family of methods ({\tt TAOBQNLS}, {\tt TAOBQNKLS},
+{\tt TAOBQNKTR}, {\tt TAOBQNKTL}), this option re-uses the accumulated 
+quasi-Newton Hessian approximation from the previous {\tt TaoSolve()} call.
+By default, the feature is disabled and the algorithm will reset the 
+quasi-Newton approximation to the identity matrix at the beginning of 
+every new {\tt TaoSolve()}.
+
+The option flag has no effect on other TAO solvers.
+

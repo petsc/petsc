@@ -18,12 +18,14 @@ M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNKLS(Tao tao)
 {
   TAO_BNK        *bnk;
+  TAO_BQNK       *bqnk;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TaoCreate_BQNK(tao);CHKERRQ(ierr);
-  tao->ops->solve = TaoSolve_BNLS;
   bnk = (TAO_BNK*)tao->data;
   bnk->update_type = BNK_UPDATE_STEP;
+  bqnk = (TAO_BQNK*)bnk->ctx;
+  bqnk->solve = TaoSolve_BNLS;
   PetscFunctionReturn(0);
 }
