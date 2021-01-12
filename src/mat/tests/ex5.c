@@ -290,8 +290,9 @@ int main(int argc, char **args)
 
    test:
       suffix: sell_5
-      nsize: 1
-      args: -mat_type mpisell
-      output_file: output/ex5_53.out
+      nsize: 3
+      args: -mat_type sellcuda -vec_type cuda -test_diagonalscale
+      output_file: output/ex5_55.out
+      requires: cuda
 
 TEST*/

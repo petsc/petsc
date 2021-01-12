@@ -889,6 +889,9 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   PetscCall(PetscFree(a->saved_values));
   PetscCall(PetscFree2(a->getrowcols, a->getrowvals));
   PetscCall(PetscFree(A->data));
+#if defined(PETSC_HAVE_CUDA)
+  PetscCall(PetscFree(a->chunk_slice_map));
+#endif
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatStoreValues_C", NULL));
@@ -1434,6 +1437,9 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
   PetscInt     i, shift, row_in_slice, row, nrow, *cp, lastcol, j, k;
   MatScalar   *vp;
+#if defined(PETSC_HAVE_CUDA)
+  PetscInt totalchunks = 0;
+#endif
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
@@ -1481,6 +1487,23 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   a->reallocs = 0;
 
   PetscCall(MatSeqSELLInvalidateDiagonal(A));
+#if defined(PETSC_HAVE_CUDA)
+  if (!a->chunksize && a->totalslices) {
+    a->chunksize = 64;
+    while (a->chunksize < 1024 && 2 * a->chunksize <= a->sliidx[a->totalslices] / a->totalslices) a->chunksize *= 2;
+    totalchunks = 1 + (a->sliidx[a->totalslices] - 1) / a->chunksize;
+  }
+  if (totalchunks != a->totalchunks) {
+    PetscCall(PetscFree(a->chunk_slice_map));
+    PetscCall(PetscMalloc1(totalchunks, &a->chunk_slice_map));
+    a->totalchunks = totalchunks;
+  }
+  j = 0;
+  for (i = 0; i < totalchunks; i++) {
+    while (a->sliidx[j + 1] <= i * a->chunksize && j < a->totalslices) j++;
+    a->chunk_slice_map[i] = j;
+  }
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2207,9 +2230,19 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   {
     PetscInt  newsh = -1;
     PetscBool flg;
+#if defined(PETSC_HAVE_CUDA)
+    PetscInt chunksize = 0;
+#endif
 
     PetscCall(PetscOptionsInt("-mat_sell_slice_height", "Set the slice height used to store SELL matrix", "MatSELLSetSliceHeight", newsh, &newsh, &flg));
     if (flg) { PetscCall(MatSeqSELLSetSliceHeight(B, newsh)); }
+#if defined(PETSC_HAVE_CUDA)
+    PetscCall(PetscOptionsInt("-mat_sell_chunk_size", "Set the chunksize for load-balanced CUDA kernels. Choices include 64,128,256,512,1024", NULL, chunksize, &chunksize, &flg));
+    if (flg) {
+      PetscCheck(chunksize >= 64 && chunksize <= 1024 && chunksize % 64 == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "chunksize must be a number in {64,128,256,512,1024}: value %" PetscInt_FMT, chunksize);
+      b->chunksize = chunksize;
+    }
+#endif
   }
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);

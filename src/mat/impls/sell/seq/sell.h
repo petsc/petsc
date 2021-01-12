@@ -31,30 +31,33 @@
 as more values are set than were prealloced */ \
   PetscBool    keepnonzeropattern; /* keeps matrix structure same in calls to MatZeroRows()*/ \
   PetscBool    ignorezeroentries; \
-  PetscBool    free_colidx;    /* free the column indices colidx when the matrix is destroyed */ \
-  PetscBool    free_val;       /* free the numerical values when matrix is destroy */ \
-  PetscInt    *colidx;         /* column index */ \
-  PetscInt    *diag;           /* pointers to diagonal elements */ \
-  PetscInt     nonzerorowcnt;  /* how many rows have nonzero entries */ \
-  PetscBool    free_diag;      /* free diag ? */ \
-  datatype    *val;            /* elements including nonzeros and padding zeros */ \
-  PetscScalar *solve_work;     /* work space used in MatSolve */ \
-  IS           row, col, icol; /* index sets, used for reorderings */ \
-  PetscBool    pivotinblocks;  /* pivot inside factorization of each diagonal block */ \
-  Mat          parent;         /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
+  PetscBool    free_colidx;     /* free the column indices colidx when the matrix is destroyed */ \
+  PetscBool    free_val;        /* free the numerical values when matrix is destroy */ \
+  PetscInt    *colidx;          /* column index */ \
+  PetscInt    *diag;            /* pointers to diagonal elements */ \
+  PetscInt     nonzerorowcnt;   /* how many rows have nonzero entries */ \
+  PetscBool    free_diag;       /* free diag ? */ \
+  datatype    *val;             /* elements including nonzeros and padding zeros */ \
+  PetscScalar *solve_work;      /* work space used in MatSolve */ \
+  IS           row, col, icol;  /* index sets, used for reorderings */ \
+  PetscBool    pivotinblocks;   /* pivot inside factorization of each diagonal block */ \
+  Mat          parent;          /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
 means that this shares some data structures with the parent including diag, ilen, imax, i, j */ \
-  PetscInt    *sliidx;         /* slice index */ \
-  PetscInt     totalslices;    /* total number of slices */ \
-  PetscInt     sliceheight;    /* slice height */ \
-  PetscReal    fillratio;      /* ratio of number of padded zeros over total number of elements  */ \
-  PetscReal    avgslicewidth;  /* average slice width */ \
-  PetscInt     maxslicewidth;  /* maximum slice width */ \
-  PetscInt    *sliperm;        /* slice permutation array, CUDA only */ \
-  PetscInt     totalblocks;    /* total number of blocks, CUDA only */ \
-  PetscInt    *blockidx;       /* block index, CUDA only */ \
-  PetscInt    *block_row_map;  /* starting row of the current block, CUDA only */ \
-  PetscInt    *getrowcols;     /* workarray for MatGetRow_SeqSELL */ \
-  PetscScalar *getrowvals      /* workarray for MatGetRow_SeqSELL */
+  PetscInt    *sliidx;          /* slice index */ \
+  PetscInt     totalslices;     /* total number of slices */ \
+  PetscInt     sliceheight;     /* slice height */ \
+  PetscReal    fillratio;       /* ratio of number of padded zeros over total number of elements  */ \
+  PetscReal    avgslicewidth;   /* average slice width */ \
+  PetscInt     maxslicewidth;   /* maximum slice width */ \
+  PetscInt    *sliperm;         /* slice permutation array, CUDA only */ \
+  PetscInt     totalblocks;     /* total number of blocks, CUDA only */ \
+  PetscInt    *blockidx;        /* block index, CUDA only */ \
+  PetscInt    *block_row_map;   /* starting row of the current block, CUDA only */ \
+  PetscInt     chunksize;       /* chunk size, CUDA only */ \
+  PetscInt     totalchunks;     /* total number of chunks, CUDA only */ \
+  PetscInt    *chunk_slice_map; /* starting slice of the currect chunk, CUDA only */ \
+  PetscInt    *getrowcols;      /* workarray for MatGetRow_SeqSELL */ \
+  PetscScalar *getrowvals       /* workarray for MatGetRow_SeqSELL */
 
 typedef struct {
   SEQSELLHEADER(MatScalar);
