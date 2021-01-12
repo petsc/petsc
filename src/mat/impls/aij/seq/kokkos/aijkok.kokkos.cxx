@@ -294,6 +294,7 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
   }
   delete aijkok;
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJGetArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -691,5 +692,103 @@ PetscErrorCode  MatCreateSeqAIJKokkos(MPI_Comm comm,PetscInt m,PetscInt n,PetscI
   ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSEQAIJKOKKOS);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,(PetscInt*)nnz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+// factorizations
+
+static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOS(Mat B,Mat A,const MatFactorInfo *info)
+{
+  // Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
+  // IS             isrow = b->row,iscol = b->col;
+  // PetscBool      row_identity,col_identity;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSeqAIJKokkosSyncHost(A);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric_SeqAIJ(B,A,info);CHKERRQ(ierr);
+  B->offloadmask = PETSC_OFFLOAD_CPU;
+  // solves stay on CPU now
+  /* determine which version of MatSolve needs to be used. */
+  // ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
+  // ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
+  // if (row_identity && col_identity) {
+  //   B->ops->solve = MatSolve_SeqAIJKOKKOS_NaturalOrdering;
+  //   B->ops->solvetranspose = MatSolveTranspose_SeqAIJKOKKOS_NaturalOrdering;
+  //   B->ops->matsolve = NULL;
+  //   B->ops->matsolvetranspose = NULL;
+  // } else {
+  //   B->ops->solve = MatSolve_SeqAIJKOKKOS;
+  //   B->ops->solvetranspose = MatSolveTranspose_SeqAIJKOKKOS;
+  //   B->ops->matsolve = NULL;
+  //   B->ops->matsolvetranspose = NULL;
+  // }
+
+  /* get the triangular factors */
+  // ierr = MatSeqAIJKOKKOSILUAnalysisAndCopyToGPU(B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatLUFactorSymbolic_SeqAIJKOKKOS(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+{
+  PetscErrorCode               ierr;
+
+  PetscFunctionBegin;
+  ierr = MatLUFactorSymbolic_SeqAIJ(B,A,isrow,iscol,info);CHKERRQ(ierr);
+  B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJKOKKOS;
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijkokkos_kokkos(Mat,MatFactorType,Mat*);
+
+
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_KOKKOS(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverTypeRegister(MATSOLVERKOKKOS,MATSEQAIJKOKKOS,MAT_FACTOR_LU,MatGetFactor_seqaijkokkos_kokkos);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatFactorGetSolverType_seqaij_kokkos(Mat A,MatSolverType *type)
+{
+  PetscFunctionBegin;
+  *type = MATSOLVERKOKKOS;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  MATSOLVERKOKKOS = "kokkos" - A matrix solver type providing triangular solvers for sequential matrices
+  on a single GPU of type, seqaijkokkos, aijkokkos.
+
+  Level: beginner
+
+.seealso: PCFactorSetMatSolverType(), MatSolverType, MatCreateSeqAIJKOKKOS(), MATAIJKOKKOS, MatCreateAIJKOKKOS(), MatKOKKOSSetFormat(), MatKOKKOSStorageFormat, MatKOKKOSFormatOperation
+M*/
+
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijkokkos_kokkos(Mat A,MatFactorType ftype,Mat *B)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = A->rmap->n;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
+  (*B)->factortype = ftype;
+  (*B)->useordering = PETSC_TRUE;
+  ierr = MatSetType(*B,MATSEQAIJKOKKOS);CHKERRQ(ierr);
+
+  if (ftype == MAT_FACTOR_LU /* || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT*/) {
+    ierr = MatSetBlockSizesFromMats(*B,A,A);CHKERRQ(ierr);
+    // (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqAIJKOKKOS;
+    (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJKOKKOS;
+    // } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
+    // (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJKOKKOS;
+    // (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJKOKKOS;
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported for KOKKOS Matrix Types");
+
+  ierr = MatSeqAIJSetPreallocation(*B,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)(*B),"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_kokkos);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

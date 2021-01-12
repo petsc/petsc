@@ -142,6 +142,7 @@ typedef const char* MatSolverType;
 #define MATSOLVERBAS              "bas"
 #define MATSOLVERCUSPARSE         "cusparse"
 #define MATSOLVERCUDA             "cuda"
+#define MATSOLVERKOKKOS           "kokkos"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
