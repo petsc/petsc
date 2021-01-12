@@ -87,6 +87,9 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
 #endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_KOKKOS(void);
+#endif
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void);
 #endif
@@ -383,6 +386,9 @@ PetscErrorCode  MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_CUDA)
   ierr = MatSolverTypeRegister_CUSPARSE();CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  ierr = MatSolverTypeRegister_KOKKOS();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
   ierr = MatSolverTypeRegister_ViennaCL();CHKERRQ(ierr);

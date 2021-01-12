@@ -183,6 +183,7 @@
 #define MATSOLVERBAS             'bas'
 #define MATSOLVERCUSPARSE        'cusparse'
 #define MATSOLVERCUDA            'cuda'
+#define MATSOLVERKOKKOS          'kokkos'
 
 !
 ! GPU Storage Formats for CUSPARSE
