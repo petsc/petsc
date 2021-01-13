@@ -3316,26 +3316,28 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionTy
 
   Not collective
 
-  Input Parameter:
-. prob - The PetscDS object
+  Input Parameters:
++ ds        - The source PetscDS object
+. numFields - The number of selected fields, or PETSC_DEFAULT for all fields
+- fields    - The selected fields, or NULL for all fields
 
   Output Parameter:
-. newprob - The PetscDS copy
+. newds     - The target PetscDS, now with a copy of the boundary conditions
 
   Level: intermediate
 
 .seealso: PetscDSCopyEquations(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
 @*/
-PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
+PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscInt fields[], PetscDS newds)
 {
   DSBoundary     b, next, *lastnext;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(probA, PETSCDS_CLASSID, 1);
-  PetscValidHeaderSpecific(probB, PETSCDS_CLASSID, 2);
-  if (probA == probB) PetscFunctionReturn(0);
-  next = probB->boundary;
+  PetscValidHeaderSpecific(ds,    PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(newds, PETSCDS_CLASSID, 4);
+  if (ds == newds) PetscFunctionReturn(0);
+  next = newds->boundary;
   while (next) {
     DSBoundary b = next;
 
@@ -3346,10 +3348,18 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
     ierr = PetscFree(b->labelname);CHKERRQ(ierr);
     ierr = PetscFree(b);CHKERRQ(ierr);
   }
-  lastnext = &(probB->boundary);
-  for (b = probA->boundary; b; b = b->next) {
+  lastnext = &(newds->boundary);
+  for (b = ds->boundary; b; b = b->next) {
     DSBoundary bNew;
+    PetscInt   fieldNew = -1;
 
+    if (numFields > 0 && fields) {
+      PetscInt f;
+
+      for (f = 0; f < numFields; ++f) if (b->field == fields[f]) break;
+      if (f == numFields) continue;
+      fieldNew = f;
+    }
     ierr = PetscNew(&bNew);CHKERRQ(ierr);
     bNew->numcomps = b->numcomps;
     ierr = PetscMalloc1(bNew->numcomps, &bNew->comps);CHKERRQ(ierr);
@@ -3361,7 +3371,7 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
     ierr = PetscStrallocpy(b->name,(char **) &(bNew->name));CHKERRQ(ierr);
     bNew->ctx   = b->ctx;
     bNew->type  = b->type;
-    bNew->field = b->field;
+    bNew->field = fieldNew < 0 ? b->field : fieldNew;
     bNew->func  = b->func;
 
     *lastnext = bNew;

@@ -8243,7 +8243,7 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 
   PetscFunctionBegin;
   for (d = 0; d < dm->Nds; ++d) {
-    ierr = PetscDSCopyBoundary(dm->probs[d].ds, dmNew->probs[d].ds);CHKERRQ(ierr);
+    ierr = PetscDSCopyBoundary(dm->probs[d].ds, PETSC_DETERMINE, NULL, dmNew->probs[d].ds);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
