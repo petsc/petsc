@@ -57,6 +57,7 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[],char pythonl
   const char     cmdline2[] = "-c 'import os;from distutils import sysconfig; import sys;print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),\"libpython\"+sys.version[:3]+\".dylib\"))'";
   const char     cmdline3[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBPL\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
   const char     cmdline4[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var(\"LIBPYTHON\"))'";
+  const char     cmdline5[] = "-c 'import os;from distutils import sysconfig; import sys;print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),\"libpython\"+sys.version[:3]+\".so\"))'";
 
   PetscBool      found = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -76,6 +77,9 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[],char pythonl
   }
   if (!found) {
     ierr = PetscPythonFindLibraryName(pythonexe,cmdline4,pythonlib,pl,&found);CHKERRQ(ierr);
+  }
+  if (!found) {
+    ierr = PetscPythonFindLibraryName(pythonexe,cmdline5,pythonlib,pl,&found);CHKERRQ(ierr);
   }
   ierr = PetscInfo2(NULL,"Python library  %s found %d\n",pythonlib,found);CHKERRQ(ierr);
   PetscFunctionReturn(0);
