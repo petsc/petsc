@@ -1221,6 +1221,13 @@ setvalue:
     options->values[n] = NULL;
   }
 
+  /* handle -help so that it can be set from anywhere */
+  if (!PetscOptNameCmp(name,"help")) {
+    options->help = PETSC_TRUE;
+    ierr = PetscStrcasecmp(value, "intro", &options->help_intro);CHKERRQ(ierr);
+    options->used[n] = PETSC_TRUE;
+  }
+
   if (PetscErrorHandlingInitialized) {
     ierr = PetscOptionsMonitor(options,name,value);CHKERRQ(ierr);
   }
