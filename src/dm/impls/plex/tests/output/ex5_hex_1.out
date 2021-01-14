@@ -57,7 +57,7 @@ Label 'cohesive':
 [1]: 44 (1)
 Discrete System with 1 fields
     cell total dim 24 total comp 3
-  Field displacement FEM3 components (implicit) (Nq 8 Nqc 1)
+  Field displacement FEM3 components (implicit) (Nq 8 Nqc 1) 1-jet
     PetscFE Object: displacement (displacement_) 1 MPI processes
       type: basic
       Basic Finite Element in 3 dimensions with 3 components
@@ -73,7 +73,7 @@ Discrete System with 1 fields
 Discrete System with 2 fields
     cell total dim 36 total comp 6
     hybrid cell
-  Field displacement FEM3 components (implicit) (Nq 4 Nqc 1)
+  Field displacement FEM3 components (implicit) (Nq 4 Nqc 1) 1-jet
     PetscFE Object: displacement 1 MPI processes
       type: basic
       Basic Finite Element in 2 dimensions with 3 components
@@ -86,7 +86,7 @@ Discrete System with 2 fields
         Dual space with 3 components, size 12
         Continuous tensor Lagrange dual space
         Quadrature of order 3 on 4 points (dim 2)
-  Field fault traction FEM3 components (implicit) (Nq 4 Nqc 1)
+  Field fault traction FEM3 components (implicit) (Nq 4 Nqc 1) 1-jet
     PetscFE Object: fault traction (faulttraction_) 1 MPI processes
       type: basic
       Basic Finite Element in 2 dimensions with 3 components

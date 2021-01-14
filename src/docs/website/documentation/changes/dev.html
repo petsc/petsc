@@ -207,9 +207,15 @@
         <li>Remove regular refinement and marking from DMPlexCreateDoublet()</li>
         <li>Add high order FEM interpolation to DMInterpolationEvaluate()</li>
       </ul>
+      <h4>FE/FV:</h4>
+      <ul>
+        <li>Add PetscDualSpaceTransformHessian(), PetscDualSpacePushforwardHessian(), and PetscFEPushforwardHessian()</li>
+        <li>Now PetscFEGetCellTabulation() and PetscFEGetFaceTabulation() ask for the number of derivatives</li>
+      </ul>
       <h4>DT:</h4>
       <ul>
         <li>PetscDSCopyBoundary() now takes a list of fields for which boundary copying is done</li>
+        <li>Add PetscDSGet/SetJetDegree(), and -dm_ds_jet_degree is needed to enable it under a DM</li>
       </ul>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>

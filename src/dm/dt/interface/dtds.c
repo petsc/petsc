@@ -176,6 +176,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       ierr = PetscQuadratureGetData(q, NULL, &Nqc, &Nq, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, " (Nq %D Nqc %D)", Nq, Nqc);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPrintf(viewer, " %D-jet", prob->jetDegree[f]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -365,7 +366,8 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 @*/
 PetscErrorCode PetscDSSetUp(PetscDS prob)
 {
-  const PetscInt Nf = prob->Nf;
+  const PetscInt Nf   = prob->Nf;
+  PetscBool      hasH = PETSC_FALSE;
   PetscInt       dim, dimEmbed, NbMax = 0, NcMax = 0, NqMax = 0, NsMax = 1, f;
   PetscErrorCode ierr;
 
@@ -386,6 +388,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
     PetscInt        Nq = 0, Nb, Nc;
 
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    if (prob->jetDegree[f] > 1) hasH = PETSC_TRUE;
     if (!obj) {
       /* Empty mesh */
       Nb = Nc = 0;
@@ -398,8 +401,8 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
         ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
         ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-        ierr = PetscFEGetCellTabulation(fe, &prob->T[f]);CHKERRQ(ierr);
-        ierr = PetscFEGetFaceTabulation(fe, &prob->Tf[f]);CHKERRQ(ierr);
+        ierr = PetscFEGetCellTabulation(fe, prob->jetDegree[f], &prob->T[f]);CHKERRQ(ierr);
+        ierr = PetscFEGetFaceTabulation(fe, prob->jetDegree[f], &prob->Tf[f]);CHKERRQ(ierr);
       } else if (id == PETSCFV_CLASSID) {
         PetscFV fv = (PetscFV) obj;
 
@@ -425,7 +428,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   }
   /* Allocate works space */
   if (prob->isHybrid) NsMax = 2;
-  ierr = PetscMalloc3(NsMax*prob->totComp,&prob->u,NsMax*prob->totComp,&prob->u_t,NsMax*prob->totComp*dimEmbed,&prob->u_x);CHKERRQ(ierr);
+  ierr = PetscMalloc3(NsMax*prob->totComp,&prob->u,NsMax*prob->totComp,&prob->u_t,NsMax*prob->totComp*dimEmbed + (hasH ? NsMax*prob->totComp*dimEmbed*dimEmbed : 0),&prob->u_x);CHKERRQ(ierr);
   ierr = PetscMalloc5(dimEmbed,&prob->x,NbMax*NcMax,&prob->basisReal,NbMax*NcMax*dimEmbed,&prob->basisDerReal,NbMax*NcMax,&prob->testReal,NbMax*NcMax*dimEmbed,&prob->testDerReal);CHKERRQ(ierr);
   ierr = PetscMalloc6(NsMax*NqMax*NcMax,&prob->f0,NsMax*NqMax*NcMax*dimEmbed,&prob->f1,
                       NsMax*NsMax*NqMax*NcMax*NcMax,&prob->g0,NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed,&prob->g1,
@@ -453,6 +456,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 {
   PetscObject      *tmpd;
   PetscBool        *tmpi;
+  PetscInt         *tmpk;
   PetscPointFunc   *tmpobj, *tmpf, *tmpup;
   PetscPointJac    *tmpg, *tmpgp, *tmpgt;
   PetscBdPointFunc *tmpfbd;
@@ -468,13 +472,14 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   if (Nf >= NfNew) PetscFunctionReturn(0);
   prob->setup = PETSC_FALSE;
   ierr = PetscDSDestroyStructs_Static(prob);CHKERRQ(ierr);
-  ierr = PetscMalloc2(NfNew, &tmpd, NfNew, &tmpi);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {tmpd[f] = prob->disc[f]; tmpi[f] = prob->implicit[f];}
-  for (f = Nf; f < NfNew; ++f) {tmpd[f] = NULL; tmpi[f] = PETSC_TRUE;}
-  ierr = PetscFree2(prob->disc, prob->implicit);CHKERRQ(ierr);
+  ierr = PetscMalloc3(NfNew, &tmpd, NfNew, &tmpi, NfNew, &tmpk);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {tmpd[f] = prob->disc[f]; tmpi[f] = prob->implicit[f]; tmpk[f] = prob->jetDegree[f];}
+  for (f = Nf; f < NfNew; ++f) {tmpd[f] = NULL; tmpi[f] = PETSC_TRUE; tmpk[f] = 1;}
+  ierr = PetscFree3(prob->disc, prob->implicit, prob->jetDegree);CHKERRQ(ierr);
   prob->Nf        = NfNew;
   prob->disc      = tmpd;
   prob->implicit  = tmpi;
+  prob->jetDegree = tmpk;
   ierr = PetscCalloc7(NfNew, &tmpobj, NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg, NfNew*NfNew*4, &tmpgp, NfNew*NfNew*4, &tmpgt, NfNew, &tmpr, NfNew, &tmpctx);CHKERRQ(ierr);
   ierr = PetscCalloc1(NfNew, &tmpup);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) tmpobj[f] = prob->obj[f];
@@ -563,7 +568,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   for (f = 0; f < (*prob)->Nf; ++f) {
     ierr = PetscObjectDereference((*prob)->disc[f]);CHKERRQ(ierr);
   }
-  ierr = PetscFree2((*prob)->disc, (*prob)->implicit);CHKERRQ(ierr);
+  ierr = PetscFree3((*prob)->disc, (*prob)->implicit, (*prob)->jetDegree);CHKERRQ(ierr);
   ierr = PetscFree7((*prob)->obj,(*prob)->f,(*prob)->g,(*prob)->gp,(*prob)->gt,(*prob)->r,(*prob)->ctx);CHKERRQ(ierr);
   ierr = PetscFree((*prob)->update);CHKERRQ(ierr);
   ierr = PetscFree7((*prob)->fBd,(*prob)->gBd,(*prob)->gpBd,(*prob)->exactSol,(*prob)->exactCtx,(*prob)->exactSol_t,(*prob)->exactCtx_t);CHKERRQ(ierr);
@@ -891,6 +896,7 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
     } else if (id == PETSCFV_CLASSID) {
       ierr = PetscDSSetImplicit(prob, f, PETSC_FALSE);CHKERRQ(ierr);
     }
+    ierr = PetscDSSetJetDegree(prob, f, 1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -995,6 +1001,55 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   prob->implicit[f] = implicit;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSGetJetDegree - Returns the highest derivative for this field equation, or the k-jet that the discretization needs to tabulate.
+
+  Not collective
+
+  Input Parameters:
++ ds - The PetscDS object
+- f  - The field number
+
+  Output Parameter:
+. k  - The highest derivative we need to tabulate
+
+  Level: developer
+
+.seealso: PetscDSSetJetDegree(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(k, 3);
+  if ((f < 0) || (f >= ds->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  *k = ds->jetDegree[f];
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSSetJetDegree - Set the highest derivative for this field equation, or the k-jet that the discretization needs to tabulate.
+
+  Not collective
+
+  Input Parameters:
++ ds - The PetscDS object
+. f  - The field number
+- k  - The highest derivative we need to tabulate
+
+  Level: developer
+
+.seealso: PetscDSGetJetDegree(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  if ((f < 0) || (f >= ds->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  ds->jetDegree[f] = k;
   PetscFunctionReturn(0);
 }
 

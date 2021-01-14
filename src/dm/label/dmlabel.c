@@ -468,6 +468,11 @@ PetscErrorCode DMLabelReset(DMLabel label)
   ierr = PetscFree(label->ht);CHKERRQ(ierr);
   ierr = PetscFree(label->points);CHKERRQ(ierr);
   ierr = PetscFree(label->validIS);CHKERRQ(ierr);
+  label->stratumValues = NULL;
+  label->stratumSizes  = NULL;
+  label->ht            = NULL;
+  label->points        = NULL;
+  label->validIS       = NULL;
   ierr = PetscHMapIReset(label->hmap);CHKERRQ(ierr);
   label->pStart = -1;
   label->pEnd   = -1;

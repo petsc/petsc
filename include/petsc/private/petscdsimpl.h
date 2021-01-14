@@ -45,6 +45,7 @@ struct _p_PetscDS {
   DSBoundary            boundary;      /* Linked list of boundary conditions */
   PetscBool             useJacPre;     /* Flag for using the Jacobian preconditioner */
   PetscBool            *implicit;      /* Flag for implicit or explicit solve for each field */
+  PetscInt             *jetDegree;     /* The highest derivative for each field equation, or the k-jet that each discretization needs to tabulate */
   PetscPointFunc       *obj;           /* Scalar integral (like an objective function) */
   PetscPointFunc       *f;             /* Weak form integrands for F, f_0, f_1 */
   PetscPointJac        *g;             /* Weak form integrands for J = dF/du, g_0, g_1, g_2, g_3 */

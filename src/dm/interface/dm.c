@@ -5429,8 +5429,8 @@ PetscErrorCode DMCreateDS(DM dm)
   MPI_Comm       comm;
   PetscDS        dsDef;
   DMLabel       *labelSet;
-  PetscInt       dE, Nf = dm->Nf, f, s, Nl, l, Ndef;
-  PetscBool      doSetup = PETSC_TRUE;
+  PetscInt       dE, Nf = dm->Nf, f, s, Nl, l, Ndef, k;
+  PetscBool      doSetup = PETSC_TRUE, flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -5588,6 +5588,11 @@ PetscErrorCode DMCreateDS(DM dm)
       if ((id != PETSCFE_CLASSID) && (id != PETSCFV_CLASSID)) doSetup = PETSC_FALSE;
     }
     ierr = ISRestoreIndices(fields, &fld);CHKERRQ(ierr);
+  }
+  /* Allow k-jet tabulation */
+  ierr = PetscOptionsGetInt(NULL, ((PetscObject) dm)->prefix, "-dm_ds_jet_degree", &k, &flg);CHKERRQ(ierr);
+  if (flg) {
+    for (s = 0; s < dm->Nds; ++s) {ierr = PetscDSSetJetDegree(dm->probs[s].ds, 0, k);CHKERRQ(ierr);}
   }
   /* Setup DSes */
   if (doSetup) {

@@ -1849,9 +1849,9 @@ PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
 
   Level: intermediate
 
-  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+  Note: This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
 
-.seealso: PetscDualSpaceTransformGradient(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransformType
+.seealso: PetscDualSpaceTransformGradient(), PetscDualSpaceTransformHessian(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransformType
 @*/
 PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransformType trans, PetscBool isInverse, PetscFEGeom *fegeom, PetscInt Nv, PetscInt Nc, PetscScalar vals[])
 {
@@ -1900,11 +1900,11 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
 - vals      - The function gradient values
 
   Output Parameter:
-. vals      - The transformed function values
+. vals      - The transformed function gradient values
 
   Level: intermediate
 
-  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+  Note: This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
 
 .seealso: PetscDualSpaceTransform(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransformType
 @*/
@@ -2001,6 +2001,71 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
 }
 
 /*@C
+  PetscDualSpaceTransformHessian - Transform the function Hessian values
+
+  Input Parameters:
++ dsp       - The PetscDualSpace
+. trans     - The type of transform
+. isInverse - Flag to invert the transform
+. fegeom    - The cell geometry
+. Nv        - The number of function Hessian samples
+. Nc        - The number of function components
+- vals      - The function gradient values
+
+  Output Parameter:
+. vals      - The transformed function Hessian values
+
+  Level: intermediate
+
+  Note: This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+
+.seealso: PetscDualSpaceTransform(), PetscDualSpacePullback(), PetscDualSpacePushforward(), PetscDualSpaceTransformType
+@*/
+PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpaceTransformType trans, PetscBool isInverse, PetscFEGeom *fegeom, PetscInt Nv, PetscInt Nc, PetscScalar vals[])
+{
+  const PetscInt dim = dsp->dm->dim, dE = fegeom->dimEmbed;
+  PetscInt       v, c;
+
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(fegeom, 4);
+  PetscValidPointer(vals, 7);
+#ifdef PETSC_USE_DEBUG
+  if (dE <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid embedding dimension %D", dE);
+#endif
+  /* Transform Hessian: J^{-T}_{ik} J^{-T}_{jl} H(f)_{kl} = J^{-T}_{ik} H(f)_{kl} J^{-1}_{lj} */
+  if (dim == dE) {
+    for (v = 0; v < Nv; ++v) {
+      for (c = 0; c < Nc; ++c) {
+        switch (dim)
+        {
+          case 1: vals[(v*Nc+c)*dim*dim] *= PetscSqr(fegeom->invJ[0]);break;
+          case 2: DMPlex_PTAP2DReal_Internal(fegeom->invJ, &vals[(v*Nc+c)*dim*dim], &vals[(v*Nc+c)*dim*dim]);break;
+          case 3: DMPlex_PTAP3DReal_Internal(fegeom->invJ, &vals[(v*Nc+c)*dim*dim], &vals[(v*Nc+c)*dim*dim]);break;
+          default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dim %D for transformation", dim);
+        }
+      }
+    }
+  } else {
+    for (v = 0; v < Nv; ++v) {
+      for (c = 0; c < Nc; ++c) {
+        DMPlex_PTAPReal_Internal(fegeom->invJ, dim, dE, &vals[(v*Nc+c)*dE*dE], &vals[(v*Nc+c)*dE*dE]);
+      }
+    }
+  }
+  /* Assume its a vector, otherwise assume its a bunch of scalars */
+  if (Nc == 1 || Nc != dim) PetscFunctionReturn(0);
+  switch (trans) {
+    case IDENTITY_TRANSFORM: break;
+    case COVARIANT_PIOLA_TRANSFORM: /* Covariant Piola mapping $\sigma^*(F) = J^{-T} F \circ \phi^{-1)$ */
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Piola mapping for Hessians not yet supported");
+    case CONTRAVARIANT_PIOLA_TRANSFORM: /* Contravariant Piola mapping $\sigma^*(F) = \frac{1}{|\det J|} J F \circ \phi^{-1}$ */
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Piola mapping for Hessians not yet supported");
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscDualSpacePullback - Transform the given functional so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
 
   Input Parameters:
@@ -2066,7 +2131,7 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
 
   Note: Functionals transform in a complementary way (pullback) to functions, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
 
-  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+  Note: This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
 
 .seealso: PetscDualSpacePullback(), PetscDualSpaceTransform(), PetscDualSpaceGetDeRahm()
 @*/
@@ -2115,7 +2180,7 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
 
   Note: Functionals transform in a complementary way (pullback) to functions, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
 
-  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+  Note: This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
 
 .seealso: PetscDualSpacePushforward(), PPetscDualSpacePullback(), PetscDualSpaceTransform(), PetscDualSpaceGetDeRahm()
 @*/
@@ -2144,5 +2209,54 @@ PetscErrorCode PetscDualSpacePushforwardGradient(PetscDualSpace dsp, PetscFEGeom
     default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
   }
   ierr = PetscDualSpaceTransformGradient(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpacePushforwardHessian - Transform the given function Hessian so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
+
+  Input Parameters:
++ dsp        - The PetscDualSpace
+. fegeom     - The geometry for this cell
+. Nq         - The number of function Hessian samples
+. Nc         - The number of function components
+- pointEval  - The function gradient values
+
+  Output Parameter:
+. pointEval  - The transformed function Hessian values
+
+  Level: advanced
+
+  Note: Functionals transform in a complementary way (pullback) to functions, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
+
+  Note: This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+
+.seealso: PetscDualSpacePushforward(), PPetscDualSpacePullback(), PetscDualSpaceTransform(), PetscDualSpaceGetDeRahm()
+@*/
+PetscErrorCode PetscDualSpacePushforwardHessian(PetscDualSpace dsp, PetscFEGeom *fegeom, PetscInt Nq, PetscInt Nc, PetscScalar pointEval[])
+{
+  PetscDualSpaceTransformType trans;
+  PetscInt                    k;
+  PetscErrorCode              ierr;
+
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(fegeom, 2);
+  PetscValidPointer(pointEval, 5);
+  /* The dualspace dofs correspond to some simplex in the DeRahm complex, which we label by k.
+     This determines their transformation properties. */
+  ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+  switch (k)
+  {
+    case 0: /* H^1 point evaluations */
+    trans = IDENTITY_TRANSFORM;break;
+    case 1: /* Hcurl preserves tangential edge traces  */
+    trans = COVARIANT_PIOLA_TRANSFORM;break;
+    case 2:
+    case 3: /* Hdiv preserve normal traces */
+    trans = CONTRAVARIANT_PIOLA_TRANSFORM;break;
+    default: SETERRQ1(PetscObjectComm((PetscObject) dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %D for transformation", k);
+  }
+  ierr = PetscDualSpaceTransformHessian(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

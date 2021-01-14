@@ -102,7 +102,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);CHKSTRINGERROR("Message to short");
   /* Basis Functions */
-  ierr = PetscFEGetCellTabulation(fem, &T);CHKERRQ(ierr);
+  ierr = PetscFEGetCellTabulation(fem, 1, &T);CHKERRQ(ierr);
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* Nodal basis function evaluations\n"
 "    - basis component is fastest varying, the basis function, then point */\n"
