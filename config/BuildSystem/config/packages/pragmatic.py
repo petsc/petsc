@@ -26,9 +26,6 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
-    if not self.cmake.found:
-      raise RuntimeError('CMake > 2.5 is needed to build Pragmatic')
-
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DMETIS_DIR='+self.metis.directory)
     args.append('-DENABLE_VTK=OFF')

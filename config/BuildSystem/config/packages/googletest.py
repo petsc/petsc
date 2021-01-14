@@ -20,9 +20,6 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
-    if not self.cmake.found:
-      raise RuntimeError('CMake > 2.5 is needed to build googletest\nSuggest adding --download-cmake to ./configure arguments')
-
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-Dgtest_build_tests=ON')
     args.append('-Dgmock_build_tests=ON')

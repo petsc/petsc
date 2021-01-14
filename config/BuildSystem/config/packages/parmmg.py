@@ -27,8 +27,6 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    if not self.cmake.found:
-      raise RuntimeError('CMake is needed to build ParMmg')
     args.append('-DDOWNLOAD_MMG=OFF')
     args.append('-DDOWNLOAD_METIS=OFF')
     args.append('-DUSE_VTK=OFF')

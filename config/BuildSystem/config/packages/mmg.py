@@ -24,8 +24,6 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    if not self.cmake.found:
-      raise RuntimeError('CMake is needed to build Mmg')
     args.append('-DUSE_ELAS=OFF')
     args.append('-DUSE_VTK=OFF')
     args.append('-DSCOTCH_DIR:STRING="'+self.ptscotch.directory+'"')

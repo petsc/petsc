@@ -23,9 +23,6 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
-    if not self.cmake.found:
-      raise RuntimeError('CMake > 2.5 is needed to build Eigen')
-
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DENABLE_OPENMP=OFF')
     return args
