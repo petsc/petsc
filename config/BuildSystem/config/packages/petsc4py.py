@@ -12,6 +12,11 @@ class Configure(config.package.Package):
     self.builtafterpetsc        = 1
     return
 
+  def setupHelp(self,help):
+    import nargs
+    help.addArgument('PETSc', '-with-petsc4py=<bool>', nargs.Arg(None, 0, 'Build PETSc Python bindings (petsc4py)'))
+    return
+
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.python          = framework.require('config.packages.python',self)
