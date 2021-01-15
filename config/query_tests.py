@@ -101,6 +101,8 @@ def query(invDict,fields,labels):
         if field == 'name':
             if '/' in label: 
               label=pathToLabel(label)
+            elif label.startswith('src'):
+                  label=label.lstrip('src').lstrip('*')
             setlist.append(fnmatch.filter(invDict['name'],label))
             continue
 
