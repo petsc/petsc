@@ -1,8 +1,6 @@
 static char help[] = "Benchmark Poisson Problem in 2d and 3d with finite elements.\n\
-We solve the Poisson problem in a rectangular\n\
-domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\
-This example supports automatic convergence estimation\n\
-and eventually adaptivity.\n\n\n";
+We solve the Poisson problem in a rectangular domain\n\
+using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
@@ -10,9 +8,9 @@ and eventually adaptivity.\n\n\n";
 #include <petscconvest.h>
 
 typedef struct {
-  PetscInt  nit;
+  PetscInt  nit;    /* Number of benchmark iterations */
+  PetscBool strong; /* Do not integrate the Laplacian by parts */
 } AppCtx;
-
 
 static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -49,14 +47,32 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (d = 0; d < dim; ++d) g3[d*dim+d] = 1.0;
 }
 
+static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  *u = PetscSqr(x[0]) + PetscSqr(x[1]);
+  return 0;
+}
+
+static void f0_strong_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                        PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) f0[0] -= u_x[dim + d*dim+d];
+  f0[0] += 4.0;
+}
+
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->nit = 10;
+  options->nit    = 10;
+  options->strong = PETSC_FALSE;
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-benchmark_it", "Solve the benchmark problem this many times", "ex13.c", options->nit, &options->nit, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-strong", "Do not integrate the Laplacian by parts", "ex13.c", options->strong, &options->strong, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -97,16 +113,22 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
-  PetscDS        prob;
+  PetscDS        ds;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 0, trig_u, user);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, NULL, 1, &id, user);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  if (user->strong) {
+    ierr = PetscDSSetResidual(ds, 0, f0_strong_u, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetExactSolution(ds, 0, quadratic_u, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) quadratic_u, NULL, 1, &id, user);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSSetResidual(ds, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetExactSolution(ds, 0, trig_u, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, NULL, 1, &id, user);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -162,6 +184,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) u, "potential");CHKERRQ(ierr);
   ierr = DMPlexSetSNESLocalFEM(dm, &user, &user, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions(snes, u);CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   /* Benchmark system */
   if (user.nit) {
@@ -205,6 +228,12 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+
+  test:
+    suffix: strong
+    requires: triangle
+    args: -dm_plex_box_dim 2 -dm_refine 1 -benchmark_it 0 -dmsnes_check \
+          -potential_petscspace_degree 2 -dm_ds_jet_degree 2 -strong
 
   test:
     suffix: bench

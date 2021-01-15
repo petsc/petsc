@@ -21,7 +21,7 @@ Label 'cohesive':
 [0]: 16 (1)
 Discrete System with 1 fields
     cell total dim 6 total comp 2
-  Field displacement FEM2 components (implicit) (Nq 4 Nqc 1)
+  Field displacement FEM2 components (implicit) (Nq 4 Nqc 1) 1-jet
     PetscFE Object: displacement (displacement_) 1 MPI processes
       type: basic
       Basic Finite Element in 2 dimensions with 2 components
@@ -37,7 +37,7 @@ Discrete System with 1 fields
 Discrete System with 2 fields
     cell total dim 12 total comp 4
     hybrid cell
-  Field displacement FEM2 components (implicit) (Nq 2 Nqc 1)
+  Field displacement FEM2 components (implicit) (Nq 2 Nqc 1) 1-jet
     PetscFE Object: displacement 1 MPI processes
       type: basic
       Basic Finite Element in 1 dimensions with 2 components
@@ -50,7 +50,7 @@ Discrete System with 2 fields
         Dual space with 2 components, size 4
         Continuous Lagrange dual space
         Quadrature of order 3 on 2 points (dim 1)
-  Field fault traction FEM2 components (implicit) (Nq 2 Nqc 1)
+  Field fault traction FEM2 components (implicit) (Nq 2 Nqc 1) 1-jet
     PetscFE Object: fault traction (faulttraction_) 1 MPI processes
       type: basic
       Basic Finite Element in 1 dimensions with 2 components
@@ -106,18 +106,18 @@ Process 0:
   (  16) dim  2 offset  14
 Vec Object: Local Solution 1 MPI processes
   type: seq
--0.5
-0.5
 0.
--5.55112e-17
--5.55112e-17
-1.
-0.5
-1.5
-5.55112e-17
-1.
 0.
-2.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
 0.
 0.
 -1.
@@ -126,20 +126,20 @@ Vec Object: Local Residual 1 MPI processes
   type: seq
 0.
 0.
-2.18901e-17
-0.
-5.86544e-18
 0.
 0.
 0.
--2.18901e-17
 0.
--5.86544e-18
 0.
--2.77556e-17
 0.
--2.77556e-17
 0.
+0.
+0.
+0.
+0.
+0.5
+0.
+0.5
 Mat Object: Jacobian 1 MPI processes
   type: seqaij
 row 0: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.) 

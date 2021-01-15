@@ -219,7 +219,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
   ierr = PetscFEGetQuadrature(fe,&quadrature);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quadrature, NULL, NULL, &npoints_q, &xiq, NULL);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fe,&nbasis);CHKERRQ(ierr);
-  ierr = PetscFEGetCellTabulation(fe, &T);CHKERRQ(ierr);
+  ierr = PetscFEGetCellTabulation(fe, 1, &T);CHKERRQ(ierr);
 
   /* 0->cell, 1->edge, 2->vert */
   ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
@@ -719,7 +719,7 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
   ierr = private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe,quadrature);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fe,&nbasis);CHKERRQ(ierr);
-  ierr = PetscFEGetCellTabulation(fe, &T);CHKERRQ(ierr);
+  ierr = PetscFEGetCellTabulation(fe, 1, &T);CHKERRQ(ierr);
 
   /* for each cell, interpolate coordaintes and insert the interpolated points coordinates into swarm */
   /* 0->cell, 1->edge, 2->vert */

@@ -787,7 +787,8 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
   Not collective
 
   Input Parameter:
-. fem - The PetscFE object
++ fem - The PetscFE object
+- k   - The highest derivative we need to tabulate, very often 1
 
   Output Parameter:
 . T - The basis function values and derivatives at quadrature points
@@ -801,7 +802,7 @@ $ T->T[2] = H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p f
 
 .seealso: PetscFECreateTabulation(), PetscTabulationDestroy()
 @*/
-PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscTabulation *T)
+PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation *T)
 {
   PetscInt         npoints;
   const PetscReal *points;
@@ -811,7 +812,8 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscTabulation *T)
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(T, 2);
   ierr = PetscQuadratureGetData(fem->quadrature, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
-  if (!fem->T) {ierr = PetscFECreateTabulation(fem, 1, npoints, points, 1, &fem->T);CHKERRQ(ierr);}
+  if (!fem->T) {ierr = PetscFECreateTabulation(fem, 1, npoints, points, k, &fem->T);CHKERRQ(ierr);}
+  if (fem->T && k > fem->T->K) SETERRQ2(PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %D derivatives, but only tabulated %D", k, fem->T->K);
   *T = fem->T;
   PetscFunctionReturn(0);
 }
@@ -822,7 +824,8 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscTabulation *T)
   Not collective
 
   Input Parameter:
-. fem - The PetscFE object
++ fem - The PetscFE object
+- k   - The highest derivative we need to tabulate, very often 1
 
   Output Parameters:
 . Tf - The basis function values and derviatives at face quadrature points
@@ -836,7 +839,7 @@ $ T->T[2] = Hf[((((f*Nq + q)*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at
 
 .seealso: PetscFEGetCellTabulation(), PetscFECreateTabulation(), PetscTabulationDestroy()
 @*/
-PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscTabulation *Tf)
+PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscInt k, PetscTabulation *Tf)
 {
   PetscErrorCode   ierr;
 
@@ -867,10 +870,11 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscTabulation *Tf)
         ierr = DMPlexComputeCellGeometryFEM(dm, faces[f], NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
         for (q = 0; q < npoints; ++q) CoordinatesRefToReal(dim, dim-1, xi0, v0, J, &points[q*(dim-1)], &facePoints[(f*npoints+q)*dim]);
       }
-      ierr = PetscFECreateTabulation(fem, numFaces, npoints, facePoints, 1, &fem->Tf);CHKERRQ(ierr);
+      ierr = PetscFECreateTabulation(fem, numFaces, npoints, facePoints, k, &fem->Tf);CHKERRQ(ierr);
       ierr = PetscFree(facePoints);CHKERRQ(ierr);
     }
   }
+  if (fem->Tf && k > fem->Tf->K) SETERRQ2(PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %D derivatives, but only tabulated %D", k, fem->Tf->K);
   *Tf = fem->Tf;
   PetscFunctionReturn(0);
 }
@@ -1191,7 +1195,7 @@ PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
 
   Note: This just forwards the call onto PetscDualSpacePushforward().
 
-  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+  Note: This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
 
 .seealso: PetscDualSpacePushforward()
 @*/
@@ -1220,7 +1224,7 @@ PetscErrorCode PetscFEPushforward(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, 
 
   Note: This just forwards the call onto PetscDualSpacePushforwardGradient().
 
-  Note: This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+  Note: This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
 
 .seealso: PetscFEPushforward(), PetscDualSpacePushforwardGradient(), PetscDualSpacePushforward()
 @*/
@@ -1230,6 +1234,35 @@ PetscErrorCode PetscFEPushforwardGradient(PetscFE fe, PetscFEGeom *fegeom, Petsc
 
   PetscFunctionBeginHot;
   ierr = PetscDualSpacePushforwardGradient(fe->dualSpace, fegeom, Nv, fe->numComponents, vals);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscFEPushforwardHessian - Map the reference element function Hessian to real space
+
+  Input Parameters:
++ fe     - The PetscFE
+. fegeom - The cell geometry
+. Nv     - The number of function Hessian values
+- vals   - The function Hessian values
+
+  Output Parameter:
+. vals   - The transformed function Hessian values
+
+  Level: advanced
+
+  Note: This just forwards the call onto PetscDualSpacePushforwardHessian().
+
+  Note: This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+
+.seealso: PetscFEPushforward(), PetscDualSpacePushforwardHessian(), PetscDualSpacePushforward()
+@*/
+PetscErrorCode PetscFEPushforwardHessian(PetscFE fe, PetscFEGeom *fegeom, PetscInt Nv, PetscScalar vals[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = PetscDualSpacePushforwardHessian(fe->dualSpace, fegeom, Nv, fe->numComponents, vals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1988,18 +2021,20 @@ PetscErrorCode PetscFESetName(PetscFE fe, const char name[])
 
 PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS ds, PetscInt Nf, PetscInt r, PetscInt q, PetscTabulation T[], PetscFEGeom *fegeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscScalar u[], PetscScalar u_x[], PetscScalar u_t[])
 {
-  PetscInt       dOffset = 0, fOffset = 0, f;
+  PetscInt       dOffset = 0, fOffset = 0, f, g;
   PetscErrorCode ierr;
 
   for (f = 0; f < Nf; ++f) {
     PetscFE          fe;
+    const PetscInt   k    = ds->jetDegree[f];
     const PetscInt   cdim = T[f]->cdim;
     const PetscInt   Nq   = T[f]->Np;
     const PetscInt   Nbf  = T[f]->Nb;
     const PetscInt   Ncf  = T[f]->Nc;
     const PetscReal *Bq   = &T[f]->T[0][(r*Nq+q)*Nbf*Ncf];
     const PetscReal *Dq   = &T[f]->T[1][(r*Nq+q)*Nbf*Ncf*cdim];
-    PetscInt         b, c, d;
+    const PetscReal *Hq   = k > 1 ? &T[f]->T[2][(r*Nq+q)*Nbf*Ncf*cdim*cdim] : NULL;
+    PetscInt         hOffset = 0, b, c, d;
 
     ierr = PetscDSGetDiscretization(ds, f, (PetscObject *) &fe);CHKERRQ(ierr);
     for (c = 0; c < Ncf; ++c) u[fOffset+c] = 0.0;
@@ -2011,6 +2046,18 @@ PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS ds, PetscInt Nf, PetscI
         u[fOffset+c] += Bq[cidx]*coefficients[dOffset+b];
         for (d = 0; d < cdim; ++d) u_x[(fOffset+c)*cdim+d] += Dq[cidx*cdim+d]*coefficients[dOffset+b];
       }
+    }
+    if (k > 1) {
+      for (g = 0; g < Nf; ++g) hOffset += T[g]->Nc*cdim;
+      for (d = 0; d < cdim*cdim*Ncf; ++d) u_x[hOffset+fOffset*cdim*cdim+d] = 0.0;
+      for (b = 0; b < Nbf; ++b) {
+        for (c = 0; c < Ncf; ++c) {
+          const PetscInt cidx = b*Ncf+c;
+
+          for (d = 0; d < cdim*cdim; ++d) u_x[hOffset+(fOffset+c)*cdim*cdim+d] += Hq[cidx*cdim*cdim+d]*coefficients[dOffset+b];
+        }
+      }
+      ierr = PetscFEPushforwardHessian(fe, fegeom, 1, &u_x[hOffset+fOffset*cdim*cdim]);CHKERRQ(ierr);
     }
     ierr = PetscFEPushforward(fe, fegeom, 1, &u[fOffset]);CHKERRQ(ierr);
     ierr = PetscFEPushforwardGradient(fe, fegeom, 1, &u_x[fOffset*cdim]);CHKERRQ(ierr);

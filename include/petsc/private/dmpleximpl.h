@@ -492,6 +492,57 @@ PETSC_STATIC_INLINE void DMPlex_MatMultTransposeLeft3D_Internal(const PetscScala
   (void)PetscLogFlops(8.0*m);
 }
 
+PETSC_STATIC_INLINE void DMPlex_PTAP2DReal_Internal(const PetscReal P[], const PetscScalar A[], PetscScalar C[])
+{
+  PetscScalar out[4];
+  PetscInt i, j, k, l;
+  for (i = 0; i < 2; ++i) {
+    for (j = 0; j < 2; ++j) {
+      out[i*2+j] = 0.;
+      for (k = 0; k < 2; ++k) {
+        for (l = 0; l < 2; ++l) {
+          out[i*2+j] += P[k*2+i]*A[k*2+l]*P[l*2+j];
+        }
+      }
+    }
+  }
+  for (i = 0; i < 2*2; ++i) C[i] = out[i];
+  (void)PetscLogFlops(48.0);
+}
+PETSC_STATIC_INLINE void DMPlex_PTAP3DReal_Internal(const PetscReal P[], const PetscScalar A[], PetscScalar C[])
+{
+  PetscScalar out[9];
+  PetscInt i, j, k, l;
+  for (i = 0; i < 3; ++i) {
+    for (j = 0; j < 3; ++j) {
+      out[i*2+j] = 0.;
+      for (k = 0; k < 3; ++k) {
+        for (l = 0; l < 3; ++l) {
+          out[i*2+j] += P[k*2+i]*A[k*2+l]*P[l*2+j];
+        }
+      }
+    }
+  }
+  for (i = 0; i < 2*2; ++i) C[i] = out[i];
+  (void)PetscLogFlops(243.0);
+}
+/* TODO Fix for aliasing of A and C */
+PETSC_STATIC_INLINE void DMPlex_PTAPReal_Internal(const PetscReal P[], PetscInt m, PetscInt n, const PetscScalar A[], PetscScalar C[])
+{
+  PetscInt i, j, k, l;
+  for (i = 0; i < n; ++i) {
+    for (j = 0; j < n; ++j) {
+      C[i*n+j] = 0.;
+      for (k = 0; k < m; ++k) {
+        for (l = 0; l < m; ++l) {
+          C[i*n+j] += P[k*n+i]*A[k*m+l]*P[l*n+j];
+        }
+      }
+    }
+  }
+  (void)PetscLogFlops(243.0);
+}
+
 PETSC_STATIC_INLINE void DMPlex_Transpose2D_Internal(PetscScalar A[])
 {
   PetscScalar tmp;

@@ -1414,7 +1414,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
           CHKERRQ(ierr);
         }
         if (transform) {ierr = DMPlexBasisTransformApply_Internal(dm, &coords[coordDim*q], PETSC_FALSE, Nc, funcVal, funcVal, dm->transformCtx);CHKERRQ(ierr);}
-        ierr = PetscFEInterpolateGradient_Static(fe, &x[fieldOffset], &qgeom, q, interpolant);CHKERRQ(ierr);
+        ierr = PetscFEInterpolateGradient_Static(fe, 1, &x[fieldOffset], &qgeom, q, interpolant);CHKERRQ(ierr);
         /* Overwrite with the dot product if the normal is given */
         if (n) {
           for (fc = 0; fc < Nc; ++fc) {
@@ -1821,7 +1821,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
             ierr2 = PetscFree6(gradsum,interpolant,coords,fegeom.detJ,fegeom.J,fegeom.invJ);CHKERRQ(ierr2);
             CHKERRQ(ierr);
           }
-          if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolateGradient_Static((PetscFE) obj, &x[fieldOffset], &qgeom, q, interpolant);CHKERRQ(ierr);}
+          if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolateGradient_Static((PetscFE) obj, 1, &x[fieldOffset], &qgeom, q, interpolant);CHKERRQ(ierr);}
           else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
           for (fc = 0; fc < Nc; ++fc) {
             const PetscReal wt = quadWeights[q*qNc+qc+fc];
@@ -3002,7 +3002,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       ierr = PetscFEGetQuadrature((PetscFE) obj, &quad);CHKERRQ(ierr);
-      ierr = PetscFEGetCellTabulation((PetscFE) obj, &Tfine);CHKERRQ(ierr);
+      ierr = PetscFEGetCellTabulation((PetscFE) obj, 1, &Tfine);CHKERRQ(ierr);
       ierr = PetscFECreateTabulation((PetscFE) obj, 1, 1, x, 0, &T);CHKERRQ(ierr);
     } else {
       ierr = PetscFVGetQuadrature((PetscFV) obj, &quad);CHKERRQ(ierr);

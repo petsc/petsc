@@ -634,7 +634,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
       ierr = PetscArrayzero(interpolant,Nc);CHKERRQ(ierr);
       ierr = PetscArrayzero(interpolantGrad, cdim*Nc);CHKERRQ(ierr);
       for (q = 0; q < Nq; ++q) {
-        ierr = PetscFEInterpolateFieldAndGradient_Static((PetscFE) obj, x, &fegeom, q, interpolant, interpolantGrad);CHKERRQ(ierr);
+        ierr = PetscFEInterpolateFieldAndGradient_Static((PetscFE) obj, 1, x, &fegeom, q, interpolant, interpolantGrad);CHKERRQ(ierr);
         for (fc = 0; fc < Nc; ++fc) {
           const PetscReal wt = quadWeights[q*qNc+qc+fc];
 

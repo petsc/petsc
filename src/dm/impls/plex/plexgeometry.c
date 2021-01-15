@@ -1606,7 +1606,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &feQuad);CHKERRQ(ierr);
   if (feQuad == quad) {
-    ierr = PetscFEGetCellTabulation(fe, &T);CHKERRQ(ierr);
+    ierr = PetscFEGetCellTabulation(fe, J ? 1 : 0, &T);CHKERRQ(ierr);
     if (numCoords != pdim*cdim) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %d coordinates for point %d != %d*%d", numCoords, point, pdim, cdim);
   } else {
     ierr = PetscFECreateTabulation(fe, 1, Nq, quadPoints, J ? 1 : 0, &T);CHKERRQ(ierr);
