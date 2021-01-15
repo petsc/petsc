@@ -1016,7 +1016,10 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
   def versionToTuple(self,version):
     '''Converts string of the form x.y to (x,y)'''
     if not version: return ()
-    return tuple(map(int,version.split('.')))
+    vl = version.split('.')
+    if len(vl) > 2:
+      vl[-1] = re.compile(r'^[0-9]+').search(vl[-1]).group(0)
+    return tuple(map(int,vl))
 
   def checkVersion(self):
     '''Uses self.version, self.minversion, self.maxversion, self.versionname, and self.versioninclude to determine if package has required version'''
