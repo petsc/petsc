@@ -994,7 +994,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
 @*/
 PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Vec v)
 {
-  PetscInt       dim, coneSize, n;
+  PetscInt       n;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1004,21 +1004,73 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
   ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
   if (n != ctx->n*ctx->dof) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid input vector size %D should be %D", n, ctx->n*ctx->dof);
   if (n) {
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = DMPlexGetConeSize(dm, ctx->cells[0], &coneSize);CHKERRQ(ierr);
-    if (dim == 2) {
-      if (coneSize == 3) {
-        ierr = DMInterpolate_Triangle_Private(ctx, dm, x, v);CHKERRQ(ierr);
-      } else if (coneSize == 4) {
-        ierr = DMInterpolate_Quad_Private(ctx, dm, x, v);CHKERRQ(ierr);
-      } else SETERRQ1(ctx->comm, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %D for point interpolation", dim);
-    } else if (dim == 3) {
-      if (coneSize == 4) {
-        ierr = DMInterpolate_Tetrahedron_Private(ctx, dm, x, v);CHKERRQ(ierr);
-      } else {
-        ierr = DMInterpolate_Hex_Private(ctx, dm, x, v);CHKERRQ(ierr);
+    PetscDS        ds;
+    DMPolytopeType ct;
+    PetscBool      done = PETSC_FALSE;
+
+    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+    if (ds) {
+      const PetscScalar *coords;
+      PetscScalar       *interpolant;
+      PetscInt           cdim, d, p, Nf, field, c = 0;
+
+      ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+      ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+      for (field = 0; field < Nf; ++field) {
+        PetscTabulation T;
+        PetscFE         fe;
+        PetscClassId    id;
+        PetscReal       xi[3];
+        PetscInt        Nc, f, fc;
+
+        ierr = PetscDSGetDiscretization(ds, field, (PetscObject *) &fe);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId((PetscObject) fe, &id);CHKERRQ(ierr);
+        if (id != PETSCFE_CLASSID) break;
+        ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
+        ierr = VecGetArrayWrite(v, &interpolant);CHKERRQ(ierr);
+        for (p = 0; p < ctx->n; ++p) {
+          PetscScalar *xa = NULL;
+          PetscReal    pcoords[3];
+
+          for (d = 0; d < cdim; ++d) pcoords[d] = PetscRealPart(coords[p*cdim+d]);
+          ierr = DMPlexCoordinatesToReference(dm, ctx->cells[p], 1, pcoords, xi);CHKERRQ(ierr);
+          ierr = DMPlexVecGetClosure(dm, NULL, x, ctx->cells[p], NULL, &xa);CHKERRQ(ierr);
+          ierr = PetscFECreateTabulation(fe, 1, 1, xi, 0, &T);CHKERRQ(ierr);
+          {
+            const PetscReal *basis = T->T[0];
+            const PetscInt   Nb    = T->Nb;
+            const PetscInt   Nc    = T->Nc;
+            for (fc = 0; fc < Nc; ++fc) {
+              interpolant[p*ctx->dof+c+fc] = 0.0;
+              for (f = 0; f < Nb; ++f) {
+                interpolant[p*ctx->dof+c+fc] += xa[f]*basis[(0*Nb + f)*Nc + fc];
+              }
+            }
+          }
+          ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);
+          ierr = DMPlexVecRestoreClosure(dm, NULL, x, ctx->cells[p], NULL, &xa);CHKERRQ(ierr);
+        }
+        ierr = VecRestoreArrayWrite(v, &interpolant);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
+        c += Nc;
       }
-    } else SETERRQ1(ctx->comm, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %D for point interpolation", dim);
+      if (field == Nf) {
+        done = PETSC_TRUE;
+        if (c != ctx->dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total components %D != %D dof specified for interpolation", c, ctx->dof);
+      }
+    }
+    if (!done) {
+      /* TODO Check each cell individually */
+      ierr = DMPlexGetCellType(dm, ctx->cells[0], &ct);CHKERRQ(ierr);
+      switch (ct) {
+        case DM_POLYTOPE_TRIANGLE:      ierr = DMInterpolate_Triangle_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
+        case DM_POLYTOPE_QUADRILATERAL: ierr = DMInterpolate_Quad_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
+        case DM_POLYTOPE_TETRAHEDRON:   ierr = DMInterpolate_Tetrahedron_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
+        case DM_POLYTOPE_HEXAHEDRON:    ierr = DMInterpolate_Hex_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
+        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support fpr cell type %s", DMPolytopeTypes[ct]);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }

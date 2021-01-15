@@ -180,6 +180,8 @@
       <ul>
         <li>Change to --download-sundials2 to indicate the version of SUNDIALS PETSc downloads, which is very old and out-dated</li>
         <li>Add TSGetNumEvents() to retrieve the number of events</li>
+        <li>Add -ts_monitor_cancel</li>
+        <li>Now -ts_view_solution respects the TS prefix</li>
       </ul>
       <h4>TAO:</h4>
         <ul>
@@ -191,15 +193,24 @@
       <ul>
         <li>Remove unneeded Vec argument from DMPatchZoom()</li>
         <li>Change DMDACreatePatchIS() to collective operation and add an extra argument to indicate whether off processor values will be returned</li>
+      </ul>
+      <h4>DMSwarm:</h4>
+      <ul>
         <li>DMSwarmViewXDMF() can now use a full path for the filename</li>
+        <li>Add DMSwarmSetPointCoordinatesRandom()</li>
+        <li>Add -dm_view_radius to set size of drawn particles</li>
       </ul>
       <h4>DMPlex:</h4>
       <ul>
         <li>Using -petscpartitioner_simple_node_grid and -petscpartitioner_simple_process_grid, the Simple partitioner can now make grid partitions</li>
         <li>Add DMGet/SetFieldAvoidTensor() to allow fields to exclude tensor cells in their definition</li>
         <li>Remove regular refinement and marking from DMPlexCreateDoublet()</li>
+        <li>Add high order FEM interpolation to DMInterpolationEvaluate()</li>
       </ul>
       <h4>DT:</h4>
+      <ul>
+        <li>PetscDSCopyBoundary() now takes a list of fields for which boundary copying is done</li>
+      </ul>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
       <ul>

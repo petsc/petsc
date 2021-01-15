@@ -240,7 +240,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
           ierr = ISRestoreIndices(dm->probs[d].fields, &fld);CHKERRQ(ierr);
           if (f == Nf) continue;
           ierr = PetscDSCopyConstants(dm->probs[d].ds, (*subdm)->probs[e].ds);CHKERRQ(ierr);
-          ierr = PetscDSCopyBoundary(dm->probs[d].ds, (*subdm)->probs[e].ds);CHKERRQ(ierr);
+          ierr = PetscDSCopyBoundary(dm->probs[d].ds, numFields, fields, (*subdm)->probs[e].ds);CHKERRQ(ierr);
           /* Translate DM fields to DS fields */
           {
             IS              infields, dsfields;
@@ -271,7 +271,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
         }
       } else {
         ierr = PetscDSCopyConstants(dm->probs[0].ds, (*subdm)->probs[0].ds);CHKERRQ(ierr);
-        ierr = PetscDSCopyBoundary(dm->probs[0].ds, (*subdm)->probs[0].ds);CHKERRQ(ierr);
+        ierr = PetscDSCopyBoundary(dm->probs[0].ds, PETSC_DETERMINE, NULL, (*subdm)->probs[0].ds);CHKERRQ(ierr);
         ierr = PetscDSSelectDiscretizations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds);CHKERRQ(ierr);
         ierr = PetscDSSelectEquations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds);CHKERRQ(ierr);
       }

@@ -98,6 +98,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_adjoint_solve <yes,no> After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
 .  -ts_fd_color - Use finite differences with coloring to compute IJacobian
 .  -ts_monitor - print information at each timestep
+.  -ts_monitor_cancel - Cancel all monitors
 .  -ts_monitor_lg_solution - Monitor solution graphically
 .  -ts_monitor_lg_error - Monitor error graphically
 .  -ts_monitor_error - Monitors norm of error
@@ -400,6 +401,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorEnvelopeCtxCreate(ts,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorEnvelope,ctx,(PetscErrorCode (*)(void**))TSMonitorEnvelopeCtxDestroy);CHKERRQ(ierr);
   }
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_monitor_cancel","Remove all monitors","TSMonitorCancel",flg,&flg,&opt);CHKERRQ(ierr);
+  if (opt && flg) {ierr = TSMonitorCancel(ts);CHKERRQ(ierr);}
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-ts_fd_color", "Use finite differences with coloring to compute IJacobian", "TSComputeJacobianDefaultColor", flg, &flg, NULL);CHKERRQ(ierr);
@@ -4209,7 +4213,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   }
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(solution,NULL,"-ts_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(solution,(PetscObject)ts,"-ts_view_solution");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
