@@ -959,7 +959,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   if (flg && ctx->radius <= 0) { /* negative is ratio of c */
     if (ctx->radius == 0) ctx->radius = 0.75;
     else ctx->radius = -ctx->radius;
-    ctx->radius = ctx->radius*299792458/ctx->v_0;
+    ctx->radius = ctx->radius*299792458.0/ctx->v_0;
     ierr = PetscInfo1(dummy, "Change domain radius to %e\n",ctx->radius);CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-dm_landau_i_radius","Ion thermal velocity, used for circular meshes","plexland.c",ctx->i_radius,&ctx->i_radius, &flg);CHKERRQ(ierr);
