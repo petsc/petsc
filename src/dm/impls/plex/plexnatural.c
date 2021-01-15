@@ -211,7 +211,7 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
     ierr = VecRestoreArrayRead(gv, &inarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(nv, &outarray);CHKERRQ(ierr);
   } else if (size == 1) {
-    ierr = VecCopy(nv, gv);CHKERRQ(ierr);
+    ierr = VecCopy(gv, nv);CHKERRQ(ierr);
   } else if (dm->useNatural) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called, report to petsc-maint@mcs.anl.gov.\n");
   else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().\n");
   ierr = PetscLogEventEnd(DMPLEX_GlobalToNaturalBegin,dm,0,0,0);CHKERRQ(ierr);
