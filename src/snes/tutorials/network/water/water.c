@@ -58,13 +58,11 @@ int main(int argc,char ** argv)
   ierr = PetscLogStagePush(stage2);CHKERRQ(ierr);
 
   /* Set numbers of nodes and edges */
-  ierr = DMNetworkSetSizes(networkdm,1,&waterdata->nvertex,&waterdata->nedge,0,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,"",waterdata->nvertex,waterdata->nedge,edgelist,NULL);CHKERRQ(ierr);
   if (!crank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"water nvertices %D, nedges %D\n",waterdata->nvertex,waterdata->nedge);CHKERRQ(ierr);
   }
-
-  /* Add edge connectivity */
-  ierr = DMNetworkSetEdgeList(networkdm,&edgelist,NULL);CHKERRQ(ierr);
 
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
@@ -74,16 +72,14 @@ int main(int argc,char ** argv)
   }
 
   /* ADD VARIABLES AND COMPONENTS FOR THE NETWORK */
-  ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+  ierr = DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
 
   for (i = 0; i < ne; i++) {
-    ierr = DMNetworkAddComponent(networkdm,edges[i],appctx.compkey_edge,&waterdata->edge[i]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,edges[i],appctx.compkey_edge,&waterdata->edge[i],0);CHKERRQ(ierr);
   }
 
   for (i = 0; i < nv; i++) {
-    ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx.compkey_vtx,&waterdata->vertex[i]);CHKERRQ(ierr);
-    /* Add number of variables */
-    ierr = DMNetworkAddNumVariables(networkdm,vtx[i],1);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx.compkey_vtx,&waterdata->vertex[i],1);CHKERRQ(ierr);
   }
 
   /* Set up DM for use */
@@ -115,6 +111,7 @@ int main(int argc,char ** argv)
 
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
+
   if (reason < 0) SETERRQ(PETSC_COMM_SELF,0,"No solution found for the water network");
   /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 

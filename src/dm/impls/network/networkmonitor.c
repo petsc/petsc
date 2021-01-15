@@ -10,7 +10,7 @@
 . network - network to monitor
 
   Output Parameters:
-. Monitorptr - Location to put network monitor context
+. monitorptr - Location to put network monitor context
 
   Level: intermediate
 
@@ -201,7 +201,7 @@ PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor,Vec x)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(x, &xx);CHKERRQ(ierr);
   for (node = monitor->firstnode; node; node = node->next) {
-    ierr = DMNetworkGetVariableGlobalOffset(monitor->network, node->element, &varoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetGlobalVecOffset(monitor->network, node->element, ALL_COMPONENTS, &varoffset);CHKERRQ(ierr);
     ierr = VecGetArray(node->v, &vv);CHKERRQ(ierr);
     start = varoffset + node->start;
     for (i = 0; i < node->nodes; i++) {

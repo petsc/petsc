@@ -52,8 +52,6 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   pf->ngen    = gen_end_line - gen_start_line;
   pf->nbranch = br_end_line  - br_start_line;
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"nb = %D, ngen = %D, nload = %D, nbranch = %D\n",pf->nbus,pf->ngen,pf->nload,pf->nbranch);CHKERRQ(ierr);
-
   ierr = PetscCalloc1(pf->nbus,&pf->bus);CHKERRQ(ierr);
   ierr = PetscCalloc1(pf->ngen,&pf->gen);CHKERRQ(ierr);
   ierr = PetscCalloc1(pf->nload,&pf->load);CHKERRQ(ierr);
