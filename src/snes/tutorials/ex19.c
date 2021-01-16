@@ -1138,4 +1138,22 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
      suffix: asm_matconvert
      args: -mat_type aij -pc_type asm -pc_asm_sub_mat_type dense -snes_view
 
+   test:
+      suffix: euclid
+      nsize: 2
+      requires: hypre !single !complex !define(PETSC_HAVE_HYPRE_MIXEDINT)
+      args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid
+
+   test:
+      suffix: euclid_bj
+      nsize: 2
+      requires: hypre !single !complex !define(PETSC_HAVE_HYPRE_MIXEDINT)
+      args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid -pc_hypre_euclid_bj
+
+   test:
+      suffix: euclid_droptolerance
+      nsize: 1
+      requires: hypre !single !complex !define(PETSC_HAVE_HYPRE_MIXEDINT)
+      args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid -pc_hypre_euclid_droptolerance .1
+
 TEST*/
