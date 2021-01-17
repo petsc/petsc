@@ -58,11 +58,11 @@ class Configure(config.package.CMakePackage):
     KokkosRoot = self.kokkos.directory
     args.append('-DKokkos_ROOT='+KokkosRoot)
     # By default it installs in lib64, change it to lib
-    args.append('-DCMAKE_INSTALL_LIBDIR:STRING='+self.libdir)
     if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH:PATH='+os.path.join(KokkosRoot,self.kokkos.libdir))
     if self.cuda.found:
       self.system = 'CUDA'
+      args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+os.path.join(KokkosRoot,'bin','nvcc_wrapper'))
       # as of version 3.2.00 Cuda 11 is not supported, e.g., identifier "cusparseXcsrgemmNnz" is undefined
       if not self.argDB['with-kokkos-kernels-tpl'] or self.cuda.version_tuple >= (11,0):

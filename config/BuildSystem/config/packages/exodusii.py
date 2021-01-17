@@ -22,9 +22,6 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     import os
-    if not self.cmake.found:
-      raise RuntimeError('CMake > 2.5 is needed to build exodusII\nSuggest adding --download-cmake to ./configure arguments')
-
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
 
     args.append('-DACCESSDIR:PATH='+self.installDir)
@@ -65,10 +62,4 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DPnetcdf_LIBRARY_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'lib'))
       args.append('-DPnetcdf_INCLUDE_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'include'))
-    if self.checkSharedLibrariesEnabled():
-      args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
-    if self.compilerFlags.debugging:
-      args.append('-DCMAKE_BUILD_TYPE=Debug')
-    else:
-      args.append('-DCMAKE_BUILD_TYPE=Release')
     return args
