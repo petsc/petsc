@@ -10,6 +10,8 @@
 
 PetscErrorCode  VecCreateSeqCUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar cpuarray[],const PetscScalar gpuarray[],Vec *V) {PetscCUDAError;}
 PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const PetscScalar cpuarray[],const PetscScalar gpuarray[],Vec *vv) {PetscCUDAError;}
+PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar gpuarray[],Vec*V) {PetscCUDAError;}
+PetscErrorCode VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const PetscScalar gpuarray[],Vec*V) {PetscCUDAError;}
 
 #undef PetscCUDAError
 
