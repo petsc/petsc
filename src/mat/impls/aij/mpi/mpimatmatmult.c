@@ -83,20 +83,21 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(void *data)
 
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
 {
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *a  =(Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
-  Mat_SeqAIJ     *ad =(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
-  Mat_SeqAIJ     *cd =(Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
-  PetscScalar    *cda=cd->a,*coa=co->a;
-  Mat_SeqAIJ     *p_loc,*p_oth;
-  PetscScalar    *apa,*ca;
-  PetscInt       cm =C->rmap->n;
-  Mat_APMPI      *ptap;
-  PetscInt       *api,*apj,*apJ,i,k;
-  PetscInt       cstart=C->cmap->rstart;
-  PetscInt       cdnz,conz,k0,k1;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
+  PetscErrorCode    ierr;
+  Mat_MPIAIJ        *a  =(Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
+  Mat_SeqAIJ        *ad =(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
+  Mat_SeqAIJ        *cd =(Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
+  PetscScalar       *cda=cd->a,*coa=co->a;
+  Mat_SeqAIJ        *p_loc,*p_oth;
+  PetscScalar       *apa,*ca;
+  PetscInt          cm =C->rmap->n;
+  Mat_APMPI         *ptap;
+  PetscInt          *api,*apj,*apJ,i,k;
+  PetscInt          cstart=C->cmap->rstart;
+  PetscInt          cdnz,conz,k0,k1;
+  const PetscScalar *dummy;
+  MPI_Comm          comm;
+  PetscMPIInt       size;
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
@@ -127,6 +128,11 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
 
   api = ptap->api;
   apj = ptap->apj;
+  /* trigger copy to CPU */
+  ierr = MatSeqAIJGetArrayRead(a->A,&dummy);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(a->A,&dummy);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(a->B,&dummy);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(a->B,&dummy);CHKERRQ(ierr);
   for (i=0; i<cm; i++) {
     /* compute apa = A[i,:]*P */
     AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa);
@@ -621,23 +627,24 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
-  Mat_SeqAIJ     *ad  = (Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
-  Mat_SeqAIJ     *cd  = (Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
-  PetscInt       *adi = ad->i,*adj,*aoi=ao->i,*aoj;
-  PetscScalar    *ada,*aoa,*cda=cd->a,*coa=co->a;
-  Mat_SeqAIJ     *p_loc,*p_oth;
-  PetscInt       *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pj;
-  PetscScalar    *pa_loc,*pa_oth,*pa,valtmp,*ca;
-  PetscInt       cm    = C->rmap->n,anz,pnz;
-  Mat_APMPI      *ptap;
-  PetscScalar    *apa_sparse;
-  PetscInt       *api,*apj,*apJ,i,j,k,row;
-  PetscInt       cstart = C->cmap->rstart;
-  PetscInt       cdnz,conz,k0,k1,nextp;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
+  PetscErrorCode    ierr;
+  Mat_MPIAIJ        *a   = (Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
+  Mat_SeqAIJ        *ad  = (Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
+  Mat_SeqAIJ        *cd  = (Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
+  PetscInt          *adi = ad->i,*adj,*aoi=ao->i,*aoj;
+  PetscScalar       *ada,*aoa,*cda=cd->a,*coa=co->a;
+  Mat_SeqAIJ        *p_loc,*p_oth;
+  PetscInt          *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pj;
+  PetscScalar       *pa_loc,*pa_oth,*pa,valtmp,*ca;
+  PetscInt          cm    = C->rmap->n,anz,pnz;
+  Mat_APMPI         *ptap;
+  PetscScalar       *apa_sparse;
+  const PetscScalar *dummy;
+  PetscInt          *api,*apj,*apJ,i,j,k,row;
+  PetscInt          cstart = C->cmap->rstart;
+  PetscInt          cdnz,conz,k0,k1,nextp;
+  MPI_Comm          comm;
+  PetscMPIInt       size;
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
@@ -667,6 +674,11 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     p_oth = NULL; pi_oth = NULL; pj_oth = NULL; pa_oth = NULL;
   }
 
+  /* trigger copy to CPU */
+  ierr = MatSeqAIJGetArrayRead(a->A,&dummy);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(a->A,&dummy);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(a->B,&dummy);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(a->B,&dummy);CHKERRQ(ierr);
   api = ptap->api;
   apj = ptap->apj;
   for (i=0; i<cm; i++) {
@@ -1595,6 +1607,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   MPI_Request         *s_waits,*r_waits;
   MPI_Status          *status;
   MatScalar           **abuf_r,*ba_i,*pA,*coa,*ba;
+  const PetscScalar   *dummy;
   PetscInt            *ai,*aj,*coi,*coj,*poJ,*pdJ;
   Mat                 A_loc;
   Mat_SeqAIJ          *a_loc;
@@ -1626,6 +1639,11 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   ai    = a_loc->i;
   aj    = a_loc->j;
 
+  /* trigger copy to CPU */
+  ierr = MatSeqAIJGetArrayRead(p->A,&dummy);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(p->A,&dummy);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(p->B,&dummy);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(p->B,&dummy);CHKERRQ(ierr);
   for (i=0; i<am; i++) {
     anz = ai[i+1] - ai[i];
     adj = aj + ai[i];

@@ -2474,8 +2474,10 @@ PetscErrorCode VecCUDAReplaceArray(Vec vin,const PetscScalar a[])
   PetscFunctionBegin;
   PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
 #if defined(PETSC_HAVE_CUDA)
-  err = cudaFree(((Vec_CUDA*)vin->spptr)->GPUarray);CHKERRCUDA(err);
-  ((Vec_CUDA*)vin->spptr)->GPUarray = (PetscScalar*)a;
+  if (((Vec_CUDA*)vin->spptr)->GPUarray_allocated) {
+    err = cudaFree(((Vec_CUDA*)vin->spptr)->GPUarray_allocated);CHKERRCUDA(err);
+  }
+  ((Vec_CUDA*)vin->spptr)->GPUarray_allocated = ((Vec_CUDA*)vin->spptr)->GPUarray = (PetscScalar*)a;
   vin->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
   ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);

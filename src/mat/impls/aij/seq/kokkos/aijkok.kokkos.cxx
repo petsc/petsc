@@ -617,6 +617,8 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar a,Mat X,MatStructur
 static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
 {
   PetscFunctionBegin;
+  A->boundtocpu = PETSC_FALSE;
+
   A->ops->setvalues                 = MatSetValues_SeqAIJKokkos; /* protect with DEBUG, but MatSeqAIJSetTotalPreallocation defeats this ??? */
   A->ops->assemblyend               = MatAssemblyEnd_SeqAIJKokkos;
   A->ops->destroy                   = MatDestroy_SeqAIJKokkos;

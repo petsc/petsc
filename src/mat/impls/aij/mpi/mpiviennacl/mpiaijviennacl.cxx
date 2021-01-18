@@ -62,6 +62,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
 
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
+  A->boundtocpu = PETSC_FALSE;
   ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(VECVIENNACL,&A->defaultvectype);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJViennaCL);CHKERRQ(ierr);

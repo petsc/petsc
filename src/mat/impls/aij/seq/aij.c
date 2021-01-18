@@ -445,7 +445,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   PetscInt       *imax = a->imax,*ai = a->i,*ailen = a->ilen;
   PetscErrorCode ierr;
   PetscInt       *aj = a->j,nonew = a->nonew,lastcol = -1;
-  MatScalar      *ap=NULL,value=0.0,*aa = a->a;
+  MatScalar      *ap=NULL,value=0.0,*aa;
   PetscBool      ignorezeroentries = a->ignorezeroentries;
   PetscBool      roworiented       = a->roworiented;
 #if defined(PETSC_HAVE_DEVICE)
@@ -453,6 +453,14 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
 #endif
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_DEVICE)
+  if (A->offloadmask == PETSC_OFFLOAD_GPU) {
+    const PetscScalar *dummy;
+    ierr = MatSeqAIJGetArrayRead(A,&dummy);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArrayRead(A,&dummy);CHKERRQ(ierr);
+  }
+#endif
+  aa = a->a;
   for (k=0; k<m; k++) { /* loop over added rows */
     row = im[k];
     if (row < 0) continue;
@@ -2832,19 +2840,18 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
 
 PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
 {
-  Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)inA->data;
-  PetscScalar    oalpha = alpha;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)inA->data;
+  PetscScalar    *v;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bnz;
 
   PetscFunctionBegin;
+  ierr = MatSeqAIJGetArray(inA,&v);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(a->nz,&bnz);CHKERRQ(ierr);
-  PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&oalpha,a->a,&one));
+  PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&alpha,v,&one));
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(inA,&v);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(inA);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DEVICE)
-  if (inA->offloadmask != PETSC_OFFLOAD_UNALLOCATED) inA->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -3186,10 +3193,6 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = PetscLogFlops(2.0*bnz);CHKERRQ(ierr);
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
-    /* the MatAXPY_Basic* subroutines calls MatAssembly, so the matrix on the GPU will be updated */
-#if defined(PETSC_HAVE_DEVICE)
-    if (Y->offloadmask != PETSC_OFFLOAD_UNALLOCATED) Y->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   } else {
@@ -3212,17 +3215,16 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 PetscErrorCode  MatConjugate_SeqAIJ(Mat mat)
 {
 #if defined(PETSC_USE_COMPLEX)
-  Mat_SeqAIJ  *aij = (Mat_SeqAIJ*)mat->data;
-  PetscInt    i,nz;
-  PetscScalar *a;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)mat->data;
+  PetscInt       i,nz;
+  PetscScalar    *a;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   nz = aij->nz;
-  a  = aij->a;
+  ierr = MatSeqAIJGetArray(mat,&a);CHKERRQ(ierr);
   for (i=0; i<nz; i++) a[i] = PetscConj(a[i]);
-#if defined(PETSC_HAVE_DEVICE)
-  if (mat->offloadmask != PETSC_OFFLOAD_UNALLOCATED) mat->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
+  ierr = MatSeqAIJRestoreArray(mat,&a);CHKERRQ(ierr);
 #else
   PetscFunctionBegin;
 #endif
@@ -3231,16 +3233,17 @@ PetscErrorCode  MatConjugate_SeqAIJ(Mat mat)
 
 PetscErrorCode MatGetRowMaxAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,j,m = A->rmap->n,*ai,*aj,ncols,n;
-  PetscReal      atmp;
-  PetscScalar    *x;
-  MatScalar      *aa;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode  ierr;
+  PetscInt        i,j,m = A->rmap->n,*ai,*aj,ncols,n;
+  PetscReal       atmp;
+  PetscScalar     *x;
+  const MatScalar *aa,*av;
 
   PetscFunctionBegin;
   if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  aa = a->a;
+  ierr = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
+  aa = av;
   ai = a->i;
   aj = a->j;
 
@@ -3257,20 +3260,22 @@ PetscErrorCode MatGetRowMaxAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
     }
   }
   ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,j,m = A->rmap->n,*ai,*aj,ncols,n;
-  PetscScalar    *x;
-  MatScalar      *aa;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode  ierr;
+  PetscInt        i,j,m = A->rmap->n,*ai,*aj,ncols,n;
+  PetscScalar     *x;
+  const MatScalar *aa,*av;
 
   PetscFunctionBegin;
   if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  aa = a->a;
+  ierr = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
+  aa = av;
   ai = a->i;
   aj = a->j;
 
@@ -3301,18 +3306,21 @@ PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v,PetscInt idx[])
     }
   }
   ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,j,m = A->rmap->n,*ai,*aj,ncols,n;
-  PetscScalar    *x,*aa;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode  ierr;
+  PetscInt        i,j,m = A->rmap->n,*ai,*aj,ncols,n;
+  PetscScalar     *x;
+  const MatScalar *aa,*av;
 
   PetscFunctionBegin;
-  aa = a->a;
+  ierr = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
+  aa = av;
   ai = a->i;
   aj = a->j;
 
@@ -3343,6 +3351,7 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
     }
   }
   ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3353,11 +3362,12 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   PetscInt        i,j,m = A->rmap->n,ncols,n;
   const PetscInt  *ai,*aj;
   PetscScalar     *x;
-  const MatScalar *aa;
+  const MatScalar *aa,*av;
 
   PetscFunctionBegin;
   if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  aa = a->a;
+  ierr = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
+  aa = av;
   ai = a->i;
   aj = a->j;
 
@@ -3388,6 +3398,7 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
     }
   }
   ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3527,6 +3538,9 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
   } else {
     for (i=0; i<aij->nz; i++) {ierr = PetscRandomGetValue(rctx,aij->a+i);CHKERRQ(ierr);}
   }
+#if defined(PETSC_HAVE_DEVICE)
+  if (x->offloadmask != PETSC_OFFLOAD_UNALLOCATED) x->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

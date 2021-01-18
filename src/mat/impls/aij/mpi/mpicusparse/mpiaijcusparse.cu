@@ -528,7 +528,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtyp
     ierr = MatCopy(B,*newmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   }
   A = *newmat;
-
+  A->boundtocpu = PETSC_FALSE;
   ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(VECCUDA,&A->defaultvectype);CHKERRQ(ierr);
 

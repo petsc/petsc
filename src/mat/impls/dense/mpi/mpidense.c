@@ -40,6 +40,17 @@ PetscErrorCode MatDenseGetLocalMatrix(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatCopy_MPIDense(Mat A, Mat B, MatStructure s)
+{
+  Mat_MPIDense   *Amat = (Mat_MPIDense*)A->data;
+  Mat_MPIDense   *Bmat = (Mat_MPIDense*)B->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCopy(Amat->A,Bmat->A,s);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatGetRow_MPIDense(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_MPIDense   *mat = (Mat_MPIDense*)A->data;
@@ -1387,7 +1398,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         MatCreateSubMatrices_MPIDense,
                                         NULL,
                                         MatGetValues_MPIDense,
-                                        NULL,
+                                        MatCopy_MPIDense,
                                 /* 44*/ NULL,
                                         MatScale_MPIDense,
                                         MatShift_Basic,

@@ -135,6 +135,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
   }
   B = *newmat;
 
+  B->boundtocpu = PETSC_FALSE;
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(VECKOKKOS,&B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJKOKKOS);CHKERRQ(ierr);

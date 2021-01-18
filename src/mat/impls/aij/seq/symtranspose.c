@@ -120,15 +120,18 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
 
 PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,j,anzj;
-  Mat            At;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*at;
-  PetscInt       an=A->cmap->N,am=A->rmap->N;
-  PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
-  MatScalar      *ata,*aa=a->a;
+  PetscErrorCode  ierr;
+  PetscInt        i,j,anzj;
+  Mat             At;
+  Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data,*at;
+  PetscInt        an=A->cmap->N,am=A->rmap->N;
+  PetscInt        *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
+  MatScalar       *ata;
+  const MatScalar *aa,*av;
 
   PetscFunctionBegin;
+  ierr = MatSeqAIJGetArrayRead(A,&av);CHKERRQ(ierr);
+  aa   = av;
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     /* Allocate space for symbolic transpose info and work array */
     ierr = PetscCalloc1(an+1,&ati);CHKERRQ(ierr);
@@ -164,6 +167,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
       atfill[*aj++]   += 1;
     }
   }
+  ierr = MatSeqAIJRestoreArrayRead(A,&av);CHKERRQ(ierr);
 
   /* Clean up temporary space and complete requests. */
   ierr = PetscFree(atfill);CHKERRQ(ierr);
@@ -185,6 +189,9 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   } else {
     ierr = MatHeaderMerge(A,&At);CHKERRQ(ierr);
   }
+#if defined(PETSC_HAVE_DEVICE)
+  (*B)->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(0);
 }
 

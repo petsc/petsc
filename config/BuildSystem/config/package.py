@@ -83,7 +83,8 @@ class Package(config.base.Configure):
     self.requires32bitintblas   = 1  # 1 means that the package will not work with 64 bit integer BLAS/LAPACK
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
-    self.usesopenmp             = 'no'  # yes, no, unknow package is built to use OpenMP
+    self.usesopenmp             = 'no'  # yes, no, unknowm package is built to use OpenMP
+    self.usespthreads           = 'no'  # yes, no, unknown package is built to use Pthreads
     self.cmakelistsdir          = '' # Location of CMakeLists.txt - if not located at the top level of the package dir
 
     # Outside coupling
@@ -119,6 +120,7 @@ class Package(config.base.Configure):
       if self.executablename: output += '  '+getattr(self,self.executablename)+'\n'
       if self.usesopenmp == 'yes': output += '  uses OpenMP; use export OMP_NUM_THREADS=<p> or -omp_num_threads <p> to control the number of threads\n'
       if self.usesopenmp == 'unknown': output += '  Unknown if this uses OpenMP (try export OMP_NUM_THREADS=<1-4> yourprogram -log_view) \n'
+      if self.usespthreads == 'yes': output += '  uses PTHREADS; please consult the documentation on how to control the number of threads\n'
     return output
 
   def setupDependencies(self, framework):

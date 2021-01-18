@@ -86,16 +86,17 @@ PetscErrorCode VecCopy_SeqCUDA_Private(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecSetRandom_SeqCUDA_Private(Vec xin,PetscRandom r)
+/* this is an exact copy of VecSetRandom_Seq */
+PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscInt       n = xin->map->n,i;
   PetscScalar    *xx;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(xin,&xx);CHKERRQ(ierr);
   for (i=0; i<n; i++) { ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr); }
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -132,16 +133,6 @@ PetscErrorCode VecResetArray_SeqCUDA_Private(Vec vin)
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
   v->unplacedarray = 0;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecSetRandom_SeqCUDA_Private(xin,r);CHKERRQ(ierr);
-  xin->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 

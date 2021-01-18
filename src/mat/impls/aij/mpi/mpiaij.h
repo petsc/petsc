@@ -62,10 +62,9 @@ typedef struct {
   PetscScalar *rowvalues;          /* nonzero values in row */
   PetscBool   getrowactive;        /* indicates MatGetRow(), not restored */
 
-  /* Used by MatDistribute_MPIAIJ() to allow reuse of previous matrix allocation  and nonzero pattern */
-  PetscInt *ld;                    /* number of entries per row left of diagona block */
+  PetscInt *ld;                    /* number of entries per row left of diagonal block */
 
-  /* Used by MPICUSPARSE classes */
+  /* Used by device classes */
   void * spptr;
 
 } Mat_MPIAIJ;
