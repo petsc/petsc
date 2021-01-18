@@ -304,18 +304,18 @@ static PetscErrorCode SVtxCreate(DM dm,PetscInt Nsedgelist,PetscInt *sedgelist,P
 
   /* (2) Construct sedges from ctable
      sedges: edges connect vertex sv[0]=(net[0],idx[0]) to vertices sv[k], k=1,...,n-1;
-     net[k], k=0, ...,n-1, are in assending order */
+     net[k], k=0, ...,n-1, are in ascending order */
   ierr = PetscMalloc1(nta,&sedges);CHKERRQ(ierr);
   for (nsv = 0; nsv < nta; nsv++) {
-    /* for a single svtx, put shared vertices in assending order of gidx */
-    ierr = PetscTableGetCount((const PetscTable)svtas[nsv],&n);CHKERRQ(ierr);
+    /* for a single svtx, put shared vertices in ascending order of gidx */
+    ierr = PetscTableGetCount(svtas[nsv],&n);CHKERRQ(ierr);
     ierr = PetscCalloc1(2*n,&sv);CHKERRQ(ierr);
     sedges[nsv].sv   = sv;
     sedges[nsv].n    = n;
     sedges[nsv].gidx = -1; /* initialization */
 
     ierr = PetscTableGetHeadPosition(svtas[nsv],&ppos);CHKERRQ(ierr);
-    for (k=0; k<n; k++) { /* gidx is sorted in assending order */
+    for (k=0; k<n; k++) { /* gidx is sorted in ascending order */
       ierr = PetscTableGetNext(svtas[nsv],&ppos,&gidx,&i);CHKERRQ(ierr);
       gidx--; i--;
 
