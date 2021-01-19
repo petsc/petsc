@@ -1571,18 +1571,33 @@ M*/
 
    Synopsis:
     #include <petscsys.h>
-     PetscErrorCode (*PetscHelpPrintf)(const char format[],...);
+     PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[],args);
 
-    Not Collective
+    Collective on comm
 
     Input Parameters:
-.   format - the usual printf() format string
++  comm - the MPI communicator over which the help message is printed
+.  format - the usual printf() format string
+-  args - arguments to be printed
 
    Level: developer
 
-    Fortran Note:
-    This routine is not supported in Fortran.
+   Fortran Note:
+     This routine is not supported in Fortran.
 
+   Note:
+     You can change how help messages are printed by replacing the function pointer with a function that does not simply write to stdout.
+
+      To use, write your own function, for example,
+$PetscErrorCode mypetschelpprintf(MPI_Comm comm,const char format[],....)
+${
+$ PetscFunctionReturn(0);
+$}
+then do the assigment
+$    PetscHelpPrintf = mypetschelpprintf;
+   You can do the assignment before PetscInitialize().
+
+  The default routine used is called PetscHelpPrintfDefault().
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscErrorPrintf()
 M*/
