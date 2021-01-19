@@ -178,9 +178,3 @@ src/docs/tao_tex/manual/*.dvi
 compile_commands.json
 .clangd/
 sphinx_docs_env
-src/binding/petsc4py/petsc4py.egg-info/
-src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc.h
-src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc_api.h
-src/binding/petsc4py/src/libpetsc4py/libpetsc4py.c
-src/binding/petsc4py/src/libpetsc4py/libpetsc4py.h
-src/binding/petsc4py/src/petsc4py.PETSc.c
