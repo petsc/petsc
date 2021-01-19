@@ -12,6 +12,14 @@ class Configure(config.package.Package):
     self.builtafterpetsc        = 1
     return
 
+  def setupHelp(self,help):
+    import nargs
+    # we claim it's bool since petsc4py is already shipped with PETSc so no need to ever provide URL
+    help.addArgument('PETSc', '-download-petsc4py=<bool>', nargs.ArgDownload(None, 0, 'Build PETSc Python bindings (petsc4py)'))
+    # commit makes no sense here, we don't wanna show it in --help
+    self.argDB['download-petsc4py-commit'] = None
+    return
+
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.python          = framework.require('config.packages.python',self)
