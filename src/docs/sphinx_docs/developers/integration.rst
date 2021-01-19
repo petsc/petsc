@@ -81,7 +81,8 @@ Submitting an MR
    <div name="raw_1" id="thumbwrap"> <a class="thumb" href="#raw_1"><img src="../../_images/git-push-mr.png" alt=""><span><img src="../../_images/git-push-mr.png" alt=""></span></a> </div></p>
    <div class="clearfix"></div>
 
-Alternatively, use `GitLab's web interface <https://gitlab.com/petsc/petsc/-/merge_requests/new>`__.
+Alternatively, use `GitLab's web interface <https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html>`__.
+For merge requests within the main PETSc repository, `click here <https://gitlab.com/petsc/petsc/-/merge_requests/new>`__.
 
 .. raw:: html
 
