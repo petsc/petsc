@@ -1,4 +1,4 @@
-static const char help[] = "Time-dependent Brusselator reaction-diffusion PDE in 1d. Demonstrates IMEX methods.\n";
+static const char help[] = "Time-dependent Brusselator reaction-diffusion PDE in 1d formulated as a PDAE. Demonstrates solving PDEs with algebraic constraints (PDAE).\n";
 /*
    u_t - alpha u_xx = A + u^2 v - (B+1) u
    v_t - alpha v_xx = B u - u^2 v
