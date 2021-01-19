@@ -158,7 +158,12 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 
   tao->bounded = PETSC_FALSE;
   tao->constrained = PETSC_FALSE;
+  tao->eq_constrained = PETSC_FALSE;
+  tao->ineq_constrained = PETSC_FALSE;
+  tao->ineq_doublesided = PETSC_FALSE;
+
   tao->recycle = PETSC_FALSE;
+
   tao->header_printed = PETSC_FALSE;
 
   /* These flags prevents algorithms from overriding user options */

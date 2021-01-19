@@ -2,7 +2,6 @@
 
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
-
 PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao);
@@ -33,6 +32,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao);
+PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao);
 
 /*
@@ -112,6 +112,7 @@ PetscErrorCode TaoRegisterAll(void)
   ierr = TaoRegister(TAOPDIPM,TaoCreate_PDIPM);CHKERRQ(ierr);
   ierr = TaoRegister(TAOSHELL,TaoCreate_Shell);CHKERRQ(ierr);
   ierr = TaoRegister(TAOADMM,TaoCreate_ADMM);CHKERRQ(ierr);
+  ierr = TaoRegister(TAOALMM,TaoCreate_ALMM);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

@@ -1402,10 +1402,54 @@ Constrained solvers solve optimization problems of the form
 \[
 \begin{array}{ll}
 \displaystyle \min_{x} & f(x) \\
-\mbox{subject to} & g(x) = c
+\mbox{subject to} & g(x) = c \\
+                  & l \leq x \leq u
 \end{array}
 \]
 where $g_i(x) = c_i$ for $i = 1,...,n$. are equality constraints.
+
+Where applicable, TAO algorithms may convert inequality constraints
+to equality constraints via slack variables or penalty functions.
+
+\subsection{Augmented Lagrangian Multiplier Method}
+
+The TAOALMM method solves problems of the form
+\[
+\begin{array}{ll}
+\displaystyle \min_{x} & f(x) \\
+\mbox{subject to} & g(x) = 0\\
+                  & h(x) \geq 0 \\
+                  & l \leq x \leq u
+\end{array}
+\]
+where $g(x)$ are equality constraints, $h(x)$ are inequality constraints
+and $l$ and $u$ are lower and upper bounds on the optimization variables,
+respectively.
+
+TAOALMM converts the above general constrained problem into a sequence of
+bound constrained problems at each outer iteration $k = 1,2,\dots$
+\[
+\begin{array}{ll}
+\displaystyle \min_{x} & L(x, \lambda_k) \\
+\mbox{subject to} & l \leq x \leq u
+\end{array}
+\]
+where $L(x, \lambda_k)$ is the augmented Lagrangian merit function and $\lambda_k$
+is the Lagrange multiplier estimates at outer iteration $k$.
+
+TAOALMM offers two versions of the augmented Lagrangian formulation: the
+canonical Hestenes-Powell augmented Lagrangian~\cite{hestenes1969multiplier,powell1969method}
+with inequality constrained converted to equality constraints via slack variables,
+and the slack-less Powell-Hestenes-Rockafellar formulation~\cite{rockafellar1974augmented}
+that utilizes a pointwise {\tt max()} on the inequality constraints. For most applications,
+the canonical Hestenes-Powell formulation is likely to perform better. However, the PHR
+formulation may be desirable for problems featuring very large numbers of inequality
+constraints as it avoids inflating the dimension of the subproblem with slack variables.
+
+The inner subproblem is solved using a nested bound-constrained first-order TAO solver.
+By default, TAOALM uses a quasi-Newton-Krylov trust-region method (TAOBQNKTR). Other
+first-order methods such as TAOBNCG and TAOBQNLS are also appropriate, but a trust-region
+globalization is strongly recommended for most applications.
 
 \subsection{Alternating Direction Method of Multipliers}
 

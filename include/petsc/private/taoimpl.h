@@ -170,6 +170,9 @@ struct _p_Tao {
     PetscBool viewjacobian;
     PetscBool bounded;
     PetscBool constrained;
+    PetscBool eq_constrained;
+    PetscBool ineq_constrained;
+    PetscBool ineq_doublesided;
     PetscBool header_printed;
     PetscBool recycle;
 

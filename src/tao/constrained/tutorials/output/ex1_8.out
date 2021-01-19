@@ -1,0 +1,62 @@
+---- Constrained Problem -----
+Solution should be f(1,1)=-2
+iter = 0, Function value: 8.,  Residual: 17.088   Constraint: 2.23607 
+  iter = 0,   Function value: 33.,    Residual: 20.3937     Constraint: 0. 
+  iter = 1,   Function value: 33.,    Residual: 20.3937     Constraint: 0. 
+  iter = 1,   Function value: 33.,    Residual: 20.3937     Constraint: 0. 
+  iter = 1,   Function value: 15.8943,    Residual: 24.2598     Constraint: 0. 
+  iter = 2,   Function value: 15.8943,    Residual: 24.2598     Constraint: 0. 
+  iter = 2,   Function value: 3.22166,    Residual: 14.182     Constraint: 0. 
+  iter = 3,   Function value: 3.22166,    Residual: 14.182     Constraint: 0. 
+  iter = 3,   Function value: 2.76308,    Residual: 3.36224     Constraint: 0. 
+  iter = 4,   Function value: -1.04191,    Residual: 3.04926     Constraint: 0. 
+  iter = 5,   Function value: -2.23251,    Residual: 1.79702     Constraint: 0. 
+  iter = 6,   Function value: -2.23251,    Residual: 1.79702     Constraint: 0. 
+  iter = 6,   Function value: -2.31234,    Residual: 1.82755     Constraint: 0. 
+  iter = 7,   Function value: -2.31234,    Residual: 1.82755     Constraint: 0. 
+  iter = 7,   Function value: -2.33629,    Residual: 1.04721     Constraint: 0. 
+  iter = 8,   Function value: -2.38143,    Residual: 0.936893     Constraint: 0. 
+  iter = 9,   Function value: -2.42193,    Residual: 1.12249     Constraint: 0. 
+  iter = 10,   Function value: -2.45695,    Residual: 0.0111001     Constraint: 0. 
+iter = 1, Function value: -2.87496,  Residual: 0.010461   Constraint: 0.289142 
+  iter = 0,   Function value: 1.30519,    Residual: 2.94365     Constraint: 0. 
+  iter = 1,   Function value: 1.30519,    Residual: 2.94365     Constraint: 0. 
+  iter = 1,   Function value: 1.30519,    Residual: 2.94365     Constraint: 0. 
+  iter = 1,   Function value: 1.30519,    Residual: 2.94365     Constraint: 0. 
+  iter = 1,   Function value: 1.30519,    Residual: 2.94365     Constraint: 0. 
+  iter = 1,   Function value: 1.30519,    Residual: 2.94365     Constraint: 0. 
+  iter = 1,   Function value: -0.249321,    Residual: 7.16917     Constraint: 0. 
+  iter = 2,   Function value: -1.56735,    Residual: 2.22776     Constraint: 0. 
+  iter = 3,   Function value: -1.89063,    Residual: 2.66907     Constraint: 0. 
+  iter = 4,   Function value: -2.04934,    Residual: 0.611203     Constraint: 0. 
+  iter = 5,   Function value: -2.04953,    Residual: 0.0138001     Constraint: 0. 
+  iter = 6,   Function value: -2.04953,    Residual: 1.32443e-05     Constraint: 0. 
+iter = 2, Function value: -2.09859,  Residual: 1.32432e-05   Constraint: 0.0313256 
+  iter = 0,   Function value: -1.9514,    Residual: 2.44952     Constraint: 0. 
+  iter = 1,   Function value: -1.9514,    Residual: 2.44952     Constraint: 0. 
+  iter = 1,   Function value: -1.9514,    Residual: 2.44952     Constraint: 0. 
+  iter = 1,   Function value: -1.9514,    Residual: 2.44952     Constraint: 0. 
+  iter = 1,   Function value: -1.9514,    Residual: 2.44952     Constraint: 0. 
+  iter = 1,   Function value: -1.9514,    Residual: 2.44952     Constraint: 0. 
+  iter = 1,   Function value: -1.97379,    Residual: 1.76495     Constraint: 0. 
+  iter = 2,   Function value: -1.99106,    Residual: 1.79077     Constraint: 0. 
+  iter = 3,   Function value: -1.99654,    Residual: 1.57748     Constraint: 0. 
+  iter = 4,   Function value: -2.,    Residual: 0.0103529     Constraint: 0. 
+  iter = 5,   Function value: -2.,    Residual: 3.66223e-05     Constraint: 0. 
+iter = 3, Function value: -2.00093,  Residual: 3.65259e-05   Constraint: 0.000296061 
+  iter = 0,   Function value: -2.,    Residual: 0.049426     Constraint: 0. 
+  iter = 1,   Function value: -2.,    Residual: 0.049426     Constraint: 0. 
+  iter = 1,   Function value: -2.,    Residual: 0.049426     Constraint: 0. 
+  iter = 1,   Function value: -2.,    Residual: 0.049426     Constraint: 0. 
+  iter = 1,   Function value: -2.,    Residual: 0.049426     Constraint: 0. 
+  iter = 1,   Function value: -2.,    Residual: 0.0788322     Constraint: 0. 
+  iter = 2,   Function value: -2.,    Residual: 0.0376641     Constraint: 0. 
+  iter = 3,   Function value: -2.,    Residual: 0.0372608     Constraint: 0. 
+  iter = 4,   Function value: -2.,    Residual: 1.95644e-06     Constraint: 0. 
+iter = 4, Function value: -2.00001,  Residual: 1.93762e-06   Constraint: 2.81803e-06 
+Vec Object: 2 MPI processes
+  type: mpicuda
+Process [0]
+1.
+1.
+Process [1]

@@ -10,6 +10,7 @@
 #define TaoLineSearchType character*(80)
 #define TaoADMMUpdateType PetscEnum
 #define TaoADMMRegularizerType PetscEnum
+#define TaoALMMType PetscEnum
 
 #define TAOLMVM     "lmvm"
 #define TAONLS      "nls"
@@ -41,6 +42,7 @@
 #define TAOIPM      "ipm"
 #define TAOPDIPM    "pdipm"
 #define TAOADMM     "admm"
+#define TAOALMM     "almm"
 #define TAOFDTEST   "test"
 
 #endif
