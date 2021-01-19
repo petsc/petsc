@@ -113,13 +113,13 @@ class Configure(config.package.Package):
       self.log.write('Overriding the thrust library in CUDAToolkit with a user-specified one\n')
       self.include = self.thrust.include+self.include
 
+    self.pushLanguage('CUDA')
+    petscNvcc = self.getCompiler()
+    self.popLanguage()
     if 'with-cuda-gencodearch' in self.framework.clArgDB:
       self.gencodearch = self.argDB['with-cuda-gencodearch']
     else:
       import os
-      self.pushLanguage('CUDA')
-      petscNvcc = self.getCompiler()
-      self.popLanguage()
       self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
       if hasattr(self,'systemNvcc'):
         cudaDir = os.path.dirname(os.path.dirname(self.systemNvcc))
