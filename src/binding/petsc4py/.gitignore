@@ -12,11 +12,9 @@ __pycache__
 *.pyo
 .tox
 
-## Please don't mess with .gitignore. If you really hate `git status`
-## showing Cython-generated files, please add the following lines
-## (without the comment marks) to `.git/info/exclude`.
-
-# Cython-*.egg
-# petsc4py.PETSc.c
-# petsc4py.PETSc*.h
-# src/libpetsc4py/libpetsc4py.[hc]
+*.egg
+.eggs/
+petsc4py.egg-info/
+petsc4py.PETSc.c
+petsc4py.PETSc*.h
+src/libpetsc4py/libpetsc4py.[hc]

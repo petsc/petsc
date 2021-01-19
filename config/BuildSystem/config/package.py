@@ -184,7 +184,7 @@ class Package(config.base.Configure):
     self.package          = self.name.lower()
     self.pkgname          = self.package
     self.downloadname     = self.name
-    self.downloaddirnames = [self.downloadname];
+    self.downloaddirnames = [self.downloadname]
     return
 
   def getDefaultPrecision(self):
