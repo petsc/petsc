@@ -8,7 +8,7 @@ class CompilerOptions(config.base.Configure):
     import config.setCompilers
 
     if language == 'C':
-      if compiler.endswith('mpicc') or compiler.endswith('mpiicc') :
+      if [s for s in ['mpicc','mpiicc'] if os.path.basename(compiler).find(s)>=0]:
         try:
           output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
           self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
@@ -97,7 +97,7 @@ class CompilerOptions(config.base.Configure):
   def getCxxFlags(self, compiler, bopt):
     import config.setCompilers
 
-    if compiler.endswith('mpiCC') or compiler.endswith('mpicxx') or compiler.endswith('mpiicxx') or compiler.endswith('mpiicpc'):
+    if [s for s in ['mpiCC','mpicxx','mpiicxx','mpiicpc'] if os.path.basename(compiler).find(s)>=0]:
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPICXX_SHOW',output.strip().replace('\n','\\\\n'))
@@ -191,7 +191,7 @@ class CompilerOptions(config.base.Configure):
 
   def getFortranFlags(self, compiler, bopt):
 
-    if compiler.endswith('mpif77') or compiler.endswith('mpif90') or compiler.endswith('mpifort') or compiler.endswith('mpiifort'):
+    if [s for s in ['mpif77','mpif90','mpifort','mpiifort'] if os.path.basename(compiler).find(s)>=0]:
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPIFC_SHOW',output.strip().replace('\n','\\\\n'))
