@@ -31,8 +31,8 @@ class Configure(config.package.GNUPackage):
   def setupHelp(self, help):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
-    help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
-    help.addArgument('MAKE', '-with-make-test-np=<np>',                      nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel tests'))
+    help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of processes to use for parallel builds'))
+    help.addArgument('MAKE', '-with-make-test-np=<np>',                      nargs.ArgInt(None, None, min=1, help='Default number of processes to use for parallel tests'))
     help.addArgument('MAKE', '-with-make-load=<load>',                       nargs.ArgReal(None, None, min=1.0, help='max load to use for parallel builds'))
     help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
     help.addArgument('MAKE', '-with-make-exec=<executable>',                 nargs.Arg(None, None, 'Make executable to look for'))
