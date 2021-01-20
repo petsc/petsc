@@ -1883,7 +1883,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
 /*@C
    MatGetValues - Gets a block of values from a matrix.
 
-   Not Collective; currently only returns a local block
+   Not Collective; can only return values that are owned by the give process
 
    Input Parameters:
 +  mat - the matrix
@@ -1892,24 +1892,28 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
 -  n, idxn - the number of columns and their global indices
 
    Notes:
-   The user must allocate space (m*n PetscScalars) for the values, v.
-   The values, v, are then returned in a row-oriented format,
-   analogous to that used by default in MatSetValues().
+     The user must allocate space (m*n PetscScalars) for the values, v.
+     The values, v, are then returned in a row-oriented format,
+     analogous to that used by default in MatSetValues().
 
-   MatGetValues() uses 0-based row and column numbers in
-   Fortran as well as in C.
+     MatGetValues() uses 0-based row and column numbers in
+     Fortran as well as in C.
 
-   MatGetValues() requires that the matrix has been assembled
-   with MatAssemblyBegin()/MatAssemblyEnd().  Thus, calls to
-   MatSetValues() and MatGetValues() CANNOT be made in succession
-   without intermediate matrix assembly.
+     MatGetValues() requires that the matrix has been assembled
+     with MatAssemblyBegin()/MatAssemblyEnd().  Thus, calls to
+     MatSetValues() and MatGetValues() CANNOT be made in succession
+     without intermediate matrix assembly.
 
-   Negative row or column indices will be ignored and those locations in v[] will be
-   left unchanged.
+     Negative row or column indices will be ignored and those locations in v[] will be
+     left unchanged.
+
+     For the standard row-based matrix formats, idxm[] can only contain rows owned by the requesting MPI rank.
+     That is, rows with global index greater than or equal to restart and less than rend where restart and rend are obtainable
+     from MatGetOwnershipRange(mat,&rstart,&rend).
 
    Level: advanced
 
-.seealso: MatGetRow(), MatCreateSubMatrices(), MatSetValues()
+.seealso: MatGetRow(), MatCreateSubMatrices(), MatSetValues(), MatGetOwnershipRange(), MatGetValuesLocal()
 @*/
 PetscErrorCode MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
@@ -1934,8 +1938,8 @@ PetscErrorCode MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
 }
 
 /*@C
-   MatGetValuesLocal - retrieves values into certain locations of a matrix,
-   using a local numbering of the nodes.
+   MatGetValuesLocal - retrieves values from certain locations in a matrix using the local numbering of the indices
+     defined previously by MatSetLocalToGlobalMapping()
 
    Not Collective
 
@@ -1948,16 +1952,21 @@ PetscErrorCode MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
 .  y -  a logically two-dimensional array of values
 
    Notes:
-   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatSetLocalToGlobalMapping() before using this routine
+     If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatSetLocalToGlobalMapping() before using this routine.
+
+     This routine can only return values that are owned by the requesting MPI rank. That is, for standard matrix formats, rows that, in the global numbering,
+     are greater than or equal to restart and less than rend where restart and rend are obtainable from MatGetOwnershipRange(mat,&rstart,&rend). One can
+     determine if the resulting global row associated with the local row r is owned by the requesting MPI rank by applying the ISLocalToGlobalMapping set
+     with MatSetLocalToGlobalMapping().
+
+   Developer Notes:
+      This is labelled with C so does not automatically generate Fortran stubs and interfaces
+      because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
    Level: advanced
 
-   Developer Notes:
-    This is labelled with C so does not automatically generate Fortran stubs and interfaces
-                    because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
-
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
-           MatSetValuesLocal()
+           MatSetValuesLocal(), MatGetValues()
 @*/
 PetscErrorCode MatGetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],PetscScalar y[])
 {
@@ -2057,7 +2066,7 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
    Level: intermediate
 
 
-.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal()
+.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal(), MatGetValuesLocal()
 @*/
 PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
 {

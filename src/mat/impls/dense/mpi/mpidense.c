@@ -1871,6 +1871,17 @@ PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A,Mat *v)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   MATMPIDENSE - MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
+
+   Options Database Keys:
+. -mat_type mpidense - sets the matrix type to "mpidense" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateDense()
+
+M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 {
   Mat_MPIDense   *a;
@@ -2391,6 +2402,8 @@ PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
    Notes:
    The dense format is fully compatible with standard Fortran 77
    storage by columns.
+   Note that, although local portions of the matrix are stored in column-major
+   order, the matrix is partitioned across MPI ranks by row.
 
    The data input variable is intended primarily for Fortran programmers
    who wish to allocate their own matrix memory space.  Most users should

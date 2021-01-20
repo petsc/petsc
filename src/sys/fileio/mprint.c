@@ -663,25 +663,6 @@ PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
   PetscFunctionReturn(0);
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*@C
-     PetscHelpPrintf -  All PETSc help messages are passing through this function. You can change how help messages are printed by
-        replacinng it  with something that does not simply write to a stdout.
-
-      To use, write your own function for example,
-$PetscErrorCode mypetschelpprintf(MPI_Comm comm,const char format[],....)
-${
-$ PetscFunctionReturn(0);
-$}
-then before the call to PetscInitialize() do the assignment
-$    PetscHelpPrintf = mypetschelpprintf;
-
-  Note: the default routine used is called PetscHelpPrintfDefault().
-
-  Level:  developer
-
-.seealso: PetscVSNPrintf(), PetscVFPrintf(), PetscErrorPrintf()
-@*/
 PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;

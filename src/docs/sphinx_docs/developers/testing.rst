@@ -215,7 +215,7 @@ Searching using gmake's native regexp functionality is kept for people who like 
        - Example: ``ptmake test gmakesearch='vec_is%ex1_basic_1'``
   + ``gmakesearchin``
        - Use gmake's own filter capability to search in previous results
-       - Example: ``ptmake test search='vec_is%1' searchin='basic'``
+       - Example: ``ptmake test gmakesearch='vec_is%1' gmakesearchin='basic'``
 
   + ``argsearch``
        - search on arguments using gmake.  This is deprecated in favor of the query/queryval method as described below.

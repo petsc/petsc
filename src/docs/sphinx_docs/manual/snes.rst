@@ -799,7 +799,7 @@ the subsidiary linear systems within the Newton-like methods of
 ``SNES``. When solving a system of nonlinear equations, one can instead
 employ the techniques of Eisenstat and Walker :cite:`EW96`
 to compute :math:`\eta_k` at each step of the nonlinear solver by using
-the option ``-snes_ksp_ew_conv`` . In addition, by adding one’s own
+the option ``-snes_ksp_ew`` . In addition, by adding one’s own
 ``KSP`` convergence test (see :any:`sec_convergencetests`), one can easily create one’s own,
 problem-dependent, inner convergence tests.
 
