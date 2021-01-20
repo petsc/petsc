@@ -157,7 +157,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscBool      isshell,isdense;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)Y,MATSHELL,&isshell);CHKERRQ(ierr);
+  ierr = MatIsShell(Y,&isshell);CHKERRQ(ierr);
   if (isshell) { /* MatShell has special support for AXPY */
     PetscErrorCode (*f)(Mat,PetscScalar,Mat,MatStructure);
 
