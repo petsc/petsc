@@ -123,6 +123,14 @@ define ARCHIVE_RECIPE_WIN32FE_LIB
   @$(RM) $@.args
 endef
 
+define ARCHIVE_RECIPE_ARGFILE
+  @$(RM) $@
+  $(file > $@.args,$^)
+  $(call quiet,AR) $(AR_FLAGS) $@ @$@.args
+  @$(RM) $@.args
+  $(call quiet,RANLIB) $@
+endef
+
 define ARCHIVE_RECIPE_DEFAULT
   @$(RM) $@
   $(call quiet,AR) $(AR_FLAGS) $@ $^
@@ -130,7 +138,7 @@ define ARCHIVE_RECIPE_DEFAULT
 endef
 
 %.$(AR_LIB_SUFFIX) : $$(obj) | $$(@D)/.DIR
-	$(if $(findstring win32fe lib,$(AR)),$(ARCHIVE_RECIPE_WIN32FE_LIB),$(ARCHIVE_RECIPE_DEFAULT))
+	$(if $(findstring win32fe lib,$(AR)),$(ARCHIVE_RECIPE_WIN32FE_LIB),$(if $(findstring yes,$(AR_ARGFILE)),$(ARCHIVE_RECIPE_ARGFILE),$(ARCHIVE_RECIPE_DEFAULT)))
 
 # with-single-library=0
 libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
