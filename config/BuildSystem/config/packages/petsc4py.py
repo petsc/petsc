@@ -15,6 +15,7 @@ class Configure(config.package.Package):
   def setupHelp(self,help):
     import nargs
     help.addArgument('PETSc', '-with-petsc4py=<bool>', nargs.Arg(None, 0, 'Build PETSc Python bindings (petsc4py)'))
+    help.addArgument('PETSc', '-with-petsc4py-test-np=<np>',nargs.ArgInt(None, None, min=1, help='Number of processes to use for petsc4py tests'))
     return
 
   def setupDependencies(self, framework):
@@ -80,10 +81,18 @@ class Configure(config.package.Package):
                           '@echo "====================================="',\
                           '@echo "To use petsc4py, add '+os.path.join(self.installDir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
-    self.addMakeRule('petsc4pytest','', \
-                       ['@echo "*** Testing petsc4py ***"',\
-                        '@PYTHONPATH='+os.path.join(self.installDir,'lib')+':${PYTHONPATH} '+self.python.pyexe+' '+os.path.join(self.packageDir,'test','runtests.py'+' --verbose'),\
-                        '@echo "====================================="'])
+
+    np = self.make.make_test_np
+    # TODO: some tests currently have issues with np > 4, this should be fixed
+    np = min(np,4)
+    if 'with-petsc4py-test-np' in self.argDB and self.argDB['with-petsc4py-test-np']:
+      np = self.argDB['with-petsc4py-test-np']
+    self.addMakeMacro('PETSC4PY_NP',np)
+    self.addMakeRule('petsc4pytest', '',
+        ['@echo "*** Testing petsc4py on ${PETSC4PY_NP} processes ***"',
+         '@PYTHONPATH=%s:${PYTHONPATH} ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % (os.path.join(self.installDir, 'lib'), self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
+         '@echo "====================================="'])
+
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('petsc4py-build','')
       # the build must be done at install time because PETSc shared libraries must be in final location before building petsc4py

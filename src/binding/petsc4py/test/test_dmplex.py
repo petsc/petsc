@@ -103,6 +103,9 @@ class BaseTestPlex(object):
                 self.assertIn(p, point_closure)
 
     def testBoundaryLabel(self):
+        pStart, pEnd = self.plex.getChart()
+        if (pEnd - pStart == 0): return
+
         self.assertFalse(self.plex.hasLabel("boundary"))
         self.plex.markBoundaryFaces("boundary")
         self.assertTrue(self.plex.hasLabel("boundary"))
@@ -113,7 +116,6 @@ class BaseTestPlex(object):
             for p in points:
                 self.plex.setLabelValue("boundary", p, 1)
 
-        pStart, pEnd = self.plex.getChart()
         for p in range(pStart, pEnd):
             if self.plex.getLabelValue("boundary", p) != 1:
                 self.plex.setLabelValue("boundary", p, 2)
