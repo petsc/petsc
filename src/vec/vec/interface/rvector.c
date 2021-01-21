@@ -1224,6 +1224,89 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 }
 
 /*@
+   VecConcatenate - Creates a new vector that is a vertical concatenation of all the given array of vectors
+                    in the order they appear in the array. The concatenated vector resides on the same
+                    communicator and is the same type as the source vectors.
+
+   Collective on X
+
+   Input Arguments:
++  nx   - number of vectors to be concatenated
+-  X    - array containing the vectors to be concatenated in the order of concatenation
+
+   Output Arguments:
++  Y    - concatenated vector
+-  x_is - array of index sets corresponding to the concatenated components of Y (NULL if not needed)
+
+   Notes:
+   Concatenation is similar to the functionality of a VecNest object; they both represent combination of
+   different vector spaces. However, concatenated vectors do not store any information about their
+   sub-vectors and own their own data. Consequently, this function provides index sets to enable the
+   manipulation of data in the concatenated vector that corresponds to the original components at creation.
+
+   This is a useful tool for outer loop algorithms, particularly constrained optimizers, where the solver
+   has to operate on combined vector spaces and cannot utilize VecNest objects due to incompatibility with
+   bound projections.
+
+   Level: advanced
+
+.seealso: VECNEST, VECSCATTER, VecScatterCreate()
+@*/
+PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
+{
+  MPI_Comm       comm;
+  VecType        vec_type;
+  Vec            Ytmp, Xtmp;
+  IS             *is_tmp;
+  PetscInt       i, shift=0, Xnl, Xng, Xbegin;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(*X,nx,1);
+  PetscValidHeaderSpecific(*X,VEC_CLASSID,2);
+  PetscValidType(*X,2);
+  PetscValidPointer(Y, 3);
+
+  if ((*X)->ops->concatenate) {
+    /* use the dedicated concatenation function if available */
+    ierr = (*(*X)->ops->concatenate)(nx,X,Y,x_is);
+  } else {
+    /* loop over vectors and start creating IS */
+    comm = PetscObjectComm((PetscObject)(*X));
+    ierr = VecGetType(*X, &vec_type);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nx, &is_tmp);
+    for (i=0; i<nx; i++) {
+      ierr = VecGetSize(X[i], &Xng);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(X[i], &Xnl);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(X[i], &Xbegin, NULL);CHKERRQ(ierr);
+      ierr = ISCreateStride(comm, Xnl, shift + Xbegin, 1, &is_tmp[i]);
+      shift += Xng;
+    }
+    /* create the concatenated vector */
+    ierr = VecCreate(comm, &Ytmp);CHKERRQ(ierr);
+    ierr = VecSetType(Ytmp, vec_type);CHKERRQ(ierr);
+    ierr = VecSetSizes(Ytmp, PETSC_DECIDE, shift);CHKERRQ(ierr);
+    ierr = VecSetUp(Ytmp);CHKERRQ(ierr);
+    /* copy data from X array to Y and return */
+    for (i=0; i<nx; i++) {
+      ierr = VecGetSubVector(Ytmp, is_tmp[i], &Xtmp);CHKERRQ(ierr);
+      ierr = VecCopy(X[i], Xtmp);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(Ytmp, is_tmp[i], &Xtmp);CHKERRQ(ierr);
+    }
+    *Y = Ytmp;
+    if (x_is) {
+      *x_is = is_tmp;
+    } else {
+      for (i=0; i<nx; i++) {
+        ierr = ISDestroy(&is_tmp[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(is_tmp);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
    VecGetSubVector - Gets a vector representing part of another vector
 
    Collective on X and IS
