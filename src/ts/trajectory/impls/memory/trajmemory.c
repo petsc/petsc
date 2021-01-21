@@ -679,7 +679,7 @@ static PetscErrorCode SetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscRe
   if (stepnum < stack->top) {
     SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
   }
-  cptype = stack->solution_only ? SOLUTIONONLY : SOLUTION_STAGES;
+  cptype = stack->solution_only ? SOLUTIONONLY : STAGESONLY;
   ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
   ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
   ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -775,7 +775,7 @@ static PetscErrorCode SetTrajTLNR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
   if (!stack->solution_only && localstepnum == 0) PetscFunctionReturn(0); /* skip last point in each stride at recompute stage or last stride */
   if (stack->solution_only && localstepnum == tjsch->stride-1) PetscFunctionReturn(0); /* skip last step in each stride at recompute stage or last stride */
 
-  cptype = stack->solution_only ? SOLUTIONONLY : SOLUTION_STAGES;
+  cptype = stack->solution_only ? SOLUTIONONLY : STAGESONLY;
   ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
   ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
   ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -823,7 +823,7 @@ static PetscErrorCode GetTrajTLNR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
     ierr = ReCompute(ts,tjsch,e->stepnum,stepnum);CHKERRQ(ierr);
     tjsch->skip_trajectory = PETSC_FALSE;
   } else {
-    CheckpointType cptype = SOLUTION_STAGES;
+    CheckpointType cptype = STAGESONLY;
     /* fill stack with info */
     if (localstepnum == 0 && tjsch->total_steps-stepnum >= laststridesize) {
       id = stepnum/tjsch->stride;
