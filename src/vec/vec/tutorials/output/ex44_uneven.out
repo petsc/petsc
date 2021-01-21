@@ -1,0 +1,202 @@
+Original X[0] vector
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+1.
+Process [1]
+2.
+Process [2]
+Process [3]
+Process [4]
+Original X[1] vector
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+3.
+Process [1]
+4.
+Process [2]
+5.
+Process [3]
+6.
+Process [4]
+Original X[2] vector
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+7.
+8.
+Process [1]
+9.
+Process [2]
+10.
+Process [3]
+11.
+Process [4]
+12.
+Expected Y vector
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+1.
+2.
+3.
+Process [1]
+4.
+5.
+6.
+Process [2]
+7.
+8.
+Process [3]
+9.
+10.
+Process [4]
+11.
+12.
+------------------------------------------------------------
+Testing VecConcatenate() for Y = [X[1], X[2], ...]
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+1.
+2.
+3.
+Process [1]
+4.
+5.
+6.
+Process [2]
+7.
+8.
+Process [3]
+9.
+10.
+Process [4]
+11.
+12.
+  PASS
+------------------------------------------------------------
+Testing VecConcatenate() for Y = [X[1], X[2], ...] w/o IS
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+1.
+2.
+3.
+Process [1]
+4.
+5.
+6.
+Process [2]
+7.
+8.
+Process [3]
+9.
+10.
+Process [4]
+11.
+12.
+  PASS
+------------------------------------------------------------
+Testing index set for X[0] component
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+1.
+Process [1]
+2.
+Process [2]
+Process [3]
+Process [4]
+  PASS
+Testing index set for X[1] component
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+3.
+Process [1]
+4.
+Process [2]
+5.
+Process [3]
+6.
+Process [4]
+  PASS
+Testing index set for X[2] component
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+7.
+8.
+Process [1]
+9.
+Process [2]
+10.
+Process [3]
+11.
+Process [4]
+12.
+  PASS
+------------------------------------------------------------
+Testing VecScatter for Y -> X[0]
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+1.
+Process [1]
+2.
+Process [2]
+Process [3]
+Process [4]
+  PASS
+Testing VecScatter for Y -> X[1]
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+3.
+Process [1]
+4.
+Process [2]
+5.
+Process [3]
+6.
+Process [4]
+  PASS
+Testing VecScatter for Y -> X[2]
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+7.
+8.
+Process [1]
+9.
+Process [2]
+10.
+Process [3]
+11.
+Process [4]
+12.
+  PASS
+------------------------------------------------------------
+Testing VecScatter for X[:] -> Y
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+1.
+2.
+3.
+Process [1]
+4.
+5.
+6.
+Process [2]
+7.
+8.
+Process [3]
+9.
+10.
+Process [4]
+11.
+12.
+  PASS
