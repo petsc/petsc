@@ -6,6 +6,7 @@ class Configure(config.package.Package):
     self.version          = '5.3.3'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
+    self.requiresversion  = 1
     self.gitcommit        = 'v'+self.version+'-p2'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
                              'https://bitbucket.org/petsc/pkg-mumps/get/'+self.gitcommit+'.tar.gz']
