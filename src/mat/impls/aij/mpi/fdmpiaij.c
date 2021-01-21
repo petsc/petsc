@@ -61,7 +61,7 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   /* (3) Loop over each color */
   if (!coloring->w3) {
     ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
-    /* Vec is used instensively in particular piece of scalar CPU code; won't benifit from bouncing back and forth to the GPU */
+    /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
     ierr = VecBindToCPU(coloring->w3,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)coloring,(PetscObject)coloring->w3);CHKERRQ(ierr);
   }

@@ -6,6 +6,7 @@ class Configure(config.package.Package):
     self.version          = '5.3.5'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
+    self.requiresversion  = 1
     self.download         = ['http://mumps.enseeiht.fr/MUMPS_'+self.version+'.tar.gz',
                              'https://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_'+self.version+'.tar.gz']
     self.download_darwin  = ['https://bitbucket.org/petsc/pkg-mumps/get/v5.2.1-p2.tar.gz']
