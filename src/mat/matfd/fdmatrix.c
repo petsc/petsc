@@ -471,11 +471,11 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   ierr = MatCreateVecs(mat,NULL,&c->w1);CHKERRQ(ierr);
-  /* Vec is used instensively in particular piece of scalar CPU code; won't benifit from bouncing back and forth to the GPU */
+  /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
   ierr = VecBindToCPU(c->w1,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w1);CHKERRQ(ierr);
   ierr = VecDuplicate(c->w1,&c->w2);CHKERRQ(ierr);
-  /* Vec is used instensively in particular piece of scalar CPU code; won't benifit from bouncing back and forth to the GPU */
+  /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
   ierr = VecBindToCPU(c->w2,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w2);CHKERRQ(ierr);
 
