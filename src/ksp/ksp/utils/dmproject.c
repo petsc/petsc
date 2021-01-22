@@ -218,16 +218,22 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
                               InsertMode mode, Vec X)
 {
   Vec            localX, localU;
+  DM             dmIn;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   /* We currently check whether locU == locX to see if we need to apply BC */
-  if (U != X) {ierr = DMGetLocalVector(dm, &localU);CHKERRQ(ierr);}
-  else        {localU = localX;}
-  ierr = DMGlobalToLocalBegin(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
+  if (U != X) {
+    ierr = VecGetDM(U, &dmIn);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(dmIn, &localU);CHKERRQ(ierr);
+  } else {
+    dmIn   = dm;
+    localU = localX;
+  }
+  ierr = DMGlobalToLocalBegin(dmIn, U, INSERT_VALUES, localU);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dmIn, U, INSERT_VALUES, localU);CHKERRQ(ierr);
   ierr = DMProjectFieldLocal(dm, time, localU, funcs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
@@ -240,7 +246,7 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
     }
   }
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  if (U != X) {ierr = DMRestoreLocalVector(dm, &localU);CHKERRQ(ierr);}
+  if (U != X) {ierr = DMRestoreLocalVector(dmIn, &localU);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
