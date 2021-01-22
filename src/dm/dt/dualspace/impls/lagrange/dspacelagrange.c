@@ -910,6 +910,10 @@ static PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetTrimmed_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetNodeType_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetNodeType_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetUseMoments_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetUseMoments_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetMomentOrder_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetMomentOrder_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -941,7 +945,8 @@ static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *Pe
   PetscBool      continuous, tensor, trimmed, flg, flg2, flg3;
   PetscDTNodeType nodeType;
   PetscReal      nodeExponent;
-  PetscBool      nodeEndpoints;
+  PetscInt       momentOrder;
+  PetscBool      nodeEndpoints, useMoments;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -950,6 +955,8 @@ static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *Pe
   ierr = PetscDualSpaceLagrangeGetTrimmed(sp, &trimmed);CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeGetNodeType(sp, &nodeType, &nodeEndpoints, &nodeExponent);CHKERRQ(ierr);
   if (nodeType == PETSCDTNODES_DEFAULT) nodeType = PETSCDTNODES_GAUSSJACOBI;
+  ierr = PetscDualSpaceLagrangeGetUseMoments(sp, &useMoments);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeGetMomentOrder(sp, &momentOrder);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"PetscDualSpace Lagrange Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscdualspace_lagrange_continuity", "Flag for continuous element", "PetscDualSpaceLagrangeSetContinuity", continuous, &continuous, &flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscDualSpaceLagrangeSetContinuity(sp, continuous);CHKERRQ(ierr);}
@@ -964,6 +971,10 @@ static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *Pe
     ierr = PetscOptionsReal("-petscdualspace_lagrange_node_exponent", "Gauss-Jacobi weight function exponent", "PetscDualSpaceLagrangeSetNodeType", nodeExponent, &nodeExponent, &flg3);CHKERRQ(ierr);
   }
   if (flg || flg2 || flg3) {ierr = PetscDualSpaceLagrangeSetNodeType(sp, nodeType, nodeEndpoints, nodeExponent);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-petscdualspace_lagrange_use_moments", "Use moments (where appropriate) for functionals", "PetscDualSpaceLagrangeSetUseMoments", useMoments, &useMoments, &flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscDualSpaceLagrangeSetUseMoments(sp, useMoments);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-petscdualspace_lagrange_moment_order", "Quadrature order for moment functionals", "PetscDualSpaceLagrangeSetMomentOrder", momentOrder, &momentOrder, &flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscDualSpaceLagrangeSetMomentOrder(sp, momentOrder);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1678,6 +1689,7 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
   PetscInt        nNodes, spdim;
   const PetscReal *nodes = NULL;
   PetscSection    section;
+  PetscBool       useMoments;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1696,6 +1708,34 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
   ierr = PetscSectionGetStorageSize(section, &spdim);CHKERRQ(ierr);
   if (spdim != nDofs) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "incompatible all matrix size");
   ierr = PetscMalloc1(nDofs, &(sp->functional));CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeGetUseMoments(sp, &useMoments);CHKERRQ(ierr);
+  if (useMoments) {
+    Mat              allMat;
+    PetscInt         momentOrder, i;
+    PetscBool        tensor;
+    const PetscReal *weights;
+    PetscScalar     *array;
+
+    if (nDofs != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "We do not yet support moments beyond P0, nDofs == %D", nDofs);
+    ierr = PetscDualSpaceLagrangeGetMomentOrder(sp, &momentOrder);CHKERRQ(ierr);
+    ierr = PetscDualSpaceLagrangeGetTensor(sp, &tensor);CHKERRQ(ierr);
+    if (!tensor) {ierr = PetscDTStroudConicalQuadrature(dim, Nc, PetscMax(momentOrder + 1,1), -1.0, 1.0, &(sp->functional[0]));CHKERRQ(ierr);}
+    else         {ierr = PetscDTGaussTensorQuadrature(dim, Nc, PetscMax(momentOrder + 1,1), -1.0, 1.0, &(sp->functional[0]));CHKERRQ(ierr);}
+    /* Need to replace allNodes and allMat */
+    ierr = PetscObjectReference((PetscObject) sp->functional[0]);CHKERRQ(ierr);
+    ierr = PetscQuadratureDestroy(&(sp->allNodes));CHKERRQ(ierr);
+    sp->allNodes = sp->functional[0];
+    ierr = PetscQuadratureGetData(sp->allNodes, NULL, NULL, &nNodes, NULL, &weights);CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF, nDofs, nNodes * Nc, NULL, &allMat);CHKERRQ(ierr);
+    ierr = MatDenseGetArrayWrite(allMat, &array);CHKERRQ(ierr);
+    for (i = 0; i < nNodes * Nc; ++i) array[i] = weights[i];
+    ierr = MatDenseRestoreArrayWrite(allMat, &array);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(allMat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(allMat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatDestroy(&(sp->allMat));CHKERRQ(ierr);
+    sp->allMat = allMat;
+    PetscFunctionReturn(0);
+  }
   for (f = 0; f < nDofs; f++) {
     PetscInt ncols, c;
     const PetscInt *cols;
@@ -2848,6 +2888,42 @@ static PetscErrorCode PetscDualSpaceLagrangeSetNodeType_Lagrange(PetscDualSpace 
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscDualSpaceLagrangeGetUseMoments_Lagrange(PetscDualSpace sp, PetscBool *useMoments)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
+
+  PetscFunctionBegin;
+  *useMoments = lag->useMoments;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscDualSpaceLagrangeSetUseMoments_Lagrange(PetscDualSpace sp, PetscBool useMoments)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
+
+  PetscFunctionBegin;
+  lag->useMoments = useMoments;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder_Lagrange(PetscDualSpace sp, PetscInt *momentOrder)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
+
+  PetscFunctionBegin;
+  *momentOrder = lag->momentOrder;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder_Lagrange(PetscDualSpace sp, PetscInt momentOrder)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
+
+  PetscFunctionBegin;
+  lag->momentOrder = momentOrder;
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDualSpaceLagrangeGetTensor - Get the tensor nature of the dual space
 
@@ -3007,6 +3083,103 @@ PetscErrorCode PetscDualSpaceLagrangeSetNodeType(PetscDualSpace sp, PetscDTNodeT
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscDualSpaceLagrangeGetUseMoments - Get the flag for using moment functionals
+
+  Not collective
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. useMoments - Moment flag
+
+  Level: advanced
+
+.seealso: PetscDualSpaceLagrangeSetUseMoments()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool *useMoments)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidBoolPointer(useMoments, 2);
+  ierr = PetscUseMethod(sp,"PetscDualSpaceLagrangeGetUseMoments_C",(PetscDualSpace,PetscBool *),(sp,useMoments));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceLagrangeSetUseMoments - Set the flag for moment functionals
+
+  Logically collective
+
+  Input Parameters:
++ sp - The PetscDualSpace
+- useMoments - The flag for moment functionals
+
+  Level: advanced
+
+.seealso: PetscDualSpaceLagrangeGetUseMoments()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeSetUseMoments(PetscDualSpace sp, PetscBool useMoments)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  ierr = PetscTryMethod(sp,"PetscDualSpaceLagrangeSetUseMoments_C",(PetscDualSpace,PetscBool),(sp,useMoments));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceLagrangeGetMomentOrder - Get the order for moment integration
+
+  Not collective
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. order - Moment integration order
+
+  Level: advanced
+
+.seealso: PetscDualSpaceLagrangeSetMomentOrder()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt *order)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidIntPointer(order, 2);
+  ierr = PetscUseMethod(sp,"PetscDualSpaceLagrangeGetMomentOrder_C",(PetscDualSpace,PetscInt *),(sp,order));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceLagrangeSetMomentOrder - Set the order for moment integration
+
+  Logically collective
+
+  Input Parameters:
++ sp - The PetscDualSpace
+- order - The order for moment integration
+
+  Level: advanced
+
+.seealso: PetscDualSpaceLagrangeGetMomentOrder()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder(PetscDualSpace sp, PetscInt order)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  ierr = PetscTryMethod(sp,"PetscDualSpaceLagrangeSetMomentOrder_C",(PetscDualSpace,PetscInt),(sp,order));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 {
@@ -3050,6 +3223,8 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
   lag->numCopies   = PETSC_DEFAULT;
   lag->numNodeSkip = PETSC_DEFAULT;
   lag->nodeType    = PETSCDTNODES_DEFAULT;
+  lag->useMoments  = PETSC_FALSE;
+  lag->momentOrder = 0;
 
   ierr = PetscDualSpaceInitialize_Lagrange(sp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetContinuity_C", PetscDualSpaceLagrangeGetContinuity_Lagrange);CHKERRQ(ierr);
@@ -3060,5 +3235,9 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetTrimmed_C", PetscDualSpaceLagrangeSetTrimmed_Lagrange);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetNodeType_C", PetscDualSpaceLagrangeGetNodeType_Lagrange);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetNodeType_C", PetscDualSpaceLagrangeSetNodeType_Lagrange);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetUseMoments_C", PetscDualSpaceLagrangeGetUseMoments_Lagrange);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetUseMoments_C", PetscDualSpaceLagrangeSetUseMoments_Lagrange);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetMomentOrder_C", PetscDualSpaceLagrangeGetMomentOrder_Lagrange);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetMomentOrder_C", PetscDualSpaceLagrangeSetMomentOrder_Lagrange);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
