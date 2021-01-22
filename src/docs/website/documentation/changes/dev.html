@@ -124,6 +124,13 @@
           <li><code>./configure --with-macos-firewall-rules</code> makes <code>MACOS_FIREWALL=1</code> the default</li>
           <li>Change --download-petsc4py to --with-petsc4py to have PETSc build and use petsc4py</li>
           <li>Add --download-mmg and --download-parmmg, 3D unstructured mesh adaptation package (interaction with DMPlex not available yet)
+          <li>Improve detection of Git repositories when a --download-package option is used
+            <ul>
+              <li>Support <code>ssh://*.git</code> and <code>https://*.git</code> URLs without the additional <code>git://</code> prefix</li>
+              <li>Local directories can be specified without the <code>git://</code> prefix as well</li>
+              <li>Any valid Git repository (including bare and with <code>--separate-git-dir</code>) is now correctly detected</li>
+            </ul>
+          </li>
         </ul>
       <h4>Sys:</h4>
         <ul>
