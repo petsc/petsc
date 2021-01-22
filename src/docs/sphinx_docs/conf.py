@@ -18,6 +18,7 @@ import subprocess
 import re
 import datetime
 
+sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
 
 
@@ -158,9 +159,28 @@ highlight_language = 'c'
 autosummary_generate = True
 numfig = True
 
+# We must check what kind of builder the app uses to adjust
+def builder_init_handler(app):
+    import genteamtable
+    print("============================================")
+    print("    GENERATING TEAM TABLE FROM CONF.PY      ")
+    print("============================================")
+    genDirName = "generated"
+    cwdPath = os.path.dirname(os.path.realpath(__file__))
+    genDirPath = os.path.join(cwdPath, genDirName)
+    if "PETSC_GITLAB_PRIVATE_TOKEN" in os.environ:
+        token = os.environ["PETSC_GITLAB_PRIVATE_TOKEN"]
+    else:
+        token = None
+    genteamtable.main(genDirPath, token, app.builder.name)
+    return None
+
 # Supposedly the safer way to add additional css files. Setting html_css_files will
 # overwrite previous versions of the variable that some extension may have set. This will
 # add our css files in addition to it.
 def setup(app):
+    # Register the builder_init_handler to be called __after__ app.builder has been initialized
+    app.connect('builder-inited', builder_init_handler)
     app.add_css_file('css/pop-up.css')
     app.add_css_file('css/colorbox.css')
+    app.add_css_file('css/petsc-team-container.css')

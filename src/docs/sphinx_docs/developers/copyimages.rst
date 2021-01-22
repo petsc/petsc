@@ -1,6 +1,6 @@
-==============================================
+=====================
 Dummy file for Sphinx
-==============================================
+=====================
 
 This is a dummy file that only exists so that Sphinx knows about the files in images/ that are
 used in raw rst commands which means that Sphinx does not copy them to the install directory.

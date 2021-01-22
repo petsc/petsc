@@ -4,6 +4,53 @@
 Quick Start Tutorial
 ====================
 
+QQTW (Quickest Quick-start in The West)
+=======================================
+
+On systems where MPI and `BLAS/LAPACK <https://www.netlib.org/lapack/lug/node11.html>`__
+are installed:
+
+.. code-block:: console
+
+   > ./configure
+   > make all check
+
+Or to specify compilers and have PETSc download and install `MPICH
+<https://www.mpich.org/>`__ and `BLAS/LAPACK
+<https://www.netlib.org/lapack/lug/node11.html>`_ [#blas]_ (when they are not already on
+your machine):
+
+.. code-block:: console
+
+   > ./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --download-fblaslapack
+   > make all check
+
+Don't need Fortran? Use ``--with-fortran-bindings=0`` to reduce the build times. If you
+are not using :ref:`external packages <doc_externalsoftware>` that use Fortran (for
+example, `MUMPS <http://mumps.enseeiht.fr/>`__ requires Fortran) you can use
+``--with-fc=0`` for even faster build times.
+
+.. admonition:: Encounter problems?
+
+   #. Read the error message from ``configure``!
+   #. Read help ``./configure --help``.
+   #. Refer to :ref:`configuration faq <doc_config_faq>` (e.g. build PETSc without a
+      Fortran compiler).
+   #. ``make`` problems? Just copy/paste ``make`` command printed by the ``configure``
+       footer including any ``$PETSC_DIR`` and ``$PETSC_ARCH`` options. It may look
+       similar to:
+
+      ::
+
+         xxx=========================================================================xxx
+         Configure stage complete. Now build PETSc libraries with:
+         make PETSC_DIR=/Users/jacobfaibussowitsch/NoSync/petsc PETSC_ARCH=arch-darwin-c-debug all
+         xxx=========================================================================xxx
+
+   #. Check the :ref:`bug-reporting <doc_creepycrawly>` section.
+
+------------------
+
 .. _tut_install_prereq:
 
 Prerequisites
@@ -110,7 +157,7 @@ should yield a similar output:
 Configuration
 =============
 
-See :ref:`install documentation <doc_config>` for more details.
+See :ref:`install documentation <doc_config_faq>` for more details.
 
 Next, PETSc needs to be configured using ``configure`` for your system with your
 specific options. This is the stage where users can specify the exact parameters to

@@ -413,6 +413,8 @@ run without the debugger) with the option
 
 where you simply list the ranks you want the debugger to run with.
 
+.. _sec_errors:
+
 Error Handling
 ~~~~~~~~~~~~~~
 

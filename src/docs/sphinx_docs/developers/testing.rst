@@ -240,11 +240,13 @@ Using the ``name`` field is equivalent to the search above:
 
 Arguments are tricky to search for.  Consider::
 
-      args:  -ksp_monitor_short -pc_type ml -ksp_max_it 3
+  args:  -ksp_monitor_short -pc_type ml -ksp_max_it 3
 
-Search terms are::
+Search terms are
 
-    ksp_monitor, 'pc_type ml', ksp_max_it
+.. code-block:: none
+
+    ksp_monitor, pc_type ml, ksp_max_it
 
 Certain items are ignored:
 
@@ -252,7 +254,7 @@ Certain items are ignored:
   + Loops:
       ``args: -pc_fieldsplit_diag_use_amat {{0 1}}`` gives ``pc_fieldsplit_diag_use_amat`` as the search term
   + Input files: ``-f *``
- 
+
 Examples of argument searching:
 
   + ``ptmake print-test query='args' queryval='ksp_monitor'``
@@ -289,22 +291,27 @@ Here is a way of getting a feel for how the union and intersect operators work:
 The total number of tests for running only ctetgen or triangle is 500.  They have 22 tests in common, and 478 that
 run independently of each other.
 
-   + The union and intersection have fixed grouping.  So this string argument::
+   + The union and intersection have fixed grouping.  So this string argument
 
-       query='requires,requires|args' queryval='cuda,hip,*log*'
+     .. code-block:: none
 
-     will can be read as::
+        query='requires,requires|args' queryval='cuda,hip,*log*'
+
+     will can be read as
+
+     ::
 
        requires:cuda && (requires:hip || args:*log*)
-     
+
      which is probably not what is intended.
 
 
-
 ``query/queryval`` also support negation (``!``), but is limited.  The negation only applies to tests that have a related field in it.  So for
-     example, the arguments of::
+     example, the arguments of
 
-           query=requires queryval='!cuda'
+     .. code-block:: none
+
+        query=requires queryval='!cuda'
 
      will only match if they explicitly have::
 
