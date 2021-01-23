@@ -1502,6 +1502,35 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def checkArchiverRecipeArgfile(self):
+    '''Checks if AR handles @ notation'''
+    def checkArchiverArgfile(command, status, output, error):
+      if error or status:
+        self.logError('archiver', status, output, error)
+        if os.path.isfile(objName):
+          os.remove(objName)
+        raise RuntimeError('ArchiverArgfile error')
+      return
+    oldDir = os.getcwd()
+    os.chdir(self.tmpDir)
+    try:
+      objName = 'checkRecipeArgfile.o'
+      obj = open(objName, 'a').close()
+      argsName = 'checkRecipeArgfile.args'
+      args = open(argsName, 'a')
+      args.write(objName)
+      args.close()
+      archiveName = 'checkRecipeArgfile.'+self.AR_LIB_SUFFIX
+      (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+self.AR_FLAGS+' '+archiveName+' @'+argsName,checkCommand = checkArchiverArgfile, log = self.log)
+      os.remove(objName)
+      os.remove(argsName)
+      os.remove(archiveName)
+      if not status:
+        self.framework.addMakeMacro('AR_ARGFILE','yes')
+    except RuntimeError:
+      pass
+    os.chdir(oldDir)
+
   def setStaticLinker(self):
     language = self.language[-1]
     return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.argDB))
@@ -1978,6 +2007,7 @@ if (dlclose(handle)) {
       self.executeTest(self.checkFortranComments)
     self.executeTest(self.checkLargeFileIO)
     self.executeTest(self.checkArchiver)
+    self.executeTest(self.checkArchiverRecipeArgfile)
     self.executeTest(self.checkSharedLinker)
     if Configure.isDarwin(self.log):
       self.executeTest(self.checkLinkerMac)
