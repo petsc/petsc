@@ -1,0 +1,96 @@
+Begin cycle 0
+DM Object: DMPlex Object (loaded_) 4 MPI processes
+  type: plex
+DMPlex Object in 3 dimensions:
+  0-cells: 45 45 45 45
+  3-cells: 14 14 14 14
+Labels:
+  depth: 2 strata with value/size (0 (45), 1 (14))
+  celltype: 2 strata with value/size (7 (14), 0 (45))
+Loaded mesh distributed? TRUE
+DM Object: DMPlex Object (interpolated_) 4 MPI processes
+  type: plex
+DMPlex Object in 3 dimensions:
+  0-cells: 45 45 45 45
+  1-cells: 93 93 93 93
+  2-cells: 63 63 63 63
+  3-cells: 14 14 14 14
+Labels:
+  celltype: 4 strata with value/size (0 (45), 7 (14), 4 (63), 1 (93))
+  depth: 4 strata with value/size (0 (45), 1 (93), 2 (63), 3 (14))
+DM Object: Parallel Mesh (redistributed_) 4 MPI processes
+  type: plex
+Parallel Mesh in 3 dimensions:
+  0-cells: 42 41 48 46
+  1-cells: 88 86 98 95
+  2-cells: 61 60 65 64
+  3-cells: 14 14 14 14
+Labels:
+  depth: 4 strata with value/size (0 (42), 1 (88), 2 (61), 3 (14))
+  celltype: 4 strata with value/size (0 (42), 1 (88), 4 (61), 7 (14))
+End   cycle 0
+--------
+Begin cycle 1
+DM Object: DMPlex Object (loaded_) 3 MPI processes
+  type: plex
+DMPlex Object in 3 dimensions:
+  0-cells: 54 68 66
+  3-cells: 19 19 18
+Labels:
+  depth: 2 strata with value/size (0 (54), 1 (19))
+  celltype: 2 strata with value/size (7 (19), 0 (54))
+Loaded mesh distributed? TRUE
+DM Object: DMPlex Object (interpolated_) 3 MPI processes
+  type: plex
+DMPlex Object in 3 dimensions:
+  0-cells: 54 68 66
+  1-cells: 115 135 131
+  2-cells: 81 88 85
+  3-cells: 19 19 18
+Labels:
+  celltype: 4 strata with value/size (0 (54), 7 (19), 4 (81), 1 (115))
+  depth: 4 strata with value/size (0 (54), 1 (115), 2 (81), 3 (19))
+DM Object: Parallel Mesh (redistributed_) 3 MPI processes
+  type: plex
+Parallel Mesh in 3 dimensions:
+  0-cells: 48 58 55
+  1-cells: 104 123 117
+  2-cells: 75 85 82
+  3-cells: 18 19 19
+Labels:
+  depth: 4 strata with value/size (0 (48), 1 (104), 2 (75), 3 (18))
+  celltype: 4 strata with value/size (0 (48), 1 (104), 4 (75), 7 (18))
+End   cycle 1
+--------
+Begin cycle 2
+DM Object: DMPlex Object (loaded_) 2 MPI processes
+  type: plex
+DMPlex Object in 3 dimensions:
+  0-cells: 74 77
+  3-cells: 28 28
+Labels:
+  depth: 2 strata with value/size (0 (74), 1 (28))
+  celltype: 2 strata with value/size (7 (28), 0 (74))
+Loaded mesh distributed? TRUE
+DM Object: DMPlex Object (interpolated_) 2 MPI processes
+  type: plex
+DMPlex Object in 3 dimensions:
+  0-cells: 74 77
+  1-cells: 163 168
+  2-cells: 118 120
+  3-cells: 28 28
+Labels:
+  celltype: 4 strata with value/size (0 (74), 7 (28), 4 (118), 1 (163))
+  depth: 4 strata with value/size (0 (74), 1 (163), 2 (118), 3 (28))
+DM Object: Parallel Mesh (redistributed_) 2 MPI processes
+  type: plex
+Parallel Mesh in 3 dimensions:
+  0-cells: 69 82
+  1-cells: 154 177
+  2-cells: 114 124
+  3-cells: 28 28
+Labels:
+  depth: 4 strata with value/size (0 (69), 1 (154), 2 (114), 3 (28))
+  celltype: 4 strata with value/size (0 (69), 1 (154), 4 (114), 7 (28))
+End   cycle 2
+--------

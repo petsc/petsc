@@ -102,6 +102,7 @@ cdef extern from * nogil:
     int DMPlexGetPartitioner(PetscDM,PetscPartitioner*)
     int DMPlexDistributeField(PetscDM,PetscSF,PetscSection,PetscVec,PetscSection,PetscVec)
     #int DMPlexDistributeData(PetscDM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**)
+    int DMPlexIsDistributed(PetscDM,PetscBool*)
 
     int DMPlexGetOrdering(PetscDM,PetscMatOrderingType,PetscDMLabel,PetscIS*)
     int DMPlexPermute(PetscDM,PetscIS,PetscDM*)
