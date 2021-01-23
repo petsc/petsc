@@ -446,7 +446,8 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   adjoint_time_step = -ts->time_step;  /* always positive since time_step is negative */
 
   if (!th->endpoint) {
-    ierr = VecAXPBYPCZ(th->X,1.0-th->Theta,th->Theta,0,th->X0,ts->vec_sol);CHKERRQ(ierr);
+    /* recover th->X0 using vec_sol and the stage value th->X */
+    ierr = VecAXPBYPCZ(th->X0,1.0/(1.0-th->Theta),th->Theta/(th->Theta-1.0),0,th->X,ts->vec_sol);CHKERRQ(ierr);
   }
 
   /* Build RHS for first-order adjoint */
@@ -896,7 +897,9 @@ static PetscErrorCode TSForwardGetStages_Theta(TS ts,PetscInt *ns,Mat **stagesen
 
   PetscFunctionBegin;
   if (ns) *ns = 1;
-  if (stagesensip) *stagesensip = th->endpoint ? &(th->MatFwdSensip0) : &(th->MatDeltaFwdSensip);
+  if (stagesensip) {
+    *stagesensip = (!th->endpoint && th->Theta != 1.0) ? &(th->MatDeltaFwdSensip) : &(th->MatFwdSensip0);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1206,7 +1209,9 @@ static PetscErrorCode TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
 
   PetscFunctionBegin;
   if (ns) *ns = 1;
-  if (Y)  *Y  = &(th->X0);
+  if (Y) {
+    *Y = (!th->endpoint && th->Theta != 1.0) ? &(th->X) : &(th->X0);
+  }
   PetscFunctionReturn(0);
 }
 
