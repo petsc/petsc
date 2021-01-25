@@ -38,6 +38,8 @@ typedef struct {
   /* Problem definition */
   PetscBag bag;     /* Holds problem parameters */
   SolType  solType; /* MMS solution type */
+  /* Flow diagnostics */
+  DM       dmCell;  /* A DM with piecewise constant discretization */
 } AppCtx;
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -547,8 +549,7 @@ static void g0_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                   const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                   PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g0[d] = u_tShift;
+  g0[0] = u_tShift;
 }
 
 static void g0_wu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -735,9 +736,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM              cdm   = dm;
-  PetscFE         fe[3];
+  PetscFE         fe[3], fediv;
   Parameter      *param;
-  MPI_Comm        comm;
   DMPolytopeType  ct;
   PetscInt        dim, cStart;
   PetscBool       simplex;
@@ -749,17 +749,20 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   /* Create finite element */
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, dim, simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "temp_", PETSC_DEFAULT, &fe[2]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "temp_", PETSC_DEFAULT, &fe[2]);CHKERRQ(ierr);
   ierr = PetscFECopyQuadrature(fe[0], fe[2]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[2], "temperature");CHKERRQ(ierr);
+
+  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "div_", PETSC_DEFAULT, &fediv);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe[0], fediv);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fediv, "divergence");CHKERRQ(ierr);
 
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
@@ -775,6 +778,11 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[2]);CHKERRQ(ierr);
+
+  ierr = DMClone(dm, &user->dmCell);CHKERRQ(ierr);
+  ierr = DMSetField(user->dmCell, 0, NULL, (PetscObject) fediv);CHKERRQ(ierr);
+  ierr = DMCreateDS(user->dmCell);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fediv);CHKERRQ(ierr);
 
   {
     PetscObject  pressure;
@@ -848,14 +856,26 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   PetscFunctionReturn(0);
 }
 
+static void divergence(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                       PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar divu[])
+{
+  PetscInt d;
+
+  divu[0] = 0.;
+  for (d = 0; d < dim; ++d) divu[0] += u_x[d*dim+d];
+}
+
 static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
 {
   PetscErrorCode (*exactFuncs[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   void            *ctxs[3];
-  DM               dm;
+  PetscPointFunc   diagnostics[1] = {divergence};
+  DM               dm, dmCell = ((AppCtx *) ctx)->dmCell;
   PetscDS          ds;
-  Vec              v;
-  PetscReal        ferrors[3];
+  Vec              v, divu;
+  PetscReal        ferrors[3], massFlux;
   PetscInt         f;
   PetscErrorCode   ierr;
 
@@ -865,18 +885,22 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
 
   for (f = 0; f < 3; ++f) {ierr = PetscDSGetExactSolution(ds, f, &exactFuncs[f], &ctxs[f]);CHKERRQ(ierr);}
   ierr = DMComputeL2FieldDiff(dm, crtime, exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [%2.3g, %2.3g, %2.3g]\n", (int) step, (double) crtime, (double) ferrors[0], (double) ferrors[1], (double) ferrors[2]);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dmCell, &divu);CHKERRQ(ierr);
+  ierr = DMProjectField(dmCell, crtime, u, diagnostics, INSERT_VALUES, divu);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(divu, NULL, "-divu_vec_view");CHKERRQ(ierr);
+  ierr = VecNorm(divu, NORM_2, &massFlux);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [%2.3g, %2.3g, %2.3g] ||div u||: %2.3g\n", (int) step, (double) crtime, (double) ferrors[0], (double) ferrors[1], (double) ferrors[2], (double) massFlux);CHKERRQ(ierr);
 
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u, "Numerical Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
 
   ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, 0.0, exactFuncs, ctxs, INSERT_ALL_VALUES, v);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, crtime, exactFuncs, ctxs, INSERT_ALL_VALUES, v);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) v, "Exact Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(v, NULL, "-exact_vec_view");CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
+
+  ierr = VecViewFromOptions(divu, NULL, "-div_vec_view");CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dmCell, &divu);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -903,6 +927,7 @@ int main(int argc, char **argv)
   ierr = DMPlexCreateClosureIndex(dm, NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "Numerical Solution");CHKERRQ(ierr);
   ierr = DMSetNullSpaceConstructor(dm, 1, CreatePressureNullSpace);CHKERRQ(ierr);
 
   ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &user);CHKERRQ(ierr);
@@ -921,9 +946,9 @@ int main(int argc, char **argv)
 
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   ierr = DMTSCheckFromOptions(ts, u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u, "Numerical Solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.dmCell);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscBagDestroy(&user.bag);CHKERRQ(ierr);
@@ -938,6 +963,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -sol_type quadratic -dm_refine 0 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
+      -div_petscdualspace_lagrange_use_moments -div_petscdualspace_lagrange_moment_order 3 \
       -dmts_check .001 -ts_max_steps 4 -ts_dt 0.1 \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_0_fields 0,2 -pc_fieldsplit_1_fields 1 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
@@ -951,6 +977,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -sol_type cubic_trig -dm_refine 0 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
+      -div_petscdualspace_lagrange_use_moments -div_petscdualspace_lagrange_moment_order 3 \
       -ts_max_steps 4 -ts_dt 0.1 -ts_convergence_estimate -convest_num_refine 1 \
       -snes_error_if_not_converged -snes_convergence_test correct_pressure \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
@@ -964,6 +991,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -sol_type cubic -dm_refine 0 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
+      -div_petscdualspace_lagrange_use_moments -div_petscdualspace_lagrange_moment_order 3 \
       -ts_max_steps 1 -ts_dt 1e-4 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
       -snes_error_if_not_converged -snes_convergence_test correct_pressure \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_atol 1e-16 -ksp_error_if_not_converged \
@@ -976,6 +1004,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -sol_type cubic -dm_refine 0 \
       -vel_petscspace_degree 3 -pres_petscspace_degree 2 -temp_petscspace_degree 2 \
+      -div_petscdualspace_lagrange_use_moments -div_petscdualspace_lagrange_moment_order 3 \
       -dmts_check .001 -ts_max_steps 4 -ts_dt 0.1 \
       -snes_convergence_test correct_pressure \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
@@ -989,6 +1018,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -sol_type taylor_green -dm_refine 0 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
+      -div_petscdualspace_lagrange_use_moments -div_petscdualspace_lagrange_moment_order 3 \
       -ts_max_steps 1 -ts_dt 1e-8 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
       -snes_error_if_not_converged -snes_convergence_test correct_pressure \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_atol 1e-16 -ksp_error_if_not_converged \
@@ -1002,6 +1032,7 @@ int main(int argc, char **argv)
     requires: triangle !single
     args: -dm_plex_separate_marker -sol_type taylor_green -dm_refine 0 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
+      -div_petscdualspace_lagrange_use_moments -div_petscdualspace_lagrange_moment_order 3 \
       -ts_max_steps 4 -ts_dt 0.1 -ts_convergence_estimate -convest_num_refine 1 \
       -snes_error_if_not_converged -snes_convergence_test correct_pressure \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_atol 1e-16 -ksp_error_if_not_converged \

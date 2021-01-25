@@ -147,6 +147,9 @@ typedef struct {
 
   PetscInt          numCopies;
 
+  PetscBool         useMoments;  /* Use moments for functionals */
+  PetscInt          momentOrder; /* Order for moment quadrature */
+
   /* these are ways of indexing nodes in a way that makes
    * the computation of symmetries programmatic */
   PetscLagNodeIndices vertIndices;

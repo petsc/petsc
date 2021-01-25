@@ -1,7 +1,7 @@
-Timestep: 0000 time = 0        	 L_2 Error: [0.0394, 0.174, 7.15e-17]
-Timestep: 0001 time = 1e-08    	 L_2 Error: [0.0394, 0.366, 4.94e-14]
-Timestep: 0000 time = 0        	 L_2 Error: [0.00538, 0.113, 1.06e-16]
-Timestep: 0001 time = 1e-08    	 L_2 Error: [0.00538, 0.0717, 2.07e-11]
+Timestep: 0000 time = 0        	 L_2 Error: [0.0394, 0.174, 7.15e-17] ||div u||: 5.74
+Timestep: 0001 time = 1e-08    	 L_2 Error: [0.0394, 0.366, 4.94e-14] ||div u||: 5.74
+Timestep: 0000 time = 0        	 L_2 Error: [0.00538, 0.113, 1.06e-16] ||div u||: 13.5
+Timestep: 0001 time = 1e-08    	 L_2 Error: [0.00538, 0.0717, 2.07e-11] ||div u||: 13.5
 L_2 convergence rate: [2.3, 3.2, -5.5]
-Timestep: 0000 time = 0        	 L_2 Error: [0.0394, 0.174, 7.15e-17]
-Timestep: 0001 time = 1e-08    	 L_2 Error: [0.0394, 0.366, 4.94e-14]
+Timestep: 0000 time = 0        	 L_2 Error: [0.0394, 0.174, 7.15e-17] ||div u||: 5.74
+Timestep: 0001 time = 1e-08    	 L_2 Error: [0.0394, 0.366, 4.94e-14] ||div u||: 5.74
