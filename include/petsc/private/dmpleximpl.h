@@ -515,10 +515,10 @@ PETSC_STATIC_INLINE void DMPlex_PTAP3DReal_Internal(const PetscReal P[], const P
   PetscInt i, j, k, l;
   for (i = 0; i < 3; ++i) {
     for (j = 0; j < 3; ++j) {
-      out[i*2+j] = 0.;
+      out[i*3+j] = 0.;
       for (k = 0; k < 3; ++k) {
         for (l = 0; l < 3; ++l) {
-          out[i*2+j] += P[k*2+i]*A[k*2+l]*P[l*2+j];
+          out[i*3+j] += P[k*3+i]*A[k*3+l]*P[l*3+j];
         }
       }
     }
