@@ -643,7 +643,7 @@ static PetscErrorCode PetscLagNodeIndicesPushForward(DM dm, PetscLagNodeIndices 
   for (n = 0; n < nNodes; n++) {
     for (i = 0; i < Nk; i++) {
       PetscReal val = 0.;
-      for (j = 0; j < pNk; j++) val += nodeVec[n * pNk + j] * Jstar[j * pNk + i];
+      for (j = 0; j < pNk; j++) val += nodeVec[n * pNk + j] * Jstar[j * Nk + i];
       pfNodeVec[n * Nk + i] = val;
     }
   }
@@ -1641,7 +1641,7 @@ static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace
           for (d = 0; d < Nk; d++) {
             for (e = 0; e < pNk; e++) {
               /* "push forward" dof by pulling back a k-form to be evaluated on the point: multiply on the right by L */
-              work[l * Nk + d] += vals[l * pNk + e] * L[e * pNk + d];
+              work[l * Nk + d] += vals[l * pNk + e] * L[e * Nk + d];
             }
           }
         }
