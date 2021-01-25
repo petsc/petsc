@@ -54,6 +54,8 @@ from distutils.errors import DistutilsError
 def fix_config_vars(names, values):
     import os, re
     values = list(values)
+    if 'CONDA_BUILD' in os.environ:
+        return values
     if sys.platform == 'darwin':
         if 'ARCHFLAGS' in os.environ:
             ARCHFLAGS = os.environ['ARCHFLAGS']
