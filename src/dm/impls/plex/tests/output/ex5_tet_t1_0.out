@@ -82,6 +82,7 @@ Discrete System with 1 fields
         Dual space with 3 components, size 12
         Continuous Lagrange dual space
         Quadrature of order 3 on 8 points (dim 3)
+  Weak Form System with 1 fields
 Discrete System with 2 fields
     cell total dim 27 total comp 6
     hybrid cell
@@ -111,6 +112,7 @@ Discrete System with 2 fields
         Dual space with 3 components, size 9
         Continuous Lagrange dual space
         Quadrature of order 3 on 4 points (dim 2)
+  Weak Form System with 2 fields
 PetscSection Object: 1 MPI processes
   type not yet set
 2 fields
@@ -281,45 +283,45 @@ Vec Object: Local Residual 1 MPI processes
 0.
 0.
 0.
--8.32667e-17
--8.32667e-17
--0.166667
-0.0833333
--1.47451e-17
-0.0833333
-0.0833333
-0.0833333
--0.166667
-0.166667
--0.0833333
--0.0833333
 0.
 0.
 0.
-8.32667e-17
-8.32667e-17
-0.166667
--0.0833333
-1.47451e-17
--0.0833333
--0.0833333
--0.0833333
-0.166667
--0.166667
-0.0833333
-0.0833333
 0.
-0.666667
-0.666667
 0.
-0.333333
-0.333333
 0.
-0.666667
-0.666667
 0.
-0.333333
-0.333333
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
 Mat Object: Jacobian 1 MPI processes
   type: seqaij
 row 0: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.) 

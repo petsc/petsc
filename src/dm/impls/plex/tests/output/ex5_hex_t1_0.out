@@ -122,6 +122,7 @@ Discrete System with 1 fields
         Dual space with 3 components, size 24
         Continuous tensor Lagrange dual space
         Quadrature of order 3 on 8 points (dim 3)
+  Weak Form System with 1 fields
 Discrete System with 2 fields
     cell total dim 36 total comp 6
     hybrid cell
@@ -151,3 +152,4 @@ Discrete System with 2 fields
         Dual space with 3 components, size 12
         Continuous tensor Lagrange dual space
         Quadrature of order 3 on 4 points (dim 2)
+  Weak Form System with 2 fields
