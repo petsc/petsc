@@ -2531,6 +2531,28 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
           }
         }
       }
+      if (PetscDefined(USE_DEBUG)) {
+        PetscReal res;
+
+        /* check that the normal error is 0 */
+        for (m = n; m < nEnd; m++) {
+          PetscInt d;
+
+          for (d = 0; d < nodeVecDim; d++) {
+            W[(m - n) * nodeVecDim + d] = ni->nodeVec[permOrnt[m] * nodeVecDim + d];
+          }
+        }
+        res = 0.;
+        for (PetscInt i = 0; i < groupSize; i++) {
+          for (PetscInt j = 0; j < nodeVecDim; j++) {
+            for (PetscInt k = 0; k < groupSize; k++) {
+              W[i * nodeVecDim + j] -= V[i * groupSize + k] * intNodeIndices->nodeVec[perm[n+k] * nodeVecDim + j];
+            }
+            res += PetscAbsScalar(W[i * nodeVecDim + j]);
+          }
+        }
+        if (res > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Dof block did not solve");
+      }
     }
     ierr = MatSetValues(A, groupSize, &permOrnt[n], groupSize, &perm[n], V, INSERT_VALUES);CHKERRQ(ierr);
     n = nEnd;
