@@ -65,7 +65,7 @@ PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
 /* cusolver */
 static PetscErrorCode PetscCUSOLVERDnDestroyHandle()
 {
-  cusolverStatus_t  cerr;
+  cusolverStatus_t cerr;
 
   PetscFunctionBegin;
   if (cusolverdnhandle) {
@@ -77,8 +77,8 @@ static PetscErrorCode PetscCUSOLVERDnDestroyHandle()
 
 PetscErrorCode PetscCUSOLVERDnInitializeHandle(void)
 {
-  PetscErrorCode    ierr;
-  cusolverStatus_t  cerr;
+  PetscErrorCode   ierr;
+  cusolverStatus_t cerr;
 
   PetscFunctionBegin;
   if (!cusolverdnhandle) {
@@ -88,7 +88,7 @@ PetscErrorCode PetscCUSOLVERDnInitializeHandle(void)
       if (cerr != CUSOLVER_STATUS_ALLOC_FAILED) CHKERRCUSOLVER(cerr);
       if (i < 2) {ierr = PetscSleep(3);CHKERRQ(ierr);}
     }
-    if (cerr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuSPARSE");
+    if (cerr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuSolverDn");
     ierr = PetscRegisterFinalize(PetscCUSOLVERDnDestroyHandle);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -96,7 +96,7 @@ PetscErrorCode PetscCUSOLVERDnInitializeHandle(void)
 
 PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
 {
-  PetscErrorCode     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(handle,1);
@@ -104,4 +104,3 @@ PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
   *handle = cusolverdnhandle;
   PetscFunctionReturn(0);
 }
-

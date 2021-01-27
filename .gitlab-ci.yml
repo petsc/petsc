@@ -298,7 +298,7 @@ freebsd-c-single-opt:
 
 linux-cuda-double:
   extends:
-    - .stage-2
+    - .stage-3
     - .linux_test
   tags:
     - gpu:nvidia, os:linux, name:p1
@@ -448,7 +448,7 @@ linux-cuda11-complex:
 
 linux-cuda-double-64idx:
   extends:
-    - .stage-3
+    - .stage-2
     - .linux_test
   tags:
     - gpu:nvidia, os:linux, name:p1

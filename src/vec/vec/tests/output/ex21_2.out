@@ -1,5 +1,4 @@
 Vec Object: 2 MPI processes
-  type: mpi
 Process [0]
 0.
 1.
@@ -7,5 +6,5 @@ Process [0]
 Process [1]
 1.
 2.
-Maximum value 2. index 4
-Minimum value 0. index 0
+Maximum value 2. index 4 (no index 2.)
+Minimum value 0. index 0 (no index 0.)

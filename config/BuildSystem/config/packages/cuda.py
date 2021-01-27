@@ -9,9 +9,9 @@ class Configure(config.package.Package):
     self.versioninclude    = 'cuda.h'
     self.requiresversion   = 1
     self.functions         = ['cublasInit', 'cufftDestroy']
-    self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','thrust/version.h']
-    self.liblist           = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a'],
-                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib']]
+    self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','curand.h','thrust/version.h']
+    self.liblist           = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a','libcurand.a'],
+                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib','curand.lib']]
     self.precisions        = ['single','double']
     self.cxx               = 0
     self.complex           = 1
@@ -113,13 +113,13 @@ class Configure(config.package.Package):
       self.log.write('Overriding the thrust library in CUDAToolkit with a user-specified one\n')
       self.include = self.thrust.include+self.include
 
+    self.pushLanguage('CUDA')
+    petscNvcc = self.getCompiler()
+    self.popLanguage()
     if 'with-cuda-gencodearch' in self.framework.clArgDB:
       self.gencodearch = self.argDB['with-cuda-gencodearch']
     else:
       import os
-      self.pushLanguage('CUDA')
-      petscNvcc = self.getCompiler()
-      self.popLanguage()
       self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
       if hasattr(self,'systemNvcc'):
         cudaDir = os.path.dirname(os.path.dirname(self.systemNvcc))

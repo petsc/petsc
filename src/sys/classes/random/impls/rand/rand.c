@@ -36,12 +36,12 @@ PetscErrorCode  PetscRandomGetValueReal_Rand(PetscRandom r,PetscReal *val)
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
-  /* 0 */
   PetscRandomSeed_Rand,
   PetscRandomGetValue_Rand,
   PetscRandomGetValueReal_Rand,
   NULL,
-  /* 5 */
+  NULL,
+  NULL,
   NULL
 };
 
@@ -53,7 +53,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 
   Level: beginner
 
-.seealso: RandomCreate(), RandomSetType(), PETSCRAND48, PETSCSPRNG
+.seealso: PetscRandomCreate(), PetscRandomSetType(), PETSCRAND48, PETSCSPRNG
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom r)

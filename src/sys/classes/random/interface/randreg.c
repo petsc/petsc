@@ -133,6 +133,9 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom);
 #if defined(PETSC_HAVE_RANDOM123)
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom);
 #endif
+#if defined(PETSC_HAVE_CUDA)
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
+#endif
 
 /*@C
   PetscRandomRegisterAll - Registers all of the components in the PetscRandom package.
@@ -151,17 +154,20 @@ PetscErrorCode  PetscRandomRegisterAll(void)
   if (PetscRandomRegisterAllCalled) PetscFunctionReturn(0);
   PetscRandomRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_RAND)
-  ierr = PetscRandomRegister(PETSCRAND,  PetscRandomCreate_Rand);CHKERRQ(ierr);
+  ierr = PetscRandomRegister(PETSCRAND,PetscRandomCreate_Rand);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_DRAND48)
   ierr = PetscRandomRegister(PETSCRAND48,PetscRandomCreate_Rand48);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-  ierr = PetscRandomRegister(PETSCSPRNG, PetscRandomCreate_Sprng);CHKERRQ(ierr);
+  ierr = PetscRandomRegister(PETSCSPRNG,PetscRandomCreate_Sprng);CHKERRQ(ierr);
 #endif
   ierr = PetscRandomRegister(PETSCRANDER48,PetscRandomCreate_Rander48);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_RANDOM123)
-  ierr = PetscRandomRegister(PETSCRANDOM123, PetscRandomCreate_Random123);CHKERRQ(ierr);
+  ierr = PetscRandomRegister(PETSCRANDOM123,PetscRandomCreate_Random123);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_CUDA)
+  ierr = PetscRandomRegister(PETSCCURAND,PetscRandomCreate_CURAND);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

@@ -55,16 +55,19 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
-  PetscValidIntPointer(val,2);
   PetscValidType(r,1);
-
-  ierr = (*r->ops->getvalue)(r,val);CHKERRQ(ierr);
+  if (!r->ops->getvalue) {
+    if (!r->ops->getvalues) SETERRQ1(PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
+    ierr = (*r->ops->getvalues)(r,1,val);CHKERRQ(ierr);
+  } else {
+    ierr = (*r->ops->getvalue)(r,val);CHKERRQ(ierr);
+  }
   ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
-   PetscRandomGetValueReal - Generates a purely real random number.  Call this after first calling
+   PetscRandomGetValueReal - Generates a real random number.  Call this after first calling
    PetscRandomCreate().
 
    Not Collective
@@ -97,10 +100,96 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
-  PetscValidIntPointer(val,2);
   PetscValidType(r,1);
+  if (!r->ops->getvaluereal) {
+    if (!r->ops->getvaluesreal) SETERRQ1(PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
+    ierr = (*r->ops->getvaluesreal)(r,1,val);CHKERRQ(ierr);
+  } else {
+    ierr = (*r->ops->getvaluereal)(r,val);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  ierr = (*r->ops->getvaluereal)(r,val);CHKERRQ(ierr);
+/*@
+   PetscRandomGetValues - Generates a sequence of random numbers.  Call this after first calling
+   PetscRandomCreate().
+
+   Not Collective
+
+   Intput Parameter:
++  r  - the random number generator context
+-  n  - number of random numbers to generate
+
+   Output Parameter:
+.  val - the array to hold the values
+
+   Level: intermediate
+
+   Notes:
+   Use VecSetRandom() to set the elements of a vector to random numbers.
+
+   When PETSc is compiled for complex numbers this returns an array of complex numbers with random real and complex parts.
+   Use PetscGetValuesReal() to get an array of random real numbers.
+
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValue()
+@*/
+PetscErrorCode  PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
+  PetscValidType(r,1);
+  if (!r->ops->getvalues) {
+    PetscInt i;
+    if (!r->ops->getvalue) SETERRQ1(PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
+    for (i = 0; i < n; i++) {
+      ierr = (*r->ops->getvalue)(r,val+i);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = (*r->ops->getvalues)(r,n,val);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscRandomGetValuesReal - Generates a sequence of real random numbers.  Call this after first calling
+   PetscRandomCreate().
+
+   Not Collective
+
+   Intput Parameter:
++  r  - the random number generator context
+-  n  - number of random numbers to generate
+
+   Output Parameter:
+.  val - the array to hold the values
+
+   Level: intermediate
+
+   Notes:
+   Use VecSetRandom() to set the elements of a vector to random numbers.
+
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValues()
+@*/
+PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
+  PetscValidType(r,1);
+  if (!r->ops->getvaluesreal) {
+    PetscInt i;
+    if (!r->ops->getvaluereal) SETERRQ1(PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
+    for (i = 0; i < n; i++) {
+      ierr = (*r->ops->getvaluereal)(r,val+i);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = (*r->ops->getvaluesreal)(r,n,val);CHKERRQ(ierr);
+  }
   ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
