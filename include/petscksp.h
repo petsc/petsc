@@ -14,8 +14,8 @@ PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
    Level: beginner
 
         Notes:
-    When a direct solver is used but no Krylov solver is used the KSP object is still used by with a
-       KSPType of KSPPREONLY (meaning application of the preconditioner is only used as the linear solver).
+    When a direct solver is used, but no Krylov solver is used, the KSP object is still used but with a
+       KSPType of KSPPREONLY, meaning that only application of the preconditioner is used as the linear solver.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, KSP, KSPDestroy(), KSPCG, KSPGMRES
 S*/
