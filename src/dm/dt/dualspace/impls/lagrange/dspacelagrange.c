@@ -1934,18 +1934,16 @@ static PetscErrorCode DMPlexPointIsTensor(DM dm, PetscInt p, PetscBool *isTensor
   PetscFunctionReturn(0);
 }
 
-/* Let k = formDegree and k' = -sign(k) * dim + k.  Transform a symmetric
- * frame for k'-forms on the biunit simplex into a symmetric frame for k-forms
- * on the biunit simplex.
+/* Let k = formDegree and k' = -sign(k) * dim + k.  Transform a symmetric frame for k-forms on the biunit simplex into
+ * a symmetric frame for k'-forms on the biunit simplex.
  *
- * A frame is "symmetric" if the pullback every symmetry of the biunit simplex
- * is a permutation of the frame.
+ * A frame is "symmetric" if the pullback of every symmetry of the biunit simplex is a permutation of the frame.
  *
- * forms in the symmetric frame are used to as dofs in the
- * untrimmed simplex spaces.  This way, symmetries of the reference cell
- * result in permutations of dofs grouped by node.
+ * forms in the symmetric frame are used as dofs in the untrimmed simplex spaces.  This way, symmetries of the
+ * reference cell result in permutations of dofs grouped by node.
  *
- * Use T to transform dof matrices as a block diagonal transformation on the right.
+ * Use T to transform dof matrices for k'-forms into dof matrices for k-forms as a block diagonal transformation on
+ * the right.
  */
 static PetscErrorCode BiunitSimplexSymmetricFormTransformation(PetscInt dim, PetscInt formDegree, PetscReal T[])
 {
@@ -1968,7 +1966,7 @@ static PetscErrorCode BiunitSimplexSymmetricFormTransformation(PetscInt dim, Pet
       biToEq[i * dim + j] = PetscSqrtReal(1./(PetscReal)fact);
     }
   }
-  /* fill in eqToBi: Jacobian of the transformation from the equilateral simplex to the bilateral simplex */
+  /* fill in eqToBi: Jacobian of the transformation from the equilateral simplex to the biunit simplex */
   fact = 0;
   for (PetscInt j = 0; j < dim; j++) {
     eqToBi[j * dim + j] = PetscSqrtReal(2.*((PetscReal)j+1.)/((PetscReal)j+2));
@@ -1979,6 +1977,20 @@ static PetscErrorCode BiunitSimplexSymmetricFormTransformation(PetscInt dim, Pet
   }
   ierr = PetscDTAltVPullbackMatrix(dim, dim, biToEq, kd, biToEqStar);CHKERRQ(ierr);
   ierr = PetscDTAltVPullbackMatrix(dim, dim, eqToBi, k, eqToBiStar);CHKERRQ(ierr);
+  /* product of pullbacks simulates the following steps
+   *
+   * 1. start with frame W = [w_1, w_2, ..., w_m] of k forms that is symmetric on the biunit simplex:
+          if J is the Jacobian of a symmetry of the biunit simplex, then J_k* W = [J_k*w_1, ..., J_k*w_m]
+          is a permutation of W.
+          Even though a k' form --- a (dim - k) form represented by its Hodge star --- has the same geometric
+          content as a k form, W is not a symmetric frame of k' forms on the biunit simplex.  That's because,
+          for general Jacobian J, J_k* != J_k'*.
+   * 2. pullback W to the equilateral triangle using the k pullback, W_eq = eqToBi_k* W.  All symmetries of the
+          equilateral simplex have orthonormal Jacobians.  For an orthonormal Jacobian O, J_k* = J_k'*, so W_eq is
+          also a symmetric frame for k' forms on the equilateral simplex.
+     3. pullback W_eq back to the biunit simplex using the k' pulback, V = biToEq_k'* W_eq = biToEq_k'* eqToBi_k* W.
+          V is a symmetric frame for k' forms on the biunit simplex.
+   */
   for (PetscInt i = 0; i < Nk; i++) {
     for (PetscInt j = 0; j < Nk; j++) {
       PetscReal val = 0.;
