@@ -346,6 +346,24 @@ static PetscErrorCode PetscLagNodeIndicesReference(PetscLagNodeIndices ni)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscLagNodeIndicesDuplicate(PetscLagNodeIndices ni, PetscLagNodeIndices *niNew)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(niNew);CHKERRQ(ierr);
+  (*niNew)->refct = 1;
+  (*niNew)->nodeIdxDim = ni->nodeIdxDim;
+  (*niNew)->nodeVecDim = ni->nodeVecDim;
+  (*niNew)->nNodes = ni->nNodes;
+  ierr = PetscMalloc1(ni->nNodes * ni->nodeIdxDim, &((*niNew)->nodeIdx));CHKERRQ(ierr);
+  ierr = PetscArraycpy((*niNew)->nodeIdx, ni->nodeIdx, ni->nNodes * ni->nodeIdxDim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ni->nNodes * ni->nodeVecDim, &((*niNew)->nodeVec));CHKERRQ(ierr);
+  ierr = PetscArraycpy((*niNew)->nodeVec, ni->nodeVec, ni->nNodes * ni->nodeVecDim);CHKERRQ(ierr);
+  (*niNew)->perm = NULL;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscLagNodeIndicesDestroy(PetscLagNodeIndices *ni) {
   PetscErrorCode ierr;
 
@@ -492,7 +510,7 @@ static PetscErrorCode PetscLagNodeIndicesCreateSimplexVertices(DM dm, PetscLagNo
 
 /* A polytope that is a tensor product of a facet and a segment.
  * We take whatever coordinate system was being used for the facet
- * and we concatenaty the barycentric coordinates for the vertices
+ * and we concatenate the barycentric coordinates for the vertices
  * at the end of the segment, (1,0) and (0,1), to get a coordinate
  * system for the tensor product element */
 static PetscErrorCode PetscLagNodeIndicesCreateTensorVertices(DM dm, PetscLagNodeIndices facetni, PetscLagNodeIndices *nodeIndices)
@@ -643,7 +661,7 @@ static PetscErrorCode PetscLagNodeIndicesPushForward(DM dm, PetscLagNodeIndices 
   for (n = 0; n < nNodes; n++) {
     for (i = 0; i < Nk; i++) {
       PetscReal val = 0.;
-      for (j = 0; j < pNk; j++) val += nodeVec[n * pNk + j] * Jstar[j * pNk + i];
+      for (j = 0; j < pNk; j++) val += nodeVec[n * pNk + j] * Jstar[j * Nk + i];
       pfNodeVec[n * Nk + i] = val;
     }
   }
@@ -1652,7 +1670,7 @@ static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace
           for (d = 0; d < Nk; d++) {
             for (e = 0; e < pNk; e++) {
               /* "push forward" dof by pulling back a k-form to be evaluated on the point: multiply on the right by L */
-              work[l * Nk + d] += vals[l * pNk + e] * L[e * pNk + d];
+              work[l * Nk + d] += vals[l * pNk + e] * L[e * Nk + d];
             }
           }
         }
@@ -1953,6 +1971,74 @@ static PetscErrorCode DMPlexPointIsTensor(DM dm, PetscInt p, PetscBool *isTensor
   ierr = DMPlexIsInterpolated(dm, &interpolated);CHKERRQ(ierr);
   if (interpolated != DMPLEX_INTERPOLATED_FULL) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Only for interpolated DMPlex's");
   ierr = DMPlexPointIsTensor_Internal(dm, p, isTensor, endA, endB);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Let k = formDegree and k' = -sign(k) * dim + k.  Transform a symmetric frame for k-forms on the biunit simplex into
+ * a symmetric frame for k'-forms on the biunit simplex.
+ *
+ * A frame is "symmetric" if the pullback of every symmetry of the biunit simplex is a permutation of the frame.
+ *
+ * forms in the symmetric frame are used as dofs in the untrimmed simplex spaces.  This way, symmetries of the
+ * reference cell result in permutations of dofs grouped by node.
+ *
+ * Use T to transform dof matrices for k'-forms into dof matrices for k-forms as a block diagonal transformation on
+ * the right.
+ */
+static PetscErrorCode BiunitSimplexSymmetricFormTransformation(PetscInt dim, PetscInt formDegree, PetscReal T[])
+{
+  PetscInt       k = formDegree;
+  PetscInt       kd = k < 0 ? dim + k : k - dim;
+  PetscInt       Nk;
+  PetscReal      *biToEq, *eqToBi, *biToEqStar, *eqToBiStar;
+  PetscInt       fact;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDTBinomialInt(dim, PetscAbsInt(k), &Nk);CHKERRQ(ierr);
+  ierr = PetscCalloc4(dim * dim, &biToEq, dim * dim, &eqToBi, Nk * Nk, &biToEqStar, Nk * Nk, &eqToBiStar);CHKERRQ(ierr);
+  /* fill in biToEq: Jacobian of the transformation from the biunit simplex to the equilateral simplex */
+  fact = 0;
+  for (PetscInt i = 0; i < dim; i++) {
+    biToEq[i * dim + i] = PetscSqrtReal(((PetscReal)i + 2.) / (2.*((PetscReal)i+1.)));
+    fact += 4*(i+1);
+    for (PetscInt j = i+1; j < dim; j++) {
+      biToEq[i * dim + j] = PetscSqrtReal(1./(PetscReal)fact);
+    }
+  }
+  /* fill in eqToBi: Jacobian of the transformation from the equilateral simplex to the biunit simplex */
+  fact = 0;
+  for (PetscInt j = 0; j < dim; j++) {
+    eqToBi[j * dim + j] = PetscSqrtReal(2.*((PetscReal)j+1.)/((PetscReal)j+2));
+    fact += j+1;
+    for (PetscInt i = 0; i < j; i++) {
+      eqToBi[i * dim + j] = -PetscSqrtReal(1./(PetscReal)fact);
+    }
+  }
+  ierr = PetscDTAltVPullbackMatrix(dim, dim, biToEq, kd, biToEqStar);CHKERRQ(ierr);
+  ierr = PetscDTAltVPullbackMatrix(dim, dim, eqToBi, k, eqToBiStar);CHKERRQ(ierr);
+  /* product of pullbacks simulates the following steps
+   *
+   * 1. start with frame W = [w_1, w_2, ..., w_m] of k forms that is symmetric on the biunit simplex:
+          if J is the Jacobian of a symmetry of the biunit simplex, then J_k* W = [J_k*w_1, ..., J_k*w_m]
+          is a permutation of W.
+          Even though a k' form --- a (dim - k) form represented by its Hodge star --- has the same geometric
+          content as a k form, W is not a symmetric frame of k' forms on the biunit simplex.  That's because,
+          for general Jacobian J, J_k* != J_k'*.
+   * 2. pullback W to the equilateral triangle using the k pullback, W_eq = eqToBi_k* W.  All symmetries of the
+          equilateral simplex have orthonormal Jacobians.  For an orthonormal Jacobian O, J_k* = J_k'*, so W_eq is
+          also a symmetric frame for k' forms on the equilateral simplex.
+     3. pullback W_eq back to the biunit simplex using the k' pulback, V = biToEq_k'* W_eq = biToEq_k'* eqToBi_k* W.
+          V is a symmetric frame for k' forms on the biunit simplex.
+   */
+  for (PetscInt i = 0; i < Nk; i++) {
+    for (PetscInt j = 0; j < Nk; j++) {
+      PetscReal val = 0.;
+      for (PetscInt k = 0; k < Nk; k++) val += biToEqStar[i * Nk + k] * eqToBiStar[k * Nk + j];
+      T[i * Nk + j] = val;
+    }
+  }
+  ierr = PetscFree4(biToEq, eqToBi, biToEqStar, eqToBiStar);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2288,11 +2374,66 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           ierr = PetscDualSpaceGetAllData(trimmedsp, &intNodes, &intMat);CHKERRQ(ierr);
           ierr = PetscObjectReference((PetscObject)intNodes);CHKERRQ(ierr);
           sp->intNodes = intNodes;
-          ierr = PetscObjectReference((PetscObject)intMat);CHKERRQ(ierr);
-          sp->intMat = intMat;
-          ierr = MatGetSize(sp->intMat, &nDofs, NULL);CHKERRQ(ierr);
           ierr = PetscLagNodeIndicesReference(trimmedlag->allNodeIndices);CHKERRQ(ierr);
           lag->intNodeIndices = trimmedlag->allNodeIndices;
+          ierr = PetscObjectReference((PetscObject)intMat);CHKERRQ(ierr);
+          if (PetscAbsInt(formDegree) > 0 && PetscAbsInt(formDegree) < dim) {
+            PetscReal *T;
+            PetscScalar *work;
+            PetscInt nCols, nRows;
+            Mat intMatT;
+
+            ierr = MatDuplicate(intMat, MAT_COPY_VALUES, &intMatT);CHKERRQ(ierr);
+            ierr = MatGetSize(intMat, &nRows, &nCols);CHKERRQ(ierr);
+            ierr = PetscMalloc2(Nk * Nk, &T, nCols, &work);CHKERRQ(ierr);
+            ierr = BiunitSimplexSymmetricFormTransformation(dim, formDegree, T);CHKERRQ(ierr);
+            for (PetscInt row = 0; row < nRows; row++) {
+              PetscInt nrCols;
+              const PetscInt *rCols;
+              const PetscScalar *rVals;
+
+              ierr = MatGetRow(intMat, row, &nrCols, &rCols, &rVals);CHKERRQ(ierr);
+              if (nrCols % Nk) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in intMat matrix are not in k-form size blocks");
+              for (PetscInt b = 0; b < nrCols; b += Nk) {
+                const PetscScalar *v = &rVals[b];
+                PetscScalar *w = &work[b];
+                for (PetscInt j = 0; j < Nk; j++) {
+                  w[j] = 0.;
+                  for (PetscInt i = 0; i < Nk; i++) {
+                    w[j] += v[i] * T[i * Nk + j];
+                  }
+                }
+              }
+              ierr = MatSetValuesBlocked(intMatT, 1, &row, nrCols, rCols, work, INSERT_VALUES);CHKERRQ(ierr);
+              ierr = MatRestoreRow(intMat, row, &nrCols, &rCols, &rVals);CHKERRQ(ierr);
+            }
+            ierr = MatAssemblyBegin(intMatT, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+            ierr = MatAssemblyEnd(intMatT, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+            ierr = MatDestroy(&intMat);CHKERRQ(ierr);
+            intMat = intMatT;
+            ierr = PetscLagNodeIndicesDestroy(&(lag->intNodeIndices));CHKERRQ(ierr);
+            ierr = PetscLagNodeIndicesDuplicate(trimmedlag->allNodeIndices, &(lag->intNodeIndices));CHKERRQ(ierr);
+            {
+              PetscInt nNodes = lag->intNodeIndices->nNodes;
+              PetscReal *newNodeVec = lag->intNodeIndices->nodeVec;
+              const PetscReal *oldNodeVec = trimmedlag->allNodeIndices->nodeVec;
+
+              for (PetscInt n = 0; n < nNodes; n++) {
+                PetscReal *w = &newNodeVec[n * Nk];
+                const PetscReal *v = &oldNodeVec[n * Nk];
+
+                for (PetscInt j = 0; j < Nk; j++) {
+                  w[j] = 0.;
+                  for (PetscInt i = 0; i < Nk; i++) {
+                    w[j] += v[i] * T[i * Nk + j];
+                  }
+                }
+              }
+            }
+            ierr = PetscFree2(T, work);CHKERRQ(ierr);
+          }
+          sp->intMat = intMat;
+          ierr = MatGetSize(sp->intMat, &nDofs, NULL);CHKERRQ(ierr);
           ierr = PetscDualSpaceDestroy(&trimmedsp);CHKERRQ(ierr);
           ierr = PetscSectionSetDof(section, 0, nDofs);CHKERRQ(ierr);
         }
@@ -2570,6 +2711,28 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
             V[i * groupSize + j] = W[i * nodeVecDim + j];
           }
         }
+      }
+      if (PetscDefined(USE_DEBUG)) {
+        PetscReal res;
+
+        /* check that the normal error is 0 */
+        for (m = n; m < nEnd; m++) {
+          PetscInt d;
+
+          for (d = 0; d < nodeVecDim; d++) {
+            W[(m - n) * nodeVecDim + d] = ni->nodeVec[permOrnt[m] * nodeVecDim + d];
+          }
+        }
+        res = 0.;
+        for (PetscInt i = 0; i < groupSize; i++) {
+          for (PetscInt j = 0; j < nodeVecDim; j++) {
+            for (PetscInt k = 0; k < groupSize; k++) {
+              W[i * nodeVecDim + j] -= V[i * groupSize + k] * intNodeIndices->nodeVec[perm[n+k] * nodeVecDim + j];
+            }
+            res += PetscAbsScalar(W[i * nodeVecDim + j]);
+          }
+        }
+        if (res > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Dof block did not solve");
       }
     }
     ierr = MatSetValues(A, groupSize, &permOrnt[n], groupSize, &perm[n], V, INSERT_VALUES);CHKERRQ(ierr);
