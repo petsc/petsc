@@ -154,6 +154,7 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
   ierr = VecDestroy(&tao->IU);CHKERRQ(ierr);
   tao->IL = IL;
   tao->IU = IU;
+  tao->ineq_doublesided = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -348,7 +349,7 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode 
     PetscObjectReference((PetscObject)ce);
   }
   ierr = VecDestroy(&tao->constraints_equality);CHKERRQ(ierr);
-
+  tao->eq_constrained = PETSC_TRUE;
   tao->constraints_equality = ce;
   tao->user_con_equalityP = ctx;
   tao->ops->computeequalityconstraints = func;
@@ -392,7 +393,7 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
   }
   ierr = VecDestroy(&tao->constraints_inequality);CHKERRQ(ierr);
   tao->constraints_inequality = ci;
-
+  tao->ineq_constrained = PETSC_TRUE;
   tao->user_con_inequalityP = ctx;
   tao->ops->computeinequalityconstraints = func;
   PetscFunctionReturn(0);

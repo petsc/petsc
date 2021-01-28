@@ -2,7 +2,6 @@
 Solution should be f(1,1)=-2
 TAO solve converged due to CONVERGED_GTTOL iterations 7
 Vec Object: 1 MPI processes
-  type: mpi
-Process [0]
+  type: seq
 1.
 1.
