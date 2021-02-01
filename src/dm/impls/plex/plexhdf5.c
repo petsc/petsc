@@ -789,6 +789,8 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
   ierr = DMPlexWriteCoordinates_HDF5_Static(dm, viewer);CHKERRQ(ierr);
   ierr = DMPlexWriteLabels_HDF5_Static(dm, globalPointNumbers, viewer);CHKERRQ(ierr);
 
+  ierr = PetscViewerHDF5WriteAttribute(viewer, NULL, "petsc_version_git", PETSC_STRING, PETSC_VERSION_GIT);CHKERRQ(ierr);
+
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   switch (format) {
     case PETSC_VIEWER_HDF5_VIZ:
