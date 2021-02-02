@@ -786,7 +786,7 @@ static PetscErrorCode PetscSFView_Window(PetscSF sf,PetscViewer viewer)
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  current flavor=%s synchronization=%s sort=%s\n",PetscSFWindowFlavorTypes[w->flavor],PetscSFWindowSyncTypes[w->sync],sf->rankorder ? "rank-order" : "unordered");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  current flavor=%s synchronization=%s MultiSF sort=%s\n",PetscSFWindowFlavorTypes[w->flavor],PetscSFWindowSyncTypes[w->sync],sf->rankorder ? "rank-order" : "unordered");CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       if (w->info != MPI_INFO_NULL) {
         PetscMPIInt k,nkeys;

@@ -93,7 +93,6 @@ Label 'celltype':
 [1]: 0 (4)
 PetscSF Object: 2 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=9, leaves=3, remote ranks=1
   [0] 1 <- (1,1)
   [0] 2 <- (1,2)
@@ -105,5 +104,6 @@ PetscSF Object: 2 MPI processes
   [0]    2 <- 2
   [0]    5 <- 5
   [1] Roots referenced by my leaves, by rank
+  MultiSF sort=rank-order
 DMPlexIsDistributed: TRUE
 DMPlexIsInterpolatedCollective: full

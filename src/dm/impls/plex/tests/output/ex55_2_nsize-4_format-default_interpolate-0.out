@@ -1372,7 +1372,6 @@ Label 'celltype':
 [3]: 13 (7)
 PetscSF Object: 4 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=64, leaves=25, remote ranks=1
   [0] 14 <- (1,14)
   [0] 15 <- (1,15)
@@ -1534,6 +1533,7 @@ PetscSF Object: 4 MPI processes
   [2]    62 <- 37
   [2]    63 <- 38
   [3] Roots referenced by my leaves, by rank
+  MultiSF sort=rank-order
 DM Object: Mesh_new (new_) 4 MPI processes
   type: plex
 Mesh_new in 3 dimensions:

@@ -1,5 +1,4 @@
 PetscSF Object: 4 MPI processes
-      current info=MPI_INFO_NULL
   [0] Number of roots=3, leaves=2, remote ranks=2
   [0] 0 <- (3,1)
   [0] 1 <- (1,0)
@@ -39,6 +38,7 @@ PetscSF Object: 4 MPI processes
   [3]    2 <- 2
   [3] 2: 1 edges
   [3]    0 <- 1
+    current info=MPI_INFO_NULL
 ## Data at multi-roots, to scatter to leaves
 [0] 0: 1000 1100 1200 1201 1202
 [1] 0: 2000 2100
