@@ -2881,7 +2881,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
       else if (nz < 0) nz = 1;
       nz = PetscMin(nz,nbs);
       for (i=0; i<mbs; i++) b->imax[i] = nz;
-      nz = nz*mbs;
+      ierr = PetscIntMultError(nz,mbs,&nz);CHKERRQ(ierr);
     } else {
       PetscInt64 nz64 = 0;
       for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz64 += nnz[i];}
