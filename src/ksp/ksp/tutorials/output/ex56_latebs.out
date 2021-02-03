@@ -93,7 +93,7 @@ PC Object: 8 MPI processes
                 total: nonzeros=8217, allocated nonzeros=8217
                   using I-node routines: found 45 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_levels_1_sub_) 1 MPI processes
           type: seqaij
           rows=135, cols=135
           total: nonzeros=5733, allocated nonzeros=5733
@@ -212,7 +212,7 @@ PC Object: 8 MPI processes
                 total: nonzeros=8217, allocated nonzeros=8217
                   using I-node routines: found 45 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_levels_1_sub_) 1 MPI processes
           type: seqaij
           rows=135, cols=135
           total: nonzeros=5733, allocated nonzeros=5733
@@ -331,7 +331,7 @@ PC Object: 8 MPI processes
                 total: nonzeros=8217, allocated nonzeros=8217
                   using I-node routines: found 45 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_levels_1_sub_) 1 MPI processes
           type: seqaij
           rows=135, cols=135
           total: nonzeros=5733, allocated nonzeros=5733
