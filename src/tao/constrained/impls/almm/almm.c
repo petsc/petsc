@@ -411,7 +411,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObjec
   This method converts a constrained problem into a sequence of unconstrained problems via the augmented
   Lagrangian merit function. Bound constraints are pushed down to the subproblem without any modifications.
 
-  Two formulations are offered for the subproblem: canonical Hestenes-Powell augmentedLagrangian with slack
+  Two formulations are offered for the subproblem: canonical Hestenes-Powell augmented Lagrangian with slack
   variables for inequality constraints, and a slack-less Powell-Hestenes-Rockafellar (PHR) formulation utilizing a
   pointwise max() penalty on inequality constraints. The canonical augmented Lagrangian formulation typically
   converges faster for most problems. However, PHR may be desirable for problems featuring a large number
@@ -423,7 +423,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObjec
   subproblem. It is also highly recommended that the subsolver chosen by the user utilize a trust-region
   strategy for globalization (default: TAOBQNKTR) especially if the outer problem features bound constraints.
 
-  .vb
+.vb
   while unconverged
     solve argmin_x L(x) s.t. l <= x <= u
     if ||c|| <= y_tol
@@ -438,7 +438,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObjec
       update penalty and loosen tolerances
     endif
   endwhile
-  .ve
+.ve
 
 .seealso: TaoALMMGetType(), TaoALMMSetType(), TaoALMMSetSubsolver(), TaoALMMGetSubsolver(),
           TaoALMMGetMultipliers(), TaoALMMSetMultipliers(), TaoALMMGetPrimalIS(), TaoALMMGetDualIS()
