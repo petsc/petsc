@@ -129,6 +129,7 @@ class Script(logger.Logger):
       raise RuntimeError('BuildSystem requires Python version 2.6 or higher. Get Python at https://www.python.org/')
     return
 
+  @staticmethod
   def getModule(root, name):
     '''Retrieve a specific module from the directory root, bypassing the usual paths'''
     import imp
@@ -138,9 +139,8 @@ class Script(logger.Logger):
       return imp.load_module(name, fp, pathname, description)
     finally:
       if fp: fp.close()
-    return
-  getModule = staticmethod(getModule)
 
+  @staticmethod
   def importModule(moduleName):
     '''Import the named module, and return the module object
        - Works properly for fully qualified names'''
@@ -149,7 +149,6 @@ class Script(logger.Logger):
     for comp in components[1:]:
       module = getattr(module, comp)
     return module
-  importModule = staticmethod(importModule)
 
   @staticmethod
   def runShellCommand(command, log=None, cwd=None):
@@ -161,6 +160,7 @@ class Script(logger.Logger):
     PIPE  = subprocess.PIPE
     output = ''
     error = ''
+    ret = 0
     for command in commandseq:
       useShell = isinstance(command, str) or isinstance(command, bytes)
       if log: log.write('Executing: %s\n' % (command,))
@@ -183,14 +183,14 @@ class Script(logger.Logger):
         break
     return (output, error, ret)
 
+  @staticmethod
   def defaultCheckCommand(command, status, output, error):
     '''Raise an error if the exit status is nonzero'''
     if status: raise RuntimeError('Could not execute "%s":\n%s' % (command,output+error))
-  defaultCheckCommand = staticmethod(defaultCheckCommand)
 
+  @staticmethod
   def passCheckCommand(command, status, output, error):
     '''Does not check the command results'''
-  passCheckCommand = staticmethod(passCheckCommand)
 
   @staticmethod
   def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True, threads = 0):
