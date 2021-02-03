@@ -10,7 +10,7 @@
        n_local = maximum over all processors of n_local_true
 */
 
-#include <../src/ksp/pc/impls/asm/asm.h> /*I "petscpc.h" I*/
+#include <petsc/private/pcasmimpl.h> /*I "petscpc.h" I*/
 
 static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
 {
