@@ -148,9 +148,7 @@ def chksynonyms():
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
 
-    if name.find('download-petsc4py') >= 0:
-      sys.argv[l] = name.replace('download-petsc4py','with-petsc4py')
-
+    name = name.replace('download-petsc4py','with-petsc4py')
     name = name.replace('with-openmpi','with-mpi')
     name = name.replace('with-mpich','with-mpi')
     name = name.replace('with-blas-lapack','with-blaslapack')
