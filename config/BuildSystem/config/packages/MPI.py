@@ -224,7 +224,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
     # determine if the program has been started with the correct mpiexec (will only be set for parallel runs so not clear how to check appropriately)
-    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 60, threads = 1, log = self.log)
+    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 120, threads = 1, log = self.log)
     if ret:
       self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 printenv"\nThis could be ok, some MPI implementations such as SGI produce a non-zero status with non-MPI programs\n'+out+err)
     else:
@@ -319,7 +319,7 @@ Unable to run hostname to check the network')
     includes = '#include <mpi.h>'
     body = 'MPI_Init(0,0);\nMPI_Finalize();\n'
     try:
-      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 60, threads = 1)
+      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 120, threads = 1)
       if not ok: raise RuntimeError(error_message)
     except RuntimeError as e:
       if str(e).find('Runaway process exceeded time limit') > -1:
@@ -434,7 +434,7 @@ Unable to run hostname to check the network')
             self.addDefine('HAVE_'+datatype, 1)
         elif not self.argDB['with-batch']:
           self.pushLanguage('C')
-          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name, executor = self.mpiexec):
+          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name, executor = self.mpiexec, timeout = 120):
             self.addDefine('HAVE_'+datatype, 1)
           self.popLanguage()
         else:
