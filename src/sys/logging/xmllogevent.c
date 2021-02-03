@@ -101,6 +101,7 @@ static PetscLogDouble   thresholdTime          = 0.01; /* initial value was 0.1 
 static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4);
 static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4);
 PETSC_INTERN PetscErrorCode PetscLogView_Nested(PetscViewer);
+PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
 
 
 /*@C
@@ -1381,7 +1382,6 @@ PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
   /* Print global information about this run */
   ierr = PetscPrintExeSpecs(viewer);CHKERRQ(ierr);
   ierr = PetscPrintGlobalPerformance(viewer, locTotalTime);CHKERRQ(ierr);
-
   /* Collect nested timer tree info from all processes */
   ierr = PetscLogNestedTreeCreate(viewer, &tree, &nTimers);CHKERRQ(ierr);
   ierr = PetscLogNestedTreePrintTop(viewer, tree, nTimers, globTotalTime);CHKERRQ(ierr);
@@ -1394,6 +1394,126 @@ PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
 
   ierr = PetscViewerXMLEndSection(viewer, "petscroot");CHKERRQ(ierr);
   ierr = PetscViewerFinalASCII_XML(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+ * Populate an array containing the ancestors (callers) of an event.
+ */
+static PetscErrorCode GetEventAncestors(const PetscNestedEventTree *tree,int nEvents,const PetscNestedEventTree event,PetscNestedEventTree **ancestors,int *nAncestors)
+{
+  PetscErrorCode       ierr;
+  int                  pos=0;
+  PetscNestedEventTree currentEvent=event;
+
+  PetscFunctionBegin;
+  // Find the number of ancestors.
+  *nAncestors = 0;
+  while (currentEvent.dftParent != -1) {
+    for (int i=0; i<nEvents; i++) {
+      if (tree[i].dftEvent == currentEvent.dftParent) {
+        currentEvent = tree[i];
+        (*nAncestors)++;
+        break;
+      }
+    }
+  }
+  // Now populate the array.
+  ierr = PetscMalloc1(*nAncestors, ancestors);CHKERRQ(ierr);
+  currentEvent = event;
+  while (currentEvent.dftParent != -1) {
+    for (int i=0; i<nEvents; i++) {
+      if (tree[i].dftEvent == currentEvent.dftParent) {
+        currentEvent = tree[i];
+        (*ancestors)[pos] = currentEvent;
+        pos++;
+        break;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+ * Get the name of an event.
+ */
+static PetscErrorCode GetEventName(const PetscNestedEventTree event,char **name)
+{
+  PetscErrorCode ierr;
+  PetscStageLog  stageLog;
+
+  PetscFunctionBegin;
+  ierr  = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  *name = stageLog->eventLog->eventInfo[event.nstEvent].name;
+  PetscFunctionReturn(0);
+}
+
+/*
+ * Return the duration of an event in seconds.
+ */
+static PetscErrorCode GetEventTime(const PetscNestedEventTree event,PetscLogDouble *eventTime)
+{
+  PetscErrorCode ierr;
+  PetscStageLog  stageLog;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  *eventTime = stageLog->stageInfo[MAINSTAGE].eventLog->eventInfo[event.dftEvent].time;
+  PetscFunctionReturn(0);
+}
+
+/*
+ * Print nested logging information to a file suitable for reading into a Flame Graph.
+ *
+ * The format consists of a semicolon-separated list of events and the event duration in microseconds (which must be an integer).
+ * An example output would look like:
+ *   MatAssemblyBegin 1
+ *   MatAssemblyEnd 10
+ *   MatView 302
+ *   KSPSetUp 98
+ *   KSPSetUp;VecSet 5
+ *   KSPSolve 150
+ *
+ * This option may be requested from the command line by passing in the flag `-log_view :<somefile>.txt:ascii_flamegraph`.
+ */
+PetscErrorCode PetscLogView_Flamegraph(PetscViewer viewer)
+{
+  int                  nEvents,nAncestors;
+  char                 *eventName;
+  PetscErrorCode       ierr;
+  PetscNestedEventTree *tree=NULL,*ancestors=NULL,event;
+  PetscLogDouble       eventTime=0,locTotalTime,globTotalTime;
+  MPI_Comm             comm;
+
+  PetscFunctionBegin;
+  // Determine the overall time for the program.
+  ierr = PetscTime(&locTotalTime);CHKERRQ(ierr);
+  locTotalTime -= petsc_BaseTime;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&locTotalTime,&globTotalTime,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+
+  ierr = PetscLogNestedTreeCreate(viewer, &tree, &nEvents);CHKERRQ(ierr);
+
+  // Now write the events to the file.
+  for (int i=0; i<nEvents; i++) {
+    event     = tree[i];
+    ierr = GetEventTime(event,&eventTime);CHKERRQ(ierr);
+    if (eventTime/globTotalTime < THRESHOLD) continue;
+
+    // Print out the ancestor events in reverse order, starting with the oldest.
+    ierr = GetEventAncestors(tree,nEvents,event,&ancestors,&nAncestors);CHKERRQ(ierr);
+    for (int j=nAncestors-1; j>=0; j--) {
+      ierr = GetEventName(ancestors[j],&eventName);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s;",eventName);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(ancestors);CHKERRQ(ierr);
+    // Now print the actual event and duration.
+    // The time is written as an integer (in microseconds) so the file can be understood by tools such as Speedscope.
+    ierr = GetEventName(event,&eventName);CHKERRQ(ierr);
+    PetscViewerASCIIPrintf(viewer,"%s %" PetscInt64_FMT "\n",eventName,(PetscInt64)(eventTime*1e6));
+  }
+
+  ierr = PetscLogNestedTreeDestroy(tree, nEvents);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

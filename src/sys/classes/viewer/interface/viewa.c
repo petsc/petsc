@@ -21,6 +21,7 @@ const char *const PetscViewerFormats[] = {
   "ASCII_FACTOR_INFO",
   "ASCII_LATEX",
   "ASCII_XML",
+  "ASCII_FLAMEGRAPH",
   "ASCII_GLVIS",
   "ASCII_CSV",
   "DRAW_BASIC",
