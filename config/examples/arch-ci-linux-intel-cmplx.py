@@ -32,7 +32,7 @@ if __name__ == '__main__':
     '--download-parmetis',
     '--with-petsc4py',
     '--download-slepc',
-    '--download-slepc-configure-arguments="--download-slepc4py"',
+    '--download-slepc-configure-arguments="--with-slepc4py"',
     '--download-scalapack',
     '--download-strumpack',
     '--download-suitesparse',
