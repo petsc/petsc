@@ -3068,12 +3068,7 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = ISDestroy(&irowp);CHKERRQ(ierr);
   ierr = ISDestroy(&icolp);CHKERRQ(ierr);
   if (rowp == colp) {
-    if (A->symmetric) {
-      ierr = MatSetOption(*B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    }
-    if (A->hermitian) {
-      ierr = MatSetOption(*B,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-    }
+    ierr = MatPropagateSymmetryOptions(A,*B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

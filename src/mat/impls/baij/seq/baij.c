@@ -1764,6 +1764,15 @@ finished:;
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatPermute_SeqBAIJ(Mat A,IS rowp,IS colp,Mat *B)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreateSubMatrix(A,rowp,colp,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -2641,7 +2650,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                /* 54*/ MatFDColoringCreate_SeqXAIJ,
                                        NULL,
                                        NULL,
-                                       NULL,
+                                       MatPermute_SeqBAIJ,
                                        MatSetValuesBlocked_SeqBAIJ,
                                /* 59*/ MatCreateSubMatrix_SeqBAIJ,
                                        MatDestroy_SeqBAIJ,

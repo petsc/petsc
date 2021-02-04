@@ -630,6 +630,20 @@ finished:;
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatPermute_SeqSBAIJ(Mat A,IS rowp,IS colp,Mat *B)
+{
+  Mat            C;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatConvert(A,MATSEQBAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+  ierr = MatPermute(C,rowp,colp,B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  if (rowp == colp) {
+    ierr = MatConvert(*B,MATSEQSBAIJ,MAT_INPLACE_MATRIX,B);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
@@ -1411,7 +1425,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                /* 54*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
+                                       MatPermute_SeqSBAIJ,
                                        MatSetValuesBlocked_SeqSBAIJ,
                                /* 59*/ MatCreateSubMatrix_SeqSBAIJ,
                                        NULL,
@@ -1816,8 +1830,8 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat B,PetscBool natura
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat,MatType,MatReuse,Mat*);
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 {
