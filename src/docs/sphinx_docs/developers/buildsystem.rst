@@ -42,10 +42,10 @@ success, due to broken tools, operating system upgrades, hardware incompatibilit
 error, and a host of other reasons. Problem diagnosis is the single biggest bottleneck for
 development and maintenance time. Unfortunately, current systems are built to optimize the
 successful case rather than the unsuccessful. In PETSc, we have developed the
-``BuildSystem`` package (BS) to remedy the shortcomings of configuration systems such as
+``BuildSystem`` package (BuildSystem) to remedy the shortcomings of configuration systems such as
 Autoconf, CMake, and SCons.
 
-First, BS provides consistent namespacing for tests and test results.
+First, BuildSystem provides consistent namespacing for tests and test results.
 Tests are encapsulated in modules, which also hold the test results.
 Thus you get the normal Python namespacing of results. Anyone familiar
 with Autoconf will recall the painful, manual namespacing using text
@@ -70,7 +70,7 @@ from scratch. Below we list features and design considerations which lead us to 
 Namespacing
 ^^^^^^^^^^^
 
-BS wraps collections of related tests in Python modules, which also hold
+BuildSystem wraps collections of related tests in Python modules, which also hold
 the test results. Thus results are accessed using normal Python
 namespacing. As rudimentary as this sounds, no namespacing beyond the
 use of variable name prefixes is present in SCons, CMake, or Autoconf.
@@ -78,7 +78,7 @@ Instead, a flat namespace is used, mirroring the situation in C. This
 tendency appears again when composing command lines for extenral tools,
 such as the compiler and linker. In the traditional configure tools,
 options are aggregated in a single bucket variable, such as ``INCLUDE``
-or ``LIBS``, whereas in BS you trace the provenance of a flag before it
+or ``LIBS``, whereas in BuildSystem you trace the provenance of a flag before it
 is added to the command line. CMake also makes the unfortunate decision
 to force all link options to resolve to full paths, which causes havoc
 with compiler-private libraries.
@@ -86,7 +86,7 @@ with compiler-private libraries.
 Explicit control flow
 ^^^^^^^^^^^^^^^^^^^^^
 
-The BS configure modules mention above, containing one configure object
+The BuildSystem configure modules mention above, containing one configure object
 per module, are organized explicitly into a directed acyclic graph
 (DAG). The user indicates dependence, an *edge* in the dependence graph,
 with a single call, ``requires('path.to.other.test', self)``, which not
@@ -97,7 +97,7 @@ dependency, achieving test and result encapsulation simply.
 Multi-languages tests
 ^^^^^^^^^^^^^^^^^^^^^
 
-BS maintains an explicit language stack, so that the current language
+BuildSystem maintains an explicit language stack, so that the current language
 can be manipulated by the test environment. A compile or link can be run
 using any language, complete with the proper compilers, flags,
 libraries, etc with a single call. This kind of automation is crucial
@@ -105,7 +105,7 @@ for cross-language tests, which are very thinly supported in current
 tools. In fact, the design of these tools inhibits this kind of check.
 The ``check_function_exists()`` call in Autoconf and CMake looks only
 for the presence of a particular symbol in a library, and fails in C++
-and on Windows, whereas the equivalent BS test can also take a
+and on Windows, whereas the equivalent BuildSystem test can also take a
 declaration. The ``try_compile()`` test in Autoconf and CMake requires
 the entire list of libraries be present in the ``LIBS`` variable,
 providing no good way to obtain libraries from other tests in a modular
@@ -116,7 +116,7 @@ straightforward method exists to add this dependency.
 Subpackages
 ^^^^^^^^^^^
 
-The most complicated, but perhaps the most useful part of BS is the
+The most complicated, but perhaps the most useful part of BuildSystem is the
 support for dependent packages. It provides an object scaffolding for
 including a 3rd party package (more than 60 are now available) so that
 PETSc downloads, builds, and tests the package for inclusion. The native
