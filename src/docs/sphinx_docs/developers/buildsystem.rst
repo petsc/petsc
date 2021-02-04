@@ -75,7 +75,7 @@ the test results. Thus results are accessed using normal Python
 namespacing. As rudimentary as this sounds, no namespacing beyond the
 use of variable name prefixes is present in SCons, CMake, or Autoconf.
 Instead, a flat namespace is used, mirroring the situation in C. This
-tendency appears again when composing command lines for extenral tools,
+tendency appears again when composing command lines for external tools,
 such as the compiler and linker. In the traditional configure tools,
 options are aggregated in a single bucket variable, such as ``INCLUDE``
 or ``LIBS``, whereas in BuildSystem you trace the provenance of a flag before it
@@ -133,7 +133,7 @@ Batch environments
 Most systems, such as Autoconf and CMake, do not actually run tests in a
 batch environment, but rather require a direct specification, in CMake a
 “platform file”. This requires a human expert to write and maintain the
-platform file. Alternatively, Buildsystem submits a dynamically
+platform file. Alternatively, BuildSystem submits a dynamically
 generated set of tests to the batch system, enabling automatic
 cross-configuration and cross-compilation.
 
@@ -165,12 +165,12 @@ with PETSc. However, close examination of the link error shows that BLAS
 with compiled without position-independent code, e.g. using the
 ``-fPIC`` flag, but PETSc was built using the flag since it was intended
 for a shared library. This is sometimes hard to detect because many
-32-bit systems silently proceeed, but most 64-bit systems fail in this
+32-bit systems silently proceed, but most 64-bit systems fail in this
 case.
 
 When test command lines are built up from options gleaned from many
 prior tests, it is imperative that the system keep track of which tests
-were responible for a given flag or a given decision in the configure
+were responsible for a given flag or a given decision in the configure
 process. This failure to preserve the chain of reasoning is not unique
 to configure, but is ubiquitous in software and hardware interfaces.
 When your Wifi receiver fails to connect to a hub, or your cable modem
@@ -206,7 +206,7 @@ package root, which contains all the Python necessary run (in addition
 to the BuildSystem source). At minimum, the config directory contains a
 ``configure.py``, which is executed to run the configure process, and a
 module for the package itself. For example, PETSc contains
-``config/PETSc/PETSc.py``. It is also common to include a toplevel
+``config/PETSc/PETSc.py``. It is also common to include a top level
 ``configure`` file to execute the configure, as this looks like
 Autotools,
 
@@ -366,7 +366,7 @@ It maintains the help list for all options available in the run. The
 recursively on all the child modules. The ``cleanup()`` method performs
 the final output and logging actions,
 
--  Subtitute files
+-  Substitute files
 
 -  Output configure header
 
@@ -399,7 +399,7 @@ about MPI, and thus contains
 
 Notice that passing self for the last arguments means that the MPI
 module will run before the HYPRE module. Furthermore, we save the
-resulting object as ``self.mpi`` so that we may interogate it later.
+resulting object as ``self.mpi`` so that we may interrogate it later.
 HYPRE can initially test whether MPI was indeed found using
 ``self.mpi.found``. When HYPRE requires the list of MPI libraries in
 order to link a test object, the module can use ``self.mpi.lib``.
@@ -432,7 +432,7 @@ status and output. The routines are
      outputRun(),        checkRun()
 
 The language used for these operation is managed with a stack, similar
-to autoconf, using ``pushLanguage()`` and ``popLanguage()``. We also
+to Autoconf, using ``pushLanguage()`` and ``popLanguage()``. We also
 provide special forms used to check for valid compiler and linker flags,
 optionally adding them to the defaults.
 
@@ -449,7 +449,7 @@ generated.A #define statement can be added to the configure header using
 information in this header file. Using ``addMakeMacro()`` and
 ``addMakeRule()`` will add make macros and rules to the output makefiles
 specified in the framework. In addition we provide ``addSubstitution()``
-and ``addArgumentSubstitution()`` to mimic the bahvior of Autoconf if
+and ``addArgumentSubstitution()`` to mimic the behavior of Autoconf if
 necessary. The object may define a ``headerPrefix`` member, which will
 be appended, followed by an underscore, to every define which is output
 from it. Similarly, a ``substPrefix`` can be defined which applies to
