@@ -1348,10 +1348,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   V->ops->bindtocpu = VecBindToCPU_SeqAIJViennaCL;
 
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
-  ierr = VecViennaCLAllocateCheckHost(V);CHKERRQ(ierr);
-  ierr = VecSet(V,0.0);CHKERRQ(ierr);
-  ierr = VecSet_Seq(V,0.0);CHKERRQ(ierr);
-  V->offloadmask = PETSC_OFFLOAD_BOTH;
   PetscFunctionReturn(0);
 }
 
