@@ -206,6 +206,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   linesearch->postcheckctx = NULL;
   linesearch->max_its      = 1;
   linesearch->setupcalled  = PETSC_FALSE;
+  linesearch->monitor      = NULL;
   *outlinesearch           = linesearch;
   PetscFunctionReturn(0);
 }
@@ -708,10 +709,7 @@ PetscErrorCode  SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, Petsc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
-  if (monitor) {
-    PetscValidPointer(monitor, 2);
-    *monitor = linesearch->monitor;
-  }
+  *monitor = linesearch->monitor;
   PetscFunctionReturn(0);
 }
 
