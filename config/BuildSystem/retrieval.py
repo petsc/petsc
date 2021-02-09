@@ -23,33 +23,6 @@ class Retriever(logger.Logger):
     self.stamp = None
     return
 
-  def getAuthorizedUrl(self, url):
-    '''This returns a tuple of the unauthorized and authorized URLs for the given URL, and a flag indicating which was input'''
-    (scheme, location, path, parameters, query, fragment) = urlparse_local.urlparse(url)
-    if not location:
-      url     = urlparse_local.urlunparse(('', '', path, parameters, query, fragment))
-      authUrl = None
-      wasAuth = 0
-    else:
-      index = location.find('@')
-      if index >= 0:
-        login   = location[0:index]
-        authUrl = url
-        url     = urlparse_local.urlunparse((scheme, location[index+1:], path, parameters, query, fragment))
-        wasAuth = 1
-      else:
-        login   = location.split('.')[0]
-        authUrl = urlparse_local.urlunparse((scheme, login+'@'+location, path, parameters, query, fragment))
-        wasAuth = 0
-    return (url, authUrl, wasAuth)
-
-  def testAuthorizedUrl(self, authUrl):
-    '''Raise an exception if the URL cannot receive an SSH login without a password'''
-    if not authUrl:
-      raise RuntimeError('Url is empty')
-    (scheme, location, path, parameters, query, fragment) = urlparse_local.urlparse(authUrl)
-    return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+location, log = self.log)
-
   def genericRetrieve(self, url, root, package):
     '''Fetch the gzipped tarfile indicated by url and expand it into root
        - All the logic for removing old versions, updating etc. must move'''
@@ -230,26 +203,3 @@ Downloaded package %s from: %s is not a tarball.
       raise RuntimeError('Error changing permissions for '+dirname+' obtained from '+localFile+ ' : '+str(e))
     os.unlink(localFile)
     return
-
-  def ftpRetrieve(self, url, root, name,force):
-    self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via ftp', 3, 'install')
-    return self.genericRetrieve(url, root, name)
-
-  def httpRetrieve(self, url, root, name,force):
-    self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via http', 3, 'install')
-    return self.genericRetrieve(url, root, name)
-
-  def fileRetrieve(self, url, root, name,force):
-    self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via cp', 3, 'install')
-    return self.genericRetrieve(url, root, name)
-
-  def svnRetrieve(self, url, root, name,force):
-    if not hasattr(self.sourceControl, 'svn'):
-      raise RuntimeError('Cannot retrieve a SVN repository since svn was not found')
-    self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via svn', 3, 'install')
-    try:
-      config.base.Configure.executeShellCommand(self.sourceControl.svn+' checkout http'+url[3:]+' '+os.path.join(root, name), log = self.log)
-    except RuntimeError:
-      pass
-
-
