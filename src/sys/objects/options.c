@@ -427,7 +427,7 @@ static char *Petscgetline(FILE * f)
 @*/
 PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
 {
-  char           *string,fname[PETSC_MAX_PATH_LEN],*vstring = NULL,*astring = NULL,*packed = NULL;
+  char           *string,*vstring = NULL,*astring = NULL,*packed = NULL;
   char           *tokens[4];
   PetscErrorCode ierr;
   size_t         i,len,bytes;
@@ -441,13 +441,15 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
   PetscBool      isdir,alias=PETSC_FALSE,valid;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = PetscMemzero(tokens,sizeof(tokens));CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
-    cnt        = 0;
-    acnt       = 0;
+    char fpath[PETSC_MAX_PATH_LEN];
+    char fname[PETSC_MAX_PATH_LEN];
 
-    ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
+    ierr = PetscStrreplace(PETSC_COMM_SELF,file,fpath,sizeof(fpath));CHKERRQ(ierr);
+    ierr = PetscFixFilename(fpath,fname);CHKERRQ(ierr);
+
     fd   = fopen(fname,"r");
     ierr = PetscTestDirectory(fname,'r',&isdir);CHKERRQ(ierr);
     if (isdir && require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified options file %s is a directory",fname);
