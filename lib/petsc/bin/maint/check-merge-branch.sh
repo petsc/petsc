@@ -6,13 +6,13 @@ if [ ! -z "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x}" -a "${CI_MERGE_REQUEST_EVEN
   exit 0
 fi
 
-git fetch -q --unshallow --no-tags origin +release:remotes/origin/release +master:remotes/origin/master
-base_release=$(git merge-base --octopus origin/release origin/master HEAD)
-base_master=$(git merge-base origin/master HEAD)
-if [ ${base_release} = ${base_master} ]; then
+git fetch -q --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
+base_release=$(git merge-base --octopus origin/release origin/main HEAD)
+base_main=$(git merge-base origin/main HEAD)
+if [ ${base_release} = ${base_main} ]; then
     dest=origin/release
 else
-    dest=origin/master
+    dest=origin/main
 fi
 echo ${dest}
 exit 0
