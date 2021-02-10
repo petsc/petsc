@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-if [ ! -z ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x} -a ${CI_MERGE_REQUEST_EVENT_TYPE} != detached ]; then
+if [ ! -z "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x}" -a "${CI_MERGE_REQUEST_EVENT_TYPE}" != "detached" ]; then
   git fetch -q --unshallow --no-tags origin +${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}:remotes/origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
   echo origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
   exit 0
