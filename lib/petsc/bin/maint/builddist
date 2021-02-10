@@ -5,7 +5,7 @@
 # Usage: builddist petscrepo [branch] [name]
 # example usages:
 #   builddist /sandbox/petsc/petsc.clone balay/foo [petsc-balay-foo.tar.bz]
-#   builddist /sandbox/petsc/petsc.clone master [petsc-master.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone main [petsc-main.tar.bz]
 #   builddist /sandbox/petsc/petsc.clone release [petsc-3.4.1.tar.bz]
 #   builddist /sandbox/petsc/petsc.clone release release-snapshot [petsc-release-snapshot.tar.bz]
 #
@@ -34,7 +34,7 @@ elif [ $# = 2 ]; then
   branch=$2
 elif [ $# = 1 ]; then
   petscrepo=$1
-  branch='master'
+  branch='main'
 else
   echo 'Error: petscrepo not specified. Usge: builddist petscrepo'
   exit

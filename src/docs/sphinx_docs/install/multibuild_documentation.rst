@@ -192,7 +192,7 @@ intend to rebuild often into your ``$PETSC_DIR``:
 Updating or Reinstalling PETSc
 ==============================
 
-If you follow the master or release branches of PETSc you can update your libraries with:
+If you follow the main or release branches of PETSc you can update your libraries with:
 
 .. code-block:: console
 

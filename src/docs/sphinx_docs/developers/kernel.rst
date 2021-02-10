@@ -56,7 +56,7 @@ Implementation of Error Handling
 PETSc uses a “call error handler; then (depending on result) return
 error code” model when problems are detected in the running code. The
 public include file for error handling is
-`include/petscerror.h <https://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html>`__,
+`include/petscerror.h <https://www.mcs.anl.gov/petsc/petsc-main/include/petscerror.h.html>`__,
 and the source code for the PETSc error handling is in
 ``src/sys/error/``.
 
@@ -132,7 +132,7 @@ Error Codes
 
 The PETSc error handler takes an error code. The generic error codes are
 defined in
-`include/petscerror.h <https://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html>`__.
+`include/petscerror.h <https://www.mcs.anl.gov/petsc/petsc-main/include/petscerror.h.html>`__.
 The same error code is used many times in the libraries. For example,
 the error code ``PETSCERRMEM`` is used whenever a requested memory
 allocation is not available.
@@ -262,7 +262,7 @@ Implementation of Profiling
 This section provides details about the implementation of event logging
 and profiling within the PETSc kernel. The interface for profiling in
 PETSc is contained in the file
-`include/petsclog.h <https://www.mcs.anl.gov/petsc/petsc-master/include/petsclog.h.html>`__.
+`include/petsclog.h <https://www.mcs.anl.gov/petsc/petsc-main/include/petsclog.h.html>`__.
 The source code for the profile logging is in ``src/sys/plog/``.
 
 Profiling Object Creation and Destruction
@@ -312,7 +312,7 @@ Events are logged by using the pair ``PetscLogEventBegin()`` and ``PetscLogEvent
 
 This logging is usually done in the abstract interface file for the
 operations, for example,
-`src/mat/interface/matrix.c <https://www.mcs.anl.gov/petsc/petsc-master/src/mat/interface/matrix.c.html>`__.
+`src/mat/interface/matrix.c <https://www.mcs.anl.gov/petsc/petsc-main/src/mat/interface/matrix.c.html>`__.
 
 Controlling Profiling
 ~~~~~~~~~~~~~~~~~~~~~

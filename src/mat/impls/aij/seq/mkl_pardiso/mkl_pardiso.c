@@ -815,7 +815,7 @@ PetscErrorCode MatFactorMKL_PARDISOInitialize_Private(Mat A, MatFactorType ftype
     mat_mkl_pardiso->iparm[36] = bs;
     mat_mkl_pardiso->n         = A->rmap->N/bs;
   }
-  mat_mkl_pardiso->iparm[39] =  0; /* Input: matrix/rhs/solution stored on master */
+  mat_mkl_pardiso->iparm[39] =  0; /* Input: matrix/rhs/solution stored on rank-0 */
 
   mat_mkl_pardiso->CleanUp   = PETSC_FALSE;
   mat_mkl_pardiso->maxfct    = 1; /* Maximum number of numerical factorizations. */

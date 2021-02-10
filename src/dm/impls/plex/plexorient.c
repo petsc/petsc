@@ -9,8 +9,8 @@
   Input Parameters:
 + dm              - The DM (DMPLEX)
 . p               - The DAG point whose cone is compared
-. masterConeSize  - Number of the reference cone points passed (at least 2 and at most size of the cone of p)
-- masterCone      - The reference cone points
+. mainConeSize    - Number of the reference cone points passed (at least 2 and at most size of the cone of p)
+- mainCone        - The reference cone points
 
   Output Parameters:
 + start           - The new starting point within the cone of p to make it conforming with the reference cone
@@ -20,7 +20,7 @@
 
 .seealso: DMPlexOrient(), DMPlexOrientCell()
 @*/
-PetscErrorCode DMPlexCompareOrientations(DM dm, PetscInt p, PetscInt masterConeSize, const PetscInt masterCone[], PetscInt *start, PetscBool *reverse)
+PetscErrorCode DMPlexCompareOrientations(DM dm, PetscInt p, PetscInt mainConeSize, const PetscInt mainCone[], PetscInt *start, PetscBool *reverse)
 {
   PetscInt        coneSize;
   const PetscInt *cone;
@@ -33,26 +33,26 @@ PetscErrorCode DMPlexCompareOrientations(DM dm, PetscInt p, PetscInt masterConeS
   ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
   if (coneSize < 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D has no cone", p);
   ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-  if (masterConeSize < 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D: masterConeSize must be at least 2", p);
-  if (masterConeSize > coneSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D: masterConeSize must be at most coneSize", p);
+  if (mainConeSize < 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D: mainConeSize must be at least 2", p);
+  if (mainConeSize > coneSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D: mainConeSize must be at most coneSize", p);
   start_ = 0;
   for (i=0; i<coneSize; i++) {
-    if (cone[i] == masterCone[0]) {
+    if (cone[i] == mainCone[0]) {
       start_ = i;
       break;
     }
   }
-  if (PetscUnlikely(i==coneSize)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Point %D: starting point of reference cone not found in slave cone", p);
+  if (PetscUnlikely(i==coneSize)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Point %D: starting point of reference cone not found in worker cone", p);
   reverse_ = PETSC_FALSE;
-  for (i=0; i<masterConeSize; i++) {if (cone[(start_+i)%coneSize] != masterCone[i]) break;}
-  if (i != masterConeSize) {
+  for (i=0; i<mainConeSize; i++) {if (cone[(start_+i)%coneSize] != mainCone[i]) break;}
+  if (i != mainConeSize) {
     reverse_ = PETSC_TRUE;
-    for (i=0; i<masterConeSize; i++) {if (cone[(coneSize+start_-i)%coneSize] != masterCone[i]) break;}
-    if (i < masterConeSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Point %D: cone has non-conforming order of points with respect to reference cone", p);
+    for (i=0; i<mainConeSize; i++) {if (cone[(coneSize+start_-i)%coneSize] != mainCone[i]) break;}
+    if (i < mainConeSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Point %D: cone has non-conforming order of points with respect to reference cone", p);
   }
   if (start) *start = start_;
   if (reverse) *reverse = reverse_;
-  if (PetscUnlikely(cone[start_] != masterCone[0])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D: cone[%d] = %d != %d = masterCone[0]", p, start_, cone[start_], masterCone[0]);
+  if (PetscUnlikely(cone[start_] != mainCone[0])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D: cone[%d] = %d != %d = mainCone[0]", p, start_, cone[start_], mainCone[0]);
   PetscFunctionReturn(0);
 }
 
@@ -64,14 +64,14 @@ PetscErrorCode DMPlexCompareOrientations(DM dm, PetscInt p, PetscInt masterConeS
   Input Parameters:
 + dm              - The DM
 . p               - The DAG point (from interval given by DMPlexGetChart())
-. masterConeSize  - Number of specified cone points (at least 2)
-- masterCone      - Specified cone points, i.e. ordered subset of current cone in DAG numbering (not cone-local numbering)
+. mainConeSize    - Number of specified cone points (at least 2)
+- mainCone        - Specified cone points, i.e. ordered subset of current cone in DAG numbering (not cone-local numbering)
 
   Level: intermediate
 
 .seealso: DMPlexOrient(), DMPlexGetCone(), DMPlexGetConeOrientation(), DMPlexInterpolate(), DMPlexGetChart()
 @*/
-PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, const PetscInt masterCone[])
+PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt mainConeSize, const PetscInt mainCone[])
 {
   PetscInt        coneSize;
   PetscInt        start1=0;
@@ -80,18 +80,18 @@ PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, cons
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (masterConeSize) PetscValidIntPointer(masterCone,4);
-  if (masterConeSize == 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "masterConeSize cannot be 1");
+  if (mainConeSize) PetscValidIntPointer(mainCone,4);
+  if (mainConeSize == 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "mainConeSize cannot be 1");
   ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
   if (!coneSize) PetscFunctionReturn(0); /* do nothing for points with no cone */
-  ierr = DMPlexCompareOrientations(dm, p, masterConeSize, masterCone, &start1, &reverse1);CHKERRQ(ierr);
+  ierr = DMPlexCompareOrientations(dm, p, mainConeSize, mainCone, &start1, &reverse1);CHKERRQ(ierr);
   ierr = DMPlexOrientCell_Internal(dm, p, start1, reverse1);CHKERRQ(ierr);
   if (PetscDefined(USE_DEBUG)) {
     PetscInt        c;
     const PetscInt *cone;
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-    for (c = 0; c < masterConeSize; c++) {
-      if (PetscUnlikely(cone[c] != masterCone[c])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "The algorithm above is wrong as cone[%d] = %d != %d = masterCone[%d]", c, cone[c], masterCone[c], c);
+    for (c = 0; c < mainConeSize; c++) {
+      if (PetscUnlikely(cone[c] != mainCone[c])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "The algorithm above is wrong as cone[%d] = %d != %d = mainCone[%d]", c, cone[c], mainCone[c], c);
     }
   }
   PetscFunctionReturn(0);

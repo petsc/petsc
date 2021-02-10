@@ -1118,7 +1118,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer,PetscBool
         ierr = PetscBinaryRead(fdes,data,cnt,NULL,dtype);CHKERRQ(ierr);
       }
       for (j=1; j<size; j++) {
-        ierr = PetscViewerFlowControlStepMaster(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
+        ierr = PetscViewerFlowControlStepMain(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
         if (write) {
           ierr = MPI_Recv(workbuf,maxcnt,mdtype,j,tag,comm,&status);CHKERRMPI(ierr);
           ierr = MPI_Get_count(&status,mdtype,&rcnt);CHKERRMPI(ierr);
@@ -1130,7 +1130,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer,PetscBool
         }
       }
       ierr = PetscFree(workbuf);CHKERRQ(ierr);
-      ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlEndMain(viewer,&message_count);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
       if (write) {

@@ -7364,7 +7364,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
   }
 
   /* number of subdomains requested greater than active processes or matrix size -> just shift the matrix
-     number of subdomains requested 1 -> send to master or first candidate in voids  */
+     number of subdomains requested 1 -> send to rank-0 or first candidate in voids  */
   ierr = MatGetSize(mat,&N,NULL);CHKERRQ(ierr);
   if (active_procs < *n_subdomains || *n_subdomains == 1 || N <= *n_subdomains) {
     PetscInt issize,isidx,dest;

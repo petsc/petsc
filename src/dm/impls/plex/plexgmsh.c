@@ -795,20 +795,20 @@ static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[
     if (byteSwap) {ierr = PetscByteSwap(&numPeriodic, PETSC_ENUM, 1);CHKERRQ(ierr);}
   }
   for (i = 0; i < numPeriodic; i++) {
-    int    ibuf[3], slaveDim = -1, slaveTag = -1, masterTag = -1, slaveNode, masterNode;
+    int    ibuf[3], correspondingDim = -1, correspondingTag = -1, primaryTag = -1, correspondingNode, primaryNode;
     long   j, nNodes;
     double affine[16];
 
     if (fileFormat == 22 || !binary) {
       ierr = PetscViewerRead(viewer, line, 3, NULL, PETSC_STRING);CHKERRQ(ierr);
-      snum = sscanf(line, "%d %d %d", &slaveDim, &slaveTag, &masterTag);
+      snum = sscanf(line, "%d %d %d", &correspondingDim, &correspondingTag, &primaryTag);
       if (snum != 3) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     } else {
       ierr = PetscViewerRead(viewer, ibuf, 3, NULL, PETSC_ENUM);CHKERRQ(ierr);
       if (byteSwap) {ierr = PetscByteSwap(ibuf, PETSC_ENUM, 3);CHKERRQ(ierr);}
-      slaveDim = ibuf[0]; slaveTag = ibuf[1]; masterTag = ibuf[2];
+      correspondingDim = ibuf[0]; correspondingTag = ibuf[1]; primaryTag = ibuf[2];
     }
-    (void)slaveDim; (void)slaveTag; (void)masterTag; /* unused */
+    (void)correspondingDim; (void)correspondingTag; (void)primaryTag; /* unused */
 
     if (fileFormat == 22 || !binary) {
       ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
@@ -832,16 +832,16 @@ static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[
     for (j = 0; j < nNodes; j++) {
       if (fileFormat == 22 || !binary) {
         ierr = PetscViewerRead(viewer, line, 2, NULL, PETSC_STRING);CHKERRQ(ierr);
-        snum = sscanf(line, "%d %d", &slaveNode, &masterNode);
+        snum = sscanf(line, "%d %d", &correspondingNode, &primaryNode);
         if (snum != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
       } else {
         ierr = PetscViewerRead(viewer, ibuf, 2, NULL, PETSC_ENUM);CHKERRQ(ierr);
         if (byteSwap) {ierr = PetscByteSwap(ibuf, PETSC_ENUM, 2);CHKERRQ(ierr);}
-        slaveNode = ibuf[0]; masterNode = ibuf[1];
+        correspondingNode = ibuf[0]; primaryNode = ibuf[1];
       }
-      slaveNode  = (int) nodeMap[slaveNode];
-      masterNode = (int) nodeMap[masterNode];
-      periodicMap[slaveNode] = masterNode;
+      correspondingNode  = (int) nodeMap[correspondingNode];
+      primaryNode = (int) nodeMap[primaryNode];
+      periodicMap[correspondingNode] = primaryNode;
     }
   }
   PetscFunctionReturn(0);
@@ -995,10 +995,10 @@ static PetscErrorCode GmshReadElements_v41(GmshFile *gmsh, GmshMesh *mesh)
 /* http://gmsh.info/dev/doc/texinfo/gmsh.html#MSH-file-format
 $Periodic
   numPeriodicLinks(size_t)
-  entityDim(int) entityTag(int) entityTagMaster(int)
+  entityDim(int) entityTag(int) entityTagPrimary(int)
   numAffine(size_t) value(double) ...
   numCorrespondingNodes(size_t)
-    nodeTag(size_t) nodeTagMaster(size_t)
+    nodeTag(size_t) nodeTagPrimary(size_t)
     ...
   ...
 $EndPeriodic
@@ -1021,9 +1021,9 @@ static PetscErrorCode GmshReadPeriodic_v41(GmshFile *gmsh, PetscInt periodicMap[
     ierr = GmshBufferGet(gmsh, numCorrespondingNodes, sizeof(PetscInt), &nodeTags);CHKERRQ(ierr);
     ierr = GmshReadSize(gmsh, nodeTags, numCorrespondingNodes*2);CHKERRQ(ierr);
     for (node = 0; node < numCorrespondingNodes; ++node) {
-      PetscInt slaveNode  = nodeMap[nodeTags[node*2+0]];
-      PetscInt masterNode = nodeMap[nodeTags[node*2+1]];
-      periodicMap[slaveNode] = masterNode;
+      PetscInt correspondingNode = nodeMap[nodeTags[node*2+0]];
+      PetscInt primaryNode = nodeMap[nodeTags[node*2+1]];
+      periodicMap[correspondingNode] = primaryNode;
     }
   }
   PetscFunctionReturn(0);
@@ -1237,20 +1237,20 @@ static PetscErrorCode GmshReadPeriodic(GmshFile *gmsh, GmshMesh *mesh)
   default: ierr = GmshReadPeriodic_v40(gmsh, mesh->periodMap);CHKERRQ(ierr); break;
   }
 
-  /* Find canonical master nodes */
+  /* Find canonical primary nodes */
   for (n = 0; n < mesh->numNodes; ++n)
     while (mesh->periodMap[n] != mesh->periodMap[mesh->periodMap[n]])
       mesh->periodMap[n] = mesh->periodMap[mesh->periodMap[n]];
 
-  /* Renumber vertices (filter out slaves) */
+  /* Renumber vertices (filter out correspondings) */
   mesh->numVerts = 0;
   for (n = 0; n < mesh->numNodes; ++n)
     if (mesh->vertexMap[n] >= 0)   /* is vertex */
-      if (mesh->periodMap[n] == n) /* is master */
+      if (mesh->periodMap[n] == n) /* is primary */
         mesh->vertexMap[n] = mesh->numVerts++;
   for (n = 0; n < mesh->numNodes; ++n)
     if (mesh->vertexMap[n] >= 0)   /* is vertex */
-      if (mesh->periodMap[n] != n) /* is slave  */
+      if (mesh->periodMap[n] != n) /* is corresponding  */
         mesh->vertexMap[n] = mesh->vertexMap[mesh->periodMap[n]];
   PetscFunctionReturn(0);
 }

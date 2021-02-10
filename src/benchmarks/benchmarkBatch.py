@@ -7,7 +7,7 @@ def generateBatchScript(num, procs, time, *args):
 #PBS -l nodes=%d:ppn=1
 #PBS -j oe
 cd $PBS_O_WORKDIR
-echo Master process running on `hostname`
+echo Main process running on `hostname`
 echo Directory is `pwd`
 echo PBS has allocated the following nodes:
 echo `cat $PBS_NODEFILE`

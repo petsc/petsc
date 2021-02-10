@@ -1511,7 +1511,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  /* only master generates this file */
+  /* only rank-0 generates this file */
   PetscObjectGetComm((PetscObject)da,&comm);
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);

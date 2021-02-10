@@ -289,7 +289,7 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
   if (!*fl) PetscFunctionReturn(0);
 
   /*
-       Remove this entry from the master DL list (if it is in it)
+       Remove this entry from the main DL list (if it is in it)
   */
   if (dlallhead == *fl) {
     if (dlallhead->next_list) dlallhead = dlallhead->next_list;

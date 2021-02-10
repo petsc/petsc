@@ -76,7 +76,7 @@ git:
 branches:
   only:
     - release
-    - master
+    - main
     - /^pr\/.*$/
     - /^ci\/.*$/
 

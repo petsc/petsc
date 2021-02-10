@@ -2703,13 +2703,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   test:
     suffix: adv_2d_tri_0
     requires: triangle
-    TODO: how did this ever get in master when there is no support for this
+    TODO: how did this ever get in main when there is no support for this
     args: -ufv_vtk_interval 0 -simplex -dm_refine 3 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
 
   test:
     suffix: adv_2d_tri_1
     requires: triangle
-    TODO: how did this ever get in master when there is no support for this
+    TODO: how did this ever get in main when there is no support for this
     args: -ufv_vtk_interval 0 -simplex -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
 
   test:
