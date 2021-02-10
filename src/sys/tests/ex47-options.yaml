@@ -1,0 +1,49 @@
+$$: ignored
+$$tail: ignored
+
+$$ans: &ans 42
+$$eu:  &eu  2.72
+$$pi:  &pi  3.14
+
+opt:
+  bool: true
+  int: *ans
+  real: *pi
+  imag: 2.72i
+  cmplx: -3.14+2.72i
+  str: petsc
+
+$$1: &seq-bool [true, false]
+$$2: &seq-int  [123, 456, 789]
+$$3: &seq-real [*pi, *eu]
+$$4: &seq-str  [abc, ijk, fgh]
+
+seq1: {
+  bool: *seq-bool,
+  int:  *seq-int,
+  real: *seq-real,
+  str:  *seq-str,
+}
+
+seq2:
+  bool:
+    - true
+    - false
+  int:
+    - 123
+    - 456
+    - 789
+  real:
+    - *pi
+    - *eu
+  str:
+    - rst
+    - uvw
+    - xyz
+
+map:
+  - key0: 0
+  - key1: 1
+  - key2: 2
+  - $$: ignored
+  - $$tail: ignored

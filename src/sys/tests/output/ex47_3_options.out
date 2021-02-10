@@ -1,0 +1,20 @@
+#PETSc Option Table entries:
+-map key0,key1,key2
+-map_key0 0
+-map_key1 1
+-map_key2 2
+-opt_bool true
+-opt_cmplx -3.14+2.72i
+-opt_imag 2.72i
+-opt_int 42
+-opt_real 3.14
+-opt_str petsc
+-seq1_bool true,false
+-seq1_int 123,456,789
+-seq1_real 3.14,2.72
+-seq1_str abc,ijk,fgh
+-seq2_bool true,false
+-seq2_int 123,456,789
+-seq2_real 3.14,2.72
+-seq2_str rst,uvw,xyz
+#End of PETSc Option Table entries

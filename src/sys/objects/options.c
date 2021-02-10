@@ -18,9 +18,6 @@
 #if defined(PETSC_HAVE_STRINGS_H)
 #  include <strings.h>          /* strcasecmp */
 #endif
-#if defined(PETSC_HAVE_YAML)
-#include <yaml.h>
-#endif
 
 #if defined(PETSC_HAVE_STRCASECMP)
 #define PetscOptNameCmp(a,b) strcasecmp(a,b)
@@ -818,7 +815,6 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
     }
   }
 
-#if defined(PETSC_HAVE_YAML)
   {
     char   *eoptions = NULL;
     size_t len       = 0;
@@ -845,14 +841,13 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
     PetscBool yaml_flg;
     ierr = PetscOptionsGetString(NULL,NULL,"-options_file_yaml",yaml_file,sizeof(yaml_file),&yaml_flg);CHKERRQ(ierr);
     if (yaml_flg) {
-      ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,options,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsGetString(NULL,NULL,"-options_string_yaml",yaml_string,sizeof(yaml_string),&yaml_flg);CHKERRQ(ierr);
     if (yaml_flg) {
-      ierr = PetscOptionsInsertStringYAML(NULL,yaml_string);CHKERRQ(ierr);
+      ierr = PetscOptionsInsertStringYAML(options,yaml_string);CHKERRQ(ierr);
     }
   }
-#endif
 
   /* insert command line options here because they take precedence over arguments in petscrc/environment */
   if (hasArgs) {ierr = PetscOptionsInsertArgs(options,*argc,*args);CHKERRQ(ierr);}
