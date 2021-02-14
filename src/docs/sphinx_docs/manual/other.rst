@@ -134,6 +134,25 @@ may also use ``KSPSetOptionsPrefix()``,\ ``DMSetOptionsPrefix()`` ,
 functions to assign custom prefixes, useful for applications with
 multiple or nested solvers.
 
+Adding options from a file
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+PETSc can load additional options from a file using ``PetscOptionsInsertFile()``,
+which can also be used from the command line, e.g. ``-options_file my_options.opts``.
+
+If PETSc is configured with YAML, one can use YAML files this way (relying on ``PetscOptionsInsertFileYAML()``).
+For example, the following file:
+
+.. literalinclude:: /../../../src/sys/tests/ex47-options.yaml
+  :language: yaml
+
+corresponds to the following PETSc options:
+
+.. literalinclude:: /../../../src/sys/tests/output/ex47_3_options.out
+  :language: none
+  :start-after: #
+  :end-before: #End
+
 User-Defined PetscOptions
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
