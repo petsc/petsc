@@ -18,9 +18,6 @@
 #if defined(PETSC_HAVE_STRINGS_H)
 #  include <strings.h>          /* strcasecmp */
 #endif
-#if defined(PETSC_HAVE_YAML)
-#include <yaml.h>
-#endif
 
 #if defined(PETSC_HAVE_STRCASECMP)
 #define PetscOptNameCmp(a,b) strcasecmp(a,b)
@@ -427,7 +424,7 @@ static char *Petscgetline(FILE * f)
 @*/
 PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
 {
-  char           *string,fname[PETSC_MAX_PATH_LEN],*vstring = NULL,*astring = NULL,*packed = NULL;
+  char           *string,*vstring = NULL,*astring = NULL,*packed = NULL;
   char           *tokens[4];
   PetscErrorCode ierr;
   size_t         i,len,bytes;
@@ -441,13 +438,15 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
   PetscBool      isdir,alias=PETSC_FALSE,valid;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = PetscMemzero(tokens,sizeof(tokens));CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
-    cnt        = 0;
-    acnt       = 0;
+    char fpath[PETSC_MAX_PATH_LEN];
+    char fname[PETSC_MAX_PATH_LEN];
 
-    ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
+    ierr = PetscStrreplace(PETSC_COMM_SELF,file,fpath,sizeof(fpath));CHKERRQ(ierr);
+    ierr = PetscFixFilename(fpath,fname);CHKERRQ(ierr);
+
     fd   = fopen(fname,"r");
     ierr = PetscTestDirectory(fname,'r',&isdir);CHKERRQ(ierr);
     if (isdir && require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified options file %s is a directory",fname);
@@ -816,7 +815,6 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
     }
   }
 
-#if defined(PETSC_HAVE_YAML)
   {
     char   *eoptions = NULL;
     size_t len       = 0;
@@ -843,14 +841,13 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
     PetscBool yaml_flg;
     ierr = PetscOptionsGetString(NULL,NULL,"-options_file_yaml",yaml_file,sizeof(yaml_file),&yaml_flg);CHKERRQ(ierr);
     if (yaml_flg) {
-      ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,options,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsGetString(NULL,NULL,"-options_string_yaml",yaml_string,sizeof(yaml_string),&yaml_flg);CHKERRQ(ierr);
     if (yaml_flg) {
-      ierr = PetscOptionsInsertStringYAML(NULL,yaml_string);CHKERRQ(ierr);
+      ierr = PetscOptionsInsertStringYAML(options,yaml_string);CHKERRQ(ierr);
     }
   }
-#endif
 
   /* insert command line options here because they take precedence over arguments in petscrc/environment */
   if (hasArgs) {ierr = PetscOptionsInsertArgs(options,*argc,*args);CHKERRQ(ierr);}

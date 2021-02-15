@@ -1,6 +1,4 @@
 
-#requirespackage 'PETSC_HAVE_YAML'
-
 ALL: lib
 SOURCEH   =
 SOURCEC   = yamlimpls.c
