@@ -170,6 +170,7 @@
          <li>Chebyshev uses MAT_SPD to default to CG for the eigen estimate</li>
          <li>Add KSPPIPECG2, a pipelined solver that reduces the number of allreduces to one per two iterations and overlaps it with two PCs and SPMVs using non-blocking allreduce</li>
          <li>Add KSPConvergedRateView() and KSPComputeConvergenceRate() to check the convergence rate of a linear solve</li>
+         <li>Add KSPSetUseExplicitTranspose() to explicitly transpose the system in KSPSolveTranspose()</li>
       </ul>
       <h4>SNES:</h4>
       <ul>
