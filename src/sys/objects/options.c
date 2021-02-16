@@ -61,7 +61,7 @@ KHASH_INIT(HO, kh_cstr_t, int, 1, PetscOptHash, PetscOptEqual)
 /*
     This table holds all the options set by the user. For simplicity, we use a static size database
 */
-#define MAXOPTNAME 512
+#define MAXOPTNAME PETSC_MAX_OPTION_NAME
 #define MAXOPTIONS 512
 #define MAXALIASES  25
 #define MAXPREFIXES 25
