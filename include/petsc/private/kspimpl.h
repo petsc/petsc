@@ -142,6 +142,11 @@ struct _p_KSP {
   PetscInt       totalits;   /* number of iterations used by this KSP object since it was created */
 
   PetscBool      transpose_solve;    /* solve transpose system instead */
+  struct {
+    Mat       AT,BT;
+    PetscBool use_explicittranspose; /* transpose the system explicitly in KSPSolveTranspose */
+    PetscBool reuse_transpose;       /* reuse the previous transposed system */
+  } transpose;
 
   KSPNormType    normtype;          /* type of norm used for convergence tests */
 

@@ -993,7 +993,29 @@ PetscErrorCode KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-  ksp->transpose_solve = PETSC_TRUE;
+  if (ksp->transpose.use_explicittranspose) {
+    Mat J,Jpre;
+    ierr = KSPGetOperators(ksp,&J,&Jpre);CHKERRQ(ierr);
+    if (!ksp->transpose.reuse_transpose) {
+      ierr = MatTranspose(J,MAT_INITIAL_MATRIX,&ksp->transpose.AT);CHKERRQ(ierr);
+      if (J != Jpre) {
+        ierr = MatTranspose(Jpre,MAT_INITIAL_MATRIX,&ksp->transpose.BT);CHKERRQ(ierr);
+      }
+      ksp->transpose.reuse_transpose = PETSC_TRUE;
+    } else {
+      ierr = MatTranspose(J,MAT_REUSE_MATRIX,&ksp->transpose.AT);CHKERRQ(ierr);
+      if (J != Jpre) {
+        ierr = MatTranspose(Jpre,MAT_REUSE_MATRIX,&ksp->transpose.BT);CHKERRQ(ierr);
+      }
+    }
+    if (J == Jpre && ksp->transpose.BT != ksp->transpose.AT) {
+      ierr = PetscObjectReference((PetscObject)ksp->transpose.AT);CHKERRQ(ierr);
+      ksp->transpose.BT = ksp->transpose.AT;
+    }
+    ierr = KSPSetOperators(ksp,ksp->transpose.AT,ksp->transpose.BT);CHKERRQ(ierr);
+  } else {
+    ksp->transpose_solve = PETSC_TRUE;
+  }
   ierr = KSPSolve_Private(ksp,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1315,6 +1337,12 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   ierr       = KSPReset((*ksp));CHKERRQ(ierr);
   (*ksp)->pc = pc;
   if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
+
+  if ((*ksp)->transpose.use_explicittranspose) {
+    ierr = MatDestroy(&(*ksp)->transpose.AT);CHKERRQ(ierr);
+    ierr = MatDestroy(&(*ksp)->transpose.BT);CHKERRQ(ierr);
+    (*ksp)->transpose.reuse_transpose = PETSC_FALSE;
+  }
 
   ierr = KSPGuessDestroy(&(*ksp)->guess);CHKERRQ(ierr);
   ierr = DMDestroy(&(*ksp)->dm);CHKERRQ(ierr);
@@ -2828,5 +2856,30 @@ PetscErrorCode KSPSetComputeInitialGuess(KSP ksp,PetscErrorCode (*func)(KSP,Vec,
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
   ierr = DMKSPSetComputeInitialGuess(dm,func,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPSetUseExplicitTranspose - Determines if transpose the system explicitly
+   in KSPSolveTranspose.
+
+   Logically Collective on ksp
+
+   Input Parameter:
+.  ksp - the KSP context
+
+   Output Parameter:
+.  flg - PETSC_TRUE to transpose the system in KSPSolveTranspose, PETSC_FALSE to not
+         transpose (default)
+
+   Level: advanced
+
+.seealso: KSPSolveTranspose(), KSP
+@*/
+PetscErrorCode KSPSetUseExplicitTranspose(KSP ksp,PetscBool flg)
+{
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
+  ksp->transpose.use_explicittranspose = flg;
   PetscFunctionReturn(0);
 }

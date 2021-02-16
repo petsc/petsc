@@ -12,7 +12,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
 */
 PetscFunctionList PCMGCoarseList = NULL;
 
-PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonConvergedReason *reason)
+PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PetscBool transpose,PCRichardsonConvergedReason *reason)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   *mgc,*mglevels = *mglevelsin;
@@ -21,12 +21,21 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
 
   PetscFunctionBegin;
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
-  ierr = KSPSolve(mglevels->smoothd,mglevels->b,mglevels->x);CHKERRQ(ierr);  /* pre-smooth */
-  ierr = KSPCheckSolve(mglevels->smoothd,pc,mglevels->x);CHKERRQ(ierr);
+  if (!transpose) {
+    ierr = KSPSolve(mglevels->smoothd,mglevels->b,mglevels->x);CHKERRQ(ierr);  /* pre-smooth */
+    ierr = KSPCheckSolve(mglevels->smoothd,pc,mglevels->x);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSolveTranspose(mglevels->smoothu,mglevels->b,mglevels->x);CHKERRQ(ierr); /* transpose of post-smooth */
+    ierr = KSPCheckSolve(mglevels->smoothu,pc,mglevels->x);CHKERRQ(ierr);
+  }
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   if (mglevels->level) {  /* not the coarsest grid */
     if (mglevels->eventresidual) {ierr = PetscLogEventBegin(mglevels->eventresidual,0,0,0,0);CHKERRQ(ierr);}
-    ierr = (*mglevels->residual)(mglevels->A,mglevels->b,mglevels->x,mglevels->r);CHKERRQ(ierr);
+    if (!transpose) {
+      ierr = (*mglevels->residual)(mglevels->A,mglevels->b,mglevels->x,mglevels->r);CHKERRQ(ierr);
+    } else {
+      ierr = (*mglevels->residualtranspose)(mglevels->A,mglevels->b,mglevels->x,mglevels->r);CHKERRQ(ierr);
+    }
     if (mglevels->eventresidual) {ierr = PetscLogEventEnd(mglevels->eventresidual,0,0,0,0);CHKERRQ(ierr);}
 
     /* if on finest level and have convergence criteria set */
@@ -47,18 +56,31 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
 
     mgc = *(mglevelsin - 1);
     if (mglevels->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-    ierr = MatRestrict(mglevels->restrct,mglevels->r,mgc->b);CHKERRQ(ierr);
+    if (!transpose) {
+      ierr = MatRestrict(mglevels->restrct,mglevels->r,mgc->b);CHKERRQ(ierr);
+    } else {
+      ierr = MatRestrict(mglevels->interpolate,mglevels->r,mgc->b);CHKERRQ(ierr);
+    }
     if (mglevels->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = VecSet(mgc->x,0.0);CHKERRQ(ierr);
     while (cycles--) {
-      ierr = PCMGMCycle_Private(pc,mglevelsin-1,reason);CHKERRQ(ierr);
+      ierr = PCMGMCycle_Private(pc,mglevelsin-1,transpose,reason);CHKERRQ(ierr);
     }
     if (mglevels->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-    ierr = MatInterpolateAdd(mglevels->interpolate,mgc->x,mglevels->x,mglevels->x);CHKERRQ(ierr);
+    if (!transpose) {
+      ierr = MatInterpolateAdd(mglevels->interpolate,mgc->x,mglevels->x,mglevels->x);CHKERRQ(ierr);
+    } else {
+      ierr = MatInterpolateAdd(mglevels->restrct,mgc->x,mglevels->x,mglevels->x);CHKERRQ(ierr);
+    }
     if (mglevels->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
-    ierr = KSPSolve(mglevels->smoothu,mglevels->b,mglevels->x);CHKERRQ(ierr);    /* post smooth */
-    ierr = KSPCheckSolve(mglevels->smoothu,pc,mglevels->x);CHKERRQ(ierr);
+    if (!transpose) {
+      ierr = KSPSolve(mglevels->smoothu,mglevels->b,mglevels->x);CHKERRQ(ierr);    /* post smooth */
+      ierr = KSPCheckSolve(mglevels->smoothu,pc,mglevels->x);CHKERRQ(ierr);
+    } else {
+      ierr = KSPSolveTranspose(mglevels->smoothd,mglevels->b,mglevels->x);CHKERRQ(ierr);    /* post smooth */
+      ierr = KSPCheckSolve(mglevels->smoothd,pc,mglevels->x);CHKERRQ(ierr);
+    }
     if (mglevels->cr) {
       /* TODO Turn on copy and turn off noisy if we have an exact solution
       ierr = VecCopy(mglevels->x, mglevels->crx);CHKERRQ(ierr);
@@ -138,7 +160,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
 
   *reason = (PCRichardsonConvergedReason)0;
   for (i=0; i<its; i++) {
-    ierr = PCMGMCycle_Private(pc,mglevels+levels-1,reason);CHKERRQ(ierr);
+    ierr = PCMGMCycle_Private(pc,mglevels+levels-1,PETSC_FALSE,reason);CHKERRQ(ierr);
     if (*reason) break;
   }
   if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
@@ -472,11 +494,6 @@ PetscErrorCode PCDestroy_MG(PC pc)
 }
 
 
-
-extern PetscErrorCode PCMGACycle_Private(PC,PC_MG_Levels**);
-extern PetscErrorCode PCMGFCycle_Private(PC,PC_MG_Levels**);
-extern PetscErrorCode PCMGKCycle_Private(PC,PC_MG_Levels**);
-
 /*
    PCApply_MG - Runs either an additive, multiplicative, Kaskadic
              or full cycle of multigrid.
@@ -484,7 +501,7 @@ extern PetscErrorCode PCMGKCycle_Private(PC,PC_MG_Levels**);
   Note:
   A simple wrapper which calls PCMGMCycle(),PCMGACycle(), or PCMGFCycle().
 */
-static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
+static PetscErrorCode PCApply_MG_Internal(PC pc,Vec b,Vec x,PetscBool transpose)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
@@ -523,22 +540,39 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   mglevels[levels-1]->x = x;
 
   if (mg->am == PC_MG_MULTIPLICATIVE) {
-    ierr = VecSet(x,0.0);CHKERRQ(ierr);
+    ierr = VecZeroEntries(x);CHKERRQ(ierr);
     for (i=0; i<mg->cyclesperpcapply; i++) {
-      ierr = PCMGMCycle_Private(pc,mglevels+levels-1,NULL);CHKERRQ(ierr);
+      ierr = PCMGMCycle_Private(pc,mglevels+levels-1,transpose,NULL);CHKERRQ(ierr);
     }
   } else if (mg->am == PC_MG_ADDITIVE) {
-    ierr = PCMGACycle_Private(pc,mglevels);CHKERRQ(ierr);
+    ierr = PCMGACycle_Private(pc,mglevels,transpose);CHKERRQ(ierr);
   } else if (mg->am == PC_MG_KASKADE) {
-    ierr = PCMGKCycle_Private(pc,mglevels);CHKERRQ(ierr);
+    ierr = PCMGKCycle_Private(pc,mglevels,transpose);CHKERRQ(ierr);
   } else {
-    ierr = PCMGFCycle_Private(pc,mglevels);CHKERRQ(ierr);
+    ierr = PCMGFCycle_Private(pc,mglevels,transpose);CHKERRQ(ierr);
   }
   if (mg->stageApply) {ierr = PetscLogStagePop();CHKERRQ(ierr);}
   if (!changeu && !changed) mglevels[levels-1]->b = NULL;
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
+{
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    ierr = PCApply_MG_Internal(pc,b,x,PETSC_FALSE);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApplyTranspose_MG(PC pc,Vec b,Vec x)
+{
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    ierr = PCApply_MG_Internal(pc,b,x,PETSC_TRUE);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+}
 
 PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
@@ -1082,6 +1116,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
       Mat mat;
       ierr = KSPGetOperators(mglevels[i]->smoothd,&mat,NULL);CHKERRQ(ierr);
       ierr = PCMGSetResidual(pc,i,PCMGResidualDefault,mat);CHKERRQ(ierr);
+    }
+    if (!mglevels[i]->residualtranspose) {
+      Mat mat;
+      ierr = KSPGetOperators(mglevels[i]->smoothd,&mat,NULL);CHKERRQ(ierr);
+      ierr = PCMGSetResidualTranspose(pc,i,PCMGResidualTransposeDefault,mat);CHKERRQ(ierr);
     }
   }
   for (i=1; i<n; i++) {
@@ -1786,6 +1825,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   pc->useAmat = PETSC_TRUE;
 
   pc->ops->apply          = PCApply_MG;
+  pc->ops->applytranspose = PCApplyTranspose_MG;
   pc->ops->setup          = PCSetUp_MG;
   pc->ops->reset          = PCReset_MG;
   pc->ops->destroy        = PCDestroy_MG;

@@ -312,6 +312,7 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
 .   -ksp_monitor_solution [ascii binary or draw][:filename][:format option] - plot solution at each iteration
 .   -ksp_monitor_singular_value - monitor extreme singular values at each iteration
 .   -ksp_converged_reason - view the convergence state at the end of the solve
+.   -ksp_use_explicittranspose - transpose the system explicitly in KSPSolveTranspose
 -   -ksp_converged_rate - view the convergence rate at the end of the solve
 
    Notes:
@@ -660,6 +661,12 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsInt("-ksp_matsolve_block_size", "Maximum number of columns treated simultaneously", "KSPMatSolve", nmax, &nmax, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetMatSolveBlockSize(ksp, nmax);CHKERRQ(ierr);
+  }
+
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ksp_use_explicittranspose","Explicitly tranpose the system in KSPSolveTranspose","KSPSetUseExplicitTranspose",ksp->transpose.use_explicittranspose,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = KSPSetUseExplicitTranspose(ksp,flg);CHKERRQ(ierr);
   }
 
   if (ksp->ops->setfromoptions) {

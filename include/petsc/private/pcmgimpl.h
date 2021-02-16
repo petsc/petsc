@@ -1,6 +1,7 @@
 /*
       Data structure used for Multigrid preconditioner.
 */
+#include "petscpctypes.h"
 #if !defined(__MG_IMPL)
 #define __MG_IMPL
 #include <petsc/private/pcimpl.h>
@@ -23,6 +24,7 @@ typedef struct {
                                                   the sequence of spaces. */
 
   PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
+  PetscErrorCode (*residualtranspose)(Mat,Vec,Vec,Vec);
 
   Mat           A;                             /* matrix used in forming residual*/
   KSP           smoothd;                       /* pre smoother */
@@ -86,5 +88,9 @@ PETSC_INTERN PetscErrorCode PCMGComputeCoarseSpace_Internal(PC, PetscInt, PCMGCo
 PETSC_INTERN PetscErrorCode PCMGAdaptInterpolator_Internal(PC, PetscInt, KSP, KSP, PetscInt, Vec[], Vec[]);
 PETSC_INTERN PetscErrorCode PCMGRecomputeLevelOperators_Internal(PC, PetscInt);
 
+PETSC_INTERN PetscErrorCode PCMGACycle_Private(PC,PC_MG_Levels**,PetscBool);
+PETSC_INTERN PetscErrorCode PCMGFCycle_Private(PC,PC_MG_Levels**,PetscBool);
+PETSC_INTERN PetscErrorCode PCMGKCycle_Private(PC,PC_MG_Levels**,PetscBool);
+PETSC_INTERN PetscErrorCode PCMGMCycle_Private(PC,PC_MG_Levels**,PetscBool,PCRichardsonConvergedReason*);
 
 #endif
