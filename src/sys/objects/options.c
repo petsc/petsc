@@ -587,20 +587,11 @@ static PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char 
 
   PetscFunctionBegin;
   while (left) {
-    PetscBool isoptions_file,isprefixpush,isprefixpop,isp4,tisp4,isp4yourname,isp4rmrank,key;
+    PetscBool isoptions_file,isprefixpush,isprefixpop,key;
     ierr = PetscStrcasecmp(eargs[0],"-options_file",&isoptions_file);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-prefix_push",&isprefixpush);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(eargs[0],"-prefix_pop",&isprefixpop);CHKERRQ(ierr);
-    ierr = PetscStrcasecmp(eargs[0],"-p4pg",&isp4);CHKERRQ(ierr);
-    ierr = PetscStrcasecmp(eargs[0],"-p4yourname",&isp4yourname);CHKERRQ(ierr);
-    ierr = PetscStrcasecmp(eargs[0],"-p4rmrank",&isp4rmrank);CHKERRQ(ierr);
-    ierr = PetscStrcasecmp(eargs[0],"-p4wd",&tisp4);CHKERRQ(ierr);
-    isp4 = (PetscBool) (isp4 || tisp4);
-    ierr = PetscStrcasecmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
-    isp4 = (PetscBool) (isp4 || tisp4);
-    ierr = PetscStrcasecmp(eargs[0],"-p4amslave",&tisp4);CHKERRQ(ierr);
     ierr = PetscOptionsValidKey(eargs[0],&key);CHKERRQ(ierr);
-
     if (!key) {
       eargs++; left--;
     } else if (isoptions_file) {
@@ -616,15 +607,6 @@ static PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char 
     } else if (isprefixpop) {
       ierr = PetscOptionsPrefixPop(options);CHKERRQ(ierr);
       eargs++; left--;
-
-      /*
-       These are "bad" options that MPICH, etc put on the command line
-       we strip them out here.
-       */
-    } else if (tisp4 || isp4rmrank) {
-      eargs += 1; left -= 1;
-    } else if (isp4 || isp4yourname) {
-      eargs += 2; left -= 2;
     } else {
       PetscBool nextiskey = PETSC_FALSE;
       if (left >= 2) {ierr = PetscOptionsValidKey(eargs[1],&nextiskey);CHKERRQ(ierr);}
