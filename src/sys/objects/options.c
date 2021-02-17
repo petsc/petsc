@@ -1701,7 +1701,7 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool 
   options = options ? options : defaultoptions;
   *used = PETSC_FALSE;
   for (i=0; i<options->N; i++) {
-    ierr = PetscStrcmp(options->names[i],name,used);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(options->names[i],name,used);CHKERRQ(ierr);
     if (*used) {
       *used = options->used[i];
       break;
