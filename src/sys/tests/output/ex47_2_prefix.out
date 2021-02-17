@@ -1,0 +1,26 @@
+Setting option: options_monitor (no value)
+Setting option: options_left = 0
+Setting option: p1_name = value
+Setting option: p1_name = value
+Setting option: p2_name = value
+Setting option: p3_name = value
+Setting option: p3_name = value
+Setting option: p4_name = value
+Setting option: p5_name = value
+Setting option: p5_name = value
+Setting option: p6_name = value
+Setting option: p7_name = value
+Setting option: p7_name = value
+Setting option: p8_name = value
+#PETSc Option Table entries:
+-options_left 0
+-options_monitor
+-p1_name value
+-p2_name value
+-p3_name value
+-p4_name value
+-p5_name value
+-p6_name value
+-p7_name value
+-p8_name value
+#End of PETSc Option Table entries
