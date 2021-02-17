@@ -1264,8 +1264,7 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
   if (name[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
-
-  if (!PetscOptNameCmp(name,"-help")) options->help = PETSC_FALSE;
+  if (!PetscOptNameCmp(name,"-help")) options->help = options->help_intro = PETSC_FALSE;
 
   name++; /* skip starting dash */
 
