@@ -444,12 +444,12 @@ PetscErrorCode FormEqualityJacobian(Tao tao,Vec X,Mat JE,Mat JEpre,void *ctx)
       requires: !complex !define(PETSC_USE_CXX) mumps
 
    test:
-      args: -tao_converged_reason
+      args: -tao_converged_reason -tao_pdipm_kkt_shift_pd
 
    test:
       suffix: 2
       nsize: 2
-      args: -tao_converged_reason
+      args: -tao_converged_reason -tao_pdipm_kkt_shift_pd
 
    test:
       suffix: 3
