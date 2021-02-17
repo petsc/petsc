@@ -219,8 +219,8 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
 
   PetscFunctionBegin;
   ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
-  opt->previous        = defaultoptions;
-  defaultoptions       = opt;
+  opt->previous  = defaultoptions;
+  defaultoptions = opt;
   PetscFunctionReturn(0);
 }
 
@@ -245,8 +245,8 @@ PetscErrorCode PetscOptionsPop(void)
   PetscFunctionBegin;
   if (!defaultoptions) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing default options");
   if (!defaultoptions->previous) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscOptionsPop() called too many times");
-  defaultoptions = defaultoptions->previous;
-  current->previous    = NULL;
+  defaultoptions    = defaultoptions->previous;
+  current->previous = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -258,6 +258,7 @@ PetscErrorCode PetscOptionsDestroyDefault(void)
   PetscErrorCode ierr;
   PetscOptions   tmp;
 
+  if (!defaultoptions) return 0;
   /* Destroy any options that the user forgot to pop */
   while (defaultoptions->previous) {
     tmp = defaultoptions;
