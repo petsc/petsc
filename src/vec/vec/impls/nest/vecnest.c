@@ -807,17 +807,17 @@ PetscErrorCode  VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
  Not collective
 
  Input Parameters:
- .  X  - nest vector
- .  idxm - index of the vector within the nest
++  X  - nest vector
+-  idxm - index of the vector within the nest
 
  Output Parameter:
- .  sx - vector at index idxm within the nest
+.  sx - vector at index idxm within the nest
 
  Notes:
 
  Level: developer
 
- .seealso: VecNestGetSize(), VecNestGetSubVecs()
+.seealso: VecNestGetSize(), VecNestGetSubVecs()
 @*/
 PetscErrorCode  VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 {
@@ -843,10 +843,10 @@ PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
 
  Not collective
 
- Input Parameters:
+ Input Parameter:
 .  X  - nest vector
 
- Output Parameter:
+ Output Parameters:
 +  N - number of nested vecs
 -  sx - array of vectors
 
@@ -858,7 +858,7 @@ PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
 
  Level: developer
 
- .seealso: VecNestGetSize(), VecNestGetSubVec()
+.seealso: VecNestGetSize(), VecNestGetSubVec()
 @*/
 PetscErrorCode  VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 {
@@ -1027,17 +1027,17 @@ PetscErrorCode  VecNestGetSize_Nest(Vec X,PetscInt *N)
 
  Not collective
 
- Input Parameters:
- .  X  - nest vector
+ Input Parameter:
+.  X  - nest vector
 
  Output Parameter:
- .  N - number of nested vecs
+.  N - number of nested vecs
 
  Notes:
 
  Level: developer
 
- .seealso: VecNestGetSubVec(), VecNestGetSubVecs()
+.seealso: VecNestGetSubVec(), VecNestGetSubVecs()
 @*/
 PetscErrorCode  VecNestGetSize(Vec X,PetscInt *N)
 {
@@ -1122,7 +1122,7 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  comm - Communicator for the new Vec
 .  nb - number of nested blocks
 .  is - array of nb index sets describing each nested block, or NULL to pack subvectors contiguously
