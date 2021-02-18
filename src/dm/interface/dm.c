@@ -9363,3 +9363,94 @@ PetscErrorCode DMMonitor(DM dm)
   }
   PetscFunctionReturn(0);
 }
+
+/*@
+  DMComputeError - Computes the error assuming the user has given exact solution functions
+
+  Collective on DM
+
+  Input Parameters:
++ dm     - The DM
+. sol    - The solution vector
+. errors - An array of length Nf, the number of fields, or NULL for no output
+. errorVec - A Vec pointer, or NULL for no output
+
+  Output Parameters:
++ errors   - The error in each field
+- errorVec - Creates a vector to hold the cellwise error
+
+  Note: The exact solutions come from the PetscDS object, and the time comes from DMGetOutputSequenceNumber().
+
+  Level: developer
+
+.seealso: DMMonitorSet(), DMGetRegionNumDS(), PetscDSGetExactSolution(), DMGetOutputSequenceNumber()
+@*/
+PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
+{
+  PetscErrorCode (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+  void            **ctxs;
+  PetscReal         time;
+  PetscInt          Nf, f, Nds, s;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = PetscCalloc2(Nf, &exactSol, Nf, &ctxs);CHKERRQ(ierr);
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  for (s = 0; s < Nds; ++s) {
+    PetscDS         ds;
+    DMLabel         label;
+    IS              fieldIS;
+    const PetscInt *fields;
+    PetscInt        dsNf;
+
+    ierr = DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields(ds, &dsNf);CHKERRQ(ierr);
+    if (fieldIS) {ierr = ISGetIndices(fieldIS, &fields);CHKERRQ(ierr);}
+    for (f = 0; f < dsNf; ++f) {
+      const PetscInt field = fields[f];
+      ierr = PetscDSGetExactSolution(ds, field, &exactSol[field], &ctxs[field]);CHKERRQ(ierr);
+    }
+    if (fieldIS) {ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);}
+  }
+  for (f = 0; f < Nf; ++f) {
+    if (!exactSol[f]) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to calculate error, missing for field %D", f);
+  }
+  ierr = DMGetOutputSequenceNumber(dm, NULL, &time);CHKERRQ(ierr);
+  if (errors) {ierr = DMComputeL2FieldDiff(dm, time, exactSol, ctxs, sol, errors);CHKERRQ(ierr);}
+  if (errorVec) {
+    DM             edm;
+    DMPolytopeType ct;
+    PetscBool      simplex;
+    PetscInt       dim, cStart, Nf;
+
+    ierr = DMClone(dm, &edm);CHKERRQ(ierr);
+    ierr = DMGetDimension(edm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+    simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+    ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      PetscFE         fe, efe;
+      PetscQuadrature q;
+      const char     *name;
+
+      ierr = DMGetField(dm, f, NULL, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, Nf, simplex, 0, PETSC_DETERMINE, &efe);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject) fe, &name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) efe, name);CHKERRQ(ierr);
+      ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+      ierr = PetscFESetQuadrature(efe, q);CHKERRQ(ierr);
+      ierr = DMSetField(edm, f, NULL, (PetscObject) efe);CHKERRQ(ierr);
+      ierr = PetscFEDestroy(&efe);CHKERRQ(ierr);
+    }
+    ierr = DMCreateDS(edm);CHKERRQ(ierr);
+
+    ierr = DMCreateGlobalVector(edm, errorVec);
+    ierr = PetscObjectSetName((PetscObject) *errorVec, "Error");CHKERRQ(ierr);
+    ierr = DMPlexComputeL2DiffVec(dm, time, exactSol, ctxs, sol, *errorVec);CHKERRQ(ierr);
+    ierr = DMDestroy(&edm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(exactSol, ctxs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
