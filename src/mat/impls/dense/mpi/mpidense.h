@@ -58,3 +58,4 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense(Mat);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Elemental(Mat,Mat,PetscReal,Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_Elemental(Mat,Mat,Mat);
 #endif
+PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat);

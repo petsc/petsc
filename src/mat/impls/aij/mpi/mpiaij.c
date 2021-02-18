@@ -1148,6 +1148,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpiaijkokkos_C",NULL);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_elemental_C",NULL);CHKERRQ(ierr);
 #endif
@@ -6103,6 +6104,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijcrl_C",MatConvert_MPIAIJ_MPIAIJCRL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpibaij_C",MatConvert_MPIAIJ_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C",MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpidense_C",MatConvert_MPIAIJ_MPIDense);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_elemental_C",MatConvert_MPIAIJ_Elemental);CHKERRQ(ierr);
 #endif

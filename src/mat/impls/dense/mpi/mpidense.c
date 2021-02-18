@@ -604,6 +604,8 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDensePlaceArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseResetArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseReplaceArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_mpiaij_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",NULL);CHKERRQ(ierr);
 #endif
@@ -1527,6 +1529,45 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIDense(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat            B,C;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqDense(C,MATSEQDENSE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    C = *newmat;
+  } else C = NULL;
+  ierr = MatCreateMPIMatConcatenateSeqMat(PetscObjectComm((PetscObject)A),B,A->cmap->n,!C?MAT_INITIAL_MATRIX:MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&C);CHKERRQ(ierr);
+  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatConvert_MPIDense_MPIAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat            B,C;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDenseGetLocalMatrix(A,&C);CHKERRQ(ierr);
+  ierr = MatConvert_SeqDense_SeqAIJ(C,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    C = *newmat;
+  } else C = NULL;
+  ierr = MatCreateMPIMatConcatenateSeqMat(PetscObjectComm((PetscObject)A),B,A->cmap->n,!C?MAT_INITIAL_MATRIX:MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&C);CHKERRQ(ierr);
+  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
@@ -1924,6 +1965,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetSubMatrix_C",MatDenseGetSubMatrix_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpidense_C",MatConvert_MPIAIJ_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_mpiaij_C",MatConvert_MPIDense_MPIAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",MatConvert_MPIDense_Elemental);CHKERRQ(ierr);
 #endif
