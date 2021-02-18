@@ -402,39 +402,28 @@ static char *Petscgetline(FILE * f)
   return NULL;
 }
 
-/*@C
-     PetscOptionsInsertFile - Inserts options into the database from a file.
+static PetscErrorCode PetscOptionsFilename(MPI_Comm comm,const char file[],char filename[PETSC_MAX_PATH_LEN],PetscBool *yaml)
+{
+  char           fname[PETSC_MAX_PATH_LEN+8],path[PETSC_MAX_PATH_LEN+8],*tail;
+  PetscErrorCode ierr;
 
-     Collective
+  *yaml = PETSC_FALSE;
+  PetscFunctionBegin;
+  ierr = PetscStrreplace(comm,file,fname,sizeof(fname));CHKERRQ(ierr);
+  ierr = PetscFixFilename(fname,path);CHKERRQ(ierr);
+  ierr = PetscStrendswith(path,":yaml",yaml);CHKERRQ(ierr);
+  if (*yaml) {
+    ierr = PetscStrrchr(path,':',&tail);CHKERRQ(ierr);
+    tail[-1] = 0; /* remove ":yaml" suffix from path */
+  } else {
+    ierr = PetscStrendswith(path,".yaml",yaml);CHKERRQ(ierr);
+    if (!*yaml) {ierr = PetscStrendswith(path,".yml",yaml);CHKERRQ(ierr);}
+  }
+  ierr = PetscStrncpy(filename,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  Input Parameter:
-+   comm - the processes that will share the options (usually PETSC_COMM_WORLD)
-.   options - options database, use NULL for default global database
-.   file - name of file
--   require - if PETSC_TRUE will generate an error if the file does not exist
-
-
-  Notes:
-    Use  # for lines that are comments and which should be ignored.
-    Usually, instead of using this command, one should list the file name in the call to PetscInitialize(), this insures that certain options
-   such as -log_view or -malloc_debug are processed properly. This routine only sets options into the options database that will be processed by later
-   calls to XXXSetFromOptions() it should not be used for options listed under PetscInitialize().
-   The collectivity of this routine is complex; only the MPI processes in comm will
-   have the affect of these options. If some processes that create objects call this routine and others do
-   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
-   on different ranks.
-
-  Level: developer
-
-.seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
-          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
-
-@*/
-PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
+static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
 {
   char           *string,*vstring = NULL,*astring = NULL,*packed = NULL;
   char           *tokens[4];
@@ -450,6 +439,7 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
   PetscBool      isdir,alias=PETSC_FALSE,valid;
 
   PetscFunctionBegin;
+
   ierr = PetscMemzero(tokens,sizeof(tokens));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
@@ -587,6 +577,56 @@ destroy:
     ierr = PetscOptionsInsertString(options,vstring);CHKERRQ(ierr);
   }
   ierr = PetscFree(packed);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     PetscOptionsInsertFile - Inserts options into the database from a file.
+
+     Collective
+
+  Input Parameter:
++   comm - the processes that will share the options (usually PETSC_COMM_WORLD)
+.   options - options database, use NULL for default global database
+.   file - name of file,
+           ".yml" and ".yaml" filename extensions are inserted as YAML options,
+           append ":yaml" to filename to force YAML options.
+-   require - if PETSC_TRUE will generate an error if the file does not exist
+
+
+  Notes:
+   Use  # for lines that are comments and which should be ignored.
+   Usually, instead of using this command, one should list the file name in the call to PetscInitialize(), this insures that certain options
+   such as -log_view or -malloc_debug are processed properly. This routine only sets options into the options database that will be processed by later
+   calls to XXXSetFromOptions() it should not be used for options listed under PetscInitialize().
+   The collectivity of this routine is complex; only the MPI processes in comm will
+   have the affect of these options. If some processes that create objects call this routine and others do
+   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
+   on different ranks.
+
+  Level: developer
+
+.seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
+          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+
+@*/
+PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
+{
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscBool      yaml;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsFilename(comm,file,filename,&yaml);CHKERRQ(ierr);
+  if (yaml) {
+    ierr = PetscOptionsInsertFileYAML(comm,options,filename,require);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsInsertFilePetsc(comm,options,filename,require);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -754,8 +794,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions option
 +  options - options database or NULL for the default global database
 .  argc - count of number of command line arguments
 .  args - the command line arguments
--  file - [optional] PETSc database file, also checks ~/.petscrc, .petscrc and petscrc.
-          Use NULL to not check for code specific file.
+-  file - [optional] PETSc database file, append ":yaml" to filename to specify YAML options format.
+          Use NULL or empty string to not check for code specific file.
+          Also checks ~/.petscrc, .petscrc and petscrc.
           Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
 
    Note:
@@ -779,7 +820,6 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
   MPI_Comm       comm = PETSC_COMM_WORLD;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  char           filename[PETSC_MAX_PATH_LEN];
   PetscBool      hasArgs = (argc && *argc) ? PETSC_TRUE : PETSC_FALSE;
   PetscBool      skipPetscrc = PETSC_FALSE, skipPetscrcSet = PETSC_FALSE;
 
@@ -796,15 +836,15 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
     ierr = PetscOptionsProcessPrecedentFlags(options,*argc,*args,&skipPetscrc,&skipPetscrcSet);CHKERRQ(ierr);
   }
   if (file && file[0]) {
-    ierr = PetscStrreplace(comm,file,filename,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-    ierr = PetscOptionsInsertFile(comm,options,filename,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscOptionsInsertFile(comm,options,file,PETSC_TRUE);CHKERRQ(ierr);
     /* if -skip_petscrc has not been set from command line, check whether it has been set in the file */
     if (!skipPetscrcSet) {ierr = PetscOptionsGetBool(options,NULL,"-skip_petscrc",&skipPetscrc,NULL);CHKERRQ(ierr);}
   }
   if (!skipPetscrc) {
-    ierr = PetscGetHomeDirectory(filename,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
-    /* PetscOptionsInsertFile() does a fopen() on rank0 only - so only rank0 HomeDir value is relavent */
-    if (filename[0]) { ierr = PetscStrcat(filename,"/.petscrc");CHKERRQ(ierr); }
+    char filename[PETSC_MAX_PATH_LEN];
+    ierr = PetscGetHomeDirectory(filename,sizeof(filename));CHKERRQ(ierr);
+    ierr = MPI_Bcast(filename,(int)sizeof(filename),MPI_CHAR,0,comm);CHKERRMPI(ierr);
+    if (filename[0]) {ierr = PetscStrcat(filename,"/.petscrc");CHKERRQ(ierr);}
     ierr = PetscOptionsInsertFile(comm,options,filename,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscOptionsInsertFile(comm,options,".petscrc",PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscOptionsInsertFile(comm,options,"petscrc",PETSC_FALSE);CHKERRQ(ierr);
@@ -818,7 +858,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
       eoptions = (char*)getenv("PETSC_OPTIONS");
       ierr = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
     }
-    ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,comm);CHKERRMPI(ierr);
     if (len) {
       if (rank) {ierr = PetscMalloc1(len+1,&eoptions);CHKERRQ(ierr);}
       ierr = MPI_Bcast(eoptions,len,MPI_CHAR,0,comm);CHKERRMPI(ierr);
@@ -836,7 +876,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
       eoptions = (char*)getenv("PETSC_OPTIONS_YAML");
       ierr = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
     }
-    ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,comm);CHKERRMPI(ierr);
     if (len) {
       if (rank) {ierr = PetscMalloc1(len+1,&eoptions);CHKERRQ(ierr);}
       ierr = MPI_Bcast(eoptions,len,MPI_CHAR,0,comm);CHKERRMPI(ierr);

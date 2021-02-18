@@ -61,8 +61,8 @@ int main(int argc,char **argv)
         suffix: 2_prefix
         args: -options_monitor
         args: -options_file ex47-opt.txt
-        args: -prefix_push p5_ -options_file_yaml ex47-opt.yml -prefix_pop
-        args: -prefix_push p5_ -options_file_yaml ex47-opt.yml -prefix_pop
+        args: -prefix_push p5_ -options_file ex47-opt.yml -prefix_pop
+        args: -prefix_push p5_ -options_file ex47-opt.yml:yaml -prefix_pop
         args: -prefix_push p6_ -options_file_yaml ex47-opt.yml -prefix_pop
         args: -prefix_push p7_ -options_string_yaml "`cat ex47-opt.yml`" -prefix_pop
         args: -prefix_push p7_ -options_string_yaml "`cat ex47-opt.yml`" -prefix_pop
