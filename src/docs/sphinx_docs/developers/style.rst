@@ -48,8 +48,7 @@ important. We use several conventions
    ``KSPGMRESSetRestart()``.
 
 #. Functions that PETSc provides as defaults for user-providable
-   functions end with ``Default`` (for example, ``KSPMonitorDefault()``
-   or ``PetscSignalHandlerDefault()``).
+   functions end with ``Default`` (for example, ``PetscSignalHandlerDefault()``).
 
 #. Options database keys are lower case, have an underscore between
    words, and match the function name associated with the option without

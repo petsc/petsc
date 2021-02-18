@@ -187,10 +187,14 @@
          <li>Add KSPPIPECG2, a pipelined solver that reduces the number of allreduces to one per two iterations and overlaps it with two PCs and SPMVs using non-blocking allreduce</li>
          <li>Add KSPConvergedRateView() and KSPComputeConvergenceRate() to check the convergence rate of a linear solve</li>
          <li>Add KSPSetUseExplicitTranspose() to explicitly transpose the system in KSPSolveTranspose()</li>
+         <li>Add KSPMonitorLGCreate(), and remove KSPMonitorLGResidualNorm*() and KSPMonitorLGTrueResidualNorm*()</li>
+         <li>Add KSPMonitorError(), used by <tt>-ksp_monitor_error</tt></li>
+         <li>Add arguments to KSPMonitorSetFromOptions() to allow line graphs to be configured</li>
       </ul>
       <h4>SNES:</h4>
       <ul>
         <li>Add SNESConvergedCorrectPressure(), which can be selected using <tt>-snes_convergence_test correct_pressure</tt></li>
+        <li>Remove SNESMonitorLGCreate() and SNESMonitorLGResidualNorm() which are now handled by the default monitor</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
@@ -250,6 +254,9 @@
         <li>Add PetscDSGet/SetJetDegree(), and -dm_ds_jet_degree is needed to enable it under a DM</li>
       </ul>
       <h4>PetscViewer:</h4>
+      <ul>
+        <li>PetscViewerAndFormat now allows a payload</li>
+      </ul>
       <h4>SYS:</h4>
       <ul>
         <li>Add PetscBagViewFromOptions()</li>

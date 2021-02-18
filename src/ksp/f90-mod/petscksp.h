@@ -62,10 +62,8 @@
 !   Possible arguments to KSPMonitorSet()
 !
       external KSPCONVERGEDDEFAULT
-      external KSPMONITORDEFAULT
-      external KSPMONITORTRUERESIDUALNORM
-      external KSPMONITORLGRESIDUALNORM
-      external KSPMONITORLGTRUERESIDUALNORM
+      external KSPMONITORRESIDUAL
+      external KSPMONITORTRUERESIDUAL
       external KSPMONITORSOLUTION
       external KSPMONITORSINGULARVALUE
       external KSPGMRESMONITORKRYLOV
@@ -77,5 +75,3 @@
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_NEVER = 0
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_IFNEEDED = 1
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_ALWAYS = 2
-
-

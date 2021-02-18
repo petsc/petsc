@@ -312,9 +312,13 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       if (fe->classid == PETSCFE_CLASSID) { fem = PETSC_TRUE; break; }
     }
     if (fem) {
+      PetscObject isZero;
+
       ierr = DMGetLocalVector(dm, &locv);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
+      ierr = PetscObjectQuery((PetscObject) v, "__Vec_bc_zero__", &isZero);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) locv, "__Vec_bc_zero__", isZero);CHKERRQ(ierr);
       ierr = VecCopy(v, locv);CHKERRQ(ierr);
       ierr = DMGetOutputSequenceNumber(dm, NULL, &time);CHKERRQ(ierr);
       ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locv, time, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -334,7 +338,10 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       ierr = PetscViewerGLVisSetSnapId(viewer, step);CHKERRQ(ierr);
       ierr = VecView_GLVis(locv, viewer);CHKERRQ(ierr);
     }
-    if (fem) {ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);}
+    if (fem) {
+      ierr = PetscObjectCompose((PetscObject) locv, "__Vec_bc_zero__", NULL);CHKERRQ(ierr);
+      ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
+    }
   } else {
     PetscBool isseq;
 
@@ -360,6 +367,7 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERGLVIS, &isglvis);CHKERRQ(ierr);
   if (isvtk || isdraw || isglvis) {
     Vec         locv;
+    PetscObject isZero;
     const char *name;
 
     ierr = DMGetLocalVector(dm, &locv);CHKERRQ(ierr);
@@ -367,7 +375,10 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject) v, "__Vec_bc_zero__", &isZero);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) locv, "__Vec_bc_zero__", isZero);CHKERRQ(ierr);
     ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) locv, "__Vec_bc_zero__", NULL);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)

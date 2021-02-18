@@ -350,7 +350,7 @@ int main(int argc,char **args)
    test:
       suffix: 5
       nsize: 2
-      args: -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor_lg_residualnorm -ksp_monitor_lg_true_residualnorm
+      args: -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor draw::draw_lg -ksp_monitor_true_residual draw::draw_lg
 
    test:
       suffix: asm

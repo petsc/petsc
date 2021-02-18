@@ -700,7 +700,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 
    test:
       suffix: 18
-      args: -ksp_monitor_snes_lg -ksp_pc_side right
+      args: -snes_monitor_ksp draw::draw_lg -ksp_pc_side right
       requires: x !single
 
    test:

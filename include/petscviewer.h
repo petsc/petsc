@@ -176,9 +176,9 @@ PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,PetscOptions,const ch
 #define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f)
 PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems*,const char[],const char[],const char[],PetscViewer*,PetscViewerFormat *,PetscBool *);
 
-typedef struct {PetscViewer viewer;PetscViewerFormat format;} PetscViewerAndFormat;
-PETSC_EXTERN PetscErrorCode  PetscViewerAndFormatCreate(PetscViewer,PetscViewerFormat,PetscViewerAndFormat**);
-PETSC_EXTERN PetscErrorCode  PetscViewerAndFormatDestroy(PetscViewerAndFormat**);
+typedef struct {PetscViewer viewer;PetscViewerFormat format;PetscDrawLG lg;void *data;} PetscViewerAndFormat;
+PETSC_EXTERN PetscErrorCode PetscViewerAndFormatCreate(PetscViewer,PetscViewerFormat,PetscViewerAndFormat**);
+PETSC_EXTERN PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat**);
 
 /*
    Operations explicit to a particular class of viewers

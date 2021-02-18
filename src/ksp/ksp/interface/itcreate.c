@@ -15,6 +15,14 @@ PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve, KSP_SolveTranspo
 PetscFunctionList KSPList              = NULL;
 PetscBool         KSPRegisterAllCalled = PETSC_FALSE;
 
+/*
+   Contains the list of registered KSP monitors
+*/
+PetscFunctionList KSPMonitorList              = NULL;
+PetscFunctionList KSPMonitorCreateList        = NULL;
+PetscFunctionList KSPMonitorDestroyList       = NULL;
+PetscBool         KSPMonitorRegisterAllCalled = PETSC_FALSE;
+
 /*@C
   KSPLoad - Loads a KSP that has been stored in binary  with KSPView().
 
@@ -861,5 +869,66 @@ PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
   PetscFunctionBegin;
   ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&KSPList,sname,function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vtype, PetscViewerFormat format, char key[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrncpy(key, name, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscStrlcat(key, ":", PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscStrlcat(key, vtype, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscStrlcat(key, ":", PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscStrlcat(key, PetscViewerFormats[format], PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorRegister -  Adds Krylov subspace solver monitor routine.
+
+  Not Collective
+
+  Input Parameters:
++ name    - name of a new monitor routine
+. vtype   - A PetscViewerType for the output
+. format  - A PetscViewerFormat for the output
+. monitor - Monitor routine
+. create  - Creation routine, or NULL
+. destroy - Destruction routine, or NULL
+- ctx     - An optional user context, or NULL
+
+  Notes:
+  KSMonitorRegister() may be called multiple times to add several user-defined monitors.
+
+  Sample usage:
+.vb
+  KSPMonitorRegister("my_monitor",PETSCVIEWERASCII,PETSC_VIEWER_ASCII_INFO_DETAIL,MyMonitor,NULL,NULL,NULL);
+.ve
+
+  Then, your monitor can be chosen with the procedural interface via
+$     KSPMonitorSetFormOptions(ksp,"my_monitor")
+  or at runtime via the option
+$     -ksp_monitor_my_monitor
+
+   Level: advanced
+
+.seealso: KSPMonitorRegisterAll()
+@*/
+PetscErrorCode KSPMonitorRegister(const char name[], PetscViewerType vtype, PetscViewerFormat format,
+                                  PetscErrorCode (*monitor)(KSP, PetscInt, PetscReal, PetscViewerAndFormat *),
+                                  PetscErrorCode (*create)(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **),
+                                  PetscErrorCode (*destroy)(PetscViewerAndFormat **))
+{
+  char           key[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
+  ierr = KSPMonitorMakeKey_Internal(name, vtype, format, key);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&KSPMonitorList, key, monitor);CHKERRQ(ierr);
+  if (create)  {ierr = PetscFunctionListAdd(&KSPMonitorCreateList,  key, create);CHKERRQ(ierr);}
+  if (destroy) {ierr = PetscFunctionListAdd(&KSPMonitorDestroyList, key, destroy);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

@@ -2,23 +2,23 @@
 #include <petscksp.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define kspmonitorlgresidualnormcreate_        KSPMONITORLGRESIDUALNORMCREATE
+#define kspmonitorlgcreate_        KSPMONITORLGCREATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define kspmonitorlgresidualnormcreate_        kspmonitorlgresidualnormcreate
+#define kspmonitorlgcreate_        kspmonitorlgcreate
 #endif
 
 /*
    Possible bleeds memory but cannot be helped.
 */
-PETSC_EXTERN void kspmonitorlgresidualnormcreate_(
+PETSC_EXTERN void kspmonitorlgcreate_(
                     MPI_Fint *comm,char* host,
-                    char* label,int *x,int *y,int *m,int *n,PetscDrawLG *lgctx,
-                    PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2)
+                    char* label,char* metric,int l,const char **names,int *x,int *y,int *m,int *n,PetscDrawLG *lgctx,
+                    PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2,PETSC_FORTRAN_CHARLEN_T len3)
 {
-  char *t1,*t2;
+  char *t1,*t2,*t3;
 
   FIXCHAR(host,len1,t1);
   FIXCHAR(label,len2,t2);
-  *ierr = KSPMonitorLGResidualNormCreate(MPI_Comm_f2c(*comm),t1,t2,*x,*y,*m,*n,lgctx);
+  FIXCHAR(metric,len3,t3);
+  *ierr = KSPMonitorLGCreate(MPI_Comm_f2c(*comm),t1,t2,t3,l,names,*x,*y,*m,*n,lgctx);
 }
-

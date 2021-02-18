@@ -2073,7 +2073,7 @@ This error can also happen if your matrix is singular, see ``MatSetNullSpace()``
 to handle this. If this error occurs in the zeroth row of the matrix, it is likely you
 have an error in the code that generates the matrix.
 
-You Create Draw Windows Or ``ViewerDraw`` Windows Or Use Options ``-ksp_monitor_lg_residualnorm`` Or ``-snes_monitor_lg_residualnorm`` And The Program Seems To Run Ok But Windows Never Open
+You Create Draw Windows Or ``ViewerDraw`` Windows Or Use Options ``-ksp_monitor draw::draw_lg`` Or ``-snes_monitor draw::draw_lg`` And The Program Seems To Run Ok But Windows Never Open
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 The libraries were compiled without support for X windows. Make sure that ``configure``

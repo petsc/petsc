@@ -283,7 +283,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
+static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
   DM             dm;
@@ -362,7 +362,7 @@ int main(int argc, char **argv)
 
     ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp, KSPMonitorError, &ctx, NULL);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp, MonitorError, &ctx, NULL);CHKERRQ(ierr);
   }
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
