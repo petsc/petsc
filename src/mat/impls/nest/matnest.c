@@ -556,45 +556,137 @@ static PetscErrorCode MatNestFindNonzeroSubMatCol(Mat A,PetscInt col,Mat *B)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatNestFindIS(Mat A,PetscInt n,const IS list[],IS is,PetscInt *found)
+static PetscErrorCode MatNestFindISRange(Mat A,PetscInt n,const IS list[],IS is,PetscInt *begin,PetscInt *end)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i,j,size,m;
   PetscBool      flg;
+  IS             out,concatenate[2];
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(list,3);
   PetscValidHeaderSpecific(is,IS_CLASSID,4);
-  PetscValidIntPointer(found,5);
-  *found = -1;
+  if (begin) {
+    PetscValidIntPointer(begin,5);
+    *begin = -1;
+  }
+  if (end) {
+    PetscValidIntPointer(end,6);
+    *end = -1;
+  }
   for (i=0; i<n; i++) {
     if (!list[i]) continue;
     ierr = ISEqualUnsorted(list[i],is,&flg);CHKERRQ(ierr);
     if (flg) {
-      *found = i;
+      if (begin) *begin = i;
+      if (end) *end = i+1;
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Could not find index set");
+  ierr = ISGetSize(is,&size);CHKERRQ(ierr);
+  for (i=0; i<n-1; i++) {
+    if (!list[i]) continue;
+    m = 0;
+    ierr = ISConcatenate(PetscObjectComm((PetscObject)A),2,list+i,&out);CHKERRQ(ierr);
+    ierr = ISGetSize(out,&m);CHKERRQ(ierr);
+    for (j=i+2; j<n && m<size; j++) {
+      if (list[j]) {
+        concatenate[0] = out;
+        concatenate[1] = list[j];
+        ierr = ISConcatenate(PetscObjectComm((PetscObject)A),2,concatenate,&out);CHKERRQ(ierr);
+        ierr = ISDestroy(concatenate);CHKERRQ(ierr);
+        ierr = ISGetSize(out,&m);CHKERRQ(ierr);
+      }
+    }
+    if (m == size) {
+      ierr = ISEqualUnsorted(out,is,&flg);CHKERRQ(ierr);
+      if (flg) {
+        if (begin) *begin = i;
+        if (end) *end = j;
+        ierr = ISDestroy(&out);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
+      }
+    }
+    ierr = ISDestroy(&out);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
-/* Get a block row as a new MatNest */
-static PetscErrorCode MatNestGetRow(Mat A,PetscInt row,Mat *B)
+
+static PetscErrorCode MatNestFillEmptyMat_Private(Mat A,PetscInt i,PetscInt j,Mat *B)
 {
   Mat_Nest       *vs = (Mat_Nest*)A->data;
+  PetscInt       lr,lc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(vs->isglobal.row[i],&lr);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(vs->isglobal.col[j],&lc);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,lr,lc,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(*B,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*B,0,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*B,0,NULL,0,NULL);CHKERRQ(ierr);
+  ierr = MatSetUp(*B);CHKERRQ(ierr);
+  ierr = MatSetOption(*B,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatNestGetBlock_Private(Mat A,PetscInt rbegin,PetscInt rend,PetscInt cbegin,PetscInt cend,Mat *B)
+{
+  Mat_Nest       *vs = (Mat_Nest*)A->data;
+  Mat            *a;
+  PetscInt       i,j,k,l,nr=rend-rbegin,nc=cend-cbegin;
   char           keyname[256];
+  PetscBool      *b;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *B   = NULL;
-  ierr = PetscSNPrintf(keyname,sizeof(keyname),"NestRow_%D",row);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(keyname,sizeof(keyname),"NestBlock_%D-%Dx%D-%D",rbegin,rend,cbegin,cend);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)A,keyname,(PetscObject*)B);CHKERRQ(ierr);
   if (*B) PetscFunctionReturn(0);
 
-  ierr = MatCreateNest(PetscObjectComm((PetscObject)A),1,NULL,vs->nc,vs->isglobal.col,vs->m[row],B);CHKERRQ(ierr);
-
+  ierr = PetscMalloc2(nr*nc,&a,nr*nc,&b);CHKERRQ(ierr);
+  for (i=0; i<nr; i++) {
+    for (j=0; j<nc; j++) {
+      a[i*nc + j] = vs->m[rbegin+i][cbegin+j];
+      b[i*nc + j] = PETSC_FALSE;
+    }
+  }
+  if (nc!=vs->nc&&nr!=vs->nr) {
+    for (i=0; i<nr; i++) {
+      for (j=0; j<nc; j++) {
+        flg = PETSC_FALSE;
+        for (k=0; (k<nr&&!flg); k++) {
+          if (a[j + k*nc]) flg = PETSC_TRUE;
+        }
+        if (flg) {
+          flg = PETSC_FALSE;
+          for (l=0; (l<nc&&!flg); l++) {
+            if (a[i*nc + l]) flg = PETSC_TRUE;
+          }
+        }
+        if (!flg) {
+          b[i*nc + j] = PETSC_TRUE;
+          ierr = MatNestFillEmptyMat_Private(A,rbegin+i,cbegin+j,a + i*nc + j);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+  ierr = MatCreateNest(PetscObjectComm((PetscObject)A),nr,nr!=vs->nr?NULL:vs->isglobal.row,nc,nc!=vs->nc?NULL:vs->isglobal.col,a,B);CHKERRQ(ierr);
+  for (i=0; i<nr; i++) {
+    for (j=0; j<nc; j++) {
+      if (b[i*nc + j]) {
+        ierr = MatDestroy(a + i*nc + j);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscFree2(a,b);CHKERRQ(ierr);
   (*B)->assembled = A->assembled;
-
   ierr = PetscObjectCompose((PetscObject)A,keyname,(PetscObject)*B);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject)*B);CHKERRQ(ierr); /* Leave the only remaining reference in the composition */
   PetscFunctionReturn(0);
@@ -603,55 +695,20 @@ static PetscErrorCode MatNestGetRow(Mat A,PetscInt row,Mat *B)
 static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,IS iscol,Mat *B)
 {
   Mat_Nest       *vs = (Mat_Nest*)A->data;
+  PetscInt       rbegin,rend,cbegin,cend;
   PetscErrorCode ierr;
-  PetscInt       row,col;
-  PetscBool      same,isFullCol,isFullColGlobal;
 
   PetscFunctionBegin;
-  /* Check if full column space. This is a hack */
-  isFullCol = PETSC_FALSE;
-  ierr      = PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&same);CHKERRQ(ierr);
-  if (same) {
-    PetscInt n,first,step,i,an,am,afirst,astep;
-    ierr      = ISStrideGetInfo(iscol,&first,&step);CHKERRQ(ierr);
-    ierr      = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
-    isFullCol = PETSC_TRUE;
-    for (i=0,an=A->cmap->rstart; i<vs->nc; i++) {
-      ierr = PetscObjectTypeCompare((PetscObject)is->col[i],ISSTRIDE,&same);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(is->col[i],&am);CHKERRQ(ierr);
-      if (same) {
-        ierr = ISStrideGetInfo(is->col[i],&afirst,&astep);CHKERRQ(ierr);
-        if (afirst != an || astep != step) isFullCol = PETSC_FALSE;
-      } else isFullCol = PETSC_FALSE;
-      an += am;
+  ierr = MatNestFindISRange(A,vs->nr,is->row,isrow,&rbegin,&rend);CHKERRQ(ierr);
+  ierr = MatNestFindISRange(A,vs->nc,is->col,iscol,&cbegin,&cend);CHKERRQ(ierr);
+  if (rend == rbegin + 1 && cend == cbegin + 1) {
+    if (!vs->m[rbegin][cbegin]) {
+      ierr = MatNestFillEmptyMat_Private(A,rbegin,cbegin,vs->m[rbegin] + cbegin);CHKERRQ(ierr);
     }
-    if (an != A->cmap->rstart+n) isFullCol = PETSC_FALSE;
-  }
-  ierr = MPIU_Allreduce(&isFullCol,&isFullColGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)iscol));CHKERRQ(ierr);
-
-  if (isFullColGlobal && vs->nc > 1) {
-    PetscInt row;
-    ierr = MatNestFindIS(A,vs->nr,is->row,isrow,&row);CHKERRQ(ierr);
-    ierr = MatNestGetRow(A,row,B);CHKERRQ(ierr);
-  } else {
-    ierr = MatNestFindIS(A,vs->nr,is->row,isrow,&row);CHKERRQ(ierr);
-    ierr = MatNestFindIS(A,vs->nc,is->col,iscol,&col);CHKERRQ(ierr);
-    if (!vs->m[row][col]) {
-      PetscInt lr,lc;
-
-      ierr = MatCreate(PetscObjectComm((PetscObject)A),&vs->m[row][col]);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(vs->isglobal.row[row],&lr);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(vs->isglobal.col[col],&lc);CHKERRQ(ierr);
-      ierr = MatSetSizes(vs->m[row][col],lr,lc,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = MatSetType(vs->m[row][col],MATAIJ);CHKERRQ(ierr);
-      ierr = MatSeqAIJSetPreallocation(vs->m[row][col],0,NULL);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(vs->m[row][col],0,NULL,0,NULL);CHKERRQ(ierr);
-      ierr = MatSetUp(vs->m[row][col]);CHKERRQ(ierr);
-      ierr = MatAssemblyBegin(vs->m[row][col],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(vs->m[row][col],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    }
-    *B = vs->m[row][col];
-  }
+    *B = vs->m[rbegin][cbegin];
+  } else if (rbegin != -1 && cbegin != -1) {
+    ierr = MatNestGetBlock_Private(A,rbegin,rend,cbegin,cend,B);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Could not find index set");
   PetscFunctionReturn(0);
 }
 
