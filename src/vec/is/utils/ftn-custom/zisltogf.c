@@ -50,6 +50,7 @@ PETSC_EXTERN void islocaltoglobalmappingviewfromoptions_(ISLocalToGlobalMapping 
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = ISLocalToGlobalMappingViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

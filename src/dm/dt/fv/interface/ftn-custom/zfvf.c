@@ -15,6 +15,7 @@ PETSC_EXTERN void petsclimiterviewfromoptions_(PetscLimiter *ao,PetscObject obj,
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscLimiterViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
@@ -24,6 +25,7 @@ PETSC_EXTERN void petscfvviewfromoptions_(PetscFV *ao,PetscObject obj,char* type
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscFVViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

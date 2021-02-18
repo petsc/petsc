@@ -12,6 +12,7 @@ PETSC_EXTERN void matcoarsenviewfromoptions_(MatCoarsen *a,PetscObject obj,char*
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = MatCoarsenViewFromOptions(*a,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

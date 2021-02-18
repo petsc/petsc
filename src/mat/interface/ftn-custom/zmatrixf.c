@@ -843,6 +843,7 @@ PETSC_EXTERN void matviewfromoptions_(Mat *ao,PetscObject obj,char* type,PetscEr
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = MatViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

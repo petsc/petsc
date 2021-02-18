@@ -42,6 +42,7 @@ PETSC_EXTERN void matpartitioningviewfromoptions_(MatPartitioning *ao,PetscObjec
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = MatPartitioningViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

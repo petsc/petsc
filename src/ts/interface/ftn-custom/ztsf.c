@@ -304,6 +304,7 @@ PETSC_EXTERN void tsviewfromoptions_(TS *ao,PetscObject obj,char* type,PetscErro
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = TSViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

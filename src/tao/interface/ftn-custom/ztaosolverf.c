@@ -370,6 +370,7 @@ PETSC_EXTERN void taoviewfromoptions_(Tao *ao,PetscObject obj,char* type,PetscEr
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = TaoViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
