@@ -117,6 +117,7 @@ struct _p_KSP {
   PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void**);         /* */
   void *monitorcontext[MAXKSPMONITORS];                  /* residual calculation, allows user */
   PetscInt  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
+  PetscBool        pauseFinal;        /* Pause all drawing monitor at the final iterate */
 
   PetscErrorCode (*converged)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
   PetscErrorCode (*convergeddestroy)(void*);
