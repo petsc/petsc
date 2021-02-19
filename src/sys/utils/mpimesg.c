@@ -190,7 +190,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
   ierr = PetscMalloc1(nrecvs+1,olengths2);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) {
     buf_j = buf_r + (2*i);
-    ierr  = MPI_Irecv(buf_j,2,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRQ(ierr);
+    ierr  = MPI_Irecv(buf_j,2,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRMPI(ierr);
   }
 
   /* Post the Isends with the message length-info */

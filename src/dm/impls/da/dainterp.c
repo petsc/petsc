@@ -325,9 +325,9 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 
    In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
    */
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRQ(ierr);
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRQ(ierr);
-  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRMPI(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRMPI(ierr);
+  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRMPI(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
@@ -553,9 +553,9 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRQ(ierr);
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRQ(ierr);
-  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRMPI(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRMPI(ierr);
+  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRMPI(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
@@ -683,9 +683,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRQ(ierr);
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRQ(ierr);
-  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRMPI(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRMPI(ierr);
+  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRMPI(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*Mz*(rank_f/size_c);
 

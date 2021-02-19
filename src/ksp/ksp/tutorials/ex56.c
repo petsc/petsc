@@ -29,8 +29,8 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr  = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
-  ierr  = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
+  ierr  = MPI_Comm_rank(comm, &mype);CHKERRMPI(ierr);
+  ierr  = MPI_Comm_size(comm, &npe);CHKERRMPI(ierr);
 
   ierr = PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
   {

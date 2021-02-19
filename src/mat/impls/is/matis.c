@@ -2729,7 +2729,7 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 
       /* need new global l2g map */
       lnewl2g = PETSC_TRUE;
-      ierr    = MPI_Allreduce(&lnewl2g,&newl2g,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+      ierr    = MPI_Allreduce(&lnewl2g,&newl2g,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
 
       /* extract valid submatrix */
       ierr = MatCreateSubMatrix(is->A,nzr,nzc,MAT_INITIAL_MATRIX,&newlA);CHKERRQ(ierr);
@@ -2787,7 +2787,7 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
       ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
     } else { /* local matrix fully populated */
       lnewl2g = PETSC_FALSE;
-      ierr    = MPI_Allreduce(&lnewl2g,&newl2g,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+      ierr    = MPI_Allreduce(&lnewl2g,&newl2g,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
       ierr    = PetscObjectReference((PetscObject)is->A);CHKERRQ(ierr);
       newlA   = is->A;
     }

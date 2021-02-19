@@ -1044,8 +1044,8 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   }
   ierr   = MPIU_Allreduce(&max,&Ng,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
   Ng++;
-  ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr   = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr   = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   scale  = Ng/size + 1;
   ng     = scale; if (rank == size-1) ng = Ng - scale*(size-1); ng = PetscMax(1,ng);
   rstart = scale*rank;
@@ -1095,7 +1095,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   cnt = 0;
   for (i=0; i<size; i++) {
     if (nprocs[2*i]) {
-      ierr      = MPI_Isend(sends+starts[i],2*nprocs[2*i],MPIU_INT,i,tag1,comm,send_waits+cnt);CHKERRQ(ierr);
+      ierr      = MPI_Isend(sends+starts[i],2*nprocs[2*i],MPIU_INT,i,tag1,comm,send_waits+cnt);CHKERRMPI(ierr);
       dest[cnt] = i;
       cnt++;
     }
@@ -1110,7 +1110,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   while (cnt) {
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRMPI(ierr);
     /* unpack receives into our local space */
-    ierr          = MPI_Get_count(&recv_status,MPIU_INT,&len[imdex]);CHKERRQ(ierr);
+    ierr          = MPI_Get_count(&recv_status,MPIU_INT,&len[imdex]);CHKERRMPI(ierr);
     source[imdex] = recv_status.MPI_SOURCE;
     len[imdex]    = len[imdex]/2;
     /* count how many local owners for each of my global owned indices */

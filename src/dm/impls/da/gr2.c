@@ -624,8 +624,8 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   ierr       = PetscMPIIntCast(dd->xs/dof,lstarts+1);CHKERRQ(ierr);
   ierr       = PetscMPIIntCast(dd->ys,lstarts+2);CHKERRQ(ierr);
   ierr       = PetscMPIIntCast(dd->zs,lstarts+3);CHKERRQ(ierr);
-  ierr       = MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
-  ierr       = MPI_Type_commit(&view);CHKERRQ(ierr);
+  ierr       = MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRMPI(ierr);
+  ierr       = MPI_Type_commit(&view);CHKERRMPI(ierr);
 
   ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);

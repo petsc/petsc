@@ -151,7 +151,7 @@ static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr  = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
   *xred = NULL;
   switch (side) {
   case PC_LEFT:

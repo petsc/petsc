@@ -673,12 +673,14 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'while \( ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Space before ) ---------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P ' \)' -- ${GITSRC} >> checkbadSource.out;true
-	-@echo "Space before CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE) ----------" >> checkbadSource.out
+	-@echo "Space before CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE) ------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '; CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE)\(' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "No space after if, for or while ----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e '[^_]for\(' -e '[^_]if\(' -e 'while\(' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Two ;; -----------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
+	-@echo "CHKERRQ for an MPI error code ------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e '= MPI_.*;CHKERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Missing if (ierr) return(ierr); ----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" >> checkbadSource.out;true
 	-@echo "DOS file (with DOS newlines) -------------------------" >> checkbadSource.out
@@ -687,7 +689,7 @@ checkbadSource:
 	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 10` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 11` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

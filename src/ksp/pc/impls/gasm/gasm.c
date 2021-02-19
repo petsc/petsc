@@ -365,7 +365,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       } else {
         /* still no subdomains; use one per processor */
         osm->nmax = osm->n = 1;
-        ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+        ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
         osm->N    = size;
         ierr = PCGASMCreateLocalSubdomains(pc->pmat,osm->n,&osm->iis);CHKERRQ(ierr);
       }
@@ -1088,7 +1088,7 @@ static PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KS
 
   if (n) *n = osm->n;
   if (first) {
-    ierr    = MPI_Scan(&osm->n,first,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr    = MPI_Scan(&osm->n,first,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     *first -= osm->n;
   }
   if (ksp) {

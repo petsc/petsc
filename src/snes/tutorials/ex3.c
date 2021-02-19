@@ -98,8 +98,8 @@ int main(int argc,char **argv)
 
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRQ(ierr);
-  ierr  = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRQ(ierr);
+  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRMPI(ierr);
+  ierr  = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRMPI(ierr);
   ierr  = PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL);CHKERRQ(ierr);
   ctx.h = 1.0/(N-1);
   ctx.sjerr = PETSC_FALSE;

@@ -671,8 +671,8 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat *B)
   PetscFunctionBegin;
   *B    = NULL;
   ierr  = PetscObjectGetComm((PetscObject)A,&acomm);CHKERRQ(ierr);
-  ierr  = MPI_Comm_size(acomm,&size);CHKERRQ(ierr);
-  ierr  = MPI_Comm_size(acomm,&rank);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(acomm,&size);CHKERRMPI(ierr);
+  ierr  = MPI_Comm_size(acomm,&rank);CHKERRMPI(ierr);
   ierr  = MatGetOwnershipRanges(A,&ranges);CHKERRQ(ierr);
   for (i=0,nranks=0; i<size; i++) {
     if (ranges[i+1] - ranges[i] > 0) nranks++;
@@ -701,7 +701,7 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat *B)
     ierr       = MatCreateMPIAdj(bcomm,m,N,a->i,a->j,a->values,B);CHKERRQ(ierr);
     b          = (Mat_MPIAdj*)(*B)->data;
     b->freeaij = PETSC_FALSE;
-    ierr       = MPI_Comm_free(&bcomm);CHKERRQ(ierr);
+    ierr       = MPI_Comm_free(&bcomm);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }

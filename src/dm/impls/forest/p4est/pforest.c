@@ -2311,7 +2311,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
     }
     send[2*(p-startF)]   = firstCell;
     send[2*(p-startF)+1] = lastCell - firstCell;
-    ierr                 = MPI_Isend(&send[2*(p-startF)],2,MPIU_INT,p,tag,comm,&sendReqs[p-startF]);CHKERRQ(ierr);
+    ierr                 = MPI_Isend(&send[2*(p-startF)],2,MPIU_INT,p,tag,comm,&sendReqs[p-startF]);CHKERRMPI(ierr);
   }
   ierr = MPI_Waitall((PetscMPIInt)(endC-startC),recvReqs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   ierr = PetscSectionCreate(PETSC_COMM_SELF,&section);CHKERRQ(ierr);
@@ -2337,7 +2337,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
   ierr        = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
   ierr        = PetscSFSetGraph(sf,cEnd-cStart,nLeaves,NULL,PETSC_OWN_POINTER,leaves,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr        = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  ierr        = MPI_Waitall((PetscMPIInt)(endF-startF),sendReqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr        = MPI_Waitall((PetscMPIInt)(endF-startF),sendReqs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   ierr        = PetscFree2(send,sendReqs);CHKERRQ(ierr);
   ierr        = PetscFree2(recv,recvReqs);CHKERRQ(ierr);
   *coveringSF = sf;
@@ -2373,7 +2373,7 @@ static PetscErrorCode DMPforestGetCellSFNodes(DM dm, PetscInt numClosureIndices,
   nroots            = PetscMax(0,nroots);
   *numClosurePoints = numClosureIndices * (cEnd - cStart);
   ierr              = PetscMalloc1(*numClosurePoints,closurePoints);
-  ierr              = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr              = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
   for (c = cStart, count = 0; c < cEnd; c++) {
     PetscInt i;
     ierr = DMPlexGetTransitiveClosure(plex,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
@@ -2544,15 +2544,15 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
          have a simple blockTypes[] to use. Note that quadStruct does not count potential padding in array of
          p4est_quadrant_t. We have to call MPI_Type_create_resized() to change upper-bound of quadStruct.
        */
-      ierr           = MPI_Type_create_struct(4,blockSizes,blockOffsets,blockTypes,&quadStruct);CHKERRQ(ierr);
-      ierr           = MPI_Type_create_resized(quadStruct,0,sizeof(p4est_quadrant_t),&quadType);CHKERRQ(ierr);
-      ierr           = MPI_Type_commit(&quadType);CHKERRQ(ierr);
+      ierr           = MPI_Type_create_struct(4,blockSizes,blockOffsets,blockTypes,&quadStruct);CHKERRMPI(ierr);
+      ierr           = MPI_Type_create_resized(quadStruct,0,sizeof(p4est_quadrant_t),&quadType);CHKERRMPI(ierr);
+      ierr           = MPI_Type_commit(&quadType);CHKERRMPI(ierr);
       ierr           = PetscSFBcastBegin(coveringSF,nodeClosureType,closurePointsC,newClosurePointsC);CHKERRQ(ierr);
       ierr           = PetscSFBcastBegin(coveringSF,quadType,coverQuadsSend,coverQuads);CHKERRQ(ierr);
       ierr           = PetscSFBcastEnd(coveringSF,nodeClosureType,closurePointsC,newClosurePointsC);CHKERRQ(ierr);
       ierr           = PetscSFBcastEnd(coveringSF,quadType,coverQuadsSend,coverQuads);CHKERRQ(ierr);
-      ierr           = MPI_Type_free(&quadStruct);CHKERRQ(ierr);
-      ierr           = MPI_Type_free(&quadType);CHKERRQ(ierr);
+      ierr           = MPI_Type_free(&quadStruct);CHKERRMPI(ierr);
+      ierr           = MPI_Type_free(&quadType);CHKERRMPI(ierr);
       ierr           = PetscFree(coverQuadsSend);CHKERRQ(ierr);
       ierr           = PetscFree(closurePointsC);CHKERRQ(ierr);
       ierr           = PetscSFDestroy(&coveringSF);CHKERRQ(ierr);
@@ -5181,7 +5181,7 @@ static PetscErrorCode DMForestCreateCellSF_pforest(DM dm, PetscSF *cellSF)
   cLocalEnd   = pforest->cLocalEnd;
   nLeaves     = 0;
   ierr        = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
-  ierr        = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr        = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
   if (overlap && pforest->ghost) {
     PetscSFNode      *mirror;
     p4est_quadrant_t *mirror_array;

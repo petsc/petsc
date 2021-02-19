@@ -743,7 +743,7 @@ PetscErrorCode PDIPMLineSearch(SNESLineSearch linesearch,void *ctx)
   if (isCHOL) {
     PetscMPIInt       size;
     ierr = PCFactorGetMatrix(pc,&Factor);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)Factor),&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)Factor),&size);CHKERRMPI(ierr);
     if (Factor->ops->getinertia) {
 #if defined(PETSC_HAVE_MUMPS)
       MatSolverType     stype;

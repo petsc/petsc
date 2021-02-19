@@ -217,7 +217,7 @@ int main(int argc,char **argv)
     application-to-PETSc mappings. Each vertex also gets a local index (stored in the
     locInd array).
   */
-  ierr    = MPI_Scan(&user.Nvlocal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr    = MPI_Scan(&user.Nvlocal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   rstart -= user.Nvlocal;
   ierr    = PetscMalloc1(user.Nvlocal,&pordering);CHKERRQ(ierr);
 

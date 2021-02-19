@@ -421,8 +421,8 @@ PetscErrorCode TaskWorker(AppCtx *user)
       ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD);CHKERRMPI(ierr);
     } else if (tag != DIE_TAG) {
       index = (PetscInt)tag;
-      ierr=RunSimulation(x,index,&f,user);CHKERRQ(ierr);
-      ierr=MPI_Send(&f,1,MPIU_REAL,0,tag,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = RunSimulation(x,index,&f,user);CHKERRQ(ierr);
+      ierr = MPI_Send(&f,1,MPIU_REAL,0,tag,PETSC_COMM_WORLD);CHKERRMPI(ierr);
     }
   }
   PetscFunctionReturn(0);

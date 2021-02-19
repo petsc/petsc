@@ -2641,7 +2641,7 @@ PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A,Vec v,PetscInt idx[])
     for (dest=rank+1; dest<size; dest++) {
       svalues = work + rowners_bs[dest];
       count   = rowners_bs[dest+1]-rowners_bs[dest];
-      ierr    = MPI_Send(svalues,count,MPIU_REAL,dest,rank,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+      ierr    = MPI_Send(svalues,count,MPIU_REAL,dest,rank,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
     }
   }
 

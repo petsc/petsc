@@ -1393,7 +1393,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
   A->ops->setup = MatSetUp_KAIJ;
 
   b->w    = NULL;
-  ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ);CHKERRQ(ierr);
     A->ops->setup               = MatSetUp_KAIJ;

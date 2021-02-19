@@ -42,7 +42,7 @@ int main(int argc,char *argv[])
   n         = PETSC_DECIDE;
   ierr      = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   rstart    = 0;
-  ierr      = MPI_Scan(&n,&rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr      = MPI_Scan(&n,&rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   rstart   -= n;
   ghosts[0] = (N+rstart-1)%N;
   ghosts[1] = (rstart+n)%N;

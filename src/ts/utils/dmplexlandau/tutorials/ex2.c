@@ -642,7 +642,7 @@ int main(int argc, char **argv)
 #endif
   PetscMPIInt    rank;
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
   if (rank) { /* turn off output stuff for duplicate runs */
     ierr = PetscOptionsClearValue(NULL,"-dm_view");CHKERRQ(ierr);
     ierr = PetscOptionsClearValue(NULL,"-vec_view");CHKERRQ(ierr);

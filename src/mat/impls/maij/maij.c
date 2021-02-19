@@ -183,7 +183,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
   b->OAIJ = NULL;
   b->ctx  = NULL;
   b->w    = NULL;
-  ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQMAIJ);CHKERRQ(ierr);
   } else {

@@ -256,7 +256,7 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
   ierr = PetscSFReset(*sf);CHKERRQ(ierr);
   if ((*sf)->ops->Destroy) {ierr = (*(*sf)->ops->Destroy)(*sf);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&(*sf)->vscat.lsf);CHKERRQ(ierr);
-  if ((*sf)->vscat.bs > 1) {ierr = MPI_Type_free(&(*sf)->vscat.unit);CHKERRQ(ierr);}
+  if ((*sf)->vscat.bs > 1) {ierr = MPI_Type_free(&(*sf)->vscat.unit);CHKERRMPI(ierr);}
   ierr = PetscHeaderDestroy(sf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -743,7 +743,7 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *n
     }
   }
   /* Since oldtype is committed, so is newtype, according to MPI */
-  if (sf->vscat.bs > 1) {ierr = MPI_Type_dup(sf->vscat.unit,&dtype);CHKERRQ(ierr);}
+  if (sf->vscat.bs > 1) {ierr = MPI_Type_dup(sf->vscat.unit,&dtype);CHKERRMPI(ierr);}
   (*newsf)->vscat.bs     = sf->vscat.bs;
   (*newsf)->vscat.unit   = dtype;
   (*newsf)->vscat.to_n   = sf->vscat.to_n;

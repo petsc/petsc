@@ -1419,7 +1419,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
       req_size[i] = 0;
       rbuf1_i        = rbuf1[i];
       start          = 2*rbuf1_i[0] + 1;
-      ierr           = MPI_Get_count(r_status1+i,MPIU_INT,&end);CHKERRQ(ierr);
+      ierr           = MPI_Get_count(r_status1+i,MPIU_INT,&end);CHKERRMPI(ierr);
       ierr           = PetscMalloc1(end+1,&sbuf2[i]);CHKERRQ(ierr);
       sbuf2_i        = sbuf2[i];
       for (j=start; j<end; j++) {
@@ -1586,7 +1586,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
 
     /* Update lens from offproc data */
     /* recv a->j is done */
-    ierr    = MPI_Waitall(nrqs,r_waits3,r_status3);CHKERRQ(ierr);
+    ierr    = MPI_Waitall(nrqs,r_waits3,r_status3);CHKERRMPI(ierr);
     for (i=0; i<nrqs; i++) {
       proc    = pa[i];
       sbuf1_i = sbuf1[proc];
@@ -1860,7 +1860,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
   /* Now assemble the off-proc rows */
   for (i=0; i<nrqs; i++) { /* for each requested message */
     /* recv values from other processes */
-    ierr    = MPI_Waitany(nrqs,r_waits4,&idex,r_status4+i);CHKERRQ(ierr);
+    ierr    = MPI_Waitany(nrqs,r_waits4,&idex,r_status4+i);CHKERRMPI(ierr);
     proc    = pa[idex];
     sbuf1_i = sbuf1[proc];
     /* jmax    = sbuf1_i[0]; if (jmax != 1)SETERRQ1(PETSC_COMM_SELF,0,"jmax %d != 1",jmax); */
@@ -2333,7 +2333,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
         req_size[i] = 0;
         rbuf1_i        = rbuf1[i];
         start          = 2*rbuf1_i[0] + 1;
-        ierr           = MPI_Get_count(r_status1+i,MPIU_INT,&end);CHKERRQ(ierr);
+        ierr           = MPI_Get_count(r_status1+i,MPIU_INT,&end);CHKERRMPI(ierr);
         ierr           = PetscMalloc1(end+1,&sbuf2[i]);CHKERRQ(ierr);
         sbuf2_i        = sbuf2[i];
         for (j=start; j<end; j++) {
@@ -2521,7 +2521,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
     {
       PetscInt *rbuf2_i,*rbuf3_i,*sbuf1_i;
 
-      ierr    = MPI_Waitall(nrqs,r_waits3,r_status3);CHKERRQ(ierr);
+      ierr    = MPI_Waitall(nrqs,r_waits3,r_status3);CHKERRMPI(ierr);
       for (tmp2=0; tmp2<nrqs; tmp2++) {
         sbuf1_i = sbuf1[pa[tmp2]];
         jmax    = sbuf1_i[0];
@@ -2780,7 +2780,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
   }
 
   /* Now assemble the off proc rows */
-  ierr    = MPI_Waitall(nrqs,r_waits4,r_status4);CHKERRQ(ierr);
+  ierr    = MPI_Waitall(nrqs,r_waits4,r_status4);CHKERRMPI(ierr);
   for (tmp2=0; tmp2<nrqs; tmp2++) {
     sbuf1_i = sbuf1[pa[tmp2]];
     jmax    = sbuf1_i[0];

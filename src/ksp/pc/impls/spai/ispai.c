@@ -595,7 +595,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
   ispai->verbose    = 0;
 
   ispai->sp = 1;
-  ierr      = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(ispai->comm_spai));CHKERRQ(ierr);
+  ierr      = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(ispai->comm_spai));CHKERRMPI(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetEpsilon_C",PCSPAISetEpsilon_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetNBSteps_C",PCSPAISetNBSteps_SPAI);CHKERRQ(ierr);

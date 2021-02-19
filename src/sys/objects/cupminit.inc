@@ -82,7 +82,7 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
       cerr = cupmSetDeviceFlags(cupmDeviceMapHost);
       cupmGetLastError(); /* Reset the last error */
       if (cerr == cupmSuccess) { /* It implies device runtime has not been initialized? */
-        ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+        ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
         devId = rank % devCount;
         for (int i=0; i<3; i++) {
           cerr = cupmSetDevice(devId);
@@ -184,7 +184,7 @@ PetscErrorCode PetscCUPMInitialize(MPI_Comm comm,PetscInt device)
       if (devCount > 0) { /* Allow no device as long as user does not use devices */
         /* Set the device flags so that it can map host memory */
         cerr  = cupmSetDeviceFlags(cupmDeviceMapHost);CHKERRCUPM(cerr);
-        ierr  = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+        ierr  = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
         devId = rank % devCount;
         cerr  = cupmSetDevice(devId);CHKERRCUPM(cerr);
       }
@@ -234,7 +234,7 @@ static PetscErrorCode PetscCUPMInitializeAndView(PetscBool initDevice,PetscInt d
         cerr = cupmSetDeviceFlags(cupmDeviceMapHost);
         cupmGetLastError(); /* Reset the last error */
         if (cerr == cupmSuccess) { /* It implies gpu runtime has not been initialized */
-          ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+          ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
           devId = rank % devCount;
           cerr  = cupmSetDevice(devId);CHKERRCUPM(cerr);
         } else if (cerr == cupmErrorSetOnActiveProcess) {

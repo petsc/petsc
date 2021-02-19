@@ -28,7 +28,7 @@ int main(int argc,char **argv)
 
   /* Split PETSC_COMM_WORLD into three subcomms. Each process can only see the subcomm it belongs to */
   mycolor = grank % 3;
-  ierr    = MPI_Comm_split(PETSC_COMM_WORLD,mycolor,grank,&subcomm);CHKERRQ(ierr);
+  ierr    = MPI_Comm_split(PETSC_COMM_WORLD,mycolor,grank,&subcomm);CHKERRMPI(ierr);
 
   /*===========================================================================
    *  Transfer a vector x defined on PETSC_COMM_WORLD to a vector y defined on

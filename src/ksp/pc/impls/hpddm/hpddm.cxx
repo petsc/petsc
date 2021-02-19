@@ -776,7 +776,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
     }
     /* check if some coarser levels are being reused */
-    ierr = MPIU_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
+    ierr = MPIU_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     const int *addr = data->levels[0]->P ? data->levels[0]->P->getAddrLocal() : &HPDDM::i__0;
 
     if (addr != &HPDDM::i__0 && reused != data->N - 1) {
