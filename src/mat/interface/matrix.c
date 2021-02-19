@@ -5161,6 +5161,11 @@ PetscErrorCode MatIsHermitianTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg
    The index sets map from row/col of permuted matrix to row/col of original matrix.
    The index sets should be on the same communicator as Mat and have the same local sizes.
 
+   Developer Note:
+     If you want to implement MatPermute for a matrix type, and your approach doesn't
+     exploit the fact that row and col are permutations, consider implementing the
+     more general MatCreateSubMatrix() instead.
+
 .seealso: MatGetOrdering(), ISAllGather()
 
 @*/
@@ -5176,11 +5181,15 @@ PetscErrorCode MatPermute(Mat mat,IS row,IS col,Mat *B)
   PetscValidPointer(B,4);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!mat->ops->permute) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatPermute not available for Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->permute && !mat->ops->createsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatPermute not available for Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
 
-  ierr = (*mat->ops->permute)(mat,row,col,B);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)*B);CHKERRQ(ierr);
+  if (mat->ops->permute) {
+    ierr = (*mat->ops->permute)(mat,row,col,B);CHKERRQ(ierr);
+    ierr = PetscObjectStateIncrease((PetscObject)*B);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateSubMatrix(mat, row, col, MAT_INITIAL_MATRIX, B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
