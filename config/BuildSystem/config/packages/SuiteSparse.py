@@ -59,7 +59,7 @@ class Configure(config.package.Package):
       ldflags=self.getDynamicLinkerFlags()
     else:
       ldflags=''
-    ldflags+=self.setCompilers.LDFLAGS
+    ldflags += ' '+self.setCompilers.LDFLAGS
     # SuiteSparse 5.6.0 makefile has a bug in how it treats LDFLAGS (not using the override directive)
     ldflags+=" -L\$(INSTALL_LIB)"
     self.popLanguage()
