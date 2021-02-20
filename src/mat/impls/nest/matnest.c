@@ -434,18 +434,20 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   ierr = MatReset_Nest(A);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMat_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMat_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMats_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSize_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetISs_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetLocalISs_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetVecType_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMats_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_mpiaij_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_seqaij_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_aij_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_is_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMats_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSize_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetISs_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetLocalISs_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetVecType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMats_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_mpiaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_seqaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_aij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_is_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_mpidense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_dense_C",NULL);CHKERRQ(ierr);
@@ -1808,7 +1810,7 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_Nest       *nest = (Mat_Nest*)A->data;
   Mat            *trans;
@@ -1957,12 +1959,89 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y,PetscScalar a,Mat X)
+{
+  Mat_Nest       *nest = (Mat_Nest*)X->data;
+  PetscInt       i,j,k,rstart;
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Fill by row */
+  for (j=0; j<nest->nc; ++j) {
+    /* Using global column indices and ISAllGather() is not scalable. */
+    IS             bNis;
+    PetscInt       bN;
+    const PetscInt *bNindices;
+    ierr = ISAllGather(nest->isglobal.col[j], &bNis);CHKERRQ(ierr);
+    ierr = ISGetSize(bNis,&bN);CHKERRQ(ierr);
+    ierr = ISGetIndices(bNis,&bNindices);CHKERRQ(ierr);
+    for (i=0; i<nest->nr; ++i) {
+      Mat            B,D=NULL;
+      PetscInt       bm, br;
+      const PetscInt *bmindices;
+      B = nest->m[i][j];
+      if (!B) continue;
+      ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PetscTryMethod(B,"MatTransposeGetMat_C",(Mat,Mat*),(B,&D));CHKERRQ(ierr);
+        ierr = PetscTryMethod(B,"MatHermitianTransposeGetMat_C",(Mat,Mat*),(B,&D));CHKERRQ(ierr);
+        ierr = MatConvert(B,((PetscObject)D)->type_name,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
+        B = D;
+      }
+      ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQSBAIJ,MATMPISBAIJ,"");CHKERRQ(ierr);
+      if (flg) {
+        if (D) {
+          ierr = MatConvert(D,MATBAIJ,MAT_INPLACE_MATRIX,&D);CHKERRQ(ierr);
+        } else {
+          ierr = MatConvert(B,MATBAIJ,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
+        }
+        B = D;
+      }
+      ierr = ISGetLocalSize(nest->isglobal.row[i],&bm);CHKERRQ(ierr);
+      ierr = ISGetIndices(nest->isglobal.row[i],&bmindices);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(B,&rstart,NULL);CHKERRQ(ierr);
+      for (br = 0; br < bm; ++br) {
+        PetscInt          row = bmindices[br], brncols, *cols;
+        const PetscInt    *brcols;
+        const PetscScalar *brcoldata;
+        PetscScalar       *vals = NULL;
+        ierr = MatGetRow(B,br+rstart,&brncols,&brcols,&brcoldata);CHKERRQ(ierr);
+        ierr = PetscMalloc1(brncols,&cols);CHKERRQ(ierr);
+        for (k=0; k<brncols; k++) cols[k] = bNindices[brcols[k]];
+        /*
+          Nest blocks are required to be nonoverlapping -- otherwise nest and monolithic index layouts wouldn't match.
+          Thus, we could use INSERT_VALUES, but I prefer ADD_VALUES.
+         */
+        if (a != 1.0) {
+          ierr = PetscMalloc1(brncols,&vals);CHKERRQ(ierr);
+          for (k=0; k<brncols; k++) vals[k] = a * brcoldata[k];
+          ierr = MatSetValues(Y,1,&row,brncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+          ierr = PetscFree(vals);CHKERRQ(ierr);
+        } else {
+          ierr = MatSetValues(Y,1,&row,brncols,cols,brcoldata,ADD_VALUES);CHKERRQ(ierr);
+        }
+        ierr = MatRestoreRow(B,br+rstart,&brncols,&brcols,&brcoldata);CHKERRQ(ierr);
+        ierr = PetscFree(cols);CHKERRQ(ierr);
+      }
+      if (D) {
+        ierr = MatDestroy(&D);
+      }
+      ierr = ISRestoreIndices(nest->isglobal.row[i],&bmindices);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(bNis,&bNindices);CHKERRQ(ierr);
+    ierr = ISDestroy(&bNis);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat_Nest       *nest = (Mat_Nest*)A->data;
-  PetscInt       m,n,M,N,i,j,k,*dnnz,*onnz,rstart;
-  PetscInt       cstart,cend;
+  PetscInt       m,n,M,N,i,j,k,*dnnz,*onnz,rstart,cstart,cend;
   PetscMPIInt    size;
   Mat            C;
 
@@ -2121,47 +2200,29 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
   ierr = MatSeqAIJSetPreallocation(C,0,dnnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(C,0,dnnz,0,onnz);CHKERRQ(ierr);
   ierr = PetscFree(dnnz);CHKERRQ(ierr);
+  ierr = MatAXPY_Dense_Nest(C,1.0,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  /* Fill by row */
-  for (j=0; j<nest->nc; ++j) {
-    /* Using global column indices and ISAllGather() is not scalable. */
-    IS             bNis;
-    PetscInt       bN;
-    const PetscInt *bNindices;
-    ierr = ISAllGather(nest->isglobal.col[j], &bNis);CHKERRQ(ierr);
-    ierr = ISGetSize(bNis,&bN);CHKERRQ(ierr);
-    ierr = ISGetIndices(bNis,&bNindices);CHKERRQ(ierr);
-    for (i=0; i<nest->nr; ++i) {
-      Mat            B;
-      PetscInt       bm, br;
-      const PetscInt *bmindices;
-      B = nest->m[i][j];
-      if (!B) continue;
-      ierr = ISGetLocalSize(nest->isglobal.row[i],&bm);CHKERRQ(ierr);
-      ierr = ISGetIndices(nest->isglobal.row[i],&bmindices);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRange(B,&rstart,NULL);CHKERRQ(ierr);
-      for (br = 0; br < bm; ++br) {
-        PetscInt          row = bmindices[br], brncols,  *cols;
-        const PetscInt    *brcols;
-        const PetscScalar *brcoldata;
-        ierr = MatGetRow(B,br+rstart,&brncols,&brcols,&brcoldata);CHKERRQ(ierr);
-        ierr = PetscMalloc1(brncols,&cols);CHKERRQ(ierr);
-        for (k=0; k<brncols; k++) cols[k] = bNindices[brcols[k]];
-        /*
-          Nest blocks are required to be nonoverlapping -- otherwise nest and monolithic index layouts wouldn't match.
-          Thus, we could use INSERT_VALUES, but I prefer ADD_VALUES.
-         */
-        ierr = MatSetValues(C,1,&row,brncols,cols,brcoldata,ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(B,br+rstart,&brncols,&brcols,&brcoldata);CHKERRQ(ierr);
-        ierr = PetscFree(cols);CHKERRQ(ierr);
-      }
-      ierr = ISRestoreIndices(nest->isglobal.row[i],&bmindices);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(bNis,&bNindices);CHKERRQ(ierr);
-    ierr = ISDestroy(&bNis);CHKERRQ(ierr);
+PetscErrorCode MatConvert_Nest_Dense(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat            B;
+  PetscInt       m,n,M,N;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    B = *newmat;
+    ierr = MatZeroEntries(B);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)A),m,PETSC_DECIDE,M,N,NULL,&B);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAXPY_Dense_Nest(B,1.0,A);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
   PetscFunctionReturn(0);
 }
 
@@ -2265,6 +2326,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_seqaij_C",  MatConvert_Nest_AIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_aij_C",     MatConvert_Nest_AIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_is_C",      MatConvert_Nest_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_mpidense_C",MatConvert_Nest_Dense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_seqdense_C",MatConvert_Nest_Dense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_seqdense_C",MatProductSetFromOptions_Nest_Dense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_mpidense_C",MatProductSetFromOptions_Nest_Dense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_nest_dense_C",MatProductSetFromOptions_Nest_Dense);CHKERRQ(ierr);

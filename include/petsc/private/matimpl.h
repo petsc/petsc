@@ -497,6 +497,7 @@ struct _p_Mat {
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
 PETSC_INTERN PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,Mat,MatStructure);
 PETSC_INTERN PetscErrorCode MatAXPY_Basic_Preallocate(Mat,Mat,Mat*);
+PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat,PetscScalar,Mat);
 
 /*
     Utility for MatFactor (Schur complement)

@@ -154,7 +154,7 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
 PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
-  PetscBool      isshell,isdense;
+  PetscBool      isshell,isdense,isnest;
 
   PetscFunctionBegin;
   ierr = MatIsShell(Y,&isshell);CHKERRQ(ierr);
@@ -169,7 +169,14 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
   }
   /* no need to preallocate if Y is dense */
   ierr = PetscObjectBaseTypeCompareAny((PetscObject)Y,&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
-  if (isdense && (str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN)) str = SUBSET_NONZERO_PATTERN;
+  if (isdense) {
+    ierr = PetscObjectTypeCompare((PetscObject)X,MATNEST,&isnest);CHKERRQ(ierr);
+    if (isnest) {
+      ierr = MatAXPY_Dense_Nest(Y,a,X);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+    if (str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN) str = SUBSET_NONZERO_PATTERN;
+  }
   if (str != DIFFERENT_NONZERO_PATTERN && str != UNKNOWN_NONZERO_PATTERN) {
     PetscInt          i,start,end,j,ncols,m,n;
     const PetscInt    *row;
