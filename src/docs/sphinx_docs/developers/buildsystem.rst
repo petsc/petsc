@@ -175,15 +175,16 @@ by adding ``set -x`` to scripts and other invasive practices, to act to
 resolve problems. This ability has been nearly lost in follow-on systems
 such as SCons and CMake.
 
-Concision is also an important attribute, as the cognitive load is
-usually larger for larger code bases. The addition of logic to Autoconf
-and CMake is often quite cumbersome as they do not employ a modern,
-higher level language. For example, the Trilinos/TriBITS package from
-Sandia National Laboratory is quite similar to PETSc in the kinds of
-computations it performs. It contains 175,000 lines of CMakescript used
-to configure and build the project, whereas PETSc contains less than
-30,000 lines of Python code to handle configuration and regression
-testing and one GNU Makefile of 130 lines.
+Concision
+^^^^^^^^^
+
+The cognitive load is usually larger for larger code bases,
+and our observation is that the addition of logic to Autoconf
+and CMake is often quite cumbersome and verbose as they do not employ a modern,
+higher level language. Although BuildSystem itself is not widely used,
+it has the advantage of being written in a widely-understood, high-level
+language.
+
 
 High level organization
 ~~~~~~~~~~~~~~~~~~~~~~~
