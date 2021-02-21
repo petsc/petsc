@@ -138,43 +138,6 @@ depend on them may not be. Moreover, CMake mixes together information
 which is discovered automatically with that explicitly provided by the
 user, which is often not tested.
 
-Dealing with Errors
-^^^^^^^^^^^^^^^^^^^
-
-The most crucial piece of an effective configure system is good error
-reporting and recovery. Most of the configuration process involves
-errors, either in compiling, linking, or execution, but it can be
-extremely difficult to uncover the ultimate source of an error. For
-example, the configuration process might have checked the system BLAS
-library, and then tried to evaluate a package that depends on BLAS such
-as PETSc. It receives a link error and fails complaining about a problem
-with PETSc. However, close examination of the link error shows that BLAS
-with compiled without position-independent code, e.g. using the
-``-fPIC`` flag, but PETSc was built using the flag since it was intended
-for a shared library. This is sometimes hard to detect because many
-32-bit systems silently proceed, but most 64-bit systems fail in this
-case.
-
-When test command lines are built up from options gleaned from many
-prior tests, it is imperative that the system keep track of which tests
-were responsible for a given flag or a given decision in the configure
-process. This failure to preserve the chain of reasoning is not unique
-to configure, but is ubiquitous in software and hardware interfaces.
-When your Wifi receiver fails to connect to a hub, or your cable modem
-to the ISP router, you are very often not told the specific reason, but
-rather given a generic error message which does not help distinguish
-between the many possible failure modes. It is essential for robust
-systems that error reports allow the user to track back all the way to
-the decision or test which produced a given problem, although it might
-involve voluminous logging. Thus the system must either be designed so
-that it creates actionable diagnostics when it fails or it must have
-unfailingly good support so that human intervention can resolve the
-problem. The longevity of Autoconf I think can be explained by the
-ability of expert users to gain access to enough information, possibly
-by adding ``set -x`` to scripts and other invasive practices, to act to
-resolve problems. This ability has been nearly lost in follow-on systems
-such as SCons and CMake.
-
 Concision
 ^^^^^^^^^
 
