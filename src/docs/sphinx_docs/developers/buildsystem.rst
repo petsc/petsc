@@ -153,11 +153,11 @@ High level organization
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 A minimal BuildSystem setup consists of a ``config`` directory off the
-package root, which contains all the Python necessary run (in addition
-to the BuildSystem source). At minimum, the config directory contains a
+package root, which contains all the Python necessary to run (in addition
+to the BuildSystem source). At minimum, the ``config`` directory contains
 ``configure.py``, which is executed to run the configure process, and a
 module for the package itself. For example, PETSc contains
-``config/PETSc/PETSc.py``. It is also common to include a top level
+``config/PETSc/petsc.py``. It is also common to include a top level
 ``configure`` file to execute the configure, as this looks like
 Autotools,
 
@@ -190,14 +190,14 @@ be
    if __name__ == '__main__':
      configure([])
 
-The PETSc ``configure.py`` is quite a bit longer than this, but it is
-doing specialized command line processing and error handling, and
+The PETSc ``configure.py`` is quite a bit longer than this, as it
+performs specialized command line processing, error handling, and
 integrating logging with the rest of PETSc.
 
 The ``config/package/Configure.py`` module determines how the tree of
-configure objects is built and how the configure information is output.
-The ``configure`` method of the nodule will be run by the ``framework``
-object created at the top level. A minimal configure method would look
+``Configure`` objects is built and how the configure information is output.
+The ``configure()`` method of the module will be run by the ``Framework``
+object created at the top level. A minimal ``configure()`` method would look
 like
 
 .. code-block:: python
@@ -214,10 +214,10 @@ like
 The ``Dump`` method runs over the tree of configure modules, and outputs
 the data necessary for building, usually employing the
 ``addMakeMacro()``, ``addMakeRule()`` and ``addDefine()`` methods. These
-method funnel output to the include and make files defined by the
+methods funnel output to the include and make files defined by the
 framework object, and set at the beginning of this ``configure()``
 method. There is also some simple information that is often used, which
-we define in the constructor,
+we define in the initializer,
 
 .. code-block:: python
 
@@ -235,7 +235,7 @@ More sophisticated configure assemblies, like PETSc, output some other
 custom information, such as information about the machine, configure
 process, and a script to recreate the configure run.
 
-The package configure module has two other main functions. First, top
+The `Package` configure module has two other main functions. First, top
 level options can be defined in the ``setupHelp()`` method,
 
 .. code-block:: python
@@ -276,7 +276,7 @@ A simple way to do this is by explicitly declaring dependencies,
 The ``projectdir`` and ``arch`` modules define the project root
 directory and a build name so that multiple independent builds can be
 managed. The ``Framework.require()`` method creates an edge in the
-dependence graph for configure modules, and returns the module object so
+dependency graph for configure modules, and returns the module object so
 that it can be queried after the configure information is determined.
 Setting the header prefix routes all the defines made inside those
 modules to our package configure header. We can also automatically
