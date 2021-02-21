@@ -1,0 +1,7 @@
+#PETSc Option Table entries:
+-mg_coarse_pc_type lu
+-mg_levels_1_ksp_max_it 5
+-mg_levels_2_ksp_max_it 10
+-mg_levels_ksp_max_it 15
+-mg_levels_ksp_type richardson
+#End of PETSc Option Table entries

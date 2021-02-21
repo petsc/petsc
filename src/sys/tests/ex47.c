@@ -75,5 +75,9 @@ int main(int argc,char **argv)
         args: -yaml ex47-include.yaml
         localrunfiles: ex47-include.yaml ex47-empty.yaml ex47-options.yaml
 
+     test:
+        suffix: 3_prefix
+        args: -yaml ex47-prefix.yaml
+        localrunfiles: ex47-prefix.yaml
 
 TEST*/
