@@ -380,6 +380,9 @@ PETSC_EXTERN PetscErrorCode KSPMonitorSolutionDrawLG(KSP,PetscInt,PetscReal,Pets
 PETSC_EXTERN PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer,PetscViewerFormat,void *,PetscViewerAndFormat **);
 PETSC_EXTERN PetscErrorCode KSPMonitorSingularValue(KSP,PetscInt,PetscReal,PetscViewerAndFormat*);
 PETSC_EXTERN PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer,PetscViewerFormat,void *,PetscViewerAndFormat **);
+PETSC_DEPRECATED_FUNCTION("Use KSPMonitorResidual() (since version 3.15)") PETSC_STATIC_INLINE PetscErrorCode KSPMonitorDefault(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {return KSPMonitorResidual(ksp,n,rnorm,vf);}
+PETSC_DEPRECATED_FUNCTION("Use KSPMonitorTrueResidual() (since version 3.15)") PETSC_STATIC_INLINE PetscErrorCode KSPMonitorTrueResidualNorm(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {return KSPMonitorTrueResidual(ksp,n,rnorm,vf);}
+PETSC_DEPRECATED_FUNCTION("Use KSPMonitorTrueResidualMax() (since version 3.15)") PETSC_STATIC_INLINE PetscErrorCode KSPMonitorTrueResidualMaxNorm(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {return KSPMonitorTrueResidualMax(ksp,n,rnorm,vf);}
 
 PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void*);
 PETSC_EXTERN PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy);
