@@ -57,6 +57,7 @@ PETSC_EXTERN void pcviewfromoptions_(PC *ao,PetscObject obj,char* type,PetscErro
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PCViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

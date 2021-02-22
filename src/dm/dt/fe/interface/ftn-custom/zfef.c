@@ -17,6 +17,7 @@ PETSC_EXTERN void petscspaceviewfromoptions_(PetscSpace *ao,PetscObject obj,char
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscSpaceViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
@@ -26,6 +27,7 @@ PETSC_EXTERN void petscdualspaceviewfromoptions_(PetscDualSpace *ao,PetscObject 
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscDualSpaceViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
@@ -35,6 +37,7 @@ PETSC_EXTERN void petscfeviewfromoptions_(PetscFE *ao,PetscObject obj,char* type
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscFEViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

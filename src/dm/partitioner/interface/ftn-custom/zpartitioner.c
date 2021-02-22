@@ -28,6 +28,7 @@ PETSC_EXTERN void petscpartitionerviewfromoptions_(PetscPartitioner *part,PetscO
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscPartitionerViewFromOptions(*part,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

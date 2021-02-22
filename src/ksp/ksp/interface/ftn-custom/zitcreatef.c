@@ -45,6 +45,7 @@ PETSC_EXTERN void kspviewfromoptions_(KSP *ao,PetscObject obj,char* type,PetscEr
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = KSPViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

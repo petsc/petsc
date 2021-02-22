@@ -433,6 +433,7 @@ PETSC_EXTERN void snesviewfromoptions_(SNES *ao,PetscObject obj,char* type,Petsc
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = SNESViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

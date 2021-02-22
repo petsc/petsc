@@ -49,6 +49,7 @@ PETSC_EXTERN void petscdrawviewfromoptions_(PetscDraw *draw,PetscObject obj,char
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscDrawViewFromOptions(*draw,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

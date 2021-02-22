@@ -13,6 +13,7 @@ PETSC_EXTERN void petscdsviewfromoptions_(PetscDS *ao,PetscObject obj,char* type
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscDSViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
