@@ -225,7 +225,7 @@
 !     Also use the default KSP monitor routine showing how it may be used from Fortran
 !
         call PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,vf,ierr)
-        call KSPMonitorSet(ksp,KSPMonitorDefault,vf,PetscViewerAndFormatDestroy,ierr)
+        call KSPMonitorSet(ksp,KSPMonitorResidual,vf,PetscViewerAndFormatDestroy,ierr)
       endif
 
 

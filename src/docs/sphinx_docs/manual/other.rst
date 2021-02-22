@@ -829,13 +829,9 @@ Graphical Convergence Monitor
 
 For both the linear and nonlinear solvers default routines allow one to
 graphically monitor convergence of the iterative method. These are
-accessed via the command line with ``-ksp_monitor_lg_residualnorm`` and
-``-snes_monitor_lg_residualnorm``. See also
+accessed via the command line with ``-ksp_monitor draw::draw_lg`` and
+``-snes_monitor draw::draw_lg``. See also
 :any:`sec_kspmonitor` and :any:`sec_snesmonitor`.
-
-The two functions used are ``KSPMonitorLGResidualNorm()`` and
-``KSPMonitorLGResidualNormCreate()``. These can easily be modified to
-serve specialized needs.
 
 Disabling Graphics at Compile Time
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1038,7 +1034,7 @@ Qt Creator Users
 This information was provided by Mohammad Mirzadeh. The Qt Creator IDE
 is part of the Qt SDK, developed for cross-platform GUI programming
 using C++. It is available under GPL v3, LGPL v2 and a commercial
-license and may be obtained, either as part of the Qt SDK or as 
+license and may be obtained, either as part of the Qt SDK or as
 stand-alone software. It supports
 automatic makefile generation using cross-platform ``qmake`` and
 ``cmake`` build systems as well as allowing one to import projects based

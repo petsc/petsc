@@ -889,8 +889,8 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
 #include "petsc/private/petscimpl.h"
 
-/*@C
-  KSPMonitorError - Outputs the error at each iteration of an iterative solver.
+/*
+  MonitorError - Outputs the error at each iteration of an iterative solver.
 
   Collective on KSP
 
@@ -902,9 +902,9 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
   Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorDefault()
-@*/
-static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual(), KSPMonitorResidual()
+*/
+static PetscErrorCode MonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
   DM             dm;
@@ -1129,7 +1129,7 @@ int main(int argc, char **argv)
         ierr = PCMGGetLevels(pc, &numLevels);CHKERRQ(ierr);
         for (l = 0; l < numLevels; ++l) {
           ierr = PCMGGetSmootherDown(pc, l, &ksp);CHKERRQ(ierr);
-          ierr = KSPMonitorSet(ksp, KSPMonitorError, &user, NULL);CHKERRQ(ierr);
+          ierr = KSPMonitorSet(ksp, MonitorError, &user, NULL);CHKERRQ(ierr);
         }
       }
     }

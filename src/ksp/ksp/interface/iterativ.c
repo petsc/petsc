@@ -7,6 +7,7 @@
  */
 #include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdmshell.h>
+#include <petscdraw.h>
 
 /*@
    KSPGetResidualNorm - Gets the last (approximate preconditioned)
@@ -90,288 +91,926 @@ PetscErrorCode  KSPGetTotalIterations(KSP ksp,PetscInt *its)
 }
 
 /*@C
-    KSPMonitorSingularValue - Prints the two norm of the true residual and
-    estimation of the extreme singular values of the preconditioned problem
-    at each iteration.
+  KSPMonitorResidual - Print the preconditioned residual norm at each iteration of an iterative solver.
 
-    Logically Collective on ksp
+  Collective on ksp
 
-    Input Parameters:
-+   ksp - the iterative context
-.   n  - the iteration
--   rnorm - the two norm of the residual
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
 
-    Options Database Key:
-.   -ksp_monitor_singular_value - Activates KSPMonitorSingularValue()
+  Options Database Key:
+. -ksp_monitor - Activates KSPMonitorResidual()
 
-    Notes:
-    The CG solver uses the Lanczos technique for eigenvalue computation,
-    while GMRES uses the Arnoldi technique; other iterative methods do
-    not currently compute singular values.
+  Level: intermediate
 
-    Level: intermediate
-
-.seealso: KSPComputeExtremeSingularValues()
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
 @*/
-PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,PetscViewerAndFormat *dummy)
+PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
-  PetscReal      emin,emax,c;
-  PetscErrorCode ierr;
-  PetscViewer    viewer = dummy->viewer;
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  PetscInt          tablevel;
+  const char       *prefix;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = PetscViewerPushFormat(viewer,dummy->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
-  if (!ksp->calc_sings) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,(double)rnorm);CHKERRQ(ierr);
-  } else {
-    ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
-    c    = emax/emin;
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e %% max %14.12e min %14.12e max/min %14.12e\n",n,(double)rnorm,(double)emax,(double)emin,(double)c);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscObjectGetTabLevel((PetscObject) ksp, &tablevel);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
+  if (n == 0 && prefix) {ierr = PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %14.12e \n", n, (double) rnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-   KSPMonitorSolution - Monitors progress of the KSP solvers by calling
-   VecView() for the approximate solution at each iteration.
+  KSPMonitorResidualDraw - Plots the preconditioned residual at each iteration of an iterative solver.
 
-   Collective on ksp
+  Collective on ksp
 
-   Input Parameters:
-+  ksp - the KSP context
-.  its - iteration number
-.  fgnorm - 2-norm of residual (or gradient)
--  dummy - a viewer
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
 
-   Level: intermediate
+  Options Database Key:
+. -ksp_monitor draw - Activates KSPMonitorResidualDraw()
 
-   Notes:
-    For some Krylov methods such as GMRES constructing the solution at
-  each iteration is expensive, hence using this will slow the code.
+  Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView()
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
 @*/
-PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *dummy)
+PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
-  PetscErrorCode ierr;
-  Vec            x;
-  PetscViewer    viewer = dummy->viewer;
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  Vec               r;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = KSPBuildSolution(ksp,NULL,&x);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,dummy->format);CHKERRQ(ierr);
-  ierr = VecView(x,viewer);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp, NULL, NULL, &r);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) r, "Residual");CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", (PetscObject) ksp);CHKERRQ(ierr);
+  ierr = VecView(r, viewer);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", NULL);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-   KSPMonitorDefault - Print the residual norm at each iteration of an
-   iterative solver.
+  KSPMonitorResidualDrawLG - Plots the preconditioned residual norm at each iteration of an iterative solver.
 
-   Collective on ksp
+  Collective on ksp
 
-   Input Parameters:
-+  ksp   - iterative context
-.  n     - iteration number
-.  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  dummy - an ASCII PetscViewer
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
 
-   Level: intermediate
+  Options Database Key:
+. -ksp_monitor draw::draw_lg - Activates KSPMonitorResidualDrawLG()
 
-.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate()
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
 @*/
-PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,PetscViewerAndFormat *dummy)
+PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
-  PetscErrorCode ierr;
-  PetscViewer    viewer =  dummy->viewer;
+  PetscViewer        viewer = vf->viewer;
+  PetscViewerFormat  format = vf->format;
+  PetscDrawLG        lg     = vf->lg;
+  KSPConvergedReason reason;
+  PetscReal          x, y;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = PetscViewerPushFormat(viewer,dummy->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
-  if (n == 0 && ((PetscObject)ksp)->prefix) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  x = (PetscReal) n;
+  if (rnorm > 0.0) y = PetscLog10Real(rnorm);
+  else y = -15.0;
+  ierr = PetscDrawLGAddPoint(lg, &x, &y);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(ksp, &reason);CHKERRQ(ierr);
+  if (n <= 20 || !(n % 5) || reason) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,(double)rnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-   KSPMonitorTrueResidualNorm - Prints the true residual norm as well as the preconditioned
-   residual norm at each iteration of an iterative solver.
+  KSPMonitorResidualDrawLGCreate - Creates the plotter for the preconditioned residual.
 
-   Collective on ksp
+  Collective on ksp
 
-   Input Parameters:
-+  ksp   - iterative context
-.  n     - iteration number
-.  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  dummy - an ASCII PetscViewer
+  Input Parameters:
++ viewer - The PetsViewer
+. format - The viewer format
+- ctx    - An optional user context
 
-   Options Database Key:
-.  -ksp_monitor_true_residual - Activates KSPMonitorTrueResidualNorm()
+  Output Parameter:
+. vf    - The viewer context
 
-   Notes:
-   When using right preconditioning, these values are equivalent.
+  Level: intermediate
 
-   Level: intermediate
-
-.seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(),KSPMonitorTrueResidualMaxNorm()
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
 @*/
-PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,PetscViewerAndFormat *dummy)
+PetscErrorCode KSPMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
   PetscErrorCode ierr;
-  Vec            resid;
-  PetscReal      truenorm,bnorm;
-  PetscViewer    viewer = dummy->viewer;
-  char           normtype[256];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = PetscViewerPushFormat(viewer,dummy->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
-  if (n == 0 && ((PetscObject)ksp)->prefix) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-  }
-  ierr = KSPBuildResidual(ksp,NULL,NULL,&resid);CHKERRQ(ierr);
-  ierr = VecNorm(resid,NORM_2,&truenorm);CHKERRQ(ierr);
-  ierr = VecDestroy(&resid);CHKERRQ(ierr);
-  ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
-  ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof(normtype));CHKERRQ(ierr);
-  ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,normtype,(double)rnorm,(double)truenorm,(double)(truenorm/bnorm));CHKERRQ(ierr);
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerAndFormatCreate(viewer, format, vf);CHKERRQ(ierr);
+  (*vf)->data = ctx;
+  ierr = KSPMonitorLGCreate(PetscObjectComm((PetscObject) viewer), NULL, NULL, "Log Residual Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+  This is the same as KSPMonitorResidual() except it prints fewer digits of the residual as the residual gets smaller.
+  This is because the later digits are meaningless and are often different on different machines; by using this routine different
+  machines will usually generate the same output.
+
+  Deprecated: Intentionally has no manual page
+*/
+PetscErrorCode KSPMonitorResidualShort(KSP ksp, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  PetscInt          tablevel;
+  const char       *prefix;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscObjectGetTabLevel((PetscObject) ksp, &tablevel);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
+  if (its == 0 && prefix)  {ierr = PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix);CHKERRQ(ierr);}
+  if (fnorm > 1.e-9)       {ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %g \n", its, (double) fnorm);CHKERRQ(ierr);}
+  else if (fnorm > 1.e-11) {ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %5.3e \n", its, (double) fnorm);CHKERRQ(ierr);}
+  else                     {ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm < 1.e-11\n", its);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/*@C
-   KSPMonitorTrueResidualMaxNorm - Prints the true residual max norm each iteration of an iterative solver.
-
-   Collective on ksp
-
-   Input Parameters:
-+  ksp   - iterative context
-.  n     - iteration number
-.  rnorm - norm (preconditioned) residual value (may be estimated).
--  dummy - an ASCII viewer
-
-   Options Database Key:
-.  -ksp_monitor_max - Activates KSPMonitorTrueResidualMaxNorm()
-
-   Notes:
-   This could be implemented (better) with a flag in ksp.
-
-   Level: intermediate
-
-.seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(),KSPMonitorTrueResidualNorm()
-@*/
-PetscErrorCode  KSPMonitorTrueResidualMaxNorm(KSP ksp,PetscInt n,PetscReal rnorm,PetscViewerAndFormat *dummy)
+PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
 {
-  PetscErrorCode ierr;
-  Vec            resid;
-  PetscReal      truenorm,bnorm;
-  PetscViewer    viewer = dummy->viewer;
-  char           normtype[256];
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = PetscViewerPushFormat(viewer,dummy->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
-  if (n == 0 && ((PetscObject)ksp)->prefix) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms (max) for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-  }
-  ierr = KSPBuildResidual(ksp,NULL,NULL,&resid);CHKERRQ(ierr);
-  ierr = VecNorm(resid,NORM_INFINITY,&truenorm);CHKERRQ(ierr);
-  ierr = VecDestroy(&resid);CHKERRQ(ierr);
-  ierr = VecNorm(ksp->vec_rhs,NORM_INFINITY,&bnorm);CHKERRQ(ierr);
-  ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof(normtype));CHKERRQ(ierr);
-  ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP true resid max norm %14.12e ||r(i)||/||b|| %14.12e\n",n,(double)truenorm,(double)(truenorm/bnorm));CHKERRQ(ierr);
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
-{
-  PetscErrorCode ierr;
-  Vec            resid;
-  PetscReal      rmax,pwork;
-  PetscInt       i,n,N;
+  Vec                resid;
   const PetscScalar *r;
+  PetscReal          rmax, pwork;
+  PetscInt           i, n, N;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = KSPBuildResidual(ksp,NULL,NULL,&resid);CHKERRQ(ierr);
-  ierr = VecNorm(resid,NORM_INFINITY,&rmax);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(resid,&n);CHKERRQ(ierr);
-  ierr = VecGetSize(resid,&N);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(resid,&r);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp, NULL, NULL, &resid);CHKERRQ(ierr);
+  ierr = VecNorm(resid, NORM_INFINITY, &rmax);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(resid, &n);CHKERRQ(ierr);
+  ierr = VecGetSize(resid, &N);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(resid, &r);CHKERRQ(ierr);
   pwork = 0.0;
-  for (i=0; i<n; i++) pwork += (PetscAbsScalar(r[i]) > .20*rmax);
-  ierr = VecRestoreArrayRead(resid,&r);CHKERRQ(ierr);
+  for (i = 0; i < n; ++i) pwork += (PetscAbsScalar(r[i]) > .20*rmax);
+  ierr = VecRestoreArrayRead(resid, &r);CHKERRQ(ierr);
   ierr = VecDestroy(&resid);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&pwork, per, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) ksp));CHKERRQ(ierr);
   *per = *per/N;
   PetscFunctionReturn(0);
 }
 
 /*@C
-   KSPMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
+  KSPMonitorResidualRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
 
-   Collective on ksp
+  Collective on ksp
 
-   Input Parameters:
-+  ksp   - iterative context
-.  it    - iteration number
-.  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  dummy - an ASCII viewer
+  Input Parameters:
++ ksp   - iterative context
+. it    - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
 
-   Options Database Key:
-.  -ksp_monitor_range - Activates KSPMonitorRange()
+  Options Database Key:
+. -ksp_monitor_range - Activates KSPMonitorResidualRange()
 
-   Level: intermediate
+  Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate()
+.seealso: KSPMonitorSet(), KSPMonitorResidual()
 @*/
-PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,PetscViewerAndFormat *dummy)
+PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
-  PetscErrorCode   ierr;
-  PetscReal        perc,rel;
-  PetscViewer      viewer = dummy->viewer;
-  /* should be in a MonitorRangeContext */
-  static PetscReal prev;
+  static PetscReal  prev;
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  PetscInt          tablevel;
+  const char       *prefix;
+  PetscReal         perc, rel;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = PetscViewerPushFormat(viewer,dummy->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscObjectGetTabLevel((PetscObject) ksp, &tablevel);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
   if (!it) prev = rnorm;
-  if (it == 0 && ((PetscObject)ksp)->prefix) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-  }
-  ierr = KSPMonitorRange_Private(ksp,it,&perc);CHKERRQ(ierr);
-
+  if (it == 0 && prefix) {ierr = PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix);CHKERRQ(ierr);}
+  ierr = KSPMonitorRange_Private(ksp, it, &perc);CHKERRQ(ierr);
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)(100.0*perc),(double)rel,(double)(rel/perc));CHKERRQ(ierr);
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n", it, (double) rnorm, (double) (100.0*perc), (double) rel, (double) (rel/perc));CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-   KSPMonitorDynamicTolerance - Recompute the inner tolerance in every
-   outer iteration in an adaptive way.
+  KSPMonitorTrueResidual - Prints the true residual norm, as well as the preconditioned residual norm, at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_true_residual - Activates KSPMonitorTrueResidual()
+
+  Notes:
+  When using right preconditioning, these values are equivalent.
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorResidual(),KSPMonitorTrueResidualMaxNorm()
+@*/
+PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  Vec               r;
+  PetscReal         truenorm, bnorm;
+  char              normtype[256];
+  PetscInt          tablevel;
+  const char       *prefix;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscObjectGetTabLevel((PetscObject) ksp, &tablevel);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
+  ierr = PetscStrncpy(normtype, KSPNormTypes[ksp->normtype], sizeof(normtype));CHKERRQ(ierr);
+  ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp, NULL, NULL, &r);CHKERRQ(ierr);
+  ierr = VecNorm(r, NORM_2, &truenorm);CHKERRQ(ierr);
+  ierr = VecNorm(ksp->vec_rhs, NORM_2, &bnorm);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
+  if (n == 0 && prefix) {ierr = PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n", n, normtype, (double) rnorm, (double) truenorm, (double) (truenorm/bnorm));CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorTrueResidualDraw - Plots the true residual at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_true_residual draw - Activates KSPMonitorResidualDraw()
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  Vec               r;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp, NULL, NULL, &r);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) r, "Residual");CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", (PetscObject) ksp);CHKERRQ(ierr);
+  ierr = VecView(r, viewer);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", NULL);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorTrueResidualDrawLG - Plots the true residual norm at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_true_residual draw::draw_lg - Activates KSPMonitorTrueResidualDrawLG()
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer        viewer = vf->viewer;
+  PetscViewerFormat  format = vf->format;
+  PetscDrawLG        lg     = vf->lg;
+  Vec                r;
+  KSPConvergedReason reason;
+  PetscReal          truenorm, x[2], y[2];
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  ierr = KSPBuildResidual(ksp, NULL, NULL, &r);CHKERRQ(ierr);
+  ierr = VecNorm(r, NORM_2, &truenorm);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  x[0] = (PetscReal) n;
+  if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
+  else y[0] = -15.0;
+  x[1] = (PetscReal) n;
+  if (truenorm > 0.0) y[1] = PetscLog10Real(truenorm);
+  else y[1] = -15.0;
+  ierr = PetscDrawLGAddPoint(lg, x, y);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(ksp, &reason);CHKERRQ(ierr);
+  if (n <= 20 || !(n % 5) || reason) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorTrueResidualDrawLGCreate - Creates the plotter for the preconditioned residual.
+
+  Collective on ksp
+
+  Input Parameters:
++ viewer - The PetsViewer
+. format - The viewer format
+- ctx    - An optional user context
+
+  Output Parameter:
+. vf    - The viewer context
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
+  const char    *names[] = {"preconditioned", "true"};
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerAndFormatCreate(viewer, format, vf);CHKERRQ(ierr);
+  (*vf)->data = ctx;
+  ierr = KSPMonitorLGCreate(PetscObjectComm((PetscObject) viewer), NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorTrueResidualMax - Prints the true residual max norm at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_true_residual_max - Activates KSPMonitorTrueResidualMax()
+
+  Notes:
+  When using right preconditioning, these values are equivalent.
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorResidual(),KSPMonitorTrueResidualMaxNorm()
+@*/
+PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  Vec               r;
+  PetscReal         truenorm, bnorm;
+  char              normtype[256];
+  PetscInt          tablevel;
+  const char       *prefix;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscObjectGetTabLevel((PetscObject) ksp, &tablevel);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
+  ierr = PetscStrncpy(normtype, KSPNormTypes[ksp->normtype], sizeof(normtype));CHKERRQ(ierr);
+  ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp, NULL, NULL, &r);CHKERRQ(ierr);
+  ierr = VecNorm(r, NORM_INFINITY, &truenorm);CHKERRQ(ierr);
+  ierr = VecNorm(ksp->vec_rhs, NORM_INFINITY, &bnorm);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
+  if (n == 0 && prefix) {ierr = PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP %s true resid max norm %14.12e ||r(i)||/||b|| %14.12e\n", n, normtype, (double) truenorm, (double) (truenorm/bnorm));CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorError - Prints the error norm, as well as the preconditioned residual norm, at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_error - Activates KSPMonitorError()
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorResidual(),KSPMonitorTrueResidualMaxNorm()
+@*/
+PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  DM                dm;
+  Vec               sol;
+  PetscReal        *errors;
+  PetscInt          Nf, f;
+  PetscInt          tablevel;
+  const char       *prefix;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscObjectGetTabLevel((PetscObject) ksp, &tablevel);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &sol);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp, sol, NULL);CHKERRQ(ierr);
+  /* TODO: Make a different monitor that flips sign for SNES, Newton system is A dx = -b, so we need to negate the solution */
+  ierr = VecScale(sol, -1.0);CHKERRQ(ierr);
+  ierr = PetscCalloc1(Nf, &errors);CHKERRQ(ierr);
+  ierr = DMComputeError(dm, sol, errors, NULL);CHKERRQ(ierr);
+
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
+  if (n == 0 && prefix) {ierr = PetscViewerASCIIPrintf(viewer, "  Error norms for %s solve.\n", prefix);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP Error norm %s", n, Nf > 1 ? "[" : "");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    if (f > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer, "%14.12e", (double) errors[f]);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer, "%s resid norm %14.12e\n", Nf > 1 ? "]" : "", (double) rnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &sol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorErrorDraw - Plots the error at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_error draw - Activates KSPMonitorErrorDraw()
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorErrorDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  DM                dm;
+  Vec               sol, e;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &sol);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp, sol, NULL);CHKERRQ(ierr);
+  ierr = DMComputeError(dm, sol, NULL, &e);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) e, "Error");CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) e, "__Vec_bc_zero__", (PetscObject) ksp);CHKERRQ(ierr);
+  ierr = VecView(e, viewer);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) e, "__Vec_bc_zero__", NULL);CHKERRQ(ierr);
+  ierr = VecDestroy(&e);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &sol);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorErrorDrawLG - Plots the error and residual norm at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_error draw::draw_lg - Activates KSPMonitorTrueResidualDrawLG()
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer        viewer = vf->viewer;
+  PetscViewerFormat  format = vf->format;
+  PetscDrawLG        lg     = vf->lg;
+  DM                 dm;
+  Vec                sol;
+  KSPConvergedReason reason;
+  PetscReal         *x, *errors;
+  PetscInt           Nf, f;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &sol);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp, sol, NULL);CHKERRQ(ierr);
+  /* TODO: Make a different monitor that flips sign for SNES, Newton system is A dx = -b, so we need to negate the solution */
+  ierr = VecScale(sol, -1.0);CHKERRQ(ierr);
+  ierr = PetscCalloc2(Nf+1, &x, Nf+1, &errors);CHKERRQ(ierr);
+  ierr = DMComputeError(dm, sol, errors, NULL);CHKERRQ(ierr);
+
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  for (f = 0; f < Nf; ++f) {
+    x[f]      = (PetscReal) n;
+    errors[f] = errors[f] > 0.0 ? PetscLog10Real(errors[f]) : -15.;
+  }
+  x[Nf]      = (PetscReal) n;
+  errors[Nf] = rnorm > 0.0 ? PetscLog10Real(rnorm) : -15.;
+  ierr = PetscDrawLGAddPoint(lg, x, errors);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(ksp, &reason);CHKERRQ(ierr);
+  if (n <= 20 || !(n % 5) || reason) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorErrorDrawLGCreate - Creates the plotter for the error and preconditioned residual.
+
+  Collective on ksp
+
+  Input Parameters:
++ viewer - The PetsViewer
+. format - The viewer format
+- ctx    - An optional user context
+
+  Output Parameter:
+. vf    - The viewer context
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
+  KSP            ksp = (KSP) ctx;
+  DM             dm;
+  char         **names;
+  PetscInt       Nf, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nf+1, &names);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    PetscObject disc;
+    const char *fname;
+    char        lname[PETSC_MAX_PATH_LEN];
+
+    ierr = DMGetField(dm, f, NULL, &disc);CHKERRQ(ierr);
+    ierr = PetscObjectGetName(disc, &fname);CHKERRQ(ierr);
+    ierr = PetscStrncpy(lname, fname, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscStrlcat(lname, " Error", PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(lname, &names[f]);CHKERRQ(ierr);
+  }
+  ierr = PetscStrallocpy("residual", &names[Nf]);CHKERRQ(ierr);
+  ierr = PetscViewerAndFormatCreate(viewer, format, vf);CHKERRQ(ierr);
+  (*vf)->data = ctx;
+  ierr = KSPMonitorLGCreate(PetscObjectComm((PetscObject) viewer), NULL, NULL, "Log Error Norm", Nf+1, (const char **) names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg);CHKERRQ(ierr);
+  for (f = 0; f <= Nf; ++f) {ierr = PetscFree(names[f]);CHKERRQ(ierr);}
+  ierr = PetscFree(names);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorSolution - Print the solution norm at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_solution - Activates KSPMonitorSolution()
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  Vec               x;
+  PetscReal         snorm;
+  PetscInt          tablevel;
+  const char       *prefix;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = KSPBuildSolution(ksp, NULL, &x);CHKERRQ(ierr);
+  ierr = VecNorm(x, NORM_2, &snorm);CHKERRQ(ierr);
+  ierr = PetscObjectGetTabLevel((PetscObject) ksp, &tablevel);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
+  if (n == 0 && prefix) {ierr = PetscViewerASCIIPrintf(viewer, "  Solution norms for %s solve.\n", prefix);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP Solution norm %14.12e \n", n, (double) snorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorSolutionDraw - Plots the solution at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_solution draw - Activates KSPMonitorSolutionDraw()
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  Vec               x;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = KSPBuildSolution(ksp, NULL, &x);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) x, "Solution");CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) x, "__Vec_bc_zero__", (PetscObject) ksp);CHKERRQ(ierr);
+  ierr = VecView(x, viewer);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) x, "__Vec_bc_zero__", NULL);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorSolutionDrawLG - Plots the solution norm at each iteration of an iterative solver.
+
+  Collective on ksp
+
+  Input Parameters:
++ ksp   - iterative context
+. n     - iteration number
+. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_solution draw::draw_lg - Activates KSPMonitorSolutionDrawLG()
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer        viewer = vf->viewer;
+  PetscViewerFormat  format = vf->format;
+  PetscDrawLG        lg     = vf->lg;
+  Vec                u;
+  KSPConvergedReason reason;
+  PetscReal          snorm, x, y;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  ierr = KSPBuildSolution(ksp, NULL, &u);CHKERRQ(ierr);
+  ierr = VecNorm(u, NORM_2, &snorm);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  x = (PetscReal) n;
+  if (snorm > 0.0) y = PetscLog10Real(snorm);
+  else y = -15.0;
+  ierr = PetscDrawLGAddPoint(lg, &x, &y);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(ksp, &reason);CHKERRQ(ierr);
+  if (n <= 20 || !(n % 5) || reason) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorSolutionDrawLGCreate - Creates the plotter for the solution.
+
+  Collective on ksp
+
+  Input Parameters:
++ viewer - The PetsViewer
+. format - The viewer format
+- ctx    - An optional user context
+
+  Output Parameter:
+. vf    - The viewer context
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+@*/
+PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerAndFormatCreate(viewer, format, vf);CHKERRQ(ierr);
+  (*vf)->data = ctx;
+  ierr = KSPMonitorLGCreate(PetscObjectComm((PetscObject) viewer), NULL, NULL, "Log Solution Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorSingularValue - Prints the two norm of the true residual and estimation of the extreme singular values of the preconditioned problem at each iteration.
+
+  Logically Collective on ksp
+
+  Input Parameters:
++ ksp   - the iterative context
+. n     - the iteration
+. rnorm - the two norm of the residual
+- vf    - The viewer context
+
+  Options Database Key:
+. -ksp_monitor_singular_value - Activates KSPMonitorSingularValue()
+
+  Notes:
+  The CG solver uses the Lanczos technique for eigenvalue computation,
+  while GMRES uses the Arnoldi technique; other iterative methods do
+  not currently compute singular values.
+
+  Level: intermediate
+
+.seealso: KSPComputeExtremeSingularValues()
+@*/
+PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscViewer       viewer = vf->viewer;
+  PetscViewerFormat format = vf->format;
+  PetscReal         emin, emax;
+  PetscInt          tablevel;
+  const char       *prefix;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  ierr = PetscObjectGetTabLevel((PetscObject) ksp, &tablevel);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
+  if (n == 0 && prefix) {ierr = PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix);CHKERRQ(ierr);}
+  if (!ksp->calc_sings) {
+    ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %14.12e \n", n, (double) rnorm);CHKERRQ(ierr);
+  } else {
+    ierr = KSPComputeExtremeSingularValues(ksp, &emax, &emin);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %14.12e %% max %14.12e min %14.12e max/min %14.12e\n", n, (double) rnorm, (double) emax, (double) emin, (double) (emax/emin));CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  KSPMonitorSingularValueCreate - Creates the singular value monitor.
+
+  Collective on ksp
+
+  Input Parameters:
++ viewer - The PetsViewer
+. format - The viewer format
+- ctx    - An optional user context
+
+  Output Parameter:
+. vf    - The viewer context
+
+  Level: intermediate
+
+.seealso: KSPMonitorSet(), KSPMonitorSingularValue()
+@*/
+PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
+  KSP            ksp = (KSP) ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerAndFormatCreate(viewer, format, vf);CHKERRQ(ierr);
+  (*vf)->data = ctx;
+  ierr = KSPSetComputeSingularValues(ksp, PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   KSPMonitorDynamicTolerance - Recompute the inner tolerance in every outer iteration in an adaptive way.
 
    Collective on ksp
 
@@ -458,40 +1097,6 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy)
 
   PetscFunctionBegin;
   ierr = PetscFree(*dummy);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-  Default (short) KSP Monitor, same as KSPMonitorDefault() except
-  it prints fewer digits of the residual as the residual gets smaller.
-  This is because the later digits are meaningless and are often
-  different on different machines; by using this routine different
-  machines will usually generate the same output.
-
-  Deprecated: Intentionally has no manual page
-*/
-PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,PetscViewerAndFormat *dummy)
-{
-  PetscErrorCode ierr;
-  PetscViewer    viewer = dummy->viewer;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = PetscViewerPushFormat(viewer,dummy->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
-  if (its == 0 && ((PetscObject)ksp)->prefix) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-  }
-
-  if (fnorm > 1.e-9) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %g \n",its,(double)fnorm);CHKERRQ(ierr);
-  } else if (fnorm > 1.e-11) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %5.3e \n",its,(double)fnorm);CHKERRQ(ierr);
-  } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

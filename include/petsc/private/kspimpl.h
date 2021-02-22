@@ -7,7 +7,9 @@
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscBool KSPRegisterAllCalled;
+PETSC_EXTERN PetscBool KSPMonitorRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
+PETSC_EXTERN PetscErrorCode KSPMonitorRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPGuessRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
 
@@ -498,3 +500,6 @@ M*/
   } } while (0)
 
 #endif
+
+PETSC_INTERN PetscErrorCode KSPMonitorMakeKey_Internal(const char[], PetscViewerType, PetscViewerFormat, char[]);
+PETSC_INTERN PetscErrorCode KSPMonitorRange_Private(KSP,PetscInt,PetscReal*);

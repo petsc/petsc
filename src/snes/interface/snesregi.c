@@ -69,5 +69,8 @@ PetscErrorCode  SNESRegisterAll(void)
   ierr = SNESRegister(SNESASPIN,            SNESCreate_ASPIN);CHKERRQ(ierr);
   ierr = SNESRegister(SNESCOMPOSITE,        SNESCreate_Composite);CHKERRQ(ierr);
   ierr = SNESRegister(SNESPATCH,            SNESCreate_Patch);CHKERRQ(ierr);
+
+  ierr = KSPMonitorRegister("snes_preconditioned_residual", PETSCVIEWERASCII, PETSC_VIEWER_DEFAULT, KSPMonitorSNESResidual,       NULL, NULL);CHKERRQ(ierr);
+  ierr = KSPMonitorRegister("snes_preconditioned_residual", PETSCVIEWERDRAW,  PETSC_VIEWER_DRAW_LG, KSPMonitorSNESResidualDrawLG, KSPMonitorSNESResidualDrawLGCreate, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

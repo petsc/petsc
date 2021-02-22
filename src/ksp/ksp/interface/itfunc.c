@@ -2010,14 +2010,13 @@ $     monitor (KSP ksp, PetscInt it, PetscReal rnorm, void *mctx)
 -  mctx  - optional monitoring context, as set by KSPMonitorSet()
 
    Options Database Keys:
-+    -ksp_monitor        - sets KSPMonitorDefault()
-.    -ksp_monitor_true_residual    - sets KSPMonitorTrueResidualNorm()
-.    -ksp_monitor_max    - sets KSPMonitorTrueResidualMaxNorm()
-.    -ksp_monitor_lg_residualnorm    - sets line graph monitor,
-                           uses KSPMonitorLGResidualNormCreate()
-.    -ksp_monitor_lg_true_residualnorm   - sets line graph monitor,
-                           uses KSPMonitorLGResidualNormCreate()
-.    -ksp_monitor_singular_value    - sets KSPMonitorSingularValue()
++    -ksp_monitor               - sets KSPMonitorResidual()
+.    -ksp_monitor draw          - sets KSPMonitorResidualDraw() and plots residual
+.    -ksp_monitor draw::draw_lg - sets KSPMonitorResidualDrawLG() and plots residual
+.    -ksp_monitor_true_residual - sets KSPMonitorTrueResidual()
+.    -ksp_monitor_true_residual draw::draw_lg - sets KSPMonitorTrueResidualDrawLG() and plots residual
+.    -ksp_monitor_max           - sets KSPMonitorTrueResidualMax()
+.    -ksp_monitor_singular_value - sets KSPMonitorSingularValue()
 -    -ksp_monitor_cancel - cancels all monitors that have
                           been hardwired into a code by
                           calls to KSPMonitorSet(), but
@@ -2027,7 +2026,7 @@ $     monitor (KSP ksp, PetscInt it, PetscReal rnorm, void *mctx)
    Notes:
    The default is to do nothing.  To print the residual, or preconditioned
    residual if KSPSetNormType(ksp,KSP_NORM_PRECONDITIONED) was called, use
-   KSPMonitorDefault() as the monitoring routine, with a ASCII viewer as the
+   KSPMonitorResidual() as the monitoring routine, with a ASCII viewer as the
    context.
 
    Several different monitoring routines may be set by calling
@@ -2039,7 +2038,7 @@ $     monitor (KSP ksp, PetscInt it, PetscReal rnorm, void *mctx)
 
    Level: beginner
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorCancel(), KSP
+.seealso: KSPMonitorResidual(), KSPMonitorCancel(), KSP
 @*/
 PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
@@ -2075,7 +2074,7 @@ PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,Pet
 
    Level: intermediate
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorSet(), KSP
+.seealso: KSPMonitorResidual(), KSPMonitorSet(), KSP
 @*/
 PetscErrorCode  KSPMonitorCancel(KSP ksp)
 {
@@ -2107,7 +2106,7 @@ PetscErrorCode  KSPMonitorCancel(KSP ksp)
 
    Level: intermediate
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSP
+.seealso: KSPMonitorResidual(), KSP
 @*/
 PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
 {

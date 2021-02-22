@@ -910,7 +910,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       Julia package.</p>
 
       <p>For other formats, either adapt one of the above libraries or see the
-      examples in src/mat/tests, specifically ex72.c or ex78.c. 
+      examples in src/mat/tests, specifically ex72.c or ex78.c.
       You will likely need to modify the code slightly to match your
       required ASCII format. Note: Never read or write in parallel an ASCII
       matrix file, instead for reading: read in sequentially with a standalone
@@ -962,7 +962,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <h3><a name="makefiles">How do I compile and link may own PETSc application codes and can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></h3>
 
       See the <a href="https://docs.petsc.org/en/latest/manual/getting_started/#writing-application-codes-with-petsc">section of the users manual</a> on writing application codes with PETSc. This provides a
-      simple makefile that can be used to compiler user code. You are free to modify this makefile or completely replace it with your own makefile. 
+      simple makefile that can be used to compiler user code. You are free to modify this makefile or completely replace it with your own makefile.
 
       <h3><a name="cmake">Can I use CMake to build my own project that depends on PETSc?</a></h3>
 
@@ -1040,7 +1040,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <ol>
         <li>
           -snes_lag_preconditioner <lag> - (SNESSetLagPreconditioner) how often the preconditioner is rebuilt. Note: if you are lagging the Jacobian the system will know the
-                                           the matrix has not changed and will not recompute the (same) preconditioner. 
+                                           the matrix has not changed and will not recompute the (same) preconditioner.
         </li>
         <li>
           -snes_lag_preconditioner_persists - Preconditioner lags through multiple SNES solves
@@ -1048,7 +1048,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       </ol>
 
       By using KSPMonitorSet() and/or SNESMonitorSet() one can provide code that monitors the convergence rate and automatically triggers an update of the Jacobian or preconditioner based on decreasing convergence of the iterative method. For example if the number of SNES iterations doubles one might trigger a new computation of the Jacobian.
-      
+
       Experimentation is the only general purpose way to determine which approach is best for your problem. It is also important to experiment on your true problem at the scale you will be solving the problem since the performance benefits depend on the exact problem and and problem size.
 
 <h3><a name="jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided
@@ -1317,8 +1317,8 @@ PETSC_COMM_WORLD = NewComm;
         the solver passes an infeasible (out of domain) solution or state to your routines.
       </p>
 
-      <p> If it occurs for DAEs, it is important to insure the algebraic 
-        constraints are well satisfied, which can prevent "breakdown" later. 
+      <p> If it occurs for DAEs, it is important to insure the algebraic
+        constraints are well satisfied, which can prevent "breakdown" later.
         Thus, one can try using a tight tolerance for SNES(), using a dicrect
         solver when possible, and reducing the timestep (or tightening TS
         tolerances for adaptive time stepping).
@@ -1345,7 +1345,7 @@ PETSC_COMM_WORLD = NewComm;
     </ol>
 
      <h3><a name="matreassembly">How can I assemble a bunch of similar matrices?</a></h3>
-     
+
      <p>You can first add the values common to all the matrices, then use MatStoreValues() to stash the common values.
         Each iteration you call MatRetrieveValues(), then set the unique values in a matrix and assemble.</p>
 
@@ -1747,7 +1747,7 @@ PETSC_COMM_WORLD = NewComm;
             <li>Perhaps change the formulation of the problem to produce more friendly algebraic equations.</li>
           </ul>
         </li>
-        
+
         <li>
           Change the units (nondimensionalization), boundary condition scaling,
           or formulation so that the matrix is better conditioned. See <a href="https://en.wikipedia.org/wiki/Buckingham_π_theorem">https://en.wikipedia.org/wiki/Buckinghamπ_theorem</a>
@@ -2018,18 +2018,18 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         <li><code>configure</code> PETSc with <code>--download-mpich --with-debugging</code>.</li>
         <li>On macOS you need to
           <ul>
-            <li>use valgrind from <a href="https://github.com/LouisBrunner/valgrind-macos">https://github.com/LouisBrunner/valgrind-macos</a>. 
+            <li>use valgrind from <a href="https://github.com/LouisBrunner/valgrind-macos">https://github.com/LouisBrunner/valgrind-macos</a>.
             Follow the Usage instructions in the README.md on that page (no need to clone the repository).</li>
             <li>use the additional <code>./configure</code> options <code>--download-fblaslapack</code> or <code>--download-f2cblaslapack</code></li>
             <li>use the additional valgrind option <code>--dsymutil=yes</code></li>
           </ul>
         </li>
         <li>Compile your application code with this build of PETSc.</li>
-        <li>Run with valgrind 
-          <ul> 
+        <li>Run with valgrind
+          <ul>
             <li>using: <code>${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME  PROGRAMOPTIONS</code></li>
             <li>or with: <code>mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 --suppressions=${PETSC_DIR}/lib/petsc/bin/maint/petsc-val.supp --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</code></li>
-          </ul> 
+          </ul>
         </li>
       </ul>
 
@@ -2068,7 +2068,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         an error in the code that generates the matrix.
       </p>
 
-      <h3><a name="xwindows">You create <code>Draw</code> windows or <code>ViewerDraw</code> windows or use options <code>-ksp_monitor_lg_residualnorm</code> or <code>-snes_monitor_lg_residualnorm</code> and the program seems to run OK but windows never open.</a></h3>
+      <h3><a name="xwindows">You create <code>Draw</code> windows or <code>ViewerDraw</code> windows or use options <code>-ksp_monitor draw::draw_lg</code> or <code>-snes_monitor draw::draw_lg</code> and the program seems to run OK but windows never open.</a></h3>
 
       The libraries were compiled without support for X windows. Make sure that
       ./configure was run with the option <code>--with-x</code>
