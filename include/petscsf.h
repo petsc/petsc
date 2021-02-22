@@ -102,8 +102,8 @@ PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const Pets
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF,PetscLayout,PetscSFPattern);
 PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF,PetscInt*,PetscInt*,const PetscInt**,const PetscSFNode**);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRange(PetscSF,PetscInt*,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF,PetscInt,const PetscInt*,PetscSF*);
-PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF,PetscInt,const PetscInt *, PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF,PetscInt,const PetscInt*,PetscSF*);
+PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF,PetscInt,const PetscInt*,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetUpRanks(PetscSF,MPI_Group);
 PETSC_EXTERN PetscErrorCode PetscSFGetRootRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
@@ -168,6 +168,9 @@ PETSC_DEPRECATED_FUNCTION("Use PetscSFGetRootRanks (since v3.12)")
 PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote)
 { return PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote); }
 
+PETSC_DEPRECATED_FUNCTION("Use PetscSFCreateEmbeddedRootSF (since v3.15)")
+PETSC_STATIC_INLINE PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *esf)
+{ return PetscSFCreateEmbeddedRootSF(sf,nselected,selected,esf); }
 
 PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastBegin (since v3.15)")
 PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata,MPI_Op op)

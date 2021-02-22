@@ -59,6 +59,6 @@ PETSC_INTERN PetscErrorCode PetscSFDestroy_Basic(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFBcastEnd_Basic  (PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Basic      (PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Basic(PetscSF,MPI_Datatype,PetscMemType,void*,PetscMemType,const void*,void*,MPI_Op);
-PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF,PetscInt,const PetscInt*,PetscSF*);
+PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF,PetscInt,const PetscInt*,PetscSF*);
 PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
 #endif

@@ -3674,7 +3674,7 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
         pointsWithDofs[offset++] = p - pStartC;
       }
     }
-    ierr = PetscSFCreateEmbeddedSF(coarseToFineEmbedded, numPointsWithDofs, pointsWithDofs, &sfDofsOnly);CHKERRQ(ierr);
+    ierr = PetscSFCreateEmbeddedRootSF(coarseToFineEmbedded, numPointsWithDofs, pointsWithDofs, &sfDofsOnly);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&coarseToFineEmbedded);CHKERRQ(ierr);
     ierr = PetscFree(pointsWithDofs);CHKERRQ(ierr);
     coarseToFineEmbedded = sfDofsOnly;

@@ -1175,7 +1175,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
             ierr = PetscSFSetUp(preCoarseToFine);CHKERRQ(ierr);
             ierr = PetscSFGetGraph(preCoarseToFine,NULL,&nleaves,&leaves,NULL);CHKERRQ(ierr);
             if (leaves) {
-              ierr = PetscSFCreateEmbeddedSF(repartSF,nleaves,leaves,&repartSFembed);CHKERRQ(ierr);
+              ierr = PetscSFCreateEmbeddedRootSF(repartSF,nleaves,leaves,&repartSFembed);CHKERRQ(ierr);
             } else {
               repartSFembed = repartSF;
               ierr          = PetscObjectReference((PetscObject)repartSFembed);CHKERRQ(ierr);

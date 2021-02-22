@@ -121,12 +121,12 @@ cdef class SF(Object):
         degree = array_i(nroots, cdegree)
         return degree
 
-    def createEmbeddedSF(self, selected):
+    def createEmbeddedRootSF(self, selected):
         cdef PetscInt nroots = asInt(len(selected))
         cdef PetscInt *cselected = NULL
         selected = iarray_i(selected, &nroots, &cselected)
         cdef SF sf = SF()
-        CHKERR( PetscSFCreateEmbeddedSF(self.sf, nroots, cselected, &sf.sf) )
+        CHKERR( PetscSFCreateEmbeddedRootSF(self.sf, nroots, cselected, &sf.sf) )
         return sf
 
     def createEmbeddedLeafSF(self, selected):

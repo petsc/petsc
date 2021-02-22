@@ -416,7 +416,7 @@ int main(int argc,char **argv)
 
     selected[0] = stride;
     selected[1] = 2*stride;
-    ierr = PetscSFCreateEmbeddedSF(sf,nroots,selected,&esf);CHKERRQ(ierr);
+    ierr = PetscSFCreateEmbeddedRootSF(sf,nroots,selected,&esf);CHKERRQ(ierr);
     ierr = PetscSFSetUp(esf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Embedded PetscSF\n");CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
