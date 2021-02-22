@@ -555,12 +555,27 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PetscOptionItems *PetscOptio
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
-  PetscBool      flag;
+  PetscBool      flag,eu_bj = jac->eu_bj ? PETSC_TRUE : PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE Euclid Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_euclid_level","Factorization levels","None",jac->eu_level,&jac->eu_level,&flag);CHKERRQ(ierr);
   if (flag) PetscStackCallStandard(HYPRE_EuclidSetLevel,(jac->hsolver,jac->eu_level));
+
+  ierr = PetscOptionsReal("-pc_hypre_euclid_droptolerance","Drop tolerance for ILU(k) in Euclid","None",jac->eu_droptolerance,&jac->eu_droptolerance,&flag);CHKERRQ(ierr);
+  if (flag){
+    PetscMPIInt size;
+
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+    if (size > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"hypre's Euclid does not support a parallel drop tolerance");
+    PetscStackCallStandard(HYPRE_EuclidSetILUT,(jac->hsolver,jac->eu_droptolerance));
+  }
+
+  ierr = PetscOptionsBool("-pc_hypre_euclid_bj", "Use Block Jacobi for ILU in Euclid", "None", eu_bj,&eu_bj,&flag);CHKERRQ(ierr);
+  if (flag) {
+    jac->eu_bj = eu_bj ? 1 : 0;
+    PetscStackCallStandard(HYPRE_EuclidSetBJ,(jac->hsolver,jac->eu_bj));
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -580,6 +595,8 @@ static PetscErrorCode PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"    default factorization levels \n");CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPrintf(viewer,"    drop tolerance %g\n",(double)jac->eu_droptolerance);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    use Block-Jacobi? %D\n",jac->eu_bj);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1727,6 +1744,9 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
   }
   ierr = PetscStrcmp("euclid",jac->hypre_type,&flag);CHKERRQ(ierr);
   if (flag) {
+#if defined(PETSC_HAVE_64BIT_INDICES)
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Hypre Euclid not support with 64 bit indices");
+#endif
     ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRMPI(ierr);
     PetscStackCallStandard(HYPRE_EuclidCreate,(jac->comm_hypre,&jac->hsolver));
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_Euclid;
