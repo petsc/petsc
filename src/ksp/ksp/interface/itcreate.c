@@ -896,19 +896,18 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
 . format  - A PetscViewerFormat for the output
 . monitor - Monitor routine
 . create  - Creation routine, or NULL
-. destroy - Destruction routine, or NULL
-- ctx     - An optional user context, or NULL
+- destroy - Destruction routine, or NULL
 
   Notes:
-  KSMonitorRegister() may be called multiple times to add several user-defined monitors.
+  KSPMonitorRegister() may be called multiple times to add several user-defined monitors.
 
   Sample usage:
 .vb
-  KSPMonitorRegister("my_monitor",PETSCVIEWERASCII,PETSC_VIEWER_ASCII_INFO_DETAIL,MyMonitor,NULL,NULL,NULL);
+  KSPMonitorRegister("my_monitor",PETSCVIEWERASCII,PETSC_VIEWER_ASCII_INFO_DETAIL,MyMonitor,NULL,NULL);
 .ve
 
   Then, your monitor can be chosen with the procedural interface via
-$     KSPMonitorSetFormOptions(ksp,"my_monitor")
+$     KSPMonitorSetFromOptions(ksp,"-ksp_monitor_my_monitor","my_monitor",NULL)
   or at runtime via the option
 $     -ksp_monitor_my_monitor
 
