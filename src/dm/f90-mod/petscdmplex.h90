@@ -255,9 +255,9 @@
       End Interface
 
       Interface
-        Subroutine DMPlexGetCellFields(m,s,e,x,xt,a,u,ut,v,ierr)
+        Subroutine DMPlexGetCellFields(m,c,x,xt,a,u,ut,v,ierr)
           use petscdmdef
-          PetscInt  s, e
+          IS  c
           Vec  x, xt, a
           PetscScalar, pointer :: u(:)
           PetscScalar, pointer :: ut(:)
@@ -268,9 +268,9 @@
       End Interface
 
       Interface
-        Subroutine DMPlexRestoreCellFields(m,s,e,x,xt,a,u,ut,v,ierr)
+        Subroutine DMPlexRestoreCellFields(m,c,x,xt,a,u,ut,v,ierr)
           use petscdmdef
-          PetscInt  s, e
+          IS  c
           Vec  x, xt, a
           PetscScalar, pointer :: u(:)
           PetscScalar, pointer :: ut(:)
@@ -281,9 +281,9 @@
       End Interface
 
       Interface
-        Subroutine DMPlexGetFaceFields(m,s,e,x,xt,f,c,g,uL,uR,ierr)
+        Subroutine DMPlexGetFaceFields(m,s,e,x,xt,f,c,g,n,uL,uR,ierr)
           use petscdmdef
-          PetscInt  s, e
+          PetscInt  s, e, n
           Vec  x, xt, f, c, g
           PetscScalar, pointer :: uL(:)
           PetscScalar, pointer :: uR(:)
@@ -293,9 +293,9 @@
       End Interface
 
       Interface
-        Subroutine DMPlexRestoreFaceFields(m,s,e,x,xt,f,c,g,uL,uR,ierr)
+        Subroutine DMPlexRestoreFaceFields(m,s,e,x,xt,f,c,g,n,uL,uR,ierr)
           use petscdmdef
-          PetscInt  s, e
+          PetscInt  s, e, n
           Vec  x, xt, f, c, g
           PetscScalar, pointer :: uL(:)
           PetscScalar, pointer :: uR(:)
@@ -305,9 +305,9 @@
       End Interface
 
       Interface
-        Subroutine DMPlexGetFaceGeometry(m,s,e,f,c,g,v,ierr)
+        Subroutine DMPlexGetFaceGeometry(m,s,e,f,c,n,g,v,ierr)
           use petscdmdef
-          PetscInt  s, e
+          PetscInt  s, e, n
           Vec  f, c
           PetscScalar, pointer :: g(:)
           PetscScalar, pointer :: v(:)
@@ -317,9 +317,9 @@
       End Interface
 
       Interface
-        Subroutine DMPlexRestoreFaceGeometry(m,s,e,f,c,g,v,ierr)
+        Subroutine DMPlexRestoreFaceGeometry(m,s,e,f,c,n,g,v,ierr)
           use petscdmdef
-          PetscInt  s, e
+          PetscInt  s, e, n
           Vec  f, c
           PetscScalar, pointer :: g(:)
           PetscScalar, pointer :: v(:)
