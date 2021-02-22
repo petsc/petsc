@@ -38,9 +38,8 @@ int main(int argc,char **argv)
 /*TEST
 
    testset:
-     requires: yaml
-     args: -options_left 0
-     filter:  egrep -v "(malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
+     args: -options_left false
+     filter:  egrep -v "(options_left|options_monitor|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|use_gpu_aware_mpi)"
      localrunfiles: petsc.yml
 
      test:
@@ -72,7 +71,6 @@ int main(int argc,char **argv)
 
    testset:
      nsize: {{1 2}}
-     requires: yaml
 
      test:
         suffix: 3_empty

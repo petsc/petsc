@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,0,"-foo_max_steps",&foo_max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,0,"-snes_max_it",&snes_max_it,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,0,"-bar_max_it",&bar_max_it,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"-ts_view = %s\n-ts_max_time = %f\n-ts_max_steps = %i\n-snes_max_it = %i\n",ts_view ? "true" : "false",ts_max_time,ts_max_steps,snes_max_it);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"-ts_view = %s\n-ts_max_time = %f\n-ts_max_steps = %D\n-snes_max_it = %D\n",ts_view ? "true" : "false",(double)ts_max_time,ts_max_steps,snes_max_it);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -31,13 +31,11 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      requires: yaml
       args: -options_file_yaml ex23options
       localrunfiles: ex23options
 
    test:
       suffix: string
-      requires: yaml
       args: -options_string_yaml "
         foo: &foo
           view: true

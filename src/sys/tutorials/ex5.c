@@ -139,9 +139,9 @@ int main(int argc,char **argv)
 
    test:
       suffix: yaml
-      requires: yaml !complex
-      args: -options_file_yaml bag.yml -options_view
-      filter:  grep -v saws_port_auto_select |grep -v malloc_dump | grep -v display | grep -v check_pointer_intensity | grep -v error_output_stdout | grep -v nox | grep -v nox_warning
+      requires: !complex
+      args: -options_file bag.yml -options_view
+      filter: egrep -v "(options_left|options_view|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|use_gpu_aware_mpi)"
       localrunfiles: bag.yml
 
 TEST*/

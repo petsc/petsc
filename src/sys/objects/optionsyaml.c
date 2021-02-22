@@ -1,6 +1,10 @@
-#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for strdup() */
+#include <petsc/private/petscimpl.h>     /*I  "petscsys.h"  I*/
+
 #if defined(PETSC_HAVE_YAML)
-#include <yaml.h>
+#include <yaml.h>  /* use external LibYAML */
+#else
+#include <../src/sys/yaml/include/yaml.h>
 #endif
 
 static MPI_Comm petsc_yaml_comm = MPI_COMM_NULL; /* only used for parallel error handling */
@@ -14,8 +18,6 @@ PETSC_STATIC_INLINE MPI_Comm PetscYAMLSetComm(MPI_Comm comm)
 {
   MPI_Comm prev = PetscYAMLGetComm(); petsc_yaml_comm = comm; return prev;
 }
-
-#if defined(PETSC_HAVE_YAML)
 
 #define TAG(node) ((const char *)((node)->tag))
 #define STR(node) ((const char *)((node)->data.scalar.value))
@@ -144,8 +146,6 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
   PetscFunctionReturn(0);
 }
 
-#endif
-
 /*@C
    PetscOptionsInsertStringYAML - Inserts YAML-formatted options into the database from a string
 
@@ -166,7 +166,6 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 @*/
 PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_str[])
 {
-#if defined(PETSC_HAVE_YAML)
   MPI_Comm        comm = PetscYAMLGetComm();
   yaml_parser_t   parser;
   yaml_document_t doc;
@@ -187,11 +186,6 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
   } while (root);
   yaml_parser_delete(&parser);
   PetscFunctionReturn(0);
-#else
-  MPI_Comm comm = PetscYAMLGetComm();
-  (void)options; (void)in_str; /* unused */
-  SETERRQ(comm, PETSC_ERR_SUP, "YAML not supported in this build.\nPlease reconfigure using --download-yaml");
-#endif
 }
 
 /*@C
@@ -272,3 +266,31 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,PetscOptions options,con
   ierr = PetscFree(yamlString);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+#if !defined(PETSC_HAVE_YAML)
+
+/*
+#if !defined(PETSC_HAVE_STRDUP)
+#define strdup(s) (char*)memcpy(malloc(strlen(s)+1),s,strlen(s)+1)
+#endif
+*/
+
+/* Embed LibYAML in this compilation unit */
+#include <../src/sys/yaml/src/api.c>
+#include <../src/sys/yaml/src/loader.c>
+#include <../src/sys/yaml/src/parser.c>
+#include <../src/sys/yaml/src/reader.c>
+#include <../src/sys/yaml/src/scanner.c>
+
+/* Silence a few unused-function warnings */
+static PETSC_UNUSED void petsc_yaml_unused(void)
+{
+  (void)yaml_parser_scan;
+  (void)yaml_document_get_node;
+  (void)yaml_parser_set_encoding;
+  (void)yaml_parser_set_input;
+  (void)yaml_parser_set_input_file;
+}
+
+#endif
