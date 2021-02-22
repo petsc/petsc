@@ -6,6 +6,7 @@
 #include <petscsys.h>
 #include <petscviewertypes.h>
 
+#define PETSC_MAX_OPTION_NAME 512
 typedef struct _n_PetscOptions* PetscOptions;
 PETSC_EXTERN PetscErrorCode PetscOptionsCreate(PetscOptions*);
 PETSC_EXTERN PetscErrorCode PetscOptionsPush(PetscOptions);
@@ -51,6 +52,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsInsertFile(MPI_Comm,PetscOptions,const c
 PETSC_EXTERN PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm,PetscOptions,const char[],PetscBool);
 PETSC_EXTERN PetscErrorCode PetscOptionsInsertString(PetscOptions,const char[]);
 PETSC_EXTERN PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions,const char[]);
+PETSC_EXTERN PetscErrorCode PetscOptionsInsertArgs(PetscOptions,int,char**);
 PETSC_EXTERN PetscErrorCode PetscOptionsClear(PetscOptions);
 PETSC_EXTERN PetscErrorCode PetscOptionsPrefixPush(PetscOptions,const char[]);
 PETSC_EXTERN PetscErrorCode PetscOptionsPrefixPop(PetscOptions);

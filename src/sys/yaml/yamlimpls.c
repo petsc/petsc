@@ -17,8 +17,6 @@ PETSC_STATIC_INLINE MPI_Comm PetscYAMLSetComm(MPI_Comm comm)
 
 #if defined(PETSC_HAVE_YAML)
 
-#define MAXOPTNAME 512
-
 #define TAG(node) ((const char *)((node)->tag))
 #define STR(node) ((const char *)((node)->data.scalar.value))
 #define SEQ(node) ((node)->data.sequence.items)
@@ -27,7 +25,7 @@ PETSC_STATIC_INLINE MPI_Comm PetscYAMLSetComm(MPI_Comm comm)
 static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t *doc, yaml_node_t *node)
 {
   MPI_Comm         comm = PetscYAMLGetComm();
-  char             name[MAXOPTNAME] = "", prefix[MAXOPTNAME] = "";
+  char             name[PETSC_MAX_OPTION_NAME] = "", prefix[PETSC_MAX_OPTION_NAME] = "";
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;

@@ -39,16 +39,35 @@ int main(int argc,char **argv)
 
    testset:
      requires: yaml
+     args: -options_left 0
      filter:  egrep -v "(malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
      localrunfiles: petsc.yml
 
      test:
         suffix: 1
-        args: -f petsc.yml -options_left 0
+        args: -f petsc.yml
 
      test:
-        suffix: 2
-        args: -options_file_yaml petsc.yml -options_left 0
+        suffix: 2_file
+        output_file: output/ex47_2.out
+        args: -options_file_yaml petsc.yml
+
+     test:
+        suffix: 2_string
+        output_file: output/ex47_2.out
+        args: -options_string_yaml "`cat petsc.yml`"
+
+     test:
+        suffix: 2_prefix
+        args: -options_monitor
+        args: -options_file ex47-opt.txt
+        args: -prefix_push p5_ -options_file ex47-opt.yml -prefix_pop
+        args: -prefix_push p5_ -options_file ex47-opt.yml:yaml -prefix_pop
+        args: -prefix_push p6_ -options_file_yaml ex47-opt.yml -prefix_pop
+        args: -prefix_push p7_ -options_string_yaml "`cat ex47-opt.yml`" -prefix_pop
+        args: -prefix_push p7_ -options_string_yaml "`cat ex47-opt.yml`" -prefix_pop
+        args: -prefix_push p8_ -options_string_yaml "`cat ex47-opt.yml`" -prefix_pop
+        localrunfiles: ex47-opt.txt ex47-opt.yml
 
 
    testset:
@@ -75,5 +94,9 @@ int main(int argc,char **argv)
         args: -yaml ex47-include.yaml
         localrunfiles: ex47-include.yaml ex47-empty.yaml ex47-options.yaml
 
+     test:
+        suffix: 3_prefix
+        args: -yaml ex47-prefix.yaml
+        localrunfiles: ex47-prefix.yaml
 
 TEST*/
