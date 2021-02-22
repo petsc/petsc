@@ -236,7 +236,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,Mat
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
-  Mat            B;
+  Mat            B = NULL;
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
   PetscInt       i, j;
@@ -244,19 +244,21 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,Ma
   MatScalar      *aa = a->v, *vals;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = PetscCalloc3(A->rmap->n,&rows,A->rmap->n,&nnz,A->rmap->n,&vals);CHKERRQ(ierr);
-  for (j=0; j<A->cmap->n; j++) {
-    for (i=0; i<A->rmap->n; i++) if (aa[i] != 0.0 || i == j) ++nnz[i];
-    aa += a->lda;
-  }
-  ierr = MatSeqAIJSetPreallocation(B,PETSC_DETERMINE,nnz);CHKERRQ(ierr);
+  if (reuse != MAT_REUSE_MATRIX) {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+    for (j=0; j<A->cmap->n; j++) {
+      for (i=0; i<A->rmap->n; i++) if (aa[i] != 0.0 || (i == j && A->cmap->n == A->rmap->n)) ++nnz[i];
+      aa += a->lda;
+    }
+    ierr = MatSeqAIJSetPreallocation(B,PETSC_DETERMINE,nnz);CHKERRQ(ierr);
+  } else B = *newmat;
   aa = a->v;
   for (j=0; j<A->cmap->n; j++) {
     PetscInt numRows = 0;
-    for (i=0; i<A->rmap->n; i++) if (aa[i] != 0.0 || i == j) {rows[numRows] = i; vals[numRows++] = aa[i];}
+    for (i=0; i<A->rmap->n; i++) if (aa[i] != 0.0 || (i == j && A->cmap->n == A->rmap->n)) {rows[numRows] = i; vals[numRows++] = aa[i];}
     ierr = MatSetValues(B,numRows,rows,1,&j,vals,INSERT_VALUES);CHKERRQ(ierr);
     aa  += a->lda;
   }
@@ -266,9 +268,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,Ma
 
   if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
-  } else {
-    *newmat = B;
-  }
+  } else if (reuse != MAT_REUSE_MATRIX) *newmat = B;
   PetscFunctionReturn(0);
 }
 
