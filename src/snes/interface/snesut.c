@@ -227,7 +227,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   Collective on ksp
 
   Input Parameters:
-+ viewer - The PetsViewer
++ viewer - The PetscViewer
 . format - The viewer format
 - ctx    - An optional user context
 

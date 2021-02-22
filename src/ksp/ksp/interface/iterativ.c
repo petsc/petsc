@@ -218,7 +218,7 @@ PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
   Collective on ksp
 
   Input Parameters:
-+ viewer - The PetsViewer
++ viewer - The PetscViewer
 . format - The viewer format
 - ctx    - An optional user context
 
@@ -486,7 +486,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   Collective on ksp
 
   Input Parameters:
-+ viewer - The PetsViewer
++ viewer - The PetscViewer
 . format - The viewer format
 - ctx    - An optional user context
 
@@ -730,7 +730,7 @@ PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Petsc
   Collective on ksp
 
   Input Parameters:
-+ viewer - The PetsViewer
++ viewer - The PetscViewer
 . format - The viewer format
 - ctx    - An optional user context
 
@@ -907,7 +907,7 @@ PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
   Collective on ksp
 
   Input Parameters:
-+ viewer - The PetsViewer
++ viewer - The PetscViewer
 . format - The viewer format
 - ctx    - An optional user context
 
@@ -986,7 +986,7 @@ PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, Pet
   Collective on ksp
 
   Input Parameters:
-+ viewer - The PetsViewer
++ viewer - The PetscViewer
 . format - The viewer format
 - ctx    - An optional user context
 
