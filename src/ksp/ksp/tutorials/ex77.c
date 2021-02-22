@@ -100,7 +100,7 @@ int main(int argc,char **args)
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)pc,PCLU,&flg);CHKERRQ(ierr);
       if (flg) {
-        ierr = PCFactorGetMatrix(pc,&F);
+        ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
         ierr = MatMatSolve(F,B,B);CHKERRQ(ierr);
         ierr = MatAYPX(B,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(B,NORM_INFINITY,&norm);CHKERRQ(ierr);

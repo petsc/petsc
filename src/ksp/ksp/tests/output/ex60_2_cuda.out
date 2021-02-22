@@ -32,7 +32,7 @@ PC Object: 4 MPI processes
             total: nonzeros=140, allocated nonzeros=140
               not using I-node routines
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: (sub_) 1 MPI processes
       type: seqaijcusparse
       rows=32, cols=32
       total: nonzeros=140, allocated nonzeros=140

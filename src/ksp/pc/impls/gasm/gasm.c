@@ -601,6 +601,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   */
   for (i=0; i<osm->n; i++) {
     ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i]);CHKERRQ(ierr);
+    ierr = KSPGetOptionsPrefix(osm->ksp[i],&prefix);CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(osm->pmat[i],prefix);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
     }

@@ -27,7 +27,7 @@ PC Object: 4 MPI processes
     type: jacobi
       type DIAGONAL
     linear system matrix = precond matrix:
-    Mat Object: 2 MPI processes
+    Mat Object: (sub_) 2 MPI processes
       type: mpiaij
       rows=28, cols=28
       total: nonzeros=118, allocated nonzeros=154
