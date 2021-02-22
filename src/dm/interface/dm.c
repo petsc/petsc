@@ -7645,9 +7645,17 @@ PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
   Output Parameter:
 . label - The DMLabel, or NULL if the label is absent
 
+  Note: Some of the default labels in a DMPlex will be
+$ "depth"       - Holds the depth (co-dimension) of each mesh point
+$ "celltype"    - Holds the topological type of each cell
+$ "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
+$ "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
+$ "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
+$ "Vertex Sets" - Mirrors the vertex sets defined by GMsh
+
   Level: intermediate
 
-.seealso: DMCreateLabel(), DMHasLabel(), DMGetLabelValue(), DMSetLabelValue(), DMGetStratumIS()
+.seealso: DMCreateLabel(), DMHasLabel(), DMPlexGetDepthLabel(), DMPlexGetCellType()
 @*/
 PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
 {
