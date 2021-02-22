@@ -10,6 +10,7 @@ Setting option: p6_name = value
 Setting option: p7_name = value
 Setting option: p7_name = value
 Setting option: p8_name = value
+Setting option: p9_name = value
 #PETSc Option Table entries:
 -p1_name value
 -p2_name value
@@ -19,4 +20,5 @@ Setting option: p8_name = value
 -p6_name value
 -p7_name value
 -p8_name value
+-p9_name value
 #End of PETSc Option Table entries

@@ -415,11 +415,28 @@ static PetscErrorCode PetscOptionsFilename(MPI_Comm comm,const char file[],char 
   if (*yaml) {
     ierr = PetscStrrchr(path,':',&tail);CHKERRQ(ierr);
     tail[-1] = 0; /* remove ":yaml" suffix from path */
-  } else {
-    ierr = PetscStrendswith(path,".yaml",yaml);CHKERRQ(ierr);
-    if (!*yaml) {ierr = PetscStrendswith(path,".yml",yaml);CHKERRQ(ierr);}
   }
   ierr = PetscStrncpy(filename,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  /* check for standard YAML and JSON filename extensions */
+  if (!*yaml) {ierr = PetscStrendswith(filename,".yaml",yaml);CHKERRQ(ierr);}
+  if (!*yaml) {ierr = PetscStrendswith(filename,".yml", yaml);CHKERRQ(ierr);}
+  if (!*yaml) {ierr = PetscStrendswith(filename,".json",yaml);CHKERRQ(ierr);}
+  if (!*yaml) { /* check file contents */
+    PetscMPIInt rank;
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+    if (!rank) {
+      FILE *fh = fopen(filename,"r");
+      if (fh) {
+        char buf[6] = "";
+        if (fread(buf,1,6,fh) > 0) {
+          ierr = PetscStrncmp(buf,"%YAML ",6,yaml);CHKERRQ(ierr);  /* check for '%YAML' tag */
+          if (!*yaml) {ierr = PetscStrncmp(buf,"---",3,yaml);CHKERRQ(ierr);}  /* check for document start */
+        }
+        (void)fclose(fh);
+      }
+    }
+    ierr = MPI_Bcast(yaml,1,MPIU_BOOL,0,comm);CHKERRMPI(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
