@@ -216,8 +216,8 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
 
   PetscFunctionBegin;
   ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
-  opt->previous        = defaultoptions;
-  defaultoptions       = opt;
+  opt->previous  = defaultoptions;
+  defaultoptions = opt;
   PetscFunctionReturn(0);
 }
 
@@ -242,8 +242,8 @@ PetscErrorCode PetscOptionsPop(void)
   PetscFunctionBegin;
   if (!defaultoptions) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing default options");
   if (!defaultoptions->previous) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscOptionsPop() called too many times");
-  defaultoptions = defaultoptions->previous;
-  current->previous    = NULL;
+  defaultoptions    = defaultoptions->previous;
+  current->previous = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -255,6 +255,7 @@ PetscErrorCode PetscOptionsDestroyDefault(void)
   PetscErrorCode ierr;
   PetscOptions   tmp;
 
+  if (!defaultoptions) return 0;
   /* Destroy any options that the user forgot to pop */
   while (defaultoptions->previous) {
     tmp = defaultoptions;
@@ -973,7 +974,8 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
   key[0] = '-'; /* keys must start with '-' */
   ierr = PetscStrncpy(key+1,prefix,sizeof(key)-1);CHKERRQ(ierr);
   ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
-  if (!valid) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter, do not include leading '-')",prefix);
+  if (!valid && options->prefixind > 0 && isdigit((int)prefix[0])) valid = PETSC_TRUE; /* If the prefix stack is not empty, make numbers a valid prefix */
+  if (!valid) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter%s, do not include leading '-')",prefix,options->prefixind?" or digit":"");
   start = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
   ierr = PetscStrlen(prefix,&n);CHKERRQ(ierr);
   if (n+1 > sizeof(options->prefix)-start) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum prefix length %d exceeded",sizeof(options->prefix));
@@ -1260,8 +1262,7 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
   if (name[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
-
-  if (!PetscOptNameCmp(name,"-help")) options->help = PETSC_FALSE;
+  if (!PetscOptNameCmp(name,"-help")) options->help = options->help_intro = PETSC_FALSE;
 
   name++; /* skip starting dash */
 
@@ -1698,7 +1699,7 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool 
   options = options ? options : defaultoptions;
   *used = PETSC_FALSE;
   for (i=0; i<options->N; i++) {
-    ierr = PetscStrcmp(options->names[i],name,used);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(options->names[i],name,used);CHKERRQ(ierr);
     if (*used) {
       *used = options->used[i];
       break;

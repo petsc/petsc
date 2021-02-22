@@ -1319,7 +1319,7 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc,PetscInt n_is, IS ISForDofs[])
                      guess if a transformation of basis approach has been selected.
 
    Input Parameter:
-+  pc - the preconditioner contex
++  pc - the preconditioner context
 
    Application Interface Routine: PCPreSolve()
 
@@ -1533,7 +1533,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
                      approach has been selected. Also, restores rhs to its original state.
 
    Input Parameter:
-+  pc - the preconditioner contex
++  pc - the preconditioner context
 
    Application Interface Routine: PCPostSolve()
 

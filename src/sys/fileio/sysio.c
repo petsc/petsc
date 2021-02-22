@@ -609,7 +609,7 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
 PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,PetscInt num,PetscInt *count,PetscDataType type)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank,size;
   MPI_Datatype   mtype;
   PetscInt       ibuf[2] = {0, 0};
   char           *fname = NULL;
@@ -626,13 +626,18 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,Pets
   }
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (!rank) {
     ibuf[0] = PetscBinaryRead(fd,data,num,count?&ibuf[1]:NULL,type);
   }
   ierr = MPI_Bcast(ibuf,2,MPIU_INT,0,comm);CHKERRMPI(ierr);
   ierr = (PetscErrorCode)ibuf[0];CHKERRQ(ierr);
-  ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
-  ierr = MPI_Bcast(data,count?ibuf[1]:num,mtype,0,comm);CHKERRMPI(ierr);
+
+  /* skip MPI call on potentially huge amounts of data when running with one process; this allows the amount of data to basically unlimited in that case */
+  if (size > 1) {
+    ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
+    ierr = MPI_Bcast(data,count?ibuf[1]:num,mtype,0,comm);CHKERRMPI(ierr);
+  }
   if (count) *count = ibuf[1];
 
   if (type == PETSC_FUNCTION) {

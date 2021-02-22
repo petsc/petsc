@@ -41,6 +41,7 @@ static PetscErrorCode PCReset_HPDDM(PC pc)
   ierr = ISDestroy(&data->is);CHKERRQ(ierr);
   ierr = MatDestroy(&data->aux);CHKERRQ(ierr);
   ierr = MatDestroy(&data->B);CHKERRQ(ierr);
+  ierr = VecDestroy(&data->normal);CHKERRQ(ierr);
   data->correction = PC_HPDDM_COARSE_CORRECTION_DEFLATED;
   data->Neumann    = PETSC_FALSE;
   data->setup      = NULL;
@@ -404,6 +405,24 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCPreSolve_HPDDM(PC pc, KSP ksp, Vec, Vec)
+{
+  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
+  PetscBool      flg;
+  Mat            A;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ksp) {
+    ierr = PetscObjectTypeCompare((PetscObject)ksp, KSPLSQR, &flg);CHKERRQ(ierr);
+    if (flg && !data->normal) {
+      ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(A, NULL, &data->normal);CHKERRQ(ierr); /* temporary Vec used in PCHPDDMShellApply() for coarse grid corrections */
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCHPDDMShellSetUp(PC pc)
 {
   PC_HPDDM_Level *ctx;
@@ -539,11 +558,21 @@ static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
     ierr = KSPGetOperators(ctx->ksp, &A, NULL);CHKERRQ(ierr);
     ierr = PCHPDDMDeflate_Private(pc, x, y);CHKERRQ(ierr);                    /* y = Q x                          */
     if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-      ierr = MatMult(A, y, ctx->v[1][0]);CHKERRQ(ierr);                       /* y = A Q x                        */
+      if (!ctx->parent->normal || ctx != ctx->parent->levels[0]) {
+        ierr = MatMult(A, y, ctx->v[1][0]);CHKERRQ(ierr);                     /* y = A Q x                        */
+      } else { /* KSPLSQR and finest level */
+        ierr = MatMult(A, y, ctx->parent->normal);CHKERRQ(ierr);              /* y = A Q x                        */
+        ierr = MatMultTranspose(A, ctx->parent->normal, ctx->v[1][0]);CHKERRQ(ierr); /* y = A^T A Q x             */
+      }
       ierr = VecWAXPY(ctx->v[1][1], -1.0, ctx->v[1][0], x);CHKERRQ(ierr);     /* y = (I - A Q) x                  */
       ierr = PCApply(ctx->pc, ctx->v[1][1], ctx->v[1][0]);CHKERRQ(ierr);      /* y = M^-1 (I - A Q) x             */
       if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-        ierr = MatMultTranspose(A, ctx->v[1][0], ctx->v[1][1]);CHKERRQ(ierr); /* z = A^T M^-1 (I - A Q) x         */
+        if (!ctx->parent->normal || ctx != ctx->parent->levels[0]) {
+          ierr = MatMultTranspose(A, ctx->v[1][0], ctx->v[1][1]);CHKERRQ(ierr); /* z = A^T M^-1 (I - A Q) x       */
+        } else {
+          ierr = MatMult(A, ctx->v[1][0], ctx->parent->normal);CHKERRQ(ierr);
+          ierr = MatMultTranspose(A, ctx->parent->normal, ctx->v[1][1]);CHKERRQ(ierr); /* z = A^T A M^-1 (I - A^T A Q) x */
+        }
         ierr = PCHPDDMDeflate_Private(pc, ctx->v[1][1], ctx->v[1][1]);CHKERRQ(ierr);
         ierr = VecAXPY(ctx->v[1][0], -1.0, ctx->v[1][1]);CHKERRQ(ierr);       /* y = (I - Q A^T) M^-1 (I - A Q) x */
       }
@@ -1179,6 +1208,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   pc->ops->applytranspose      = 0;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
+  pc->ops->presolve            = PCPreSolve_HPDDM;
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", PCHPDDMSetAuxiliaryMat_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", PCHPDDMHasNeumannMat_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", PCHPDDMSetRHSMat_HPDDM);CHKERRQ(ierr);
