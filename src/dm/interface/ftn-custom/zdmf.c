@@ -26,6 +26,7 @@
 #define dmsetstratumis_              DMSETSTRATUMIS
 #define dmremovelabel_               DMREMOVELABEL
 #define dmviewfromoptions_           DMVIEWFROMOPTIONS
+#define dmcreatesuperdm_             DMCREATESUPERDM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmcreateinterpolation_       dmcreateinterpolation
 #define dmview_                      dmview
@@ -50,6 +51,7 @@
 #define dmsetstratumis_              dmsetstratumis
 #define dmremovelabel_               dmremovelabel
 #define dmviewfromoptions_           dmviewfromoptions
+#define dmcreatesuperdm_             dmreatesuperdm
 #endif
 
 PETSC_EXTERN void dmgetmattype_(DM *mm,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)

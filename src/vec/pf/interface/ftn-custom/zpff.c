@@ -13,6 +13,7 @@ PETSC_EXTERN void pfviewfromoptions_(PF *ao,PetscObject obj,char* type,PetscErro
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PFViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

@@ -39,7 +39,7 @@ PETSC_EXTERN void petscfvsettype_(PetscFV *fvm,char* type_name,PetscErrorCode *i
   char *t;
 
   FIXCHAR(type_name,len,t);
-  *ierr = PetscFVSetType(*fvm,t);if (*ierr) return;
+ *ierr = PetscFVSetType(*fvm,t);if (*ierr) return;
   FREECHAR(type_name,t);
 }
 
@@ -48,6 +48,7 @@ PETSC_EXTERN void petscfvviewfromoptions_(PetscFV *ao,PetscObject obj,char* type
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscFVViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
@@ -57,6 +58,7 @@ PETSC_EXTERN void petsclimiterviewfromoptions_(PetscLimiter *ao,PetscObject obj,
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscLimiterViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

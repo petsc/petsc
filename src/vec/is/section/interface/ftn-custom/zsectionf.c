@@ -13,6 +13,7 @@ PETSC_EXTERN void petscsectionviewfromoptions_(PetscSection *ao,PetscObject obj,
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscSectionViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

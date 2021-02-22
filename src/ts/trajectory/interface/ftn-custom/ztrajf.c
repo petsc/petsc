@@ -31,6 +31,7 @@ PETSC_EXTERN void tstrajectoryviewfromoptions_(TSTrajectory *ao,PetscObject obj,
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = TSTrajectoryViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

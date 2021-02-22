@@ -47,6 +47,7 @@ PETSC_EXTERN void petscrandomviewfromoptions_(PetscRandom *ao,PetscObject obj,ch
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscRandomViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

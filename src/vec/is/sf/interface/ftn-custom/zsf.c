@@ -88,6 +88,7 @@ PETSC_EXTERN void petscsfviewfromoptions_(PetscSF *ao,PetscObject obj,char* type
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscSFViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

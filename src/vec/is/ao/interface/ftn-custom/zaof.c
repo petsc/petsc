@@ -34,6 +34,7 @@ PETSC_EXTERN void aoviewfromoptions_(AO *ao,PetscObject obj,char* type,PetscErro
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = AOViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
