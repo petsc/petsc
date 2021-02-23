@@ -2119,9 +2119,9 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  MatConjugate_SeqAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatConjugate_SeqAIJ(Mat);
 
-PetscErrorCode  MatConjugate_MPIAIJ(Mat mat)
+PetscErrorCode MatConjugate_MPIAIJ(Mat mat)
 {
 #if defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;

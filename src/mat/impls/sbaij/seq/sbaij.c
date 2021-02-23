@@ -1253,6 +1253,21 @@ PetscErrorCode MatIsHermitian_SeqSBAIJ(Mat A,PetscReal tol,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatConjugate_SeqSBAIJ(Mat A)
+{
+#if defined(PETSC_USE_COMPLEX)
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  PetscInt     i,nz = a->bs2*a->i[a->mbs];
+  MatScalar    *aa = a->a;
+
+  PetscFunctionBegin;
+  for (i=0; i<nz; i++) aa[i] = PetscConj(aa[i]);
+#else
+  PetscFunctionBegin;
+#endif
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatRealPart_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -1470,7 +1485,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                /* 99*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
+                                       MatConjugate_SeqSBAIJ,
                                        NULL,
                                /*104*/ NULL,
                                        MatRealPart_SeqSBAIJ,

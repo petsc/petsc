@@ -1319,6 +1319,21 @@ PetscErrorCode MatRestoreRowUpperTriangular_MPISBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatConjugate_MPISBAIJ(Mat mat)
+{
+#if defined(PETSC_USE_COMPLEX)
+  PetscErrorCode ierr;
+  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)mat->data;
+
+  PetscFunctionBegin;
+  ierr = MatConjugate(a->A);CHKERRQ(ierr);
+  ierr = MatConjugate(a->B);CHKERRQ(ierr);
+#else
+  PetscFunctionBegin;
+#endif
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatRealPart_MPISBAIJ(Mat A)
 {
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
@@ -1885,7 +1900,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                /* 99*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
+                                       MatConjugate_MPISBAIJ,
                                        NULL,
                                /*104*/ NULL,
                                        MatRealPart_MPISBAIJ,

@@ -3207,7 +3207,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  MatConjugate_SeqAIJ(Mat mat)
+PETSC_INTERN PetscErrorCode MatConjugate_SeqAIJ(Mat mat)
 {
 #if defined(PETSC_USE_COMPLEX)
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)mat->data;
