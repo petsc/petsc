@@ -140,7 +140,7 @@ Adding options from a file
 PETSc can load additional options from a file using ``PetscOptionsInsertFile()``,
 which can also be used from the command line, e.g. ``-options_file my_options.opts``.
 
-If PETSc is configured with YAML, one can use YAML files this way (relying on ``PetscOptionsInsertFileYAML()``).
+One can also use YAML files this way (relying on ``PetscOptionsInsertFileYAML()``).
 For example, the following file:
 
 .. literalinclude:: /../../../src/sys/tests/ex47-options.yaml
@@ -152,6 +152,30 @@ corresponds to the following PETSc options:
   :language: none
   :start-after: #
   :end-before: #End
+
+With ``-options_file``, PETSc will parse the file as YAML if it ends in a standard
+YAML or JSON [#json]_ extension or if one uses a ``:yaml`` postfix,
+e.g. ``-options_file my_options.yaml`` or ``-options_file my_options.txt:yaml``
+
+PETSc will also check the first line of the options file itself and
+parse the file as YAML if it matches certain criteria, for example.
+
+
+.. literalinclude:: /../../../src/sys/tests/ex47-yaml_tag
+  :language: yaml
+
+and
+
+.. literalinclude:: /../../../src/sys/tests/ex47-yaml_doc
+  :language: yaml
+
+both correspond to options
+
+.. literalinclude:: /../../../src/sys/tests/output/ex47_2_auto.out
+  :language: none
+  :start-after: #
+  :end-before: #End
+
 
 User-Defined PetscOptions
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -350,7 +374,7 @@ with calls to the appropriate object viewer with the viewer format
 Using SAWs with PETSc
 ~~~~~~~~~~~~~~~~~~~~~
 
-The Scientific Application Web server, SAWs [8]_, allows one to monitor
+The Scientific Application Web server, SAWs [#saws]_, allows one to monitor
 running PETSc applications from a browser. ``configure`` PETSc with
 the additional option ``--download-saws``. Options to use SAWs include
 
@@ -568,7 +592,7 @@ user should run ``configure`` with the additional option
 `installation instructions <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__
 provide detailed instructions for installing PETSc. You can use
 ``--with-clanguage=c`` (the default) to use the C99 complex numbers or
-``--with-clanguage=c++`` to use the C++ complex type [9]_.
+``--with-clanguage=c++`` to use the C++ complex type [#cxx_note]_.
 
 Recall that each variant of the PETSc libraries is stored in a different
 directory, given by ``$PETSC_DIR/lib/$PETSC_ARCH``
@@ -1026,7 +1050,7 @@ PETSc source into their project.
    PETSc with the project.
 
 For further examples of using Eclipse with a PETSc-based application,
-see the documentation for LaMEM [10]_.
+see the documentation for LaMEM [#lamem]_.
 
 Qt Creator Users
 ~~~~~~~~~~~~~~~~
@@ -1183,11 +1207,16 @@ libraries inside your iOS XCode projects; see the examples in
 ``$PETSC_DIR/systems/Apple/iOS/examples``. You must also link against
 the Apple ``Accelerate.framework``.
 
-.. [8]
+.. rubric:: Footnotes
+
+.. [#saws]
    `Saws wiki on Bitbucket <https://bitbucket.org/saws/saws/wiki/Home>`__
 
-.. [9]
+.. [#cxx_note]
    Note that this option is not required to use PETSc with C++
 
-.. [10]
+.. [#lamem]
    ``doc/`` at https://bitbucket.org/bkaus/lamem
+
+.. [#json]
+   JSON is a subset of YAML
