@@ -672,6 +672,44 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode KSPMonitorPauseFinal_Internal(KSP ksp)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!ksp->pauseFinal) PetscFunctionReturn(0);
+  for (i = 0; i < ksp->numbermonitors; ++i) {
+    PetscViewerAndFormat *vf = (PetscViewerAndFormat *) ksp->monitorcontext[i];
+    PetscDraw             draw;
+    PetscReal             lpause;
+
+    if (!vf) continue;
+    if (vf->lg) {
+      if (!PetscCheckPointer(vf->lg, PETSC_OBJECT)) continue;
+      if (((PetscObject) vf->lg)->classid != PETSC_DRAWLG_CLASSID) continue;
+      ierr = PetscDrawLGGetDraw(vf->lg, &draw);CHKERRQ(ierr);
+      ierr = PetscDrawGetPause(draw, &lpause);CHKERRQ(ierr);
+      ierr = PetscDrawSetPause(draw, -1.0);CHKERRQ(ierr);
+      ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+      ierr = PetscDrawSetPause(draw, lpause);CHKERRQ(ierr);
+    } else {
+      PetscBool isdraw;
+
+      if (!PetscCheckPointer(vf->viewer, PETSC_OBJECT)) continue;
+      if (((PetscObject) vf->viewer)->classid != PETSC_VIEWER_CLASSID) continue;
+      ierr = PetscObjectTypeCompare((PetscObject) vf->viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
+      if (!isdraw) continue;
+      ierr = PetscViewerDrawGetDraw(vf->viewer, 0, &draw);CHKERRQ(ierr);
+      ierr = PetscDrawGetPause(draw, &lpause);CHKERRQ(ierr);
+      ierr = PetscDrawSetPause(draw, -1.0);CHKERRQ(ierr);
+      ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+      ierr = PetscDrawSetPause(draw, lpause);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -786,6 +824,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
     ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
   }
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  ierr  = KSPMonitorPauseFinal_Internal(ksp);CHKERRQ(ierr);
 
   ierr = VecLockReadPop(ksp->vec_rhs);CHKERRQ(ierr);
   if (nullsp) {
@@ -2013,6 +2052,7 @@ $     monitor (KSP ksp, PetscInt it, PetscReal rnorm, void *mctx)
 +    -ksp_monitor               - sets KSPMonitorResidual()
 .    -ksp_monitor draw          - sets KSPMonitorResidualDraw() and plots residual
 .    -ksp_monitor draw::draw_lg - sets KSPMonitorResidualDrawLG() and plots residual
+.    -ksp_monitor_pause_final   - Pauses any graphics when the solve finishes (only works for internal monitors)
 .    -ksp_monitor_true_residual - sets KSPMonitorTrueResidual()
 .    -ksp_monitor_true_residual draw::draw_lg - sets KSPMonitorTrueResidualDrawLG() and plots residual
 .    -ksp_monitor_max           - sets KSPMonitorTrueResidualMax()
