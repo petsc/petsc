@@ -27,7 +27,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
   Level: developer
 
-.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum()
+.seealso DMPlexConstructGhostCells(), DMPlexGetGhostCellStratum()
 @*/
 PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd)
 {
@@ -7023,7 +7023,7 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 
   Level: advanced
 
-.seealso DMPlexConstructGhostCells(), DMPlexSetGhostCellStratum()
+.seealso DMPlexConstructGhostCells(), DMPlexGetGhostCellStratum()
 @*/
 PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcEnd)
 {
