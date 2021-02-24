@@ -33,6 +33,7 @@ struct _SNESOps {
    Nonlinear solver context
  */
 #define MAXSNESMONITORS 5
+#define MAXSNESREASONVIEWS 5
 
 struct _p_SNES {
   PETSCHEADER(struct _SNESOps);
@@ -74,7 +75,11 @@ struct _p_SNES {
   void                *monitorcontext[MAXSNESMONITORS];                           /* monitor context */
   PetscInt            numbermonitors;                                             /* number of monitors */
   void                *cnvP;                                                      /* convergence context */
-  SNESConvergedReason reason;
+  SNESConvergedReason reason;                                                     /* converged reason */
+  PetscErrorCode      (*reasonview[MAXSNESREASONVIEWS])(SNES,void*);              /* snes converged reason view */
+  PetscErrorCode      (*reasonviewdestroy[MAXSNESREASONVIEWS])(void**);           /* reason view context destroy routine */
+  void                *reasonviewcontext[MAXSNESREASONVIEWS];                     /* reason view context */
+  PetscInt            numberreasonviews;                                          /* number of reason views */
   PetscBool           errorifnotconverged;
 
   /* --- Routines and data that are unique to each particular solver --- */

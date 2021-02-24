@@ -178,6 +178,11 @@
          <li>Add support for monitor KSPPREONLY. This is useful for monitoring solvers
            with inner solvers such as PCMG, PCGAMG, PCFIELDSPLIT.
          </li>
+         <li>Add KSPConvergedReasonViewSet() to set an ADDITIONAL function that is to be used at the
+          end of the linear solver to display the convergence reason of the linear solver
+         </li>
+         <li>Add KSPConvergedReasonViewCancel() to remove all user-added  converged reason view functions</li>
+         <li>Add KSPGetConvergedReasonString() to retrieve a human readable string for ksp converged reason</li>
          <li>Change KSPReasonView() to  KSPConvergenceReasonView()</li>
          <li>Change KSPReasonViewFromOptions() to KSPConvergedReasonViewFromOptions()</li>
          <li>Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence when the maximum number of iterations is reached</li>
@@ -195,6 +200,11 @@
       <ul>
         <li>Add SNESConvergedCorrectPressure(), which can be selected using <tt>-snes_convergence_test correct_pressure</tt></li>
         <li>Remove SNESMonitorLGCreate() and SNESMonitorLGResidualNorm() which are now handled by the default monitor</li>
+        <li>Add SNESConvergedReasonViewSet() to set an ADDITIONAL function that is to be used at the
+         end of the nonlinear solver to display the convergence reason of the nonlinear solver
+        </li>
+        <li>Add SNESConvergedReasonViewCancel() to remove all user-added  converged reason view functions</li>
+        <li>Add SNESGetConvergedReasonString() to retrieve a human readable string for snes converged reason</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>

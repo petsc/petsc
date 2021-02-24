@@ -410,7 +410,9 @@ PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPViewFromOptions(KSP,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode KSPConvergedReasonView(KSP,PetscViewer);
+PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewSet(KSP,PetscErrorCode (*)(KSP,void*),void *vctx,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewFromOptions(KSP);
+PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewCancel(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedRateView(KSP,PetscViewer);
 
 PETSC_DEPRECATED_FUNCTION("Use KSPConvergedReasonView() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode KSPReasonView(KSP ksp,PetscViewer v) {return KSPConvergedReasonView(ksp,v);}
@@ -688,6 +690,7 @@ PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP,KSPConvergedReason*);
+PETSC_EXTERN PetscErrorCode KSPGetConvergedReasonString(KSP,const char**);
 PETSC_EXTERN PetscErrorCode KSPComputeConvergenceRate(KSP,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefault() (since version 3.5)") PETSC_STATIC_INLINE void KSPDefaultConverged(void) { /* never called */ }

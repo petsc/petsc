@@ -391,7 +391,11 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",&ksp->viewer, &ksp->format,&ksp->view);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_reason",&ksp->viewerReason,&ksp->formatReason,&ksp->viewReason);CHKERRQ(ierr);
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ksp_converged_reason_view_cancel","Cancel all the converged reason view functions set using KSPConvergedReasonViewSet","KSPConvergedReasonViewCancel",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+    if (set && flg) {
+      ierr = KSPConvergedReasonViewCancel(ksp);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",&ksp->viewerMat,&ksp->formatMat,&ksp->viewMat);CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pmat",&ksp->viewerPMat,&ksp->formatPMat,&ksp->viewPMat);CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_rhs",&ksp->viewerRhs,&ksp->formatRhs,&ksp->viewRhs);CHKERRQ(ierr);
@@ -548,7 +552,12 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   }
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",&ksp->viewer,&ksp->format,&ksp->view);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pre",&ksp->viewerPre,&ksp->formatPre,&ksp->viewPre);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_reason",&ksp->viewerReason,&ksp->formatReason,&ksp->viewReason);CHKERRQ(ierr);
+
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ksp_converged_reason_view_cancel","Cancel all the converged reason view functions set using KSPConvergedReasonViewSet","KSPConvergedReasonViewCancel",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set && flg) {
+    ierr = KSPConvergedReasonViewCancel(ksp);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_rate",&ksp->viewerRate,&ksp->formatRate,&ksp->viewRate);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",&ksp->viewerMat,&ksp->formatMat,&ksp->viewMat);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pmat",&ksp->viewerPMat,&ksp->formatPMat,&ksp->viewPMat);CHKERRQ(ierr);
