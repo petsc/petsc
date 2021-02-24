@@ -13,6 +13,7 @@ configure_options = [
   '--with-scalar-type=complex',
   '--with-64-bit-indices=1',
   '--download-mpich',
+  '--download-revolve=1',
   ]
 
 if __name__ == '__main__':
