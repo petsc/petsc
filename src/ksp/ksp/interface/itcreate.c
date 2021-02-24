@@ -721,6 +721,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->err_hist_max   = 0;
   ksp->err_hist_reset = PETSC_TRUE;
   ksp->numbermonitors = 0;
+  ksp->numberreasonviews = 0;
   ksp->setfromoptionscalled = 0;
 
   ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);

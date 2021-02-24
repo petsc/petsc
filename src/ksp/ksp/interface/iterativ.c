@@ -1709,6 +1709,30 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   KSPGetConvergedReasonString - Return a human readable string for ksp converged reason
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - the KSP context
+
+   Output Parameter:
+.  strreason - a human readable string that describes ksp converged reason
+
+   Level: basic
+
+.seealso: KSPGetConvergedReason()
+@*/
+PetscErrorCode KSPGetConvergedReasonString(KSP ksp,const char** strreason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidCharPointer(strreason,2);
+  *strreason = KSPConvergedReasons[ksp->reason];
+  PetscFunctionReturn(0);
+}
+
 #include <petsc/private/dmimpl.h>
 /*@
    KSPSetDM - Sets the DM that may be used by some preconditioners

@@ -479,6 +479,84 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   KSPConvergedReasonViewSet - Sets an ADDITIONAL function that is to be used at the
+    end of the linear solver to display the convergence reason of the linear solver.
+
+   Logically Collective on KSP
+
+   Input Parameters:
++  ksp - the KSP context
+.  f - the ksp converged reason view function
+.  vctx - [optional] user-defined context for private data for the
+          ksp converged reason view routine (use NULL if no context is desired)
+-  reasonviewdestroy - [optional] routine that frees reasonview context
+          (may be NULL)
+
+   Options Database Keys:
++    -ksp_converged_reason        - sets a default KSPConvergedReasonView()
+-    -ksp_converged_reason_view_cancel - cancels all converged reason viewers that have
+                            been hardwired into a code by
+                            calls to KSPConvergedReasonViewSet(), but
+                            does not cancel those set via
+                            the options database.
+
+   Notes:
+   Several different converged reason view routines may be set by calling
+   KSPConvergedReasonViewSet() multiple times; all will be called in the
+   order in which they were set.
+
+   Level: intermediate
+
+.seealso: KSPConvergedReasonView(), KSPConvergedReasonViewCancel()
+@*/
+PetscErrorCode  KSPConvergedReasonViewSet(KSP ksp,PetscErrorCode (*f)(KSP,void*),void *vctx,PetscErrorCode (*reasonviewdestroy)(void**))
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+  PetscBool      identical;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  for (i=0; i<ksp->numberreasonviews;i++) {
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))f,vctx,reasonviewdestroy,(PetscErrorCode (*)(void))ksp->reasonview[i],ksp->reasonviewcontext[i],ksp->reasonviewdestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
+  }
+  if (ksp->numberreasonviews >= MAXKSPREASONVIEWS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP reasonview set");
+  ksp->reasonview[ksp->numberreasonviews]          = f;
+  ksp->reasonviewdestroy[ksp->numberreasonviews]   = reasonviewdestroy;
+  ksp->reasonviewcontext[ksp->numberreasonviews++] = (void*)vctx;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPConvergedReasonViewCancel - Clears all the reasonview functions for a KSP object.
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Level: intermediate
+
+.seealso: KSPCreate(), KSPDestroy(), KSPReset()
+@*/
+PetscErrorCode  KSPConvergedReasonViewCancel(KSP ksp)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  for (i=0; i<ksp->numberreasonviews; i++) {
+    if (ksp->reasonviewdestroy[i]) {
+      ierr = (*ksp->reasonviewdestroy[i])(&ksp->reasonviewcontext[i]);CHKERRQ(ierr);
+    }
+  }
+  ksp->numberreasonviews = 0;
+  PetscFunctionReturn(0);
+}
+
 /*@
   KSPConvergedReasonViewFromOptions - Processes command line options to determine if/how a KSPReason is to be viewed.
 
@@ -497,8 +575,16 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
   PetscBool         flg;
   PetscViewerFormat format;
   PetscErrorCode    ierr;
+  PetscInt          i;
 
   PetscFunctionBegin;
+
+  /* Call all user-provided reason review routines */
+  for (i=0; i<ksp->numberreasonviews; i++) {
+    ierr = (*ksp->reasonview[i])(ksp,ksp->reasonviewcontext[i]);CHKERRQ(ierr);
+  }
+
+  /* Call the default PETSc routine */
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_converged_reason",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -837,11 +923,8 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
   if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ksp->totalits += ksp->its;
 
-  if (ksp->viewReason) {
-    ierr = PetscViewerPushFormat(ksp->viewerReason,ksp->formatReason);CHKERRQ(ierr);
-    ierr = KSPConvergedReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(ksp->viewerReason);CHKERRQ(ierr);
-  }
+  ierr = KSPConvergedReasonViewFromOptions(ksp);CHKERRQ(ierr);
+
   if (ksp->viewRate) {
     ierr = PetscViewerPushFormat(ksp->viewerRate,ksp->formatRate);CHKERRQ(ierr);
     ierr = KSPConvergedRateView(ksp, ksp->viewerRate);CHKERRQ(ierr);
@@ -1155,11 +1238,9 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
       if (ksp->viewFinalRes) {
         ierr = KSPViewFinalMatResidual_Internal(ksp, B, X, ksp->viewerFinalRes, ksp->formatFinalRes, 0);CHKERRQ(ierr);
       }
-      if (ksp->viewReason) {
-        ierr = PetscViewerPushFormat(ksp->viewerReason,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
-        ierr = KSPConvergedReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
-        ierr = PetscViewerPopFormat(ksp->viewerReason);CHKERRQ(ierr);
-      }
+
+      ierr = KSPConvergedReasonViewFromOptions(ksp);CHKERRQ(ierr);
+
       if (ksp->viewRate) {
         ierr = PetscViewerPushFormat(ksp->viewerRate,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
         ierr = KSPConvergedRateView(ksp, ksp->viewerRate);CHKERRQ(ierr);
@@ -1173,11 +1254,9 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
         if (ksp->viewFinalRes) {
           ierr = KSPViewFinalMatResidual_Internal(ksp, vB, vX, ksp->viewerFinalRes, ksp->formatFinalRes, n2);CHKERRQ(ierr);
         }
-        if (ksp->viewReason) {
-          ierr = PetscViewerPushFormat(ksp->viewerReason,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
-          ierr = KSPConvergedReasonView(ksp, ksp->viewerReason);CHKERRQ(ierr);
-          ierr = PetscViewerPopFormat(ksp->viewerReason);CHKERRQ(ierr);
-        }
+
+        ierr = KSPConvergedReasonViewFromOptions(ksp);CHKERRQ(ierr);
+
         if (ksp->viewRate) {
           ierr = PetscViewerPushFormat(ksp->viewerRate,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
           ierr = KSPConvergedRateView(ksp, ksp->viewerRate);CHKERRQ(ierr);
@@ -1273,7 +1352,6 @@ PetscErrorCode  KSPResetViewers(KSP ksp)
   if (!ksp) PetscFunctionReturn(0);
   ierr = PetscViewerDestroy(&ksp->viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&ksp->viewerPre);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ksp->viewerReason);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&ksp->viewerRate);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&ksp->viewerMat);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&ksp->viewerPMat);CHKERRQ(ierr);
@@ -1288,7 +1366,6 @@ PetscErrorCode  KSPResetViewers(KSP ksp)
   ierr = PetscViewerDestroy(&ksp->viewerDScale);CHKERRQ(ierr);
   ksp->view         = PETSC_FALSE;
   ksp->viewPre      = PETSC_FALSE;
-  ksp->viewReason   = PETSC_FALSE;
   ksp->viewMat      = PETSC_FALSE;
   ksp->viewPMat     = PETSC_FALSE;
   ksp->viewRhs      = PETSC_FALSE;
@@ -1392,6 +1469,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
     ierr = (*(*ksp)->convergeddestroy)((*ksp)->cnvP);CHKERRQ(ierr);
   }
   ierr = KSPMonitorCancel((*ksp));CHKERRQ(ierr);
+  ierr = KSPConvergedReasonViewCancel((*ksp));CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&(*ksp)->eigviewer);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
