@@ -180,7 +180,7 @@ PetscErrorCode  PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[]
   Level: advanced
 
 .seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectAppendOptionsPrefix(),
-          PetscObjectGetOptionsPrefix(), TSPrependOptionsPrefix(), SNESPrependOptionsPrefix(), KSPPrependOptionsPrefix()
+          PetscObjectGetOptionsPrefix()
 
 @*/
 PetscErrorCode  PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
