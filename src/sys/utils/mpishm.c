@@ -240,16 +240,16 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
     ierr    = ftruncate(fd,size);CHKERRQ(ierr);
     baseptr = mmap(NULL,size,PROT_READ | PROT_WRITE, MAP_SHARED,fd,0); if (baseptr == MAP_FAILED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"mmap() failed\n");
     ierr    = close(fd);CHKERRQ(ierr);
-    ierr    = MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm);CHKERRQ(ierr);
+    ierr    = MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm);CHKERRMPI(ierr);
     /* this MPI_Barrier is to wait slaves to open the file before master unlinks it */
-    ierr    = MPI_Barrier(ctrl->omp_comm);CHKERRQ(ierr);
+    ierr    = MPI_Barrier(ctrl->omp_comm);CHKERRMPI(ierr);
     ierr    = unlink(pathname);CHKERRQ(ierr);
   } else {
-    ierr    = MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm);CHKERRQ(ierr);
+    ierr    = MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm);CHKERRMPI(ierr);
     fd      = open(pathname,O_RDWR); if (fd == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not open tmp file %s\n", pathname);
     baseptr = mmap(NULL,size,PROT_READ | PROT_WRITE, MAP_SHARED,fd,0); if (baseptr == MAP_FAILED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"mmap() failed\n");
     ierr    = close(fd);CHKERRQ(ierr);
-    ierr    = MPI_Barrier(ctrl->omp_comm);CHKERRQ(ierr);
+    ierr    = MPI_Barrier(ctrl->omp_comm);CHKERRMPI(ierr);
   }
 #else
   size = ctrl->is_omp_master ? sizeof(pthread_barrier_t) : 0;
@@ -363,7 +363,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
      Use 0 as key so that rank ordering wont change in new comm.
    */
   color = shm_rank / nthreads;
-  ierr  = MPI_Comm_split(shm_comm,color,0/*key*/,&ctrl->omp_comm);CHKERRQ(ierr);
+  ierr  = MPI_Comm_split(shm_comm,color,0/*key*/,&ctrl->omp_comm);CHKERRMPI(ierr);
 
   /* put rank 0's in omp_comms (i.e., master ranks) into a new comm - omp_master_comm */
   ierr = MPI_Comm_rank(ctrl->omp_comm,&omp_rank);CHKERRMPI(ierr);

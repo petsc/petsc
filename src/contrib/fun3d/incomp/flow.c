@@ -545,7 +545,7 @@ int Update(SNES snes,void *ctx)
     ierr        = PetscTime(&time2);CHKERRQ(ierr);
     cpuloc      = time2-time1;
     cpuglo      = 0.0;
-    ierr        = MPI_Allreduce(&cpuloc,&cpuglo,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr        = MPI_Allreduce(&cpuloc,&cpuglo,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
     c_info->tot = cpuglo;    /* Total CPU time used upto this time step */
 
     ierr = VecScatterBegin(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -574,7 +574,7 @@ int Update(SNES snes,void *ctx)
     ierr   = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
     ierr   = VecRestoreArray(grid->res,&res);CHKERRQ(ierr);
     fratio = tsCtx->fnorm_ini/tsCtx->fnorm;
-    ierr   = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr   = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
 
   } /* End of time step loop */
 
@@ -769,7 +769,7 @@ int GetLocalOrdering(GRID *grid)
   ierr      = PetscPrintf(comm,"Partition Vector read successfully\n");CHKERRQ(ierr);
   ierr      = PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin);CHKERRQ(ierr);
 
-  ierr    = MPI_Scan(&nnodesLoc,&rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr    = MPI_Scan(&nnodesLoc,&rstart,1,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   rstart -= nnodesLoc;
   ICALLOC(nnodesLoc,&pordering);
   for (i=0; i < nnodesLoc; i++) pordering[i] = rstart + i;
@@ -954,7 +954,7 @@ int GetLocalOrdering(GRID *grid)
       }
     i       += readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr     = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
   for (i = 0; i < nedgeLoc; i++)
 #if defined(INTERLACING)
@@ -975,7 +975,7 @@ int GetLocalOrdering(GRID *grid)
       }
     i       += readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr     = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
   for (i = 0; i < nedgeLoc; i++)
 #if defined(INTERLACING)
@@ -996,7 +996,7 @@ int GetLocalOrdering(GRID *grid)
       }
     i       += readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr     = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
   for (i = 0; i < nedgeLoc; i++)
 #if defined(INTERLACING)
@@ -1017,7 +1017,7 @@ int GetLocalOrdering(GRID *grid)
       }
     i       += readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr     = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
   for (i = 0; i < nedgeLoc; i++)
 #if defined(INTERLACING)
@@ -1195,7 +1195,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i        += nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr      = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
 
   remNodes = nnodes;
@@ -1214,7 +1214,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i        += nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr      = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
 
   remNodes = nnodes;
@@ -1233,7 +1233,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i        += nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr      = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
 
 
@@ -1249,7 +1249,7 @@ int GetLocalOrdering(GRID *grid)
         grid->area[a2l[i+j]] = ftmp[j];
     i        += nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr      = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
 
   ierr      = PetscFree(ftmp);CHKERRQ(ierr);
@@ -2038,7 +2038,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   nedgeLoc  = grid->nedgeLoc;   /* Number of edges connected to owned nodes */
 
   /* Count the number of neighbors of each owned node */
-  ierr    = MPI_Scan(&nnodesLoc,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr    = MPI_Scan(&nnodesLoc,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   rstart -= nnodesLoc;
   ierr    = PetscMalloc2(nnodesLoc,&nodeEdgeCount,nnodesLoc,&nodeEdgeOffset);CHKERRQ(ierr);
   ierr    = PetscMemzero(nodeEdgeCount,nnodesLoc*sizeof(*nodeEdgeCount));CHKERRQ(ierr);

@@ -53,7 +53,7 @@ PetscErrorCode PetscStackViewSAWs(void)
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
-  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if (rank) return 0;
   PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstack->function,20,SAWs_READ,SAWs_STRING));
   PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/__current_size",&petscstack->currentsize,1,SAWs_READ,SAWs_INT));

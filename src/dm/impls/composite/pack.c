@@ -113,7 +113,7 @@ PetscErrorCode  DMSetUp_Composite(DM dm)
     nprev        += next->n;
     next->grstart = com->rstart + next->rstart;
     ierr          = PetscMalloc1(size,&next->grstarts);CHKERRQ(ierr);
-    ierr          = MPI_Allgather(&next->grstart,1,MPIU_INT,next->grstarts,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr          = MPI_Allgather(&next->grstart,1,MPIU_INT,next->grstarts,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
     next          = next->next;
   }
   com->setup = PETSC_TRUE;

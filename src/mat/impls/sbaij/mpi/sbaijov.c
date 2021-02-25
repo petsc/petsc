@@ -340,10 +340,10 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
     /* Receive messages */
     ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag1,comm,&flag,&r_status);CHKERRMPI(ierr);
     if (flag) {
-      ierr    = MPI_Get_count(&r_status,MPIU_INT,&len);CHKERRQ(ierr);
+      ierr    = MPI_Get_count(&r_status,MPIU_INT,&len);CHKERRMPI(ierr);
       proc_id = r_status.MPI_SOURCE;
-      ierr    = MPI_Irecv(odata1,len,MPIU_INT,proc_id,r_status.MPI_TAG,comm,&r_req);CHKERRQ(ierr);
-      ierr    = MPI_Wait(&r_req,&r_status);CHKERRQ(ierr);
+      ierr    = MPI_Irecv(odata1,len,MPIU_INT,proc_id,r_status.MPI_TAG,comm,&r_req);CHKERRMPI(ierr);
+      ierr    = MPI_Wait(&r_req,&r_status);CHKERRMPI(ierr);
 
       /*  Process messages */
       /*  make sure there is enough unused space in odata2 array */

@@ -710,7 +710,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
     ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
     ierr       = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
-    ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
+    ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRMPI(ierr);
     offsets[0] = 0;
     for (i=1; i<size; i++) {
       PetscInt s = offsets[i-1] + sizes[i-1];
@@ -763,7 +763,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
-  ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRMPI(ierr);
   offsets[0] = 0;
   for (i=1; i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
   N    = offsets[size-1] + sizes[size-1];

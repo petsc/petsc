@@ -502,7 +502,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       /* Determine nctot, the total (parallel) number of columns of this color */
       /* ncolsonproc[j]: local ncolumns on proc[j] of this color */
       ierr  = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
-      ierr  = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+      ierr  = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
       nctot = 0; for (j=0; j<size; j++) nctot += ncolsonproc[j];
       if (!nctot) {
         ierr = PetscInfo(mat,"Coloring of matrix has some unneeded colors with no corresponding rows\n");CHKERRQ(ierr);

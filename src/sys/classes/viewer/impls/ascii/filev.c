@@ -170,8 +170,8 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
       ierr = MPI_Recv(&dummy,1,MPI_INT,0,tag,comm,&status);CHKERRMPI(ierr);
       ierr = MPI_Send(&vascii->petsc_printfqueuelength,1,MPI_INT,0,tag,comm);CHKERRMPI(ierr);
       for (i=0; i<vascii->petsc_printfqueuelength; i++) {
-        ierr     = MPI_Send(&next->size,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
-        ierr     = MPI_Send(next->string,next->size,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
+        ierr     = MPI_Send(&next->size,1,MPI_INT,0,tag,comm);CHKERRMPI(ierr);
+        ierr     = MPI_Send(next->string,next->size,MPI_CHAR,0,tag,comm);CHKERRMPI(ierr);
         previous = next;
         next     = next->next;
         ierr     = PetscFree(previous->string);CHKERRQ(ierr);

@@ -81,8 +81,8 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
   PetscValidHeaderSpecific(globalSection, PETSC_SECTION_CLASSID, 3);
 
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscSectionGetChart(globalSection, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(globalSection, &nroots);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);

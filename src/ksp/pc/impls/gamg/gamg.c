@@ -110,9 +110,9 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     int          devCount;
     ierr = PetscShmCommGet(comm,&pshmcomm);CHKERRQ(ierr);
     ierr = PetscShmCommGetMpiShmComm(pshmcomm,&loccomm);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(loccomm, &locrank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(loccomm, &locrank);CHKERRMPI(ierr);
     s_nnodes = !locrank;
-    ierr = MPI_Allreduce(&s_nnodes,&r_nnodes,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&s_nnodes,&r_nnodes,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
     if (size%r_nnodes) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"odd number of nodes np=%D nnodes%D",size,r_nnodes);
     devCount = 0;
     cerr = cudaGetDeviceCount(&devCount);

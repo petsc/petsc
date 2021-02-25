@@ -15,7 +15,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBeginUser;
   options->metric  = PETSC_FALSE;
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = PetscCalloc1(size, &options->refcell);CHKERRQ(ierr);
   n    = size;
 
@@ -45,7 +45,7 @@ static PetscErrorCode CreateAdaptLabel(DM dm, AppCtx *ctx, DMLabel *adaptLabel)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
   ierr = DMLabelCreate(PETSC_COMM_SELF, "Adaptation Label", adaptLabel);CHKERRQ(ierr);
   if (ctx->refcell[rank] >= 0) {ierr = DMLabelSetValue(*adaptLabel, ctx->refcell[rank], DM_ADAPT_REFINE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

@@ -656,7 +656,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   if (HYPRE_AssumedPartitionCheck()) {
     PetscMPIInt myid;
 
-    ierr       = MPI_Comm_rank(comm,&myid);CHKERRQ(ierr);
+    ierr       = MPI_Comm_rank(comm,&myid);CHKERRMPI(ierr);
     row_starts = A->rmap->range + myid;
     col_starts = A->cmap->range + myid;
   } else {

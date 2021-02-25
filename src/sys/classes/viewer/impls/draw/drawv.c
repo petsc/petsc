@@ -483,7 +483,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm
     ierr = PetscViewerDrawGetDraw(*sviewer,0,&sdraw);CHKERRQ(ierr);
     if (draw->savefilename) {
       draw->savefilecount = sdraw->savefilecount;
-      ierr = MPI_Bcast(&draw->savefilecount,1,MPIU_INT,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+      ierr = MPI_Bcast(&draw->savefilecount,1,MPIU_INT,0,PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
     }
     svdraw = (PetscViewer_Draw*)(*sviewer)->data;
     for (i=0; i<vdraw->draw_max; i++) {
@@ -499,7 +499,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     if (draw->savefilename) {
-      ierr = MPI_Bcast(&draw->savefilecount,1,MPIU_INT,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+      ierr = MPI_Bcast(&draw->savefilecount,1,MPIU_INT,0,PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
     }
   }
 

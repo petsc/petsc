@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   /* The vector entries are displayed in the "natural" ordering on the two dimensional grid; interlaced x and y with with the x variable increasing more rapidly than the y */
   ierr = VecView(xy,0);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if (!rank) comm = MPI_COMM_SELF;
   else comm = MPI_COMM_NULL;
 

@@ -55,8 +55,8 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&gsize);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&grank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&gsize);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&grank);CHKERRMPI(ierr);
 
   for (i=0; i<user.ntimes; i++) {
     if (i==0) {
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
       mycolor = (PetscMPIInt)0;
       /* comm = PETSC_COMM_WORLD; */
     }
-    ierr = MPI_Comm_split(PETSC_COMM_WORLD,mycolor,grank,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_split(PETSC_COMM_WORLD,mycolor,grank,&comm);CHKERRMPI(ierr);
 
     if (mycolor == 0) {
       /* Load/Save only on processes with mycolor == 0 */
@@ -148,8 +148,8 @@ int main(int argc, char **argv)
 
       ierr = PetscPrintf(comm, "End   cycle %D\n--------\n",i);CHKERRQ(ierr);
     }
-    ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&comm);CHKERRMPI(ierr);
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
   }
 
   /* Final clean-up */

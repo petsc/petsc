@@ -1595,7 +1595,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
       if (n < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Sizes have not yet been set for submatrix");
       nsum += n;
     }
-    ierr    = MPI_Scan(&nsum,&offset,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr    = MPI_Scan(&nsum,&offset,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
     offset -= nsum;
     for (i=0; i<vs->nr; i++) {
       ierr    = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
@@ -1624,7 +1624,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
       if (n < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Sizes have not yet been set for submatrix");
       nsum += n;
     }
-    ierr    = MPI_Scan(&nsum,&offset,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr    = MPI_Scan(&nsum,&offset,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
     offset -= nsum;
     for (j=0; j<vs->nc; j++) {
       ierr    = MatNestFindNonzeroSubMatCol(A,j,&sub);CHKERRQ(ierr);

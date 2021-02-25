@@ -1400,7 +1400,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
         if (n && !x && !x_d) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
         if (x) x += start;
         if (x_d) x_d += start;
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRMPI(ierr);
         if (size == 1) {
           ierr = VecCreateSeqHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,x,x_d,&Z);CHKERRQ(ierr);
         } else {

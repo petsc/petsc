@@ -112,10 +112,10 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
     ++numCells;
   }
   maxCells = numCells;
-  ierr     = MPI_Reduce(&numCells, &totCells, 1, MPIU_INT, MPI_SUM, 0, comm);CHKERRQ(ierr);
-  ierr     = MPI_Reduce(&numCells, &maxCells, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
-  ierr     = MPI_Reduce(&numCorners, &totCorners, 1, MPIU_INT, MPI_SUM, 0, comm);CHKERRQ(ierr);
-  ierr     = MPI_Reduce(&numCorners, &maxCorners, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
+  ierr     = MPI_Reduce(&numCells, &totCells, 1, MPIU_INT, MPI_SUM, 0, comm);CHKERRMPI(ierr);
+  ierr     = MPI_Reduce(&numCells, &maxCells, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRMPI(ierr);
+  ierr     = MPI_Reduce(&numCorners, &totCorners, 1, MPIU_INT, MPI_SUM, 0, comm);CHKERRMPI(ierr);
+  ierr     = MPI_Reduce(&numCorners, &maxCorners, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRMPI(ierr);
   ierr     = DMPlexGetVertexNumbering(dm, &globalVertexNumbers);CHKERRQ(ierr);
   ierr     = ISGetIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
   ierr     = PetscMalloc1(maxCells, &corners);CHKERRQ(ierr);

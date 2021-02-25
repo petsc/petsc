@@ -765,7 +765,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
             request        = (MPI_Request*)pt;
             rreqs2[nSend1] = request; /* cache recv request */
             pt             = (PetscInt*)(request+1);
-            ierr           = MPI_Irecv(pt, n*CHUNCK_SIZE, MPIU_INT, proc, tag2, comm, request);CHKERRQ(ierr);
+            ierr           = MPI_Irecv(pt, n*CHUNCK_SIZE, MPIU_INT, proc, tag2, comm, request);CHKERRMPI(ierr);
             /* clear list */
             ierr = PetscCDRemoveAll(deleted_list, proc);CHKERRQ(ierr);
             nSend1++;
@@ -836,8 +836,8 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           PetscInt    *pt, *pt2;
 
           request = rreqs2[kk]; /* no need to free -- buffer is in 'sbuffs1' */
-          ierr    = MPI_Wait(request, &status);CHKERRQ(ierr);
-          ierr    = MPI_Get_count(&status, MPIU_INT, &count);CHKERRQ(ierr);
+          ierr    = MPI_Wait(request, &status);CHKERRMPI(ierr);
+          ierr    = MPI_Get_count(&status, MPIU_INT, &count);CHKERRMPI(ierr);
           pt      = pt2 = (PetscInt*)(request+1);
           while (pt-pt2 < count) {
             PetscInt lid0 = *pt++, n = *pt++;
@@ -852,7 +852,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
         while (nSend1--) {
           MPI_Request *request;
           request = (MPI_Request*)sbuffs1[nSend1];
-          ierr    = MPI_Wait(request, &status);CHKERRQ(ierr);
+          ierr    = MPI_Wait(request, &status);CHKERRMPI(ierr);
           ierr    = PetscFree(request);CHKERRQ(ierr);
         }
         ierr = PetscFree(sbuffs1);CHKERRQ(ierr);

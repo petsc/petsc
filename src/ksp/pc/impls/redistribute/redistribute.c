@@ -138,7 +138,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr  = PetscMalloc3(recvtotal,&rvalues,nrecvs,&source,nrecvs,&recv_waits);CHKERRQ(ierr);
     count = 0;
     for (i=0; i<nrecvs; i++) {
-      ierr   = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
+      ierr   = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRMPI(ierr);
       count += olengths1[i];
     }
 
@@ -170,7 +170,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     while (count) {
       ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRMPI(ierr);
       /* unpack receives into our local space */
-      ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
+      ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRMPI(ierr);
       slen += n;
       count--;
     }

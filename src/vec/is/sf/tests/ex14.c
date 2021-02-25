@@ -87,8 +87,8 @@ int main(int argc,char **argv)
   /* print out event log of VecScatter(bs=1) */
 #if defined(PETSC_USE_LOG)
   ierr    = PetscLogEventGetPerfInfo(stage1,event1,&eventInfo);CHKERRQ(ierr);
-  ierr    = MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr    = MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr    = MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  ierr    = MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   tot_msg = (PetscInt)numMessages*0.5; /* two MPI calls (Send & Recv) per message */
   tot_len = (PetscInt)messageLength*0.5;
   avg_len = tot_msg? (PetscInt)(messageLength/numMessages) : 0;
@@ -145,8 +145,8 @@ int main(int argc,char **argv)
   /* print out event log of VecScatter(bs=4) */
 #if defined(PETSC_USE_LOG)
   ierr    = PetscLogEventGetPerfInfo(stage2,event2,&eventInfo);CHKERRQ(ierr);
-  ierr    = MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr    = MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr    = MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  ierr    = MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   tot_msg = (PetscInt)numMessages*0.5; /* two MPI calls (Send & Recv) per message */
   tot_len = (PetscInt)messageLength*0.5;
   avg_len = tot_msg? (PetscInt)(messageLength/numMessages) : 0;

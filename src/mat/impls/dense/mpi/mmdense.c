@@ -222,7 +222,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
     j     = pa[i];
     count = (w1[2*j] - (2*sbuf1[j][0] + 1))*N;
     ierr  = PetscMalloc1(count+1,&rbuf2[i]);CHKERRQ(ierr);
-    ierr  = MPI_Irecv(rbuf2[i],count,MPIU_SCALAR,j,tag1,comm,r_waits2+i);CHKERRQ(ierr);
+    ierr  = MPI_Irecv(rbuf2[i],count,MPIU_SCALAR,j,tag1,comm,r_waits2+i);CHKERRMPI(ierr);
   }
 
   /* Receive messages(row_nos) and then, pack and send off the rowvalues
@@ -236,13 +236,13 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
     PetscScalar *sbuf2_i,*v_start;
     PetscInt    s_proc;
     for (i=0; i<nrqr; ++i) {
-      ierr    = MPI_Waitany(nrqr,r_waits1,&idex,r_status1+i);CHKERRQ(ierr);
+      ierr    = MPI_Waitany(nrqr,r_waits1,&idex,r_status1+i);CHKERRMPI(ierr);
       s_proc  = r_status1[i].MPI_SOURCE;         /* send processor */
       rbuf1_i = rbuf1[idex];         /* Actual message from s_proc */
       /* no of rows = end - start; since start is array idex[], 0idex, whel end
          is length of the buffer - which is 1idex */
       start = 2*rbuf1_i[0] + 1;
-      ierr  = MPI_Get_count(r_status1+i,MPIU_INT,&end);CHKERRQ(ierr);
+      ierr  = MPI_Get_count(r_status1+i,MPIU_INT,&end);CHKERRMPI(ierr);
       /* allocate memory sufficinet to hold all the row values */
       ierr    = PetscMalloc1((end-start)*N,&sbuf2[idex]);CHKERRQ(ierr);
       sbuf2_i = sbuf2[idex];

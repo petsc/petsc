@@ -119,7 +119,7 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
   PetscFunctionBegin;
   *result = 0;
 
-  ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   shift -= llen;
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);

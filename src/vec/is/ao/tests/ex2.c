@@ -20,8 +20,8 @@ int main(int argc,char **argv)
   /* create the orderings */
   ierr = PetscMalloc2(n,&ispetsc,n,&isapp);CHKERRQ(ierr);
 
-  ierr   = MPI_Scan(&n,&start,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr   = MPI_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr   = MPI_Scan(&n,&start,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  ierr   = MPI_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   start -= n;
 
   for (i=0; i<n; i++) {

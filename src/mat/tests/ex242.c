@@ -173,7 +173,7 @@ int main(int argc,char **args)
 
   /* Test MatCreate() on subcomm */
   color = rank%2;
-  ierr = MPI_Comm_split(PETSC_COMM_WORLD,color,0,&subcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_split(PETSC_COMM_WORLD,color,0,&subcomm);CHKERRMPI(ierr);
   if (color==0) {
     ierr = MatCreate(subcomm,&Asub);CHKERRQ(ierr);
     ierr = MatSetType(Asub,MATSCALAPACK);CHKERRQ(ierr);
@@ -194,7 +194,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&Ct);CHKERRQ(ierr);
   ierr = VecDestroy(&d);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRMPI(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

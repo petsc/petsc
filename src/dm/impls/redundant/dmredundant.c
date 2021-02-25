@@ -336,7 +336,7 @@ static PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscMPIInt rank,PetscI
   PetscInt       i,*globals;
 
   PetscFunctionBegin;
-  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&myrank);CHKERRQ(ierr);
+  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&myrank);CHKERRMPI(ierr);
   red->rank = rank;
   red->N    = N;
   red->n    = (myrank == rank) ? N : 0;

@@ -6604,7 +6604,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
     PetscMPIInt    rank;
     PetscErrorCode ierr2;
 
-    ierr2 = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRQ(ierr2);
+    ierr2 = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRMPI(ierr2);
     ierr2 = (*PetscErrorPrintf)("[%d]ERROR in DMPlexMatSetClosure\n", rank);CHKERRQ(ierr2);
     ierr2 = DMPlexPrintMatSetValues(PETSC_VIEWER_STDERR_SELF, A, point, numIndices, indices, 0, NULL, values);CHKERRQ(ierr2);
     ierr2 = DMPlexRestoreClosureIndices(dm, section, globalSection, point, PETSC_TRUE, &numIndices, &indices, NULL, (PetscScalar **) &values);CHKERRQ(ierr2);
@@ -6674,7 +6674,7 @@ PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, Pet
     PetscMPIInt    rank;
     PetscErrorCode ierr2;
 
-    ierr2 = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRQ(ierr2);
+    ierr2 = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRMPI(ierr2);
     ierr2 = (*PetscErrorPrintf)("[%d]ERROR in DMPlexMatSetClosure\n", rank);CHKERRQ(ierr2);
     ierr2 = DMPlexPrintMatSetValues(PETSC_VIEWER_STDERR_SELF, A, point, numIndicesRow, indicesRow, numIndicesCol, indicesCol, values);CHKERRQ(ierr2);
     ierr2 = DMPlexRestoreClosureIndices(dmRow, sectionRow, globalSectionRow, point, PETSC_TRUE, &numIndicesRow, &indicesRow, NULL, (PetscScalar **) &values);CHKERRQ(ierr2);
@@ -6836,7 +6836,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
     PetscMPIInt    rank;
     PetscErrorCode ierr2;
 
-    ierr2 = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRQ(ierr2);
+    ierr2 = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRMPI(ierr2);
     ierr2 = (*PetscErrorPrintf)("[%d]ERROR in DMPlexMatSetClosure\n", rank);CHKERRQ(ierr2);
     ierr2 = DMPlexPrintMatSetValues(PETSC_VIEWER_STDERR_SELF, A, point, numFIndices, findices, numCIndices, cindices, values);CHKERRQ(ierr2);
     ierr2 = DMRestoreWorkArray(dmf, numFIndices, MPIU_INT, &findices);CHKERRQ(ierr2);

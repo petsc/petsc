@@ -328,7 +328,7 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
       vdtype = MPI_DOUBLE;
     }
 #endif
-    ierr  = MPI_Type_size(vdtype,&dsize);CHKERRQ(ierr);
+    ierr  = MPI_Type_size(vdtype,&dsize);CHKERRMPI(ierr);
     bytes = PetscVTKIntCast(dsize*n);
 
     count = fwrite(&bytes,sizeof(int),1,fp);

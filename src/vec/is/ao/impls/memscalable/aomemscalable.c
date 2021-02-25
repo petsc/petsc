@@ -54,8 +54,8 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
       len       = map->range[i+1] - map->range[i];
       app_loc   = app  + map->range[i];
       petsc_loc = petsc+ map->range[i];
-      ierr      = MPI_Recv(app_loc,(PetscMPIInt)len,MPIU_INT,i,tag_app,PetscObjectComm((PetscObject)ao),&status);CHKERRQ(ierr);
-      ierr      = MPI_Recv(petsc_loc,(PetscMPIInt)len,MPIU_INT,i,tag_petsc,PetscObjectComm((PetscObject)ao),&status);CHKERRQ(ierr);
+      ierr      = MPI_Recv(app_loc,(PetscMPIInt)len,MPIU_INT,i,tag_app,PetscObjectComm((PetscObject)ao),&status);CHKERRMPI(ierr);
+      ierr      = MPI_Recv(petsc_loc,(PetscMPIInt)len,MPIU_INT,i,tag_petsc,PetscObjectComm((PetscObject)ao),&status);CHKERRMPI(ierr);
       ierr      = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",i);CHKERRQ(ierr);
       for (j=0; j<len; j++) {
         ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",map->range[i]+j,app_loc[j],map->range[i]+j,petsc_loc[j]);CHKERRQ(ierr);
@@ -202,8 +202,8 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,const 
 
   /* 1st recvs: other's requests */
   for (j=0; j< nreceives; j++) {
-    ierr   = MPI_Waitany(nreceives,recv_waits,&widx,&recv_status);CHKERRQ(ierr); /* idx: index of handle for operation that completed */
-    ierr   = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRQ(ierr);
+    ierr   = MPI_Waitany(nreceives,recv_waits,&widx,&recv_status);CHKERRMPI(ierr); /* idx: index of handle for operation that completed */
+    ierr   = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRMPI(ierr);
     rbuf   = rindices+nmax*widx; /* global index */
     source = recv_status.MPI_SOURCE;
 
@@ -222,8 +222,8 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,const 
 
   /* 2nd recvs: for the answer of my request */
   for (j=0; j< nsends; j++) {
-    ierr   = MPI_Waitany(nsends,recv_waits2,&widx,&recv_status);CHKERRQ(ierr);
-    ierr   = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRQ(ierr);
+    ierr   = MPI_Waitany(nsends,recv_waits2,&widx,&recv_status);CHKERRMPI(ierr);
+    ierr   = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRMPI(ierr);
     source = recv_status.MPI_SOURCE;
     /* pack output ia[] */
     rbuf  = sindices2+start[source];

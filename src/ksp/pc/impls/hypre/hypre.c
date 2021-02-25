@@ -566,7 +566,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PetscOptionItems *PetscOptio
   if (flag){
     PetscMPIInt size;
 
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
     if (size > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"hypre's Euclid does not support a parallel drop tolerance");
     PetscStackCallStandard(HYPRE_EuclidSetILUT,(jac->hsolver,jac->eu_droptolerance));
   }

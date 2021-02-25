@@ -251,11 +251,11 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   ao->data = (void*) aomap;
 
   /* transmit all lengths to all processors */
-  ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr  = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr  = PetscMalloc2(size, &lens,size,&disp);CHKERRQ(ierr);
   nnapp = napp;
-  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRMPI(ierr);
   N     = 0;
   for (i = 0; i < size; i++) {
     disp[i] = N;

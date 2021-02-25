@@ -1758,46 +1758,46 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         ierr = MPI_Allreduce(&eventInfo[event].count,         &minC,  1, MPI_INT,             MPI_MIN, comm);CHKERRMPI(ierr);
         ierr = MPI_Allreduce(&eventInfo[event].count,         &maxC,  1, MPI_INT,             MPI_MAX, comm);CHKERRMPI(ierr);
         if (PetscLogMemory) {
-          ierr  = MPI_Allreduce(&eventInfo[event].memIncrease,    &mem,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-          ierr  = MPI_Allreduce(&eventInfo[event].mallocSpace,    &mal,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-          ierr  = MPI_Allreduce(&eventInfo[event].mallocIncrease, &malmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-          ierr  = MPI_Allreduce(&eventInfo[event].mallocIncreaseEvent, &emalmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+          ierr  = MPI_Allreduce(&eventInfo[event].memIncrease,    &mem,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+          ierr  = MPI_Allreduce(&eventInfo[event].mallocSpace,    &mal,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+          ierr  = MPI_Allreduce(&eventInfo[event].mallocIncrease, &malmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+          ierr  = MPI_Allreduce(&eventInfo[event].mallocIncreaseEvent, &emalmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
         }
         #if defined(PETSC_HAVE_DEVICE)
-        ierr  = MPI_Allreduce(&eventInfo[event].CpuToGpuCount,    &cct,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&eventInfo[event].GpuToCpuCount,    &gct,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&eventInfo[event].CpuToGpuSize,     &csz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&eventInfo[event].GpuToCpuSize,     &gsz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&eventInfo[event].GpuFlops,         &gflops,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&eventInfo[event].GpuTime,          &gmaxt ,1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
+        ierr  = MPI_Allreduce(&eventInfo[event].CpuToGpuCount,    &cct,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&eventInfo[event].GpuToCpuCount,    &gct,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&eventInfo[event].CpuToGpuSize,     &csz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&eventInfo[event].GpuToCpuSize,     &gsz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&eventInfo[event].GpuFlops,         &gflops,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&eventInfo[event].GpuTime,          &gmaxt ,1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRMPI(ierr);
         #endif
         name = stageLog->eventLog->eventInfo[event].name;
       } else {
         flopr = 0.0;
-        ierr  = MPI_Allreduce(&flopr,                         &minf,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&flopr,                         &maxf,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &totf,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &mint,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &maxt,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &tott,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &totm,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &totml, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &totr,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&ierr,                          &minC,  1, MPI_INT,             MPI_MIN, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&ierr,                          &maxC,  1, MPI_INT,             MPI_MAX, comm);CHKERRQ(ierr);
+        ierr  = MPI_Allreduce(&flopr,                         &minf,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&flopr,                         &maxf,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &totf,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &mint,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &maxt,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &tott,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &totm,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &totml, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &totr,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&ierr,                          &minC,  1, MPI_INT,             MPI_MIN, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&ierr,                          &maxC,  1, MPI_INT,             MPI_MAX, comm);CHKERRMPI(ierr);
         if (PetscLogMemory) {
-          ierr  = MPI_Allreduce(&zero,                        &mem,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-          ierr  = MPI_Allreduce(&zero,                        &mal,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-          ierr  = MPI_Allreduce(&zero,                        &malmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-          ierr  = MPI_Allreduce(&zero,                        &emalmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+          ierr  = MPI_Allreduce(&zero,                        &mem,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+          ierr  = MPI_Allreduce(&zero,                        &mal,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+          ierr  = MPI_Allreduce(&zero,                        &malmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+          ierr  = MPI_Allreduce(&zero,                        &emalmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
         }
         #if defined(PETSC_HAVE_DEVICE)
-        ierr  = MPI_Allreduce(&zero,                          &cct,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &gct,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &csz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &gsz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &gflops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
-        ierr  = MPI_Allreduce(&zero,                          &gmaxt , 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &cct,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &gct,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &csz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &gsz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &gflops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRMPI(ierr);
+        ierr  = MPI_Allreduce(&zero,                          &gmaxt , 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRMPI(ierr);
         #endif
         name  = "";
       }

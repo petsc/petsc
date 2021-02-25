@@ -289,14 +289,14 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
           zq      = zloc[0];
           y[d]    =      c * zp + s * zq;
           zloc[0] =   -s * zp + c * zq;
-          ierr    = MPI_Send(&(y[d]), 1, MPIU_SCALAR, Ileft, agmres->tag, comm);CHKERRQ(ierr);
+          ierr    = MPI_Send(&(y[d]), 1, MPIU_SCALAR, Ileft, agmres->tag, comm);CHKERRMPI(ierr);
         } else {
-          ierr    = MPI_Recv(&yd, 1, MPIU_SCALAR, Iright, agmres->tag, comm, &status);CHKERRQ(ierr);
+          ierr    = MPI_Recv(&yd, 1, MPIU_SCALAR, Iright, agmres->tag, comm, &status);CHKERRMPI(ierr);
           zp      = yd;
           zq      = zloc[0];
           yd      =      c * zp + s * zq;
           zloc[0] =   -s * zp + c * zq;
-          ierr    = MPI_Send(&yd, 1, MPIU_SCALAR, Ileft, agmres->tag, comm);CHKERRQ(ierr);
+          ierr    = MPI_Send(&yd, 1, MPIU_SCALAR, Ileft, agmres->tag, comm);CHKERRMPI(ierr);
         }
       }
     }

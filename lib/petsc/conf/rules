@@ -656,42 +656,47 @@ checkbadPetscFunctionBegin:
 	${OMAKE} PETSC_ARCH=${PETSC_ARCH} \
 	checkbadPetscFunctionBegin_private ; fi
 
-GITSRC = '*.[chF]' '*.F90' '*.cpp' '*.cxx' '*.cu'
+GITSRC = '*.[chF]' '*.F90' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
+GITSRCEXCL = \
+':!include/*/khash.h' \
+':!src/sys/yaml/*'
 checkbadSource:
 	-@${RM} -f checkbadSource.out
 	-@echo "Tabs in file -----------------------------------------" > checkbadSource.out
-	-@git --no-pager grep -n -P '\t' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '\t' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "White space at end of line ---------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P ' $$' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P ' $$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Space after ( ----------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '\( ' -- ${GITSRC} | grep PetscErrorCode | grep -v khash.h >> checkbadSource.out;true
-	-@git --no-pager grep -n -P 'if \( ' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
-	-@git --no-pager grep -n -P 'for \( ' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
-	-@git --no-pager grep -n -P 'while \( ' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '\( ' -- ${GITSRC} | grep PetscErrorCode >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'if \( ' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'for \( ' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'while \( ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Space before ) ---------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P ' \)' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
-	-@echo "Space before CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE) ----------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '; CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE)\(' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P ' \)' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "Space before CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE) ------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '; CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE)\(' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "No space after if, for or while ----------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '[^_]for\(' -e '[^_]if\(' -e 'while\(' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '[^_]for\(' -e '[^_]if\(' -e 'while\(' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Two ;; -----------------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
+	-@echo "CHKERRQ for an MPI error code ------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e '= MPI_.*;CHKERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Missing if (ierr) return(ierr); ----------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" | grep -v khash.h >> checkbadSource.out;true
-	-@echo "DOS file (with DOS newlines) -------------------------" | grep -v khash.h >> checkbadSource.out
-	-@git --no-pager grep -n -P '\r' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" >> checkbadSource.out;true
+	-@echo "DOS file (with DOS newlines) -------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '\r' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "{ before SETERRQ -------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} | grep -v khash.h >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 10` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 11` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
          fi;\
          test ! $$l -gt 0
-	-@git --no-pager grep -P -n "[\x00-\x08\x0E-\x1F\x80-\xFF]" -- ${GITSRC} | grep -v khash.h > badSourceChar.out;\
-         w=`cat badSourceChar.out | wc -l`;\
+	-@git --no-pager grep -P -n "[\x00-\x08\x0E-\x1F\x80-\xFF]" -- ${GITSRC} > badSourceChar.out;true
+	-@w=`cat badSourceChar.out | wc -l`;\
          if [ $$w -gt 0 ] ; then \
            echo "Source files with non-ASCII characters ----------------" ;\
            cat badSourceChar.out ;\

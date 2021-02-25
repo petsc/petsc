@@ -109,7 +109,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&At);CHKERRQ(ierr);
 
   /* test providing diagonal first, the offdiagonal */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
   if (ismpiaij && size > 1) {
     Mat               lA,lB;

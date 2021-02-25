@@ -704,8 +704,8 @@ first :math:`n` (also assume :math:`n \leq m`) values from it's immediately supe
    /* Compute the global indices */
    ierr = VecGetSize(vecGlobal, &N);CHKERRQ(ierr);
    ierr = PetscObjectGetComm((PetscObject) vecGlobal, &comm);CHKERRQ(ierr);
-   ierr = MPI_Comm_rank(comm, &r);CHKERRQ(ierr);
-   ierr = MPI_Comm_size(comm, &R);CHKERRQ(ierr);
+   ierr = MPI_Comm_rank(comm, &r);CHKERRMPI(ierr);
+   ierr = MPI_Comm_size(comm, &R);CHKERRMPI(ierr);
    firstGlobalIndex = r == R-1 ? 0 : (N/R)*(r+1);
 
    /* Create IS that describes where we want to scatter from */
@@ -1161,7 +1161,7 @@ provided by Rolf Kuiper:
    PetscErrorCode ierr;
 
    // get rank from MPI ordering:
-   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &MPI_Rank);CHKERRQ(ierr);
+   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &MPI_Rank);CHKERRMPI(ierr);
 
    // calculate coordinates of cpus in MPI ordering:
    x = MPI_rank / (z_procs*y_procs);
@@ -1172,7 +1172,7 @@ provided by Rolf Kuiper:
    NewRank = z*y_procs*x_procs + y*x_procs + x;
 
    // create communicator with new ranks according to PETSc ordering
-   ierr = MPI_Comm_split(PETSC_COMM_WORLD, 1, NewRank, &NewComm);CHKERRQ(ierr);
+   ierr = MPI_Comm_split(PETSC_COMM_WORLD, 1, NewRank, &NewComm);CHKERRMPI(ierr);
 
    // override the default communicator (was MPI_COMM_WORLD as default)
    PETSC_COMM_WORLD = NewComm;

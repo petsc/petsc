@@ -252,8 +252,8 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
   PetscValidPointer(objlist,3);
   if (!count && !numbering) PetscFunctionReturn(0);
 
-  ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr  = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   roots = 0;
   for (i = 0; i < len; ++i) {
     PetscMPIInt srank;
@@ -272,7 +272,7 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
       and make it global by calculating the shift among all of the roots.
       The roots are ordered using the comm ordering.
     */
-    ierr    = MPI_Scan(&roots,&offset,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr    = MPI_Scan(&roots,&offset,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
     offset -= roots;
     /* Now we are ready to broadcast global subcomm numbers within each subcomm.*/
     /*

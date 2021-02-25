@@ -900,9 +900,9 @@ static PetscErrorCode THISurfaceStatistics(DM da,Vec X,PetscReal *min,PetscReal 
     }
   }
   ierr  = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(&umin,min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(&umax,max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(&usum,&gusum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(&umin,min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  ierr  = MPI_Allreduce(&umax,max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  ierr  = MPI_Allreduce(&usum,&gusum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
   *mean = PetscRealPart(gusum) / (mx*my);
   PetscFunctionReturn(0);
 }

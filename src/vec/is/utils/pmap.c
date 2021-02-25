@@ -51,7 +51,7 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 
   PetscFunctionBegin;
   ierr = PetscNew(map);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &(*map)->size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &(*map)->size);CHKERRMPI(ierr);
   (*map)->comm        = comm;
   (*map)->bs          = -1;
   (*map)->n           = -1;

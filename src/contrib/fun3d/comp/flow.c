@@ -576,7 +576,7 @@ int Update(SNES snes, void *ctx)
     /*cpu_fin = PetscGetCPUTime();*/
     cpuloc = time2-time1;
     cpuglo = 0.0;
-    ierr   = MPI_Allreduce(&cpuloc,&cpuglo,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(&cpuloc,&cpuglo,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);CHKERRMPI(ierr);
 
     /*cpu_fin = PetscGetCPUTime();
     cpuloc = cpu_fin - cpu_ini;
@@ -838,7 +838,7 @@ int GetLocalOrdering(GRID *grid)
   time_fin -= time_ini;
   ierr      = PetscPrintf(comm,"Partition Vector read successfully\n");CHKERRQ(ierr);
   ierr      = PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin);CHKERRQ(ierr);
-  ierr      = MPI_Scan(&nnodesLoc,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr      = MPI_Scan(&nnodesLoc,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);CHKERRMPI(ierr);
   rstart   -= nnodesLoc;
   ICALLOC(nnodesLoc, &pordering);
   for (i=0; i < nnodesLoc; i++) pordering[i] = rstart + i;
@@ -1017,7 +1017,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i+= readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr     = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   }
   ierr = PetscFree(ftmp);CHKERRQ(ierr);
   FCALLOC(nedgeLoc, &ftmp);
@@ -1041,7 +1041,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i+= readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr     = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   }
   ierr = PetscFree(ftmp);CHKERRQ(ierr);
   FCALLOC(nedgeLoc, &ftmp);
@@ -1065,7 +1065,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i+= readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr     = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   }
   ierr = PetscFree(ftmp);CHKERRQ(ierr);
   FCALLOC(nedgeLoc, &ftmp);
@@ -1089,7 +1089,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i+= readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr     = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   }
   ierr = PetscFree(ftmp);CHKERRQ(ierr);
   FCALLOC(nedgeLoc, &ftmp);
@@ -1137,7 +1137,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i+= nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr      = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   }
 
   FCALLOC(nvertices, &grid->z);
@@ -1153,7 +1153,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i+= nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr      = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   }
 
 

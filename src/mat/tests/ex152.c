@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
   options[3] = 0;
   options[4] = 0;
 
-  ierr   = MPI_Comm_dup(MPI_COMM_WORLD, &comm);CHKERRQ(ierr);
+  ierr   = MPI_Comm_dup(MPI_COMM_WORLD, &comm);CHKERRMPI(ierr);
   status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt, NULL, &wgtflag, &numflag, &ndims, sxyz, &ncon, &isize, tpwgts, ubvec,options, &edgecut, part, &comm);CHKERRQPARMETIS(status);
   ierr = MPI_Comm_free(&comm);CHKERRMPI(ierr);
 

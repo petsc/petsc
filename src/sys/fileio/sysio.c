@@ -626,7 +626,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,Pets
   }
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (!rank) {
     ibuf[0] = PetscBinaryRead(fd,data,num,count?&ibuf[1]:NULL,type);
   }
