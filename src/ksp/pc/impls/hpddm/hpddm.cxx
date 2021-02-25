@@ -728,8 +728,8 @@ static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc)
 static PetscErrorCode PCSetUp_HPDDM(PC pc)
 {
   PC_HPDDM                 *data = (PC_HPDDM*)pc->data;
-  PC                       inner, st = NULL;
-  Mat                      *sub, A, P, N, C = NULL, uaux = NULL, weighted;
+  PC                       inner;
+  Mat                      *sub, A, P, N, C = NULL, uaux = NULL, weighted, subA[2];
   Vec                      xin, v;
   std::vector<Vec>         initial;
   IS                       is[1], loc, uis = data->is;
@@ -752,7 +752,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     ierr = KSPSetOptionsPrefix(data->levels[0]->ksp, prefix);CHKERRQ(ierr);
     ierr = KSPSetType(data->levels[0]->ksp, KSPPREONLY);CHKERRQ(ierr);
   } else if (data->levels[0]->ksp->pc && data->levels[0]->ksp->pc->setupcalled == 1 && data->levels[0]->ksp->pc->reusepreconditioner) {
-    /* if the fine level PCSHELL exists, its setup has succeeded, and one wants to reuse it, */
+    /* if the fine-level PCSHELL exists, its setup has succeeded, and one wants to reuse it, */
     /* then just propagate the appropriate flag to the coarser levels                        */
     for (n = 0; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
       /* the following KSP and PC may be NULL for some processes, hence the check            */
@@ -919,6 +919,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       }
       /* it is possible to share the PC only given specific conditions, otherwise there is not warranty that the matrices have the same nonzero pattern */
       if (!ismatis && sub == &data->aux && !data->B && subdomains && data->share) {
+        KSP            *ksp;
         IS             perm;
         PetscInt       size;
         const PetscInt *ptr;
@@ -945,11 +946,47 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         concatenate -= size;
         /* permute user-provided IS so that it matches with MatCreateSubMatrices() numbering */
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)data->is), size, concatenate, PETSC_OWN_POINTER, &uis);CHKERRQ(ierr);
-        /* swap pointers so that variables stay consistent throughout PCSetUp() */
-        std::swap(C, data->aux);
-        std::swap(uis, data->is);
+        if (!data->levels[0]->pc) {
+          ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : "");CHKERRQ(ierr);
+          ierr = PCCreate(PetscObjectComm((PetscObject)pc), &data->levels[0]->pc);CHKERRQ(ierr);
+          ierr = PCSetOptionsPrefix(data->levels[0]->pc, prefix);CHKERRQ(ierr);
+          ierr = PCSetOperators(data->levels[0]->pc, A, P);CHKERRQ(ierr);
+        }
+        ierr = PCSetType(data->levels[0]->pc, PCASM);CHKERRQ(ierr);
+        if (!data->levels[0]->pc->setupcalled) {
+          ierr = PCASMSetLocalSubdomains(data->levels[0]->pc, 1, is, &loc);CHKERRQ(ierr);
+        }
+        ierr = PCSetFromOptions(data->levels[0]->pc);CHKERRQ(ierr);
+        ierr = PCSetUp(data->levels[0]->pc);CHKERRQ(ierr);
+        size = -1;
+        ierr = PetscTryMethod(data->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt*, PetscInt*, KSP**), (data->levels[0]->pc, &size, NULL, &ksp));CHKERRQ(ierr);
+        if (size != 1) {
+          ierr = PCDestroy(&data->levels[0]->pc);CHKERRQ(ierr);
+          ierr = MatDestroy(&C);CHKERRQ(ierr);
+          ierr = ISDestroy(&uis);CHKERRQ(ierr);
+          data->share = PETSC_FALSE;
+          if (size == -1) {
+            ierr = PetscInfo(pc, "Cannot share PC between ST and subdomain solver since PCASMGetSubKSP() not found in fine-level PC\n");CHKERRQ(ierr);
+          } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %D != 1", size);
+        } else {
+          Mat        D;
+          const char *matpre;
+          inner = data->levels[0]->pc;
+          ierr = KSPGetPC(ksp[0], &data->levels[0]->pc);CHKERRQ(ierr);
+          ierr = PCGetOperators(data->levels[0]->pc, subA, subA + 1);CHKERRQ(ierr);
+          ierr = MatDuplicate(subA[1], MAT_SHARE_NONZERO_PATTERN, &D);CHKERRQ(ierr);
+          ierr = MatGetOptionsPrefix(subA[1], &matpre);CHKERRQ(ierr);
+          ierr = MatSetOptionsPrefix(D, matpre);CHKERRQ(ierr);
+          ierr = MatAXPY(D, 1.0, C, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+          ierr = MatPropagateSymmetryOptions(C, D);CHKERRQ(ierr);
+          ierr = MatDestroy(&C);CHKERRQ(ierr);
+          C = D;
+          /* swap pointers so that variables stay consistent throughout PCSetUp() */
+          std::swap(C, data->aux);
+          std::swap(uis, data->is);
+        }
       } else if (data->share) {
-        ierr = PetscInfo(pc, "Cannot share PC between ST and subdomain solver");CHKERRQ(ierr);
+        ierr = PetscInfo(pc, "Cannot share PC between ST and subdomain solver\n");CHKERRQ(ierr);
         data->share = PETSC_FALSE;
       }
       if (!data->levels[0]->scatter) {
@@ -983,13 +1020,20 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         /* only useful for -mat_type baij -pc_hpddm_levels_1_st_pc_type cholesky (no problem with MATAIJ or MATSBAIJ)       */
         ierr = MatPropagateSymmetryOptions(sub[0], weighted);CHKERRQ(ierr);
       } else weighted = data->B;
-      st = data->levels[0]->pc;
       /* SLEPc is used inside the loaded symbol */
       ierr = (*loadedSym)(data->levels[0]->P, data->is, ismatis ? C : data->aux, weighted, data->B, initial, data->levels);CHKERRQ(ierr);
-      if (data->share && st != data->levels[0]->pc) {
-        st = data->levels[0]->pc;
-        ierr = PetscObjectReference((PetscObject)st);CHKERRQ(ierr);
-        ierr = PCDestroy(&data->levels[0]->pc);CHKERRQ(ierr);
+      if (data->share) {
+        KSP *ksp;
+        Mat st[2];
+        data->levels[0]->pc = inner;
+        ierr = PetscTryMethod(data->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt*, PetscInt*, KSP**), (data->levels[0]->pc, NULL, NULL, &ksp));CHKERRQ(ierr);
+        ((PC_ASM*)data->levels[0]->pc->data)->same_local_solves = PETSC_TRUE;
+        ierr = KSPGetPC(ksp[0], &inner);CHKERRQ(ierr);
+        ierr = PCGetOperators(inner, st, st + 1);CHKERRQ(ierr);
+        ierr = MatCopy(subA[0], st[0], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        if (subA[1] != subA[0] || st[1] != st[0]) {
+          ierr = MatCopy(subA[1], st[1], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        }
       }
       if (data->log_separate) {
         ierr = PetscLogEventEnd(PC_HPDDM_SetUp[0], data->levels[0]->ksp, 0, 0, 0);CHKERRQ(ierr);
@@ -1097,32 +1141,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     pc->setfromoptionscalled = 0;
   }
   data->N += reused;
-  if (!ismatis && C) {
-    PetscInt   n_local;
-    KSP        *ksp;
-    Mat        A1, A2, P1, P2;
-    const char *prefix;
-    ierr = PCSetUp(data->levels[0]->pc);CHKERRQ(ierr);
-    ierr = PCASMGetSubKSP(data->levels[0]->pc, &n_local, NULL, &ksp);CHKERRQ(ierr);
-    ((PC_ASM*)data->levels[0]->pc->data)->same_local_solves = PETSC_TRUE;
-    if (n_local != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %D != 1", n_local);
-    /* reset all previously SLEPc-set prefixes */
-    ierr = KSPGetOptionsPrefix(ksp[0], &prefix);CHKERRQ(ierr);
-    ierr = KSPGetOperators(ksp[0], &A1, &P1);CHKERRQ(ierr);
-    ierr = PCGetOperators(st, &A2, &P2);CHKERRQ(ierr);
-    /* update the subdomain Mat */
-    ierr = MatCopy(A1, A2, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(A2, prefix);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A2);CHKERRQ(ierr);
-    if (P1 != A1 || P2 != A2) {
-      ierr = MatCopy(P1, P2, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatSetOptionsPrefix(P2, prefix);CHKERRQ(ierr);
-      ierr = MatSetFromOptions(P2);CHKERRQ(ierr);
-    }
-    ierr = PCSetOptionsPrefix(st, prefix);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(st);CHKERRQ(ierr);
-    ierr = KSPSetPC(ksp[0], st);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((PetscObject)st);CHKERRQ(ierr);
+  if (data->share) {
     /* swap back pointers so that variables follow the user-provided numbering */
     std::swap(C, data->aux);
     std::swap(uis, data->is);
