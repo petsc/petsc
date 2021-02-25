@@ -27,9 +27,6 @@ configure_options = [
   '--with-pnetcdf-dir='+os.environ['CRAY_PARALLEL_NETCDF_PREFIX'],
   '--with-zlib=1',
   '--with-batch=1',
-  '--known-mpi-long-double=1',
-  '--known-mpi-int64_t=1',
-  '--known-mpi-c-double-complex=1',
   '--known-64-bit-blas-indices=0',
 ]
 

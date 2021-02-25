@@ -434,20 +434,7 @@ Unable to run hostname to check the network')
       includes = '#include <stdlib.h>\n#include <mpi.h>\n'
       body     = 'int size;\nint ierr;\nMPI_Init(0,0);\nierr = MPI_Type_size('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\nMPI_Finalize();\n'
       if self.checkCompile(includes, body):
-        if 'known-mpi-'+name in self.argDB:
-          if int(self.argDB['known-mpi-'+name]):
-            self.addDefine('HAVE_'+datatype, 1)
-        elif not self.argDB['with-batch']:
-          self.pushLanguage('C')
-          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name, executor = self.mpiexec, timeout = 120):
-            self.addDefine('HAVE_'+datatype, 1)
-          self.popLanguage()
-        else:
-         self.logPrintBox('***** WARNING: Cannot determine if '+datatype+' works on your system\n\
-in batch-mode! Assuming it does work. Run with --known-mpi-'+name+'=0\n\
-if you know it does not work (very unlikely). Run with --known-mpi-'+name+'=1\n\
-to remove this warning message *****')
-         self.addDefine('HAVE_'+datatype, 1)
+        self.addDefine('HAVE_'+datatype, 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     return
