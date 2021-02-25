@@ -66,15 +66,15 @@ PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps *pMaps)
 // The GPU Landau kernel
 //
 __global__
-void __launch_bounds__(256,1) landau_form_fdf(const PetscInt nip, const PetscInt dim, const PetscInt Nf, const PetscInt Nb, const PetscReal invJ_a[],
-                                              const PetscReal * const BB, const PetscReal * const DD, LandauIPReal *IPDataRaw, LandauIPReal d_f[], LandauIPReal d_dfdx[], LandauIPReal d_dfdy[],
+void landau_form_fdf(const PetscInt nip, const PetscInt dim, const PetscInt Nf, const PetscInt Nb, const PetscReal invJ_a[],
+                     const PetscReal * const BB, const PetscReal * const DD, LandauIPReal *IPDataRaw, LandauIPReal d_f[], LandauIPReal d_dfdx[], LandauIPReal d_dfdy[],
 #if LANDAU_DIM==3
-                                              LandauIPReal d_dfdz[],
+                     LandauIPReal d_dfdz[],
 #endif
-                                              PetscErrorCode *ierr) // output
+                     PetscErrorCode *ierr) // output
 {
-  const PetscInt  Nq = blockDim.y, myelem = blockIdx.x;
-  const PetscInt  myQi = threadIdx.y;
+  const PetscInt  Nq = blockDim.x, myelem = blockIdx.x;
+  const PetscInt  myQi = threadIdx.x;
   const PetscInt  jpidx = myQi + myelem * Nq;
   const PetscReal *invJ = &invJ_a[jpidx*dim*dim];
   const PetscReal *Bq = &BB[myQi*Nb], *Dq = &DD[myQi*Nb*dim];
@@ -437,7 +437,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, const PetscReal nu
 #if LANDAU_DIM==3
   PetscScalar       *d_dfdz=NULL;
 #endif
-  PetscLogDouble    flops;
   PetscTabulation   *Tf;
   PetscDS           prob;
   PetscSection      section, globalSection;
@@ -473,7 +472,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, const PetscReal nu
   if (mass_w) {
     cerr = cudaMalloc((void **)&d_mass_w,        nip*szf);CHKERRCUDA(cerr); // kernel input
     cerr = cudaMemcpy(          d_mass_w, mass_w,nip*szf,   cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
-    flops = (PetscLogDouble)numGCells*(PetscLogDouble)Nq*(PetscLogDouble)(5.*dim*dim*Nf*Nf);
   } else {
     ipdatasz = LandauGetIPDataSize(IPData);
     cerr = cudaMalloc((void **)&d_IPDataRaw,ipdatasz*szf);CHKERRCUDA(cerr); // kernel input
@@ -496,7 +494,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, const PetscReal nu
     // collect geometry
     cerr = cudaMalloc((void **)&d_invJj, nip_dim2*szf);CHKERRCUDA(cerr); // kernel input
     cerr = cudaMemcpy(d_invJj, invJj, nip_dim2*szf,       cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
-    flops = (PetscLogDouble)numGCells*(PetscLogDouble)Nq*(PetscLogDouble)(5.*dim*dim*Nf*Nf + 165.);
   }
 
   ierr = DMGetApplicationContext(plex, &ctx);CHKERRQ(ierr);
@@ -525,8 +522,9 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, const PetscReal nu
 
   cerr = cudaMalloc((void **)&d_ierr, sizeof(ierr));CHKERRCUDA(cerr); // kernel input
   if (!mass_w) { // form f and df
-    dim3 dimBlock(nnn,Nq);
+    dim3 dimBlock(Nq,1);
     ierr = PetscLogEventBegin(events[8],0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     ii = 0;
     // PetscPrintf(PETSC_COMM_SELF, "numGCells=%d dim.x=%d Nq=%d nThreads=%d, %d kB shared mem\n",numGCells,n,Nq,Nq*n,ii*szf/1024);
     landau_form_fdf<<<numGCells,dimBlock,ii*szf>>>( nip, dim, Nf, Nb, d_invJj, d_BB, d_DD, d_IPDataRaw, d_f, d_dfdx, d_dfdy,
@@ -535,21 +533,23 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, const PetscReal nu
 #endif
                                                     d_ierr);
     CHECK_LAUNCH_ERROR();
+    ierr = PetscLogGpuFlops(nip*(PetscLogDouble)(2*Nb*(1+dim)));CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     cerr = cudaMemcpy(&ierr, d_ierr, sizeof(ierr), cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
     CHKERRQ(ierr);
     ierr = PetscLogEventEnd(events[8],0,0,0,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(events[4],0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-  ierr = PetscLogGpuFlops(flops*nip);CHKERRQ(ierr);
   {
     dim3 dimBlock(nnn,Nq);
+    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+    ierr = PetscLogGpuFlops(nip*(PetscLogDouble)(mass_w ? (nip*(11*Nf+ 4*dim*dim) + 6*Nf*dim*dim*dim + 10*Nf*dim*dim + 4*Nf*dim + Nb*Nf*Nb*Nq*dim*dim*5) : Nb*Nf*Nb*Nq*4));CHKERRQ(ierr);
     ii = 2*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_DIM*(1+LANDAU_DIM) + 3*LANDAU_MAX_SPECIES + (1+LANDAU_DIM)*dimBlock.x*LANDAU_MAX_SPECIES;
     ii += (LANDAU_MAX_NQ*LANDAU_MAX_NQ)*LANDAU_MAX_SPECIES;
     if (ii*szf >= 49152) {
       cerr = cudaFuncSetAttribute(landau_kernel_v2,
-                                          cudaFuncAttributeMaxDynamicSharedMemorySize,
-                                          98304);CHKERRCUDA(cerr);
+                                  cudaFuncAttributeMaxDynamicSharedMemorySize,
+                                  98304);CHKERRCUDA(cerr);
     }
     // PetscPrintf(PETSC_COMM_SELF, "numGCells=%d dim.x=%d Nq=%d nThreads=%d, %d kB shared mem\n",numGCells,n,Nq,Nq*n,ii*szf/1024);
     landau_kernel_v2<<<numGCells,dimBlock,ii*szf>>>(nip,dim,totDim,Nf,Nb,d_invJj,d_nu_alpha,d_nu_beta,d_invMass,d_Eq_m,
@@ -560,12 +560,12 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, const PetscReal nu
                                                     d_mass_w, shift,
                                                     d_ierr);
     CHECK_LAUNCH_ERROR();
-    cerr = cudaMemcpy(&ierr, d_ierr, sizeof(ierr), cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
-    CHKERRQ(ierr);
+    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+    //cerr = cudaMemcpy(&ierr, d_ierr, sizeof(ierr), cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+    //CHKERRQ(ierr);
   }
   cerr = cudaFree(d_ierr);CHKERRCUDA(cerr);
   cerr = WaitForCUDA();CHKERRCUDA(cerr);
-  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = PetscLogEventEnd(events[4],0,0,0,0);CHKERRQ(ierr);
   // delete device data
   ierr = PetscLogEventBegin(events[5],0,0,0,0);CHKERRQ(ierr);
