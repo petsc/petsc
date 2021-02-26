@@ -84,7 +84,7 @@ int main(int argc, char **argv)
   /* test view from options */
   ierr = PetscPartitionerViewFromOptions(p,NULL,"-part_view");CHKERRQ(ierr);
 
-  /* test partitioning a graph on one process only (not master) */
+  /* test partitioning a graph on one process only (not main) */
   if (rank == size - 1) {
     ierr = PetscPartitionerPartition(p,nparts,nv,vv,vadj,vertexSection,targetSection,partSection,&partition);CHKERRQ(ierr);
   } else {

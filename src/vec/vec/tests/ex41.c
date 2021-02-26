@@ -21,7 +21,7 @@ PetscErrorCode test_vec_ops(void)
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_WORLD, "============== %s ==============\n",PETSC_FUNCTION_NAME);CHKERRQ(ierr);
 
-  /* create 4 slave vectors */
+  /* create 4 worker vectors */
   ierr = VecCreate(PETSC_COMM_WORLD, &c);CHKERRQ(ierr);
   ierr = VecSetSizes(c, PETSC_DECIDE, 4);CHKERRQ(ierr);
   ierr = VecSetType(c, VECMPI);CHKERRQ(ierr);
@@ -29,7 +29,7 @@ PetscErrorCode test_vec_ops(void)
   ierr = VecDuplicate(c, &e);CHKERRQ(ierr);
   ierr = VecDuplicate(c, &f);CHKERRQ(ierr);
 
-  /* create two more slaves of different sizes */
+  /* create two more workers of different sizes */
   ierr = VecCreate(PETSC_COMM_WORLD, &g);CHKERRQ(ierr);
   ierr = VecSetSizes(g, PETSC_DECIDE, 6);CHKERRQ(ierr);
   ierr = VecSetType(g, VECMPI);CHKERRQ(ierr);

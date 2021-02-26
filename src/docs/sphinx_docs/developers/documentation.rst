@@ -75,7 +75,7 @@ using the usual guidelines in :doc:`integration` (note the options for speedy re
 Building the Sphinx docs locally
 --------------------------------
 
-* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/master/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/master/src/docs/sphinx_docs/requirements.txt>`__ [#f1]. e.g. with pip:
+* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/main/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/main/src/docs/sphinx_docs/requirements.txt>`__ [#f1]. e.g. with pip:
 
   .. code-block:: console
 
@@ -214,8 +214,8 @@ Sphinx Documentation Guidelines
 
 * We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
-  You must include ``.. bibliography::`` blocks at the bottom of a page including citations (`example <https://gitlab.com/petsc/petsc/-/raw/master/src/docs/sphinx_docs/manual/ksp.rst>`__).
-  To cite the same reference in more than one page, use `this workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing>`__ on one of them (`example <https://gitlab.com/petsc/petsc/-/raw/master/src/docs/sphinx_docs/developers/articles.rst>`__) [#bibtex_footnote]_.
+  You must include ``.. bibliography::`` blocks at the bottom of a page including citations (`example <https://gitlab.com/petsc/petsc/-/raw/main/src/docs/sphinx_docs/manual/ksp.rst>`__).
+  To cite the same reference in more than one page, use `this workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing>`__ on one of them (`example <https://gitlab.com/petsc/petsc/-/raw/main/src/docs/sphinx_docs/developers/articles.rst>`__) [#bibtex_footnote]_.
 
 * When possible, please use SVG for images.  SVG is web-friendly and will be automatically converted to PDF using ``rsvg-convert`` (installable with your package manager, e.g., ``librsvg2-bin`` on Debian/Ubuntu systems).  If SVG originals are not available, it is useful to provide images in both web-friendly (such as PNG) and PDF formats.  This can be done with a wildcard extension, as in the following example, which uses ``ghost.png`` for the web but ``ghost.pdf`` when building a PDF with LaTeX.
 
@@ -413,4 +413,4 @@ Next, one must examine the output, ideally comparing to the original rendered La
 .. rubric:: Footnotes
 
 .. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (`:footcite:`), which can be investigated if a release is ever made.
-.. [#f1] We use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/master/src/docs/sphinx_docs/ext/html5_petsc.py>`__
+.. [#f1] We use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/main/src/docs/sphinx_docs/ext/html5_petsc.py>`__

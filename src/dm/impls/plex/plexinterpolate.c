@@ -610,7 +610,7 @@ static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmi
 PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
 {
   /* Here we only compare first 2 points of the cone. Full cone size would lead to stronger self-checking. */
-  PetscInt          masterCone[2];
+  PetscInt          mainCone[2];
   PetscInt          (*roots)[2], (*leaves)[2];
   PetscMPIInt       (*rootsRanks)[2], (*leavesRanks)[2];
 
@@ -682,11 +682,11 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
     if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %4D: cone=[%4D %4D] roots=[(%d,%4D) (%d,%4D)] leaves=[(%d,%4D) (%d,%4D)]", rank, p, cone[0], cone[1], rootsRanks[p][0], roots[p][0], rootsRanks[p][1], roots[p][1], leavesRanks[p][0], leaves[p][0], leavesRanks[p][1], leaves[p][1]);CHKERRQ(ierr);}
     if ((leaves[p][0] != roots[p][0]) || (leaves[p][1] != roots[p][1]) || (leavesRanks[p][0] != rootsRanks[p][0]) || (leavesRanks[p][1] != rootsRanks[p][1])) {
-      /* Translate these two leaves to my cone points; masterCone means desired order p's cone points */
+      /* Translate these two leaves to my cone points; mainCone means desired order p's cone points */
       for (c = 0; c < 2; c++) {
         if (leavesRanks[p][c] == rank) {
           /* A local leave is just taken as it is */
-          masterCone[c] = leaves[p][c];
+          mainCone[c] = leaves[p][c];
           continue;
         }
         /* Find index of rank leavesRanks[p][c] among remote ranks */
@@ -700,12 +700,12 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
         ierr = PetscFindInt(leaves[p][c], n, &rremote1[o], &ind0);CHKERRQ(ierr);
         if (PetscUnlikely(ind0 < 0)) SETERRQ7(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leave (%d,%D): corresponding remote point not found - it seems there is missing connection in point SF!",p,c,cone[c],rootsRanks[p][c],roots[p][c],leavesRanks[p][c],leaves[p][c]);
         /* Get the corresponding local point */
-        masterCone[c] = rmine1[o+ind0];CHKERRQ(ierr);
+        mainCone[c] = rmine1[o+ind0];CHKERRQ(ierr);
       }
-      if (debug) {ierr = PetscSynchronizedPrintf(comm, " masterCone=[%4D %4D]\n", masterCone[0], masterCone[1]);CHKERRQ(ierr);}
+      if (debug) {ierr = PetscSynchronizedPrintf(comm, " mainCone=[%4D %4D]\n", mainCone[0], mainCone[1]);CHKERRQ(ierr);}
       /* Set the desired order of p's cone points and fix orientations accordingly */
       /* Vaclav's note: Here we only compare first 2 points of the cone. Full cone size would lead to stronger self-checking. */
-      ierr = DMPlexOrientCell(dm, p, 2, masterCone);CHKERRQ(ierr);
+      ierr = DMPlexOrientCell(dm, p, 2, mainCone);CHKERRQ(ierr);
     } else if (debug) {ierr = PetscSynchronizedPrintf(comm, " ==\n");CHKERRQ(ierr);}
   }
   if (debug) {

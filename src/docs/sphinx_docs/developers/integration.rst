@@ -29,23 +29,23 @@ Bug-fix branches for the release should start from ``release``.
 
 Bug-fix updates, about every month or so, (e.g. 3.14.1) are tagged on ``release`` (e.g. v3.14.1).
 
-.. _sec_master_branch:
+.. _sec_main_branch:
 
 
-``master``
+``main``
 ----------
 
-The ``master`` branch (soon to be renamed) contains all features and bug-fixes that are believed to be
+The ``main`` branch contains all features and bug-fixes that are believed to be
 stable and will be in the next release (e.g. version 3.15). Users developing software based
-on recently-added features in PETSc should follow ``master``.
+on recently-added features in PETSc should follow ``main``.
 
-New feature branches and bug-fixes for ``master`` :any:`should start  <sec_developing_a_new_feature>` from ``master``.
+New feature branches and bug-fixes for ``main`` :any:`should start  <sec_developing_a_new_feature>` from ``main``.
 
 .. code-block:: none
 
-   $ git checkout master
+   $ git checkout main
    $ git pull
-   $ git checkout -b yourname/fix-component-name master
+   $ git checkout -b yourname/fix-component-name main
 
 
 Contributing
@@ -53,7 +53,7 @@ Contributing
 
 By submitting code, the contributor gives irretrievable consent to the
 redistribution and/or modification of the contributed source code as
-described in the `PETSc open source license <https://gitlab.com/petsc/petsc/-/blob/master/CONTRIBUTING>`__.
+described in the `PETSc open source license <https://gitlab.com/petsc/petsc/-/blob/main/CONTRIBUTING>`__.
 
 Before filing an MR
 -------------------
@@ -90,7 +90,7 @@ For merge requests within the main PETSc repository, `click here <https://gitlab
     <div name="raw_2" id="thumbwrap"> <a class="thumb" href="#raw_2"><img src="../../_images/mr-select-branch.png" alt=""><span><img src="../../_images/mr-select-branch.png" alt=""></span></a> </div></p>
    <div class="clearfix"></div>
 
-Select the appropriate target branch ``master`` or ``release`` (bug-fixes only).
+Select the appropriate target branch ``main`` or ``release`` (bug-fixes only).
 
 .. raw:: html
 
@@ -132,7 +132,7 @@ create your merge request, add the
 ``docs-only`` label and you do not need to submit the MR to a pipeline.
 
 Only small crucial documentation changes should be made to the :any:`the release branch <sec_release_branch>`
-if they apply to the release version of PETSc. All others should be applied to :any:`the master branch <sec_master_branch>`.
+if they apply to the release version of PETSc. All others should be applied to :any:`the main branch <sec_main_branch>`.
 
 Feedback MR
 ^^^^^^^^^^^
@@ -258,7 +258,7 @@ Change the label on the
 MR page to :any:`Workflow::Review <workflow_labels>`.
 
 It is the **submitter’s** responsibility to track the progress of the MR
-and ensure it gets merged to master (or release). If the pipeline
+and ensure it gets merged to main (or release). If the pipeline
 detect problems it is the **submitter’s** responsibility to fix the
 errors.
 
@@ -491,7 +491,7 @@ PETSC_ARCH in our prompt, e.g.
 
 .. code-block:: console
 
-   ~/Src/petsc (master=) arch-complex
+   ~/Src/petsc (main=) arch-complex
    > git checkout release
     ~/Src/petsc (release<) arch-complex
 
@@ -536,7 +536,7 @@ Starting a new feature branch
 
        - ``git clone git@gitlab.com:YOURGITLABUSERNAME/petsc.git``
 
--  Make sure you start from master for a new feature branch: ``git checkout master; git pull``
+-  Make sure you start from main for a new feature branch: ``git checkout main; git pull``
 
 -  Create and switch to a new feature branch:
 
@@ -567,13 +567,13 @@ Starting a new feature branch
    ``git push -u origin barry/snes-removecpp``
 
 If you have long-running development of a feature branch, you will probably
-fall behind the ``master`` branch.
+fall behind the ``main`` branch.
 You can move your changes to the top
-of the latest ``master`` using
+of the latest ``main`` using
 
 .. code-block:: console
 
-    > git rebase master (while in your branch)
+    > git rebase main (while in your branch)
 
 Quick summary of Git commands
 -----------------------------
@@ -620,16 +620,16 @@ Reading commit logs
    -  Compare version of file in two commits:
       ``git diff <SHA1> <SHA1> [file or directory]``
 
--  Show changes that are in master, but not yet in my current branch:
+-  Show changes that are in main, but not yet in my current branch:
 
-   -   ``git log ..master [file or directory]``
+   -   ``git log ..main [file or directory]``
    -  Tabulated by author:
-      ``git shortlog v3.3..master [file or directory]``
+      ``git shortlog v3.3..main [file or directory]``
 
 -  Showing branches:
 
-   -  Not yet in ``master``  ``git branch --all --no-merged master``
-   -  In master ``git branch --all --merged master``
+   -  Not yet in ``main``  ``git branch --all --no-merged main``
+   -  In main ``git branch --all --merged main``
    -  Remove ``--all`` to the above to not include remote tracking
       branches (work you have not interacted with yet).
 

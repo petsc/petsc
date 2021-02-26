@@ -129,7 +129,7 @@ PetscErrorCode DMSwarmDataExCreate(MPI_Comm comm,const PetscInt count, DMSwarmDa
 }
 
 /*
-    This code is horrible, who let it get into master.
+    This code is horrible, who let it get into main.
 
     Should be printing to a viewer, should not be using PETSC_COMM_WORLD
 

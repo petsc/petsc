@@ -114,7 +114,7 @@ class NullLogger(object):
 
 class Lexer:
     def __init__(self):
-        self.lexre = None             # Master regular expression. This is a list of
+        self.lexre = None             # Main regular expression. This is a list of
                                       # tuples (re, findex) where re is a compiled
                                       # regular expression and findex is a list
                                       # mapping regex group numbers to rules

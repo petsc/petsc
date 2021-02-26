@@ -1395,16 +1395,16 @@ static PetscErrorCode DMNetworkVariablesSetUp(DM dm)
 }
 
 /* Get a subsection from a range of points */
-static PetscErrorCode DMNetworkGetSubSection_private(PetscSection master,PetscInt pstart,PetscInt pend,PetscSection *subsection)
+static PetscErrorCode DMNetworkGetSubSection_private(PetscSection main,PetscInt pstart,PetscInt pend,PetscSection *subsection)
 {
   PetscErrorCode ierr;
   PetscInt       i, nvar;
 
   PetscFunctionBegin;
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)master), subsection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)main), subsection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*subsection, 0, pend - pstart);CHKERRQ(ierr);
   for (i = pstart; i < pend; i++) {
-    ierr = PetscSectionGetDof(master,i,&nvar);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(main,i,&nvar);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(*subsection, i - pstart, nvar);CHKERRQ(ierr);
   }
 
@@ -1672,15 +1672,15 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
  Collective
 
   Input Parameters:
-+ masterSF - the original SF structure
++ mainSF - the original SF structure
 - map - a ISLocalToGlobal mapping that contains the subset of points
 
   Output Parameters:
-. subSF - a subset of the masterSF for the desired subset.
+. subSF - a subset of the mainSF for the desired subset.
 
   Level: intermediate
 @*/
-PetscErrorCode PetscSFGetSubSF(PetscSF mastersf,ISLocalToGlobalMapping map,PetscSF *subSF)
+PetscErrorCode PetscSFGetSubSF(PetscSF mainsf,ISLocalToGlobalMapping map,PetscSF *subSF)
 {
   PetscErrorCode        ierr;
   PetscInt              nroots, nleaves, *ilocal_sub;
@@ -1691,7 +1691,7 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mastersf,ISLocalToGlobalMapping map,Petsc
   const PetscSFNode     *iremote;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetGraph(mastersf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(mainsf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
 
   /* Look for leaves that pertain to the subset of points. Get the local ordering */
   ierr = PetscMalloc1(nleaves,&ilocal_map);CHKERRQ(ierr);
@@ -1703,8 +1703,8 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mastersf,ISLocalToGlobalMapping map,Petsc
   ierr = PetscMalloc2(nroots,&local_points,nroots,&remote_points);CHKERRQ(ierr);
   for (i = 0; i < nroots; i++) local_points[i] = i;
   ierr = ISGlobalToLocalMappingApply(map,IS_GTOLM_MASK,nroots,local_points,NULL,local_points);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(mastersf, MPIU_INT, local_points, remote_points);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(mastersf, MPIU_INT, local_points, remote_points);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(mainsf, MPIU_INT, local_points, remote_points);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(mainsf, MPIU_INT, local_points, remote_points);CHKERRQ(ierr);
   /* Fill up graph using local (that is, local to the subset) numbering. */
   ierr = PetscMalloc1(nleaves_sub,&ilocal_sub);CHKERRQ(ierr);
   ierr = PetscMalloc1(nleaves_sub,&iremote_sub);CHKERRQ(ierr);

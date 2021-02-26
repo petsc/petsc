@@ -2205,7 +2205,7 @@ behavior. This is achieved by:
 
 Git bisect can be done as follows:
 
-#. Get PETSc development (master branch in git) sources
+#. Get PETSc development (main branch in git) sources
 
    .. code-block:: console
 

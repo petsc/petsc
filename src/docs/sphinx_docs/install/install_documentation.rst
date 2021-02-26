@@ -420,7 +420,7 @@ Installation Location: In-place or Out-of-place
 
 By default, PETSc does an in-place installation, meaning the libraries are kept in the
 same directories used to compile PETSc. This is particularly useful for those application
-developers who follow the PETSc git repository master or release branches since rebuilds
+developers who follow the PETSc git repository main or release branches since rebuilds
 for updates are very quick and painless.
 
 .. note::
