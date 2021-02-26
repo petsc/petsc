@@ -101,7 +101,8 @@ PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
  *    C[m,n,p] = A[m,k,p] * B[k,n]
  * where all matrices use C-style ordering.
  */
-static PetscErrorCode TensorContract_Private(PetscInt m,PetscInt n,PetscInt p,PetscInt k,const PetscReal *A,const PetscReal *B,PetscReal *C) {
+static PetscErrorCode TensorContract_Private(PetscInt m,PetscInt n,PetscInt p,PetscInt k,const PetscReal *A,const PetscReal *B,PetscReal *C)
+{
   PetscErrorCode ierr;
   PetscInt i;
 

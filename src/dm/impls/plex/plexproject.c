@@ -17,7 +17,8 @@
 
 .seealso: DMPlexSetActivePoint()
 @*/
-PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point) {
+PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
+{
   PetscFunctionBeginHot;
   *point = ((DM_Plex *) dm->data)->activePoint;
   PetscFunctionReturn(0);
@@ -36,7 +37,8 @@ PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point) {
 
 .seealso: DMPlexGetActivePoint()
 @*/
-PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point) {
+PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
+{
   PetscFunctionBeginHot;
   ((DM_Plex *) dm->data)->activePoint = point;
   PetscFunctionReturn(0);

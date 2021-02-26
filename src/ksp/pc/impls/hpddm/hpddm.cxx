@@ -1233,7 +1233,8 @@ static PetscErrorCode PCHPDDMGetSTShareSubPC_HPDDM(PC pc, PetscBool *share)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode HPDDMLoadDL_Private(PetscBool *found) {
+PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
+{
   char           lib[PETSC_MAX_PATH_LEN], dlib[PETSC_MAX_PATH_LEN], dir[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
