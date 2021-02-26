@@ -13,6 +13,7 @@
 #include <petscfv.h>
 #include <petscsftypes.h>
 #include <petscdmfield.h>
+#include <petscviewer.h>
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner, DM, PetscSection, PetscSection, IS *);
 
@@ -449,5 +450,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCellRefinerRefine(DMPlexCellRefiner, DMPolytop
 PETSC_EXTERN PetscErrorCode DMPlexCellRefinerGetAffineTransforms(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_EXTERN PetscErrorCode DMPlexCellRefinerGetAffineFaceTransforms(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_EXTERN PetscErrorCode DMPlexRefineUniform(DM, DMPlexCellRefiner, DM *);
+
+PETSC_EXTERN PetscErrorCode DMPlexTopologyLoad(DM, PetscViewer);
 
 #endif

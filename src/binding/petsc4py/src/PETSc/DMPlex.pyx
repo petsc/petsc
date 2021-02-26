@@ -653,3 +653,8 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexConstructGhostCells(self.dm, cname, &numGhostCells, &dmGhosted))
         PetscCLEAR(self.obj); self.dm = dmGhosted
         return toInt(numGhostCells)
+
+    # Load
+
+    def topologyLoad(self, Viewer viewer):
+        CHKERR( DMPlexTopologyLoad(self.dm, viewer.vwr))

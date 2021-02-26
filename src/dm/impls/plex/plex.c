@@ -1405,6 +1405,43 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
   } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlex loading", ((PetscObject)viewer)->type_name);
 }
 
+/*@
+  DMPlexTopologyLoad - Loads a topology into a DMPlex
+
+  Collective on DM
+
+  Input Parameters:
++ dm     - The DM into which the topology is loaded
+- viewer - The PetscViewer for the saved topology
+
+  Level: advanced
+
+.seealso: DMLoad(), DMView(), PetscViewerHDF5Open(), PetscViewerPushFormat()
+@*/
+PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer)
+{
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscValidPointer(sf, 3);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    PetscViewerFormat format;
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
+      ierr = DMPlexTopologyLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMDestroy_Plex(DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
