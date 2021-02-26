@@ -1,0 +1,10 @@
+PetscSF Object: sf 3 MPI processes
+  type: basic
+  [0] Number of roots=102, leaves=1, remote ranks=1
+  [0] 400 <- (0,100)
+  [1] Number of roots=201, leaves=1, remote ranks=1
+  [1] 500 <- (0,101)
+  [2] Number of roots=301, leaves=2, remote ranks=2
+  [2] 600 <- (0,100)
+  [2] 601 <- (2,300)
+  MultiSF sort=rank-order
