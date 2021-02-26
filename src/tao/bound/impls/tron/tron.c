@@ -292,7 +292,8 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
+static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU)
+{
 
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;
