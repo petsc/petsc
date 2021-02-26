@@ -660,3 +660,6 @@ cdef class DMPlex(DM):
         cdef SF sf = SF()
         CHKERR( DMPlexTopologyLoad(self.dm, viewer.vwr, &sf.sf))
         return sf
+
+    def coordinatesLoad(self, Viewer viewer):
+        CHKERR( DMPlexCoordinatesLoad(self.dm, viewer.vwr))

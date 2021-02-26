@@ -1006,10 +1006,7 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   PetscFunctionReturn(0);
 }
 
-/* The first version will read everything onto proc 0, letting the user distribute
-   The next will create a naive partition, and then rebalance after reading
-*/
-PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
+PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 {
   PetscSection    coordSection;
   Vec             coordinates;
@@ -1020,7 +1017,6 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
-  ierr = DMPlexLoadTopology_HDF5_Internal(dm, viewer, NULL);CHKERRQ(ierr);
   /* Read geometry */
   ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject) dm), &coordinates);CHKERRQ(ierr);
@@ -1052,7 +1048,19 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinates(dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  /* Read Labels */
+  PetscFunctionReturn(0);
+}
+
+/* The first version will read everything onto proc 0, letting the user distribute
+   The next will create a naive partition, and then rebalance after reading
+*/
+PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexTopologyLoad_HDF5_Internal(dm, viewer, NULL);CHKERRQ(ierr);
+  ierr = DMPlexCoordinatesLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
   ierr = DMPlexLoadLabels_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

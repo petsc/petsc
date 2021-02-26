@@ -452,5 +452,6 @@ PETSC_EXTERN PetscErrorCode DMPlexCellRefinerGetAffineFaceTransforms(DMPlexCellR
 PETSC_EXTERN PetscErrorCode DMPlexRefineUniform(DM, DMPlexCellRefiner, DM *);
 
 PETSC_EXTERN PetscErrorCode DMPlexTopologyLoad(DM, PetscViewer, PetscSF*);
+PETSC_EXTERN PetscErrorCode DMPlexCoordinatesLoad(DM, PetscViewer);
 
 #endif

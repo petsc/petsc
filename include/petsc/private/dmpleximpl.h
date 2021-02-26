@@ -255,6 +255,7 @@ PETSC_INTERN PetscErrorCode DMComputeL2FieldDiff_Plex(DM,PetscReal,PetscErrorCod
 PETSC_INTERN PetscErrorCode DMLocatePoints_Plex(DM, Vec, DMPointLocationType, PetscSF);
 
 PETSC_INTERN PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM, PetscViewer, PetscSF*);
+PETSC_INTERN PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexLoadLabels_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexView_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexLoad_HDF5_Internal(DM, PetscViewer);
