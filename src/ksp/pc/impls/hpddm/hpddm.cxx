@@ -64,7 +64,7 @@ static PetscErrorCode PCDestroy_HPDDM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubPC_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -226,8 +226,8 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
     ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_threshold", i);CHKERRQ(ierr);
     ierr = PetscOptionsReal(prefix, "Local threshold for selecting deflation vectors returned by SLEPc", "none", data->levels[i - 1]->threshold, &data->levels[i - 1]->threshold, NULL);CHKERRQ(ierr);
     if (i == 1) {
-      ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_1_st_share_sub_pc");CHKERRQ(ierr);
-      ierr = PetscOptionsBool(prefix, "Shared PC between SLEPc ST and the fine-level subdomain solver", "none", PETSC_FALSE, &data->share, NULL);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_1_st_share_sub_ksp");CHKERRQ(ierr);
+      ierr = PetscOptionsBool(prefix, "Shared KSP between SLEPc ST and the fine-level subdomain solver", "none", PETSC_FALSE, &data->share, NULL);CHKERRQ(ierr);
     }
     /* if there is no prescribed coarsening, just break out of the loop */
     if (data->levels[i - 1]->threshold <= 0.0 && data->levels[i - 1]->nu <= 0) break;
@@ -729,6 +729,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 {
   PC_HPDDM                 *data = (PC_HPDDM*)pc->data;
   PC                       inner;
+  KSP                      *ksp;
   Mat                      *sub, A, P, N, C = NULL, uaux = NULL, weighted, subA[2];
   Vec                      xin, v;
   std::vector<Vec>         initial;
@@ -919,7 +920,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       }
       /* it is possible to share the PC only given specific conditions, otherwise there is not warranty that the matrices have the same nonzero pattern */
       if (!ismatis && sub == &data->aux && !data->B && subdomains && data->share) {
-        KSP            *ksp;
         IS             perm;
         PetscInt       size;
         const PetscInt *ptr;
@@ -971,9 +971,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         } else {
           Mat        D;
           const char *matpre;
-          inner = data->levels[0]->pc;
-          ierr = KSPGetPC(ksp[0], &data->levels[0]->pc);CHKERRQ(ierr);
-          ierr = PCGetOperators(data->levels[0]->pc, subA, subA + 1);CHKERRQ(ierr);
+          ierr = KSPGetOperators(ksp[0], subA, subA + 1);CHKERRQ(ierr);
           ierr = MatDuplicate(subA[1], MAT_SHARE_NONZERO_PATTERN, &D);CHKERRQ(ierr);
           ierr = MatGetOptionsPrefix(subA[1], &matpre);CHKERRQ(ierr);
           ierr = MatSetOptionsPrefix(D, matpre);CHKERRQ(ierr);
@@ -1023,13 +1021,9 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       /* SLEPc is used inside the loaded symbol */
       ierr = (*loadedSym)(data->levels[0]->P, data->is, ismatis ? C : data->aux, weighted, data->B, initial, data->levels);CHKERRQ(ierr);
       if (data->share) {
-        KSP *ksp;
         Mat st[2];
-        data->levels[0]->pc = inner;
-        ierr = PetscTryMethod(data->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt*, PetscInt*, KSP**), (data->levels[0]->pc, NULL, NULL, &ksp));CHKERRQ(ierr);
         ((PC_ASM*)data->levels[0]->pc->data)->same_local_solves = PETSC_TRUE;
-        ierr = KSPGetPC(ksp[0], &inner);CHKERRQ(ierr);
-        ierr = PCGetOperators(inner, st, st + 1);CHKERRQ(ierr);
+        ierr = KSPGetOperators(ksp[0], st, st + 1);CHKERRQ(ierr);
         ierr = MatCopy(subA[0], st[0], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         if (subA[1] != subA[0] || st[1] != st[0]) {
           ierr = MatCopy(subA[1], st[1], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -1218,13 +1212,13 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 }
 
 /*@
-     PCHPDDMGetSTShareSubPC - Gets whether the PC in SLEPc ST and the fine-level subdomain solver is shared.
+     PCHPDDMGetSTShareSubKSP - Gets whether the KSP in SLEPc ST and the fine-level subdomain solver is shared.
 
    Input Parameter:
 .     pc - preconditioner context
 
    Output Parameter:
-.     share - whether the PC is shared or not
+.     share - whether the KSP is shared or not
 
    Notes:
      This is not the same as PCGetReusePreconditioner(). The return value is unlikely to be true, but when it is, a symbolic factorization can be skipped
@@ -1233,17 +1227,17 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
    Level: advanced
 
 @*/
-PetscErrorCode PCHPDDMGetSTShareSubPC(PC pc, PetscBool *share)
+PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  ierr = PetscUseMethod(pc, "PCHPDDMGetSTShareSubPC_C", (PC, PetscBool*), (pc, share));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool*), (pc, share));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMGetSTShareSubPC_HPDDM(PC pc, PetscBool *share)
+static PetscErrorCode PCHPDDMGetSTShareSubKSP_HPDDM(PC pc, PetscBool *share)
 {
   PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
@@ -1351,7 +1345,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", PCHPDDMSetRHSMat_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", PCHPDDMSetCoarseCorrectionType_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", PCHPDDMGetCoarseCorrectionType_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubPC_C", PCHPDDMGetSTShareSubPC_HPDDM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", PCHPDDMGetSTShareSubKSP_HPDDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
