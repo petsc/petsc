@@ -399,7 +399,7 @@ def main():
 
         print('options.merge_branch:',options.merge_branch)
         if options.merge_branch: destBranch = options.merge_branch
-        else: destBranch = 'origin/master'
+        else: destBranch = 'origin/main'
         print('destBranch:',destBranch)
         gcov_dir = tempfile.mkdtemp()
         make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch)
