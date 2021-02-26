@@ -38,9 +38,8 @@ int main(int argc,char **argv)
 /*TEST
 
    testset:
-     requires: yaml
-     args: -options_left 0
-     filter:  egrep -v "(malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
+     args: -options_left false
+     filter:  egrep -v "(options_left|options_monitor|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|use_gpu_aware_mpi)"
      localrunfiles: petsc.yml
 
      test:
@@ -58,6 +57,13 @@ int main(int argc,char **argv)
         args: -options_string_yaml "`cat petsc.yml`"
 
      test:
+        suffix: 2_auto
+        args: -options_monitor
+        args: -options_file ex47-yaml_tag
+        args: -options_file ex47-yaml_doc
+        localrunfiles: ex47-yaml_tag ex47-yaml_doc
+
+     test:
         suffix: 2_prefix
         args: -options_monitor
         args: -options_file ex47-opt.txt
@@ -67,12 +73,12 @@ int main(int argc,char **argv)
         args: -prefix_push p7_ -options_string_yaml "`cat ex47-opt.yml`" -prefix_pop
         args: -prefix_push p7_ -options_string_yaml "`cat ex47-opt.yml`" -prefix_pop
         args: -prefix_push p8_ -options_string_yaml "`cat ex47-opt.yml`" -prefix_pop
-        localrunfiles: ex47-opt.txt ex47-opt.yml
+        args: -prefix_push p9_ -options_file ex47-opt.json -prefix_pop
+        localrunfiles: ex47-opt.txt ex47-opt.yml ex47-opt.json
 
 
    testset:
      nsize: {{1 2}}
-     requires: yaml
 
      test:
         suffix: 3_empty

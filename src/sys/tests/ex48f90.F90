@@ -19,7 +19,7 @@
          call PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,PETSC_NULL_OPTIONS,filename,PETSC_TRUE,ierr);CHKERRA(ierr)
       end if
       call PetscOptionsView(PETSC_NULL_OPTIONS,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr);CHKERRQ(ierr);
+      call PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr);CHKERRA(ierr);
       Call PetscFinalize(ierr)
       end program ex10f90
 
@@ -28,19 +28,17 @@
 !
 !/*TEST
 !
-!   build:
-!     requires: yaml
+! testset:
+!   filter: egrep -v "(options_left|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|use_gpu_aware_mpi)"
 !
 !   test:
 !      suffix: 1
 !      args: -f petsc.yml -options_left 0
-!      filter:   egrep -v "(malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
 !      localrunfiles: petsc.yml
 !
 !   test:
 !      suffix: 2
 !      args: -options_file_yaml petsc.yml -options_left 0
-!      filter:   egrep -v "(malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox)"
 !      localrunfiles: petsc.yml
 !
 !TEST*/

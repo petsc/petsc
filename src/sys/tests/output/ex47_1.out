@@ -4,7 +4,6 @@
 -cs0010_hookeslaw 1,2,3,4,5,6
 -cs0020_force 0.
 -f petsc.yml
--options_left 0
 -temp_KSP_monitor_true_residual
 -temp_KSP_type cg
 -temp_snes_type ksponly
