@@ -184,7 +184,7 @@ template<typename Type> struct Maxloc {
 
   PETSc notes:
 
-  It may be useful in PetscSFFetchAndOp with op = MPIU_REPLACE.
+  It may be useful in PetscSFFetchAndOp with op = MPI_REPLACE.
 
   VecScatter with multiple entries scattered to the same location using INSERT_VALUES does not need
   atomic insertion, since it does not need the old value. A 32-bit or 64-bit store instruction should

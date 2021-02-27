@@ -838,7 +838,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
   MPI_Win            win;
 
   PetscFunctionBegin;
-  if (op != MPI_REPLACE || op != MPIU_REPLACE) SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PetscSFBcastAndOpBegin_Window with op!=MPI_REPLACE has not been implemented");
+  if (op != MPI_REPLACE) SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PetscSFBcastAndOpBegin_Window with op!=MPI_REPLACE has not been implemented");
   ierr = PetscSFGetRootRanks(sf,&nranks,&ranks,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,(void*)rootdata,w->sync,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&target_disp,&reqs,&win);CHKERRQ(ierr);

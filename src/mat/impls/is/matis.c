@@ -451,8 +451,8 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
     ierr = PetscSFSetGraphLayout(sf,A->rmap,nl,NULL,PETSC_OWN_POINTER,garray);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(*l2g,&garray);CHKERRQ(ierr);
     ierr = PetscCalloc1(A->rmap->n,&ndmapc);CHKERRQ(ierr);
-    ierr = PetscSFReduceBegin(sf,MPIU_INT,ncount,ndmapc,MPIU_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf,MPIU_INT,ncount,ndmapc,MPIU_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf,MPIU_INT,ncount,ndmapc,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPIU_INT,ncount,ndmapc,MPI_REPLACE);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreNodeInfo(*l2g,NULL,&ncount,NULL);CHKERRQ(ierr);
     ierr = ISGetIndices(ndmap,&ndmapi);CHKERRQ(ierr);
     for (i = 0, cnt = 0; i < A->rmap->n; i++)
@@ -2361,8 +2361,8 @@ static PetscErrorCode MatInvertBlockDiagonal_IS(Mat mat,const PetscScalar **valu
   }
   ierr = MPI_Type_contiguous(bs,MPIU_SCALAR,&nodeType);CHKERRMPI(ierr);
   ierr = MPI_Type_commit(&nodeType);CHKERRMPI(ierr);
-  ierr = PetscSFReduceBegin(is->sf,nodeType,lv,is->bdiag,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(is->sf,nodeType,lv,is->bdiag,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(is->sf,nodeType,lv,is->bdiag,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(is->sf,nodeType,lv,is->bdiag,MPI_REPLACE);CHKERRQ(ierr);
   ierr = MPI_Type_free(&nodeType);CHKERRMPI(ierr);
   if (values) *values = is->bdiag;
   PetscFunctionReturn(0);

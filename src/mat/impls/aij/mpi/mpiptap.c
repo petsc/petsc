@@ -814,8 +814,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof,
   pn *= dof;
   ierr = PetscCalloc2(ptap->c_othi[pn],&c_othj,ptap->c_othi[pn],&c_otha);CHKERRQ(ierr);
 
-  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPI_REPLACE);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(P,&pcstart,&pcend);CHKERRQ(ierr);
   pcstart = pcstart*dof;
   pcend   = pcend*dof;
@@ -855,8 +855,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof,
   ierr = MatGetOwnershipRangeColumn(C,&ccstart,&ccend);CHKERRQ(ierr);
   ierr = PetscFree5(apindices,apvalues,apvaluestmp,dcc,occ);CHKERRQ(ierr);
   ierr = PetscHMapIVDestroy(&hmap);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscFree2(c_rmtj,c_rmta);CHKERRQ(ierr);
 
   /* Add contributions from remote */
@@ -999,10 +999,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,PetscI
   ierr = PetscHMapIVDestroy(&hmap);CHKERRQ(ierr);
   ierr = PetscCalloc2(ptap->c_othi[pn],&c_othj,ptap->c_othi[pn],&c_otha);CHKERRQ(ierr);
 
-  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(ptap->sf,MPIU_SCALAR,c_rmta,c_otha,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscFree2(c_rmtj,c_rmta);CHKERRQ(ierr);
 
   /* Add contributions from remote */
@@ -1197,7 +1197,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof
   ierr = PetscSFSetGraph(ptap->sf,ptap->c_othi[pn],nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(ptap->sf);CHKERRQ(ierr);
   /* One to one map */
-  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_REPLACE);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(pn,&dnz,pn,&onz);CHKERRQ(ierr);
   ierr = PetscHSetICreate(&oht);CHKERRQ(ierr);
@@ -1237,7 +1237,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof
   ierr = PetscHSetIDestroy(&oht);CHKERRQ(ierr);
 
   /* Get remote data */
-  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscFree(c_rmtj);CHKERRQ(ierr);
 
   for (i = 0; i < pn; i++) {
@@ -1495,9 +1495,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,Petsc
   ierr = PetscSFSetGraph(ptap->sf,ptap->c_othi[pn],nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(ptap->sf);CHKERRQ(ierr);
   /* One to one map */
-  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_REPLACE);CHKERRQ(ierr);
   /* Get remote data */
-  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(ptap->sf,MPIU_INT,c_rmtj,c_othj,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscFree(c_rmtj);CHKERRQ(ierr);
   ierr = PetscMalloc2(pn,&dnz,pn,&onz);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(P,&pcstart,&pcend);CHKERRQ(ierr);

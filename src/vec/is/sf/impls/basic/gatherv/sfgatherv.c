@@ -52,8 +52,8 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Gatherv(PetscSF sf,MPI_Dataty
 
   PetscFunctionBegin;
   /* In Gatherv, each root only has one leaf. So we just need to bcast rootdata to leafupdate and then reduce leafdata to rootdata */
-  ierr = PetscSFBcastAndOpBegin(sf,unit,rootdata,leafupdate,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastAndOpEnd(sf,unit,rootdata,leafupdate,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastAndOpBegin(sf,unit,rootdata,leafupdate,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastAndOpEnd(sf,unit,rootdata,leafupdate,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(sf,unit,leafdata,rootdata,op);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

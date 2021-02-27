@@ -3018,8 +3018,8 @@ PetscErrorCode PCBDDCBenignGetOrSetP0(PC pc, Vec v, PetscBool get)
     ierr = VecRestoreArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(v,&array);CHKERRQ(ierr);
-    ierr = PetscSFReduceBegin(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPIU_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPIU_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

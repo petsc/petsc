@@ -84,6 +84,8 @@
        parameter (MPI_MAX=2)
        MPIUNI_FInt MPI_MIN
        parameter (MPI_MIN=3)
+       MPIUNI_FInt MPI_REPLACE
+       parameter (MPI_REPLACE=4)
        MPIUNI_FInt MPI_MAXLOC
        parameter (MPI_MAXLOC=12)
        MPIUNI_FInt MPI_MINLOC

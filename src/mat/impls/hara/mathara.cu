@@ -485,8 +485,8 @@ static PetscErrorCode MatMultNKernel_HARA(Mat A, PetscBool transA, Mat B, Mat C)
     }
     ierr = MatDenseCUDARestoreArrayRead(B,(const PetscScalar**)&xx);CHKERRQ(ierr);
     if (hara->sf) {
-      ierr = PetscSFReduceBegin(csf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(csf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(csf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(csf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
     }
     ierr = MatDenseCUDARestoreArrayWrite(C,&yy);CHKERRQ(ierr);
     if (!biscuda) {
@@ -523,8 +523,8 @@ static PetscErrorCode MatMultNKernel_HARA(Mat A, PetscBool transA, Mat B, Mat C)
     }
     ierr = MatDenseRestoreArrayRead(B,(const PetscScalar**)&xx);CHKERRQ(ierr);
     if (hara->sf) {
-      ierr = PetscSFReduceBegin(csf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(csf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(csf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(csf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
     }
     ierr = MatDenseRestoreArrayWrite(C,&yy);CHKERRQ(ierr);
   }
@@ -641,8 +641,8 @@ static PetscErrorCode MatMultKernel_HARA(Mat A, Vec x, PetscScalar sy, Vec y, Pe
     }
     ierr = VecCUDARestoreArrayRead(x,(const PetscScalar**)&xx);CHKERRQ(ierr);
     if (hara->sf) {
-      ierr = PetscSFReduceBegin(hara->sf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(hara->sf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(hara->sf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(hara->sf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
     }
     if (sy == 0.0) {
       ierr = VecCUDARestoreArrayWrite(y,&yy);CHKERRQ(ierr);
@@ -679,8 +679,8 @@ static PetscErrorCode MatMultKernel_HARA(Mat A, Vec x, PetscScalar sy, Vec y, Pe
     }
     ierr = VecRestoreArrayRead(x,(const PetscScalar**)&xx);CHKERRQ(ierr);
     if (hara->sf) {
-      ierr = PetscSFReduceBegin(hara->sf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(hara->sf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(hara->sf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(hara->sf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
     }
     if (sy == 0.0) {
       ierr = VecRestoreArrayWrite(y,&yy);CHKERRQ(ierr);

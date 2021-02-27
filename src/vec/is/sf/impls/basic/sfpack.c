@@ -514,10 +514,10 @@ PetscErrorCode PetscSFLinkCreate(PetscSF sf,MPI_Datatype unit,PetscMemType xroot
   for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
     if (sfop == PETSCSF_BCAST) {
       rootdirect[i] = bas->rootcontig[i]; /* Pack roots */
-      leafdirect[i] = (sf->leafcontig[i] && op == MPIU_REPLACE) ? PETSC_TRUE : PETSC_FALSE;  /* Unpack leaves */
+      leafdirect[i] = (sf->leafcontig[i] && op == MPI_REPLACE) ? PETSC_TRUE : PETSC_FALSE;  /* Unpack leaves */
     } else if (sfop == PETSCSF_REDUCE) {
       leafdirect[i] = sf->leafcontig[i];  /* Pack leaves */
-      rootdirect[i] = (bas->rootcontig[i] && op == MPIU_REPLACE) ? PETSC_TRUE : PETSC_FALSE; /* Unpack roots */
+      rootdirect[i] = (bas->rootcontig[i] && op == MPI_REPLACE) ? PETSC_TRUE : PETSC_FALSE; /* Unpack roots */
     } else { /* PETSCSF_FETCH */
       rootdirect[i] = PETSC_FALSE; /* FETCH always need a separate rootbuf */
       leafdirect[i] = PETSC_FALSE; /* We also force allocating a separate leafbuf so that leafdata and leafupdate can share mpi requests */
@@ -965,7 +965,7 @@ PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI
   PetscFunctionBegin;
   *UnpackAndOp = NULL;
   if (mtype == PETSC_MEMTYPE_HOST) {
-    if      (op == MPIU_REPLACE)              *UnpackAndOp = link->h_UnpackAndInsert;
+    if      (op == MPI_REPLACE)               *UnpackAndOp = link->h_UnpackAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->h_UnpackAndAdd;
     else if (op == MPI_PROD)                  *UnpackAndOp = link->h_UnpackAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->h_UnpackAndMax;
@@ -981,7 +981,7 @@ PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI
   }
 #if defined(PETSC_HAVE_DEVICE)
   else if (mtype == PETSC_MEMTYPE_DEVICE && !atomic) {
-    if      (op == MPIU_REPLACE)              *UnpackAndOp = link->d_UnpackAndInsert;
+    if      (op == MPI_REPLACE)               *UnpackAndOp = link->d_UnpackAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->d_UnpackAndAdd;
     else if (op == MPI_PROD)                  *UnpackAndOp = link->d_UnpackAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->d_UnpackAndMax;
@@ -995,7 +995,7 @@ PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI
     else if (op == MPI_MAXLOC)                *UnpackAndOp = link->d_UnpackAndMaxloc;
     else if (op == MPI_MINLOC)                *UnpackAndOp = link->d_UnpackAndMinloc;
   } else if (mtype == PETSC_MEMTYPE_DEVICE && atomic) {
-    if      (op == MPIU_REPLACE)              *UnpackAndOp = link->da_UnpackAndInsert;
+    if      (op == MPI_REPLACE)               *UnpackAndOp = link->da_UnpackAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->da_UnpackAndAdd;
     else if (op == MPI_PROD)                  *UnpackAndOp = link->da_UnpackAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->da_UnpackAndMax;
@@ -1018,7 +1018,7 @@ PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MP
   PetscFunctionBegin;
   *ScatterAndOp = NULL;
   if (mtype == PETSC_MEMTYPE_HOST) {
-    if      (op == MPIU_REPLACE)              *ScatterAndOp = link->h_ScatterAndInsert;
+    if      (op == MPI_REPLACE)               *ScatterAndOp = link->h_ScatterAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->h_ScatterAndAdd;
     else if (op == MPI_PROD)                  *ScatterAndOp = link->h_ScatterAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *ScatterAndOp = link->h_ScatterAndMax;
@@ -1034,7 +1034,7 @@ PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MP
   }
 #if defined(PETSC_HAVE_DEVICE)
   else if (mtype == PETSC_MEMTYPE_DEVICE && !atomic) {
-    if      (op == MPIU_REPLACE)              *ScatterAndOp = link->d_ScatterAndInsert;
+    if      (op == MPI_REPLACE)               *ScatterAndOp = link->d_ScatterAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->d_ScatterAndAdd;
     else if (op == MPI_PROD)                  *ScatterAndOp = link->d_ScatterAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *ScatterAndOp = link->d_ScatterAndMax;
@@ -1048,7 +1048,7 @@ PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MP
     else if (op == MPI_MAXLOC)                *ScatterAndOp = link->d_ScatterAndMaxloc;
     else if (op == MPI_MINLOC)                *ScatterAndOp = link->d_ScatterAndMinloc;
   } else if (mtype == PETSC_MEMTYPE_DEVICE && atomic) {
-    if      (op == MPIU_REPLACE)              *ScatterAndOp = link->da_ScatterAndInsert;
+    if      (op == MPI_REPLACE)               *ScatterAndOp = link->da_ScatterAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->da_ScatterAndAdd;
     else if (op == MPI_PROD)                  *ScatterAndOp = link->da_ScatterAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *ScatterAndOp = link->da_ScatterAndMax;
@@ -1100,7 +1100,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscS
 
 
   PetscFunctionBegin;
-  if (op != MPIU_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
+  if (op != MPI_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
     flops = bas->rootbuflen[scope]*link->bs; /* # of roots in buffer x # of scalars in unit */
 #if defined(PETSC_HAVE_DEVICE)
     if (link->rootmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscLogGpuFlops(flops);CHKERRQ(ierr);} else
@@ -1116,7 +1116,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (op != MPIU_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
+  if (op != MPI_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
     flops = sf->leafbuflen[scope]*link->bs; /* # of roots in buffer x # of scalars in unit */
 #if defined(PETSC_HAVE_DEVICE)
     if (link->leafmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscLogGpuFlops(flops);CHKERRQ(ierr);} else

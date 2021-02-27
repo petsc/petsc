@@ -506,8 +506,8 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map,PetscInt N,const PetscInt idx
     start -= cum;
     cum = 0;
     for (r = 0; r < N; ++r) if (idxs[r] >=0) work2[r] = start+cum++;
-    ierr = PetscSFReduceBegin(sf,MPIU_INT,work2,work,MPIU_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf,MPIU_INT,work2,work,MPIU_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf,MPIU_INT,work2,work,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPIU_INT,work2,work,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscFree(work2);CHKERRQ(ierr);
   }
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);

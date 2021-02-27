@@ -637,8 +637,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       ierr = ISGetIndices(II,&idxs);CHKERRQ(ierr);
       for (i=0;i<ni;i++) matis->sf_leafdata[idxs[i]] = 1;
       ierr = ISRestoreIndices(II,&idxs);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
       ierr = PetscMalloc1(PetscMax(nl,n),&widxs);CHKERRQ(ierr);
       for (i=0,ni=0;i<nl;i++) if (matis->sf_rootdata[i]) widxs[ni++] = i+rst;
       ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&pII);CHKERRQ(ierr);
@@ -718,8 +718,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISGetIndices(lPall,&idxs);CHKERRQ(ierr);
         for (i=0;i<ni;i++) matis->sf_leafdata[idxs[i]] = 1;
         ierr = ISRestoreIndices(lPall,&idxs);CHKERRQ(ierr);
-        ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
         for (i=0,ni=0;i<nl;i++) if (matis->sf_rootdata[i]) widxs[ni++] = i+rst;
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&Pall);CHKERRQ(ierr);
       }
@@ -772,12 +772,12 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           if (idxs[i] >=0 && idxs[i] < n)
             matis->sf_leafdata[idxs[i]] = 1;
         ierr = ISRestoreIndices(lP,&idxs);CHKERRQ(ierr);
-        ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingApply(l2g,ni,idxs,widxs);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_gP",(PetscObject)is1);CHKERRQ(ierr);
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
         for (i=0,ni=0;i<nl;i++) if (matis->sf_rootdata[i]) widxs[ni++] = i+rst;
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&pP);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_pP",(PetscObject)pP);CHKERRQ(ierr);

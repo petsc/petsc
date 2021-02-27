@@ -1517,16 +1517,16 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = PetscSFSetGraphLayout(rowsf,A->rmap,A->rmap->n,NULL,PETSC_OWN_POINTER,rwant);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(rowsf);CHKERRQ(ierr);
   for (i=0; i<m; i++) work[i] = A->rmap->rstart + i;
-  ierr = PetscSFReduceBegin(rowsf,MPIU_INT,work,rdest,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(rowsf,MPIU_INT,work,rdest,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(rowsf,MPIU_INT,work,rdest,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(rowsf,MPIU_INT,work,rdest,MPI_REPLACE);CHKERRQ(ierr);
 
   /* Invert column permutation to find out where my columns should go */
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)A),&sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraphLayout(sf,A->cmap,A->cmap->n,NULL,PETSC_OWN_POINTER,cwant);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   for (i=0; i<n; i++) work[i] = A->cmap->rstart + i;
-  ierr = PetscSFReduceBegin(sf,MPIU_INT,work,cdest,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf,MPIU_INT,work,cdest,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,work,cdest,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_INT,work,cdest,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(rowp,&rwant);CHKERRQ(ierr);

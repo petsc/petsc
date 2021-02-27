@@ -162,15 +162,7 @@ PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF,MPI_Datatype,const void*,v
 PETSC_EXTERN PetscErrorCode PetscSFCompose(PetscSF,PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFComposeInverse(PetscSF,PetscSF,PetscSF*);
 
-#if defined(MPI_REPLACE)
-#  define MPIU_REPLACE MPI_REPLACE
-#else
-/* When using an old MPI such that MPI_REPLACE is not defined, we do not pass MPI_REPLACE to MPI at all.  Instead, we
- * use it as a flag for our own reducer in the PETSCSFBASIC implementation.  This could be any unique value unlikely to
- * collide with another MPI_Op so we'll just use the value that has been used by every version of MPICH since
- * MPICH2-1.0.6. */
-#  define MPIU_REPLACE (MPI_Op)(0x5800000d)
-#endif
+#define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_REPLACE macro is deprecated use MPI_REPLACE (since version 3.15)\"")
 
 PETSC_DEPRECATED_FUNCTION("Use PetscSFGetRootRanks (since v3.12)")
 PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote)
@@ -194,10 +186,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,c
 .seealso: PetscSFCreate(), PetscSFSetGraph(), PetscSFView(), PetscSFBcastEnd(), PetscSFReduceBegin(), PetscSFBcastAndOpBegin()
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata)
-{ return PetscSFBcastAndOpBegin(sf,unit,rootdata,leafdata,MPIU_REPLACE); }
+{ return PetscSFBcastAndOpBegin(sf,unit,rootdata,leafdata,MPI_REPLACE); }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void* rootdata,PetscMemType leafmtype,void* leafdata)
-{ return PetscSFBcastAndOpWithMemTypeBegin(sf,unit,rootmtype,rootdata,leafmtype,leafdata,MPIU_REPLACE); }
+{ return PetscSFBcastAndOpWithMemTypeBegin(sf,unit,rootmtype,rootdata,leafmtype,leafdata,MPI_REPLACE); }
 
 /*@C
    PetscSFBcastEnd - end a broadcast operation started with PetscSFBcastBegin()
@@ -217,6 +209,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF sf,MPI_D
 .seealso: PetscSFSetGraph(), PetscSFReduceEnd()
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata)
-{ return PetscSFBcastAndOpEnd(sf,unit,rootdata,leafdata,MPIU_REPLACE); }
+{ return PetscSFBcastAndOpEnd(sf,unit,rootdata,leafdata,MPI_REPLACE); }
 
 #endif

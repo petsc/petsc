@@ -60,7 +60,7 @@ static PetscErrorCode VecScatterBegin_Internal(VecScatter sf,Vec x,Vec y,InsertM
   }
 
   /* Note xdata/ydata is always recorded on sf (not lsf) above */
-  if (addv == INSERT_VALUES)   mop = MPIU_REPLACE;
+  if (addv == INSERT_VALUES)   mop = MPI_REPLACE;
   else if (addv == ADD_VALUES) mop = MPIU_SUM; /* Petsc defines its own MPI datatype and SUM operation for __float128 etc. */
   else if (addv == MAX_VALUES) mop = MPIU_MAX;
   else if (addv == MIN_VALUES) mop = MPIU_MIN;
@@ -86,7 +86,7 @@ static PetscErrorCode VecScatterEnd_Internal(VecScatter sf,Vec x,Vec y,InsertMod
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRMPI(ierr);
   wsf  = ((mode & SCATTER_LOCAL) && size > 1) ? sf->vscat.lsf : sf;
 
-  if (addv == INSERT_VALUES)   mop = MPIU_REPLACE;
+  if (addv == INSERT_VALUES)   mop = MPI_REPLACE;
   else if (addv == ADD_VALUES) mop = MPIU_SUM;
   else if (addv == MAX_VALUES) mop = MPIU_MAX;
   else if (addv == MIN_VALUES) mop = MPIU_MIN;
