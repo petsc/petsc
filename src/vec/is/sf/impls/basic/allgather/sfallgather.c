@@ -3,7 +3,7 @@
 /* Reuse the type. The difference is some fields (i.e., displs, recvcounts) are not used in Allgather on rank != 0, which is not a big deal */
 typedef PetscSF_Allgatherv PetscSF_Allgather;
 
-PETSC_INTERN PetscErrorCode PetscSFBcastAndOpBegin_Gather(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op);
+PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gather(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op);
 
 PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf)
 {
@@ -30,7 +30,7 @@ PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastAndOpBegin_Allgather(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscErrorCode        ierr;
   PetscSFLink           link;
@@ -93,7 +93,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf,MPI_Datatype unit,
   PetscMPIInt           rank;
 
   PetscFunctionBegin;
-  ierr = PetscSFBcastAndOpBegin_Gather(sf,unit,rootmtype,rootdata,leafmtype,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin_Gather(sf,unit,rootmtype,rootdata,leafmtype,leafdata,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFLinkGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
   ierr = PetscSFLinkMPIWaitall(sf,link,PETSCSF_ROOT2LEAF);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
@@ -110,7 +110,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
   PetscSF_Allgather *dat = (PetscSF_Allgather*)sf->data;
 
   PetscFunctionBegin;
-  sf->ops->BcastAndOpEnd   = PetscSFBcastAndOpEnd_Basic;
+  sf->ops->BcastEnd        = PetscSFBcastEnd_Basic;
   sf->ops->ReduceEnd       = PetscSFReduceEnd_Basic;
 
   /* Inherit from Allgatherv */
@@ -125,7 +125,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
 
   /* Allgather stuff */
   sf->ops->SetUp           = PetscSFSetUp_Allgather;
-  sf->ops->BcastAndOpBegin = PetscSFBcastAndOpBegin_Allgather;
+  sf->ops->BcastBegin      = PetscSFBcastBegin_Allgather;
   sf->ops->ReduceBegin     = PetscSFReduceBegin_Allgather;
   sf->ops->BcastToZero     = PetscSFBcastToZero_Allgather;
 

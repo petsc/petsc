@@ -152,8 +152,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscFree3(toranks,tosizes,tosizes_temp);CHKERRQ(ierr);
   ierr = PetscFree3(remoterows,rrow_ranks,rrow_isids);CHKERRQ(ierr);
   ierr = PetscFree(toffsets);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,todata,fromdata);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,todata,fromdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,todata,fromdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,todata,fromdata,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   /* send rows belonging to the remote so that then we could get the overlapping data back */
   ierr = MatIncreaseOverlap_MPIAIJ_Send_Scalable(mat,nidx,nfrom,fromranks,fromsizes,fromdata,&sbsizes,&sbdata);CHKERRQ(ierr);
@@ -178,9 +178,9 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   /* overlap communication and computation */
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,sbdata,todata);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,sbdata,todata,MPI_REPLACE);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap_MPIAIJ_Local_Scalable(mat,nidx,is);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,sbdata,todata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,sbdata,todata,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = PetscFree2(sbdata,sbsizes);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap_MPIAIJ_Receive_Scalable(mat,nidx,is,nrecvrows,todata);CHKERRQ(ierr);

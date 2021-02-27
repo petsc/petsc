@@ -137,15 +137,17 @@ cdef class SF(Object):
         CHKERR( PetscSFCreateEmbeddedLeafSF(self.sf, nleaves, cselected, &sf.sf) )
         return sf
 
-    def bcastBegin(self, unit, ndarray rootdata, ndarray leafdata):
+    def bcastBegin(self, unit, ndarray rootdata, ndarray leafdata, op):
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        cdef MPI_Op cop = mpi4py_Op_Get(op)
         CHKERR( PetscSFBcastBegin(self.sf, dtype, <const void*>PyArray_DATA(rootdata),
-                                  <void*>PyArray_DATA(leafdata)) )
+                                  <void*>PyArray_DATA(leafdata), cop) )
 
-    def bcastEnd(self, unit, ndarray rootdata, ndarray leafdata):
+    def bcastEnd(self, unit, ndarray rootdata, ndarray leafdata, op):
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        cdef MPI_Op cop = mpi4py_Op_Get(op)
         CHKERR( PetscSFBcastEnd(self.sf, dtype, <const void*>PyArray_DATA(rootdata),
-                                <void*>PyArray_DATA(leafdata)) )
+                                <void*>PyArray_DATA(leafdata), cop) )
 
     def reduceBegin(self, unit, ndarray leafdata, ndarray rootdata, op):
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)

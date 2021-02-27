@@ -187,8 +187,8 @@ int main(int argc,char **argv)
     /* Initialize local buffer, these values are never used. */
     for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
     /* Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls. */
-    ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata\n");CHKERRQ(ierr);
     ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n");CHKERRQ(ierr);
@@ -207,8 +207,8 @@ int main(int argc,char **argv)
     /* Initialize local buffer, these values are never used. */
     for (i=0; i<nleavesalloc; i++) leafdata[i] = '?';
 
-    ierr = PetscSFBcastBegin(sf,MPI_CHAR,rootdata,leafdata);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPI_CHAR,rootdata,leafdata);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPI_CHAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPI_CHAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata in type of char\n");CHKERRQ(ierr);
     len  = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
@@ -238,8 +238,8 @@ int main(int argc,char **argv)
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-BcastAndOp Leafdata\n");CHKERRQ(ierr);
     ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /* Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls. */
-    ierr = PetscSFBcastAndOpBegin(sf,MPIU_INT,rootdata,leafdata,mop);CHKERRQ(ierr);
-    ierr = PetscSFBcastAndOpEnd(sf,MPIU_INT,rootdata,leafdata,mop);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata,mop);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata,mop);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## BcastAndOp Rootdata\n");CHKERRQ(ierr);
     ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## BcastAndOp Leafdata\n");CHKERRQ(ierr);

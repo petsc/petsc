@@ -110,7 +110,7 @@ static PetscErrorCode PetscSFDestroy_Neighbor(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastAndOpBegin_Neighbor(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+static PetscErrorCode PetscSFBcastBegin_Neighbor(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscErrorCode       ierr;
   PetscSFLink          link;
@@ -202,7 +202,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf)
 
   PetscFunctionBegin;
   sf->ops->CreateEmbeddedSF     = PetscSFCreateEmbeddedSF_Basic;
-  sf->ops->BcastAndOpEnd        = PetscSFBcastAndOpEnd_Basic;
+  sf->ops->BcastEnd             = PetscSFBcastEnd_Basic;
   sf->ops->ReduceEnd            = PetscSFReduceEnd_Basic;
   sf->ops->GetLeafRanks         = PetscSFGetLeafRanks_Basic;
   sf->ops->View                 = PetscSFView_Basic;
@@ -210,7 +210,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf)
   sf->ops->SetUp                = PetscSFSetUp_Neighbor;
   sf->ops->Reset                = PetscSFReset_Neighbor;
   sf->ops->Destroy              = PetscSFDestroy_Neighbor;
-  sf->ops->BcastAndOpBegin      = PetscSFBcastAndOpBegin_Neighbor;
+  sf->ops->BcastBegin           = PetscSFBcastBegin_Neighbor;
   sf->ops->ReduceBegin          = PetscSFReduceBegin_Neighbor;
   sf->ops->FetchAndOpBegin      = PetscSFFetchAndOpBegin_Neighbor;
   sf->ops->FetchAndOpEnd        = PetscSFFetchAndOpEnd_Neighbor;

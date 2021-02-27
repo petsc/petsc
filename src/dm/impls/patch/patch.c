@@ -252,8 +252,8 @@ PetscErrorCode DMPatchSolve(DM dm)
         if (dmz) {ierr = DMGetGlobalVector(dmz, &XZ);CHKERRQ(ierr);}
         if (XZ)  {ierr = VecGetArray(XZ, &xzarray);CHKERRQ(ierr);}
         ierr = VecGetArray(XC, &xcarray);CHKERRQ(ierr);
-        ierr = PetscSFBcastBegin(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(sfz, MPIU_SCALAR, xcarray, xzarray,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(sfz, MPIU_SCALAR, xcarray, xzarray,MPI_REPLACE);CHKERRQ(ierr);
         ierr = VecRestoreArray(XC, &xcarray);CHKERRQ(ierr);
         if (XZ)  {ierr = VecRestoreArray(XZ, &xzarray);CHKERRQ(ierr);}
 #if 0

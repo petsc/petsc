@@ -165,8 +165,8 @@ int main(int argc,char **argv)
   ierr = PetscSFSetType(sf,sftype);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPI_INT,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd  (sf,MPI_INT,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPI_INT,NULL,NULL,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd  (sf,MPI_INT,NULL,NULL,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
   /* From now on we also call SetFromOptions */

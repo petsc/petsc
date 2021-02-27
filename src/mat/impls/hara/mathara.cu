@@ -251,8 +251,8 @@ static PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt ldr, 
   ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,&rankssf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(rankssf,1,nranks,NULL,PETSC_OWN_POINTER,rremotes,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscMalloc1(nranks,&ldrs);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(rankssf,MPIU_INT,&ldr,ldrs);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(rankssf,MPIU_INT,&ldr,ldrs);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(rankssf,MPIU_INT,&ldr,ldrs,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(rankssf,MPIU_INT,&ldr,ldrs,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&rankssf);CHKERRQ(ierr);
 
   j = -1;
@@ -471,8 +471,8 @@ static PetscErrorCode MatMultNKernel_HARA(Mat A, PetscBool transA, Mat B, Mat C)
     if (hara->sf) {
       uxx  = MatHaraGetThrustPointer(*hara->xx_gpu);
       uyy  = MatHaraGetThrustPointer(*hara->yy_gpu);
-      ierr = PetscSFBcastBegin(bsf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(bsf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(bsf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(bsf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
     } else {
       uxx = xx;
       uyy = yy;
@@ -509,8 +509,8 @@ static PetscErrorCode MatMultNKernel_HARA(Mat A, PetscBool transA, Mat B, Mat C)
     if (hara->sf) {
       uxx  = MatHaraGetThrustPointer(*hara->xx);
       uyy  = MatHaraGetThrustPointer(*hara->yy);
-      ierr = PetscSFBcastBegin(bsf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(bsf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(bsf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(bsf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
     } else {
       uxx = xx;
       uyy = yy;
@@ -623,11 +623,11 @@ static PetscErrorCode MatMultKernel_HARA(Mat A, Vec x, PetscScalar sy, Vec y, Pe
       uxx = MatHaraGetThrustPointer(*hara->xx_gpu);
       uyy = MatHaraGetThrustPointer(*hara->yy_gpu);
 
-      ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
       if (sy != 0.0) {
-        ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,yy,uyy);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,yy,uyy);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,yy,uyy,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,yy,uyy,MPI_REPLACE);CHKERRQ(ierr);
       }
     } else {
       uxx = xx;
@@ -661,11 +661,11 @@ static PetscErrorCode MatMultKernel_HARA(Mat A, Vec x, PetscScalar sy, Vec y, Pe
       uxx = MatHaraGetThrustPointer(*hara->xx);
       uyy = MatHaraGetThrustPointer(*hara->yy);
 
-      ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
       if (sy != 0.0) {
-        ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,yy,uyy);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,yy,uyy);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,yy,uyy,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,yy,uyy,MPI_REPLACE);CHKERRQ(ierr);
       }
     } else {
       uxx = xx;
@@ -1152,8 +1152,8 @@ static PetscErrorCode MatHaraSetCoords_HARA(Mat A, PetscInt spacedim, const Pets
     ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
     ierr = PetscSFSetGraphWithPattern(sf,A->rmap,PETSCSF_PATTERN_ALLGATHER);CHKERRQ(ierr);
     ierr = PetscMalloc1(spacedim*N,&gcoords);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sf,dtype,coords,gcoords);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,dtype,coords,gcoords);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,dtype,coords,gcoords,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,dtype,coords,gcoords,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
     ierr = MPI_Type_free(&dtype);CHKERRMPI(ierr);
   } else gcoords = (PetscReal*)coords;

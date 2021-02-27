@@ -8,8 +8,6 @@ PetscLogEvent PETSCSF_SetGraph;
 PetscLogEvent PETSCSF_SetUp;
 PetscLogEvent PETSCSF_BcastBegin;
 PetscLogEvent PETSCSF_BcastEnd;
-PetscLogEvent PETSCSF_BcastAndOpBegin;
-PetscLogEvent PETSCSF_BcastAndOpEnd;
 PetscLogEvent PETSCSF_ReduceBegin;
 PetscLogEvent PETSCSF_ReduceEnd;
 PetscLogEvent PETSCSF_FetchAndOpBegin;
@@ -48,8 +46,6 @@ PetscErrorCode PetscSFInitializePackage(void)
   ierr = PetscLogEventRegister("SFSetUp"        , PETSCSF_CLASSID, &PETSCSF_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFBcastBegin"   , PETSCSF_CLASSID, &PETSCSF_BcastBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFBcastEnd"     , PETSCSF_CLASSID, &PETSCSF_BcastEnd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SFBcastOpBegin" , PETSCSF_CLASSID, &PETSCSF_BcastAndOpBegin);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SFBcastOpEnd"   , PETSCSF_CLASSID, &PETSCSF_BcastAndOpEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFReduceBegin"  , PETSCSF_CLASSID, &PETSCSF_ReduceBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFReduceEnd"    , PETSCSF_CLASSID, &PETSCSF_ReduceEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFFetchOpBegin" , PETSCSF_CLASSID, &PETSCSF_FetchAndOpBegin);CHKERRQ(ierr);

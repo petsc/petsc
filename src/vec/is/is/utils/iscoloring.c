@@ -490,8 +490,8 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
    /* how to put a prefix ? */
    ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-   ierr = PetscSFBcastBegin(sf,MPIU_INT,send_indices,recv_indices);CHKERRQ(ierr);
-   ierr = PetscSFBcastEnd(sf,MPIU_INT,send_indices,recv_indices);CHKERRQ(ierr);
+   ierr = PetscSFBcastBegin(sf,MPIU_INT,send_indices,recv_indices,MPI_REPLACE);CHKERRQ(ierr);
+   ierr = PetscSFBcastEnd(sf,MPIU_INT,send_indices,recv_indices,MPI_REPLACE);CHKERRQ(ierr);
    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
    ierr = PetscFree(fromranks);CHKERRQ(ierr);
    ierr = PetscFree(fromsizes);CHKERRQ(ierr);

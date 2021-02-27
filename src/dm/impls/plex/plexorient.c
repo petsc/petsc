@@ -432,8 +432,8 @@ PetscErrorCode DMPlexOrient(DM dm)
       rorntComp[face].index = faceComp[face-fStart];
     }
     /* Communicate boundary edge orientations */
-    ierr = PetscSFBcastBegin(sf, MPIU_2INT, rorntComp, lorntComp);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf, MPIU_2INT, rorntComp, lorntComp);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf, MPIU_2INT, rorntComp, lorntComp,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_2INT, rorntComp, lorntComp,MPI_REPLACE);CHKERRQ(ierr);
   }
   /* Get process adjacency */
   ierr = PetscMalloc2(numComponents, &numNeighbors, numComponents, &neighbors);CHKERRQ(ierr);

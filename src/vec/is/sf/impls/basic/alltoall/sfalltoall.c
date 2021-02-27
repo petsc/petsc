@@ -31,7 +31,7 @@ static PetscErrorCode PetscSFGetGraph_Alltoall(PetscSF sf,PetscInt *nroots,Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastAndOpBegin_Alltoall(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+static PetscErrorCode PetscSFBcastBegin_Alltoall(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscErrorCode       ierr;
   PetscSFLink          link;
@@ -189,7 +189,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
   PetscSF_Alltoall *dat = (PetscSF_Alltoall*)sf->data;
 
   PetscFunctionBegin;
-  sf->ops->BcastAndOpEnd   = PetscSFBcastAndOpEnd_Basic;
+  sf->ops->BcastEnd        = PetscSFBcastEnd_Basic;
   sf->ops->ReduceEnd       = PetscSFReduceEnd_Basic;
 
   /* Inherit from Allgatherv. It is astonishing Alltoall can inherit so much from Allgather(v) */
@@ -207,7 +207,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
 
   /* Alltoall stuff */
   sf->ops->GetGraph         = PetscSFGetGraph_Alltoall;
-  sf->ops->BcastAndOpBegin  = PetscSFBcastAndOpBegin_Alltoall;
+  sf->ops->BcastBegin       = PetscSFBcastBegin_Alltoall;
   sf->ops->ReduceBegin      = PetscSFReduceBegin_Alltoall;
   sf->ops->CreateLocalSF    = PetscSFCreateLocalSF_Alltoall;
   sf->ops->CreateEmbeddedSF = PetscSFCreateEmbeddedSF_Alltoall;
