@@ -12,7 +12,7 @@ class Configure(config.package.Package):
     #self.minversion       = '2.5.2'
     #self.versionname      = ???
     #self.gitcommit        = 'v'+self.version
-    version               = '2.5.2'
+    version               = '2.5.4'
     self.gitcommit        = 'v'+version
     # hg stashing mechanism seems broken
     #self.download         = ['https://bitbucket.org/icl/magma/get/'+self.gitcommit+'.tar.gz','hg://https://bitbucket.org/icl/magma']
