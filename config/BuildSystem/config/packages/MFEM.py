@@ -173,7 +173,7 @@ class Configure(config.package.Package):
         self.popLanguage()
         g.write('MFEM_USE_CUDA = YES\n')
         g.write('CUDA_CXX = '+petscNvcc+'\n')
-        if self.cuda.gencodearch:
+        if hasattr(self.cuda,'gencodearch') and self.cuda.gencodearch:
           g.write('CUDA_ARCH = sm_'+self.cuda.gencodearch+'\n')
         g.write('CXXFLAGS := '+cudaFlags+' $(addprefix -Xcompiler ,$(CXXFLAGS))\n')
       g.close()
