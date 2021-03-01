@@ -57,7 +57,6 @@ Label 'Point Partition':
 [0]: 32 (7)
 PetscSF Object: Migration SF 8 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=33, leaves=7, remote ranks=1
   [0] 0 <- (0,0)
   [0] 1 <- (0,8)
@@ -122,6 +121,7 @@ PetscSF Object: Migration SF 8 MPI processes
   [7] 4 <- (0,20)
   [7] 5 <- (0,31)
   [7] 6 <- (0,32)
+  MultiSF sort=rank-order
 Point renumbering for DM migration:
 ISLocalToGlobalMapping Object: 8 MPI processes
   type not yet set
@@ -183,7 +183,6 @@ ISLocalToGlobalMapping Object: 8 MPI processes
 [7] 6 32
 PetscSF Object: 8 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=7, leaves=3, remote ranks=2
   [0] 2 <- (4,1)
   [0] 3 <- (2,2)
@@ -215,6 +214,7 @@ PetscSF Object: 8 MPI processes
   [6] 3 <- (7,3)
   [6] 6 <- (7,5)
   [7] Number of roots=7, leaves=0, remote ranks=0
+  MultiSF sort=rank-order
 DM Object: Simplicial Mesh 8 MPI processes
   type: plex
 Simplicial Mesh in 2 dimensions:
@@ -972,7 +972,6 @@ Label 'celltype':
 [7]: 9 (0)
 PetscSF Object: 8 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=19, leaves=5, remote ranks=2
   [0] 5 <- (4,4)
   [0] 6 <- (2,5)
@@ -1080,3 +1079,4 @@ PetscSF Object: 8 MPI processes
   [6]    17 <- 15
   [6]    18 <- 16
   [7] Roots referenced by my leaves, by rank
+  MultiSF sort=rank-order

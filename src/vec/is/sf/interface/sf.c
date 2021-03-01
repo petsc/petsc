@@ -883,7 +883,6 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
 
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    if (sf->ops->View) {ierr = (*sf->ops->View)(sf,viewer);CHKERRQ(ierr);}
     if (sf->pattern == PETSCSF_PATTERN_GENERAL) {
       if (!sf->graphset) {
         ierr = PetscViewerASCIIPrintf(viewer,"PetscSFSetGraph() has not been called yet\n");CHKERRQ(ierr);
@@ -919,6 +918,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
+  if (sf->ops->View) {ierr = (*sf->ops->View)(sf,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

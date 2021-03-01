@@ -1,6 +1,5 @@
 PetscSF Object: 2 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=4, leaves=4, remote ranks=2
   [0] 0 <- (0,0)
   [0] 1 <- (0,1)
@@ -21,6 +20,7 @@ PetscSF Object: 2 MPI processes
   [1] 11 <- (1,11)
   [1] 12 <- (1,12)
   [1] 13 <- (1,13)
+  MultiSF sort=rank-order
 ==== original V in global ordering. size==18	block size=2
 Vec Object: V 2 MPI processes
   type: mpi

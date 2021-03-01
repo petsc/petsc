@@ -15413,7 +15413,6 @@ Label 'celltype':
 [1]: 181 (6)
 PetscSF Object: 2 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=1146, leaves=605, remote ranks=1
   [0] 182 <- (1,186)
   [0] 183 <- (1,188)
@@ -16629,3 +16628,4 @@ PetscSF Object: 2 MPI processes
   [0]    1144 <- 1123
   [0]    1145 <- 1124
   [1] Roots referenced by my leaves, by rank
+  MultiSF sort=rank-order

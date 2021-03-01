@@ -1,4 +1,3 @@
-
 #include "petscsf.h"
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
@@ -116,6 +115,41 @@ PETSC_INTERN PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_SINGLE_LIBRARY)
+#include <petscmat.h>
+
+PETSC_INTERN PetscErrorCode PetscSFView_Basic_PatternAndSizes(PetscSF sf,PetscViewer viewer)
+{
+  PetscErrorCode       ierr;
+  PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
+  PetscSFLink          link = bas->avail;
+  PetscInt             i,nrootranks,ndrootranks,myrank;
+  const PetscInt       *rootoffset;
+  PetscMPIInt          rank,size;
+  MPI_Comm             comm = PetscObjectComm((PetscObject)sf);
+  Mat                  A;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  myrank = rank;
+  if (sf->persistent) {
+    /* amount of data I send to other ranks - global to local */
+    ierr = MatCreateAIJ(comm,1,1,size,size,20,NULL,20,NULL,&A);CHKERRQ(ierr);
+    ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,NULL,&rootoffset,NULL);CHKERRQ(ierr);
+    for (i=0; i<nrootranks; i++) {
+      ierr = MatSetValue(A,myrank,bas->iranks[i],(rootoffset[i+1] - rootoffset[i])*link->unitbytes,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatView(A,viewer);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 PETSC_INTERN PetscErrorCode PetscSFView_Basic(PetscSF sf,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -123,7 +157,14 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic(PetscSF sf,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscViewerASCIIPrintf(viewer,"  sort=%s\n",sf->rankorder ? "rank-order" : "unordered");CHKERRQ(ierr);}
+  if (iascii) {ierr = PetscViewerASCIIPrintf(viewer,"  MultiSF sort=%s\n",sf->rankorder ? "rank-order" : "unordered");CHKERRQ(ierr);}
+ #if defined(PETSC_USE_SINGLE_LIBRARY)
+  {
+    PetscBool ibinary;
+    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
+    if (ibinary) {ierr = PetscSFView_Basic_PatternAndSizes(sf,viewer);CHKERRQ(ierr);}
+  }
+ #endif
   PetscFunctionReturn(0);
 }
 

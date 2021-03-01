@@ -49,7 +49,6 @@ Label 'celltype':
 [0]: 7 (0)
 PetscSF Object: 2 MPI processes
   type: basic
-    sort=rank-order
   PetscSFSetGraph() has not been called yet
 DMPlexIsDistributed: FALSE
 DMPlexIsInterpolatedCollective: none

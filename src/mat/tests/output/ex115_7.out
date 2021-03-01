@@ -13,7 +13,6 @@ Mat Object: 3 MPI processes
     Information on VecScatter used in matrix-vector product: 
     PetscSF Object: 3 MPI processes
       type: basic
-        sort=rank-order
       [0] Number of roots=4, leaves=2, remote ranks=1
       [0] 0 <- (1,0)
       [0] 1 <- (1,1)
@@ -48,6 +47,7 @@ Mat Object: 3 MPI processes
       [2] 1: 2 edges
       [2]    4 <- 0
       [2]    5 <- 1
+       MultiSF sort=rank-order
 Dup/Copy tests: 0 0
 Dup/Copy tests: 0 1
 Dup/Copy tests: 0 2

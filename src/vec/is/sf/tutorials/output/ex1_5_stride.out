@@ -1,6 +1,5 @@
 PetscSF Object: 4 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=6, leaves=2, remote ranks=2
   [0] 0 <- (3,2)
   [0] 2 <- (1,0)
@@ -40,6 +39,7 @@ PetscSF Object: 4 MPI processes
   [3]    4 <- 4
   [3] 2: 1 edges
   [3]    0 <- 2
+  MultiSF sort=rank-order
 ## Data at multi-roots, to scatter to leaves
 [0] 0: 1000 1200 1400 1401 1402
 [1] 0: 2000 2200

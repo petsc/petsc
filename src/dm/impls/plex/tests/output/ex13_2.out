@@ -207,7 +207,6 @@ Label 'celltype':
 [1]: 1 (3)
 PetscSF Object: 2 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=25, leaves=6, remote ranks=1
   [0] 6 <- (1,3)
   [0] 8 <- (1,4)
@@ -225,6 +224,7 @@ PetscSF Object: 2 MPI processes
   [0]    13 <- 9
   [0]    22 <- 11
   [1] Roots referenced by my leaves, by rank
+  MultiSF sort=rank-order
 [0]BT for serial flipped cells:
 0 0
 1 2
@@ -462,7 +462,6 @@ Label 'celltype':
 [1]: 1 (3)
 PetscSF Object: 2 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=25, leaves=6, remote ranks=1
   [0] 6 <- (1,3)
   [0] 8 <- (1,4)
@@ -480,3 +479,4 @@ PetscSF Object: 2 MPI processes
   [0]    13 <- 9
   [0]    22 <- 11
   [1] Roots referenced by my leaves, by rank
+  MultiSF sort=rank-order

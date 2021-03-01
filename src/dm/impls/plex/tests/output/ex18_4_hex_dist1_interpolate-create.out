@@ -310,7 +310,6 @@ Label 'celltype':
 [1]: 0 (7)
 PetscSF Object: 2 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=27, leaves=9, remote ranks=1
   [0] 5 <- (1,1)
   [0] 6 <- (1,2)
@@ -334,3 +333,4 @@ PetscSF Object: 2 MPI processes
   [0]    25 <- 24
   [0]    26 <- 25
   [1] Roots referenced by my leaves, by rank
+  MultiSF sort=rank-order

@@ -1297,7 +1297,6 @@ Label 'celltype':
 [3]: 2 (6)
 PetscSF Object: 4 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=72, leaves=48, remote ranks=3
   [0] 4 <- (3,3)
   [0] 6 <- (3,4)
@@ -1528,6 +1527,7 @@ PetscSF Object: 4 MPI processes
   [2]    43 <- 43
   [2]    44 <- 44
   [3] Roots referenced by my leaves, by rank
+   MultiSF sort=rank-order
 Symmetric gradient null space: PASS
 Mat Object: Reference Tree Injector 1 MPI processes
   type: seqaij

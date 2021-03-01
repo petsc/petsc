@@ -12,10 +12,10 @@ Processor [0] M 1 N 1 m 1 n 1 w 1 s 0
 X range of indices: 0 1, Y range of indices: 0 1
 PetscSF Object: Buffered Map 1 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=1, leaves=1, remote ranks=1
   [0] 0 <- (0,0)
+  MultiSF sort=rank-order
 PetscSF Object: Restricted Map 1 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=1, leaves=0, remote ranks=0
+  MultiSF sort=rank-order
