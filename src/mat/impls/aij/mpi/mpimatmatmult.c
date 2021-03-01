@@ -417,6 +417,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
   /* Estimate Bbn, column size of Bb */
   if (nz) {
     Bbn1 = 2*Am*BN/nz;
+    if (!Bbn1) Bbn1 = 1;
   } else Bbn1 = BN;
 
   bs = PetscAbs(B->cmap->bs);
@@ -588,6 +589,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   } else {
     Mat      Bb,Cb;
     PetscInt BN=B->cmap->N,n=contents->workB->cmap->n,i;
+    if (n <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Column block size %D must be positive",n);
 
     for (i=0; i<BN; i+=n) {
       ierr = MatDenseGetSubMatrix(B,i,PetscMin(i+n,BN),&Bb);CHKERRQ(ierr);
