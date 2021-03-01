@@ -1057,24 +1057,20 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_PtAP(Mat C)
   PetscBool      set, flag;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  /* By setting C->ops->productsymbolic to NULL, we ensure that MatProductSymbolic_Unsafe() will be used.
-   * We do this in several other locations in this file. This works for the time being, but these
-   * routines are considered unsafe and may be removed from the MatProduct code in the future.
-   * TODO: Add proper MATSEQAIJMKL implementations */
-  C->ops->productsymbolic = NULL;
-#else
-  /* AIJMKL only has an optimized routine for PtAP when A is symmetric and real. */
-  ierr = MatIsSymmetricKnown(A,&set,&flag);CHKERRQ(ierr);
-  if (set && flag) {
-    C->ops->productsymbolic = MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal;
-    PetscFunctionReturn(0);
+  if (PetscDefined(USE_COMPLEX)) {
+    /* By setting C->ops->productsymbolic to NULL, we ensure that MatProductSymbolic_Unsafe() will be used.
+     * We do this in several other locations in this file. This works for the time being, but these
+     * routines are considered unsafe and may be removed from the MatProduct code in the future.
+     * TODO: Add proper MATSEQAIJMKL implementations */
+    C->ops->productsymbolic = NULL;
   } else {
-    C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
+    /* AIJMKL only has an optimized routine for PtAP when A is symmetric and real. */
+    ierr = MatIsSymmetricKnown(A,&set,&flag);CHKERRQ(ierr);
+    if (set && flag) C->ops->productsymbolic = MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal;
+    else C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
+    /* Note that we don't set C->ops->productnumeric here, as this must happen in MatProductSymbolic_PtAP_XXX(),
+     * depending on whether the algorithm for the general case vs. the real symmetric one is used. */
   }
-  /* Note that we don't set C->ops->productnumeric here, as this must happen in MatProductSymbolic_PtAP_XXX(),
-   * depending on whether the algorithm for the general case vs. the real symmetric one is used. */
-#endif
   PetscFunctionReturn(0);
 }
 
