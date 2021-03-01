@@ -131,6 +131,7 @@
               <li>Any valid Git repository (including bare and with <code>--separate-git-dir</code>) is now correctly detected</li>
             </ul>
           </li>
+          <li><code>--download-yaml</code> or <code>--with-yaml</code> are no longer required for YAML support (but can still be used to avoid compiling source included with PETSc)</li>
         </ul>
       <h4>Sys:</h4>
         <ul>
@@ -138,6 +139,8 @@
           <li>Add PetscRandomGetValues and PetscRandomGetValuesReal to retrieve an array of random numbers</li>
           <li>Add PetscOptions argument to PetscOptionsInsertFileYAML()</li>
           <li>Add PetscCalloc to allocate zeroed memory</li>
+          <li>Automatically detect YAML and JSON option files by extension or particular first line</li>
+          <li>YAML options files ignore keys starting with <code>$$</code>, and some special processing is added.</li>
         </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
