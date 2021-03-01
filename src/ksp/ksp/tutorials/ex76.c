@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatLoad(aux,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_levels_1_st_share_sub_pc",&flg,NULL);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_levels_1_st_share_sub_ksp",&flg,NULL);
   if (flg) { /* PETSc LU/Cholesky is struggling numerically for bs > 1          */
              /* only set the proper bs for the geneo_share_* tests, 1 otherwise */
     ierr = MatSetBlockSizesFromMats(aux,A,A);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ int main(int argc,char **args)
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HPDDM)
   if (flg) {
-    ierr = PCHPDDMGetSTShareSubPC(pc,&flg);CHKERRQ(ierr);
+    ierr = PCHPDDMGetSTShareSubKSP(pc,&flg);CHKERRQ(ierr);
   }
 #endif
   if (flg && PetscDefined(USE_LOG)) {
@@ -133,13 +133,13 @@ int main(int argc,char **args)
     ierr = PetscLogEventRegister("MatLUFactorNum",PC_CLASSID,&event);CHKERRQ(ierr);
     ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2);CHKERRQ(ierr);
     if (info1.count || info2.count) {
-      if (info2.count <= info1.count) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_pc",info2.count,info1.count);
+      if (info2.count <= info1.count) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
     } else {
       ierr = PetscLogEventRegister("MatCholFctrSym",PC_CLASSID,&event);CHKERRQ(ierr);
       ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1);CHKERRQ(ierr);
       ierr = PetscLogEventRegister("MatCholFctrNum",PC_CLASSID,&event);CHKERRQ(ierr);
       ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2);CHKERRQ(ierr);
-      if (info2.count <= info1.count) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_pc",info2.count,info1.count);
+      if (info2.count <= info1.count) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
     }
   }
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ int main(int argc,char **args)
    testset:
       requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       nsize: 4
-      args: -ksp_converged_reason -ksp_max_it 150 -pc_type hpddm -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type redundant -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_define_subdomains -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_pc {{false true}shared output}
+      args: -ksp_converged_reason -ksp_max_it 150 -pc_type hpddm -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type redundant -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_define_subdomains -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp {{false true}shared output}
       test:
         suffix: geneo_share_cholesky
         output_file: output/ex76_geneo_share.out

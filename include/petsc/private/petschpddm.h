@@ -37,7 +37,7 @@ struct PC_HPDDM {
   PCHPDDMCoarseCorrectionType correction; /* type of coarse correction */
   PetscBool                   Neumann;    /* aux is the local Neumann matrix? */
   PetscBool                   log_separate; /* separate events for each level? */
-  PetscBool                   share;      /* shared PC between SLEPc ST and the fine-level subdomain solver? */
+  PetscBool                   share;      /* shared KSP between SLEPc ST and the fine-level subdomain solver? */
   PetscErrorCode              (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*); /* setup function for the auxiliary matrix */
   void*                       setup_ctx;  /* context for setup */
 };
