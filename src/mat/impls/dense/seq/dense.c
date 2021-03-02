@@ -2022,7 +2022,7 @@ PetscErrorCode  MatDenseRestoreArrayWrite(Mat A,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCreateSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt cs,MatReuse scall,Mat *B)
+static PetscErrorCode MatCreateSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
@@ -2086,7 +2086,7 @@ static PetscErrorCode MatCreateSubMatrices_SeqDense(Mat A,PetscInt n,const IS ir
   }
 
   for (i=0; i<n; i++) {
-    ierr = MatCreateSubMatrix_SeqDense(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_SeqDense(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2612,7 +2612,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         NULL,
                                         NULL,
                                         NULL,
-                                /* 59*/ NULL,
+                                /* 59*/ MatCreateSubMatrix_SeqDense,
                                         MatDestroy_SeqDense,
                                         MatView_SeqDense,
                                         NULL,

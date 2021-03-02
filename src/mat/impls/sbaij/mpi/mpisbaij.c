@@ -1419,9 +1419,12 @@ PetscErrorCode MatCreateSubMatrix_MPISBAIJ(Mat mat,IS isrow,IS iscol,MatReuse ca
     ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
     if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
+    PetscBool issorted;
+
     ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
     ierr = ISEqual_private(isrow,iscol_local,&isequal);CHKERRQ(ierr);
-    if (!isequal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
+    ierr = ISSorted(iscol_local, &issorted);CHKERRQ(ierr);
+    if (!isequal || !issorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow and be sorted");
   }
 
   /* now call MatCreateSubMatrix_MPIBAIJ() */
