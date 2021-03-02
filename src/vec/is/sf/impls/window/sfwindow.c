@@ -477,8 +477,8 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
     ierr = PetscSFGetRootRanks(w->dynsf,&nranks,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(nranks,&link->dyn_target_addr);CHKERRQ(ierr);
     ierr = MPI_Get_address(array,&winaddr);CHKERRMPI(ierr);
-    ierr = PetscSFBcastBegin(w->dynsf,MPI_AINT,&winaddr,link->dyn_target_addr);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(w->dynsf,MPI_AINT,&winaddr,link->dyn_target_addr);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(w->dynsf,MPI_AINT,&winaddr,link->dyn_target_addr,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(w->dynsf,MPI_AINT,&winaddr,link->dyn_target_addr,MPI_REPLACE);CHKERRQ(ierr);
     break;
   case PETSCSF_WINDOW_FLAVOR_ALLOCATE:
     ierr = MPI_Win_allocate(wsize,(PetscMPIInt)bytes,w->info,PetscObjectComm((PetscObject)sf),&link->addr,&link->win);CHKERRMPI(ierr);
@@ -826,7 +826,7 @@ static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf,PetscSFDuplicateOption 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastAndOpBegin_Window(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscSF_Window     *w = (PetscSF_Window*)sf->data;
   PetscErrorCode     ierr;
@@ -838,7 +838,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
   MPI_Win            win;
 
   PetscFunctionBegin;
-  if (op != MPI_REPLACE || op != MPIU_REPLACE) SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PetscSFBcastAndOpBegin_Window with op!=MPI_REPLACE has not been implemented");
+  if (op != MPI_REPLACE) SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PetscSFBcastBegin_Window with op!=MPI_REPLACE has not been implemented");
   ierr = PetscSFGetRootRanks(sf,&nranks,&ranks,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,(void*)rootdata,w->sync,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&target_disp,&reqs,&win);CHKERRQ(ierr);
@@ -859,7 +859,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFBcastAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
+PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
@@ -999,8 +999,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   sf->ops->Destroy         = PetscSFDestroy_Window;
   sf->ops->View            = PetscSFView_Window;
   sf->ops->Duplicate       = PetscSFDuplicate_Window;
-  sf->ops->BcastAndOpBegin = PetscSFBcastAndOpBegin_Window;
-  sf->ops->BcastAndOpEnd   = PetscSFBcastAndOpEnd_Window;
+  sf->ops->BcastBegin      = PetscSFBcastBegin_Window;
+  sf->ops->BcastEnd        = PetscSFBcastEnd_Window;
   sf->ops->ReduceBegin     = PetscSFReduceBegin_Window;
   sf->ops->ReduceEnd       = PetscSFReduceEnd_Window;
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Window;

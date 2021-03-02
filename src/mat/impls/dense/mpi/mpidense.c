@@ -480,8 +480,8 @@ PetscErrorCode MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArrayReadAndMemType(xx,&ax,&axmtype);CHKERRQ(ierr);
   ierr = VecGetArrayAndMemType(mdn->lvec,&ay,&aymtype);CHKERRQ(ierr);
-  ierr = PetscSFBcastWithMemTypeBegin(mdn->Mvctx,MPIU_SCALAR,axmtype,ax,aymtype,ay);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(mdn->Mvctx,MPIU_SCALAR,ax,ay);CHKERRQ(ierr);
+  ierr = PetscSFBcastWithMemTypeBegin(mdn->Mvctx,MPIU_SCALAR,axmtype,ax,aymtype,ay,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(mdn->Mvctx,MPIU_SCALAR,ax,ay,MPI_REPLACE);CHKERRQ(ierr);
   ierr = VecRestoreArrayAndMemType(mdn->lvec,&ay);CHKERRQ(ierr);
   ierr = VecRestoreArrayReadAndMemType(xx,&ax);CHKERRQ(ierr);
   ierr = (*mdn->A->ops->mult)(mdn->A,mdn->lvec,yy);CHKERRQ(ierr);
@@ -499,8 +499,8 @@ PetscErrorCode MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   ierr = VecGetArrayReadAndMemType(xx,&ax,&axmtype);CHKERRQ(ierr);
   ierr = VecGetArrayAndMemType(mdn->lvec,&ay,&aymtype);CHKERRQ(ierr);
-  ierr = PetscSFBcastWithMemTypeBegin(mdn->Mvctx,MPIU_SCALAR,axmtype,ax,aymtype,ay);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(mdn->Mvctx,MPIU_SCALAR,ax,ay);CHKERRQ(ierr);
+  ierr = PetscSFBcastWithMemTypeBegin(mdn->Mvctx,MPIU_SCALAR,axmtype,ax,aymtype,ay,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(mdn->Mvctx,MPIU_SCALAR,ax,ay,MPI_REPLACE);CHKERRQ(ierr);
   ierr = VecRestoreArrayAndMemType(mdn->lvec,&ay);CHKERRQ(ierr);
   ierr = VecRestoreArrayReadAndMemType(xx,&ax);CHKERRQ(ierr);
   ierr = (*mdn->A->ops->multadd)(mdn->A,mdn->lvec,yy,zz);CHKERRQ(ierr);
@@ -852,8 +852,8 @@ PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
     if (s3a != s3) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vec non-conforming local size, %d != %d.", s3a, s3);
     ierr = VecGetArrayRead(rr,&ar);CHKERRQ(ierr);
     ierr = VecGetArray(mdn->lvec,&r);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(mdn->Mvctx,MPIU_SCALAR,ar,r);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(mdn->Mvctx,MPIU_SCALAR,ar,r);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(mdn->Mvctx,MPIU_SCALAR,ar,r,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(mdn->Mvctx,MPIU_SCALAR,ar,r,MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(rr,&ar);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       x = r[i];

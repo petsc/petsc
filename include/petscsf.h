@@ -102,8 +102,8 @@ PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const Pets
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF,PetscLayout,PetscSFPattern);
 PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF,PetscInt*,PetscInt*,const PetscInt**,const PetscSFNode**);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRange(PetscSF,PetscInt*,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF,PetscInt,const PetscInt*,PetscSF*);
-PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF,PetscInt,const PetscInt *, PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF,PetscInt,const PetscInt*,PetscSF*);
+PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF,PetscInt,const PetscInt*,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetUpRanks(PetscSF,MPI_Group);
 PETSC_EXTERN PetscErrorCode PetscSFGetRootRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
@@ -125,11 +125,11 @@ PETSC_EXTERN PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, Pets
 PETSC_EXTERN PetscErrorCode PetscSFCreateSectionSF(PetscSF, PetscSection, PetscInt [], PetscSection, PetscSF *);
 
 /* Reduce rootdata to leafdata using provided operation */
-PETSC_EXTERN PetscErrorCode PetscSFBcastAndOpBegin(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
+PETSC_EXTERN PetscErrorCode PetscSFBcastBegin(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
-PETSC_EXTERN PetscErrorCode PetscSFBcastAndOpEnd(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
+PETSC_EXTERN PetscErrorCode PetscSFBcastEnd(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
-PETSC_EXTERN PetscErrorCode PetscSFBcastAndOpWithMemTypeBegin(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op)
+PETSC_EXTERN PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op)
   PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(6,2);
 
 /* Reduce leafdata into rootdata using provided operation */
@@ -162,61 +162,26 @@ PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF,MPI_Datatype,const void*,v
 PETSC_EXTERN PetscErrorCode PetscSFCompose(PetscSF,PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFComposeInverse(PetscSF,PetscSF,PetscSF*);
 
-#if defined(MPI_REPLACE)
-#  define MPIU_REPLACE MPI_REPLACE
-#else
-/* When using an old MPI such that MPI_REPLACE is not defined, we do not pass MPI_REPLACE to MPI at all.  Instead, we
- * use it as a flag for our own reducer in the PETSCSFBASIC implementation.  This could be any unique value unlikely to
- * collide with another MPI_Op so we'll just use the value that has been used by every version of MPICH since
- * MPICH2-1.0.6. */
-#  define MPIU_REPLACE (MPI_Op)(0x5800000d)
-#endif
+#define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_REPLACE macro is deprecated use MPI_REPLACE (since version 3.15)\"")
 
 PETSC_DEPRECATED_FUNCTION("Use PetscSFGetRootRanks (since v3.12)")
 PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote)
 { return PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote); }
 
-/*@C
-   PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()
+PETSC_DEPRECATED_FUNCTION("Use PetscSFCreateEmbeddedRootSF (since v3.15)")
+PETSC_STATIC_INLINE PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *esf)
+{ return PetscSFCreateEmbeddedRootSF(sf,nselected,selected,esf); }
 
-   Collective on PetscSF
+PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastBegin (since v3.15)")
+PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata,MPI_Op op)
+{ return PetscSFBcastBegin(sf,unit,rootdata,leafdata,op); }
 
-   Input Arguments:
-+  sf - star forest on which to communicate
-.  unit - data type associated with each node
--  rootdata - buffer to broadcast
+PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastEnd (since v3.15)")
+PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata,MPI_Op op)
+{ return PetscSFBcastEnd(sf,unit,rootdata,leafdata,op); }
 
-   Output Arguments:
-.  leafdata - buffer to update with values from each leaf's respective root
-
-   Level: intermediate
-
-.seealso: PetscSFCreate(), PetscSFSetGraph(), PetscSFView(), PetscSFBcastEnd(), PetscSFReduceBegin(), PetscSFBcastAndOpBegin()
-@*/
-PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata)
-{ return PetscSFBcastAndOpBegin(sf,unit,rootdata,leafdata,MPIU_REPLACE); }
-
-PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void* rootdata,PetscMemType leafmtype,void* leafdata)
-{ return PetscSFBcastAndOpWithMemTypeBegin(sf,unit,rootmtype,rootdata,leafmtype,leafdata,MPIU_REPLACE); }
-
-/*@C
-   PetscSFBcastEnd - end a broadcast operation started with PetscSFBcastBegin()
-
-   Collective
-
-   Input Arguments:
-+  sf - star forest
-.  unit - data type
--  rootdata - buffer to broadcast
-
-   Output Arguments:
-.  leafdata - buffer to update with values from each leaf's respective root
-
-   Level: intermediate
-
-.seealso: PetscSFSetGraph(), PetscSFReduceEnd()
-@*/
-PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata)
-{ return PetscSFBcastAndOpEnd(sf,unit,rootdata,leafdata,MPIU_REPLACE); }
+PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastWithMemTypeBegin (since v3.15)")
+PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastAndOpWithMemtypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+{ return PetscSFBcastWithMemTypeBegin(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op); }
 
 #endif

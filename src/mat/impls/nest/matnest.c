@@ -1596,8 +1596,8 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
       ierr = PetscSFSetGraphLayout(sf,map,nleaves,ilocal,PETSC_USE_POINTER,iremote);CHKERRQ(ierr);
       ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sf,MPIU_INT,ix2,ix + m);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf,MPIU_INT,ix2,ix + m);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf,MPIU_INT,ix2,ix + m,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf,MPIU_INT,ix2,ix + m,MPI_REPLACE);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
       ierr = PetscFree2(ilocal,iremote);CHKERRQ(ierr);
     } else {

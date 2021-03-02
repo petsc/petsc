@@ -140,8 +140,8 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,nroots,nleaves,NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(sf,MPIU_INT,indices_ov_rd,indices_recv,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf,MPIU_INT,indices_ov_rd,indices_recv,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,indices_ov_rd,indices_recv,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_INT,indices_ov_rd,indices_recv,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = PetscFree2(indices_ov_rd,sources_sc_rd);CHKERRQ(ierr);
   ierr = ISCreateGeneral(scomm,nroots,indices_recv,PETSC_OWN_POINTER,&is_sc);CHKERRQ(ierr);

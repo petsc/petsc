@@ -2516,7 +2516,7 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
     if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
     ierr = VecGetArrayAndMemType(l, &lArray, &lmtype);CHKERRQ(ierr);
     ierr = VecGetArrayReadAndMemType(g, &gArray, &gmtype);CHKERRQ(ierr);
-    ierr = PetscSFBcastWithMemTypeBegin(sf, MPIU_SCALAR, gmtype, gArray, lmtype, lArray);CHKERRQ(ierr);
+    ierr = PetscSFBcastWithMemTypeBegin(sf, MPIU_SCALAR, gmtype, gArray, lmtype, lArray, MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArrayAndMemType(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArrayReadAndMemType(g, &gArray);CHKERRQ(ierr);
   } else {
@@ -2561,7 +2561,7 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 
     ierr = VecGetArrayAndMemType(l, &lArray, &lmtype);CHKERRQ(ierr);
     ierr = VecGetArrayReadAndMemType(g, &gArray, &gmtype);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_SCALAR, gArray, lArray,MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArrayAndMemType(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArrayReadAndMemType(g, &gArray);CHKERRQ(ierr);
     if (transform) {ierr = DMPlexGlobalToLocalBasis(dm, l);CHKERRQ(ierr);}

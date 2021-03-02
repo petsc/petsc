@@ -2620,10 +2620,10 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     ierr = PetscSectionGetStorageSize(leafIndicesSec,&numLeafIndices);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(leafMatricesSec,&numLeafMatrices);CHKERRQ(ierr);
     ierr = PetscMalloc2(numLeafIndices,&leafIndices,numLeafMatrices,&leafMatrices);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(indicesSF,MPIU_INT,rootIndices,leafIndices);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(matricesSF,MPIU_SCALAR,rootMatrices,leafMatrices);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(indicesSF,MPIU_INT,rootIndices,leafIndices);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(matricesSF,MPIU_SCALAR,rootMatrices,leafMatrices);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(indicesSF,MPIU_INT,rootIndices,leafIndices,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(matricesSF,MPIU_SCALAR,rootMatrices,leafMatrices,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(indicesSF,MPIU_INT,rootIndices,leafIndices,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(matricesSF,MPIU_SCALAR,rootMatrices,leafMatrices,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&matricesSF);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&indicesSF);CHKERRQ(ierr);
     ierr = PetscFree2(rootIndices,rootMatrices);CHKERRQ(ierr);
@@ -3615,8 +3615,8 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
       parentNodeAndIdFine[p - pStartF][1] = -1;
       parentNodeAndIdFine[p - pStartF][2] = -1;
     }
-    ierr = PetscSFBcastBegin(coarseToFineEmbedded,threeInt,parentNodeAndIdCoarse,parentNodeAndIdFine);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(coarseToFineEmbedded,threeInt,parentNodeAndIdCoarse,parentNodeAndIdFine);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(coarseToFineEmbedded,threeInt,parentNodeAndIdCoarse,parentNodeAndIdFine,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(coarseToFineEmbedded,threeInt,parentNodeAndIdCoarse,parentNodeAndIdFine,MPI_REPLACE);CHKERRQ(ierr);
     for (p = pStartF, nleavesToParents = 0; p < pEndF; p++) {
       PetscInt dof;
 
@@ -3674,7 +3674,7 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
         pointsWithDofs[offset++] = p - pStartC;
       }
     }
-    ierr = PetscSFCreateEmbeddedSF(coarseToFineEmbedded, numPointsWithDofs, pointsWithDofs, &sfDofsOnly);CHKERRQ(ierr);
+    ierr = PetscSFCreateEmbeddedRootSF(coarseToFineEmbedded, numPointsWithDofs, pointsWithDofs, &sfDofsOnly);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&coarseToFineEmbedded);CHKERRQ(ierr);
     ierr = PetscFree(pointsWithDofs);CHKERRQ(ierr);
     coarseToFineEmbedded = sfDofsOnly;
@@ -3704,13 +3704,13 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
     ierr = PetscSectionGetStorageSize(rootIndicesSec,&numRootIndices);CHKERRQ(ierr);
     if (gatheredIndices) {
       ierr = PetscMalloc1(numRootIndices,&rootInds);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(indicesSF,MPIU_INT,leafInds,rootInds);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(indicesSF,MPIU_INT,leafInds,rootInds);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(indicesSF,MPIU_INT,leafInds,rootInds,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(indicesSF,MPIU_INT,leafInds,rootInds,MPI_REPLACE);CHKERRQ(ierr);
     }
     if (gatheredValues) {
       ierr = PetscMalloc1(numRootIndices,&rootVals);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(indicesSF,MPIU_SCALAR,leafVals,rootVals);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(indicesSF,MPIU_SCALAR,leafVals,rootVals);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(indicesSF,MPIU_SCALAR,leafVals,rootVals,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(indicesSF,MPIU_SCALAR,leafVals,rootVals,MPI_REPLACE);CHKERRQ(ierr);
     }
     ierr = PetscSFDestroy(&indicesSF);CHKERRQ(ierr);
   }
@@ -4171,8 +4171,8 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     ierr = PetscFree(remoteOffsetsValues);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(leafValuesSec,&numLeafValues);CHKERRQ(ierr);
     ierr = PetscMalloc1(numLeafValues,&leafValues);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(valuesSF,MPIU_SCALAR,rootValues,leafValues);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(valuesSF,MPIU_SCALAR,rootValues,leafValues);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(valuesSF,MPIU_SCALAR,rootValues,leafValues,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(valuesSF,MPIU_SCALAR,rootValues,leafValues,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&valuesSF);CHKERRQ(ierr);
     ierr = PetscFree(rootValues);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&rootValuesSec);CHKERRQ(ierr);

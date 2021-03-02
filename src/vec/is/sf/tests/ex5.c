@@ -79,12 +79,12 @@ int main(int argc, char **argv)
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastB(BcastA)\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: root data\n");CHKERRQ(ierr);
   ierr = PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfA, MPIU_INT, rdA, ldA);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfA, MPIU_INT, rdA, ldA);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfA, MPIU_INT, rdA, ldA,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfA, MPIU_INT, rdA, ldA,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: leaf data (all)\n");CHKERRQ(ierr);
   ierr = PetscIntView(nldataA, ldA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfB, MPIU_INT, ldA, ldB);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfB, MPIU_INT, ldA, ldB);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfB, MPIU_INT, ldA, ldB,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfB, MPIU_INT, ldA, ldB,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "B: leaf data (all)\n");CHKERRQ(ierr);
   ierr = PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -98,8 +98,8 @@ int main(int argc, char **argv)
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastBA\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: root data\n");CHKERRQ(ierr);
   ierr = PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfBA, MPIU_INT, rdA, ldB);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfBA, MPIU_INT, rdA, ldB);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfBA, MPIU_INT, rdA, ldB,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfBA, MPIU_INT, rdA, ldB,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: leaf data (all)\n");CHKERRQ(ierr);
   ierr = PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

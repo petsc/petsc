@@ -112,8 +112,8 @@ int main(int argc,char **argv)
       ierr = MatGetLayouts(A,&map,NULL);CHKERRQ(ierr);
       ierr = PetscSFSetGraphWithPattern(sf,map,PETSCSF_PATTERN_ALLGATHER);CHKERRQ(ierr);
       ierr = PetscMalloc1(dim*N,&gcoords);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sf,dtype,coords,gcoords);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf,dtype,coords,gcoords);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf,dtype,coords,gcoords,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf,dtype,coords,gcoords,MPI_REPLACE);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
       ierr = MPI_Type_free(&dtype);CHKERRMPI(ierr);
     } else gcoords = (PetscReal*)coords;

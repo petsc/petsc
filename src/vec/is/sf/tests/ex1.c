@@ -165,8 +165,8 @@ int main(int argc,char **argv)
   ierr = PetscSFSetType(sf,sftype);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPI_INT,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd  (sf,MPI_INT,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPI_INT,NULL,NULL,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd  (sf,MPI_INT,NULL,NULL,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
   /* From now on we also call SetFromOptions */
@@ -176,8 +176,8 @@ int main(int argc,char **argv)
   ierr = PetscSFSetType(sf,sftype);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(sf,MPI_INT,NULL,NULL,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd  (sf,MPI_INT,NULL,NULL,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPI_INT,NULL,NULL,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd  (sf,MPI_INT,NULL,NULL,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(sf,MPI_INT,NULL,NULL,MPI_SUM);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd  (sf,MPI_INT,NULL,NULL,MPI_SUM);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
@@ -220,12 +220,12 @@ int main(int argc,char **argv)
   ierr = PetscSFDestroy(&sfInv);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
-  /* Test PetscSFCreateEmbeddedSF() */
+  /* Test PetscSFCreateEmbeddedRootSF() */
   ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetType(sf,sftype);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFCreateEmbeddedSF(sf,0,NULL,&sfEmbed);CHKERRQ(ierr);
+  ierr = PetscSFCreateEmbeddedRootSF(sf,0,NULL,&sfEmbed);CHKERRQ(ierr);
   ierr = CheckGraphEmpty(sfEmbed);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfEmbed);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);

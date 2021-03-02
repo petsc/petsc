@@ -72,8 +72,8 @@ int main(int argc, char **argv)
     contig = tmp;
   }
   for (i=0;i<10000;i++) {
-    ierr = PetscSFBcastBegin(sf,contig,bufA,bufAout);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,contig,bufA,bufAout);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,contig,bufA,bufAout,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,contig,bufA,bufAout,MPI_REPLACE);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(A,(const PetscScalar**)&bufA);CHKERRQ(ierr);
   ierr = VecRestoreArray(Aout,&bufAout);CHKERRQ(ierr);

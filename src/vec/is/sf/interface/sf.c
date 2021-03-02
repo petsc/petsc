@@ -677,8 +677,8 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
     roots[i].rank  = -1;
     roots[i].index = -1;
   }
-  ierr = PetscSFReduceBegin(sf,MPIU_2INT,leaves,roots,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf,MPIU_2INT,leaves,roots,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_2INT,leaves,roots,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_2INT,leaves,roots,MPI_REPLACE);CHKERRQ(ierr);
 
   /* Check whether our leaves are sparse */
   for (i=0,count=0; i<nroots; i++) if (roots[i].rank >= 0) count++;
@@ -1240,8 +1240,8 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
       for (i=0,maxdegree=0; i<sf->nroots; i++) maxdegree = PetscMax(maxdegree,indegree[i]);
       ierr = PetscMalloc5(sf->multi->nroots,&inranks,sf->multi->nroots,&newoffset,maxlocal,&outranks,maxlocal,&newoutoffset,maxdegree,&tmpoffset);CHKERRQ(ierr);
       for (i=0; i<maxlocal; i++) outranks[i] = rank;
-      ierr = PetscSFReduceBegin(sf->multi,MPIU_INT,outranks,inranks,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(sf->multi,MPIU_INT,outranks,inranks,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(sf->multi,MPIU_INT,outranks,inranks,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sf->multi,MPIU_INT,outranks,inranks,MPI_REPLACE);CHKERRQ(ierr);
       /* Sort the incoming ranks at each vertex, build the inverse map */
       for (i=0; i<sf->nroots; i++) {
         PetscInt j;
@@ -1249,8 +1249,8 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
         ierr = PetscSortIntWithArray(indegree[i],inranks+inoffset[i],tmpoffset);CHKERRQ(ierr);
         for (j=0; j<indegree[i]; j++) newoffset[inoffset[i] + tmpoffset[j]] = inoffset[i] + j;
       }
-      ierr = PetscSFBcastBegin(sf->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf->multi,MPIU_INT,newoffset,newoutoffset,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf->multi,MPIU_INT,newoffset,newoutoffset,MPI_REPLACE);CHKERRQ(ierr);
       ierr = PetscMalloc1(sf->nleaves,&newremote);CHKERRQ(ierr);
       for (i=0; i<sf->nleaves; i++) {
         newremote[i].rank  = sf->remote[i].rank;
@@ -1266,7 +1266,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
 }
 
 /*@C
-   PetscSFCreateEmbeddedSF - removes edges from all but the selected roots, does not remap indices
+   PetscSFCreateEmbeddedRootSF - removes edges from all but the selected roots, does not remap indices
 
    Collective
 
@@ -1286,7 +1286,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
 
 .seealso: PetscSFSetGraph(), PetscSFGetGraph()
 @*/
-PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *esf)
+PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *esf)
 {
   PetscInt          i,j,n,nroots,nleaves,esf_nleaves,*new_ilocal,minleaf,maxleaf,maxlocal;
   const PetscInt    *ilocal;
@@ -1315,8 +1315,8 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
       if (selected[i] < 0 || selected[i] >= nroots) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"selected root indice %D is out of [0,%D)",selected[i],nroots);
   }
 
-  if (sf->ops->CreateEmbeddedSF) {
-    ierr = (*sf->ops->CreateEmbeddedSF)(sf,nselected,selected,esf);CHKERRQ(ierr);
+  if (sf->ops->CreateEmbeddedRootSF) {
+    ierr = (*sf->ops->CreateEmbeddedRootSF)(sf,nselected,selected,esf);CHKERRQ(ierr);
   } else {
     /* A generic version of creating embedded sf */
     ierr = PetscSFGetLeafRange(sf,&minleaf,&maxleaf);CHKERRQ(ierr);
@@ -1325,8 +1325,8 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
     leafdata = leafmem - minleaf;
     /* Tag selected roots and bcast to leaves */
     for (i=0; i<nselected; i++) rootdata[selected[i]] = 1;
-    ierr = PetscSFBcastBegin(sf,MPI_SIGNED_CHAR,rootdata,leafdata);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPI_SIGNED_CHAR,rootdata,leafdata);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPI_SIGNED_CHAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPI_SIGNED_CHAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
 
     /* Build esf with leaves that are still connected */
     esf_nleaves = 0;
@@ -1372,7 +1372,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const Petsc
 
   Level: advanced
 
-.seealso: PetscSFCreateEmbeddedSF(), PetscSFSetGraph(), PetscSFGetGraph()
+.seealso: PetscSFCreateEmbeddedRootSF(), PetscSFSetGraph(), PetscSFGetGraph()
 @*/
 PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *newsf)
 {
@@ -1417,7 +1417,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
 }
 
 /*@C
-   PetscSFBcastAndOpBegin - begin pointwise broadcast with root value being reduced to leaf value, to be concluded with call to PetscSFBcastAndOpEnd()
+   PetscSFBcastBegin - begin pointwise broadcast with root value being reduced to leaf value, to be concluded with call to PetscSFBcastEnd()
 
    Collective on PetscSF
 
@@ -1435,10 +1435,10 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
    Notes:
     When petsc is configured with device support, it will use its own mechanism to figure out whether the given data pointers
     are host pointers or device pointers, which may incur a noticable cost. If you already knew the info, you should
-    use PetscSFBcastAndOpWithMemTypeBegin() instead.
-.seealso: PetscSFBcastAndOpEnd(), PetscSFBcastBegin(), PetscSFBcastEnd(), PetscSFBcastAndOpWithMemTypeBegin()
+    use PetscSFBcastWithMemTypeBegin() instead.
+.seealso: PetscSFBcastEnd(), PetscSFBcastWithMemTypeBegin()
 @*/
-PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
+PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
 {
   PetscErrorCode ierr;
   PetscMemType   rootmtype,leafmtype;
@@ -1446,16 +1446,16 @@ PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void *r
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  if (!sf->vscat.logging) {ierr = PetscLogEventBegin(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);}
+  if (!sf->vscat.logging) {ierr = PetscLogEventBegin(PETSCSF_BcastBegin,sf,0,0,0);CHKERRQ(ierr);}
   ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
   ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
-  ierr = (*sf->ops->BcastAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op);CHKERRQ(ierr);
-  if (!sf->vscat.logging) {ierr = PetscLogEventEnd(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);}
+  ierr = (*sf->ops->BcastBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op);CHKERRQ(ierr);
+  if (!sf->vscat.logging) {ierr = PetscLogEventEnd(PETSCSF_BcastBegin,sf,0,0,0);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 /*@C
-   PetscSFBcastAndOpWithMemTypeBegin - begin pointwise broadcast with root value being reduced to leaf value with explicit memory types, to be concluded with call to PetscSFBcastAndOpEnd()
+   PetscSFBcastWithMemTypeBegin - begin pointwise broadcast with root value being reduced to leaf value with explicit memory types, to be concluded with call to PetscSFBcastEnd()
 
    Collective on PetscSF
 
@@ -1472,23 +1472,23 @@ PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void *r
 
    Level: intermediate
 
-.seealso: PetscSFBcastAndOpEnd(), PetscSFBcastBegin(), PetscSFBcastEnd(),PetscSFBcastAndOpBegin()
+.seealso: PetscSFBcastEnd(), PetscSFBcastBegin()
 @*/
-PetscErrorCode PetscSFBcastAndOpWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  if (!sf->vscat.logging) {ierr = PetscLogEventBegin(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);}
-  ierr = (*sf->ops->BcastAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op);CHKERRQ(ierr);
-  if (!sf->vscat.logging) {ierr = PetscLogEventEnd(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);}
+  if (!sf->vscat.logging) {ierr = PetscLogEventBegin(PETSCSF_BcastBegin,sf,0,0,0);CHKERRQ(ierr);}
+  ierr = (*sf->ops->BcastBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op);CHKERRQ(ierr);
+  if (!sf->vscat.logging) {ierr = PetscLogEventEnd(PETSCSF_BcastBegin,sf,0,0,0);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 /*@C
-   PetscSFBcastAndOpEnd - end a broadcast & reduce operation started with PetscSFBcastAndOpBegin()
+   PetscSFBcastEnd - end a broadcast & reduce operation started with PetscSFBcastBegin()
 
    Collective
 
@@ -1505,15 +1505,15 @@ PetscErrorCode PetscSFBcastAndOpWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,Pe
 
 .seealso: PetscSFSetGraph(), PetscSFReduceEnd()
 @*/
-PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
+PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  if (!sf->vscat.logging) {ierr = PetscLogEventBegin(PETSCSF_BcastAndOpEnd,sf,0,0,0);CHKERRQ(ierr);}
-  ierr = (*sf->ops->BcastAndOpEnd)(sf,unit,rootdata,leafdata,op);CHKERRQ(ierr);
-  if (!sf->vscat.logging) {ierr = PetscLogEventEnd(PETSCSF_BcastAndOpEnd,sf,0,0,0);CHKERRQ(ierr);}
+  if (!sf->vscat.logging) {ierr = PetscLogEventBegin(PETSCSF_BcastEnd,sf,0,0,0);CHKERRQ(ierr);}
+  ierr = (*sf->ops->BcastEnd)(sf,unit,rootdata,leafdata,op);CHKERRQ(ierr);
+  if (!sf->vscat.logging) {ierr = PetscLogEventEnd(PETSCSF_BcastEnd,sf,0,0,0);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1843,7 +1843,7 @@ PetscErrorCode PetscSFGatherBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(multi,unit,leafdata,multirootdata,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(multi,unit,leafdata,multirootdata,MPI_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1872,7 +1872,7 @@ PetscErrorCode PetscSFGatherEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(multi,unit,leafdata,multirootdata,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(multi,unit,leafdata,multirootdata,MPI_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1902,7 +1902,7 @@ PetscErrorCode PetscSFScatterBegin(PetscSF sf,MPI_Datatype unit,const void *mult
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(multi,unit,multirootdata,leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(multi,unit,multirootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1931,7 +1931,7 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(multi,unit,multirootdata,leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(multi,unit,multirootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2016,8 +2016,8 @@ PetscErrorCode PetscSFCompose(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
   }
   ierr = PetscSFGetLeafRange(sfB,&minleaf,&maxleaf);CHKERRQ(ierr);
   ierr = PetscMalloc1(maxleaf-minleaf+1,&leafdataB);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfB,MPIU_2INT,remotePointsA,leafdataB-minleaf);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfB,MPIU_2INT,remotePointsA,leafdataB-minleaf);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfB,MPIU_2INT,remotePointsA,leafdataB-minleaf,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfB,MPIU_2INT,remotePointsA,leafdataB-minleaf,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscFree(reorderedRemotePointsA);CHKERRQ(ierr);
 
   denseB = (PetscBool)!localPointsB;
@@ -2099,7 +2099,7 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
 
   /* TODO: Check roots of sfB have degree of 1 */
   /* Once we implement it, we can replace the MPI_MAXLOC
-     with MPIU_REPLACE. In that case, MPI_MAXLOC and MPIU_REPLACE have the same effect.
+     with MPI_REPLACE. In that case, MPI_MAXLOC and MPI_REPLACE have the same effect.
      We use MPI_MAXLOC only to have a deterministic output from this routine if
      the root condition is not meet.
    */
@@ -2107,7 +2107,7 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA,PetscSF sfB,PetscSF *sfBA)
 #if defined(PETSC_USE_64BIT_INDICES)
   /* we accept a non-deterministic output (if any) with PETSCSFWINDOW, since MPI_MAXLOC cannot operate on MPIU_2INT with MPI_Accumulate */
   ierr = PetscObjectTypeCompare((PetscObject)sfB,PETSCSFWINDOW,&iswin);CHKERRQ(ierr);
-  if (iswin) op = MPIU_REPLACE;
+  if (iswin) op = MPI_REPLACE;
 #endif
 
   ierr = PetscSFGetLeafRange(sfB, &minleaf, &maxleaf);CHKERRQ(ierr);
@@ -2212,13 +2212,13 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf,MPI_Datatype unit,const voi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSCSF_BcastBegin,sf,0,0,0);CHKERRQ(ierr);
   ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
   ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
   if (sf->ops->BcastToZero) {
     ierr = (*sf->ops->BcastToZero)(sf,unit,rootmtype,rootdata,leafmtype,leafdata);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSFBcastToZero_Private is not supported on this SF type");
-  ierr = PetscLogEventEnd(PETSCSF_BcastAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_BcastBegin,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

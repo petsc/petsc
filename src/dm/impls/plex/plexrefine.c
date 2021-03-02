@@ -2532,8 +2532,8 @@ static PetscErrorCode DMPlexCellRefinerSetUp_SBR(DMPlexCellRefiner cr)
       ierr = SBRInitializeComm(cr, pointSF);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray, MPI_MAX);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray, MPI_MAX);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray,MPI_REPLACE);CHKERRQ(ierr);
       ierr = SBRFinalizeComm(cr, pointSF, queue);CHKERRQ(ierr);
     }
     empty = PointQueueEmpty(queue);
@@ -3993,8 +3993,8 @@ static PetscErrorCode DMPlexCellRefinerCreateSF(DMPlexCellRefiner cr, DM rdm)
         }
       }
     }
-    ierr = PetscSFBcastBegin(rsf, MPIU_INT, rootPointsNew, rootPointsNew);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(rsf, MPIU_INT, rootPointsNew, rootPointsNew);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(rsf, MPIU_INT, rootPointsNew, rootPointsNew,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(rsf, MPIU_INT, rootPointsNew, rootPointsNew,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&rsf);CHKERRQ(ierr);
     ierr = PetscMalloc1(numLeavesNew, &localPointsNew);CHKERRQ(ierr);
     ierr = PetscMalloc1(numLeavesNew, &remotePointsNew);CHKERRQ(ierr);
@@ -4026,10 +4026,10 @@ static PetscErrorCode DMPlexCellRefinerCreateSF(DMPlexCellRefiner cr, DM rdm)
     ierr = PetscMalloc2(ctSize*numNeighbors, &ctStartRem, ctSize*numNeighbors, &ctStartNewRem);CHKERRQ(ierr);
     ierr = MPI_Type_contiguous(ctSize, MPIU_INT, &ctType);CHKERRMPI(ierr);
     ierr = MPI_Type_commit(&ctType);CHKERRMPI(ierr);
-    ierr = PetscSFBcastBegin(sfProcess, ctType, cr->ctStart, ctStartRem);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sfProcess, ctType, cr->ctStart, ctStartRem);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sfProcess, ctType, cr->ctStartNew, ctStartNewRem);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sfProcess, ctType, cr->ctStartNew, ctStartNewRem);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sfProcess, ctType, cr->ctStart, ctStartRem,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfProcess, ctType, cr->ctStart, ctStartRem,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sfProcess, ctType, cr->ctStartNew, ctStartNewRem,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfProcess, ctType, cr->ctStartNew, ctStartNewRem,MPI_REPLACE);CHKERRQ(ierr);
     ierr = MPI_Type_free(&ctType);CHKERRMPI(ierr);
     ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
     ierr = PetscMalloc1(numNeighbors, &crRem);CHKERRQ(ierr);

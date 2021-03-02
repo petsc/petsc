@@ -670,10 +670,10 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
       leavesRanks[p][c] = -2;
     }
   }
-  ierr = PetscSFBcastBegin(sf, MPIU_2INT, roots, leaves);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf, MPI_2INT, rootsRanks, leavesRanks);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf, MPIU_2INT, roots, leaves);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf, MPI_2INT, rootsRanks, leavesRanks);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPIU_2INT, roots, leaves,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPI_2INT, rootsRanks, leavesRanks,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_2INT, roots, leaves,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPI_2INT, rootsRanks, leavesRanks,MPI_REPLACE);CHKERRQ(ierr);
   if (debug) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
   if (debug && rank == 0) {ierr = PetscSynchronizedPrintf(comm, "Referenced roots\n");CHKERRQ(ierr);}
   for (p = 0; p < nroots; ++p) {
@@ -1072,8 +1072,8 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
     ierr = PetscSFCreateSectionSF(sfInverse, candidateSection, remoteOffsets, candidateRemoteSection, &sfCandidates);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(candidateRemoteSection, &candidatesRemoteSize);CHKERRQ(ierr);
     ierr = PetscMalloc1(candidatesRemoteSize, &candidatesRemote);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sfCandidates, MPIU_2INT, candidates, candidatesRemote);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sfCandidates, MPIU_2INT, candidates, candidatesRemote);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sfCandidates, MPIU_2INT, candidates, candidatesRemote,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfCandidates, MPIU_2INT, candidates, candidatesRemote,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfInverse);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfCandidates);CHKERRQ(ierr);
     ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
@@ -1211,8 +1211,8 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
     ierr = PetscSectionGetStorageSize(claimSection, &claimsSize);CHKERRQ(ierr);
     ierr = PetscMalloc1(claimsSize, &claims);CHKERRQ(ierr);
     for (p = 0; p < claimsSize; ++p) claims[p].rank = -1;
-    ierr = PetscSFBcastBegin(sfClaims, MPIU_2INT, candidatesRemote, claims);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sfClaims, MPIU_2INT, candidatesRemote, claims);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sfClaims, MPIU_2INT, candidatesRemote, claims,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfClaims, MPIU_2INT, candidatesRemote, claims,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfClaims);CHKERRQ(ierr);
     ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) claimSection, "Claim Section");CHKERRQ(ierr);

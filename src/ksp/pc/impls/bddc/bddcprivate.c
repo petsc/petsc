@@ -241,8 +241,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       if (nc > 1) matis->sf_rootdata[i-rst] = 1;
       ierr = MatRestoreRow(pcbddc->discretegradient,i,&nc,NULL,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
     for (i=0,ne=0;i<n;i++) if (matis->sf_leafdata[i]) idx[ne++] = i;
     ierr = ISCreateGeneral(comm,ne,idx,PETSC_OWN_POINTER,&nedfieldlocal);CHKERRQ(ierr);
@@ -348,8 +348,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       PetscInt *tbz;
 
       ierr = PetscMalloc1(ne,&tbz);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
       ierr = ISGetIndices(nedfieldlocal,&idxs);CHKERRQ(ierr);
       for (i=0,cum=0;i<ne;i++)
         if (matis->sf_leafdata[idxs[i]] == 1)
@@ -650,8 +650,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   ierr = PetscSFReduceBegin(sfv,MPIU_INT,sfvleaves,sfvroots,MPI_SUM);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(sfv,MPIU_INT,sfvleaves,sfvroots,MPI_SUM);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfv,MPIU_INT,sfvroots,sfvleaves);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfv,MPIU_INT,sfvroots,sfvleaves);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfv,MPIU_INT,sfvroots,sfvleaves,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfv,MPIU_INT,sfvroots,sfvleaves,MPI_REPLACE);CHKERRQ(ierr);
 
   /* Zero rows of lGt corresponding to identified corners
      and interior nodal dofs */
@@ -1884,8 +1884,8 @@ PetscErrorCode PCBDDCConsistencyCheckIS(PC pc, MPI_Op mop, IS *is)
   ierr = ISRestoreIndices(*is,&idxs);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(matis->sf,MPIU_BOOL,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(matis->sf,MPIU_BOOL,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
   if (mop == MPI_LAND) {
     ierr = PetscMalloc1(nd,&nidxs);CHKERRQ(ierr);
   } else {
@@ -3013,13 +3013,13 @@ PetscErrorCode PCBDDCBenignGetOrSetP0(PC pc, Vec v, PetscBool get)
   }
   if (get) {
     ierr = VecGetArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0,MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(v,&array);CHKERRQ(ierr);
-    ierr = PetscSFReduceBegin(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPIU_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPIU_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -7221,8 +7221,8 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       ierr = PetscMalloc1(pcbddc->mat_graph->cdim*n,&lcoords);CHKERRQ(ierr);
       ierr = MPI_Type_contiguous(pcbddc->mat_graph->cdim,MPIU_REAL,&dimrealtype);CHKERRMPI(ierr);
       ierr = MPI_Type_commit(&dimrealtype);CHKERRMPI(ierr);
-      ierr = PetscSFBcastBegin(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords,MPI_REPLACE);CHKERRQ(ierr);
       ierr = MPI_Type_free(&dimrealtype);CHKERRMPI(ierr);
       ierr = PetscFree(pcbddc->mat_graph->coords);CHKERRQ(ierr);
 

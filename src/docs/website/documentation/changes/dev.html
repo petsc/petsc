@@ -145,6 +145,9 @@
           <li>VecScatter is now the same type as PetscSF, in other words, we have typedef PetscSF VecScatter</li>
           <li>Remove VecScatter types VECSCATTER{SEQ,MPI1,MPI3,MPI3NODE,SF}. One can use all PetcSF types as VecScatter types</li>
           <li>Rename PetscLayoutsCreateSF() to PetscSFCreateFromLayouts() and move its declaration from petscis.h to petscsf.h</li>
+          <li>Deprecate MPIU_REPLACE; Use MPI_REPLACE instead</li>
+          <li>Deprecate PetscSFBcastAndOp variants; Use PetscSFBcast instead </li>
+          <li>Deprecate PetscSFCreateEmbeddedSF; Use PetscSFCreateEmbeddedRootSF instead</li>
         </ul>
       <h4>PF:</h4>
       <h4>Vec:</h4>

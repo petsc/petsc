@@ -96,8 +96,8 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal 
   /* get the off-diagonal weights */
   if (oG) {
     ierr = PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sf,MPIU_REAL,dwts,owts);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_REAL,dwts,owts);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPIU_REAL,dwts,owts,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_REAL,dwts,owts,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
   }
   /* check for the maximum out to the distance of the coloring */
@@ -124,8 +124,8 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal 
       }
       if (oG) {
         ierr = PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
-        ierr = PetscSFBcastBegin(sf,MPIU_REAL,dwts,owts);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(sf,MPIU_REAL,dwts,owts);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(sf,MPIU_REAL,dwts,owts,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(sf,MPIU_REAL,dwts,owts,MPI_REPLACE);CHKERRQ(ierr);
         ierr = PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
       }
     }
@@ -354,8 +354,8 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcol
     }
     if (oG) {
       ierr = PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sf,MPIU_INT,dmask,omask);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf,MPIU_INT,dmask,omask);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf,MPIU_INT,dmask,omask,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf,MPIU_INT,dmask,omask,MPI_REPLACE);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
     }
     /* fill in the mask out to the distance of the coloring */
@@ -381,8 +381,8 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcol
       if (l < mc->dist-1) {
         if (oG) {
           ierr = PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
-          ierr = PetscSFBcastBegin(sf,MPIU_INT,dmask,omask);CHKERRQ(ierr);
-          ierr = PetscSFBcastEnd(sf,MPIU_INT,dmask,omask);CHKERRQ(ierr);
+          ierr = PetscSFBcastBegin(sf,MPIU_INT,dmask,omask,MPI_REPLACE);CHKERRQ(ierr);
+          ierr = PetscSFBcastEnd(sf,MPIU_INT,dmask,omask,MPI_REPLACE);CHKERRQ(ierr);
           ierr = PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
         }
       }

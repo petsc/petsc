@@ -238,7 +238,7 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
   if (dm->sfNatural) {
     ierr = VecGetArray(nv, &outarray);CHKERRQ(ierr);
     ierr = VecGetArrayRead(gv, &inarray);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray,MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(gv, &inarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(nv, &outarray);CHKERRQ(ierr);
   } else if (size == 1) {
@@ -280,7 +280,7 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
   if (dm->sfNatural) {
     ierr = VecGetArrayRead(gv, &inarray);CHKERRQ(ierr);
     ierr = VecGetArray(nv, &outarray);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray,MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(gv, &inarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(nv, &outarray);CHKERRQ(ierr);
   } else if (size == 1) {

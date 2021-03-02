@@ -365,6 +365,8 @@ Unable to run hostname to check the network')
     # Even MPI_Win_create is in MPI 2.0, we do this test to supress MPIUNI, which does not support MPI one-sided.
     if self.checkLink('#include <mpi.h>\n', 'int base[100]; MPI_Win win; if (MPI_Win_create(base,100,4,MPI_INFO_NULL,MPI_COMM_WORLD,&win));\n'):
       self.addDefine('HAVE_MPI_WIN_CREATE', 1)
+    if not self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Accumulate(ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_REPLACE,win));\n'):
+      raise RuntimeError('PETSc requires MPI_REPLACE (introduced in MPI-2.1 in 2008). Please update or switch to MPI that supports MPI_REPLACE. Let us know at petsc-maint@mcs.anl.gov if this is not possible')
     # flag broken one-sided tests
     if not 'HAVE_MSMPI' in self.defines and not (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) <= 30004300):
       self.addDefine('HAVE_MPI_ONE_SIDED', 1)

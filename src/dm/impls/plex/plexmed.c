@@ -239,8 +239,8 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       /* Migrate facet IDs */
       ierr = PetscSFGetGraph(sfFacetMigration, NULL, &numFacetsRendezvous, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscMalloc1(numFacetsRendezvous, &facetIDsRendezvous);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous,MPI_REPLACE);CHKERRQ(ierr);
       /* Clean up */
       ierr = DMLabelDestroy(&lblFacetRendezvous);CHKERRQ(ierr);
       ierr = DMLabelDestroy(&lblFacetMigration);CHKERRQ(ierr);

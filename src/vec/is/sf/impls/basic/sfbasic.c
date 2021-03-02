@@ -168,7 +168,7 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic(PetscSF sf,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastAndOpBegin_Basic(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscErrorCode    ierr;
   PetscSFLink       link = NULL;
@@ -190,7 +190,7 @@ static PetscErrorCode PetscSFBcastAndOpBegin_Basic(PetscSF sf,MPI_Datatype unit,
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFBcastAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
+PETSC_INTERN PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata,MPI_Op op)
 {
   PetscErrorCode    ierr;
   PetscSFLink       link = NULL;
@@ -281,7 +281,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   ierr = MPI_Startall_isend(bas->rootbuflen[PETSCSF_REMOTE],unit,bas->nrootreqs,rootreqs);CHKERRMPI(ierr);
   /* Unpack and insert fetched data into leaves */
   ierr = PetscSFLinkMPIWaitall(sf,link,PETSCSF_ROOT2LEAF);CHKERRQ(ierr);
-  ierr = PetscSFLinkUnpackLeafData(sf,link,PETSCSF_REMOTE,leafupdate,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFLinkUnpackLeafData(sf,link,PETSCSF_REMOTE,leafupdate,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFLinkReclaim(sf,&link);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -298,11 +298,11 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF sf,PetscInt *niran
   PetscFunctionReturn(0);
 }
 
-/* An optimized PetscSFCreateEmbeddedSF. We aggresively make use of the established communication on sf.
+/* An optimized PetscSFCreateEmbeddedRootSF. We aggresively make use of the established communication on sf.
    We need one bcast on sf, and no communication anymore to build the embedded sf. Note that selected[]
    was sorted before calling the routine.
  */
-PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *newsf)
+PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *newsf)
 {
   PetscSF           esf;
   PetscInt          esf_nranks,esf_ndranks,*esf_roffset,*esf_rmine,*esf_rremote;
@@ -330,8 +330,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedSF_Basic(PetscSF sf,PetscInt ns
   /* Tag selected roots */
   for (i=0; i<nselected; ++i) rootdata[selected[i]] = 1;
 
-  ierr = PetscSFBcastBegin(sf,MPI_CHAR,rootdata,leafdata);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPI_CHAR,rootdata,leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPI_CHAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPI_CHAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFGetLeafInfo_Basic(sf,&nranks,&ndranks,&ranks,&roffset,&rmine,&rremote);CHKERRQ(ierr); /* Get send info */
   esf_nranks = esf_ndranks = esf_nleaves = 0;
   for (i=0; i<nranks; i++) {
@@ -447,14 +447,14 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
   sf->ops->Reset                = PetscSFReset_Basic;
   sf->ops->Destroy              = PetscSFDestroy_Basic;
   sf->ops->View                 = PetscSFView_Basic;
-  sf->ops->BcastAndOpBegin      = PetscSFBcastAndOpBegin_Basic;
-  sf->ops->BcastAndOpEnd        = PetscSFBcastAndOpEnd_Basic;
+  sf->ops->BcastBegin           = PetscSFBcastBegin_Basic;
+  sf->ops->BcastEnd             = PetscSFBcastEnd_Basic;
   sf->ops->ReduceBegin          = PetscSFReduceBegin_Basic;
   sf->ops->ReduceEnd            = PetscSFReduceEnd_Basic;
   sf->ops->FetchAndOpBegin      = PetscSFFetchAndOpBegin_Basic;
   sf->ops->FetchAndOpEnd        = PetscSFFetchAndOpEnd_Basic;
   sf->ops->GetLeafRanks         = PetscSFGetLeafRanks_Basic;
-  sf->ops->CreateEmbeddedSF     = PetscSFCreateEmbeddedSF_Basic;
+  sf->ops->CreateEmbeddedRootSF = PetscSFCreateEmbeddedRootSF_Basic;
 
   ierr = PetscNewLog(sf,&dat);CHKERRQ(ierr);
   sf->data = (void*)dat;

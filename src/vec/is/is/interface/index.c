@@ -146,8 +146,8 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   }
 
   /* from roots to leaves */
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,root_data,leaf_data);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,root_data,leaf_data);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,root_data,leaf_data,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,root_data,leaf_data,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
   /* create new IS with global indexes without holes */
@@ -240,8 +240,8 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
 
   ierr = PetscMalloc1(nleaves,&subis_indices);CHKERRQ(ierr);
   ierr = ISGetIndices(is, &is_indices);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,is_indices,subis_indices);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,is_indices,subis_indices);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,is_indices,subis_indices,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,is_indices,subis_indices,MPI_REPLACE);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&is_indices);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nleaves,subis_indices,PETSC_OWN_POINTER,subis);CHKERRQ(ierr);

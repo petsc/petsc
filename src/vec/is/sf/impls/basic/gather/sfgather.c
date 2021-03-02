@@ -4,7 +4,7 @@
 /* Reuse the type. The difference is some fields (i.e., displs, recvcounts) are not used in Gather, which is not a big deal */
 typedef PetscSF_Allgatherv PetscSF_Gather;
 
-PETSC_INTERN PetscErrorCode PetscSFBcastAndOpBegin_Gather(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gather(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscErrorCode       ierr;
   PetscSFLink          link;
@@ -48,7 +48,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF sf)
   PetscSF_Gather  *dat = (PetscSF_Gather*)sf->data;
 
   PetscFunctionBegin;
-  sf->ops->BcastAndOpEnd   = PetscSFBcastAndOpEnd_Basic;
+  sf->ops->BcastEnd        = PetscSFBcastEnd_Basic;
   sf->ops->ReduceEnd       = PetscSFReduceEnd_Basic;
 
   /* Inherit from Allgatherv */
@@ -67,7 +67,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF sf)
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Gatherv;
 
   /* Gather stuff */
-  sf->ops->BcastAndOpBegin = PetscSFBcastAndOpBegin_Gather;
+  sf->ops->BcastBegin      = PetscSFBcastBegin_Gather;
   sf->ops->ReduceBegin     = PetscSFReduceBegin_Gather;
 
   ierr     = PetscNewLog(sf,&dat);CHKERRQ(ierr);

@@ -1147,8 +1147,8 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     if (numRoots >= 0) {
       ierr = PetscMalloc2(numRoots,&newLocation,pEnd-pStart,&newRemoteLocation);CHKERRQ(ierr);
       for (l=0; l<numRoots; l++) newLocation[l] = l; /* + (l >= cEnd ? numGhostCells : 0); */
-      ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation,MPI_REPLACE);CHKERRQ(ierr);
       ierr = PetscMalloc1(numLeaves,    &glocalPoints);CHKERRQ(ierr);
       ierr = PetscMalloc1(numLeaves, &gremotePoints);CHKERRQ(ierr);
       for (l = 0; l < numLeaves; ++l) {

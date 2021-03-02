@@ -1374,8 +1374,8 @@ static PetscErrorCode DMNetworkVariablesSetUp(DM dm)
     }
 
     /* Roots Bcast nvar to leaves */
-    ierr = PetscSFBcastBegin(sf, MPIU_INT, local_nvar, remote_nvar);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf, MPIU_INT, local_nvar, remote_nvar);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf, MPIU_INT, local_nvar, remote_nvar,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_INT, local_nvar, remote_nvar,MPI_REPLACE);CHKERRQ(ierr);
 
     /* Leaves reset receved/remote nvar to dm */
     for (i=0; i<nsv; i++) {
@@ -1703,8 +1703,8 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mainsf,ISLocalToGlobalMapping map,PetscSF
   ierr = PetscMalloc2(nroots,&local_points,nroots,&remote_points);CHKERRQ(ierr);
   for (i = 0; i < nroots; i++) local_points[i] = i;
   ierr = ISGlobalToLocalMappingApply(map,IS_GTOLM_MASK,nroots,local_points,NULL,local_points);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(mainsf, MPIU_INT, local_points, remote_points);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(mainsf, MPIU_INT, local_points, remote_points);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(mainsf, MPIU_INT, local_points, remote_points,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(mainsf, MPIU_INT, local_points, remote_points,MPI_REPLACE);CHKERRQ(ierr);
   /* Fill up graph using local (that is, local to the subset) numbering. */
   ierr = PetscMalloc1(nleaves_sub,&ilocal_sub);CHKERRQ(ierr);
   ierr = PetscMalloc1(nleaves_sub,&iremote_sub);CHKERRQ(ierr);

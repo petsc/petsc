@@ -256,8 +256,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
   }
 
   if (gA) {
-    ierr = PetscSFBcastBegin(sf,MPIU_INT,lcid,gcid);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_INT,lcid,gcid);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPIU_INT,lcid,gcid,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_INT,lcid,gcid,MPI_REPLACE);CHKERRQ(ierr);
   }
 
   /* determine the largest off-diagonal entries in each row */
@@ -636,8 +636,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
   }
   if (size > 1) {
     ierr = PetscMalloc1(nl,&lcid);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sf,MPIU_INT,gcid,lcid);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_INT,gcid,lcid);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPIU_INT,gcid,lcid,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_INT,gcid,lcid,MPI_REPLACE);CHKERRQ(ierr);
   } else {
     lcid = gcid;
   }
