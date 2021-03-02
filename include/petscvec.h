@@ -192,7 +192,7 @@ M*/
    Level: beginner
 
 .seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_FROBINIUS, NORM_1_AND_2
+           NORM_FROBENIUS, NORM_1_AND_2
 
 M*/
 
@@ -202,7 +202,7 @@ M*/
    Level: beginner
 
 .seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_FROBINIUS, NORM_INFINITY
+           NORM_FROBENIUS, NORM_INFINITY
 
 M*/
 

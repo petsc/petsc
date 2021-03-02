@@ -2448,6 +2448,21 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatConjugate_SeqBAIJ(Mat A)
+{
+#if defined(PETSC_USE_COMPLEX)
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  PetscInt    i,nz = a->bs2*a->i[a->mbs];
+  MatScalar   *aa = a->a;
+
+  PetscFunctionBegin;
+  for (i=0; i<nz; i++) aa[i] = PetscConj(aa[i]);
+#else
+  PetscFunctionBegin;
+#endif
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatRealPart_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -2695,7 +2710,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                /* 99*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
+                                       MatConjugate_SeqBAIJ,
                                        NULL,
                                /*104*/ NULL,
                                        MatRealPart_SeqBAIJ,

@@ -1888,6 +1888,21 @@ PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatConjugate_MPIBAIJ(Mat mat)
+{
+#if defined(PETSC_USE_COMPLEX)
+  PetscErrorCode ierr;
+  Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)mat->data;
+
+  PetscFunctionBegin;
+  ierr = MatConjugate_SeqBAIJ(a->A);CHKERRQ(ierr);
+  ierr = MatConjugate_SeqBAIJ(a->B);CHKERRQ(ierr);
+#else
+  PetscFunctionBegin;
+#endif
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatRealPart_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
@@ -2547,7 +2562,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                 /*99*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
+                                       MatConjugate_MPIBAIJ,
                                        NULL,
                                 /*104*/NULL,
                                        MatRealPart_MPIBAIJ,
@@ -3682,6 +3697,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm comm,Mat inmat,
     ierr = MatSeqBAIJSetPreallocation(*outmat,bs,0,dnz);CHKERRQ(ierr);
     ierr = MatMPIBAIJSetPreallocation(*outmat,bs,0,dnz,0,onz);CHKERRQ(ierr);
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+    ierr = MatSetOption(*outmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   /* numeric phase */

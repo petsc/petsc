@@ -246,7 +246,7 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCCHOLESKY, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCFactorGetMatrix(),
            PCFactorSetFill(), PCFactorSetUseInPlace(), PCFactorSetMatOrderingType(), PCFactorSetColumnPivot(),
-           PCFactorSetPivotingInBlocks(),PCFactorSetShiftType(),PCFactorSetShiftAmount()
+           PCFactorSetPivotInBlocks(),PCFactorSetShiftType(),PCFactorSetShiftAmount()
            PCFactorReorderForNonzeroDiagonal()
 M*/
 

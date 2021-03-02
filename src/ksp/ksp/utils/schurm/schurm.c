@@ -473,27 +473,33 @@ PetscErrorCode  MatSchurComplementGetSubMatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A
 
 .seealso: MatCreateSchurComplement(), MatSchurComplementUpdate()
 @*/
-PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
+PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
 {
   Mat            B, C, D, Bd, AinvBd;
   KSP            ksp;
+  PetscInt       n,N,m,M;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSchurComplementGetSubMatrices(M, NULL, NULL, &B, &C, &D);CHKERRQ(ierr);
-  ierr = MatSchurComplementGetKSP(M, &ksp);CHKERRQ(ierr);
+  ierr = MatSchurComplementGetSubMatrices(A, NULL, NULL, &B, &C, &D);CHKERRQ(ierr);
+  ierr = MatSchurComplementGetKSP(A, &ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = MatConvert(B, MATDENSE, MAT_INITIAL_MATRIX, &Bd);CHKERRQ(ierr);
   ierr = MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd);CHKERRQ(ierr);
   ierr = KSPMatSolve(ksp, Bd, AinvBd);CHKERRQ(ierr);
   ierr = MatDestroy(&Bd);CHKERRQ(ierr);
   ierr = MatChop(AinvBd, PETSC_SMALL);CHKERRQ(ierr);
-  ierr = MatMatMult(C, AinvBd, MAT_INITIAL_MATRIX, PETSC_DEFAULT, S);CHKERRQ(ierr);
+  if (D) {
+    ierr = MatGetLocalSize(D, &m, &n);CHKERRQ(ierr);
+    ierr = MatGetSize(D, &M, &N);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)A), m, n, M, N, NULL, S);
+  }
+  ierr = MatMatMult(C, AinvBd, D ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DEFAULT, S);CHKERRQ(ierr);
   ierr = MatDestroy(&AinvBd);CHKERRQ(ierr);
-  ierr = MatConvert(*S, MATAIJ, MAT_INPLACE_MATRIX, S);CHKERRQ(ierr);
   if (D) {
     ierr = MatAXPY(*S, -1.0, D, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   }
+  ierr = MatConvert(*S, MATAIJ, MAT_INPLACE_MATRIX, S);CHKERRQ(ierr);
   ierr = MatScale(*S, -1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
