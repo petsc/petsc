@@ -236,8 +236,13 @@ PetscErrorCode MatConvert_Transpose(Mat A,MatType newtype,MatReuse reuse,Mat *ne
 
   PetscFunctionBegin;
   ierr = MatTranspose(Aa->A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatConvert(B,newtype,reuse,newmat);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  if (reuse != MAT_INPLACE_MATRIX) {
+    ierr = MatConvert(B,newtype,reuse,newmat);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  } else {
+    ierr = MatConvert(B,newtype,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
