@@ -663,3 +663,6 @@ cdef class DMPlex(DM):
 
     def coordinatesLoad(self, Viewer viewer):
         CHKERR( DMPlexCoordinatesLoad(self.dm, viewer.vwr))
+
+    def labelsLoad(self, Viewer viewer):
+        CHKERR( DMPlexLabelsLoad(self.dm, viewer.vwr))

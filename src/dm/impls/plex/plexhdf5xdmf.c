@@ -163,7 +163,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 
   /* Read Labels */
   /* TODO: this probably does not work as elements get permuted */
-  /* ierr = DMPlexLoadLabels_HDF5_Internal(dm, viewer);CHKERRQ(ierr); */
+  /* ierr = DMPlexLabelsLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 #endif

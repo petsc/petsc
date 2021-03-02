@@ -133,3 +133,4 @@ cdef extern from * nogil:
 
     int DMPlexTopologyLoad(PetscDM,PetscViewer,PetscSF*)
     int DMPlexCoordinatesLoad(PetscDM,PetscViewer)
+    int DMPlexLabelsLoad(PetscDM,PetscViewer)
