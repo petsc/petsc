@@ -372,7 +372,7 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
   PetscFunctionBegin;
   /* We have not checked these routines for use with complex numbers. The inner products
      are likely not defined correctly for that case */
-  if (PetscDefined(PETSC_USE_COMPLEX) && !PetscDefined(PETSC_SKIP_COMPLEX)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
+  if (PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
 
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
