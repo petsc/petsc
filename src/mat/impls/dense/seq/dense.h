@@ -17,7 +17,9 @@ typedef struct {
   PetscBLASInt *pivots;           /* pivots in LU factorization */
   PetscBLASInt lfwork;            /* length of work array in factorization */
   PetscScalar  *fwork;            /* work array in factorization */
+  PetscScalar  *tau;              /* scalar factors of QR factorization */
   PetscBLASInt lda;               /* Lapack leading dimension of data */
+  PetscBLASInt rank;              /* numerical rank (of a QR factorized matrix) */
   PetscBool    user_alloc;        /* true if the user provided the dense data */
   PetscBool    unplaced_user_alloc;
   Mat          ptapwork;          /* workspace (SeqDense matrix) for PtAP */
