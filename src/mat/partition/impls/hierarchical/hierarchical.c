@@ -55,8 +55,8 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (flg) {
     adj = mat;
@@ -265,7 +265,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscFunctionBegin;
   PetscValidPointer(sfineparts, 4);
   ierr = PetscObjectGetComm((PetscObject)adj,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MatGetLayouts(adj,&rmap,NULL);CHKERRQ(ierr);
   ierr = ISGetLocalSize(fineparts,&localsize);CHKERRQ(ierr);
   ierr = PetscMalloc2(localsize,&global_indices,localsize,&local_indices);CHKERRQ(ierr);
@@ -297,8 +297,8 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   /* not sure how to add prefix to sf */
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,localsize,localsize,NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(sf,MPIU_INT,fineparts_indices,sfineparts_indices,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf,MPIU_INT,fineparts_indices,sfineparts_indices,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,fineparts_indices,sfineparts_indices,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_INT,fineparts_indices,sfineparts_indices,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = ISRestoreIndices(fineparts,&fineparts_indices);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,ranges[rank+1]-ranges[rank],sfineparts_indices,PETSC_OWN_POINTER,sfineparts);CHKERRQ(ierr);
@@ -319,7 +319,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS vweights
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)adj,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   /* figure out where data comes from  */
   ierr = ISBuildTwoSided(destination,NULL,&irows);CHKERRQ(ierr);
   ierr = ISDuplicate(irows,&icols);CHKERRQ(ierr);
@@ -347,8 +347,8 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if ((pend-pstart)>size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"range [%D, %D] should be smaller than or equal to size %D",pstart,pend,size);
   if (pstart>pend) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," pstart %D should be smaller than pend %D",pstart,pend);
   ierr = ISGetLocalSize(partitioning,&plocalsize);CHKERRQ(ierr);
@@ -375,7 +375,7 @@ PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer
   PetscViewer              sviewer;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii){
     ierr = PetscViewerASCIIPrintf(viewer," Number of coarse parts: %D\n",hpart->ncoarseparts);CHKERRQ(ierr);
@@ -489,8 +489,10 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
   Mat                           mat = part->adj, adj;
   PetscBool                    flg;
-  PetscInt                     *vertex_weights;
   const char                   *prefix;
+#if defined(PETSC_HAVE_PARMETIS)
+  PetscInt                     *vertex_weights;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
@@ -511,11 +513,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)hpart->improver,"hierarch_improver_");CHKERRQ(ierr);
   /* Only parmetis supports to refine a partition */
 #if defined(PETSC_HAVE_PARMETIS)
-    ierr = MatPartitioningSetType(hpart->improver,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
-#else
-    SETERRQ(PetscObjectComm((PetscObject)adj),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis\n");
-#endif
-
+  ierr = MatPartitioningSetType(hpart->improver,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(hpart->improver,adj);CHKERRQ(ierr);
   ierr = MatPartitioningSetNParts(hpart->improver, part->n);CHKERRQ(ierr);
   /* copy over vertex weights */
@@ -527,6 +525,9 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   ierr = MatPartitioningImprove(hpart->improver,partitioning);CHKERRQ(ierr);
   ierr = MatDestroy(&adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+#else
+  SETERRQ(PetscObjectComm((PetscObject)adj),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis\n");
+#endif
 }
 
 

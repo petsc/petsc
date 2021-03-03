@@ -94,6 +94,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   PetscBool      isswarm = PETSC_FALSE;
   const char     *viewername;
   char           datafile[PETSC_MAX_PATH_LEN];
+  char           *datafilename;
   PetscViewer    fviewer;
   PetscInt       k,ng,dim;
   Vec            dvec;
@@ -135,6 +136,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   ierr = PetscViewerFileGetName(viewer,&viewername);CHKERRQ(ierr);
   ierr = private_CreateDataFileNameXDMF(viewername,datafile);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(fviewer,datafile);CHKERRQ(ierr);
+  ierr = PetscStrrchr(datafile,'/',&datafilename);CHKERRQ(ierr);
 
   ierr = DMSwarmGetSize(dm,&ng);CHKERRQ(ierr);
 
@@ -144,7 +146,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Dimensions=\"%D\" Seek=\"%D\">\n",ng*3,bytes[0]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafile);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafilename);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"</DataItem>\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -168,7 +170,6 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   switch (dim) {
     case 1:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for 1D");
-      break;
     case 2:
       ierr = PetscViewerASCIIPrintf(viewer,"<Geometry Type=\"XY\">\n");CHKERRQ(ierr);
       break;
@@ -179,7 +180,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D %D\" Seek=\"%D\">\n",ng,dim,bytes[0]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafile);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafilename);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"</DataItem>\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -203,6 +204,7 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
   PetscContainer container = NULL;
   const char     *viewername;
   char           datafile[PETSC_MAX_PATH_LEN];
+  char           *datafilename;
   PetscViewer    fviewer;
   PetscInt       N,bs;
   const char     *vecname;
@@ -226,6 +228,7 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
   ierr = PetscViewerBinarySetSkipInfo(fviewer,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(fviewer,FILE_MODE_APPEND);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(fviewer,datafile);CHKERRQ(ierr);
+  ierr = PetscStrrchr(datafile,'/',&datafilename);CHKERRQ(ierr);
 
   ierr = VecGetSize(x,&N);CHKERRQ(ierr);
   ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
@@ -247,7 +250,7 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D %D\" Seek=\"%D\">\n",N,bs,bytes[0]);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafile);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafilename);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"</DataItem>\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -269,6 +272,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
   PetscContainer container = NULL;
   const char     *viewername;
   char           datafile[PETSC_MAX_PATH_LEN];
+  char           *datafilename;
   PetscViewer    fviewer;
   PetscInt       N,bs;
   const char     *vecname;
@@ -292,6 +296,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
   ierr = PetscViewerBinarySetSkipInfo(fviewer,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(fviewer,FILE_MODE_APPEND);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(fviewer,datafile);CHKERRQ(ierr);
+  ierr = PetscStrrchr(datafile,'/',&datafilename);CHKERRQ(ierr);
 
   ierr = ISGetSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
@@ -313,7 +318,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%D %D\" Seek=\"%D\">\n",N,bs,bytes[0]);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafile);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafilename);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"</DataItem>\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

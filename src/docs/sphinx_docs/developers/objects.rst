@@ -87,7 +87,7 @@ Common Object Header
 
 All PETSc/PETSc objects have the following common header structures
 defined in
-`include/petsc/private/petscimpl.h <https://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/petscimpl.h.html>`__:
+`include/petsc/private/petscimpl.h <https://www.mcs.anl.gov/petsc/petsc-main/include/petsc/private/petscimpl.h.html>`__:
 
 ::
 
@@ -127,7 +127,7 @@ defined in
 Here ``<class>ops`` is a function table (like the ``PetscOps`` above)
 that contains the function pointers for the operations specific to that
 class. For example, the PETSc vector class object operations in
-`include/petsc/private/vecimpl.h <https://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/vecimpl.h.html>`__
+`include/petsc/private/vecimpl.h <https://www.mcs.anl.gov/petsc/petsc-main/include/petsc/private/vecimpl.h.html>`__
 include the following.
 
 ::
@@ -281,7 +281,7 @@ Compose and Query Objects
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In
-`src/sys/objects/olist.c <https://www.mcs.anl.gov/petsc/petsc-master/src/sys/objects/olist.c.html>`__,
+`src/sys/objects/olist.c <https://www.mcs.anl.gov/petsc/petsc-main/src/sys/objects/olist.c.html>`__,
 PETSc defines a C ``struct``
 
 ::
@@ -308,7 +308,7 @@ PetscObjectList if the argument ``fl`` points to a NULL.
 
 The PETSc object ``compose()`` and ``query()`` functions are as follows
 (defined in
-`src/sys/objects/inherit.c <https://www.mcs.anl.gov/petsc/petsc-master/src/objects/inherit.c.html>`__).
+`src/sys/objects/inherit.c <https://www.mcs.anl.gov/petsc/petsc-main/src/sys/objects/inherit.c.html>`__).
 
 ::
 
@@ -335,7 +335,7 @@ Compose and Query Functions
 
 PETSc allows you to compose functions by specifying a name and function
 pointer. In
-`src/sys/dll/reg.c <https://www.mcs.anl.gov/petsc/petsc-master/src/sys/dll/reg.c.html>`__,
+`src/sys/dll/reg.c <https://www.mcs.anl.gov/petsc/petsc-main/src/sys/dll/reg.c.html>`__,
 PETSc defines the following linked list structure.
 
 ::

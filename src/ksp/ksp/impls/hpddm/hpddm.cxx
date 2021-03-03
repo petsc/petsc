@@ -74,7 +74,7 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObje
         ierr = PetscOptionsEList("-ksp_hpddm_recycle_target", "Criterion to select harmonic Ritz vectors", "KSPHPDDM", HPDDMRecycleTarget, ALEN(HPDDMRecycleTarget), HPDDMRecycleTarget[HPDDM_RECYCLE_TARGET_SM], &i, NULL);CHKERRQ(ierr);
         data->cntl[3] = i;
       } else {
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ksp), &size);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ksp), &size);CHKERRMPI(ierr);
         i = (data->cntl[3] == static_cast<char>(PETSC_DECIDE) ? 1 : data->cntl[3]);
         ierr = PetscOptionsRangeInt("-ksp_hpddm_recycle_redistribute", "Number of processes used to solve eigenvalue problems when recycling in BGCRODR", "KSPHPDDM", i, &i, NULL, 1, PetscMin(size, 192));CHKERRQ(ierr);
         data->cntl[3] = i;
@@ -139,15 +139,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
   ierr = MatGetBlockSize(A, &bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)A, &match, MATSEQKAIJ, MATMPIKAIJ, "");CHKERRQ(ierr);
   if (match) n /= bs;
-#if defined(PETSC_PKG_HPDDM_VERSION_MAJOR)
-#if PETSC_PKG_HPDDM_VERSION_LT(2, 0, 4)
-  data->op = new HPDDM::PETScOperator(ksp, n, 1);
-#else
   data->op = new HPDDM::PETScOperator(ksp, n);
-#endif
-#else
-  data->op = new HPDDM::PETScOperator(ksp, n, 1);
-#endif
   if (PetscUnlikely(!ksp->setfromoptionscalled || data->cntl[0] == static_cast<char>(PETSC_DECIDE))) { /* what follows is basically a copy/paste of KSPSetFromOptions_HPDDM, with no call to PetscOptions() */
     ierr = PetscInfo(ksp, "KSPSetFromOptions() not called or uninitialized internal structure, hardwiring default KSPHPDDM options\n");CHKERRQ(ierr);
     if (data->cntl[0] == static_cast<char>(PETSC_DECIDE))
@@ -290,15 +282,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
     if (!flg) i *= n; /* S and T are not scaled identities, cannot use block methods */
     if (i != j) { /* switching between block and standard methods */
       delete data->op;
-#if defined(PETSC_PKG_HPDDM_VERSION_MAJOR)
-#if PETSC_PKG_HPDDM_VERSION_LT(2, 0, 4)
-      data->op = new HPDDM::PETScOperator(ksp, i, 1);
-#else
       data->op = new HPDDM::PETScOperator(ksp, i);
-#endif
-#else
-      data->op = new HPDDM::PETScOperator(ksp, i, 1);
-#endif
     }
     if (flg && n > 1) {
       ierr = PetscMalloc1(i * n, &bt);CHKERRQ(ierr);
@@ -563,7 +547,7 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
 /*MC
      KSPHPDDM - Interface with the HPDDM library.
 
-   This KSP may be used to further select methods that are currently not implemented natively in PETSc, e.g., GCRODR [2006], a recycled Krylov method which is similar to KSPLGMRES, see [2016] for a comparison. ex75.c shows how to reproduce the results from the aforementioned paper [2006]. A chronological bibliography of relevant publications linked with KSP available in HPDDM through KSPHPDDM, and not available directly in PETSc, may be found below.
+   This KSP may be used to further select methods that are currently not implemented natively in PETSc, e.g., GCRODR [2006], a recycled Krylov method which is similar to KSPLGMRES, see [2016] for a comparison. ex75.c shows how to reproduce the results from the aforementioned paper [2006]. A chronological bibliography of relevant publications linked with KSP available in HPDDM through KSPHPDDM, and not available directly in PETSc, may be found below. The interface is explained in details in [2021].
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart, default=30> - see KSPGMRES
@@ -576,14 +560,15 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
 .   -ksp_hpddm_recycle <n, default=0> - number of harmonic Ritz vectors to compute (only relevant with GCRODR or BGCRODR)
 .   -ksp_hpddm_recycle_target <type, default=SM> - criterion to select harmonic Ritz vectors using either SM, LM, SR, LR, SI, or LI (only relevant with GCRODR or BGCRODR). For BGCRODR, if PETSc is compiled with SLEPc, this option is not relevant, since SLEPc is used instead. Options are set with the prefix -ksp_hpddm_recycle_eps_
 .   -ksp_hpddm_recycle_strategy <type, default=A> - generalized eigenvalue problem A or B to solve for recycling (only relevant with flexible GCRODR or BGCRODR)
--   -ksp_hpddm_recycle_symmetric <true, default=false> - symmetric generalized eigenproblems in BGCRODR, useful to switch to distributed solvers like EPSELEMENTAL (only relevant when PETSc is compiled with SLEPc)
+-   -ksp_hpddm_recycle_symmetric <true, default=false> - symmetric generalized eigenproblems in BGCRODR, useful to switch to distributed solvers like EPSELEMENTAL or EPSSCALAPACK (only relevant when PETSc is compiled with SLEPc)
 
    References:
 +   1980 - The Block Conjugate Gradient Algorithm and Related Methods. O'Leary. Linear Algebra and its Applications.
 .   2006 - Recycling Krylov Subspaces for Sequences of Linear Systems. Parks, de Sturler, Mackey, Johnson, and Maiti. SIAM Journal on Scientific Computing
 .   2013 - A Modified Block Flexible GMRES Method with Deflation at Each Iteration for the Solution of Non-Hermitian Linear Systems with Multiple Right-Hand Sides. Calandra, Gratton, Lago, Vasseur, and Carvalho. SIAM Journal on Scientific Computing.
 .   2016 - Block Iterative Methods and Recycling for Improved Scalability of Linear Solvers. Jolivet and Tournier. SC16.
--   2017 - A breakdown-free block conjugate gradient method. Ji and Li. BIT Numerical Mathematics.
+.   2017 - A breakdown-free block conjugate gradient method. Ji and Li. BIT Numerical Mathematics.
+-   2021 - KSPHPDDM and PCHPDDM: extending PETSc with advanced Krylov methods and robust multilevel overlapping Schwarz preconditioners. Jolivet, Roman, and Zampini. Computer & Mathematics with Applications.
 
    Level: intermediate
 

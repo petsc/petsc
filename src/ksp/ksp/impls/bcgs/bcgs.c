@@ -20,7 +20,6 @@ PetscErrorCode KSPSetUp_BCGS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode KSPSolve_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;

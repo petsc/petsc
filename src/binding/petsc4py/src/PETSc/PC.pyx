@@ -49,6 +49,7 @@ class PCType(object):
     HMG                = S_(PCHMG)
     DEFLATION          = S_(PCDEFLATION)
     HPDDM              = S_(PCHPDDM)
+    HARA               = S_(PCHARA)
 
 class PCSide(object):
     # native
@@ -523,10 +524,10 @@ cdef class PC(Object):
         PetscINCREF(pc.obj)
         return pc
 
-    def addCompositePC(self, pc_type):
+    def addCompositePCType(self, pc_type):
         cdef PetscPCType cval = NULL
         pc_type = str2bytes(pc_type, &cval)
-        CHKERR( PCCompositeAddPC(self.pc, cval) )
+        CHKERR( PCCompositeAddPCType(self.pc, cval) )
 
     # --- KSP ---
 

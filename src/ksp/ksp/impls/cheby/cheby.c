@@ -13,15 +13,6 @@ static PetscErrorCode KSPReset_Chebyshev(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscScalar chebyhash(PetscInt xx)
-{
-  unsigned int x = xx;
-  x = ((x >> 16) ^ x) * 0x45d9f3b;
-  x = ((x >> 16) ^ x) * 0x45d9f3b;
-  x = ((x >> 16) ^ x);
-  return (PetscScalar)((PetscInt64)x-2147483648)*5.e-10; /* center around zero, scaled about -1. to 1.*/
-}
-
 /*
  * Must be passed a KSP solver that has "converged", with KSPSetComputeEigenvalues() called before the solve
  */
@@ -81,18 +72,12 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       KSPConvergedReason reason;
       ierr = KSPSetPC(cheb->kspest,ksp->pc);CHKERRQ(ierr);
       if (cheb->usenoisy) {
-        PetscInt       n,i,istart;
-        PetscScalar    *xx;
-
-        B    = ksp->work[1];
-        ierr = VecGetOwnershipRange(B,&istart,NULL);CHKERRQ(ierr);
-        ierr = VecGetLocalSize(B,&n);CHKERRQ(ierr);
-        ierr = VecGetArrayWrite(B,&xx);CHKERRQ(ierr);
-        for (i=0; i<n; i++) xx[i] = chebyhash(i+istart);
-        ierr = VecRestoreArrayWrite(B,&xx);CHKERRQ(ierr);
+        B = ksp->work[1];
+        ierr = KSPSetNoisy_Private(B);CHKERRQ(ierr);
       } else {
         PetscBool change;
 
+        if (!ksp->vec_rhs) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Chebyshev must use a noisy right hand side to estimate the eigenvalues when no right hand side is available");
         ierr = PCPreSolveChangeRHS(ksp->pc,&change);CHKERRQ(ierr);
         if (change) {
           B = ksp->work[1];
@@ -112,12 +97,11 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
           PetscInt  sendbuf,recvbuf;
           ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);
           sendbuf = (PetscInt)pcreason;
-          ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+          ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRMPI(ierr);
           ierr = PCSetFailedReason(ksp->pc,(PCFailedReason) recvbuf);CHKERRQ(ierr);
         }
         ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
         ksp->reason = KSP_DIVERGED_PC_FAILED;
-        ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
         ierr = PetscInfo3(ksp,"Eigen estimator failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else if (reason == KSP_CONVERGED_RTOL || reason == KSP_CONVERGED_ATOL) {
@@ -413,7 +397,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   /* These three point to the three active solutions, we
      rotate these three at each solution update */
   km1      = 0; k = 1; kp1 = 2;
-  sol_orig = ksp->vec_sol; /* ksp->vec_sol will be asigned to rotating vector p[k], thus save its address */
+  sol_orig = ksp->vec_sol; /* ksp->vec_sol will be assigned to rotating vector p[k], thus save its address */
   b        = ksp->vec_rhs;
   p[km1]   = sol_orig;
   p[k]     = ksp->work[0];
@@ -456,6 +440,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ksp->rnorm   = rnorm;
     ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
+    ierr = KSPLogErrorHistory(ksp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   } else ksp->reason = KSP_CONVERGED_ITERATING;
@@ -508,6 +493,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}r  */
     }
     ksp->vec_sol = p[k];
+    ierr = KSPLogErrorHistory(ksp);CHKERRQ(ierr);
 
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega  = omegaprod*c[k]/c[kp1];
@@ -556,6 +542,9 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   ksp->vec_sol = sol_orig;
   if (k) {
     ierr = VecCopy(p[k],sol_orig);CHKERRQ(ierr);
+  }
+  if (ksp->reason == KSP_CONVERGED_ITS) {
+    ierr = KSPLogErrorHistory(ksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

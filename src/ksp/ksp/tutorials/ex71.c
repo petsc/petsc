@@ -399,8 +399,8 @@ int main(int argc,char **args)
     KSP ksprich;
     ierr = PCSetType(pc,PCCOMPOSITE);CHKERRQ(ierr);
     ierr = PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
-    ierr = PCCompositeAddPC(pc,PCBDDC);CHKERRQ(ierr);
-    ierr = PCCompositeAddPC(pc,PCKSP);CHKERRQ(ierr);
+    ierr = PCCompositeAddPCType(pc,PCBDDC);CHKERRQ(ierr);
+    ierr = PCCompositeAddPCType(pc,PCKSP);CHKERRQ(ierr);
     ierr = PCCompositeGetPC(pc,1,&pcksp);CHKERRQ(ierr);
     ierr = PCKSPGetKSP(pcksp,&ksprich);CHKERRQ(ierr);
     ierr = KSPSetType(ksprich,KSPRICHARDSON);CHKERRQ(ierr);
@@ -597,7 +597,7 @@ int main(int argc,char **args)
    filter: grep -v "variant HERMITIAN"
    suffix: bddc_elast_deluxe_layers_adapt
    requires: mumps !complex
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output}
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -sub_schurs_schur_mat_type seqdense
  # gitlab runners have a quite old MKL (2016) which interacts badly with AMD machines (not Intel-based ones!)
  # this is the reason behind the filtering rule
  test:
@@ -605,7 +605,7 @@ int main(int argc,char **args)
    suffix: bddc_elast_deluxe_layers_adapt_mkl_pardiso
    filter: sed -e "s/CONVERGED_RTOL iterations [1-2][0-9]/CONVERGED_RTOL iterations 13/g" | sed -e "s/CONVERGED_RTOL iterations 6/CONVERGED_RTOL iterations 5/g"
    requires: mkl_pardiso !complex
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mkl_pardiso -sub_schurs_mat_mkl_pardiso_65 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output}
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mkl_pardiso -sub_schurs_mat_mkl_pardiso_65 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -sub_schurs_schur_mat_type seqdense
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN"
@@ -617,20 +617,20 @@ int main(int argc,char **args)
    nsize: 8
    filter: grep -v "variant HERMITIAN"
    suffix: bddc_elast_deluxe_layers_adapt_cuda
-   requires: mumps cuda viennacl
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -matis_localmat_type seqaijviennacl -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
+   requires: !complex mumps cuda define(PETSC_HAVE_CUSOLVERDNDPOTRI)
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -matis_localmat_type seqaijcusparse -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
  test:
    nsize: 8
-   filter: grep -v "variant HERMITIAN" | grep -v "I-node routines" | sed -e "s/seqaijviennacl/seqaij/g"
+   filter: grep -v "variant HERMITIAN" | grep -v "I-node routines" | sed -e "s/seqaijcusparse/seqaij/g"
    suffix: bddc_elast_deluxe_layers_adapt_cuda_approx
-   requires: mumps cuda viennacl
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers 1 -matis_localmat_type {{seqaij seqaijviennacl}} -sub_schurs_schur_mat_type {{seqdensecuda seqdense}} -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_approximate -pc_bddc_neumann_pc_type gamg -pc_bddc_neumann_approximate
+   requires: !complex mumps cuda define(PETSC_HAVE_CUSOLVERDNDPOTRI)
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers 1 -matis_localmat_type {{seqaij seqaijcusparse}separate output} -sub_schurs_schur_mat_type {{seqdensecuda seqdense}} -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_approximate -pc_bddc_neumann_pc_type gamg -pc_bddc_neumann_approximate
  test:
    nsize: 8
    suffix: bddc_elast_deluxe_layers_adapt_mkl_pardiso_cuda
-   requires: mkl_pardiso cuda viennacl
+   requires: !complex mkl_pardiso cuda define(PETSC_HAVE_CUSOLVERDNDPOTRI)
    filter: sed -e "s/CONVERGED_RTOL iterations 6/CONVERGED_RTOL iterations 5/g"
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mkl_pardiso -sub_schurs_mat_mkl_pardiso_65 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -matis_localmat_type seqaijviennacl -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mkl_pardiso -sub_schurs_mat_mkl_pardiso_65 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -matis_localmat_type seqaijcusparse -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
 
  testset:
    nsize: 2

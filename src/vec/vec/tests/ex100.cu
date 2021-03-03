@@ -30,7 +30,7 @@ int main(int argc,char **args)
   PetscScalar const *values;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscCUDAInitialize(PETSC_COMM_WORLD, PETSC_DEFAULT); CHKERRQ(ierr);
+  ierr = PetscCUDAInitialize(PETSC_COMM_WORLD, PETSC_DEFAULT);CHKERRQ(ierr);
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-binary",&isbinary,NULL);CHKERRQ(ierr);
@@ -47,8 +47,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-sizes_set",&vstage2,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-type_set",&vstage3,NULL);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
 
   /* PART 1:  Generate vector, then write it in the given data format */

@@ -50,14 +50,14 @@ int main(int argc, char **argv)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCCOMPOSITE);CHKERRQ(ierr); /* default composite with single Identity PC */
   ierr = PCCompositeSetType(pc,PC_COMPOSITE_ADDITIVE);CHKERRQ(ierr);
-  ierr = PCCompositeAddPC(pc,PCLU);CHKERRQ(ierr);
+  ierr = PCCompositeAddPCType(pc,PCLU);CHKERRQ(ierr);
   ierr = PCCompositeGetPC(pc,0,&subpc);CHKERRQ(ierr);
   /*  B is set to the diagonal of A; this demonstrates that setting the operator for a subpc changes the preconditioning */
   ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B);CHKERRQ(ierr);
   ierr = MatGetDiagonal(A,b);CHKERRQ(ierr);
   ierr = MatDiagonalSet(B,b,ADD_VALUES);CHKERRQ(ierr);
   ierr = PCSetOperators(subpc,B,B);CHKERRQ(ierr);
-  ierr = PCCompositeAddPC(pc,PCNONE);CHKERRQ(ierr);
+  ierr = PCCompositeAddPCType(pc,PCNONE);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);

@@ -159,7 +159,7 @@
             call RunSimulation(x_v(x_i),i,f_v(i+f_i),ierr)
          enddo
       else
-         ! Multiprocessor master
+         ! Multiprocessor main
          next_task = 0
          finished_tasks = 0
          checkedin = 0
@@ -451,7 +451,7 @@
 
       tag = IDLE_TAG
       f   = 0.0
-      ! Send check-in message to master
+      ! Send check-in message to rank-0
       call MPI_Send(f,1,MPIU_SCALAR,0,IDLE_TAG,PETSC_COMM_WORLD,ierr)
       CHKERRQ(ierr)
       do while (tag .ne. DIE_TAG)
@@ -469,7 +469,7 @@
             call RunSimulation(x,index,f(1),ierr)
             CHKERRQ(ierr)
 
-            ! Return residual to master
+            ! Return residual to rank-0
             call MPI_Send(f,1,MPIU_SCALAR,0,tag,PETSC_COMM_WORLD,ierr)
             CHKERRQ(ierr)
          end if

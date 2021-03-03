@@ -671,7 +671,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       /* Reduction factor choice */
       red = def->reductionfact;
       if (red < 0) {
-        ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(comm,&commsize);CHKERRMPI(ierr);
         red  = ceil((float)commsize/ceil((float)m/commsize));
         ierr = PetscObjectTypeCompareAny((PetscObject)(def->WtAW),&match,MATSEQDENSE,MATMPIDENSE,MATDENSE,"");CHKERRQ(ierr);
         if (match) red = commsize;

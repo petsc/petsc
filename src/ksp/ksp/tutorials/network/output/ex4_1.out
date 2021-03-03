@@ -1,0 +1,37 @@
+DM Object: 1 MPI processes
+  type: network
+  NSubnets: 2; NEdges: 6; NVertices: 6; NSharedVertices: 2.
+  [0] nEdges: 6; nVertices: 8; nSharedVertices: 2
+     Subnet 0: nEdges 3, nVertices(include shared vertices) 4
+       edge 0: 0 ----> 1
+       edge 1: 1 ----> 2
+       edge 2: 2 ----> 3
+     Subnet 1: nEdges 3, nVertices(include shared vertices) 4
+       edge 3: 0 ----> 1
+       edge 4: 1 ----> 4
+       edge 5: 4 ----> 5
+     SharedVertices:
+       svtx 0: global index 0, subnet[0].0 ---->
+                                           ----> subnet[1].0
+       svtx 1: global index 1, subnet[0].1 ---->
+                                           ----> subnet[1].1
+Vec Object: 1 MPI processes
+  type: seq
+  Vertex 0:
+    1.
+    1.
+    1.
+  Vertex 1:
+    1.
+    1.
+    1.
+  Vertex 2:
+    0.
+    0.
+  Vertex 3:
+    0.
+    0.
+  Vertex 4:
+    0.
+  Vertex 5:
+    0.

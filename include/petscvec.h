@@ -4,8 +4,10 @@
   on a grid. They have more mathematical structure then simple arrays.
 */
 
-#ifndef PETSCVEC_H
+#if !defined(PETSCVEC_H)
 #define PETSCVEC_H
+#include <petscsys.h>
+#include <petscsftypes.h> /* for VecScatter, VecScatterType */
 #include <petscis.h>
 #include <petscviewer.h>
 
@@ -17,16 +19,6 @@
 .seealso:  VecCreate(), VecType, VecSetType()
 S*/
 typedef struct _p_Vec*         Vec;
-
-/*S
-     VecScatter - Object used to manage communication of data
-       between vectors in parallel. Manages both scatters and gathers
-
-   Level: beginner
-
-.seealso:  VecScatterCreate(), VecScatterBegin(), VecScatterEnd()
-S*/
-typedef struct _p_VecScatter*  VecScatter;
 
 /*E
   ScatterMode - Determines the direction of a scatter
@@ -99,42 +91,26 @@ typedef const char* VecType;
 #define VECSEQCUDA     "seqcuda"
 #define VECMPICUDA     "mpicuda"
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
+#define VECSEQHIP      "seqhip"
+#define VECMPIHIP      "mpihip"
+#define VECHIP         "hip"       /* seqcuda on one process and mpicuda on several */
 #define VECNEST        "nest"
-#define VECNODE        "node"       /* use on-node shared memory */
 #define VECSEQKOKKOS   "seqkokkos"
 #define VECMPIKOKKOS   "mpikokkos"
 #define VECKOKKOS      "kokkos"     /* seqkokkos on one process and mpikokkos on several */
 
-/*J
-    VecScatterType - String with the name of a PETSc vector scatter type
-
-   Level: beginner
-
-.seealso: VecScatterSetType(), VecScatter, VecScatterCreate(), VecScatterDestroy()
-J*/
-typedef const char* VecScatterType;
-#define VECSCATTERSEQ       "seq"
-#define VECSCATTERMPI1      "mpi1"
-#define VECSCATTERMPI3      "mpi3"     /* use MPI3 on-node shared memory */
-#define VECSCATTERMPI3NODE  "mpi3node" /* use MPI3 on-node shared memory for vector type VECNODE */
-#define VECSCATTERSF        "sf"       /* use StarForest */
-
 /* Dynamic creation and loading functions */
-PETSC_EXTERN PetscFunctionList VecScatterList;
 PETSC_EXTERN PetscErrorCode VecScatterSetType(VecScatter, VecScatterType);
-PETSC_EXTERN PetscErrorCode VecScatterGetType(VecScatter, VecScatterType *);
+PETSC_EXTERN PetscErrorCode VecScatterGetType(VecScatter, VecScatterType*);
 PETSC_EXTERN PetscErrorCode VecScatterSetFromOptions(VecScatter);
 PETSC_EXTERN PetscErrorCode VecScatterRegister(const char[],PetscErrorCode (*)(VecScatter));
 PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter*);
-PETSC_EXTERN PetscErrorCode VecScatterInitializePackage(void);
-PETSC_EXTERN PetscErrorCode VecScatterFinalizePackage(void);
 
 /* Logging support */
 #define    REAL_FILE_CLASSID 1211213
 #define    VEC_FILE_CLASSID 1211214
 PETSC_EXTERN PetscClassId VEC_CLASSID;
-PETSC_EXTERN PetscClassId VEC_SCATTER_CLASSID;
-
+PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
 PETSC_EXTERN PetscErrorCode VecInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecFinalizePackage(void);
@@ -167,6 +143,7 @@ PETSC_EXTERN PetscErrorCode VecMDot(Vec,PetscInt,const Vec[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecMTDot(Vec,PetscInt,const Vec[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecGetSubVector(Vec,IS,Vec*);
 PETSC_EXTERN PetscErrorCode VecRestoreSubVector(Vec,IS,Vec*);
+PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt,const Vec[],Vec*,IS*[]);
 
 /*E
     NormType - determines what type of norm to compute
@@ -215,7 +192,7 @@ M*/
    Level: beginner
 
 .seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_FROBINIUS, NORM_1_AND_2
+           NORM_FROBENIUS, NORM_1_AND_2
 
 M*/
 
@@ -225,7 +202,7 @@ M*/
    Level: beginner
 
 .seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_FROBINIUS, NORM_INFINITY
+           NORM_FROBENIUS, NORM_INFINITY
 
 M*/
 
@@ -411,6 +388,19 @@ PETSC_EXTERN PetscErrorCode VecCUDAPlaceArray(Vec,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecCUDAReplaceArray(Vec,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecCUDAResetArray(Vec);
 
+PETSC_EXTERN PetscErrorCode VecHIPGetArray(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecHIPRestoreArray(Vec,PetscScalar**);
+
+PETSC_EXTERN PetscErrorCode VecHIPGetArrayRead(Vec,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayRead(Vec,const PetscScalar**);
+
+PETSC_EXTERN PetscErrorCode VecHIPGetArrayWrite(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayWrite(Vec,PetscScalar**);
+
+PETSC_EXTERN PetscErrorCode VecHIPPlaceArray(Vec,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode VecHIPReplaceArray(Vec,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode VecHIPResetArray(Vec);
+
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec, PETSC_UINTPTR_T*);
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec, PETSC_UINTPTR_T*);
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec, PETSC_UINTPTR_T*);
@@ -498,20 +488,10 @@ PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
-
-PETSC_EXTERN PetscErrorCode VecGetArrayInPlace(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecRestoreArrayInPlace(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecGetArrayReadInPlace(Vec,const PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecRestoreArrayReadInPlace(Vec,const PetscScalar**);
-
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
-PETSC_EXTERN PetscErrorCode VecKokkosGetArrayInPlace(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecKokkosRestoreArrayInPlace(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecKokkosGetArrayReadInPlace(Vec,const PetscScalar**);
-PETSC_STATIC_INLINE PetscErrorCode VecKokkosRestoreArrayReadInPlace(Vec v,const PetscScalar** a) {return 0;}
-PETSC_EXTERN PetscErrorCode VecKokkosSyncHost(Vec);
-PETSC_EXTERN PetscErrorCode VecKokkosModifyHost(Vec);
-#endif
+PETSC_EXTERN PetscErrorCode VecGetArrayAndMemType(Vec,PetscScalar**,PetscMemType*);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayAndMemType(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecGetArrayReadAndMemType(Vec,const PetscScalar**,PetscMemType*);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayReadAndMemType(Vec,const PetscScalar**);
 
 /*@C
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
@@ -689,20 +669,25 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPUSome_Public(Vec,PetscViennaCLI
 PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCL(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCL(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
-#if defined(PETSC_HAVE_CUDA)
-typedef struct _p_PetscCUDAIndices* PetscCUDAIndices;
-typedef struct _p_VecScatterCUDAIndices_StoS* VecScatterCUDAIndices_StoS;
-typedef struct _p_VecScatterCUDAIndices_PtoP* VecScatterCUDAIndices_PtoP;
-PETSC_EXTERN PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,PetscCUDAIndices,ScatterMode);
-PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec,PetscCUDAIndices,ScatterMode);
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
+#endif
+#if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUDA(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUDA(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUDAWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
+#endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscErrorCode VecCreateSeqHIP(MPI_Comm,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPIHIP(MPI_Comm,PetscInt,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
 #endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec,PetscInt*,Vec**);

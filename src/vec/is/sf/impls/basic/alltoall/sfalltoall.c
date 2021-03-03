@@ -31,7 +31,7 @@ static PetscErrorCode PetscSFGetGraph_Alltoall(PetscSF sf,PetscInt *nroots,Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastAndOpBegin_Alltoall(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+static PetscErrorCode PetscSFBcastBegin_Alltoall(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
   PetscErrorCode       ierr;
   PetscSFLink          link;
@@ -76,7 +76,7 @@ static PetscErrorCode PetscSFCreateLocalSF_Alltoall(PetscSF sf,PetscSF *out)
   PetscFunctionBegin;
   nroots  = 1;
   nleaves = 1;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
   ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
   ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
   ilocal[0]        = rank;
@@ -90,7 +90,7 @@ static PetscErrorCode PetscSFCreateLocalSF_Alltoall(PetscSF sf,PetscSF *out)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFCreateEmbeddedSF_Alltoall(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *newsf)
+static PetscErrorCode PetscSFCreateEmbeddedRootSF_Alltoall(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *newsf)
 {
   PetscErrorCode ierr;
   PetscInt       i,*tmproots,*ilocal,ndranks,ndiranks;
@@ -102,7 +102,7 @@ static PetscErrorCode PetscSFCreateEmbeddedSF_Alltoall(PetscSF sf,PetscInt nsele
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   /* Uniq selected[] and store the result in roots[] */
   ierr = PetscMalloc1(nselected,&tmproots);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ static PetscErrorCode PetscSFCreateEmbeddedSF_Alltoall(PetscSF sf,PetscInt nsele
     bas->irootloc[i]  = roots[i];
   }
 
-  /* See PetscSFCreateEmbeddedSF_Basic */
+  /* See PetscSFCreateEmbeddedRootSF_Basic */
   esf->nleafreqs  = esf->nranks - esf->ndranks;
   bas->nrootreqs  = bas->niranks - bas->ndiranks;
   esf->persistent = PETSC_TRUE;
@@ -189,7 +189,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
   PetscSF_Alltoall *dat = (PetscSF_Alltoall*)sf->data;
 
   PetscFunctionBegin;
-  sf->ops->BcastAndOpEnd   = PetscSFBcastAndOpEnd_Basic;
+  sf->ops->BcastEnd        = PetscSFBcastEnd_Basic;
   sf->ops->ReduceEnd       = PetscSFReduceEnd_Basic;
 
   /* Inherit from Allgatherv. It is astonishing Alltoall can inherit so much from Allgather(v) */
@@ -206,11 +206,11 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Gatherv;
 
   /* Alltoall stuff */
-  sf->ops->GetGraph         = PetscSFGetGraph_Alltoall;
-  sf->ops->BcastAndOpBegin  = PetscSFBcastAndOpBegin_Alltoall;
-  sf->ops->ReduceBegin      = PetscSFReduceBegin_Alltoall;
-  sf->ops->CreateLocalSF    = PetscSFCreateLocalSF_Alltoall;
-  sf->ops->CreateEmbeddedSF = PetscSFCreateEmbeddedSF_Alltoall;
+  sf->ops->GetGraph             = PetscSFGetGraph_Alltoall;
+  sf->ops->BcastBegin           = PetscSFBcastBegin_Alltoall;
+  sf->ops->ReduceBegin          = PetscSFReduceBegin_Alltoall;
+  sf->ops->CreateLocalSF        = PetscSFCreateLocalSF_Alltoall;
+  sf->ops->CreateEmbeddedRootSF = PetscSFCreateEmbeddedRootSF_Alltoall;
 
   ierr = PetscNewLog(sf,&dat);CHKERRQ(ierr);
   sf->data = (void*)dat;

@@ -3,12 +3,19 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version   = '0.7.0'
-    self.gitcommit = '0.7.0'
+    self.version   = '0.8.0'
+    self.gitcommit = '0.8.0'
     self.download  = ['git://https://github.com/flame/blis.git', 'https://github.com/flame/blis/archive/%s.tar.gz' % self.gitcommit]
     self.functions = ['bli_init']
     self.includes  = ['blis/blis.h']
     self.liblist   = [['libblis.a']]
+    return
+
+  def setupHelp(self, help):
+    import nargs
+    config.package.Package.setupHelp(self, help)
+    help.addArgument(self.PACKAGE,'-download-blis-use-pthreads=<bool>',nargs.ArgBool(None,0,'Use pthreads threading support for '+self.name ))
+    help.addArgument(self.PACKAGE,'-download-blis-enable-cblas-headers=<bool>',nargs.ArgBool(None,0,'Enable CBLAS headers for '+self.name ))
     return
 
   def configureLibrary(self):
@@ -22,20 +29,21 @@ class Configure(config.package.Package):
             match = threading_model.match(line)
             if match:
               self.threading_model = match.groups()[0]
+              self.usesopenmp = 'no'
+              self.usespthreads = 'no'
               if self.threading_model == 'openmp':
                 self.usesopenmp = 'yes'
-              else:
-                self.usesopenmp = 'no'
+              if self.threading_model == 'pthreads':
+                self.usespthreads = 'yes'
       except:
         pass
-    else:
-      self.usesopenmp = 'yes' if self.openmp.found else 'no'
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.make            = framework.require('config.packages.make', self)
     self.openmp          = framework.require('config.packages.openmp',self)
+    self.pthread         = framework.require('config.packages.pthread',self)
 
   def Install(self):
     import os
@@ -49,7 +57,15 @@ class Configure(config.package.Package):
         self.known64 = '64'
       else:
         self.known64 = '32'
-      args.append('--enable-threading=' + ('openmp' if self.openmp.found else 'no'))
+      if self.argDB['download-blis-use-pthreads']:
+        if not self.pthread.found: raise RuntimeError("--download-blis-use-pthreads option selected but pthreads is not available")
+        args.append('--enable-threading=pthreads')
+        self.usespthreads = 'yes'
+      elif self.openmp.found:
+        args.append('--enable-threading=openmp')
+        self.usesopenmp = 'yes'
+      if self.argDB['download-blis-enable-cblas-headers']:
+        args.append('--enable-cblas')
       args.append('CC=' + cc)
       args.append('auto')
       config.package.Package.executeShellCommand(args, cwd=self.packageDir, timeout=60, log=self.log)

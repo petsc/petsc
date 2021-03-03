@@ -8,6 +8,10 @@
 #include <cuda_runtime.h>
 #include <petsccublas.h>
 #endif
+#if defined(PETSC_HAVE_HIP)
+#include <hip/hip_runtime.h>
+#include <petschipblas.h>
+#endif
 /*
  * MPI_Reduce_local is not really useful because it can't handle sparse data and it vectorizes "in the wrong direction",
  * therefore we pack data types manually. This file defines packing routines for the standard data types.
@@ -489,7 +493,7 @@ PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype
    The routine is shared by SFBasic and SFNeighbor based on the fact they all deal with sparse graphs and
    need pack/unpack data.
 */
-PetscErrorCode PetscSFLinkCreate(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,const void *leafdata,MPI_Op op,PetscSFOperation sfop,PetscSFLink *mylink)
+PetscErrorCode PetscSFLinkCreate(PetscSF sf,MPI_Datatype unit,PetscMemType xrootmtype,const void *rootdata,PetscMemType xleafmtype,const void *leafdata,MPI_Op op,PetscSFOperation sfop,PetscSFLink *mylink)
 {
   PetscErrorCode    ierr;
   PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
@@ -498,6 +502,8 @@ PetscErrorCode PetscSFLinkCreate(PetscSF sf,MPI_Datatype unit,PetscMemType rootm
   PetscSFDirection  direction;
   MPI_Request       *reqs = NULL;
   PetscBool         match,rootdirect[2],leafdirect[2];
+  PetscMemType      rootmtype = PetscMemTypeHost(xrootmtype) ? PETSC_MEMTYPE_HOST : PETSC_MEMTYPE_DEVICE; /* Convert to 0/1*/
+  PetscMemType      leafmtype = PetscMemTypeHost(xleafmtype) ? PETSC_MEMTYPE_HOST : PETSC_MEMTYPE_DEVICE;
   PetscMemType      rootmtype_mpi,leafmtype_mpi;   /* mtypes seen by MPI */
   PetscInt          rootdirect_mpi,leafdirect_mpi; /* root/leafdirect seen by MPI*/
 
@@ -508,10 +514,10 @@ PetscErrorCode PetscSFLinkCreate(PetscSF sf,MPI_Datatype unit,PetscMemType rootm
   for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
     if (sfop == PETSCSF_BCAST) {
       rootdirect[i] = bas->rootcontig[i]; /* Pack roots */
-      leafdirect[i] = (sf->leafcontig[i] && op == MPIU_REPLACE) ? PETSC_TRUE : PETSC_FALSE;  /* Unpack leaves */
+      leafdirect[i] = (sf->leafcontig[i] && op == MPI_REPLACE) ? PETSC_TRUE : PETSC_FALSE;  /* Unpack leaves */
     } else if (sfop == PETSCSF_REDUCE) {
       leafdirect[i] = sf->leafcontig[i];  /* Pack leaves */
-      rootdirect[i] = (bas->rootcontig[i] && op == MPIU_REPLACE) ? PETSC_TRUE : PETSC_FALSE; /* Unpack roots */
+      rootdirect[i] = (bas->rootcontig[i] && op == MPI_REPLACE) ? PETSC_TRUE : PETSC_FALSE; /* Unpack roots */
     } else { /* PETSCSF_FETCH */
       rootdirect[i] = PETSC_FALSE; /* FETCH always need a separate rootbuf */
       leafdirect[i] = PETSC_FALSE; /* We also force allocating a separate leafbuf so that leafdata and leafupdate can share mpi requests */
@@ -541,12 +547,12 @@ PetscErrorCode PetscSFLinkCreate(PetscSF sf,MPI_Datatype unit,PetscMemType rootm
       */
       if (rootdirect_mpi && sf->persistent && link->rootreqsinited[direction][rootmtype][1] && link->rootdatadirect[direction][rootmtype] != rootdata) {
         reqs = link->rootreqs[direction][rootmtype][1]; /* Here, rootmtype = rootmtype_mpi */
-        for (i=0; i<nrootreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&reqs[i]);CHKERRQ(ierr);}}
+        for (i=0; i<nrootreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&reqs[i]);CHKERRMPI(ierr);}}
         link->rootreqsinited[direction][rootmtype][1] = PETSC_FALSE;
       }
       if (leafdirect_mpi && sf->persistent && link->leafreqsinited[direction][leafmtype][1] && link->leafdatadirect[direction][leafmtype] != leafdata) {
         reqs = link->leafreqs[direction][leafmtype][1];
-        for (i=0; i<nleafreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&reqs[i]);CHKERRQ(ierr);}}
+        for (i=0; i<nleafreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&reqs[i]);CHKERRMPI(ierr);}}
         link->leafreqsinited[direction][leafmtype][1] = PETSC_FALSE;
       }
       *p = link->next; /* Remove from available list */
@@ -574,9 +580,12 @@ PetscErrorCode PetscSFLinkCreate(PetscSF sf,MPI_Datatype unit,PetscMemType rootm
 found:
 
 #if defined(PETSC_HAVE_DEVICE)
-  if ((rootmtype == PETSC_MEMTYPE_DEVICE || leafmtype == PETSC_MEMTYPE_DEVICE) && !link->deviceinited) {
+  if ((PetscMemTypeDevice(xrootmtype) || PetscMemTypeDevice(xleafmtype)) && !link->deviceinited) {
     #if defined(PETSC_HAVE_CUDA)
       if (sf->backend == PETSCSF_BACKEND_CUDA)   {ierr = PetscSFLinkSetUp_Cuda(sf,link,unit);CHKERRQ(ierr);}
+    #endif
+    #if defined(PETSC_HAVE_HIP)
+      if (sf->backend == PETSCSF_BACKEND_HIP)   {ierr = PetscSFLinkSetUp_Hip(sf,link,unit);CHKERRQ(ierr);}
     #endif
     #if defined(PETSC_HAVE_KOKKOS)
       if (sf->backend == PETSCSF_BACKEND_KOKKOS) {ierr = PetscSFLinkSetUp_Kokkos(sf,link,unit);CHKERRQ(ierr);}
@@ -677,13 +686,13 @@ PetscErrorCode PetscSFLinkGetMPIBuffersAndRequests(PetscSF sf,PetscSFLink link,P
         for (i=ndrootranks,j=0; i<nrootranks; i++,j++) {
           disp = (rootoffset[i] - rootoffset[ndrootranks])*link->unitbytes;
           ierr = PetscMPIIntCast(rootoffset[i+1]-rootoffset[i],&n);CHKERRQ(ierr);
-          ierr = MPI_Recv_init(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi]+disp,n,unit,bas->iranks[i],link->tag,comm,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi]+j);CHKERRQ(ierr);
+          ierr = MPI_Recv_init(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi]+disp,n,unit,bas->iranks[i],link->tag,comm,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi]+j);CHKERRMPI(ierr);
         }
       } else { /* PETSCSF_ROOT2LEAF */
         for (i=ndrootranks,j=0; i<nrootranks; i++,j++) {
           disp = (rootoffset[i] - rootoffset[ndrootranks])*link->unitbytes;
           ierr = PetscMPIIntCast(rootoffset[i+1]-rootoffset[i],&n);CHKERRQ(ierr);
-          ierr = MPI_Send_init(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi]+disp,n,unit,bas->iranks[i],link->tag,comm,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi]+j);CHKERRQ(ierr);
+          ierr = MPI_Send_init(link->rootbuf[PETSCSF_REMOTE][rootmtype_mpi]+disp,n,unit,bas->iranks[i],link->tag,comm,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi]+j);CHKERRMPI(ierr);
         }
       }
       link->rootreqsinited[direction][rootmtype_mpi][rootdirect_mpi] = PETSC_TRUE;
@@ -695,13 +704,13 @@ PetscErrorCode PetscSFLinkGetMPIBuffersAndRequests(PetscSF sf,PetscSFLink link,P
         for (i=ndleafranks,j=0; i<nleafranks; i++,j++) {
           disp = (leafoffset[i] - leafoffset[ndleafranks])*link->unitbytes;
           ierr = PetscMPIIntCast(leafoffset[i+1]-leafoffset[i],&n);CHKERRQ(ierr);
-          ierr = MPI_Send_init(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi]+disp,n,unit,sf->ranks[i],link->tag,comm,link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi]+j);CHKERRQ(ierr);
+          ierr = MPI_Send_init(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi]+disp,n,unit,sf->ranks[i],link->tag,comm,link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi]+j);CHKERRMPI(ierr);
         }
       } else { /* PETSCSF_ROOT2LEAF */
         for (i=ndleafranks,j=0; i<nleafranks; i++,j++) {
           disp = (leafoffset[i] - leafoffset[ndleafranks])*link->unitbytes;
           ierr = PetscMPIIntCast(leafoffset[i+1]-leafoffset[i],&n);CHKERRQ(ierr);
-          ierr = MPI_Recv_init(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi]+disp,n,unit,sf->ranks[i],link->tag,comm,link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi]+j);CHKERRQ(ierr);
+          ierr = MPI_Recv_init(link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi]+disp,n,unit,sf->ranks[i],link->tag,comm,link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi]+j);CHKERRMPI(ierr);
         }
       }
       link->leafreqsinited[direction][leafmtype_mpi][leafdirect_mpi] = PETSC_TRUE;
@@ -737,7 +746,6 @@ PetscErrorCode PetscSFLinkGetInUse(PetscSF sf,MPI_Datatype unit,const void *root
     }
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Could not find pack");
-  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscSFLinkReclaim(PetscSF sf,PetscSFLink *link)
@@ -764,9 +772,9 @@ PetscErrorCode PetscSFLinkDestroy(PetscSF sf,PetscSFLink *avail)
   PetscFunctionBegin;
   for (; link; link=next) {
     next = link->next;
-    if (!link->isbuiltin) {ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);}
+    if (!link->isbuiltin) {ierr = MPI_Type_free(&link->unit);CHKERRMPI(ierr);}
     for (i=0; i<nreqs; i++) { /* Persistent reqs must be freed. */
-      if (link->reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&link->reqs[i]);CHKERRQ(ierr);}
+      if (link->reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&link->reqs[i]);CHKERRMPI(ierr);}
     }
     ierr = PetscFree(link->reqs);CHKERRQ(ierr);
     for (i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
@@ -779,10 +787,11 @@ PetscErrorCode PetscSFLinkDestroy(PetscSF sf,PetscSFLink *avail)
     }
   #if defined(PETSC_HAVE_DEVICE)
     if (link->Destroy) {ierr = (*link->Destroy)(link);CHKERRQ(ierr);}
+   /*TODO:  Make runtime */
    #if defined(PETSC_HAVE_CUDA)
     if (link->stream) {cudaError_t cerr = cudaStreamDestroy(link->stream);CHKERRCUDA(cerr); link->stream = NULL;}
    #elif defined(PETSC_HAVE_HIP)
-    if (link->stream) {hipError_t  cerr = hipStreamDestroy(link->stream);CHKERRQ(cerr); link->stream = NULL;} /* TODO: CHKERRHIP? */
+    if (link->stream) {hipError_t  cerr = hipStreamDestroy(link->stream);CHKERRHIP(cerr); link->stream = NULL;}
    #endif
   #endif
     ierr = PetscFree(link);CHKERRQ(ierr);
@@ -800,14 +809,15 @@ PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,
   PetscBool         match;
 
   PetscFunctionBegin;
-  if (!PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
-  /* Look up links in use and error out if there is a match. When both rootdata and leafdata are NULL, ignore
-     the potential overlapping since this process does not participate in communication. Overlapping is harmless.
-  */
-  if (rootdata || leafdata) {
-    for (p=&bas->inuse; (link=*p); p=&link->next) {
-      ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-      if (match && (rootdata == link->rootdata) && (leafdata == link->leafdata)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Overlapped PetscSF with the same rootdata(%p), leafdata(%p) and data type. Undo the overlapping to avoid the error.",rootdata,leafdata);
+  if (PetscDefined(USE_DEBUG)) {
+    /* Look up links in use and error out if there is a match. When both rootdata and leafdata are NULL, ignore
+       the potential overlapping since this process does not participate in communication. Overlapping is harmless.
+    */
+    if (rootdata || leafdata) {
+      for (p=&bas->inuse; (link=*p); p=&link->next) {
+        ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
+        if (match && (rootdata == link->rootdata) && (leafdata == link->leafdata)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Overlapped PetscSF with the same rootdata(%p), leafdata(%p) and data type. Undo the overlapping to avoid the error.",rootdata,leafdata);
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -844,7 +854,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf,PetscSFLink link,MPI_Datatype un
   ierr = MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt);CHKERRQ(ierr);
   /* TODO: shaell we also handle Fortran MPI_2REAL? */
-  ierr = MPI_Type_get_envelope(unit,&ni,&na,&nd,&combiner);CHKERRQ(ierr);
+  ierr = MPI_Type_get_envelope(unit,&ni,&na,&nd,&combiner);CHKERRMPI(ierr);
   link->isbuiltin = (combiner == MPI_COMBINER_NAMED) ? PETSC_TRUE : PETSC_FALSE; /* unit is MPI builtin */
   link->bs = 1; /* default */
 
@@ -922,7 +932,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf,PetscSFLink link,MPI_Datatype un
 #endif
   } else {
     MPI_Aint lb,nbyte;
-    ierr = MPI_Type_get_extent(unit,&lb,&nbyte);CHKERRQ(ierr);
+    ierr = MPI_Type_get_extent(unit,&lb,&nbyte);CHKERRMPI(ierr);
     if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
       if      (nbyte == 4) PackInit_DumbType_char_4_1(link); else if (nbyte%4 == 0) PackInit_DumbType_char_4_0(link);
@@ -944,7 +954,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf,PetscSFLink link,MPI_Datatype un
     if (link->isbuiltin) link->unit = unit;
   }
 
-  if (!link->isbuiltin) {ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);}
+  if (!link->isbuiltin) {ierr = MPI_Type_dup(unit,&link->unit);CHKERRMPI(ierr);}
 
   link->Memcpy = PetscSFLinkMemcpy_Host;
   PetscFunctionReturn(0);
@@ -955,7 +965,7 @@ PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI
   PetscFunctionBegin;
   *UnpackAndOp = NULL;
   if (mtype == PETSC_MEMTYPE_HOST) {
-    if      (op == MPIU_REPLACE)              *UnpackAndOp = link->h_UnpackAndInsert;
+    if      (op == MPI_REPLACE)               *UnpackAndOp = link->h_UnpackAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->h_UnpackAndAdd;
     else if (op == MPI_PROD)                  *UnpackAndOp = link->h_UnpackAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->h_UnpackAndMax;
@@ -971,7 +981,7 @@ PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI
   }
 #if defined(PETSC_HAVE_DEVICE)
   else if (mtype == PETSC_MEMTYPE_DEVICE && !atomic) {
-    if      (op == MPIU_REPLACE)              *UnpackAndOp = link->d_UnpackAndInsert;
+    if      (op == MPI_REPLACE)               *UnpackAndOp = link->d_UnpackAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->d_UnpackAndAdd;
     else if (op == MPI_PROD)                  *UnpackAndOp = link->d_UnpackAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->d_UnpackAndMax;
@@ -985,7 +995,7 @@ PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link,PetscMemType mtype,MPI
     else if (op == MPI_MAXLOC)                *UnpackAndOp = link->d_UnpackAndMaxloc;
     else if (op == MPI_MINLOC)                *UnpackAndOp = link->d_UnpackAndMinloc;
   } else if (mtype == PETSC_MEMTYPE_DEVICE && atomic) {
-    if      (op == MPIU_REPLACE)              *UnpackAndOp = link->da_UnpackAndInsert;
+    if      (op == MPI_REPLACE)               *UnpackAndOp = link->da_UnpackAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *UnpackAndOp = link->da_UnpackAndAdd;
     else if (op == MPI_PROD)                  *UnpackAndOp = link->da_UnpackAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *UnpackAndOp = link->da_UnpackAndMax;
@@ -1008,7 +1018,7 @@ PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MP
   PetscFunctionBegin;
   *ScatterAndOp = NULL;
   if (mtype == PETSC_MEMTYPE_HOST) {
-    if      (op == MPIU_REPLACE)              *ScatterAndOp = link->h_ScatterAndInsert;
+    if      (op == MPI_REPLACE)               *ScatterAndOp = link->h_ScatterAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->h_ScatterAndAdd;
     else if (op == MPI_PROD)                  *ScatterAndOp = link->h_ScatterAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *ScatterAndOp = link->h_ScatterAndMax;
@@ -1024,7 +1034,7 @@ PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MP
   }
 #if defined(PETSC_HAVE_DEVICE)
   else if (mtype == PETSC_MEMTYPE_DEVICE && !atomic) {
-    if      (op == MPIU_REPLACE)              *ScatterAndOp = link->d_ScatterAndInsert;
+    if      (op == MPI_REPLACE)               *ScatterAndOp = link->d_ScatterAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->d_ScatterAndAdd;
     else if (op == MPI_PROD)                  *ScatterAndOp = link->d_ScatterAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *ScatterAndOp = link->d_ScatterAndMax;
@@ -1038,7 +1048,7 @@ PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link,PetscMemType mtype,MP
     else if (op == MPI_MAXLOC)                *ScatterAndOp = link->d_ScatterAndMaxloc;
     else if (op == MPI_MINLOC)                *ScatterAndOp = link->d_ScatterAndMinloc;
   } else if (mtype == PETSC_MEMTYPE_DEVICE && atomic) {
-    if      (op == MPIU_REPLACE)              *ScatterAndOp = link->da_ScatterAndInsert;
+    if      (op == MPI_REPLACE)               *ScatterAndOp = link->da_ScatterAndInsert;
     else if (op == MPI_SUM || op == MPIU_SUM) *ScatterAndOp = link->da_ScatterAndAdd;
     else if (op == MPI_PROD)                  *ScatterAndOp = link->da_ScatterAndMult;
     else if (op == MPI_MAX || op == MPIU_MAX) *ScatterAndOp = link->da_ScatterAndMax;
@@ -1090,7 +1100,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscS
 
 
   PetscFunctionBegin;
-  if (op != MPIU_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
+  if (op != MPI_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
     flops = bas->rootbuflen[scope]*link->bs; /* # of roots in buffer x # of scalars in unit */
 #if defined(PETSC_HAVE_DEVICE)
     if (link->rootmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscLogGpuFlops(flops);CHKERRQ(ierr);} else
@@ -1106,7 +1116,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (op != MPIU_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
+  if (op != MPI_REPLACE && link->basicunit == MPIU_SCALAR) { /* op is a reduction on PetscScalars */
     flops = sf->leafbuflen[scope]*link->bs; /* # of roots in buffer x # of scalars in unit */
 #if defined(PETSC_HAVE_DEVICE)
     if (link->leafmtype == PETSC_MEMTYPE_DEVICE) {ierr = PetscLogGpuFlops(flops);CHKERRQ(ierr);} else
@@ -1141,16 +1151,16 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(Petsc
       /* Note we use link->unit instead of link->basicunit. When op can be mapped to MPI_SUM etc, it operates on
          basic units of a root/leaf element-wisely. Otherwise, it is meant to operate on a whole root/leaf.
       */
-      for (i=0; i<count; i++) {ierr = MPI_Reduce_local((const char*)buf+i*link->unitbytes,(char*)data+indices[i]*link->unitbytes,1,link->unit,op);CHKERRQ(ierr);}
+      for (i=0; i<count; i++) {ierr = MPI_Reduce_local((const char*)buf+i*link->unitbytes,(char*)data+indices[i]*link->unitbytes,1,link->unit,op);CHKERRMPI(ierr);}
     } else {
       ierr = PetscMPIIntCast(count,&n);CHKERRQ(ierr);
-      ierr = MPI_Reduce_local(buf,(char*)data+start*link->unitbytes,n,link->unit,op);CHKERRQ(ierr);
+      ierr = MPI_Reduce_local(buf,(char*)data+start*link->unitbytes,n,link->unit,op);CHKERRMPI(ierr);
     }
   }
+  PetscFunctionReturn(0);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
 #endif
-  PetscFunctionReturn(0);
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt srcStart,const PetscInt *srcIdx,const void *src,PetscInt dstStart,const PetscInt *dstIdx,void *dst,MPI_Op op)
@@ -1165,14 +1175,14 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(Pets
     } else {
       for (i=0; i<count; i++) {
         disp = dstIdx? dstIdx[i] : dstStart + i;
-        ierr = MPI_Reduce_local((const char*)src+srcIdx[i]*link->unitbytes,(char*)dst+disp*link->unitbytes,1,link->unit,op);CHKERRQ(ierr);
+        ierr = MPI_Reduce_local((const char*)src+srcIdx[i]*link->unitbytes,(char*)dst+disp*link->unitbytes,1,link->unit,op);CHKERRMPI(ierr);
       }
     }
   }
+  PetscFunctionReturn(0);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
 #endif
-  PetscFunctionReturn(0);
 }
 
 /*=============================================================================
@@ -1577,10 +1587,13 @@ PetscErrorCode PetscSFSetUpPackFields(PetscSF sf)
 
 #if defined(PETSC_HAVE_DEVICE)
     /* Check dups in indices so that CUDA unpacking kernels can use cheaper regular instructions instead of atomics when they know there are no data race chances */
-  if (!sf->leafcontig[0])  {ierr = PetscCheckDupsInt(sf->leafbuflen[0],  sf->rmine,                                 &sf->leafdups[0]);CHKERRQ(ierr);}
-  if (!sf->leafcontig[1])  {ierr = PetscCheckDupsInt(sf->leafbuflen[1],  sf->rmine+sf->roffset[sf->ndranks],        &sf->leafdups[1]);CHKERRQ(ierr);}
-  if (!bas->rootcontig[0]) {ierr = PetscCheckDupsInt(bas->rootbuflen[0], bas->irootloc,                             &bas->rootdups[0]);CHKERRQ(ierr);}
-  if (!bas->rootcontig[1]) {ierr = PetscCheckDupsInt(bas->rootbuflen[1], bas->irootloc+bas->ioffset[bas->ndiranks], &bas->rootdups[1]);CHKERRQ(ierr);}
+  if (PetscDefined(HAVE_DEVICE)) {
+    PetscBool ismulti = (sf->multi == sf) ? PETSC_TRUE : PETSC_FALSE;
+    if (!sf->leafcontig[0]  && !ismulti) {ierr = PetscCheckDupsInt(sf->leafbuflen[0],  sf->rmine,                                 &sf->leafdups[0]);CHKERRQ(ierr);}
+    if (!sf->leafcontig[1]  && !ismulti) {ierr = PetscCheckDupsInt(sf->leafbuflen[1],  sf->rmine+sf->roffset[sf->ndranks],        &sf->leafdups[1]);CHKERRQ(ierr);}
+    if (!bas->rootcontig[0] && !ismulti) {ierr = PetscCheckDupsInt(bas->rootbuflen[0], bas->irootloc,                             &bas->rootdups[0]);CHKERRQ(ierr);}
+    if (!bas->rootcontig[1] && !ismulti) {ierr = PetscCheckDupsInt(bas->rootbuflen[1], bas->irootloc+bas->ioffset[bas->ndiranks], &bas->rootdups[1]);CHKERRQ(ierr);}
+  }
 #endif
 
   PetscFunctionReturn(0);

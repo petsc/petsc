@@ -938,8 +938,8 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
 
   PetscFunctionBeginUser;
   dd->gcomm = PETSC_COMM_WORLD;
-  ierr      = MPI_Comm_size(dd->gcomm,&sizes);CHKERRQ(ierr);
-  ierr      = MPI_Comm_rank(dd->gcomm,&rank);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(dd->gcomm,&sizes);CHKERRMPI(ierr);
+  ierr      = MPI_Comm_rank(dd->gcomm,&rank);CHKERRMPI(ierr);
   /* Get informations from command line */
   /* Processors/subdomains per dimension */
   /* Default is 1d problem */

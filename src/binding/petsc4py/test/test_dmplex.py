@@ -1,5 +1,8 @@
+import petsc4py
 from petsc4py import PETSc
 import unittest
+import os
+import filecmp
 import numpy as np
 
 # --------------------------------------------------------------------
@@ -103,6 +106,9 @@ class BaseTestPlex(object):
                 self.assertIn(p, point_closure)
 
     def testBoundaryLabel(self):
+        pStart, pEnd = self.plex.getChart()
+        if (pEnd - pStart == 0): return
+
         self.assertFalse(self.plex.hasLabel("boundary"))
         self.plex.markBoundaryFaces("boundary")
         self.assertTrue(self.plex.hasLabel("boundary"))
@@ -113,7 +119,6 @@ class BaseTestPlex(object):
             for p in points:
                 self.plex.setLabelValue("boundary", p, 1)
 
-        pStart, pEnd = self.plex.getChart()
         for p in range(pStart, pEnd):
             if self.plex.getLabelValue("boundary", p) != 1:
                 self.plex.setLabelValue("boundary", p, 2)
@@ -191,7 +196,6 @@ class TestPlex_3D_BoxTensor(BaseTestPlex_3D, unittest.TestCase):
     def setUp(self):
         self.plex = PETSc.DMPlex().createBoxMesh([3,3,3], simplex=False)
 
-import sys
 try:
     raise PETSc.Error
     PETSc.DMPlex().createBoxMesh([2,2], simplex=True, comm=PETSc.COMM_SELF).destroy()
@@ -227,6 +231,247 @@ else:
             boundary.createCubeBoundary([0., 0., 0.], [1., 1., 1.], [1, 1, 1])
             boundary.setDimension(self.DIM-1)
             self.plex = PETSc.DMPlex().generate(boundary)
+
+# --------------------------------------------------------------------
+
+PETSC_DIR = petsc4py.get_config()['PETSC_DIR']
+
+def check_dtype(method):
+    def wrapper(self, *args, **kwargs):
+        if PETSc.ScalarType is PETSc.ComplexType:
+            return
+        else:
+            return method(self, *args, **kwargs)
+    return wrapper
+
+def check_package(method):
+    def wrapper(self, *args, **kwargs):
+        if not PETSc.Sys.hasExternalPackage("hdf5"):
+            return
+        elif self.PARTITIONERTYPE != "simple" and \
+           not PETSc.Sys.hasExternalPackage(self.PARTITIONERTYPE):
+            return
+        else:
+            return method(self, *args, **kwargs)
+    return wrapper
+
+def check_nsize(method):
+    def wrapper(self, *args, **kwargs):
+        if PETSc.COMM_WORLD.size != self.NSIZE:
+            return
+        else:
+            return method(self, *args, **kwargs)
+    return wrapper
+
+class BaseTestPlexHDF5(object):
+    NSIZE = 4
+    NTIMES = 3
+
+    def setUp(self):
+        self.txtvwr = PETSc.Viewer()
+
+    def tearDown(self):
+        if not PETSc.COMM_WORLD.rank:
+            if os.path.exists(self.outfile()):
+                os.remove(self.outfile())
+            if os.path.exists(self.tmp_output_file()):
+                os.remove(self.tmp_output_file())
+        self.txtvwr = None
+
+    def _name(self):
+        return "%s_outformat-%s_%s" % (self.SUFFIX,
+                                       self.OUTFORMAT,
+                                       self.PARTITIONERTYPE)
+
+    def infile(self):
+        return os.path.join(PETSC_DIR, "share/petsc/datafiles/",
+                            "meshes/blockcylinder-50.h5")
+
+    def outfile(self):
+        return os.path.join("./temp_test_dmplex_%s.h5" % self._name())
+
+    def informat(self):
+        return PETSc.Viewer.Format.HDF5_XDMF
+
+    def outformat(self):
+        d = {"hdf5_petsc": PETSc.Viewer.Format.HDF5_PETSC,
+             "hdf5_xdmf": PETSc.Viewer.Format.HDF5_XDMF}
+        return d[self.OUTFORMAT]
+
+    def partitionerType(self):
+        d = {"simple": PETSc.Partitioner.Type.SIMPLE,
+             "ptscotch": PETSc.Partitioner.Type.PTSCOTCH,
+             "parmetis": PETSc.Partitioner.Type.PARMETIS}
+        return d[self.PARTITIONERTYPE]
+
+    def ref_output_file(self):
+        return os.path.join(PETSC_DIR, "src/dm/impls/plex/tutorials/",
+                            "output/ex5_%s.out" % self._name())
+
+    def tmp_output_file(self):
+        return os.path.join("./temp_test_dmplex_%s.out" % self._name())
+
+    def outputText(self, msg, comm):
+        if not comm.rank:
+            with open(self.tmp_output_file(), 'a') as f:
+                f.write(msg)
+
+    def outputPlex(self, plex):
+        self.txtvwr.createASCII(self.tmp_output_file(),
+                                mode='a', comm=plex.comm)
+        plex.view(viewer=self.txtvwr)
+        self.txtvwr.destroy()
+
+    @check_dtype
+    @check_package
+    @check_nsize
+    def testViewLoadCycle(self):
+        grank = PETSc.COMM_WORLD.rank
+        for i in range(self.NTIMES):
+            if i == 0:
+                infname = self.infile()
+                informt = self.informat()
+            else:
+                infname = self.outfile()
+                informt = self.outformat()
+            if self.HETEROGENEOUS:
+                mycolor = (grank > self.NTIMES - i)
+            else:
+                mycolor = 0
+            mpicomm = PETSc.COMM_WORLD.tompi4py()
+            comm = PETSc.Comm(comm=mpicomm.Split(color=mycolor, key=grank))
+            if mycolor == 0:
+                self.outputText("Begin cycle %d\n" % i, comm)
+                plex = PETSc.DMPlex()
+                vwr = PETSc.ViewerHDF5()
+                # Create plex
+                plex.create(comm=comm)
+                plex.setName("DMPlex Object")
+                # Load data from XDMF into dm in parallel
+                vwr.create(infname, mode='r', comm=comm)
+                vwr.pushFormat(format=informt)
+                plex.load(viewer=vwr)
+                plex.setOptionsPrefix("loaded_")
+                plex.setFromOptions()
+                vwr.popFormat()
+                vwr.destroy()
+                self.outputPlex(plex)
+                # Test DM is indeed distributed
+                flg = plex.isDistributed()
+                self.outputText("Loaded mesh distributed? %s\n" %
+                                str(flg).upper(), comm)
+                # Interpolate
+                plex.interpolate()
+                plex.setOptionsPrefix("interpolated_")
+                plex.setFromOptions()
+                self.outputPlex(plex)
+                # Redistribute
+                part = plex.getPartitioner()
+                part.setType(self.partitionerType())
+                _ = plex.distribute(overlap=0)
+                plex.setOptionsPrefix("redistributed_")
+                plex.setFromOptions()
+                self.outputPlex(plex)
+                # Save redistributed dm to XDMF in parallel
+                vwr.create(self.outfile(), mode='w', comm=comm)
+                vwr.pushFormat(format=self.outformat())
+                plex.view(viewer=vwr)
+                vwr.popFormat()
+                vwr.destroy()
+                # Destroy plex
+                plex.destroy()
+                self.outputText("End   cycle %d\n--------\n" % i, comm)
+            PETSc.COMM_WORLD.Barrier()
+        # Check that the output is identical to that of plex/tutorial/ex5.c.
+        self.assertTrue(filecmp.cmp(self.tmp_output_file(),
+                                    self.ref_output_file(), shallow=False),
+                        'Contents of the files not the same.')
+        PETSc.COMM_WORLD.Barrier()
+
+class BaseTestPlexHDF5Homogeneous(BaseTestPlexHDF5):
+    """Test save on N / load on N."""
+    SUFFIX = 0
+    HETEROGENEOUS = False
+
+class BaseTestPlexHDF5Heterogeneous(BaseTestPlexHDF5):
+    """Test save on N / load on M."""
+    SUFFIX = 1
+    HETEROGENEOUS = True
+
+class TestPlexHDF5PETSCSimpleHomogeneous(BaseTestPlexHDF5Homogeneous,
+                                         unittest.TestCase):
+    OUTFORMAT = "hdf5_petsc"
+    PARTITIONERTYPE = "simple"
+
+"""
+Skipping. PTScotch produces different distributions when run
+in a sequence in a single session.
+
+class TestPlexHDF5PETSCPTScotchHomogeneous(BaseTestPlexHDF5Homogeneous,
+                                           unittest.TestCase):
+    OUTFORMAT = "hdf5_petsc"
+    PARTITIONERTYPE = "ptscotch"
+"""
+
+class TestPlexHDF5PETSCParmetisHomogeneous(BaseTestPlexHDF5Homogeneous,
+                                           unittest.TestCase):
+    OUTFORMAT = "hdf5_petsc"
+    PARTITIONERTYPE = "parmetis"
+
+class TestPlexHDF5XDMFSimpleHomogeneous(BaseTestPlexHDF5Homogeneous,
+                                        unittest.TestCase):
+    OUTFORMAT = "hdf5_xdmf"
+    PARTITIONERTYPE = "simple"
+
+"""
+Skipping. PTScotch produces different distributions when run
+in a sequence in a single session.
+
+class TestPlexHDF5XDMFPTScotchHomogeneous(BaseTestPlexHDF5Homogeneous,
+                                          unittest.TestCase):
+    OUTFORMAT = "hdf5_xdmf"
+    PARTITIONERTYPE = "ptscotch"
+"""
+
+class TestPlexHDF5XDMFParmetisHomogeneous(BaseTestPlexHDF5Homogeneous,
+                                          unittest.TestCase):
+    OUTFORMAT = "hdf5_xdmf"
+    PARTITIONERTYPE = "parmetis"
+
+class TestPlexHDF5PETSCSimpleHeterogeneous(BaseTestPlexHDF5Heterogeneous,
+                                           unittest.TestCase):
+    OUTFORMAT = "hdf5_petsc"
+    PARTITIONERTYPE = "simple"
+
+"""
+Skipping. PTScotch produces different distributions when run
+in a sequence in a single session.
+
+class TestPlexHDF5PETSCPTScotchHeterogeneous(BaseTestPlexHDF5Heterogeneous,
+                                             unittest.TestCase):
+    OUTFORMAT = "hdf5_petsc"
+    PARTITIONERTYPE = "ptscotch"
+"""
+
+class TestPlexHDF5PETSCParmetisHeterogeneous(BaseTestPlexHDF5Heterogeneous,
+                                             unittest.TestCase):
+    OUTFORMAT = "hdf5_petsc"
+    PARTITIONERTYPE = "parmetis"
+
+class TestPlexHDF5XDMFSimpleHeterogeneous(BaseTestPlexHDF5Heterogeneous,
+                                          unittest.TestCase):
+    OUTFORMAT = "hdf5_xdmf"
+    PARTITIONERTYPE = "simple"
+
+class TestPlexHDF5XDMFPTScotchHeterogeneous(BaseTestPlexHDF5Heterogeneous,
+                                            unittest.TestCase):
+    OUTFORMAT = "hdf5_xdmf"
+    PARTITIONERTYPE = "ptscotch"
+
+class TestPlexHDF5XDMFParmetisHeterogeneous(BaseTestPlexHDF5Heterogeneous,
+                                            unittest.TestCase):
+    OUTFORMAT = "hdf5_xdmf"
+    PARTITIONERTYPE = "parmetis"
 
 # --------------------------------------------------------------------
 

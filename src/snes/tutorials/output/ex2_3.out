@@ -1,8 +1,8 @@
 atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
-  0 SNES Function norm 5.41468 
-  1 SNES Function norm 0.295258 
-  2 SNES Function norm 0.000450229 
-  3 SNES Function norm 1.38967e-09 
+  0 SNES Function norm 5.41468
+  1 SNES Function norm 0.295258
+  2 SNES Function norm 0.000450229
+  3 SNES Function norm 1.38967e-09
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -27,6 +27,7 @@ SNES Object: 1 MPI processes
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
     type: jacobi
+      type DIAGONAL
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij

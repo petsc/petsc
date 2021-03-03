@@ -50,8 +50,8 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
 #if defined(PETSC_HAVE_MED)
   mederr = MEDfileCompatibility(filename, &hdfok, &medok);
   if (mederr) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Cannot determine MED file compatibility: %s", filename);
@@ -239,8 +239,8 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       /* Migrate facet IDs */
       ierr = PetscSFGetGraph(sfFacetMigration, NULL, &numFacetsRendezvous, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscMalloc1(numFacetsRendezvous, &facetIDsRendezvous);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous,MPI_REPLACE);CHKERRQ(ierr);
       /* Clean up */
       ierr = DMLabelDestroy(&lblFacetRendezvous);CHKERRQ(ierr);
       ierr = DMLabelDestroy(&lblFacetMigration);CHKERRQ(ierr);
@@ -349,8 +349,8 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = PetscLayoutDestroy(&vLayout);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&cLayout);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfVertices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires Med mesh reader support. Reconfigure using --download-med");
 #endif
-  PetscFunctionReturn(0);
 }

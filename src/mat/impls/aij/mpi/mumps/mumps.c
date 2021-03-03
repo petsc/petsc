@@ -103,9 +103,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems
          an easy translation between omp_comm and petsc_comm). See MUMPS-5.1.2 manual p82.                   \
          omp_comm is a small shared memory communicator, hence doing multiple Bcast as shown below is OK. \
       */ \
-      ierr = MPI_Bcast(mumps->id.infog, 40,MPIU_MUMPSINT, 0,mumps->omp_comm);CHKERRQ(ierr);  \
-      ierr = MPI_Bcast(mumps->id.rinfog,20,MPIU_REAL,     0,mumps->omp_comm);CHKERRQ(ierr); \
-      ierr = MPI_Bcast(mumps->id.info,  1, MPIU_MUMPSINT, 0,mumps->omp_comm);CHKERRQ(ierr);  \
+      ierr = MPI_Bcast(mumps->id.infog, 40,MPIU_MUMPSINT, 0,mumps->omp_comm);CHKERRMPI(ierr);\
+      ierr = MPI_Bcast(mumps->id.rinfog,20,MPIU_REAL,     0,mumps->omp_comm);CHKERRMPI(ierr);\
+      ierr = MPI_Bcast(mumps->id.info,  1, MPIU_MUMPSINT, 0,mumps->omp_comm);CHKERRMPI(ierr);\
     } else { \
       MUMPS_c(&mumps->id); \
     } \
@@ -290,7 +290,6 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);
-    break;
   }
   ierr = MatFactorRestoreSchurComplement(F,&S,schurstatus);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -1008,7 +1007,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscFree(mumps->recvcount);CHKERRQ(ierr);
   ierr = PetscFree(mumps->reqs);CHKERRQ(ierr);
   ierr = PetscFree(mumps->irhs_loc);CHKERRQ(ierr);
-  if (mumps->mumps_comm != MPI_COMM_NULL) {ierr = MPI_Comm_free(&mumps->mumps_comm);CHKERRQ(ierr);}
+  if (mumps->mumps_comm != MPI_COMM_NULL) {ierr = MPI_Comm_free(&mumps->mumps_comm);CHKERRMPI(ierr);}
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -1060,10 +1059,10 @@ static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A,PetscInt nrhs,const PetscSc
       if (!mumps->irhs_loc) {
         ierr = PetscMalloc2(ompsize,&omp_ranks,ompsize,&petsc_ranks);CHKERRQ(ierr);
         ierr = PetscMalloc3(ompsize,&mumps->rhs_nrow,ompsize,&mumps->rhs_recvcounts,ompsize,&mumps->rhs_disps);CHKERRQ(ierr);
-        ierr = MPI_Comm_group(mumps->petsc_comm,&petsc_group);CHKERRQ(ierr);
-        ierr = MPI_Comm_group(mumps->omp_comm,&omp_group);CHKERRQ(ierr);
+        ierr = MPI_Comm_group(mumps->petsc_comm,&petsc_group);CHKERRMPI(ierr);
+        ierr = MPI_Comm_group(mumps->omp_comm,&omp_group);CHKERRMPI(ierr);
         for (j=0; j<ompsize; j++) omp_ranks[j] = j;
-        ierr = MPI_Group_translate_ranks(omp_group,ompsize,omp_ranks,petsc_group,petsc_ranks);CHKERRQ(ierr);
+        ierr = MPI_Group_translate_ranks(omp_group,ompsize,omp_ranks,petsc_group,petsc_ranks);CHKERRMPI(ierr);
 
         /* Populate mumps->irhs_loc[], rhs_nrow[] */
         mumps->nloc_rhs = 0;
@@ -1078,8 +1077,8 @@ static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A,PetscInt nrhs,const PetscSc
         }
 
         ierr = PetscFree2(omp_ranks,petsc_ranks);CHKERRQ(ierr);
-        ierr = MPI_Group_free(&petsc_group);CHKERRQ(ierr);
-        ierr = MPI_Group_free(&omp_group);CHKERRQ(ierr);
+        ierr = MPI_Group_free(&petsc_group);CHKERRMPI(ierr);
+        ierr = MPI_Group_free(&omp_group);CHKERRMPI(ierr);
       }
 
       /* Realloc buffers when current nrhs is bigger than what we have met */
@@ -1100,7 +1099,7 @@ static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A,PetscInt nrhs,const PetscSc
     }
 
     ierr = PetscMPIIntCast(m*nrhs,&sendcount);CHKERRQ(ierr);
-    ierr = MPI_Gatherv(array,sendcount,MPIU_SCALAR,recvbuf,mumps->rhs_recvcounts,mumps->rhs_disps,MPIU_SCALAR,0,mumps->omp_comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(array,sendcount,MPIU_SCALAR,recvbuf,mumps->rhs_recvcounts,mumps->rhs_disps,MPIU_SCALAR,0,mumps->omp_comm);CHKERRMPI(ierr);
 
     if (mumps->is_omp_master) {
       if (nrhs > 1) { /* Copy & re-arrange data from rhs_recvbuf[] to mumps->rhs_loc[] only when there are multiple rhs */
@@ -1520,7 +1519,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,PetscInt *nneg,PetscInt *nzero,Pet
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)F),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)F),&size);CHKERRMPI(ierr);
   /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
   if (size > 1 && mumps->id.ICNTL(13) != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",mumps->id.INFOG(13));
 
@@ -1549,7 +1548,7 @@ PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse,Mat_MUMPS *mumps)
     if (reuse == MAT_INITIAL_MATRIX) {
       /* master first gathers counts of nonzeros to receive */
       if (mumps->is_omp_master) {ierr = PetscMalloc1(osize,&mumps->recvcount);CHKERRQ(ierr);}
-      ierr = MPI_Gather(&mumps->nnz,1,MPIU_INT64,mumps->recvcount,1,MPIU_INT64,0/*master*/,mumps->omp_comm);CHKERRQ(ierr);
+      ierr = MPI_Gather(&mumps->nnz,1,MPIU_INT64,mumps->recvcount,1,MPIU_INT64,0/*master*/,mumps->omp_comm);CHKERRMPI(ierr);
 
       /* Then each computes number of send/recvs */
       if (mumps->is_omp_master) {
@@ -1594,9 +1593,9 @@ PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse,Mat_MUMPS *mumps)
           count  = PetscMin(mumps->recvcount[i],PETSC_MPI_INT_MAX);
           remain = mumps->recvcount[i] - count;
           while (count>0) {
-            ierr    = MPI_Irecv(irn,count,MPIU_MUMPSINT,i,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRQ(ierr);
-            ierr    = MPI_Irecv(jcn,count,MPIU_MUMPSINT,i,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRQ(ierr);
-            ierr    = MPI_Irecv(val,count,MPIU_SCALAR,  i,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRQ(ierr);
+            ierr    = MPI_Irecv(irn,count,MPIU_MUMPSINT,i,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRMPI(ierr);
+            ierr    = MPI_Irecv(jcn,count,MPIU_MUMPSINT,i,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRMPI(ierr);
+            ierr    = MPI_Irecv(val,count,MPIU_SCALAR,  i,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRMPI(ierr);
             irn    += count;
             jcn    += count;
             val    += count;
@@ -1611,9 +1610,9 @@ PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse,Mat_MUMPS *mumps)
         count  = PetscMin(mumps->nnz,PETSC_MPI_INT_MAX);
         remain = mumps->nnz - count;
         while (count>0) {
-          ierr    = MPI_Isend(irn,count,MPIU_MUMPSINT,0,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRQ(ierr);
-          ierr    = MPI_Isend(jcn,count,MPIU_MUMPSINT,0,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRQ(ierr);
-          ierr    = MPI_Isend(val,count,MPIU_SCALAR,  0,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRQ(ierr);
+          ierr    = MPI_Isend(irn,count,MPIU_MUMPSINT,0,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRMPI(ierr);
+          ierr    = MPI_Isend(jcn,count,MPIU_MUMPSINT,0,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRMPI(ierr);
+          ierr    = MPI_Isend(val,count,MPIU_SCALAR,  0,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRMPI(ierr);
           irn    += count;
           jcn    += count;
           val    += count;
@@ -1629,7 +1628,7 @@ PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse,Mat_MUMPS *mumps)
           count  = PetscMin(mumps->recvcount[i],PETSC_MPI_INT_MAX);
           remain = mumps->recvcount[i] - count;
           while (count>0) {
-            ierr    = MPI_Irecv(val,count,MPIU_SCALAR,i,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRQ(ierr);
+            ierr    = MPI_Irecv(val,count,MPIU_SCALAR,i,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRMPI(ierr);
             val    += count;
             count   = PetscMin(remain,PETSC_MPI_INT_MAX);
             remain -= count;
@@ -1640,14 +1639,14 @@ PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse,Mat_MUMPS *mumps)
         count  = PetscMin(mumps->nnz,PETSC_MPI_INT_MAX);
         remain = mumps->nnz - count;
         while (count>0) {
-          ierr    = MPI_Isend(val,count,MPIU_SCALAR,0,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRQ(ierr);
+          ierr    = MPI_Isend(val,count,MPIU_SCALAR,0,mumps->tag,mumps->omp_comm,&mumps->reqs[nreqs++]);CHKERRMPI(ierr);
           val    += count;
           count   = PetscMin(remain,PETSC_MPI_INT_MAX);
           remain -= count;
         }
       }
     }
-    ierr = MPI_Waitall(nreqs,mumps->reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Waitall(nreqs,mumps->reqs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
     mumps->tag++; /* It is totally fine for above send/recvs to share one mpi tag */
   }
   PetscFunctionReturn(0);
@@ -1854,8 +1853,8 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 
   PetscFunctionBegin;
   mumps->petsc_comm = PetscObjectComm((PetscObject)A);
-  ierr = MPI_Comm_size(mumps->petsc_comm,&mumps->petsc_size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(mumps->petsc_comm,&mumps->myid);CHKERRQ(ierr); /* so that code like "if (!myid)" still works even if mumps_comm is different */
+  ierr = MPI_Comm_size(mumps->petsc_comm,&mumps->petsc_size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(mumps->petsc_comm,&mumps->myid);CHKERRMPI(ierr);/* "if (!myid)" still works even if mumps_comm is different */
 
   ierr = PetscOptionsHasName(NULL,NULL,"-mat_mumps_use_omp_threads",&mumps->use_petsc_omp_support);CHKERRQ(ierr);
   if (mumps->use_petsc_omp_support) nthreads = -1; /* -1 will let PetscOmpCtrlCreate() guess a proper value when user did not supply one */
@@ -1872,13 +1871,13 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
     mumps->mumps_comm    = mumps->petsc_comm;
     mumps->is_omp_master = PETSC_TRUE;
   }
-  ierr = MPI_Comm_size(mumps->omp_comm,&mumps->omp_comm_size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(mumps->omp_comm,&mumps->omp_comm_size);CHKERRMPI(ierr);
   mumps->reqs = NULL;
   mumps->tag  = 0;
 
   /* It looks like MUMPS does not dup the input comm. Dup a new comm for MUMPS to avoid any tag mismatches. */
   if (mumps->mumps_comm != MPI_COMM_NULL) {
-    ierr = MPI_Comm_dup(mumps->mumps_comm,&newcomm);CHKERRQ(ierr);
+    ierr = MPI_Comm_dup(mumps->mumps_comm,&newcomm);CHKERRMPI(ierr);
     mumps->mumps_comm = newcomm;
   }
 
@@ -1893,8 +1892,8 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
      For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
    */
-  ierr = MPI_Bcast(mumps->id.icntl,40,MPI_INT,  0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 Manual Section 9 */
-  ierr = MPI_Bcast(mumps->id.cntl, 15,MPIU_REAL,0,mumps->omp_comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(mumps->id.icntl,40,MPI_INT,  0,mumps->omp_comm);CHKERRMPI(ierr);
+  ierr = MPI_Bcast(mumps->id.cntl, 15,MPIU_REAL,0,mumps->omp_comm);CHKERRMPI(ierr);
 
   mumps->scat_rhs = NULL;
   mumps->scat_sol = NULL;
@@ -2308,7 +2307,7 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
     PetscBool ls,gs; /* gs is false if any rank other than root has non-empty IS */
 
     ls   = mumps->myid ? (size ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE; /* always true on root; false on others if their size != 0 */
-    ierr = MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->petsc_comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->petsc_comm);CHKERRMPI(ierr);
     if (!gs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc\n");
   }
 
@@ -3049,7 +3048,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
     B->useordering = PETSC_TRUE;
@@ -3119,7 +3118,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
     B->useordering = PETSC_TRUE;
@@ -3179,7 +3178,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
     B->useordering = PETSC_TRUE;
@@ -3239,7 +3238,7 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A,MatFactorType ftype,Mat *F)
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
     B->useordering = PETSC_TRUE;

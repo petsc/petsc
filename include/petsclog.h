@@ -10,23 +10,27 @@
 /* General logging of information; different from event logging */
 PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],PetscObject,const char[],...);
 #if defined(PETSC_USE_INFO)
-#define PetscInfo(A,S)                       PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S)
-#define PetscInfo1(A,S,a1)                   PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1)
-#define PetscInfo2(A,S,a1,a2)                PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2)
-#define PetscInfo3(A,S,a1,a2,a3)             PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3)
-#define PetscInfo4(A,S,a1,a2,a3,a4)          PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4)
-#define PetscInfo5(A,S,a1,a2,a3,a4,a5)       PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5)
-#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6)
-#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6,a7)
+#define PetscInfo(A,S)                             PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S)
+#define PetscInfo1(A,S,a1)                         PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1)
+#define PetscInfo2(A,S,a1,a2)                      PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2)
+#define PetscInfo3(A,S,a1,a2,a3)                   PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3)
+#define PetscInfo4(A,S,a1,a2,a3,a4)                PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4)
+#define PetscInfo5(A,S,a1,a2,a3,a4,a5)             PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5)
+#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)          PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6)
+#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7)       PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6,a7)
+#define PetscInfo8(A,S,a1,a2,a3,a4,a5,a6,a7,a8)    PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6,a7,a8)
+#define PetscInfo9(A,S,a1,a2,a3,a4,a5,a6,a7,a8,a9) PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6,a7,a8,a9)
 #else
-#define PetscInfo(A,S)                       0
-#define PetscInfo1(A,S,a1)                   0
-#define PetscInfo2(A,S,a1,a2)                0
-#define PetscInfo3(A,S,a1,a2,a3)             0
-#define PetscInfo4(A,S,a1,a2,a3,a4)          0
-#define PetscInfo5(A,S,a1,a2,a3,a4,a5)       0
-#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    0
-#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) 0
+#define PetscInfo(A,S)                             0
+#define PetscInfo1(A,S,a1)                         0
+#define PetscInfo2(A,S,a1,a2)                      0
+#define PetscInfo3(A,S,a1,a2,a3)                   0
+#define PetscInfo4(A,S,a1,a2,a3,a4)                0
+#define PetscInfo5(A,S,a1,a2,a3,a4,a5)             0
+#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)          0
+#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7)       0
+#define PetscInfo8(A,S,a1,a2,a3,a4,a5,a6,a7,a8)    0
+#define PetscInfo9(A,S,a1,a2,a3,a4,a5,a6,a7,a8,a9) 0
 #endif
 
 /*E
@@ -332,7 +336,12 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
    Level: intermediate
 
       Notes:
-        The timer is run on the CPU, it is just logged separately as time devoted to GPU computations (including kernel launch times). It is used to compute the flop rate on the GPU.
+        The timer is run on the CPU, it is a separate logging of time devoted to GPU computations (including kernel launch times).
+        This timer should NOT include times for data transfers between the GPU and CPU, nor setup actions such as allocating space.
+        The regular logging captures the time for data transfers and any CPU activites during the event
+        It is used to compute the flop rate on the GPU as it is actively engaged in running a kernel.
+
+
 .seealso:  PetscLogView(), PetscLogGpuFlops(), PetscLogGpuTimeEnd()
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuTimeBegin()
@@ -423,6 +432,8 @@ PETSC_EXTERN PetscErrorCode PetscLogEventIncludeClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventExcludeClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventActivate(PetscLogEvent);
 PETSC_EXTERN PetscErrorCode PetscLogEventDeactivate(PetscLogEvent);
+PETSC_EXTERN PetscErrorCode PetscLogEventDeactivatePush(PetscLogEvent);
+PETSC_EXTERN PetscErrorCode PetscLogEventDeactivatePop(PetscLogEvent);
 PETSC_EXTERN PetscErrorCode PetscLogEventSetActiveAll(PetscLogEvent,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscLogEventActivateClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventDeactivateClass(PetscClassId);
@@ -490,7 +501,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSize(PetscInt count,MPI_Datatype 
   PetscMPIInt    typesize;
   PetscErrorCode ierr;
   if (type == MPI_DATATYPE_NULL) return 0;
-  ierr     = MPI_Type_size(type,&typesize);CHKERRQ(ierr);
+  ierr     = MPI_Type_size(type,&typesize);CHKERRMPI(ierr);
   *length += (PetscLogDouble) (count*typesize);
   return 0;
 }
@@ -501,8 +512,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm,const Pets
   PetscErrorCode ierr;
 
   if (type == MPI_DATATYPE_NULL) return 0;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Type_size(type,&typesize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Type_size(type,&typesize);CHKERRMPI(ierr);
   for (p=0; p<size; ++p) {
     *length += (PetscLogDouble) (counts[p]*typesize);
   }
@@ -515,7 +526,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeCount(PetscInt n,const PetscM
   PetscErrorCode ierr;
 
   if (type == MPI_DATATYPE_NULL) return 0;
-  ierr = MPI_Type_size(type,&typesize);CHKERRQ(ierr);
+  ierr = MPI_Type_size(type,&typesize);CHKERRMPI(ierr);
   for (p=0; p<n; ++p) {
     *length += (PetscLogDouble) (counts[p]*typesize);
   }
@@ -666,6 +677,8 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #define PetscLogEventExcludeClass(a)       0
 #define PetscLogEventActivate(a)           0
 #define PetscLogEventDeactivate(a)         0
+#define PetscLogEventDeactivatePush(a)     0
+#define PetscLogEventDeactivatePop(a)      0
 #define PetscLogEventActivateClass(a)      0
 #define PetscLogEventDeactivateClass(a)    0
 #define PetscLogEventSetActiveAll(a,b)     0

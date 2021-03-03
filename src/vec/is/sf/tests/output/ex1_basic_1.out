@@ -3,13 +3,12 @@ PetscSF Object: 1 MPI processes
   PetscSFSetGraph() has not been called yet
 PetscSF Object: 1 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=0, leaves=0, remote ranks=0
+  MultiSF sort=rank-order
 PetscSF Object: 1 MPI processes
   type: basic
-    sort=rank-order
   PetscSFSetGraph() has not been called yet
 PetscSF Object: 1 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=0, leaves=0, remote ranks=0
+  MultiSF sort=rank-order

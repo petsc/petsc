@@ -1,8 +1,6 @@
 static char help[] = "Benchmark Poisson Problem in 2d and 3d with finite elements.\n\
-We solve the Poisson problem in a rectangular\n\
-domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\
-This example supports automatic convergence estimation\n\
-and eventually adaptivity.\n\n\n";
+We solve the Poisson problem in a rectangular domain\n\
+using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
@@ -10,13 +8,9 @@ and eventually adaptivity.\n\n\n";
 #include <petscconvest.h>
 
 typedef struct {
-  /* Domain and mesh definition */
-  PetscBool benchmark;
-  PetscInt  cells[3];
-  PetscInt  processGrid[3];
-  PetscInt  nodeGrid[3];
+  PetscInt  nit;    /* Number of benchmark iterations */
+  PetscBool strong; /* Do not integrate the Laplacian by parts */
 } AppCtx;
-
 
 static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -53,23 +47,32 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (d = 0; d < dim; ++d) g3[d*dim+d] = 1.0;
 }
 
+static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  *u = PetscSqr(x[0]) + PetscSqr(x[1]);
+  return 0;
+}
+
+static void f0_strong_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                        PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) f0[0] -= u_x[dim + d*dim+d];
+  f0[0] += 4.0;
+}
+
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
-  PetscInt       asz, dim=2; /* should be default of DMPLex (yuck) */
 
   PetscFunctionBeginUser;
-  options->benchmark= PETSC_FALSE;
-  for (asz=0;asz<3;asz++) options->processGrid[asz] = options->cells[asz] = options->nodeGrid[asz] = 1;
+  options->nit    = 10;
+  options->strong = PETSC_FALSE;
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dm_plex_box_dim","dim in ex13","ex13.c",dim,&dim,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-benchmark", "Solve the benchmark problem", "ex13.c", options->benchmark, &options->benchmark, NULL);CHKERRQ(ierr);
-  asz  = dim;
-  ierr = PetscOptionsIntArray("-dm_plex_box_faces","Mesh size (cells) for benchmarking ex13","ex13.c",options->cells,&asz,NULL);CHKERRQ(ierr);
-  asz  = dim;
-  ierr = PetscOptionsIntArray("-process_grid_size","Number of processors (np) in each dimension (cells[i]%np[i]==0 && prod(np[i]==#procs)","ex13.c",options->processGrid,&asz,NULL);CHKERRQ(ierr);
-  asz  = dim;
-  ierr = PetscOptionsIntArray("-node_grid_size","Number of nodes (nnodes) in each dimension (np[i]%nnodes[i]==0)","ex13.c",options->nodeGrid,&asz,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-benchmark_it", "Solve the benchmark problem this many times", "ex13.c", options->nit, &options->nit, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-strong", "Do not integrate the Laplacian by parts", "ex13.c", options->strong, &options->strong, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -77,7 +80,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscErrorCode ierr;
-  PetscInt       dim;
 
   PetscFunctionBeginUser;
   /* Create box mesh */
@@ -104,85 +106,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
-  if (user->benchmark) {
-    PetscPartitioner part;
-    PetscInt         cEnd, ii, np,cells_proc[3],procs_node[3];
-    PetscMPIInt      rank, size;
-    PetscInt         *sizes = NULL, *points = NULL;
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(*dm, 0, NULL, &cEnd);CHKERRQ(ierr);
-    ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
-    for (ii=0,np=1;ii<dim;ii++) np *= user->processGrid[ii]; /* check number of processors */
-    if (np!=size)SETERRQ2(comm,PETSC_ERR_SUP,"invalid process grid sum = %D, -n %D",np, size);
-    for (ii=0,np=1;ii<dim;ii++) np *= user->cells[ii];
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-    if (!rank) {
-      if (np!=cEnd)SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP," cell grid %D != num cells = %D",np,cEnd);
-      for (ii=0;ii<dim;ii++) {
-        if (user->processGrid[ii]%user->nodeGrid[ii]) SETERRQ3(comm,PETSC_ERR_SUP,"dir %D, invalid node grid size %D, process grid %D",ii,user->nodeGrid[ii],user->processGrid[ii]);
-        procs_node[ii] = user->processGrid[ii]/user->nodeGrid[ii];
-        if (user->cells[ii]%user->processGrid[ii]) SETERRQ3(comm,PETSC_ERR_SUP,"dir %D, invalid process grid size %D, cells %D",ii,user->processGrid[ii],user->cells[ii]);
-        cells_proc[ii] = user->cells[ii]/user->processGrid[ii];
-        ierr = PetscPrintf(comm, "%D) cells_proc=%D procs_node=%D processGrid=%D cells=%D nodeGrid=%D\n",ii,cells_proc[ii],procs_node[ii],user->processGrid[ii],user->cells[ii],user->nodeGrid[ii]);CHKERRQ(ierr);
-      }
-      for (/* */;ii<3;ii++) {
-        procs_node[ii] = cells_proc[ii] = 1;
-        ierr = PetscPrintf(comm, "%D) cells_proc=%D procs_node=%D processGrid=%D cells=%D nodeGrid=%D\n",ii,cells_proc[ii],procs_node[ii],user->processGrid[ii],user->cells[ii],user->nodeGrid[ii]);CHKERRQ(ierr);
-      }
-      PetscInt  pi,pj,pk,ni,nj,nk,ci,cj,ck,pid=0;
-      ierr = PetscMalloc2(size, &sizes, cEnd, &points);CHKERRQ(ierr);
-      for (ii=0,np=1;ii<dim;ii++) np *= cells_proc[ii];
-      for (ii=0;ii<size;ii++) sizes[ii] = np;
-      for (ii=0;ii<cEnd;ii++) points[ii] = -1;
-      for (nk=0;nk<user->nodeGrid[2];nk++) { /* node loop */
-        PetscInt idx_2 = nk*cells_proc[2]*procs_node[2]*user->cells[0]*user->cells[1];
-        for (nj=0;nj<user->nodeGrid[1];nj++) { /* node loop */
-          PetscInt idx_1 = idx_2 + nj*cells_proc[1]*procs_node[1]*user->cells[0];
-          for (ni=0;ni<user->nodeGrid[0];ni++) { /* node loop */
-            PetscInt idx_0 = idx_1 + ni*cells_proc[0]*procs_node[0];
-            for (pk=0;pk<procs_node[2];pk++) { /* process loop */
-              PetscInt idx_22 = idx_0 + pk*cells_proc[2]*user->cells[0]*user->cells[1];
-              for (pj=0;pj<procs_node[1];pj++) { /* process loop */
-                PetscInt idx_11 = idx_22 + pj*cells_proc[1]*user->cells[0];
-                for (pi=0;pi<procs_node[0];pi++) { /* process loop */
-                  PetscInt idx_00 = idx_11 + pi*cells_proc[0];
-                  for (ck=0;ck<cells_proc[2];ck++) { /* cell loop */
-                    PetscInt idx_222 = idx_00 + ck*user->cells[0]*user->cells[1];
-                    for (cj=0;cj<cells_proc[1];cj++) { /* cell loop */
-                      PetscInt idx_111 = idx_222 + cj*user->cells[0];
-                      for (ci=0;ci<cells_proc[0];ci++) { /* cell loop */
-                        PetscInt idx_000 = idx_111 + ci;
-                        points[idx_000] = pid;
-                      }
-                    }
-                  }
-                  pid++;
-                }
-              }
-            }
-          }
-        }
-      }
-      if (pid!=size) SETERRQ2(comm,PETSC_ERR_SUP,"pid %D != size %D",pid,size);
-      /* view */
-      ierr = PetscPrintf(comm, "points:\n");CHKERRQ(ierr);
-      pid=0;
-      for (ck=0;ck<user->cells[2];ck++) {
-        for (cj=0;cj<user->cells[1];cj++) {
-          for (ci=0;ci<user->cells[0];ci++) {
-            ierr = PetscPrintf(comm, "%6D",points[pid++]);CHKERRQ(ierr);
-          }
-          ierr = PetscPrintf(comm, "\n");CHKERRQ(ierr);
-        }
-        ierr = PetscPrintf(comm, "\n");CHKERRQ(ierr);
-      }
-    }
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
-    ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
-  }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -190,16 +113,22 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
-  PetscDS        prob;
+  PetscDS        ds;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 0, trig_u, user);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, NULL, 1, &id, user);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  if (user->strong) {
+    ierr = PetscDSSetResidual(ds, 0, f0_strong_u, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetExactSolution(ds, 0, quadratic_u, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) quadratic_u, NULL, 1, &id, user);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSSetResidual(ds, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetExactSolution(ds, 0, trig_u, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, NULL, 1, &id, user);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -255,22 +184,37 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) u, "potential");CHKERRQ(ierr);
   ierr = DMPlexSetSNESLocalFEM(dm, &user, &user, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions(snes, u);CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   /* Benchmark system */
-  if (user.benchmark) {
+  if (user.nit) {
 #if defined(PETSC_USE_LOG)
-    PetscLogStage stage;
+    PetscLogStage kspstage,pcstage;
 #endif
-    KSP           ksp;
-    Vec           b;
+    KSP       ksp;
+    PC        pc;
+    Mat       A,P;
+    Vec       b;
+    PetscInt  i;
+    ierr = PetscOptionsClearValue(NULL,"-ksp_monitor");CHKERRQ(ierr);
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
-    ierr = VecZeroEntries(u);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes, &A, &P, NULL, NULL);CHKERRQ(ierr);
+    ierr = VecSet(u, 0.0);CHKERRQ(ierr);
     ierr = SNESGetFunction(snes, &b, NULL, NULL);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, u, b);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("KSP Solve only", &stage);CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp, b, u);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes, u, A, P);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("PCSetUp", &pcstage);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(pcstage);CHKERRQ(ierr);
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("KSP Solve only", &kspstage);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(kspstage);CHKERRQ(ierr);
+    for (i=0;i<user.nit;i++) {
+      ierr = VecZeroEntries(u);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp, b, u);CHKERRQ(ierr);
+    }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
@@ -286,10 +230,69 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
+    suffix: strong
+    requires: triangle
+    args: -dm_plex_box_dim 2 -dm_refine 1 -benchmark_it 0 -dmsnes_check \
+          -potential_petscspace_degree 2 -dm_ds_jet_degree 2 -strong
+
+  test:
     suffix: bench
-    nsize: 16
-    args: -dm_plex_box_dim 2 -dm_plex_box_faces 8,8 -ksp_type cg -pc_type gamg -dm_plex_box_simplex 0 -dm_refine 1 \
-          -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple -dm_view \
-          -dm_plex_box_lower 0,0 -dm_plex_box_upper 1,1 -process_grid_size 4,4 -node_grid_size 2,2 -benchmark true
+    nsize: 4
+    args: -dm_plex_box_dim 3 -dm_plex_box_simplex 0 -dm_plex_box_faces 2,2,8 -dm_refine 1 -dm_distribute \
+          -petscpartitioner_type simple -petscpartitioner_simple_process_grid 1,1,2 -petscpartitioner_simple_node_grid 1,1,2 \
+          -potential_petscspace_degree 2 -ksp_type cg -pc_type gamg -benchmark_it 1 -dm_view -snes_rtol 1.e-4
+
+  test:
+    suffix: comparison
+    nsize: 4
+    args: -dm_plex_box_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
+      -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple \
+      -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4
+
+  test:
+    suffix: cuda
+    nsize: 4
+    requires: cuda
+    output_file: output/ex13_comparison.out
+    args: -dm_plex_box_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
+      -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple \
+      -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijcusparse -dm_vec_type cuda
+
+  test:
+    suffix: kokkos_comp
+    nsize: 4
+    requires: kokkos_kernels
+    output_file: output/ex13_comparison.out
+    args: -dm_plex_box_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
+      -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple \
+      -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijkokkos -dm_vec_type kokkos
+
+  test:
+    nsize: 4
+    requires: kokkos_kernels
+    suffix: kokkos
+    args: -dm_plex_box_dim 2 -dm_plex_box_faces 2,8 -dm_distribute -petscpartitioner_type simple -petscpartitioner_simple_process_grid 2,1 \
+          -petscpartitioner_simple_node_grid 2,1 -dm_plex_box_simplex 0 -potential_petscspace_degree 1 -dm_refine 1 -ksp_type cg -pc_type gamg -ksp_norm_type unpreconditioned \
+          -mg_levels_esteig_ksp_type cg -mg_levels_pc_type jacobi -ksp_converged_reason -snes_monitor_short -snes_rtol 1.e-4 -dm_view -dm_mat_type aijkokkos -dm_vec_type kokkos
+
+  test:
+    suffix: aijmkl_comp
+    nsize: 4
+    requires: mkl
+    output_file: output/ex13_comparison.out
+    args: -dm_plex_box_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
+      -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple \
+      -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl
+
+  test:
+    suffix: aijmkl_seq
+    nsize: 1
+    requires: mkl
+    TODO: broken (INDEFINITE PC)
+    args: -dm_plex_box_dim 3 -dm_plex_box_faces 4,4,4 -dm_refine 1 -petscpartitioner_type simple -potential_petscspace_degree 1 -dm_distribute -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_sym_graph 0 -pc_gamg_threshold -1 -pc_gamg_square_graph 10 -pc_gamg_process_eq_limit 400 -pc_gamg_reuse_interpolation -pc_gamg_coarse_eq_limit 10 -mg_levels_esteig_ksp_type cg -mg_levels_pc_type jacobi -ksp_type cg -ksp_norm_type unpreconditioned -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl -dm_vec_type standard
 
 TEST*/

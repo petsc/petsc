@@ -80,6 +80,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
 
   t->num_rhs_splits     = 0;
 
+  t->axpy_pattern       = UNKNOWN_NONZERO_PATTERN;
   *ts = t;
   PetscFunctionReturn(0);
 }

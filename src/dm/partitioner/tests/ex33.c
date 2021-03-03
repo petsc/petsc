@@ -18,8 +18,8 @@ int main(int argc, char **argv)
   PetscBool        pwgts = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   nparts = size;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nparts",&nparts,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-vwgts",&vwgts,NULL);CHKERRQ(ierr);
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
   /* test view from options */
   ierr = PetscPartitionerViewFromOptions(p,NULL,"-part_view");CHKERRQ(ierr);
 
-  /* test partitioning a graph on one process only (not master) */
+  /* test partitioning a graph on one process only (not main) */
   if (rank == size - 1) {
     ierr = PetscPartitionerPartition(p,nparts,nv,vv,vadj,vertexSection,targetSection,partSection,&partition);CHKERRQ(ierr);
   } else {

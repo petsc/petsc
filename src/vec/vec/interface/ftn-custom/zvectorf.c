@@ -186,6 +186,7 @@ PETSC_EXTERN void vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)
   PetscViewer v;
 
   PetscPatchDefaultViewers_Fortran(vin,v);
+  if (!v) {*ierr = PETSC_ERR_SYS; return;}
   *ierr = VecView(*x,v);
 }
 
@@ -369,6 +370,7 @@ PETSC_EXTERN void vecviewfromoptions_(Vec *ao,PetscObject obj,char* type,PetscEr
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = VecViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }
@@ -377,6 +379,7 @@ PETSC_EXTERN void vecstashviewfromoptions_(Vec *ao,PetscObject obj,char* type,Pe
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = VecStashViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

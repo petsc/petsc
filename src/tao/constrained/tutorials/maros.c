@@ -77,7 +77,7 @@ PetscErrorCode main(int argc,char **argv)
 
   /* Initialize TAO,PETSc */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   /* Specify default parameters for the problem, check for command-line overrides */
   ierr = PetscStrncpy(user.name,"HS21",sizeof(user.name));CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-cutername",user.name,sizeof(user.name),&flg);CHKERRQ(ierr);

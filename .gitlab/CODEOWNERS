@@ -6,6 +6,8 @@
 /src/ts/                  @caidao22 @jedbrown @emconsta @stefanozampini @BarrySmith
 src/ts/event/             @abhyshr @caidao22 @BarrySmith
 
+/src/ts/utils/dmplexlandau/ @markadams4 @knepley
+
 /src/dm/impls/plex/       @knepley @wence @haplav @tisaac
 /src/dm/impls/stag/       @psanan @knepley
 
@@ -17,7 +19,7 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 /src/ksp/pc/impls/hpddm/  @prj- @stefanozampini
 /src/ksp/ksp/impls/hpddm/ @prj- @stefanozampini
 
-/src/binding/petsc4py/    @dalcinl @wence @pefarrell @joseroman
+/src/binding/petsc4py/    @dalcinl @wence @pefarrell @joseroman @jedbrown @knepley @psanan
 
 /src/sys/classes/viewer/  @petsc/integrators @haplav
 
@@ -31,3 +33,6 @@ gmakefile*                @krugers @jedbrown @BarrySmith
 .gitlab*.yml              @sbalay @jedbrown
 /lib/petsc                @krugers @sbalay
 
+**/*.kokkos.cxx           @jczhang07 @jedbrown @stefanozampini @markadams4
+**/*.hip.cpp              @jczhang07 @jedbrown @stefanozampini @markadams4 @krugers
+**/*.cu                   @jczhang07 @stefanozampini @markadams4 @karlrupp

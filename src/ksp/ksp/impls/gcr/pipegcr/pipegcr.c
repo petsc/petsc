@@ -78,12 +78,9 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
   PetscReal      rnorm=0.0, delta,*eta,*etas;
 
   PetscFunctionBegin;
-
   /* !!PS We have not checked these routines for use with complex numbers. The inner products
      are likely not defined correctly for that case */
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEGCR has not been implemented for use with complex scalars");
-#endif
+  if (PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
 
   ierr = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
   x = ksp->vec_sol;

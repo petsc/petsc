@@ -3481,7 +3481,7 @@ int main(int argc, char **argv)
       suffix: aij
       args: -matis_localmat_type aij
     test:
-      requires: viennacl
+      requires: viennacl !CUDA_VERSION_11PLUS
       suffix: aijviennacl
       args: -matis_localmat_type aijviennacl
     test:
@@ -3508,7 +3508,7 @@ int main(int argc, char **argv)
       suffix: aij_seqdense
       args: -matis_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
     test:
-      requires: viennacl
+      requires: viennacl !CUDA_VERSION_11PLUS
       suffix: aijviennacl
       args: -matis_localmat_type aijviennacl
     test:
@@ -3535,7 +3535,7 @@ int main(int argc, char **argv)
       suffix: aij_seqdense
       args: -matis_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
     test:
-      requires: viennacl
+      requires: viennacl !CUDA_VERSION_11PLUS
       suffix: aijviennacl
       args: -matis_localmat_type aijviennacl
     test:
@@ -3644,5 +3644,33 @@ int main(int argc, char **argv)
     test:
       suffix: p2p1fetidp_olof_additive
       args: -fetidp_pc_fieldsplit_type additive
+
+  #BDDC with benign trick
+  testset:
+    suffix: q2p1bddc
+    output_file: output/ex69_q2p1fetidp_deluxe.out
+    nsize: 5
+    args: -dm_distribute -dm_plex_box_simplex 0 -dm_plex_separate_marker -dm_refine_pre 1 -dm_mat_type is -dm_view -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -pres_petscdualspace_lagrange_node_endpoints 0 -petscds_jac_pre 0 -snes_error_if_not_converged -ksp_error_if_not_converged -ksp_type cg -ksp_norm_type natural -pc_type bddc -pc_bddc_benign_trick -pc_bddc_nonetflux -pc_bddc_detect_disconnected -pc_bddc_vertex_size 2 -pc_bddc_coarse_redundant_pc_type svd -pc_bddc_use_qr_single
+    test:
+      requires: double
+      suffix: benign_card
+      # no native support for saddle point factorizations from PETSc
+      args: -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd
+    test:
+      requires: mumps double
+      suffix: benign_deluxe_mumps
+      args: -pc_bddc_use_deluxe_scaling -pc_bddc_deluxe_zerorows -sub_schurs_mat_solver_type mumps -sub_schurs_mat_mumps_icntl_14 1000
+    test:
+      requires: mumps double
+      suffix: benign_deluxe_adaptive_mumps
+      args: -pc_bddc_adaptive_threshold 1.7 -pc_bddc_use_deluxe_scaling -pc_bddc_deluxe_zerorows -sub_schurs_mat_solver_type mumps -sub_schurs_mat_mumps_icntl_14 1000
+    test:
+      requires: mkl_pardiso double
+      suffix: benign_deluxe_mkl
+      args: -pc_bddc_use_deluxe_scaling -pc_bddc_deluxe_zerorows -sub_schurs_mat_solver_type mkl_pardiso -snes_rtol 1.e-7
+    test:
+      requires: mkl_pardiso double
+      suffix: benign_deluxe_adaptive_mkl
+      args: -pc_bddc_adaptive_threshold 1.7 -pc_bddc_use_deluxe_scaling -pc_bddc_deluxe_zerorows -sub_schurs_mat_solver_type mkl_pardiso -snes_rtol 1.e-7
 
 TEST*/

@@ -1,0 +1,23 @@
+-prefix_push p1_
+-options_file_yaml ex47-opt.yml
+-prefix_pop
+
+-prefix_push p1_
+-options_file_yaml ex47-opt.yml
+-prefix_pop
+
+-prefix_push p2_
+-options_file_yaml ex47-opt.yml
+-prefix_pop
+
+-prefix_push p3_
+-options_string_yaml "name: value"
+-prefix_pop
+
+-prefix_push p3_
+-options_string_yaml "name: value"
+-prefix_pop
+
+-prefix_push p4_
+-options_string_yaml "name: value"
+-prefix_pop

@@ -26,8 +26,6 @@ PetscBag Object:  ParameterBag (pbag_) contains parameters for simulations of to
   choose = THE_OTHER; (EnumeratedChoices) Express yourself by choosing among enumerated things
 The value of rho after loading is: 1.000000
 #PETSc Option Table entries:
--options_file_yaml bag.yml
--options_view
 -pbag_bool_array yes,0,false
 -pbag_choose THE_OTHER
 -pbag_do_output no

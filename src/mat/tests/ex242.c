@@ -5,19 +5,20 @@ static char help[] = "Tests ScaLAPACK interface.\n\n";
 
 int main(int argc,char **args)
 {
-  Mat            Cdense,Caij,B,C,Ct;
+  Mat            Cdense,Caij,B,C,Ct,Asub;
   Vec            d;
   PetscInt       i,j,M = 5,N,mb = 2,nb,nrows,ncols,mloc,nloc;
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
   PetscErrorCode ierr;
   PetscScalar    *v;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank,color;
   PetscReal      Cnorm;
   PetscBool      flg,mats_view=PETSC_FALSE;
+  MPI_Comm       subcomm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
   N    = M;
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
@@ -170,12 +171,30 @@ int main(int argc,char **args)
     ierr = MatDestroy(&CC);CHKERRQ(ierr);
   }
 
+  /* Test MatCreate() on subcomm */
+  color = rank%2;
+  ierr = MPI_Comm_split(PETSC_COMM_WORLD,color,0,&subcomm);CHKERRMPI(ierr);
+  if (color==0) {
+    ierr = MatCreate(subcomm,&Asub);CHKERRQ(ierr);
+    ierr = MatSetType(Asub,MATSCALAPACK);CHKERRQ(ierr);
+    mloc = PETSC_DECIDE;
+    ierr = PetscSplitOwnershipEqual(subcomm,&mloc,&M);CHKERRQ(ierr);
+    nloc = PETSC_DECIDE;
+    ierr = PetscSplitOwnershipEqual(subcomm,&nloc,&N);CHKERRQ(ierr);
+    ierr = MatSetSizes(Asub,mloc,nloc,M,N);CHKERRQ(ierr);
+    ierr = MatScaLAPACKSetBlockSizes(Asub,mb,nb);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(Asub);CHKERRQ(ierr);
+    ierr = MatSetUp(Asub);CHKERRQ(ierr);
+    ierr = MatDestroy(&Asub);CHKERRQ(ierr);
+  }
+
   ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
   ierr = MatDestroy(&Caij);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&Ct);CHKERRQ(ierr);
   ierr = VecDestroy(&d);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRMPI(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

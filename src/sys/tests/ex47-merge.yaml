@@ -1,0 +1,24 @@
+---
+
+$$0: &SMALL  { r: 1 }
+$$1: &BIG    { r: 100 }
+$$2: &LEFT   { x: -1, y: -2 }
+$$3: &RIGHT  { x:  1, y:  2 }
+
+map1: # Explicit keys
+  r: 10
+  x: 1
+  y: 2
+
+map2: # Merge one map
+  r: 10
+  <<: *RIGHT
+
+map3: # Merge multiple maps
+  <<: *BIG
+  <<: *RIGHT
+
+map4: # Override
+  <<: [ *BIG, *LEFT, *SMALL ]
+  <<: *RIGHT
+  x: 0

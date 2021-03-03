@@ -49,6 +49,7 @@ import graph
 
 import os
 import re
+import sys
 import platform
 from functools import reduce
 # workarround for python2.2 which does not have pathsep
@@ -107,7 +108,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.createChildren()
     # Create argDB for user specified options only
     self.clArgDB = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.clArgs])
-    self.defineDict = {}
     return
 
   def __getstate__(self):
@@ -247,7 +247,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputMakeRuleHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeRuleHeader)
     if self.header:
-      self.outputHeader(self.header)
+      self.outputHeader(self.header, petscconf=True)
       self.log.write('**** ' + self.header + ' ****\n')
       self.outputHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
@@ -345,7 +345,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.getChild(moduleName)
     return
 
-  def require(self, moduleName, depChild, keywordArgs = {}):
+  def require(self, moduleName, depChild = None, keywordArgs = {}):
     '''Return a child from moduleName, creating it if necessary and making sure it runs before depChild'''
     config = self.getChild(moduleName, keywordArgs)
     if not config is depChild:
@@ -665,7 +665,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.actions.addArgument('Framework', 'RDict update', 'Substitutions were stored in RDict with parent '+str(argDB.parentDirectory))
     return
 
-  def outputDefine(self, f, name, value = None):
+  def outputDefine(self, f, name, value = None, condition = None):
     '''Define "name" to "value" in the configuration header'''
     # we need to keep the libraries in this list and simply not print them at the end
     # because libraries.havelib() is used to find library in this list we had to list the libraries in the
@@ -673,9 +673,11 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # two packages have LIB in there name so we have to include them here
     if (name.startswith('PETSC_HAVE_LIB') and not name in ['PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG']) or (name.startswith('PETSC_HAVE_') and name.endswith('LIB')): return
     if value:
-      f.write('#define '+name+' '+str(value)+'\n')
-    else:
-      f.write('/* #undef '+name+' */\n')
+      if (condition):
+        f.write('#if (%s)\n' % condition)
+      f.write('#define %s %s\n' % (name,value))
+      if (condition):
+        f.write('#endif\n')
     return
 
   def outputMakeMacro(self, f, name, value):
@@ -719,7 +721,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if prefix:         prefix = prefix+'_'
     return prefix+name
 
-  def processDefines(self, child, prefix = None):
+  def processDefines(self, defineDict, child, prefix = None):
     '''If the child contains a dictionary named "defines", the entries are output as defines in the config header.
     The prefix to each define is calculated as follows:
     - If the prefix argument is given, this is used, otherwise
@@ -731,12 +733,15 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for pair in child.defines.items():
       if not pair[1]: continue
       item = (self.getFullDefineName(child, pair[0], prefix), pair[1])
-      self.defineDict.update({item[0] : item})
+      defineDict[item[0]] = item
     return
 
-  def outputDefines(self, f):
-    for item in sorted(self.defineDict):
-      self.outputDefine(f, *self.defineDict[item])
+  def outputDefines(self, defineDict, f, petscconf=False):
+    for item in sorted(defineDict):
+      cond = None
+      if petscconf and 'HIP_PLATFORM' in item:
+        cond = '!defined(__HIP__)'
+      self.outputDefine(f, *defineDict[item], condition=cond)
 
   def outputPkgVersion(self, f, child):
     '''If the child contains a tuple named "version_tuple", the entries are output in the config package header.'''
@@ -830,7 +835,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       f.close()
     return
 
-  def outputHeader(self, name, prefix = None):
+  def processPackageListDefine(self, defineDict):
+    key = 'PETSC_HAVE_PACKAGES'
+    pkglist = sorted(set([pkg.pkgname.lower() for pkg in self.packages]))
+    str = '":' + ':'.join(pkglist) + ':"'
+    defineDict[key] = (key, str)
+
+  def outputHeader(self, name, prefix = None, petscconf = False):
     '''Write the configuration header'''
     if hasattr(name, 'close'):
       f = name
@@ -847,10 +858,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     f.write('#define '+guard+'\n\n')
     if hasattr(self, 'headerTop'):
       f.write(str(self.headerTop)+'\n')
-    self.processDefines(self, prefix)
+    defineDict = {}
+    self.processDefines(defineDict, self, prefix)
     for child in self.childGraph.vertices:
-      self.processDefines(child, prefix)
-    self.outputDefines(f)
+      self.processDefines(defineDict, child, prefix)
+    if (petscconf):
+      self.processPackageListDefine(defineDict)
+    self.outputDefines(defineDict, f,petscconf)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif\n')

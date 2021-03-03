@@ -327,7 +327,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
     eventLog->eventInfo[e].mpe_id_begin = beginID;
     eventLog->eventInfo[e].mpe_id_end   = endID;
 
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
     if (!rank) {
       ierr = PetscLogMPEGetRGBColor(&color);CHKERRQ(ierr);
       MPE_Describe_state(beginID,endID,str,(char*)color);
@@ -362,7 +362,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
 
   Level: developer
 
-.seealso: PetscEventPerfLogDeactivate()
+.seealso: PetscEventPerfLogDeactivate(), PetscEventPerfLogDeactivatePop(), PetscEventPerfLogDeactivatePush()
 @*/
 PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog,PetscLogEvent event)
 {
@@ -394,12 +394,76 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog,PetscLogEven
 
   Level: developer
 
-.seealso: PetscEventPerfLogActivate()
+.seealso: PetscEventPerfLogActivate(), PetscEventPerfLogDeactivatePop(), PetscEventPerfLogDeactivatePush()
 @*/
 PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog,PetscLogEvent event)
 {
   PetscFunctionBegin;
   eventLog->eventInfo[event].active = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscEventPerfLogDeactivatePush - Indicates that a particular event should not be logged.
+
+  Not Collective
+
+  Input Parameters:
++ eventLog - The PetscEventPerfLog
+- event    - The event
+
+   Usage:
+.vb
+      PetscEventPerfLogDeactivatePush(log, VEC_SetValues);
+        [code where you do not want to log VecSetValues()]
+      PetscEventPerfLogDeactivatePop(log, VEC_SetValues);
+        [code where you do want to log VecSetValues()]
+.ve
+
+  Note:
+  The event may be either a pre-defined PETSc event (found in
+  include/petsclog.h) or an event number obtained with PetscEventRegLogRegister().
+
+  Level: developer
+
+.seealso: PetscEventPerfLogDeactivate(), PetscEventPerfLogActivate(), PetscEventPerfLogDeactivatePop()
+@*/
+PetscErrorCode PetscEventPerfLogDeactivatePush(PetscEventPerfLog eventLog,PetscLogEvent event)
+{
+  PetscFunctionBegin;
+  eventLog->eventInfo[event].depth++;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscEventPerfLogDeactivatePop - Indicates that a particular event should  be logged.
+
+  Not Collective
+
+  Input Parameters:
++ eventLog - The PetscEventPerfLog
+- event    - The event
+
+   Usage:
+.vb
+      PetscEventPerfLogDeactivatePush(log, VEC_SetValues);
+        [code where you do not want to log VecSetValues()]
+      PetscEventPerfLogDeactivatePop(log, VEC_SetValues);
+        [code where you do want to log VecSetValues()]
+.ve
+
+  Note:
+  The event may be either a pre-defined PETSc event (found in
+  include/petsclog.h) or an event number obtained with PetscEventRegLogRegister().
+
+  Level: developer
+
+.seealso: PetscEventPerfLogDeactivate(), PetscEventPerfLogActivate(), PetscEventPerfLogDeactivatePush()
+@*/
+PetscErrorCode PetscEventPerfLogDeactivatePop(PetscEventPerfLog eventLog,PetscLogEvent event)
+{
+  PetscFunctionBegin;
+  eventLog->eventInfo[event].depth--;
   PetscFunctionReturn(0);
 }
 
@@ -626,7 +690,7 @@ PetscErrorCode PetscLogEventSynchronize(PetscLogEvent event,MPI_Comm comm)
   if (eventLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
 
   PetscTimeSubtract(&time);
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
   PetscTimeAdd(&time);
   eventLog->eventInfo[event].syncTime += time;
   PetscFunctionReturn(0);
@@ -859,7 +923,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event,int t,PetscObject o1,
   if (!petsc_tracetime) PetscTime(&petsc_tracetime);
 
   petsc_tracelevel++;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventRegLog(stageLog,&eventRegLog);CHKERRQ(ierr);
@@ -891,7 +955,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
 
   PetscFunctionBegin;
   petsc_tracelevel--;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventRegLog(stageLog,&eventRegLog);CHKERRQ(ierr);

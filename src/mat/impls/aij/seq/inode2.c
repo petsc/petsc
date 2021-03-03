@@ -64,6 +64,7 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   PetscFunctionBegin;
   no_inode             = PETSC_FALSE;
   no_unroll            = PETSC_FALSE;
+  b->inode.checked     = PETSC_FALSE;
   b->inode.node_count  = 0;
   b->inode.size        = NULL;
   b->inode.limit       = 5;
@@ -106,8 +107,3 @@ PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat A,MatOption op,PetscBool flg)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-

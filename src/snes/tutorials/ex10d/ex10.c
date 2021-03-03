@@ -119,8 +119,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr =  PetscInitialize(&argc,&argv,"options.inf",help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   /* The current input file options.inf is for 2 proc run only */
   if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example currently runs on 2 procs only.");
@@ -217,7 +217,7 @@ int main(int argc,char **argv)
     application-to-PETSc mappings. Each vertex also gets a local index (stored in the
     locInd array).
   */
-  ierr    = MPI_Scan(&user.Nvlocal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr    = MPI_Scan(&user.Nvlocal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   rstart -= user.Nvlocal;
   ierr    = PetscMalloc1(user.Nvlocal,&pordering);CHKERRQ(ierr);
 

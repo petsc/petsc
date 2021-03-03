@@ -16,20 +16,22 @@
 #define CHKERRCUDA(cerr) \
 do { \
    if (PetscUnlikely(cerr)) { \
-      const char *name  = cudaGetErrorName(cerr); \
-      const char *descr = cudaGetErrorString(cerr); \
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"cuda error %d (%s) : %s",(int)cerr,name,descr); \
+     const char *name  = cudaGetErrorName(cerr); \
+     const char *descr = cudaGetErrorString(cerr); \
+     if (cerr == cudaErrorMemoryAllocation) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"CUDA error %d (%s) : %s. Reports alloc failed; this indicates the GPU has run out resources",(int)cerr,name,descr); \
+     else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU,"CUDA error %d (%s) : %s",(int)cerr,name,descr); \
    } \
 } while (0)
 #else
-#define CHKERRCUDA(cerr) do {if (PetscUnlikely(cerr)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"cuda error %d",(int)cerr);} while (0)
+#define CHKERRCUDA(cerr) do {if (PetscUnlikely(cerr)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_GPU,"CUDA error %d",(int)cerr);} while (0)
 #endif
 
 #define CHKERRCUBLAS(stat) \
 do { \
    if (PetscUnlikely(stat)) { \
-      const char *name = PetscCUBLASGetErrorName(stat); \
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"cuBLAS error %d (%s)",(int)stat,name); \
+     const char *name = PetscCUBLASGetErrorName(stat);                     \
+     if (((stat == CUBLAS_STATUS_NOT_INITIALIZED) || (stat == CUBLAS_STATUS_ALLOC_FAILED)) && PetscCUDAInitialized) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuBLAS error %d (%s). Reports not initialized or alloc failed; this indicates the GPU has run out resources",(int)stat,name); \
+     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuBLAS error %d (%s)",(int)stat,name); \
    } \
 } while (0)
 

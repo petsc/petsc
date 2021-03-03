@@ -211,7 +211,7 @@ PetscErrorCode VecCreate_CUDA(Vec v)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = VecSetType(v,VECSEQCUDA);CHKERRQ(ierr);
   } else {
@@ -326,6 +326,53 @@ PetscErrorCode  VecCreateMPICUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,
   PetscFunctionReturn(0);
 }
 
+extern MPI_Op MPIU_MAXINDEX_OP, MPIU_MININDEX_OP;
+
+PetscErrorCode VecMax_MPICUDA(Vec xin,PetscInt *idx,PetscReal *z)
+{
+  PetscErrorCode ierr;
+  PetscReal      work;
+
+  PetscFunctionBegin;
+  ierr = VecMax_SeqCUDA(xin,idx,&work);CHKERRQ(ierr);
+  if (!idx) {
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  } else {
+    PetscReal work2[2],z2[2];
+    PetscInt  rstart;
+    rstart   = xin->map->rstart;
+    work2[0] = work;
+    work2[1] = *idx + rstart;
+    ierr     = MPIU_Allreduce(work2,z2,2,MPIU_REAL,MPIU_MAXINDEX_OP,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    *z       = z2[0];
+    *idx     = (PetscInt)z2[1];
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecMin_MPICUDA(Vec xin,PetscInt *idx,PetscReal *z)
+{
+  PetscErrorCode ierr;
+  PetscReal      work;
+
+  PetscFunctionBegin;
+  ierr = VecMin_SeqCUDA(xin,idx,&work);CHKERRQ(ierr);
+  if (!idx) {
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  } else {
+    PetscReal work2[2],z2[2];
+    PetscInt  rstart;
+
+    ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
+    work2[0] = work;
+    work2[1] = *idx + rstart;
+    ierr = MPIU_Allreduce(work2,z2,2,MPIU_REAL,MPIU_MININDEX_OP,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    *z   = z2[0];
+    *idx = (PetscInt)z2[1];
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
 {
   PetscErrorCode ierr;
@@ -365,6 +412,11 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = NULL;
     V->ops->restorelocalvectorread = NULL;
     V->ops->getarraywrite          = NULL;
+    V->ops->max                    = VecMax_MPI;
+    V->ops->min                    = VecMin_MPI;
+    /* default random number generator */
+    ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(PETSCRANDER48,&V->defaultrandtype);CHKERRQ(ierr);
   } else {
     V->ops->dotnorm2               = VecDotNorm2_MPICUDA;
     V->ops->waxpy                  = VecWAXPY_SeqCUDA;
@@ -398,6 +450,15 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = VecGetLocalVector_SeqCUDA;
     V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUDA;
     V->ops->getarraywrite          = VecGetArrayWrite_SeqCUDA;
+    V->ops->getarray               = VecGetArray_SeqCUDA;
+    V->ops->restorearray           = VecRestoreArray_SeqCUDA;
+    V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqCUDA;
+    V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqCUDA;
+    V->ops->max                    = VecMax_MPICUDA;
+    V->ops->min                    = VecMin_MPICUDA;
+    /* default random number generator */
+    ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(PETSCCURAND,&V->defaultrandtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

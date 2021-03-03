@@ -69,7 +69,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   dd->p = p;
   if (da->dim == 2) {
     PetscMPIInt size;
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRMPI(ierr);
     if ((dd->m > 0) && (dd->n < 0)) {
       dd->n = size/dd->m;
       if (dd->n*dd->m != size) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in X direction not divisible into comm size %d",m,size);
@@ -733,9 +733,10 @@ PetscErrorCode  DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt
 -    refine_z - ratio of fine grid to coarse in z direction (2 by default)
 
   Options Database:
-+  -da_refine_x - refinement ratio in x direction
-.  -da_refine_y - refinement ratio in y direction
--  -da_refine_z - refinement ratio in z direction
++  -da_refine_x refine_x - refinement ratio in x direction
+.  -da_refine_y rafine_y - refinement ratio in y direction
+.  -da_refine_z refine_z - refinement ratio in z direction
+-  -da_refine <n> - refine the DMDA object n times when it is created.
 
   Level: intermediate
 

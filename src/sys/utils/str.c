@@ -432,7 +432,7 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
 
    Input Parameters:
 +  s - pointer to string to be added to at end
-.  t - string to be added to
+.  t - string to be added
 -  n - length of the original allocated string
 
    Level: intermediate

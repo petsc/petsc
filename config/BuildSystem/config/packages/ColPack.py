@@ -30,5 +30,4 @@ class Configure(config.package.CMakePackage):
       args.append('-DENABLE_OPENMP=ON')
     else:
       args.append('-DENABLE_OPENMP=OFF')
-    args.append('-DCMAKE_INSTALL_LIBDIR:STRING="lib"')
     return args

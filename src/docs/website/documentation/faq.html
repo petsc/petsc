@@ -165,6 +165,8 @@ Error in first MPI collective call, this indicates a network problem, it could b
         <li><a href="#newton">Why is Newton's method (SNES) not converging, or converges slowly?</a></li>
         <li><a href="#kspdiverged">Why is the linear solver (KSP) not converging, or converges slowly?</a></li>
         <li><a href="#typebound">I get the error message:Actual argument at (1) to assumed-type dummy is of derived type with type-bound or FINAL procedures</li>
+        <li><a href="#crashvecdestroy">In C++ I get a crash on VecDestroy() (or some other PETSc object)  at the end of the program</li>
+
       </ul>
 
       <h4><a href="#debugging">Debugging</a></h4>
@@ -465,7 +467,7 @@ Error in first MPI collective call, this indicates a network problem, it could b
       except KSPIBCGS, run all their vector operations on the GPU; thus, for
       example, Jacobi preconditioned Krylov methods run completely on the GPU.
       Preconditioners are a problem; we could do with some help for these. The
-      example <a href="https://www.mcs.anl.gov/petsc/petsc-master/src/snes/tutorials/ex47cu.cu.html">src/snes/tutorials/ex47cu.cu</a>
+      example <a href="https://www.mcs.anl.gov/petsc/petsc-main/src/snes/tutorials/ex47cu.cu.html">src/snes/tutorials/ex47cu.cu</a>
       demonstates how the nonlinear function evaluation can be done on the
       GPU.
 
@@ -908,7 +910,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       Julia package.</p>
 
       <p>For other formats, either adapt one of the above libraries or see the
-      examples in src/mat/tests, specifically ex72.c or ex78.c. 
+      examples in src/mat/tests, specifically ex72.c or ex78.c.
       You will likely need to modify the code slightly to match your
       required ASCII format. Note: Never read or write in parallel an ASCII
       matrix file, instead for reading: read in sequentially with a standalone
@@ -960,7 +962,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <h3><a name="makefiles">How do I compile and link may own PETSc application codes and can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></h3>
 
       See the <a href="https://docs.petsc.org/en/latest/manual/getting_started/#writing-application-codes-with-petsc">section of the users manual</a> on writing application codes with PETSc. This provides a
-      simple makefile that can be used to compiler user code. You are free to modify this makefile or completely replace it with your own makefile. 
+      simple makefile that can be used to compiler user code. You are free to modify this makefile or completely replace it with your own makefile.
 
       <h3><a name="cmake">Can I use CMake to build my own project that depends on PETSc?</a></h3>
 
@@ -1038,7 +1040,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <ol>
         <li>
           -snes_lag_preconditioner <lag> - (SNESSetLagPreconditioner) how often the preconditioner is rebuilt. Note: if you are lagging the Jacobian the system will know the
-                                           the matrix has not changed and will not recompute the (same) preconditioner. 
+                                           the matrix has not changed and will not recompute the (same) preconditioner.
         </li>
         <li>
           -snes_lag_preconditioner_persists - Preconditioner lags through multiple SNES solves
@@ -1046,8 +1048,8 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       </ol>
 
       By using KSPMonitorSet() and/or SNESMonitorSet() one can provide code that monitors the convergence rate and automatically triggers an update of the Jacobian or preconditioner based on decreasing convergence of the iterative method. For example if the number of SNES iterations doubles one might trigger a new computation of the Jacobian.
-      
-      Experimentation is the only general purpose way to determine which approach is best for your problem. It is also important to experiment on your true problem at the scale you will be solving the problem since the performance benifits depend on the exact problem and and problem size.
+
+      Experimentation is the only general purpose way to determine which approach is best for your problem. It is also important to experiment on your true problem at the scale you will be solving the problem since the performance benefits depend on the exact problem and and problem size.
 
 <h3><a name="jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided
              with <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunction.html">SNESSetFunction()?</a></h3>
@@ -1315,8 +1317,8 @@ PETSC_COMM_WORLD = NewComm;
         the solver passes an infeasible (out of domain) solution or state to your routines.
       </p>
 
-      <p> If it occurs for DAEs, it is important to insure the algebraic 
-        constraints are well satisfied, which can prevent "breakdown" later. 
+      <p> If it occurs for DAEs, it is important to insure the algebraic
+        constraints are well satisfied, which can prevent "breakdown" later.
         Thus, one can try using a tight tolerance for SNES(), using a dicrect
         solver when possible, and reducing the timestep (or tightening TS
         tolerances for adaptive time stepping).
@@ -1343,7 +1345,7 @@ PETSC_COMM_WORLD = NewComm;
     </ol>
 
      <h3><a name="matreassembly">How can I assemble a bunch of similar matrices?</a></h3>
-     
+
      <p>You can first add the values common to all the matrices, then use MatStoreValues() to stash the common values.
         Each iteration you call MatRetrieveValues(), then set the unique values in a matrix and assemble.</p>
 
@@ -1745,7 +1747,7 @@ PETSC_COMM_WORLD = NewComm;
             <li>Perhaps change the formulation of the problem to produce more friendly algebraic equations.</li>
           </ul>
         </li>
-        
+
         <li>
           Change the units (nondimensionalization), boundary condition scaling,
           or formulation so that the matrix is better conditioned. See <a href="https://en.wikipedia.org/wiki/Buckingham_π_theorem">https://en.wikipedia.org/wiki/Buckinghamπ_theorem</a>
@@ -1835,6 +1837,24 @@ PETSC_COMM_WORLD = NewComm;
 
   </pre>
 
+      <h3><a name="crashvecdestroy">In C++ I get a crash on VecDestroy() (or some other PETSc object)  at the end of the program</a></h3>
+
+      This can happen when the destructor for a C++ class is automatically called at the end of the program after PetscFinalize(). Use the code</p>
+
+<pre>
+    main()
+    {
+        PetscInitialize()
+        {
+          your variables
+          your code
+
+           ...   /* all your destructors are called here automatically by C++ so they work correctly */
+        }
+        PetscFinalize()
+        return 0
+     }
+  </pre>
       <hr>
 
       <h2><a name="debugging">Debugging</a></h2>
@@ -1851,6 +1871,8 @@ PETSC_COMM_WORLD = NewComm;
       </p>
 
       <h3><a name="start_in_debugger-doesnotwork">How do I debug if -start_in_debugger does not work on my machine?</a></h3>
+
+      <p> The script  <a href="https://github.com/Azrael3000/tmpi">https://github.com/Azrael3000/tmpi</a> can be used with OpenMPI to run multiple MPI ranks in the debugger using tmux.</p>
 
       <p> On newer Mac OSX machines - one has to be in admin group to be able to use debugger</p>
 
@@ -1971,7 +1993,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
 
       <p>
         Sometimes it can mean an argument to a function is invalid. In Fortran
-        this may be caused by forgeting to list an argument in the call,
+        this may be caused by forgetting to list an argument in the call,
         especially the final ierr.
       </p>
 
@@ -1985,31 +2007,44 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         crash to determine exactly what line is causing the problem.
       </p>
 
+      <p>
       If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X machines
-      - you can try using <a href="http://valgrind.org/">http://valgrind.org</a>
-      to look for memory corruption. - Make sure valgrind is installed
+      - you can use <a href="https://valgrind.org/">http://valgrind.org</a>.
+      </p>
 
-      You might also consider using <a href="http://drmemory.org">http://drmemory.org</a> which has
-      support for GNU/Linux, Apple Mac OS and Microsoft Windows machines. (Note we haven't tried this ourselves).
+     <p style="color:rgb(255,0,0);">Follow the instructions below.</p>
 
       <ul>
-        <li>Recommend building PETSc with <code>--download-mpich --with-debugging</code> [debugging is enabled by default]</li>
-        <li>Compile application code with this build of PETSc</li>
-        <li>run with valgrind using: <code>${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME  PROGRAMOPTIONS</code></li>
-        <li>or invoke valgrind directly with: <code>mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</code></li>
+        <li><code>configure</code> PETSc with <code>--download-mpich --with-debugging</code>.</li>
+        <li>On macOS you need to
+          <ul>
+            <li>use valgrind from <a href="https://github.com/LouisBrunner/valgrind-macos">https://github.com/LouisBrunner/valgrind-macos</a>.
+            Follow the Usage instructions in the README.md on that page (no need to clone the repository).</li>
+            <li>use the additional <code>./configure</code> options <code>--download-fblaslapack</code> or <code>--download-f2cblaslapack</code></li>
+            <li>use the additional valgrind option <code>--dsymutil=yes</code></li>
+          </ul>
+        </li>
+        <li>Compile your application code with this build of PETSc.</li>
+        <li>Run with valgrind
+          <ul>
+            <li>using: <code>${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME  PROGRAMOPTIONS</code></li>
+            <li>or with: <code>mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 --suppressions=${PETSC_DIR}/lib/petsc/bin/maint/petsc-val.supp --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</code></li>
+          </ul>
+        </li>
       </ul>
 
       Notes:
 
       <ul>
         <li>option <code>--with-debugging</code> enables valgrind to give stack trace with additional source-file:line-number info.</li>
-        <li>option <code>--download-mpich</code> gives valgrind clean MPI - hence the recommendation.</li>
-        <li>Wrt Other MPI impls, Open MPI should also work. MPICH1 will not work.</li>
-        <li>if <code>--download-mpich</code> is used - mpiexec will be in PETSC_ARCH/bin</li>
-        <li><code>--log-file=valgrind.log.%p</code> option tells valgrind to store the output from each proc in a different file [as %p i.e PID, is different for each MPI proc].</li>
-        <li>On Apple you need the additional valgrind option <code>--dsymutil=yes</code></li>
+        <li>option <code>--download-mpich</code> is valgrind clean, other MPI builds are not valgrind clean. </li>
+        <li>when <code>--download-mpich</code> is used - mpiexec will be in PETSC_ARCH/bin</li>
+        <li><code>--log-file=valgrind.log.%p</code> option tells valgrind to store the output from each process in a different file [as %p i.e PID, is different for each MPI process.</li>
         <li>memcheck will not find certain array access that violate static array declarations so if memcheck runs clean you can try the <code>--tool=exp-ptrcheck</code> instead.</li>
       </ul>
+
+       You might also consider using <a href="http://drmemory.org">http://drmemory.org</a> which has
+       support for GNU/Linux, Apple Mac OS and Microsoft Windows machines. (Note we haven't tried this ourselves).
 
       <h3><a name="zeropivot">What does <code>Detected zero pivot in LU factorization</code> mean?</a></h3>
 
@@ -2033,7 +2068,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         an error in the code that generates the matrix.
       </p>
 
-      <h3><a name="xwindows">You create <code>Draw</code> windows or <code>ViewerDraw</code> windows or use options <code>-ksp_monitor_lg_residualnorm</code> or <code>-snes_monitor_lg_residualnorm</code> and the program seems to run OK but windows never open.</a></h3>
+      <h3><a name="xwindows">You create <code>Draw</code> windows or <code>ViewerDraw</code> windows or use options <code>-ksp_monitor draw::draw_lg</code> or <code>-snes_monitor draw::draw_lg</code> and the program seems to run OK but windows never open.</a></h3>
 
       The libraries were compiled without support for X windows. Make sure that
       ./configure was run with the option <code>--with-x</code>
@@ -2175,7 +2210,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       This process can be as follows:
 
       <ul>
-        <li>get petsc development (master branch in git) sources:
+        <li>get petsc development (main branch in git) sources:
           <ul>
             <li><code>git clone https://gitlab.com/petsc/petsc.git</code></li>
           </ul>

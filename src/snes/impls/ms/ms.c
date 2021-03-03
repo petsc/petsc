@@ -502,7 +502,6 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes,SNESMSType mstype)
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",mstype);
-  PetscFunctionReturn(0);
 }
 
 /*@C

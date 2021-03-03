@@ -19,7 +19,7 @@ PetscErrorCode  PetscSysFinalizePackage(void)
 
   PetscFunctionBegin;
   if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Seq_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Seq_keyval);CHKERRMPI(ierr);
   }
   PetscSysPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);

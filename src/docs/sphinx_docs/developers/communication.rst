@@ -1,6 +1,6 @@
-============================================
-Communication Channels for PETSc Development
-============================================
+===========================================
+Communication Channels for PETSc Developers
+===========================================
 
 GitLab
 ======
@@ -14,7 +14,7 @@ and more. Also see :doc:`integration`.
 Mailing Lists
 =============
 
-Please consider joining the `mailing lists <https://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html>`__.
+Please consider joining the :ref:`mailing lists <doc_mail>`.
 
 Comments and questions regarding PETSc design and development should go to petsc-dev@mcs.anl.gov.
 
@@ -34,7 +34,7 @@ PETSc users communicate to the PETSc team via the mailing lists
 petsc-maint@mcs.anl.gov and petsc-users@mcs.anl.gov. When responding there,
 please follow these guidelines:
 
-* Be polite and behave according to the `Code of Conduct <https://gitlab.com/petsc/petsc/-/blob/master/CODE_OF_CONDUCT.md>`_.
+* Be polite and behave according to the `Code of Conduct <https://gitlab.com/petsc/petsc/-/blob/main/CODE_OF_CONDUCT.md>`_.
 * Address the person by name (when you can determine a name).
 * Apologize for the problem when it is appropriate.
 * Thank the person for their patience if it is more than six hours since the report came in.

@@ -46,6 +46,10 @@ PetscErrorCode PetscMkdir(const char dir[])
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_VALGRIND_DARWIN)
+#include "apple_fdir.c"
+#endif
+
 /*@C
   PetscMkdtemp - Create a folder with a unique name given a filename template.
 

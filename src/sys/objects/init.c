@@ -59,6 +59,7 @@ PetscBool   PetscBeganKokkos              = PETSC_FALSE;
 #endif
 
 PetscBool   use_gpu_aware_mpi             = PETSC_TRUE;
+PetscBool   PetscCreatedGpuObjects        = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
@@ -128,7 +129,7 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
   char           version[256];
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if (!rank) {
     char        arch[10];
     int         err;
@@ -136,7 +137,7 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
     ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
     if (filename) {
       ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
     } else {
@@ -168,7 +169,7 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
   int            err;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n");CHKERRQ(ierr);
@@ -265,18 +266,6 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 PETSC_INTERN PetscBool   PetscObjectsLog;
 #endif
 
-void PetscMPI_Comm_eh(MPI_Comm *comm, PetscMPIInt *err, ...)
-{
-  if (PetscUnlikely(*err)) {
-    PetscMPIInt len;
-    char        errstring[MPI_MAX_ERROR_STRING];
-
-    MPI_Error_string(*err,errstring,&len);
-    PetscError(MPI_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_MPI_ERROR_CODE,PETSC_ERROR_INITIAL,"Internal error in MPI: %s",errstring);
-  }
-  return;
-}
-
 /* CUPM stands for 'CUDA Programming Model', which is implemented in either CUDA or HIP.
    Use the following macros to define CUDA/HIP initialization related vars/routines.
  */
@@ -364,7 +353,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
 #endif
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
 #if !defined(PETSC_HAVE_THREADSAFETY)
   if (!(PETSC_RUNNING_ON_VALGRIND)) {
@@ -488,7 +477,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     if (hasHelpIntro) {
       ierr = PetscOptionsDestroyDefault();CHKERRQ(ierr);
       ierr = PetscFreeMPIResources();CHKERRQ(ierr);
-      ierr = MPI_Finalize();CHKERRQ(ierr);
+      ierr = MPI_Finalize();CHKERRMPI(ierr);
       exit(0);
     }
   }
@@ -499,7 +488,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-on_error_abort",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
-    ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_ARE_FATAL);CHKERRMPI(ierr);
     ierr = PetscPushErrorHandler(PetscAbortErrorHandler,NULL);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
@@ -508,17 +497,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-mpi_return_on_error",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
-    ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
-  }
-  /* experimental */
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-mpi_return_error_string",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) {
-    MPI_Errhandler eh;
-
-    ierr = MPI_Comm_create_errhandler(PetscMPI_Comm_eh,&eh);CHKERRQ(ierr);
-    ierr = MPI_Comm_set_errhandler(comm,eh);CHKERRQ(ierr);
-    ierr = MPI_Errhandler_free(&eh);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN);CHKERRMPI(ierr);
   }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-no_signal_handler",&flg1,NULL);CHKERRQ(ierr);
@@ -533,8 +512,8 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     MPI_Errhandler err_handler;
 
     ierr = PetscSetDebuggerFromString(string);CHKERRQ(ierr);
-    ierr = MPI_Comm_create_errhandler(Petsc_MPI_DebuggerOnError,&err_handler);CHKERRQ(ierr);
-    ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRQ(ierr);
+    ierr = MPI_Comm_create_errhandler(Petsc_MPI_DebuggerOnError,&err_handler);CHKERRMPI(ierr);
+    ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRMPI(ierr);
     ierr = PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetString(NULL,NULL,"-debug_terminal",string,sizeof(string),&flg1);CHKERRQ(ierr);
@@ -551,18 +530,18 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
        debugger has stated it is likely to receive a SIGUSR1
        and kill the program.
     */
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     if (size > 2) {
       PetscMPIInt dummy = 0;
       MPI_Status  status;
       for (i=0; i<size; i++) {
         if (rank != i) {
-          ierr = MPI_Send(&dummy,1,MPI_INT,i,109,comm);CHKERRQ(ierr);
+          ierr = MPI_Send(&dummy,1,MPI_INT,i,109,comm);CHKERRMPI(ierr);
         }
       }
       for (i=0; i<size; i++) {
         if (rank != i) {
-          ierr = MPI_Recv(&dummy,1,MPI_INT,i,109,comm,&status);CHKERRQ(ierr);
+          ierr = MPI_Recv(&dummy,1,MPI_INT,i,109,comm,&status);CHKERRMPI(ierr);
         }
       }
     }
@@ -608,8 +587,8 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
       } else {
         ierr = PetscStopForDebugger();CHKERRQ(ierr);
       }
-      ierr = MPI_Comm_create_errhandler(Petsc_MPI_AbortOnError,&err_handler);CHKERRQ(ierr);
-      ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRQ(ierr);
+      ierr = MPI_Comm_create_errhandler(Petsc_MPI_AbortOnError,&err_handler);CHKERRMPI(ierr);
+      ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRMPI(ierr);
     } else {
       ierr = PetscWaitOnError();CHKERRQ(ierr);
     }

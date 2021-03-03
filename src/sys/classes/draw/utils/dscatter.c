@@ -308,7 +308,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   ierr = PetscDrawIsNull(sp->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sp),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sp),&rank);CHKERRMPI(ierr);
 
   if (sp->xmin > sp->xmax || sp->ymin > sp->ymax) PetscFunctionReturn(0);
   if (sp->nopts < 1) PetscFunctionReturn(0);

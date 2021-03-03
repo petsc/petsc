@@ -225,7 +225,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscFunctionBeginUser;
   if ((fail++ > 7 && user->errorindomainmf) || (fail++ > 36 && user->errorindomain)){
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)user->snes),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)user->snes),&rank);CHKERRMPI(ierr);
     if (!rank) {
       ierr = SNESSetFunctionDomainError(user->snes);CHKERRQ(ierr);
     }
@@ -359,7 +359,7 @@ PetscErrorCode MatMult_MyShell(Mat A,Vec x,Vec y)
   ierr = MatMult(matshellctx->Jmf,x,y);CHKERRQ(ierr);
   if (fail++ > 5) {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRMPI(ierr);
     if (!rank) {ierr = VecSetInf(y);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
@@ -385,7 +385,7 @@ PetscErrorCode PCApply_MyShell(PC pc,Vec x,Vec y)
   ierr = VecCopy(x,y);CHKERRQ(ierr);
   if (fail++ > 3) {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
     if (!rank) {ierr = VecSetInf(y);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);

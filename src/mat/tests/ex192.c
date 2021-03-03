@@ -22,7 +22,7 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor test");
   /* Determine which type of solver we want to test for */
   herm = PETSC_FALSE;
@@ -331,7 +331,7 @@ int main(int argc,char **args)
        args: -symmetric_solve -hermitian_solve
        output_file: output/ex192_mkl_pardiso_3.out
      test:
-       requires: cuda
+       requires: cuda define(PETSC_HAVE_CUSOLVERDNDPOTRI)
        suffix: mkl_pardiso_cuda_3
        args: -symmetric_solve -hermitian_solve -cuda_solve
        output_file: output/ex192_mkl_pardiso_3.out
@@ -361,7 +361,7 @@ int main(int argc,char **args)
        args: -symmetric_solve -hermitian_solve
        output_file: output/ex192_mumps_3.out
      test:
-       requires: cuda
+       requires: cuda define(PETSC_HAVE_CUSOLVERDNDPOTRI)
        suffix: mumps_cuda_3
        args: -symmetric_solve -hermitian_solve -cuda_solve
        output_file: output/ex192_mumps_3.out

@@ -111,7 +111,7 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
     PetscValidCharPointer(filename, 1);
     ierr = PetscFixFilename(filename, fname);CHKERRQ(ierr);
     ierr = PetscStrallocpy(fname, &PetscInfoFilename);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);CHKERRMPI(ierr);
     sprintf(tname, ".%d", rank);
     ierr = PetscStrcat(fname, tname);CHKERRQ(ierr);
     oldflag = PetscLogPrintInfo; PetscLogPrintInfo = PETSC_FALSE;
@@ -584,8 +584,8 @@ PetscErrorCode  PetscInfo_Private(const char func[],PetscObject obj, const char 
   if (!enabled) PetscFunctionReturn(0);
   PetscValidCharPointer(message,3);
   if (obj) {
-    ierr = MPI_Comm_rank(obj->comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(obj->comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(obj->comm, &rank);CHKERRMPI(ierr);
+    ierr = MPI_Comm_size(obj->comm, &size);CHKERRMPI(ierr);
   }
   /* rank > 0 always jumps out */
   if (rank) PetscFunctionReturn(0);
@@ -598,7 +598,7 @@ PetscErrorCode  PetscInfo_Private(const char func[],PetscObject obj, const char 
   }
   /* Mute info messages within this function */
   oldflag = PetscLogPrintInfo; PetscLogPrintInfo = PETSC_FALSE;
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);CHKERRMPI(ierr);
   va_start(Argp, message);
   sprintf(string, "[%d] %s(): ",urank,func);
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);

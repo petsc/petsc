@@ -60,7 +60,7 @@ PetscErrorCode  PetscBarrier(PetscObject obj)
   if (obj) {
     ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   } else comm = PETSC_COMM_WORLD;
-  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
   ierr = PetscLogEventEnd(PETSC_Barrier,obj,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

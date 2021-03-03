@@ -261,8 +261,8 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     ierr         = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
     ierr         = PetscMalloc2(n_neigh+1,&send_request,n_neigh+1,&recv_request);CHKERRQ(ierr);
     for (i=1; i<n_neigh; i++) {
-      ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(send_request[i]));CHKERRQ(ierr);
-      ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(recv_request[i]));CHKERRQ(ierr);
+      ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(send_request[i]));CHKERRMPI(ierr);
+      ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(recv_request[i]));CHKERRMPI(ierr);
     }
   }
 
@@ -273,22 +273,20 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   /* Apply Schur complement. The result is "stored" in vec (more    */
   /* precisely, vec points to the result, stored in pc_nn->vec1_B)  */
   /* and also scattered to pcnn->work_N.                            */
-  ierr = PCNNApplySchurToChunk(pc,n_shared[0],shared[0],DZ_IN[0],pcis->work_N,pcis->vec1_B,
-                               pcis->vec2_B,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  ierr = PCNNApplySchurToChunk(pc,n_shared[0],shared[0],DZ_IN[0],pcis->work_N,pcis->vec1_B,pcis->vec2_B,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
 
   /* Compute the first column, while completing the receiving. */
   for (i=0; i<n_neigh; i++) {
     MPI_Status  stat;
     PetscMPIInt ind=0;
-    if (i>0) { ierr = MPI_Waitany(n_neigh-1,recv_request+1,&ind,&stat);CHKERRQ(ierr); ind++;}
+    if (i>0) {ierr = MPI_Waitany(n_neigh-1,recv_request+1,&ind,&stat);CHKERRMPI(ierr); ind++;}
     mat[ind*n_neigh+0] = 0.0;
     for (k=0; k<n_shared[ind]; k++) mat[ind*n_neigh+0] += DZ_IN[ind][k] * pcis->work_N[shared[ind][k]];
   }
 
   /* Compute the remaining of the columns */
   for (j=1; j<n_neigh; j++) {
-    ierr = PCNNApplySchurToChunk(pc,n_shared[j],shared[j],DZ_IN[j],pcis->work_N,pcis->vec1_B,
-                                 pcis->vec2_B,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+    ierr = PCNNApplySchurToChunk(pc,n_shared[j],shared[j],DZ_IN[j],pcis->work_N,pcis->vec1_B,pcis->vec2_B,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
     for (i=0; i<n_neigh; i++) {
       mat[i*n_neigh+j] = 0.0;
       for (k=0; k<n_shared[i]; k++) mat[i*n_neigh+j] += DZ_IN[i][k] * pcis->work_N[shared[i][k]];
@@ -299,7 +297,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   if (n_neigh>1) {
     MPI_Status *stat;
     ierr = PetscMalloc1(n_neigh-1,&stat);CHKERRQ(ierr);
-    if (n_neigh-1) {ierr = MPI_Waitall(n_neigh-1,&(send_request[1]),stat);CHKERRQ(ierr);}
+    if (n_neigh-1) {ierr = MPI_Waitall(n_neigh-1,&(send_request[1]),stat);CHKERRMPI(ierr);}
     ierr = PetscFree(stat);CHKERRQ(ierr);
   }
 
@@ -314,7 +312,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 
   {
     PetscMPIInt size;
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
     /* Create the global coarse vectors (rhs and solution). */
     ierr = VecCreateMPI(PetscObjectComm((PetscObject)pc),1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
     ierr = VecDuplicate(pcnn->coarse_b,&(pcnn->coarse_x));CHKERRQ(ierr);
@@ -334,7 +332,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   {
     PetscMPIInt rank;
     PetscScalar one = 1.0;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
     /* "Zero out" rows of not-purely-Neumann subdomains */
     if (pcis->pure_neumann) {  /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
       ierr = MatZeroRows(pcnn->coarse_mat,0,NULL,one,NULL,NULL);CHKERRQ(ierr);
@@ -547,7 +545,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   value *= pcnn->factor_coarse_rhs;  /* This factor is set in CreateCoarseMatrix(). */
   {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
     ierr = VecSetValue(pcnn->coarse_b,rank,value,INSERT_VALUES);CHKERRQ(ierr);
     /*
        Since we are only inserting local values (one value actually) we don't need to do the

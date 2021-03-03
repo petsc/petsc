@@ -554,8 +554,6 @@ PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*)
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,TSForcingFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,TSForcingFunction*,void**);
-PETSC_EXTERN PetscErrorCode DMTSGetMinRadius(DM,PetscReal*);
-PETSC_EXTERN PetscErrorCode DMTSSetMinRadius(DM,PetscReal);
 PETSC_EXTERN PetscErrorCode DMTSCheckFromOptions(TS, Vec);
 
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,Vec,void*),void*);
@@ -576,7 +574,6 @@ PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*),void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexTSGetGeometryFVM(DM,Vec*,Vec*,PetscReal*);
-PETSC_EXTERN PetscErrorCode DMPlexTSGetGradientDM(DM,PetscFV,DM*);
 
 typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 typedef struct {
@@ -655,6 +652,8 @@ PETSC_EXTERN PetscErrorCode TSMonitorSPSwarmSolution(TS,PetscInt,PetscReal,Vec,v
 PETSC_EXTERN PetscErrorCode TSSetEventHandler(TS,PetscInt,PetscInt[],PetscBool[],PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar[],void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void*);
 PETSC_EXTERN PetscErrorCode TSSetPostEventIntervalStep(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSSetEventTolerances(TS,PetscReal,PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSGetNumEvents(TS,PetscInt*);
+
 /*J
    TSSSPType - string with the name of TSSSP scheme.
 
@@ -1038,4 +1037,6 @@ PETSC_EXTERN PetscErrorCode TSGetComputeExactError(TS, PetscErrorCode (**)(TS, V
 PETSC_EXTERN PetscErrorCode TSSetComputeExactError(TS, PetscErrorCode (*)(TS, Vec, Vec));
 PETSC_EXTERN PetscErrorCode TSComputeExactError(TS, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PetscConvEstUseTS(PetscConvEst, PetscBool);
+
+PETSC_EXTERN PetscErrorCode TSSetMatStructure(TS,MatStructure);
 #endif

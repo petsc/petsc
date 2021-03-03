@@ -79,7 +79,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
 
   /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix */
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size == 1) red->useparallelmat = PETSC_FALSE;
 
   if (!pc->setupcalled) {
@@ -94,7 +94,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       /* grab the parallel matrix and put it into processors of a subcomminicator */
       ierr = MatCreateRedundantMatrix(pc->pmat,red->psubcomm->n,subcomm,MAT_INITIAL_MATRIX,&red->pmats);CHKERRQ(ierr);
 
-      ierr = MPI_Comm_size(subcomm,&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(subcomm,&size);CHKERRMPI(ierr);
       if (size > 1) {
         PetscBool foundpack,issbaij;
         ierr = PetscObjectTypeCompare((PetscObject)red->pmats,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
@@ -378,8 +378,8 @@ PetscErrorCode PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidHeaderSpecific(in,VEC_SCATTER_CLASSID,2);
-  PetscValidHeaderSpecific(out,VEC_SCATTER_CLASSID,3);
+  PetscValidHeaderSpecific(in,PETSCSF_CLASSID,2);
+  PetscValidHeaderSpecific(out,PETSCSF_CLASSID,3);
   ierr = PetscTryMethod(pc,"PCRedundantSetScatter_C",(PC,VecScatter,VecScatter),(pc,in,out));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -528,7 +528,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,&red);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
 
   red->nsubcomm       = size;
   red->useparallelmat = PETSC_TRUE;

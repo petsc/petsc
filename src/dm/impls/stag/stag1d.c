@@ -42,7 +42,7 @@ PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm,DMBoundaryType bndx,Pet
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = DMCreate(comm,dm);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm,1);CHKERRQ(ierr);
   ierr = DMStagInitialize(bndx,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,M,0,0,size,0,0,dof0,dof1,0,0,stencilType,stencilWidth,lx,NULL,NULL,*dm);CHKERRQ(ierr);
@@ -114,8 +114,8 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   /* Check Global size */
   if (stag->N[0] < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Global grid size of %D < 1 specified",stag->N[0]);

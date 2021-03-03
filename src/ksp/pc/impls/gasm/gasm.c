@@ -156,7 +156,7 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
         ++l;
       }
     }
-    ierr = MPI_Barrier(PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPI_Barrier(PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
   }
   ierr = PetscFree2(numbering,permutation);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -179,8 +179,8 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
   PetscInt       *numbering,*permutation;/* global numbering of locally-supported subdomains and the permutation from the local ordering */
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank);CHKERRMPI(ierr);
 
   if (osm->overlap >= 0) {
     ierr = PetscSNPrintf(overlap,sizeof(overlap),"requested amount of overlap = %D",osm->overlap);CHKERRQ(ierr);
@@ -216,7 +216,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  - - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
     /* Make sure that everybody waits for the banner to be printed. */
-    ierr = MPI_Barrier(PetscObjectComm((PetscObject)viewer));CHKERRQ(ierr);
+    ierr = MPI_Barrier(PetscObjectComm((PetscObject)viewer));CHKERRMPI(ierr);
     /* Now let subdomains go one at a time in the global numbering order and print their subdomain/solver info. */
     ierr = PCGASMComputeGlobalSubdomainNumbering_Private(pc,&numbering,&permutation);CHKERRQ(ierr);
     l = 0;
@@ -225,8 +225,8 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
       if (l<osm->n) {
         PetscInt d = permutation[l]; /* d is the local number of the l-th smallest (in the global ordering) among the locally supported subdomains */
         if (numbering[d] == count) {
-          ierr = MPI_Comm_size(((PetscObject)osm->ois[d])->comm, &ssize);CHKERRQ(ierr);
-          ierr = MPI_Comm_rank(((PetscObject)osm->ois[d])->comm, &srank);CHKERRQ(ierr);
+          ierr = MPI_Comm_size(((PetscObject)osm->ois[d])->comm, &ssize);CHKERRMPI(ierr);
+          ierr = MPI_Comm_rank(((PetscObject)osm->ois[d])->comm, &srank);CHKERRMPI(ierr);
           ierr = PetscViewerGetSubViewer(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
           ierr = ISGetLocalSize(osm->ois[d],&bsz);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"  [%d|%d] (subcomm [%d|%d]) local subdomain number %D, local size = %D\n",rank,size,srank,ssize,d,bsz);CHKERRQ(ierr);
@@ -245,13 +245,14 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
           ++l;
         }
       }
-      ierr = MPI_Barrier(PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr = MPI_Barrier(PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     }
     ierr = PetscFree2(numbering,permutation);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    /* this line is needed to match the extra PetscViewerASCIIPushSynchronized() in PetscViewerGetSubViewer() */
+    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -270,7 +271,7 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
 
    PetscFunctionBegin;
    ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
    /* we do not need a hierarchical partitioning when
     * the total number of subdomains is consistent with
     * the number of MPI tasks.
@@ -336,8 +337,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
 
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
   if (!pc->setupcalled) {
         /* use a hierarchical partitioning */
     if (osm->hierarchicalpartitioning){
@@ -364,7 +365,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       } else {
         /* still no subdomains; use one per processor */
         osm->nmax = osm->n = 1;
-        ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+        ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
         osm->N    = size;
         ierr = PCGASMCreateLocalSubdomains(pc->pmat,osm->n,&osm->iis);CHKERRQ(ierr);
       }
@@ -600,6 +601,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   */
   for (i=0; i<osm->n; i++) {
     ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i]);CHKERRQ(ierr);
+    ierr = KSPGetOptionsPrefix(osm->ksp[i],&prefix);CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(osm->pmat[i],prefix);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
     }
@@ -839,7 +842,7 @@ static PetscErrorCode PCReset_GASM(PC pc)
   if (osm->pmat) {
     if (osm->n > 0) {
       PetscMPIInt size;
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
       if (size > 1) {
         /* osm->pmat is created by MatCreateSubMatricesMPI(), cannot use MatDestroySubMatrices() */
         ierr = MatDestroyMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
@@ -965,8 +968,8 @@ PetscErrorCode  PCGASMSetTotalSubdomains(PC pc,PetscInt N)
   ierr = PCGASMDestroySubdomains(osm->n,&osm->iis,&osm->ois);CHKERRQ(ierr);
   osm->ois = osm->iis = NULL;
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
   osm->N    = N;
   osm->n    = PETSC_DETERMINE;
   osm->nmax = PETSC_DETERMINE;
@@ -1085,7 +1088,7 @@ static PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KS
 
   if (n) *n = osm->n;
   if (first) {
-    ierr    = MPI_Scan(&osm->n,first,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr    = MPI_Scan(&osm->n,first,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     *first -= osm->n;
   }
   if (ksp) {
@@ -1574,7 +1577,7 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A,PetscInt N,PetscInt *n,IS *iis[])
   PetscValidPointer(iis,4);
 
   if (N < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of subdomains must be > 0, N = %D",N);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (N >= size) {
     *n = N/size + (N%size);
     ierr = PCGASMCreateLocalSubdomains(A,*n,iis);CHKERRQ(ierr);
@@ -1704,8 +1707,8 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = MatGetOwnershipRange(pc->pmat, &first, &last);CHKERRQ(ierr);
   if (first%dof || last%dof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Matrix row partitioning unsuitable for domain decomposition: local row range (%D,%D) "
                                       "does not respect the number of degrees of freedom per grid point %D", first, last, dof);
@@ -1787,7 +1790,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
         if (q == 0) {
           if (nidx) color = 1;
           else color = MPI_UNDEFINED;
-          ierr = MPI_Comm_split(comm, color, rank, &subcomm);CHKERRQ(ierr);
+          ierr = MPI_Comm_split(comm, color, rank, &subcomm);CHKERRMPI(ierr);
           split = PETSC_TRUE;
         }
         /*
@@ -1826,7 +1829,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
           }
           ierr = ISCreateGeneral(subcomm,nidx,idx,PETSC_OWN_POINTER,(*xis)+s);CHKERRQ(ierr);
           if (split) {
-            ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+            ierr = MPI_Comm_free(&subcomm);CHKERRMPI(ierr);
           }
         }/* if (n[0]) */
       }/* for (q = 0; q < 2; ++q) */

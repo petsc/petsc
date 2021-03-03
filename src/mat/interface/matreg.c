@@ -44,7 +44,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
     ierr = PetscStrcmp(matype,names->rname,&found);CHKERRQ(ierr);
     if (found) {
       PetscMPIInt size;
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRMPI(ierr);
       if (size == 1) matype = names->sname;
       else matype = names->mname;
       break;
@@ -74,6 +74,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
     ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&mat->nearnullsp);CHKERRQ(ierr);
   }
+  ierr = PetscMemzero(mat->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   mat->preallocated  = PETSC_FALSE;
   mat->assembled     = PETSC_FALSE;
   mat->was_assembled = PETSC_FALSE;

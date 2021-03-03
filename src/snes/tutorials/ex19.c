@@ -700,7 +700,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 
    test:
       suffix: 18
-      args: -ksp_monitor_snes_lg -ksp_pc_side right
+      args: -snes_monitor_ksp draw::draw_lg -ksp_pc_side right
       requires: x !single
 
    test:
@@ -1129,5 +1129,31 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
      requires: define(PETSC_USE_LOG) !define(PETSC_HAVE_VALGRIND)
      args: -log_view -log_view_memory -da_refine 4
      filter: grep MatFDColorSetUp | wc -w | xargs  -I % sh -c "expr % \> 21"
+
+   test:
+     suffix: fs
+     args: -pc_type fieldsplit -da_refine 3  -all_ksp_monitor -fieldsplit_y_velocity_pc_type lu  -fieldsplit_temperature_pc_type lu -fieldsplit_x_velocity_pc_type lu  -snes_view
+
+   test:
+     suffix: asm_matconvert
+     args: -mat_type aij -pc_type asm -pc_asm_sub_mat_type dense -snes_view
+
+   test:
+      suffix: euclid
+      nsize: 2
+      requires: hypre !single !complex !define(PETSC_HAVE_HYPRE_MIXEDINT)
+      args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid
+
+   test:
+      suffix: euclid_bj
+      nsize: 2
+      requires: hypre !single !complex !define(PETSC_HAVE_HYPRE_MIXEDINT)
+      args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid -pc_hypre_euclid_bj
+
+   test:
+      suffix: euclid_droptolerance
+      nsize: 1
+      requires: hypre !single !complex !define(PETSC_HAVE_HYPRE_MIXEDINT)
+      args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid -pc_hypre_euclid_droptolerance .1
 
 TEST*/

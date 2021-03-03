@@ -1109,7 +1109,6 @@ Label 'celltype':
 [7]: 6 (3)
 PetscSF Object: 8 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=19, leaves=14, remote ranks=4
   [0] 1 <- (1,0)
   [0] 2 <- (2,0)
@@ -1532,3 +1531,4 @@ PetscSF Object: 8 MPI processes
   [7]    5 <- 0
   [7]    25 <- 15
   [7]    26 <- 16
+  MultiSF sort=rank-order

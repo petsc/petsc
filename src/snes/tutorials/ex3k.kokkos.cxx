@@ -139,6 +139,7 @@ int main(int argc,char **argv)
   /*  export OMP_PROC_BIND="threads"  export OMP_PROC_BIND="spread" */
 
   if (!getenv("KOKKOS_NUM_THREADS")) setenv("KOKKOS_NUM_THREADS","4",1);
+  ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr); /* Init Kokkos if not yet */
 
   if (view_kokkos_configuration) {
     Kokkos::print_configuration(std::cout, true);
@@ -414,7 +415,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
 
    test:
      suffix: 3
-     requires: kokkos double !complex !single define(PETSC_HAVE_cusparseCreateSolveAnalysisInfo) cuda
+     TODO: broken
+     requires: kokkos double !complex !single cuda
      nsize: 2
      args: -dm_vec_type cuda -dm_mat_type aijcusparse -vec_pinned_memory_min 0 -view_initial -view_kokkos_configuration false  -snes_monitor
      output_file: output/ex3k_1.out

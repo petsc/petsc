@@ -3,10 +3,13 @@
 #define _KSPIMPL_H
 
 #include <petscksp.h>
+#include <petscds.h>
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscBool KSPRegisterAllCalled;
+PETSC_EXTERN PetscBool KSPMonitorRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
+PETSC_EXTERN PetscErrorCode KSPMonitorRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPGuessRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
 
@@ -63,6 +66,7 @@ PETSC_EXTERN PetscErrorCode KSPGuessCreate_POD(KSPGuess);
      Maximum number of monitors you can run with a single KSP
 */
 #define MAXKSPMONITORS 5
+#define MAXKSPREASONVIEWS 5
 typedef enum {KSP_SETUP_NEW, KSP_SETUP_NEWMATRIX, KSP_SETUP_NEWRHS} KSPSetUpStage;
 
 /*
@@ -95,11 +99,16 @@ struct _p_KSP {
                                       the solution and rhs, these are
                                       never touched by the code, only
                                       passed back to the user */
-  PetscReal     *res_hist;            /* If !0 stores residual at iterations */
+  PetscReal     *res_hist;            /* If !0 stores residual each at iteration */
   PetscReal     *res_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
   PetscInt      res_hist_len;         /* current size of residual history array */
-  PetscInt      res_hist_max;         /* actual amount of data in residual_history */
-  PetscBool     res_hist_reset;       /* reset history to size zero for each new solve */
+  PetscInt      res_hist_max;         /* actual amount of storage in residual history */
+  PetscBool     res_hist_reset;       /* reset history to length zero for each new solve */
+  PetscReal     *err_hist;            /* If !0 stores error at each iteration */
+  PetscReal     *err_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
+  PetscInt      err_hist_len;         /* current size of error history array */
+  PetscInt      err_hist_max;         /* actual amount of storage in error history */
+  PetscBool     err_hist_reset;       /* reset history to length zero for each new solve */
 
   PetscInt      chknorm;             /* only compute/check norm if iterations is great than this */
   PetscBool     lagnorm;             /* Lag the residual norm calculation so that it is computed as part of the
@@ -109,6 +118,12 @@ struct _p_KSP {
   PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void**);         /* */
   void *monitorcontext[MAXKSPMONITORS];                  /* residual calculation, allows user */
   PetscInt  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
+  PetscBool        pauseFinal;        /* Pause all drawing monitor at the final iterate */
+
+  PetscErrorCode (*reasonview[MAXKSPREASONVIEWS])(KSP,void*);       /* KSP converged reason view */
+  PetscErrorCode (*reasonviewdestroy[MAXKSPREASONVIEWS])(void**);   /* Optional destroy routine */
+  void *reasonviewcontext[MAXKSPREASONVIEWS];                       /* User context */
+  PetscInt  numberreasonviews;                                      /* Number if reason viewers */
 
   PetscErrorCode (*converged)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
   PetscErrorCode (*convergeddestroy)(void*);
@@ -121,9 +136,9 @@ struct _p_KSP {
   void       *data;                      /* holder for misc stuff associated
                                    with a particular iterative solver */
 
-  PetscBool         view,   viewPre,   viewReason,   viewMat,   viewPMat,   viewRhs,   viewSol,   viewMatExp,   viewEV,   viewSV,   viewEVExp,   viewFinalRes,   viewPOpExp,   viewDScale;
-  PetscViewer       viewer, viewerPre, viewerReason, viewerMat, viewerPMat, viewerRhs, viewerSol, viewerMatExp, viewerEV, viewerSV, viewerEVExp, viewerFinalRes, viewerPOpExp, viewerDScale;
-  PetscViewerFormat format, formatPre, formatReason, formatMat, formatPMat, formatRhs, formatSol, formatMatExp, formatEV, formatSV, formatEVExp, formatFinalRes, formatPOpExp, formatDScale;
+  PetscBool         view,   viewPre,   viewRate,   viewMat,   viewPMat,   viewRhs,   viewSol,   viewMatExp,   viewEV,   viewSV,   viewEVExp,   viewFinalRes,   viewPOpExp,   viewDScale;
+  PetscViewer       viewer, viewerPre, viewerRate, viewerMat, viewerPMat, viewerRhs, viewerSol, viewerMatExp, viewerEV, viewerSV, viewerEVExp, viewerFinalRes, viewerPOpExp, viewerDScale;
+  PetscViewerFormat format, formatPre, formatRate, formatMat, formatPMat, formatRhs, formatSol, formatMatExp, formatEV, formatSV, formatEVExp, formatFinalRes, formatPOpExp, formatDScale;
 
   /* ----------------Default work-area management -------------------- */
   PetscInt       nwork;
@@ -136,6 +151,11 @@ struct _p_KSP {
   PetscInt       totalits;   /* number of iterations used by this KSP object since it was created */
 
   PetscBool      transpose_solve;    /* solve transpose system instead */
+  struct {
+    Mat       AT,BT;
+    PetscBool use_explicittranspose; /* transpose the system explicitly in KSPSolveTranspose */
+    PetscBool reuse_transpose;       /* reuse the previous transposed system */
+  } transpose;
 
   KSPNormType    normtype;          /* type of norm used for convergence tests */
 
@@ -184,6 +204,65 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
   }
   ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode KSPLogErrorHistory(KSP ksp)
+{
+  DM             dm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectSAWsTakeAccess((PetscObject) ksp);CHKERRQ(ierr);
+  ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
+  if (dm && ksp->err_hist && ksp->err_hist_max > ksp->err_hist_len) {
+    PetscSimplePointFunc exactSol;
+    void                *exactCtx;
+    PetscDS              ds;
+    Vec                  u;
+    PetscReal            error;
+    PetscInt             Nf;
+
+    ierr = KSPBuildSolution(ksp, NULL, &u);CHKERRQ(ierr);
+    /* TODO Was needed to correct for Newton solution, but I just need to set a solution */
+    //ierr = VecScale(u, -1.0);CHKERRQ(ierr);
+    /* TODO Case when I have a solution */
+    if (0) {
+      ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+      ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+      if (Nf > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle number of fields %D > 1 right now", Nf);
+      ierr = PetscDSGetExactSolution(ds, 0, &exactSol, &exactCtx);CHKERRQ(ierr);
+      ierr = DMComputeL2FieldDiff(dm, 0.0, &exactSol, &exactCtx, u, &error);CHKERRQ(ierr);
+    } else {
+      /* The null solution A 0 = 0 */
+      ierr = VecNorm(u, NORM_2, &error);CHKERRQ(ierr);
+    }
+    ksp->err_hist[ksp->err_hist_len++] = error;
+  }
+  ierr = PetscObjectSAWsGrantAccess((PetscObject) ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscScalar KSPNoisyHash_Private(PetscInt xx)
+{
+  unsigned int x = xx;
+  x = ((x >> 16) ^ x) * 0x45d9f3b;
+  x = ((x >> 16) ^ x) * 0x45d9f3b;
+  x = ((x >> 16) ^ x);
+  return (PetscScalar)((PetscInt64)x-2147483648)*5.e-10; /* center around zero, scaled about -1. to 1.*/
+}
+
+PETSC_STATIC_INLINE PetscErrorCode KSPSetNoisy_Private(Vec v)
+{
+  PetscScalar   *a;
+  PetscInt       n, istart, i;
+  PetscErrorCode ierr;
+
+  ierr = VecGetOwnershipRange(v, &istart, NULL);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(v, &a);CHKERRQ(ierr);
+  for (i = 0; i < n; ++i) a[i] = KSPNoisyHash_Private(i+istart);
+  ierr = VecRestoreArrayWrite(v, &a);CHKERRQ(ierr);
+  return(0);
 }
 
 PETSC_INTERN PetscErrorCode KSPSetUpNorms_Private(KSP,PetscBool,KSPNormType*,PCSide*);
@@ -374,7 +453,7 @@ M*/
       PetscInt       sendbuf,recvbuf; \
       ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRMPI(ierr);\
       if (recvbuf) {                                                           \
         ierr = PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf);CHKERRQ(ierr); \
         ksp->reason = KSP_DIVERGED_PC_FAILED;\
@@ -414,7 +493,7 @@ M*/
       PetscInt       sendbuf,recvbuf; \
       ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRMPI(ierr);\
       if (recvbuf) {                                                           \
         ierr = PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf);CHKERRQ(ierr); \
         ksp->reason = KSP_DIVERGED_PC_FAILED;                         \
@@ -428,3 +507,6 @@ M*/
   } } while (0)
 
 #endif
+
+PETSC_INTERN PetscErrorCode KSPMonitorMakeKey_Internal(const char[], PetscViewerType, PetscViewerFormat, char[]);
+PETSC_INTERN PetscErrorCode KSPMonitorRange_Private(KSP,PetscInt,PetscReal*);

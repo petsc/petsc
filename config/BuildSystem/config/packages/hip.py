@@ -4,35 +4,26 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.minversion       = '2.0'
+
+    # Handle the platform issues
+    if 'HIP_PLATFORM' in os.environ:
+      self.platform = os.environ['HIP_PLATFORM']
+    elif hasattr(self,'systemNvcc'):
+      self.platform = 'nvcc'
+    else:
+      self.platform = 'hcc'
+
+    self.minversion       = '3.8'
     self.versionname      = 'HIP_VERSION'
-    # Does not seem to include version
-    #self.versioninclude  = 'hip/hip_runtime.h'
-    #self.requiresversion = 2
     self.functionsCxx     = [1,'', 'hipblasCreate']
-    # hipfft and hipsolver aren't available really (hipfft is close).
-    #self.includes        = ['hipblas.h','hipfft.h','hipsparse.h','hipsolver.h']
-    #self.liblist         = [['libhipblas.a','libhiprtc.a','libhipsparse.a','libhipsolver.a'],
-    #                         ['hipfft.lib','hipblas.lib','hiprtc.lib','hipsparse.lib','hipsolver.lib']]
     self.includes         = ['hipblas.h','hipsparse.h']
     self.liblist          = [['libhipsparse.a','libhipblas.a','librocsparse.a','librocsolver.a','librocblas.a','libamdhip64.a'],
                              ['hipsparse.lib','hipblas.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','amdhip64.lib'],]
-    #self.liblist          = [['libhipsparse.a','libhipblas.a','libhiprtc.a'],
-    #                         ['hipsparse.lib','hipblas.lib','hiprtc.lib']]
     self.precisions       = ['single','double']
     self.cxx              = 1
     self.complex          = 1
     self.hastests         = 0
     self.hastestsdatafiles= 0
-    # Handle the platform issues
-    if 'HIP_PLATFORM' in os.environ:
-      self.platform = os.environ['HIP_PLATFORM']
-    elif hasattr(self,'systemNvcc'):
-    #elif hasattr(self.config.compile, 'CUDA'):
-      self.platform = 'nvcc'
-    else:
-      self.platform = 'hcc'
-
     return
 
   def setupHelp(self, help):
@@ -88,7 +79,6 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     self.libraries.pushLanguage('HIP')
     self.addDefine('HAVE_HIP','1')
-    # May need more checks/defines/work here
     if self.platform == 'nvcc':
         self.pushLanguage('CUDA')
         petscNvcc = self.getCompiler()

@@ -51,8 +51,7 @@ calling sequences of routines will occur. PETSc has been supported for twenty-fi
 https://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html for
 information on contacting support.
 
-We welcome any reports of corrections for this document at
-``petsc-maint@mcs.anl.gov``.
+.. include :: ../common/editing-online.rst
 
 Manual pages and example usage :
 https://www.mcs.anl.gov/petsc/documentation/

@@ -1559,7 +1559,6 @@ static PetscErrorCode  TSRosWSetType_RosW(TS ts,TSRosWType rostype)
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",rostype);
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  TSRosWSetRecomputeJacobian_RosW(TS ts,PetscBool flg)

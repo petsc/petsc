@@ -151,7 +151,7 @@ static PetscErrorCode SetInitialCoordinates(DM dmSw)
   ierr = DMLocatePoints(dm, coordinates, DM_POINTLOCATION_NONE, &cellSF);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(dmSw, DMSwarmPICField_coor, &coordinates);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dmSw), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dmSw), &rank);CHKERRMPI(ierr);
   ierr = DMSwarmGetField(dmSw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(cellSF, NULL, &Np, &found, &cells);CHKERRQ(ierr);
   for (p = 0; p < Np; ++p) {

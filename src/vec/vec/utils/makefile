@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vinv.c vecio.c comb.c vecstash.c vecmpitoseq.c vecs.c vsection.c projection.c vecglvis.c
+SOURCEC  = vinv.c vecio.c comb.c vecstash.c vecs.c vsection.c projection.c vecglvis.c
 SOURCEF  =
 SOURCEH  =
 DIRS     = matlab tagger

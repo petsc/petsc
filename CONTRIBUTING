@@ -1,9 +1,12 @@
-Contributions are accepted via GitLab merge requests to
 
-  https://gitlab.com/petsc/petsc
+Contributions of source code, documentations, and fixes are happily
+accepted via GitLab merge requests. Please see
+https://docs.petsc.org/en/main/developers/integration/ for a
+full discussion of the process.
 
-If you are planning a large contribution, we
-encourage you to discuss the concept on the petsc-dev@mcs.anl.gov mailing list and interact
+If you are planning a large contribution, we encourage you to discuss
+the concept on a GitLab issue, merge request,
+or the petsc-dev@mcs.anl.gov mailing list and interact
 with us frequently to ensure that your effort is well-directed.
 
 PETSc is distributed under a 2-clause BSD license (see LICENSE).  The

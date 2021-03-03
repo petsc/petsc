@@ -46,7 +46,7 @@ static PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
 }
 
 /* Construct the change of basis from prime basis to nodal basis */
-PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
+PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
   PetscReal     *work;
   PetscBLASInt  *pivots;
@@ -101,7 +101,8 @@ PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
  *    C[m,n,p] = A[m,k,p] * B[k,n]
  * where all matrices use C-style ordering.
  */
-static PetscErrorCode TensorContract_Private(PetscInt m,PetscInt n,PetscInt p,PetscInt k,const PetscReal *A,const PetscReal *B,PetscReal *C) {
+static PetscErrorCode TensorContract_Private(PetscInt m,PetscInt n,PetscInt p,PetscInt k,const PetscReal *A,const PetscReal *B,PetscReal *C)
+{
   PetscErrorCode ierr;
   PetscInt i;
 
@@ -124,7 +125,7 @@ static PetscErrorCode TensorContract_Private(PetscInt m,PetscInt n,PetscInt p,Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
+PETSC_INTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
 {
   DM               dm;
   PetscInt         pdim; /* Dimension of FE space P */

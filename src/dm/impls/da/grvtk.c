@@ -51,11 +51,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(comm,PETSC_ERR_SUP,"Complex values not supported");
-#endif
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (PetscDefined(USE_COMPLEX)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Coords);CHKERRQ(ierr);
@@ -81,7 +79,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   rloc[3] = info.ym;
   rloc[4] = info.zs;
   rloc[5] = info.zm;
-  ierr    = MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr    = MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm);CHKERRMPI(ierr);
 
   /* Write XML header */
   maxnnodes = 0;                /* Used for the temporary array size on rank 0 */
@@ -172,8 +170,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       if (!rank) {
         if (r) {
           PetscMPIInt nn;
-          ierr = MPI_Recv(array,nnodes*cdim,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
-          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
+          ierr = MPI_Recv(array,nnodes*cdim,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
+          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
           if (nn != nnodes*cdim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
         } else {
           ierr = PetscArraycpy(array,coords,nnodes*cdim);CHKERRQ(ierr);
@@ -190,7 +188,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           }
         }
       } else if (r == rank) {
-        ierr = MPI_Send((void*)coords,nnodes*cdim,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+        ierr = MPI_Send((void*)coords,nnodes*cdim,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
       }
       ierr = VecRestoreArrayRead(Coords,&coords);CHKERRQ(ierr);
     } else {       /* Fabricate some coordinates using grid index */
@@ -220,8 +218,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       if (!rank) {
         if (r) {
           PetscMPIInt nn;
-          ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
-          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
+          ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
+          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
           if (nn != nnodes*bs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
         } else {
           ierr = PetscArraycpy(array,x,nnodes*bs);CHKERRQ(ierr);
@@ -246,7 +244,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           ierr = PetscViewerVTKFWrite(viewer,fp,array,bs*nnodes,MPIU_SCALAR);CHKERRQ(ierr);
         }
       } else if (r == rank) {
-        ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+        ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
       }
       ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
     }
@@ -284,11 +282,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(comm,PETSC_ERR_SUP,"Complex values not supported");
-#endif
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (PetscDefined(USE_COMPLEX)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = PetscFOpen(comm,vtk->filename,"wb",&fp);CHKERRQ(ierr);
@@ -303,7 +299,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
   rloc[3] = info.ym;
   rloc[4] = info.zs;
   rloc[5] = info.zm;
-  ierr    = MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr    = MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm);CHKERRMPI(ierr);
 
   /* Write XML header */
   maxnnodes = 0;                /* Used for the temporary array size on rank 0 */
@@ -398,8 +394,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
         if (!rank) {
           if (r) {
             PetscMPIInt nn;
-            ierr = MPI_Recv(array,xm+ym+zm,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
-            ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
+            ierr = MPI_Recv(array,xm+ym+zm,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
+            ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
             if (nn != xm+ym+zm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
           } else {
             /* x coordinates */
@@ -434,7 +430,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
             PetscInt Iloc = i+xm*(j+ym*k);
             array2[k+xm+ym] = dim > 2 ? coords[Iloc*dim + 2] : 0;
           }
-          ierr = MPI_Send((void*)array2,xm+ym+zm,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+          ierr = MPI_Send((void*)array2,xm+ym+zm,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
         }
         ierr = VecRestoreArrayRead(Coords,&coords);CHKERRQ(ierr);
       } else {       /* Fabricate some coordinates using grid index */
@@ -469,8 +465,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
       if (!rank) {
         if (r) {
           PetscMPIInt nn;
-          ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
-          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
+          ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
+          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
           if (nn != nnodes*bs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
         } else {
           ierr = PetscArraycpy(array,x,nnodes*bs);CHKERRQ(ierr);
@@ -494,7 +490,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
         ierr = PetscViewerVTKFWrite(viewer,fp,array,nnodes*bs,MPIU_SCALAR);CHKERRQ(ierr);
 
       } else if (r == rank) {
-        ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+        ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
       }
       ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
     }

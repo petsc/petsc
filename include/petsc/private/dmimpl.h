@@ -160,6 +160,7 @@ typedef struct _n_Field {
   PetscObject disc;         /* Field discretization, or a PetscContainer with the field name */
   DMLabel     label;        /* Label defining the domain of definition of the field */
   PetscBool   adjacency[2]; /* Flags for defining variable influence (adjacency) for each field [use cone() or support() first, use the transitive closure] */
+  PetscBool   avoidTensor;  /* Flag to avoid defining field over tensor cells */
 } RegionField;
 
 typedef struct _n_Space {
@@ -167,6 +168,18 @@ typedef struct _n_Space {
   DMLabel label;  /* Label defining the domain of definition of the discretization */
   IS      fields; /* Map from DS field numbers to original field numbers in the DM */
 } DMSpace;
+
+struct _p_UniversalLabel {
+  DMLabel    label;   /* The universal label */
+  PetscInt   Nl;      /* Number of labels encoded */
+  char     **names;   /* The label names */
+  PetscInt  *indices; /* The original indices in the input DM */
+  PetscInt   Nv;      /* Total number of values in all the labels */
+  PetscInt  *bits;    /* Starting bit for values of each label */
+  PetscInt  *masks;   /* Masks to pull out label value bits for each label */
+  PetscInt  *offsets; /* Starting offset for label values for each label */
+  PetscInt  *values;  /* Original label values before renumbering */
+};
 
 PETSC_INTERN PetscErrorCode DMDestroyLabelLinkList_Internal(DM);
 
@@ -237,7 +250,6 @@ struct _p_DM {
   PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
   DMBoundaryType         *bdtype;               /* Indicates type of topological boundary */
   /* Null spaces -- of course I should make this have a variable number of fields */
-  /*   I now believe this might not be the right way: see below */
   NullSpaceFunc           nullspaceConstructors[10];
   NullSpaceFunc           nearnullspaceConstructors[10];
   /* Fields are represented by objects */
@@ -470,5 +482,11 @@ PETSC_INTERN PetscErrorCode DMConstructBasisTransform_Internal(DM);
 
 PETSC_INTERN PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM, PetscReal[], PetscReal[]);
 PETSC_INTERN PetscErrorCode DMSetField_Internal(DM, PetscInt, DMLabel, PetscObject);
+
+PETSC_EXTERN PetscErrorCode DMUniversalLabelCreate(DM, DMUniversalLabel *);
+PETSC_EXTERN PetscErrorCode DMUniversalLabelDestroy(DMUniversalLabel *);
+PETSC_EXTERN PetscErrorCode DMUniversalLabelGetLabel(DMUniversalLabel, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMUniversalLabelCreateLabels(DMUniversalLabel, PetscBool, DM);
+PETSC_EXTERN PetscErrorCode DMUniversalLabelSetLabelValue(DMUniversalLabel, DM, PetscBool, PetscInt, PetscInt);
 
 #endif

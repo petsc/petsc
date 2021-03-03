@@ -79,8 +79,8 @@ PETSC_EXTERN PetscErrorCode PetscDSAddDiscretization(PetscDS, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscDSGetQuadrature(PetscDS, PetscQuadrature*);
 PETSC_EXTERN PetscErrorCode PetscDSGetImplicit(PetscDS, PetscInt, PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscDSSetImplicit(PetscDS, PetscInt, PetscBool);
-PETSC_EXTERN PetscErrorCode PetscDSGetAdjacency(PetscDS, PetscInt, PetscBool*, PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscDSSetAdjacency(PetscDS, PetscInt, PetscBool,  PetscBool);
+PETSC_EXTERN PetscErrorCode PetscDSGetJetDegree(PetscDS, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscDSSetJetDegree(PetscDS, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscDSGetConstants(PetscDS, PetscInt *, const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode PetscDSSetConstants(PetscDS, PetscInt, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetObjective(PetscDS, PetscInt,
@@ -338,6 +338,6 @@ PETSC_EXTERN PetscErrorCode PetscDSAddBoundary(PetscDS, DMBoundaryConditionType,
 PETSC_EXTERN PetscErrorCode PetscDSUpdateBoundary(PetscDS, PetscInt, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(void), void (*)(void), PetscInt, const PetscInt *, void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetNumBoundary(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, DMBoundaryConditionType *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(void), void (**)(void), PetscInt *, const PetscInt **, void **);
-PETSC_EXTERN PetscErrorCode PetscDSCopyBoundary(PetscDS, PetscDS);
+PETSC_EXTERN PetscErrorCode PetscDSCopyBoundary(PetscDS, PetscInt, const PetscInt[], PetscDS);
 
 #endif

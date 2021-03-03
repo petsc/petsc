@@ -251,8 +251,8 @@ static PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt ldr, 
   ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,&rankssf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(rankssf,1,nranks,NULL,PETSC_OWN_POINTER,rremotes,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscMalloc1(nranks,&ldrs);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(rankssf,MPIU_INT,&ldr,ldrs);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(rankssf,MPIU_INT,&ldr,ldrs);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(rankssf,MPIU_INT,&ldr,ldrs,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(rankssf,MPIU_INT,&ldr,ldrs,MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&rankssf);CHKERRQ(ierr);
 
   j = -1;
@@ -471,8 +471,8 @@ static PetscErrorCode MatMultNKernel_HARA(Mat A, PetscBool transA, Mat B, Mat C)
     if (hara->sf) {
       uxx  = MatHaraGetThrustPointer(*hara->xx_gpu);
       uyy  = MatHaraGetThrustPointer(*hara->yy_gpu);
-      ierr = PetscSFBcastBegin(bsf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(bsf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(bsf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(bsf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
     } else {
       uxx = xx;
       uyy = yy;
@@ -485,8 +485,8 @@ static PetscErrorCode MatMultNKernel_HARA(Mat A, PetscBool transA, Mat B, Mat C)
     }
     ierr = MatDenseCUDARestoreArrayRead(B,(const PetscScalar**)&xx);CHKERRQ(ierr);
     if (hara->sf) {
-      ierr = PetscSFReduceBegin(csf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(csf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(csf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(csf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
     }
     ierr = MatDenseCUDARestoreArrayWrite(C,&yy);CHKERRQ(ierr);
     if (!biscuda) {
@@ -509,8 +509,8 @@ static PetscErrorCode MatMultNKernel_HARA(Mat A, PetscBool transA, Mat B, Mat C)
     if (hara->sf) {
       uxx  = MatHaraGetThrustPointer(*hara->xx);
       uyy  = MatHaraGetThrustPointer(*hara->yy);
-      ierr = PetscSFBcastBegin(bsf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(bsf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(bsf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(bsf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
     } else {
       uxx = xx;
       uyy = yy;
@@ -523,8 +523,8 @@ static PetscErrorCode MatMultNKernel_HARA(Mat A, PetscBool transA, Mat B, Mat C)
     }
     ierr = MatDenseRestoreArrayRead(B,(const PetscScalar**)&xx);CHKERRQ(ierr);
     if (hara->sf) {
-      ierr = PetscSFReduceBegin(csf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(csf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(csf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(csf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
     }
     ierr = MatDenseRestoreArrayWrite(C,&yy);CHKERRQ(ierr);
   }
@@ -623,11 +623,11 @@ static PetscErrorCode MatMultKernel_HARA(Mat A, Vec x, PetscScalar sy, Vec y, Pe
       uxx = MatHaraGetThrustPointer(*hara->xx_gpu);
       uyy = MatHaraGetThrustPointer(*hara->yy_gpu);
 
-      ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
       if (sy != 0.0) {
-        ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,yy,uyy);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,yy,uyy);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,yy,uyy,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,yy,uyy,MPI_REPLACE);CHKERRQ(ierr);
       }
     } else {
       uxx = xx;
@@ -641,8 +641,8 @@ static PetscErrorCode MatMultKernel_HARA(Mat A, Vec x, PetscScalar sy, Vec y, Pe
     }
     ierr = VecCUDARestoreArrayRead(x,(const PetscScalar**)&xx);CHKERRQ(ierr);
     if (hara->sf) {
-      ierr = PetscSFReduceBegin(hara->sf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(hara->sf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(hara->sf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(hara->sf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
     }
     if (sy == 0.0) {
       ierr = VecCUDARestoreArrayWrite(y,&yy);CHKERRQ(ierr);
@@ -661,11 +661,11 @@ static PetscErrorCode MatMultKernel_HARA(Mat A, Vec x, PetscScalar sy, Vec y, Pe
       uxx = MatHaraGetThrustPointer(*hara->xx);
       uyy = MatHaraGetThrustPointer(*hara->yy);
 
-      ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,xx,uxx);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,xx,uxx,MPI_REPLACE);CHKERRQ(ierr);
       if (sy != 0.0) {
-        ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,yy,uyy);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,yy,uyy);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(hara->sf,MPIU_SCALAR,yy,uyy,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(hara->sf,MPIU_SCALAR,yy,uyy,MPI_REPLACE);CHKERRQ(ierr);
       }
     } else {
       uxx = xx;
@@ -679,8 +679,8 @@ static PetscErrorCode MatMultKernel_HARA(Mat A, Vec x, PetscScalar sy, Vec y, Pe
     }
     ierr = VecRestoreArrayRead(x,(const PetscScalar**)&xx);CHKERRQ(ierr);
     if (hara->sf) {
-      ierr = PetscSFReduceBegin(hara->sf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(hara->sf,MPIU_SCALAR,uyy,yy,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(hara->sf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(hara->sf,MPIU_SCALAR,uyy,yy,MPI_REPLACE);CHKERRQ(ierr);
     }
     if (sy == 0.0) {
       ierr = VecRestoreArrayWrite(y,&yy);CHKERRQ(ierr);
@@ -814,7 +814,7 @@ static PetscErrorCode MatSetUpMultiply_HARA(Mat A)
   PetscFunctionBegin;
   if (a->multsetup) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size > 1) {
     iidx = MatHaraGetThrustPointer(a->dist_hmatrix->basis_tree.basis_branch.index_map);
     n    = a->dist_hmatrix->basis_tree.basis_branch.index_map.size();
@@ -865,7 +865,7 @@ static PetscErrorCode MatAssemblyEnd_HARA(Mat A, MatAssemblyType asstype)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   /* TODO REUSABILITY of geometric construction */
   delete a->hmatrix;
   delete a->dist_hmatrix;
@@ -1008,7 +1008,7 @@ static PetscErrorCode MatZeroEntries_HARA(Mat A)
   Mat_HARA       *a = (Mat_HARA*)A->data;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size > 1) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not yet supported");
   else {
     a->hmatrix->clearData();
@@ -1098,7 +1098,7 @@ static PetscErrorCode MatView_HARA(Mat A, PetscViewer view)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(view,&format);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(view,"  H-Matrix constructed from %s\n",hara->sampler ? "Mat" : (hara->spacedim ? "Kernel" : "None"));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(view,"  PointCloud dim %D\n",hara->spacedim);CHKERRQ(ierr);
@@ -1141,21 +1141,21 @@ static PetscErrorCode MatHaraSetCoords_HARA(Mat A, PetscInt spacedim, const Pets
   ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
   if (!cong) SETERRQ(comm,PETSC_ERR_SUP,"Only for square matrices with congruent layouts");
   N    = A->rmap->N;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size > 1) {
     PetscSF      sf;
     MPI_Datatype dtype;
 
-    ierr = MPI_Type_contiguous(spacedim,MPIU_REAL,&dtype);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&dtype);CHKERRQ(ierr);
+    ierr = MPI_Type_contiguous(spacedim,MPIU_REAL,&dtype);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&dtype);CHKERRMPI(ierr);
 
     ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
     ierr = PetscSFSetGraphWithPattern(sf,A->rmap,PETSCSF_PATTERN_ALLGATHER);CHKERRQ(ierr);
     ierr = PetscMalloc1(spacedim*N,&gcoords);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sf,dtype,coords,gcoords);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,dtype,coords,gcoords);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,dtype,coords,gcoords,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,dtype,coords,gcoords,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-    ierr = MPI_Type_free(&dtype);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&dtype);CHKERRMPI(ierr);
   } else gcoords = (PetscReal*)coords;
 
   delete hara->ptcloud1;
@@ -1206,7 +1206,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HARA(Mat A)
   a->norm_max_samples = 10;
   haraCreateDistributedHandleComm(&a->handle,PetscObjectComm((PetscObject)A));
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATHARA);CHKERRQ(ierr);
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 

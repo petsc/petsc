@@ -95,18 +95,29 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm com
   if (keyval != Petsc_Superlu_dist_keyval) SETERRMPI(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Unexpected keyval");
   ierr = PetscInfo(NULL,"Removing Petsc_Superlu_dist_keyval attribute from communicator that is being freed\n");
   PetscStackCall("SuperLU_DIST:superlu_gridexit",superlu_gridexit(&context->grid));
-  ierr = MPI_Comm_free(&context->comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&context->comm);CHKERRMPI(ierr);
   ierr = PetscFree(context);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
+/*
+   Performs MPI_Comm_free_keyval() on Petsc_Superlu_dist_keyval but keeps the global variable for
+   users who do not destroy all PETSc objects before PetscFinalize().
+
+   The value Petsc_Superlu_dist_keyval is retained so that Petsc_Superlu_dist_keyval_Delete_Fn()
+   can still check that the keyval associated with the MPI communicator is correct when the MPI
+   communicator is destroyed.
+
+   This is called in PetscFinalize()
+*/
 static PetscErrorCode Petsc_Superlu_dist_keyval_free(void)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    Petsc_Superlu_dist_keyval_temp = Petsc_Superlu_dist_keyval;
 
   PetscFunctionBegin;
   ierr = PetscInfo(NULL,"Freeing Petsc_Superlu_dist_keyval\n");
-  ierr = MPI_Comm_free_keyval(&Petsc_Superlu_dist_keyval);CHKERRQ(ierr);
+  ierr = MPI_Comm_free_keyval(&Petsc_Superlu_dist_keyval_temp);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -133,14 +144,14 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     /* Release the SuperLU_DIST process grid. Only if the matrix has its own copy, this is it is not in the communicator context */
     if (lu->comm_superlu) {
       PetscStackCall("SuperLU_DIST:superlu_gridexit",superlu_gridexit(&lu->grid));
-      ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
+      ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRMPI(ierr);
     } else {
       PetscSuperLU_DIST *context;
       MPI_Comm          comm;
       PetscMPIInt       flg;
 
       ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-      ierr = MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg);CHKERRQ(ierr);
+      ierr = MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg);CHKERRMPI(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Communicator does not have expected Petsc_Superlu_dist_keyval attribute");
       context->busy = PETSC_FALSE;
     }
@@ -584,7 +595,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 
   ierr    = PetscNewLog(B,&lu);CHKERRQ(ierr);
   B->data = lu;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
 
   {
     PetscMPIInt       flg;
@@ -593,18 +604,18 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 
     ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
     if (Petsc_Superlu_dist_keyval == MPI_KEYVAL_INVALID) {
-      ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_Superlu_dist_keyval_Delete_Fn,&Petsc_Superlu_dist_keyval,(void*)0);CHKERRQ(ierr);
+      ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_Superlu_dist_keyval_Delete_Fn,&Petsc_Superlu_dist_keyval,(void*)0);CHKERRMPI(ierr);
       ierr = PetscRegisterFinalize(Petsc_Superlu_dist_keyval_free);CHKERRQ(ierr);
     }
-    ierr = MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg);CHKERRQ(ierr);
+    ierr = MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg);CHKERRMPI(ierr);
     if (!flg || context->busy) {
       if (!flg) {
         ierr = PetscNew(&context);CHKERRQ(ierr);
         context->busy = PETSC_TRUE;
-        ierr = MPI_Comm_dup(comm,&context->comm);CHKERRQ(ierr);
-        ierr = MPI_Comm_set_attr(comm,Petsc_Superlu_dist_keyval,context);CHKERRQ(ierr);
+        ierr = MPI_Comm_dup(comm,&context->comm);CHKERRMPI(ierr);
+        ierr = MPI_Comm_set_attr(comm,Petsc_Superlu_dist_keyval,context);CHKERRMPI(ierr);
       } else {
-        ierr = MPI_Comm_dup(comm,&lu->comm_superlu);CHKERRQ(ierr);
+        ierr = MPI_Comm_dup(comm,&lu->comm_superlu);CHKERRMPI(ierr);
       }
 
       /* Default num of process columns and rows */

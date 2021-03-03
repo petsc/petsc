@@ -96,6 +96,11 @@ struct _VecOps {
   PetscErrorCode (*bindtocpu)(Vec,PetscBool);
   PetscErrorCode (*getarraywrite)(Vec,PetscScalar**);
   PetscErrorCode (*restorearraywrite)(Vec,PetscScalar**);
+  PetscErrorCode (*getarrayandmemtype)(Vec,PetscScalar**,PetscMemType*);
+  PetscErrorCode (*getarrayreadandmemtype)(Vec,const PetscScalar**,PetscMemType*);
+  PetscErrorCode (*restorearrayandmemtype)(Vec,PetscScalar**);
+  PetscErrorCode (*restorearrayreadandmemtype)(Vec,const PetscScalar**);
+  PetscErrorCode (*concatenate)(PetscInt,const Vec[],Vec*,IS*[]);
 };
 
 /*
@@ -147,6 +152,7 @@ struct _p_Vec {
   size_t                 minimum_bytes_pinned_memory; /* minimum data size in bytes for which pinned memory will be allocated */
   PetscBool              pinned_memory; /* PETSC_TRUE if the current host allocation has been made from pinned memory. */
 #endif
+  char                   *defaultrandtype;
 };
 
 PETSC_EXTERN PetscLogEvent VEC_SetRandom;
@@ -187,6 +193,10 @@ PETSC_EXTERN PetscLogEvent VEC_CUDACopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyToGPUSome;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPUSome;
+PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPU;
+PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPU;
+PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPUSome;
+PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPUSome;
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 #if defined(PETSC_HAVE_VIENNACL)
@@ -196,6 +206,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode VecCUDAAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
+#endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscErrorCode VecHIPAllocateCheckHost(Vec v);
+PETSC_EXTERN PetscErrorCode VecHIPCopyFromGPU(Vec v);
 #endif
 
 
@@ -307,7 +321,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, Pets
   } while (0)
 
 #define VecCheckSize(x,ar1,n,N) do { \
-    if ((x)->map->N != N) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incorrect vector global size: parameter # %d global size %D != %D",ar1,(x)->map->N, N); \
+    if ((x)->map->N != N) SETERRQ3(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incorrect vector global size: parameter # %d global size %D != %D",ar1,(x)->map->N, N); \
     VecCheckLocalSize(x,ar1,n); \
   } while (0)
 

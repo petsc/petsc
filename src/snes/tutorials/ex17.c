@@ -589,7 +589,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p1_quad_vlap
     requires: ctetgen
-    args: -dim 3 -cells 2,2,2 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -dm_refine 1 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_quad_vlap
     requires: ctetgen
@@ -610,7 +610,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p1_quad_elas
     requires: ctetgen
-    args: -sol_type elas_quad -dim 3 -cells 2,2,2 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
+    args: -sol_type elas_quad -dim 3 -dm_refine 1 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_quad_elas
     requires: ctetgen
@@ -685,7 +685,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p1_trig_vlap
     requires: ctetgen
-    args: -sol_type vlap_trig -dim 3 -cells 2,2,2 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
+    args: -sol_type vlap_trig -dim 3 -dm_refine 1 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_trig_vlap
     requires: ctetgen
@@ -707,7 +707,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p1_trig_elas
     requires: ctetgen
-    args: -sol_type elas_trig -dim 3 -cells 2,2,2 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
+    args: -sol_type elas_trig -dim 3 -dm_refine 1 -displacement_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_trig_elas
     requires: ctetgen

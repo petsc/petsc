@@ -18,7 +18,7 @@ Building Main Documentation
 ===========================
 
 The documentation tools listed below (except for pdflatex) are
-automatically downloaded and installed by ``./configure``.
+automatically downloaded and installed by ``configure``.
 
 * `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: a text processing tool developed by Bill Gropp.  This produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
 * `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: A text processing package. This generates the HTML versions of all the source code.
@@ -28,32 +28,29 @@ Note: Sowing and c2html have additional dependencies like gcc, g++, and flex and
 use compilers specified to PETSc configure. [Windows users please install the corresponding
 cygwin packages]
 
-Once pdflatex is in your ``PATH``, you can build the documentation with:
+Once pdflatex is in your ``$PATH``, you can build the documentation with:
 
-.. code-block:: bash
+.. code-block:: console
 
-    make alldoc LOC=${PETSC_DIR}
+    > make alldoc LOC=${PETSC_DIR}
 
 (Note that this does not include :ref:`sphinx_documentation`).
 
 To get a quick preview of manual pages from a single source directory (mainly to debug the manual page syntax):
 
-.. code-block:: bash
+.. code-block:: console
 
-    cd $PETSC_DIR/src/snes/interface
-    make LOC=$PETSC_DIR manualpages_buildcite
-    browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
+    > cd $PETSC_DIR/src/snes/interface
+    > make LOC=$PETSC_DIR manualpages_buildcite
+     browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
 
 .. _sphinx_documentation:
 
 Sphinx Documentation
 ====================
 
-`Sphinx <https://www.sphinx-doc.org/en/master/>`__ is a well-documented and widely-used set of Python-based tools
+`Sphinx <https://www.sphinx-doc.org/en/master/>`__ is a `well-documented <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`__ and widely-used set of Python-based tools
 for building documentation. Most content is written using `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`__, a simple markup language.
-
-The Sphinx documentation is currently not integrated into the main docs build as described
-in :ref:`docs_build`.
 
 `ReadTheDocs <readthedocs.org>`__ generates the HTML documentation at
 https://docs.petsc.org from the `PETSc Git repository <https://gitlab.com/petsc/petsc>`__.
@@ -69,24 +66,138 @@ Making changes to the Sphinx Docs from the web
 You can make small changes this documentation entirely through web interfaces,
 using the usual guidelines in :doc:`integration` (note the options for speedy review of docs-only changes).
 
-1. Find the page of interest, confirming the version is what you expect (usually "latest").
-2. In the small ReadTheDocs menu in the bottom right, click the link to edit on GitLab.
-3. Make your changes.
-4. Compose a commit message and name your branch.
-5. Click the button to commit changes and create a Merge Request.
+#. Find the page of interest, confirming the version is what you expect (usually "latest").
+#. In the small ReadTheDocs menu in the bottom right, click the link to edit on GitLab.
+#. Make your changes.
+#. Compose a commit message and name your branch.
+#. Click the button to commit changes and create a Merge Request.
 
 Building the Sphinx docs locally
 --------------------------------
 
-* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/master/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/master/src/docs/sphinx_docs/requirements.txt>`__ [#f1]. e.g. with pip, `pip install -r $PETSC_DIR/src/docs/sphinx_docs/requirements.txt`.
+* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/main/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/main/src/docs/sphinx_docs/requirements.txt>`__ [#f1]. e.g. with pip:
+
+  .. code-block:: console
+
+     > python -m pip install -r $PETSC_DIR/src/docs/sphinx_docs/requirements.txt
+
 * Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``$PETSC_DIR/src/docs/sphinx_docs``).
+
 * ``make html``
+
 * Open ``_build/html/index.html`` with your browser.
 
 .. _sphinx_guidelines:
 
 Sphinx Documentation Guidelines
 -------------------------------
+
+* Use the ``.. code-block::`` `directive
+  <https://www.sphinx-doc.org/en/1.5/markup/code.html>`__ instead of the ``.. code::``
+  `directive <https://docutils.sourceforge.io/docs/ref/rst/directives.html#code>`__ for
+  any example code that is not included literally using ``.. literalinclude::``. See
+  :ref:`below <doc_devdoc_guide_litinc>` for more details on ``.. literalinclude``.
+
+* Any invocable command line statements longer than a few words should be in
+  ``.. code-block::`` sections. Any such statements not in code-block statements must be
+  enclosed by double backticks "``". For example ``make all`` is acceptable but
+
+  .. code-block:: console
+
+     > make PETSC_DIR=/my/path/to/petsc PETSC_ARCH=my-petsc-arch all
+
+  should be in a block.
+
+* All code blocks showing invocation of command line must use the "console" block
+  directive. E.g.
+
+  .. code-block:: rst
+
+     .. code-block:: console
+
+        > cd $PETSC_DIR/src/snes/interface
+        > ./someprog
+        output1
+        output2
+
+  The only exception of this is when displaying raw output, i.e. with no preceding
+  commands. Then one may use just the "::" directive to improve visibility E.g.
+
+  .. code-block:: rst
+
+     ::
+
+        output1
+        output2
+
+  which renders as
+
+  ::
+
+     output1
+     output2
+
+  Notice that now "output1" and "output2" are not greyed out as previously.
+
+* Any code blocks that show command line invocations must be preceded by the ">"
+  character. E.g.
+
+  .. code-block:: rst
+
+     .. code-block:: console
+
+        > ./configure --some-args
+        > make libs
+        > make ./ex1
+        > ./ex1 --some-args
+
+
+* All environment variables such as ``$PETSC_DIR`` or ``$PATH`` must be preceded by the
+  "$" character and be enclosed in double backticks "``". E.g.
+
+  .. code-block:: rst
+
+     Lorem ipsum dolor sit ``$PETSC_DIR``, consectetur adipiscing ``$PETSC_ARCH``...
+
+* When referring to configuration of PETSc, specifically the ``$PETSC_DIR/configure``
+  script in plain text (not code blocks), it should always be lower-case, enclosed in
+  double backticks "``" and not include "./". E.g.
+
+  .. code-block:: rst
+
+     Lorem ipsum dolor sit ``configure``, consectetur adipiscing elit...
+
+* If using internal section links to to jump to other places within the documentation, use
+  explicit labels and namespace them appropriately. Do not use `autosectionlabel
+  <https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html>`__
+  extension, and do not use implicit links. E.g.
+
+  .. code-block:: rst
+
+     .. _doc_mydoc:
+
+     ======================
+     Start Document Heading
+     ======================
+
+     .. _doc_mydoc_internalheadline:
+
+     Internal Headline
+     =================
+
+  And in some other file
+
+  .. code-block:: rst
+
+     .. _tut_mytutorial:
+
+     ======================
+     Start Tutorial Heading
+     ======================
+
+     A link- :ref:`my link name <doc_mydoc_internalheadline>`
+
+.. _doc_devdoc_guide_litinc:
 
 * Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code, as in
   the following example. Note that an "absolute" path has been used, which means
@@ -103,8 +214,8 @@ Sphinx Documentation Guidelines
 
 * We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
-  You must include ``.. bibliography::`` blocks at the bottom of a page including citations (`example <https://gitlab.com/petsc/petsc/-/raw/master/src/docs/sphinx_docs/manual/ksp.rst>`__).
-  To cite the same reference in more than one page, use `this workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing>`__ on one of them (`example <https://gitlab.com/petsc/petsc/-/raw/master/src/docs/sphinx_docs/developers/articles.rst>`__) [#bibtex_footnote]_.
+  You must include ``.. bibliography::`` blocks at the bottom of a page including citations (`example <https://gitlab.com/petsc/petsc/-/raw/main/src/docs/sphinx_docs/manual/ksp.rst>`__).
+  To cite the same reference in more than one page, use `this workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing>`__ on one of them (`example <https://gitlab.com/petsc/petsc/-/raw/main/src/docs/sphinx_docs/developers/articles.rst>`__) [#bibtex_footnote]_.
 
 * When possible, please use SVG for images.  SVG is web-friendly and will be automatically converted to PDF using ``rsvg-convert`` (installable with your package manager, e.g., ``librsvg2-bin`` on Debian/Ubuntu systems).  If SVG originals are not available, it is useful to provide images in both web-friendly (such as PNG) and PDF formats.  This can be done with a wildcard extension, as in the following example, which uses ``ghost.png`` for the web but ``ghost.pdf`` when building a PDF with LaTeX.
 
@@ -114,6 +225,78 @@ Sphinx Documentation Guidelines
         :alt: Ghost Points
 
         Ghost Points
+
+* By default the theme used by PETSc docs will only uniquely color 2 sets of `admonitions
+  <https://docutils.sourceforge.io/docs/ref/rst/directives.html#admonitions>`__,
+  ``.. warning::`` and everything else. E.g.
+
+  .. code-block:: rst
+
+     .. note::
+
+        Can be any one of "attention", "caution", "danger", "error", "hint", "important",
+        "note", "tip", "warning", "admonition".
+
+     .. warning::
+
+        Scary!
+
+  Renders as:
+
+  .. note::
+
+     Can be any one of "attention", "caution", "danger", "error", "hint", "important",
+     "note", "tip", "warning", "admonition".
+
+  .. warning::
+
+     Scary!
+
+  However, it is possible to add custom colors to generic admonition ``.. admonition::``
+  by using the ``:class:`` directive option.  The "classes" to which this option refer to
+  may be defined in ``$PETSC_DIR/src/docs/sphinx_docs/_static/css``.  Currently only 1
+  valid option exists:
+
+  .. code-block:: rst
+
+     .. admonition:: My title
+        :class: yellow
+
+        We all live in a yellow submarine.
+
+  Which renders as:
+
+  .. admonition:: My title
+        :class: yellow
+
+        We all live in a yellow submarine.
+
+  And is defined in ``$PETSC_DIR/src/docs/sphinx_docs/_static/css/colorbox.css``. In order
+  to define additional colors for use as an admonition class, for example a pink box we
+  shall call ``examplebox`` with a fancy border, one may add the following to
+  ``colorbox.css``:
+
+  .. literalinclude:: /_static/css/colorbox.css
+     :language: css
+     :start-at: div.examplebox {
+     :end-at: border: 5px ridge #e195a2;
+     :append: }
+
+  Then
+
+  .. code-block:: rst
+
+     .. admonition:: Oh no
+        :class: examplebox
+
+        Something very important
+
+  Renders as:
+
+  .. admonition:: Oh no
+     :class: examplebox
+
+     Something very important
 
 * Prefer formatting styles that are easy to modify and maintain.  In particular, use of `list-table <https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table>`_ is recommended.
 
@@ -216,7 +399,7 @@ be converted to RST by `Pandoc <pandoc.org>`__.
 Next, one must examine the output, ideally comparing to the original rendered LaTeX, and make fixes on the ``.rst`` file, including but not limited to:
 
 * Check links
-* Add correct code block languages when not C, e.g. replace ``::`` with ``.. code-block:: bash``
+* Add correct code block languages when not C, e.g. replace ``::`` with ``.. code-block:: console``
 * Re-add citations with ``:cite:`` and add per-chapter bibliography sections (see existing examples)
 * Fix footnotes
 * Fix section labels and links
@@ -230,4 +413,4 @@ Next, one must examine the output, ideally comparing to the original rendered La
 .. rubric:: Footnotes
 
 .. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (`:footcite:`), which can be investigated if a release is ever made.
-.. [#f1] We use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/master/src/docs/sphinx_docs/ext/html5_petsc.py>`__
+.. [#f1] We use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/main/src/docs/sphinx_docs/ext/html5_petsc.py>`__

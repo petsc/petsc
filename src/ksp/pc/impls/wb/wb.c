@@ -257,7 +257,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   ierr = ISLocalToGlobalMappingApply(ltg,26,gl,gl);CHKERRQ(ierr);
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
   ierr = PetscMalloc1(26*mp*np*pp,&globals);CHKERRQ(ierr);
-  ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
   ierr = MatGetSize(Aglobal,&Nt,NULL);CHKERRQ(ierr);
@@ -535,7 +535,7 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   ierr = ISLocalToGlobalMappingApply(ltg,6,gl,gl);CHKERRQ(ierr);
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
   ierr = PetscMalloc1(6*mp*np*pp,&globals);CHKERRQ(ierr);
-  ierr = MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
   ierr = MatGetSize(Aglobal,&Nt,NULL);CHKERRQ(ierr);
@@ -710,7 +710,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);  /* should not need to push this twice? */
       ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
       if (!rank) {
         ierr = KSPView(ctx->ksp,sviewer);CHKERRQ(ierr);
       }

@@ -51,6 +51,7 @@ PetscLogEvent PC_BDDC_CoarseSolver[PETSC_PCBDDC_MAXLEVELS];
 PetscLogEvent PC_BDDC_AdaptiveSetUp[PETSC_PCBDDC_MAXLEVELS];
 PetscLogEvent PC_BDDC_Scaling[PETSC_PCBDDC_MAXLEVELS];
 PetscLogEvent PC_BDDC_Schurs[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_Solves[PETSC_PCBDDC_MAXLEVELS][3];
 
 const char *const PCBDDCInterfaceExtTypes[] = {"DIRICHLET","LUMP","PCBDDCInterfaceExtType","PC_BDDC_INTERFACE_EXT_",NULL};
 
@@ -222,12 +223,12 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     loc[4]  = pcis->n;
     loc[5]  = pcbddc->n_local_subs > 0 ? pcbddc->n_local_subs : (pcis->n ? 1 : 0);
     loc[6]  = pcbddc->benign_n;
-    ierr = MPI_Reduce(loc,gsum,6,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPI_Reduce(loc,gsum,6,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = loc[5] = -1;
-    ierr = MPI_Reduce(loc,gmax,6,MPIU_INT64,MPI_MAX,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPI_Reduce(loc,gmax,6,MPIU_INT64,MPI_MAX,0,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = loc[5] = PETSC_MAX_INT;
-    ierr = MPI_Reduce(loc,gmin,6,MPIU_INT64,MPI_MIN,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    ierr = MPI_Reduce(&loc[6],&totbenign,1,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPI_Reduce(loc,gmin,6,MPIU_INT64,MPI_MIN,0,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
+    ierr = MPI_Reduce(&loc[6],&totbenign,1,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     if (pcbddc->coarse_size) {
       ratio1 = pc->pmat->rmap->N/(1.*pcbddc->coarse_size);
       ratio2 = PetscRealPart(interface_size)/pcbddc->coarse_size;
@@ -248,7 +249,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Local     subs   :\t%D\t%D\n"    ,(PetscInt)gmin[5],(PetscInt)gmax[5]);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
 
     /* local solvers */
     ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)pcbddc->ksp_D),&subviewer);CHKERRQ(ierr);
@@ -269,7 +270,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     /* the coarse problem can be handled by a different communicator */
     if (pcbddc->coarse_ksp) color = 1;
     else color = 0;
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
     ierr = PetscSubcommCreate(PetscObjectComm((PetscObject)pc),&subcomm);CHKERRQ(ierr);
     ierr = PetscSubcommSetNumber(subcomm,PetscMin(size,2));CHKERRQ(ierr);
     ierr = PetscSubcommSetTypeGeneral(subcomm,color,rank);CHKERRQ(ierr);
@@ -1318,7 +1319,7 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc,PetscInt n_is, IS ISForDofs[])
                      guess if a transformation of basis approach has been selected.
 
    Input Parameter:
-+  pc - the preconditioner contex
++  pc - the preconditioner context
 
    Application Interface Routine: PCPreSolve()
 
@@ -1504,7 +1505,9 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = VecScatterBegin(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
+    ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
     ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
     ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
     if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior) {
       ierr = VecSet(pcis->vec1_global,0.);CHKERRQ(ierr);
@@ -1530,7 +1533,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
                      approach has been selected. Also, restores rhs to its original state.
 
    Input Parameter:
-+  pc - the preconditioner contex
++  pc - the preconditioner context
 
    Application Interface Routine: PCPostSolve()
 
@@ -1602,7 +1605,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
   ierr = MatGetSize(pc->pmat,&nrows,&ncols);CHKERRQ(ierr);
   if (nrows != ncols) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
 
   matis = (Mat_IS*)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
@@ -1943,7 +1946,9 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
       - pcis->vec1_B the interface part of the global vector z
     */
     if (n_D) {
+      ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
       ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
       ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
       if (pcbddc->switch_static) {
@@ -2022,7 +2027,9 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
       ierr = MatMultTranspose(pcbddc->switch_static_change,pcis->vec2_N,pcis->vec3_D);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
   ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec4_D);CHKERRQ(ierr);
 
   if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
@@ -2112,7 +2119,9 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
       - pcis->vec1_B the interface part of the global vector z
     */
     if (n_D) {
+      ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
       ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
       ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
       if (pcbddc->switch_static) {
@@ -2180,7 +2189,9 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
       ierr = MatMultTranspose(pcbddc->switch_static_change,pcis->vec2_N,pcis->vec3_D);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
   ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
   ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec4_D);CHKERRQ(ierr);
   if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
     if (pcbddc->switch_static) {
@@ -2382,7 +2393,9 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   /* ierr = PCBDDCScalingRestriction(mat_ctx->pc,work,mat_ctx->temp_solution_B);CHKERRQ(ierr); */
   if (!pcbddc->switch_static) {
     /* compute partially subassembled Schur complement right-hand side */
+    ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0],mat_ctx->pc,0,0,0);CHKERRQ(ierr);
     ierr = KSPSolve(pcbddc->ksp_D,mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0],mat_ctx->pc,0,0,0);CHKERRQ(ierr);
     /* Cannot propagate up error in KSPSolve() because there is no access to the PC */
     ierr = MatMult(pcis->A_BI,pcis->vec1_D,pcis->vec1_B);CHKERRQ(ierr);
     ierr = VecAXPY(mat_ctx->temp_solution_B,-1.0,pcis->vec1_B);CHKERRQ(ierr);
@@ -2499,7 +2512,9 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
     /* compute values into the interior if solved for the partially subassembled Schur complement */
     ierr = MatMult(pcis->A_IB,pcis->vec1_B,pcis->vec1_D);CHKERRQ(ierr);
     ierr = VecAYPX(pcis->vec1_D,-1.0,mat_ctx->temp_solution_D);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0],mat_ctx->pc,0,0,0);CHKERRQ(ierr);
     ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0],mat_ctx->pc,0,0,0);CHKERRQ(ierr);
     /* Cannot propagate up error in KSPSolve() because there is no access to the PC */
   }
 
@@ -3108,6 +3123,9 @@ PetscErrorCode PCBDDCInitializePackage(void)
   ierr = PetscLogEventRegister("PCBDDCAdap",PC_CLASSID,&PC_BDDC_AdaptiveSetUp[0]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCBDDCScal",PC_CLASSID,&PC_BDDC_Scaling[0]);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCBDDCSchr",PC_CLASSID,&PC_BDDC_Schurs[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCDirS",PC_CLASSID,&PC_BDDC_Solves[0][0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCNeuS",PC_CLASSID,&PC_BDDC_Solves[0][1]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCCoaS",PC_CLASSID,&PC_BDDC_Solves[0][2]);CHKERRQ(ierr);
   for (i=1;i<PETSC_PCBDDC_MAXLEVELS;i++) {
     char ename[32];
 
@@ -3133,6 +3151,12 @@ PetscErrorCode PCBDDCInitializePackage(void)
     ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_Scaling[i]);CHKERRQ(ierr);
     ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCSchr l%02d",i);CHKERRQ(ierr);
     ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_Schurs[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCDirS l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_Solves[i][0]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCNeuS l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_Solves[i][1]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCCoaS l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_Solves[i][2]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

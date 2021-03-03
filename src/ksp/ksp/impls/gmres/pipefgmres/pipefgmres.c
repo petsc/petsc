@@ -88,8 +88,7 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
     the initial residual.
 
 
- */
-
+*/
 static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)(ksp->data);
@@ -371,12 +370,9 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
   PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
-
   /* We have not checked these routines for use with complex numbers. The inner products
      are likely not defined correctly for that case */
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
-#endif
+  if (PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
 
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
@@ -785,6 +781,7 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp,PetscInt it)
   pipefgmres->nwork_alloc++;
   PetscFunctionReturn(0);
 }
+
 /*@
   KSPPIPEFGMRESSetShift - Set the shift parameter for the flexible, pipelined GMRES solver.
 

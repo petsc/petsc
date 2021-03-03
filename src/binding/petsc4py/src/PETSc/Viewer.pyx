@@ -15,6 +15,7 @@ class ViewerType(object):
     GLVIS       = S_(PETSCVIEWERGLVIS)
     ADIOS       = S_(PETSCVIEWERADIOS)
     ADIOS2      = S_(PETSCVIEWERADIOS2)
+    EXODUSII    = S_(PETSCVIEWEREXODUSII)
 
 class ViewerFormat(object):
     DEFAULT           = PETSC_VIEWER_DEFAULT
@@ -36,8 +37,11 @@ class ViewerFormat(object):
     ASCII_FACTOR_INFO = PETSC_VIEWER_ASCII_FACTOR_INFO
     ASCII_LATEX       = PETSC_VIEWER_ASCII_LATEX
     ASCII_XML         = PETSC_VIEWER_ASCII_XML
+    ASCII_GLVIS       = PETSC_VIEWER_ASCII_GLVIS
+    ASCII_CSV         = PETSC_VIEWER_ASCII_CSV
     DRAW_BASIC        = PETSC_VIEWER_DRAW_BASIC
     DRAW_LG           = PETSC_VIEWER_DRAW_LG
+    DRAW_LG_XRANGE    = PETSC_VIEWER_DRAW_LG_XRANGE
     DRAW_CONTOUR      = PETSC_VIEWER_DRAW_CONTOUR
     DRAW_PORTS        = PETSC_VIEWER_DRAW_PORTS
     VTK_VTS           = PETSC_VIEWER_VTK_VTS
@@ -45,9 +49,13 @@ class ViewerFormat(object):
     VTK_VTU           = PETSC_VIEWER_VTK_VTU
     BINARY_MATLAB     = PETSC_VIEWER_BINARY_MATLAB
     NATIVE            = PETSC_VIEWER_NATIVE
+    HDF5_PETSC        = PETSC_VIEWER_HDF5_PETSC
     HDF5_VIZ          = PETSC_VIEWER_HDF5_VIZ
     HDF5_XDMF         = PETSC_VIEWER_HDF5_XDMF
+    HDF5_MAT          = PETSC_VIEWER_HDF5_MAT
     NOFORMAT          = PETSC_VIEWER_NOFORMAT
+    LOAD_BALANCE      = PETSC_VIEWER_LOAD_BALANCE
+    FAILED            = PETSC_VIEWER_FAILED
 
 class FileMode(object):
     # native
@@ -118,7 +126,7 @@ cdef class Viewer(Object):
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
-        if mode is not None: filemode(mode)
+        if mode is not None: cmode = filemode(mode)
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr

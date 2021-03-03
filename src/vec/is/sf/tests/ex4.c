@@ -19,7 +19,7 @@ int main(int argc, char **argv)
   PetscBool          flag = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
@@ -88,8 +88,8 @@ int main(int argc, char **argv)
   ierr = VecGetArrayRead(a, &arrayR);CHKERRQ(ierr);
   ierr = VecGetArray(b, &arrayW);CHKERRQ(ierr);
 
-  ierr = PetscSFBcastBegin(sfA, MPIU_SCALAR, arrayR, arrayW);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfA, MPIU_SCALAR, arrayR, arrayW);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
   ierr = VecRestoreArray(b, &arrayW);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(a, &arrayR);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast A->B over sfA\n");CHKERRQ(ierr);
@@ -98,8 +98,8 @@ int main(int argc, char **argv)
   ierr = VecGetArrayRead(b, &arrayR);CHKERRQ(ierr);
   ierr = VecGetArray(ba, &arrayW);CHKERRQ(ierr);
   arrayW[0] = 10.0;             /* Not touched by bcast */
-  ierr = PetscSFBcastBegin(sfB, MPIU_SCALAR, arrayR, arrayW);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfB, MPIU_SCALAR, arrayR, arrayW);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfB, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfB, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(b, &arrayR);CHKERRQ(ierr);
   ierr = VecRestoreArray(ba, &arrayW);CHKERRQ(ierr);
 
@@ -112,8 +112,8 @@ int main(int argc, char **argv)
   ierr = VecGetArrayRead(a, &arrayR);CHKERRQ(ierr);
   ierr = VecGetArray(ba, &arrayW);CHKERRQ(ierr);
   arrayW[0] = 11.0;             /* Not touched by bcast */
-  ierr = PetscSFBcastBegin(sfBA, MPIU_SCALAR, arrayR, arrayW);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfBA, MPIU_SCALAR, arrayR, arrayW);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfBA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfBA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
   ierr = VecRestoreArray(ba, &arrayW);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(a, &arrayR);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast A->BA over sfBA (sfB o sfA)\n");CHKERRQ(ierr);

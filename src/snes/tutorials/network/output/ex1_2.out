@@ -1,7 +1,7 @@
-nb = 9, ngen = 3, nload = 3, nbranch = 9
-[0] Total local nvertices 9 + 0 = 9, nedges 9 + 0 + 0 = 9
-[1] Total local nvertices 0 + 7 = 7, nedges 0 + 7 + 0 = 7
-[2] Total local nvertices 0 + 0 = 0, nedges 0 + 0 + 0 = 0
+Power network: nb = 9, ngen = 3, nload = 3, nbranch = 9
+[0] Total local nvertices 9 + 0 = 9, nedges 9 + 0 = 9
+[1] Total local nvertices 0 + 7 = 7, nedges 0 + 7 = 7
+[2] Total local nvertices 0 + 0 = 0, nedges 0 + 0 = 0
 SNES_coupled setup ......
 SNES_power setup ......
 SNES_water setup......

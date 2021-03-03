@@ -467,8 +467,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
      In our case, u(t,0) = t + 1, so that u_{t}(t,0) = 1
              and  u(t,1) = 2t+ 2, so that u_{t}(t,1) = 2
   */
-  ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(appctx->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(appctx->comm,&size);CHKERRMPI(ierr);
   if (!rank)          copyptr[0]           = 1.0;
   if (rank == size-1) copyptr[localsize-1] = 2.0;
 

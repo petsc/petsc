@@ -65,8 +65,8 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)Gmat),&sf);CHKERRQ(ierr);
     ierr = MatGetLayouts(Gmat,&layout,NULL);CHKERRQ(ierr);
     ierr = PetscSFSetGraphLayout(sf,layout,num_fine_ghosts,NULL,PETSC_COPY_VALUES,mpimat->garray);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sf,MPIU_INT,lid_gid,cpcol_gid);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_INT,lid_gid,cpcol_gid);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPIU_INT,lid_gid,cpcol_gid,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_INT,lid_gid,cpcol_gid,MPI_REPLACE);CHKERRQ(ierr);
     for (kk=0;kk<num_fine_ghosts;kk++) {
       cpcol_state[kk]=MIS_NOT_DONE;
     }
@@ -182,8 +182,8 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     /* update ghost states and count todos */
     if (mpimat) {
       /* scatter states, check for done */
-      ierr = PetscSFBcastBegin(sf,MPIU_INT,lid_state,cpcol_state);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf,MPIU_INT,lid_state,cpcol_state);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf,MPIU_INT,lid_state,cpcol_state,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf,MPIU_INT,lid_state,cpcol_state,MPI_REPLACE);CHKERRQ(ierr);
       ii   = matB->compressedrow.i;
       for (ix=0; ix<matB->compressedrow.nrows; ix++) {
         lid   = matB->compressedrow.rindex[ix]; /* local boundary node */
@@ -227,8 +227,8 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     for (cpid=0; cpid<num_fine_ghosts; cpid++) icpcol_gid[cpid] = cpcol_gid[cpid];
 
     /* get proc of deleted ghost */
-    ierr = PetscSFBcastBegin(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid,MPI_REPLACE);CHKERRQ(ierr);
     for (cpid=0; cpid<num_fine_ghosts; cpid++) {
       sgid = cpcol_sel_gid[cpid];
       gid  = icpcol_gid[cpid];
@@ -255,24 +255,20 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
   PetscFunctionReturn(0);
 }
 
-typedef struct {
-  int dummy;
-} MatCoarsen_MIS;
 /*
    MIS coarsen, simple greedy.
 */
 static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
 {
-  /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
   PetscErrorCode ierr;
   Mat            mat = coarse->graph;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   if (!coarse->perm) {
     IS       perm;
     PetscInt n,m;
     MPI_Comm comm;
+
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
     ierr = MatGetLocalSize(mat, &m, &n);CHKERRQ(ierr);
     ierr = ISCreateStride(comm, m, 0, 1, &perm);CHKERRQ(ierr);
@@ -286,14 +282,12 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
 
 PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 {
-  /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
@@ -301,17 +295,6 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatCoarsenDestroy_MIS(MatCoarsen coarse)
-{
-  MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->subctx;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
-  ierr = PetscFree(MIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -334,17 +317,9 @@ M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
 {
-  PetscErrorCode ierr;
-  MatCoarsen_MIS *MIS;
-
   PetscFunctionBegin;
-  ierr           = PetscNewLog(coarse,&MIS);CHKERRQ(ierr);
-  coarse->subctx = (void*)MIS;
-
-  coarse->ops->apply   = MatCoarsenApply_MIS;
-  coarse->ops->view    = MatCoarsenView_MIS;
-  coarse->ops->destroy = MatCoarsenDestroy_MIS;
+  coarse->ops->apply = MatCoarsenApply_MIS;
+  coarse->ops->view  = MatCoarsenView_MIS;
   /* coarse->ops->setfromoptions = MatCoarsenSetFromOptions_MIS; */
   PetscFunctionReturn(0);
 }
-

@@ -82,7 +82,13 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
   Output Parameter:
 . mesh  - The DMPatch object
 
+  Notes:
+
+  This code is incomplete and not used by other parts of PETSc.
+
   Level: beginner
+
+.seealso: DMPatchZoom()
 
 @*/
 PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)

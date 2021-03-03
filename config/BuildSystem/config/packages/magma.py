@@ -12,7 +12,7 @@ class Configure(config.package.Package):
     #self.minversion       = '2.5.2'
     #self.versionname      = ???
     #self.gitcommit        = 'v'+self.version
-    version               = '2.5.2'
+    version               = '2.5.4'
     self.gitcommit        = 'v'+version
     # hg stashing mechanism seems broken
     #self.download         = ['https://bitbucket.org/icl/magma/get/'+self.gitcommit+'.tar.gz','hg://https://bitbucket.org/icl/magma']
@@ -150,7 +150,7 @@ class Configure(config.package.Package):
         g.write('F90LAGS = '+fcflags+'\n')
       if self.argDB['with-magma-gputarget']:
         g.write('GPU_TARGET = '+self.argDB['with-magma-gputarget']+'\n')
-      if self.cuda.gencodearch:
+      if hasattr(self.cuda,'gencodearch') and self.cuda.gencodearch:
         g.write('NVCCFLAGS += -gencode arch=compute_'+self.cuda.gencodearch+',code=sm_'+self.cuda.gencodearch+'\n')
         g.write('MIN_ARCH = '+self.cuda.gencodearch+'0\n')
 

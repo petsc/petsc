@@ -79,7 +79,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const Ma
           /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
           v    = rtmp + bs2*pj[j];
-          ierr = PetscKernel_A_gets_A_minus_B_times_C_9(v,pc,pv);CHKERRQ(ierr);
+          ierr = PetscKernel_A_gets_A_minus_B_times_C_9(v,pc,pv+81*j);CHKERRQ(ierr);
           /* pv incremented in PetscKernel_A_gets_A_minus_B_times_C_9 */
         }
         ierr = PetscLogFlops(1458*nz+1377);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */

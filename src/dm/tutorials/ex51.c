@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
   /* Create 2D DMDA */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
@@ -29,12 +29,12 @@ int main(int argc, char *argv[])
   /* Partitioning in the X direction makes a subcomm extending in the Y direction and vice-versa. */
   ierr = DMDAGetProcessorSubsets(da, DM_X, &commY);CHKERRQ(ierr);
   ierr = DMDAGetProcessorSubsets(da, DM_Y, &commX);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(commX, &subsize);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(commX, &subrank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(commX, &subsize);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(commX, &subrank);CHKERRMPI(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(commY, &subsize);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(commY, &subrank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(commY, &subsize);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(commY, &subrank);CHKERRMPI(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Y subrank: %d subsize: %d\n", rank, subrank, subsize);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   ierr = DMDACreate1d(commX, DM_BOUNDARY_NONE, info.mx, dof, 1, lx, &daX);CHKERRQ(ierr);
@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
   ierr = DMRestoreGlobalVector(daX, &basisX);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(daY, &basisY);CHKERRQ(ierr);
   /* Cleanup */
-  ierr = MPI_Comm_free(&commX);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&commY);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&commX);CHKERRMPI(ierr);
+  ierr = MPI_Comm_free(&commY);CHKERRMPI(ierr);
   ierr = DMDestroy(&daX);CHKERRQ(ierr);
   ierr = DMDestroy(&daY);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);

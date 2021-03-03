@@ -292,7 +292,7 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewe
       } else {
         PetscMPIInt rank;
         char        filename[PETSC_MAX_PATH_LEN];
-        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
         ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-mesh.%06d",socket->name,rank);CHKERRQ(ierr);
         ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->meshwindow);CHKERRQ(ierr);
       }
@@ -418,7 +418,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
           PetscMPIInt rank;
           char        filename[PETSC_MAX_PATH_LEN];
 
-          ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+          ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
           ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-%s-%d.%06d",socket->name,socket->windowtitle[wid],socket->snapid,rank);CHKERRQ(ierr);
           ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->window[wid]);CHKERRQ(ierr);
         }
@@ -438,7 +438,6 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
       break;
     default:
       SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unhandled socket status %d\n",(int)status);
-      break;
   }
   if (*view) {
     ierr = PetscViewerGLVisAttachInfo_Private(viewer,*view);CHKERRQ(ierr);

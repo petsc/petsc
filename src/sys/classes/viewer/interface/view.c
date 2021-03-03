@@ -1,5 +1,6 @@
 
 #include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petscdraw.h>
 
 PetscClassId PETSC_VIEWER_CLASSID;
 
@@ -18,28 +19,28 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
 
   PetscFunctionBegin;
   if (Petsc_Viewer_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_keyval);CHKERRMPI(ierr);
   }
   if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Stdout_keyval);CHKERRMPI(ierr);
   }
   if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Stderr_keyval);CHKERRMPI(ierr);
   }
   if (Petsc_Viewer_Binary_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Binary_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Binary_keyval);CHKERRMPI(ierr);
   }
   if (Petsc_Viewer_Draw_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Draw_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Draw_keyval);CHKERRMPI(ierr);
   }
 #if defined(PETSC_HAVE_HDF5)
   if (Petsc_Viewer_HDF5_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_HDF5_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_HDF5_keyval);CHKERRMPI(ierr);
   }
 #endif
 #if defined(PETSC_USE_SOCKETVIEWER)
   if (Petsc_Viewer_Socket_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Socket_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Socket_keyval);CHKERRMPI(ierr);
   }
 #endif
   ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
@@ -142,7 +143,7 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewerAndFormatDestroy()
 
 @*/
-PetscErrorCode  PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat format,PetscViewerAndFormat **vf)
+PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat format, PetscViewerAndFormat **vf)
 {
   PetscErrorCode ierr;
 
@@ -151,9 +152,10 @@ PetscErrorCode  PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat
   ierr = PetscNew(vf);CHKERRQ(ierr);
   (*vf)->viewer = viewer;
   (*vf)->format = format;
+  (*vf)->lg     = NULL;
+  (*vf)->data   = NULL;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    PetscViewerAndFormatDestroy - Destroys a PetscViewerAndFormat struct.
@@ -161,19 +163,19 @@ PetscErrorCode  PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat
    Collective on PetscViewer
 
    Input Parameters:
-.  viewer - the PetscViewerAndFormat to be destroyed.
+.  vf - the PetscViewerAndFormat to be destroyed.
 
    Level: developer
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewerAndFormatCreate()
-
 @*/
-PetscErrorCode  PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
+PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerDestroy(&(*vf)->viewer);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&(*vf)->lg);CHKERRQ(ierr);
   ierr = PetscFree(*vf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

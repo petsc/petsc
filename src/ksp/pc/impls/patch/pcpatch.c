@@ -261,12 +261,12 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     }
     /* Offsets are the offsets on the current process of the
      * global dof numbering for the subspaces. */
-    ierr = MPI_Type_contiguous(n, MPIU_INT, &contig);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&contig);CHKERRQ(ierr);
+    ierr = MPI_Type_contiguous(n, MPIU_INT, &contig);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&contig);CHKERRMPI(ierr);
 
-    ierr = PetscSFBcastBegin(rankSF, contig, offsets, remoteOffsets);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(rankSF, contig, offsets, remoteOffsets);CHKERRQ(ierr);
-    ierr = MPI_Type_free(&contig);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(rankSF, contig, offsets, remoteOffsets,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(rankSF, contig, offsets, remoteOffsets,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&contig);CHKERRMPI(ierr);
     ierr = PetscFree(offsets);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&rankSF);CHKERRQ(ierr);
     /* Now remoteOffsets contains the offsets on the remote
@@ -2772,8 +2772,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
       ierr = VecGetArray(patch->dof_weights, &output);CHKERRQ(ierr);
       ierr = VecGetArray(global, &input);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(patch->sectionSF, MPIU_SCALAR, input, output);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(patch->sectionSF, MPIU_SCALAR, input, output);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(patch->sectionSF, MPIU_SCALAR, input, output,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(patch->sectionSF, MPIU_SCALAR, input, output,MPI_REPLACE);CHKERRQ(ierr);
       ierr = VecRestoreArray(patch->dof_weights, &output);CHKERRQ(ierr);
       ierr = VecRestoreArray(global, &input);CHKERRQ(ierr);
       ierr = VecDestroy(&global);CHKERRQ(ierr);
@@ -2903,8 +2903,8 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
   /* Scatter from global space into overlapped local spaces */
   ierr = VecGetArrayRead(x, &globalRHS);CHKERRQ(ierr);
   ierr = VecGetArray(patch->localRHS, &localRHS);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(patch->sectionSF, MPIU_SCALAR, globalRHS, localRHS);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(patch->sectionSF, MPIU_SCALAR, globalRHS, localRHS);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(patch->sectionSF, MPIU_SCALAR, globalRHS, localRHS,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(patch->sectionSF, MPIU_SCALAR, globalRHS, localRHS,MPI_REPLACE);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x, &globalRHS);CHKERRQ(ierr);
   ierr = VecRestoreArray(patch->localRHS, &localRHS);CHKERRQ(ierr);
 
@@ -3232,7 +3232,7 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   /* TODO Redo tabbing with set tbas in new style */
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (!isascii) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) pc), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) pc), &rank);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Subspace Correction preconditioner with %d patches\n", patch->npatch);CHKERRQ(ierr);
   if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {

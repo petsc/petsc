@@ -18,7 +18,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   comm = MPI_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscOptionsBegin(comm, "", "Parallel Sort Test Options", "IS");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-nmax", "Maximum number of keys per process", "ex11.c", nmax, &nmax, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

@@ -4,25 +4,30 @@ static char help[] = "Solves a linear system using PCHPDDM.\n\n";
 
 int main(int argc,char **args)
 {
-  Vec            x,b;        /* computed solution and RHS */
-  Mat            A,aux,X,B;  /* linear system matrix */
-  KSP            ksp;        /* linear solver context */
-  PC             pc;
-  IS             is,sizes;
-  const PetscInt *idx;
-  PetscMPIInt    rank,size;
-  PetscInt       m,N = 1;
-  const char     *deft = MATAIJ;
-  PetscViewer    viewer;
-  char           dir[PETSC_MAX_PATH_LEN],name[PETSC_MAX_PATH_LEN],type[256];
-  PetscBool      flg;
-  PetscErrorCode ierr;
+  Vec                x,b;        /* computed solution and RHS */
+  Mat                A,aux,X,B;  /* linear system matrix */
+  KSP                ksp;        /* linear solver context */
+  PC                 pc;
+  IS                 is,sizes;
+  const PetscInt     *idx;
+  PetscMPIInt        rank,size;
+  PetscInt           m,N = 1;
+  const char         *deft = MATAIJ;
+  PetscViewer        viewer;
+  char               dir[PETSC_MAX_PATH_LEN],name[PETSC_MAX_PATH_LEN],type[256];
+  PetscBool          flg;
+#if defined(PETSC_USE_LOG)
+  PetscLogEvent      event;
+#endif
+  PetscEventPerfInfo info1,info2;
+  PetscErrorCode     ierr;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   if (size != 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"This example requires 4 processes");
   ierr = PetscOptionsGetInt(NULL,NULL,"-rhs",&N,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&aux);CHKERRQ(ierr);
   ierr = ISCreate(PETSC_COMM_SELF,&is);CHKERRQ(ierr);
@@ -49,9 +54,14 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscSNPrintf(name,sizeof(name),"%s/Neumann_%d_%d.dat",dir,rank,size);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatSetBlockSizesFromMats(aux,A,A);CHKERRQ(ierr);
   ierr = MatLoad(aux,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_levels_1_st_share_sub_ksp",&flg,NULL);
+  if (flg) { /* PETSc LU/Cholesky is struggling numerically for bs > 1          */
+             /* only set the proper bs for the geneo_share_* tests, 1 otherwise */
+    ierr = MatSetBlockSizesFromMats(aux,A,A);CHKERRQ(ierr);
+  }
   ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(aux,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   /* ready for testing */
@@ -89,17 +99,17 @@ int main(int argc,char **args)
     /* this is algorithmically optimal in the sense that blocks of vectors are coarsened or interpolated using matrix--matrix operations */
     /* PCHPDDM however heavily relies on MPI[S]BAIJ format for which there is no efficient MatProduct implementation */
     ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-    ierr = KSPGetType(ksp,&type);
+    ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
     ierr = PetscStrcmp(type,KSPHPDDM,&flg);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HPDDM)
     if (flg) {
       PetscReal    norm;
       KSPHPDDMType type;
-      ierr = KSPHPDDMGetType(ksp,&type);
+      ierr = KSPHPDDMGetType(ksp,&type);CHKERRQ(ierr);
       if (type == KSP_HPDDM_TYPE_PREONLY || type == KSP_HPDDM_TYPE_CG || type == KSP_HPDDM_TYPE_GMRES || type == KSP_HPDDM_TYPE_GCRODR) {
         Mat C;
-        ierr = MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&C);
-        ierr = KSPSetMatSolveBlockSize(ksp,1);
+        ierr = MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&C);CHKERRQ(ierr);
+        ierr = KSPSetMatSolveBlockSize(ksp,1);CHKERRQ(ierr);
         ierr = KSPMatSolve(ksp,B,C);CHKERRQ(ierr);
         ierr = MatAYPX(C,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
@@ -110,6 +120,27 @@ int main(int argc,char **args)
 #endif
     ierr = MatDestroy(&X);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HPDDM)
+  if (flg) {
+    ierr = PCHPDDMGetSTShareSubKSP(pc,&flg);CHKERRQ(ierr);
+  }
+#endif
+  if (flg && PetscDefined(USE_LOG)) {
+    ierr = PetscLogEventRegister("MatLUFactorSym",PC_CLASSID,&event);CHKERRQ(ierr);
+    ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("MatLUFactorNum",PC_CLASSID,&event);CHKERRQ(ierr);
+    ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2);CHKERRQ(ierr);
+    if (info1.count || info2.count) {
+      if (info2.count <= info1.count) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
+    } else {
+      ierr = PetscLogEventRegister("MatCholFctrSym",PC_CLASSID,&event);CHKERRQ(ierr);
+      ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1);CHKERRQ(ierr);
+      ierr = PetscLogEventRegister("MatCholFctrNum",PC_CLASSID,&event);CHKERRQ(ierr);
+      ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2);CHKERRQ(ierr);
+      if (info2.count <= info1.count) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
+    }
   }
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -130,11 +161,27 @@ int main(int argc,char **args)
       nsize: 4
       args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev {{5 15}separate output} -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_coarse_p {{1 2}shared output} -pc_hpddm_coarse_pc_type redundant -mat_type {{aij baij sbaij}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
+   testset:
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      nsize: 4
+      args: -ksp_converged_reason -ksp_max_it 150 -pc_type hpddm -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type redundant -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_define_subdomains -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp {{false true}shared output}
+      test:
+        suffix: geneo_share_cholesky
+        output_file: output/ex76_geneo_share.out
+        # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -mat_type {{aij baij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian
+      test:
+        requires: mumps
+        suffix: geneo_share_lu
+        output_file: output/ex76_geneo_share.out
+        # extra -pc_factor_mat_solver_type mumps needed to avoid failures with PETSc LU
+        args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_st_pc_type lu -mat_type baij -pc_hpddm_levels_1_st_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps
+
    test:
       requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       suffix: fgmres_geneo_20_p_2
       nsize: 4
-      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_type fgmres -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
+      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_type fgmres -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -pc_hpddm_log_separate {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
    test:
       requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)

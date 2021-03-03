@@ -232,7 +232,7 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   ierr = DMSwarmGetField(dm, fieldname, &bs, &type, (void **) &array);CHKERRQ(ierr);
   if (type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Only valid for PETSC_REAL");
 
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = VecCreateSeqWithArray(comm, bs, n*bs, array, vec);CHKERRQ(ierr);
   } else {
@@ -943,7 +943,7 @@ PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
 
   PetscFunctionBegin;
   ierr = DMSwarmDataBucketGetSizes(swarm->db,&nlocal,NULL,NULL);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&nlocal,&ng,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&nlocal,&ng,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
   if (n) { *n = ng; }
   PetscFunctionReturn(0);
 }
@@ -1305,13 +1305,10 @@ PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
       break;
     case DMSWARM_MIGRATE_DMCELLEXACT:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE_DMCELLEXACT not implemented");
-      break;
     case DMSWARM_MIGRATE_USER:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE_USER not implemented");
-      break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE type unknown");
-      break;
   }
   ierr = PetscLogEventEnd(DMSWARM_Migrate,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1363,13 +1360,10 @@ PetscErrorCode DMSwarmCollectViewCreate(DM dm)
       break;
     case DMSWARM_COLLECT_DMDABOUNDINGBOX:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT_DMDABOUNDINGBOX not implemented");
-      break;
     case DMSWARM_COLLECT_GENERAL:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT_GENERAL not implemented");
-      break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT type unknown");
-      break;
   }
   swarm->collect_view_active = PETSC_TRUE;
   swarm->collect_view_reset_nlocal = ng;
@@ -1414,6 +1408,72 @@ PetscErrorCode DMSwarmSetUpPIC(DM dm)
   if (dim > 3) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %D",dim);
   ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmPICField_coor,dim,PETSC_DOUBLE);CHKERRQ(ierr);
   ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmPICField_cellid,1,PETSC_INT);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSwarmSetPointCoordinatesRandom - Sets initial coordinates for particles in each cell
+
+  Collective on dm
+
+  Input parameters:
++ dm  - the DMSwarm
+- Npc - The number of particles per cell in the cell DM
+
+  Notes:
+  The user must use DMSwarmSetCellDM() to set the cell DM first. The particles are placed randomly inside each cell. If only
+  one particle is in each cell, it is placed at the centroid.
+
+  Level: intermediate
+
+.seealso: DMSwarmSetCellDM()
+@*/
+PetscErrorCode DMSwarmSetPointCoordinatesRandom(DM dm, PetscInt Npc)
+{
+  DM             cdm;
+  PetscRandom    rnd;
+  DMPolytopeType ct;
+  PetscBool      simplex;
+  PetscReal     *centroid, *coords, *xi0, *v0, *J, *invJ, detJ;
+  PetscInt       dim, d, cStart, cEnd, c, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscRandomCreate(PetscObjectComm((PetscObject) dm), &rnd);CHKERRQ(ierr);
+  ierr = PetscRandomSetInterval(rnd, -1.0, 1.0);CHKERRQ(ierr);
+  ierr = PetscRandomSetType(rnd, PETSCRAND48);CHKERRQ(ierr);
+
+  ierr = DMSwarmGetCellDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetDimension(cdm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(cdm, cStart, &ct);CHKERRQ(ierr);
+  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+
+  ierr = PetscMalloc5(dim, &centroid, dim, &xi0, dim, &v0, dim*dim, &J, dim*dim, &invJ);CHKERRQ(ierr);
+  for (d = 0; d < dim; ++d) xi0[d] = -1.0;
+  ierr = DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    if (Npc == 1) {
+      ierr = DMPlexComputeCellGeometryFVM(cdm, c, NULL, centroid, NULL);CHKERRQ(ierr);
+      for (d = 0; d < dim; ++d) coords[c*dim+d] = centroid[d];
+    } else {
+      ierr = DMPlexComputeCellGeometryFEM(cdm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr); /* affine */
+      for (p = 0; p < Npc; ++p) {
+        const PetscInt n   = c*Npc + p;
+        PetscReal      sum = 0.0, refcoords[3];
+
+        for (d = 0; d < dim; ++d) {
+          ierr = PetscRandomGetValueReal(rnd, &refcoords[d]);CHKERRQ(ierr);
+          sum += refcoords[d];
+        }
+        if (simplex && sum > 0.0) for (d = 0; d < dim; ++d) refcoords[d] -= PetscSqrtReal(dim)*sum;
+        CoordinatesRefToReal(dim, dim, xi0, v0, J, refcoords, &coords[n*dim]);
+      }
+    }
+  }
+  ierr = DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
+  ierr = PetscFree5(centroid, xi0, v0, J, invJ);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1487,7 +1547,7 @@ PetscErrorCode DMSetup_Swarm(DM dm)
 
   /* initialize values in pid and rank placeholders */
   /* TODO: [pid - use MPI_Scan] */
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
   ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
@@ -1517,11 +1577,12 @@ PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
 {
   DM             cdm;
   PetscDraw      draw;
-  PetscReal     *coords, oldPause;
+  PetscReal     *coords, oldPause, radius = 0.01;
   PetscInt       Np, p, bs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetReal(NULL, ((PetscObject) dm)->prefix, "-dm_view_swarm_radius", &radius, NULL);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
   ierr = DMSwarmGetCellDM(dm, &cdm);CHKERRQ(ierr);
   ierr = PetscDrawGetPause(draw, &oldPause);CHKERRQ(ierr);
@@ -1534,7 +1595,7 @@ PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
   for (p = 0; p < Np; ++p) {
     const PetscInt i = p*bs;
 
-    ierr = PetscDrawEllipse(draw, coords[i], coords[i+1], 0.01, 0.01, PETSC_DRAW_BLUE);CHKERRQ(ierr);
+    ierr = PetscDrawEllipse(draw, coords[i], coords[i+1], radius, radius, PETSC_DRAW_BLUE);CHKERRQ(ierr);
   }
   ierr = DMSwarmRestoreField(dm, DMSwarmPICField_coor, &bs, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);

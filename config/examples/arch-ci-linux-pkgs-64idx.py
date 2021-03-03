@@ -22,6 +22,7 @@ configure_options = [
   '--download-scalapack=1',
   '--donwload-suitesparse=1',
   '--download-p4est=1',
+  '--download-revolve=1',
   '--with-zlib=1',
   ]
 

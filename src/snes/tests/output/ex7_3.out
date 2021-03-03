@@ -1,16 +1,16 @@
-    0 KSP Residual norm 7.280029743643e-01 
-    1 KSP Residual norm 3.337699703998e-01 
-    2 KSP Residual norm 8.311740393601e-02 
-    3 KSP Residual norm 5.246933530538e-02 
-    4 KSP Residual norm 4.966507134009e-10 
-    0 KSP Residual norm 9.243455441942e-03 
-    1 KSP Residual norm 5.047059971537e-03 
-    2 KSP Residual norm 1.832182661334e-03 
-    3 KSP Residual norm 3.923724867924e-12 
-    0 KSP Residual norm 1.415224283158e-05 
-    1 KSP Residual norm 8.046855087544e-06 
-    2 KSP Residual norm 3.150105943273e-06 
-    3 KSP Residual norm 1.614829587474e-14 
+    0 KSP Residual norm 7.280029743643e-01
+    1 KSP Residual norm 3.337699703998e-01
+    2 KSP Residual norm 8.311740393601e-02
+    3 KSP Residual norm 5.246933530538e-02
+    4 KSP Residual norm 4.966507134009e-10
+    0 KSP Residual norm 9.243455441942e-03
+    1 KSP Residual norm 5.047059971537e-03
+    2 KSP Residual norm 1.832182661334e-03
+    3 KSP Residual norm 3.923724867924e-12
+    0 KSP Residual norm 1.415224283158e-05
+    1 KSP Residual norm 8.046855087544e-06
+    2 KSP Residual norm 3.150105943273e-06
+    3 KSP Residual norm 1.614829587474e-14
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -35,6 +35,7 @@ SNES Object: 1 MPI processes
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
     type: jacobi
+      type DIAGONAL
     linear system matrix followed by preconditioner matrix:
     Mat Object: 1 MPI processes
       type: mffd

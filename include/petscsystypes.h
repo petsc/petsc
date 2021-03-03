@@ -332,7 +332,7 @@ typedef double PetscLogDouble;
    It would be nice if we could always just use MPI Datatypes, why can we not?
 
    If you change any values in PetscDatatype make sure you update their usage in
-   share/petsc/matlab/PetscBagRead.m
+   share/petsc/matlab/PetscBagRead.m and share/petsc/matlab/@PetscOpenSocket/read/write.m
 
    TODO: Add PETSC_INT32 and remove use of improper PETSC_ENUM
 
@@ -637,5 +637,20 @@ S*/
 typedef struct _n_PetscSegBuffer *PetscSegBuffer;
 
 typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
+
+/*E
+  PetscMemType - Memory type of a pointer
+
+  Level: beginner
+
+  Developer Note:
+   Encoding of the bitmask in binary: xx0=HOST, xx1=DEVICE, x01 for CUDA, x11 for HIP.
+
+.seealso: VecGetArrayAndMemType(), PetscSFBcastWithMemTypeBegin(), PetscSFReduceWithMemTypeBegin()
+E*/
+typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE=1, PETSC_MEMTYPE_CUDA=1, PETSC_MEMTYPE_HIP=3} PetscMemType;
+
+#define PetscMemTypeHost(m)   (((m) & 0x1) == PETSC_MEMTYPE_HOST)
+#define PetscMemTypeDevice(m) (((m) & 0x1) == PETSC_MEMTYPE_DEVICE)
 
 #endif

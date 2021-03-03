@@ -4,7 +4,7 @@
  */
 
 #include "petsc/private/petscimpl.h"
-#include <petscvec.hpp>
+#include <petscveckokkos.hpp>
 #include <petsc/private/vecimpl.h> /* for struct Vec */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /* for VecCreate/Destroy_MPI */
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
@@ -226,6 +226,10 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->getlocalvectorread     = VecGetLocalVector_SeqKokkos;
   v->ops->restorelocalvectorread = VecRestoreLocalVector_SeqKokkos;
   v->ops->getarraywrite          = VecGetArrayWrite_SeqKokkos;
+  v->ops->getarray               = VecGetArray_SeqKokkos;
+  v->ops->restorearray           = VecRestoreArray_SeqKokkos;
+  v->ops->getarrayandmemtype        = VecGetArrayAndMemType_SeqKokkos;
+  v->ops->restorearrayandmemtype    = VecRestoreArrayAndMemType_SeqKokkos;
   PetscFunctionReturn(0);
 }
 
@@ -329,7 +333,7 @@ PetscErrorCode VecCreate_Kokkos(Vec v)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRMPI(ierr);
   if (size == 1) {ierr = VecSetType(v,VECSEQKOKKOS);CHKERRQ(ierr);}
   else {ierr = VecSetType(v,VECMPIKOKKOS);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

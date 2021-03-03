@@ -35,7 +35,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank);CHKERRMPI(ierr);
   if (rank) PetscFunctionReturn(0);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -251,11 +251,11 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   ao->data = (void*) aomap;
 
   /* transmit all lengths to all processors */
-  ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr  = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr  = PetscMalloc2(size, &lens,size,&disp);CHKERRQ(ierr);
   nnapp = napp;
-  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRMPI(ierr);
   N     = 0;
   for (i = 0; i < size; i++) {
     disp[i] = N;
@@ -276,8 +276,8 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
 
   /* get all indices on all processors */
   ierr = PetscMalloc4(N, &allapp,N,&appPerm,N,&allpetsc,N,&petscPerm);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm);CHKERRMPI(ierr);
+  ierr = MPI_Allgatherv((void*)petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRMPI(ierr);
   ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */

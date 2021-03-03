@@ -5,15 +5,15 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.cython = 0
     self.numpy = 0
+    self.skippackagewithoptions = 1
     return
 
   def __str__(self):
     return ''
 
   def setupHelp(self,help):
-    config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('PYTHON', '-with-python-exec=<executable>',                nargs.Arg(None, None, 'Alternate Python executable to use for mpi4py/petsc4py'))
+    help.addArgument('PETSc', '-with-python-exec=<executable>', nargs.Arg(None, None, 'Alternate Python executable to use for mpi4py/petsc4py'))
     return
 
   def configure(self):

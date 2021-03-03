@@ -39,48 +39,152 @@ from gmakegentest import nameSpace
 
 """
 
-def query(invDict,label):
+def isFile(maybeFile):
+  ext=os.path.splitext(maybeFile)[1]
+  if not ext: return False
+  if ext not in ['.c','.cxx','.cpp','F90','F','cu']: return False
+  return True
+
+def pathToLabel(path):
+  """
+  Because the scripts have a non-unique naming, the pretty-printing
+  needs to convey the srcdir and srcfile.  There are two ways of doing this.
+  """
+  # Strip off any top-level directories or spaces
+  path=path.strip().replace(pdir,'')
+  path=path.replace('src/','')
+  if isFile(path):
+    prefix=os.path.dirname(path).replace("/","_")
+    suffix=os.path.splitext(os.path.basename(path))[0]
+    label=prefix+"-"+suffix+'_*'
+  else:
+    path=path.rstrip('/')
+    label=path.replace("/","_")+"-*"
+  return label
+
+def get_value(varset):
+  """
+  Searching args is a bit funky:
+  Consider
+      args:  -ksp_monitor_short -pc_type ml -ksp_max_it 3
+  Search terms are:
+    ksp_monitor, 'pc_type ml', ksp_max_it
+  Also ignore all loops
+    -pc_fieldsplit_diag_use_amat {{0 1}}
+  Gives: pc_fieldsplit_diag_use_amat as the search term
+  Also ignore -f ...  (use matrices from file) because I'll assume
+   that this kind of information isn't needed for testing.  If it's
+   a separate search than just grep it
+  """
+  if varset.startswith('-f '): return None
+
+  # First  remove loops
+  value=re.sub('{{.*}}','',varset)
+  # Next remove -
+  value=varset.lstrip("-")
+  # Get rid of numbers
+  value=re.sub(r"[+-]? *(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?",'',value)
+  # return without spaces
+  return value.strip()
+
+def query(invDict,fields,labels):
     """
     Search the keys using fnmatch to find matching names and return list with
     the results 
     """
-    results=[]
-    if 'name' in invDict:
-        return fnmatch.filter(invDict['name'],label)
+    setlist=[]  # setlist is a list of lists that set opertions will operate on
+    llist=labels.replace('|',',').split(',')
+    i=-1
+    for field in fields.replace('|',',').split(','):
+        i+=1
+        label=llist[i]
+        if field == 'name':
+            if '/' in label: 
+              label=pathToLabel(label)
+            elif label.startswith('src'):
+                  label=label.lstrip('src').lstrip('*')
+            setlist.append(fnmatch.filter(invDict['name'],label))
+            continue
 
-    for key in invDict:
-        if fnmatch.filter([key],label):
-            # Do not return values with not unless label itself has not
-            if label.startswith('!') and not key.startswith('!'): continue
-            if not label.startswith('!') and key.startswith('!'): continue
-            results += invDict[key]
+        foundLabel=False   # easy to do if you misspell argument search
+        for key in invDict[field]:
+            if fnmatch.filter([key],label):
+              foundLabel=True
+              # Do not return values with not unless label itself has not
+              if label.startswith('!') and not key.startswith('!'): continue
+              if not label.startswith('!') and key.startswith('!'): continue
+              setlist.append(invDict[field][key])
+        if not foundLabel:
+          setlist.append([])
 
-    return results
+    # Now process the union and intersection operators based on setlist
+    allresults=[]
+    # Union
+    i=-1
+    for ufield in fields.split(','):
+       i+=1
+       if '|' in ufield:
+         # Intersection
+         label=llist[i]
+         results=set(setlist[i])
+         for field in ufield.split('|')[1:]:
+             i+=1
+             label=llist[i]
+             results=results.intersection(set(setlist[i]))
+         allresults+=list(results)
+       else:
+         allresults+=setlist[i]
 
-def get_inverse_dictionary(dataDict,field,srcdir):
+    # remove duplicate entries and sort to give consistent results
+    uniqlist=list(set(allresults))
+    uniqlist.sort()
+    return  uniqlist
+
+def get_inverse_dictionary(dataDict,fields,srcdir):
     """
     Create a dictionary with the values of field as the keys, and the name of
     the tests as the results.
     """
     invDict={}
-    if field == 'name': invDict['name']=[]
-    for root in dataDict:
-      for exfile in dataDict[root]:
-        for test in dataDict[root][exfile]:
-          if test in testparse.buildkeys: continue
-          defroot = testparse.getDefaultOutputFileRoot(test)
-          name=nameSpace(defroot,os.path.relpath(root,srcdir))
-          if field == 'name':
-              invDict['name'].append(name)
-              continue
-          if field not in dataDict[root][exfile][test]: continue
-          values=dataDict[root][exfile][test][field]
+    # Comma-delimited lists denote union
+    for field in fields.replace('|',',').split(','):
+        if field not in invDict:
+            if field == 'name':
+                 invDict[field]=[]   # List for ease
+            else:
+                 invDict[field]={}
+        for root in dataDict:
+          for exfile in dataDict[root]:
+            for test in dataDict[root][exfile]:
+              if test in testparse.buildkeys: continue
+              defroot = testparse.getDefaultOutputFileRoot(test)
+              fname=nameSpace(defroot,os.path.relpath(root,srcdir))
+              if field == 'name':
+                  invDict['name'].append(fname)
+                  continue
+              if field not in dataDict[root][exfile][test]: continue
+              values=dataDict[root][exfile][test][field]
 
-          for val in values.split():
-              if val in invDict:
-                  invDict[val].append(name)
+              if not field == 'args' and not field == 'diff_args':
+                for val in values.split():
+                    if val in invDict[field]:
+                        invDict[field][val].append(fname)
+                    else:
+                        invDict[field][val] = [fname]
               else:
-                  invDict[val] = [name]
+                # Args are funky.  
+                for varset in re.split('(^|\W)-(?=[a-zA-Z])',values):
+                  val=get_value(varset)
+                  if not val: continue
+                  if val in invDict[field]:
+                    invDict[field][val].append(fname)
+                  else:
+                    invDict[field][val] = [fname]
+        # remove duplicate entries (multiple test/file)
+        if not field == 'name':
+          for val in invDict[field]:
+            invDict[field][val]=list(set(invDict[field][val]))
+
     return invDict
 
 def get_gmakegentest_data(testdir,petsc_dir,petsc_arch):
@@ -110,7 +214,6 @@ def walktree(top):
     dataDict = {}
     alldatafiles = []
     for root, dirs, files in os.walk(top, topdown=False):
-        if "examples" not in root: continue
         if root == 'output': continue
         if '.dSYM' in root: continue
         if verbose: print(root)
@@ -130,7 +233,8 @@ def walktree(top):
 
     return dataDict
 
-def do_query(use_source, startdir, srcdir, testdir, petsc_dir, petsc_arch, field, label):
+def do_query(use_source, startdir, srcdir, testdir, petsc_dir, petsc_arch,
+             fields, labels, searchin):
     """
     Do the actual query
     This part of the code is placed here instead of main()
@@ -144,11 +248,18 @@ def do_query(use_source, startdir, srcdir, testdir, petsc_dir, petsc_arch, field
         dataDict=get_gmakegentest_data(testdir, petsc_dir, petsc_arch)
 
     # Get inverse dictionary for searching
-    invDict=get_inverse_dictionary(dataDict, field, srcdir)
-    #print(invDict)
+    invDict=get_inverse_dictionary(dataDict, fields, srcdir)
 
     # Now do query
-    resList=query(invDict, label)
+    resList=query(invDict, fields, labels)
+
+    # Filter results using searchin
+    newresList=[]
+    if searchin.strip():
+        for key in resList:
+            if fnmatch.filter([key],searchin):
+              newresList.append(key)
+        resList=newresList
 
     # Print in flat list suitable for use by gmakefile.test
     print(' '.join(resList))
@@ -175,6 +286,9 @@ def main():
     parser.add_option('-u', '--use-source', action="store_false",
                       dest='use_source',
                       help='Query all sources rather than those configured in PETSC_ARCH')
+    parser.add_option('-i', '--searchin', dest='searchin',
+                      help='Filter results from the arguments',
+                      default='')
 
     opts, args = parser.parse_args()
 
@@ -190,6 +304,7 @@ def main():
     # Process arguments and options -- mostly just paths here
     field=args[0]
     match=args[1]
+    searchin=opts.searchin
 
     petsc_dir = opts.petsc_dir
     petsc_arch = opts.petsc_arch
@@ -227,7 +342,7 @@ def main():
 
     # Do the actual query
     do_query(opts.use_source, startdir, petsc_full_src, petsc_full_test,
-             petsc_dir, petsc_arch, field, match)
+             petsc_dir, petsc_arch, field, match, searchin)
 
     return
 

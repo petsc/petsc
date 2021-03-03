@@ -63,7 +63,7 @@ if ( ${valgrind} == "1" ) then
     set PETSCVALGRIND_OPTIONS=
   endif
   set VALGRIND_CMD=`which valgrind`
-  set VALGRIND_OPTIONS="-q --tool=memcheck  --num-callers=20 --track-origins=yes ${PETSCVALGRIND_OPTIONS}"
+  set VALGRIND_OPTIONS="-q --tool=memcheck  --num-callers=20 --track-origins=yes --suppressions=${PETSC_DIR}/lib/petsc/bin/maint/petsc-val.supp --error-exitcode=10 ${PETSCVALGRIND_OPTIONS}"
   if ( ${debugger} == "1" ) then
     set VALGRIND_CMD="xterm -e ${VALGRIND_CMD}"
     set VALGRIND_OPTIONS="${VALGRIND_OPTIONS} --db-attach=yes"

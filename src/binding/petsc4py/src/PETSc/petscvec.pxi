@@ -14,7 +14,9 @@ cdef extern from * nogil:
     PetscVecType VECMPICUDA
     PetscVecType VECCUDA
     PetscVecType VECNEST
-    PetscVecType VECNODE
+    PetscVecType VECSEQKOKKOS
+    PetscVecType VECMPIKOKKOS
+    PetscVecType VECKOKKOS
 
     ctypedef enum PetscVecOption "VecOption":
         VEC_IGNORE_OFF_PROC_ENTRIES
@@ -31,8 +33,12 @@ cdef extern from * nogil:
 
     int VecCreateSeq(MPI_Comm,PetscInt,PetscVec*)
     int VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscVec*)
+    int VecCreateSeqCUDAWithArrays(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
+    int VecCreateSeqViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
     int VecCreateMPI(MPI_Comm,PetscInt,PetscInt,PetscVec*)
     int VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscVec*)
+    int VecCreateMPICUDAWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
+    int VecCreateMPIViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
     int VecCreateGhost(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscVec*)
     int VecCreateGhostWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscScalar[],PetscVec*)
     int VecCreateGhostBlock(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscVec*)
@@ -50,6 +56,8 @@ cdef extern from * nogil:
     int VecGetOwnershipRange(PetscVec,PetscInt*,PetscInt*)
     int VecGetOwnershipRanges(PetscVec,const PetscInt*[])
 
+    int VecGetArrayWrite(PetscVec,PetscScalar*[])
+    int VecRestoreArrayWrite(PetscVec,PetscScalar*[])
     int VecGetArrayRead(PetscVec,const PetscScalar*[])
     int VecRestoreArrayRead(PetscVec,const PetscScalar*[])
     int VecGetArray(PetscVec,PetscScalar*[])
@@ -160,6 +168,19 @@ cdef extern from * nogil:
     int VecCUDARestoreArrayWrite(PetscVec,PetscScalar*[])
     int VecCUDARestoreArray(PetscVec,PetscScalar*[])
 
+    int VecBindToCPU(PetscVec,PetscBool)
+    int VecGetOffloadMask(PetscVec,PetscOffloadMask*)
+
+    int VecViennaCLGetCLContext(PetscVec,Py_uintptr_t*)
+    int VecViennaCLGetCLQueue(PetscVec,Py_uintptr_t*)
+    int VecViennaCLGetCLMemRead(PetscVec,Py_uintptr_t*)
+    int VecViennaCLGetCLMemWrite(PetscVec,Py_uintptr_t*)
+    int VecViennaCLRestoreCLMemWrite(PetscVec)
+    int VecViennaCLGetCLMem(PetscVec,Py_uintptr_t*)
+    int VecViennaCLRestoreCLMem(PetscVec)
+
+    int VecCreateSeqCUDAWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,PetscVec*)
+    int VecCreateMPICUDAWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,PetscVec*)
 # --------------------------------------------------------------------
 
 cdef inline Vec ref_Vec(PetscVec vec):
@@ -553,5 +574,67 @@ cdef class _Vec_LocalForm:
         cdef PetscVec gvec = self.gvec.vec
         CHKERR( VecGhostRestoreLocalForm(gvec, &self.lvec.vec) )
         self.lvec.vec = NULL
+
+# --------------------------------------------------------------------
+
+cdef extern from "Python.h":
+    ctypedef void (*PyCapsule_Destructor)(object)
+    bint PyCapsule_IsValid(object, const char*)
+    void* PyCapsule_GetPointer(object, const char*) except? NULL
+    int PyCapsule_SetName(object, const char*) except -1
+    object PyCapsule_New(void*, const char*, PyCapsule_Destructor)
+
+cdef extern from "stdlib.h" nogil:
+   ctypedef signed long int64_t
+   ctypedef unsigned long long uint64_t
+   ctypedef unsigned char uint8_t
+   ctypedef unsigned short uint16_t
+   void free(void* ptr)
+   void* malloc(size_t size)
+
+cdef struct DLDataType:
+    uint8_t code
+    uint8_t bits
+    uint16_t lanes
+
+ctypedef struct DLContext:
+    int device_type
+    int device_id
+
+cdef enum DLDataTypeCode:
+    kDLInt = <unsigned int>0
+    kDLUInt = <unsigned int>1
+    kDLFloat = <unsigned int>2
+
+cdef struct DLTensor:
+    void* data
+    DLContext ctx
+    int ndim
+    DLDataType dtype
+    int64_t* shape
+    int64_t* strides
+    uint64_t byte_offset
+
+cdef struct DLManagedTensor:
+    DLTensor dl_tensor
+    void* manager_ctx
+    void (*manager_deleter)(DLManagedTensor*) nogil
+
+cdef void pycapsule_deleter(object dltensor):
+    cdef DLManagedTensor* dlm_tensor = NULL
+    try:
+        dlm_tensor = <DLManagedTensor *>PyCapsule_GetPointer(dltensor, 'used_dltensor')
+        return             # we do not call a used capsule's deleter
+    except Exception:
+        dlm_tensor = <DLManagedTensor *>PyCapsule_GetPointer(dltensor, 'dltensor')
+    manager_deleter(dlm_tensor)
+
+cdef void manager_deleter(DLManagedTensor* tensor) nogil:
+    if tensor.manager_ctx is NULL:
+        return
+    free(tensor.dl_tensor.shape)
+    CHKERR( PetscDEALLOC(<PetscObject*>&tensor.manager_ctx) )
+    free(tensor)
+    tensor.manager_ctx = NULL
 
 # --------------------------------------------------------------------

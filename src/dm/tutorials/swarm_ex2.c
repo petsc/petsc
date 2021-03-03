@@ -16,7 +16,7 @@ PetscErrorCode ex2_1(void)
   PetscMPIInt    rank;
   PetscInt       p,bs,nlocal;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
   ierr = DMSetType(dms,DMSWARM);CHKERRQ(ierr);

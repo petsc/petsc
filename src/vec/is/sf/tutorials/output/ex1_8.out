@@ -1,5 +1,4 @@
 PetscSF Object: 3 MPI processes
-      current info=MPI_INFO_NULL
   [0] Number of roots=3, leaves=3, remote ranks=3
   [0] 0 <- (0,0)
   [0] 1 <- (1,0)
@@ -33,6 +32,7 @@ PetscSF Object: 3 MPI processes
   [2]    1 <- 2
   [2] 2: 1 edges
   [2]    2 <- 2
+    current info=MPI_INFO_NULL
 ## Bcast Rootdata
 [0] 0: 100 101 102
 [1] 0: 200 201 202

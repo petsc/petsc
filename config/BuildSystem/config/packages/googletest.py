@@ -20,24 +20,12 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
-    if not self.cmake.found:
-      raise RuntimeError('CMake > 2.5 is needed to build googletest\nSuggest adding --download-cmake to ./configure arguments')
-
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-Dgtest_build_tests=ON')
     args.append('-Dgmock_build_tests=ON')
     args.append('-Dgtest_build_samples=ON')
     args.append('-DBUILD_GMOCK=ON')
     args.append('-DBUILD_GTEST=OFF')
-    if hasattr(self.compilers, 'CXX'):
-      self.pushLanguage('Cxx')
-      args.append('-DMPI_CXX_COMPILER="'+self.getCompiler()+'"')
-      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.getCompilerFlags())+'"')
-    else:
-        raise RuntimeError("googletest requires a C++ compiler\n")
-    self.popLanguage()
-    self.pushLanguage('C')
-    args.append('-DMPI_C_COMPILER="'+self.getCompiler()+'"')
-    args.append('-DCMAKE_C_FLAGS:STRING="'+self.updatePackageCFlags(self.getCompilerFlags())+'"')
-    self.popLanguage()
+    if not hasattr(self.compilers, 'CXX'):
+      raise RuntimeError("googletest requires a C++ compiler\n")
     return args

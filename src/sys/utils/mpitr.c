@@ -32,7 +32,7 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
   int            err;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if (!fd) fd = PETSC_STDOUT;
 
   /* Did we wait on all the non-blocking sends and receives? */
@@ -46,9 +46,9 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
   ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   /* Did we receive all the messages that we sent? */
   work = petsc_irecv_ct + petsc_recv_ct;
-  ierr = MPI_Reduce(&work,&trecvs,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&work,&trecvs,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   work = petsc_isend_ct + petsc_send_ct;
-  ierr = MPI_Reduce(&work,&tsends,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&work,&tsends,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   if (!rank && tsends != trecvs) {
     ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Total number sends %g not equal receives %g\n",tsends,trecvs);CHKERRQ(ierr);
     err  = fflush(fd);
@@ -78,11 +78,10 @@ PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint sz,PetscMPIInt szind,MPI_Info i
   float          *tmp;
 
   PetscFunctionBegin;
-  ierr = MPI_Win_allocate_shared(16+sz,szind,info,comm,&tmp,win);CHKERRQ(ierr);
+  ierr = MPI_Win_allocate_shared(16+sz,szind,info,comm,&tmp,win);CHKERRMPI(ierr);
   tmp += ((size_t)tmp) % szind ? szind/4 - ((((size_t)tmp) % szind)/4) : 0;
   *(void**)ptr = (void*)tmp;
   PetscFunctionReturn(0);
-  return 0;
 }
 
 PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win,PetscMPIInt rank,MPI_Aint *sz,PetscMPIInt *szind,void *ptr)
@@ -91,7 +90,7 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win,PetscMPIInt rank,M
   float          *tmp;
 
   PetscFunctionBegin;
-  ierr = MPI_Win_shared_query(win,rank,sz,szind,&tmp);CHKERRQ(ierr);
+  ierr = MPI_Win_shared_query(win,rank,sz,szind,&tmp);CHKERRMPI(ierr);
   if (*szind <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"szkind %d must be positive\n",*szind);
   tmp += ((size_t)tmp) % *szind ? *szind/4 - ((((size_t)tmp) % *szind)/4) : 0;
   *(void**)ptr = (void*)tmp;

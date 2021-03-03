@@ -22,15 +22,15 @@ class Configure(config.package.CMakePackage):
     return
 
   def __str__(self):
-    output  = config.package.Package.__str__(self)
+    output  = config.package.CMakePackage.__str__(self)
     if hasattr(self,'system'): output += '  Backend: '+self.system+'\n'
     return output
 
   def setupHelp(self, help):
     import nargs
-    config.package.Package.setupHelp(self, help)
-    help.addArgument('Kokkos', '-with-kokkos-cuda-arch', nargs.ArgString(None, 0, 'One of KEPLER30, KEPLER32, KEPLER35, KEPLER37, MAXWELL50, MAXWELL52, MAXWELL53, PASCAL60, PASCAL61, VOLTA70, VOLTA72, TURING75, AMPERE80, use nvidia-smi'))
-    help.addArgument('Kokkos', '-with-kokkos-hip-arch',  nargs.ArgString(None, 0, 'One of VEGA900, VEGA906, VEGA908'))
+    config.package.CMakePackage.setupHelp(self, help)
+    help.addArgument('KOKKOS', '-with-kokkos-cuda-arch', nargs.ArgString(None, 0, 'One of KEPLER30, KEPLER32, KEPLER35, KEPLER37, MAXWELL50, MAXWELL52, MAXWELL53, PASCAL60, PASCAL61, VOLTA70, VOLTA72, TURING75, AMPERE80, use nvidia-smi'))
+    help.addArgument('KOKKOS', '-with-kokkos-hip-arch',  nargs.ArgString(None, 0, 'One of VEGA900, VEGA906, VEGA908'))
     return
 
   def setupDependencies(self, framework):
@@ -69,14 +69,8 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
-    if self.compilerFlags.debugging:
-      args.append('-DCMAKE_BUILD_TYPE=DEBUG')
-    else:
-      args.append('-DCMAKE_BUILD_TYPE=RELEASE')
+    if not self.compilerFlags.debugging:
       args.append('-DXSDK_ENABLE_DEBUG=NO')
-
-    # Trilinos cmake does not set this variable (as it should) so cmake install does not properly reset the -id and rpath of --prefix installed Trilinos libraries
-    args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
     if self.mpi.found:
       args.append('-DKokkos_ENABLE_MPI=ON')
@@ -145,7 +139,7 @@ class Configure(config.package.CMakePackage):
 
   def configureLibrary(self):
     import os
-    config.package.Package.configureLibrary(self)
+    config.package.CMakePackage.configureLibrary(self)
     if self.cuda.found:
-      self.addMakeMacro('KOKKOS_BIN',os.path.join(self.installDir,'bin'))
+      self.addMakeMacro('KOKKOS_BIN',os.path.join(self.directory,'bin'))
 

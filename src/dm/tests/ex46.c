@@ -96,7 +96,7 @@ int main(int argc,char **argv) {
     DM        da2;
     PetscBool compatible,set;
     MPI_Comm  comm2;
-    ierr = MPI_Comm_dup(PETSC_COMM_WORLD,&comm2);CHKERRQ(ierr);
+    ierr = MPI_Comm_dup(PETSC_COMM_WORLD,&comm2);CHKERRMPI(ierr);
     ierr = DMDACreate3d(comm2,bx,by,bz,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da2);CHKERRQ(ierr);
     ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
     ierr = DMSetUp(da2);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ int main(int argc,char **argv) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)da),"Error: DM not compatible with DMDA on dup'd comm\n");CHKERRQ(ierr);
     }
     ierr = DMDestroy(&da2);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&comm2);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&comm2);CHKERRMPI(ierr);
   }
 
   /* Check compatibility with a derived DMDA */
@@ -173,7 +173,7 @@ int main(int argc,char **argv) {
       ierr = PetscMalloc1(p,&lz2);CHKERRQ(ierr);
       for (i=0; i<p-1; i++) lz2[i] = 1; /* One point per rank instead of 2 */
       lz2[p-1] = P - (p-1);
-      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
       ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz2,&da2);CHKERRQ(ierr);
       ierr = DMSetUp(da2);CHKERRQ(ierr);
       ierr = DMGetCompatibility(da,da2,&compatible,&set);CHKERRQ(ierr);

@@ -47,6 +47,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_ScaLAPACK(Mat,Mat,Mat);
 #endif
 
 /* BLACS routines (C interface) */
+BLAS_EXTERN PetscBLASInt Csys2blacs_handle(MPI_Comm syscontext);
 BLAS_EXTERN void  Cblacs_pinfo(PetscBLASInt *mypnum,PetscBLASInt *nprocs);
 BLAS_EXTERN void  Cblacs_get(PetscBLASInt context,PetscBLASInt request,PetscBLASInt *value);
 BLAS_EXTERN PetscBLASInt Cblacs_pnum(PetscBLASInt context,PetscBLASInt prow,PetscBLASInt pcol);

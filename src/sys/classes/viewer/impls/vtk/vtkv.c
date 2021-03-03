@@ -314,7 +314,7 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
   if (!rank) {
     size_t      count;
     PetscMPIInt dsize;
@@ -328,7 +328,7 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
       vdtype = MPI_DOUBLE;
     }
 #endif
-    ierr  = MPI_Type_size(vdtype,&dsize);CHKERRQ(ierr);
+    ierr  = MPI_Type_size(vdtype,&dsize);CHKERRMPI(ierr);
     bytes = PetscVTKIntCast(dsize*n);
 
     count = fwrite(&bytes,sizeof(int),1,fp);

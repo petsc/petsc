@@ -1,3 +1,5 @@
+.. _tut_stokes:
+
 ============================================================
 Guide to the Stokes Equations using Finite Elements in PETSc
 ============================================================
@@ -206,10 +208,10 @@ which will allow us to set the value from the command line using ``-mu``. The ``
 Investigating convergence
 -------------------------
 
-In order to look at the convergence of some harder problems, we will examine ``SNES ex69``. This example provides an exact solution to the variable viscosity Stokes equation. The sharp viscosity variation will allow us to investigate convergence of the solver and discretization. The full problem description can be found in :cite:`VelicMayMoresiKnepley20`. Briefly, a sharp viscosity variation is created across the unit square, imposed on a background pressure with given fundamental frequency. For example, we can create examples with period one half and viscosity :math:`e^{2 B x}` (solKx)
+In order to look at the convergence of some harder problems, we will examine ``SNES ex69``. This example provides an exact solution to the variable viscosity Stokes equation. The sharp viscosity variation will allow us to investigate convergence of the solver and discretization. Briefly, a sharp viscosity variation is created across the unit square, imposed on a background pressure with given fundamental frequency. For example, we can create examples with period one half and viscosity :math:`e^{2 B x}` (solKx)
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 5 -dm_view hdf5:${PETSC_DIR}/sol.h5 -snes_view_solution hdf5:${PETSC_DIR}/sol.h5::append -exact_vec_view hdf5:${PETSC_DIR}/sol.h5::append -m 2 -n 2 -B 1"
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 5 -dm_view hdf5:${PETSC_DIR}/sol.h5 -snes_view_solution hdf5:${PETSC_DIR}/sol.h5::append -exact_vec_view hdf5:${PETSC_DIR}/sol.h5::append -m 2 -n 2 -B 3.75"
+  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 5 -dm_view hdf5:$PETSC_DIR/sol.h5 -snes_view_solution hdf5:$PETSC_DIR/sol.h5::append -exact_vec_view hdf5:$PETSC_DIR/sol.h5::append -m 2 -n 2 -B 1"
+  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 5 -dm_view hdf5:$PETSC_DIR/sol.h5 -snes_view_solution hdf5:$PETSC_DIR/sol.h5::append -exact_vec_view hdf5:$PETSC_DIR/sol.h5::append -m 2 -n 2 -B 3.75"
 
 which are show in the figure below.
 
@@ -757,8 +759,8 @@ We see that they have the same nonzero pattern, even though the preconditioning 
 We can see a sparsity portrait of the system and preconditioning matrices if the installation supports X-windows visualization
 
    >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-ksp_view_mat draw -prec_mat_view draw -draw_pause -1"
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-ksp_view_mat draw -prec_mat_view draw -draw_save ${PETSC_DIR}/mat.png"
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_preallocate_only -mat_ignore_zero_entries -prec_mat_ignore_zero_entries -ksp_view_mat draw -prec_mat_view draw -draw_save ${PETSC_DIR}/mat_sparse.png"
+   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-ksp_view_mat draw -prec_mat_view draw -draw_save $PETSC_DIR/mat.png"
+   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_preallocate_only -mat_ignore_zero_entries -prec_mat_ignore_zero_entries -ksp_view_mat draw -prec_mat_view draw -draw_save $PETSC_DIR/mat_sparse.png"
 
 
 .. list-table::

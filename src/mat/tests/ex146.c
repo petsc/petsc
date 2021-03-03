@@ -4,7 +4,7 @@ static char help[]="This program illustrates the use of parallel real 3D fftw (w
 #include <fftw3.h>
 #include <fftw3-mpi.h>
 
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   ptrdiff_t      N0=256,N1=256,N2=256,N3=2,dim[4];
   fftw_plan      bplan,fplan;
@@ -29,8 +29,8 @@ PetscInt main(PetscInt argc,char **args)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
 #endif
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
 
   PetscRandomCreate(PETSC_COMM_WORLD,&rnd);
 

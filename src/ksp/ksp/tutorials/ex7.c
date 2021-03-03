@@ -47,8 +47,8 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   n    = m+2;
 
   /* -------------------------------------------------------------------
@@ -75,15 +75,13 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
   /*
      Create parallel vectors
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&u,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
 
   /*
      Set exact solution; then compute right-hand-side vector.
@@ -137,6 +135,11 @@ int main(int argc,char **args)
   for (i=0; i<m; i++) blks[i] = n;
   ierr = PCBJacobiSetTotalBlocks(pc,m,blks);CHKERRQ(ierr);
   ierr = PetscFree(blks);CHKERRQ(ierr);
+
+  /*
+    Set runtime options
+  */
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
 
   /* -------------------------------------------------------------------
@@ -206,11 +209,6 @@ int main(int argc,char **args)
      ------------------------------------------------------------------- */
 
   /*
-    Set runtime options
-  */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-
-  /*
      Solve the linear system
   */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
@@ -242,8 +240,9 @@ int main(int argc,char **args)
 /*TEST
 
    test:
+      suffix: 1
       nsize: 2
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 2
@@ -253,47 +252,62 @@ int main(int argc,char **args)
    test:
       suffix: viennacl
       requires: viennacl
-      args: -ksp_monitor_short -mat_type aijviennacl -vec_type viennacl
+      args: -ksp_monitor_short -mat_type aijviennacl
       output_file: output/ex7_mpiaijcusparse.out
 
    test:
       suffix: viennacl_2
       nsize: 2
       requires: viennacl
-      args: -ksp_monitor_short -mat_type aijviennacl -vec_type viennacl
+      args: -ksp_monitor_short -mat_type aijviennacl
       output_file: output/ex7_mpiaijcusparse_2.out
 
    test:
       suffix: mpiaijcusparse
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -vec_type cuda
+      args: -ksp_monitor_short -mat_type aijcusparse
 
    test:
       suffix: mpiaijcusparse_2
       nsize: 2
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -vec_type cuda
+      args: -ksp_monitor_short -mat_type aijcusparse
 
    test:
       suffix: mpiaijcusparse_simple
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusparse_simple_2
       nsize: 2
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusparse_3
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
 
    test:
       suffix: mpiaijcusparse_4
       nsize: 2
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
+
+   testset:
+      args: -ksp_monitor_short -pc_type gamg -ksp_view
+      test:
+        suffix: gamg_cuda
+        nsize: {{1 2}separate output}
+        requires: cuda
+        args: -mat_type aijcusparse
+        # triggers cusparse MatTransposeMat operation when squaring the graph
+        args: -pc_gamg_sym_graph 0 -pc_gamg_threshold -1 -pc_gamg_square_graph 1
+      test:
+        suffix: gamg_kokkos
+        nsize: {{1 2}separate output}
+        requires: kokkos_kernels
+        args: -mat_type aijkokkos
 
 TEST*/

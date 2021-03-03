@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   value = 1;
   ierr  = VecSet(global,value);CHKERRQ(ierr);
 
-  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   value = rank+1;
   ierr  = VecScale(global,value);CHKERRQ(ierr);
 

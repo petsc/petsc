@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscInt       i;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr = MatCreateDense(PETSC_COMM_WORLD,6,6,12,12,NULL,&A);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A,&Av);CHKERRQ(ierr);

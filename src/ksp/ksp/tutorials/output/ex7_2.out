@@ -21,7 +21,7 @@ PC Object: 2 MPI processes
     PC Object: (sub_) 1 MPI processes
       type: none
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: (sub_) 1 MPI processes
         type: seqaij
         rows=6, cols=6
         total: nonzeros=16, allocated nonzeros=16
@@ -50,7 +50,7 @@ PC Object: 2 MPI processes
               total: nonzeros=16, allocated nonzeros=16
                 not using I-node routines
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: (sub_) 1 MPI processes
         type: seqaij
         rows=6, cols=6
         total: nonzeros=16, allocated nonzeros=16
@@ -69,8 +69,9 @@ PC Object: 2 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: (sub_) 1 MPI processes
       type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: (sub_) 1 MPI processes
         type: seqaij
         rows=6, cols=6
         total: nonzeros=16, allocated nonzeros=16
@@ -88,8 +89,9 @@ PC Object: 2 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: (sub_) 1 MPI processes
       type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: (sub_) 1 MPI processes
         type: seqaij
         rows=6, cols=6
         total: nonzeros=16, allocated nonzeros=16

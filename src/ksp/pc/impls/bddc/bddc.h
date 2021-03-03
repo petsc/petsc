@@ -19,6 +19,7 @@ PETSC_EXTERN PetscLogEvent PC_BDDC_CoarseSolver[PETSC_PCBDDC_MAXLEVELS];
 PETSC_EXTERN PetscLogEvent PC_BDDC_AdaptiveSetUp[PETSC_PCBDDC_MAXLEVELS];
 PETSC_EXTERN PetscLogEvent PC_BDDC_Scaling[PETSC_PCBDDC_MAXLEVELS];
 PETSC_EXTERN PetscLogEvent PC_BDDC_Schurs[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_Solves[PETSC_PCBDDC_MAXLEVELS][3];
 
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {

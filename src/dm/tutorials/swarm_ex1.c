@@ -16,8 +16,8 @@ PetscErrorCode ex1_1(void)
   PetscMPIInt    rank,size;
   PetscInt       p;
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if ((size > 1) && (size != 4)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must be run wuth 4 MPI ranks");
 
   ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
@@ -101,8 +101,8 @@ PetscErrorCode ex1_2(void)
   PetscMPIInt    rank,size;
   PetscInt       p;
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
   ierr = DMSetType(dms,DMSWARM);CHKERRQ(ierr);
   ierr = DMSwarmInitializeFieldRegister(dms);CHKERRQ(ierr);
@@ -191,8 +191,8 @@ PetscErrorCode ex1_3(void)
   PetscInt       is,js,ni,nj,overlap;
   DM             dmcell;
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   overlap = 2;
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,13,13,PETSC_DECIDE,PETSC_DECIDE,1,overlap,NULL,NULL,&dmcell);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dmcell);CHKERRQ(ierr);
@@ -304,7 +304,7 @@ PetscErrorCode collect_zone(DM dm,void *ctx,PetscInt *nfound,PetscInt **foundlis
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = DMSwarmGetLocalSize(dm,&npoints);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,"coory",NULL,NULL,(void**)&array_y);CHKERRQ(ierr);
@@ -351,8 +351,8 @@ PetscErrorCode ex1_4(void)
   CollectZoneCtx *zone;
   PetscReal      dx;
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   nn = 101;
   dx = 2.0/ (PetscReal)(nn-1);
   overlap = 0;

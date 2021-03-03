@@ -91,7 +91,7 @@ const char *const PetscViewerFormats[] = {
 
     Note: This supports passing in a NULL for the viewer for use in the debugger, but it should never be called in the code with a NULL viewer
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(), PetscViewerType,
+.seealso: PetscViewerGetFormat(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(), PetscViewerType,
           PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpen(),PetscViewerSocketOpen()
 @*/
 PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
@@ -177,7 +177,54 @@ PetscErrorCode  PetscViewerPopFormat(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
+/*@C
+   PetscViewerGetFormat - Gets the format for PetscViewers.
+
+   Not collective
+
+   Input Parameter:
+.  viewer - the PetscViewer
+
+   Output Parameter:
+-  format - the format
+
+   Level: intermediate
+
+   Notes:
+   Available formats include
++    PETSC_VIEWER_DEFAULT - default format
+.    PETSC_VIEWER_ASCII_MATLAB - MATLAB format
+.    PETSC_VIEWER_ASCII_DENSE - print matrix as dense
+.    PETSC_VIEWER_ASCII_IMPL - implementation-specific format
+      (which is in many cases the same as the default)
+.    PETSC_VIEWER_ASCII_INFO - basic information about object
+.    PETSC_VIEWER_ASCII_INFO_DETAIL - more detailed info
+       about object
+.    PETSC_VIEWER_ASCII_COMMON - identical output format for
+       all objects of a particular type
+.    PETSC_VIEWER_ASCII_INDEX - (for vectors) prints the vector
+       element number next to each vector entry
+.    PETSC_VIEWER_ASCII_SYMMODU - print parallel vectors without
+       indicating the processor ranges
+.    PETSC_VIEWER_ASCII_VTK - outputs the object to a VTK file (deprecated since v3.14)
+.    PETSC_VIEWER_NATIVE - store the object to the binary
+       file in its native format (for example, dense
+       matrices are stored as dense), DMDA vectors are dumped directly to the
+       file instead of being first put in the natural ordering
+.    PETSC_VIEWER_DRAW_BASIC - views the vector with a simple 1d plot
+.    PETSC_VIEWER_DRAW_LG - views the vector with a line graph
+-    PETSC_VIEWER_DRAW_CONTOUR - views the vector with a contour plot
+
+   These formats are most often used for viewing matrices and vectors.
+
+   If a format (for example PETSC_VIEWER_DRAW_CONTOUR) was applied to a viewer
+  where it didn't apply (PETSC_VIEWER_STDOUT_WORLD) it cause the default behavior
+  for that viewer to be used.
+
+.seealso: PetscViewerSetFormat(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(), PetscViewerType,
+          PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpen(),PetscViewerSocketOpen()
+@*/
+PetscErrorCode PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
 {
   PetscFunctionBegin;
   *format =  viewer->format;

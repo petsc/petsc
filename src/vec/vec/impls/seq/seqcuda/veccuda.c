@@ -86,16 +86,26 @@ PetscErrorCode VecCopy_SeqCUDA_Private(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecSetRandom_SeqCUDA_Private(Vec xin,PetscRandom r)
+PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
-  PetscInt       n = xin->map->n,i;
+  PetscInt       n = xin->map->n;
+  PetscBool      iscurand;
   PetscScalar    *xx;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  for (i=0; i<n; i++) { ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr); }
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)r,PETSCCURAND,&iscurand);CHKERRQ(ierr);
+  if (iscurand) {
+    ierr = VecCUDAGetArrayWrite(xin,&xx);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArrayWrite(xin,&xx);CHKERRQ(ierr);
+  }
+  ierr = PetscRandomGetValues(r,n,xx);CHKERRQ(ierr);
+  if (iscurand) {
+    ierr = VecCUDARestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
+  } else {
+    ierr = VecRestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -132,68 +142,6 @@ PetscErrorCode VecResetArray_SeqCUDA_Private(Vec vin)
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
   v->unplacedarray = 0;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecCUDAAllocateCheck_Public(Vec v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecCUDACopyToGPU_Public(Vec v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-    VecCUDACopyToGPUSome_Public - Copies certain entries down to the GPU from the CPU of a vector
-
-   Input Parameters:
- +  v    - the vector
- .  ci   - the requested indices, this should be created with CUDAIndicesCreate()
- -  mode - vec scatter mode used in VecScatterBegin/End
-*/
-PetscErrorCode VecCUDACopyToGPUSome_Public(Vec v,PetscCUDAIndices ci,ScatterMode mode)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDACopyToGPUSome(v,ci,mode);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-  VecCUDACopyFromGPUSome_Public - Copies certain entries up to the CPU from the GPU of a vector
-
-  Input Parameters:
- +  v    - the vector
- .  ci   - the requested indices, this should be created with CUDAIndicesCreate()
- -  mode - vec scatter mode used in VecScatterBegin/End
-*/
-PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec v,PetscCUDAIndices ci,ScatterMode mode)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDACopyFromGPUSome(v,ci,mode);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecSetRandom_SeqCUDA_Private(xin,r);CHKERRQ(ierr);
-  xin->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -404,14 +352,62 @@ PetscErrorCode  VecCreateSeqCUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec v,PetscScalar **vv)
+PetscErrorCode VecGetArray_SeqCUDA(Vec v,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (v->offloadmask == PETSC_OFFLOAD_GPU) {
+    ierr = VecCUDACopyFromGPU(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
+  }
+  *a = *((PetscScalar**)v->data);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreArray_SeqCUDA(Vec v,PetscScalar **a)
+{
+  PetscFunctionBegin;
+  v->offloadmask = PETSC_OFFLOAD_CPU;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec v,PetscScalar **a)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
-  v->offloadmask = PETSC_OFFLOAD_CPU;
-  *vv = *((PetscScalar**)v->data);
+  *a   = *((PetscScalar**)v->data);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a,PetscMemType *mtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (v->offloadmask & PETSC_OFFLOAD_GPU) { /* Prefer working on GPU when offloadmask is PETSC_OFFLOAD_BOTH */
+    *a = ((Vec_CUDA*)v->spptr)->GPUarray;
+    v->offloadmask    = PETSC_OFFLOAD_GPU; /* Change the mask once GPU gets write access, don't wait until restore array */
+    if (mtype) *mtype = PETSC_MEMTYPE_CUDA;
+  } else {
+    ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
+    *a = *((PetscScalar**)v->data);
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a)
+{
+  PetscFunctionBegin;
+  if (v->offloadmask & PETSC_OFFLOAD_GPU) {
+    v->offloadmask = PETSC_OFFLOAD_GPU;
+  } else {
+    v->offloadmask = PETSC_OFFLOAD_CPU;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -458,6 +454,12 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = NULL;
     V->ops->restorelocalvectorread = NULL;
     V->ops->getarraywrite          = NULL;
+    V->ops->max                    = VecMax_Seq;
+    V->ops->min                    = VecMin_Seq;
+
+    /* default random number generator */
+    ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(PETSCRANDER48,&V->defaultrandtype);CHKERRQ(ierr);
   } else {
     V->ops->dot                    = VecDot_SeqCUDA;
     V->ops->norm                   = VecNorm_SeqCUDA;
@@ -492,6 +494,16 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = VecGetLocalVector_SeqCUDA;
     V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUDA;
     V->ops->getarraywrite          = VecGetArrayWrite_SeqCUDA;
+    V->ops->getarray               = VecGetArray_SeqCUDA;
+    V->ops->restorearray           = VecRestoreArray_SeqCUDA;
+    V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqCUDA;
+    V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqCUDA;
+    V->ops->max                    = VecMax_SeqCUDA;
+    V->ops->min                    = VecMin_SeqCUDA;
+
+    /* default random number generator */
+    ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(PETSCCURAND,&V->defaultrandtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -504,7 +516,7 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
   PetscBool      option_set;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRMPI(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA);CHKERRQ(ierr);

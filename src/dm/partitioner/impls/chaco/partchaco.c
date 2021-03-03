@@ -103,7 +103,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     PetscBool distributed;
 
     ival = (numVertices > 0);
-    ierr = MPI_Allreduce(&ival, &isum, 1, MPI_INT, MPI_SUM, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&ival, &isum, 1, MPI_INT, MPI_SUM, comm);CHKERRMPI(ierr);
     distributed = (isum > 1) ? PETSC_TRUE : PETSC_FALSE;
     if (distributed) SETERRQ(comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
   }

@@ -1,2 +1,1 @@
-[0] VecScatterCreate_SF(): Using StarForest for vector scatter
 [0] VecScatterSetFromOptions(): For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI

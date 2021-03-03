@@ -21,8 +21,8 @@ int main(int argc, char **argv)
   PetscSFNode *iremote;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   if (size != 2) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for two MPI processes\n");
 
@@ -73,10 +73,10 @@ int main(int argc, char **argv)
   ierr = VecGetArrayRead(B,(const PetscScalar**)&bufB);CHKERRQ(ierr);
   ierr = VecGetArray(Aout,&bufAout);CHKERRQ(ierr);
   ierr = VecGetArray(Bout,&bufBout);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout,MPI_REPLACE);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(A,(const PetscScalar**)&bufA);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(B,(const PetscScalar**)&bufB);CHKERRQ(ierr);
   ierr = VecRestoreArray(Aout,&bufAout);CHKERRQ(ierr);

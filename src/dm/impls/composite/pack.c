@@ -106,14 +106,14 @@ PetscErrorCode  DMSetUp_Composite(DM dm)
   ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
 
   /* now set the rstart for each linked vector */
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRMPI(ierr);
   while (next) {
     next->rstart  = nprev;
     nprev        += next->n;
     next->grstart = com->rstart + next->rstart;
     ierr          = PetscMalloc1(size,&next->grstarts);CHKERRQ(ierr);
-    ierr          = MPI_Allgather(&next->grstart,1,MPIU_INT,next->grstarts,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr          = MPI_Allgather(&next->grstart,1,MPIU_INT,next->grstarts,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
     next          = next->next;
   }
   com->setup = PETSC_TRUE;
@@ -932,7 +932,7 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
   ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = PetscMalloc1(com->nDM,ltogs);CHKERRQ(ierr);
   next = com->next;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
 
   /* loop over packed objects, handling one at at time */
   cnt = 0;
@@ -951,7 +951,7 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
     /* Get the offsets for the sub-DM global vector */
     ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
     ierr = VecGetOwnershipRanges(global,&suboff);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)global),&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)global),&size);CHKERRMPI(ierr);
 
     /* Shift the sub-DM definition of the global space to the composite global space */
     for (i=0; i<n; i++) {
@@ -1074,7 +1074,7 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
   if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Must call DMSetUp() before");
   ierr = PetscMalloc1(com->nDM,is);CHKERRQ(ierr);
   next = com->next;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
 
   /* loop over packed objects, handling one at at time */
   while (next) {
@@ -1600,7 +1600,7 @@ PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,ISColoring
     struct DMCompositeLink *next = com->next;
     PetscMPIInt            rank;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
     cnt  = 0;
     while (next) {
       ISColoring lcoloring;

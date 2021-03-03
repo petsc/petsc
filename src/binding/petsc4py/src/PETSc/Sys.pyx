@@ -177,6 +177,14 @@ cdef class Sys:
         CHKERR( PetscCitationsRegister(cit, &flag) )
         set_citation(citation, toBool(flag))
 
+    @classmethod
+    def hasExternalPackage(cls, package):
+        cdef const char *cpackage = NULL
+        package = str2bytes(package, &cpackage)
+        cdef PetscBool has = PETSC_FALSE
+        CHKERR( PetscHasExternalPackage(cpackage, &has) )
+        return toBool(has)
+
 cdef dict citations_registry = { }
 
 cdef PetscBool get_citation(object citation):

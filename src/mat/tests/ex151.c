@@ -105,4 +105,8 @@ int main(int argc,char **argv)
       nsize: 3
       args: -mat_type baij -view_sparse
 
+   test:
+      suffix: dense
+      args: -mat_type dense
+
 TEST*/

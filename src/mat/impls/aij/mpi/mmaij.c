@@ -24,6 +24,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (!aij->garray) {
+    if (!aij->B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
 #if defined(PETSC_USE_CTABLE)
     /* use a table */
     ierr = PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
@@ -101,11 +102,10 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   if (!aij->lvec) {
-    /* create local vector that is used to scatter into */
-    ierr = VecCreateSeq(PETSC_COMM_SELF,ec,&aij->lvec);CHKERRQ(ierr);
-  } else {
-    ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr);
+    if (!aij->B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
+    ierr = MatCreateVecs(aij->B,&aij->lvec,NULL);CHKERRQ(ierr);
   }
+  ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr);
 
   /* create two temporary Index sets for build scatter gather */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
@@ -116,18 +116,11 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
-  if (aij->Mvctx_mpi1_flg) {
-    ierr = VecScatterDestroy(&aij->Mvctx_mpi1);CHKERRQ(ierr);
-    ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx_mpi1);CHKERRQ(ierr);
-    ierr = VecScatterSetType(aij->Mvctx_mpi1,VECSCATTERMPI1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx_mpi1);CHKERRQ(ierr);
-  } else {
-    ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
-    ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  }
+  ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   aij->garray = garray;
 
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);

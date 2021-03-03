@@ -110,10 +110,16 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
   return 0;
 }
 
+/*
+   On some systems when the stderr is nested through several levels of shell script
+   before being passed to a file the isatty() falsely returns true resulting in
+   the screen highlight variables being passed through the test harness. Therefore
+   simply do not highlight when the PETSC_STDERR is PETSC_STDOUT.
+*/
 static void PetscErrorPrintfHilight(void)
 {
 #if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
-  if (PetscErrorPrintf == PetscErrorPrintfDefault) {
+  if (PetscErrorPrintf == PetscErrorPrintfDefault && PETSC_STDERR != PETSC_STDOUT) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR,"\033[1;31m");
   }
 #endif
@@ -122,7 +128,7 @@ static void PetscErrorPrintfHilight(void)
 static void PetscErrorPrintfNormal(void)
 {
 #if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
-  if (PetscErrorPrintf == PetscErrorPrintfDefault) {
+  if (PetscErrorPrintf == PetscErrorPrintfDefault && PETSC_STDERR != PETSC_STDOUT) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR,"\033[0;39m\033[0;49m");
   }
 #endif
@@ -177,7 +183,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
     PetscBool  ismain;
     static int cnt = 1;
 
-    if (p == PETSC_ERROR_INITIAL) {
+    if (cnt == 1) {
       PetscErrorPrintfHilight();
       (*PetscErrorPrintf)("--------------------- Error Message --------------------------------------------------------------\n");
       PetscErrorPrintfNormal();

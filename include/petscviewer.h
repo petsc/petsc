@@ -176,9 +176,9 @@ PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,PetscOptions,const ch
 #define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f)
 PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems*,const char[],const char[],const char[],PetscViewer*,PetscViewerFormat *,PetscBool *);
 
-typedef struct {PetscViewer viewer;PetscViewerFormat format;} PetscViewerAndFormat;
-PETSC_EXTERN PetscErrorCode  PetscViewerAndFormatCreate(PetscViewer,PetscViewerFormat,PetscViewerAndFormat**);
-PETSC_EXTERN PetscErrorCode  PetscViewerAndFormatDestroy(PetscViewerAndFormat**);
+typedef struct {PetscViewer viewer;PetscViewerFormat format;PetscDrawLG lg;void *data;} PetscViewerAndFormat;
+PETSC_EXTERN PetscErrorCode PetscViewerAndFormatCreate(PetscViewer,PetscViewerFormat,PetscViewerAndFormat**);
+PETSC_EXTERN PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat**);
 
 /*
    Operations explicit to a particular class of viewers
@@ -361,10 +361,12 @@ M*/
 #define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE)
 
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStart(PetscViewer,PetscInt*,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer,PetscInt,PetscInt*,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer,PetscInt,PetscInt*,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer,PetscMPIInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer,PetscInt*);
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlStepMaster (since v3.15)") PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer,PetscInt i,PetscInt *mcnt,PetscInt cnt) {return PetscViewerFlowControlStepMain(viewer,i,mcnt,cnt);}
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlEndMaster (since v3.15)") PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer, PetscInt *mcnt) {return PetscViewerFlowControlEndMain(viewer,mcnt);}
 
 /*
    PetscViewer writes to MATLAB .mat file

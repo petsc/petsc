@@ -9,6 +9,7 @@ class KSPType(object):
     PIPECGRR   = S_(KSPPIPECGRR)
     PIPELCG    = S_(KSPPIPELCG)
     PIPEPRCG   = S_(KSPPIPEPRCG)
+    PIPECG2    = S_(KSPPIPECG2)
     CGNE       = S_(KSPCGNE)
     NASH       = S_(KSPNASH)
     STCG       = S_(KSPSTCG)
@@ -276,7 +277,7 @@ cdef class KSP(Object):
         CHKERR( KSPSetResidualHistory(self.ksp, data, size, flag) )
 
     def getConvergenceHistory(self):
-        cdef PetscReal *data = NULL
+        cdef const PetscReal *data = NULL
         cdef PetscInt   size = 0
         CHKERR( KSPGetResidualHistory(self.ksp, &data, &size) )
         return array_r(size, data)

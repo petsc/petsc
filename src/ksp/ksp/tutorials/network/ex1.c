@@ -167,12 +167,12 @@ PetscErrorCode FormOperator(DM dmnetwork,Mat A,Vec b)
    */
   ierr = DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd);CHKERRQ(ierr);
   for (e = 0; e < eEnd; e++) {
-    ierr = DMNetworkGetComponent(dmnetwork,e,0,NULL,(void**)&branch);CHKERRQ(ierr);
-    ierr = DMNetworkGetVariableOffset(dmnetwork,e,&lofst);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(dmnetwork,e,0,NULL,(void**)&branch,NULL);CHKERRQ(ierr);
+    ierr = DMNetworkGetLocalVecOffset(dmnetwork,e,ALL_COMPONENTS,&lofst);CHKERRQ(ierr);
 
     ierr = DMNetworkGetConnectedVertices(dmnetwork,e,&cone);CHKERRQ(ierr);
-    ierr = DMNetworkGetVariableOffset(dmnetwork,cone[0],&lofst_fr);CHKERRQ(ierr);
-    ierr = DMNetworkGetVariableOffset(dmnetwork,cone[1],&lofst_to);CHKERRQ(ierr);
+    ierr = DMNetworkGetLocalVecOffset(dmnetwork,cone[0],ALL_COMPONENTS,&lofst_fr);CHKERRQ(ierr);
+    ierr = DMNetworkGetLocalVecOffset(dmnetwork,cone[1],ALL_COMPONENTS,&lofst_to);CHKERRQ(ierr);
 
     /* set rhs b for Branch equation */
     barr[lofst] = branch->bat;
@@ -185,7 +185,7 @@ PetscErrorCode FormOperator(DM dmnetwork,Mat A,Vec b)
     ierr = MatSetValuesLocal(A,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /* set Node equation */
-    ierr = DMNetworkGetComponent(dmnetwork,cone[0],0,NULL,(void**)&node);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(dmnetwork,cone[0],0,NULL,(void**)&node,NULL);CHKERRQ(ierr);
 
     /* from node */
     if (!node->gr) { /* not a boundary node */
@@ -195,7 +195,7 @@ PetscErrorCode FormOperator(DM dmnetwork,Mat A,Vec b)
     }
 
     /* to node */
-    ierr = DMNetworkGetComponent(dmnetwork,cone[1],0,NULL,(void**)&node);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(dmnetwork,cone[1],0,NULL,(void**)&node,NULL);CHKERRQ(ierr);
 
     if (!node->gr) { /* not a boundary node */
       row[0] = lofst_to;
@@ -209,8 +209,8 @@ PetscErrorCode FormOperator(DM dmnetwork,Mat A,Vec b)
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(dmnetwork,v,&ghost);CHKERRQ(ierr);
     if (!ghost) {
-      ierr = DMNetworkGetComponent(dmnetwork,v,0,NULL,(void**)&node);CHKERRQ(ierr);
-      ierr = DMNetworkGetVariableOffset(dmnetwork,v,&lofst);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponent(dmnetwork,v,0,NULL,(void**)&node,NULL);CHKERRQ(ierr);
+      ierr = DMNetworkGetLocalVecOffset(dmnetwork,v,ALL_COMPONENTS,&lofst);CHKERRQ(ierr);
 
       if (node->gr) { /* a boundary node */
         row[0] = lofst;
@@ -242,11 +242,11 @@ int main(int argc,char ** argv)
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
-  PetscInt          nV[1],nE[1],*edgelists[1];
+  PetscInt          nV[1],nE[1];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   /* "Read" data only for processor 0 */
   if (!rank) {
@@ -257,29 +257,24 @@ int main(int argc,char ** argv)
   ierr = DMNetworkRegisterComponent(dmnetwork,"nstr",sizeof(Node),&componentkey[0]);CHKERRQ(ierr);
   ierr = DMNetworkRegisterComponent(dmnetwork,"bsrt",sizeof(Branch),&componentkey[1]);CHKERRQ(ierr);
 
-  /* Set local number of nodes/edges */
+  /* Set local number of nodes/edges, add edge connectivity */
   nV[0] = nnode; nE[0] = nbranch;
-  ierr = DMNetworkSetSizes(dmnetwork,1,nV,nE,0,NULL);CHKERRQ(ierr);
-  /* Add edge connectivity */
-  edgelists[0] = edgelist;
-  ierr = DMNetworkSetEdgeList(dmnetwork,edgelists,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkSetNumSubNetworks(dmnetwork,PETSC_DECIDE,1);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(dmnetwork,"",nV[0],nE[0],edgelist,NULL);CHKERRQ(ierr);
+
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(dmnetwork);CHKERRQ(ierr);
 
-  /* Add network components: physical parameters of nodes and branches*/
+  /* Add network components (physical parameters of nodes and branches) and num of variables */
   if (!rank) {
     ierr = DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd);CHKERRQ(ierr);
     for (i = eStart; i < eEnd; i++) {
-      ierr = DMNetworkAddComponent(dmnetwork,i,componentkey[1],&branch[i-eStart]);CHKERRQ(ierr);
-      /* Add number of variables */
-      ierr = DMNetworkAddNumVariables(dmnetwork,i,1);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(dmnetwork,i,componentkey[1],&branch[i-eStart],1);CHKERRQ(ierr);
     }
 
     ierr = DMNetworkGetVertexRange(dmnetwork,&vStart,&vEnd);CHKERRQ(ierr);
     for (i = vStart; i < vEnd; i++) {
-      ierr = DMNetworkAddComponent(dmnetwork,i,componentkey[0],&node[i-vStart]);CHKERRQ(ierr);
-      /* Add number of variables */
-      ierr = DMNetworkAddNumVariables(dmnetwork,i,1);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(dmnetwork,i,componentkey[0],&node[i-vStart],1);CHKERRQ(ierr);
     }
   }
 

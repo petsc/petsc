@@ -1,6 +1,7 @@
 #if !defined(PETSCSFIMPL_H)
 #define PETSCSFIMPL_H
 
+#include <petscvec.h>
 #include <petscsf.h>
 #include <petsc/private/petscimpl.h>
 #include <petscviewer.h>
@@ -17,8 +18,8 @@ PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;
 PETSC_EXTERN PetscLogEvent PETSCSF_SetUp;
 PETSC_EXTERN PetscLogEvent PETSCSF_BcastBegin;
 PETSC_EXTERN PetscLogEvent PETSCSF_BcastEnd;
-PETSC_EXTERN PetscLogEvent PETSCSF_BcastAndOpBegin;
-PETSC_EXTERN PetscLogEvent PETSCSF_BcastAndOpEnd;
+PETSC_EXTERN PetscLogEvent PETSCSF_BcastBegin;
+PETSC_EXTERN PetscLogEvent PETSCSF_BcastEnd;
 PETSC_EXTERN PetscLogEvent PETSCSF_ReduceBegin;
 PETSC_EXTERN PetscLogEvent PETSCSF_ReduceEnd;
 PETSC_EXTERN PetscLogEvent PETSCSF_FetchAndOpBegin;
@@ -32,9 +33,8 @@ PETSC_EXTERN PetscLogEvent PETSCSF_Unpack;
 
 typedef enum {PETSCSF_ROOT2LEAF=0, PETSCSF_LEAF2ROOT} PetscSFDirection;
 typedef enum {PETSCSF_BCAST=0, PETSCSF_REDUCE, PETSCSF_FETCH} PetscSFOperation;
-typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE} PetscMemType;
 /* When doing device-aware MPI, a backend refers to the SF/device interface */
-typedef enum {PETSCSF_BACKEND_INVALID=0,PETSCSF_BACKEND_CUDA,PETSCSF_BACKEND_KOKKOS} PetscSFBackend;
+typedef enum {PETSCSF_BACKEND_INVALID=0,PETSCSF_BACKEND_CUDA,PETSCSF_BACKEND_HIP,PETSCSF_BACKEND_KOKKOS} PetscSFBackend;
 
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
@@ -43,8 +43,8 @@ struct _PetscSFOps {
   PetscErrorCode (*SetFromOptions)(PetscOptionItems*,PetscSF);
   PetscErrorCode (*View)(PetscSF,PetscViewer);
   PetscErrorCode (*Duplicate)(PetscSF,PetscSFDuplicateOption,PetscSF);
-  PetscErrorCode (*BcastAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op);
-  PetscErrorCode (*BcastAndOpEnd)  (PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*BcastBegin)     (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op);
+  PetscErrorCode (*BcastEnd)       (PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*ReduceBegin)    (PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void*,MPI_Op);
   PetscErrorCode (*ReduceEnd)      (PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
   PetscErrorCode (*FetchAndOpBegin)(PetscSF,MPI_Datatype,PetscMemType,void*,PetscMemType,const void*,void*,MPI_Op);
@@ -54,7 +54,7 @@ struct _PetscSFOps {
   PetscErrorCode (*GetLeafRanks)(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
   PetscErrorCode (*CreateLocalSF)(PetscSF,PetscSF*);
   PetscErrorCode (*GetGraph)(PetscSF,PetscInt*,PetscInt*,const PetscInt**,const PetscSFNode**);
-  PetscErrorCode (*CreateEmbeddedSF)(PetscSF,PetscInt,const PetscInt*,PetscSF*);
+  PetscErrorCode (*CreateEmbeddedRootSF)(PetscSF,PetscInt,const PetscInt*,PetscSF*);
   PetscErrorCode (*CreateEmbeddedLeafSF)(PetscSF,PetscInt,const PetscInt*,PetscSF*);
 
   PetscErrorCode (*Malloc)(PetscMemType,size_t,void**);
@@ -65,6 +65,19 @@ typedef struct _n_PetscSFPackOpt *PetscSFPackOpt;
 
 struct _p_PetscSF {
   PETSCHEADER(struct _PetscSFOps);
+  struct { /* Fields needed to implement VecScatter behavior */
+    PetscInt          from_n,to_n;   /* Recorded local sizes of the input from/to vectors in VecScatterCreate(). Used subsequently for error checking. */
+    PetscBool         beginandendtogether;  /* Indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
+    PetscBool         packongpu;     /* For GPU vectors, pack needed entries on GPU instead of pulling the whole vector down to CPU and then packing on CPU */
+    const PetscScalar *xdata;        /* Vector data to read from */
+    PetscScalar       *ydata;        /* Vector data to write to. The two pointers are recorded in VecScatterBegin. Memory is not managed by SF. */
+    PetscSF           lsf;           /* The local part of the scatter, used in SCATTER_LOCAL. Built on demand. */
+    PetscInt          bs;            /* Block size, determined by IS passed to VecScatterCreate */
+    MPI_Datatype      unit;          /* one unit = bs PetscScalars */
+    PetscBool         logging;       /* Indicate if vscat log events are happening. If yes, avoid duplicated SF logging to have clear -log_view */
+  } vscat;
+
+  /* Fields for generic PetscSF functionality */
   PetscInt        nroots;          /* Number of root vertices on current process (candidates for incoming edges) */
   PetscInt        nleaves;         /* Number of leaf vertices on current process (this process specifies a root for each leaf) */
   PetscInt        *mine;           /* Location of leaves in leafdata arrays provided to the communication routines */
@@ -104,7 +117,7 @@ struct _p_PetscSF {
   PetscBool       use_default_stream;  /* If true, SF assumes root/leafdata is on the default stream upon input and will also leave them there upon output */
   PetscBool       use_gpu_aware_mpi;   /* If true, SF assumes it can pass GPU pointers to MPI */
   PetscBool       use_stream_aware_mpi;/* If true, SF assumes the underlying MPI is cuda-stream aware and we won't sync streams for send/recv buffers passed to MPI */
-#if defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   PetscInt        maxResidentThreadsPerGPU;
 #endif
   PetscSFBackend  backend;         /* The device backend (if any) SF will use */
@@ -142,9 +155,19 @@ PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype,MPI_Dataty
 #define MPIU_Ialltoall(a,b,c,d,e,f,g,req)      MPI_Alltoall(a,b,c,d,e,f,g)
 #endif
 
+PETSC_EXTERN PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter,PetscBool,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemote_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
+
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode PetscSFMalloc_Cuda(PetscMemType,size_t,void**);
 PETSC_EXTERN PetscErrorCode PetscSFFree_Cuda(PetscMemType,void*);
+#endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscErrorCode PetscSFMalloc_HIP(PetscMemType,size_t,void**);
+PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType,void*);
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS)
@@ -152,10 +175,11 @@ PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
 PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
 #endif
 
+
 /* SF only supports CUDA and Kokkos devices. Even VIENNACL is a device, its device pointers are invisible to SF.
    Through VecGetArray(), we copy data of VECVIENNACL from device to host and pass host pointers to SF.
  */
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS) || defined(PETSC_HAVE_HIP)
   #define PetscSFMalloc(sf,mtype,sz,ptr)  ((*(sf)->ops->Malloc)(mtype,sz,ptr))
   /* Free memory and set ptr to NULL when succeeded */
   #define PetscSFFree(sf,mtype,ptr)       ((ptr) && ((*(sf)->ops->Free)(mtype,ptr) || ((ptr)=NULL,0)))

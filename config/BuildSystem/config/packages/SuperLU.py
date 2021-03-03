@@ -4,10 +4,10 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version          = '5.2.1'
+    self.version          = '5.2.2'
     self.minversion       = '5.2.1' # bugs in 5.2.0 prevent it from functioning
     self.versionname      = 'SUPERLU_MAJOR_VERSION.SUPERLU_MINOR_VERSION.SUPERLU_PATCH_VERSION'
-    self.gitcommit        = 'a3d5233' # master mar-15-2020
+    self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://github.com/xiaoyeli/superlu','https://github.com/xiaoyeli/superlu/archive/'+self.gitcommit+'.tar.gz']
     self.functions        = ['set_default_options']
     self.includes         = ['slu_ddefs.h']
@@ -37,8 +37,6 @@ class Configure(config.package.CMakePackage):
 
     #  Tests are broken on Apple since they depend on a shared library that is not resolved against BLAS
     args.append('-Denable_tests=0')
-    #  CMake in SuperLU should set this; but like many other packages it does not [and its different from superlu_dist]
-    args.append('-DCMAKE_INSTALL_LIBDIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
     if not hasattr(self.compilers, 'FC'):
       args.append('-DXSDK_ENABLE_Fortran=OFF')

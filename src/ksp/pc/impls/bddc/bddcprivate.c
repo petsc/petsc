@@ -14,12 +14,14 @@ static PetscErrorCode MatMPIAIJRestrict(Mat,MPI_Comm,Mat*);
    if range is false, it returns B s.t. range(B) _|_ range(A) */
 PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, PetscInt lw, PetscScalar *work, PetscReal *rwork, Mat *B)
 {
-#if !defined(PETSC_USE_COMPLEX)
   PetscScalar    *uwork,*data,*U, ds = 0.;
   PetscReal      *sing;
   PetscBLASInt   bM,bN,lwork,lierr,di = 1;
   PetscInt       ulw,i,nr,nc,n;
   PetscErrorCode ierr;
+#if defined(PETSC_USE_COMPLEX)
+  PetscReal      *rwork2;
+#endif
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
@@ -47,7 +49,13 @@ PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, Petsc
   ierr = PetscBLASIntCast(ulw,&lwork);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A,&data);CHKERRQ(ierr);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
   PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","N",&bM,&bN,data,&bM,sing,U,&bM,&ds,&di,uwork,&lwork,&lierr));
+#else
+  ierr = PetscMalloc1(5*n,&rwork2);CHKERRQ(ierr);
+  PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","N",&bM,&bN,data,&bM,sing,U,&bM,&ds,&di,uwork,&lwork,rwork2,&lierr));
+  ierr = PetscFree(rwork2);CHKERRQ(ierr);
+#endif
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
   ierr = MatDenseRestoreArray(A,&data);CHKERRQ(ierr);
@@ -70,10 +78,6 @@ PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, Petsc
   }
   ierr = MatDenseRestoreArray(*B,&data);CHKERRQ(ierr);
   ierr = PetscFree(U);CHKERRQ(ierr);
-#else /* PETSC_USE_COMPLEX */
-  PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for complexes");
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -237,8 +241,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       if (nc > 1) matis->sf_rootdata[i-rst] = 1;
       ierr = MatRestoreRow(pcbddc->discretegradient,i,&nc,NULL,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
     for (i=0,ne=0;i<n;i++) if (matis->sf_leafdata[i]) idx[ne++] = i;
     ierr = ISCreateGeneral(comm,ne,idx,PETSC_OWN_POINTER,&nedfieldlocal);CHKERRQ(ierr);
@@ -344,8 +348,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       PetscInt *tbz;
 
       ierr = PetscMalloc1(ne,&tbz);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
       ierr = ISGetIndices(nedfieldlocal,&idxs);CHKERRQ(ierr);
       for (i=0,cum=0;i<ne;i++)
         if (matis->sf_leafdata[idxs[i]] == 1)
@@ -646,8 +650,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   ierr = PetscSFReduceBegin(sfv,MPIU_INT,sfvleaves,sfvroots,MPI_SUM);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(sfv,MPIU_INT,sfvleaves,sfvroots,MPI_SUM);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfv,MPIU_INT,sfvroots,sfvleaves);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfv,MPIU_INT,sfvroots,sfvleaves);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfv,MPIU_INT,sfvroots,sfvleaves,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfv,MPIU_INT,sfvroots,sfvleaves,MPI_REPLACE);CHKERRQ(ierr);
 
   /* Zero rows of lGt corresponding to identified corners
      and interior nodal dofs */
@@ -1522,7 +1526,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   ierr = VecDestroy(&p);CHKERRQ(ierr);
 
   /* insert in global quadrature vecs */
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRMPI(ierr);
   for (i=1;i<n_neigh;i++) {
     const PetscInt    *idxs;
     PetscInt          idx,nn,j;
@@ -1880,8 +1884,8 @@ PetscErrorCode PCBDDCConsistencyCheckIS(PC pc, MPI_Op mop, IS *is)
   ierr = ISRestoreIndices(*is,&idxs);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(matis->sf,MPIU_BOOL,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(matis->sf,MPIU_BOOL,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
   if (mop == MPI_LAND) {
     ierr = PetscMalloc1(nd,&nidxs);CHKERRQ(ierr);
   } else {
@@ -1916,7 +1920,9 @@ PetscErrorCode PCBDDCBenignRemoveInterior(PC pc,Vec r,Vec z)
   }
   ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0],pc,0,0,0);CHKERRQ(ierr);
   ierr = KSPCheckSolve(pcbddc->ksp_D,pc,pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecSet(z,0.);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -2866,7 +2872,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
     if (isused) {
       ierr = ISGetLocalSize(isused,&n_isused);CHKERRQ(ierr);
     }
-    ierr = MPI_Scan(&n_isused,&st,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPI_Scan(&n_isused,&st,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     st = st-n_isused;
     if (n) {
       const PetscInt *gidxs;
@@ -3007,13 +3013,13 @@ PetscErrorCode PCBDDCBenignGetOrSetP0(PC pc, Vec v, PetscBool get)
   }
   if (get) {
     ierr = VecGetArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0,MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(v,&array);CHKERRQ(ierr);
-    ierr = PetscSFReduceBegin(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPIU_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPIU_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPI_REPLACE);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -3531,7 +3537,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
               break;
             default:
               SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Unknown recipe %D",recipe);
-              break;
             }
           }
         } else if (!same_data) { /* this is just to see all the eigenvalues */
@@ -5788,6 +5793,7 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
       ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][1],pc,0,0,0);CHKERRQ(ierr);
   if (!reuse_solver || pcbddc->switch_static) {
     if (applytranspose) {
       ierr = KSPSolveTranspose(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
@@ -5804,6 +5810,7 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
       ierr = MatFactorSolveSchurComplement(reuse_solver->F,reuse_solver->rhs_B,reuse_solver->sol_B);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][1],pc,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(inout_B,0.);CHKERRQ(ierr);
   if (!pcbddc->switch_static) {
     if (!reuse_solver) {
@@ -5897,7 +5904,9 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL);CHKERRQ(ierr);
     if (applytranspose) {
       if (pcbddc->benign_apply_coarse_only) SETERRQ(PetscObjectComm((PetscObject)pcbddc->coarse_ksp),PETSC_ERR_SUP,"Not yet implemented");
+      ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0);CHKERRQ(ierr);
       ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0);CHKERRQ(ierr);
       ierr = KSPCheckSolve(pcbddc->coarse_ksp,pc,sol);CHKERRQ(ierr);
       ierr = MatGetTransposeNullSpace(coarse_mat,&nullsp);CHKERRQ(ierr);
       if (nullsp) {
@@ -5916,7 +5925,9 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
         ierr = PCBDDCBenignRemoveInterior(coarse_pc,rhs,sol);CHKERRQ(ierr);
         ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
       } else {
+        ierr = PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0);CHKERRQ(ierr);
         ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+        ierr = PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0);CHKERRQ(ierr);
         ierr = KSPCheckSolve(pcbddc->coarse_ksp,pc,sol);CHKERRQ(ierr);
         if (nullsp) {
           ierr = MatNullSpaceRemove(nullsp,sol);CHKERRQ(ierr);
@@ -7208,11 +7219,11 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       if (pcbddc->mat_graph->cnloc != pc->pmat->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local coordinates! Got %D, expected %D",pcbddc->mat_graph->cnloc,pc->pmat->rmap->n);
       ierr = MatGetLocalSize(matis->A,&n,NULL);CHKERRQ(ierr);
       ierr = PetscMalloc1(pcbddc->mat_graph->cdim*n,&lcoords);CHKERRQ(ierr);
-      ierr = MPI_Type_contiguous(pcbddc->mat_graph->cdim,MPIU_REAL,&dimrealtype);CHKERRQ(ierr);
-      ierr = MPI_Type_commit(&dimrealtype);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords);CHKERRQ(ierr);
-      ierr = MPI_Type_free(&dimrealtype);CHKERRQ(ierr);
+      ierr = MPI_Type_contiguous(pcbddc->mat_graph->cdim,MPIU_REAL,&dimrealtype);CHKERRMPI(ierr);
+      ierr = MPI_Type_commit(&dimrealtype);CHKERRMPI(ierr);
+      ierr = PetscSFBcastBegin(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = MPI_Type_free(&dimrealtype);CHKERRMPI(ierr);
       ierr = PetscFree(pcbddc->mat_graph->coords);CHKERRQ(ierr);
 
       pcbddc->mat_graph->coords = lcoords;
@@ -7329,8 +7340,8 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
   if (*n_subdomains <=0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Invalid number of subdomains requested %D",*n_subdomains);
 
   if (have_void) *have_void = PETSC_FALSE;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRMPI(ierr);
   ierr = MatISGetLocalMat(mat,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&n,NULL);CHKERRQ(ierr);
   im_active = !!n;
@@ -7342,7 +7353,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
 
     if (have_void) *have_void = PETSC_TRUE;
     ierr = PetscMalloc1(size,&procs_candidates);CHKERRQ(ierr);
-    ierr = MPI_Allgather(&im_active,1,MPIU_INT,procs_candidates,1,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    ierr = MPI_Allgather(&im_active,1,MPIU_INT,procs_candidates,1,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
     for (i=0,ncand=0;i<size;i++) {
       if (!procs_candidates[i]) {
         procs_candidates[ncand++] = i;
@@ -7353,7 +7364,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
   }
 
   /* number of subdomains requested greater than active processes or matrix size -> just shift the matrix
-     number of subdomains requested 1 -> send to master or first candidate in voids  */
+     number of subdomains requested 1 -> send to rank-0 or first candidate in voids  */
   ierr = MatGetSize(mat,&N,NULL);CHKERRQ(ierr);
   if (active_procs < *n_subdomains || *n_subdomains == 1 || N <= *n_subdomains) {
     PetscInt issize,isidx,dest;
@@ -7437,11 +7448,11 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
     PetscMPIInt     size;
     PetscBool       aggregate;
 
-    ierr = MPI_Comm_size(subcomm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(subcomm,&size);CHKERRMPI(ierr);
     if (void_procs) {
       PetscInt prank = rank;
       ierr = PetscMalloc1(size,&oldranks);CHKERRQ(ierr);
-      ierr = MPI_Allgather(&prank,1,MPIU_INT,oldranks,1,MPIU_INT,subcomm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&prank,1,MPIU_INT,oldranks,1,MPIU_INT,subcomm);CHKERRMPI(ierr);
       for (i=0;i<xadj[1];i++) {
         ierr = PetscFindInt(adjncy[i],size,oldranks,&adjncy[i]);CHKERRQ(ierr);
       }
@@ -7455,7 +7466,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
       PetscMPIInt nrank;
       PetscScalar *vals;
 
-      ierr = MPI_Comm_rank(subcomm,&nrank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(subcomm,&nrank);CHKERRMPI(ierr);
       lrows = 0;
       if (nrank<redprocs) {
         lrows = size/redprocs;
@@ -7542,10 +7553,10 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
       ierr = PetscObjectGetNewTag((PetscObject)subdomain_adj,&tag);CHKERRQ(ierr);
       ierr = PetscMalloc1(rend-rstart,&reqs);CHKERRQ(ierr);
       for (i=rstart;i<rend;i++) {
-        ierr = MPI_Isend(is_indices+i-rstart,1,MPIU_INT,i,tag,subcomm,&reqs[i-rstart]);CHKERRQ(ierr);
+        ierr = MPI_Isend(is_indices+i-rstart,1,MPIU_INT,i,tag,subcomm,&reqs[i-rstart]);CHKERRMPI(ierr);
       }
-      ierr = MPI_Recv(&idx,1,MPIU_INT,MPI_ANY_SOURCE,tag,subcomm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-      ierr = MPI_Waitall(rend-rstart,reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Recv(&idx,1,MPIU_INT,MPI_ANY_SOURCE,tag,subcomm,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
+      ierr = MPI_Waitall(rend-rstart,reqs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
       ierr = PetscFree(reqs);CHKERRQ(ierr);
       if (procs_candidates) { /* shift the pattern on non-active candidates (if any) */
         if (PetscUnlikelyDebug(!oldranks)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
@@ -7654,7 +7665,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   ierr = PetscMPIIntCast(i,&n_sends);CHKERRQ(ierr);
 
   /* compute number of receives */
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscMalloc1(size,&iflags);CHKERRQ(ierr);
   ierr = PetscArrayzero(iflags,size);CHKERRQ(ierr);
   ierr = ISGetIndices(is_sends_internal,&is_indices);CHKERRQ(ierr);
@@ -7680,7 +7691,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
     if (reuse) {
       if (*mat_n) {
         PetscMPIInt subcommsize2;
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)*mat_n),&subcommsize2);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)*mat_n),&subcommsize2);CHKERRMPI(ierr);
         if (subcommsize != subcommsize2) SETERRQ2(PetscObjectComm((PetscObject)*mat_n),PETSC_ERR_PLIB,"Cannot reuse matrix! wrong subcomm size %d != %d",subcommsize,subcommsize2);
         comm_n = PetscObjectComm((PetscObject)*mat_n);
       } else {
@@ -7689,7 +7700,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
     } else { /* MAT_INITIAL_MATRIX */
       PetscMPIInt rank;
 
-      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
       ierr = PetscSubcommCreate(comm,&subcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetNumber(subcomm,2);CHKERRQ(ierr);
       ierr = PetscSubcommSetTypeGeneral(subcomm,color,rank);CHKERRQ(ierr);
@@ -7803,38 +7814,38 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   ptr_vecs = recv_buffer_vecs;
   for (i=0;i<n_recvs;i++) {
     source_dest = onodes[i];
-    ierr = MPI_Irecv(ptr_idxs,olengths_idxs[i],MPIU_INT,source_dest,tag_idxs,comm,&recv_req_idxs[i]);CHKERRQ(ierr);
-    ierr = MPI_Irecv(ptr_vals,olengths_vals[i],MPIU_SCALAR,source_dest,tag_vals,comm,&recv_req_vals[i]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(ptr_idxs,olengths_idxs[i],MPIU_INT,source_dest,tag_idxs,comm,&recv_req_idxs[i]);CHKERRMPI(ierr);
+    ierr = MPI_Irecv(ptr_vals,olengths_vals[i],MPIU_SCALAR,source_dest,tag_vals,comm,&recv_req_vals[i]);CHKERRMPI(ierr);
     ptr_idxs += olengths_idxs[i];
     ptr_vals += olengths_vals[i];
     if (nis) {
       source_dest = onodes_is[i];
-      ierr = MPI_Irecv(ptr_idxs_is,olengths_idxs_is[i],MPIU_INT,source_dest,tag_idxs_is,comm,&recv_req_idxs_is[i]);CHKERRQ(ierr);
+      ierr = MPI_Irecv(ptr_idxs_is,olengths_idxs_is[i],MPIU_INT,source_dest,tag_idxs_is,comm,&recv_req_idxs_is[i]);CHKERRMPI(ierr);
       ptr_idxs_is += olengths_idxs_is[i];
     }
     if (nvecs) {
       source_dest = onodes[i];
-      ierr = MPI_Irecv(ptr_vecs,olengths_idxs[i]-2,MPIU_SCALAR,source_dest,tag_vecs,comm,&recv_req_vecs[i]);CHKERRQ(ierr);
+      ierr = MPI_Irecv(ptr_vecs,olengths_idxs[i]-2,MPIU_SCALAR,source_dest,tag_vecs,comm,&recv_req_vecs[i]);CHKERRMPI(ierr);
       ptr_vecs += olengths_idxs[i]-2;
     }
   }
   for (i=0;i<n_sends;i++) {
     ierr = PetscMPIIntCast(is_indices[i],&source_dest);CHKERRQ(ierr);
-    ierr = MPI_Isend(send_buffer_idxs,ilengths_idxs[source_dest],MPIU_INT,source_dest,tag_idxs,comm,&send_req_idxs[i]);CHKERRQ(ierr);
-    ierr = MPI_Isend((PetscScalar*)send_buffer_vals,ilengths_vals[source_dest],MPIU_SCALAR,source_dest,tag_vals,comm,&send_req_vals[i]);CHKERRQ(ierr);
+    ierr = MPI_Isend(send_buffer_idxs,ilengths_idxs[source_dest],MPIU_INT,source_dest,tag_idxs,comm,&send_req_idxs[i]);CHKERRMPI(ierr);
+    ierr = MPI_Isend((PetscScalar*)send_buffer_vals,ilengths_vals[source_dest],MPIU_SCALAR,source_dest,tag_vals,comm,&send_req_vals[i]);CHKERRMPI(ierr);
     if (nis) {
-      ierr = MPI_Isend(send_buffer_idxs_is,ilengths_idxs_is[source_dest],MPIU_INT,source_dest,tag_idxs_is,comm,&send_req_idxs_is[i]);CHKERRQ(ierr);
+      ierr = MPI_Isend(send_buffer_idxs_is,ilengths_idxs_is[source_dest],MPIU_INT,source_dest,tag_idxs_is,comm,&send_req_idxs_is[i]);CHKERRMPI(ierr);
     }
     if (nvecs) {
       ierr = VecGetArray(nnsp_vec[0],&send_buffer_vecs);CHKERRQ(ierr);
-      ierr = MPI_Isend(send_buffer_vecs,ilengths_idxs[source_dest]-2,MPIU_SCALAR,source_dest,tag_vecs,comm,&send_req_vecs[i]);CHKERRQ(ierr);
+      ierr = MPI_Isend(send_buffer_vecs,ilengths_idxs[source_dest]-2,MPIU_SCALAR,source_dest,tag_vecs,comm,&send_req_vecs[i]);CHKERRMPI(ierr);
     }
   }
   ierr = ISRestoreIndices(is_sends_internal,&is_indices);CHKERRQ(ierr);
   ierr = ISDestroy(&is_sends_internal);CHKERRQ(ierr);
 
   /* assemble new l2g map */
-  ierr = MPI_Waitall(n_recvs,recv_req_idxs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(n_recvs,recv_req_idxs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   ptr_idxs = recv_buffer_idxs;
   new_local_rows = 0;
   for (i=0;i<n_recvs;i++) {
@@ -7883,7 +7894,6 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
         break;
       default:
         SETERRQ2(comm,PETSC_ERR_SUP,"Unsupported private type %d in %s",new_local_type_private,PETSC_FUNCTION_NAME);
-        break;
     }
   } else { /* by default, new_local_type is seqaij */
     new_local_type = MATSEQAIJ;
@@ -7905,7 +7915,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   ierr = MatISGetLocalMat(*mat_n,&local_mat);CHKERRQ(ierr);
   ierr = MatSetType(local_mat,new_local_type);CHKERRQ(ierr);
 
-  ierr = MPI_Waitall(n_recvs,recv_req_vals,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(n_recvs,recv_req_vals,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
 
   /* Global to local map of received indices */
   ierr = PetscMalloc1(buf_size_idxs,&recv_buffer_idxs_local);CHKERRQ(ierr); /* needed for values insertion */
@@ -8000,7 +8010,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   if (nis) {
     PetscInt **temp_idxs,*count_is,j,psum;
 
-    ierr = MPI_Waitall(n_recvs,recv_req_idxs_is,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Waitall(n_recvs,recv_req_idxs_is,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
     ierr = PetscCalloc1(nis,&count_is);CHKERRQ(ierr);
     ptr_idxs = recv_buffer_idxs_is;
     psum = 0;
@@ -8038,9 +8048,9 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   }
   /* free workspace */
   ierr = PetscFree(recv_buffer_idxs_is);CHKERRQ(ierr);
-  ierr = MPI_Waitall(n_sends,send_req_idxs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(n_sends,send_req_idxs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   ierr = PetscFree(send_buffer_idxs);CHKERRQ(ierr);
-  ierr = MPI_Waitall(n_sends,send_req_vals,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(n_sends,send_req_vals,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   if (isdense) {
     ierr = MatISGetLocalMat(mat,&local_mat);CHKERRQ(ierr);
     ierr = MatDenseRestoreArrayRead(local_mat,&send_buffer_vals);CHKERRQ(ierr);
@@ -8049,13 +8059,13 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
     /* ierr = PetscFree(send_buffer_vals);CHKERRQ(ierr); */
   }
   if (nis) {
-    ierr = MPI_Waitall(n_sends,send_req_idxs_is,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Waitall(n_sends,send_req_idxs_is,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
     ierr = PetscFree(send_buffer_idxs_is);CHKERRQ(ierr);
   }
 
   if (nvecs) {
-    ierr = MPI_Waitall(n_recvs,recv_req_vecs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-    ierr = MPI_Waitall(n_sends,send_req_vecs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Waitall(n_recvs,recv_req_vecs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
+    ierr = MPI_Waitall(n_sends,send_req_vecs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
     ierr = VecRestoreArray(nnsp_vec[0],&send_buffer_vecs);CHKERRQ(ierr);
     ierr = VecDestroy(&nnsp_vec[0]);CHKERRQ(ierr);
     ierr = VecCreate(comm_n,&nnsp_vec[0]);CHKERRQ(ierr);
@@ -8199,7 +8209,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   /* determine number of processes partecipating to coarse solver and compute subassembling pattern */
   /* restr : whether we want to exclude senders (which are not receivers) from the subassembling pattern */
   /* full_restr : just use the receivers from the subassembling pattern */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
   coarse_mat_is        = NULL;
   multilevel_allowed   = PETSC_FALSE;
   multilevel_requested = PETSC_FALSE;
@@ -8228,7 +8238,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     } else {
       PetscMPIInt rank;
 
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
       have_void = (active_procs == (PetscInt)size) ? PETSC_FALSE : PETSC_TRUE;
       ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),1,rank,1,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
     }
@@ -8589,7 +8599,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         PetscInt               n,st,M,N;
 
         ierr = MatGetSize(coarsedivudotp,&n,NULL);CHKERRQ(ierr);
-        ierr = MPI_Scan(&n,&st,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)coarse_mat));CHKERRQ(ierr);
+        ierr = MPI_Scan(&n,&st,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)coarse_mat));CHKERRMPI(ierr);
         st   = st-n;
         ierr = ISCreateStride(PetscObjectComm((PetscObject)coarse_mat),1,st,1,&row);CHKERRQ(ierr);
         ierr = MatGetLocalToGlobalMapping(coarse_mat,&l2gmap,NULL);CHKERRQ(ierr);
@@ -9408,8 +9418,8 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
     ierr = PetscLayoutSetUp((*B)->cmap);CHKERRQ(ierr);
     a    = (Mat_MPIAIJ*)At->data;
     b    = (Mat_MPIAIJ*)(*B)->data;
-    ierr = MPI_Comm_size(ccomm,&b->size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(ccomm,&b->rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(ccomm,&b->size);CHKERRMPI(ierr);
+    ierr = MPI_Comm_rank(ccomm,&b->rank);CHKERRMPI(ierr);
     ierr = PetscObjectReference((PetscObject)a->A);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)a->B);CHKERRQ(ierr);
     b->A = a->A;

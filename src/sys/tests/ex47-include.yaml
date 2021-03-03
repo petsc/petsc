@@ -1,0 +1,9 @@
+$$0: !include ex47-empty.yaml
+$$1: !include ex47-options.yaml
+
+xxx:
+  $$0: !include ex47-empty.yaml
+  $$1: !include ex47-options.yaml
+  xxx:
+    $$0: !include ex47-empty.yaml
+    $$1: !include ex47-options.yaml

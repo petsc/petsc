@@ -94,8 +94,8 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
       PetscMPIInt size,rank;
       const char *name;
 
-      ierr = MPI_Comm_size(PetscObjectComm(dm),&size);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(PetscObjectComm(dm),&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(PetscObjectComm(dm),&size);CHKERRMPI(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm(dm),&rank);CHKERRMPI(ierr);
       ierr = PetscObjectGetName((PetscObject)Ufield[i],&name);CHKERRQ(ierr);
 
       ierr = PetscGLVisCollectiveBegin(PetscObjectComm(dm),&view);CHKERRQ(ierr);

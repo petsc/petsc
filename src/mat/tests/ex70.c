@@ -542,7 +542,7 @@ int main(int argc,char **args)
   if (testproj) {
     ierr = MatPtAPMultEqual(T2,B,PtAP,10,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP (MATSHELL)\n");CHKERRQ(ierr);
     }
     if (testshellops) { /* projections fail if the product operations are not specified */
       ierr = MatPtAP(T2,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
@@ -551,7 +551,7 @@ int main(int argc,char **args)
       if (!flg) {
         Mat TE;
 
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP (user defined)\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP (MATSHELL user defined)\n");CHKERRQ(ierr);
         ierr = MatComputeOperator(T,MATDENSE,&TE);CHKERRQ(ierr);
         ierr = MatView(TE,NULL);CHKERRQ(ierr);
         ierr = MatView(PtAP,NULL);CHKERRQ(ierr);
@@ -564,7 +564,7 @@ int main(int argc,char **args)
     if (RARt) {
       ierr = MatRARtMultEqual(T2,R,RARt,10,&flg);CHKERRQ(ierr);
       if (!flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with RARt\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with RARt (MATSHELL)\n");CHKERRQ(ierr);
       }
     }
     if (testshellops) {
@@ -574,7 +574,7 @@ int main(int argc,char **args)
       if (!flg) {
         Mat TE;
 
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with RARt (user defined)\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with RARt (MATSHELL user defined)\n");CHKERRQ(ierr);
         ierr = MatComputeOperator(T,MATDENSE,&TE);CHKERRQ(ierr);
         ierr = MatView(TE,NULL);CHKERRQ(ierr);
         if (RARt) {

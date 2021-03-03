@@ -295,7 +295,7 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mapping),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mapping),&rank);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mapping,viewer);CHKERRQ(ierr);
@@ -393,8 +393,8 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
   ierr = PetscMalloc1(maxlocal,&ltog);CHKERRQ(ierr);
   for (i=0; i<nroots; i++) globals[i] = start + i;
   for (i=0; i<maxlocal; i++) ltog[i] = -1;
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,globals,ltog);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,globals,ltog);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,globals,ltog,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,globals,ltog,MPI_REPLACE);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(comm,1,maxlocal,ltog,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
   ierr = PetscFree(globals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1001,8 +1001,8 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mapping,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (size == 1) {
     *nproc         = 0;
     *procs         = NULL;
@@ -1044,8 +1044,8 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   }
   ierr   = MPIU_Allreduce(&max,&Ng,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
   Ng++;
-  ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr   = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr   = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   scale  = Ng/size + 1;
   ng     = scale; if (rank == size-1) ng = Ng - scale*(size-1); ng = PetscMax(1,ng);
   rstart = scale*rank;
@@ -1073,7 +1073,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   ierr = PetscMalloc1((2*nrecvs+1)*(nmax+1),&recvs);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrecvs+1,&recv_waits);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) {
-    ierr = MPI_Irecv(recvs+2*nmax*i,2*nmax,MPIU_INT,MPI_ANY_SOURCE,tag1,comm,recv_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(recvs+2*nmax*i,2*nmax,MPIU_INT,MPI_ANY_SOURCE,tag1,comm,recv_waits+i);CHKERRMPI(ierr);
   }
 
   /* pack messages containing lists of local nodes to owners */
@@ -1095,7 +1095,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   cnt = 0;
   for (i=0; i<size; i++) {
     if (nprocs[2*i]) {
-      ierr      = MPI_Isend(sends+starts[i],2*nprocs[2*i],MPIU_INT,i,tag1,comm,send_waits+cnt);CHKERRQ(ierr);
+      ierr      = MPI_Isend(sends+starts[i],2*nprocs[2*i],MPIU_INT,i,tag1,comm,send_waits+cnt);CHKERRMPI(ierr);
       dest[cnt] = i;
       cnt++;
     }
@@ -1108,9 +1108,9 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   cnt  = nrecvs;
   ierr = PetscCalloc1(ng+1,&nownedsenders);CHKERRQ(ierr);
   while (cnt) {
-    ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
+    ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRMPI(ierr);
     /* unpack receives into our local space */
-    ierr          = MPI_Get_count(&recv_status,MPIU_INT,&len[imdex]);CHKERRQ(ierr);
+    ierr          = MPI_Get_count(&recv_status,MPIU_INT,&len[imdex]);CHKERRMPI(ierr);
     source[imdex] = recv_status.MPI_SOURCE;
     len[imdex]    = len[imdex]/2;
     /* count how many local owners for each of my global owned indices */
@@ -1164,7 +1164,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   /* wait on original sends */
   if (nsends) {
     ierr = PetscMalloc1(nsends,&send_status);CHKERRQ(ierr);
-    ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
+    ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRMPI(ierr);
     ierr = PetscFree(send_status);CHKERRQ(ierr);
   }
   ierr = PetscFree(send_waits);CHKERRQ(ierr);
@@ -1222,18 +1222,18 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   ierr    = PetscMalloc1(nrecvs2+1,&starts3);CHKERRQ(ierr);
   ierr    = PetscMalloc1(nrecvs2+1,&recv_waits);CHKERRQ(ierr);
   for (i=0; i<nrecvs2; i++) {
-    ierr = MPI_Irecv(&lens2[i],1,MPIU_INT,dest[i],tag2,comm,recv_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(&lens2[i],1,MPIU_INT,dest[i],tag2,comm,recv_waits+i);CHKERRMPI(ierr);
   }
 
   /* send the message lengths */
   for (i=0; i<nsends2; i++) {
-    ierr = MPI_Send(&nprocs[i],1,MPIU_INT,source[i],tag2,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(&nprocs[i],1,MPIU_INT,source[i],tag2,comm);CHKERRMPI(ierr);
   }
 
   /* wait on receives of lens */
   if (nrecvs2) {
     ierr = PetscMalloc1(nrecvs2,&recv_statuses);CHKERRQ(ierr);
-    ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
+    ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRMPI(ierr);
     ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
   }
   ierr = PetscFree(recv_waits);CHKERRQ(ierr);
@@ -1249,19 +1249,19 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   ierr = PetscMalloc1(nt+1,&recvs2);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrecvs2+1,&recv_waits);CHKERRQ(ierr);
   for (i=0; i<nrecvs2; i++) {
-    ierr = MPI_Irecv(recvs2+starts3[i],lens2[i],MPIU_INT,dest[i],tag3,comm,recv_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(recvs2+starts3[i],lens2[i],MPIU_INT,dest[i],tag3,comm,recv_waits+i);CHKERRMPI(ierr);
   }
 
   /* send the messages */
   ierr = PetscMalloc1(nsends2+1,&send_waits);CHKERRQ(ierr);
   for (i=0; i<nsends2; i++) {
-    ierr = MPI_Isend(sends2+starts2[i],nprocs[i],MPIU_INT,source[i],tag3,comm,send_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Isend(sends2+starts2[i],nprocs[i],MPIU_INT,source[i],tag3,comm,send_waits+i);CHKERRMPI(ierr);
   }
 
   /* wait on receives */
   if (nrecvs2) {
     ierr = PetscMalloc1(nrecvs2,&recv_statuses);CHKERRQ(ierr);
-    ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
+    ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRMPI(ierr);
     ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
   }
   ierr = PetscFree(recv_waits);CHKERRQ(ierr);
@@ -1348,7 +1348,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   /* wait on sends */
   if (nsends2) {
     ierr = PetscMalloc1(nsends2,&send_status);CHKERRQ(ierr);
-    ierr = MPI_Waitall(nsends2,send_waits,send_status);CHKERRQ(ierr);
+    ierr = MPI_Waitall(nsends2,send_waits,send_status);CHKERRMPI(ierr);
     ierr = PetscFree(send_status);CHKERRQ(ierr);
   }
 

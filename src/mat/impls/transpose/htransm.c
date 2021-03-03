@@ -138,6 +138,29 @@ PetscErrorCode MatHermitianTransposeGetMat(Mat A,Mat *M)
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat);
 
+PetscErrorCode MatGetDiagonal_HT(Mat A,Vec v)
+{
+  Mat_HT         *Na = (Mat_HT*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetDiagonal(Na->A,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatConvert_HT(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat_HT         *Na = (Mat_HT*)A->data;
+  Mat            B;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatHermitianTranspose(Na->A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatConvert(B,newtype,reuse,newmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
       MatCreateHermitianTranspose - Creates a new matrix object that behaves like A'*
 
@@ -190,6 +213,8 @@ PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
 #if !defined(PETSC_USE_COMPLEX)
   (*N)->ops->productsetfromoptions     = MatProductSetFromOptions_Transpose;
 #endif
+  (*N)->ops->getdiagonal               = MatGetDiagonal_HT;
+  (*N)->ops->convert                   = MatConvert_HT;
   (*N)->assembled                      = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatHermitianTransposeGetMat_C",MatHermitianTransposeGetMat_HT);CHKERRQ(ierr);
@@ -200,6 +225,9 @@ PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
   ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
   ierr = MatGetVecType(A,&vtype);CHKERRQ(ierr);
   ierr = MatSetVecType(*N,vtype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_DEVICE)
+  ierr = MatBindToCPU(*N,A->boundtocpu);CHKERRQ(ierr);
+#endif
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

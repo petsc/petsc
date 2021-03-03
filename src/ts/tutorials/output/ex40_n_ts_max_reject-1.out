@@ -6,6 +6,8 @@ TS Object: 1 MPI processes
     Alpha_m=0.5, Alpha_f=0.5, Gamma=0.5
   maximum steps=1
   maximum time=30.
+  total number of I function evaluations=12
+  total number of I Jacobian evaluations=6
   total number of nonlinear solver iterations=6
   total number of linear solver iterations=6
   total number of nonlinear solve failures=0

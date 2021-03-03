@@ -24,10 +24,11 @@ $ DM_REFINER_ALFELD2D      - Alfeld barycentric refinement of triangles
 $ DM_REFINER_ALFELD3D      - Alfeld barycentric refinement of tetrahedra
 $ DM_REFINER_POWELL_SABIN  - Powell-Sabin barycentric refinement of simplices (unfinished)
 $ DM_REFINER_BOUNDARYLAYER - Refine only tensor cells in the tensor direction, often used to refine boundary layers
+$ DM_REFINER_SBR           - Adaptively refine using the Skeleton-based Refinement algorithm of Plaza and Carey
 
 .seealso: DMPlexGetCellRefiner(), DMPlexSetCellRefiner(), DMRefine(), DMPolytopeType
 E*/
-typedef enum {DM_REFINER_REGULAR, DM_REFINER_TO_BOX, DM_REFINER_TO_SIMPLEX, DM_REFINER_ALFELD2D, DM_REFINER_ALFELD3D, DM_REFINER_POWELL_SABIN, DM_REFINER_BOUNDARYLAYER} DMPlexCellRefinerType;
+typedef enum {DM_REFINER_REGULAR, DM_REFINER_TO_BOX, DM_REFINER_TO_SIMPLEX, DM_REFINER_ALFELD2D, DM_REFINER_ALFELD3D, DM_REFINER_POWELL_SABIN, DM_REFINER_BOUNDARYLAYER, DM_REFINER_SBR} DMPlexCellRefinerType;
 PETSC_EXTERN const char * const DMPlexCellRefinerTypes[];
 
 #endif

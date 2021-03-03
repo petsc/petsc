@@ -11,20 +11,16 @@ int main(int argc,char **argv)
   PetscScalar    result1a,result2a;
   PetscReal      result3,result4,result[2],result3a,result4a,resulta[2];
   Vec            x,y,vecs[40];
-  PetscRandom    rctx;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  /* create vector */
+  /* create vectors */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(x,NULL,"-x_view");CHKERRQ(ierr);
   ierr = VecSet(y,two);CHKERRQ(ierr);
 
   /*

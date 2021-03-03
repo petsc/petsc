@@ -163,6 +163,7 @@ PETSC_EXTERN void taolinesearchviewfromoptions_(TaoLineSearch *ao,PetscObject ob
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = TaoLineSearchViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

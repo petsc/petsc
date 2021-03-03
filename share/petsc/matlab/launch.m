@@ -15,7 +15,7 @@ function result = launch(program,np,opt)
 if nargin < 2
   np = 1;
 else if nargin < 3
-  opt = ''
+   opt = '';
 end
 end
 

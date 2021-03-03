@@ -18,13 +18,31 @@ import subprocess
 import re
 import datetime
 
+sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
+
+
+# -- Sphinx Version and Config -----------------------------------------------
+# Sphinx will error and refuse to build if not equal to version
+needs_sphinx='2.4.4'
+
+# Sphinx-build fails for any broken __internal__ links. For external use make linkcheck.
+nitpicky = True
 
 # -- Project information -----------------------------------------------------
 
 project = 'PETSc'
 copyright = '1991-%d, UChicago Argonne, LLC and the PETSc Development Team' % datetime.date.today().year
 author = 'The PETSc Development Team'
+
+# Allow todo's to be emitted, turn off for build!
+todo_include_todos=True
+todo_emit_warnings=True
+
+# Little copy-and-paste button by code blocks, from sphinx_copybutton package
+# https://sphinx-copybutton.readthedocs.io/en/latest/
+copybutton_prompt_text = r"[>]{1,3}"
+copybutton_prompt_is_regexp = True
 
 with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as version_file:
     buf = version_file.read()
@@ -41,13 +59,14 @@ with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as ve
         version = '.'.join([major_version, minor_version])
         release = '.'.join([major_version,minor_version,subminor_version])
 
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx_copybutton',
+    'sphinx.ext.todo',
     'sphinx.ext.graphviz',
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
@@ -82,6 +101,7 @@ html_favicon = os.path.join('..','website','images','PETSc_RGB-logo.png')
 
 # -- Options for LaTeX output --------------------------------------------
 
+bibtex_bibfiles = ['../tex/petsc.bib','../tex/petscapp.bib']
 latex_engine = 'xelatex'
 
 # Specify how to arrange the documents into LaTeX files.
@@ -138,3 +158,29 @@ graphviz_dot = str(result)
 highlight_language = 'c'
 autosummary_generate = True
 numfig = True
+
+# We must check what kind of builder the app uses to adjust
+def builder_init_handler(app):
+    import genteamtable
+    print("============================================")
+    print("    GENERATING TEAM TABLE FROM CONF.PY      ")
+    print("============================================")
+    genDirName = "generated"
+    cwdPath = os.path.dirname(os.path.realpath(__file__))
+    genDirPath = os.path.join(cwdPath, genDirName)
+    if "PETSC_GITLAB_PRIVATE_TOKEN" in os.environ:
+        token = os.environ["PETSC_GITLAB_PRIVATE_TOKEN"]
+    else:
+        token = None
+    genteamtable.main(genDirPath, token, app.builder.name)
+    return None
+
+# Supposedly the safer way to add additional css files. Setting html_css_files will
+# overwrite previous versions of the variable that some extension may have set. This will
+# add our css files in addition to it.
+def setup(app):
+    # Register the builder_init_handler to be called __after__ app.builder has been initialized
+    app.connect('builder-inited', builder_init_handler)
+    app.add_css_file('css/pop-up.css')
+    app.add_css_file('css/colorbox.css')
+    app.add_css_file('css/petsc-team-container.css')

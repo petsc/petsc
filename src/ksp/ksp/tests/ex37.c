@@ -39,8 +39,8 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   /* Create rhs vector b */
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ int main(int argc,char **args)
     }
 
     ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&dcomm,NULL);CHKERRQ(ierr);
-    ierr = MPI_Comm_split(dcomm,color,subrank,&subcomm);CHKERRQ(ierr);
+    ierr = MPI_Comm_split(dcomm,color,subrank,&subcomm);CHKERRMPI(ierr);
 
     ierr = MatCreate(subcomm,&subA);CHKERRQ(ierr);
     ierr = MatSetSizes(subA,PETSC_DECIDE,PETSC_DECIDE,10,10);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ int main(int argc,char **args)
   ierr = KSPDestroy(&subksp);CHKERRQ(ierr);
   ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
   if (size > 1) {
-    ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&subcomm);CHKERRMPI(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);

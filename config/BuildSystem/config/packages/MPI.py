@@ -81,7 +81,7 @@ class Configure(config.package.Package):
   def generateLibList(self, directory):
     if self.setCompilers.usedMPICompilers:
       self.liblist = []
-      self.libdir  = []
+      self.libdir  = ''
     return config.package.Package.generateLibList(self,directory)
 
   # search many obscure locations for MPI
@@ -227,7 +227,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
     # determine if the program has been started with the correct mpiexec (will only be set for parallel runs so not clear how to check appropriately)
-    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 60, threads = 1, log = self.log)
+    (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 printenv', checkCommand = noCheck, timeout = 120, threads = 1, log = self.log)
     if ret:
       self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 printenv"\nThis could be ok, some MPI implementations such as SGI produce a non-zero status with non-MPI programs\n'+out+err)
     else:
@@ -308,7 +308,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
                 self.logPrintBox('***** WARNING: mpiexec may not work on your system due to network issues.\n\
 Perhaps you have VPN running whose network settings may not work with mpiexec or your network is misconfigured')
           else:
-            elf.logPrintBox('***** WARNING: mpiexec may not work on your system due to network issues.\n\
+            self.logPrintBox('***** WARNING: mpiexec may not work on your system due to network issues.\n\
 Unable to run hostname to check the network')
           self.logPrintDivider()
 
@@ -322,7 +322,7 @@ Unable to run hostname to check the network')
     includes = '#include <mpi.h>'
     body = 'MPI_Init(0,0);\nMPI_Finalize();\n'
     try:
-      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 60, threads = 1)
+      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 120, threads = 1)
       if not ok: raise RuntimeError(error_message)
     except RuntimeError as e:
       if str(e).find('Runaway process exceeded time limit') > -1:
@@ -365,6 +365,8 @@ Unable to run hostname to check the network')
     # Even MPI_Win_create is in MPI 2.0, we do this test to supress MPIUNI, which does not support MPI one-sided.
     if self.checkLink('#include <mpi.h>\n', 'int base[100]; MPI_Win win; if (MPI_Win_create(base,100,4,MPI_INFO_NULL,MPI_COMM_WORLD,&win));\n'):
       self.addDefine('HAVE_MPI_WIN_CREATE', 1)
+    if not self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Accumulate(ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_REPLACE,win));\n'):
+      raise RuntimeError('PETSc requires MPI_REPLACE (introduced in MPI-2.1 in 2008). Please update or switch to MPI that supports MPI_REPLACE. Let us know at petsc-maint@mcs.anl.gov if this is not possible')
     # flag broken one-sided tests
     if not 'HAVE_MSMPI' in self.defines and not (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) <= 30004300):
       self.addDefine('HAVE_MPI_ONE_SIDED', 1)
@@ -437,7 +439,7 @@ Unable to run hostname to check the network')
             self.addDefine('HAVE_'+datatype, 1)
         elif not self.argDB['with-batch']:
           self.pushLanguage('C')
-          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name, executor = self.mpiexec):
+          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name, executor = self.mpiexec, timeout = 120):
             self.addDefine('HAVE_'+datatype, 1)
           self.popLanguage()
         else:
@@ -635,7 +637,10 @@ to remove this warning message *****')
 
   def findMPIInc(self):
     '''Find MPI include paths from "mpicc -show" and use with CUDAC_FLAGS'''
-    if not hasattr(self.compilers, 'CUDAC'): return
+    needInclude=False
+    if hasattr(self.compilers, 'CUDAC'): needInclude=True
+    if hasattr(self.compilers, 'HIPCC'): needInclude=True
+    if not needInclude: return
     import re
     output = ''
     try:
@@ -651,9 +656,14 @@ to remove this warning message *****')
         m = re.match(r'^-I.*$', arg)
         if m:
           self.logPrint('Found include option: '+arg, 4, 'compilers')
-          self.setCompilers.pushLanguage('CUDA')
-          self.setCompilers.addCompilerFlag(arg)
-          self.setCompilers.popLanguage()
+          if hasattr(self.compilers, 'CUDAC'):
+            self.setCompilers.pushLanguage('CUDA')
+            self.setCompilers.addCompilerFlag(arg)
+            self.setCompilers.popLanguage()
+          if hasattr(self.compilers, 'HIPCC'):
+            self.setCompilers.pushLanguage('HIP')
+            self.setCompilers.addCompilerFlag(arg)
+            self.setCompilers.popLanguage()
           continue
     except StopIteration:
       pass

@@ -91,7 +91,7 @@ static PetscErrorCode PetscViewerFileSetName_ExodusII(PetscViewer viewer, const 
   PetscErrorCode        ierr;
 
 
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) viewer), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) viewer), &rank);CHKERRMPI(ierr);
   CPU_word_size = sizeof(PetscReal);
   IO_word_size  = sizeof(PetscReal);
 
@@ -350,8 +350,8 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   /* --- Get DM info --- */
   ierr = PetscObjectGetName((PetscObject) dm, &dmName);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -742,7 +742,7 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) v, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -770,7 +770,7 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
     IS       compIS;
     PetscInt c;
 
-    ierr = ISCreateStride(PETSC_COMM_SELF, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
     for (c = 0; c < bs; ++c) {
       ierr = ISStrideSetStride(compIS, (xe-xs)/bs, xs+c, bs);CHKERRQ(ierr);
       ierr = VecGetSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
@@ -820,7 +820,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) v, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = VecGetDM(v,&dm);CHKERRQ(ierr);
   ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -841,7 +841,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
     IS       compIS;
     PetscInt c;
 
-    ierr = ISCreateStride(PETSC_COMM_SELF, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
     for (c = 0; c < bs; ++c) {
       ierr = ISStrideSetStride(compIS, (xe-xs)/bs, xs+c, bs);CHKERRQ(ierr);
       ierr = VecGetSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
@@ -898,7 +898,7 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)v, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -1000,7 +1000,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -1117,7 +1117,7 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
 
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 2);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
 #if defined(PETSC_HAVE_EXODUSII)
   if (!rank) {
     exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
@@ -1125,10 +1125,10 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
   }
   ierr = DMPlexCreateExodus(comm, exoid, interpolate, dm);CHKERRQ(ierr);
   if (!rank) {PetscStackCallStandard(ex_close,(exoid));}
+  PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif
-  PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_HAVE_EXODUSII)
@@ -1201,8 +1201,8 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_EXODUSII)
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &num_proc);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &num_proc);CHKERRMPI(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   /* Open EXODUS II file and read basic informations on rank 0, then broadcast to all processors */
@@ -1211,8 +1211,8 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     PetscStackCallStandard(ex_get_init,(exoid, title, &dimEmbed, &numVertices, &numCells, &num_cs, &num_vs, &num_fs));
     if (!num_cs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
   }
-  ierr = MPI_Bcast(title, PETSC_MAX_PATH_LEN+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&dim, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(title, PETSC_MAX_PATH_LEN+1, MPI_CHAR, 0, comm);CHKERRMPI(ierr);
+  ierr = MPI_Bcast(&dim, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, title);CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
   /*   We do not want this label automatically computed, instead we compute it here */
@@ -1297,7 +1297,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   {
     PetscInt ints[] = {dim, dimEmbed};
 
-    ierr = MPI_Bcast(ints, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(ints, 2, MPIU_INT, 0, comm);CHKERRMPI(ierr);
     ierr = DMSetDimension(*dm, ints[0]);CHKERRQ(ierr);
     ierr = DMSetCoordinateDim(*dm, ints[1]);CHKERRQ(ierr);
     dim      = ints[0];
@@ -1417,8 +1417,8 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     }
     ierr = PetscFree(fs_id);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif
-  PetscFunctionReturn(0);
 }

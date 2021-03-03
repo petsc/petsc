@@ -3,7 +3,7 @@
 
 /*@
    KSPInitialResidual - Computes the residual. Either b - A*C*u = b - A*x with right
-     preconditioning or C*(b - A*x) with left preconditioning; that later
+     preconditioning or C*(b - A*x) with left preconditioning; the latter
      residual is often called the "preconditioned residual".
 
    Collective on ksp
@@ -52,8 +52,8 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
     if (ksp->pc_side == PC_RIGHT) {
       ierr = PCDiagonalScaleLeft(ksp->pc,vt2,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_LEFT) {
-        ierr = KSP_PCApply(ksp,vt2,vres);CHKERRQ(ierr);
-        ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
+      ierr = KSP_PCApply(ksp,vt2,vres);CHKERRQ(ierr);
+      ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_SYMMETRIC) {
       ierr = PCApplySymmetricLeft(ksp->pc,vt2,vres);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);

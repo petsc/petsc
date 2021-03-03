@@ -58,7 +58,6 @@
       external MATMFFDCOMPUTEJACOBIAN
       external SNESCOMPUTEJACOBIANDEFAULTCOLOR
       external SNESMONITORDEFAULT
-      external SNESMONITORLGRESIDUALNORM
       external SNESMONITORSOLUTION
       external SNESMONITORSOLUTIONUPDATE
 
@@ -106,4 +105,3 @@
       PetscEnum, parameter :: SNES_NCG_HS  = 2
       PetscEnum, parameter :: SNES_NCG_DY  = 3
       PetscEnum, parameter :: SNES_NCG_CD  = 4
-

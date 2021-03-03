@@ -3,6 +3,7 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define dmcreateinterpolation_       DMCREATEINTERPOLATION
 #define dmview_                      DMVIEW
 #define dmsetoptionsprefix_          DMSETOPTIONSPREFIX
 #define dmsettype_                   DMSETTYPE
@@ -25,7 +26,9 @@
 #define dmsetstratumis_              DMSETSTRATUMIS
 #define dmremovelabel_               DMREMOVELABEL
 #define dmviewfromoptions_           DMVIEWFROMOPTIONS
+#define dmcreatesuperdm_             DMCREATESUPERDM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dmcreateinterpolation_       dmcreateinterpolation
 #define dmview_                      dmview
 #define dmsetoptionsprefix_          dmsetoptionsprefix
 #define dmsettype_                   dmsettype
@@ -48,6 +51,7 @@
 #define dmsetstratumis_              dmsetstratumis
 #define dmremovelabel_               dmremovelabel
 #define dmviewfromoptions_           dmviewfromoptions
+#define dmcreatesuperdm_             dmreatesuperdm
 #endif
 
 PETSC_EXTERN void dmgetmattype_(DM *mm,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
@@ -244,4 +248,10 @@ PETSC_EXTERN void dmviewfromoptions_(DM *dm,PetscObject obj,char* type,PetscErro
   CHKFORTRANNULLOBJECT(obj);
   *ierr = DMViewFromOptions(*dm,obj,t);if (*ierr) return;
   FREECHAR(type,t);
+}
+
+PETSC_EXTERN void dmcreateinterpolation_(DM *dmc,DM *dmf,Mat *mat,Vec *vec, int *ierr)
+{
+  CHKFORTRANNULLOBJECT(vec);
+  *ierr = DMCreateInterpolation(*dmc,*dmf,mat,vec);
 }

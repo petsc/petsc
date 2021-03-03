@@ -856,16 +856,15 @@ static PetscErrorCode MatShellSetMatProductOperation_Private(Mat A,MatProductTyp
     while (entry) {
       ierr = PetscStrcmp(composedname,entry->composedname,&flg);CHKERRQ(ierr);
       flg  = (PetscBool)(flg && (entry->ptype == ptype));
-      if (flg) break;
+      if (flg) goto set;
       matmat = entry;
       entry = entry->next;
     }
-    if (!flg) {
-      ierr = PetscNew(&matmat->next);CHKERRQ(ierr);
-      matmat = matmat->next;
-    } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
+    ierr = PetscNew(&matmat->next);CHKERRQ(ierr);
+    matmat = matmat->next;
   }
 
+set:
   matmat->symbolic = symbolic;
   matmat->numeric  = numeric;
   matmat->destroy  = destroy;
@@ -954,7 +953,7 @@ PetscErrorCode MatShellSetMatProductOperation_Shell(Mat A,MatProductType ptype,P
     if (flg) break;
     Cnames = Cnames->next;
   }
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   Btype = Bnames ? (size > 1 ? Bnames->mname : Bnames->sname) : Btype;
   Ctype = Cnames ? (size > 1 ? Cnames->mname : Cnames->sname) : Ctype;
   ierr = PetscSNPrintf(composedname,sizeof(composedname),"MatProductSetFromOptions_%s_%s_C",((PetscObject)A)->type_name,Btype);CHKERRQ(ierr);
@@ -1694,9 +1693,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 
   ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
-
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
   b->ctx                 = NULL;
   b->vshift              = 0.0;

@@ -16,23 +16,40 @@ PETSC_EXTERN PetscErrorCode LandauIJacobian(TS, PetscReal,Vec,Vec,PetscReal,Mat,
 #if !defined(LANDAU_DIM)
 #define LANDAU_DIM 2
 #endif
+
 #if !defined(LANDAU_MAX_SPECIES)
+#if LANDAU_DIM==2
 #define LANDAU_MAX_SPECIES 10
-#endif
-#if !defined(LANDAU_MAX_NQ)
-#define LANDAU_MAX_NQ 25
-#endif
-#if !defined(LANDAU_MAX_SUB_THREAD_BLOCKS)
-#if defined(PETSC_HAVE_CUDA)
-#define LANDAU_MAX_SUB_THREAD_BLOCKS 4
 #else
-#define LANDAU_MAX_SUB_THREAD_BLOCKS 1
+#define LANDAU_MAX_SPECIES 3
 #endif
 #endif
+
+#if !defined(LANDAU_MAX_Q)
+#if defined(LANDAU_MAX_NQ)
+#error"LANDAU_MAX_NQ but not LANDAU_MAX_Q. Use -DLANDAU_MAX_Q=4 for Q3 elements"
+#endif
+#if LANDAU_DIM==2
+#define LANDAU_MAX_Q 5
+#else
+#define LANDAU_MAX_Q 3
+#endif
+#else
+#undef LANDAU_MAX_NQ
+#endif
+
+#if LANDAU_DIM==2
+#define LANDAU_MAX_Q_FACE LANDAU_MAX_Q
+#define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q)
+#else
+#define LANDAU_MAX_Q_FACE (LANDAU_MAX_Q*LANDAU_MAX_Q)
+#define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q*LANDAU_MAX_Q)
+#endif
+
 typedef enum {LANDAU_CUDA, LANDAU_KOKKOS, LANDAU_CPU} LandauDeviceType;
 typedef struct {
   PetscBool      interpolate;                  /* Generate intermediate mesh elements */
-  PetscBool      simplex;
+  PetscBool      gpu_assembly;
   PetscFE        fe[LANDAU_MAX_SPECIES];
   /* geometry  */
   PetscReal      i_radius;
@@ -49,7 +66,6 @@ typedef struct {
   PetscInt       nZRefine2;          /* origin refinement after origin AMR refinement */
   PetscInt       maxRefIts;         /* normal AMR - refine from origin */
   PetscInt       postAMRRefine;     /* uniform refinement of AMR */
-  PetscBool      quarter3DDomain;   /* bilateral symetry, 1/4 x-y domain */
   /* discretization - AMR */
   PetscErrorCode (*errorIndicator)(PetscInt, PetscReal, PetscReal [], PetscInt, const PetscInt[], const PetscScalar[], const PetscScalar[], PetscReal *, void *);
   PetscReal      refineTol[LANDAU_MAX_SPECIES];
@@ -83,33 +99,54 @@ typedef struct {
   PetscBool      aux_bool;  /* helper */
   /* computing */
   LandauDeviceType deviceType;
-  PetscInt       subThreadBlockSize;
+  PetscInt         subThreadBlockSize; /* just used for Kokkos, could hardwire like Cuda, but Kokkos is portable */
+  MPI_Comm         comm; /* global communicator to use for errors and diagnostics */
 } LandauCtx;
 
+typedef int LandauIdx;
 typedef struct {
-  PetscReal     f;
-  PetscReal     df[LANDAU_DIM];
-} LandauFDF;
+  PetscReal scale;
+  LandauIdx gid;   // Lanadu matrix index (<10,000)
+} pointInterpolationP4est;
+typedef struct _lP4estVertexMaps {
+  LandauIdx                (*gIdx)[LANDAU_MAX_SPECIES][LANDAU_MAX_NQ]; // #elems *  LANDAU_MAX_NQ (spoof for max , Nb) on device,
+  LandauIdx                num_elements;
+  LandauIdx                num_reduced;
+  LandauIdx                num_face;  // (Q or Q^2 for 3D)
+  LandauDeviceType         deviceType;
+  PetscInt                 Nf;
+  PetscInt                 Nq;
+  pointInterpolationP4est (*c_maps)[LANDAU_MAX_Q_FACE];
+  struct _lP4estVertexMaps*data;
+  void                    *vp1,*vp2,*vp3;
+} P4estVertexMaps;
 
+typedef PetscReal LandauIPReal;
 typedef struct {
-  /* coordinate */
-  PetscReal   crd[LANDAU_DIM];
-  /* f; df data [Nc] */
-  LandauFDF     fdf[LANDAU_MAX_SPECIES];
-} LandauPointData;
+  LandauIPReal  *w;
+  LandauIPReal  *x;
+  LandauIPReal  *y;
+  LandauIPReal  *z;
+  LandauIPReal  *coefs;
+  int           dim_,ns_,nip_;
+} LandauIPData;
 
-PETSC_EXTERN PetscErrorCode LandauAssembleOpenMP(PetscInt cStart, PetscInt cEnd, PetscInt totDim, DM plex, PetscSection section, PetscSection globalSection, Mat JacP, PetscScalar elemMats[], PetscContainer container);
 PETSC_EXTERN PetscErrorCode LandauCreateColoring(Mat, DM, PetscContainer *);
-PETSC_EXTERN PetscErrorCode LandauFormJacobian_Internal(Vec, Mat, const PetscInt, void *);
+PETSC_EXTERN int LandauGetIPDataSize(const LandauIPData *const);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode LandauCUDAJacobian(DM, const PetscInt, const PetscReal [], const PetscReal [], const PetscReal[], const PetscReal[],
-                                             const PetscReal * const, const PetscReal[], const PetscReal [],const PetscInt, const PetscLogEvent[], PetscBool, Mat);
+                                               const LandauIPData *const, const PetscReal [], PetscReal *, PetscReal, const PetscLogEvent[], Mat);
+PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps *);
+
 #endif
 #if defined(PETSC_HAVE_KOKKOS)
-/* TODO: this won't work if PETSc is built with C++ */
+  /* TODO: this won't work if PETSc is built with C++ */
 #if !defined(__cplusplus)
 PETSC_EXTERN PetscErrorCode LandauKokkosJacobian(DM, const PetscInt, const PetscReal [], const PetscReal [], const PetscReal[], const PetscReal[],
-                                               const PetscReal * const, const PetscReal[], const PetscReal [],const PetscInt, const PetscLogEvent[], PetscBool, Mat);
+                                                 const LandauIPData *const, const PetscReal [],const PetscInt, PetscReal *, PetscReal, const PetscLogEvent[], Mat);
+PETSC_EXTERN PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps *);
 #endif
 #endif
 

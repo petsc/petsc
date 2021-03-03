@@ -20,9 +20,15 @@ class Configure(config.package.CMakePackage):
     return
 
   def __str__(self):
-    output  = config.package.Package.__str__(self)
+    output  = config.package.CMakePackage.__str__(self)
     if hasattr(self,'system'): output += '  Backend: '+self.system+'\n'
     return output
+
+  def setupHelp(self, help):
+    import nargs
+    config.package.CMakePackage.setupHelp(self, help)
+    help.addArgument('KOKKOS-KERNELS', '-with-kokkos-kernels-tpl=<bool>', nargs.ArgBool(None, 1, 'Indicate if you wish to let Kokkos-Kernels use Third-Party Libraries (TPLs)'))
+    return
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
@@ -49,11 +55,19 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    KokkosRoot = self.kokkos.installDir
+    KokkosRoot = self.kokkos.directory
     args.append('-DKokkos_ROOT='+KokkosRoot)
+    # By default it installs in lib64, change it to lib
+    if self.checkSharedLibrariesEnabled():
+      args.append('-DCMAKE_INSTALL_RPATH:PATH='+os.path.join(KokkosRoot,self.kokkos.libdir))
     if self.cuda.found:
       self.system = 'CUDA'
+      args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+os.path.join(KokkosRoot,'bin','nvcc_wrapper'))
+      # as of version 3.2.00 Cuda 11 is not supported, e.g., identifier "cusparseXcsrgemmNnz" is undefined
+      if not self.argDB['with-kokkos-kernels-tpl'] or self.cuda.version_tuple >= (11,0):
+        args.append('-DKokkosKernels_ENABLE_TPL_CUBLAS=OFF')
+        args.append('-DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF')
     elif self.hip.found:
       self.system = 'HIP'
       self.pushLanguage('HIP')

@@ -19,14 +19,14 @@ int main(int argc,char **argv)
   PetscBool      flag,isreplace,issum;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr = PetscOptionsGetString(NULL,NULL,"-op",opname,sizeof(opname),&flag);CHKERRQ(ierr);
   ierr = PetscStrcmp(opname,"replace",&isreplace);CHKERRQ(ierr);
   ierr = PetscStrcmp(opname,"sum",&issum);CHKERRQ(ierr);
 
-  if (isreplace)  {op = MPIU_REPLACE; mpiopname = "MPI_REPLACE";}
+  if (isreplace)  {op = MPI_REPLACE; mpiopname = "MPI_REPLACE";}
   else if (issum) {op = MPIU_SUM;     mpiopname = "MPI_SUM";}
   else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Unsupported argument (%s) to -op, which must be 'replace' or 'sum'",opname);
 
@@ -60,8 +60,8 @@ int main(int argc,char **argv)
   ierr = VecGetArray(y2,&leafupdate);CHKERRQ(ierr);
 
   /* Bcast x to y,to initialize y = [1,N], then scale y to make leafupdate = y = [2,2*N] */
-  ierr = PetscSFBcastAndOpBegin(gathersf,MPIU_SCALAR,rootdata,leafdata,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastAndOpEnd(gathersf,MPIU_SCALAR,rootdata,leafdata,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(gathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(gathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&leafdata);CHKERRQ(ierr);
   ierr = VecScale(y,2);CHKERRQ(ierr);
   ierr = VecGetArray(y,&leafdata);CHKERRQ(ierr);
@@ -115,8 +115,8 @@ int main(int argc,char **argv)
   ierr = VecGetArray(y2,&leafupdate);CHKERRQ(ierr);
 
   /* Bcast x to y, to initialize y = [1,N], then scale y to make leafupdate = y = [2,2*N] */
-  ierr = PetscSFBcastAndOpBegin(allgathersf,MPIU_SCALAR,rootdata,leafdata,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastAndOpEnd(allgathersf,MPIU_SCALAR,rootdata,leafdata,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(allgathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(allgathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&leafdata);CHKERRQ(ierr);
   ierr = VecScale(y,2);CHKERRQ(ierr);
   ierr = VecGetArray(y,&leafdata);CHKERRQ(ierr);
@@ -179,8 +179,8 @@ int main(int argc,char **argv)
   ierr = VecGetArray(y2,&leafupdate);CHKERRQ(ierr);
 
   /* Bcast x to y, to initialize y = 1+rank+size*i, with i=0..size-1 */
-  ierr = PetscSFBcastAndOpBegin(alltoallsf,MPIU_SCALAR,rootdata,leafdata,MPIU_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastAndOpEnd(alltoallsf,MPIU_SCALAR,rootdata,leafdata,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(alltoallsf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(alltoallsf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
 
   /* FetchAndOp x to y */
   ierr = PetscSFFetchAndOpBegin(alltoallsf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);

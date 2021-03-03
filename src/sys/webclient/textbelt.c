@@ -43,7 +43,7 @@ PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char messag
   if (nlen != 10) SETERRQ1(comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
   ierr = PetscStrlen(message,&mlen);CHKERRQ(ierr);
   if (mlen > 100) SETERRQ1(comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {
     int       sock;
     char      buff[474],*body;

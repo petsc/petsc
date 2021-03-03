@@ -115,11 +115,11 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Gather(VecTagger tagger,Vec vec,
   ierr = VecScatterBegin(vScat,vec,gVec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vScat,vec,gVec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&vScat);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank (PetscObjectComm((PetscObject)vec),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank (PetscObjectComm((PetscObject)vec),&rank);CHKERRMPI(ierr);
   if (!rank) {
     ierr = VecTaggerComputeBoxes_CDF_Serial(tagger,gVec,bs,boxes);CHKERRQ(ierr);
   }
-  ierr = MPI_Bcast((PetscScalar *)boxes,2*bs,MPIU_SCALAR,0,PetscObjectComm((PetscObject)vec));CHKERRQ(ierr);
+  ierr = MPI_Bcast((PetscScalar *)boxes,2*bs,MPIU_SCALAR,0,PetscObjectComm((PetscObject)vec));CHKERRMPI(ierr);
   ierr = VecDestroy(&gVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -207,7 +207,7 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
       stats[2].moment[2] += val * val;
     }
     /* reduce those statistics */
-    ierr = MPI_Allreduce(MPI_IN_PLACE,stats,3,statType,statReduce,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE,stats,3,statType,statReduce,comm);CHKERRMPI(ierr);
     M    = (PetscInt) stats[2].moment[0];
     /* use those initial statistics to get the initial (globally agreed-upon) choices for the absolute box bounds */
     for (i = 0; i < 2; i++) {
@@ -250,7 +250,7 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
         newBounds[i][section][1] = PetscMax(newBounds[i][section][0],thisInd + 1);
       }
     }
-    ierr = MPI_Allreduce(MPI_IN_PLACE, stats, 4, statType, statReduce, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, stats, 4, statType, statReduce, comm);CHKERRMPI(ierr);
     for (i = 0; i < 2; i++) {
       PetscInt  totalLessThan = offsets[i] + stats[i][0].moment[0];
       PetscReal cdfOfAbs      = (PetscReal) totalLessThan / (PetscReal) M;
@@ -309,9 +309,9 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger,Vec v
 #if defined (PETSC_USE_COMPLEX)
   ierr = PetscMalloc2(m,&cReal,m,&cImag);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Type_contiguous(5,MPIU_REAL,&statType);CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&statType);CHKERRQ(ierr);
-  ierr = MPI_Op_create(VecTaggerCDFStatsReduce,1,&statReduce);CHKERRQ(ierr);
+  ierr = MPI_Type_contiguous(5,MPIU_REAL,&statType);CHKERRMPI(ierr);
+  ierr = MPI_Type_commit(&statType);CHKERRMPI(ierr);
+  ierr = MPI_Op_create(VecTaggerCDFStatsReduce,1,&statReduce);CHKERRMPI(ierr);
   for (i = 0; i < bs; i++) {
     IS          isStride;
     VecScatter  vScat;
@@ -353,8 +353,8 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger,Vec v
 #endif
     ierr = VecRestoreArray(vComp,&cArray);CHKERRQ(ierr);
   }
-  ierr = MPI_Op_free(&statReduce);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&statType);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&statReduce);CHKERRMPI(ierr);
+  ierr = MPI_Type_free(&statType);CHKERRMPI(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscFree2(cReal,cImag);CHKERRQ(ierr);
 #endif
@@ -374,7 +374,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger,Vec vec,PetscIn
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
   *numBoxes = 1;
   ierr = PetscMalloc1(bs,&bxs);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)tagger),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)tagger),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = VecTaggerComputeBoxes_CDF_Serial(tagger,vec,bs,bxs);CHKERRQ(ierr);
     *boxes = bxs;
@@ -403,7 +403,7 @@ static PetscErrorCode VecTaggerView_CDF(VecTagger tagger,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = VecTaggerView_Simple(tagger,viewer);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)tagger),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)tagger),&size);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (size > 1 && iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"CDF computation method: %s\n",VecTaggerCDFMethods[cuml->method]);CHKERRQ(ierr);

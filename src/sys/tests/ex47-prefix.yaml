@@ -1,0 +1,16 @@
+mg:
+
+  levels:
+    ksp:
+      type: richardson
+      max_it: 15
+    1:
+      ksp:
+        max_it: 5
+    2:
+      ksp:
+        max_it: 10
+
+  coarse:
+    pc:
+      type: lu

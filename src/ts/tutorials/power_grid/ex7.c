@@ -131,7 +131,7 @@ PetscErrorCode PostStep(TS ts)
   }
   ierr = DMDAVecRestoreArrayRead(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(user->da,X,&p);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&sum,&asum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&sum,&asum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %f = %f\n",(double)t,(double)(asum));CHKERRQ(ierr);
   if (sum  < 1.0e-2) {
     ierr = TSSetConvergedReason(ts,TS_CONVERGED_USER);CHKERRQ(ierr);
@@ -157,7 +157,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   PetscScalar    sum;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   user->dx = (user->xmax - user->xmin)/(M-1); user->dy = (user->ymax - user->ymin)/(N-1);
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);

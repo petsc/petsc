@@ -139,12 +139,12 @@ static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm,const PetscMPIIn
      receiver is expecting them.
    */
   if (hdr->count || (x->first_assembly_done && x->sendptrs[rankid].ints)) {
-    ierr = MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
-    ierr = MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
+    ierr = MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRMPI(ierr);
+    ierr = MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRMPI(ierr);
   }
   if (hdr->bcount || (x->first_assembly_done && x->sendptrs[rankid].intb)) {
-    ierr = MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
-    ierr = MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
+    ierr = MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRMPI(ierr);
+    ierr = MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -163,9 +163,9 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIIn
 
   if (hdr->count) {
     ierr = PetscSegBufferGet(x->segrecvint,hdr->count,&frame->ints);CHKERRQ(ierr);
-    ierr = MPI_Irecv(frame->ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRMPI(ierr);
     ierr = PetscSegBufferGet(x->segrecvscalar,hdr->count,&frame->scalars);CHKERRQ(ierr);
-    ierr = MPI_Irecv(frame->scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRMPI(ierr);
     frame->pendings = 2;
   } else {
     frame->ints = NULL;
@@ -175,9 +175,9 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIIn
 
   if (hdr->bcount) {
     ierr = PetscSegBufferGet(x->segrecvint,hdr->bcount,&frame->intb);CHKERRQ(ierr);
-    ierr = MPI_Irecv(frame->intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRMPI(ierr);
     ierr = PetscSegBufferGet(x->segrecvscalar,hdr->bcount*bs,&frame->scalarb);CHKERRQ(ierr);
-    ierr = MPI_Irecv(frame->scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRMPI(ierr);
     frame->pendingb = 2;
   } else {
     frame->intb = NULL;
@@ -302,7 +302,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
      * when VEC_SUBSET_OFF_PROC_ENTRIES has not been set, because we could exchange exact sizes in the initial
      * rendezvous.  When the rendezvous is elided, however, we use MPI_Status to get actual message lengths, so that
      * subsequent assembly can set a proper subset of the values. */
-    ierr = MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,x->use_status?some_statuses:MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,x->use_status?some_statuses:MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
     for (ii=0; ii<ndone; ii++) {
       PetscInt i = some_indices[ii]/4,j,k;
       InsertMode imode = (InsertMode)x->recvhdr[i].insertmode;
@@ -315,7 +315,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
         PetscMPIInt count;
         if (--frame[i].pendings > 0) continue;
         if (x->use_status) {
-          ierr = MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count);CHKERRQ(ierr);
+          ierr = MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count);CHKERRMPI(ierr);
         } else count = x->recvhdr[i].count;
         for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<count; j++,recvint++) {
           PetscInt loc = *recvint - X->map->rstart;
@@ -334,7 +334,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
         PetscMPIInt count;
         if (--frame[i].pendingb > 0) continue;
         if (x->use_status) {
-          ierr = MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count);CHKERRQ(ierr);
+          ierr = MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count);CHKERRMPI(ierr);
           if (!intmsg) count /= bs; /* Convert from number of scalars to number of blocks */
         } else count = x->recvhdr[i].bcount;
         for (j=0,recvint=frame[i].intb,recvscalar=frame[i].scalarb; j<count; j++,recvint++) {
@@ -353,7 +353,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
     }
   }
   ierr = VecRestoreArray(X,&xarray);CHKERRQ(ierr);
-  ierr = MPI_Waitall(4*x->nsendranks,x->sendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(4*x->nsendranks,x->sendreqs,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   ierr = PetscFree2(some_indices,some_statuses);CHKERRQ(ierr);
   if (x->assembly_subset) {
     void *dummy;                /* reset segbuffers */
@@ -481,6 +481,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecStrideSubSetGather_Default,
                                 VecStrideSubSetScatter_Default,
                                 NULL,
+                                NULL,
                                 NULL
 };
 
@@ -573,7 +574,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = VecSetType(v,VECSEQ);CHKERRQ(ierr);
   } else {

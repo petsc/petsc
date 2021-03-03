@@ -50,7 +50,7 @@ makefileMap["PARAMETIS"]="requires: parmetis"
 # Some packages are runtime, but others are buildtime because of includes
 reqpkgs=["HDF5", "HYPRE", "LUSOL","MKL_PARDISO", "ML", "MUMPS", "PARMETIS", "PARMS", "PASTIX", "PTSCOTCH", "REVOLVE", "SAWS", "SPAI", "STRUMPACK", "SUITESPARSE", "SUPERLU", "SUPERLU_DIST"]
 
-bldpkgs=["CTETGEN", "EXODUSII", "CHOMBO","ELEMENTAL", "MATLAB", "MATLAB_ENGINE",  "MOAB", "FFTW", "TCHEM","VECCUDA","CUSP","CUSPARSE","TRILINOS", "X", "TRIANGLE", "YAML"]
+bldpkgs=["CTETGEN", "EXODUSII", "CHOMBO","ELEMENTAL", "MATLAB", "MATLAB_ENGINE",  "MOAB", "FFTW", "TCHEM","VECCUDA","CUSPARSE","TRILINOS", "X", "TRIANGLE", "YAML"]
 
 for pkg in reqpkgs: makefileMap[pkg]="requires: "+ pkg.lower()
 for pkg in bldpkgs: makefileMap[pkg]="buildrequires: "+ pkg.lower()

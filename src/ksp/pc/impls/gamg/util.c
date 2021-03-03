@@ -77,10 +77,11 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs;
 
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
 
+  /* TODO GPU: these calls are potentially expensive if matrices are large and we want to use the GPU */
+  /* A solution consists in providing a new API, MatAIJGetCollapsedAIJ, and each class can provide a fast
+     implementation */
   if (bs > 1) {
     const PetscScalar *vals;
     const PetscInt    *idx;
@@ -96,7 +97,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
     ierr = PetscMalloc2(nloc, &d_nnz,isseqaij ? 0 : nloc, &o_nnz);CHKERRQ(ierr);
 
     if (isseqaij) {
-      PetscInt       max_d_nnz;
+      PetscInt max_d_nnz;
 
       /*
           Determine exact preallocation count for (sequential) scalar matrix
@@ -167,10 +168,9 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
     /* just copy scalar matrix - abs() not taken here but scaled later */
     ierr = MatDuplicate(Amat, MAT_COPY_VALUES, &Gmat);CHKERRQ(ierr);
   }
+  ierr = MatPropagateSymmetryOptions(Amat, Gmat);CHKERRQ(ierr);
 
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
 
   *a_Gmat = Gmat;
   PetscFunctionReturn(0);
@@ -199,7 +199,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   PetscErrorCode    ierr;
   PetscInt          Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
   PetscMPIInt       rank;
-  Mat               Gmat  = *a_Gmat, tGmat, matTrans;
+  Mat               Gmat  = *a_Gmat, tGmat;
   MPI_Comm          comm;
   const PetscScalar *vals;
   const PetscInt    *idx;
@@ -207,17 +207,10 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   Vec               diag;
 
   PetscFunctionBegin;
-#if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
-  /* scale Gmat for all values between -1 and 1 */
-  ierr = MatCreateVecs(Gmat, &diag, NULL);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(Gmat, diag);CHKERRQ(ierr);
-  ierr = VecReciprocal(diag);CHKERRQ(ierr);
-  ierr = VecSqrtAbs(diag);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(Gmat, diag, diag);CHKERRQ(ierr);
-  ierr = VecDestroy(&diag);CHKERRQ(ierr);
 
+  /* TODO GPU: optimization proposal, each class provides fast implementation of this
+     procedure via MatAbs API */
   if (vfilter < 0.0 && !symm) {
     /* Just use the provided matrix as the graph but make all values positive */
     MatInfo     info;
@@ -242,21 +235,33 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
       for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
       ierr = MatSeqAIJRestoreArray(aij->B,&avals);CHKERRQ(ierr);
     }
-#if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
     PetscFunctionReturn(0);
   }
 
+  /* TODO GPU: this can be called when filter = 0 -> Probably provide MatAIJThresholdCompress that compresses the entries below a threshold?
+               Also, if the matrix is symmetric, can we skip this
+               operation? It can be very expensive on large matrices. */
   ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);
   nloc = Iend - Istart;
   ierr = MatGetSize(Gmat, &MM, &NN);CHKERRQ(ierr);
 
   if (symm) {
+    Mat matTrans;
     ierr = MatTranspose(Gmat, MAT_INITIAL_MATRIX, &matTrans);CHKERRQ(ierr);
+    ierr = MatAXPY(Gmat, 1.0, matTrans, Gmat->structurally_symmetric ? SAME_NONZERO_PATTERN : DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDestroy(&matTrans);CHKERRQ(ierr);
   }
+
+  /* scale Gmat for all values between -1 and 1 */
+  ierr = MatCreateVecs(Gmat, &diag, NULL);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(Gmat, diag);CHKERRQ(ierr);
+  ierr = VecReciprocal(diag);CHKERRQ(ierr);
+  ierr = VecSqrtAbs(diag);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(Gmat, diag, diag);CHKERRQ(ierr);
+  ierr = VecDestroy(&diag);CHKERRQ(ierr);
 
   /* Determine upper bound on nonzeros needed in new filtered matrix */
   ierr = PetscMalloc2(nloc, &d_nnz,nloc, &o_nnz);CHKERRQ(ierr);
@@ -265,12 +270,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
     d_nnz[jj] = ncols;
     o_nnz[jj] = ncols;
     ierr      = MatRestoreRow(Gmat,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
-    if (symm) {
-      ierr       = MatGetRow(matTrans,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
-      d_nnz[jj] += ncols;
-      o_nnz[jj] += ncols;
-      ierr       = MatRestoreRow(matTrans,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
-    }
     if (d_nnz[jj] > nloc) d_nnz[jj] = nloc;
     if (o_nnz[jj] > (MM-nloc)) o_nnz[jj] = MM - nloc;
   }
@@ -280,13 +279,8 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   ierr = MatSetType(tGmat, MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(tGmat,0,d_nnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(tGmat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+  ierr = MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
-  if (symm) {
-    ierr = MatDestroy(&matTrans);CHKERRQ(ierr);
-  } else {
-    /* all entries are generated locally so MatAssembly will be slightly faster for large process counts */
-    ierr = MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  }
 
   for (Ii = Istart, nnz0 = nnz1 = 0; Ii < Iend; Ii++) {
     ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals);CHKERRQ(ierr);
@@ -294,23 +288,19 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
       PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
       if (PetscRealPart(sv) > vfilter) {
         nnz1++;
-        if (symm) {
-          sv  *= 0.5;
-          ierr = MatSetValues(tGmat,1,&Ii,1,&idx[jj],&sv,ADD_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValues(tGmat,1,&idx[jj],1,&Ii,&sv,ADD_VALUES);CHKERRQ(ierr);
-        } else {
-          ierr = MatSetValues(tGmat,1,&Ii,1,&idx[jj],&sv,ADD_VALUES);CHKERRQ(ierr);
-        }
+        ierr = MatSetValues(tGmat,1,&Ii,1,&idx[jj],&sv,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,&vals);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(tGmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(tGmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-#if defined PETSC_GAMG_USE_LOG
+  if (symm) {
+    ierr = MatSetOption(tGmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  } else {
+    ierr = MatPropagateSymmetryOptions(Gmat,tGmat);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
-#endif
 
 #if defined(PETSC_USE_INFO)
   {

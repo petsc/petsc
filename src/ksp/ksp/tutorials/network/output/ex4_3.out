@@ -1,0 +1,71 @@
+DM Object: 4 MPI processes
+  type: network
+  NSubnets: 4; NEdges: 12; NVertices: 10; NSharedVertices: 2.
+  [0] nEdges: 3; nVertices: 4; nSharedVertices: 2
+     Subnet 0: nEdges 3, nVertices(include shared vertices) 4
+       edge 0: 0 ----> 1
+       edge 1: 1 ----> 2
+       edge 2: 2 ----> 3
+     SharedVertices:
+  [1] nEdges: 3; nVertices: 4; nSharedVertices: 2
+     Subnet 1: nEdges 3, nVertices(include shared vertices) 4
+       edge 3: 0 ----> 1
+       edge 4: 1 ----> 4
+       edge 5: 4 ----> 5
+     SharedVertices:
+  [2] nEdges: 3; nVertices: 4; nSharedVertices: 2
+     Subnet 2: nEdges 3, nVertices(include shared vertices) 4
+       edge 6: 0 ----> 1
+       edge 7: 1 ----> 6
+       edge 8: 6 ----> 7
+     SharedVertices:
+  [3] nEdges: 3; nVertices: 4; nSharedVertices: 2
+     Subnet 3: nEdges 3, nVertices(include shared vertices) 4
+       edge 9: 0 ----> 1
+       edge 10: 1 ----> 8
+       edge 11: 8 ----> 9
+     SharedVertices:
+       svtx 0: global index 0, subnet[0].0 ---->
+                                           ----> subnet[1].0
+                                           ----> subnet[2].0
+                                           ----> subnet[3].0
+       svtx 1: global index 1, subnet[0].1 ---->
+                                           ----> subnet[1].1
+                                           ----> subnet[2].1
+                                           ----> subnet[3].1
+Vec Object: 4 MPI processes
+  type: mpi
+Process [0]
+  Vertex 2:
+    0.
+    0.
+  Vertex 3:
+    0.
+    0.
+Process [1]
+  Vertex 4:
+    0.
+  Vertex 5:
+    0.
+Process [2]
+  Vertex 6:
+    0.
+  Vertex 7:
+    0.
+Process [3]
+  Vertex 0:
+    4.
+    4.
+    4.
+    4.
+    4.
+  Vertex 1:
+    4.
+    4.
+    4.
+    4.
+    4.
+  Vertex 8:
+    0.
+  Vertex 9:
+    0.

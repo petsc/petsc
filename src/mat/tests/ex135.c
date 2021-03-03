@@ -14,8 +14,8 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt n,MatType mtype)
   ierr = MatSetSizes(A, PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (rank < size-1) {
     ierr = MatMPISBAIJSetPreallocation(A,1,1,NULL,1,NULL);CHKERRQ(ierr);
   } else {
@@ -53,7 +53,7 @@ int main(int argc,char *argv[])
 
    test:
       nsize: 4
-      args: -n 1000 -mat_view ascii::ascii_info_detail -vecscatter_type sf
+      args: -n 1000 -mat_view ascii::ascii_info_detail
       requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/

@@ -327,13 +327,13 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   ierr = VecAXPY(test_vec,-1.0,fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
   ierr = VecNorm(test_vec,NORM_INFINITY,&val);CHKERRQ(ierr);
   ierr = VecDestroy(&test_vec);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"A: CHECK glob to loc: % 1.14e\n",rval);CHKERRQ(ierr);
 
   if (fetidpmat_ctx->l2g_p) {
     ierr = VecAXPY(test_vec_p,-1.0,fetidpmat_ctx->vP);CHKERRQ(ierr);
     ierr = VecNorm(test_vec_p,NORM_INFINITY,&val);CHKERRQ(ierr);
-    ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRMPI(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"A: CHECK glob to loc (p): % 1.14e\n",rval);CHKERRQ(ierr);
   }
 
@@ -344,7 +344,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
     ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecSum(fetidp_global,&sval);CHKERRQ(ierr);
     val  = PetscRealPart(sval)-fetidpmat_ctx->n_lambda;
-    ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRMPI(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"B: CHECK loc to glob: % 1.14e\n",rval);CHKERRQ(ierr);
   }
 
@@ -364,7 +364,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
     ierr = VecScatterEnd(fetidpmat_ctx->g2g_p,pcis->vec1_global,fetidp_global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecSum(fetidp_global,&sval);CHKERRQ(ierr);
     val  = PetscRealPart(sval);
-    ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRMPI(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"B: CHECK loc to glob (p): % 1.14e\n",rval);CHKERRQ(ierr);
   }
 
@@ -438,7 +438,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   ierr = VecAXPY(pcis->vec1_B,-1.0,test_vec);CHKERRQ(ierr);
   ierr = VecNorm(pcis->vec1_B,NORM_INFINITY,&val);CHKERRQ(ierr);
   ierr = VecDestroy(&test_vec);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&val,&rval,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"D: CHECK infty norm of E_D + P_D - I: % 1.14e\n",PetscGlobalRank,val);CHKERRQ(ierr);
 
   /******************************************************************/
@@ -545,7 +545,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   ierr = PetscOptionsBool("-ksp_fetidp_pressure_schur","Use a BDDC solver for pressure",NULL,schp,&schp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ksp),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ksp),&size);CHKERRMPI(ierr);
   fetidp->saddlepoint = (fid >= 0 ? PETSC_TRUE : fetidp->saddlepoint);
   if (size == 1) fetidp->saddlepoint = PETSC_FALSE;
 
@@ -637,8 +637,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       ierr = ISGetIndices(II,&idxs);CHKERRQ(ierr);
       for (i=0;i<ni;i++) matis->sf_leafdata[idxs[i]] = 1;
       ierr = ISRestoreIndices(II,&idxs);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
       ierr = PetscMalloc1(PetscMax(nl,n),&widxs);CHKERRQ(ierr);
       for (i=0,ni=0;i<nl;i++) if (matis->sf_rootdata[i]) widxs[ni++] = i+rst;
       ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&pII);CHKERRQ(ierr);
@@ -705,8 +705,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISGetIndices(Pall,&idxs);CHKERRQ(ierr);
         for (i=0;i<ni;i++) matis->sf_rootdata[idxs[i]-rst] = 1;
         ierr = ISRestoreIndices(Pall,&idxs);CHKERRQ(ierr);
-        ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
         for (i=0,ni=0;i<n;i++) if (matis->sf_leafdata[i]) widxs[ni++] = i;
         ierr = ISCreateGeneral(PETSC_COMM_SELF,ni,widxs,PETSC_COPY_VALUES,&lPall);CHKERRQ(ierr);
       }
@@ -718,8 +718,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISGetIndices(lPall,&idxs);CHKERRQ(ierr);
         for (i=0;i<ni;i++) matis->sf_leafdata[idxs[i]] = 1;
         ierr = ISRestoreIndices(lPall,&idxs);CHKERRQ(ierr);
-        ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
         for (i=0,ni=0;i<nl;i++) if (matis->sf_rootdata[i]) widxs[ni++] = i+rst;
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&Pall);CHKERRQ(ierr);
       }
@@ -754,8 +754,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISGetIndices(pP,&idxs);CHKERRQ(ierr);
         for (i=0;i<ni;i++) matis->sf_rootdata[idxs[i]-rst] = 1;
         ierr = ISRestoreIndices(pP,&idxs);CHKERRQ(ierr);
-        ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
         for (i=0,ni=0;i<n;i++) if (matis->sf_leafdata[i]) widxs[ni++] = i;
         ierr = PetscMalloc1(ni,&widxs2);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingApply(l2g,ni,widxs,widxs2);CHKERRQ(ierr);
@@ -772,12 +772,12 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           if (idxs[i] >=0 && idxs[i] < n)
             matis->sf_leafdata[idxs[i]] = 1;
         ierr = ISRestoreIndices(lP,&idxs);CHKERRQ(ierr);
-        ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingApply(l2g,ni,idxs,widxs);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_gP",(PetscObject)is1);CHKERRQ(ierr);
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_REPLACE);CHKERRQ(ierr);
         for (i=0,ni=0;i<nl;i++) if (matis->sf_rootdata[i]) widxs[ni++] = i+rst;
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&pP);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_pP",(PetscObject)pP);CHKERRQ(ierr);

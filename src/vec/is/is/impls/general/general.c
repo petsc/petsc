@@ -149,7 +149,7 @@ static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isou
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = PetscMalloc1(n,&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[idx[i]] = i;
@@ -163,11 +163,11 @@ static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isou
     ierr = ISDestroy(&istmp);CHKERRQ(ierr);
     /* get the part we need */
     if (nlocal == PETSC_DECIDE) nlocal = n;
-    ierr = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+    ierr = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRMPI(ierr);
     if (PetscDefined(USE_DEBUG)) {
       PetscInt    N;
       PetscMPIInt rank;
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRMPI(ierr);
       ierr = PetscLayoutGetSize(is->map, &N);CHKERRQ(ierr);
       if (rank == size-1) {
         if (nstart != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of nlocal lengths %d != total IS length %d",nstart,N);
@@ -332,8 +332,8 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
     PetscBool         isperm;
 
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
     ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,PETSC_FALSE,&isperm);CHKERRQ(ierr);
@@ -515,9 +515,7 @@ PetscErrorCode ISSetUp_General(IS is)
    distributed sets of indices and thus certain operations on them are
    collective.
 
-
    Level: beginner
-
 
 .seealso: ISCreateStride(), ISCreateBlock(), ISAllGather(), PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER, PetscCopyMode
 @*/
@@ -545,8 +543,7 @@ PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],Pe
 
    Level: beginner
 
-
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISBlockSetIndices(), ISGENERAL, PetscCopyMode
 @*/
 PetscErrorCode  ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
@@ -613,7 +610,7 @@ static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt en
 }
 
 /*@
-   ISGeneralFilter - Remove all points outside of [start, end)
+   ISGeneralFilter - Remove all indices outside of [start, end)
 
    Collective on IS
 

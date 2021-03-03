@@ -1615,7 +1615,7 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
     PetscMPIInt mpiComparison;
     MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
 
-    ierr = MPI_Comm_compare(comm, dmcomm, &mpiComparison);CHKERRQ(ierr);
+    ierr = MPI_Comm_compare(comm, dmcomm, &mpiComparison);CHKERRMPI(ierr);
     if (mpiComparison != MPI_IDENT && mpiComparison != MPI_CONGRUENT) SETERRQ(dmcomm,PETSC_ERR_SUP,"No support for different communicators yet");
   }
   ierr = DMGetCoarseDM(dm,&coarseDM);CHKERRQ(ierr);

@@ -9,7 +9,14 @@
 
 #if defined(PETSC_HAVE_HIP)
   #include <hip/hip_runtime.h>  /* For hipStream_t */
+  #include <petschipblas.h>  /* For CHKERRHIP */
 #endif
+
+/* In terms of function overloading, long long int is a different type than int64_t, which PetscInt might be defined to.
+   We perfer long long int over PetscInt (int64_t), since CUDA atomics are built around (unsigned) long long int.
+ */
+typedef long long int          llint;
+typedef unsigned long long int ullint;
 
 /* We separate SF communications for SFBasic and SFNeighbor in two parts: local (self,intra-rank) and remote (inter-rank) */
 typedef enum {PETSCSF_LOCAL=0, PETSCSF_REMOTE} PetscSFScope;
@@ -144,17 +151,18 @@ struct _n_PetscSFLink {
   PetscErrorCode (*da_ScatterAndLXOR)  (PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*);
   PetscErrorCode (*da_ScatterAndBXOR)  (PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*);
   PetscErrorCode (*da_FetchAndAddLocal)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*);
+/* TODO:  Make runtime  */
 #if defined (PETSC_HAVE_CUDA)
   PetscInt       maxResidentThreadsPerGPU;   /* It is a copy from SF for convenience */
   cudaStream_t   stream;                     /* Stream to launch pack/unapck kernels if not using the default stream */
 #elif defined (PETSC_HAVE_HIP)
+  PetscInt       maxResidentThreadsPerGPU;   /* It is a copy from SF for convenience */
   hipStream_t    stream;
 #endif
 
   PetscErrorCode (*Destroy)(PetscSFLink);    /* These two fields are meant to be used by SF_Kokkos, with spptr pointing to an execution space object */
   void           *spptr;                     /* for a given stream, but unused now due to a Kokkos bug, so that SF_Kokkos only supports null stream. */
 #endif
-
   PetscMPIInt  tag;                          /* Each link has a tag so we can perform multiple SF ops at the same time */
   MPI_Datatype unit;                         /* The MPI datatype this PetscSFLink is built for */
   MPI_Datatype basicunit;                    /* unit is made of MPI builtin dataype basicunit */
@@ -210,8 +218,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkMPIWaitall(PetscSF sf,PetscSFLink 
   const PetscInt       rootdirect_mpi = link->rootdirect_mpi,leafdirect_mpi = link->leafdirect_mpi;
 
   PetscFunctionBegin;
-  ierr = MPI_Waitall(bas->nrootreqs,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = MPI_Waitall(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi],MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(bas->nrootreqs,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi],MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
+  ierr = MPI_Waitall(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi],MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -237,6 +245,10 @@ PETSC_INTERN PetscErrorCode PetscSFResetPackFields(PetscSF);
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Cuda(PetscSF,PetscSFLink,MPI_Datatype);
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Hip(PetscSF,PetscSFLink,MPI_Datatype);
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS)

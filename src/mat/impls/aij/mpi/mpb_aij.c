@@ -10,9 +10,9 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   PetscInt       *garrayCMap,col,i,j,*nnz,newRow,newCol;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&commRank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&commRank);CHKERRMPI(ierr);
 
   /* create subMat object with the relevant layout */
   if (scall == MAT_INITIAL_MATRIX) {
@@ -28,7 +28,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
 
   /* create a map of comm_rank from subComm to comm - should commRankMap and garrayCMap be kept for reused? */
   ierr = PetscMalloc1(subCommSize,&commRankMap);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm);CHKERRMPI(ierr);
 
   /* Traverse garray and identify column indices [of offdiag mat] that
    should be discarded. For the ones not discarded, store the newCol+1

@@ -106,7 +106,7 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
   PetscBool      dataverified = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   len = DMDA_I*DMDA_J*DMDA_K*dof;
   if (!rank) {

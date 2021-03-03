@@ -9,14 +9,15 @@ class Configure(config.package.Package):
     self.versioninclude    = 'cuda.h'
     self.requiresversion   = 1
     self.functions         = ['cublasInit', 'cufftDestroy']
-    self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','thrust/version.h']
-    self.liblist           = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a'],
-                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib']]
+    self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','curand.h','thrust/version.h']
+    self.liblist           = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a','libcurand.a'],
+                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib','curand.lib']]
     self.precisions        = ['single','double']
     self.cxx               = 0
     self.complex           = 1
     self.hastests          = 0
     self.hastestsdatafiles = 0
+    self.functionsDefine   = ['cusolverDnDpotri']
     return
 
   def setupHelp(self, help):
@@ -29,6 +30,10 @@ class Configure(config.package.Package):
     output  = config.package.Package.__str__(self)
     if hasattr(self,'gencodearch'):
       output += '  CUDA SM '+self.gencodearch+'\n'
+    if hasattr(self.setCompilers,'CUDA_CXX'):
+      output += '  CUDA underlying compiler: CUDA_CXX ' + self.setCompilers.CUDA_CXX + '\n'
+    if hasattr(self.setCompilers,'CUDA_CXXFLAGS'):
+      output += '  CUDA underlying compiler flags: CUDA_CXXFLAGS ' + self.setCompilers.CUDA_CXXFLAGS + '\n'
     return output
 
   def setupDependencies(self, framework):
@@ -99,6 +104,8 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
+    if not hasattr(self.compilers, 'CXX'):
+      raise RuntimeError('Using CUDA requires PETSc to be configure with a C++ compiler')
     self.checkNVCCDoubleAlign()
     self.configureTypes()
     # includes from --download-thrust should override the prepackaged version in cuda - so list thrust.include before cuda.include on the compile command.
@@ -106,13 +113,13 @@ class Configure(config.package.Package):
       self.log.write('Overriding the thrust library in CUDAToolkit with a user-specified one\n')
       self.include = self.thrust.include+self.include
 
+    self.pushLanguage('CUDA')
+    petscNvcc = self.getCompiler()
+    self.popLanguage()
     if 'with-cuda-gencodearch' in self.framework.clArgDB:
       self.gencodearch = self.argDB['with-cuda-gencodearch']
     else:
       import os
-      self.pushLanguage('CUDA')
-      petscNvcc = self.getCompiler()
-      self.popLanguage()
       self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
       if hasattr(self,'systemNvcc'):
         cudaDir = os.path.dirname(os.path.dirname(self.systemNvcc))
@@ -144,4 +151,38 @@ class Configure(config.package.Package):
       self.checkVersion(); # set version_tuple
     if self.version_tuple[0] >= 11:
       self.addDefine('HAVE_CUDA_VERSION_11PLUS','1')
+
+    # determine the compiler used by nvcc
+    (out, err, ret) = Configure.executeShellCommand(petscNvcc + ' ' + self.setCompilers.CUDAFLAGS + ' --dryrun dummy.cu 2>&1 | grep D__CUDACC__ | head -1 | cut -f2 -d" "')
+    if out:
+      self.setCompilers.CUDA_CXX = out
+      self.setCompilers.CUDA_CXXFLAGS = ''
+      self.logPrint('Determined the compiler nvcc uses is ' + out);
+      self.logPrint('PETSc C compiler '+self.compilers.CC)
+      self.logPrint('PETSc C++ compiler '+self.compilers.CXX)
+
+      # TODO: How to handle MPI compiler wrapper as opposed to its underlying compiler
+      if out == self.compilers.CC or out == self.compilers.CXX:
+        # nvcc will say it is using gcc as its compiler, it pass a flag when using to treat it as a C++ compiler
+        self.setCompilers.CUDA_CXXFLAGS = self.setCompilers.CPPFLAGS+' '+self.setCompilers.CFLAGS
+        self.setCompilers.CUDA_CXXFLAGS += self.setCompilers.CXXPPFLAGS+' '+self.setCompilers.CXXFLAGS
+      else:
+        # only add any -I arguments since compiler arguments may not work
+        flags = self.setCompilers.CPPFLAGS.split(' ')+self.setCompilers.CFLAGS.split(' ')+self.setCompilers.CXXFLAGS.split(' ')
+        for i in flags:
+          if i.startswith('-I'):
+            self.setCompilers.CUDA_CXXFLAGS += ' '+i
+      # set compiler flags for compiler called by nvcc
+      if self.setCompilers.CUDA_CXXFLAGS:
+        self.addMakeMacro('CUDA_CXXFLAGS',self.setCompilers.CUDA_CXXFLAGS)
+      else:
+        self.logPrint('No CUDA_CXXFLAGS available')
+
+      # Intel compiler environment breaks GNU compilers, fix it just enough to allow g++ to run
+      if self.setCompilers.CUDA_CXX == 'gcc' and config.setCompilers.Configure.isIntel(self.compilers.CXX,self.log):
+        self.logPrint('''Removing Intel's CPLUS_INCLUDE_PATH when using nvcc since it breaks g++''')
+        self.delMakeMacro('CUDAC')
+        self.addMakeMacro('CUDAC','CPLUS_INCLUDE_PATH="" '+petscNvcc)
+    else:
+      self.logPrint('nvcc --dryrun failed, unable to determine CUDA_CXX and CUDA_CXXFLAGS') 
     return

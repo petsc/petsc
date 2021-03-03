@@ -997,12 +997,10 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       loc2 = output.find(' -lpgf90rtl -lpgftnrtl')
       if loc2 >= -1:
         output = output[0:loc] + ' -lpgf90rtl -lpgftnrtl' + output[loc:]
-      self.addDefine('HAVE_PGF90_COMPILER','1')
     elif output.find(' -lpgf90rtl -lpgftnrtl') >= 0:
       # somehow doing this hacky thing appears to get rid of error with undefined __hpf_exit
       self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in librarylist')
       output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
-      self.addDefine('HAVE_PGF90_COMPILER','1')
 
     # PGI: kill anything enclosed in single quotes
     if output.find('\'') >= 0:
@@ -1428,7 +1426,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     }
     """
     self.setCompilers.pushLanguage('C')
-    flags_to_try = ['','-std=c99','-std=gnu99','-std=c11''-std=gnu11','-c99']
+    flags_to_try = ['','-std=c99','-std=gnu99','-std=c11','-std=gnu11','-c99']
     for flag in flags_to_try:
       self.setCompilers.saveLog()
       if self.setCompilers.checkCompilerFlag(flag, includes, body):
@@ -1440,7 +1438,10 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       else:
         self.logWrite(self.setCompilers.restoreLog())
     self.setCompilers.popLanguage()
-    if self.c99flag is None: raise RuntimeError('PETSc requires c99 compiler! Configure could not determine compatible compiler flag. Perhaps you can specify via CFLAGS')
+    if self.c99flag is None:
+      if self.isGCC: additionalErrorMsg = '\nPerhaps you have an Intel compiler environment or module set that is interferring with the GNU compilers.\nTry removing that environment or module and running ./configure again.'
+      else: additionalErrorMsg = ''
+      raise RuntimeError('PETSc requires c99 compiler! Configure could not determine compatible compiler flag.\nPerhaps you can specify it via CFLAGS.'+additionalErrorMsg)
     return
 
   def configure(self):

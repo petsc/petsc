@@ -181,9 +181,9 @@ int main(int argc, char **argv)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCCOMPOSITE);CHKERRQ(ierr); /* default composite with single Identity PC */
   ierr = PCCompositeSetType(pc,PC_COMPOSITE_ADDITIVE);CHKERRQ(ierr);
-  ierr = PCCompositeAddPC(pc,PCNONE);CHKERRQ(ierr);
+  ierr = PCCompositeAddPCType(pc,PCNONE);CHKERRQ(ierr);
   if (eta > 0){
-    ierr = PCCompositeAddPC(pc,PCSHELL);CHKERRQ(ierr);
+    ierr = PCCompositeAddPCType(pc,PCSHELL);CHKERRQ(ierr);
     ierr = PCCompositeGetPC(pc,1,&pcnoise);CHKERRQ(ierr);
     ctx.eta = eta;
     ierr = PCShellSetContext(pcnoise,&ctx);CHKERRQ(ierr);

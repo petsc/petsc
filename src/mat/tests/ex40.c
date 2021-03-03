@@ -15,12 +15,12 @@ PetscErrorCode ISAllGatherDisjoint(IS iis, IS** ois)
   PetscMPIInt    size;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)iis),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)iis),&size);CHKERRMPI(ierr);
   ierr = PetscMalloc1(size,&is2);CHKERRQ(ierr);
   ierr = PetscMalloc1(size,&sizes);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iis,&ls);CHKERRQ(ierr);
   /* we don't have a public ISGetLayout */
-  ierr = MPI_Allgather(&ls,1,MPIU_INT,sizes,1,MPIU_INT,PetscObjectComm((PetscObject)iis));CHKERRQ(ierr);
+  ierr = MPI_Allgather(&ls,1,MPIU_INT,sizes,1,MPIU_INT,PetscObjectComm((PetscObject)iis));CHKERRMPI(ierr);
   ierr = ISAllGather(iis,&is);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idxs);CHKERRQ(ierr);
   for (i = 0, ls = 0; i < size; i++) {
@@ -48,7 +48,7 @@ int main(int argc,char **args)
   PetscScalar    rand;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to indicate a file containing a PETSc binary matrix");
   ierr = PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ int main(int argc,char **args)
     PetscMPIInt     size;
 
     ndpar = 1;
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
     nd   = (PetscInt)size;
     ierr = PetscMalloc1(ndpar,&is1);CHKERRQ(ierr);
     ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);

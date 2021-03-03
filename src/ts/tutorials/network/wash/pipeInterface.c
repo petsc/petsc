@@ -205,7 +205,7 @@ PetscErrorCode JunctionCreateJacobian(DM dm,PetscInt v,Mat *Jin,Mat *J[])
   ierr = PetscCalloc1(2*nedges+1,&Jv);CHKERRQ(ierr);
 
   /* Create dense zero block for this vertex: J[0] = Jacobian(v,v) */
-  ierr = DMNetworkGetNumVariables(dm,v,&M);CHKERRQ(ierr);
+  ierr = DMNetworkGetComponent(dm,v,-1,NULL,NULL,&M);CHKERRQ(ierr);
   if (M !=2) SETERRQ1(PETSC_COMM_SELF,1,"M != 2",M);
   ierr = PetscMalloc3(M,&rows,M,&cols,M*M,&zeros);CHKERRQ(ierr);
   ierr = PetscArrayzero(zeros,M*M);CHKERRQ(ierr);
@@ -228,7 +228,7 @@ PetscErrorCode JunctionCreateJacobian(DM dm,PetscInt v,Mat *Jin,Mat *J[])
     } else {
       /* create J(v,e) */
       ierr = MatCreate(PETSC_COMM_SELF,&Jv[2*e+1]);CHKERRQ(ierr);
-      ierr = DMNetworkGetNumVariables(dm,edges[e],&N);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponent(dm,edges[e],-1,NULL,NULL,&N);CHKERRQ(ierr);
       ierr = MatSetSizes(Jv[2*e+1],PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
       ierr = MatSetFromOptions(Jv[2*e+1]);CHKERRQ(ierr);
       ierr = MatSetOption(Jv[2*e+1],MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);

@@ -1,18 +1,18 @@
-    0 KSP Residual norm 7.280770540237e-01 
-    1 KSP Residual norm 3.337812721729e-01 
-    2 KSP Residual norm 8.313739299774e-02 
-    3 KSP Residual norm 5.251831933856e-02 
-    4 KSP Residual norm 1.542615245853e-05 
-    5 KSP Residual norm 9.020985913821e-08 
-    0 KSP Residual norm 9.231724776328e-03 
-    1 KSP Residual norm 5.040032789111e-03 
-    2 KSP Residual norm 1.891976920888e-03 
-    3 KSP Residual norm 8.513155336232e-08 
-    0 KSP Residual norm 1.452666856494e-05 
-    1 KSP Residual norm 1.038508253259e-05 
-    2 KSP Residual norm 5.428066742752e-06 
-    3 KSP Residual norm 5.770967845820e-07 
-    4 KSP Residual norm 3.353276423895e-12 
+    0 KSP Residual norm 7.280770540237e-01
+    1 KSP Residual norm 3.337812721729e-01
+    2 KSP Residual norm 8.313739299774e-02
+    3 KSP Residual norm 5.251831933856e-02
+    4 KSP Residual norm 1.542615245853e-05
+    5 KSP Residual norm 9.020985913821e-08
+    0 KSP Residual norm 9.231724776328e-03
+    1 KSP Residual norm 5.040032789111e-03
+    2 KSP Residual norm 1.891976920888e-03
+    3 KSP Residual norm 8.513155336232e-08
+    0 KSP Residual norm 1.452666856494e-05
+    1 KSP Residual norm 1.038508253259e-05
+    2 KSP Residual norm 5.428066742752e-06
+    3 KSP Residual norm 5.770967845820e-07
+    4 KSP Residual norm 3.353276423895e-12
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -37,6 +37,7 @@ SNES Object: 1 MPI processes
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
     type: jacobi
+      type DIAGONAL
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: mffd

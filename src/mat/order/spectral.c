@@ -101,7 +101,9 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
 PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type, IS *row, IS *col)
 {
   Mat             L;
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_ESSL)
   PetscInt       *perm, tmp;
+#endif
   const PetscReal eps = 1.0e-12;
   PetscErrorCode  ierr;
 
@@ -122,13 +124,16 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     ierr = VecDestroy(&y);CHKERRQ(ierr);
   }
   /* Compute Fiedler vector (right now, all eigenvectors) */
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "Spectral partitioning does not support complex numbers");
+#elif defined(PETSC_HAVE_ESSL)
+  SETERRQ(PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "Spectral partitioning does not support ESSL Lapack Routines");
+#else
   {
     Mat          LD;
     PetscScalar *a;
     PetscReal   *realpart, *imagpart, *eigvec, *work;
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_ESSL)
     PetscReal    sdummy;
-#endif
     PetscBLASInt bn, bN, lwork = 0, lierr, idummy;
     PetscInt     n, i, evInd;
 
@@ -141,13 +146,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     ierr = PetscBLASIntCast(1,&idummy);CHKERRQ(ierr);
     ierr = PetscMalloc4(n,&realpart,n,&imagpart,n*n,&eigvec,lwork,&work);CHKERRQ(ierr);
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-#ifdef PETSC_USE_COMPLEX
-    SETERRQ(PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "Spectral partitioning does not support complex numbers");
-#elif defined(PETSC_HAVE_ESSL)
-    SETERRQ(PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "Spectral partitioning does not support ESSL Lapack Routines");
-#else
-    PetscStackCall("LAPACKgeev", LAPACKgeev_("N","V",&bn,a,&bN,realpart,imagpart,&sdummy,&idummy,eigvec,&bN,work,&lwork,&lierr));
-#endif
+    PetscStackCallBLAS("LAPACKgeev", LAPACKgeev_("N","V",&bn,a,&bN,realpart,imagpart,&sdummy,&idummy,eigvec,&bN,work,&lwork,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     ierr = MatDenseRestoreArray(LD,&a);CHKERRQ(ierr);
@@ -179,6 +178,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
 
     ierr = PetscFree4(realpart,imagpart,eigvec,work);CHKERRQ(ierr);
     ierr = MatDestroy(&L);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
-  PetscFunctionReturn(0);
+#endif
 }

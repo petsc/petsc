@@ -70,7 +70,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   lambda = bmrm->lambda;
 
   /* Check Stopping Condition */
@@ -111,7 +111,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
     ierr = VecDot(W, G, &bt);CHKERRQ(ierr);
     bt = f - bt;
 
-    /* First gather the gradient to the master node */
+    /* First gather the gradient to the rank-0 node */
     ierr = VecScatterBegin(bmrm->scatter, G, bmrm->local_w, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(bmrm->scatter, G, bmrm->local_w, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -163,8 +163,8 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
     ierr = TaoComputeObjectiveAndGradient(tao, W, &f, G);CHKERRQ(ierr);
 
-    ierr = MPI_Bcast(&jtwt,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
-    ierr = MPI_Bcast(&reg,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&jtwt,1,MPIU_REAL,0,comm);CHKERRMPI(ierr);
+    ierr = MPI_Bcast(&reg,1,MPIU_REAL,0,comm);CHKERRMPI(ierr);
 
     jw = reg + f;                                       /* J(w) = regularizer + Remp(w) */
     if (jw < min_jw) min_jw = jw;

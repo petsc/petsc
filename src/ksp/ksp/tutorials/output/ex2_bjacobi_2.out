@@ -1,8 +1,8 @@
-  0 KSP Residual norm 5.18566 
-  1 KSP Residual norm 0.882327 
-  2 KSP Residual norm 0.232433 
-  3 KSP Residual norm 0.0193881 
-  4 KSP Residual norm 0.000403063 
+  0 KSP Residual norm 5.18566
+  1 KSP Residual norm 0.882327
+  2 KSP Residual norm 0.232433
+  3 KSP Residual norm 0.0193881
+  4 KSP Residual norm 0.000403063
 KSP Object: 4 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -25,8 +25,9 @@ PC Object: 4 MPI processes
     using PRECONDITIONED norm type for convergence test
   PC Object: (sub_) 2 MPI processes
     type: jacobi
+      type DIAGONAL
     linear system matrix = precond matrix:
-    Mat Object: 2 MPI processes
+    Mat Object: (sub_) 2 MPI processes
       type: mpiaij
       rows=28, cols=28
       total: nonzeros=118, allocated nonzeros=154

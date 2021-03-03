@@ -18,7 +18,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
   PetscBool      hasop,flg1,flg2,set,flg3;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
   if (pc->pmat) {
     ierr = MatHasOperation(pc->pmat,MATOP_GET_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
     if (size == 1) {
@@ -945,6 +945,9 @@ PetscErrorCode PCGetFailedReasonRank(PC pc,PCFailedReason *reason)
   PetscFunctionReturn(0);
 }
 
+/*  Next line needed to deactivate KSP_Solve logging */
+#include <petsc/private/kspimpl.h>
+
 /*
       a setupcall of 0 indicates never setup,
                      1 indicates has been previously setup
@@ -987,8 +990,8 @@ PetscErrorCode  PCSetUp(PC pc)
     PetscFunctionReturn(0);
   } else {
     if (matnonzerostate > pc->matnonzerostate) {
-       ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
-       pc->flag = DIFFERENT_NONZERO_PATTERN;
+      ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
+      pc->flag = DIFFERENT_NONZERO_PATTERN;
     } else {
       ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
       pc->flag = SAME_NONZERO_PATTERN;
@@ -1006,7 +1009,12 @@ PetscErrorCode  PCSetUp(PC pc)
   ierr = MatSetErrorIfFailure(pc->mat,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (pc->ops->setup) {
+    /* do not log solves and applications of preconditioners while constructing preconditioners; perhaps they should be logged separately from the regular solves */
+    ierr = PetscLogEventDeactivatePush(KSP_Solve);CHKERRQ(ierr);
+    ierr = PetscLogEventDeactivatePush(PC_Apply);CHKERRQ(ierr);
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
+    ierr = PetscLogEventDeactivatePop(KSP_Solve);CHKERRQ(ierr);
+    ierr = PetscLogEventDeactivatePop(PC_Apply);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (!pc->setupcalled) pc->setupcalled = 1;
@@ -1762,7 +1770,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     char        type[256];
 
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
     if (!rank) {
       ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
       ierr = PetscStrncpy(type,((PetscObject)pc)->type_name,256);CHKERRQ(ierr);
@@ -1797,7 +1805,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     PetscMPIInt rank;
 
     ierr = PetscObjectName((PetscObject)pc);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
     if (!((PetscObject)pc)->amsmem && !rank) {
       ierr = PetscObjectViewSAWs((PetscObject)pc,viewer);CHKERRQ(ierr);
     }

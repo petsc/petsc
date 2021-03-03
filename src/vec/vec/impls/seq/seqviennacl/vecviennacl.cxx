@@ -1077,7 +1077,7 @@ PETSC_EXTERN PetscErrorCode  VecCreateSeqViennaCLWithArray(MPI_Comm comm,PetscIn
   ierr = VecCreate(comm,V);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,n,n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*V,bs);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   ierr = VecCreate_SeqViennaCL_Private(*V,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1120,7 +1120,7 @@ PetscErrorCode  VecCreateSeqViennaCLWithArrays(MPI_Comm comm,PetscInt bs,PetscIn
 
   PetscFunctionBegin;
 
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
 
   // set V's viennaclvec to be viennaclvec, do not allocate memory on host yet.
@@ -1252,6 +1252,37 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecGetArray_SeqViennaCL(Vec v,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (v->offloadmask == PETSC_OFFLOAD_GPU) {
+    ierr = VecViennaCLCopyFromGPU(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecViennaCLAllocateCheckHost(v);CHKERRQ(ierr);
+  }
+  *a = *((PetscScalar**)v->data);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreArray_SeqViennaCL(Vec v,PetscScalar **a)
+{
+  PetscFunctionBegin;
+  v->offloadmask = PETSC_OFFLOAD_CPU;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayWrite_SeqViennaCL(Vec v,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecViennaCLAllocateCheckHost(v);CHKERRQ(ierr);
+  *a   = *((PetscScalar**)v->data);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode VecBindToCPU_SeqAIJViennaCL(Vec V,PetscBool flg)
 {
   PetscErrorCode ierr;
@@ -1319,6 +1350,9 @@ static PetscErrorCode VecBindToCPU_SeqAIJViennaCL(Vec V,PetscBool flg)
     V->ops->resetarray      = VecResetArray_SeqViennaCL;
     V->ops->destroy         = VecDestroy_SeqViennaCL;
     V->ops->duplicate       = VecDuplicate_SeqViennaCL;
+    V->ops->getarraywrite   = VecGetArrayWrite_SeqViennaCL;
+    V->ops->getarray        = VecGetArray_SeqViennaCL;
+    V->ops->restorearray    = VecRestoreArray_SeqViennaCL;
   }
   PetscFunctionReturn(0);
 }
@@ -1329,7 +1363,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRMPI(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQVIENNACL on more than one process");
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQVIENNACL);CHKERRQ(ierr);
@@ -1623,7 +1657,7 @@ PetscErrorCode VecCreate_SeqViennaCL_Private(Vec V,const ViennaCLVector *array)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRMPI(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQVIENNACL on more than one process");
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQVIENNACL);CHKERRQ(ierr);

@@ -1053,7 +1053,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
 
   /* get the communicator and the rank of the processor */
   ierr = PetscObjectGetComm((PetscObject)snes, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
 
   if (param->output_to_file) { /* send output to binary file */
     ierr = VecCreate(comm, &pars);CHKERRQ(ierr);

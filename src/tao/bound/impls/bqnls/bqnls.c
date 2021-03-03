@@ -92,7 +92,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)
   PetscFunctionBegin;
   ierr = TaoCreate_BQNK(tao);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, "unused");CHKERRQ(ierr);
-  tao->ops->solve = TaoSolve_BNLS;
   tao->ops->setfromoptions = TaoSetFromOptions_BQNLS;
 
   bnk = (TAO_BNK*)tao->data;
@@ -101,6 +100,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)
   bnk->computestep = TaoBQNLSComputeStep;
 
   bqnk = (TAO_BQNK*)bnk->ctx;
+  bqnk->solve = TaoSolve_BNLS;
   ierr = MatSetOptionsPrefix(bqnk->B, "tao_bqnls_");CHKERRQ(ierr);
   ierr = MatSetType(bqnk->B, MATLMVMBFGS);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -78,27 +78,27 @@ info:
 	-@echo "Using configuration flags:"
 	-@grep "\#define " ${PETSCCONF_H}
 	-@echo "-----------------------------------------"
-	-@echo "Using C compile: ${PETSC_CCOMPILE}"
+	-@echo "Using C compile: ${PETSC_CCOMPILE_SINGLE}"
 	-@if [  "${MPICC_SHOW}" != "" ]; then \
              printf  "mpicc -show: %b\n" "${MPICC_SHOW}";\
           fi; \
         printf  "C compiler version: %b\n" "${C_VERSION}"; \
-        if [ "${PETSC_CXXCOMPILE}" != "" ]; then \
-        echo "Using C++ compile: ${PETSC_CXXCOMPILE}";\
+        if [ "${CXX}" != "" ]; then \
+        echo "Using C++ compile: ${PETSC_CXXCOMPILE_SINGLE}";\
         if [ "${MPICXX_SHOW}" != "" ]; then \
                printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
             fi;\
             printf  "C++ compiler version: %b\n" "${Cxx_VERSION}"; \
           fi
 	-@if [ "${FC}" != "" ]; then \
-	   echo "Using Fortran compile: ${PETSC_FCOMPILE}";\
+	   echo "Using Fortran compile: ${PETSC_FCOMPILE_SINGLE}";\
            if [ "${MPIFC_SHOW}" != "" ]; then \
              printf "mpif90 -show: %b\n" "${MPIFC_SHOW}"; \
            fi; \
              printf  "Fortran compiler version: %b\n" "${FC_VERSION}"; \
          fi
 	-@if [ "${CUDAC}" != "" ]; then \
-	   echo "Using CUDA compile: ${PETSC_CUCOMPILE}";\
+	   echo "Using CUDA compile: ${PETSC_CUCOMPILE_SINGLE}";\
          fi
 	-@if [ "${CLANGUAGE}" = "CXX" ]; then \
            echo "Using C++ compiler to compile PETSc";\
@@ -384,7 +384,7 @@ docsetdate: chk_petscdir
         version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
         version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
         if  [ $${version_release} = 0 ]; then \
-          petscversion=petsc-master; \
+          petscversion=petsc-main; \
           export petscversion; \
         elif [ $${version_release} = 1 ]; then \
           petscversion=petsc-$${version_major}.$${version_minor}.$${version_subminor}; \
@@ -419,14 +419,18 @@ PETSC_SPHINX_ENV=${PETSC_ARCH}/sphinx_docs_env
 PETSC_SPHINX_DEST=docs/sphinx_docs
 
 sphinx-docs-all: sphinx-docs-manual sphinx-docs-html
+	-@cd src/binding/petsc4py ; make docs
+
+sphinx-docs-fast: chk_loc sphinx-docs-env
+	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
+		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} html
 
 sphinx-docs-html: chk_loc allcite sphinx-docs-env
 	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
 		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} html
 
 sphinx-docs-manual: chk_loc sphinx-docs-env
-	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
-		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} latexpdf
+	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT}  BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} latexpdf
 	@mv ${LOC}/${PETSC_SPHINX_DEST}/latex/manual.pdf ${LOC}/docs/manual.pdf
 	@${RM} -rf ${LOC}/${PETSC_SPHINX_DEST}/latex
 
@@ -479,24 +483,24 @@ srchtml:
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
 dist:
-	${PETSC_DIR}/lib/petsc/bin/maint/builddist ${PETSC_DIR} master
+	${PETSC_DIR}/lib/petsc/bin/maint/builddist ${PETSC_DIR} main
 
 # This target works only if you can do 'ssh petsc@login.mcs.anl.gov'
 # also copy the file over to ftp site.
 web-snapshot:
-	@if [ ! -f "${HOME}/petsc-master.tar.gz" ]; then \
-	    echo "~/petsc-master.tar.gz missing! cannot update petsc-master snapshot on mcs-web-site"; \
+	@if [ ! -f "${HOME}/petsc-main.tar.gz" ]; then \
+	    echo "~/petsc-main.tar.gz missing! cannot update petsc-main snapshot on mcs-web-site"; \
 	  else \
-            echo "updating petsc-master snapshot on mcs-web-site"; \
+            echo "updating petsc-main snapshot on mcs-web-site"; \
 	    tmpdir=`mktemp -d -t petsc-doc.XXXXXXXX`; \
-	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-master.tar.gz; \
-	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-master/ \
-              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-master ;\
-	    /bin/cp -f /home/petsc/petsc-master.tar.gz /mcs/ftp/pub/petsc/petsc-master.tar.gz;\
+	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-main.tar.gz; \
+	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-main/ \
+              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-main ;\
+	    /bin/cp -f /home/petsc/petsc-main.tar.gz /mcs/ftp/pub/petsc/petsc-main.tar.gz;\
 	    ${RM} -rf $${tmpdir} ;\
 	  fi
 
-# build the tarfile - and then update petsc-master snapshot on mcs-web-site
+# build the tarfile - and then update petsc-main snapshot on mcs-web-site
 update-web-snapshot: dist web-snapshot
 
 # This target updates website main pages

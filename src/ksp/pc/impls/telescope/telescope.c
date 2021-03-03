@@ -61,19 +61,19 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f,MPI_Comm comm_c,Petsc
   PetscFunctionBegin;
   if (comm_f == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"comm_f cannot be MPI_COMM_NULL");
 
-  ierr = MPI_Comm_group(comm_f,&group_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_group(comm_f,&group_f);CHKERRMPI(ierr);
   if (comm_c != MPI_COMM_NULL) {
-    ierr = MPI_Comm_group(comm_c,&group_c);CHKERRQ(ierr);
+    ierr = MPI_Comm_group(comm_c,&group_c);CHKERRMPI(ierr);
   }
 
-  ierr = MPI_Comm_size(comm_f,&size_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm_f,&size_f);CHKERRMPI(ierr);
   if (comm_c != MPI_COMM_NULL) {
-    ierr = MPI_Comm_size(comm_c,&size_c);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm_c,&size_c);CHKERRMPI(ierr);
   }
 
   /* check not all comm_c's are NULL */
   size_c_sum = size_c;
-  ierr = MPI_Allreduce(MPI_IN_PLACE,&size_c_sum,1,MPI_INT,MPI_SUM,comm_f);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(MPI_IN_PLACE,&size_c_sum,1,MPI_INT,MPI_SUM,comm_f);CHKERRMPI(ierr);
   if (size_c_sum == 0) valid = 0;
 
   /* check we can map at least 1 rank in comm_c to comm_f */
@@ -100,15 +100,15 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f,MPI_Comm comm_c,Petsc
   }
   if (count == size_f) valid = 0;
 
-  ierr = MPI_Allreduce(MPI_IN_PLACE,&valid,1,MPIU_INT,MPI_MIN,comm_f);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(MPI_IN_PLACE,&valid,1,MPIU_INT,MPI_MIN,comm_f);CHKERRMPI(ierr);
   if (valid == 1) *isvalid = PETSC_TRUE;
   else *isvalid = PETSC_FALSE;
 
   ierr = PetscFree(ranks_f);CHKERRQ(ierr);
   ierr = PetscFree(ranks_c);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&group_f);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&group_f);CHKERRMPI(ierr);
   if (comm_c != MPI_COMM_NULL) {
-    ierr = MPI_Group_free(&group_c);CHKERRQ(ierr);
+    ierr = MPI_Group_free(&group_c);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -341,8 +341,8 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
       if (sred->psubcomm) {
         comm = PetscSubcommParent(sred->psubcomm);
         subcomm = PetscSubcommChild(sred->psubcomm);
-        ierr = MPI_Comm_size(comm,&comm_size);CHKERRQ(ierr);
-        ierr = MPI_Comm_size(subcomm,&subcomm_size);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(comm,&comm_size);CHKERRMPI(ierr);
+        ierr = MPI_Comm_size(subcomm,&subcomm_size);CHKERRMPI(ierr);
 
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"petsc subcomm: parent comm size reduction factor = %D\n",sred->redfactor);CHKERRQ(ierr);
@@ -494,8 +494,8 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
     sred->pctelescope_matnullspacecreate_type = PCTelescopeMatNullSpaceCreate_dmda;
     sred->pctelescope_reset_type              = PCReset_Telescope_dmda;
     break;
-  case TELESCOPE_DMPLEX: SETERRQ(comm,PETSC_ERR_SUP,"Support for DMPLEX is currently not available");
-    break;
+  case TELESCOPE_DMPLEX:
+    SETERRQ(comm,PETSC_ERR_SUP,"Support for DMPLEX is currently not available");
   case TELESCOPE_COARSEDM:
     pc->ops->apply                            = PCApply_Telescope_CoarseDM;
     pc->ops->applyrichardson                  = PCApplyRichardson_Telescope_CoarseDM;
@@ -504,8 +504,8 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
     sred->pctelescope_matnullspacecreate_type = NULL; /* PCTelescopeMatNullSpaceCreate_CoarseDM; */
     sred->pctelescope_reset_type              = PCReset_Telescope_CoarseDM;
     break;
-  default: SETERRQ(comm,PETSC_ERR_SUP,"Support only provided for: repartitioning an operator; repartitioning a DMDA; or using a coarse DM");
-    break;
+  default:
+    SETERRQ(comm,PETSC_ERR_SUP,"Support only provided for: repartitioning an operator; repartitioning a DMDA; or using a coarse DM");
   }
 
   /* subcomm definition */
@@ -528,18 +528,18 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       comm_fine = PetscObjectComm((PetscObject)dm);
       ierr = DMGetCoarseDM(dm,&dm_coarse_partition);CHKERRQ(ierr);
       if (dm_coarse_partition) { cnt = 1; }
-      ierr = MPI_Allreduce(MPI_IN_PLACE,&cnt,1,MPI_INT,MPI_SUM,comm_fine);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(MPI_IN_PLACE,&cnt,1,MPI_INT,MPI_SUM,comm_fine);CHKERRMPI(ierr);
       if (cnt == 0) SETERRQ(comm_fine,PETSC_ERR_SUP,"Zero instances of a coarse DM were found");
 
-      ierr = MPI_Comm_size(comm_fine,&csize_fine);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(comm_fine,&csize_fine);CHKERRMPI(ierr);
       if (dm_coarse_partition) {
         comm_coarse_partition = PetscObjectComm((PetscObject)dm_coarse_partition);
-        ierr = MPI_Comm_size(comm_coarse_partition,&csize_coarse_partition);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(comm_coarse_partition,&csize_coarse_partition);CHKERRMPI(ierr);
       }
 
       cs[0] = csize_fine;
       cs[1] = csize_coarse_partition;
-      ierr = MPI_Allreduce(cs,csg,2,MPI_INT,MPI_MAX,comm_fine);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(cs,csg,2,MPI_INT,MPI_MAX,comm_fine);CHKERRMPI(ierr);
       if (csg[0] == csg[1]) SETERRQ(comm_fine,PETSC_ERR_SUP,"Coarse DM uses the same size communicator as the parent DM attached to the PC");
 
       ierr = PCTelescopeTestValidSubcomm(comm_fine,comm_coarse_partition,&isvalidsubcomm);CHKERRQ(ierr);
@@ -746,7 +746,7 @@ static PetscErrorCode PCSetFromOptions_Telescope(PetscOptionItems *PetscOptionsO
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"Telescope options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-pc_telescope_subcomm_type","Subcomm type (interlaced or contiguous)","PCTelescopeSetSubcommType",PetscSubcommTypes,(PetscEnum)sred->subcommtype,(PetscEnum*)&subcommtype,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -804,7 +804,7 @@ static PetscErrorCode PCTelescopeSetReductionFactor_Telescope(PC pc,PetscInt fac
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
   if (fact <= 0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be positive",fact);
   if (fact > size) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be <= comm.size",fact);
   red->redfactor = fact;

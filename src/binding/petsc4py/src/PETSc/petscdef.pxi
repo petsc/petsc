@@ -40,7 +40,14 @@ cdef extern from * nogil:
         PETSC_COPY_VALUES
         PETSC_OWN_POINTER
         PETSC_USE_POINTER
-    
+
+    ctypedef enum PetscOffloadMask:
+        PETSC_OFFLOAD_UNALLOCATED
+        PETSC_OFFLOAD_CPU
+        PETSC_OFFLOAD_GPU
+        PETSC_OFFLOAD_BOTH
+        PETSC_OFFLOAD_VECKOKKOS
+
 
 cdef extern from * nogil:
 

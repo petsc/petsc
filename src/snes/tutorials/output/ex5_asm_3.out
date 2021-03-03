@@ -48,32 +48,32 @@ SNES Object: 1 MPI processes
       total subdomain blocks = 4, amount of overlap = 0
       restriction/interpolation type - RESTRICT
       Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
-      KSP Object: (sub_) 1 MPI processes
-        type: preonly
-        maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-        left preconditioning
-        using NONE norm type for convergence test
-      PC Object: (sub_) 1 MPI processes
-        type: lu
-          out-of-place factorization
-          tolerance for zero pivot 2.22045e-14
-          matrix ordering: nd
-          factor fill ratio given 5., needed 1.27273
-            Factored matrix follows:
-              Mat Object: 1 MPI processes
-                type: seqaij
-                rows=8, cols=8
-                package used to perform factorization: petsc
-                total: nonzeros=28, allocated nonzeros=28
-                  not using I-node routines
-        linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
-          type: seqaij
-          rows=8, cols=8
-          total: nonzeros=22, allocated nonzeros=22
-          total number of mallocs used during MatSetValues calls=0
-            not using I-node routines
+    KSP Object: (sub_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (sub_) 1 MPI processes
+      type: lu
+        out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 5., needed 1.27273
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=8, cols=8
+              package used to perform factorization: petsc
+              total: nonzeros=28, allocated nonzeros=28
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (sub_) 1 MPI processes
+        type: seqaij
+        rows=8, cols=8
+        total: nonzeros=22, allocated nonzeros=22
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij

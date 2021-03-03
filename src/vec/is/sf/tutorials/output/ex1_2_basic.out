@@ -1,6 +1,5 @@
 PetscSF Object: 4 MPI processes
   type: basic
-    sort=rank-order
   [0] Number of roots=3, leaves=2, remote ranks=2
   [0] 0 <- (3,1)
   [0] 1 <- (1,0)
@@ -40,6 +39,7 @@ PetscSF Object: 4 MPI processes
   [3]    2 <- 2
   [3] 2: 1 edges
   [3]    0 <- 1
+  MultiSF sort=rank-order
 ## Pre-Reduce Rootdata
 [0] 0: 100 101 102
 [1] 0: 200 201

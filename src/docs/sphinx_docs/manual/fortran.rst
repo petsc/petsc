@@ -25,7 +25,7 @@ Fortran Include Files
 ^^^^^^^^^^^^^^^^^^^^^
 
 The Fortran include files for PETSc are located in the directory
-``${PETSC_DIR}/include/petsc/finclude`` and should be used via
+``$PETSC_DIR/include/petsc/finclude`` and should be used via
 statements such as the following:
 
 .. code-block:: fortran
@@ -100,7 +100,7 @@ machines change all the letters in Fortran routine names to capitals.
 PETSc provides two macros (defined in C/C++) to help write portable code
 that mixes C/C++ and Fortran. They are ``PETSC_HAVE_FORTRAN_UNDERSCORE``
 and ``PETSC_HAVE_FORTRAN_CAPS`` , which are defined in the file
-``${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h``. The macros are used,
+``$PETSC_DIR/$PETSC_ARCH/include/petscconf.h``. The macros are used,
 for example, as follows:
 
 .. code-block:: fortran

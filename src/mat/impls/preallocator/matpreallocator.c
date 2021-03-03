@@ -5,6 +5,7 @@ typedef struct {
   PetscHSetIJ ht;
   PetscInt   *dnz, *onz;
   PetscInt   *dnzu, *onzu;
+  PetscBool   nooffproc;
 } Mat_Preallocator;
 
 PetscErrorCode MatDestroy_Preallocator(Mat A)
@@ -95,15 +96,18 @@ PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
 
 PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
 {
-  PetscScalar   *val;
-  PetscInt      *row, *col;
-  PetscInt       i, j, rstart, ncols, flg;
-  PetscMPIInt    n;
-  PetscErrorCode ierr;
+  PetscScalar      *val;
+  PetscInt         *row, *col;
+  PetscInt         i, j, rstart, ncols, flg;
+  PetscMPIInt      n;
+  Mat_Preallocator *p = (Mat_Preallocator *) A->data;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  p->nooffproc = PETSC_TRUE;
   while (1) {
     ierr = MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg);CHKERRQ(ierr);
+    if (flg) p->nooffproc = PETSC_FALSE;
     if (!flg) break;
 
     for (i = 0; i < n;) {
@@ -119,6 +123,7 @@ PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
     }
   }
   ierr = MatStashScatterEnd_Private(&A->stash);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,&p->nooffproc,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -145,6 +150,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   ierr = MatXAIJSetPreallocation(A, bs, p->dnz, p->onz, p->dnzu, p->onzu);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, p->nooffproc);CHKERRQ(ierr);
   if (fill) {
     PetscHashIter  hi;
     PetscHashIJKey key;

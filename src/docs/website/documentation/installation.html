@@ -105,7 +105,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <li><b>Read the error message from ./configure!</b></li>
         <li>Read help <code>./configure --help</code></li>
         <li>Refer to <a href="#exampleusage">example usages</a> (e.g., build PETSc without a Fortran compiler)</li>
-        <li><i><b>make</i></b> problems? Just copy/paste <i><b>make</i></b> command printed by configure including PETSC_DIR and PETSC_ARCH options</li>
+        <li><i><b>make</i></b> problems? Just copy/paste <i><b>make</i></b> command printed by configure including any PETSC_DIR and PETSC_ARCH options</li>
         <li> Check the <a href="https://www.mcs.anl.gov/petsc/documentation/bugreporting.html">bug-reporting</a> section</li>
       </ul>
 
@@ -125,10 +125,10 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <li><a href="#external">External packages</a></li>
         <li><a href="#blaslapack">BLAS and LAPACK problems</a></li>
         <li><a href="#mpi">MPI problems / I don't want MPI</a></li>
-        <li><a href="#windows">Microsoft Windows installation</a></li>
-        <li><a href="#root">Installing PETSc in system directories where sudo or root privileges are required / For package managers</a></li>
-        <li><a href="#module">Installing on machines that use modules</a></li>
+        <li><a href="#root">Installation location: in-place or out-of-place.</li>
+        <li><a href="#envvars">Environmental variables PETSC_DIR and PETSC_ARCH</li>
         <li><a href="#cross">Installing on machine requiring cross compiler or a job scheduler</a></li>
+        <li><a href="#windows">Microsoft Windows installation</a></li>
         <li><a href="#usingtau">Installing with TAU instrumentation package</a></li>
         <li><a href="#CUDA">Installing PETSc to use NVIDIA GPUs (aka CUDA)</a></li>
         <li><a href="#Kokkos">Installing PETSc with Kokkos</a></li>
@@ -174,8 +174,15 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           </li>
 
           <li>
-            If BLAS, LAPACK, MPI sources (in &quot;-devel&quot; packages in most distros) are already installed in default system/compiler locations and mpicc,
-            mpif90, mpiexec are available via PATH - configure does not require any additional options.
+            Same as above - but install in a user specified (prefix) location.
+            <ul>
+              <li>./configure --prefix=/home/user/soft/petsc-install --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich</li>
+            </ul>
+          </li>
+
+          <li>
+            If BLAS, LAPACK, MPI sources (in &quot;-devel&quot; packages in most distributions) are already installed in default system/compiler locations and mpicc,
+            mpif90, mpiexec are available in the users PATH - configure does not require any additional options.
             <ul>
               <li>./configure</li>
             </ul>
@@ -194,6 +201,12 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
             </ul>
           </li>
 
+          <li>
+            Build PETSc4py with PETSc:
+            <ul>
+              <li>./configure --download-petsc4py</li>
+            </ul>
+          </li>
           <li>
             Build Complex version of PETSc [using c++ compiler]:
             <ul>
@@ -216,84 +229,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
       <hr>
 
-      <div id="vars">
 
-        PETSC_DIR and PETSC_ARCH  control the
-        configuration and build locations of PETSc. These variables can be set as
-        envirnment variables or specified on the command line [to both configure and make]
-
-        <ul>
-          <li>
-            specify enviornment variable for csh/tcsh [can be specified in ~/.cshrc]
-            <ul>
-              <li>setenv PETSC_DIR /home/balay/petsc-3.14.0</li>
-              <li>setenv PETSC_ARCH linux-gnu-c-debug</li>
-            </ul>
-          </li>
-
-          <li>
-            specify enviornment variable for bash [can be specified in ~/.bashrc]
-            <ul>
-              <li>export PETSC_DIR=/home/balay/petsc-3.14.0</li>
-              <li>export PETSC_ARCH=linux-gnu-c-debug</li>
-            </ul>
-          </li>
-
-          <li>
-            specify variable on commandline to configure
-            <ul>
-              <li>./configure PETSC_DIR=/home/balay/petsc-3.14.0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
-            </ul>
-          </li>
-
-          <li>
-            specify variables on command line to make
-            <ul>
-              <li>make PETSC_DIR=/home/balay/petsc-3.14.0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
-            </ul>
-          </li>
-        </ul>
-
-        <p>
-          <a class="def" name="PETSC_DIR">PETSC_DIR</a>
-          should point to the location of the PETSc
-          installation that is used. Multiple PETSc versions can
-          coexist on the same file-system. By changing PETSC_DIR
-          value, one can switch between these installed versions of
-          PETSc.
-        </p>
-
-        <p>
-          <span class="def">PETSC_ARCH</span>
-          gives a name to a specific configuration/build.
-          Configure uses this value to stores the generated configuration
-          makefiles in ${PETSC_DIR}/${PETSC_ARCH}. Make
-          uses this value to determine the location of these
-          makefiles [which internally help in locating the correct
-          include and library files].
-        </p>
-
-        <p>
-          Thus one can install multiple variants of PETSc libraries
-          - by providing different PETSC_ARCH values to each
-          configure build. Then one can switch between using these
-          variants of libraries [from make] by switching the
-          PETSC_ARCH value used.<br>
-        </p>
-
-        <p>
-          If configure doesn't find a PETSC_ARCH value [either in
-          env variable or command line option], it automatically
-          generates a default value and uses it. Also - if make
-          doesn't find a PETSC_ARCH environmental variable - it defaults to
-          the value used by last successful invocation of previous
-          configure.
-        </p>
-
-        <a href="#" target="_top">Return to Installation Instructions</a>
-      </div><!-- #vars -->
-
-      <hr>
 
       <div>
         <h3><a name="compilers">Compilers:</a></h3>
@@ -552,7 +488,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
         <ul>
           <li>
-            Configure will automatically look for blas/lapack in certain standard
+            Configure will automatically look for BLAS/LAPACK in certain standard
             locations, on most systems you should not need to provide any
             information about BLAS/LAPACK in the ./configure command.
           </li>
@@ -578,6 +514,8 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <b>Notes:</b>
 
         <ul>
+          <li> Additional information on the use of BLAS/LAPACK may be found in the <a href="https://docs.petsc.org/en/main/manual/">PETSc users manual</a>.
+          </li>
           <li> <h4> Intel MKL</h4>
             Intel provides BLAS/LAPACK via  the <a href="https://software.intel.com/en-us/mkl">MKL</a> library.
             It usually works from GNU/Intel compilers on Linux and Microsoft/Intel compilers on Microsoft Windows.
@@ -635,7 +573,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
                 <code>./config/confiure.py --with-cc=mpcc --with-fc=mpf90</code>
               </li>
 
-              <li>
+               <li>
                 If using MPICH which is already installed [perhaps using
                 myrinet/gm] then use [without specifying --with-cc=gcc etc.so
                 that configure picks up mpicc from mpi-dir]:<br>
@@ -714,6 +652,186 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
       <hr>
 
+
+      <div>
+        <h3><a name="root">Installation location: In-place or out-of-place</a></h3>
+
+        By default, PETSc does an in-place installation, meaning the libraries are kept in the same directories used to compile PETSc. This is particularly useful for
+        those application developers who follow the PETSc git repository <code>main</code> or <code>release</code> branches since rebuilds for updates are very quick and painless,
+        see <a href="saws.html">easyrebuild</a>.
+
+        <h4>Out-of-place installation with --prefix</h4>
+
+        To install the libraries and include files in another location use the --prefix option
+
+
+        <ul class="code">
+          <li>./configure --prefix=/home/userid/petsc-3.14.0  [other configure options]</li>
+        </ul>
+
+        The libraries and include files needed by the users will be located in <code>/home/userid/petsc-3.14.0/lib</code> and <code>/home/userid/petsc-3.14.0/include</code>.</p>
+
+        <strong>Installs in root location (uncommon).</strong>
+
+        <p>
+          If one wants to install PETSc in a common system
+          location like /usr/local or /opt that requires root access we suggest creating a directory for
+          PETSc  with user privileges, and then do the
+          PETSc install [as a <b>regular/non-root user</b>]. i.e.
+        </p>
+
+        <ul class="code">
+          <li>sudo mkdir /opt/petsc</li>
+          <li>sudo chown user:group /opt/petsc</li>
+          <li>cd /home/userid/petsc</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.14.0  [other configure options]</li>
+          <li>make</li>
+          <li>make install</li>
+        </ul>
+
+        If one prefers to use root access for the install they only need change the final line
+
+        <ul class="code">
+          <li>sudo make install</li>
+        </ul>
+
+        One should never run configure or make on any package using root access.</p>
+
+        <strong>Installs for package managers: using DESTDIR (very uncommon)</strong>
+
+        <ul class="code">
+          <li>./configure --prefix=/opt/petsc/petsc-3.14.0</li>
+          <li>make</li>
+          <li>make install DESTDIR=/tmp/petsc-pkg</li>
+          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.14.0]</li>
+        </ul>
+
+        <strong>Multiple installs using --prefix [and DESTDIR]:</strong></p>
+
+        Specify a different --prefix location for each configure of different options - at configure time. For example
+
+        <ul class="code">
+          <li>./configure --prefix=/opt/petsc/petsc-3.14.0-mpich --with-mpi-dir=/opt/mpich</li>
+          <li>make</li>
+          <li>make install [DESTDIR=/tmp/petsc-pkg]</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.14.0-openmpi --with-mpi-dir=/opt/openmpi</li>
+          <li>make</li>
+          <li>make install [DESTDIR=/tmp/petsc-pkg]</li>
+        </ul>
+
+        <h4>In-place installation</h4>
+
+        The PETSc libraries and generated included files are placed in the sub-directory off the current directory <code>$PETSC_ARCH</code>  which is either provided by the user with, for example,
+
+        <ul class="code">
+          <li>export PETSC_ARCH=arch-debug</li>
+          <li>./configure </li>
+          <li>make</li>
+          <li>export PETSC_ARCH=arch-opt</li>
+          <li>./configure --with-debugging=0</li>
+          <li>make</li>
+        </ul>
+
+        or
+        
+        <ul class="code">
+          <li> ./configure PETSC_ARCH=arch-debug</li>
+          <li>make</li>
+          <li> ./configure --with-debugging=0 PETSC_ARCH=arch-opt</li>
+          <li>make</li>
+        </ul>
+
+        If not provided <code>./configure</code> will generate a unique value automatically (for in-place non <code>--prefix</code> configurations only)
+        
+        <ul class="code">
+          <li> ./configure </li>
+          <li>make</li>
+          <li> ./configure --with-debugging=0 </li>
+          <li>make</li>
+        </ul>
+
+        produces the directories (on an Apple MacOS machine) <code>arch-darwin-c-debug</code> and <code>arch-darwin-c-opt</code>.</p>
+
+        The libraries and include files needed by the users are located off the current directory in  <code>$PETSC_ARCH/lib</code>, <code>include</code> and <code>$PETSC_ARCH/include</code></p>
+
+        <strong>Following main or release on Git</strong></p>
+
+        <a name="easyrebuild">If you follow the <code>main</code> or <code>release</code> branches off PETSc you can update your libraries with
+
+        <ul class="code">
+          <li> git pull</li>
+          <li>make libs</li>
+        </ul>
+
+        Most of the time this will work, if there are errors regarding compiling Fortran stubs you need to also do  
+        <ul class="code">
+          <li>make allfortranstubs</li>
+        </ul>
+
+       If there are large changes in PETSc's configure code when you pull you may need to rerun the <code>./configure</code> which you can do with 
+
+        <ul class="code">
+          <li>$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py</li>
+        </ul>
+
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div> 
+
+<hr>
+
+      <div>
+        <h3><a name="envvars">Environmental variables PETSC_DIR and PETSC_ARCH</h3>
+
+        Applications completely providing their own makefiles do not need to use <code>PETSC_DIR</code> or <code>PETSC_ARCH</code></p>
+
+        <code>PETSC_DIR</code> and <code>PETSC_ARCH</code> (in-place installs only)
+        are used by the PETSc <strong>makefiles</strong> to indicate which directory and configuration of PETSc to use when compiling examples or application code.
+        These variables can be set as
+        envirnment variables or specified on the command line 
+
+        <ul>
+          <li>
+            specify enviornment variable for csh/tcsh [can be specified in ~/.cshrc]
+            <ul>
+              <li>setenv PETSC_DIR /home/balay/petsc-3.14.0</li>
+              <li>setenv PETSC_ARCH linux-gnu-c-debug</li>
+            </ul>
+          </li>
+
+          <li>
+            specify environment variable for bash [can be specified in ~/.bashrc]
+            <ul>
+              <li>export PETSC_DIR=/home/balay/petsc-3.14.0</li>
+              <li>export PETSC_ARCH=linux-gnu-c-debug</li>
+            </ul>
+          </li>
+
+          <li>
+            specify variable on commandline (bash) to build an example in src/ts/tutorials
+            <ul>
+              <li>PETSC_ARCH=linux-gnu-c-debug make PETSC_DIR=/home/balay/petsc-3.14.0 ex1</li>
+            </ul>
+          </li>
+        </ul>
+
+
+        <p>
+          <code>PETSC_DIR</code>
+          should point to the location of the PETSc
+          installation. For out-of-place installations this is the <code>--prefix</code> location. For in-place installations it is the directory where you ran configure PETSc.
+        </p>
+
+        <p>
+          <code>PETSC_ARCH</code>
+          is only needed for in-place installations.
+        </p>
+
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div>
+
+<hr>
       <div>
         <h3><a name="windows">Microsoft Windows Installation:</a></h3>
 
@@ -753,6 +871,8 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
             Untested, let us know your experience.
           </li>
          </ul>
+
+      <hr>
 
 
         <h4>Installation With Microsoft/Intel Windows Compilers:</h4>
@@ -948,88 +1068,16 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
       <hr>
 
       <div>
-        <h3><a name="root">Installing PETSc in /usr/local or /opt where sudo or root privileges are required:</a></h3>
-
-        <p>
-          If one wants to install PETSc [with sources] in a common system
-          location like /usr/local or /opt, then we suggest creating a dir for
-          PETSc in the required location with user privileges, and then do the
-          PETSc install [as a <b>regular/non-root user</b>]. i.e.
-        </p>
-
-        <ul class="code">
-          <li>sudo mkdir /opt/petsc</li>
-          <li>sudo chown user:group /opt/petsc</li>
-          <li>cd /opt/petsc</li>
-          <li>tar -xzf petsc-3.14.0.tar.gz</li>
-          <li>cd petsc-3.14.0</li>
-          <li>./configure</li>
-          <li>make</li>
-        </ul>
-
-        <h4>Installing with --prefix: (we don't recommend this for users building PETSc for their own use)</h4>
-        <p>One can also use the GNU <b>--prefix</b> install mode.</p>
-
-        <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.14.0  [other configure options]</li>
-          <li>make</li>
-          <li>[sudo] make install</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.14.0 ex1</li>
-        </ul>
-
-        <p>
-          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.14.0</code> after
-          install is done - and <b>NOT</b> use PETSC_ARCH anymore.
-        </p>
-
-        <h4><a name="packagemanagers">Using DESTDIR with prefix install:</h4>
-
-        <p>
-          One can also use the GNU <b>DESTDIR</b> with a prefix install. This mode is generally
-          used by binary packagers. For example
-        </p>
-
-        <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.14.0</li>
-          <li>make</li>
-          <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.14.0]</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.14.0 ex1</li>
-        </ul>
-
-        <h4>Multiple installs using --prefix and DESTDIR:</h4>
-
-        Sepcify a different --prefix location/option for each build - at configure time. For example
-
-        <ul class="code">
-          <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.14.0-mpich --with-mpi-dir=/opt/mpich</li>
-          <li>make</li>
-          <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.14.0-openmpi --with-mpi-dir=/opt/openmpi</li>
-          <li>make</li>
-          <li>make install DESTDIR=/tmp/petsc-pkg</li>
-        </ul>
-
-        </p>
-
-        <a href="#" target="_top">Return to Installation Instructions</a>
-      </div> <!-- #root -->
-
-      <hr>
-
-      <div>
         <h3><a name="pkgconfig">PETSc ./configure automatically generates Pkgconfig and module files for each install</a></h3>
 
-       These can be found in ${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig/petsc.pc and ${PETSC_DIR}/${PETSC_ARCH}/lib/modules/${PETSC_VERSION}-${PETSC_ARCH}.
+       These can be found in ${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig/petsc.pc and ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/modules/${PETSC_VERSION}-${PETSC_ARCH}.
         The module file may need to be edited for your particular system. Note that if --prefix is used then $PETSC_ARCH is not included in the above directories
         nor is -${PETSC_ARCH} included in the module file name.
 
         </p>
 
         <a href="#" target="_top">Return to Installation Instructions</a>
-      </div> <!-- #root -->
+      </div> <!-- #pkgconfig -->
 
       <hr>
 

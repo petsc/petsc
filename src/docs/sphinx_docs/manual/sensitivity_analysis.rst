@@ -208,12 +208,12 @@ Examples include:
 
 -  a discrete adjoint sensitivity using ``TSCN`` (Crank-Nicolson)
    methods for DAEs with discontinuities
-   `TS Power Grid Stability Tutorial ex9busadj.c <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/stability/stability_9bus/ex9busadj.c.html>`__,
+   `TS Power Grid Stability Tutorial ex9busadj.c <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/stability_9bus/ex9busadj.c.html>`__,
 
 -  a DAE-constrained optimization using the discrete adjoint models of
    ``TSCN`` (Crank-Nicolson) methods for cost function with an integral
    term
-   `TS Power Grid Tutorial ex9busopt.c <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/stability/stability_9bus/ex9busopt.c.html>`__,
+   `TS Power Grid Tutorial ex9busopt.c <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/power_grid/stability_9bus/ex9busopt.c.html>`__,
 
 -  a discrete adjoint sensitivity using ``TSCN`` methods for a PDE
    problem
@@ -260,7 +260,7 @@ Some other useful options are listed below.
    trajectory for visualization. It stores the solution and the time,
    but no stage values. The binary files generated can be read into
    MATLAB via the script
-   ``${PETSC_DIR}/share/petsc/matlab/PetscReadBinaryTrajectory.m``.
+   ``$PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m``.
 
 Solving Steady-State Problems with Pseudo-Timestepping
 ------------------------------------------------------

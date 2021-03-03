@@ -100,7 +100,7 @@ M*/
 .seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
-     TSARKIMEX1BEE - First order Backward Euler represented as an ARK IMEX scheme with extrapolation as error estimator. This is a 3-stage method.
+     TSARKIMEX1BEE - First order backward Euler represented as an ARK IMEX scheme with extrapolation as error estimator. This is a 3-stage method.
 
      This method is aimed at starting the integration of implicit DAEs when explicit first-stage ARK methods are used.
 
@@ -680,6 +680,35 @@ unavailable:
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts,PetscBool *id)
+{
+  PetscErrorCode ierr;
+  Vec            Udot,Y1,Y2;
+  TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
+  PetscReal      norm;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicate(ts->vec_sol,&Udot);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&Y1);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&Y2);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,Udot,Y1,ark->imex);CHKERRQ(ierr);
+  ierr = VecSetRandom(Udot,NULL);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,Udot,Y2,ark->imex);CHKERRQ(ierr);
+  ierr = VecAXPY(Y2,-1.0,Y1);CHKERRQ(ierr);
+  ierr = VecAXPY(Y2,-1.0,Udot);CHKERRQ(ierr);
+  ierr = VecNorm(Y2,NORM_2,&norm);CHKERRQ(ierr);
+  if (norm < 100.0*PETSC_MACHINE_EPSILON) {
+    *id = PETSC_TRUE;
+  } else {
+    *id = PETSC_FALSE;
+    ierr = PetscInfo1((PetscObject)ts,"IFunction(Udot = random) - IFunction(Udot = 0) is not near Udot, %g, suspect mass matrix implied in IFunction() is not the identity as required\n",(double)norm);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&Udot);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y1);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y2);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
@@ -747,6 +776,11 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 
   if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage && ts->steprestart) {
     TS ts_start;
+    if (PetscDefined(USE_DEBUG)) {
+      PetscBool id = PETSC_FALSE;
+      ierr = TSARKIMEXTestMassIdentity(ts,&id);CHKERRQ(ierr);
+      if (!id) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"This scheme requires an identity mass matrix, however the TSIFunction you provide does not utilize an identity mass matrix");
+    }
     ierr = TSClone(ts,&ts_start);CHKERRQ(ierr);
     ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSSetTime(ts_start,ts->ptime);CHKERRQ(ierr);
@@ -1354,7 +1388,6 @@ static PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",arktype);
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
@@ -1395,7 +1428,7 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 
 /* ------------------------------------------------------------ */
 /*MC
-      TSARKIMEX - ODE and DAE solver using Additive Runge-Kutta IMEX schemes
+      TSARKIMEX - ODE and DAE solver using additive Runge-Kutta IMEX schemes
 
   These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly
   nonlinear such that it is expensive to solve with a fully implicit method. The user should provide the stiff part

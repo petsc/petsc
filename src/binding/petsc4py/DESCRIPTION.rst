@@ -5,33 +5,7 @@ Python bindings for PETSc.
 
 Install
 -------
-
-If you have a working MPI implementation and the ``mpicc`` compiler
-wrapper is on your search path, it highly recommended to install
-``mpi4py`` first::
-
-  $ pip install mpi4py
-
-Ensure you have NumPy installed::
-
-  $ pip install numpy
-
-and finally::
-
-  $ pip install petsc petsc4py
-
-You can also install the in-development version of petsc4py with::
-
-  $ pip install Cython numpy mpi4py
-  $ pip install --no-deps git+https://gitlab.com/petsc/petsc
-  $ pip install --no-deps git+https://gitlab.com/petsc/petsc4py
-
-or::
-
-  $ pip install Cython numpy mpi4py
-  $ pip install --no-deps https://gitlab.com/petsc/petsc/-/archive/master.tar.gz
-  $ pip install --no-deps https://gitlab.com/petsc/petsc4py/-/archive/master.tar.gz
-
+See :any:`petsc4py_install`
 
 Citations
 ---------

@@ -142,37 +142,24 @@
       PetscInt         dummy
 
       PetscInt         i
-
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
-! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal        f_v(0:1),x_v(0:1)
-      PetscOffset      f_i,x_i
+      PetscScalar, pointer, dimension(:)  :: x_v,f_v
 
       ierr = 0
 
 !     Get pointers to vector data
-      call VecGetArray(x,x_v,x_i,ierr)
-      CHKERRQ(ierr)
-      call VecGetArray(f,f_v,f_i,ierr)
-      CHKERRQ(ierr)
+      call VecGetArrayF90(x,x_v,ierr);CHKERRQ(ierr)
+      call VecGetArrayF90(f,f_v,ierr);CHKERRQ(ierr)
 
 
 !     Compute F(X)
       do i=0,m-1
-         f_v(f_i+i) = y(i) - exp(-x_v(x_i+0)*t(i))/                      &
-     &    (x_v(x_i+1) + x_v(x_i+2)*t(i))
-
+         f_v(i+1) = y(i) - exp(-x_v(1)*t(i))/(x_v(2) + x_v(3)*t(i))
       enddo
 
 
 !     Restore vectors
-      call VecRestoreArray(X,x_v,x_i,ierr)
-      CHKERRQ(ierr)
-      call VecRestoreArray(F,f_v,f_i,ierr)
-      CHKERRQ(ierr)
+      call VecRestoreArrayF90(X,x_v,ierr);CHKERRQ(ierr)
+      call VecRestoreArrayF90(F,f_v,ierr);CHKERRQ(ierr)
 
 
       return
@@ -182,15 +169,14 @@
 #include "chwirut1f.h"
 
       Vec             x
-      PetscReal       x_v(0:1)
-      PetscOffset     x_i
+      PetscScalar, pointer, dimension(:)  :: x_v
       PetscErrorCode  ierr
 
-      call VecGetArray(x,x_v,x_i,ierr)
-      x_v(x_i) = 0.15
-      x_v(x_i+1) = 0.008
-      x_v(x_i+2) = 0.01
-      call VecRestoreArray(x,x_v,x_i,ierr)
+      call VecGetArrayF90(x,x_v,ierr)
+      x_v(1) = 0.15
+      x_v(2) = 0.008
+      x_v(3) = 0.01
+      call VecRestoreArrayF90(x,x_v,ierr)
       return
       end
 

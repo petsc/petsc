@@ -4,7 +4,7 @@ static char help[] = "Illustrate how to do one symbolic factorization and multip
 
 int main(int argc,char **args)
 {
-  PetscInt       ipack,i,rstart,rend,N=10,num_numfac=5,col[3],k;
+  PetscInt       i,rstart,rend,N=10,num_numfac=5,col[3],k;
   Mat            A[5],F;
   Vec            u,x,b;
   PetscErrorCode ierr;
@@ -13,11 +13,12 @@ int main(int argc,char **args)
   PetscReal      norm,tol=100*PETSC_MACHINE_EPSILON;
   IS             perm,iperm;
   MatFactorInfo  info;
-  char           solvertype[64]="petsc";
-  PetscBool      flg,flg_superlu,flg_mumps;
+  MatFactorType  facttype = MAT_FACTOR_LU;
+  char           solvertype[64];
+  char           factortype[64];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
 
   /* Create and assemble matrices, all have same data structure */
   for (k=0; k<num_numfac; k++) {
@@ -27,7 +28,9 @@ int main(int argc,char **args)
     ierr = MatSetUp(A[k]);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A[k],&rstart,&rend);CHKERRQ(ierr);
 
-    value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
+    value[0] = -1.0*(k+1);
+    value[1] =  2.0*(k+1);
+    value[2] = -1.0*(k+1);
     for (i=rstart; i<rend; i++) {
       col[0] = i-1; col[1] = i; col[2] = i+1;
       if (i == 0) {
@@ -35,7 +38,7 @@ int main(int argc,char **args)
       } else if (i == N-1) {
         ierr = MatSetValues(A[k],1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
       } else {
-        ierr   = MatSetValues(A[k],1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(A[k],1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = MatAssemblyBegin(A[k],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -51,52 +54,56 @@ int main(int argc,char **args)
   ierr = VecSet(b,1.0);CHKERRQ(ierr);
 
   /* Get a symbolic factor F from A[0] */
-  ierr = PetscOptionsGetString(NULL, NULL, "-mat_solver_type",solvertype,sizeof(solvertype),&flg);CHKERRQ(ierr);
-  ierr = PetscStrcmp(solvertype,"superlu",&flg_superlu);CHKERRQ(ierr);
-  ierr = PetscStrcmp(solvertype,"mumps",&flg_mumps);CHKERRQ(ierr);
+  ierr = PetscStrncpy(solvertype,"petsc",sizeof(solvertype));CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, NULL, "-mat_solver_type",solvertype,sizeof(solvertype),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-mat_factor_type",MatFactorTypes,(PetscEnum*)&facttype,NULL);CHKERRQ(ierr);
 
-  ipack = 0;
-  if (flg_superlu) ipack = 1;
-  else {
-    if (flg_mumps) ipack = 2;
-  }
-
-  switch (ipack) {
-  case 1:
-#if defined(PETSC_HAVE_SUPERLU)
-    ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU LU:\n");CHKERRQ(ierr);
-    ierr = MatGetFactor(A[0],MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-    break;
-#else
-    ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU is not installed, using PETSC LU\n");CHKERRQ(ierr);
-#endif
-  case 2:
+  ierr = MatGetFactor(A[0],solvertype,facttype,&F);CHKERRQ(ierr);
+  /* test mumps options */
 #if defined(PETSC_HAVE_MUMPS)
-    ierr = PetscPrintf(PETSC_COMM_WORLD," MUMPS LU:\n");CHKERRQ(ierr);
-    ierr = MatGetFactor(A[0],MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-    {
-      /* test mumps options */
-      PetscInt icntl_7 = 5;
-      ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
-    }
-    break;
-#else
-    ierr = PetscPrintf(PETSC_COMM_WORLD," MUMPS is not installed, use PETSC LU\n");CHKERRQ(ierr);
+  ierr = MatMumpsSetIcntl(F,7,5);CHKERRQ(ierr);
 #endif
-  default:
-    ierr = PetscPrintf(PETSC_COMM_WORLD," PETSC LU:\n");CHKERRQ(ierr);
-    ierr = MatGetFactor(A[0],MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-  }
+  ierr = PetscStrncpy(factortype,MatFactorTypes[facttype],sizeof(factortype));CHKERRQ(ierr);
+  ierr = PetscStrtoupper(solvertype);CHKERRQ(ierr);
+  ierr = PetscStrtoupper(factortype);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," %s %s:\n",solvertype,factortype);CHKERRQ(ierr);
 
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   info.fill = 5.0;
   ierr = MatGetOrdering(A[0],MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(F,A[0],perm,iperm,&info);CHKERRQ(ierr);
+  switch (facttype) {
+  case MAT_FACTOR_LU:
+    ierr = MatLUFactorSymbolic(F,A[0],perm,iperm,&info);CHKERRQ(ierr);
+    break;
+  case MAT_FACTOR_ILU:
+    ierr = MatILUFactorSymbolic(F,A[0],perm,iperm,&info);CHKERRQ(ierr);
+    break;
+  case MAT_FACTOR_ICC:
+    ierr = MatICCFactorSymbolic(F,A[0],perm,&info);CHKERRQ(ierr);
+    break;
+  case MAT_FACTOR_CHOLESKY:
+    ierr = MatCholeskyFactorSymbolic(F,A[0],perm,&info);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s\n",factortype);
+    break;
+  }
 
   /* Compute numeric factors using same F, then solve */
   for (k = 0; k < num_numfac; k++) {
-    /* Get numeric factor of A[k] */
-    ierr = MatLUFactorNumeric(F,A[k],&info);CHKERRQ(ierr);
+    switch (facttype) {
+    case MAT_FACTOR_LU:
+    case MAT_FACTOR_ILU:
+      ierr = MatLUFactorNumeric(F,A[k],&info);CHKERRQ(ierr);
+      break;
+    case MAT_FACTOR_ICC:
+    case MAT_FACTOR_CHOLESKY:
+      ierr = MatCholeskyFactorNumeric(F,A[k],&info);CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s\n",factortype);
+      break;
+    }
 
     /* Solve A[k] * x = b */
     ierr = MatSolve(F,b,x);CHKERRQ(ierr);
@@ -106,7 +113,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
     if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the LU numfact and solve: residual %g\n",k,(double)norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the %s numfact and solve: residual %g\n",k,factortype,(double)norm);CHKERRQ(ierr);
     }
   }
 
@@ -138,5 +145,10 @@ int main(int argc,char **args)
       nsize: 2
       requires: mumps
       args: -mat_solver_type mumps
+
+   test:
+      suffix: 4
+      args: -mat_solver_type cusparse -mat_type aijcusparse -mat_factor_type {{lu cholesky ilu icc}separate output}
+      requires: cuda
 
 TEST*/

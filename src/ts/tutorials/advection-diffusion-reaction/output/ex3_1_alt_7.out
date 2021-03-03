@@ -1,0 +1,175 @@
+0 TS dt 8.33333e-06 time 0.
+1 TS dt 8.33333e-05 time 8.33333e-06
+2 TS dt 0.000833333 time 9.16667e-05
+3 TS dt 0.00833333 time 0.000925
+4 TS dt 0.0132237 time 0.00925833
+5 TS dt 0.0132566 time 0.022482
+6 TS dt 0.0132919 time 0.0357387
+7 TS dt 0.0133226 time 0.0490305
+8 TS dt 0.0133482 time 0.0623531
+9 TS dt 0.0133897 time 0.0757014
+10 TS dt 0.0134319 time 0.0890911
+11 TS dt 0.0134682 time 0.102523
+12 TS dt 0.0134978 time 0.115991
+13 TS dt 0.0135234 time 0.129489
+14 TS dt 0.00483662 time 0.133833
+15 TS dt 0.00989762 time 0.13867
+16 TS dt 0.0135664 time 0.148568
+17 TS dt 0.0136112 time 0.162134
+18 TS dt 0.00457065 time 0.166112
+19 TS dt 0.00912822 time 0.170683
+20 TS dt 0.0136007 time 0.179811
+21 TS dt 0.0137043 time 0.193412
+22 TS dt 0.00497896 time 0.197785
+23 TS dt 0.0102583 time 0.202764
+24 TS dt 0.0137316 time 0.213023
+25 TS dt 0.013782 time 0.226754
+26 TS dt 0.00416982 time 0.229921
+27 TS dt 0.00743928 time 0.234091
+28 TS dt 0.0133752 time 0.24153
+29 TS dt 0.0138678 time 0.254905
+30 TS dt 0.0125017 time 0.268773
+31 TS dt 0.00188482 time 0.269814
+32 TS dt 0.00229215 time 0.271698
+33 TS dt 0.00317053 time 0.273991
+34 TS dt 0.0047745 time 0.277161
+35 TS dt 0.00858367 time 0.281936
+36 TS dt 0.0138083 time 0.290519
+37 TS dt 0.0139896 time 0.304328
+TS Object: 1 MPI processes
+  type: arkimex
+    ARK IMEX 3
+    Stiff abscissa       ct =  0.000000  0.871733  0.600000  1.000000 
+  Fully implicit: no
+  Stiffly accurate: yes
+  Explicit first stage: yes
+  FSAL property: yes
+    Nonstiff abscissa     c =  0.000000  0.871733  0.600000  1.000000 
+  maximum steps=1000
+  maximum time=0.3
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
+  TSAdapt Object: 1 MPI processes
+    type: basic
+    safety factor 0.9
+    extra safety factor after step rejection 0.5
+    clip fastest increase 10.
+    clip fastest decrease 0.1
+    maximum allowed timestep 1e+20
+    minimum allowed timestep 1e-20
+    maximum solution absolute value to be ignored -1.
+  SNES Object: 1 MPI processes
+    type: newtonls
+    maximum iterations=50, maximum function evaluations=10000
+    tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+    norm schedule ALWAYS
+    SNESLineSearch Object: 1 MPI processes
+      type: bt
+        interpolation: cubic
+        alpha=1.000000e-04
+      maxstep=1.000000e+08, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=40
+    KSP Object: 1 MPI processes
+      type: gmres
+        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        happy breakdown tolerance 1e-30
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object: 1 MPI processes
+      type: mg
+        type is MULTIPLICATIVE, levels=3 cycles=v
+          Cycles per PCApply=1
+          Not using Galerkin computed coarse grid matrices
+      Coarse grid solver -- level -------------------------------
+        KSP Object: (mg_coarse_) 1 MPI processes
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (mg_coarse_) 1 MPI processes
+          type: lu
+            out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
+            matrix ordering: nd
+            factor fill ratio given 5., needed 1.63333
+              Factored matrix follows:
+                Mat Object: 1 MPI processes
+                  type: seqaij
+                  rows=60, cols=60
+                  package used to perform factorization: petsc
+                  total: nonzeros=294, allocated nonzeros=294
+                    not using I-node routines
+          linear system matrix = precond matrix:
+          Mat Object: 1 MPI processes
+            type: seqaij
+            rows=60, cols=60
+            total: nonzeros=180, allocated nonzeros=180
+              not using I-node routines
+      Down solver (pre-smoother) on level 1 -------------------------------
+        KSP Object: (mg_levels_1_) 1 MPI processes
+          type: chebyshev
+            eigenvalue estimates used:  min = 0.1, max = 1.1
+            eigenvalues estimate via gmres min 1., max 1.
+            eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+            KSP Object: (mg_levels_1_esteig_) 1 MPI processes
+              type: gmres
+                restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                happy breakdown tolerance 1e-30
+              maximum iterations=10, initial guess is zero
+              tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using PRECONDITIONED norm type for convergence test
+            estimating eigenvalues using noisy right hand side
+          maximum iterations=3, nonzero initial guess
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (mg_levels_1_) 1 MPI processes
+          type: sor
+            type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+          linear system matrix = precond matrix:
+          Mat Object: 1 MPI processes
+            type: seqaij
+            rows=120, cols=120
+            total: nonzeros=360, allocated nonzeros=360
+              not using I-node routines
+      Up solver (post-smoother) same as down solver (pre-smoother)
+      Down solver (pre-smoother) on level 2 -------------------------------
+        KSP Object: (mg_levels_2_) 1 MPI processes
+          type: chebyshev
+            eigenvalue estimates used:  min = 0.1, max = 1.1
+            eigenvalues estimate via gmres min 1., max 1.
+            eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+            KSP Object: (mg_levels_2_esteig_) 1 MPI processes
+              type: gmres
+                restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                happy breakdown tolerance 1e-30
+              maximum iterations=10, initial guess is zero
+              tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using PRECONDITIONED norm type for convergence test
+            estimating eigenvalues using noisy right hand side
+          maximum iterations=3, nonzero initial guess
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (mg_levels_2_) 1 MPI processes
+          type: sor
+            type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+          linear system matrix = precond matrix:
+          Mat Object: 1 MPI processes
+            type: seqaij
+            rows=240, cols=240
+            total: nonzeros=720, allocated nonzeros=720
+              not using I-node routines
+      Up solver (post-smoother) same as down solver (pre-smoother)
+      linear system matrix = precond matrix:
+      Mat Object: 1 MPI processes
+        type: seqaij
+        rows=240, cols=240
+        total: nonzeros=720, allocated nonzeros=720
+          not using I-node routines

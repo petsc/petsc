@@ -8,7 +8,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       n = 5,idx;
-  PetscReal      value;
+  PetscReal      value,value2;
   Vec            x;
   PetscScalar    one = 1.0;
 
@@ -20,18 +20,18 @@ int main(int argc,char **argv)
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
-
   ierr = VecSet(x,one);CHKERRQ(ierr);
   ierr = VecSetValue(x,0,0.0,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecSetValue(x,n-1,2.0,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecMax(x,&idx,&value);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %D\n",(double)value,idx);CHKERRQ(ierr);
+  ierr = VecMax(x,NULL,&value2);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %D (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
   ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %D\n",(double)value,idx);CHKERRQ(ierr);
+  ierr = VecMin(x,NULL,&value2);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %D (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
 
@@ -42,10 +42,50 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   test:
 
    test:
+      diff_args: -j
+      filter: grep -v type
+      suffix: 1
+
+   test:
+      requires: cuda
+      diff_args: -j
+      filter: grep -v type
+      suffix: 1_cuda
+      args: -vec_type cuda
+      output_file: output/ex21_1.out
+
+   test:
+      requires: kokkos_kernels
+      diff_args: -j
+      filter: grep -v type
+      suffix: 1_kokkos
+      args: -vec_type kokkos
+      output_file: output/ex21_1.out
+
+   test:
+      diff_args: -j
+      filter: grep -v type
       suffix: 2
       nsize: 2
+
+   test:
+      requires: cuda
+      diff_args: -j
+      filter: grep -v type
+      suffix: 2_cuda
+      nsize: 2
+      args: -vec_type cuda
+      output_file: output/ex21_2.out
+
+   test:
+      requires: kokkos_kernels
+      diff_args: -j
+      filter: grep -v type
+      suffix: 2_kokkos
+      nsize: 2
+      args: -vec_type kokkos
+      output_file: output/ex21_2.out
 
 TEST*/

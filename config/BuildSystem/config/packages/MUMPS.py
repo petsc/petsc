@@ -3,12 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.3.3'
+    self.version          = '5.3.5'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
-    self.gitcommit        = 'v'+self.version+'-p2'
-    self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
-                             'https://bitbucket.org/petsc/pkg-mumps/get/'+self.gitcommit+'.tar.gz']
+    self.requiresversion  = 1
+    self.download         = ['http://mumps.enseeiht.fr/MUMPS_'+self.version+'.tar.gz',
+                             'https://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_'+self.version+'.tar.gz']
     self.download_darwin  = ['https://bitbucket.org/petsc/pkg-mumps/get/v5.2.1-p2.tar.gz']
     self.downloaddirnames = ['petsc-pkg-mumps','MUMPS']
     self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
@@ -113,6 +113,8 @@ class Configure(config.package.Package):
     g.write('FC = '+self.getCompiler()+'\n')
     g.write('FL = '+self.getCompiler()+'\n')
     g.write('OPTF    = '+self.updatePackageFFlags(self.getCompilerFlags())+'\n')
+    if self.openmp.found:
+      g.write('OPTF   += -DBLR_MT\n')
     if self.blasLapack.checkForRoutine('dgemmt'):
       g.write('OPTF   += -DGEMMT_AVAILABLE \n')
     g.write('OUTF = -o \n')

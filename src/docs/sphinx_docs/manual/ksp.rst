@@ -388,7 +388,7 @@ can be used by the options database command
   * - Deflated Generalized Minimal Residual
     - ``KSPDGMRES``
     - ``dgmres``
-  * - Pipelined Generalized Minimal Residual :cite:`Ghysels_Ashby_Meerbergen_Vanroose_2012`
+  * - Pipelined Generalized Minimal Residual :cite:`GhyselsAshbyMeerbergenVanroose2013`
     - ``KSPPGMRES``
     - ``pgmres``
   * - Pipelined, Flexible Generalized Minimal Residual :cite:`SananSchneppMay2016`
@@ -511,8 +511,7 @@ information about the iterations. The user can indicate that the norms
 of the residuals should be displayed by using ``-ksp_monitor`` within
 the options database. To display the residual norms in a graphical
 window (running under X Windows), one should use
-``-ksp_monitor_lg_residualnorm`` ``[x,y,w,h]``, where either all or none
-of the options must be specified. Application programmers can also
+``-ksp_monitor draw::draw_lg``. Application programmers can also
 provide their own routines to perform the monitoring by using the
 command
 
@@ -533,9 +532,9 @@ Several monitoring routines are supplied with PETSc, including
 
 ::
 
-   KSPMonitorDefault(KSP,PetscInt,PetscReal, void *);
+   KSPMonitorResidual(KSP,PetscInt,PetscReal, void *);
    KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
-   KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal, void *);
+   KSPMonitorTrueResidual(KSP,PetscInt,PetscReal, void *);
 
 The default monitor simply prints an estimate of the :math:`l_2`-norm of
 the residual at each iteration. The routine
@@ -549,26 +548,8 @@ for testing or convergence studies, not for timing. These monitors may
 be accessed with the command line options ``-ksp_monitor``,
 ``-ksp_monitor_singular_value``, and ``-ksp_monitor_true_residual``.
 
-To employ the default graphical monitor, one should use the commands
-
-::
-
-   PetscDrawLG lg;
-   KSPMonitorLGResidualNormCreate(MPI_Comm comm,char *display,char *title,PetscInt x,PetscInt y,PetscInt w,PetscInt h,PetscDrawLG *lg);
-   KSPMonitorSet(KSP ksp,KSPMonitorLGResidualNorm,lg,0);
-
-When no longer needed, the line graph should be destroyed with the
-command
-
-::
-
-   PetscDrawLGDestroy(PetscDrawLG *lg);
-
-The user can change aspects of the graphs with the ``PetscDrawLG*()``
-and ``PetscDrawAxis*()`` routines. One can also access this
-functionality from the options database with the command
-``-ksp_monitor_lg_residualnorm`` ``[x,y,w,h]``. , where ``x, y, w, h``
-are the optional location and size of the window.
+To employ the default graphical monitor, one should use the command
+``-ksp_monitor draw::draw_lg``.
 
 One can cancel hardwired monitoring routines for KSP at runtime with
 ``-ksp_monitor_cancel``.
@@ -1424,8 +1405,8 @@ preconditioners of type ``type1`` and ``type2``. The preconditioner
 ::
 
    PCSetType(pc,PCCOMPOSITE);
-   PCCompositeAddPC(pc,type1);
-   PCCompositeAddPC(pc,type2);
+   PCCompositeAddPCType(pc,type1);
+   PCCompositeAddPCType(pc,type2);
 
 Any number of preconditioners may added in this way.
 
@@ -2110,7 +2091,7 @@ Using External Linear Solvers
 PETSc interfaces to several external linear solvers (also see :any:`chapter_acknowledgements`)
 at the beginning of this manual). To use these solvers, one may:
 
-#. Run ``./configure`` with the additional options
+#. Run ``configure`` with the additional options
    ``--download-packagename`` e.g. ``--download-superlu_dist``
    ``--download-parmetis`` (SuperLU_DIST needs ParMetis) or
    ``--download-mumps`` ``--download-scalapack`` (MUMPS requires

@@ -19,7 +19,7 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = VecGetLocalSize(pos,&n);CHKERRQ(ierr);
   ierr = VecGetBlockSize(pos,&bs);CHKERRQ(ierr);
   npoints = n/bs;
@@ -109,7 +109,7 @@ PetscErrorCode SwarmViewGP(DM dms,const char prefix[])
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s-rank%d.gp",prefix,rank);CHKERRQ(ierr);
   fp = fopen(name,"w");
   if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
@@ -141,7 +141,7 @@ PetscErrorCode ex3_1(void)
   PetscErrorCode ierr;
 
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   /* Create a regularly spaced DMDA */
   mx = 40;

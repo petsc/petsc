@@ -242,6 +242,8 @@ PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, DMLabel *, PetscObject *);
 PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, DMLabel, PetscObject);
 PETSC_EXTERN PetscErrorCode DMAddField(DM, DMLabel, PetscObject);
+PETSC_EXTERN PetscErrorCode DMSetFieldAvoidTensor(DM, PetscInt, PetscBool);
+PETSC_EXTERN PetscErrorCode DMGetFieldAvoidTensor(DM, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMClearFields(DM);
 PETSC_EXTERN PetscErrorCode DMCopyFields(DM, DM);
 PETSC_EXTERN PetscErrorCode DMGetAdjacency(DM, PetscInt, PetscBool *, PetscBool *);
@@ -344,6 +346,7 @@ PETSC_EXTERN PetscErrorCode DMProjectBdFieldLabelLocal(DM,PetscReal,DMLabel,Pets
 PETSC_EXTERN PetscErrorCode DMComputeL2Diff(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComputeL2GradientDiff(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, const PetscReal [], PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComputeL2FieldDiff(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
+PETSC_EXTERN PetscErrorCode DMComputeError(DM, Vec, PetscReal[], Vec *);
 PETSC_EXTERN PetscErrorCode DMHasBasisTransform(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMCopyTransform(DM, DM);
 
@@ -370,6 +373,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct) {
     case DM_POLYTOPE_TRI_PRISM:
     case DM_POLYTOPE_TRI_PRISM_TENSOR:
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    case DM_POLYTOPE_PYRAMID:
       return 3;
     default: return -1;
   }
@@ -389,6 +393,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
     case DM_POLYTOPE_TRI_PRISM:          return 5;
     case DM_POLYTOPE_TRI_PRISM_TENSOR:   return 5;
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:  return 6;
+    case DM_POLYTOPE_PYRAMID:            return 5;
     default: return -1;
   }
 }
@@ -407,6 +412,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
     case DM_POLYTOPE_TRI_PRISM:          return 6;
     case DM_POLYTOPE_TRI_PRISM_TENSOR:   return 6;
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:  return 8;
+    case DM_POLYTOPE_PYRAMID:            return 5;
     default: return -1;
   }
 }

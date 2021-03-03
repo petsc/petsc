@@ -27,12 +27,15 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.hypre = framework.require('config.packages.hypre',self)
-    self.mpi   = framework.require('config.packages.MPI',self)
-    self.metis = framework.require('config.packages.metis',self)
-    self.slepc = framework.require('config.packages.slepc',self)
-    self.deps  = [self.mpi,self.hypre,self.metis]
-    self.odeps = [self.slepc]
+    self.hypre  = framework.require('config.packages.hypre',self)
+    self.mpi    = framework.require('config.packages.MPI',self)
+    self.metis  = framework.require('config.packages.metis',self)
+    self.slepc  = framework.require('config.packages.slepc',self)
+    self.ceed   = framework.require('config.packages.libceed',self)
+    self.cuda   = framework.require('config.packages.cuda',self)
+    self.openmp = framework.require('config.packages.openmp',self)
+    self.deps   = [self.mpi,self.hypre,self.metis]
+    self.odeps  = [self.slepc,self.ceed,self.cuda,self.openmp]
     return
 
   def Install(self):
@@ -69,9 +72,10 @@ class Configure(config.package.Package):
     cxxflags = self.getCompilerFlags()
     cxxflags = cxxflags.replace('-fvisibility=hidden','') # MFEM is currently broken with -fvisibility=hidden
     # MFEM uses the macro MFEM_BUILD_DIR that builds a path by combining the directory plus other stuff but if the
-    # directory name contains  "-linux'" this is converted by CPP to the value 1 since that is defined in Linux header files
+    # directory name contains  "-linux" this is converted by CPP to the value 1 since that is defined in Linux header files
     # unless the -std=C++11 or -std=C++14 flag is used; we want to support MFEM without this flag
-    cxxflags += ' -Dlinux=linux'
+    if '-linux' in self.packageDir:
+      cxxflags += ' -Dlinux=linux'
     self.popLanguage()
     if 'download-mfem-ghv-cxx' in self.argDB and self.argDB['download-mfem-ghv-cxx']:
       ghv = self.argDB['download-mfem-ghv-cxx']
@@ -82,6 +86,12 @@ class Configure(config.package.Package):
     # $ cc -shared -o libmfem.so ...a bunch of .o files.... ...libraries.... -dynamic
     # The -dynamic at the end makes cc think it is creating an executable
     ldflags = self.setCompilers.LDFLAGS.replace('-dynamic','')
+
+    strip_rpath=''
+    if self.cuda.found:
+      strip_rpath=' | sed "s/-Wl,-rpath,/-Xlinker=-rpath,/g"'
+      if self.openmp.found:
+        ldflags = ldflags.replace(self.openmp.ompflag,'')
 
     makedepend = ''
     with open(os.path.join(configDir,'user.mk'),'w') as g:
@@ -98,6 +108,8 @@ class Configure(config.package.Package):
       g.write('AR = '+self.setCompilers.AR+'\n')
       g.write('ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n')
       g.write('LDFLAGS = '+ldflags+'\n')
+      if self.cuda.found:
+        g.write('LDFLAGS := $(addprefix -Xlinker ,$(LDFLAGS))\n')
       g.write('MFEM_USE_MPI = YES\n')
       g.write('MFEM_MPIEXEC = '+self.mpi.getMakeMacro('MPIEXEC')+'\n')
       g.write('MFEM_USE_METIS_5 = YES\n')
@@ -107,6 +119,9 @@ class Configure(config.package.Package):
       g.write('HYPRE_LIB = '+self.libraries.toString(self.hypre.lib)+'\n')
       g.write('METIS_OPT = '+self.headers.toString(self.metis.include)+'\n')
       g.write('METIS_LIB = '+self.libraries.toString(self.metis.lib)+'\n')
+      if self.cuda.found:
+        g.write('HYPRE_LIB := $(subst -Wl,-Xlinker=,$(HYPRE_LIB))\n')
+        g.write('METIS_LIB := $(subst -Wl,-Xlinker=,$(METIS_LIB))\n')
       g.write('PETSC_VARS = '+prefix+'/lib/petsc/conf/petscvariables\n')
       g.write('PETSC_OPT = '+PETSC_OPT+'\n')
       # MFEM's config/defaults.mk overwrites these
@@ -116,13 +131,17 @@ class Configure(config.package.Package):
       # When the HYPRE library is built statically, we need to resolve blas symbols
       # It would be nice to have access to the conf variables during postProcess, and access petsclib and other variables, instead of using a shell here
       # but I do not know how to do so
-      petscext = '$(shell sed -n "s/PETSC_EXTERNAL_LIB_BASIC = *//p" $(PETSC_VARS))'
+      petscext = '$(shell sed -n "s/PETSC_EXTERNAL_LIB_BASIC = *//p" $(PETSC_VARS)'+strip_rpath+')'
+
       if self.argDB['with-single-library']:
         petsclib = '-L'+prefix+'/lib -lpetsc'
       else:
         petsclib = '-L'+prefix+'/lib -lpetsctao -lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
       if self.argDB['with-shared-libraries']:
-        petscrpt = '-Wl,-rpath,'+prefix+'/lib'
+        if self.cuda.found:
+          petscrpt = '-Xlinker=-rpath,'+prefix+'/lib'
+        else:
+          petscrpt = '-Wl,-rpath,'+prefix+'/lib'
       else:
         petscrpt = ''
       g.write('PETSC_LIB = '+petscrpt+' '+petsclib+' '+petscext+'\n')
@@ -132,12 +151,31 @@ class Configure(config.package.Package):
         g.write('SLEPC_DIR = '+PETSC_DIR+'\n')
         g.write('SLEPC_ARCH = '+PETSC_ARCH+'\n')
         g.write('SLEPC_VARS = '+prefix+'/lib/slepc/conf/slepc_variables\n')
-        g.write('SLEPC_LIB = dummy\n')
-        g.write('include '+prefix+'/lib/slepc/conf/slepc_variables\n')
+        slepclib = '-L'+prefix+'/lib -lslepc'
+        slepcext = ''
+        g.write('SLEPC_LIB = '+petscrpt+' '+slepclib+' '+slepcext+' $(PETSC_LIB)\n')
         if self.argDB['prefix']:
           makedepend = 'slepc-install'
         else:
           makedepend = 'slepc-build'
+      if self.ceed.found:
+        g.write('MFEM_USE_CEED = YES\n')
+        g.write('CEED_DIR = '+self.ceed.directory+'\n')
+        g.write('CEED_OPT = '+self.headers.toString(self.ceed.include)+'\n')
+        g.write('CEED_LIB = '+self.libraries.toString(self.ceed.lib)+'\n')
+        if self.cuda.found:
+          g.write('CEED_LIB := $(subst -Wl,-Xlinker=,$(CEED_LIB))\n')
+
+      if self.cuda.found:
+        self.pushLanguage('CUDA')
+        petscNvcc = self.getCompiler()
+        cudaFlags = self.getCompilerFlags()
+        self.popLanguage()
+        g.write('MFEM_USE_CUDA = YES\n')
+        g.write('CUDA_CXX = '+petscNvcc+'\n')
+        if hasattr(self.cuda,'gencodearch') and self.cuda.gencodearch:
+          g.write('CUDA_ARCH = sm_'+self.cuda.gencodearch+'\n')
+        g.write('CXXFLAGS := '+cudaFlags+' $(addprefix -Xcompiler ,$(CXXFLAGS))\n')
       g.close()
 
     #  if installing as Superuser than want to return to regular user for clean and build
@@ -152,7 +190,7 @@ class Configure(config.package.Package):
                        ['@echo "*** Building mfem ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg',\
                           '@(cd '+buildDir+' && \\\n\
-           ${OMAKE} -f '+self.packageDir+'/makefile config && \\\n\
+           ${OMAKE} -f '+self.packageDir+'/makefile config MFEM_DIR='+self.packageDir+' && \\\n\
            ${OMAKE} clean && \\\n\
            '+self.make.make_jnp+') > ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\

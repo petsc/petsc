@@ -20,7 +20,6 @@ struct _PCGAMGOps {
 typedef struct gamg_TAG {
   PCGAMGType type;
   PetscInt  Nlevels;
-  PetscInt  setup_count;
   PetscBool repart;
   PetscBool reuse_prol;
   PetscBool use_aggs_in_asm;
@@ -30,9 +29,9 @@ typedef struct gamg_TAG {
   PetscInt  min_eq_proc;
   PetscInt  coarse_eq_limit;
   PetscReal threshold_scale;
-  PetscInt  current_level; /* stash construction state */
   PetscReal threshold[PETSC_MG_MAXLEVELS]; /* common quatity to many AMG methods so keep it up here */
-
+  PetscInt  level_reduction_factors[PETSC_MG_MAXLEVELS];
+  PetscInt  current_level; /* stash construction state */
   /* these 4 are all related to the method data and should be in the subctx */
   PetscInt  data_sz;      /* nloc*data_rows*data_cols */
   PetscInt  data_cell_rows;
@@ -67,12 +66,8 @@ PetscErrorCode PCGAMGCreateGraph(Mat, Mat*);
 PetscErrorCode PCGAMGFilterGraph(Mat*, PetscReal, PetscBool);
 PetscErrorCode PCGAMGGetDataWithGhosts(Mat, PetscInt, PetscReal[],PetscInt*, PetscReal **);
 
-#if defined PETSC_USE_LOG
-#define PETSC_GAMG_USE_LOG
 enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,SET14,SET15,SET16,NUM_SET};
-#if defined PETSC_GAMG_USE_LOG
 PETSC_EXTERN PetscLogEvent petsc_gamg_setup_events[NUM_SET];
-#endif
 PETSC_EXTERN PetscLogEvent PC_GAMGGraph_AGG;
 PETSC_EXTERN PetscLogEvent PC_GAMGGraph_GEO;
 PETSC_EXTERN PetscLogEvent PC_GAMGCoarsen_AGG;
@@ -80,7 +75,7 @@ PETSC_EXTERN PetscLogEvent PC_GAMGCoarsen_GEO;
 PETSC_EXTERN PetscLogEvent PC_GAMGProlongator_AGG;
 PETSC_EXTERN PetscLogEvent PC_GAMGProlongator_GEO;
 PETSC_EXTERN PetscLogEvent PC_GAMGOptProlongator_AGG;
-#endif
+PETSC_EXTERN PetscLogEvent petsc_gamg_setup_matmat_events[PETSC_MG_MAXLEVELS][3];
 
 typedef struct _PCGAMGHashTable {
   PetscInt *table;

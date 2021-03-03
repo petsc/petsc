@@ -24,7 +24,7 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
   const PetscScalar *xarr;
   const PetscInt    *cone;
   PetscScalar       *farr,hf,ht,flow;
-  PetscInt          i,key,vnode1,vnode2,offsetnode1,offsetnode2,offset;
+  PetscInt          i,key,vnode1,vnode2,offsetnode1,offsetnode2,offset,ncomp;
   PetscBool         ghostvtex;
   VERTEX_Water      vertex,vertexnode1,vertexnode2;
   EDGE_Water        edge;
@@ -40,20 +40,21 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
 
   for (i=0; i<ne; i++) { /* for each edge */
     /* Get the offset and the key for the component for edge number e[i] */
-    ierr = DMNetworkGetComponent(networkdm,edges[i],0,&key,(void**)&edge);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,edges[i],0,&key,(void**)&edge,NULL);CHKERRQ(ierr);
 
     /* Get the numbers for the vertices covering this edge */
     ierr = DMNetworkGetConnectedVertices(networkdm,edges[i],&cone);CHKERRQ(ierr);
     vnode1 = cone[0];
     vnode2 = cone[1];
 
-    /* Get the components at the two vertices */
-    ierr = DMNetworkGetComponent(networkdm,vnode1,0,&key,(void**)&vertexnode1);CHKERRQ(ierr);
-    ierr = DMNetworkGetComponent(networkdm,vnode2,0,&key,(void**)&vertexnode2);CHKERRQ(ierr);
+    /* Get the components at the two vertices, their variable offsets */
+    ierr = DMNetworkGetNumComponents(networkdm,vnode1,&ncomp);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,vnode1,ncomp-1,&key,(void**)&vertexnode1,NULL);CHKERRQ(ierr);
+    ierr = DMNetworkGetLocalVecOffset(networkdm,vnode1,ncomp-1,&offsetnode1);CHKERRQ(ierr);
 
-    /* Get the variable offset (the starting location for the variables in the farr array) for node1 and node2 */
-    ierr = DMNetworkGetVariableOffset(networkdm,vnode1,&offsetnode1);CHKERRQ(ierr);
-    ierr = DMNetworkGetVariableOffset(networkdm,vnode2,&offsetnode2);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumComponents(networkdm,vnode2,&ncomp);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,vnode2,ncomp-1,&key,(void**)&vertexnode2,NULL);CHKERRQ(ierr);
+    ierr = DMNetworkGetLocalVecOffset(networkdm,vnode2,ncomp-1,&offsetnode2);CHKERRQ(ierr);
 
     /* Variables at node1 and node 2 */
     hf = xarr[offsetnode1];
@@ -77,8 +78,9 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
     ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
     if (ghostvtex) continue;
 
-    ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
-    ierr = DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
+    ierr = DMNetworkGetLocalVecOffset(networkdm,vtx[i],ALL_COMPONENTS,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumComponents(networkdm,vtx[i],&ncomp);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,vtx[i],ncomp-1,&key,(void**)&vertex,NULL);CHKERRQ(ierr);
 
     if (vertex->type == VERTEX_TYPE_JUNCTION) {
       farr[offset] -= vertex->junc.demand;
@@ -109,7 +111,7 @@ PetscErrorCode WaterFormFunction(SNES snes,Vec X, Vec F, void *user)
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
 
   /* Get local vertices and edges */
-  ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&v,&e);CHKERRQ(ierr);
+  ierr = DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&v,&e);CHKERRQ(ierr);
 
   /* Get local vectors */
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
@@ -147,8 +149,8 @@ PetscErrorCode WaterSetInitialGuess(DM networkdm,Vec X)
   ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
-  /* Get subnetwork info */
-  ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+  /* Get subnetwork */
+  ierr = DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = SetInitialGuess_Water(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
@@ -205,7 +207,7 @@ PetscErrorCode SetInitialGuess_Water(DM networkdm,Vec localX,PetscInt nv,PetscIn
 {
   PetscErrorCode ierr;
   PetscInt       i,offset,key;
-  PetscBool      ghostvtex;
+  PetscBool      ghostvtex,sharedv;
   VERTEX_Water   vertex;
   PetscScalar    *xarr;
 
@@ -213,10 +215,11 @@ PetscErrorCode SetInitialGuess_Water(DM networkdm,Vec localX,PetscInt nv,PetscIn
   ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
   for (i=0; i < nv; i++) {
     ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
-    if (ghostvtex) continue;
-    ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
-    ierr = DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
+    ierr = DMNetworkIsSharedVertex(networkdm,vtx[i],&sharedv);CHKERRQ(ierr);
+    if (ghostvtex || sharedv) continue;
 
+    ierr = DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex,NULL);CHKERRQ(ierr);
+    ierr = DMNetworkGetLocalVecOffset(networkdm,vtx[i],0,&offset);CHKERRQ(ierr);
     if (vertex->type == VERTEX_TYPE_JUNCTION) {
       xarr[offset] = 100;
     } else if (vertex->type == VERTEX_TYPE_RESERVOIR) {

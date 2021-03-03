@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '2.19.0'
+    self.version         = '2.20.0'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
@@ -121,8 +121,11 @@ class Configure(config.package.GNUPackage):
       msg  = '--with-64-bit-indices option requires Hypre built with --enable-bigint or --enable-mixedint.\n'
     else:
       code = '#if defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT defined!\n#endif\n#if defined(HYPRE_MIXEDINT)\n#error HYPRE_MIXEDINT defined!\n#endif\n'
-      msg  = 'Hypre with --enable-bigint/--enable-mixedint appears to be specified for a default 32-bit-indices build of PETSc.\n'
+      msg  = 'Hypre with --enable-bigint/--enable-mixedint appears to be specified for a 32-bit-indices build of PETSc.\n'
     if not self.checkCompile('#include "HYPRE_config.h"',code):
       raise RuntimeError('Hypre specified is incompatible!\n'+msg+'Suggest using --download-hypre for a compatible hypre')
+    code = '#if defined(HYPRE_MIXEDINT)\n#error HYPRE_MIXEDINT defined!\n#endif\n'
+    if not self.checkCompile('#include "HYPRE_config.h"',code):
+      self.addDefine('HAVE_HYPRE_MIXEDINT', 1)
     setattr(self.compilers, flagsArg,oldFlags)
     return

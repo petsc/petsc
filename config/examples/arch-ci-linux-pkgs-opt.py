@@ -29,7 +29,7 @@ configure_options = [
   '--download-moab=1',
   '--download-chaco=1',
   '--download-fftw=1',
-  '--download-petsc4py=1',
+  '--with-petsc4py=1',
   '--download-mpi4py=1',
   '--download-saws',
   '--download-concurrencykit=1',
@@ -44,6 +44,8 @@ configure_options = [
   '--download-slepc=1',
   '--download-hpddm=1',
   '--download-bamg=1',
+  '--download-mmg=1',
+  '--download-parmmg=1',
   ]
 
 if __name__ == '__main__':

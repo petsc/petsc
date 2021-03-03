@@ -23,5 +23,5 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 This license DOES NOT apply to any software that may be obtained via the
---download-package option of the PETSc configuration. Each of those
-packages are covered by their own licenses.
+--download-package option of the PETSc configuration. Each of those packages is
+covered by its own license(s).

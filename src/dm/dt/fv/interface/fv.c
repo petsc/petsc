@@ -2030,7 +2030,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   ierr = PetscBLASIntCast(mstride,&lda);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info);
+  PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
   R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
@@ -2083,8 +2083,8 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   }
 
   /* initialize to identity */
-  tmpwork = Ainv;
-  Brhs = work;
+  tmpwork = work;
+  Brhs = Ainv;
   maxmn = PetscMax(m,n);
   for (j=0; j<maxmn; j++) {
     for (i=0; i<maxmn; i++) Brhs[i + j*maxmn] = 1.0*(i == j);
@@ -2101,23 +2101,17 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
 #if defined(PETSC_USE_COMPLEX)
   rworkSize = 5 * PetscMin(M,N);
   ierr  = PetscMalloc1(rworkSize,&rwork);CHKERRQ(ierr);
-  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info);
+  PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   ierr = PetscFree(rwork);CHKERRQ(ierr);
 #else
   nrhs  = M;
-  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info);
+  PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
 #endif
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
   if (irank < PetscMin(M,N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
-
-  /* Brhs shaped (M,nrhs) column-major coldim=mstride was overwritten by Ainv shaped (N,nrhs) column-major coldim=maxmn.
-   * Here we transpose to (N,nrhs) row-major rowdim=mstride. */
-  for (i=0; i<n; i++) {
-    for (j=0; j<nrhs; j++) Ainv[i*mstride+j] = Brhs[i + j*maxmn];
-  }
   PetscFunctionReturn(0);
 }
 
@@ -2184,10 +2178,19 @@ static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt 
     for (d = 0; d < dim; ++d) ls->B[d*maxFaces+f] = dx[f*dim+d];
   }
   /* Overwrites B with garbage, returns Binv in row-major format */
-  if (useSVD) {ierr = PetscFVLeastSquaresPseudoInverseSVD_Static(numFaces, maxFaces, dim, ls->B, ls->Binv, ls->tau, ls->workSize, ls->work);CHKERRQ(ierr);}
-  else        {ierr = PetscFVLeastSquaresPseudoInverse_Static(numFaces, maxFaces, dim, ls->B, ls->Binv, ls->tau, ls->workSize, ls->work);CHKERRQ(ierr);}
-  for (f = 0; f < numFaces; ++f) {
-    for (d = 0; d < dim; ++d) grad[f*dim+d] = ls->Binv[d*maxFaces+f];
+  if (useSVD) {
+    PetscInt maxmn = PetscMax(numFaces, dim);
+    ierr = PetscFVLeastSquaresPseudoInverseSVD_Static(numFaces, maxFaces, dim, ls->B, ls->Binv, ls->tau, ls->workSize, ls->work);CHKERRQ(ierr);
+    /* Binv shaped in column-major, coldim=maxmn.*/
+    for (f = 0; f < numFaces; ++f) {
+      for (d = 0; d < dim; ++d) grad[f*dim+d] = ls->Binv[d + maxmn*f];
+    }
+  } else {
+    ierr = PetscFVLeastSquaresPseudoInverse_Static(numFaces, maxFaces, dim, ls->B, ls->Binv, ls->tau, ls->workSize, ls->work);CHKERRQ(ierr);
+    /* Binv shaped in row-major, rowdim=maxFaces.*/
+    for (f = 0; f < numFaces; ++f) {
+      for (d = 0; d < dim; ++d) grad[f*dim+d] = ls->Binv[d*maxFaces + f];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -2228,7 +2231,7 @@ static PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, Pets
 static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt maxFaces)
 {
   PetscFV_LeastSquares *ls = (PetscFV_LeastSquares *) fvm->data;
-  PetscInt              dim, m, n, nrhs, minwork;
+  PetscInt              dim,m,n,nrhs,minmn,maxmn;
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
@@ -2239,9 +2242,10 @@ static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt ma
   m       = ls->maxFaces;
   n       = dim;
   nrhs    = ls->maxFaces;
-  minwork = 3*PetscMin(m,n) + PetscMax(2*PetscMin(m,n), PetscMax(PetscMax(m,n), nrhs)); /* required by LAPACK */
-  ls->workSize = 5*minwork; /* We can afford to be extra generous */
-  ierr = PetscMalloc4(ls->maxFaces*dim,&ls->B,ls->workSize,&ls->Binv,ls->maxFaces,&ls->tau,ls->workSize,&ls->work);CHKERRQ(ierr);
+  minmn   = PetscMin(m,n);
+  maxmn   = PetscMax(m,n);
+  ls->workSize = 3*minmn + PetscMax(2*minmn, PetscMax(maxmn, nrhs)); /* required by LAPACK */
+  ierr = PetscMalloc4(m*n,&ls->B,maxmn*maxmn,&ls->Binv,minmn,&ls->tau,ls->workSize,&ls->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

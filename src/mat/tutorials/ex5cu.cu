@@ -1,21 +1,26 @@
-static char help[] = "Serial test of Cuda matrix assemble with 1D Laplacian.\n\n";
+static char help[] = "Test of Cuda matrix assemble with 1D Laplacian.\n\n";
 
-// This a minimal example of the use of the Cuda MatAIJ metadata for assembly.
+// This a minimal example of the use of the Cuda and Kokkos MatAIJ metadata for assembly.
 //
-// The matrix must be a type 'cusparse' and must first be assembled to get the correct
-// nonzero patern, which is created in MatAssemblyEnd on the host. Next, get a
+// The matrix must be a type 'aijcusparse' or 'aijkokkos' and must first be assembled
+// to get the AIJ metadata, which is created in MatAssemblyEnd on the host. Next, get a
 // pointer to simple CSR mirror (PetscSplitCSRDataStructure) of the matrix data on
-// the device with MatCUSPARSEGetDeviceMatWrite. Then use this object to populate
+// the device with Mat[CUSPARSE/Kokkos]GetDeviceMatWrite. Then use this object to populate
 // the matrix on the device with the standard MatSetValues for the device
 // (MatSetValuesDevice). Finaly one calls MatAssemblyBegin/End on the host and the
 // matrix is ready to use on the device without matrix data movement between the
-// host and device.
+// host and device. N.B., after MatXGetDeviceMatWrite has been called you can not call
+// MatSetValues (Host) again.
 
 #include <petscconf.h>
 #include <petscmat.h>
-#include <petscaijdevice.h>
 #include <petsccublas.h>
 
+// hack to avoid configure problems in CI. Delete when resolved
+#define atomicAdd(e, f) (*e) += f
+
+#define PETSC_DEVICE_FUNC_DECL __device__
+#include <petscaijdevice.h>
 
 __global__
 void assemble_device(PetscSplitCSRDataStructure *d_mat, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank, PetscErrorCode *ierr)
@@ -61,7 +66,7 @@ int main(int argc,char **args)
     PetscPrintf(PETSC_COMM_WORLD,"warning decreasing nz\n");
     nz=N+1;
   }
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr = PetscLogEventRegister("GPU operator", MAT_CLASSID, &event);CHKERRQ(ierr);
   ierr = MatCreateAIJCUSPARSE(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,nz,NULL,nz-1,NULL,&A);CHKERRQ(ierr);

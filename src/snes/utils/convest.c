@@ -35,7 +35,7 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
     PetscFunctionReturn(0);
   }
   ierr = PetscFree3((*ce)->initGuess, (*ce)->exactSol, (*ce)->ctxs);CHKERRQ(ierr);
-  ierr = PetscFree((*ce)->errors);CHKERRQ(ierr);
+  ierr = PetscFree2((*ce)->dofs, (*ce)->errors);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ce);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -159,7 +159,7 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
   PetscFunctionBegin;
   ierr = DMGetNumFields(ce->idm, &Nf);CHKERRQ(ierr);
   ce->Nf = PetscMax(Nf, 1);
-  ierr = PetscMalloc1((ce->Nr+1)*ce->Nf, &ce->errors);CHKERRQ(ierr);
+  ierr = PetscMalloc2((ce->Nr+1)*ce->Nf, &ce->dofs, (ce->Nr+1)*ce->Nf, &ce->errors);CHKERRQ(ierr);
   ierr = PetscCalloc3(ce->Nf, &ce->initGuess, ce->Nf, &ce->exactSol, ce->Nf, &ce->ctxs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) ce->initGuess[f] = zero_private;
   ierr = DMGetNumDS(ce->idm, &Nds);CHKERRQ(ierr);
@@ -234,9 +234,18 @@ PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst ce, PetscInt r)
 
   PetscFunctionBegin;
   if (ce->monitor) {
+    PetscInt  *dofs   = &ce->dofs[r*ce->Nf];
     PetscReal *errors = &ce->errors[r*ce->Nf];
 
     ierr = PetscObjectGetComm((PetscObject) ce, &comm);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "N: ");CHKERRQ(ierr);
+    if (ce->Nf > 1) {ierr = PetscPrintf(comm, "[");CHKERRQ(ierr);}
+    for (f = 0; f < ce->Nf; ++f) {
+      if (f > 0) {ierr = PetscPrintf(comm, ", ");CHKERRQ(ierr);}
+      ierr = PetscPrintf(comm, "%7D", dofs[f]);CHKERRQ(ierr);
+    }
+    if (ce->Nf > 1) {ierr = PetscPrintf(comm, "]");CHKERRQ(ierr);}
+    ierr = PetscPrintf(comm, "  ");CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "L_2 Error: ");CHKERRQ(ierr);
     if (ce->Nf > 1) {ierr = PetscPrintf(comm, "[");CHKERRQ(ierr);}
     for (f = 0; f < ce->Nf; ++f) {
@@ -313,7 +322,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   DM            *dm;
   PetscObject    disc;
   PetscReal     *x, *y, slope, intercept;
-  PetscInt      *dof, Nr = ce->Nr, r, f, dim, oldlevel, oldnlev;
+  PetscInt       Nr = ce->Nr, r, f, dim, oldlevel, oldnlev;
   void          *ctx;
   PetscErrorCode ierr;
 
@@ -323,7 +332,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMGetRefineLevel(ce->idm, &oldlevel);CHKERRQ(ierr);
-  ierr = PetscMalloc2((Nr+1), &dm, (Nr+1)*ce->Nf, &dof);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Nr+1), &dm);CHKERRQ(ierr);
   /* Loop over meshes */
   dm[0] = ce->idm;
   for (r = 0; r <= Nr; ++r) {
@@ -377,8 +386,8 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
       ierr = DMGetLocalSection(dm[r], &s);CHKERRQ(ierr);
       ierr = PetscSectionGetField(s, f, &fs);CHKERRQ(ierr);
       ierr = PetscSectionGetConstrainedStorageSize(fs, &lsize);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&lsize, &dof[r*ce->Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) snes));CHKERRQ(ierr);
-      ierr = PetscLogEventSetDof(ce->event, f, dof[r*ce->Nf+f]);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&lsize, &ce->dofs[r*ce->Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) snes));CHKERRMPI(ierr);
+      ierr = PetscLogEventSetDof(ce->event, f, ce->dofs[r*ce->Nf+f]);CHKERRQ(ierr);
       ierr = PetscLogEventSetError(ce->event, f, ce->errors[r*ce->Nf+f]);CHKERRQ(ierr);
     }
     /* Monitor */
@@ -403,7 +412,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   ierr = PetscMalloc2(Nr+1, &x, Nr+1, &y);CHKERRQ(ierr);
   for (f = 0; f < ce->Nf; ++f) {
     for (r = 0; r <= Nr; ++r) {
-      x[r] = PetscLog10Real(dof[r*ce->Nf+f]);
+      x[r] = PetscLog10Real(ce->dofs[r*ce->Nf+f]);
       y[r] = PetscLog10Real(ce->errors[r*ce->Nf+f]);
     }
     ierr = PetscLinearRegression(Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
@@ -411,7 +420,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     alpha[f] = -slope * dim;
   }
   ierr = PetscFree2(x, y);CHKERRQ(ierr);
-  ierr = PetscFree2(dm, dof);CHKERRQ(ierr);
+  ierr = PetscFree(dm);CHKERRQ(ierr);
   /* Restore solver */
   ierr = SNESReset(snes);CHKERRQ(ierr);
   {

@@ -1,0 +1,11 @@
+L_2 Error: [5.76349e-16, 2.97347e-16, 1.11787e-16]
+L_2 Residual: 2.44952e-14
+Taylor approximation converging at order 2.00
+Timestep: 0000 time = 0        	 L_2 Error: [5.76e-16, 0.125, 1.12e-16] ||div u||: 8.53e-14
+Timestep: 0001 time = 0.1      	 L_2 Error: [8.02e-12, 2.14e-09, 1.82e-10] ||div u||: 2.41e-09
+Timestep: 0002 time = 0.2      	 L_2 Error: [8.17e-12, 2.14e-09, 2e-10] ||div u||: 2.44e-09
+Timestep: 0003 time = 0.3      	 L_2 Error: [8.21e-12, 2.14e-09, 2.03e-10] ||div u||: 2.46e-09
+Timestep: 0004 time = 0.4      	 L_2 Error: [8.26e-12, 2.14e-09, 2.03e-10] ||div u||: 2.47e-09
+L_2 Error: [7.86144e-16, 2.97347e-16, 1.5541e-16]
+L_2 Residual: 3.80296e-14
+Taylor approximation converging at order 2.00

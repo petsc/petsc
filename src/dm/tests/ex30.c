@@ -18,8 +18,8 @@ int main(int argc,char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   ierr = PetscOptionsBegin(comm,0,"Options for DMSliced test",0);CHKERRQ(ierr);
   {
@@ -42,7 +42,7 @@ int main(int argc,char *argv[])
   n         = PETSC_DECIDE;
   ierr      = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   rstart    = 0;
-  ierr      = MPI_Scan(&n,&rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr      = MPI_Scan(&n,&rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   rstart   -= n;
   ghosts[0] = (N+rstart-1)%N;
   ghosts[1] = (rstart+n)%N;

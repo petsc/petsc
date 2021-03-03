@@ -165,7 +165,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecRestoreArray(sbaij->slvec0,&ptr);CHKERRQ(ierr);
 
   ierr = PetscFree(stmp);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+  ierr = MPI_Barrier(PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
 
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->sMvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->slvec0);CHKERRQ(ierr);

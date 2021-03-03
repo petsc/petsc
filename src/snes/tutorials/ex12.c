@@ -889,8 +889,8 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
 #include "petsc/private/petscimpl.h"
 
-/*@C
-  KSPMonitorError - Outputs the error at each iteration of an iterative solver.
+/*
+  MonitorError - Outputs the error at each iteration of an iterative solver.
 
   Collective on KSP
 
@@ -902,9 +902,9 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
   Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorDefault()
-@*/
-static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidual(), KSPMonitorResidual()
+*/
+static PetscErrorCode MonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
   DM             dm;
@@ -1129,7 +1129,7 @@ int main(int argc, char **argv)
         ierr = PCMGGetLevels(pc, &numLevels);CHKERRQ(ierr);
         for (l = 0; l < numLevels; ++l) {
           ierr = PCMGGetSmootherDown(pc, l, &ksp);CHKERRQ(ierr);
-          ierr = KSPMonitorSet(ksp, KSPMonitorError, &user, NULL);CHKERRQ(ierr);
+          ierr = KSPMonitorSet(ksp, MonitorError, &user, NULL);CHKERRQ(ierr);
         }
       }
     }
@@ -1598,25 +1598,10 @@ int main(int argc, char **argv)
 
   # Full solve simplex: Convergence
   test:
-    suffix: tet_conv_p1_r0
+    suffix: 3d_p1_conv
     requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
-  test:
-    suffix: tet_conv_p1_r2
-    requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
-  test:
-    suffix: tet_conv_p1_r3
-    requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
-  test:
-    suffix: tet_conv_p2_r0
-    requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
-  test:
-    suffix: tet_conv_p2_r2
-    requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
+    args: -run_type full -dim 3 -cells 1,1,1 -dm_refine 1 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 \
+      -snes_convergence_estimate -convest_num_refine 1 -pc_type lu
 
   # Full solve simplex: PCBDDC
   test:
@@ -1992,8 +1977,10 @@ int main(int argc, char **argv)
     args: -run_type full -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient circle -dm_plex_gmsh_periodic 0
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
+      filter: grep -v "      total: nonzeros=" | grep -v "      rows=" | sed -e "s/total number of linear solver iterations=1[5-7]/total number of linear solver iterations=16/g"
       suffix: tri_parmetis_hpddm_baij
     test:
+      filter: grep -v "      total: nonzeros=" | grep -v "      rows=" | sed -e "s/total number of linear solver iterations=1[5-7]/total number of linear solver iterations=16/g"
       requires: !complex
       suffix: tri_parmetis_hpddm
 

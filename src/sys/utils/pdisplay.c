@@ -54,14 +54,14 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
     } else { /* now check environment */
       ierr = PetscArrayzero(env,len);CHKERRQ(ierr);
 
-      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
       if (!rank) {
         str = getenv(name);
         if (str) flg = PETSC_TRUE;
         if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
       }
-      ierr = MPI_Bcast(&flg,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&flg,1,MPIU_BOOL,0,comm);CHKERRMPI(ierr);
+      ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRMPI(ierr);
       if (flag) *flag = flg;
     }
   } else {
@@ -87,7 +87,7 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
   PetscFunctionBegin;
   ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
   ierr = PetscMemcpy(roothostname,hostname,sizeof(hostname));CHKERRQ(ierr);
-  ierr = MPI_Bcast(roothostname,sizeof(roothostname),MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(roothostname,sizeof(roothostname),MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   ierr = PetscStrcmp(hostname,roothostname,&flag);CHKERRQ(ierr);
 
   localmatch = (PetscMPIInt)flag;
@@ -111,8 +111,8 @@ PetscErrorCode  PetscSetDisplay(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr = PetscWorldIsSingleHost(&singlehost);CHKERRQ(ierr);
 
@@ -136,7 +136,7 @@ PetscErrorCode  PetscSetDisplay(void)
     ierr = PetscGetHostName(display,sizeof(display));CHKERRQ(ierr);
     ierr = PetscStrlcat(display,str,sizeof(display));CHKERRQ(ierr);
   }
-  ierr = MPI_Bcast(display,sizeof(display),MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(display,sizeof(display),MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   ierr = PetscMemcpy(PetscDisplay,display,sizeof(PetscDisplay));CHKERRQ(ierr);
 
   PetscDisplay[sizeof(PetscDisplay)-1] = 0;

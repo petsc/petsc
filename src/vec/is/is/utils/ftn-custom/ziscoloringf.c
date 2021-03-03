@@ -22,6 +22,7 @@ PETSC_EXTERN void iscoloringviewfromoptions_(ISColoring *ao,PetscObject obj,char
   char *t;
 
   FIXCHAR(type,len,t);
+  CHKFORTRANNULLOBJECT(obj);
   *ierr = ISColoringViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
 }

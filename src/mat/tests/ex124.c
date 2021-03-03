@@ -5,8 +5,7 @@ Input parameters include\n\
 
 #include <petscmat.h>
 
-#undef WRITEFILE
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,B;
   PetscViewer    fd;
@@ -17,7 +16,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscInt       ma,na,mb,nb;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* read the two matrices, A and B */
