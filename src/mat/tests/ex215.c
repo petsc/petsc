@@ -118,11 +118,18 @@ int main(int argc,char **args)
   /* it seems that the SPD concept in PETSc extends naturally to Hermitian Positive definitess */
   ierr = MatSetOption(F,MAT_HERMITIAN,(PetscBool)(hpd || herm));CHKERRQ(ierr);
   ierr = MatSetOption(F,MAT_SPD,hpd);CHKERRQ(ierr);
+  {
+    PetscInt iftyp = ftyp;
+    ierr = PetscOptionsGetEList(NULL,NULL,"-ftype",MatFactorTypes,MAT_FACTOR_NUM_TYPES,&iftyp,NULL);CHKERRQ(ierr);
+    ftyp = (MatFactorType) iftyp;
+  }
   if (ftyp == MAT_FACTOR_LU) {
     ierr = MatLUFactor(F,NULL,NULL,NULL);CHKERRQ(ierr);
-  } else {
+  } else if (ftyp == MAT_FACTOR_CHOLESKY) {
     ierr = MatCholeskyFactor(F,NULL,NULL);CHKERRQ(ierr);
-  }
+  } else if (ftyp == MAT_FACTOR_QR) {
+    ierr = MatQRFactor(F,NULL,NULL);CHKERRQ(ierr);
+  } else SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Factorization %s not supported in this example\n", MatFactorTypes[ftyp]);
 
   for (nsolve = 0; nsolve < 2; nsolve++) {
     ierr = VecSetRandom(x,rand);CHKERRQ(ierr);
@@ -193,5 +200,8 @@ int main(int argc,char **args)
     test:
       suffix: hpd
       args: -hpd_solve
+    test:
+      suffix: qr
+      args: -ftype qr
 
 TEST*/
