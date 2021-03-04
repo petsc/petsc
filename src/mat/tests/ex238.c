@@ -17,14 +17,14 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
   M    = m*bs;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,27,NULL,&A);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,M,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
-  /* For each block row insert atleast 27 elements */
+  /* For each block row insert at most 27 blocks */
   ierr = PetscMalloc1(bs*bs,&vals);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     row = i;
