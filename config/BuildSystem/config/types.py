@@ -268,6 +268,8 @@ char petsc_max_path_len[] = xstr(PETSC_MAX_PATH_LEN);
                      'enum': (4, 8),
                      'size_t': (8, 4)}.items():
       self.executeTest(self.checkSizeof, args=[t, sizes])
+    if self.sizes['void-p'] == 8:
+      self.addDefine('USING_64BIT_PTR',1)
     self.executeTest(self.checkVisibility)
     self.executeTest(self.checkMaxPathLen)
     return
