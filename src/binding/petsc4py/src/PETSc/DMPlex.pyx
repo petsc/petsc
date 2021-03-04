@@ -661,6 +661,9 @@ cdef class DMPlex(DM):
     def coordinatesView(self, Viewer viewer):
         CHKERR( DMPlexCoordinatesView(self.dm, viewer.vwr))
 
+    def labelsView(self, Viewer viewer):
+        CHKERR( DMPlexLabelsView(self.dm, viewer.vwr))
+
     # Load
 
     def topologyLoad(self, Viewer viewer):

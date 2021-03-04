@@ -122,6 +122,9 @@ Changes: Development
 -  Add ``DMPlexTopologyLoad()``, ``DMPlexCoordinatesLoad()``, and
    ``DMPlexLabelsLoad()`` for incremental loading of a ``DMPlex`` object
    from an HDF5 file
+-  Add ``DMPlexTopologyView()``, ``DMPlexCoordinatesView()``, and
+   ``DMPlexLabelsView()`` for incremental saving of a ``DMPlex`` object
+   to an HDF5 file
 - Add ``DMPlexIsSimplex()`` to check the shape of the first cell
 - Add ``DMPlexShape`` to describe prebuilt mesh domains
 - Add ``DMPlexCreateCoordinateSpace()`` to make an FE space for the coordinates

@@ -132,6 +132,7 @@ cdef extern from * nogil:
 
     int DMPlexTopologyView(PetscDM,PetscViewer)
     int DMPlexCoordinatesView(PetscDM,PetscViewer)
+    int DMPlexLabelsView(PetscDM,PetscViewer)
 
     int DMPlexTopologyLoad(PetscDM,PetscViewer,PetscSF*)
     int DMPlexCoordinatesLoad(PetscDM,PetscViewer)
