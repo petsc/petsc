@@ -198,7 +198,7 @@ M*/
     Complex number definitions
  */
 #if defined(PETSC_HAVE_COMPLEX)
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(__cplusplus)
 /* C++ support of complex number */
 
 #define PetscRealPartComplex(a)      (a).real()
@@ -294,10 +294,9 @@ PETSC_STATIC_INLINE PetscComplex PetscAtanhComplex(PetscComplex z)
 
 */
 
-#elif defined(PETSC_HAVE_C99_COMPLEX) && !defined(PETSC_USE_REAL___FP16)
-/* C99 support of complex number */
+#else /* C99 support of complex number */
 
-#if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PetscRealPartComplex(a)      crealf(a)
 #define PetscImaginaryPartComplex(a) cimagf(a)
 #define PetscAbsComplex(a)           cabsf(a)
@@ -367,7 +366,7 @@ PETSC_STATIC_INLINE PetscComplex PetscAtanhComplex(PetscComplex z)
 #define PetscAtanhComplex(a)         catanhq(a)
 
 #endif /* PETSC_USE_REAL_* */
-#endif /* (__cplusplus && PETSC_HAVE_CXX_COMPLEX) else-if (!__cplusplus && PETSC_HAVE_C99_COMPLEX) */
+#endif /* (__cplusplus) */
 
 /*
    PETSC_i is the imaginary number, i
@@ -381,7 +380,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
 */
 PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 {
-#if   defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(__cplusplus)
   return PetscComplex(x,y);
 #elif defined(_Imaginary_I)
   return x + y * _Imaginary_I;
@@ -406,15 +405,12 @@ PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 #define MPIU_C_COMPLEX MPI_C_COMPLEX
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
 #else
-# if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
+# if defined(__cplusplus)
   typedef petsccomplexlib::complex<double> petsc_mpiu_c_double_complex;
   typedef petsccomplexlib::complex<float> petsc_mpiu_c_complex;
-# elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX)
+# else
   typedef double _Complex petsc_mpiu_c_double_complex;
   typedef float _Complex petsc_mpiu_c_complex;
-# else
-  typedef struct {double real,imag;} petsc_mpiu_c_double_complex;
-  typedef struct {float real,imag;} petsc_mpiu_c_complex;
 # endif
 PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_complex);
 PETSC_EXTERN MPI_Datatype MPIU_C_DOUBLE_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_double_complex);
@@ -448,7 +444,7 @@ M*/
 /*
     Scalar number definitions
  */
-#if defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_HAVE_COMPLEX)
 /*MC
    MPIU_SCALAR - MPI datatype corresponding to PetscScalar
 

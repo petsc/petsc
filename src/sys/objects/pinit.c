@@ -961,7 +961,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   */
 #if defined(PETSC_HAVE_COMPLEX)
   {
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_CLANGUAGE_CXX)
     PetscComplex ic(0.0,1.0);
     PETSC_i = ic;
 #else

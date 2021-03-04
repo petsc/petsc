@@ -204,13 +204,29 @@ M*/
 
 .seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PETSC_i
 M*/
+#if !defined(PETSC_SKIP_COMPLEX)
+#  if defined(PETSC_CLANGUAGE_CXX)
+#    if !defined(PETSC_USE_REAL___FP16) && !defined(PETSC_USE_REAL___FLOAT128)
+#      if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX)  /* enable complex for library code */
+#        define PETSC_HAVE_COMPLEX 1
+#      elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX)  /* User code only - conditional on libary code complex support */
+#        define PETSC_HAVE_COMPLEX 1
+#      endif
+#    endif
+#  else /* !PETSC_CLANGUAGE_CXX */
+#    if !defined(PETSC_USE_REAL___FP16)
+#      if !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) /* enable complex for library code */
+#        define PETSC_HAVE_COMPLEX 1
+#      elif defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX)  /* User code only - conditional on libary code complex support */
+#        define PETSC_HAVE_COMPLEX 1
+#      endif
+#    endif
+#  endif /* PETSC_CLANGUAGE_CXX */
+#endif /* !PETSC_SKIP_COMPLEX */
 
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
-#  if !defined(PETSC_SKIP_COMPLEX)
-     /* C++ support of complex number */
-#    define PETSC_HAVE_COMPLEX 1
-#    if defined(PETSC_HAVE_CUDA) && __CUDACC_VER_MAJOR__ > 6
-       /* complex headers in thrust only available in CUDA 7.0 and above */
+#if defined(PETSC_HAVE_COMPLEX)
+#  if defined(__cplusplus)  /* C++ complex support */
+#    if defined(PETSC_HAVE_CUDA)
 #      define petsccomplexlib thrust
 #      include <thrust/complex.h>
 #    else
@@ -224,13 +240,10 @@ M*/
 #    elif defined(PETSC_USE_REAL___FLOAT128)
        typedef petsccomplexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
 #    endif  /* PETSC_USE_REAL_ */
-#  endif  /* ! PETSC_SKIP_COMPLEX */
-#  if !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
-#    include <petsccxxcomplexfix.h>
-#  endif /* ! PETSC_SKIP_CXX_COMPLEX_FIX */
-#elif defined(PETSC_HAVE_C99_COMPLEX) && !defined(PETSC_USE_REAL___FP16)
-#  if !defined(PETSC_SKIP_COMPLEX)
-#    define PETSC_HAVE_COMPLEX 1
+#    if !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
+#      include <petsccxxcomplexfix.h>
+#    endif /* ! PETSC_SKIP_CXX_COMPLEX_FIX */
+#  else /* c99 complex support */
 #    include <complex.h>
 #    if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
        typedef float _Complex PetscComplex;
@@ -239,10 +252,8 @@ M*/
 #    elif defined(PETSC_USE_REAL___FLOAT128)
        typedef __complex128 PetscComplex;
 #    endif /* PETSC_USE_REAL_* */
-#  endif /* !PETSC_SKIP_COMPLEX */
-#elif (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
-#  error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
-#endif /* !PETSC_SKIP_COMPLEX */
+#  endif /* !__cplusplus */
+#endif /* PETSC_HAVE_COMPLEX */
 
 /*MC
    PetscScalar - PETSc type that represents either a double precision real number, a double precision
@@ -257,7 +268,7 @@ M*/
 .seealso: PetscReal, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PetscRealPart(), PetscImaginaryPart()
 M*/
 
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_HAVE_COMPLEX)
    typedef PetscComplex PetscScalar;
 #else /* PETSC_USE_COMPLEX */
    typedef PetscReal PetscScalar;
