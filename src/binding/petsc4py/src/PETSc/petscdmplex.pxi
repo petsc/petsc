@@ -130,6 +130,8 @@ cdef extern from * nogil:
     int DMPlexComputeCellGeometryFVM(PetscDM,PetscInt,PetscReal*,PetscReal[],PetscReal[])
     int DMPlexConstructGhostCells(PetscDM,const char[],PetscInt*,PetscDM*)
 
+    int DMPlexTopologyView(PetscDM,PetscViewer)
+
     int DMPlexTopologyLoad(PetscDM,PetscViewer,PetscSF*)
     int DMPlexCoordinatesLoad(PetscDM,PetscViewer)
     int DMPlexLabelsLoad(PetscDM,PetscViewer)
