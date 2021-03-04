@@ -131,6 +131,7 @@ cdef extern from * nogil:
     int DMPlexConstructGhostCells(PetscDM,const char[],PetscInt*,PetscDM*)
 
     int DMPlexTopologyView(PetscDM,PetscViewer)
+    int DMPlexCoordinatesView(PetscDM,PetscViewer)
 
     int DMPlexTopologyLoad(PetscDM,PetscViewer,PetscSF*)
     int DMPlexCoordinatesLoad(PetscDM,PetscViewer)
