@@ -401,20 +401,9 @@ PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 #endif
 }
 
-#if defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-#define MPIU_C_COMPLEX MPI_C_COMPLEX
-#define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
-#else
-# if defined(__cplusplus)
-  typedef petsccomplexlib::complex<double> petsc_mpiu_c_double_complex;
-  typedef petsccomplexlib::complex<float> petsc_mpiu_c_complex;
-# else
-  typedef double _Complex petsc_mpiu_c_double_complex;
-  typedef float _Complex petsc_mpiu_c_complex;
-# endif
-PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_complex);
-PETSC_EXTERN MPI_Datatype MPIU_C_DOUBLE_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_double_complex);
-#endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
+#define MPIU_C_COMPLEX MPI_C_COMPLEX PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_C_COMPLEX macro is deprecated use MPI_C_COMPLEX (since version 3.15)\"")
+#define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_C_DOUBLE_COMPLEX macro is deprecated use MPI_C_DOUBLE_COMPLEX (since version 3.15)\"")
+
 #if defined(PETSC_USE_REAL___FLOAT128)
 PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #endif /* PETSC_USE_REAL___FLOAT128 */
@@ -430,13 +419,13 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 .seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PETSC_i
 M*/
 #if defined(PETSC_USE_REAL_SINGLE)
-#  define MPIU_COMPLEX MPIU_C_COMPLEX
+#  define MPIU_COMPLEX MPI_C_COMPLEX
 #elif defined(PETSC_USE_REAL_DOUBLE)
-#  define MPIU_COMPLEX MPIU_C_DOUBLE_COMPLEX
+#  define MPIU_COMPLEX MPI_C_DOUBLE_COMPLEX
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #  define MPIU_COMPLEX MPIU___COMPLEX128
 #elif defined(PETSC_USE_REAL___FP16)
-#  define MPIU_COMPLEX MPIU_C_COMPLEX
+#  define MPIU_COMPLEX MPI_C_COMPLEX
 #endif /* PETSC_USE_REAL_* */
 
 #endif /* PETSC_HAVE_COMPLEX */
