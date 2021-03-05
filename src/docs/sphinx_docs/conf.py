@@ -21,7 +21,6 @@ import datetime
 sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
 
-
 # -- Sphinx Version and Config -----------------------------------------------
 # Sphinx will error and refuse to build if not equal to version
 needs_sphinx='2.4.4'
@@ -111,6 +110,13 @@ html_static_path = ['_static']
 
 html_logo = os.path.join('..','website','images','PETSc-TAO_RGB.svg')
 html_favicon = os.path.join('..','website','images','PETSc_RGB-logo.png')
+
+# Extra preprocessing for included "classic" docs
+import build_classic_docs
+html_extra_dir = build_classic_docs.main()
+
+# Additional files that are simply copied over with an HTML build
+html_extra_path = [html_extra_dir]
 
 # -- Options for LaTeX output --------------------------------------------
 
