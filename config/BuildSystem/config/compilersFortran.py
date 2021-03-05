@@ -367,7 +367,7 @@ class Configure(config.base.Configure):
     return
 
   def checkFortranModuleOutput(self):
-    '''Figures out what flag is used to specify the include path for Fortran modules'''
+    '''Figures out what flag is used to specify the output path for Fortran modules'''
     self.setCompilers.fortranModuleOutputFlag = None
     if not self.fortranIsF90:
       self.logPrint('Not a Fortran90 compiler - hence skipping module include test')
