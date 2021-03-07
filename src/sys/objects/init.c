@@ -65,10 +65,6 @@ PetscBool   PetscCreatedGpuObjects        = PETSC_FALSE;
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
 #endif
-#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-MPI_Datatype MPIU_C_DOUBLE_COMPLEX;
-MPI_Datatype MPIU_C_COMPLEX;
-#endif
 
 /*MC
    PETSC_i - the imaginary number i
@@ -85,12 +81,10 @@ MPI_Datatype MPIU_C_COMPLEX;
 .seealso: PetscRealPart(), PetscImaginaryPart(), PetscRealPartComplex(), PetscImaginaryPartComplex()
 M*/
 PetscComplex PETSC_i;
-#endif
+MPI_Datatype MPIU___COMPLEX128 = 0;
+#endif /* PETSC_HAVE_COMPLEX */
 #if defined(PETSC_USE_REAL___FLOAT128)
 MPI_Datatype MPIU___FLOAT128 = 0;
-#if defined(PETSC_HAVE_COMPLEX)
-MPI_Datatype MPIU___COMPLEX128 = 0;
-#endif
 #elif defined(PETSC_USE_REAL___FP16)
 MPI_Datatype MPIU___FP16 = 0;
 #endif

@@ -64,8 +64,6 @@ if __name__ == '__main__':
     '--known-level1-dcache-size=32768',
     '--known-level1-dcache-linesize=64',
     '--known-level1-dcache-assoc=8',
-    '--known-mpi-int64_t=1',
-    '--known-mpi-c-double-complex=1',
     '--known-sdot-returns-double=0',
     '--known-snrm2-returns-double=0',
     '--known-has-attribute-aligned=1',

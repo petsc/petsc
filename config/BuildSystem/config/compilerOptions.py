@@ -60,6 +60,7 @@ class CompilerOptions(config.base.Configure):
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
         if bopt == '':
+          flags.extend(['-Qstd=c99'])
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD'])
           else:

@@ -1,6 +1,5 @@
 #if !defined(PETSCCXXCOMPLEXFIX_H)
 #define PETSCCXXCOMPLEXFIX_H
-#if defined(__cplusplus) && defined(PETSC_HAVE_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX)
 
 /*
     The pragma below silence all compiler warnings comming from code in this header file.
@@ -73,5 +72,4 @@ PETSC_CXX_COMPLEX_FIX(double)
 PETSC_CXX_COMPLEX_FIX(PetscInt)
 #endif /* PETSC_USE_REAL_* */
 
-#endif /* __cplusplus && PETSC_HAVE_COMPLEX && PETSC_HAVE_CXX_COMPLEX */
 #endif
