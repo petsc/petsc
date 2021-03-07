@@ -195,14 +195,13 @@ extern "C"  {
       ipdatasz = LandauGetIPDataSize(IPData); NfJac = Nf; nip = IPData->nip_;
     }
     ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(events[3],0,0,0,0);CHKERRQ(ierr);
     {
       using scr_mem_t = Kokkos::DefaultExecutionSpace::scratch_memory_space;
       using g2_scr_t = Kokkos::View<PetscReal***, Kokkos::LayoutRight, scr_mem_t>;
       using g3_scr_t = Kokkos::View<PetscReal****, Kokkos::LayoutRight, scr_mem_t>;
-
       const int scr_bytes = 2*(g2_scr_t::shmem_size(dim,Nf,Nq) + g3_scr_t::shmem_size(dim,dim,Nf,Nq));
       int   conc, team_size;
-      ierr = PetscLogEventBegin(events[3],0,0,0,0);CHKERRQ(ierr);
       const Kokkos::View<PetscReal*, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_alpha (nu_alpha, NfJac);
       Kokkos::View<PetscReal*, Kokkos::LayoutLeft> d_alpha ("nu_alpha", NfJac);
       const Kokkos::View<PetscReal*, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_beta (nu_beta, NfJac);
@@ -233,7 +232,6 @@ extern "C"  {
       Kokkos::deep_copy (d_BB, h_BB);
       Kokkos::deep_copy (d_DD, h_DD);
       Kokkos::deep_copy (d_invJ, h_invJ);
-
       ierr = PetscLogEventEnd(events[3],0,0,0,0);CHKERRQ(ierr);
 #define KOKKOS_SHARED_LEVEL 1
       conc = Kokkos::DefaultExecutionSpace().concurrency(), team_size = conc > Nq ? Nq : 1;
@@ -425,8 +423,8 @@ extern "C"  {
                     if (global_elem_mat_sz) d_elem_mats(myelem,fOff) = t; // can set this because local element matrix[fOff]
                     else {
                       PetscErrorCode         ierr = 0;
-                      PetscScalar            vals[LANDAU_MAX_Q*LANDAU_MAX_Q],row_scale[LANDAU_MAX_Q],col_scale[LANDAU_MAX_Q];
-                      PetscInt               q,idx,nr,nc,rows0[LANDAU_MAX_Q],cols0[LANDAU_MAX_Q],rows[LANDAU_MAX_Q],cols[LANDAU_MAX_Q];
+                      PetscScalar            vals[LANDAU_MAX_Q_FACE*LANDAU_MAX_Q_FACE],row_scale[LANDAU_MAX_Q_FACE],col_scale[LANDAU_MAX_Q_FACE];
+                      PetscInt               q,idx,nr,nc,rows0[LANDAU_MAX_Q_FACE],cols0[LANDAU_MAX_Q_FACE],rows[LANDAU_MAX_Q_FACE],cols[LANDAU_MAX_Q_FACE];
                       const LandauIdx *const Idxs = &d_maps->gIdx[myelem][fieldA][0];
                       idx = Idxs[blk_i];
                       if (idx >= 0) {

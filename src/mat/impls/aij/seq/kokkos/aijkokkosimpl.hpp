@@ -44,6 +44,8 @@ struct Mat_SeqAIJKokkos {
   Kokkos::View<PetscInt*>    *colmap_d; // ugh, this is a parallel construct
   Kokkos::View<PetscSplitCSRDataStructure,DeviceMemorySpace> device_mat_d;
 
+  Kokkos::View<PetscInt*>     *diag_d; // factorizations
+
   Mat_SeqAIJKokkos(MatColumnIndex_t nrows,MatColumnIndex_t ncols,MatRowMap_t nnz,MatRowMap_t *i,MatColumnIndex_t *j,MatValue_t *a)
    : i_h(i,nrows+1),
      j_h(j,nnz),
@@ -55,7 +57,8 @@ struct Mat_SeqAIJKokkos {
      csr("AIJKokkos",nrows,ncols,nnz,a_d,i_d,j_d),
      i_uncompressed_d(NULL),
      colmap_d(NULL),
-     device_mat_d(NULL)
+     device_mat_d(NULL),
+     diag_d(NULL)
   {};
 };
 
