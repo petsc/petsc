@@ -6,25 +6,24 @@
 #include <petsc/private/dmpleximpl.h>  /*I  "petscdmplex.h"  I*/
 #include <petscctable.h>
 
-#define MAX_DATA_AT_POINT 36
-
-#define MAX_COMPONENTS 16
+/* The maximum number of components registered and maximum number of components per network point */
+#define MAX_NETCOMPONENTS 36
 
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {
   PetscInt index;    /* index for user input global edge and vertex */
   PetscInt subnetid; /* Id for subnetwork */
   PetscInt ndata;    /* number of components */
-  PetscInt size[MAX_DATA_AT_POINT];
-  PetscInt key[MAX_DATA_AT_POINT];
-  PetscInt offset[MAX_DATA_AT_POINT];
-  PetscInt nvar[MAX_DATA_AT_POINT]; /* Number of variables */
-  PetscInt offsetvarrel[MAX_DATA_AT_POINT]; /* offset from the first variable of the network point */
+  PetscInt size[MAX_NETCOMPONENTS];
+  PetscInt key[MAX_NETCOMPONENTS];
+  PetscInt offset[MAX_NETCOMPONENTS];
+  PetscInt nvar[MAX_NETCOMPONENTS]; /* Number of variables */
+  PetscInt offsetvarrel[MAX_NETCOMPONENTS]; /* offset from the first variable of the network point */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct _p_DMNetworkComponentValue *DMNetworkComponentValue;
 struct _p_DMNetworkComponentValue {
-  void* data[MAX_DATA_AT_POINT];
+  void* data[MAX_NETCOMPONENTS];
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct {
@@ -93,7 +92,7 @@ typedef struct {
   DMNetworkEdgeInfo                 edge;
 
   PetscInt                          ncomponent; /* Number of components */
-  DMNetworkComponent                component[MAX_COMPONENTS]; /* List of components */
+  DMNetworkComponent                component[MAX_NETCOMPONENTS]; /* List of components */
   DMNetworkComponentHeader          header;
   DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;

@@ -340,7 +340,7 @@ This kind of calculation is used in
 Networks
 ~~~~~~~~
 
-Built on top of ``DMPlex``, the ``DMNetwork`` subclass provides
+Built on top of DMPlex, the DMNetwork subclass provides
 abstractions for representing general unstructured networks such as
 communication networks, power grid, computer networks, transportation
 networks, electrical circuits, graphs, and others.
@@ -348,10 +348,10 @@ networks, electrical circuits, graphs, and others.
 Application flow
 ^^^^^^^^^^^^^^^^
 
-The general flow of an application code using ``DMNetwork`` is as
+The general flow of an application code using DMNetwork is as
 follows:
 
-#. Create a network object
+#. Create a network object.
 
    ::
 
@@ -360,8 +360,8 @@ follows:
 #. Create components and register them with the network. A “component”
    is specific application data at a vertex/edge of the network required
    for its residual evaluation. For example, components could be
-   resistor, inductor data for circuit applications, edge weights for
-   graph problems, generator/transmission line data for power grids.
+   resistor/inductor data for circuit applications, edge weights for
+   graph problems, or generator/transmission line data for power grids.
    Components are registered by calling
 
    ::
@@ -371,55 +371,51 @@ follows:
    Here, ``name`` is the component name, ``size`` is the size of
    component data type, and ``compkey`` is an integer key that can be
    used for setting/getting the component at a vertex or an edge.
-   DMNetwork currently allows upto 16 components to be registered for a
+   DMNetwork currently allows upto 36 components to be registered for a
    network.
 
-#. A DMNetwork can consist of one or more *physical* subnetworks. When
+#. A DMNetwork can consist of one or more physical subnetworks. When
    multiple physical subnetworks are used one can (optionally) provide
-   *coupling information between subnetworks* which consist only of
-   edges connecting the vertices of the physical subnetworks. The
+   coupling information between subnetworks which consist only of shared vertices of the physical subnetworks. The
    topological sizes of the network are set by calling
 
    ::
 
-      DMNetworkSetSizes(DM dm, PetscInt Nsubnet, PetscInt nV[], PetscInt nE[], PetscInt NsubnetCouple, PetscInt nec[]);
+      DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsubnet);
 
-   Here, ``Nsubnet`` is the number of subnetworks, ``nV`` and ``nE`` is
-   the number of vertices and edges for each subnetwork,
-   ``NsubnetCouple`` is the number of pairs of subnetworks that are
-   coupled, and ``nec`` is the number of edges coupling each subnetwork
-   pair. DMNetwork assumes coupling between the subnetworks through
-   coupling edges. For a single network, set ``Nsubnet`` = 1,
-   ``NsubnetCouple`` = 0, and ``nec`` = NULL. Note that the coupling
-   between subnetworks is still an experimental feature and under
-   development.
+   Here, ``nsubnet`` and ``Nsubnet`` are the local and global number of subnetworks.
 
-#. The next step is to set up the connectivity for the network. This is
-   done by specifying the connectivity within each subnetwork
-   (``edgelist``) and between subnetworks (``edgelistCouple``).
+#. A subnetwork is added to the network by calling
 
    ::
 
-      DMNetworkSetEdgeList(DM dm, PetscInt *edgelist[], PetscInt *edgelistCouple[]);
+      DMNetworkAddSubnetwork(DM dm, const char* name, PetscInt nv, PetscInt ne, PetscInt edgelist[], PetscInt *netnum);
 
-   Each element of ``edgelist`` is an integer array of size 2*nE[i]
-   containing the edge connectivity for the i-th subnetwork. Each
-   element in ``edgelistCouple`` has four entries - from subnetwork
-   number (net.id), from subnetwork vertex number (vertex.id), to
-   subnetwork number (net.id), to subetwork vertex number (vertex.id).
+   Here ``name`` is the subnetwork name, ``nv`` and ``ne`` are the numbers of local vertices and local edges on the subnetwork, and ``edgelist`` is the connectivity for the subnetwork.
+   The output ``netnum`` is the global numbering of the subnetwork in the network.
+   Each element of ``edgelist`` is an integer array of size ``2*ne``
+   containing the edge connectivity for the subnetwork.
 
    | As an example, consider a network comprising of 2 subnetworks that
      are coupled. The topological information for the network is as
      follows:
    | subnetwork 0: v0 — v1 — v2 — v3
    | subnetwork 1: v1 — v2 — v0
-   | coupling between subnetworks: subnetwork 1: v2 — subnetwork 0: v0
-   | The ``edgelist`` and ``edgelistCouple`` for this network are
+   | The two subnetworks are coupled by merging vertex 0 from subnetwork 0 with vertex 2 from subnetwork 1.
+   | The ``edgelist`` of this network is
    | edgelist[0] = {0,1,1,2,2,3}
    | edgelist[1] = {1,2,2,0}
-   | edgelistCouple[0] = {1,2,0,0}.
 
-#. The next step is to have DMNetwork to create a bare layout (graph) of
+   The coupling is done by calling
+
+   ::
+
+      DMNetworkAddSharedVertices(DM dm, PetscInt anet, PetscInt bnet, PetscInt nsv, PetscInt asv[], PetscInt bsv[]);
+
+   Here ``anet`` and ``bnet`` are the first and second subnetwork global numberings returned by ``DMNetworkAddSubnetwork()``,
+   ``nsv`` is the number of vertices shared by the two subnetworks, ``asv`` and ``bsv`` are the vertex indices in the subnetwork ``anet`` and ``bnet`` .
+
+#. The next step is to have DMNetwork create a bare layout (graph) of
    the network by calling
 
    ::
@@ -428,46 +424,26 @@ follows:
 
 #. After completing the previous steps, the network graph is set up, but
    no physics is associated yet. This is done by adding the components
-   and setting the number of variables for the vertices and edges.
+   and setting the number of variables to the vertices and edges.
 
-   A component is added to a vertex/edge by calling
+   A component and number of variables are added to a vertex/edge by calling
 
    ::
 
-      DMNetworkAddComponent(DM dm, PetscInt p, PetscInt compkey, void* compdata);
+      DMNetworkAddComponent(DM dm, PetscInt p, PetscInt compkey, void* compdata, PetscInt nvar)
 
    where ``p`` is the network vertex/edge point in the range obtained by
-   either DMNetworkGetEdgeRange or DMNetworkGetVertexRange, ``compkey``
-   is the component key returned when registering the component
-   (DMNetworkRegisterComponent), and ``compdata`` holds the data for the
-   component. DMNetwork supports setting multiple components (max. 36)
-   at a vertex/edge.
+   either ``DMNetworkGetVertexRange()``/``DMNetworkGetEdgeRange()``, ``DMNetworkGetSubnetwork()``, or ``DMNetworkGetSharedVertices()``;
+   ``compkey`` is the component key returned when registering the component
+   (``DMNetworkRegisterComponent()``); ``compdata`` holds the data for the
+   component; and ``nvar`` is the number of variables associated to the added component at this network point. DMNetwork supports setting multiple components (max. 36)
+   at a vertex/edge. At a shared vertex, DMNetwork currently requires the owner process of the vertex adds all the components and number of variables.
 
    DMNetwork currently assumes the component data to be stored in a
    contiguous chunk of memory. As such, it does not do any
    packing/unpacking before/after the component data gets distributed.
    Any such serialization (packing/unpacking) should be done by the
    application.
-
-   The number of variables at each vertex/edge are set by
-
-   ::
-
-      DMNetworkSetNumVariables(DM dm, PetscInt p, PetscInt nvar);
-
-   or
-
-   ::
-
-      DMNetworkAddNumVariables(DM dm, PetscInt p, PetscInt nvar);
-
-   Alternatively, the number of variables can be set for a component
-   directly. This allows much finer control, specifically for
-   vertices/edges that have multiple components set on them.
-
-   ::
-
-      DMNetworkSetComponentNumVariables(DM dm, PetscInt p, PetscInt compnum, PetscInt nvar);
 
 #. Set up network internal data structures.
 
@@ -505,35 +481,28 @@ vertices/edges,
 
 ::
 
-   DMNetworkGetSubnetworkInfo(DM dm, PetscInt netid, PetscInt *nv, PetscInt *ne, const PetscInt **vtx, const PetscInt **edge);
+   DMNetworkGetSubnetwork(DM dm, PetscInt netnum, PetscInt *nv, PetscInt *ne, const PetscInt **vtx, const PetscInt **edge);
 
-Checking the “ghost” status of a vertex,
+checking the status of a vertex,
 
 ::
 
    DMNetworkIsGhostVertex(DM dm, PetscInt p, PetscBool *isghost);
 
-and retrieving local/global indices of vertex/edge variables for
-inserting elements in vectors/matrices.
+::
+
+   DMNetworkIsSharedVertex(DM dm, PetscInt p, PetscBool *isshared);
+
+and retrieving local/global indices of vertex/edge component variables for
+inserting elements in vectors/matrices,
 
 ::
 
-   DMNetworkGetVariableOffset(DM dm, PetscInt p, PetscInt *offset);
+   DMNetworkGetLocalVecOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offset);
 
 ::
 
-   DMNetworkGetVariableGlobalOffset(DM dm, PetscInt p, PetscInt *offsetg);
-
-If the number of variables are set at the component level, then their
-local/global offsets can be retrieved via
-
-::
-
-   DMNetworkGetComponentVariableOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offset);
-
-::
-
-   DMNetworkGetComponentVariableGlobalOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offsetg);
+   DMNetworkGetGlobalVecOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offsetg).
 
 In network applications, one frequently needs to find the supporting
 edges for a vertex or the connecting vertices covering an edge. These
@@ -545,34 +514,34 @@ can be obtained by the following two routines.
 
 ::
 
-   DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *nedges, const PetscInt *edges[]);
+   DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *nedges, const PetscInt *edges[]).
 
-Retrieving components
-^^^^^^^^^^^^^^^^^^^^^
+Retrieving components and number of variables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The components set at a vertex/edge can be accessed by
-
-::
-
-   DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscInt *compkey, void** component);
-
-``compkey`` is the key set by ``DMNetworkRegisterComponent``. An example
-of accessing and retrieving the components at vertices is:
+The components and the corresponding number of variables set at a vertex/edge can be accessed by
 
 ::
 
-   PetscInt Start, End, numcomps,key,v,compnum;
+   DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscInt *compkey, void **component, PetscInt *nvar)
+
+input ``compnum`` is the component number, output ``compkey`` is the key set by ``DMNetworkRegisterComponent``. An example
+of accessing and retrieving the components and number of variables at vertices is:
+
+::
+
+   PetscInt Start,End,numcomps,key,v,compnum;
    void *component;
 
    DMNetworkGetVertexRange(dm, &Start, &End);
-   for (v=Start; v  < End; v++) {
-     DMNetworkGetNumComponents(dm,v, &numcomps);
-     for (compnum=0; compnum < numcomps;compnum++) {
-       DMNetworkGetComponent(dm,v,compnum, &key, &component);
+   for (v = Start; v < End; v++) {
+     DMNetworkGetNumComponents(dm, v, &numcomps);
+     for (compnum=0; compnum < numcomps; compnum++) {
+       DMNetworkGetComponent(dm, v, compnum, &key, &component, &nvar);
        compdata = (UserCompDataType)(component);
      }
    }
 
-The above example does not explicitly make use the component key. It is
+The above example does not explicitly use the component key. It is
 used when different component types are set at different vertices. In
-this case, the compkey is used to differentiate the component type.
+this case, ``compkey`` is used to differentiate the component type.
