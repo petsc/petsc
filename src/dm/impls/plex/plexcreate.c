@@ -2600,6 +2600,7 @@ static PetscErrorCode DMGetNeighbors_Plex(DM dm, PetscInt *nranks, const PetscMP
   PetscFunctionBegin;
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   if (!data->neighbors) {
+    ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
     ierr = PetscSFGetRootRanks(sf, &njranks, &jranks, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = PetscSFGetLeafRanks(sf, &niranks, &iranks, NULL, NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(njranks + niranks + 1, &data->neighbors);CHKERRQ(ierr);
