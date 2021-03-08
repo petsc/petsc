@@ -14,7 +14,7 @@
 /*
    Include files specific for SUNDIALS
 */
-#if defined(PETSC_HAVE_SUNDIALS)
+#if defined(PETSC_HAVE_SUNDIALS2)
 
 EXTERN_C_BEGIN
 #include <cvode/cvode.h>                  /* prototypes for CVODE fcts. */

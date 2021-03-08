@@ -1,7 +1,7 @@
 
 ALL: lib
 
-#requirespackage   'PETSC_HAVE_SUNDIALS'
+#requirespackage   'PETSC_HAVE_SUNDIALS2'
 
 CFLAGS   =
 FFLAGS   =
