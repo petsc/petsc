@@ -71,8 +71,10 @@ Changes: Development
 -  Add ``MATCENTERING`` special matrix type that implements action of the
    centering matrix
 -  Remove -mat_mumps_icntl_7 1 option, use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
+-  Add ``MATSOLVERSPQR`` - interface to SuiteSparse QR factorization
 
 .. rubric:: PC:
+-  Add ``PCQR`` - interface to SuiteSparse QR factorization
 
 .. rubric:: KSP:
 
