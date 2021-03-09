@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   PetscReal      norm,tol=PETSC_SMALL;
   PetscMPIInt    size;
   char           solver[64];
-  PetscBool      inplace,full = PETSC_FALSE, ldl = PETSC_TRUE;
+  PetscBool      inplace,full = PETSC_FALSE, ldl = PETSC_TRUE, qr = PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
@@ -106,6 +106,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-ldl",&ldl,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-qr",&qr,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-full",&full,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-solver_type",solver,sizeof(solver),NULL);CHKERRQ(ierr);
 
@@ -212,68 +213,70 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = VecDestroy(&ytmp);CHKERRQ(ierr);
 
-  /* setup rectanglar */
-  ierr = createMatsAndVecs(m, n, nrhs, full, &mat, &RHS, &SOLU, &x, &y, &b);CHKERRQ(ierr);
-  ierr = VecDuplicate(y,&ytmp);CHKERRQ(ierr);
+  if (qr) {
+    /* setup rectanglar */
+    ierr = createMatsAndVecs(m, n, nrhs, full, &mat, &RHS, &SOLU, &x, &y, &b);CHKERRQ(ierr);
+    ierr = VecDuplicate(y,&ytmp);CHKERRQ(ierr);
 
-  /* QR factorization - perms and factinfo are ignored by LAPACK */
-  ierr = MatMult(mat,x,b);CHKERRQ(ierr);
+    /* QR factorization - perms and factinfo are ignored by LAPACK */
+    ierr = MatMult(mat,x,b);CHKERRQ(ierr);
 
-  /* in-place QR */
-  if (inplace) {
-    Mat SOLU2;
+    /* in-place QR */
+    if (inplace) {
+      Mat SOLU2;
 
-    ierr = MatDuplicate(mat,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
-    ierr = MatQRFactor(F,NULL,0);CHKERRQ(ierr);
+      ierr = MatDuplicate(mat,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
+      ierr = MatQRFactor(F,NULL,0);CHKERRQ(ierr);
+      ierr = MatSolve(F,b,y);CHKERRQ(ierr);
+      ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
+      ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
+      if (norm > tol) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for in-place QR %g\n",(double)norm);CHKERRQ(ierr);
+      }
+      ierr = MatMatMult(mat,SOLU,MAT_REUSE_MATRIX,PETSC_DEFAULT,&RHS);CHKERRQ(ierr);
+      ierr = MatDuplicate(SOLU, MAT_DO_NOT_COPY_VALUES, &SOLU2);CHKERRQ(ierr);
+      ierr = MatMatSolve(F,RHS,SOLU2);CHKERRQ(ierr);
+      ierr = MatAXPY(SOLU2,-1.0,SOLU,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(SOLU2,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+      if (norm > tol) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Norm of error for in-place QR (MatMatSolve) %g\n",(double)norm);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&F);CHKERRQ(ierr);
+      ierr = MatDestroy(&SOLU2);CHKERRQ(ierr);
+    }
+
+    /* out-of-place QR */
+    ierr = MatGetFactor(mat,solver,MAT_FACTOR_QR,&F);CHKERRQ(ierr);
+    ierr = MatQRFactorSymbolic(F,mat,NULL,NULL);CHKERRQ(ierr);
+    ierr = MatQRFactorNumeric(F,mat,NULL);CHKERRQ(ierr);
     ierr = MatSolve(F,b,y);CHKERRQ(ierr);
-    ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
-    ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-    if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for in-place QR %g\n",(double)norm);CHKERRQ(ierr);
-    }
-    ierr = MatMatMult(mat,SOLU,MAT_REUSE_MATRIX,PETSC_DEFAULT,&RHS);CHKERRQ(ierr);
-    ierr = MatDuplicate(SOLU, MAT_DO_NOT_COPY_VALUES, &SOLU2);CHKERRQ(ierr);
-    ierr = MatMatSolve(F,RHS,SOLU2);CHKERRQ(ierr);
-    ierr = MatAXPY(SOLU2,-1.0,SOLU,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(SOLU2,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Norm of error for in-place QR (MatMatSolve) %g\n",(double)norm);CHKERRQ(ierr);
-    }
-    ierr = MatDestroy(&F);CHKERRQ(ierr);
-    ierr = MatDestroy(&SOLU2);CHKERRQ(ierr);
-  }
-
-  /* out-of-place QR */
-  ierr = MatGetFactor(mat,solver,MAT_FACTOR_QR,&F);CHKERRQ(ierr);
-  ierr = MatQRFactorSymbolic(F,mat,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatQRFactorNumeric(F,mat,NULL);CHKERRQ(ierr);
-  ierr = MatSolve(F,b,y);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for out-of-place QR %g\n",(double)norm);CHKERRQ(ierr);
-  }
-
-  if (m == n) {
-    /* out-of-place MatSolveTranspose */
-    ierr = MatMultTranspose(mat,x,b);CHKERRQ(ierr);
-    ierr = MatSolveTranspose(F,b,y);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
     if (norm > tol) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for out-of-place QR %g\n",(double)norm);CHKERRQ(ierr);
     }
-  }
 
-  /* free space */
-  ierr = MatDestroy(&F);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&RHS);CHKERRQ(ierr);
-  ierr = MatDestroy(&SOLU);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&ytmp);CHKERRQ(ierr);
+    if (m == n) {
+      /* out-of-place MatSolveTranspose */
+      ierr = MatMultTranspose(mat,x,b);CHKERRQ(ierr);
+      ierr = MatSolveTranspose(F,b,y);CHKERRQ(ierr);
+      ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
+      ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
+      if (norm > tol) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for out-of-place QR %g\n",(double)norm);CHKERRQ(ierr);
+      }
+    }
+
+    /* free space */
+    ierr = MatDestroy(&F);CHKERRQ(ierr);
+    ierr = MatDestroy(&mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&RHS);CHKERRQ(ierr);
+    ierr = MatDestroy(&SOLU);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    ierr = VecDestroy(&ytmp);CHKERRQ(ierr);
+  }
   ierr = PetscFinalize();
   return ierr;
 }
@@ -287,19 +290,25 @@ int main(int argc,char **argv)
    test:
      requires: cuda
      suffix: seqdensecuda
-     args: -mat_type seqdensecuda -rhs_mat_type seqdensecuda -ldl 0 -solver_type {{petsc cuda}}
+     args: -mat_type seqdensecuda -rhs_mat_type seqdensecuda -ldl 0 -solver_type {{petsc cuda}} -qr 0
+     output_file: output/ex1_1.out
+
+   test:
+     requires: cuda
+     suffix: seqdensecuda_2
+     args: -ldl 0 -solver_type cuda -qr 0
      output_file: output/ex1_1.out
 
    test:
      requires: cuda
      suffix: seqdensecuda_seqaijcusparse
-     args: -mat_type seqaijcusparse -rhs_mat_type seqdensecuda
+     args: -mat_type seqaijcusparse -rhs_mat_type seqdensecuda -qr 0
      output_file: output/ex1_2.out
 
    test:
      requires: cuda viennacl
      suffix: seqdensecuda_seqaijviennacl
-     args: -mat_type seqaijviennacl -rhs_mat_type seqdensecuda
+     args: -mat_type seqaijviennacl -rhs_mat_type seqdensecuda -qr 0
      output_file: output/ex1_2.out
 
    test:
