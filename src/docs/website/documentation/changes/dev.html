@@ -164,6 +164,7 @@
         <li>Add the option MAT_FORCE_DIAGONAL_ENTRIES for MatSetOption(). It forces allocation of all diagonal entries</li>
         <li>Remove MAT_NEW_DIAGONALS from MatOption</li>
         <li>Add UNKNOW_NONZERO_PATTERN as new value for MatStructure. It indicates that the relationship is unknown, when set the AIJ matrices check if the two matrices have identical patterns and if so use the faster code</li>
+        <li>Add MAT_FACTOR_QR, MatQRFactor(), MatQRFactorSymbolic(), and MatQRFactorNumeric() for QR factorizations.  Currently the only built-in implementation uses LAPACK on sequential dense matrices.</li>
       </ul>
       <h4>PC:</h4>
       <ul>
