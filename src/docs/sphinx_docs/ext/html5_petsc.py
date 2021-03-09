@@ -12,6 +12,7 @@ from sphinx import version_info as sphinx_version_info
 from sphinx.writers.html5 import HTML5Translator
 from sphinx.application import Sphinx
 
+if not hasattr(re,'Pattern'): re.Pattern = re._pattern_type
 
 def setup(app: Sphinx) -> None:
     _check_version(app)
