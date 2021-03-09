@@ -242,6 +242,8 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
     if (fas->fastype == SNES_FAS_FULL) {
       ierr   = PetscOptionsBool("-snes_fas_full_downsweep","Smooth on the initial down sweep for full FAS cycles","SNESFASFullSetDownSweep",fas->full_downsweep,&fas->full_downsweep,&flg);CHKERRQ(ierr);
       if (flg) {ierr = SNESFASFullSetDownSweep(snes,fas->full_downsweep);CHKERRQ(ierr);}
+      ierr   = PetscOptionsBool("-snes_fas_full_total","Use total restriction and interpolaton on the indial down and up sweeps for the full FAS cycle","SNESFASFullSetUseTotal",fas->full_total,&fas->full_total,&flg);CHKERRQ(ierr);
+      if (flg) {ierr = SNESFASFullSetTotal(snes,fas->full_total);CHKERRQ(ierr);}
     }
 
     ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smoothing steps","SNESFASSetNumberSmoothUp",fas->max_up_it,&n_up,&upflg);CHKERRQ(ierr);
@@ -509,6 +511,68 @@ PetscErrorCode SNESFASRestrict(SNES fine,Vec Xfine,Vec Xcoarse)
 
 /*
 
+Performs a variant of FAS using the interpolated total coarse solution
+
+fine problem:   F(x) = b
+coarse problem: F^c(x^c) = Rb, Initial guess Rx
+interpolated solution: x^f = I x^c (total solution interpolation
+
+ */
+static PetscErrorCode SNESFASInterpolatedCoarseSolution(SNES snes, Vec X, Vec X_new)
+{
+  PetscErrorCode      ierr;
+  Vec                 X_c, B_c;
+  SNESConvergedReason reason;
+  SNES                next;
+  Mat                 restrct, interpolate;
+  SNES_FAS            *fasc;
+
+  PetscFunctionBegin;
+  ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
+  if (next) {
+    fasc = (SNES_FAS*)next->data;
+
+    ierr = SNESFASCycleGetRestriction(snes, &restrct);CHKERRQ(ierr);
+    ierr = SNESFASCycleGetInterpolation(snes, &interpolate);CHKERRQ(ierr);
+
+    X_c  = next->vec_sol;
+
+    if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
+    /* restrict the total solution: Rb */
+    ierr = SNESFASRestrict(snes, X, X_c);CHKERRQ(ierr);
+    B_c = next->vec_rhs;
+    if (snes->vec_rhs) {
+      /* restrict the total rhs defect: Rb */
+      ierr = MatRestrict(restrct, snes->vec_rhs, B_c);CHKERRQ(ierr);
+    } else {
+      ierr = VecSet(B_c, 0.);CHKERRQ(ierr);
+    }
+    if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
+
+    ierr = SNESSolve(next, B_c, X_c);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(next,&reason);CHKERRQ(ierr);
+    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
+    /* x^f <- Ix^c*/
+    DM dmc,dmf;
+
+    ierr = SNESGetDM(next, &dmc);CHKERRQ(ierr);
+    ierr = SNESGetDM(snes, &dmf);CHKERRQ(ierr);
+    if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
+    ierr = DMInterpolateSolution(dmc, dmf, interpolate, X_c, X_new);CHKERRQ(ierr);
+    if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
+    ierr = PetscObjectSetName((PetscObject) X_c, "Coarse solution");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(X_c, NULL, "-fas_coarse_solution_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) X_new, "Updated Fine solution");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(X_new, NULL, "-fas_levels_1_solution_view");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+
 Performs the FAS coarse correction as:
 
 fine problem:   F(x) = b
@@ -570,11 +634,11 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
 
     if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolateAdd(interpolate, X_c, X, X_new);CHKERRQ(ierr);
+    if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
     ierr = PetscObjectSetName((PetscObject) X_c, "Coarse correction");CHKERRQ(ierr);
     ierr = VecViewFromOptions(X_c, NULL, "-fas_coarse_solution_view");CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) X_new, "Updated Fine solution");CHKERRQ(ierr);
     ierr = VecViewFromOptions(X_new, NULL, "-fas_levels_1_solution_view");CHKERRQ(ierr);
-    if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -745,7 +809,9 @@ static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
       if (fas->level != 1) next->max_its += 1;
       if (fas->full_downsweep) {ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);}
       fas->full_downsweep = PETSC_TRUE;
-      ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
+      if (fas->full_total) {ierr = SNESFASInterpolatedCoarseSolution(snes,X,X);CHKERRQ(ierr);}
+      else                 {ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);}
+      fas->full_total = PETSC_FALSE;
       ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
       if (fas->level != 1) next->max_its -= 1;
     } else {
@@ -969,6 +1035,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->usedmfornumberoflevels = PETSC_FALSE;
   fas->fastype                = SNES_FAS_MULTIPLICATIVE;
   fas->full_downsweep         = PETSC_FALSE;
+  fas->full_total             = PETSC_FALSE;
 
   fas->eventsmoothsetup    = 0;
   fas->eventsmoothsolve    = 0;
