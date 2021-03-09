@@ -81,6 +81,9 @@ class Configure(config.package.Package):
     args.append('INSTALL_DOC='+self.installDir+'/share/doc/suitesparse')
     args.append('BLAS="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('LAPACK="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    # fix for bug in SuiteSparse
+    if self.setCompilers.isDarwin(self.log):
+      args.append('LDLIBS=""')
     if self.blasLapack.mangling == 'underscore':
       flg = ''
     elif self.blasLapack.mangling == 'caps':
