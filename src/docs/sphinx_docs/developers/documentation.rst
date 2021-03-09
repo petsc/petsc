@@ -344,6 +344,8 @@ Sphinx Documentation Guidelines
 
       `link text <https://external.org>`__
 
+* Use restraint in adding new Sphinx extensions, in particular those which aren't
+  widely-used and well-supported, or those with hidden system dependencies.
 
 Porting LaTeX to Sphinx
 -----------------------
@@ -405,7 +407,7 @@ Next, one must examine the output, ideally comparing to the original rendered La
 * Fix section labels and links
 * Fix links with literals in the link text
 * Itemized lists
-* Replace Tikz with graphviz (or images or something else)
+* Replace Tikz images or convert to standalone and render
 * Replace/fix tables
 * Replace included source code with "literalinclude" (see :ref:`sphinx_guidelines`)
 * (please add more common fixes here as you find them) ...
