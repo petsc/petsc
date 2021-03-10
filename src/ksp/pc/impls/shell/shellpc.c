@@ -584,7 +584,7 @@ PetscErrorCode  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 }
 
 /*@C
-   PCShellSetApply - Sets routine to use as preconditioner on a block of vectors.
+   PCShellSetMatApply - Sets routine to use as preconditioner on a block of vectors.
 
    Logically Collective on PC
 
