@@ -14,6 +14,7 @@ typedef struct {
   PetscBool spectral; /* Look at the spectrum along planes in the solution */
   PetscBool shear;    /* Shear the domain */
   PetscBool adjoint;  /* Solve the adjoint problem */
+  PetscBool homogeneous;
 } AppCtx;
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -22,11 +23,19 @@ static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   return 0;
 }
 
-static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode trig_inhomogeneous_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt d;
   *u = 0.0;
   for (d = 0; d < dim; ++d) *u += PetscSinReal(2.0*PETSC_PI*x[d]);
+  return 0;
+}
+
+static PetscErrorCode trig_homogeneous_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt d;
+  *u = 1.0;
+  for (d = 0; d < dim; ++d) *u *= PetscSinReal(2.0*PETSC_PI*x[d]);
   return 0;
 }
 
@@ -39,13 +48,32 @@ static void obj_error_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   obj[0] = a[aOff[0]]*(u[0] - a[aOff[1]]);
 }
 
-static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+static void f0_trig_inhomogeneous_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                       PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) f0[0] += -4.0*PetscSqr(PETSC_PI)*PetscSinReal(2.0*PETSC_PI*x[d]);
+}
+
+static void f0_trig_homogeneous_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                      PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) {
+    PetscScalar v = 1.;
+    for (PetscInt e = 0; e < dim; e++) {
+      if (e == d) {
+        v *= -4.0*PetscSqr(PETSC_PI)*PetscSinReal(2.0*PETSC_PI*x[d]);
+      } else {
+        v *= PetscSinReal(2.0*PETSC_PI*x[d]);
+      }
+    }
+    f0[0] += v;
+  }
 }
 
 static void f0_unity_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -90,11 +118,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->shear    = PETSC_FALSE;
   options->spectral = PETSC_FALSE;
   options->adjoint  = PETSC_FALSE;
+  options->homogeneous = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-shear", "Shear the domain", "ex13.c", options->shear, &options->shear, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-spectral", "Look at the spectrum along planes of the solution", "ex13.c", options->spectral, &options->spectral, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-adjoint", "Solve the adjoint problem", "ex13.c", options->adjoint, &options->adjoint, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-homogeneous", "Use homogeneous boundary conditions", "ex13.c", options->homogeneous, &options->homogeneous, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -179,14 +209,16 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
   PetscDS        prob;
   const PetscInt id = 1;
+  PetscPointFunc f0 = user->homogeneous ? f0_trig_homogeneous_u : f0_trig_inhomogeneous_u;
+  PetscErrorCode (*ex)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *) = user->homogeneous ? trig_homogeneous_u : trig_inhomogeneous_u;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(prob, 0, f0, f1_u);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 0, ex, user);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) ex, NULL, 1, &id, user);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 0, trig_u, user);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, NULL, 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -410,7 +442,7 @@ int main(int argc, char **argv)
       IS       *subis;
       PetscReal errorEstTot, errorL2Norm, errorL2Tot;
       PetscInt  N, i;
-      PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *) = {trig_u};
+      PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *) = {user.homogeneous ? trig_homogeneous_u : trig_inhomogeneous_u};
       void (*identity[1])(PetscInt, PetscInt, PetscInt,
                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
