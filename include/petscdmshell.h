@@ -8,6 +8,7 @@ PETSC_EXTERN PetscErrorCode DMShellSetContext(DM,void *);
 PETSC_EXTERN PetscErrorCode DMShellGetContext(DM,void **);
 PETSC_EXTERN PetscErrorCode DMShellSetMatrix(DM,Mat);
 PETSC_EXTERN PetscErrorCode DMShellSetGlobalVector(DM,Vec);
+PETSC_EXTERN PetscErrorCode DMShellGetGlobalVector(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMShellSetLocalVector(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMShellSetCreateGlobalVector(DM,PetscErrorCode (*)(DM,Vec*));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateLocalVector(DM,PetscErrorCode (*)(DM,Vec*));

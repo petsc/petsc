@@ -396,6 +396,34 @@ PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMShellGetGlobalVector - Returns the template global vector associated with the DMShell, or NULL if it was not set
+
+   Not collective
+
+   Input Arguments:
++  dm - shell DM
+-  X - template vector
+
+   Level: advanced
+
+.seealso: DMShellSetGlobalVector(), DMShellSetCreateGlobalVector(), DMCreateGlobalVector()
+@*/
+PetscErrorCode DMShellGetGlobalVector(DM dm, Vec *X)
+{
+  DM_Shell      *shell = (DM_Shell *) dm->data;
+  PetscBool      isshell;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(X,2);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  *X = shell->Xglobal;
+  PetscFunctionReturn(0);
+}
+
 /*@C
    DMShellSetCreateGlobalVector - sets the routine to create a global vector associated with the shell DM
 
