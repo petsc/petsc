@@ -24,7 +24,7 @@ Solvers
 
 - ``KSP`` Krylov Subspace methods - approximate solvers with a history of previous iterations
 
-- ``SNES`` nolinear equation solver
+- ``SNES`` nolinear equation solvers
 
 - ``TS`` time integrators (ODE/PDE), explicit, implicit, local and global error estimators
 
@@ -44,6 +44,8 @@ Connectors of continuum models, meshes, and discretizations to solvers and algeb
 - ``DMNETWORK`` - for simulations on networks or graphs, for example the power grid, river networks, the nervous system
 
 - ``DMP4EST`` - for simulations on collections of quad or octree meshes
+
+- ``DMSWARM`` - for simulations on particles
 
 
 Utilities
