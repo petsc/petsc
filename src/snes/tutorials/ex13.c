@@ -600,6 +600,24 @@ int main(int argc, char **argv)
     # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 3.8
     suffix: 3d_q3_conv
     args: -dm_plex_box_dim 3 -dm_plex_box_simplex 0 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 1
+  test:
+    suffix: 2d_p1_fas_full
+    requires: triangle
+    args: -potential_petscspace_degree 1 -dm_refine_hierarchy 5 -dm_distribute \
+      -snes_max_it 1 -snes_type fas -snes_fas_levels 5 -snes_fas_type full -snes_fas_full_total \
+        -fas_coarse_snes_monitor -fas_coarse_snes_max_it 1 -fas_coarse_ksp_atol 1.e-13 \
+        -fas_levels_snes_monitor -fas_levels_snes_max_it 1 -fas_levels_snes_type newtonls \
+          -fas_levels_pc_type none -fas_levels_ksp_max_it 2 -fas_levels_ksp_converged_maxits -fas_levels_ksp_type chebyshev \
+            -fas_levels_esteig_ksp_type cg -fas_levels_ksp_chebyshev_esteig 0,0.25,0,1.05 -fas_levels_esteig_ksp_max_it 10
+  test:
+    suffix: 2d_p1_fas_full_homogeneous
+    requires: triangle
+    args: -homogeneous -potential_petscspace_degree 1 -dm_refine_hierarchy 5 -dm_distribute \
+      -snes_max_it 1 -snes_type fas -snes_fas_levels 5 -snes_fas_type full \
+        -fas_coarse_snes_monitor -fas_coarse_snes_max_it 1 -fas_coarse_ksp_atol 1.e-13 \
+        -fas_levels_snes_monitor -fas_levels_snes_max_it 1 -fas_levels_snes_type newtonls \
+          -fas_levels_pc_type none -fas_levels_ksp_max_it 2 -fas_levels_ksp_converged_maxits -fas_levels_ksp_type chebyshev \
+            -fas_levels_esteig_ksp_type cg -fas_levels_ksp_chebyshev_esteig 0,0.25,0,1.05 -fas_levels_esteig_ksp_max_it 10
 
   test:
     suffix: 2d_p1_scalable
