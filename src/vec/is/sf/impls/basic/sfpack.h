@@ -3,13 +3,15 @@
 
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 #if defined(PETSC_HAVE_CUDA)
-  #include <cuda_runtime.h> /* For cudaStream_t */
-  #include <petsccublas.h>  /* For CHKERRCUDA */
+  #include <petsccublas.h>
+  typedef cudaStream_t  cupmStream_t;
+  typedef cudaEvent_t   cupmEvent_t;
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-  #include <hip/hip_runtime.h>  /* For hipStream_t */
-  #include <petschipblas.h>  /* For CHKERRHIP */
+  #include <petschipblas.h>
+  typedef hipStream_t   cupmStream_t;
+  typedef hipEvent_t    cupmEvent_t;
 #endif
 
 /* In terms of function overloading, long long int is a different type than int64_t, which PetscInt might be defined to.
@@ -48,7 +50,17 @@ struct _n_PetscSFPackOpt {
 /* An abstract class that defines a communication link, which includes how to pack/unpack data and send/recv buffers
  */
 struct _n_PetscSFLink {
-  PetscErrorCode (*Memcpy)            (PetscSFLink,PetscMemType,void*,PetscMemType,const void*,size_t); /* Asynchronous copy might use stream in the link */
+  PetscErrorCode (*Memcpy)              (PetscSFLink,PetscMemType,void*,PetscMemType,const void*,size_t); /* Async device memcopy might use stream in the link */
+  PetscErrorCode (*PrePack)             (PetscSF,PetscSFLink,PetscSFDirection);
+  PetscErrorCode (*PostUnpack)          (PetscSF,PetscSFLink,PetscSFDirection);
+  PetscErrorCode (*StartCommunication)  (PetscSF,PetscSFLink,PetscSFDirection);
+  PetscErrorCode (*FinishCommunication) (PetscSF,PetscSFLink,PetscSFDirection);
+  PetscErrorCode (*SyncDevice)          (PetscSFLink);
+  PetscErrorCode (*SyncStream)          (PetscSFLink);
+  PetscErrorCode (*Destroy)             (PetscSF,PetscSFLink);
+
+  PetscErrorCode (*BuildDependenceBegin)(PetscSF,PetscSFLink,PetscSFDirection);
+  PetscErrorCode (*BuildDependenceEnd)  (PetscSF,PetscSFLink,PetscSFDirection);
 
   PetscErrorCode (*h_Pack)            (PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*);
   PetscErrorCode (*h_UnpackAndInsert) (PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,const void*);
@@ -87,9 +99,6 @@ struct _n_PetscSFLink {
   /* These fields are lazily initialized in a sense that only when device pointers are passed to an SF, the SF
      will set them, otherwise it just leaves them alone. Packing routines using regular ops when there are no data race chances.
   */
-  PetscErrorCode (*d_SyncDevice)      (PetscSFLink);
-  PetscErrorCode (*d_SyncStream)      (PetscSFLink);
-
   PetscErrorCode (*d_Pack)            (PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*);
   PetscErrorCode (*d_UnpackAndInsert) (PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,const void*);
   PetscErrorCode (*d_UnpackAndAdd)    (PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,const void*);
@@ -151,17 +160,10 @@ struct _n_PetscSFLink {
   PetscErrorCode (*da_ScatterAndLXOR)  (PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*);
   PetscErrorCode (*da_ScatterAndBXOR)  (PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,PetscInt,PetscSFPackOpt,const PetscInt*,void*);
   PetscErrorCode (*da_FetchAndAddLocal)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,void*,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*);
-/* TODO:  Make runtime  */
-#if defined (PETSC_HAVE_CUDA)
+ #if defined (PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   PetscInt       maxResidentThreadsPerGPU;   /* It is a copy from SF for convenience */
-  cudaStream_t   stream;                     /* Stream to launch pack/unapck kernels if not using the default stream */
-#elif defined (PETSC_HAVE_HIP)
-  PetscInt       maxResidentThreadsPerGPU;   /* It is a copy from SF for convenience */
-  hipStream_t    stream;
-#endif
-
-  PetscErrorCode (*Destroy)(PetscSFLink);    /* These two fields are meant to be used by SF_Kokkos, with spptr pointing to an execution space object */
-  void           *spptr;                     /* for a given stream, but unused now due to a Kokkos bug, so that SF_Kokkos only supports null stream. */
+  cupmStream_t   stream;                     /* stream on which input/output root/leafdata is computed on (default is PetscDefaultCudaStream) */
+ #endif
 #endif
   PetscMPIInt  tag;                          /* Each link has a tag so we can perform multiple SF ops at the same time */
   MPI_Datatype unit;                         /* The MPI datatype this PetscSFLink is built for */
@@ -178,7 +180,8 @@ struct _n_PetscSFLink {
   PetscInt     rootdirect_mpi,leafdirect_mpi;/* Can root/leafdata for remote be directly passed to MPI? 1: yes, 0: no. See more in PetscSFLinkCreate() */
   const void   *rootdatadirect[2][2];        /* The root/leafdata used to init root/leaf requests, in layout of [PETSCSF_DIRECTION][PETSC_MEMTYPE]. */
   const void   *leafdatadirect[2][2];        /* ... We need them to look up links when root/leafdirect_mpi are true */
-  char         *rootbuf[2][2];               /* Buffers for packed roots, in layout of [PETSCSF_LOCAL/REMOTE][PETSC_MEMTYPE] */
+  char         *rootbuf[2][2];               /* Buffers for packed roots, in layout of [PETSCSF_LOCAL/REMOTE][PETSC_MEMTYPE]. PETSCSF_LOCAL does not need MPI, .. */
+                                             /* .. but in case rootmtype is different from leafmtype, we still need to pack local roots and then copy them to memory of leafmtype */
   char         *rootbuf_alloc[2][2];         /* Log memory allocated by petsc. We need it since rootbuf[][] may point to rootdata given by user */
   char         *leafbuf[2][2];               /* Buffers for packed leaves, in layout of [PETSCSF_LOCAL/REMOTE][PETSC_MEMTYPE] */
   char         *leafbuf_alloc[2][2];
@@ -188,6 +191,17 @@ struct _n_PetscSFLink {
   PetscBool    leafreqsinited[2][2][2];      /* Are leaf requests initialized? Also in layout of [PETSCSF_DIRECTION][PETSC_MEMTYPE][leafdirect_mpi]*/
   MPI_Request  *reqs;                        /* An array of length (nrootreqs+nleafreqs)*8. Pointers in rootreqs[][][] and leafreqs[][][] point here */
   PetscSFLink  next;
+
+  PetscBool    use_nvshmem;                  /* Does this link use nvshem (vs. MPI) for communication? */
+#if defined(PETSC_HAVE_NVSHMEM)
+  cupmEvent_t  dataReady;                    /* Events to mark readiness of root/leafdata */
+  cupmEvent_t  endRemoteComm;              /* Events to mark end of local/remote communication */
+  cupmStream_t remoteCommStream;             /* Streams for remote (i.e., inter-rank) communication */
+
+  /* The buffers are allocated in device symmetric heap. Their length is the maximal length over all ranks in the comm, and therefore is the same. */
+  uint64_t     *rootSendSig,*rootRecvSig;    /* [max{niranks-ndiranks}], signals used when rootbuf works as send/recv buf */
+  uint64_t     *leafSendSig,*leafRecvSig;    /* [max{nranks-ndranks}], signals used when leafbuf works as send/recv buf */
+#endif
 };
 
 PETSC_INTERN PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF,MPI_Datatype,const void*,const void*);
@@ -197,29 +211,16 @@ PETSC_INTERN PetscErrorCode PetscSFLinkCreate(PetscSF,MPI_Datatype,PetscMemType,
 PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Host(PetscSF,PetscSFLink,MPI_Datatype);
 PETSC_INTERN PetscErrorCode PetscSFLinkGetInUse(PetscSF,MPI_Datatype,const void*,const void*,PetscCopyMode,PetscSFLink*);
 PETSC_INTERN PetscErrorCode PetscSFLinkReclaim(PetscSF,PetscSFLink*);
-PETSC_INTERN PetscErrorCode PetscSFLinkDestroy(PetscSF,PetscSFLink*);
+PETSC_INTERN PetscErrorCode PetscSFLinkDestroy(PetscSF,PetscSFLink);
 
 /* Get pack/unpack function pointers from a link */
 PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkGetPack(PetscSFLink link,PetscMemType mtype,PetscErrorCode (**Pack)(PetscSFLink,PetscInt,PetscInt,PetscSFPackOpt,const PetscInt*,const void*,void*))
 {
   PetscFunctionBegin;
-  if (mtype == PETSC_MEMTYPE_HOST) *Pack = link->h_Pack;
+  if (PetscMemTypeHost(mtype)) *Pack = link->h_Pack;
 #if defined(PETSC_HAVE_DEVICE)
   else *Pack = link->d_Pack;
 #endif
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkMPIWaitall(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
-{
-  PetscErrorCode       ierr;
-  PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
-  const PetscMemType   rootmtype_mpi = link->rootmtype_mpi,leafmtype_mpi = link->leafmtype_mpi;
-  const PetscInt       rootdirect_mpi = link->rootdirect_mpi,leafdirect_mpi = link->leafdirect_mpi;
-
-  PetscFunctionBegin;
-  ierr = MPI_Waitall(bas->nrootreqs,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi],MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
-  ierr = MPI_Waitall(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi],MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -234,102 +235,48 @@ PETSC_INTERN PetscErrorCode PetscSFLinkPackRootData  (PetscSF,PetscSFLink,PetscS
 PETSC_INTERN PetscErrorCode PetscSFLinkPackLeafData  (PetscSF,PetscSFLink,PetscSFScope,const void*);
 PETSC_INTERN PetscErrorCode PetscSFLinkUnpackRootData(PetscSF,PetscSFLink,PetscSFScope,void*,MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFLinkUnpackLeafData(PetscSF,PetscSFLink,PetscSFScope,void*,MPI_Op);
-PETSC_INTERN PetscErrorCode PetscSFLinkFetchRootData (PetscSF,PetscSFLink,PetscSFScope,void*,MPI_Op);
+PETSC_INTERN PetscErrorCode PetscSFLinkFetchAndOpRemote (PetscSF,PetscSFLink,void*,MPI_Op);
 
-PETSC_INTERN PetscErrorCode PetscSFLinkBcastAndOpLocal(PetscSF,PetscSFLink,const void*,void*,MPI_Op);
-PETSC_INTERN PetscErrorCode PetscSFLinkReduceLocal(PetscSF,PetscSFLink,const void*,void*,MPI_Op);
+PETSC_INTERN PetscErrorCode PetscSFLinkScatterLocal(PetscSF,PetscSFLink,PetscSFDirection,void*,void*,MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF,PetscSFLink,void*,const void*,void*,MPI_Op);
 
 PETSC_INTERN PetscErrorCode PetscSFSetUpPackFields(PetscSF);
 PETSC_INTERN PetscErrorCode PetscSFResetPackFields(PetscSF);
+PETSC_INTERN PetscErrorCode PetscSFLinkCreate_MPI(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,const void*,MPI_Op,PetscSFOperation,PetscSFLink*);
 
 #if defined(PETSC_HAVE_CUDA)
-PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Cuda(PetscSF,PetscSFLink,MPI_Datatype);
+PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF,PetscSFLink,MPI_Datatype);
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Hip(PetscSF,PetscSFLink,MPI_Datatype);
+PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF,PetscSFLink,MPI_Datatype);
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF,PetscSFLink,MPI_Datatype);
 #endif
 
+#if defined(PETSC_HAVE_NVSHMEM)
+PETSC_INTERN PetscErrorCode PetscSFLinkCreate_NVSHMEM(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,const void*,MPI_Op,PetscSFOperation,PetscSFLink*);
+PETSC_INTERN PetscErrorCode PetscSFLinkNvshmemCheck(PetscSF,PetscMemType,const void*,PetscMemType,const void*,PetscBool*);
+#endif
+
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkStartCommunication(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
+{
+  PetscFunctionBegin;
+  if (link->StartCommunication) {PetscErrorCode ierr = (*link->StartCommunication)(sf,link,direction);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkFinishCommunication(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
+{
+  PetscFunctionBegin;
+  if (link->FinishCommunication) {PetscErrorCode ierr=(*link->FinishCommunication)(sf,link,direction);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /* A set of helper routines for Pack/Unpack/Scatter on GPUs */
-#if defined(PETSC_HAVE_DEVICE)
-/* If SF does not know which stream root/leafdata is being computed on, it has to sync the device to
-   make sure the data is ready for packing.
- */
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncDeviceBeforePackData(PetscSF sf,PetscSFLink link)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  if (sf->use_default_stream) PetscFunctionReturn(0);
-  if (link->rootmtype == PETSC_MEMTYPE_DEVICE || link->leafmtype == PETSC_MEMTYPE_DEVICE) {ierr = (*link->d_SyncDevice)(link);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-/* PetscSFLinkSyncStreamAfterPackXxxData routines make sure root/leafbuf for the remote is ready for MPI */
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterPackRootData(PetscSF sf,PetscSFLink link)
-{
-  PetscErrorCode ierr;
-  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
-
-  PetscFunctionBegin;
-  /* Do nothing if we use stream aware mpi || has nothing for remote */
-  if (sf->use_stream_aware_mpi || link->rootmtype != PETSC_MEMTYPE_DEVICE || !bas->rootbuflen[PETSCSF_REMOTE]) PetscFunctionReturn(0);
-  /* If we called a packing kernel || we async-copied rootdata from device to host || No cudaDeviceSynchronize was called (since default stream is assumed) */
-  if (!link->rootdirect[PETSCSF_REMOTE] || !sf->use_gpu_aware_mpi || sf->use_default_stream) {ierr = (*link->d_SyncStream)(link);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterPackLeafData(PetscSF sf,PetscSFLink link)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  /* See comments above */
-  if (sf->use_stream_aware_mpi || link->leafmtype != PETSC_MEMTYPE_DEVICE || !sf->leafbuflen[PETSCSF_REMOTE]) PetscFunctionReturn(0);
-  if (!link->leafdirect[PETSCSF_REMOTE] || !sf->use_gpu_aware_mpi || sf->use_default_stream) {ierr = (*link->d_SyncStream)(link);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-/* PetscSFLinkSyncStreamAfterUnpackXxx routines make sure root/leafdata (local & remote) is ready to use for SF callers, when SF
-   does not know which stream the callers will use.
-*/
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterUnpackRootData(PetscSF sf,PetscSFLink link)
-{
-  PetscErrorCode ierr;
-  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
-  PetscBool      host2host = (link->rootmtype == PETSC_MEMTYPE_HOST) && (link->leafmtype == PETSC_MEMTYPE_HOST) ? PETSC_TRUE : PETSC_FALSE;
-
-  PetscFunctionBegin;
-  /* Do nothing if host2host OR we are allowed to asynchronously put rootdata on device through the default stream */
-  if (host2host || (link->rootmtype == PETSC_MEMTYPE_DEVICE && sf->use_default_stream)) PetscFunctionReturn(0);
-
-  /* If rootmtype is HOST or DEVICE:
-     If we have data from local, then we called a scatter kernel (on link->stream), then we must sync it;
-     If we have data from remote && no rootdirect(i.e., we called an unpack kernel), then we must also sycn it (if rootdirect,
-     i.e., no unpack kernel after MPI, MPI guarentees rootbuf is ready to use so that we do not need the sync).
-
-     Note a tricky case is when leafmtype=DEVICE, rootmtype=HOST on uni-processor, we must sync the stream otherwise
-     CPU thread might use the yet-to-be-updated rootdata pending in the stream.
-   */
-  if (bas->rootbuflen[PETSCSF_LOCAL] || (bas->rootbuflen[PETSCSF_REMOTE] && !link->rootdirect[PETSCSF_REMOTE])) {ierr = (*link->d_SyncStream)(link);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamAfterUnpackLeafData(PetscSF sf,PetscSFLink link)
-{
-  PetscErrorCode ierr;
-  PetscBool      host2host = (link->rootmtype == PETSC_MEMTYPE_HOST) && (link->leafmtype == PETSC_MEMTYPE_HOST) ? PETSC_TRUE : PETSC_FALSE;
-
-  PetscFunctionBegin;
-  /* See comments in PetscSFLinkSyncStreamAfterUnpackRootData*/
-  if (host2host || (link->leafmtype == PETSC_MEMTYPE_DEVICE && sf->use_default_stream)) PetscFunctionReturn(0);
-  if (sf->leafbuflen[PETSCSF_LOCAL] || (sf->leafbuflen[PETSCSF_REMOTE] && !link->leafdirect[PETSCSF_REMOTE])) {ierr = (*link->d_SyncStream)(link);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
 /* PetscSFLinkCopyXxxxBufferInCaseNotUseGpuAwareMPI routines are simple: if not use_gpu_aware_mpi, we need
    to copy the buffer from GPU to CPU before MPI calls, and from CPU to GPU after MPI calls.
 */
@@ -339,7 +286,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkCopyRootBufferInCaseNotUseGpuAware
   PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
-  if (link->rootmtype == PETSC_MEMTYPE_DEVICE && (link->rootmtype_mpi != link->rootmtype) && bas->rootbuflen[PETSCSF_REMOTE]) {
+  /* rootdata is on device but we use regular MPI for communication */
+  if (PetscMemTypeDevice(link->rootmtype) && PetscMemTypeHost(link->rootmtype_mpi) && bas->rootbuflen[PETSCSF_REMOTE]) {
     void  *h_buf = link->rootbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
     void  *d_buf = link->rootbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_DEVICE];
     size_t count = bas->rootbuflen[PETSCSF_REMOTE]*link->unitbytes;
@@ -359,7 +307,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkCopyLeafBufferInCaseNotUseGpuAware
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (link->leafmtype == PETSC_MEMTYPE_DEVICE && (link->leafmtype_mpi != link->leafmtype) && sf->leafbuflen[PETSCSF_REMOTE]) {
+  if (PetscMemTypeDevice(link->leafmtype) && PetscMemTypeHost(link->leafmtype_mpi) && sf->leafbuflen[PETSCSF_REMOTE]) {
     void  *h_buf = link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
     void  *d_buf = link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_DEVICE];
     size_t count = sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes;
@@ -374,14 +322,33 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkCopyLeafBufferInCaseNotUseGpuAware
   PetscFunctionReturn(0);
 }
 
+/* Make sure root/leafbuf for the remote is ready for MPI */
+PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkSyncStreamBeforeCallMPI(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
+{
+  PetscErrorCode ierr;
+  PetscSF_Basic  *bas;
+  PetscInt       buflen;
+  PetscMemType   mtype;
+
+  PetscFunctionBegin;
+  if (direction == PETSCSF_ROOT2LEAF) {
+    bas    = (PetscSF_Basic*)sf->data;
+    mtype  = link->rootmtype;
+    buflen = bas->rootbuflen[PETSCSF_REMOTE];
+  } else {
+    mtype  = link->leafmtype;
+    buflen = sf->leafbuflen[PETSCSF_REMOTE];
+  }
+
+  if (PetscMemTypeDevice(mtype) && buflen) {
+    ierr = (*link->SyncStream)(link);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 #else /* Host only */
-#define PetscSFLinkSyncDeviceBeforePackData(a,b)                0
-#define PetscSFLinkSyncStreamAfterPackRootData(a,b)             0
-#define PetscSFLinkSyncStreamAfterPackLeafData(a,b)             0
-#define PetscSFLinkSyncStreamAfterUnpackRootData(a,b)           0
-#define PetscSFLinkSyncStreamAfterUnpackLeafData(a,b)           0
-#define PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(a,b,c) 0
-#define PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(a,b,c) 0
+  #define PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(a,b,c)                  0
+  #define PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(a,b,c)                  0
+  #define PetscSFLinkSyncStreamBeforeCallMPI(a,b,c)                                0
 #endif
 
 /* Get root indices used for pack/unpack
@@ -389,13 +356,14 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkCopyLeafBufferInCaseNotUseGpuAware
 Input arguments:
   +sf    - StarForest
   .link  - The link, which provides the stream for the async memcpy (In SF, we make all GPU operations asynchronous to avoid unexpected pipeline stalls)
-  .scope - Which part of the indices? (PETSCSF_LOCAL or PETSCSF_REMOTE)
   .mtype - In what type of memory? (PETSC_MEMTYPE_DEVICE or PETSC_MEMTYPE_HOST)
+  -scope - Which part of the indices? (PETSCSF_LOCAL or PETSCSF_REMOTE)
 
  Output arguments:
   +count   - Count of indices
   .start   - The first index (only useful when indices is NULL)
-  -indices - indices of roots for pack/unpack. NULL means indices are contiguous
+  .opt     - Packing optimizations
+  -indices - Indices of roots for pack/unpack. NULL means indices are contiguous
  */
 PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkGetRootPackOptAndIndices(PetscSF sf,PetscSFLink link,PetscMemType mtype,PetscSFScope scope,PetscInt *count,PetscInt *start,PetscSFPackOpt *opt,const PetscInt **indices)
 {
@@ -415,8 +383,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkGetRootPackOptAndIndices(PetscSF s
   */
   if (!bas->rootcontig[scope]) {
     offset = (scope == PETSCSF_LOCAL)? 0 : bas->ioffset[bas->ndiranks];
-    if (mtype == PETSC_MEMTYPE_HOST) {*opt = bas->rootpackopt[scope]; *indices = bas->irootloc + offset;}
-#if defined(PETSC_HAVE_DEVICE)
+    if (PetscMemTypeHost(mtype)) {*opt = bas->rootpackopt[scope]; *indices = bas->irootloc + offset;}
     else {
       PetscErrorCode ierr;
       size_t         size;
@@ -438,7 +405,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkGetRootPackOptAndIndices(PetscSF s
         *indices = bas->irootloc_d[scope];
       }
     }
-#endif
   }
   PetscFunctionReturn(0);
 }
@@ -458,8 +424,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkGetLeafPackOptAndIndices(PetscSF s
   *indices = NULL;
   if (!sf->leafcontig[scope]) {
     offset = (scope == PETSCSF_LOCAL)? 0 : sf->roffset[sf->ndranks];
-    if (mtype == PETSC_MEMTYPE_HOST) {*opt = sf->leafpackopt[scope]; *indices = sf->rmine + offset;}
-#if defined(PETSC_HAVE_DEVICE)
+    if (PetscMemTypeHost(mtype)) {*opt = sf->leafpackopt[scope]; *indices = sf->rmine + offset;}
     else {
       PetscErrorCode ierr;
       size_t         size;
@@ -481,7 +446,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkGetLeafPackOptAndIndices(PetscSF s
         *indices = sf->rmine_d[scope];
       }
     }
-#endif
   }
   PetscFunctionReturn(0);
 }

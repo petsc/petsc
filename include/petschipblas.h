@@ -66,6 +66,7 @@ do { \
    } \
 } while (0)
 
+PETSC_EXTERN hipStream_t    PetscDefaultHipStream; /* The default stream used by PETSc */
 PETSC_INTERN PetscErrorCode PetscHIPBLASInitializeHandle(void);
 PETSC_INTERN PetscErrorCode PetscHIPSOLVERInitializeHandle(void);
 

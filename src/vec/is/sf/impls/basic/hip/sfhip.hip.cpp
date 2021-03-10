@@ -758,7 +758,7 @@ static PetscErrorCode PetscSFLinkMemcpy_HIP(PetscSFLink link,PetscMemType dstmty
   enum hipMemcpyKind kinds[2][2] = {{hipMemcpyHostToHost,hipMemcpyHostToDevice},{hipMemcpyDeviceToHost,hipMemcpyDeviceToDevice}};
 
   if (n) {
-    if (dstmtype == PETSC_MEMTYPE_HOST && srcmtype == PETSC_MEMTYPE_HOST) { /* Separate HostToHost so that pure-cpu code won't call hip runtime */
+    if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) { /* Separate HostToHost so that pure-cpu code won't call hip runtime */
       PetscErrorCode ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);
     } else {
       int stype = PetscMemTypeDevice(srcmtype) ? 1 : 0;
@@ -772,8 +772,8 @@ static PetscErrorCode PetscSFLinkMemcpy_HIP(PetscSFLink link,PetscMemType dstmty
 PETSC_EXTERN PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype,size_t size,void** ptr)
 {
   PetscFunctionBegin;
-  if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
-  else if (mtype == PETSC_MEMTYPE_DEVICE) {
+  if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
+  else if (PetscMemTypeDevice(mtype)) {
     if (!PetscHIPInitialized) { PetscErrorCode ierr = PetscHIPInitializeCheck();CHKERRQ(ierr); }
     hipError_t err = hipMalloc(ptr,size);CHKERRHIP(err);
   }
@@ -784,9 +784,22 @@ PETSC_EXTERN PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype,size_t size,voi
 PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType mtype,void* ptr)
 {
   PetscFunctionBegin;
-  if (mtype == PETSC_MEMTYPE_HOST) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
-  else if (mtype == PETSC_MEMTYPE_DEVICE) {hipError_t err = hipFree(ptr);CHKERRHIP(err);}
+  if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
+  else if (PetscMemTypeDevice(mtype)) {hipError_t err = hipFree(ptr);CHKERRHIP(err);}
   else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
+  PetscFunctionReturn(0);
+}
+
+/* Destructor when the link uses MPI for communication on HIP device */
+static PetscErrorCode PetscSFLinkDestroy_MPI_HIP(PetscSF sf,PetscSFLink link)
+{
+  hipError_t    cerr;
+
+  PetscFunctionBegin;
+  for (int i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
+    cerr = hipFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRHIP(cerr);
+    cerr = hipFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRHIP(cerr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -795,10 +808,10 @@ PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType mtype,void* ptr)
 /*====================================================================================*/
 
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
-PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Hip(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
+PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
-  hipError_t    err;
+  hipError_t     cerr;
   PetscInt       nSignedChar=0,nUnsignedChar=0,nInt=0,nPetscInt=0,nPetscReal=0;
   PetscBool      is2Int,is2PetscInt;
 #if defined(PETSC_HAVE_COMPLEX)
@@ -872,19 +885,20 @@ PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_Hip(PetscSF sf,PetscSFLink link,MPI
     }
   }
 
-  if (!sf->use_default_stream) {err = hipStreamCreate(&link->stream);CHKERRHIP(err);}
   if (!sf->maxResidentThreadsPerGPU) { /* Not initialized */
     int                   device;
     struct hipDeviceProp_t props;
-    err = hipGetDevice(&device);CHKERRHIP(err);
-    err = hipGetDeviceProperties(&props,device);CHKERRHIP(err);
+    cerr = hipGetDevice(&device);CHKERRHIP(cerr);
+    cerr = hipGetDeviceProperties(&props,device);CHKERRHIP(cerr);
     sf->maxResidentThreadsPerGPU = props.maxThreadsPerMultiProcessor*props.multiProcessorCount;
   }
   link->maxResidentThreadsPerGPU = sf->maxResidentThreadsPerGPU;
 
-  link->d_SyncDevice =  PetscSFLinkSyncDevice_HIP;
-  link->d_SyncStream =  PetscSFLinkSyncStream_HIP;
-  link->Memcpy       =  PetscSFLinkMemcpy_HIP;
+  link->stream       = PetscDefaultHipStream;
+  link->Destroy      = PetscSFLinkDestroy_MPI_HIP;
+  link->SyncDevice   = PetscSFLinkSyncDevice_HIP;
+  link->SyncStream   = PetscSFLinkSyncStream_HIP;
+  link->Memcpy       = PetscSFLinkMemcpy_HIP;
   link->deviceinited = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

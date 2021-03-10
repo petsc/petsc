@@ -98,7 +98,7 @@ struct _p_PetscSF {
   PetscInt        leafstart[2];    /* ... leafstart[0] and leafstart[1] respectively */
   PetscSFPackOpt  leafpackopt[2];  /* Optimization plans to (un)pack leaves connected to remote roots, based on index patterns in rmine[]. NULL for no optimization */
   PetscSFPackOpt  leafpackopt_d[2];/* Copy of leafpackopt_d[] on device if needed */
-  PetscBool       leafdups[2];     /* Indices in rmine[] for self(0)/remote(1) communication have dups? TRUE implies theads working on them in parallel may have data race. */
+  PetscBool       leafdups[2];     /* Indices in rmine[] for self(0)/remote(1) communication have dups respectively? TRUE implies theads working on them in parallel may have data race. */
 
   PetscInt        nleafreqs;       /* Number of MPI reqests for leaves */
   PetscInt        *rremote;        /* Concatenated array holding remote indices referenced for each remote rank */
@@ -114,14 +114,31 @@ struct _p_PetscSF {
   PetscSFPattern  pattern;         /* Pattern of the graph */
   PetscBool       persistent;      /* Does this SF use MPI persistent requests for communication */
   PetscLayout     map;             /* Layout of leaves over all processes when building a patterned graph */
-  PetscBool       use_default_stream;  /* If true, SF assumes root/leafdata is on the default stream upon input and will also leave them there upon output */
+  PetscBool       unknown_input_stream;/* If true, SF does not know which streams root/leafdata is on. Default is false, since we only use petsc default stream */
   PetscBool       use_gpu_aware_mpi;   /* If true, SF assumes it can pass GPU pointers to MPI */
   PetscBool       use_stream_aware_mpi;/* If true, SF assumes the underlying MPI is cuda-stream aware and we won't sync streams for send/recv buffers passed to MPI */
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   PetscInt        maxResidentThreadsPerGPU;
-#endif
   PetscSFBackend  backend;         /* The device backend (if any) SF will use */
   void *data;                      /* Pointer to implementation */
+
+ #if defined(PETSC_HAVE_NVSHMEM)
+  PetscBool       use_nvshmem;     /* TRY to use nvshmem on cuda devices with this SF when possible */
+  PetscBool       use_nvshmem_get; /* If true, use nvshmem_get based protocal, otherwise, use nvshmem_put based protocol */
+  PetscBool       checked_nvshmem_eligibility; /* Have we checked eligibility of using NVSHMEM on this sf? */
+  PetscBool       setup_nvshmem;   /* Have we already set up NVSHMEM related fields below? These fields are built on-demand */
+  PetscInt        leafbuflen_rmax; /* max leafbuflen[REMOTE] over comm */
+  PetscInt        nRemoteRootRanks;/* nranks - ndranks */
+  PetscInt        nRemoteRootRanksMax; /* max nranks-ndranks over comm */
+
+  /* The following two fields look confusing but actually make sense: They are offsets of buffers at the remote side. We're doing one-sided communication! */
+  PetscInt        *rootsigdisp;    /* [nRemoteRootRanks]. For my i-th remote root rank, I will access its rootsigdisp[i]-th root signal */
+  PetscInt        *rootbufdisp;    /* [nRemoteRootRanks]. For my i-th remote root rank, I will access its root buf at offset rootbufdisp[i], in <unit> to be set */
+
+  PetscInt        *rootbufdisp_d;
+  PetscInt        *rootsigdisp_d;  /* Copy of rootsigdisp[] on device */
+  PetscMPIInt     *ranks_d;        /* Copy of the remote part of (root) ranks[] on device */
+  PetscInt        *roffset_d;      /* Copy of the remote part of roffset[] on device */
+ #endif
 };
 
 PETSC_EXTERN PetscBool PetscSFRegisterAllCalled;
@@ -162,8 +179,8 @@ PETSC_EXTERN PetscErrorCode VecScatterRestoreRemote_Private(VecScatter,PetscBool
 PETSC_EXTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter,PetscBool,PetscInt*,const PetscInt**,const PetscInt**,const PetscMPIInt**,PetscInt*);
 
 #if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode PetscSFMalloc_Cuda(PetscMemType,size_t,void**);
-PETSC_EXTERN PetscErrorCode PetscSFFree_Cuda(PetscMemType,void*);
+PETSC_EXTERN PetscErrorCode PetscSFMalloc_CUDA(PetscMemType,size_t,void**);
+PETSC_EXTERN PetscErrorCode PetscSFFree_CUDA(PetscMemType,void*);
 #endif
 #if defined(PETSC_HAVE_HIP)
 PETSC_EXTERN PetscErrorCode PetscSFMalloc_HIP(PetscMemType,size_t,void**);

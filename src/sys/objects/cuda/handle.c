@@ -44,7 +44,7 @@ PetscErrorCode PetscCUBLASInitializeHandle(void)
       if (i < 2) {ierr = PetscSleep(3);CHKERRQ(ierr);}
     }
     if (cberr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuBLAS");
-
+    cberr = cublasSetStream(cublasv2handle,PetscDefaultCudaStream);CHKERRCUBLAS(cberr);
     /* Make sure that the handle will be destroyed properly */
     ierr = PetscRegisterFinalize(PetscCUBLASDestroyHandle);CHKERRQ(ierr);
   }
@@ -89,6 +89,7 @@ PetscErrorCode PetscCUSOLVERDnInitializeHandle(void)
       if (i < 2) {ierr = PetscSleep(3);CHKERRQ(ierr);}
     }
     if (cerr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuSolverDn");
+    cerr = cusolverDnSetStream(cusolverdnhandle,PetscDefaultCudaStream);CHKERRCUSOLVER(cerr);
     ierr = PetscRegisterFinalize(PetscCUSOLVERDnDestroyHandle);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

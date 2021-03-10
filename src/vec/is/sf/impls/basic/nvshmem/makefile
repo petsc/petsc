@@ -1,11 +1,12 @@
+#requirespackage 'PETSC_HAVE_NVSHMEM'
 ALL: lib
 
 SOURCEH       =
-SOURCEC       = sfbasic.c sfpack.c sfmpi.c
-SOURCECU      =
+SOURCEC       =
+SOURCECU      = sfnvshmem.cu
 LIBBASE       = libpetscvec
-DIRS          = allgatherv allgather gatherv gather alltoall neighbor cuda hip kokkos nvshmem
-LOCDIR        = src/vec/is/sf/impls/basic/
+DIRS          =
+LOCDIR        = src/vec/is/sf/impls/basic/nvshmem
 MANSEC        = Vec
 SUBMANSEC     = PetscSF
 

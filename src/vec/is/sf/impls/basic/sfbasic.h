@@ -25,6 +25,19 @@ typedef struct _n_PetscSFLink* PetscSFLink;
 
 typedef struct {
   SFBASICHEADER;
+ #if defined(PETSC_HAVE_NVSHMEM)
+  PetscInt         rootbuflen_rmax; /* max rootbuflen[REMOTE] over comm */
+  PetscInt         nRemoteLeafRanks;    /* niranks - ndiranks */                                                                       \
+  PetscInt         nRemoteLeafRanksMax; /* max nRemoteLeafRanks over comm */
+
+  PetscInt         *leafbufdisp;    /* [nRemoteLeafRanks]. For my i-th remote leaf rank, I will put to its leafbuf_shmem[] at offset leafbufdisp[i], in <unit> to be set */
+  PetscInt         *leafsigdisp;    /* [nRemoteLeafRanks]. For my i-th remote leaf rank, I am its leafsigdisp[i]-th root rank */
+
+  PetscInt         *leafbufdisp_d;
+  PetscInt         *leafsigdisp_d;  /* Copy of leafsigdisp[] on device */
+  PetscMPIInt      *iranks_d;       /* Copy of the remote part of (leaf) iranks[] on device */
+  PetscInt         *ioffset_d;      /* Copy of the remote part of ioffset[] on device */
+ #endif
 } PetscSF_Basic;
 
 PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRootInfo_Basic(PetscSF sf,PetscInt *nrootranks,PetscInt *ndrootranks,const PetscMPIInt **rootranks,const PetscInt **rootoffset,const PetscInt **rootloc)
@@ -61,4 +74,9 @@ PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Basic      (PetscSF,MPI_Datatype,co
 PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Basic(PetscSF,MPI_Datatype,PetscMemType,void*,PetscMemType,const void*,void*,MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF,PetscInt,const PetscInt*,PetscSF*);
 PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
+
+#if defined(PETSC_HAVE_NVSHMEM)
+PETSC_INTERN PetscErrorCode PetscSFReset_Basic_NVSHMEM(PetscSF);
+#endif
+
 #endif

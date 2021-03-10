@@ -35,6 +35,7 @@ do { \
    } \
 } while (0)
 
+PETSC_EXTERN cudaStream_t   PetscDefaultCudaStream; /* The default stream used by PETSc */
 PETSC_INTERN PetscErrorCode PetscCUBLASInitializeHandle(void);
 PETSC_INTERN PetscErrorCode PetscCUSOLVERDnInitializeHandle(void);
 
