@@ -36,6 +36,7 @@ General Features
   - Dense
 
 - :ref:`Easy, efficient matrix assembly and interface <sec_matcreate>`
+- :ref:`Parallel unstructured mesh support <chapter_unstructured>`
 - :ref:`Powerful object introspection tools <sec_viewers>`
 - Support for a variety of IO options (see ``PetscViewerType``)
 - :ref:`Comprehensive performance testing <ch_performance>`
