@@ -40,15 +40,7 @@ class Configure(config.package.Package):
     return
 
   def getSearchDirectories(self):
-    import os
-    self.pushLanguage('CUDA')
-    petscNvcc = self.getCompiler()
-    self.popLanguage()
-    self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
-    if hasattr(self,'systemNvcc'):
-      self.nvccDir = os.path.dirname(self.systemNvcc)
-      self.cudaDir = os.path.split(self.nvccDir)[0]
-      yield self.cudaDir
+    yield self.cudaDir
     return
 
   def checkSizeofVoidP(self):
@@ -97,7 +89,20 @@ class Configure(config.package.Package):
         raise RuntimeError('CUDA compiler error: memory alignment doesn\'t match C compiler (try adding -malign-double to compiler options)')
     return
 
+  def setCudaDir(self):
+    import os
+    self.pushLanguage('CUDA')
+    petscNvcc = self.getCompiler()
+    self.popLanguage()
+    self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
+    if hasattr(self,'systemNvcc'):
+      self.nvccDir = os.path.dirname(self.systemNvcc)
+      self.cudaDir = os.path.split(self.nvccDir)[0]
+    else:
+      raise RuntimeError('CUDA compiler not found!')
+
   def configureLibrary(self):
+    self.setCudaDir()
     config.package.Package.configureLibrary(self)
     self.checkNVCCDoubleAlign()
     self.configureTypes()
@@ -109,27 +114,20 @@ class Configure(config.package.Package):
     if 'with-cuda-gencodearch' in self.framework.clArgDB:
       self.gencodearch = self.argDB['with-cuda-gencodearch']
     else:
-      import os
-      self.pushLanguage('CUDA')
-      petscNvcc = self.getCompiler()
-      self.popLanguage()
-      self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
-      if hasattr(self,'systemNvcc'):
-        cudaDir = os.path.dirname(os.path.dirname(self.systemNvcc))
-        dq = os.path.join(cudaDir,'extras','demo_suite')
-        self.getExecutable('deviceQuery',path = dq)
-        if hasattr(self,'deviceQuery'):
+      dq = os.path.join(self.cudaDir,'extras','demo_suite')
+      self.getExecutable('deviceQuery',path = dq)
+      if hasattr(self,'deviceQuery'):
+        try:
+          (out, err, ret) = Configure.executeShellCommand(self.deviceQuery + ' | grep "CUDA Capability"',timeout = 60, log = self.log, threads = 1)
+        except:
+          self.log.write('deviceQuery failed\n')
+        else:
           try:
-            (out, err, ret) = Configure.executeShellCommand(self.deviceQuery + ' | grep "CUDA Capability"',timeout = 60, log = self.log, threads = 1)
+            out = out.split('\n')[0]
+            sm = out[-3:]
+            self.gencodearch = str(int(10*float(sm)))
           except:
-            self.log.write('deviceQuery failed\n')
-          else:
-            try:
-              out = out.split('\n')[0]
-              sm = out[-3:]
-              self.gencodearch = str(int(10*float(sm)))
-            except:
-              self.log.write('Unable to parse CUDA capability\n')
+            self.log.write('Unable to parse CUDA capability\n')
 
     if hasattr(self,'gencodearch'):
       if self.gencodearch == 'all':
