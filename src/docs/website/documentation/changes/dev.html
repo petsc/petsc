@@ -211,6 +211,7 @@
         </li>
         <li>Add SNESConvergedReasonViewCancel() to remove all user-added  converged reason view functions</li>
         <li>Add SNESGetConvergedReasonString() to retrieve a human readable string for snes converged reason</li>
+        <li>Add SNESFASFullSetTotal() to use total residual restriction and total solution interpolation in the initial cycle of full FAS multigrid</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
@@ -234,6 +235,7 @@
         <li>Change DMDACreatePatchIS() to collective operation and add an extra argument to indicate whether off processor values will be returned</li>
         <li>Add DMComputeError(), which uses PetscDS information for the exact solution</li>
         <li>Add DMShellGetGLobalVector()</li>
+        <li>Add DMInterpolateSolution() for interpolating solutions between meshes in a potentially nonlinear way</li>
       </ul>
       <h4>DMSwarm:</h4>
       <ul>
