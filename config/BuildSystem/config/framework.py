@@ -504,6 +504,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
       # pgi dumps filename on stderr - but returns 0 errorcode'
       lines = [s for s in lines if lines != 'conftest.c:']
+      # in case -pie is always being passed to linker
+      lines = [s for s in lines if s.find('-pie being ignored. It is only used when linking a main executable') < 0]
       if lines: output = reduce(lambda s, t: s+t, lines, '\n')
       else: output = ''
       log.write("Linker stderr after filtering:\n"+output+":\n")
