@@ -80,15 +80,14 @@ Preconditioners
      - ``PCILU``
      - ``MATSEQAIJ``
      - `SuperLU Sequential ILU solver
-       <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MATSOLVERSUPERLU.html>`__
+       <../../docs/manualpages/Mat/MATSOLVERSUPERLU.html>`__
      -
      - X
    * -
      -
      - ``PCILU``
      - ``MATAIJ``
-     - `Euclid/hypre
-       <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHYPRE.html>`__
+     - Euclid/hypre (``PCHYPRE``)
      - X
      -
    * -

@@ -42,8 +42,12 @@ Get Working
 
    manual/index
    guides/guide_to_examples
-   Function Index <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/singleindex.html>
-   Examples Index <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/help.html>
+
+
+* `Manual Pages <docs/index.html>`__
+* `Function Index <docs/manualpages/singleindex.html>`__
+* `Examples Index <docs/manualpages/help.html>`__
+* `Strategies for using Fortran <docs/manualpages/Sys/UsingFortran.html>`__
 
 ============
 Get Involved

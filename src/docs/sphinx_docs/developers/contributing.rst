@@ -21,9 +21,9 @@ How-tos
 Some of the source code is documented to provide direct examples/templates for common
 contributions, adding new implementations for solver components:
 
-* `Add a new PC type <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/pc/impls/jacobi/jacobi.c.html>`__
-* `Add a new KSP type <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/impls/cg/cg.c.html>`__
-* `Add a new subclass of a matrix type (implementation inheritence) <https://www.mcs.anl.gov/petsc/petsc-current/src/mat/impls/aij/seq/superlu/superlu.c.html>`__
+* `Add a new PC type <https://gitlab.com/petsc/petsc/-/blob/main/src/ksp/pc/impls/jacobi/jacobi.c>`__
+* `Add a new KSP type <https://gitlab.com/petsc/petsc/-/blob/main/src/ksp/ksp/impls/cg/cg.c.html>`__
+* `Add a new subclass of a matrix type (implementation inheritence) <https://gitlab.com/petsc/petsc/-/blob/main/src/mat/impls/aij/seq/superlu/superlu.c.html>`__
 
 Browsing Source
 ===============

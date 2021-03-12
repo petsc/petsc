@@ -311,7 +311,7 @@ taking into account the orientations of various mesh points:
    DMPlexVecSetClosure(dm, section, residual, cell, &r, ADD_VALUES);
 
 A simple example of this kind of calculation is in
-``DMPlexComputeL2Diff_Plex()`` (`source <https://www.mcs.anl.gov/petsc/petsc-current/src/dm/impls/plex/plexfem.c.html#DMComputeL2Diff_Plex>`__).
+``DMPlexComputeL2Diff_Plex()`` (`source <../../src/dm/impls/plex/plexfem.c.html#DMComputeL2Diff_Plex>`__).
 Note that there is no restriction on the type of cell or dimension of
 the mesh in the code above, so it will work for polyhedral cells, hybrid
 meshes, and meshes of any dimension, without change. We can also reverse
@@ -335,7 +335,7 @@ where we want the data from neighboring cells for each face:
    VecRestoreArray(u, &a);
 
 This kind of calculation is used in
-`TS Tutorial ex11 <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex11.c.html>`__.
+`TS Tutorial ex11 <../../src/ts/tutorials/ex11.c.html>`__.
 
 Networks
 ~~~~~~~~

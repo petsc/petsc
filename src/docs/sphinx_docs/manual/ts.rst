@@ -1133,9 +1133,9 @@ provide two examples of its use; one for single cell reaction and one
 for an “artificial” one dimensional problem with periodic boundary
 conditions and diffusion of all species. The self-explanatory examples
 are the
-`The TS tutorial extchem <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/extchem.c.html>`__
+`The TS tutorial extchem <../../src/ts/tutorials/extchem.c.html>`__
 and
-`The TS tutorial extchemfield <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/extchemfield.c.html>`__.
+`The TS tutorial extchemfield <../../src/ts/tutorials/extchemfield.c.html>`__.
 
 .. _sec_sundials:
 
