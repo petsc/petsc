@@ -1,4 +1,6 @@
 # --------------------------------------------------------------------
+import functools
+
 
 cdef class Log:
 
@@ -85,6 +87,35 @@ cdef class Log:
         cdef PetscLogDouble cputime=0
         CHKERR( PetscGetCPUTime(&cputime) )
         return cputime
+
+    @classmethod    
+    def EventDecorator(cls, name=None, klass=None):
+        """Decorate a function with a PETSc event.
+
+        If no event name is specified it will default to the name of the function.
+        
+        Usage:
+            @EventDecorator("My Function")
+            def myfunc():
+                ...
+
+            or
+
+            @EventDecorator()
+            def myfunc():
+                ...
+        """
+        def decorator(func):
+            @functools.wraps(func)
+            def wrapped_func(*args, **kwargs):
+                if name:
+                    name_ = name
+                else:
+                    name_ = ".".join([func.__module__, getattr(func, "__qualname__", func.__name__)])
+                with cls.Event(name_, klass):
+                    return func(*args, **kwargs)
+            return wrapped_func
+        return decorator
 
 # --------------------------------------------------------------------
 
