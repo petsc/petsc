@@ -2,12 +2,6 @@
 PETSc |version| Documentation
 =============================
 
-.. Important::
-
-  The PETSc docs are currently in transition,
-  and different pieces "live" in two different places. In addition to on this page,
-  much of the documentation is found `here <https://www.mcs.anl.gov/petsc/documentation/index.html>`__.
-
 .. raw:: html
 
    <a href="https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137">Ed Bueler, PETSc for Partial Differential Equations: Numerical Solutions in C and Python</a>
