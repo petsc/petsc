@@ -1702,9 +1702,9 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
 .   pc - the preconditioner context
 
     Output Parameters:
-+   n - the number of subdomains for this processor (default value = 1)
-.   is - the index sets that define the subdomains for this processor
--   is_local - the index sets that define the local part of the subdomains for this processor (can be NULL)
++   n - if requested, the number of subdomains for this processor (default value = 1)
+.   is - if requested, the index sets that define the subdomains for this processor
+-   is_local - if requested, the index sets that define the local part of the subdomains for this processor (can be NULL)
 
 
     Notes:
@@ -1723,8 +1723,9 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidIntPointer(n,2);
+  if (n) PetscValidIntPointer(n,2);
   if (is) PetscValidPointer(is,3);
+  if (is_local) PetscValidPointer(is_local,4);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PC is not a PCASM");
   if (n) *n = osm->n_local_true;
@@ -1743,8 +1744,8 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
 .   pc - the preconditioner context
 
     Output Parameters:
-+   n - the number of matrices for this processor (default value = 1)
--   mat - the matrices
++   n - if requested, the number of matrices for this processor (default value = 1)
+-   mat - if requested, the matrices
 
     Level: advanced
 
@@ -1764,7 +1765,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidIntPointer(n,2);
+  if (n) PetscValidIntPointer(n,2);
   if (mat) PetscValidPointer(mat,3);
   if (!pc->setupcalled) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUp() or PCSetUp().");
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
