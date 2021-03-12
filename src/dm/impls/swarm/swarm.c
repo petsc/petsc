@@ -1311,6 +1311,7 @@ PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE type unknown");
   }
   ierr = PetscLogEventEnd(DMSWARM_Migrate,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMClearGlobalVectors(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
