@@ -576,7 +576,7 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
   Logically Collective
 
   Input Argument:
-+ ts - the TS context
+. ts - the TS context
 
   Output Argument:
 . nevents - number of events

@@ -1198,7 +1198,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
   Input Parameters:
 + dm - the DMNetwork object
 . p - vertex/edge point
-. compnum - component number; use ALL_COMPONENTS if sum up all the components
+- compnum - component number; use ALL_COMPONENTS if sum up all the components
 
   Output Parameters:
 + compkey - the key obtained when registering the component (use NULL if not required)

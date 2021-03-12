@@ -7,8 +7,8 @@ Choose one of the two at runtime by -sa_method {track,global}. \n";
 
 /*
   Concepts: TS^adjoint for time dependent parameters
-  Concepts: Customized adjoint monitor based sensitivity tracking
-  Concepts: All at once approach to sensitivity tracking
+  Concepts: TS^Customized adjoint monitor based sensitivity tracking
+  Concepts: TS^All at once approach to sensitivity tracking
   Processors: 1
 */
 
