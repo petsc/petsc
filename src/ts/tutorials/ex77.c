@@ -507,7 +507,10 @@ static PetscErrorCode FreeStreaming(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
   ierr = VecGetArrayRead(X, &coords);CHKERRQ(ierr);
   ierr = DMInterpolationAddPoints(ictx, Np, (PetscReal *) coords);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(X, &coords);CHKERRQ(ierr);
-  ierr = DMInterpolationSetUp(ictx, vdm, PETSC_FALSE);CHKERRQ(ierr);
+  /* Particles that lie outside the domain should be dropped,
+     whereas particles that move to another partition should trigger a migration */
+  ierr = DMInterpolationSetUp(ictx, vdm, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecSet(pvel, 0.);CHKERRQ(ierr);
   ierr = DMInterpolationEvaluate(ictx, vdm, locvel, pvel);CHKERRQ(ierr);
   ierr = DMInterpolationDestroy(&ictx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(vdm, &locvel);CHKERRQ(ierr);

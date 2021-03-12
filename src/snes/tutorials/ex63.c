@@ -616,7 +616,7 @@ int main(int argc, char **argv)
       ierr = DMSwarmGetField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
       ierr = DMInterpolationAddPoints(ictx, Np, coords);CHKERRQ(ierr);
       ierr = DMSwarmRestoreField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
-      ierr = DMInterpolationSetUp(ictx, vdm, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = DMInterpolationSetUp(ictx, vdm, PETSC_FALSE, PETSC_FALSE);CHKERRQ(ierr);
       ierr = DMInterpolationEvaluate(ictx, vdm, locvel, pvel);CHKERRQ(ierr);
       ierr = DMInterpolationDestroy(&ictx);CHKERRQ(ierr);
       /* Push particles */
