@@ -275,7 +275,7 @@ check-py-vermin:
 #
 # The tags variable used in the tests below connects the particular test with the runners
 # listed on the left hand side of https://gitlab.com/petsc/petsc/-/settings/ci_cd.
-# For example the test linux-gcc-complex-opt  any runner that has the tag 'name:pj02'
+# For example the test linux-sycl-double  any runner that has the tag 'name:pj01'
 # (in a blue box beneath it)
 #
 
@@ -324,14 +324,14 @@ linux-gcc-pkgs-opt:
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
 
-linux-gcc-complex-opt:
+linux-gcc-complex-opt-32bit:
   extends:
     - .stage-2
     - .linux_test
   tags:
     - linux-stage2
   variables:
-    TEST_ARCH: arch-ci-linux-gcc-complex-opt
+    TEST_ARCH: arch-ci-linux-gcc-complex-opt-32bit
 
 mswin-uni:
   extends:

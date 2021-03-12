@@ -244,8 +244,8 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   */
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
-    if (x < 1.0) u[i].rho = 0.0;
-    else         u[i].rho = 1.0;
+    if (i < Mx-1) u[i].rho = 0.0;
+    else          u[i].rho = 1.0;
     u[i].c = PetscCosReal(.5*PETSC_PI*x);
   }
 

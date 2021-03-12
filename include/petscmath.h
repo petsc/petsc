@@ -868,5 +868,62 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal po
   return PetscPowScalar(base,cpower);
 }
 
+/*MC
+    PetscLTE - Performs a less than or equal to on a given constant with a fudge for floating point numbers
+
+   Synopsis:
+   #include <petscmath.h>
+   bool PetscLTE(PetscReal x,constant float)
+
+   Not Collective
+
+   Input Parameters:
++   x - the variable
+-   b - the constant float it is checking if x is less than or equal to
+
+   Notes:
+     The fudge factor is the value PETSC_SMALL
+
+     The constant numerical value is automatically set to the appropriate precision of PETSc so can just be provided as, for example, 3.2
+
+     This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
+     floating point results.
+
+   Level: advanced
+
+.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscGTE()
+
+M*/
+#define PetscLTE(x,b)  ((x) <= (PetscRealConstant(b)+PETSC_SMALL))
+
+/*MC
+    PetscGTE - Performs a greater than or equal to on a given constant with a fudge for floating point numbers
+
+   Synopsis:
+   #include <petscmath.h>
+   bool PetscGTE(PetscReal x,constant float)
+
+   Not Collective
+
+   Input Parameters:
++   x - the variable
+-   b - the constant float it is checking if x is greater than or equal to
+
+   Notes:
+     The fudge factor is the value PETSC_SMALL
+
+     The constant numerical value is automatically set to the appropriate precision of PETSc so can just be provided as, for example, 3.2
+
+     This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
+     floating point results.
+
+   Level: advanced
+
+.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscLTE()
+
+M*/
+#define PetscGTE(x,b)  ((x) >= (PetscRealConstant(b)-PETSC_SMALL))
+
+
 PETSC_EXTERN PetscErrorCode PetscLinearRegression(PetscInt,const PetscReal[],const PetscReal[],PetscReal*,PetscReal*);
 #endif
