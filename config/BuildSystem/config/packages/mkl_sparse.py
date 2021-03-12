@@ -19,6 +19,8 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
-    if not self.blasLapack.mkl: return
+    if not self.blasLapack.mkl:
+      self.argDB['with-'+self.package] = 0
+      return
     config.package.Package.configureLibrary(self)
     self.usesopenmp = self.blasLapack.usesopenmp
