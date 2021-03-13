@@ -1399,7 +1399,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
 
 /*@C
    PCASMCreateSubdomains - Creates the index sets for the overlapping Schwarz
-   preconditioner for a any problem on a general grid.
+   preconditioner for any problem on a general grid.
 
    Collective
 
