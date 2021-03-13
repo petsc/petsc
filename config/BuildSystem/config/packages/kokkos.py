@@ -148,4 +148,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.configureLibrary(self)
     if self.cuda.found:
       self.addMakeMacro('KOKKOS_BIN',os.path.join(self.directory,'bin'))
+      self.addMakeMacro('KOKKOS_USE_CUDA_COMPILER',1) # use the CUDA compiler to compile PETSc Kokkos code
+    elif self.hip.found:
+      self.addMakeMacro('KOKKOS_USE_HIP_COMPILER',1)  # use the HIP compiler to compile PETSc Kokkos code
 
