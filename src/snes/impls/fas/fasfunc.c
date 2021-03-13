@@ -1179,3 +1179,65 @@ PetscErrorCode SNESFASFullSetDownSweep(SNES snes,PetscBool swp)
   }
   PetscFunctionReturn(0);
 }
+
+/*@
+   SNESFASFullSetTotal - Use total residual restriction and total interpolation on the initial down and up sweep of full FAS cycles
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the multigrid context
+-  total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
+
+   Options Database Key:
+.  -snes_fas_full_total
+
+   Level: advanced
+
+   Note: this option is only significant if the interpolation of a coarse correction (MatInterpolate()) is significantly different from total solution interpolation (DMInterpolateSolution()).
+
+.seealso: SNESFASSetNumberSmoothUp(), DMInterpolateSolution()
+@*/
+PetscErrorCode SNESFASFullSetTotal(SNES snes,PetscBool total)
+{
+  SNES_FAS       *fas;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas = (SNES_FAS*)snes->data;
+  fas->full_total = total;
+  if (fas->next) {
+    ierr = SNESFASFullSetTotal(fas->next,total);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESFASFullGetTotal - Use total residual restriction and total interpolation on the initial down and up sweep of full FAS cycles
+
+   Logically Collective on SNES
+
+   Input Parameters:
+.  snes - the multigrid context
+
+   Output:
+.  total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
+
+   Options Database Key:
+.  -snes_fas_full_total
+
+   Level: advanced
+
+.seealso: SNESFASSetNumberSmoothUp(), DMInterpolateSolution(), SNESFullSetTotal()
+@*/
+PetscErrorCode SNESFASFullGetTotal(SNES snes,PetscBool *total)
+{
+  SNES_FAS       *fas;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
+  fas = (SNES_FAS*)snes->data;
+  *total = fas->full_total;
+  PetscFunctionReturn(0);
+}

@@ -2210,6 +2210,52 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 }
 
 /*@
+   DMInterpolateSolution - Interpolates a solution from a coarse mesh to a fine mesh.
+
+   Collective on DM
+
+   Input Arguments:
++  coarse - coarse DM
+.  fine   - fine DM
+.  interp - (optional) the matrix computed by DMCreateInterpolation().  Implementations may not need this, but if it
+            is available it can avoid some recomputation.  If it is provided, MatInterpolate() will be used if
+            the coarse DM does not have a specialized implementation.
+-  coarseSol - solution on the coarse mesh
+
+   Output Arguments:
+.  fineSol - the interpolation of coarseSol to the fine mesh
+
+   Level: developer
+
+   Note: This function exists because the interpolation of a solution vector between meshes is not always a linear
+   map.  For example, if a boundary value problem has an inhomogeneous Dirichlet boundary condition that is compressed
+   out of the solution vector.  Or if interpolation is inherently a nonlinear operation, such as a method using
+   slope-limiting reconstruction.
+
+.seealso DMInterpolate(), DMCreateInterpolation()
+@*/
+PetscErrorCode DMInterpolateSolution(DM coarse, DM fine, Mat interp, Vec coarseSol, Vec fineSol)
+{
+  PetscErrorCode (*interpsol)(DM,DM,Mat,Vec,Vec) = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(coarse,DM_CLASSID,1);
+  PetscValidHeaderSpecific(coarse,DM_CLASSID,2);
+  if (interp) PetscValidHeaderSpecific(interp,MAT_CLASSID,3);
+  PetscValidHeaderSpecific(coarseSol,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(fineSol,VEC_CLASSID,5);
+
+  ierr = PetscObjectQueryFunction((PetscObject)coarse,"DMInterpolateSolution_C", &interpsol);CHKERRQ(ierr);
+  if (interpsol) {
+    ierr = (*interpsol)(coarse, fine, interp, coarseSol, fineSol);CHKERRQ(ierr);
+  } else if (interp) {
+    ierr = MatInterpolate(interp, coarseSol, fineSol);CHKERRQ(ierr);
+  } else SETERRQ1(PetscObjectComm((PetscObject)coarse), PETSC_ERR_SUP, "DM %s does not implement DMInterpolateSolution()", ((PetscObject)coarse)->type_name);
+  PetscFunctionReturn(0);
+}
+
+/*@
     DMGetRefineLevel - Gets the number of refinements that have generated this DM.
 
     Not Collective
