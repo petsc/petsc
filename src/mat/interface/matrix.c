@@ -5345,6 +5345,8 @@ PetscErrorCode MatPermute(Mat mat,IS row,IS col,Mat *B)
   PetscValidHeaderSpecific(row,IS_CLASSID,2);
   PetscValidHeaderSpecific(col,IS_CLASSID,3);
   PetscValidPointer(B,4);
+  PetscCheckSameComm(mat,1,row,2);
+  if (row != col) PetscCheckSameComm(row,2,col,3);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!mat->ops->permute && !mat->ops->createsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatPermute not available for Mat type %s",((PetscObject)mat)->type_name);

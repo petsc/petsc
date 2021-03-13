@@ -943,7 +943,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         for (const std::pair<const PetscInt, PetscInt>& i : order)
           *concatenate++ = i.second;
         concatenate -= size;
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)data->is), size, concatenate, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF, size, concatenate, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
         ierr = ISSetPermutation(perm);CHKERRQ(ierr);
         /* permute user-provided Mat so that it matches with MatCreateSubMatrices() numbering */
         ierr = MatPermute(data->aux, perm, perm, &C);CHKERRQ(ierr);
