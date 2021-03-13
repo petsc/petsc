@@ -51,6 +51,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-cxxlib-autodetect=<bool>',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
     help.addArgument('Compilers', '-with-dependencies=<bool>',              nargs.ArgBool(None, 1, 'Compile with -MMD or equivalent flag if possible'))
     help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',            nargs.Arg(None, 'auto', 'Dialect under which to compile C++ sources (auto,cxx14,cxx11,0)'))
+    help.addArgument('Compilers', '-with-hip-dialect=<dialect>',            nargs.Arg(None, 'auto', 'Dialect under which to compile HIP sources (auto,cxx14,cxx11,0)'))
     return
 
   def getDispatchNames(self):
@@ -466,18 +467,21 @@ class Configure(config.base.Configure):
     return
 
 
-  def checkCxxDialect(self):
-    """Determine the Cxx dialect supported by the compiler [and correspoding compiler option - if any].
-    -with-cxx-dialect can take options:
+  def checkCxxDialect(self,language,isGNU):
+    """Determine the CXX dialect supported by the compiler(language) [and correspoding compiler option - if any].
+    isGNU indicates if the compiler is g++.
+    -with-<lang>-dialect can take options:
       auto: use highest dialect configure can determine
       cxx17: [future?]
       cxx14: gnu++14 or c++14
       cxx11: gnu++11 or c++11
       0: disable CxxDialect check and use compiler default
     """
+    lang      = language.lower()
+    LANG      = language.upper()
     TESTCXX14 = 0
     TESTCXX11 = 0
-    cxxdialect = self.argDB.get('with-cxx-dialect','').upper().replace('X','+')
+    cxxdialect = self.argDB.get('with-'+lang+'-dialect','').upper().replace('X','+')
     if cxxdialect in ['','0','NONE']: return
     elif cxxdialect == 'AUTO':
       TESTCXX14 = 1
@@ -487,7 +491,7 @@ class Configure(config.base.Configure):
     elif cxxdialect == 'C++11':
       TESTCXX11 = 1
     else:
-      raise RuntimeError('Unknown C++ dialect: with-cxx-dialect=%s' % (self.argDB['with-cxx-dialect']))
+      raise RuntimeError('Unknown C++ dialect: with-'+lang+'-dialect=%s' % (self.argDB['with-'+lang+'-dialect']))
 
     # Test borrowed from Jack Poulson (Elemental)
     includes = """
@@ -509,42 +513,44 @@ class Configure(config.base.Configure):
           return lambda(3,4);
           """
     self.setCompilers.saveLog()
-    self.setCompilers.pushLanguage('Cxx')
+    self.setCompilers.pushLanguage(language)
     if TESTCXX14:
       flags_to_try = ['']
-      if self.isGCXX: flags_to_try += ['-std=gnu++14']
+      if isGNU: flags_to_try += ['-std=gnu++14']
       else: flags_to_try += ['-std=c++14']
       for flag in flags_to_try:
         self.logWrite(self.setCompilers.restoreLog())
-        self.logPrint('checkCxxDialect: checking CXX14 with flag: '+flag)
+        self.logPrint('checkCxxDialect: checking CXX14 for '+language+ ' with flag: '+flag)
         self.setCompilers.saveLog()
         if self.setCompilers.checkCompilerFlag(flag, includes, body+body14):
-          self.setCompilers.CXXPPFLAGS += ' ' + flag
+          newflag = getattr(self.setCompilers,LANG+'FLAGS') + ' ' + flag # append flag to the old
+          setattr(self.setCompilers,LANG+'FLAGS',newflag)
           self.cxxdialect = 'C++14'
-          self.addDefine('HAVE_CXX_DIALECT_CXX14',1)
-          self.addDefine('HAVE_CXX_DIALECT_CXX11',1)
+          self.addDefine('HAVE_'+LANG+'_DIALECT_CXX14',1)
+          self.addDefine('HAVE_'+LANG+'_DIALECT_CXX11',1)
           break
 
     if cxxdialect == 'C++14' and self.cxxdialect != 'C++14':
       self.logWrite(self.setCompilers.restoreLog())
-      raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s,\nIf you know the flag, set it with CXXFLAGS option')
+      raise RuntimeError('Could not determine compiler flag for with-'+lang+'-dialect=%s,\nIf you know the flag, set it with '+LANG+'FLAGS option')
     elif not self.cxxdialect and TESTCXX11:
       flags_to_try = ['']
-      if self.isGCXX: flags_to_try += ['-std=gnu++11']
+      if isGNU: flags_to_try += ['-std=gnu++11']
       else: flags_to_try += ['-std=c++11','-std=c++0x']
       for flag in flags_to_try:
         self.logWrite(self.setCompilers.restoreLog())
-        self.logPrint('checkCxxDialect: checking CXX11 with flag: '+flag)
+        self.logPrint('checkCxxDialect: checking CXX11 for '+language+ ' with flag: '+flag)
         self.setCompilers.saveLog()
         if self.setCompilers.checkCompilerFlag(flag, includes, body):
-          self.setCompilers.CXXPPFLAGS += ' ' + flag
+          newflag = getattr(self.setCompilers,LANG+'FLAGS') + ' ' + flag # append flag to the old
+          setattr(self.setCompilers,LANG+'FLAGS',newflag)
           self.cxxdialect = 'C++11'
-          self.addDefine('HAVE_CXX_DIALECT_CXX11',1)
+          self.addDefine('HAVE_'+LANG+'_DIALECT_CXX11',1)
           break
 
     if cxxdialect == 'C++11' and self.cxxdialect != 'C++11':
       self.logWrite(self.setCompilers.restoreLog())
-      raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s,\nIf you know the flag, set it with CXXFLAGS option')
+      raise RuntimeError('Could not determine compiler flag for with-'+lang+'-dialect=%s,\nIf you know the flag, set it with '+LANG+'FLAGS option')
 
     self.setCompilers.popLanguage()
     self.logWrite(self.setCompilers.restoreLog())
@@ -1461,7 +1467,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     if hasattr(self.setCompilers, 'CXX'):
       self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX, self.log)
       self.executeTest(self.checkRestrict,['Cxx'])
-      self.executeTest(self.checkCxxDialect)
+      self.executeTest(self.checkCxxDialect,['Cxx',self.isGCXX])
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxInline)
       if self.argDB['with-cxxlib-autodetect']:
@@ -1478,9 +1484,8 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         self.executeTest(self.checkFortranLibraries)
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
-    if hasattr(self.setCompilers, 'HIP'):
-        #Placeholder in case further checks are needed
-        pass
+    if hasattr(self.setCompilers, 'HIPC'):
+      self.executeTest(self.checkCxxDialect,['HIP',False]) # Not GNU
     if hasattr(self.setCompilers, 'SYCL'):
         #Placeholder in case further checks are needed
         pass
