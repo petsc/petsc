@@ -4119,7 +4119,7 @@ PetscErrorCode SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
    Output Parameter:
 .  strreason - a human readable string that describes SNES converged reason
 
-   Level: basic
+   Level: beginner
 
 .seealso: SNESGetConvergedReason()
 @*/
