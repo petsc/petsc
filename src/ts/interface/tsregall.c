@@ -51,7 +51,7 @@ PetscErrorCode  TSRegisterAll(void)
   ierr = TSRegister(TSTHETA,          TSCreate_Theta);CHKERRQ(ierr);
   ierr = TSRegister(TSALPHA,          TSCreate_Alpha);CHKERRQ(ierr);
   ierr = TSRegister(TSALPHA2,         TSCreate_Alpha2);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SUNDIALS)
+#if defined(PETSC_HAVE_SUNDIALS2)
   ierr = TSRegister(TSSUNDIALS,       TSCreate_Sundials);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_RADAU5)

@@ -988,7 +988,7 @@ PETSC_EXTERN PetscErrorCode TSDiscGradSetFormulation(TS, PetscErrorCode(*)(TS, P
 /*
        PETSc interface to Sundials
 */
-#ifdef PETSC_HAVE_SUNDIALS
+#ifdef PETSC_HAVE_SUNDIALS2
 typedef enum { SUNDIALS_ADAMS=1,SUNDIALS_BDF=2} TSSundialsLmmType;
 PETSC_EXTERN const char *const TSSundialsLmmTypes[];
 typedef enum { SUNDIALS_MODIFIED_GS = 1,SUNDIALS_CLASSICAL_GS = 2 } TSSundialsGramSchmidtType;
