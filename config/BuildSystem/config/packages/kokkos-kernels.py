@@ -72,13 +72,13 @@ class Configure(config.package.CMakePackage):
     elif self.hip.found:
       self.system = 'HIP'
       with self.Language('HIP'):
-        petscHipcc = self.getCompiler()
+        petscHipc = self.getCompiler()
         hipFlags = self.updatePackageCFlags(self.getCompilerFlags())
-      self.getExecutable(petscHipcc,getFullPath=1,resultName='systemHipcc')
-      if not hasattr(self,'systemHipcc'):
-        raise RuntimeError('HIP error: could not find path of hipcc')
+      self.getExecutable(petscHipc,getFullPath=1,resultName='systemHipc')
+      if not hasattr(self,'systemHipc'):
+        raise RuntimeError('HIP error: could not find path of hipc')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
-      args.append('-DCMAKE_CXX_COMPILER='+self.systemHipcc)
+      args.append('-DCMAKE_CXX_COMPILER='+self.systemHipc)
       args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
       args.append('-DCMAKE_CXX_FLAGS="' + hipFlags + '"')
     return args

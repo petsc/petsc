@@ -60,7 +60,7 @@ class Configure(config.base.Configure):
     names['CPP'] = 'No C preprocessor found.'
     names['CUDAC'] = 'No CUDA compiler found.'
     names['CUDAPP'] = 'No CUDA preprocessor found.'
-    names['HIPCC'] = 'No HIP compiler found.'
+    names['HIPC'] = 'No HIP compiler found.'
     names['HIPPP'] = 'No HIP preprocessor found.'
     names['SYCLCXX'] = 'No SYCL compiler found.'
     names['SYCLPP'] = 'No SYCL preprocessor found.'
@@ -106,7 +106,7 @@ class Configure(config.base.Configure):
         if not hasattr(self.setCompilers, name):
           raise MissingProcessor(self.dispatchNames[name])
         return getattr(self.setCompilers, name)
-      if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPCC_LINKER_FLAGS', 'SYCLCXX_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
+      if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPC_LINKER_FLAGS', 'SYCLCXX_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
         flags = getattr(self.setCompilers, name)
         if not isinstance(flags, list): flags = [flags]
         return ' '.join(flags)
@@ -1377,7 +1377,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     # Fortran is handled in compilersfortran.py
     if hasattr(self, 'CUDAC'):
       languages.append('CUDA')
-    if hasattr(self, 'HIPCC'):
+    if hasattr(self, 'HIPC'):
       languages.append('HIP')
     if hasattr(self, 'SYCLCXX'):
       languages.append('SYCL')

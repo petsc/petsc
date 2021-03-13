@@ -4,7 +4,7 @@
 # as for example Frontier.  Since Frontier does not exist yet, this is a beta
 # file
 #
-# Recommended module loads 
+# Recommended module loads
 #    module load PrgEnv-cray
 #    module load cmake
 #    module load rocm-alt/3.5.0
@@ -29,15 +29,15 @@ if __name__ == '__main__':
   configure_options = [
     '--prefix='+os.path.join(os.environ['HOME'],'software','petsc'),
     '--with-hip=1',
-    '--with-hipcc=hipcc',
+    '--with-hipc=hipcc',
     '--with-precision=double',
     '--with-clanguage=c',
     '--with-cc=mpicc',
     '--with-cxx=mpicxx',
     '--with-fc=mpifort',
-    '--with-mpiexec=srun', 
+    '--with-mpiexec=srun',
     '--with-blaslapack-lib=-L'+os.environ['BLASDIR']+' -L'+os.environ['LAPACK_DIR']+' -llapack -lblas',
-    '--with-shared-libraries=0', 
+    '--with-shared-libraries=0',
 
     # The GCC and Clang compilers are supported on tulip/frontier
     # Load modules as described above
