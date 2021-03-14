@@ -181,6 +181,8 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
   PetscInt             i;
   PetscBool            iascii,isstring,isdraw;
   PetscViewer          sviewer;
+  PetscViewerFormat    format;
+  const char           *prefix;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -192,8 +194,11 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  number of blocks = %D\n",jac->n);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
-    if (jac->same_local_solves) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:\n");CHKERRQ(ierr);
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Local solver information for first block is in the following KSP and PC objects on rank 0:\n");CHKERRQ(ierr);
+      ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Use -%sksp_view ::ascii_info_detail to display information for all blocks\n",prefix?prefix:"");CHKERRQ(ierr);
       if (jac->ksp && !jac->psubcomm) {
         ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
         if (!rank) {
@@ -225,7 +230,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
       PetscInt n_global;
       ierr = MPIU_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Local solver information for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D, first local block number = %D\n",
                                                 rank,jac->n_local,jac->first_local);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -274,10 +279,7 @@ static PetscErrorCode  PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_local,PetscI
 
   if (n_local) *n_local = jac->n_local;
   if (first_local) *first_local = jac->first_local;
-  *ksp                   = jac->ksp;
-  jac->same_local_solves = PETSC_FALSE;        /* Assume that local solves are now different;
-                                                  not necessarily true though!  This flag is
-                                                  used only for PCView_BJacobi() */
+  if (ksp) *ksp                 = jac->ksp;
   PetscFunctionReturn(0);
 }
 
@@ -559,7 +561,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
   jac->n_local           = -1;
   jac->first_local       = rank;
   jac->ksp               = NULL;
-  jac->same_local_solves = PETSC_TRUE;
   jac->g_lens            = NULL;
   jac->l_lens            = NULL;
   jac->psubcomm          = NULL;

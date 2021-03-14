@@ -37,7 +37,8 @@ PC Object: (stokes_) 8 MPI processes
         PC Object: (stokes_mg_coarse_telescope_) 4 MPI processes
           type: bjacobi
             number of blocks = 4
-            Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+            Local solver information for first block is in the following KSP and PC objects on rank 0:
+            Use -stokes_mg_coarse_telescope_ksp_view ::ascii_info_detail to display information for all blocks
                 KSP Object:       (stokes_mg_coarse_telescope_sub_)       1 MPI processes
                   type: preonly
                   maximum iterations=10000, initial guess is zero
