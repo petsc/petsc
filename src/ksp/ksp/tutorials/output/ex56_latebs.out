@@ -72,7 +72,8 @@ PC Object: 8 MPI processes
       type: asm
         total subdomain blocks = 27, amount of overlap = 0
         restriction/interpolation type - BASIC
-        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        Local solver information for first block is in the following KSP and PC objects on rank 0:
+        Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
       KSP Object: (mg_levels_1_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
@@ -191,7 +192,8 @@ PC Object: 8 MPI processes
       type: asm
         total subdomain blocks = 27, amount of overlap = 0
         restriction/interpolation type - BASIC
-        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        Local solver information for first block is in the following KSP and PC objects on rank 0:
+        Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
       KSP Object: (mg_levels_1_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
@@ -310,7 +312,8 @@ PC Object: 8 MPI processes
       type: asm
         total subdomain blocks = 27, amount of overlap = 0
         restriction/interpolation type - BASIC
-        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        Local solver information for first block is in the following KSP and PC objects on rank 0:
+        Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
       KSP Object: (mg_levels_1_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero

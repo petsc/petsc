@@ -19,7 +19,6 @@ typedef struct {
   Mat        *mat,*pmat;          /* mat is not currently used */
   PCASMType  type;                /* use reduced interpolation, restriction or both */
   PetscBool  type_set;            /* if user set this value (so won't change it for symmetric problems) */
-  PetscBool  same_local_solves;   /* flag indicating whether all local solvers are same */
   PetscBool  sort_indices;        /* flag to sort subdomain indices */
   PetscBool  dm_subdomains;       /* whether DM is allowed to define subdomains */
   PCCompositeType loctype;        /* the type of composition for local solves */
