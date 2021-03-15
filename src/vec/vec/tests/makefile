@@ -24,4 +24,4 @@ runex47: ex47.PETSc
 	   if (${DIFF} output/ex47_1.out ex47_1.tmp) then \
            echo "C/C++ example src/vec/vec/tests/ex47 run successfully with hdf5"; \
            else  printf "${PWD}\nPossible problem with ex47 running with hdf5, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex47_1.tmp
+	   ${RM} -f ex47_1.tmp x.h5
