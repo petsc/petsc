@@ -87,6 +87,8 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObje
     data->cntl[0] = HPDDM_KRYLOV_METHOD_NONE;
     data->scntl[1] = 1;
   }
+  if (ksp->nmax > std::numeric_limits<int>::max() || ksp->nmax < std::numeric_limits<int>::min()) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D not representable by an integer, which is not handled by KSPHPDDM", ksp->nmax);
+  else data->icntl[1] = static_cast<int>(ksp->nmax);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -175,6 +177,8 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
       }
     } else data->scntl[1] = 1;
   }
+  if (ksp->nmax > std::numeric_limits<int>::max() || ksp->nmax < std::numeric_limits<int>::min()) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D not representable by an integer, which is not handled by KSPHPDDM", ksp->nmax);
+  else data->icntl[1] = static_cast<int>(ksp->nmax);
   PetscFunctionReturn(0);
 }
 
@@ -214,8 +218,6 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetDeflationSpace_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationSpace_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPSetMatSolveBlockSize_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGetMatSolveBlockSize_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetType_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetType_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -445,25 +447,6 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetMatSolveBlockSize_HPDDM(KSP ksp, PetscInt bs)
-{
-  KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
-
-  PetscFunctionBegin;
-  if (bs > std::numeric_limits<int>::max() || bs < std::numeric_limits<int>::min()) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D not representable by an integer", bs);
-  else data->icntl[1] = static_cast<int>(bs);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode KSPGetMatSolveBlockSize_HPDDM(KSP ksp, PetscInt *bs)
-{
-  KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
-
-  PetscFunctionBegin;
-  *bs = static_cast<PetscInt>(data->icntl[1]);
-  PetscFunctionReturn(0);
-}
-
 /*@
      KSPHPDDMSetType - Sets the type of Krylov method used in KSPHPDDM.
 
@@ -607,8 +590,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
   }
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetDeflationSpace_C", KSPHPDDMSetDeflationSpace_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationSpace_C", KSPHPDDMGetDeflationSpace_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPSetMatSolveBlockSize_C", KSPSetMatSolveBlockSize_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGetMatSolveBlockSize_C", KSPGetMatSolveBlockSize_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetType_C", KSPHPDDMSetType_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetType_C", KSPHPDDMGetType_HPDDM);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SLEPC) && defined(PETSC_USE_SHARED_LIBRARIES)

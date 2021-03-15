@@ -91,9 +91,9 @@ int main(int argc,char **args)
   if (!flg) {
     if (!breakdown) {
       ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-      ierr = KSPGetMatSolveBlockSize(ksp,&M);CHKERRQ(ierr);
+      ierr = KSPGetMatSolveBatchSize(ksp,&M);CHKERRQ(ierr);
       if (M != PETSC_DECIDE) {
-        ierr = KSPSetMatSolveBlockSize(ksp,PETSC_DECIDE);CHKERRQ(ierr);
+        ierr = KSPSetMatSolveBatchSize(ksp,PETSC_DECIDE);CHKERRQ(ierr);
         ierr = MatZeroEntries(X);CHKERRQ(ierr);
         ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
       }
@@ -161,7 +161,7 @@ int main(int argc,char **args)
          nsize: 4
          suffix: 4
          requires: hpddm
-         args: -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5
+         args: -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_batch_size 5
 
    test:
       nsize: 1
@@ -201,13 +201,13 @@ int main(int argc,char **args)
       suffix: 4_slepc
       output_file: output/ex77_4.out
       filter: sed "/^ksp_hpddm_recycle_ Linear eigensolve converged/d"
-      args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_mat_type {{aij dense}shared output} -ksp_hpddm_recycle_eps_converged_reason -ksp_hpddm_recycle_st_pc_type redundant
+      args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_batch_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_mat_type {{aij dense}shared output} -ksp_hpddm_recycle_eps_converged_reason -ksp_hpddm_recycle_st_pc_type redundant
 
    testset:
       nsize: 4
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc
       filter: sed "/^ksp_hpddm_recycle_ Linear eigensolve converged/d"
-      args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_eps_converged_reason
+      args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_batch_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_eps_converged_reason
       test:
          requires: elemental
          suffix: 4_elemental
@@ -229,6 +229,6 @@ int main(int argc,char **args)
       requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       suffix: 4_zero
       output_file: output/ex77_4.out
-      args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_block_size 5
+      args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_batch_size 5
 
 TEST*/

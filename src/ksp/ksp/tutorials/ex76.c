@@ -109,7 +109,7 @@ int main(int argc,char **args)
       if (type == KSP_HPDDM_TYPE_PREONLY || type == KSP_HPDDM_TYPE_CG || type == KSP_HPDDM_TYPE_GMRES || type == KSP_HPDDM_TYPE_GCRODR) {
         Mat C;
         ierr = MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&C);CHKERRQ(ierr);
-        ierr = KSPSetMatSolveBlockSize(ksp,1);CHKERRQ(ierr);
+        ierr = KSPSetMatSolveBatchSize(ksp,1);CHKERRQ(ierr);
         ierr = KSPMatSolve(ksp,B,C);CHKERRQ(ierr);
         ierr = MatAYPX(C,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);

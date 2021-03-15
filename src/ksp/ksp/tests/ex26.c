@@ -1,4 +1,4 @@
-static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
+static char help[] ="Solves Laplacian with multigrid. Tests block API for PCMG\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
@@ -16,7 +16,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
 
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear
+    is used to discretize the boundary value problem to obtain a linear
     system of equations.
 
     Usage: ./ex26 -ksp_monitor_short -pc_type ml
@@ -39,33 +39,30 @@ typedef struct {
   Mat      A,P,R;
   KSP      ksp;
 } GridCtx;
-extern int FormJacobian_Grid(GridCtx*,Mat*);
+
+static PetscErrorCode FormJacobian_Grid(GridCtx*,Mat);
 
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       its,n,Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,nlocal;
-  PetscMPIInt    size;
+  PetscInt       i,its,Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,nlocal,nrhs = 1;
   PetscScalar    one = 1.0;
-  PetscInt       mx,my;
-  Mat            A;
+  Mat            A,B,X;
   GridCtx        fine_ctx;
   KSP            ksp;
-  PetscBool      flg;
+  PetscBool      Brand = PETSC_FALSE,flg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* set up discretization matrix for fine grid */
-  fine_ctx.mx = 9; fine_ctx.my = 9;
-  ierr        = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,&flg);CHKERRQ(ierr);
-  if (flg) fine_ctx.mx = mx;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,&flg);CHKERRQ(ierr);
-  if (flg) fine_ctx.my = my;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my);CHKERRQ(ierr);
-  n    = fine_ctx.mx*fine_ctx.my;
-
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  fine_ctx.mx = 9;
+  fine_ctx.my = 9;
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&fine_ctx.mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&fine_ctx.my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-rand",&Brand,NULL);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da);CHKERRQ(ierr);
@@ -76,11 +73,13 @@ int main(int argc,char **argv)
   ierr = VecGetLocalSize(fine_ctx.x,&nlocal);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.localX,&fine_ctx.localF);CHKERRQ(ierr);
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&A);CHKERRQ(ierr);
-  ierr = FormJacobian_Grid(&fine_ctx,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(fine_ctx.da,&A);CHKERRQ(ierr);
+  ierr = FormJacobian_Grid(&fine_ctx,A);CHKERRQ(ierr);
 
   /* create linear solver */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,fine_ctx.da);CHKERRQ(ierr);
+  ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
 
   /* set values for rhs vector */
   ierr = VecSet(fine_ctx.b,one);CHKERRQ(ierr);
@@ -89,8 +88,47 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_ML if 'pc_type=ml' */
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(fine_ctx.x,NULL,"-debug");CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its);CHKERRQ(ierr);
+
+  /* test multiple right-hand side */
+  ierr = MatCreateDense(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,fine_ctx.mx*fine_ctx.my,nrhs,NULL,&B);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(B,"rhs_");CHKERRQ(ierr);
+  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+  ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
+  if (Brand) {
+    ierr = MatSetRandom(B,NULL);CHKERRQ(ierr);
+  } else {
+    PetscScalar *b;
+
+    ierr = MatDenseGetArrayWrite(B,&b);CHKERRQ(ierr);
+    for (i=0;i<nlocal*nrhs;i++) b[i] = 1.0;
+    ierr = MatDenseRestoreArrayWrite(B,&b);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(X,NULL,"-debug");CHKERRQ(ierr);
+
+  ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
+  if ((flg || nrhs == 1) && !Brand) {
+    PetscInt          n;
+    const PetscScalar *xx,*XX;
+
+    ierr = VecGetArrayRead(fine_ctx.x,&xx);CHKERRQ(ierr);
+    ierr = MatDenseGetArrayRead(X,&XX);CHKERRQ(ierr);
+    for (n=0;n<nrhs;n++) {
+      for (i=0;i<nlocal;i++) {
+        if (PetscAbsScalar(xx[i] - XX[nlocal*n + i]) > PETSC_SMALL) {
+          ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error local solve %D, entry %D -> %g + i %g != %g + i %g\n",PetscGlobalRank,n,i,(double)PetscRealPart(xx[i]),(double)PetscImaginaryPart(xx[i]),(double)PetscRealPart(XX[i]),(double)PetscImaginaryPart(XX[i]));CHKERRQ(ierr);
+        }
+      }
+    }
+    ierr = MatDenseRestoreArrayRead(X,&XX);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(fine_ctx.x,&xx);CHKERRQ(ierr);
+  }
 
   /* free data structures */
   ierr = VecDestroy(&fine_ctx.x);CHKERRQ(ierr);
@@ -99,15 +137,16 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&fine_ctx.localX);CHKERRQ(ierr);
   ierr = VecDestroy(&fine_ctx.localF);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&X);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;
 }
 
-int FormJacobian_Grid(GridCtx *grid,Mat *J)
+PetscErrorCode FormJacobian_Grid(GridCtx *grid,Mat jac)
 {
-  Mat                    jac = *J;
   PetscErrorCode         ierr;
   PetscInt               i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
   PetscInt               grow;
@@ -115,6 +154,7 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   PetscScalar            two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
   ISLocalToGlobalMapping ltogm;
 
+  PetscFunctionBeginUser;
   mx    = grid->mx;            my = grid->my;
   hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
@@ -150,7 +190,7 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*TEST
@@ -180,5 +220,33 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
       args:  -ksp_monitor_short -pc_type ml -mat_no_inode -pc_mg_type ADDITIVE -ksp_max_it 7
       nsize: 1
       requires: ml
+
+    test:
+      suffix: cycles
+      nsize: {{1 2}}
+      args: -ksp_view_final_residual -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}separate output} -nrhs 1
+
+    test:
+      suffix: matcycles
+      nsize: {{1 2}}
+      args: -ksp_view_final_residual -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}separate output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    test:
+      requires: ml
+      suffix: matcycles_ml
+      nsize: {{1 2}}
+      args: -ksp_view_final_residual -ksp_type preonly -pc_type ml -mx 5 -my 5 -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}separate output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    test:
+      requires: hpddm
+      suffix: matcycles_hpddm_mg
+      nsize: {{1 2}}
+      args: -ksp_view_final_residual -ksp_type hpddm -pc_type mg -pc_mg_levels 3 -pc_mg_galerkin -mx 5 -my 5 -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}separate output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    test:
+      requires: hpddm
+      nsize: {{1 2}}
+      suffix: matcycles_hpddm_ilu
+      args: -ksp_view_final_residual -ksp_type hpddm -pc_type redundant -redundant_pc_type ilu -mx 5 -my 5 -ksp_monitor -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
 
 TEST*/
