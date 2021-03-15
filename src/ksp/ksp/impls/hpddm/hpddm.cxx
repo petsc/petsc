@@ -269,7 +269,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   ierr = PetscCitationsRegister(hpddmCitationKSP, &citeKSP);CHKERRQ(ierr);
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQKAIJ, MATMPIKAIJ, "");CHKERRQ(ierr);
-  ierr = VecGetArray(ksp->vec_sol, &x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(ksp->vec_sol, &x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(ksp->vec_rhs, &b);CHKERRQ(ierr);
   if (!flg) {
     ierr = KSPSolve_HPDDM_Private(ksp, b, x, 1);CHKERRQ(ierr);
@@ -301,7 +301,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
     }
   }
   ierr = VecRestoreArrayRead(ksp->vec_rhs, &b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(ksp->vec_sol, &x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(ksp->vec_sol, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
