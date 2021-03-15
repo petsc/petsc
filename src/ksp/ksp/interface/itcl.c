@@ -415,6 +415,11 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     if (flg) {
       ierr = KSPSetDiagonalScaleFix(ksp,flag);CHKERRQ(ierr);
     }
+    nmax = ksp->nmax;
+    ierr = PetscOptionsInt("-ksp_matsolve_block_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBlockSize", nmax, &nmax, &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPSetMatSolveBlockSize(ksp, nmax);CHKERRQ(ierr);
+    }
     goto skipoptions;
   }
 
@@ -640,17 +645,17 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
 #if defined(PETSC_HAVE_SAWS)
   {
-  PetscBool set;
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_saws_block","Block for SAWs at end of KSPSolve","PetscObjectSAWsBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
-  if (set) {
-    ierr = PetscObjectSAWsSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
-  }
+    PetscBool set;
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ksp_saws_block","Block for SAWs at end of KSPSolve","PetscObjectSAWsBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+    if (set) {
+      ierr = PetscObjectSAWsSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
+    }
   }
 #endif
 
-  nmax = PETSC_DECIDE;
-  ierr = PetscOptionsInt("-ksp_matsolve_block_size", "Maximum number of columns treated simultaneously", "KSPMatSolve", nmax, &nmax, &flg);CHKERRQ(ierr);
+  nmax = ksp->nmax;
+  ierr = PetscOptionsInt("-ksp_matsolve_block_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBlockSize", nmax, &nmax, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetMatSolveBlockSize(ksp, nmax);CHKERRQ(ierr);
   }

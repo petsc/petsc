@@ -1230,7 +1230,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     ierr = KSPGetMatSolveBlockSize(ksp, &Bbn);CHKERRQ(ierr);
     /* by default, do a single solve with all columns */
     if (Bbn == PETSC_DECIDE) Bbn = N2;
-    else if (Bbn < 1)        SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D must be positive", Bbn);
+    else if (Bbn < 1) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D must be positive", Bbn);
     ierr = PetscInfo2(ksp, "KSP type %s solving using blocks of width at most %D\n", ((PetscObject)ksp)->type_name, Bbn);CHKERRQ(ierr);
     /* if -ksp_matsolve_block_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
@@ -1303,6 +1303,7 @@ PetscErrorCode KSPSetMatSolveBlockSize(KSP ksp, PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ksp, bs, 2);
+  ksp->nmax = bs;
   ierr = PetscTryMethod(ksp, "KSPSetMatSolveBlockSize_C", (KSP, PetscInt), (ksp, bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1326,7 +1327,8 @@ PetscErrorCode KSPGetMatSolveBlockSize(KSP ksp, PetscInt *bs)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  *bs = PETSC_DECIDE;
+  PetscValidIntPointer(bs, 2);
+  *bs  = ksp->nmax;
   ierr = PetscTryMethod(ksp, "KSPGetMatSolveBlockSize_C", (KSP, PetscInt*), (ksp, bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1416,6 +1418,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   ierr = KSPResetViewers(ksp);CHKERRQ(ierr);
 
   ksp->setupstage = KSP_SETUP_NEW;
+  ksp->nmax = PETSC_DECIDE;
   PetscFunctionReturn(0);
 }
 
