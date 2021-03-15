@@ -419,7 +419,6 @@ PETSC_SPHINX_ENV=${PETSC_ARCH}/sphinx_docs_env
 PETSC_SPHINX_DEST=docs/sphinx_docs
 
 sphinx-docs-all: sphinx-docs-manual sphinx-docs-html
-	-@cd src/binding/petsc4py ; make docs
 
 sphinx-docs-fast: chk_loc sphinx-docs-env
 	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \

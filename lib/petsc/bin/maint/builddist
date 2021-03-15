@@ -112,6 +112,15 @@ python3 ./config/configure.py --with-mpi=0 --download-c2html=1 --download-sowing
 make allfortranstubs
 make sphinx-docs-check-python
 make alldoc LOC=${PETSC_DIR} DOCSETDATE_PRUNE_LIST="" GONULL=""
+# petsc4py docs and tarball
+export PETSC_ARCH=arch-pydoc
+python2 ./config/configure.py --with-mpi=0 --with-cxx=0 --with-fc=0
+make all
+cd $PETSC_DIR/src/binding/petsc4py
+  make sdist PYTHON=python2 PYTHON2=python2
+  cp dist/*.gz ~/
+  make srcclean
+cd $PETSC_DIR
 #
 make ACTION=clean tree_basic
 
@@ -152,7 +161,7 @@ cat include/petscversion.h.bak | \
 /bin/rm -f include/petscversion.h.bak
 
 # just to be sure
-/bin/rm -rf configure.log* RDict.* RESYNC PENDING
+/bin/rm -rf make.log* configure.log* RDict.* RESYNC PENDING
 # eliminate .html files in src/contrib
 /usr/bin/find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
 # eliminate .pyc files if any
@@ -175,6 +184,7 @@ cd $tmpdir
 
 # create lite version
 /bin/rm -rf $tmpdir/petsc$version/docs $tmpdir/petsc$version/zope $tmpdir/petsc$version/config/BuildSystem/docs $tmpdir/petsc$version/config/examples/old
+/bin/rm -rf $tmpdir/petsc$version/src/binding/petsc4py/docs
 find $tmpdir/petsc$version -type f -name "*.html" -exec rm {} \;
 # recreate EMACS-TAGS [after deletion]
 cd $tmpdir/petsc$version; ${PETSC_DIR}/lib/petsc/bin/maint/generateetags.py
