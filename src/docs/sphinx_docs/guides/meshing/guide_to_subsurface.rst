@@ -59,7 +59,7 @@ We can similarly look at this in parallel. Test 2 uses three refinements and thr
   > make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_2" EXTRA_OPTIONS="-dm_view hdf5:$PETSC_DIR/mesh.h5 -dm_partition_view -petscpartitioner_type parmetis"
   > $PETSC_DIR/lib/petsc/bin/petsc_gen_xmdf.py mesh.h5
 
-.. figure:: images/extrusionparallel.png
+.. figure:: images/extrusionParallel.png
    :align: center
 
    **Parallel extruded mesh with refined surface**
