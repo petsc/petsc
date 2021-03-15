@@ -255,7 +255,7 @@ int main(int argc, char **argv)
   ierr = DMInterpolationCreate(PETSC_COMM_WORLD, &interpolator);CHKERRQ(ierr);
   ierr = DMInterpolationSetDim(interpolator, spaceDim);CHKERRQ(ierr);
   ierr = DMInterpolationAddPoints(interpolator, Np, pcoords);CHKERRQ(ierr);
-  ierr = DMInterpolationSetUp(interpolator, dm, pointsAllProcs);CHKERRQ(ierr);
+  ierr = DMInterpolationSetUp(interpolator, dm, pointsAllProcs, PETSC_FALSE);CHKERRQ(ierr);
   /* Check locations */
   for (c = 0; c < interpolator->n; ++c) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D is in Cell %D\n", rank, c, interpolator->cells[c]);CHKERRQ(ierr);
