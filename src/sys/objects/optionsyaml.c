@@ -31,6 +31,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  if (node->type == YAML_SCALAR_NODE && !STR(node)[0]) PetscFunctionReturn(0); /* empty */
   if (node->type != YAML_MAPPING_NODE) SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
   for (yaml_node_pair_t *pair = MAP(node).start; pair < MAP(node).top; pair++) {
     yaml_node_t *keynode = yaml_document_get_node(doc, pair->key);
