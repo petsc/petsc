@@ -8352,8 +8352,6 @@ PetscErrorCode MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   PetscValidHeaderSpecific(w,VEC_CLASSID,4);
-  PetscValidType(A,1);
-  MatCheckPreallocated(A,1);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = VecGetSize(y,&Ny);CHKERRQ(ierr);
   if (M == Ny) {
@@ -8392,8 +8390,6 @@ PetscErrorCode MatInterpolate(Mat A,Vec x,Vec y)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  PetscValidType(A,1);
-  MatCheckPreallocated(A,1);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = VecGetSize(y,&Ny);CHKERRQ(ierr);
   if (M == Ny) {
@@ -8431,9 +8427,6 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  PetscValidType(A,1);
-  MatCheckPreallocated(A,1);
-
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = VecGetSize(y,&Ny);CHKERRQ(ierr);
   if (M == Ny) {
@@ -8441,6 +8434,150 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
   } else {
     ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatMatInterpolateAdd - Y = W + A*X or W + A'*X
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  mat   - the matrix
+-  w, x - the input dense matrices
+
+   Output Parameters:
++  y - the output dense matrix
+
+   Level: intermediate
+
+   Notes:
+    This allows one to use either the restriction or interpolation (its transpose)
+    matrix to do the interpolation. y matrix can be reused if already created with the proper sizes,
+    otherwise it will be recreated. y must be initialized to NULL if not supplied.
+
+.seealso: MatInterpolateAdd(), MatMatInterpolate(), MatMatRestrict()
+
+@*/
+PetscErrorCode MatMatInterpolateAdd(Mat A,Mat x,Mat w,Mat *y)
+{
+  PetscErrorCode ierr;
+  PetscInt       M,N,Mx,Nx,Mo,My = 0,Ny = 0;
+  PetscBool      trans = PETSC_TRUE;
+  MatReuse       reuse = MAT_INITIAL_MATRIX;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(x,MAT_CLASSID,2);
+  PetscValidType(x,2);
+  if (w) PetscValidHeaderSpecific(w,MAT_CLASSID,3);
+  if (*y) PetscValidHeaderSpecific(*y,MAT_CLASSID,4);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetSize(x,&Mx,&Nx);CHKERRQ(ierr);
+  if (N == Mx) trans = PETSC_FALSE;
+  else if (M != Mx) SETERRQ4(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Size mismatch: A %Dx%D, X %Dx%D",M,N,Mx,Nx);
+  Mo = trans ? N : M;
+  if (*y) {
+    ierr = MatGetSize(*y,&My,&Ny);CHKERRQ(ierr);
+    if (Mo == My && Nx == Ny) { reuse = MAT_REUSE_MATRIX; }
+    else {
+      if (w && *y == w) SETERRQ6(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Cannot reuse y and w, size mismatch: A %Dx%D, X %Dx%D, Y %Dx%D",M,N,Mx,Nx,My,Ny);
+      ierr = MatDestroy(y);CHKERRQ(ierr);
+    }
+  }
+
+  if (w && *y == w) { /* this is to minimize changes in PCMG */
+    PetscBool flg;
+
+    ierr = PetscObjectQuery((PetscObject)*y,"__MatMatIntAdd_w",(PetscObject*)&w);CHKERRQ(ierr);
+    if (w) {
+      PetscInt My,Ny,Mw,Nw;
+
+      ierr = PetscObjectTypeCompare((PetscObject)*y,((PetscObject)w)->type_name,&flg);CHKERRQ(ierr);
+      ierr = MatGetSize(*y,&My,&Ny);CHKERRQ(ierr);
+      ierr = MatGetSize(w,&Mw,&Nw);CHKERRQ(ierr);
+      if (!flg || My != Mw || Ny != Nw) w = NULL;
+    }
+    if (!w) {
+      ierr = MatDuplicate(*y,MAT_COPY_VALUES,&w);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)*y,"__MatMatIntAdd_w",(PetscObject)w);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)*y,(PetscObject)w);CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)w);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(*y,w,UNKNOWN_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+  }
+  if (!trans) {
+    ierr = MatMatMult(A,x,reuse,PETSC_DEFAULT,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatTransposeMatMult(A,x,reuse,PETSC_DEFAULT,y);CHKERRQ(ierr);
+  }
+  if (w) {
+    ierr = MatAXPY(*y,1.0,w,UNKNOWN_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatMatInterpolate - Y = A*X or A'*X
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  mat   - the matrix
+-  x - the input dense matrix
+
+   Output Parameters:
++  y - the output dense matrix
+
+
+   Level: intermediate
+
+   Notes:
+    This allows one to use either the restriction or interpolation (its transpose)
+    matrix to do the interpolation. y matrix can be reused if already created with the proper sizes,
+    otherwise it will be recreated. y must be initialized to NULL if not supplied.
+
+.seealso: MatInterpolate(), MatRestrict(), MatMatRestrict()
+
+@*/
+PetscErrorCode MatMatInterpolate(Mat A,Mat x,Mat *y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatInterpolateAdd(A,x,NULL,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatMatRestrict - Y = A*X or A'*X
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  mat   - the matrix
+-  x - the input dense matrix
+
+   Output Parameters:
++  y - the output dense matrix
+
+
+   Level: intermediate
+
+   Notes:
+    This allows one to use either the restriction or interpolation (its transpose)
+    matrix to do the restriction. y matrix can be reused if already created with the proper sizes,
+    otherwise it will be recreated. y must be initialized to NULL if not supplied.
+
+.seealso: MatRestrict(), MatInterpolate(), MatMatInterpolate()
+@*/
+PetscErrorCode MatMatRestrict(Mat A,Mat x,Mat *y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatInterpolateAdd(A,x,NULL,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -384,6 +384,8 @@ PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,V
 PETSC_EXTERN PetscErrorCode PCMGSetResidualTranspose(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCMGResidualTransposeDefault(Mat,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCMGMatResidualDefault(Mat,Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode PCMGMatResidualTransposeDefault(Mat,Mat,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode PCHMGSetReuseInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC,PetscBool);
