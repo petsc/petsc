@@ -4687,7 +4687,7 @@ PetscErrorCode MatSolverTypeDestroy(void)
 }
 
 /*@C
-   MatFactorGetUseOrdering - Indicates if the factorization uses the ordering provided in MatLUFactorSymbolic(), MatCholeskyFactorSymbolic()
+   MatFactorGetCanUseOrdering - Indicates if the factorization uses the ordering provided in MatLUFactorSymbolic(), MatCholeskyFactorSymbolic()
 
    Logically Collective on Mat
 
@@ -4705,10 +4705,10 @@ PetscErrorCode MatSolverTypeDestroy(void)
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatGetFactor(), MatLUFactorSymbolic(), MatCholeskyFactorSymbolic()
 @*/
-PetscErrorCode MatFactorGetUseOrdering(Mat mat, PetscBool *flg)
+PetscErrorCode MatFactorGetCanUseOrdering(Mat mat, PetscBool *flg)
 {
   PetscFunctionBegin;
-  *flg = mat->useordering;
+  *flg = mat->canuseordering;
   PetscFunctionReturn(0);
 }
 
@@ -4736,7 +4736,7 @@ PetscErrorCode MatFactorGetUseOrdering(Mat mat, PetscBool *flg)
 
    Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatFactorGetUseOrdering(), MatSolverTypeRegister()
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatFactorGetCanUseOrdering(), MatSolverTypeRegister()
 @*/
 PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat *f)
 {

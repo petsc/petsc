@@ -16,20 +16,20 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (!pc->setupcalled) {
     if (!((PC_Factor*)icc)->fact) {
-      PetscBool useordering;
+      PetscBool canuseordering;
       ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
-      ierr = MatFactorGetUseOrdering(((PC_Factor*)icc)->fact,&useordering);CHKERRQ(ierr);
-      if (useordering) {
+      ierr = MatFactorGetCanUseOrdering(((PC_Factor*)icc)->fact,&canuseordering);CHKERRQ(ierr);
+      if (canuseordering) {
         ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
       }
     }
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
-    PetscBool useordering;
+    PetscBool canuseordering;
     ierr = MatDestroy(&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
     ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
-    ierr = MatFactorGetUseOrdering(((PC_Factor*)icc)->fact,&useordering);CHKERRQ(ierr);
-    if (useordering) {
+    ierr = MatFactorGetCanUseOrdering(((PC_Factor*)icc)->fact,&canuseordering);CHKERRQ(ierr);
+    if (canuseordering) {
       ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
     }
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);

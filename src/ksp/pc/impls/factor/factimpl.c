@@ -328,10 +328,10 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     if (!factor->fact) {
       ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s (may be overridden during setup)\n",ordering);CHKERRQ(ierr);
     } else {
-      PetscBool useordering;
+      PetscBool canuseordering;
       MatInfo   info;
-      ierr = MatFactorGetUseOrdering(factor->fact,&useordering);CHKERRQ(ierr);
-      if (!useordering) ordering = "external";
+      ierr = MatFactorGetCanUseOrdering(factor->fact,&canuseordering);CHKERRQ(ierr);
+      if (!canuseordering) ordering = "external";
       ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",ordering);CHKERRQ(ierr);
       ierr = MatGetInfo(factor->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %g, needed %g\n",(double)info.fill_ratio_given,(double)info.fill_ratio_needed);CHKERRQ(ierr);

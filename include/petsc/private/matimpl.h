@@ -450,7 +450,7 @@ struct _p_Mat {
   PetscLayout            rmap,cmap;
   void                   *data;            /* implementation-specific data */
   MatFactorType          factortype;       /* MAT_FACTOR_LU, ILU, CHOLESKY or ICC */
-  PetscBool              useordering;      /* factorization using ordering provide to routine (most PETSc implementations) */
+  PetscBool              canuseordering;      /* factorization using ordering provide to routine (most PETSc implementations) */
   PetscBool              assembled;        /* is the matrix assembled? */
   PetscBool              was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */

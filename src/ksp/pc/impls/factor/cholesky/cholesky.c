@@ -58,13 +58,13 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     MatInfo info;
 
     if (!pc->setupcalled) {
-      PetscBool useordering;
+      PetscBool canuseordering;
       if (!((PC_Factor*)dir)->fact) {
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_CHOLESKY,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       }
-      ierr = MatFactorGetUseOrdering(((PC_Factor*)dir)->fact,&useordering);CHKERRQ(ierr);
-      if (useordering) {
+      ierr = MatFactorGetCanUseOrdering(((PC_Factor*)dir)->fact,&canuseordering);CHKERRQ(ierr);
+      if (canuseordering) {
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         /* check if dir->row == dir->col */
         ierr = ISEqual(dir->row,dir->col,&flg);CHKERRQ(ierr);
@@ -85,12 +85,12 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       dir->hdr.actualfill = info.fill_ratio_needed;
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->hdr.reuseordering) {
-        PetscBool useordering;
+        PetscBool canuseordering;
         ierr = MatDestroy(&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_CHOLESKY,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
-        ierr = MatFactorGetUseOrdering(((PC_Factor*)dir)->fact,&useordering);CHKERRQ(ierr);
-        if (useordering) {
+        ierr = MatFactorGetCanUseOrdering(((PC_Factor*)dir)->fact,&canuseordering);CHKERRQ(ierr);
+        if (canuseordering) {
           ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
           ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
           ierr = ISDestroy(&dir->col);CHKERRQ(ierr); /* only use dir->row ordering in CholeskyFactor */

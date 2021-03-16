@@ -397,7 +397,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
 
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERUMFPACK,&B->solvertype);CHKERRQ(ierr);
-  B->useordering = PETSC_FALSE;
+  B->canuseordering = PETSC_TRUE;
 
   /* initializations */
   /* ------------------------------------------------*/

@@ -549,7 +549,7 @@ static PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_pastix);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_LU;
-  B->useordering = PETSC_TRUE;
+  B->canuseordering = PETSC_TRUE;
 
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);

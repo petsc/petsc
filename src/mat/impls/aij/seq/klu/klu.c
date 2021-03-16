@@ -318,7 +318,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
 
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERKLU,&B->solvertype);CHKERRQ(ierr);
-  B->useordering = PETSC_TRUE;
+  B->canuseordering = PETSC_TRUE;
 
   /* initializations */
   /* ------------------------------------------------*/

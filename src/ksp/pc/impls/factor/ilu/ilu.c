@@ -123,13 +123,13 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   } else {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
-      PetscBool useordering;
+      PetscBool canuseordering;
       if (!((PC_Factor*)ilu)->fact) {
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       }
-      ierr = MatFactorGetUseOrdering(((PC_Factor*)ilu)->fact,&useordering);CHKERRQ(ierr);
-      if (useordering) {
+      ierr = MatFactorGetCanUseOrdering(((PC_Factor*)ilu)->fact,&canuseordering);CHKERRQ(ierr);
+      if (canuseordering) {
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col);CHKERRQ(ierr);
@@ -143,12 +143,12 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       ilu->hdr.actualfill = info.fill_ratio_needed;
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!ilu->hdr.reuseordering) {
-        PetscBool useordering;
+        PetscBool canuseordering;
         ierr = MatDestroy(&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-        ierr = MatFactorGetUseOrdering(((PC_Factor*)ilu)->fact,&useordering);CHKERRQ(ierr);
-        if (useordering) {
+        ierr = MatFactorGetCanUseOrdering(((PC_Factor*)ilu)->fact,&canuseordering);CHKERRQ(ierr);
+        if (canuseordering) {
           /* compute a new ordering for the ILU */
           ierr = ISDestroy(&ilu->row);CHKERRQ(ierr);
           ierr = ISDestroy(&ilu->col);CHKERRQ(ierr);

@@ -3051,7 +3051,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
-    B->useordering = PETSC_TRUE;
+    B->canuseordering = PETSC_TRUE;
   }
 
   B->ops->destroy = MatDestroy_MUMPS;
@@ -3121,7 +3121,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
-    B->useordering = PETSC_TRUE;
+    B->canuseordering = PETSC_TRUE;
   }
 
   B->ops->destroy = MatDestroy_MUMPS;
@@ -3181,7 +3181,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
-    B->useordering = PETSC_TRUE;
+    B->canuseordering = PETSC_TRUE;
   }
 
   B->ops->destroy = MatDestroy_MUMPS;
@@ -3241,7 +3241,7 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     /* MUMPS option can use ordering with "-mat_mumps_icntl_7 1 when sequential so generate the ordering, even if it may not be used */
-    B->useordering = PETSC_TRUE;
+    B->canuseordering = PETSC_TRUE;
   }
 
   B->ops->destroy = MatDestroy_MUMPS;

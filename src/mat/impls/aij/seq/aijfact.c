@@ -118,7 +118,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,
 
   ierr = PetscFree((*B)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERPETSC,&(*B)->solvertype);CHKERRQ(ierr);
-  (*B)->useordering = PETSC_TRUE;
+  (*B)->canuseordering = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

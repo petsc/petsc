@@ -77,13 +77,13 @@ static PetscErrorCode PCSetUp_LU(PC pc)
     MatInfo info;
 
     if (!pc->setupcalled) {
-      PetscBool useordering;
+      PetscBool canuseordering;
       if (!((PC_Factor*)dir)->fact) {
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_LU,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       }
-      ierr = MatFactorGetUseOrdering(((PC_Factor*)dir)->fact,&useordering);CHKERRQ(ierr);
-      if (useordering) {
+      ierr = MatFactorGetCanUseOrdering(((PC_Factor*)dir)->fact,&canuseordering);CHKERRQ(ierr);
+      if (canuseordering) {
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         if (dir->nonzerosalongdiagonal) {
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col);CHKERRQ(ierr);
@@ -95,13 +95,13 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       ierr                = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->hdr.actualfill = info.fill_ratio_needed;
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
-      PetscBool useordering;
+      PetscBool canuseordering;
       if (!dir->hdr.reuseordering) {
         ierr = MatDestroy(&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_LU,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
-        ierr = MatFactorGetUseOrdering(((PC_Factor*)dir)->fact,&useordering);CHKERRQ(ierr);
-        if (useordering) {
+        ierr = MatFactorGetCanUseOrdering(((PC_Factor*)dir)->fact,&canuseordering);CHKERRQ(ierr);
+        if (canuseordering) {
           if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
           ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
           ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
