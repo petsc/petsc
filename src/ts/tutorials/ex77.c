@@ -507,7 +507,10 @@ static PetscErrorCode FreeStreaming(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
   ierr = VecGetArrayRead(X, &coords);CHKERRQ(ierr);
   ierr = DMInterpolationAddPoints(ictx, Np, (PetscReal *) coords);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(X, &coords);CHKERRQ(ierr);
-  ierr = DMInterpolationSetUp(ictx, vdm, PETSC_FALSE);CHKERRQ(ierr);
+  /* Particles that lie outside the domain should be dropped,
+     whereas particles that move to another partition should trigger a migration */
+  ierr = DMInterpolationSetUp(ictx, vdm, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecSet(pvel, 0.);CHKERRQ(ierr);
   ierr = DMInterpolationEvaluate(ictx, vdm, locvel, pvel);CHKERRQ(ierr);
   ierr = DMInterpolationDestroy(&ictx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(vdm, &locvel);CHKERRQ(ierr);
@@ -775,7 +778,7 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
   PetscDS          ds;
   Vec              v;
   PetscReal        ferrors[3];
-  PetscInt         f;
+  PetscInt         tl, l, f;
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
@@ -784,6 +787,8 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
 
   for (f = 0; f < 3; ++f) {ierr = PetscDSGetExactSolution(ds, f, &exactFuncs[f], &ctxs[f]);CHKERRQ(ierr);}
   ierr = DMComputeL2FieldDiff(dm, crtime, exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
+  ierr = PetscObjectGetTabLevel((PetscObject) ts, &tl);CHKERRQ(ierr);
+  for (l = 0; l < tl; ++l) {ierr = PetscPrintf(PETSC_COMM_WORLD, "\t");CHKERRQ(ierr);}
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [%2.3g, %2.3g, %2.3g]\n", (int) step, (double) crtime, (double) ferrors[0], (double) ferrors[1], (double) ferrors[2]);CHKERRQ(ierr);
 
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
@@ -847,7 +852,7 @@ static PetscErrorCode MonitorParticleError(TS ts, PetscInt step, PetscReal time,
   Parameter         *param;
   const PetscScalar *xp0, *xp;
   PetscReal          error = 0.0;
-  PetscInt           dim, Np, p;
+  PetscInt           dim, tl, l, Np, p;
   MPI_Comm           comm;
   PetscErrorCode     ierr;
 
@@ -872,6 +877,8 @@ static PetscErrorCode MonitorParticleError(TS ts, PetscInt step, PetscReal time,
   }
   ierr = VecRestoreArrayRead(adv->x0, &xp0);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(u, &xp);CHKERRQ(ierr);
+  ierr = PetscObjectGetTabLevel((PetscObject) ts, &tl);CHKERRQ(ierr);
+  for (l = 0; l < tl; ++l) {ierr = PetscPrintf(PETSC_COMM_WORLD, "\t");CHKERRQ(ierr);}
   ierr = PetscPrintf(comm, "Timestep: %04d time = %-8.4g \t L_2 Particle Error: [%2.3g]\n", (int) step, (double) time, (double) error);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -885,7 +892,7 @@ static PetscErrorCode AdvectParticles(TS ts)
   PetscScalar       *coord, *a;
   const PetscScalar *ca;
   PetscReal          time;
-  PetscInt           n;
+  PetscInt           dim, n, np;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
@@ -893,8 +900,20 @@ static PetscErrorCode AdvectParticles(TS ts)
   ierr = PetscObjectQuery((PetscObject) ts, "_SwarmSol", (PetscObject *) &p);CHKERRQ(ierr);
   ierr = TSGetDM(sts, &sdm);CHKERRQ(ierr);
   ierr = TSGetRHSFunction(sts, NULL, NULL, (void **) &adv);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coord);CHKERRQ(ierr);
+  ierr = DMGetDimension(sdm, &dim);CHKERRQ(ierr);
+  ierr = DMSwarmGetLocalSize(sdm, &np);CHKERRQ(ierr);
   ierr = VecGetLocalSize(p, &n);CHKERRQ(ierr);
+  if (n != np*dim) {
+    ierr = DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(sdm, &p);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) ts, "_SwarmSol", (PetscObject) p);CHKERRQ(ierr);
+    ierr = VecDestroy(&p);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject) ts, "_SwarmSol", (PetscObject *) &p);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(p, &n);CHKERRQ(ierr);
+    ierr = TSReset(sts);CHKERRQ(ierr);
+  }
+
+  ierr = DMSwarmGetField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coord);CHKERRQ(ierr);
   ierr = VecGetArray(p, &a);CHKERRQ(ierr);
   ierr = PetscArraycpy(a, coord, n);CHKERRQ(ierr);
   ierr = VecRestoreArray(p, &a);CHKERRQ(ierr);
@@ -904,7 +923,9 @@ static PetscErrorCode AdvectParticles(TS ts)
   adv->tf = time;
   ierr = TSSolve(sts, p);CHKERRQ(ierr);
   ierr = DMSwarmGetField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coord);CHKERRQ(ierr);
+  ierr = DMSwarmGetLocalSize(sdm, &np);CHKERRQ(ierr);
   ierr = VecGetLocalSize(p, &n);CHKERRQ(ierr);
+  if (n != np*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Particle coords %D != %D Cached size", np*dim, n);
   ierr = VecGetArrayRead(p, &ca);CHKERRQ(ierr);
   ierr = PetscArraycpy(coord, ca, n);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(p, &ca);CHKERRQ(ierr);
@@ -968,6 +989,7 @@ int main(int argc, char **argv)
   /* Setup particle position integrator */
   ierr = TSCreate(PETSC_COMM_WORLD, &sts);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) sts, "part_");CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject) sts, (PetscObject) ts, 1);CHKERRQ(ierr);
   ierr = TSSetDM(sts, sdm);CHKERRQ(ierr);
   ierr = TSSetProblemType(sts, TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(sts, TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
@@ -986,6 +1008,7 @@ int main(int argc, char **argv)
   ierr = DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(sdm, &p);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) ts, "_SwarmSol", (PetscObject) p);CHKERRQ(ierr);
+  ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(sdm, &adv.x0);CHKERRQ(ierr);
   ierr = DMSwarmCreateGlobalVectorFromField(sdm, DMSwarmPICField_coor, &xtmp);CHKERRQ(ierr);
   ierr = VecCopy(xtmp, adv.x0);CHKERRQ(ierr);
@@ -1001,7 +1024,6 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) u, "Numerical Solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = VecDestroy(&adv.x0);CHKERRQ(ierr);
   ierr = VecDestroy(&adv.ui);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -1028,5 +1050,17 @@ int main(int argc, char **argv)
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
       -omega 0.5 -part_layout_type box -part_lower 0.25,0.25 -part_upper 0.75,0.75 -Npb 5 \
       -part_ts_max_steps 2 -part_ts_dt 0.05 -part_ts_convergence_estimate -convest_num_refine 1 -part_ts_monitor_cancel
+  test:
+    suffix: 2d_tri_p2_p1_p1_exit
+    requires: triangle !single !complex
+    args: -dm_plex_separate_marker -sol_type trig_trig -dm_refine 1 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 1 \
+      -dmts_check .001 -ts_max_steps 10 -ts_dt 0.1 \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_0_fields 0,2 -pc_fieldsplit_1_fields 1 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_0_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
+      -omega 0.5 -part_layout_type box -part_lower 0.25,0.25 -part_upper 0.75,0.75 -Npb 5 \
+      -part_ts_max_steps 20 -part_ts_dt 0.05
 
 TEST*/

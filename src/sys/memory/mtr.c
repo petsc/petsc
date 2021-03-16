@@ -122,7 +122,11 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at  %s() line %d in %s\n",function,line,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write before beginning of or past end of array\n");
-      if (lasthead) (*PetscErrorPrintf)("Last intact block allocated in %s() line %d in %s\n",lasthead->functionname,lasthead->lineno,lasthead->filename);
+      if (lasthead){
+        a    = (char*)(((TrSPACE*)head) + 1);
+        (*PetscErrorPrintf)("Last intact block [id=%d(%.0f)] at address %p allocated in %s() line %d in %s\n",lasthead->id,(PetscLogDouble)lasthead->size,a,lasthead->functionname,lasthead->lineno,lasthead->filename);
+      }
+      abort();
       return PETSC_ERR_MEMC;
     }
     a    = (char*)(((TrSPACE*)head) + 1);
@@ -141,11 +145,8 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
     if (head->prev && head->prev != lasthead) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s\n",function,line,file);
       (*PetscErrorPrintf)("Backpointer %p is invalid, should be %p\n",head->prev,lasthead);
-      return PETSC_ERR_MEMC;
-    }
-    if (head->next && head != head->next->prev) {
-      (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s\n",function,line,file);
-      (*PetscErrorPrintf)("Next memory header %p has invalid back pointer %p, should be %p\n",head->next,head->next->prev,head);
+      (*PetscErrorPrintf)("Previous memory originally allocated in %s() line %d in %s\n",lasthead->functionname,lasthead->lineno,lasthead->filename);
+      (*PetscErrorPrintf)("Memory originally allocated in %s() line %d in %s\n",head->functionname,head->lineno,head->filename);
       return PETSC_ERR_MEMC;
     }
     lasthead = head;
@@ -190,7 +191,7 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,PetscBool clear,int lineno,const c
   head->prev   = NULL;
   head->size   = nsize;
   head->rsize  = a;
-  head->id     = TRid;
+  head->id     = TRid++;
   head->lineno = lineno;
 
   head->filename                 = filename;
@@ -424,7 +425,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
   head->prev   = NULL;
   head->size   = nsize;
   head->rsize  = len;
-  head->id     = TRid;
+  head->id     = TRid++;
   head->lineno = lineno;
 
   head->filename                 = filename;

@@ -2396,14 +2396,13 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
 {
   DM_Plex          *mesh  = (DM_Plex *) dmc->data;
   const char       *name  = "Interpolator";
-  PetscDS           cds, rds;
   PetscFE          *feRef;
   PetscFV          *fvRef;
   PetscSection      fsection, fglobalSection;
   PetscSection      csection, cglobalSection;
   PetscScalar      *elemMat;
   PetscInt          dim, Nf, f, fieldI, fieldJ, offsetI, offsetJ, cStart, cEnd, c;
-  PetscInt          cTotDim, rTotDim = 0;
+  PetscInt          cTotDim=0, rTotDim = 0;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -2415,15 +2414,13 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
   ierr = DMGetGlobalSection(dmc, &cglobalSection);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(fsection, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetSimplexOrBoxCells(dmc, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMGetDS(dmc, &cds);CHKERRQ(ierr);
-  ierr = DMGetDS(dmf, &rds);CHKERRQ(ierr);
   ierr = PetscCalloc2(Nf, &feRef, Nf, &fvRef);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    PetscObject  obj;
-    PetscClassId id;
-    PetscInt     rNb = 0, Nc = 0;
+    PetscObject  obj, objc;
+    PetscClassId id, idc;
+    PetscInt     rNb = 0, Nc = 0, cNb = 0;
 
-    ierr = PetscDSGetDiscretization(rds, f, &obj);CHKERRQ(ierr);
+    ierr = DMGetField(dmf, f, NULL, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       PetscFE fe = (PetscFE) obj;
@@ -2448,11 +2445,25 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
       }
       ierr = PetscFVGetDualSpace(fvRef[f], &Q);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(Q, &rNb);CHKERRQ(ierr);
+      ierr = PetscFVGetDualSpace(fv, &Q);CHKERRQ(ierr);
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
     }
+    ierr = DMGetField(dmc, f, NULL, &objc);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(objc, &idc);CHKERRQ(ierr);
+    if (idc == PETSCFE_CLASSID) {
+      PetscFE fe = (PetscFE) objc;
+
+      ierr = PetscFEGetDimension(fe, &cNb);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV        fv = (PetscFV) obj;
+      PetscDualSpace Q;
+
+      ierr = PetscFVGetDualSpace(fv, &Q);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(Q, &cNb);CHKERRQ(ierr);
+    }
     rTotDim += rNb;
+    cTotDim += cNb;
   }
-  ierr = PetscDSGetTotalDimension(cds, &cTotDim);CHKERRQ(ierr);
   ierr = PetscMalloc1(rTotDim*cTotDim,&elemMat);CHKERRQ(ierr);
   ierr = PetscArrayzero(elemMat, rTotDim*cTotDim);CHKERRQ(ierr);
   for (fieldI = 0, offsetI = 0; fieldI < Nf; ++fieldI) {
@@ -2488,7 +2499,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
       PetscClassId id;
       PetscInt     NcJ = 0, cpdim = 0, j, qNc;
 
-      ierr = PetscDSGetDiscretization(cds, fieldJ, &obj);CHKERRQ(ierr);
+      ierr = DMGetField(dmc, fieldJ, NULL, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
         PetscFE           fe = (PetscFE) obj;

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import numpy as np
 import os
 os.environ['MPLCONFIGDIR'] = os.environ.get('PETSC_DIR')+'/share/petsc/xml/'
@@ -10,28 +10,30 @@ import math
 import configureTAS as config
 import sys
 import traceback
+import pandas as pd
 from tasClasses import File
 from tasClasses import Field
+
 
 def main(cmdLineArgs):
     files = dataProces(cmdLineArgs)
 
-    if cmdLineArgs.enable_graphs == 1:
-        for file in files:
-            graphGen(file, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
+    for file in files:
+        graphGen(file, cmdLineArgs.enable_graphs, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
+
 
 def dataProces(cmdLineArgs):
     """
     This function takes the list of data files supplied as command line arguments and parses them into a multi-level
-        dictionary, whose top level key is the file name, followed by data type, i.e. dofs, times, flops, errors, and
-        the finale value is a NumPy array of the data to plot.
+    dictionary, whose top level key is the file name, followed by data type, i.e. dofs, times, flops, errors, and
+    the finale value is a NumPy array of the data to plot.
 
-        data[<file name>][<data type>]: <numpy array>
+        data[<file name>][<data type>]:<numpy array>
 
-        :param cmdLineArgs: Contains the file names, and command line arguments.
-        :type cmdLineArgs: numpy array
+    :param cmdLineArgs: Contains the file names, and command line arguments.
+    :type numpy array:
 
-        :returns: data -- A dictionary containing the parsed data from the files specified on the command line.
+    :returns:   data a dictionary containing the parsed data from the files specified on the command line.
     """
 
     data = {}
@@ -59,6 +61,7 @@ def dataProces(cmdLineArgs):
         files.append(cmdLineArgs.file[0])
 
     for module in files:
+        print(module)
         module             = importlib.import_module(module)
         Nf                 = getNf(module.Stages["ConvEst Refinement Level 1"]["ConvEst Error"][0]["error"])
         nProcs             = module.size
@@ -200,19 +203,19 @@ def dataProces(cmdLineArgs):
         luFactorGrowthRate = np.array(luFactorGrowthRate)
 
 
-        data["Times"]              = times
-        data["Mean Time"]           = meanTime
-        data["Times Range"]         = times-timesMin
+        data["Times"]                = times
+        data["Mean Time"]            = meanTime
+        data["Times Range"]          = times-timesMin
         data["Time Growth Rate"]     = timeGrowthRate
 
-        data["Flops"]              = flops
-        data["Mean Flop"]           = meanFlop
-        data["Flop Range"]          = flopsMax - flopsMin
+        data["Flops"]                = flops
+        data["Mean Flops"]            = meanFlop
+        data["Flop Range"]           = flopsMax - flopsMin
         data["Flop Growth Rate"]     = flopGrowthRate
 
-        data["LU Factor"]           = luFactor
-        data["LU Factor Mean"]       = luFactorMean
-        data["LU Factor Range"]      = luFactor-luFactorMin
+        data["LU Factor"]             = luFactor
+        data["LU Factor Mean"]        = luFactorMean
+        data["LU Factor Range"]       = luFactor-luFactorMin
         data["LU Factor Growth Rate"] = luFactorGrowthRate
 
 
@@ -224,10 +227,11 @@ def dataProces(cmdLineArgs):
     results.append(file)
     file.printFile()
 
+
     return results
 
 def getNf(errorList):
-    """"
+    """
     This simple function takes the supplied error list and loops through that list until it encounters -1.  The default
     convention is that each field from the problem has an entry in the error list with at most 8 fields.  If there are
     less thatn 8 fields those entries are set to -1.
@@ -236,8 +240,7 @@ def getNf(errorList):
 
     :param errorList: contains a list of floating point numbers with the errors from each level of refinement.
     :type errorList: List containg Floating point numbers.
-
-    :returns: Nf and integer that represents the number of fields.
+    :returns: Nf an integer that represents the number of fields.
     """
     i  = 0
     Nf = 0
@@ -247,57 +250,29 @@ def getNf(errorList):
     return Nf
 
 
-def graphGen(file, graph_flops_scaling, dim):
+def graphGen(file, enable_graphs, graph_flops_scaling, dim):
     """
     This function takes the supplied dictionary and plots the data from each file on the Mesh Convergence, Static Scaling, and
-        Efficacy graphs.
+    Efficacy graphs.
 
-        :param data: Contains the data to be ploted on the graphs, assumes the format: data[<file name>][<data type>]: <numpy array>
-        :type data: Dictionary
-        :param graph_flops_scaling: Controls creating the scaling graph that uses flops/second.  The default is not to.  This option
+    :param file: Contains the data to be ploted on the graphs, assumes the format -- file[<file name>][<data type>]:<numpy array>
+    :type file: Dictionary
+    :param graph_flops_scaling: Controls creating the scaling graph that uses flops/second.  The default is not to.  This option
                                     is specified on the command line.
-        :type graph_flops_scaling: Integer
-        :param dim: Contains the number of dimension of the mesh.  This is specified on the command line.
-        :type dim: Integer
+    :type graph_flops_scaling: Integer
+    :param dim: Contains the number of dimension of the mesh.  This is specified on the command line.
+    :type dim: Integer
 
 
-        :returns: None
+    :returns: None
     """
     lstSqMeshConv = np.empty([2])
 
     counter = 0
-
-    #Set up plots with labels
-    plt.style.use('petsc_tas_style.mplstyle') #uses the specified style sheet for generating the plots
-
-    meshConvFig = plt.figure()
-    meshConvOrigHandles = []
-    meshConvLstSqHandles = []
-    axMeshConv = meshConvFig.add_subplot(1,1,1)
-    axMeshConv.set(xlabel ='Problem Size $\log N$', ylabel ='Error $\log |x - x^*|$' , title ='Mesh Convergence')
-
-
-    statScaleFig = plt.figure()
-    statScaleHandles = []
-    axStatScale = statScaleFig.add_subplot(1,1,1)
-    axStatScale.set(xlabel = 'Time(s)', ylabel = 'Flop Rate (F/s)', title = 'Static Scaling')
-
-    statScaleFig = plt.figure()
-    statScaleHandles = []
-    axStatScale = statScaleFig.add_subplot(1,1,1)
-    axStatScale.set(xlabel = 'Time(s)', ylabel = 'DoF Rate (DoF/s)', title = 'Static Scaling')
-
-    efficFig = plt.figure()
-    efficHandles = []
-    axEffic = efficFig.add_subplot(1,1,1)
-    axEffic.set(xlabel = 'Time(s)', ylabel = 'Error Time', title = 'Efficacy')
-    axEffic.set_ylim(0,10)
-
-
     #Loop through each file and add the data/line for that file to the Mesh Convergance, Static Scaling, and Efficacy Graphs
     for field in file.fieldList:
         #Least squares solution for Mesh Convergence
-        lstSqMeshConv[0], lstSqMeshConv[1] = leastSquares(field.fieldData['dofs'], field.fieldData['errors'])
+        lstSqMeshConv[0], lstSqMeshConv[1] = leastSquares(field.fieldData['dofs'], field.fieldData['Errors'])
 
 
         print("Least Squares Data")
@@ -308,74 +283,104 @@ def graphGen(file, graph_flops_scaling, dim):
         convRate = lstSqMeshConv[0] * -dim
         print('convRate: {} of {} data'.format(convRate,file.fileName))
 
-        ##Start Mesh Convergance graph
-        convRate = str(convRate)
+        field.setConvergeRate(convRate)
+        field.setAlpha(lstSqMeshConv[0])
+        field.setBeta(lstSqMeshConv[1])
+    file.writeCSV()
 
-        x, = axMeshConv.loglog(field.fieldData['dofs'], field.fieldData['errors'],
-            label = 'Field ' + field.fieldName + ' Orig Data', marker = "^")
+    if cmdLineArgs.enable_graphs == 1:
+        #Set up plots with labels
+        #petscDir = os.environ.get('PETSC_DIR') + '/share/petsc/xml/stylelib/' #needed to run on the cluster
+        plt.style.use('petsc_tas_style.mplstyle') #uses the specified style sheet for generating the plots
 
-        meshConvOrigHandles.append(x)
+        meshConvFig = plt.figure()
+        meshConvOrigHandles = []
+        meshConvLstSqHandles = []
+        axMeshConv = meshConvFig.add_subplot(1,1,1)
+        axMeshConv.set(xlabel ='Problem Size $\log N$', ylabel ='Error $\log |x - x^*|$' , title ='Mesh Convergence')
 
-        y, = axMeshConv.loglog(field.fieldData['dofs'], ((field.fieldData['dofs']**lstSqMeshConv[0] * 10**lstSqMeshConv[1])),
-                label = field.fieldName + " Convergence rate =  " + convRate, marker = "x" )
 
-        meshConvLstSqHandles.append(y)
+        statScaleFig = plt.figure()
+        statScaleHandles = []
+        axStatScale = statScaleFig.add_subplot(1,1,1)
+        axStatScale.set(xlabel = 'Time(s)', ylabel = 'Flop Rate (F/s)', title = 'Static Scaling')
 
-        ##Start Static Scaling Graph, only if graph_flops_scaling equals 1.  Specified on the command line.
-        if graph_flops_scaling == 1 :
-            x, =axStatScale.loglog(file.fileData['times'], file.fileData['flops']/file.fileData['times'],
-            label = 'Field ' + field.fieldName, marker = "^")
+        statScaleFig = plt.figure()
+        statScaleHandles = []
+        axStatScale = statScaleFig.add_subplot(1,1,1)
+        axStatScale.set(xlabel = 'Time(s)', ylabel = 'DoF Rate (DoF/s)', title = 'Static Scaling')
 
-        #statScaleHandles.append(x)
-        ##Start Static Scaling with DoFs Graph
-        x, =axStatScale.loglog(file.fileData['times'], field.fieldData['dofs']/file.fileData['times'],
-            label = 'Field ' + field.fieldName, marker = "^")
+        efficFig = plt.figure()
+        efficHandles = []
+        axEffic = efficFig.add_subplot(1,1,1)
+        axEffic.set(xlabel = 'Time(s)', ylabel = 'Error Time', title = 'Efficacy')
+        axEffic.set_ylim(0,10)
 
-        statScaleHandles.append(x)
-        ##Start Efficacy graph
-        x, = axEffic.semilogx(file.fileData['times'], -np.log10(field.fieldData['errors']*file.fileData['times']),
-            label = 'Field ' + field.fieldName, marker = "^")
 
-        efficHandles.append(x)
+        #Loop through each file and add the data/line for that file to the Mesh Convergance, Static Scaling, and Efficacy Graphs
+        for field in file.fieldList:
+            ##Start Mesh Convergance graph
+            convRate = str(convRate)
 
-        counter = counter + 1
+            x, = axMeshConv.loglog(field.fieldData['dofs'], field.fieldData['Errors'],
+                label = 'Field ' + field.fieldName + ' Orig Data', marker = "^")
 
-        meshConvHandles = meshConvOrigHandles + meshConvLstSqHandles
-        meshConvLabels = [h.get_label() for h in meshConvOrigHandles]
-        meshConvLabels = meshConvLabels + [h.get_label() for h in meshConvLstSqHandles]
-        meshConvFig.legend(handles = meshConvHandles, labels = meshConvLabels)
+            meshConvOrigHandles.append(x)
 
-        statScaleLabels = [h.get_label() for h in statScaleHandles]
-        statScaleFig.legend(handles = statScaleHandles, labels = statScaleLabels)
+            y, = axMeshConv.loglog(field.fieldData['dofs'], ((field.fieldData['dofs']**lstSqMeshConv[0] * 10**lstSqMeshConv[1])),
+                    label = field.fieldName + " Convergence rate =  " + convRate, marker = "x" )
 
-        efficLabels = [h.get_label() for h in efficHandles]
-        efficFig.legend(handles = efficHandles, labels = efficLabels)
+            meshConvLstSqHandles.append(y)
 
-    meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fileName + '.png')
-    statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fileName + '.png')
-    efficFig.savefig(config.filePath['absoluteGraphs']+'efficacyField_' + field.fileName + '.png')
+            ##Start Static Scaling Graph, only if graph_flops_scaling equals 1.  Specified on the command line.
+            if graph_flops_scaling == 1 :
+                x, =axStatScale.loglog(file.fileData['Times'], file.fileData['Flops']/file.fileData['Times'],
+                label = 'Field ' + field.fieldName, marker = "^")
 
-    # meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fileName + '_' +\
-    #     date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-    # statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fileName + '_' +\
-    #     date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-    # efficFig.savefig(config.filePath['absoluteGraphs']+'efficacyField_' + field.fileName + '_' +\
-    #     date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
+            #statScaleHandles.append(x)
+            ##Start Static Scaling with DoFs Graph
+            x, =axStatScale.loglog(file.fileData['Times'], field.fieldData['dofs']/file.fileData['Times'],
+                label = 'Field ' + field.fieldName, marker = "^")
+
+            statScaleHandles.append(x)
+            ##Start Efficacy graph
+            x, = axEffic.semilogx(file.fileData['Times'], -np.log10(field.fieldData['Errors']*file.fileData['Times']),
+                label = 'Field ' + field.fieldName, marker = "^")
+
+            efficHandles.append(x)
+
+            counter = counter + 1
+
+            meshConvHandles = meshConvOrigHandles + meshConvLstSqHandles
+            meshConvLabels = [h.get_label() for h in meshConvOrigHandles]
+            meshConvLabels = meshConvLabels + [h.get_label() for h in meshConvLstSqHandles]
+            meshConvFig.legend(handles = meshConvHandles, labels = meshConvLabels)
+
+            statScaleLabels = [h.get_label() for h in statScaleHandles]
+            statScaleFig.legend(handles = statScaleHandles, labels = statScaleLabels)
+
+            efficLabels = [h.get_label() for h in efficHandles]
+            efficFig.legend(handles = efficHandles, labels = efficLabels)
+
+        meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fileName + '.png')
+        statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fileName + '.png')
+        efficFig.savefig(config.filePath['absoluteGraphs']+'efficacyField_' + field.fileName + '.png')
 
     return
+
 def leastSquares(x, y):
     """
     This function takes 2 numpy arrays of data and out puts the least squares solution,
        y = m*x + c.  The solution is obtained by finding the result of y = Ap, where A
        is the matrix of the form [[x 1]] and p = [[m], [c]].
 
-       :param x: Contains the x values for the data.
-       :type x: numpy array
-       :param y: Contains the y values for the data.
-       :type y: numpy array
+    :param x: Contains the x values for the data.
+    :type x: numpy array
+    :param y: Contains the y values for the data.
+    :type y: numpy array
 
-       :returns: alpha -- the convRate fo the least squares solution
-       :returns: c -- the constant of the least squares solution.
+    :returns: alpha -- the convRate fo the least squares solution
+    :returns: c -- the constant of the least squares solution.
     """
 
 

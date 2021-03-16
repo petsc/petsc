@@ -150,7 +150,7 @@ int main(int argc,char **argv)
   /* get the command line options if there are any and set them */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_SUNDIALS)
+#if defined(PETSC_HAVE_SUNDIALS2)
   {
     TSType    type;
     PetscBool sundialstype=PETSC_FALSE;

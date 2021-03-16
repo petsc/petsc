@@ -512,29 +512,30 @@ exampleconcepts:
 #
 # To find functions implementing methods, we use git grep to look for
 # well-formed PETSc functions
-# - with a single underscore following the item's name,
+# - with names containing a single underscore
 # - in files of appropriate types (.cu .c .cxx .h),
 # - in paths including "/impls/",
 # - excluding any line with a semicolon (to avoid matching prototypes), and
-# - excluding any line including "_Private"
-# and then process implsFunc.txt to generate HTML.
+# - excluding any line including "_Private",
+# storing potential matches in implsFuncAll.txt.
 #
-# Efficiency note: this runs git grep for each man page. It may be more efficient
-#  to run it once for all possible implementation functions and store the results,
-#  sorted, in a temporary file.
+# For each man page we then grep in this file for the item's name followed by
+# a single underscore and process the resulting implsFunc.txt to generate HTML.
 #
 # To find class implementations, we populate implsClassAll.txt with candidates
 # - of the form "struct _p_itemName {",  and
 # - not containing a semicolon
-# and then match for particular values of itemName, generating implsClass.txt,
+# and then grep for particular values of itemName, generating implsClass.txt,
 # which is processed to generate HTML.
 #
 manimplementations:
-	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v ";" | grep -v "/examples/" > implsClassAll.txt ; \
-  for i in docs/manualpages/*/*.html; do \
+	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
+  git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode\s\+[^_\s]*_[^_\s]*(" -- '*/impls/*.c' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
+  for i in ${LOC}/docs/manualpages/*/*.html foo; do \
+       if [ "$$i" != "foo" ] ; then \
           printf "manimplementations in: $$i\n"; \
           itemName=`basename $$i .html`; \
-          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/*.c */impls/*.cu */impls/*.cxx */impls/*.h | grep -v ";" | grep -v "_Private" > implsFunc.txt ; \
+          grep "\s$${itemName}_" implsFuncAll.txt > implsFunc.txt ; \
           grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
           if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
             printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \
@@ -552,8 +553,10 @@ manimplementations:
             ${RM} tmp ; \
           fi ; \
           ${RM} implsFunc.txt implsClass.txt; \
+       fi ; \
   done ; \
-  ${RM} implsClassAll.txt
+  ${RM} implsClassAll.txt implsFuncAll.txt
+
 
 getexlist:
 	-@${PETSC_DIR}/lib/petsc/bin/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC} ${EXAMPLESF}
@@ -680,7 +683,7 @@ checkbadSource:
 	-@echo "Two ;; -----------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
 	-@echo "CHKERRQ for an MPI error code ------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '= MPI_.*;CHKERRQ' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '= MPI_\w*\(.*CHKERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Missing if (ierr) return(ierr); ----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" >> checkbadSource.out;true
 	-@echo "DOS file (with DOS newlines) -------------------------" >> checkbadSource.out

@@ -93,7 +93,6 @@ int main(int argc, char **argv)
     test:
       suffix: 0
       requires: cgns
-      TODO: broken
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns
     test:
       suffix: 1

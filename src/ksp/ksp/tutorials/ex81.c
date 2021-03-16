@@ -135,7 +135,7 @@ int main(int argc,char **args)
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_matmult",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    Mat D, E;
+    Mat D, E, F, H;
     ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
     ierr = MatMultEqual(A,D,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatDense != MatNest");
@@ -156,8 +156,23 @@ int main(int argc,char **args)
     ierr = MatConvert(D,MATAIJ,MAT_INPLACE_MATRIX,&D);CHKERRQ(ierr);
     ierr = MatMultEqual(A,D,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatDense != MatNest");
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
     ierr = MatDestroy(&E);CHKERRQ(ierr);
+    ierr = MatCreateHermitianTranspose(D,&E);CHKERRQ(ierr);
+    ierr = MatConvert(E,MATAIJ,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+    ierr = MatMultEqual(E,F,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatHermitianTranspose != MatAIJ");
+    ierr = MatZeroEntries(F);CHKERRQ(ierr);
+    ierr = MatConvert(E,MATAIJ,MAT_REUSE_MATRIX,&F);CHKERRQ(ierr);
+    ierr = MatMultEqual(E,F,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatHermitianTranspose != MatAIJ");
+    ierr = MatDestroy(&F);CHKERRQ(ierr);
+    ierr = MatConvert(E,MATAIJ,MAT_INPLACE_MATRIX,&E);CHKERRQ(ierr);
+    ierr = MatCreateHermitianTranspose(D,&H);CHKERRQ(ierr);
+    ierr = MatMultEqual(E,H,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatHermitianTranspose != MatAIJ");
+    ierr = MatDestroy(&H);CHKERRQ(ierr);
+    ierr = MatDestroy(&E);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
   }
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);

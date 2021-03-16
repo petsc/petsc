@@ -58,16 +58,17 @@ PetscMPIInt PetscGlobalSize               = -1;
 PetscBool   PetscBeganKokkos              = PETSC_FALSE;
 #endif
 
+#if defined(PETSC_HAVE_NVSHMEM)
+PetscBool   PetscBeganNvshmem             = PETSC_FALSE;
+PetscBool   PetscNvshmemInitialized       = PETSC_FALSE;
+#endif
+
 PetscBool   use_gpu_aware_mpi             = PETSC_TRUE;
 PetscBool   PetscCreatedGpuObjects        = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
-#endif
-#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-MPI_Datatype MPIU_C_DOUBLE_COMPLEX;
-MPI_Datatype MPIU_C_COMPLEX;
 #endif
 
 /*MC
@@ -85,12 +86,10 @@ MPI_Datatype MPIU_C_COMPLEX;
 .seealso: PetscRealPart(), PetscImaginaryPart(), PetscRealPartComplex(), PetscImaginaryPartComplex()
 M*/
 PetscComplex PETSC_i;
-#endif
+MPI_Datatype MPIU___COMPLEX128 = 0;
+#endif /* PETSC_HAVE_COMPLEX */
 #if defined(PETSC_USE_REAL___FLOAT128)
 MPI_Datatype MPIU___FLOAT128 = 0;
-#if defined(PETSC_HAVE_COMPLEX)
-MPI_Datatype MPIU___COMPLEX128 = 0;
-#endif
 #elif defined(PETSC_USE_REAL___FP16)
 MPI_Datatype MPIU___FP16 = 0;
 #endif
@@ -272,11 +271,13 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
 #if defined(PETSC_HAVE_CUDA)
   typedef cudaError_t                             cupmError_t;
   typedef struct cudaDeviceProp                   cupmDeviceProp;
+  typedef cudaStream_t                            cupmStream_t;
   #define cupmGetDeviceCount(x)                   cudaGetDeviceCount(x)
   #define cupmGetDevice(x)                        cudaGetDevice(x)
   #define cupmSetDevice(x)                        cudaSetDevice(x)
   #define cupmSetDeviceFlags(x)                   cudaSetDeviceFlags(x)
   #define cupmGetDeviceProperties(x,y)            cudaGetDeviceProperties(x,y)
+  #define cupmStreamCreate(x)                     cudaStreamCreate(x)
   #define cupmGetLastError()                      cudaGetLastError()
   #define cupmDeviceMapHost                       cudaDeviceMapHost
   #define cupmSuccess                             cudaSuccess
@@ -299,17 +300,20 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
   #define PetscCUPMInitializeStr                  "PetscCUDAInitialize"
   #define PetscOptionsCheckCUPM                   PetscOptionsCheckCUDA
   #define PetscMPICUPMAwarenessCheck              PetscMPICUDAAwarenessCheck
+  #define PetscDefaultCupmStream                  PetscDefaultCudaStream
   #include "cupminit.inc"
 #endif
 
 #if defined(PETSC_HAVE_HIP)
   typedef hipError_t                              cupmError_t;
   typedef hipDeviceProp_t                         cupmDeviceProp;
+  typedef hipStream_t                             cupmStream_t;
   #define cupmGetDeviceCount(x)                   hipGetDeviceCount(x)
   #define cupmGetDevice(x)                        hipGetDevice(x)
   #define cupmSetDevice(x)                        hipSetDevice(x)
   #define cupmSetDeviceFlags(x)                   hipSetDeviceFlags(x)
   #define cupmGetDeviceProperties(x,y)            hipGetDeviceProperties(x,y)
+  #define cupmStreamCreate(x)                     hipStreamCreate(x)
   #define cupmGetLastError()                      hipGetLastError()
   #define cupmDeviceMapHost                       hipDeviceMapHost
   #define cupmSuccess                             hipSuccess
@@ -332,6 +336,7 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
   #define PetscCUPMInitializeStr                  "PetscHIPInitialize"
   #define PetscOptionsCheckCUPM                   PetscOptionsCheckHIP
   #define PetscMPICUPMAwarenessCheck              PetscMPIHIPAwarenessCheck
+  #define PetscDefaultCupmStream                  PetscDefaultHipStream
   #include "cupminit.inc"
 #endif
 

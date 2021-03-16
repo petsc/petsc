@@ -31,6 +31,7 @@ typedef struct {
   PetscInt    max_down_it;                     /* number of post-smooth cycles */
   PetscBool   usedmfornumberoflevels;          /* uses a DM to generate a number of the levels */
   PetscBool   full_downsweep;                  /* smooth on the initial full downsweep */
+  PetscBool   full_total;                      /* use total residual restriction and total solution interpolation on the initial downsweep and upsweep */
   PetscBool   continuation;                    /* sets the setup to default to continuation */
   PetscInt    full_stage;                      /* stage of the full cycle -- 0 is the upswing, 1 is the downsweep and final V-cycle */
 

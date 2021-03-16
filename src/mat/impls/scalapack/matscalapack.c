@@ -617,10 +617,7 @@ static PetscErrorCode MatTranspose_ScaLAPACK(Mat A,MatReuse reuse,Mat *B)
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&Bs);CHKERRQ(ierr);
-    ierr = MatSetSizes(Bs,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetType(Bs,MATSCALAPACK);CHKERRQ(ierr);
-    ierr = MatSetUp(Bs);CHKERRQ(ierr);
+    ierr = MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->nb,a->mb,a->N,a->M,a->csrc,a->rsrc,&Bs);CHKERRQ(ierr);
     *B = Bs;
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only MAT_INITIAL_MATRIX supported");
   b = (Mat_ScaLAPACK*)Bs->data;
@@ -653,10 +650,7 @@ static PetscErrorCode MatHermitianTranspose_ScaLAPACK(Mat A,MatReuse reuse,Mat *
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&Bs);CHKERRQ(ierr);
-    ierr = MatSetSizes(Bs,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetType(Bs,MATSCALAPACK);CHKERRQ(ierr);
-    ierr = MatSetUp(Bs);CHKERRQ(ierr);
+    ierr = MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->nb,a->mb,a->N,a->M,a->csrc,a->rsrc,&Bs);CHKERRQ(ierr);
     *B = Bs;
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only MAT_INITIAL_MATRIX supported");
   b = (Mat_ScaLAPACK*)Bs->data;
@@ -841,14 +835,12 @@ PetscErrorCode MatFactorGetSolverType_scalapack_scalapack(Mat A,MatSolverType *t
 static PetscErrorCode MatGetFactor_scalapack_scalapack(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
+  Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSCALAPACK);CHKERRQ(ierr);
-  ierr = MatSetUp(B);CHKERRQ(ierr);
+  ierr = MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->mb,a->nb,a->M,a->N,a->rsrc,a->csrc,&B);CHKERRQ(ierr);
   B->factortype = ftype;
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERSCALAPACK,&B->solvertype);CHKERRQ(ierr);

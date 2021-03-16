@@ -145,6 +145,7 @@ PetscErrorCode MatGetDiagonal_HT(Mat A,Vec v)
 
   PetscFunctionBegin;
   ierr = MatGetDiagonal(Na->A,v);CHKERRQ(ierr);
+  ierr = VecConjugate(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -156,8 +157,13 @@ PetscErrorCode MatConvert_HT(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 
   PetscFunctionBegin;
   ierr = MatHermitianTranspose(Na->A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatConvert(B,newtype,reuse,newmat);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  if (reuse != MAT_INPLACE_MATRIX) {
+    ierr = MatConvert(B,newtype,reuse,newmat);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  } else {
+    ierr = MatConvert(B,newtype,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -545,6 +545,12 @@ PETSC_EXTERN PetscErrorCode PetscHIPInitializeCheck(void);
 PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void);  /* Initialize Kokkos if not yet. */
 #endif
 
+#if defined(PETSC_HAVE_NVSHMEM)
+PETSC_EXTERN PetscBool      PetscBeganNvshmem;
+PETSC_EXTERN PetscBool      PetscNvshmemInitialized;
+PETSC_EXTERN PetscErrorCode PetscNvshmemFinalize(void);
+#endif
+
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalInitialized(PetscBool*);
@@ -622,6 +628,33 @@ M*/
 
 M*/
 #define PetscAddrAlign(a) (void*)((((PETSC_UINTPTR_T)(a))+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
+
+/*MC
+   PetscCalloc - Allocates a cleared (zeroed) memory region aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscCalloc(size_t m,void **result)
+
+   Not Collective
+
+   Input Parameter:
+.  m - number of bytes to allocate
+
+   Output Parameter:
+.  result - memory allocated
+
+   Level: beginner
+
+   Notes:
+   Memory is always allocated at least double aligned. This macro is useful in allocating memory pointed by void pointers
+
+   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be NULL) to PetscFree().
+
+.seealso: PetscFree(), PetscNew()
+
+M*/
+#define PetscCalloc(m,result)  PetscMallocA(1,PETSC_TRUE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(size_t)(m),(result))
 
 /*MC
    PetscMalloc1 - Allocates an array of memory aligned to PETSC_MEMALIGN
@@ -1348,15 +1381,12 @@ PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const*,const char*,PetscEn
    These are MPI operations for MPI_Allreduce() etc
 */
 PETSC_EXTERN MPI_Op MPIU_MAXSUM_OP;
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
-PETSC_EXTERN MPI_Op MPIU_SUM;
-#else
-#define MPIU_SUM MPI_SUM
-#endif
 #if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
+PETSC_EXTERN MPI_Op MPIU_SUM;
 PETSC_EXTERN MPI_Op MPIU_MAX;
 PETSC_EXTERN MPI_Op MPIU_MIN;
 #else
+#define MPIU_SUM MPI_SUM
 #define MPIU_MAX MPI_MAX
 #define MPIU_MIN MPI_MIN
 #endif

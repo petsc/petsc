@@ -29,14 +29,17 @@ class Configure(config.package.Package):
     self.mpi             = framework.require('config.packages.MPI',self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.slepc           = framework.require('config.packages.slepc',self)
+    self.mkl_sparse      = framework.require('config.packages.mkl_sparse',self)
     self.deps            = [self.blasLapack,self.cxxlibs,self.mathlib]
-    self.odeps           = [self.mpi,self.slepc]
+    self.odeps           = [self.mpi,self.slepc,self.mkl_sparse]
     return
 
   def Install(self):
     import os
     if self.slepc.found and not self.checkSharedLibrariesEnabled():
       raise RuntimeError('Shared libraries enabled needed to build PCHPDDM')
+    if not self.mkl_sparse.found and self.blasLapack.mkl:
+      raise RuntimeError('Cannot use HPDDM with the MKL but no \'mkl_spblas.h\', check for missing --with-blaslapack-include=/opt/intel/mkl/include (or similar)')
     buildDir = os.path.join(self.packageDir,'petsc-build')
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()

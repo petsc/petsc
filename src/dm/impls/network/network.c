@@ -853,8 +853,8 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,size_t size,Pet
       PetscFunctionReturn(0);
     }
   }
-  if (network->ncomponent == MAX_COMPONENTS) {
-    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components registered exceeds the max %D",MAX_COMPONENTS);
+  if (network->ncomponent == MAX_NETCOMPONENTS) {
+    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components registered exceeds the max %D",MAX_NETCOMPONENTS);
   }
 
   ierr = PetscStrcpy(component->name,name);CHKERRQ(ierr);
@@ -1174,7 +1174,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
     if (ghost) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Adding a component at a leaf(ghost) shared vertex is not supported");
   }
 
-  if (compnum == MAX_DATA_AT_POINT) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components at a point exceeds the max %D",MAX_DATA_AT_POINT);
+  if (compnum == MAX_NETCOMPONENTS) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components at a point exceeds the max %D",MAX_NETCOMPONENTS);
 
   header->size[compnum] = component->size;
   ierr = PetscSectionAddDof(network->DataSection,p,component->size);CHKERRQ(ierr);
@@ -1198,7 +1198,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
   Input Parameters:
 + dm - the DMNetwork object
 . p - vertex/edge point
-. compnum - component number; use ALL_COMPONENTS if sum up all the components
+- compnum - component number; use ALL_COMPONENTS if sum up all the components
 
   Output Parameters:
 + compkey - the key obtained when registering the component (use NULL if not required)
@@ -1757,7 +1757,7 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
 
   PetscFunctionBegin;
   ierr = DMPlexGetSupportSize(network->plex,vertex,nedges);CHKERRQ(ierr);
-  ierr = DMPlexGetSupport(network->plex,vertex,edges);CHKERRQ(ierr);
+  if (edges) {ierr = DMPlexGetSupport(network->plex,vertex,edges);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

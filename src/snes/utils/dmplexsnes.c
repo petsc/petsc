@@ -314,20 +314,21 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
 }
 
 /*@C
-  DMInterpolationSetUp - Computea spatial indices that add in point location during interpolation
+  DMInterpolationSetUp - Compute spatial indices for point location during interpolation
 
   Collective on ctx
 
   Input Parameters:
 + ctx - the context
 . dm  - the DM for the function space used for interpolation
-- redundantPoints - If PETSC_TRUE, all processes are passing in the same array of points. Otherwise, points need to be communicated among processes.
+. redundantPoints - If PETSC_TRUE, all processes are passing in the same array of points. Otherwise, points need to be communicated among processes.
+. ignoreOutsideDomain - If PETSC_TRUE, ignore points outside the domain, otherwise return an error
 
   Level: intermediate
 
 .seealso: DMInterpolationEvaluate(), DMInterpolationAddPoints(), DMInterpolationCreate()
 @*/
-PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool redundantPoints)
+PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool redundantPoints, PetscBool ignoreOutsideDomain)
 {
   MPI_Comm          comm = ctx->comm;
   PetscScalar       *a;
@@ -397,8 +398,10 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ierr   = MPIU_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
-    if (globalProcs[p] == size) SETERRQ4(comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, (double)globalPoints[p*ctx->dim+0], (double)(ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0), (double)(ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0));
-    else if (globalProcs[p] == rank) ctx->n++;
+    if (globalProcs[p] == size) {
+      if (!ignoreOutsideDomain) SETERRQ4(comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, (double)globalPoints[p*ctx->dim+0], (double)(ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0), (double)(ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0));
+      else if (!rank) ++ctx->n;
+    } else if (globalProcs[p] == rank) ++ctx->n;
   }
   /* Create coordinates vector and array of owned cells */
   ierr = PetscMalloc1(ctx->n, &ctx->cells);CHKERRQ(ierr);
@@ -413,6 +416,13 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
 
       for (d = 0; d < ctx->dim; ++d, ++i) a[i] = globalPoints[p*ctx->dim+d];
       ctx->cells[q] = foundCells[q].index;
+      ++q;
+    }
+    if (globalProcs[p] == size && !rank) {
+      PetscInt d;
+
+      for (d = 0; d < ctx->dim; ++d, ++i) a[i] = 0.;
+      ctx->cells[q] = -1;
       ++q;
     }
   }
@@ -1033,6 +1043,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
           PetscScalar *xa = NULL;
           PetscReal    pcoords[3];
 
+          if (ctx->cells[p] < 0) continue;
           for (d = 0; d < cdim; ++d) pcoords[d] = PetscRealPart(coords[p*cdim+d]);
           ierr = DMPlexCoordinatesToReference(dm, ctx->cells[p], 1, pcoords, xi);CHKERRQ(ierr);
           ierr = DMPlexVecGetClosure(dm, NULL, x, ctx->cells[p], NULL, &xa);CHKERRQ(ierr);

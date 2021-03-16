@@ -2890,6 +2890,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatR
    Options Database Keys:
 + -mat_type mpibaij - sets the matrix type to "mpibaij" during a call to MatSetFromOptions()
 . -mat_block_size <bs> - set the blocksize used to store the matrix
+. -mat_baij_mult_version version - indicate the version of the matrix-vector product to use  (0 often indicates using BLAS)
 - -mat_use_hash_table <fact>
 
    Level: beginner

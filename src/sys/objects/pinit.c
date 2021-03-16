@@ -5,6 +5,15 @@
 #include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscvalgrind.h>
 #include <petscviewer.h>
+
+#if defined(PETSC_HAVE_CUDA)
+  #include <petsccublas.h>
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  #include <petschipblas.h>
+#endif
+
 #if defined(PETSC_USE_GCOV)
 EXTERN_C_BEGIN
 void  __gcov_flush(void);
@@ -215,7 +224,7 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,P
 
 /* ----------------------------------------------------------------------------*/
 
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
+#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 MPI_Op MPIU_SUM = 0;
 
 PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
@@ -228,7 +237,7 @@ PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
     for (i=0; i<count; i++) xout[i] += xin[i];
   }
 #if defined(PETSC_HAVE_COMPLEX)
-  else if (*datatype == MPIU_COMPLEX) {
+  else if (*datatype == MPI_COMPLEX) {
     PetscComplex *xin = (PetscComplex*)in,*xout = (PetscComplex*)out;
     for (i=0; i<count; i++) xout[i] += xin[i];
   }
@@ -844,13 +853,20 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     /* check for OpenMPI version, it is not part of the MPI ABI initiative (is it part of another initiative that needs to be handled?) */
 #elif defined(OMPI_MAJOR_VERSION)
     {
-      char *ver,bs[32],*bsf;
+      char *ver,bs[MPI_MAX_LIBRARY_VERSION_STRING],*bsf;
       flg = PETSC_FALSE;
-      ierr = PetscStrstr(mpilibraryversion,"Open MPI",&ver);if (ierr) return ierr;
-      if (ver) {
-        PetscSNPrintf(bs,32,"v%d.%d",OMPI_MAJOR_VERSION,OMPI_MINOR_VERSION);
-        ierr = PetscStrstr(ver,bs,&bsf);if (ierr) return ierr;
-        if (bsf) flg = PETSC_TRUE;
+#define PSTRSZ 2
+      char ompistr1[PSTRSZ][MPI_MAX_LIBRARY_VERSION_STRING] = {"Open MPI","FUJITSU MPI"};
+      char ompistr2[PSTRSZ][MPI_MAX_LIBRARY_VERSION_STRING] = {"v","Library "};
+      int i;
+      for (i=0; i<PSTRSZ; i++) {
+        ierr = PetscStrstr(mpilibraryversion,ompistr1[i],&ver);if (ierr) return ierr;
+        if (ver) {
+          PetscSNPrintf(bs,MPI_MAX_LIBRARY_VERSION_STRING,"%s%d.%d",ompistr2[i],OMPI_MAJOR_VERSION,OMPI_MINOR_VERSION);
+          ierr = PetscStrstr(ver,bs,&bsf);if (ierr) return ierr;
+          if (bsf) flg = PETSC_TRUE;
+          break;
+        }
       }
       if (!flg) {
         fprintf(stderr,"PETSc Error --- Open MPI library version \n%s does not match what PETSc was compiled with %d.%d, aborting\n",mpilibraryversion,OMPI_MAJOR_VERSION,OMPI_MINOR_VERSION);
@@ -954,20 +970,13 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   */
 #if defined(PETSC_HAVE_COMPLEX)
   {
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_CLANGUAGE_CXX)
     PetscComplex ic(0.0,1.0);
     PETSC_i = ic;
 #else
     PETSC_i = _Complex_I;
 #endif
   }
-
-#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-  ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_C_DOUBLE_COMPLEX);CHKERRMPI(ierr);
-  ierr = MPI_Type_commit(&MPIU_C_DOUBLE_COMPLEX);CHKERRMPI(ierr);
-  ierr = MPI_Type_contiguous(2,MPI_FLOAT,&MPIU_C_COMPLEX);CHKERRMPI(ierr);
-  ierr = MPI_Type_commit(&MPIU_C_COMPLEX);CHKERRMPI(ierr);
-#endif
 #endif /* PETSC_HAVE_COMPLEX */
 
   /*
@@ -992,7 +1001,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);CHKERRMPI(ierr);
 #endif
 
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
+#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
   ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRMPI(ierr);
 #endif
 
@@ -1160,14 +1169,7 @@ PetscErrorCode  PetscFreeMPIResources(void)
   ierr = MPI_Op_free(&MPIU_MIN);CHKERRMPI(ierr);
 #endif
 
-#if defined(PETSC_HAVE_COMPLEX)
-#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-  ierr = MPI_Type_free(&MPIU_C_DOUBLE_COMPLEX);CHKERRMPI(ierr);
-  ierr = MPI_Type_free(&MPIU_C_COMPLEX);CHKERRMPI(ierr);
-#endif
-#endif
-
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
+#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
   ierr = MPI_Op_free(&MPIU_SUM);CHKERRMPI(ierr);
 #endif
 
@@ -1557,6 +1559,21 @@ PetscErrorCode  PetscFinalize(void)
     PetscBeganKokkos = PETSC_FALSE;
     PetscKokkosInitialized = PETSC_FALSE;
   }
+#endif
+
+#if defined(PETSC_HAVE_NVSHMEM)
+  if (PetscBeganNvshmem) {
+    ierr = PetscNvshmemFinalize();CHKERRQ(ierr);
+    PetscBeganNvshmem = PETSC_FALSE;
+  }
+#endif
+
+#if defined(PETSC_HAVE_CUDA)
+  if (PetscDefaultCudaStream) {cudaError_t cerr = cudaStreamDestroy(PetscDefaultCudaStream);CHKERRCUDA(cerr);}
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  if (PetscDefaultHipStream)  {hipError_t cerr  = hipStreamDestroy(PetscDefaultHipStream);CHKERRHIP(cerr);}
 #endif
 
   ierr = PetscFreeMPIResources();CHKERRQ(ierr);

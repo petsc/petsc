@@ -137,6 +137,7 @@
           <li>Add PETSCRANDOMCURAND to support CURAND random number generator</li>
           <li>Add PetscRandomGetValues and PetscRandomGetValuesReal to retrieve an array of random numbers</li>
           <li>Add PetscOptions argument to PetscOptionsInsertFileYAML()</li>
+          <li>Add PetscCalloc to allocate zeroed memory</li>
         </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
@@ -148,6 +149,7 @@
           <li>Deprecate MPIU_REPLACE; Use MPI_REPLACE instead</li>
           <li>Deprecate PetscSFBcastAndOp variants; Use PetscSFBcast instead </li>
           <li>Deprecate PetscSFCreateEmbeddedSF; Use PetscSFCreateEmbeddedRootSF instead</li>
+          <li>Add experimental NVIDIA NVSHMEM support; For details on how to use it, contact petsc-maint@mcs.anl.gov</li>
         </ul>
       <h4>PF:</h4>
       <h4>Vec:</h4>
@@ -164,6 +166,7 @@
         <li>Add the option MAT_FORCE_DIAGONAL_ENTRIES for MatSetOption(). It forces allocation of all diagonal entries</li>
         <li>Remove MAT_NEW_DIAGONALS from MatOption</li>
         <li>Add UNKNOW_NONZERO_PATTERN as new value for MatStructure. It indicates that the relationship is unknown, when set the AIJ matrices check if the two matrices have identical patterns and if so use the faster code</li>
+        <li>Add MAT_FACTOR_QR, MatQRFactor(), MatQRFactorSymbolic(), and MatQRFactorNumeric() for QR factorizations.  Currently the only built-in implementation uses LAPACK on sequential dense matrices.</li>
       </ul>
       <h4>PC:</h4>
       <ul>
@@ -208,6 +211,7 @@
         </li>
         <li>Add SNESConvergedReasonViewCancel() to remove all user-added  converged reason view functions</li>
         <li>Add SNESGetConvergedReasonString() to retrieve a human readable string for snes converged reason</li>
+        <li>Add SNESFASFullSetTotal() to use total residual restriction and total solution interpolation in the initial cycle of full FAS multigrid</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
@@ -230,6 +234,9 @@
         <li>Remove unneeded Vec argument from DMPatchZoom()</li>
         <li>Change DMDACreatePatchIS() to collective operation and add an extra argument to indicate whether off processor values will be returned</li>
         <li>Add DMComputeError(), which uses PetscDS information for the exact solution</li>
+        <li>Add DMShellGetGLobalVector()</li>
+        <li>Add DMInterpolateSolution() for interpolating solutions between meshes in a potentially nonlinear way</li>
+        <li>DMInterpolationSetUp() now can drop points outside the domain</li>
       </ul>
       <h4>DMSwarm:</h4>
       <ul>
