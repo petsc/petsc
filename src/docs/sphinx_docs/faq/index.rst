@@ -926,9 +926,8 @@ Computing The Jacobian Or Preconditioner Is Time Consuming, Is There Any Way To 
 ------------------------------------------------------------------------------------------------------
 
 PETSc has a variety of ways of lagging the computation of the Jacobian or the
-preconditioner. They are documented in the `manual page
-<https://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESComputeJacobian.html>`__
-and :ref:`users manual <chapter_snes>`:
+preconditioner. They are documented in the manual page for ``SNESComputeJacobian()``
+and in the :ref:`users manual <chapter_snes>`:
 
 -snes_lag_jacobian  (``SNESSetLagJacobian()``) How often Jacobian is rebuilt (use -1 to
                     never rebuild, use -2 to rebuild the next time requested and then
@@ -1036,8 +1035,9 @@ creating a dense matrix B and fill it with the identity matrix (ones along the d
 also create a dense matrix X of the same size that will hold the solution. Then factor the
 matrix you wish to invert with ``MatLUFactor()`` or ``MatCholeskyFactor()``, call the
 result A. Then call ``MatMatSolve(A,B,X)`` to compute the inverse into X. See also section
-on `Schur's complement
-<https://www.mcs.anl.gov/petsc/documentation/faq.html#schurcomplement>`__.
+on :any:`Schur's complement <how_can_i_compute_the_schur_complement>`.
+
+.. _how_can_i_compute_the_schur_complement:
 
 How Can I Compute The Schur Complement In PETSc?
 ------------------------------------------------

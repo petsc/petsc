@@ -589,7 +589,7 @@ defined as ``complex`` (or ``complex<double>`` for machines using
 templated complex class libraries). To work with complex numbers, the
 user should run ``configure`` with the additional option
 ``--with-scalar-type=complex``. The
-`installation instructions <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__
+:doc:`installation instructions </install/index>`
 provide detailed instructions for installing PETSc. You can use
 ``--with-clanguage=c`` (the default) to use the C99 complex numbers or
 ``--with-clanguage=c++`` to use the C++ complex type [#cxx_note]_.

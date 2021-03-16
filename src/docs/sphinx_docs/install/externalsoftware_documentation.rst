@@ -6,8 +6,8 @@ Supported External Software
 
 PETSc interfaces to the following optional external software. See :ref:`installing
 packages <doc_config_externalpack>` for more information on downloading and installing
-these softwares, as well as the `linear solve table
-<https://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html>`__ for more
+these softwares, as well as the :doc:`linear solve table
+</overview/linear_solve_table_documentation>` for more
 information on the intended use-cases for each software.
 
 List Of Software

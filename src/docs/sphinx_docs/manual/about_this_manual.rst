@@ -48,16 +48,7 @@ of many application codes simpler than “rolling them” yourself.
 
 Since PETSc is under continued development, small changes in usage and
 calling sequences of routines will occur. PETSc has been supported for twenty-five years; see
-https://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html for
+:doc:`/contact/mailing_documentation` for
 information on contacting support.
 
 .. include :: ../common/editing-online.rst
-
-Manual pages and example usage :
-https://www.mcs.anl.gov/petsc/documentation/
-
-Installing PETSc :
-https://www.mcs.anl.gov/petsc/documentation/installation.html
-
-Tutorials :
-https://www.mcs.anl.gov/petsc/documentation/tutorials/index.html
