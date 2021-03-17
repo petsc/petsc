@@ -105,4 +105,9 @@ int main(int argc,char **argv)
         args: -yaml ex47-prefix.yaml
         localrunfiles: ex47-prefix.yaml
 
+     test:
+        suffix: 3_multidoc
+        args: -yaml ex47-multidoc.yaml
+        localrunfiles: ex47-multidoc.yaml
+
 TEST*/
