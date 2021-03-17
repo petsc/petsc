@@ -108,19 +108,23 @@ endif
 
 PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(PFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
 PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(CXX_DEPFLAGS)
-ifneq ($(KOKKOS_BIN),)
-# Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
-PETSC_COMPILE.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CXX_LINKER) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS)
-PETSC_LINK.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CXX_LINKER) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda  $(CXX_LINKER_FLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
-else
-PETSC_COMPILE.kokkos.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(CXX_DEPFLAGS)
-PETSC_LINK.kokkos.cxx = $(CXXLINKER) $(CXX_LINKER_FLAGS) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
-endif
 PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) $(CUFLAGS) --compiler-options="${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS)"
-PETSC_COMPILE.hip.cpp = $(call quiet,HIPCC) -c $(HIPCC_FLAGS) $(HIPCCFLAGS) $(HIPCCPPFLAGS) $(HIPCC_DEPFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(CXX_DEPFLAGS)
+PETSC_COMPILE.hip.cpp = $(call quiet,HIPC) -c $(HIPC_FLAGS) $(HIPFLAGS) $(HIPPPFLAGS) $(HIPOPTFLAGS) $(HIPC_DEPFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(CXX_DEPFLAGS)
 PETSC_COMPILE.sycl.cpp = $(call quiet,SYCLCPP) -c $(SYCLCPP_FLAGS) $(SYCLCPPFLAGS) $(SYCLCPPCPPFLAGS) $(SYCLCPP_DEPFLAGS)
 PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) $(CUFLAGS)  --compiler-options="${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS)"
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
+
+ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
+  # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
+  PETSC_COMPILE.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CXX_LINKER) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS)
+  PETSC_LINK.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CXX_LINKER) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda  $(CXX_LINKER_FLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
+else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
+  PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.hip.cpp)
+  PETSC_LINK.kokkos.cxx = MPICH_CXX="$(HIPC)" OMPI_CXX="$(HIPC)" $(CXXLINKER) $(HIPFLAGS) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
+else
+  PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.cxx)
+  PETSC_LINK.kokkos.cxx = $(CXXLINKER) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
+endif
 
 testlangs := c cu cxx F F90 kokkos.cxx hip.cpp sycl.cpp
 $(foreach lang, $(testlangs), $(eval \
@@ -383,7 +387,7 @@ report_tests: starttime $(TESTTARGETS)
 	-@ elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
 	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time} $(showreport)
 
-check_output: 
+check_output:
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --check-output
 
 # Do not how how to invoke test from makefile
@@ -460,7 +464,7 @@ help-test:
 	-@echo "   or the shortcut using q and qv"
 	-@echo "    make -f ${makefile} test q='requires' qv='*MPI_PROCESS_SHARED_MEMORY*'"
 	-@echo "  To filter results from other searches, use searchin"
-	-@echo "    make -f ${makefile} test s='src/sys/tests/' searchin='*options*'" 
+	-@echo "    make -f ${makefile} test s='src/sys/tests/' searchin='*options*'"
 	-@echo
 	-@echo "  To re-run the last tests which failed:"
 	-@echo "    make -f ${makefile} test test-fail='1'"

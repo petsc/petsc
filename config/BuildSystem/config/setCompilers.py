@@ -40,7 +40,7 @@ class Configure(config.base.Configure):
       self._setupCompiler('C',desc)
     if hasattr(self, 'CUDAC'):
       self._setupCompiler('CUDA',desc)
-    if hasattr(self, 'HIPCC'):
+    if hasattr(self, 'HIPC'):
       self._setupCompiler('HIP',desc)
     if hasattr(self, 'SYCLCXX'):
       self._setupCompiler('SYCL',desc)
@@ -111,15 +111,15 @@ class Configure(config.base.Configure):
 
     help.addArgument('Compilers', '-HIPPP=<prog>', nargs.Arg(None, None, 'Specify the HIP preprocessor'))
     help.addArgument('Compilers', '-HIPPPFLAGS=<string>', nargs.Arg(None, '-Wno-deprecated-gpu-targets', 'Specify the HIPpreprocessor options'))
-    help.addArgument('Compilers', '-with-hipcc=<prog>', nargs.Arg(None, None, 'Specify the HIP compiler'))
-    help.addArgument('Compilers', '-HIPCC=<prog>',         nargs.Arg(None, None, 'Specify the HIP compiler'))
-    help.addArgument('Compilers', '-HIPCCFLAGS=<string>',   nargs.Arg(None, None, 'Specify the HIP compiler options'))
-    help.addArgument('Compilers', '-HIPCC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the HIP linker flags'))
+    help.addArgument('Compilers', '-with-hipc=<prog>', nargs.Arg(None, None, 'Specify the HIP compiler'))
+    help.addArgument('Compilers', '-HIPC=<prog>',         nargs.Arg(None, None, 'Specify the HIP compiler'))
+    help.addArgument('Compilers', '-HIPFLAGS=<string>',   nargs.Arg(None, None, 'Specify the HIP compiler options'))
+    help.addArgument('Compilers', '-HIPC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the HIP linker flags'))
 
     help.addArgument('Compilers', '-SYCLPP=<prog>', nargs.Arg(None, None, 'Specify the SYCL preprocessor'))
     help.addArgument('Compilers', '-SYCLPPFLAGS=<string>', nargs.Arg(None, '-Wno-deprecated-gpu-targets', 'Specify the SYCL preprocessor options'))
     help.addArgument('Compilers', '-with-syclcxx=<prog>', nargs.Arg(None, None, 'Specify the SYCLcompiler'))
-    help.addArgument('Compilers', '-SYCLCXX=<prog>',         nargs.Arg(None, None, 'Specify the SYCL compiler')) 
+    help.addArgument('Compilers', '-SYCLCXX=<prog>',         nargs.Arg(None, None, 'Specify the SYCL compiler'))
     help.addArgument('Compilers', '-SYCLCXXFLAGS=<string>',   nargs.Arg(None, None, 'Specify the SYCL compiler options'))
     help.addArgument('Compilers', '-SYCLCXX_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the SYCL linker flags'))
 
@@ -207,6 +207,18 @@ class Configure(config.base.Configure):
       found = any([s in output for s in ['Emit Clang AST']])
       if found:
         if log: log.write('Detected CLANG compiler\n')
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
+  def isHIP(compiler, log):
+    '''Returns true if the compiler is a HIP compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output + error
+      if 'HIP version:' in output:
+        if log: log.write('Detected HIP compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -524,7 +536,7 @@ class Configure(config.base.Configure):
       if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
       else: setattr(self, flagsArg, '')
       self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
-    for flagsArg in ['CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPCC_LINKER_FLAGS', 'SYCLCXX_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
+    for flagsArg in ['CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPC_LINKER_FLAGS', 'SYCLCXX_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
       if isinstance(self.argDB[flagsArg],str): val = [self.argDB[flagsArg]]
       else: val = self.argDB[flagsArg]
       setattr(self, flagsArg, val)
@@ -816,38 +828,38 @@ class Configure(config.base.Configure):
     return
 
   def generateHIPCompilerGuesses(self):
-    '''Determine the HIP compiler using HIPCC, then --with-hipcc
+    '''Determine the HIP compiler using HIPC, then --with-hipc
        - Any given category can be excluded'''
-    if hasattr(self, 'HIPCC'):
-      yield self.HIPCC
+    if hasattr(self, 'HIPC'):
+      yield self.HIPC
       raise RuntimeError('Error: '+self.mesg)
-    elif 'with-hipcc' in self.argDB:
-      yield self.argDB['with-hipcc']
-      raise RuntimeError('HIPCC compiler you provided with -with-hipcc='+self.argDB['with-hipcc']+' cannot be found or does not work.'+'\n'+self.mesg)
-    elif 'HIPCC' in self.argDB:
-      yield self.argDB['HIPCC']
-      raise RuntimeError('HIP compiler you provided with -HIPCC='+self.argDB['HIPCC']+' cannot be found or does not work.'+'\n'+self.mesg)
+    elif 'with-hipc' in self.argDB:
+      yield self.argDB['with-hipc']
+      raise RuntimeError('HIPC compiler you provided with -with-hipc='+self.argDB['with-hipc']+' cannot be found or does not work.'+'\n'+self.mesg)
+    elif 'HIPC' in self.argDB:
+      yield self.argDB['HIPC']
+      raise RuntimeError('HIP compiler you provided with -HIPC='+self.argDB['HIPC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'with-hip-dir' in self.argDB:
-      hipPath = os.path.join(self.argDB['with-hip-dir'], 'bin','hipcc')
+      hipPath = os.path.join(self.argDB['with-hip-dir'], 'bin','hipc')
       yield hipPath
     else:
-      yield 'hipcc'
-      yield os.path.join('opt','rocm','bin','hipcc')
+      yield 'hipc'
+      yield os.path.join('opt','rocm','bin','hipc')
     return
 
   def checkHIPCompiler(self):
     '''Locate a functional HIP compiler'''
-    if ('with-hipcc' in self.argDB and self.argDB['with-hipcc'] == '0'):
-      if 'HIPCC' in self.argDB:
-        del self.argDB['HIPCC']
+    if ('with-hipc' in self.argDB and self.argDB['with-hipc'] == '0'):
+      if 'HIPC' in self.argDB:
+        del self.argDB['HIPC']
       return
     self.mesg = 'in generateHIPCompilerGuesses'
     for compiler in self.generateHIPCompilerGuesses():
       try:
-        if self.getExecutable(compiler, resultName = 'HIPCC'):
+        if self.getExecutable(compiler, resultName = 'HIPC'):
           self.checkCompiler('HIP')
           # Put version info into the log
-          compilerVersion = self.executeShellCommand(self.HIPCC+' --version', log = self.log)
+          compilerVersion = self.executeShellCommand(self.HIPC+' --version', log = self.log)
           if 'nvcc' in compilerVersion and 'NVIDIA' in compilerVersion:
             hipLine = compilerVersion.split('\n')[0]
             self.compilerVersionHIP = hipLine.split(':')[1]
@@ -856,15 +868,15 @@ class Configure(config.base.Configure):
             if 'release' in nvccReleaseLine:
               self.compilerVersionCUDA = re.split('release',nvccReleaseLine)[1]
             else:
-              raise RuntimeError('Error: Could not determine CUDA version from hipcc')
+              raise RuntimeError('Error: Could not determine CUDA version from hipc')
           else:
             self.compilerVersionHIP = compilerVersion[0]
           break
       except RuntimeError as e:
         self.mesg = str(e)
         self.logPrint('HERE Error testing HIP compiler: '+str(e))
-        self.delMakeMacro('HIPCC')
-        del self.HIPCC
+        self.delMakeMacro('HIPC')
+        del self.HIPC
     return
 
   def generateHIPPreprocessorGuesses(self):
@@ -1304,7 +1316,7 @@ class Configure(config.base.Configure):
       languages.append('FC')
     if hasattr(self, 'CUDAC'):
       languages.append('CUDA')
-    if hasattr(self, 'HIPCC'):
+    if hasattr(self, 'HIPC'):
       languages.append('HIP')
     if hasattr(self, 'SYCLCXX'):
       languages.append('SYCL')
@@ -1659,7 +1671,7 @@ class Configure(config.base.Configure):
 
   def checkLinkerMac(self):
     '''Tests some Apple Mac specific linker flags'''
-    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPCC','SYCL':'SYCLCXX'}
+    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLCXX'}
     languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
@@ -1679,7 +1691,7 @@ class Configure(config.base.Configure):
 
   def checkLinkerWindows(self):
     '''Turns off linker warning about unknown .o files extension'''
-    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPCC','SYCL':'SYCLCXX'}
+    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLCXX'}
     languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
@@ -1708,7 +1720,7 @@ class Configure(config.base.Configure):
       languages.append('FC')
     if hasattr(self, 'CUDAC'):
       languages.append('CUDA')
-    if hasattr(self, 'HIPCC'):
+    if hasattr(self, 'HIPC'):
       languages.append('HIP')
     if hasattr(self, 'SYCLCXX'):
       languages.append('SYCL')
@@ -1844,9 +1856,9 @@ if (dlclose(handle)) {
     if hasattr(self, 'CUDAPP'):
       self.addSubstitution('CUDAPP', self.CUDAPP)
       self.addSubstitution('CUDAPPFLAGS', self.CUDAPPFLAGS)
-    if hasattr(self, 'HIPCC'):
-      self.addSubstitution('HIPCC', self.HIPCC)
-      self.addSubstitution('HIPCCFLAGS', self.HIPCCFLAGS)
+    if hasattr(self, 'HIPC'):
+      self.addSubstitution('HIPC', self.HIPC)
+      self.addSubstitution('HIPFLAGS', self.HIPFLAGS)
     if hasattr(self, 'HIPPP'):
       self.addSubstitution('HIPPP', self.HIPPP)
       self.addSubstitution('HIPPPFLAGS', self.HIPPPFLAGS)

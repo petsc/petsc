@@ -624,7 +624,7 @@ Unable to run hostname to check the network')
     '''Find MPI include paths from "mpicc -show" and use with CUDAC_FLAGS'''
     needInclude=False
     if hasattr(self.compilers, 'CUDAC'): needInclude=True
-    if hasattr(self.compilers, 'HIPCC'): needInclude=True
+    if hasattr(self.compilers, 'HIPC'): needInclude=True
     if not needInclude: return
     import re
     output = ''
@@ -645,7 +645,7 @@ Unable to run hostname to check the network')
             self.setCompilers.pushLanguage('CUDA')
             self.setCompilers.addCompilerFlag(arg)
             self.setCompilers.popLanguage()
-          if hasattr(self.compilers, 'HIPCC'):
+          if hasattr(self.compilers, 'HIPC'):
             self.setCompilers.pushLanguage('HIP')
             self.setCompilers.addCompilerFlag(arg)
             self.setCompilers.popLanguage()

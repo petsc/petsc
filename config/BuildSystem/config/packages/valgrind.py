@@ -53,7 +53,7 @@ class Configure(config.package.Package):
 
     if self.found and config.setCompilers.Configure.isDarwin(self.log):
       self.addDefine('HAVE_VALGRIND_DARWIN', 1)
-      langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPCC','SYCL':'SYCLCXX'}
+      langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLCXX'}
       languages = ['C']
       if hasattr(self, 'CXX'):languages.append('Cxx')
       if hasattr(self, 'FC'):languages.append('FC')

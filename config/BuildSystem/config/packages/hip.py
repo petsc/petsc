@@ -42,15 +42,15 @@ class Configure(config.package.Package):
     self.pushLanguage('HIP')
     petscHip = self.getCompiler()
     self.popLanguage()
-    self.getExecutable(petscHip,getFullPath=1,resultName='systemHipcc')
-    if hasattr(self,'systemHipcc'):
-      hipccDir = os.path.dirname(self.systemHipcc)
-      hipDir = os.path.split(hipccDir)[0]
+    self.getExecutable(petscHip,getFullPath=1,resultName='systemHipc')
+    if hasattr(self,'systemHipc'):
+      hipcDir = os.path.dirname(self.systemHipc)
+      hipDir = os.path.split(hipcDir)[0]
       yield hipDir
     return
 
   def checkSizeofVoidP(self):
-    '''Checks if the HIPCC compiler agrees with the C compiler on what size of void * should be'''
+    '''Checks if the HIPC compiler agrees with the C compiler on what size of void * should be'''
     self.log.write('Checking if sizeof(void*) in HIP is the same as with regular compiler\n')
     size = self.types.checkSizeof('void *', (8, 4), lang='HIP', save=False)
     if size != self.types.sizes['void-p']:
@@ -64,7 +64,7 @@ class Configure(config.package.Package):
     self.checkSizeofVoidP()
     return
 
-  def checkHIPCCDoubleAlign(self):
+  def checkHIPCDoubleAlign(self):
     if 'known-hip-align-double' in self.argDB:
       if not self.argDB['known-hip-align-double']:
         raise RuntimeError('HIP error: PETSC currently requires that HIP double alignment match the C compiler')
