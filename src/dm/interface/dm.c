@@ -1240,8 +1240,10 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
   /* If the 'fine' Vec is bound to the CPU, it makes sense to bind 'mat' as well.
    * Note that we only do this for the CUDA case, right now, but if we add support for MatMultTranspose() via ViennaCL,
    * we'll need to do it for that case, too.*/
-  ierr = VecBoundToCPU(fine,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);}
+  if (fine->bindingpropagates) {
+    ierr = VecBoundToCPU(fine,&flg);CHKERRQ(ierr);
+    ierr = MatBindToCPU(mat,flg);CHKERRQ(ierr);
+  }
 #endif
   ierr = MatRestrict(mat,fine,*scale);CHKERRQ(ierr);
   ierr = VecDestroy(&fine);CHKERRQ(ierr);
