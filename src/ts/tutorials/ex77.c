@@ -807,6 +807,7 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
   PetscFunctionReturn(0);
 }
 
+/* Note that adv->x0 will not be correct after migration */
 static PetscErrorCode ComputeParticleError(TS ts, Vec u, Vec e)
 {
   AdvCtx            *adv;
@@ -887,31 +888,24 @@ static PetscErrorCode AdvectParticles(TS ts)
 {
   TS                 sts;
   DM                 sdm;
-  Vec                p;
+  Vec                p, r;
   AdvCtx            *adv;
   PetscScalar       *coord, *a;
   const PetscScalar *ca;
   PetscReal          time;
-  PetscInt           dim, n, np;
+  PetscBool          lreset, reset;
+  PetscInt           dim, n, N, newn, newN;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectQuery((PetscObject) ts, "_SwarmTS",  (PetscObject *) &sts);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) ts, "_SwarmSol", (PetscObject *) &p);CHKERRQ(ierr);
   ierr = TSGetDM(sts, &sdm);CHKERRQ(ierr);
-  ierr = TSGetRHSFunction(sts, NULL, NULL, (void **) &adv);CHKERRQ(ierr);
+  ierr = DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(sdm, &p);CHKERRQ(ierr);
+  ierr = TSGetRHSFunction(sts, &r, NULL, (void **) &adv);CHKERRQ(ierr);
   ierr = DMGetDimension(sdm, &dim);CHKERRQ(ierr);
-  ierr = DMSwarmGetLocalSize(sdm, &np);CHKERRQ(ierr);
+  ierr = VecGetSize(p, &N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(p, &n);CHKERRQ(ierr);
-  if (n != np*dim) {
-    ierr = DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor);CHKERRQ(ierr);
-    ierr = DMCreateGlobalVector(sdm, &p);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) ts, "_SwarmSol", (PetscObject) p);CHKERRQ(ierr);
-    ierr = VecDestroy(&p);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject) ts, "_SwarmSol", (PetscObject *) &p);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(p, &n);CHKERRQ(ierr);
-    ierr = TSReset(sts);CHKERRQ(ierr);
-  }
 
   ierr = DMSwarmGetField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coord);CHKERRQ(ierr);
   ierr = VecGetArray(p, &a);CHKERRQ(ierr);
@@ -923,18 +917,24 @@ static PetscErrorCode AdvectParticles(TS ts)
   adv->tf = time;
   ierr = TSSolve(sts, p);CHKERRQ(ierr);
   ierr = DMSwarmGetField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coord);CHKERRQ(ierr);
-  ierr = DMSwarmGetLocalSize(sdm, &np);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(p, &n);CHKERRQ(ierr);
-  if (n != np*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Particle coords %D != %D Cached size", np*dim, n);
   ierr = VecGetArrayRead(p, &ca);CHKERRQ(ierr);
   ierr = PetscArraycpy(coord, ca, n);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(p, &ca);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coord);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(sdm, &p);CHKERRQ(ierr);
 
   ierr = VecCopy(adv->uf, adv->ui);CHKERRQ(ierr);
   adv->ti = adv->tf;
 
   ierr = DMSwarmMigrate(sdm, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(sdm, &p);CHKERRQ(ierr);
+  ierr = VecGetSize(p, &newN);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(p, &newn);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(sdm, &p);CHKERRQ(ierr);
+  lreset = (n != newn || N != newN) ? PETSC_TRUE : PETSC_FALSE;
+  ierr = MPI_Allreduce(&lreset, &reset, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject) sts));CHKERRQ(ierr);
+  if (reset) {ierr = TSReset(sts);CHKERRQ(ierr);}
   ierr = DMViewFromOptions(sdm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -943,7 +943,7 @@ int main(int argc, char **argv)
 {
   DM              dm, sdm;
   TS              ts, sts;
-  Vec             u, p, xtmp;
+  Vec             u, xtmp;
   AppCtx          user;
   AdvCtx          adv;
   PetscReal       t;
@@ -1006,9 +1006,6 @@ int main(int argc, char **argv)
   ierr = TSSetPostStep(ts, AdvectParticles);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) ts, "_SwarmTS", (PetscObject) sts);CHKERRQ(ierr);
   ierr = DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(sdm, &p);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) ts, "_SwarmSol", (PetscObject) p);CHKERRQ(ierr);
-  ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(sdm, &adv.x0);CHKERRQ(ierr);
   ierr = DMSwarmCreateGlobalVectorFromField(sdm, DMSwarmPICField_coor, &xtmp);CHKERRQ(ierr);
   ierr = VecCopy(xtmp, adv.x0);CHKERRQ(ierr);
