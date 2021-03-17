@@ -13,7 +13,6 @@ class Configure(config.package.CMakePackage):
     # I don't know how to make it work since all KK routines are templated and always need Kokkos::View. So I cheat here and use functionCxx from Kokkos.
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
     self.cxx              = 1
-    self.requirescxx11    = 1
     self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
