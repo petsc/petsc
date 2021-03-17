@@ -10,8 +10,17 @@ static const char *HPDDMVariant[]           = { "left", "right", "flexible" };
 static const char *HPDDMRecycleTarget[]     = { "SM", "LM", "SR", "LR", "SI", "LI" };
 static const char *HPDDMRecycleStrategy[]   = { "A", "B" };
 
-static PetscBool citeKSP = PETSC_FALSE;
-static const char hpddmCitationKSP[] = "@inproceedings{jolivet2016block,\n\tTitle = {{Block Iterative Methods and Recycling for Improved Scalability of Linear Solvers}},\n\tAuthor = {Jolivet, Pierre and Tournier, Pierre-Henri},\n\tOrganization = {IEEE},\n\tYear = {2016},\n\tSeries = {SC16},\n\tBooktitle = {Proceedings of the 2016 International Conference for High Performance Computing, Networking, Storage and Analysis}\n}\n";
+PetscBool HPDDMCite = PETSC_FALSE;
+const char HPDDMCitation[] = "@article{jolivet2020petsc,\n"
+"  Author = {Jolivet, Pierre and Roman, Jose E. and Zampini, Stefano},\n"
+"  Title = {{KSPHPDDM} and {PCHPDDM}: Extending {PETSc} with Robust Overlapping {Schwarz} Preconditioners and Advanced {Krylov} Methods},\n"
+"  Year = {2021},\n"
+"  Publisher = {Elsevier},\n"
+"  Journal = {Computer \\& Mathematics with Applications},\n"
+"  Volume = {84},\n"
+"  Pages = {277--295},\n"
+"  Url = {https://github.com/prj-/jolivet2020petsc}\n"
+"}\n";
 
 #if defined(PETSC_HAVE_SLEPC) && defined(PETSC_USE_SHARED_LIBRARIES)
 static PetscBool loadedDL = PETSC_FALSE;
@@ -268,7 +277,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(hpddmCitationKSP, &citeKSP);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister(HPDDMCitation, &HPDDMCite);CHKERRQ(ierr);
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQKAIJ, MATMPIKAIJ, "");CHKERRQ(ierr);
   ierr = VecGetArrayWrite(ksp->vec_sol, &x);CHKERRQ(ierr);
