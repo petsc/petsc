@@ -7093,7 +7093,7 @@ PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS 
       ierr = MatPropagateSymmetryOptions(mat,(*submat)[i]);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-    if (mat->boundtocpu) {ierr = MatBindToCPU((*submat)[i],PETSC_TRUE);CHKERRQ(ierr);}
+    if (mat->boundtocpu && mat->bindingpropagates) {ierr = MatBindToCPU((*submat)[i],PETSC_TRUE);CHKERRQ(ierr);}
 #endif
   }
   PetscFunctionReturn(0);
@@ -10063,7 +10063,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
   }
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (matseq[0]->boundtocpu) {ierr = MatBindToCPU(*matredundant,PETSC_TRUE);CHKERRQ(ierr);}
+  if (matseq[0]->boundtocpu && matseq[0]->bindingpropagates) {ierr = MatBindToCPU(*matredundant,PETSC_TRUE);CHKERRQ(ierr);}
 #endif
   ierr = PetscLogEventEnd(MAT_RedundantMat,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
