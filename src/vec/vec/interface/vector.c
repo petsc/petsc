@@ -366,7 +366,7 @@ PetscErrorCode  VecDuplicate(Vec v,Vec *newv)
   PetscValidType(v,1);
   ierr = (*v->ops->duplicate)(v,newv);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (v->boundtocpu) {ierr = VecBindToCPU(*newv,PETSC_TRUE);CHKERRQ(ierr);}
+  if (v->boundtocpu && v->bindingpropagates) {ierr = VecBindToCPU(*newv,PETSC_TRUE);CHKERRQ(ierr);}
 #endif
   ierr = PetscObjectStateIncrease((PetscObject)*newv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -440,7 +440,7 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
   PetscValidType(v,1);
   ierr = (*v->ops->duplicatevecs)(v,m,V);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (v->boundtocpu) {
+  if (v->boundtocpu && v->bindingpropagates) {
     PetscInt i;
 
     for (i=0; i<m; i++) {
