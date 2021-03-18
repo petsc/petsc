@@ -1242,6 +1242,7 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
    * we'll need to do it for that case, too.*/
   if (fine->bindingpropagates) {
     ierr = VecBoundToCPU(fine,&flg);CHKERRQ(ierr);
+    ierr = MatSetBindingPropagates(mat,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatBindToCPU(mat,flg);CHKERRQ(ierr);
   }
 #endif
