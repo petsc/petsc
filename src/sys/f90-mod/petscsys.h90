@@ -1,50 +1,43 @@
 #if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       Interface
        subroutine PetscObjectReference(obj,ierr)
-          use petscsysdef
           type(*) :: obj
           PetscErrorCode :: ierr
        end Subroutine PetscObjectReference
        subroutine PetscObjectDereference(obj,ierr)
-          use petscsysdef
           type(*) :: obj
           PetscErrorCode :: ierr
         end Subroutine PetscObjectDereference
        subroutine PetscObjectGetReference(obj,c,ierr)
-          use petscsysdef
           type(*) :: obj
           PetscInt c
           PetscErrorCode :: ierr
         end Subroutine PetscObjectGetReference
        subroutine PetscObjectCompose(obj,str,obj2,ierr)
-          use petscsysdef
           type(*) :: obj,obj2
           character(*) :: str
           PetscErrorCode :: ierr
         end Subroutine PetscObjectCompose
        subroutine PetscObjectQuery(obj,str,obj2,ierr)
-          use petscsysdef
           type(*) :: obj,obj2
           character(*) :: str
           PetscErrorCode :: ierr
         end Subroutine PetscObjectQuery
       subroutine PetscBarrier(a,z)
-      use petscsysdef
        type(*) :: a
        PetscErrorCode :: z
        end subroutine
       end Interface
 #endif
 
-      Interface 
+      Interface
        Subroutine PetscPrintf(m,c,ierr)
-          use petscsysdef
           MPI_Comm :: m
           character(len=*) :: c
           PetscErrorCode :: ierr
        End Subroutine
         Subroutine PetscOptionsGetInt(o,p,n,v,s,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           PetscInt v
           character(*) p,n
@@ -52,7 +45,7 @@
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsGetReal(o,p,n,v,s,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           PetscReal v
           character(*) p,n
@@ -60,7 +53,7 @@
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsGetScalar(o,p,n,v,s,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           PetscScalar v
           character(*) p,n
@@ -68,7 +61,7 @@
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsGetBool(o,p,n,v,s,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           PetscBool v
           character(*) p,n
@@ -76,7 +69,7 @@
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsGetString(o,p,n,v,s,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           character(*) v
           character(*) p,n
@@ -84,14 +77,14 @@
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsHasName(o,p,n,s,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           character(*) p,n
           PetscBool s
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsGetIntArray(o,p,n,v,c,s,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           PetscInt v(*),c
           character(*) p,n
@@ -99,7 +92,7 @@
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsGetScalarArray(o,p,n,v,c,s,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           PetscScalar v(*)
           PetscInt c
@@ -108,7 +101,7 @@
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsGetRealArray(o,p,n,v,c,s,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           PetscReal v(*)
           PetscInt c
@@ -117,90 +110,86 @@
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsSetValue(o,n,v,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           character(*) n,v
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsClearValue(o,n,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           character(*) n
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsClear(o,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsInsertString(o,n,ierr)
-          use petscsysdef
+          import tPetscOptions
           PetscOptions o
           character(*) n
           PetscErrorCode ierr
         End Subroutine
         Subroutine PetscOptionsView(o,v,ierr)
-          use petscsysdef
+          import tPetscOptions,tPetscViewer
           PetscOptions, intent(in) :: o
           PetscViewer,  intent(in) :: v
           PetscErrorCode, intent(out) :: ierr
         End Subroutine PetscOptionsView
 
       subroutine PetscRandomSetType(a,b,ierr)
-      use petscsysdef
+       import tPetscRandom
        PetscRandom a
        character(*) b
        PetscErrorCode ierr
        end subroutine
 
       subroutine PetscErrorf(ierr)
-      use petscsysdef
        PetscErrorCode, intent(in) :: ierr
       end Subroutine PetscErrorf
 
       subroutine PetscInitialize(c,ierr)
-      use petscsysdef
        character(len=*), intent(in) :: c
        PetscErrorCode, intent(out) :: ierr
       end Subroutine PetscInitialize
-      
+
       subroutine PetscInitializeNoArguments(ierr)
-      use petscsysdef
        PetscErrorCode, intent(out) :: ierr
       end Subroutine PetscInitializeNoArguments
 
       subroutine PetscFinalize(ierr)
-      use petscsysdef
        PetscErrorCode, intent(out) :: ierr
       end Subroutine PetscFinalize
 
       subroutine PetscRandomView(a,b,ierr)
-      use petscsysdef
+       import tPetscRandom,tPetscViewer
        PetscRandom a
        PetscViewer b
        PetscErrorCode ierr
        end subroutine
 
       subroutine PetscSubcommView(a,b,z)
-      use petscsysdef
+       import tPetscSubComm,tPetscViewer
        PetscSubcomm a ! PetscSubcomm
        PetscViewer b ! PetscViewer
        PetscErrorCode z
       end subroutine
       subroutine PetscSubcommGetParent(a,b,z)
-      use petscsysdef
+       import tPetscSubComm
        PetscSubcomm a ! PetscSubcomm
        MPI_Comm b ! MPI_Comm
        PetscErrorCode z
        end subroutine
       subroutine PetscSubcommGetContiguousParent(a,b,z)
-      use petscsysdef
+       import tPetscSubComm
        PetscSubcomm a ! PetscSubcomm
        MPI_Comm b ! MPI_Comm
        PetscErrorCode z
        end subroutine
       subroutine PetscSubcommGetChild(a,b,z)
-      use petscsysdef
+       import tPetscSubComm
        PetscSubcomm a ! PetscSubcomm
        MPI_Comm b ! MPI_Comm
        PetscErrorCode z
@@ -212,7 +201,6 @@
       end subroutine
 
       subroutine PetscLogEventRegister(name,classid,event,ierr)
-       use petscsysdef
        character(len=*), intent(in) :: name
        PetscClassId, intent(in) :: classid
        PetscLogEvent, intent(in) :: event
@@ -220,7 +208,6 @@
       end subroutine PetscLogEventRegister
 
       subroutine PetscLogStageRegister(name,stage,ierr)
-       use petscsysdef
        character(len=*), intent(in) :: name
        PetscLogStage, intent(out) :: stage
        PetscErrorCode, intent(out) :: ierr
@@ -241,7 +228,6 @@
       end subroutine PetscLogStagePop
 
       subroutine PetscLogStagePush(s,ierr)
-       use petscsysdef
        PetscLogStage, intent(in) :: s
        PetscErrorCode, intent(out) :: ierr
       end subroutine PetscLogStagePush

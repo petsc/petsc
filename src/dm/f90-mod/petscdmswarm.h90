@@ -1,6 +1,6 @@
       Interface
         Subroutine DMSwarmGetField(dm,fieldname,blocksize,dtype,data,ierr)
-          use petscdmdef
+          import tDM
           DM dm
           character(len=*) :: fieldname
           PetscInt blocksize
@@ -12,7 +12,7 @@
 
       Interface
         Subroutine DMSwarmRestoreField(dm,fieldname,blocksize,dtype,data,ierr)
-          use petscdmdef
+          import tDM
           DM dm
           character(len=*) :: fieldname
           PetscInt blocksize
@@ -24,7 +24,7 @@
 
       Interface
         Subroutine DMSwarmCreateGlobalVectorFromField(dm,fieldname,vec,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM dm
           character(len=*) :: fieldname
           Vec vec
@@ -34,7 +34,7 @@
 
       Interface
         Subroutine DMSwarmDestroyGlobalVectorFromField(dm,fieldname,vec,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM dm
           character(len=*) :: fieldname
           Vec vec

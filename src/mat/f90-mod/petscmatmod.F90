@@ -2,40 +2,40 @@
         module petscmatdefdummy
         use petscvecdef
 #include <../src/mat/f90-mod/petscmat.h>
-        end module
+        end module petscmatdefdummy
 
         module petscmatdef
         use petscmatdefdummy
         interface operator(.ne.)
           function matnotequal(A,B)
-            use petscmatdefdummy
+            import tMat
             logical matnotequal
             type(tMat), intent(in) :: A,B
           end function
           function matfdcoloringnotequal(A,B)
-            use petscmatdefdummy
+            import tMatFDColoring
             logical matfdcoloringnotequal
             type(tMatFDColoring), intent(in) :: A,B
           end function
           function matnullspacenotequal(A,B)
-            use petscmatdefdummy
+            import tMatNullSpace
             logical matnullspacenotequal
             type(tMatNullSpace), intent(in) :: A,B
             end function
       end interface operator (.ne.)
         interface operator(.eq.)
           function matequals(A,B)
-            use petscmatdefdummy
+            import tMat
             logical matequals
             type(tMat), intent(in) :: A,B
           end function
           function matfdcoloringequals(A,B)
-            use petscmatdefdummy
+            import tMatFDColoring
             logical matfdcoloringequals
             type(tMatFDColoring), intent(in) :: A,B
           end function
            function matnullspaceequals(A,B)
-            use petscmatdefdummy
+            import tMatNullSpace
             logical matnullspaceequals
             type(tMatNullSpace), intent(in) :: A,B
             end function
@@ -43,42 +43,48 @@
         end module
 
         function matnotequal(A,B)
-          use petscmatdefdummy
+          use petscmatdefdummy, only: tMat
+          implicit none
           logical matnotequal
           type(tMat), intent(in) :: A,B
           matnotequal = (A%v .ne. B%v)
         end function
 
        function matequals(A,B)
-          use petscmatdefdummy
+          use petscmatdefdummy, only: tMat
+          implicit none
           logical matequals
           type(tMat), intent(in) :: A,B
           matequals = (A%v .eq. B%v)
         end function
 
         function matfdcoloringnotequal(A,B)
-          use petscmatdefdummy
+          use petscmatdefdummy, only: tMatFDColoring
+          implicit none
           logical matfdcoloringnotequal
           type(tMatFDColoring), intent(in) :: A,B
           matfdcoloringnotequal = (A%v .ne. B%v)
         end function
 
         function matfdcoloringequals(A,B)
-          use petscmatdefdummy
+          use petscmatdefdummy, only: tMatFDColoring
+          implicit none
           logical matfdcoloringequals
           type(tMatFDColoring), intent(in) :: A,B
           matfdcoloringequals = (A%v .eq. B%v)
         end function
 
         function matnullspacenotequal(A,B)
-          use petscmatdefdummy
+          use petscmatdefdummy, only: tMatNullSpace
+          implicit none
           logical matnullspacenotequal
           type(tMatNullSpace), intent(in) :: A,B
           matnullspacenotequal = (A%v .ne. B%v)
         end function
 
         function matnullspaceequals(A,B)
-          use petscmatdefdummy
+          use petscmatdefdummy, only: tMatNullSpace
+          implicit none
           logical matnullspaceequals
           type(tMatNullSpace), intent(in) :: A,B
           matnullspaceequals = (A%v .eq. B%v)
