@@ -512,7 +512,7 @@ class Configure(config.base.Configure):
     body14 = """
           constexpr std::complex<double> I(0.0,1.0);
           auto lambda = [](auto x, auto y) {return x + y;};
-          return lambda(3,4);
+          return lambda(3,4) + (int)std::real(I);
           """
     self.setCompilers.saveLog()
     self.setCompilers.pushLanguage(language)
