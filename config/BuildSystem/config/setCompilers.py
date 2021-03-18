@@ -840,11 +840,11 @@ class Configure(config.base.Configure):
       yield self.argDB['HIPC']
       raise RuntimeError('HIP compiler you provided with -HIPC='+self.argDB['HIPC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'with-hip-dir' in self.argDB:
-      hipPath = os.path.join(self.argDB['with-hip-dir'], 'bin','hipc')
+      hipPath = os.path.join(self.argDB['with-hip-dir'], 'bin','hipcc')
       yield hipPath
     else:
-      yield 'hipc'
-      yield os.path.join('opt','rocm','bin','hipc')
+      yield 'hipcc'
+      yield os.path.join('opt','rocm','bin','hipcc')
     return
 
   def checkHIPCompiler(self):
@@ -868,7 +868,7 @@ class Configure(config.base.Configure):
             if 'release' in nvccReleaseLine:
               self.compilerVersionCUDA = re.split('release',nvccReleaseLine)[1]
             else:
-              raise RuntimeError('Error: Could not determine CUDA version from hipc')
+              raise RuntimeError('Error: Could not determine CUDA version from HIPC')
           else:
             self.compilerVersionHIP = compilerVersion[0]
           break
