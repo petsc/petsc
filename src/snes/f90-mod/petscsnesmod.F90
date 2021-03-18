@@ -3,20 +3,20 @@
         use petsckspdef
 #include <../src/snes/f90-mod/petscsnes.h>
 #include <../src/snes/f90-mod/petscsnesfas.h>
-        end module
+        end module petscsnesdefdummy
 
         module petscsnesdef
         use petscsnesdefdummy
         interface operator(.ne.)
           function snesnotequal(A,B)
-            use petscsnesdefdummy
+            import tSNES
             logical snesnotequal
             type(tSNES), intent(in) :: A,B
           end function
         end interface operator (.ne.)
         interface operator(.eq.)
           function snesequals(A,B)
-            use petscsnesdefdummy
+            import tSNES
             logical snesequals
             type(tSNES), intent(in) :: A,B
           end function
@@ -24,14 +24,14 @@
         end module
 
         function snesnotequal(A,B)
-          use petscsnesdefdummy
+          use petscsnesdefdummy, only: tSNES
           logical snesnotequal
           type(tSNES), intent(in) :: A,B
           snesnotequal = (A%v .ne. B%v)
         end function
 
         function snesequals(A,B)
-          use petscsnesdefdummy
+          use petscsnesdefdummy, only: tSNES
           logical snesequals
           type(tSNES), intent(in) :: A,B
           snesequals = (A%v .eq. B%v)

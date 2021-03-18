@@ -1,6 +1,6 @@
       Interface
        subroutine DMGetLabel(d,str,l,ierr)
-          use petscdmdef
+          import tDM,tDMLabel
           DM,             intent(in)  :: d
           character(*),   intent(in)  :: str
           DMLabel,        intent(out) :: l
@@ -9,7 +9,7 @@
       end Interface
       Interface
        subroutine DMGetLabelSize(d,str,l,ierr)
-          use petscdmdef
+          import tDM
           DM,             intent(in)  :: d
           character(*),   intent(in)  :: str
           PetscInt,       intent(out) :: l
@@ -18,7 +18,7 @@
       end Interface
       Interface
        subroutine DMGetLabelValue(d,str,p,v,ierr)
-          use petscdmdef
+          import tDM
           DM,             intent(in)  :: d
           character(*),   intent(in)  :: str
           PetscInt,       intent(in)  :: p
@@ -28,8 +28,7 @@
       end Interface
       Interface
        subroutine DMGetLabelIdIS(d,str,i,ierr)
-          use petscdmdef
-          use petscisdef
+          import tDM,tIS
           DM,             intent(in)  :: d
           character(*),   intent(in)  :: str
           IS,             intent(out) :: i
@@ -38,7 +37,7 @@
       end Interface
       Interface
        subroutine DMSetLabelValue(d,str,p,v,ierr)
-          use petscdmdef
+          import tDM
           DM,             intent(in)  :: d
           character(*),   intent(in)  :: str
           PetscInt,       intent(in)  :: p,v

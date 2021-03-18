@@ -14,28 +14,28 @@
 
       Interface DMDAVecGetArrayF90
         Subroutine DMDAVecGetArrayF901(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecGetArrayF902(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecGetArrayF903(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:,:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecGetArrayF904(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:,:,:)
@@ -45,28 +45,28 @@
 
       Interface DMDAVecRestoreArrayF90
         Subroutine DMDAVecRestoreArrayF901(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecRestoreArrayF902(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecRestoreArrayF903(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:,:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecRestoreArrayF904(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:,:,:)
@@ -76,28 +76,28 @@
 
       Interface DMDAVecGetArrayReadF90
         Subroutine DMDAVecGetArrayReadF901(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecGetArrayReadF902(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecGetArrayReadF903(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:,:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecGetArrayReadF904(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:,:,:)
@@ -107,28 +107,28 @@
 
       Interface DMDAVecRestoreArrayReadF90
         Subroutine DMDAVecRestoreArrayReadF901(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecRestoreArrayReadF902(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecRestoreArrayReadF903(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:,:)
           PetscErrorCode ierr
         End Subroutine
         Subroutine DMDAVecRestoreArrayReadF904(da1, v,d1,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM da1
           Vec v
           PetscScalar,pointer :: d1(:,:,:,:)
@@ -138,7 +138,7 @@
 
       Interface DMDACreate1d
         Subroutine DMDACreate1d(a,b,c,d,e,f,g,z)
-          use petscdmdef
+          import tDM
           MPI_Comm a
           DMBoundaryType b
           PetscInt c,d,e,f(*)
@@ -149,7 +149,7 @@
 
       Interface DMDACreate2d
         Subroutine DMDACreate2d(a,b,c,d,e,f,g,h,i,j,k,l,m,z)
-          use petscdmdef
+          import tDM
           MPI_Comm a
           DMBoundaryType b,c
           DMDAStencilType d
@@ -161,7 +161,7 @@
 
       Interface DMDACreate3d
       Subroutine DMDACreate3d(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,z)
-          use petscdmdef
+          import tDM
           MPI_Comm a
           DMBoundaryType b,c,d
           DMDAStencilType e
@@ -174,7 +174,7 @@
 
       Interface DMDAGetNeighbors
         Subroutine DMDAGetNeighbors(a,b,z)
-          use petscdmdef
+          import tDM
           DM a
           PetscMPIInt b(*)
           PetscErrorCode z
@@ -183,7 +183,7 @@
 
       Interface DMDAGetOwnershipRange
         Subroutine DMDAGetOwnershipRange(a,b,c,d,z)
-          use petscdmdef
+          import tDM
           DM a
           PetscInt b(*), c(*), d(*)
           PetscErrorCode z
@@ -192,7 +192,7 @@
 
       Interface DMDAGetRefinementFactor
         Subroutine DMDAGetRefinementFactor(a,b,c,d,z)
-          use petscdmdef
+          import tDM
           DM a
           PetscInt b(*), c(*), d(*)
           PetscErrorCode z
@@ -201,7 +201,7 @@
 
       Interface DMDASetFieldName
         Subroutine DMDASetFieldName(a,b,c,z)
-          use petscdmdef
+          import tDM
           DM a
           PetscInt b
           character(*) c
@@ -211,7 +211,7 @@
 
       Interface DMDAGetFieldName
         Subroutine DMDAGetFieldName(a,b,c,z)
-          use petscdmdef
+          import tDM
           DM a
           PetscInt b
           character(*) c
@@ -221,7 +221,7 @@
 
       Interface DMDASetAOType
         Subroutine DMDASetAOType(a,b,z)
-          use petscdmdef
+          import tDM
           DM a
           character(*) b
           PetscErrorCode z
@@ -230,7 +230,7 @@
 
       Interface DMDAGetScatter
         Subroutine DMDAGetScatter(a,b,c,z)
-          use petscdmdef
+          import tDM,tVecScatter
           DM a
           VecScatter b,c
           PetscErrorCode z
@@ -239,7 +239,7 @@
 
       Interface DMDAGetCorners
         Subroutine DMDAGetCorners000000(a,x,y,z,m,n,p,ierr)
-         use petscdmdef
+         import tDM
          DM a
          PetscInt, intent(out) :: x,y,z
          PetscInt, intent(out) :: m,n,p
@@ -247,7 +247,7 @@
         End Subroutine DMDAGetCorners000000
 
         Subroutine DMDAGetCorners001001(a,x,y,z,m,n,p,ierr)
-         use petscdmdef
+         import tDM
          DM a
          PetscInt, intent(out) :: x,y
          PetscInt              :: m,n
@@ -256,7 +256,7 @@
         End Subroutine DMDAGetCorners001001
 
         Subroutine DMDAGetCorners011011(a,x,y,z,m,n,p,ierr)
-         use petscdmdef
+         import tDM
          DM a
          PetscInt, intent(out) :: x
          PetscInt, intent(out) :: m
@@ -268,7 +268,7 @@
 
       Interface DMDAGetGhostCorners
         Subroutine DMDAGetGhostCorners000000(a,x,y,z,m,n,p,ierr)
-         use petscdmdef
+         import tDM
          DM a
          PetscInt, intent(out) :: x,y,z
          PetscInt, intent(out) :: m,n,p
@@ -276,7 +276,7 @@
         End Subroutine DMDAGetGhostCorners000000
 
         Subroutine DMDAGetGhostCorners001001(a,x,y,z,m,n,p,ierr)
-         use petscdmdef
+         import tDM
          DM a
          PetscInt, intent(out) :: x,y
          PetscInt              :: m,n
@@ -285,7 +285,7 @@
         End Subroutine DMDAGetGhostCorners001001
 
         Subroutine DMDAGetGhostCorners011011(a,x,y,z,m,n,p,ierr)
-         use petscdmdef
+         import tDM
          DM a
          PetscInt, intent(out) :: x
          PetscInt, intent(out) :: m

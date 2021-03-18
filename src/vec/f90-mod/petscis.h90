@@ -5,7 +5,6 @@
 
       Interface
         Subroutine PetscLayoutFindOwner(a,b,z)
-          use petscisdef
           PetscLayout a
           PetscMPIInt b
           PetscErrorCode  z
@@ -14,7 +13,6 @@
 
       Interface
         Subroutine PetscLayoutFindOwnerIndex(a,b,c,z)
-          use petscisdef
           PetscLayout a
           PetscMPIInt b
           PetscInt c
@@ -24,7 +22,7 @@
 
       Interface
         Subroutine ISGetIndicesF90(i,array,ierr)
-          use petscisdef
+          import tIS
           PetscInt, pointer :: array(:)
           PetscErrorCode  ierr
          IS       i
@@ -33,7 +31,7 @@
 
       Interface
         Subroutine ISRestoreIndicesF90(i,array,ierr)
-          use petscisdef
+          import tIS
           PetscInt, pointer :: array(:)
           PetscErrorCode ierr
          IS      i
@@ -42,7 +40,6 @@
 
       Interface
         Subroutine ISLocalToGlobalMappingGetIndicesF90(i,array,ierr)
-          use petscisdef
           PetscInt, pointer :: array(:)
           PetscErrorCode  ierr
          ISLocalToGlobalMapping       i
@@ -51,7 +48,6 @@
 
       Interface
         Subroutine ISLocalToGlobalMappingRestoreIndicesF90(i,array,ierr)
-          use petscisdef
           PetscInt, pointer :: array(:)
           PetscErrorCode  ierr
          ISLocalToGlobalMapping       i
@@ -62,7 +58,7 @@
 
       Interface
         Subroutine ISBlockGetIndicesF90(i,array,ierr)
-          use petscisdef
+          import tIS
           PetscInt, pointer :: array(:)
           PetscErrorCode  ierr
          IS       i
@@ -72,7 +68,7 @@
 
       Interface
         Subroutine ISBlockRestoreIndicesF90(i,array,ierr)
-          use petscisdef
+          import tIS
           PetscInt, pointer :: array(:)
           PetscErrorCode ierr
          IS      i
@@ -82,7 +78,7 @@
 ! ------------------------------------------------------
       Interface
         Subroutine ISColoringGetISF90(ic,n,isa,ierr)
-          use petscisdef
+          import tIS,tISColoring
           IS, pointer :: isa(:)
           PetscInt     n
           PetscErrorCode ierr
@@ -92,7 +88,7 @@
 
       Interface
         Subroutine ISColoringRestoreISF90(ic,isa,ierr)
-          use petscisdef
+          import tIS,tISColoring
           IS, pointer :: isa(:)
           PetscErrorCode     ierr
           ISColoring ic
@@ -101,7 +97,7 @@
 
       Interface
         Subroutine PetscSectionGetConstraintIndicesF90(s,p,a,ierr)
-          use petscisdef
+          import tPetscSection
           PetscInt p
           PetscInt, pointer :: a(:)
           PetscErrorCode  ierr
@@ -111,7 +107,7 @@
 
       Interface
         Subroutine PetscSectionRestoreConstraintIndicesF90(s,p,a,ierr)
-          use petscisdef
+          import tPetscSection
           PetscInt p
           PetscInt, pointer :: a(:)
           PetscErrorCode  ierr
@@ -121,7 +117,7 @@
 
       Interface
         Subroutine PetscSectionSetConstraintIndicesF90(s,p,a,ierr)
-          use petscisdef
+          import tPetscSection
           PetscInt p
           PetscInt, pointer :: a(:)
           PetscErrorCode  ierr
@@ -131,7 +127,7 @@
 
       Interface
       subroutine ISSetType(a,b,z)
-      use petscisdef
+       import tIS
        IS a
        character(*) b
        integer z
@@ -140,7 +136,7 @@
 
       Interface
       subroutine ISView(a,b,z)
-      use petscisdef
+       import tIS,tPetscViewer
        IS a
        PetscViewer b
        PetscErrorCode z

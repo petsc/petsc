@@ -5,7 +5,7 @@
 #define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
       Interface
         Subroutine MatFDColoringGetPerturbedColumnsF90(i,array,ierr)
-          use petscmatdef
+          import tMatFDColoring
           PetscInt, pointer :: array(:)
           PetscErrorCode  ierr
          MatFDColoring       i
@@ -14,7 +14,7 @@
 
       Interface
         Subroutine MatFDColoringRestorePerturbedColumnsF90(i,array,ierr)
-          use petscmatdef
+          import tMatFDColoring
           PetscInt, pointer :: array(:)
           PetscErrorCode ierr
          MatFDColoring      i
@@ -24,7 +24,7 @@
       Interface
       subroutine MatCreateMPIAIJWithSplitArrays(a,b,c,d,e,f,g,h,i,j,k,l,&
      &z)
-       use petscmatdef
+       import tMat
        MPI_Comm a ! MPI_Comm
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
@@ -43,7 +43,7 @@
 
       interface MatNullSpaceCreate
       subroutine MatNullSpaceCreate1(a,b,c,d,e,z)
-      use petscmatdef
+       import tVec,tMatNullSpace
        MPI_Comm a
        PetscBool b
        PetscInt c
@@ -52,7 +52,7 @@
        PetscErrorCode z
        end subroutine
       subroutine MatNullSpaceCreate0(a,b,c,d,e,z)
-      use petscmatdef
+       import tVec,tMatNullSpace
        MPI_Comm a
        PetscBool b
        PetscInt c
@@ -64,21 +64,21 @@
 
       interface MatGetSize
       subroutine MatGetSize00(a,b,c,z)
-      use petscmatdef
+       import tMat
        Mat a
        PetscInt b
        PetscInt c
        PetscErrorCode z
        end subroutine
       subroutine MatGetSize10(a,b,c,z)
-      use petscmatdef
+       import tMat
        Mat a
        PetscInt b(*)
        PetscInt c
        PetscErrorCode z
        end subroutine
       subroutine MatGetSize01(a,b,c,z)
-      use petscmatdef
+       import tMat
        Mat a
        PetscInt b
        PetscInt c(*)
@@ -88,21 +88,21 @@
 
       interface MatGetLocalSize
       subroutine MatGetLocalSize00(a,b,c,z)
-      use petscmatdef
+       import tMat
        Mat a
        PetscInt b
        PetscInt c
        PetscErrorCode z
        end subroutine
       subroutine MatGetLocalSize10(a,b,c,z)
-      use petscmatdef
+       import tMat
        Mat a
        PetscInt b(*)
        PetscInt c
        PetscErrorCode z
        end subroutine
       subroutine MatGetLocalSize01(a,b,c,z)
-      use petscmatdef
+       import tMat
        Mat a
        PetscInt b
        PetscInt c(*)
@@ -112,7 +112,7 @@
 
         Interface
         subroutine MatCreateMPIAIJ(a,b,c,d,e,f,g,h,i,j,z)
-          use petscmatdef
+          import tMat
           MPI_Comm a
           PetscInt b
           PetscInt c
@@ -127,7 +127,7 @@
         end subroutine
 
         subroutine MatCreateSeqAIJ(a,b,c,d,e,f,z)
-          use petscmatdef
+          import tMat
           MPI_Comm a
           PetscInt b
           PetscInt c
@@ -138,7 +138,7 @@
         end subroutine
 
         subroutine MatSeqAIJSetPreallocation(a,b,c,z)
-          use petscmatdef
+          import tMat
           Mat a
           PetscInt b
           PetscInt c(*)
@@ -146,7 +146,7 @@
         end subroutine
 
         subroutine MatSeqBAIJSetPreallocation(a,b,c,d,z)
-          use petscmatdef
+          import tMat
           Mat a
           PetscInt b,c
           PetscInt d(*)
@@ -154,7 +154,7 @@
         end subroutine
 
         subroutine MatMPIAIJSetPreallocation(a,b,c,d,e,z)
-          use petscmatdef
+          import tMat
           Mat a
           PetscInt b
           PetscInt c(*)
@@ -164,7 +164,7 @@
         end subroutine
 
         subroutine MatXAIJSetPreallocationb(a,b,c,d,e,f,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -175,7 +175,7 @@
         end subroutine
 
         subroutine MatSetValue(myMat,i,j,va,mode,ierr)
-          use petscmatdef
+          import tMat
           Mat :: myMat
           PetscInt :: i,j
           PetscScalar :: va
@@ -184,7 +184,7 @@
         end subroutine
 
         subroutine MatSetValueLocal(myMat,i,j,va,mode,ierr)
-          use petscmatdef
+          import tMat
           Mat :: myMat
           PetscInt :: i,j
           PetscScalar :: va
@@ -198,7 +198,7 @@
         ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars
         subroutine MatGetValues0(a,b,c,d,e,f,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -208,7 +208,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatGetValuesnn1(a,b,c,d,e,f,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -218,7 +218,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatGetValuesnnnn(a,b,c,d,e,f,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -228,7 +228,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatGetValues11(a,b,c,d,e,f,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -238,7 +238,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatGetValues1n(a,b,c,d,e,f,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -248,7 +248,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatGetValuesn1(a,b,c,d,e,f,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -264,7 +264,7 @@
         ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValues0(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -275,7 +275,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesnn1(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -286,7 +286,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesnnnn(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -297,7 +297,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValues11(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -308,7 +308,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValues1n(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -319,7 +319,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesn1(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -335,7 +335,7 @@
         ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValuesLocal0(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -346,7 +346,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocal11(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -357,7 +357,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocal11nn(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -368,7 +368,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocal111(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -379,7 +379,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocal1n(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -390,7 +390,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesLocaln1(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -406,7 +406,7 @@
         ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValuesBlockedLocal0(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -417,7 +417,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedLocal11(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -428,7 +428,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedLocal111(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -439,7 +439,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedLocal1n(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -450,7 +450,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedLocaln1(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -466,7 +466,7 @@
         ! picky Fortran requires separate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValuesBlocked2(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -477,7 +477,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlocked0(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -488,7 +488,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlocked11(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -499,7 +499,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlocked111(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -510,7 +510,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlocked1n(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -521,7 +521,7 @@
           PetscErrorCode z
         end subroutine
         subroutine MatSetValuesBlockedn1(a,b,c,d,e,f,g,z)
-          use petscmatdef
+          import tMat
           Mat a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -535,7 +535,7 @@
 
       Interface
         Subroutine MatGetRow(v,row,ncols,cols,vals,ierr)
-          use petscmatdef
+          import tMat
           PetscInt cols(*)
           PetscInt  row,ncols
           PetscScalar vals(*)
@@ -546,7 +546,7 @@
 
       Interface
         Subroutine MatRestoreRow(v,row,ncols,cols,vals,ierr)
-          use petscmatdef
+          import tMat
           PetscInt  cols(*)
           PetscInt  row,ncols
           PetscScalar vals(*)
@@ -557,7 +557,7 @@
 
       Interface
         Subroutine MatGetRowIJF90(v,sh,sym,bl,n,ia,ja,d,ierr)
-          use petscmatdef
+          import tMat
           PetscInt, pointer :: ia(:), ja(:)
           PetscInt  n,sh
           PetscBool  sym,bl,d
@@ -568,7 +568,7 @@
 
       Interface
         Subroutine MatRestoreRowIJF90(v,s,sy,b,n,ia,ja,d,ierr)
-          use petscmatdef
+          import tMat
           PetscInt, pointer :: ia(:), ja(:)
           PetscInt  n,s
           PetscBool  sy,b,d
@@ -579,7 +579,7 @@
 
       Interface
         Subroutine MatDenseGetArrayF90(v,array,ierr)
-          use petscmatdef
+          import tMat
           PetscScalar, pointer :: array(:,:)
           PetscErrorCode ierr
           Mat     v
@@ -588,7 +588,7 @@
 
       Interface
         Subroutine MatDenseRestoreArrayF90(v,array,ierr)
-          use petscmatdef
+          import tMat
           PetscScalar, pointer :: array(:,:)
           PetscErrorCode ierr
           Mat     v
@@ -597,7 +597,7 @@
 
       Interface
         Subroutine MatDenseGetColumnF90(v,col,array,ierr)
-          use petscmatdef
+          import tMat
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           Mat     v
@@ -607,7 +607,7 @@
 
       Interface
         Subroutine MatDenseRestoreColumnF90(v,array,ierr)
-          use petscmatdef
+          import tMat
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           Mat     v
@@ -616,7 +616,7 @@
 
       Interface
         Subroutine MatSeqAIJGetArrayF90(v,array,ierr)
-          use petscmatdef
+          import tMat
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           Mat     v
@@ -626,7 +626,7 @@
 
       Interface
         Subroutine MatSeqAIJRestoreArrayF90(v,array,ierr)
-          use petscmatdef
+          import tMat
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           Mat     v
@@ -635,7 +635,7 @@
 
       Interface
         Subroutine MatGetGhostsF90(v,array,ierr)
-          use petscmatdef
+          import tMat
           PetscInt, pointer :: array(:)
           PetscErrorCode ierr
           Mat     v
@@ -644,7 +644,7 @@
 
       Interface
          Subroutine MatGetInfo(v, flag, info ,ierr)
-         use petscmatdef
+         import tMat
          Mat  v
          MatInfoType flag
 #include "../src/mat/f90-mod/petscmatinfosize.h"
@@ -655,7 +655,7 @@
 
       Interface
          subroutine MatLUFactor(v, row, col, info ,ierr)
-         use petscmatdef
+         import tMat,tIS
          Mat  v
          IS row
          IS col
@@ -667,7 +667,7 @@
 
       Interface
          subroutine MatILUFactor(v, row, col, info ,ierr)
-         use petscmatdef
+         import tMat,tIS
          Mat  v
          IS row
          IS col
@@ -679,7 +679,7 @@
 
       Interface
          subroutine MatLUFactorSymbolic(fact, v, row, col, info ,ierr)
-         use petscmatdef
+         import tMat,tIS
          Mat  fact
          Mat  v
          IS row
@@ -692,7 +692,7 @@
 
       Interface
          subroutine MatLUFactorNumeric(fact, v, info ,ierr)
-         use petscmatdef
+         import tMat
          Mat  fact
          Mat  v
 #include "../src/mat/f90-mod/petscmatfactorinfosize.h"
@@ -703,7 +703,7 @@
 
       Interface
          subroutine MatCholeskyFactor(v, perm, info ,ierr)
-         use petscmatdef
+         import tMat,tIS
          Mat  v
          IS perm
 #include "../src/mat/f90-mod/petscmatfactorinfosize.h"
@@ -714,7 +714,7 @@
 
       Interface
          subroutine MatCholeskyFactorSymbolic(fact,v,perm,info,ierr)
-         use petscmatdef
+         import tMat,tIS
          Mat  fact
          Mat  v
          IS perm
@@ -726,7 +726,7 @@
 
       Interface
          subroutine MatCholeskyFactorNumeric(fact, v, info ,ierr)
-         use petscmatdef
+         import tMat
          Mat  fact
          Mat  v
 #include "../src/mat/f90-mod/petscmatfactorinfosize.h"
@@ -737,7 +737,7 @@
 
       Interface
          subroutine MatILUFactorSymbolic(fact,v,row,col,info,ierr)
-         use petscmatdef
+         import tMat,tIS
          Mat  fact
          Mat  v
          IS row
@@ -750,7 +750,7 @@
 
       Interface
          subroutine MatICCFactorSymbolic(fact, v, perm, info ,ierr)
-         use petscmatdef
+         import tMat,tIS
          Mat  fact
          Mat  v
          IS perm
@@ -762,7 +762,7 @@
 
       Interface
          subroutine MatICCFactor(v, row, info ,ierr)
-         use petscmatdef
+         import tMat,tIS
          Mat  v
          IS row
 #include "../src/mat/f90-mod/petscmatfactorinfosize.h"
@@ -773,7 +773,7 @@
 
       Interface
          subroutine MatGetGetNullSpace(A,n,ierr)
-         use petscmatdef
+         import tMat,tMatNullSpace
          Mat  A
          MatNullSpace n
          PetscErrorCode ierr
@@ -790,7 +790,7 @@
 
       Interface
       subroutine MatSetType(a,b,z)
-      use petscmatdef
+      import tMat
        Mat a
        character(*) b
        PetscErrorCode z
@@ -799,7 +799,7 @@
 
       Interface
       subroutine MatView(a,b,z)
-      use petscmatdef
+      import tMat,tPetscViewer
        Mat a
        PetscViewer b
        PetscErrorCode z
@@ -808,7 +808,7 @@
 
       Interface MatZeroRowsLocal
       subroutine MatZeroRowsLocal0(a,b,c,d,e,f,z)
-      use petscmatdef
+      import tMat,tVec
        Mat a ! Mat
        PetscInt b ! PetscInt
        PetscInt c (*) ! PetscInt
@@ -818,7 +818,7 @@
        PetscErrorCode z
        end subroutine
       subroutine MatZeroRowsLocal1(a,b,c,d,e,f,z)
-      use petscmatdef
+      import tMat,tVec
        Mat a ! Mat
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
@@ -831,27 +831,27 @@
 
       interface MatGetOwnershipRange
       subroutine MatGetOwnershipRange00(a,b,c,ierr)
-       use petscmatdef
+       import tMat
        Mat,intent(in) :: a ! Mat
        PetscInt :: b,c ! PetscInt
        PetscErrorCode,intent(out) :: ierr
       end subroutine
       subroutine MatGetOwnershipRange10(a,b,c,ierr)
-       use petscmatdef
+       import tMat
        Mat,intent(in) :: a ! Mat
        PetscInt,dimension(:) :: b ! PetscInt
        PetscInt              :: c ! PetscInt
        PetscErrorCode,intent(out) :: ierr
       end subroutine
       subroutine MatGetOwnershipRange01(a,b,c,ierr)
-       use petscmatdef
+       import tMat
        Mat,intent(in) :: a ! Mat
        PetscInt              :: b ! PetscInt
        PetscInt,dimension(:) :: c ! PetscInt
        PetscErrorCode,intent(out) :: ierr
       end subroutine
       subroutine MatGetOwnershipRange11(a,b,c,ierr)
-       use petscmatdef
+       import tMat
        Mat,intent(in) :: a ! Mat
        PetscInt,dimension(:) :: b,c ! PetscInt
        PetscErrorCode,intent(out) :: ierr
@@ -860,7 +860,7 @@
 
       interface
       subroutine MatGetFactor(m,t,ft,f,ierr)
-      use petscmatdef
+      import tMat
        Mat, intent(in) ::  m
        character(*), intent(in) :: t
        MatFactorType,intent(in) :: ft
@@ -869,33 +869,30 @@
       end subroutine
 
       subroutine MatPartitioningCreate(a,b,ierr)
-      use petscmatdef
        MPI_Comm, intent(in) :: a ! MPI_comm
        MatPartitioning, intent(out) ::  b
        PetscErrorCode,intent(out) :: ierr
       end subroutine
 
       subroutine MatPartitioningDestroy(a,ierr)
-      use petscmatdef
        MatPartitioning, intent(in) ::  a
        PetscErrorCode,intent(out) :: ierr
       end subroutine
 
       subroutine MatPartitioningSetAdjacency(a,b,ierr)
-      use petscmatdef
+      import tMat
        MatPartitioning, intent(in) ::  a
        Mat, intent(in) ::  b
        PetscErrorCode,intent(out) :: ierr
       end subroutine
 
       subroutine MatPartitioningSetFromOptions(a,ierr)
-      use petscmatdef
        MatPartitioning, intent(in) ::  a
        PetscErrorCode,intent(out) :: ierr
       end subroutine
 
       subroutine MatPartitioningApply(a,b,ierr)
-      use petscmatdef
+       import tIS
        MatPartitioning, intent(in) ::  a
        IS, intent(out) :: b
        PetscErrorCode :: ierr

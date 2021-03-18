@@ -2,7 +2,7 @@
 
       Interface
       subroutine KSPSetType(a,b,z)
-      use petsckspdef
+      import tKSP
        KSP a
        character(*) b
        PetscErrorCode z
@@ -11,7 +11,7 @@
 
       Interface
       subroutine KSPView(a,b,z)
-      use petsckspdef
+      import tKSP,tPetscViewer
        KSP a
        PetscViewer b
        PetscErrorCode z
@@ -20,7 +20,7 @@
 
       Interface PCBJacobiGetSubKSP
       subroutine PCBJacobiGetSubKSP1(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
@@ -28,7 +28,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCBJacobiGetSubKSP2(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
@@ -39,7 +39,7 @@
 
       Interface PCASMGetSubKSP
       subroutine PCASMGetSubKSP1(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
@@ -47,7 +47,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCASMGetSubKSP2(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
@@ -55,7 +55,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCASMGetSubKSP3(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b(*) ! PetscInt
        PetscInt c ! PetscInt
@@ -63,7 +63,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCASMGetSubKSP4(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b(*) ! PetscInt
        PetscInt c ! PetscInt
@@ -71,7 +71,7 @@
        PetscErrorCode z
       end subroutine
      subroutine PCASMGetSubKSP5(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c(*) ! PetscInt
@@ -79,7 +79,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCASMGetSubKSP6(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c(*) ! PetscInt
@@ -87,7 +87,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCASMGetSubKSP7(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b(*) ! PetscInt
        PetscInt c(*) ! PetscInt
@@ -95,7 +95,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCASMGetSubKSP8(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b(*) ! PetscInt
        PetscInt c(*) ! PetscInt
@@ -106,7 +106,7 @@
 
       Interface PCGASMGetSubKSP
       subroutine PCGASMGetSubKSP1(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
@@ -114,7 +114,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCGASMGetSubKSP2(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c ! PetscInt
@@ -122,7 +122,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCGASMGetSubKSP3(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b(*) ! PetscInt
        PetscInt c ! PetscInt
@@ -130,7 +130,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCGASMGetSubKSP4(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b(*) ! PetscInt
        PetscInt c ! PetscInt
@@ -138,7 +138,7 @@
        PetscErrorCode z
       end subroutine
      subroutine PCGASMGetSubKSP5(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c(*) ! PetscInt
@@ -146,7 +146,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCGASMGetSubKSP6(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b ! PetscInt
        PetscInt c(*) ! PetscInt
@@ -154,7 +154,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCGASMGetSubKSP7(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b(*) ! PetscInt
        PetscInt c(*) ! PetscInt
@@ -162,7 +162,7 @@
        PetscErrorCode z
       end subroutine
       subroutine PCGASMGetSubKSP8(a,b,c,d,z)
-       use petsckspdef
+       import tKSP,tPC
        PC a ! PC
        PetscInt b(*) ! PetscInt
        PetscInt c(*) ! PetscInt

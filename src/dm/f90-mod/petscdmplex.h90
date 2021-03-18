@@ -1,7 +1,7 @@
 
       Interface
         Subroutine DMPlexGetCone(m,p,cone,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     p
           PetscInt, pointer :: cone(:)
           PetscErrorCode ierr
@@ -11,7 +11,7 @@
 
       Interface
         Subroutine DMPlexRestoreCone(m,p,cone,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     p
           PetscInt, pointer :: cone(:)
           PetscErrorCode ierr
@@ -21,7 +21,7 @@
 
       Interface
         Subroutine DMPlexGetConeOrientation(m,p,coneOrient,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     p
           PetscInt, pointer :: coneOrient(:)
           PetscErrorCode ierr
@@ -31,7 +31,7 @@
 
       Interface
         Subroutine DMPlexRestoreConeOrientation(m,p,coneOrient,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     p
           PetscInt, pointer :: coneOrient(:)
           PetscErrorCode ierr
@@ -41,7 +41,7 @@
 
       Interface
         Subroutine DMPlexGetSupport(m,p,support,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     p
           PetscInt, pointer :: support(:)
           PetscErrorCode ierr
@@ -51,7 +51,7 @@
 
       Interface
         Subroutine DMPlexRestoreSupport(m,p,support,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     p
           PetscInt, pointer :: support(:)
           PetscErrorCode ierr
@@ -61,7 +61,7 @@
 
       Interface
         Subroutine DMPlexGetTransitiveClosure(m,p,useCone,points,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     p
           PetscBool    useCone
           PetscInt, pointer :: points(:)
@@ -72,7 +72,7 @@
 
       Interface
         Subroutine DMPlexRestoreTransitiveClosure(m,p,uC,points,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     p
           PetscBool    uC
           PetscInt, pointer :: points(:)
@@ -83,7 +83,7 @@
 
       Interface
         Subroutine DMPlexGetJoin(m,numPoints,points,join,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     numPoints
           PetscInt, pointer :: points(:)
           PetscInt, pointer :: join(:)
@@ -94,7 +94,7 @@
 
       Interface
         Subroutine DMPlexGetFullJoin(m,numPoints,points,join,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     numPoints
           PetscInt, pointer :: points(:)
           PetscInt, pointer :: join(:)
@@ -105,7 +105,7 @@
 
       Interface
         Subroutine DMPlexRestoreJoin(m,numPoints,points,join,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     numPoints
           PetscInt, pointer :: points(:)
           PetscInt, pointer :: join(:)
@@ -116,7 +116,7 @@
 
       Interface
         Subroutine DMPlexGetMeet(m,numPoints,points,meet,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     numPoints
           PetscInt, pointer :: points(:)
           PetscInt, pointer :: meet(:)
@@ -127,7 +127,7 @@
 
       Interface
         Subroutine DMPlexGetFullMeet(m,numPoints,points,meet,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     numPoints
           PetscInt, pointer :: points(:)
           PetscInt, pointer :: meet(:)
@@ -138,7 +138,7 @@
 
       Interface
         Subroutine DMPlexRestoreMeet(m,numPoints,points,meet,ierr)
-          use petscdmdef
+          import tDM
           PetscInt     numPoints
           PetscInt, pointer :: points(:)
           PetscInt, pointer :: meet(:)
@@ -149,7 +149,7 @@
 
       Interface
         Subroutine DMPlexVecGetClosure(m,section,v,point,values,ierr)
-          use petscdmdef
+          import tDM,tPetscSection,tVec
           PetscSection section
           Vec     v
           PetscInt     point
@@ -161,7 +161,7 @@
 
       Interface
         Subroutine DMPlexVecRestoreClosure(m,section,v,point,vs,ierr)
-          use petscdmdef
+          import tDM,tPetscSection,tVec
           PetscSection section
           Vec     v
           PetscInt     point
@@ -173,7 +173,7 @@
 
       Interface
         Subroutine DMPlexVecSetClosure(m,sec,v,point,vs,mode,ierr)
-          use petscdmdef
+          import tDM,tPetscSection,tVec
           PetscSection sec
           Vec     v
           PetscInt     point
@@ -186,7 +186,7 @@
 
       Interface
         Subroutine DMPlexMatSetClosure(m,s,gS,A,p,v,mode,ierr)
-          use petscdmdef
+          import tDM,tPetscSection,tMat
           PetscSection s
           PetscSection gS
           Mat     A
@@ -200,7 +200,7 @@
 
       Interface
         Subroutine DMPlexCreateSection(m,l,nC,nD,nB,bF,bC,bP,pm,sc,e)
-          use petscdmdef
+          import tDM,tPetscSection,tIS,tDMLabel
           PetscSection sc
           PetscInt     nB
           DMLabel,  pointer :: l(:)
@@ -217,7 +217,7 @@
 
       Interface
         Subroutine DMPlexComputeCellGeometryAffineFEM(m,c,v0,J,iJ,dJ,er)
-          use petscdmdef
+          import tDM
           PetscInt   c
           PetscReal, pointer :: v0(:)
           PetscReal, pointer :: J(:)
@@ -230,7 +230,7 @@
 
       Interface
         Subroutine DMPlexComputeCellGeometryFEM(m,c,fe,v0,J,iJ,dJ,er)
-          use petscdmdef
+          import tDM
           PetscInt   c
           PetscReal, pointer :: v0(:)
           PetscReal, pointer :: J(:)
@@ -244,7 +244,7 @@
 
       Interface
         Subroutine DMPlexComputeCellGeometryFVM(m,cell,vol,ct,nm,ierr)
-          use petscdmdef
+          import tDM
           PetscInt   cell
           PetscReal  vol
           PetscReal, pointer :: ct(:)
@@ -256,7 +256,7 @@
 
       Interface
         Subroutine DMPlexGetCellFields(m,c,x,xt,a,u,ut,v,ierr)
-          use petscdmdef
+          import tDM,tIS,tVec
           IS  c
           Vec  x, xt, a
           PetscScalar, pointer :: u(:)
@@ -269,7 +269,7 @@
 
       Interface
         Subroutine DMPlexRestoreCellFields(m,c,x,xt,a,u,ut,v,ierr)
-          use petscdmdef
+          import tDM,tIS,tVec
           IS  c
           Vec  x, xt, a
           PetscScalar, pointer :: u(:)
@@ -282,7 +282,7 @@
 
       Interface
         Subroutine DMPlexGetFaceFields(m,s,e,x,xt,f,c,g,n,uL,uR,ierr)
-          use petscdmdef
+          import tDM,tVec
           PetscInt  s, e, n
           Vec  x, xt, f, c, g
           PetscScalar, pointer :: uL(:)
@@ -294,7 +294,7 @@
 
       Interface
         Subroutine DMPlexRestoreFaceFields(m,s,e,x,xt,f,c,g,n,uL,uR,ierr)
-          use petscdmdef
+          import tDM,tVec
           PetscInt  s, e, n
           Vec  x, xt, f, c, g
           PetscScalar, pointer :: uL(:)
@@ -306,7 +306,7 @@
 
       Interface
         Subroutine DMPlexGetFaceGeometry(m,s,e,f,c,n,g,v,ierr)
-          use petscdmdef
+          import tDM,tVec
           PetscInt  s, e, n
           Vec  f, c
           PetscScalar, pointer :: g(:)
@@ -318,7 +318,7 @@
 
       Interface
         Subroutine DMPlexRestoreFaceGeometry(m,s,e,f,c,n,g,v,ierr)
-          use petscdmdef
+          import tDM,tVec
           PetscInt  s, e, n
           Vec  f, c
           PetscScalar, pointer :: g(:)
@@ -330,7 +330,7 @@
 
       Interface
         Subroutine DMPlexCreateFromFile(c,str,i,m,ierr)
-          use petscdmdef
+          import tDM
           MPI_Comm :: c
           character(len=*) :: str
           PetscBool, intent(in) :: i
@@ -341,7 +341,7 @@
 
       Interface
         Subroutine DMPlexDistribute(m,o,sf,mp,ierr)
-          use petscdmdef
+          import tDM,tPetscSF
           DM, intent(in) :: m
           PetscInt, intent(in) :: o
           PetscSF :: sf
@@ -352,7 +352,7 @@
 
       Interface
         Subroutine DMPlexCreateDefault(m,ierr)
-          use petscdmdef
+          import tDM
           DM, intent(out) :: m
           PetscErrorCode, intent(out):: ierr
         End Subroutine

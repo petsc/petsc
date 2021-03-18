@@ -2,7 +2,7 @@
         module petsctaodef
         use petsckspdef
 #include <../src/tao/f90-mod/petsctao.h>
-        end module
+        end module petsctaodef
 
         module petsctao
         use petsctaodef
@@ -11,7 +11,7 @@
         interface
 #include <../src/tao/f90-mod/ftn-auto-interfaces/petsctao.h90>
         end interface
-        end module
+        end module petsctao
 
 
 ! The all encompassing petsc module
@@ -25,7 +25,7 @@
         use petscdmlabeldef
         use petsctsdef
         use petsctaodef
-        end module
+        end module petscdef
 
         module petsc
         use petscdmda
@@ -37,4 +37,4 @@
         use petscdt
         use petscts
         use petsctao
-        end module
+        end module petsc

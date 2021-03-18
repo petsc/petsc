@@ -1,6 +1,6 @@
       Interface
       subroutine PCSetType(a,b,z)
-      use petscpcdef
+      import tPC
        PC a
        character(*) b
        PetscErrorCode z
@@ -9,7 +9,7 @@
 
       Interface
       subroutine PCView(a,b,z)
-      use petscpcdef
+      import tPC,tPetscViewer
        PC a
        PetscViewer b
        PetscErrorCode z
@@ -18,7 +18,7 @@
 
       Interface
       subroutine PCFieldSplitSetIS(a,b,c,z)
-      use petscpcdef
+      import tPC,tIS
        PC a
        character(*)  b
        IS c
@@ -28,7 +28,7 @@
 
       Interface
       subroutine PCFieldSplitGetIS(a,b,c,z)
-      use petscpcdef
+      import tPC,tIS
        PC a
        character(*)  b
        IS c

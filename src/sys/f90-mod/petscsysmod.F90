@@ -14,20 +14,20 @@
 #include <../src/sys/f90-mod/petscbag.h>
 #include <../src/sys/f90-mod/petscerror.h>
 #include <../src/sys/f90-mod/petsclog.h>
-        end module
+        end module petscsysdefdummy
 
         module petscsysdef
         use petscsysdefdummy
         interface operator(.ne.)
           function petscviewernotequal(A,B)
-            use petscsysdefdummy
+            import tPetscViewer
             logical petscviewernotequal
             type(tPetscViewer), intent(in) :: A,B
           end function
         end interface operator (.ne.)
         interface operator(.eq.)
           function petscviewerequals(A,B)
-            use petscsysdefdummy
+            import tPetscViewer
             logical petscviewerequals
             type(tPetscViewer), intent(in) :: A,B
           end function
@@ -35,14 +35,14 @@
 
         interface operator(.ne.)
         function petscrandomnotequal(A,B)
-          use petscsysdefdummy
+          import tPetscRandom
           logical petscrandomnotequal
           type(tPetscRandom), intent(in) :: A,B
         end function
         end interface operator (.ne.)
         interface operator(.eq.)
         function petscrandomequals(A,B)
-          use petscsysdefdummy
+          import tPetscRandom
           logical petscrandomequals
           type(tPetscRandom), intent(in) :: A,B
         end function
@@ -50,7 +50,6 @@
 
         Interface petscbinaryread
         subroutine petscbinaryreadcomplex(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscComplex data(*)
           PetscInt num
@@ -59,7 +58,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadreal(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscReal data(*)
           PetscInt num
@@ -68,7 +66,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadint(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscInt data(*)
           PetscInt num
@@ -77,7 +74,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadcomplex1(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscComplex data
           PetscInt num
@@ -86,7 +82,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadreal1(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscReal data
           PetscInt num
@@ -95,7 +90,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadint1(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscInt data
           PetscInt num
@@ -104,7 +98,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadcomplexcnt(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscComplex data(*)
           PetscInt num
@@ -113,7 +106,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadrealcnt(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscReal data(*)
           PetscInt num
@@ -122,7 +114,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadintcnt(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscInt data(*)
           PetscInt num
@@ -131,7 +122,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadcomplex1cnt(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscComplex data
           PetscInt num
@@ -140,7 +130,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadreal1cnt(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscReal data
           PetscInt num
@@ -149,7 +138,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadint1cnt(fd,data,num,count,type,z)
-          use petscsysdefdummy
           integer fd
           PetscInt data
           PetscInt num
@@ -161,7 +149,6 @@
 
         Interface petscbinarywrite
         subroutine petscbinarywritecomplex(fd,data,num,type,z)
-          use petscsysdefdummy
           integer fd
           PetscComplex data(*)
           PetscInt num
@@ -169,7 +156,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywritereal(fd,data,num,type,z)
-          use petscsysdefdummy
           integer fd
           PetscReal data(*)
           PetscInt num
@@ -177,7 +163,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywriteint(fd,data,num,type,z)
-          use petscsysdefdummy
           integer fd
           PetscInt data(*)
           PetscInt num
@@ -185,7 +170,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywritecomplex1(fd,data,num,type,z)
-          use petscsysdefdummy
           integer fd
           PetscComplex data
           PetscInt num
@@ -193,7 +177,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywritereal1(fd,data,num,type,z)
-          use petscsysdefdummy
           integer fd
           PetscReal data
           PetscInt num
@@ -201,7 +184,6 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywriteint1(fd,data,num,type,z)
-          use petscsysdefdummy
           integer fd
           PetscInt data
           PetscInt num
@@ -213,26 +195,26 @@
         end module
 
         function petscviewernotequal(A,B)
-          use petscsysdefdummy
+          use petscsysdefdummy, only: tPetscViewer
           logical petscviewernotequal
           type(tPetscViewer), intent(in) :: A,B
           petscviewernotequal = (A%v .ne. B%v)
         end function
         function petscviewerequals(A,B)
-          use petscsysdefdummy
+          use petscsysdefdummy, only: tPetscViewer
           logical petscviewerequals
           type(tPetscViewer), intent(in) :: A,B
           petscviewerequals = (A%v .eq. B%v)
         end function
 
         function petscrandomnotequal(A,B)
-          use petscsysdefdummy
+          use petscsysdefdummy, only: tPetscRandom
           logical petscrandomnotequal
           type(tPetscRandom), intent(in) :: A,B
           petscrandomnotequal = (A%v .ne. B%v)
         end function
         function petscrandomequals(A,B)
-          use petscsysdefdummy
+          use petscsysdefdummy, only: tPetscRandom
           logical petscrandomequals
           type(tPetscRandom), intent(in) :: A,B
           petscrandomequals = (A%v .eq. B%v)
@@ -306,7 +288,7 @@
         end module
 
         subroutine PetscSetCOMM(c1,c2)
-        use petscsys
+        use petscsys, only: PETSC_COMM_WORLD,PETSC_COMM_SELF
         implicit none
         MPI_Comm c1,c2
 
@@ -316,7 +298,7 @@
         end
 
         subroutine PetscGetCOMM(c1)
-        use petscsys
+        use petscsys, only: PETSC_COMM_WORLD
         implicit none
         MPI_Comm c1
 
@@ -325,7 +307,9 @@
         end
 
         subroutine PetscSetModuleBlock()
-        use petscsys
+        use petscsys, only: PETSC_NULL_CHARACTER,PETSC_NULL_INTEGER,&
+             PETSC_NULL_SCALAR,PETSC_NULL_DOUBLE,PETSC_NULL_REAL,&
+             PETSC_NULL_BOOL,PETSC_NULL_FUNCTION
         implicit none
 
         call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER,            &
@@ -352,7 +336,9 @@
 
         subroutine PetscSetModuleBlockNumeric(pi,maxreal,minreal,eps,       &
      &     seps,small,pinf,pninf)
-        use petscsys
+        use petscsys, only: PETSC_PI,PETSC_MAX_REAL,PETSC_MIN_REAL,&
+             PETSC_MACHINE_EPSILON,PETSC_SQRT_MACHINE_EPSILON,&
+             PETSC_SMALL,PETSC_INFINITY,PETSC_NINFINITY
         implicit none
 
         PetscReal pi,maxreal,minreal,eps,seps
