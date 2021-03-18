@@ -522,3 +522,198 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map,PetscInt N,const PetscInt idx
   if (ogidxs) *ogidxs = work;
   PetscFunctionReturn(0);
 }
+
+/*@
+  PetscSFCreateByMatchingIndices - Create SF by matching root and leaf indices
+
+  Collective
+
+  Input Parameters:
++ layout - PetscLayout defining the global index space and the rank that brokers each index
+. numRootIndices - size of rootIndices
+. rootIndices - PetscInt array of global indices of which this process requests ownership
+. rootLocalIndices - root local index permutation (NULL if no permutation)
+. rootLocalOffset - offset to be added to root local indices
+. numLeafIndices - size of leafIndices
+. leafIndices - PetscInt array of global indices with which this process requires data associated
+. leafLocalIndices - leaf local index permutation (NULL if no permutation)
+- leafLocalOffset - offset to be added to leaf local indices
+
+  Output Parameter:
++ sfA - star forest representing the communication pattern from the layout space to the leaf space (NULL if not needed)
+- sf - star forest representing the communication pattern from the root space to the leaf space
+
+  Example 1:
+$
+$  rank             : 0            1            2
+$  rootIndices      : [1 0 2]      [3]          [3]
+$  rootLocalOffset  : 100          200          300
+$  layout           : [0 1]        [2]          [3]
+$  leafIndices      : [0]          [2]          [0 3]
+$  leafLocalOffset  : 400          500          600
+$
+would build the following SF:
+$
+$  [0] 400 <- (0,101)
+$  [1] 500 <- (0,102)
+$  [2] 600 <- (0,101)
+$  [2] 601 <- (2,300)
+$
+  Example 2:
+$
+$  rank             : 0               1               2
+$  rootIndices      : [1 0 2]         [3]             [3]
+$  rootLocalOffset  : 100             200             300
+$  layout           : [0 1]           [2]             [3]
+$  leafIndices      : rootIndices     rootIndices     rootIndices
+$  leafLocalOffset  : rootLocalOffset rootLocalOffset rootLocalOffset
+$
+would build the following SF:
+$
+$  [1] 200 <- (2,300)
+$
+  Example 3:
+$
+$  No process requests ownership of global index 1, but no process needs it.
+$
+$  rank             : 0            1            2
+$  numRootIndices   : 2            1            1
+$  rootIndices      : [0 2]        [3]          [3]
+$  rootLocalOffset  : 100          200          300
+$  layout           : [0 1]        [2]          [3]
+$  numLeafIndices   : 1            1            2
+$  leafIndices      : [0]          [2]          [0 3]
+$  leafLocalOffset  : 400          500          600
+$
+would build the following SF:
+$
+$  [0] 400 <- (0,100)
+$  [1] 500 <- (0,101)
+$  [2] 600 <- (0,100)
+$  [2] 601 <- (2,300)
+$
+
+  Notes:
+  The layout parameter represents any partitioning of [0, N), where N is the total number of global indices, and its
+  local size can be set to PETSC_DECIDE.
+  If a global index x lies in the partition owned by process i, each process whose rootIndices contains x requests
+  ownership of x and sends its own rank and the local index of x to process i.
+  If multiple processes request ownership of x, the one with the highest rank is to own x.
+  Process i then broadcasts the ownership information, so that each process whose leafIndices contains x knows the
+  ownership information of x.
+  The output sf is constructed by associating each leaf point to a root point in this way.
+
+  Suppose there is point data ordered according to the global indices and partitioned according to the given layout.
+  The optional output PetscSF object sfA can be used to push such data to leaf points.
+
+  All indices in rootIndices and leafIndices must lie in the layout range. The union (over all processes) of rootIndices
+  must cover that of leafIndices, but need not cover the entire layout.
+
+  If (leafIndices, leafLocalIndices, leafLocalOffset) == (rootIndices, rootLocalIndices, rootLocalOffset), the output
+  star forest is almost identity, so will only include non-trivial part of the map.
+
+  Developer Notes:
+  Current approach of a process of the highest rank gaining the ownership may cause load imbalance; consider using
+  hash(rank, root_local_index) as the bid for the ownership determination.
+
+  Level: advanced
+
+.seealso: PetscSFCreate()
+@*/
+PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRootIndices, const PetscInt *rootIndices, const PetscInt *rootLocalIndices, PetscInt rootLocalOffset, PetscInt numLeafIndices, const PetscInt *leafIndices, const PetscInt *leafLocalIndices, PetscInt leafLocalOffset, PetscSF *sfA, PetscSF *sf)
+{
+  MPI_Comm        comm = layout->comm;
+  PetscMPIInt     size, rank;
+  PetscSF         sf1;
+  PetscSFNode    *owners, *buffer, *iremote;
+  PetscInt       *ilocal, nleaves, N, n, i;
+#if defined(PETSC_USE_DEBUG)
+  PetscInt        N1;
+#endif
+  PetscBool       flag;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (rootIndices)      PetscValidIntPointer(rootIndices,3);
+  if (rootLocalIndices) PetscValidIntPointer(rootLocalIndices,4);
+  if (leafIndices)      PetscValidIntPointer(leafIndices,7);
+  if (leafLocalIndices) PetscValidIntPointer(leafLocalIndices,8);
+  if (sfA)              PetscValidPointer(sfA,10);
+  PetscValidPointer(sf,11);
+  if (numRootIndices < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numRootIndices (%D) must be non-negative", numRootIndices);
+  if (numLeafIndices < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numLeafIndices (%D) must be non-negative", numLeafIndices);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetSize(layout, &N);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(layout, &n);CHKERRQ(ierr);
+  flag = (PetscBool)(leafIndices == rootIndices);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+  if (flag && numLeafIndices != numRootIndices) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%D) != numRootIndices(%D)", numLeafIndices, numRootIndices);
+#if defined(PETSC_USE_DEBUG)
+  N1 = PETSC_MIN_INT;
+  for (i = 0; i < numRootIndices; i++) if (rootIndices[i] > N1) N1 = rootIndices[i];
+  ierr = MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
+  if (N1 >= N) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%D) out of layout range [0,%D)", N1, N);
+  if (!flag) {
+    N1 = PETSC_MIN_INT;
+    for (i = 0; i < numLeafIndices; i++) if (leafIndices[i] > N1) N1 = leafIndices[i];
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
+    if (N1 >= N) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. leaf index (%D) out of layout range [0,%D)", N1, N);
+  }
+#endif
+  /* Reduce: owners -> buffer */
+  ierr = PetscMalloc1(n, &buffer);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm, &sf1);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sf1);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(sf1, layout, numRootIndices, NULL, PETSC_OWN_POINTER, rootIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numRootIndices, &owners);CHKERRQ(ierr);
+  for (i = 0; i < numRootIndices; ++i) {
+    owners[i].rank = rank;
+    owners[i].index = rootLocalOffset + (rootLocalIndices ? rootLocalIndices[i] : i);
+  }
+  for (i = 0; i < n; ++i) {
+    buffer[i].index = -1;
+    buffer[i].rank = -1;
+  }
+  ierr = PetscSFReduceBegin(sf1, MPIU_2INT, owners, buffer, MPI_MAXLOC);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf1, MPIU_2INT, owners, buffer, MPI_MAXLOC);CHKERRQ(ierr);
+  /* Bcast: buffer -> owners */
+  if (!flag) {
+    /* leafIndices is different from rootIndices */
+    ierr = PetscFree(owners);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(sf1, layout, numLeafIndices, NULL, PETSC_OWN_POINTER, leafIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeafIndices, &owners);CHKERRQ(ierr);
+  }
+  ierr = PetscSFBcastBegin(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE);CHKERRQ(ierr);
+  for (i = 0; i < numLeafIndices; ++i) if (owners[i].rank < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global point %D was unclaimed", leafIndices[i]);
+  ierr = PetscFree(buffer);CHKERRQ(ierr);
+  if (sfA) {*sfA = sf1;}
+  else     {ierr = PetscSFDestroy(&sf1);CHKERRQ(ierr);}
+  /* Create sf */
+  if (flag && rootLocalIndices == leafLocalIndices && leafLocalOffset == rootLocalOffset) {
+    /* leaf space == root space */
+    for (i = 0, nleaves = 0; i < numLeafIndices; ++i) if (owners[i].rank != rank) ++nleaves;
+    ierr = PetscMalloc1(nleaves, &ilocal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nleaves, &iremote);CHKERRQ(ierr);
+    for (i = 0, nleaves = 0; i < numLeafIndices; ++i) {
+      if (owners[i].rank != rank) {
+        ilocal[nleaves]        = leafLocalOffset + i;
+        iremote[nleaves].rank  = owners[i].rank;
+        iremote[nleaves].index = owners[i].index;
+        ++nleaves;
+      }
+    }
+    ierr = PetscFree(owners);CHKERRQ(ierr);
+  } else {
+    nleaves = numLeafIndices;
+    ierr = PetscMalloc1(nleaves, &ilocal);CHKERRQ(ierr);
+    for (i = 0; i < nleaves; ++i) {ilocal[i] = leafLocalOffset + (leafLocalIndices ? leafLocalIndices[i] : i);}
+    iremote = owners;
+  }
+  ierr = PetscSFCreate(comm, sf);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(*sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sf, rootLocalOffset + numRootIndices, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
