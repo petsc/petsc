@@ -48,7 +48,7 @@ $     SETERRQ(comm,number,mess)
 PetscErrorCode  PetscAbortErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
-  (*PetscErrorPrintf)("PetscAbortErrorHandler: %s() line %d in %s %s\n  To prevent termination, change the error handler using PetscPushErrorHandler()\n",fun,line,file,mess);
+  (*PetscErrorPrintf)("PetscAbortErrorHandler: %s() at %s:%d %s\n  To prevent termination, change the error handler using PetscPushErrorHandler()\n",fun,file,line,mess);
   abort();
   PetscFunctionReturn(0);
 }
