@@ -190,7 +190,7 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
 }
 
 /*@C
-  PetscOptionsInsertFileYAML - Insert a YAML-formatted file in the option database
+  PetscOptionsInsertFileYAML - Insert a YAML-formatted file in the options database
 
   Collective
 
@@ -200,16 +200,11 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
 .   file - name of file
 -   require - if PETSC_TRUE will generate an error if the file does not exist
 
-  Only a small subset of the YAML standard is implemented. Non-scalar keys are NOT supported;
-  aliases and the merge key "<<" are.
-  The algorithm recursively parses the yaml file, pushing and popping prefixes
-  and inserting key + values pairs using PetscOptionsSetValue().
-
   PETSc will generate an error condition that stops the program if a YAML error
   is detected, hence the user should check that the YAML file is valid before
   supplying it, for instance at http://www.yamllint.com/ .
 
-  Inspired by https://stackoverflow.com/a/621451
+  Uses PetscOptionsInsertStringYAML().
 
   Level: intermediate
 
