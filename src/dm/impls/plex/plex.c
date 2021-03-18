@@ -8599,6 +8599,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
     }
     else {
       annz = 0;
+      ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
       for (q = 0; q < dof; q++) {
         a = anchors[off + q];
         ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);
