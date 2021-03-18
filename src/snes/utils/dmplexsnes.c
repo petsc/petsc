@@ -322,7 +322,7 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
 + ctx - the context
 . dm  - the DM for the function space used for interpolation
 . redundantPoints - If PETSC_TRUE, all processes are passing in the same array of points. Otherwise, points need to be communicated among processes.
-. ignoreOutsideDomain - If PETSC_TRUE, ignore points outside the domain, otherwise return an error
+- ignoreOutsideDomain - If PETSC_TRUE, ignore points outside the domain, otherwise return an error
 
   Level: intermediate
 
