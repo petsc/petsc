@@ -41,6 +41,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     }
     ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
     /* should only get reordering if the factor matrix uses it but cannot determine because MatGetFactor() not called */
+    ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
     ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
     if (dir->col && (dir->row != dir->col)) {  /* only use row ordering for SBAIJ */
       ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
@@ -65,10 +66,13 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       }
       ierr = MatFactorGetCanUseOrdering(((PC_Factor*)dir)->fact,&canuseordering);CHKERRQ(ierr);
       if (canuseordering) {
+        ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         /* check if dir->row == dir->col */
-        ierr = ISEqual(dir->row,dir->col,&flg);CHKERRQ(ierr);
-        if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row and column permutations must equal");
+        if (dir->row) {
+          ierr = ISEqual(dir->row,dir->col,&flg);CHKERRQ(ierr);
+          if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row and column permutations must be equal");
+        }
         ierr = ISDestroy(&dir->col);CHKERRQ(ierr); /* only pass one ordering into CholeskyFactor */
 
         flg  = PETSC_FALSE;
@@ -92,6 +96,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         ierr = MatFactorGetCanUseOrdering(((PC_Factor*)dir)->fact,&canuseordering);CHKERRQ(ierr);
         if (canuseordering) {
           ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
+          ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
           ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
           ierr = ISDestroy(&dir->col);CHKERRQ(ierr); /* only use dir->row ordering in CholeskyFactor */
 
@@ -302,16 +307,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   PetscFunctionBegin;
   ierr     = PetscNewLog(pc,&dir);CHKERRQ(ierr);
   pc->data = (void*)dir;
-  ierr     = PCFactorInitialize(pc);CHKERRQ(ierr);
+  ierr     = PCFactorInitialize(pc,MAT_FACTOR_CHOLESKY);CHKERRQ(ierr);
 
-  ((PC_Factor*)dir)->factortype         = MAT_FACTOR_CHOLESKY;
-  ((PC_Factor*)dir)->info.fill          = 5.0;
-
-  dir->col = NULL;
-  dir->row = NULL;
-
-  /* MATORDERINGNATURAL_OR_ND allows selecting type based on matrix type sbaij or aij */
-  ierr = PetscStrallocpy(MATORDERINGNATURAL_OR_ND,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+  ((PC_Factor*)dir)->info.fill  = 5.0;
 
   pc->ops->destroy             = PCDestroy_Cholesky;
   pc->ops->reset               = PCReset_Cholesky;

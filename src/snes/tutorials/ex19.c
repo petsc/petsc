@@ -933,7 +933,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: klu_2
       requires: suitesparse
-      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type klu -mat_klu_ordering PETSC
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type klu -pc_factor_mat_ordering_type nd
       output_file: output/ex19_superlu.out
 
    test:

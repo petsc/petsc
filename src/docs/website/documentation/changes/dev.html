@@ -123,6 +123,7 @@
       <h4>PetscPartitioner:</h4>
       <h4>Mat:</h4>
       <ul>
+        <li>Factorization types now provide their preferred ordering (which may be MATORDERINGEXTERNAL) to prevent PETSc PCFactor from, by default, picking an ordering when it is not ideal</li>
         <li>Deprecate MatFactorGetUseOrdering(); Use MatFactorGetCanUseOrdering() instead</li>
       </ul>
       <h4>PC:</h4>

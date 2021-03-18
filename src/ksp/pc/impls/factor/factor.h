@@ -18,7 +18,7 @@ typedef struct {
   PetscBool        reusefill;          /* reuse fill from previous LU */
 } PC_Factor;
 
-PETSC_INTERN PetscErrorCode PCFactorInitialize(PC);
+PETSC_INTERN PetscErrorCode PCFactorInitialize(PC,MatFactorType);
 PETSC_INTERN PetscErrorCode PCFactorGetMatrix_Factor(PC,Mat*);
 
 PETSC_INTERN PetscErrorCode PCFactorSetZeroPivot_Factor(PC,PetscReal);
@@ -41,5 +41,7 @@ PETSC_INTERN PetscErrorCode PCFactorGetMatSolverType_Factor(PC,MatSolverType*);
 PETSC_INTERN PetscErrorCode PCFactorSetColumnPivot_Factor(PC,PetscReal);
 PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC);
 PETSC_INTERN PetscErrorCode PCView_Factor(PC,PetscViewer);
+PETSC_INTERN PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC);
+
 
 #endif

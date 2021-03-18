@@ -562,6 +562,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERCHOLMOD,&B->solvertype);CHKERRQ(ierr);
   B->canuseordering = PETSC_TRUE;
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&B->preferredordering[MAT_FACTOR_CHOLESKY]);CHKERRQ(ierr);
   *F   = B;
   PetscFunctionReturn(0);
 }

@@ -1039,9 +1039,12 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_cuda(Mat A,MatFactorType ftype
     (*fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqDense;
   }
   (*fact)->factortype = ftype;
-
   ierr = PetscFree((*fact)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERCUDA,&(*fact)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_LU]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_ILU]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_CHOLESKY]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_ICC]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

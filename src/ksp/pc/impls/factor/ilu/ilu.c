@@ -100,6 +100,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       /* In-place factorization only makes sense with the natural ordering,
          so we only need to get the ordering once, even if nonzero structure changes */
       /* Should not get the ordering if the factorization routine does not use it, but do not yet have access to the factor matrix */
+      ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
+      ierr = MatDestroy(&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
       if (ilu->row) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row);CHKERRQ(ierr);}
       if (ilu->col) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col);CHKERRQ(ierr);}
@@ -130,6 +132,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       }
       ierr = MatFactorGetCanUseOrdering(((PC_Factor*)ilu)->fact,&canuseordering);CHKERRQ(ierr);
       if (canuseordering) {
+        ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col);CHKERRQ(ierr);
@@ -152,6 +155,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
           /* compute a new ordering for the ILU */
           ierr = ISDestroy(&ilu->row);CHKERRQ(ierr);
           ierr = ISDestroy(&ilu->col);CHKERRQ(ierr);
+          ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
           ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
           ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row);CHKERRQ(ierr);
           ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col);CHKERRQ(ierr);
@@ -306,14 +310,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   PetscFunctionBegin;
   ierr     = PetscNewLog(pc,&ilu);CHKERRQ(ierr);
   pc->data = (void*)ilu;
-  ierr     = PCFactorInitialize(pc);CHKERRQ(ierr);
+  ierr     = PCFactorInitialize(pc,MAT_FACTOR_ILU);CHKERRQ(ierr);
 
-  ((PC_Factor*)ilu)->factortype         = MAT_FACTOR_ILU;
   ((PC_Factor*)ilu)->info.levels        = 0.;
   ((PC_Factor*)ilu)->info.fill          = 1.0;
   ilu->col                              = NULL;
   ilu->row                              = NULL;
-  ierr                                  = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ((PC_Factor*)ilu)->info.dt            = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount       = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcol         = PETSC_DEFAULT;

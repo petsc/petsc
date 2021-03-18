@@ -661,6 +661,13 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorI
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatFactorGetSolverType_petsc(Mat A,MatSolverType *type)
+{
+  PetscFunctionBegin;
+  *type = MATSOLVERPETSC;
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
@@ -677,18 +684,25 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype
 
     (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqBAIJ;
     (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqBAIJ;
+    ierr = PetscStrallocpy(MATORDERINGND,(char**)&(*B)->preferredordering[MAT_FACTOR_LU]);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_ILU]);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_ILUDT]);CHKERRQ(ierr);
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(*B,A->rmap->bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqBAIJ;
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqBAIJ;
+    /*  Future optimization would be direct symbolic and numerical factorization for BAIJ to support orderings and Cholesky, instead of first converting to SBAIJ */
+    ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_CHOLESKY]);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_ICC]);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   (*B)->factortype = ftype;
   (*B)->canuseordering = PETSC_TRUE;
 
   ierr = PetscFree((*B)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERPETSC,&(*B)->solvertype);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)*B,"MatFactorGetSolverType_C",MatFactorGetSolverType_petsc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

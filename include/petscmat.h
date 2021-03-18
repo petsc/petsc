@@ -1171,6 +1171,8 @@ PETSC_EXTERN PetscFunctionList MatOrderingList;
 PETSC_EXTERN PetscErrorCode MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 PETSC_EXTERN PetscErrorCode MatCreateLaplacian(Mat,PetscReal,PetscBool,Mat*);
 
+PETSC_EXTERN PetscErrorCode MatFactorGetPreferredOrdering(Mat,MatFactorType,MatOrderingType*);
+
 /*S
     MatFactorShiftType - Numeric Shift for factorizations
 

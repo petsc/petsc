@@ -1088,6 +1088,10 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftyp
 
   ierr = PetscFree((*fact)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERPETSC,&(*fact)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_LU]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_ILU]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_CHOLESKY]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_ICC]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

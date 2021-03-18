@@ -60,6 +60,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
       ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
       /* This should only get the ordering if needed, but since MatGetFactor() is not called we can't know if it is needed */
+      ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       if (dir->row) {
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);
@@ -84,6 +85,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       }
       ierr = MatFactorGetCanUseOrdering(((PC_Factor*)dir)->fact,&canuseordering);CHKERRQ(ierr);
       if (canuseordering) {
+        ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         if (dir->nonzerosalongdiagonal) {
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col);CHKERRQ(ierr);
@@ -104,6 +106,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
         if (canuseordering) {
           if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
           ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
+          ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
           ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
           if (dir->nonzerosalongdiagonal) {
             ierr = MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col);CHKERRQ(ierr);
@@ -253,14 +256,12 @@ M*/
 PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
   PC_LU          *dir;
 
   PetscFunctionBegin;
   ierr     = PetscNewLog(pc,&dir);CHKERRQ(ierr);
   pc->data = (void*)dir;
-  ierr     = PCFactorInitialize(pc);CHKERRQ(ierr);
-  ((PC_Factor*)dir)->factortype = MAT_FACTOR_LU;
+  ierr     = PCFactorInitialize(pc,MAT_FACTOR_LU);CHKERRQ(ierr);
   dir->nonzerosalongdiagonal    = PETSC_FALSE;
 
   ((PC_Factor*)dir)->info.fill          = 5.0;
@@ -268,13 +269,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   ((PC_Factor*)dir)->info.shifttype     = (PetscReal)MAT_SHIFT_NONE;
   dir->col                              = NULL;
   dir->row                              = NULL;
-
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
-  if (size == 1) {
-    ierr = PetscStrallocpy(MATORDERINGND,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
-  } else {
-    ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
-  }
 
   pc->ops->reset             = PCReset_LU;
   pc->ops->destroy           = PCDestroy_LU;
