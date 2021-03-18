@@ -56,7 +56,10 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
   ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
-  if (dd->nlocal < da->bind_below) {ierr = VecBindToCPU(*g,PETSC_TRUE);CHKERRQ(ierr);}
+  if (dd->nlocal < da->bind_below) {
+    ierr = VecSetBindingPropagates(*g,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = VecBindToCPU(*g,PETSC_TRUE);CHKERRQ(ierr);
+  }
   ierr = VecSetDM(*g, da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (dd->w == 1  && da->dim == 2) {
