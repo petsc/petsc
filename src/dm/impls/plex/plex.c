@@ -1553,6 +1553,45 @@ PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexSectionView - Saves a section associated with a DMPlex
+
+  Collective on DM
+
+  Input Parameters:
++ dm         - The DM that contains the topology on which the section to be saved is defined
+. viewer     - The PetscViewer for saving
+- sectiondm  - The DM that contains the section to be saved
+
+  Level: advanced
+
+  Notes:
+  This function is a wrapper around PetscSectionView(); in addition to the raw section, it saves information that associates the section points to the topology (dm) points. When the topology (dm) and the section are later loaded with DMPlexTopologyLoad() and DMPlexSectionLoad(), respectively, this information is used to match section points with topology points.
+
+  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with PetscObjectSetName(). In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+
+.seealso: DMView(), DMPlexTopologyView(), DMPlexCoordinatesView(), DMPlexLabelsView(), DMPlexGlobalVectorView(), DMPlexLocalVectorView(), PetscSectionView(), DMPlexSectionLoad()
+@*/
+PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
+{
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscValidHeaderSpecific(sectiondm, DM_CLASSID, 3);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = DMPlexSectionView_HDF5_Internal(dm, viewer, sectiondm);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 {
   PetscBool      ishdf5;

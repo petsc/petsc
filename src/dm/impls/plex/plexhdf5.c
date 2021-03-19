@@ -836,6 +836,56 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMPlexSectionView_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm)
+{
+  MPI_Comm       comm;
+  const char    *topologydm_name;
+  const char    *sectiondm_name;
+  PetscSection   gsection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)sectiondm, &comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "dms");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, sectiondm_name);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(sectiondm, &gsection);CHKERRQ(ierr);
+  /* Save raw section */
+  ierr = PetscSectionView(gsection, viewer);CHKERRQ(ierr);
+  /* Save plex wrapper */
+  {
+    PetscInt        pStart, pEnd, p, n;
+    IS              globalPointNumbers;
+    const PetscInt *gpoints;
+    IS              orderIS;
+    PetscInt       *order;
+
+    ierr = PetscSectionGetChart(gsection, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexCreatePointNumbering(dm, &globalPointNumbers);CHKERRQ(ierr);
+    ierr = ISGetIndices(globalPointNumbers, &gpoints);CHKERRQ(ierr);
+    for (p = pStart, n = 0; p < pEnd; ++p) if (gpoints[p] >= 0) n++;
+    /* "order" is an array of global point numbers.
+       When loading, it is used with topology/order array
+       to match section points with plex topology points. */
+    ierr = PetscMalloc1(n, &order);CHKERRQ(ierr);
+    for (p = pStart, n = 0; p < pEnd; ++p) if (gpoints[p] >= 0) order[n++] = gpoints[p];
+    ierr = ISRestoreIndices(globalPointNumbers, &gpoints);CHKERRQ(ierr);
+    ierr = ISDestroy(&globalPointNumbers);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, n, order, PETSC_OWN_POINTER, &orderIS);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)orderIS, "order");CHKERRQ(ierr);
+    ierr = ISView(orderIS, viewer);CHKERRQ(ierr);
+    ierr = ISDestroy(&orderIS);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 typedef struct {
   PetscMPIInt rank;
   DM          dm;

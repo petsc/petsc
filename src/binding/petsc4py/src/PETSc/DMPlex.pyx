@@ -664,6 +664,9 @@ cdef class DMPlex(DM):
     def labelsView(self, Viewer viewer):
         CHKERR( DMPlexLabelsView(self.dm, viewer.vwr))
 
+    def sectionView(self, Viewer viewer, DM sectiondm):
+        CHKERR( DMPlexSectionView(self.dm, viewer.vwr, sectiondm.dm))
+
     # Load
 
     def topologyLoad(self, Viewer viewer):
