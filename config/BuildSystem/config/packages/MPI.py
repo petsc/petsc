@@ -509,9 +509,8 @@ Unable to run hostname to check the network')
     # check if mpi.mod exists
     if self.fortran.fortranIsF90:
       self.log.write('Checking for mpi.mod\n')
-      if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
-        self.havef90module = 1
-        self.addDefine('HAVE_MPI_F90MODULE', 1)
+      if not self.libraries.check(self.lib,'', call = '       use mpi\n       integer(kind=selected_int_kind(5)) ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
+        raise RuntimeError('mpi.mod not found! PETSc fortran interface requires a working mpi.mod')
     self.compilers.FPPFLAGS = oldFlags
     self.libraries.popLanguage()
     return 0
