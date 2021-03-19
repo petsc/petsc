@@ -48,7 +48,7 @@ Tao Object: 3 MPI processes
               total: nonzeros=132, allocated nonzeros=132
                 not using I-node routines
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: (sub_) 1 MPI processes
         type: seqaij
         rows=28, cols=28
         total: nonzeros=132, allocated nonzeros=132

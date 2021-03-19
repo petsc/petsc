@@ -111,7 +111,7 @@ TS Object: 2 MPI processes
                       total: nonzeros=59, allocated nonzeros=59
                         not using I-node routines
               linear system matrix = precond matrix:
-              Mat Object: 1 MPI processes
+              Mat Object: (npc_fas_coarse_sub_) 1 MPI processes
                 type: seqaij
                 rows=15, cols=15
                 total: nonzeros=59, allocated nonzeros=59

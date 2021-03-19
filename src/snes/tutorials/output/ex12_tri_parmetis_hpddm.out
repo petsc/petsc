@@ -69,7 +69,7 @@ SNES Object: 4 MPI processes
                 package used to perform factorization: petsc
                     block size is 1
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI processes
           type: seqaij
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines

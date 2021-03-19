@@ -54,7 +54,7 @@ PC Object:
            matrix ordering: natural
       factor fill ratio needed 1
            Factored matrix follows
-          Mat Object:
+          Mat Object: (sub_)
             type: seqaij
             rows=18, cols=18
             package used to perform factorization: petsc
