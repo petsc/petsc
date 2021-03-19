@@ -62,7 +62,11 @@
 #endif
 
         module petscsysdefdummy
+#if defined(PETSC_HAVE_MPI_F90MODULE_VISIBILITY)
+        use petscmpi
+#else
         use petscmpi, only: MPIU_REAL,MPIU_SUM,MPIU_SCALAR,MPIU_INTEGER,PETSC_COMM_WORLD,PETSC_COMM_SELF
+#endif
 #include <../src/sys/f90-mod/petscsys.h>
 #include <../src/sys/f90-mod/petscdraw.h>
 #include <../src/sys/f90-mod/petscviewer.h>

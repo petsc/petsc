@@ -35,6 +35,7 @@ configure_options = [
   '--download-suitesparse=1',
   '--download-chaco=1',
   '--download-spai=1',
+  '--with-mpi-f90module-visibility=0',
   ]
 
 if __name__ == '__main__':
