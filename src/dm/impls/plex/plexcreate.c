@@ -2285,7 +2285,6 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 {
   PetscSF               sf;
   DM                    coordDM, coarseDM;
-  DMField               coordField;
   Vec                   coords;
   PetscBool             isper;
   const PetscReal      *maxCell, *L;
@@ -2297,12 +2296,13 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dmNew, &coordDM);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmNew, &coords);CHKERRQ(ierr);
-  ierr = DMGetCoordinateField(dmNew, &coordField);CHKERRQ(ierr);
   ierr = DMSetCoordinateDM(dm, coordDM);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
-  ierr = DMSetCoordinateField(dm, coordField);CHKERRQ(ierr);
-  ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
-  ierr = DMSetPeriodicity(dmNew, isper, maxCell, L, bd);CHKERRQ(ierr);
+  /* Do not want to create the coordinate field if it does not already exist, so do not call DMGetCoordinateField() */
+  ierr = DMFieldDestroy(&dm->coordinateField);CHKERRQ(ierr);
+  dm->coordinateField = dmNew->coordinateField;
+  ierr = DMGetPeriodicity(dmNew, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
+  ierr = DMSetPeriodicity(dm, isper, maxCell, L, bd);CHKERRQ(ierr);
   ierr = DMDestroy_Plex(dm);CHKERRQ(ierr);
   ierr = DMInitialize_Plex(dm);CHKERRQ(ierr);
   dm->data = dmNew->data;
@@ -2324,6 +2324,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   DM              coordDMA, coordDMB;
   Vec             coordsA,  coordsB;
   PetscSF         sfA,      sfB;
+  DMField         fieldTmp;
   void            *tmp;
   DMLabelLink     listTmp;
   DMLabel         depthTmp;
@@ -2352,6 +2353,9 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   ierr = DMSetCoordinatesLocal(dmB, coordsA);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject) coordsA);CHKERRQ(ierr);
 
+  fieldTmp             = dmA->coordinateField;
+  dmA->coordinateField = dmB->coordinateField;
+  dmB->coordinateField = fieldTmp;
   tmp       = dmA->data;
   dmA->data = dmB->data;
   dmB->data = tmp;
