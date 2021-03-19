@@ -1446,4 +1446,75 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
   ierr = PetscSectionDestroy(&sectionA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm, PetscSF sf, Vec vec)
+{
+  MPI_Comm           comm;
+  const char        *topologydm_name;
+  const char        *sectiondm_name;
+  const char        *vec_name;
+  Vec                vecA;
+  PetscInt           mA, m, bs;
+  const PetscInt    *ilocal;
+  const PetscScalar *src;
+  PetscScalar       *dest;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)vec, &vec_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "dms");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "vecs");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, vec_name);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &vecA);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)vecA, vec_name);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, &mA, &m, &ilocal, NULL);CHKERRQ(ierr);
+  /* Check consistency */
+  {
+    PetscSF   pointsf, pointsf1;
+    PetscInt  m1, i, j;
+
+    ierr = DMGetPointSF(dm, &pointsf);CHKERRQ(ierr);
+    ierr = DMGetPointSF(sectiondm, &pointsf1);CHKERRQ(ierr);
+    if (pointsf1 != pointsf) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching point SFs for dm and sectiondm");
+#if defined(PETSC_USE_DEBUG)
+    {
+      PetscInt  MA, MA1;
+
+      ierr = MPIU_Allreduce(&mA, &MA, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+      ierr = PetscViewerHDF5ReadSizes(viewer, vec_name, NULL, &MA1);CHKERRQ(ierr);
+      if (MA1 != MA) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total SF root size (%D) != On-disk vector data size (%D)", MA, MA1);
+    }
+#endif
+    ierr = VecGetLocalSize(vec, &m1);CHKERRQ(ierr);
+    if (m1 < m) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Target vector size (%D) < SF leaf size (%D)", m1, m);
+    for (i = 0; i < m; ++i) {
+      j = ilocal ? ilocal[i] : i;
+      if (j < 0 || j >= m1) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf's %D-th index, %D, not in [%D, %D)", i, j, 0, m1);
+    }
+  }
+  ierr = VecSetSizes(vecA, mA, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecLoad(vecA, viewer);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(vecA, &src);CHKERRQ(ierr);
+  ierr = VecGetArray(vec, &dest);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPIU_SCALAR, src, dest, MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_SCALAR, src, dest, MPI_REPLACE);CHKERRQ(ierr);
+  ierr = VecRestoreArray(vec, &dest);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vecA, &src);CHKERRQ(ierr);
+  ierr = VecDestroy(&vecA);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer, NULL, "blockSize", PETSC_INT, NULL, (void *) &bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 #endif

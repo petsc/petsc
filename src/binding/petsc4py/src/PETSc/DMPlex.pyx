@@ -691,3 +691,9 @@ cdef class DMPlex(DM):
         cdef SF lsf = SF()
         CHKERR( DMPlexSectionLoad(self.dm, viewer.vwr, sectiondm.dm, sfxc.sf, &gsf.sf, &lsf.sf))
         return gsf, lsf
+
+    def globalVectorLoad(self, Viewer viewer, DM sectiondm, SF sf, Vec vec):
+        CHKERR( DMPlexGlobalVectorLoad(self.dm, viewer.vwr, sectiondm.dm, sf.sf, vec.vec))
+
+    def localVectorLoad(self, Viewer viewer, DM sectiondm, SF sf, Vec vec):
+        CHKERR( DMPlexLocalVectorLoad(self.dm, viewer.vwr, sectiondm.dm, sf.sf, vec.vec))
