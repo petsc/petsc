@@ -71,7 +71,7 @@ extensions = [
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
     'sphinxcontrib.rsvgconverter',
-    'html5_petsc',  # Overrides HTML5Translator
+    'html5_petsc',
 ]
 
 master_doc = 'index'
