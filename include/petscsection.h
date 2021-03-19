@@ -25,6 +25,8 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetPermutation(PetscSection, IS *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetPermutation(PetscSection, IS);
 PETSC_EXTERN PetscErrorCode PetscSectionGetPointMajor(PetscSection, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetPointMajor(PetscSection, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionAddDof(PetscSection, PetscInt, PetscInt);
