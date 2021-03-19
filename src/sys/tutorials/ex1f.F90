@@ -22,8 +22,8 @@ program main
 
       ! We can now change the communicator universe for PETSc
 
-      call MPI_Comm_size(MPI_COMM_WORLD,mySize,ierr); CHKERRA(ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,myRank,ierr); CHKERRA(ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr); CHKERRA(ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,myRank,ierr); CHKERRA(ierr)
 
       ! Here we would like to print only one message that represents all the processes in the group
       ! We use PetscPrintf() with the

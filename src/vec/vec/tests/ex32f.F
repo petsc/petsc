@@ -4,6 +4,7 @@
 !  duplicated
       program main
 #include <petsc/finclude/petscvec.h>
+      use petscmpi  ! or mpi or mpi_f08
       use petscvec
        implicit none
 

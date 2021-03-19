@@ -4,6 +4,7 @@
 !
 
 #include "petsc/finclude/petsctao.h"
+      use petscmpi  ! or mpi or mpi_f08
       use petsctao
       implicit none
 

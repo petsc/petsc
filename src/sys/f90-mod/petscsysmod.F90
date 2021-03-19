@@ -1,10 +1,68 @@
-        module petscsysdefdummy
+        module petscmpi
 #include <petscconf.h>
+#include "petsc/finclude/petscsys.h"
 #if defined(PETSC_HAVE_MPIUNI)
         use mpiuni
 #else
         use mpi
 #endif
+
+        public:: MPIU_REAL, MPIU_SUM, MPIU_SCALAR, MPIU_INTEGER
+        public:: PETSC_COMM_WORLD, PETSC_COMM_SELF
+
+! ----------------------------------------------------------------------------
+!    BEGIN PETSc aliases for MPI_ constants
+!
+!   These values for __float128 are handled in the common block (below)
+!     and transmitted from the C code
+!
+#if !defined(PETSC_USE_REAL___FLOAT128)
+#if defined (PETSC_USE_REAL_SINGLE)
+      integer4, parameter :: MPIU_REAL = MPI_REAL
+#else
+      integer4, parameter :: MPIU_REAL = MPI_DOUBLE_PRECISION
+#endif
+
+      integer4, parameter :: MPIU_SUM = MPI_SUM
+
+#if defined(PETSC_USE_COMPLEX)
+#if defined (PETSC_USE_REAL_SINGLE)
+      integer4, parameter :: MPIU_SCALAR = MPI_COMPLEX
+#else
+      integer4, parameter :: MPIU_SCALAR = MPI_DOUBLE_COMPLEX
+#endif
+#else
+#if defined (PETSC_USE_REAL_SINGLE)
+      integer4, parameter :: MPIU_SCALAR = MPI_REAL
+#else
+      integer4, parameter :: MPIU_SCALAR = MPI_DOUBLE_PRECISION
+#endif
+#endif
+#endif
+
+#if defined(PETSC_USE_64BIT_INDICES)
+      integer4, parameter :: MPIU_INTEGER = MPI_INTEGER8
+#else
+      integer4, parameter :: MPIU_INTEGER = MPI_INTEGER
+#endif
+
+      MPI_Comm PETSC_COMM_WORLD
+      MPI_Comm PETSC_COMM_SELF
+      common /petscfortran9/ PETSC_COMM_WORLD
+      common /petscfortran10/ PETSC_COMM_SELF
+      data   PETSC_COMM_WORLD /0/
+      data   PETSC_COMM_SELF /0/
+        end module
+
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::MPIU_REAL
+!DEC$ ATTRIBUTES DLLEXPORT::MPIU_SUM
+!DEC$ ATTRIBUTES DLLEXPORT::MPIU_SCALAR
+!DEC$ ATTRIBUTES DLLEXPORT::MPIU_INTEGER
+#endif
+
+        module petscsysdefdummy
+        use petscmpi, only: MPIU_REAL,MPIU_SUM,MPIU_SCALAR,MPIU_INTEGER,PETSC_COMM_WORLD,PETSC_COMM_SELF
 #include <../src/sys/f90-mod/petscsys.h>
 #include <../src/sys/f90-mod/petscdraw.h>
 #include <../src/sys/f90-mod/petscviewer.h>
@@ -225,8 +283,6 @@
         module petscsys
         use iso_c_binding
         use petscsysdef
-        MPI_Comm PETSC_COMM_SELF
-        MPI_Comm PETSC_COMM_WORLD
         PetscChar(80) PETSC_NULL_CHARACTER = ''
         PetscInt PETSC_NULL_INTEGER(1)
         PetscFortranDouble PETSC_NULL_DOUBLE(1)
@@ -234,11 +290,6 @@
         PetscReal PETSC_NULL_REAL(1)
         PetscBool PETSC_NULL_BOOL
 !
-#if defined(PETSC_USE_REAL___FLOAT128)
-        integer MPIU_REAL
-        integer MPIU_SCALAR
-        integer MPIU_SUM
-#endif
 !
 !
 !
@@ -285,7 +336,8 @@
         end module
 
         subroutine PetscSetCOMM(c1,c2)
-        use petscsys, only: PETSC_COMM_WORLD,PETSC_COMM_SELF
+        use petscmpi, only: PETSC_COMM_WORLD,PETSC_COMM_SELF
+
         implicit none
         MPI_Comm c1,c2
 
@@ -295,7 +347,7 @@
         end
 
         subroutine PetscGetCOMM(c1)
-        use petscsys, only: PETSC_COMM_WORLD
+        use petscmpi, only: PETSC_COMM_WORLD
         implicit none
         MPI_Comm c1
 
@@ -319,7 +371,7 @@
 
 #if defined(PETSC_USE_REAL___FLOAT128)
         subroutine PetscSetModuleBlockMPI(freal,fscalar,fsum)
-        use petscsys
+        use petscmpi, only: MPIU_REAL,MPIU_SUM,MPIU_SCALAR
         implicit none
 
         integer freal,fscalar,fsum
@@ -353,18 +405,4 @@
         return
         end
 
-
-      block data PetscCommInit
-      implicit none
-!
-!     this code is duplicated - because including ../src/sys/f90-mod/petscsys.h here
-!     gives compile errors.
-!
-      MPI_Comm PETSC_COMM_WORLD
-      MPI_Comm PETSC_COMM_SELF
-      common /petscfortran9/ PETSC_COMM_WORLD
-      common /petscfortran10/ PETSC_COMM_SELF
-      data   PETSC_COMM_WORLD /0/
-      data   PETSC_COMM_SELF /0/
-      end
 

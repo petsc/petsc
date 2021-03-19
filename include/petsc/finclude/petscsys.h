@@ -165,7 +165,7 @@
 #define SETERRQ(c,ierr,s)  call PetscError(c,ierr,0,s); return
 #define SETERRA(c,ierr,s)  call PetscError(c,ierr,0,s); call MPIU_Abort(c,ierr)
 #define CHKERRQ(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);return;endif
-#define CHKERRA(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);call MPIU_Abort(MPI_COMM_SELF,ierr);endif
+#define CHKERRA(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);call MPIU_Abort(PETSC_COMM_SELF,ierr);endif
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)
 
 #define PetscMatlabEngine PetscFortranAddr

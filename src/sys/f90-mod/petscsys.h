@@ -85,42 +85,6 @@
 #else
       PetscFortranComplex, parameter :: PETSC_i = (0.0d0,1.0d0)
 #endif
-!
-! ----------------------------------------------------------------------------
-!    BEGIN PETSc aliases for MPI_ constants
-!
-!   These values for __float128 are handled in the common block (below)
-!     and transmitted from the C code
-!
-#if !defined(PETSC_USE_REAL___FLOAT128)
-#if defined (PETSC_USE_REAL_SINGLE)
-      integer4, parameter :: MPIU_REAL = MPI_REAL
-#else
-      integer4, parameter :: MPIU_REAL = MPI_DOUBLE_PRECISION
-#endif
-
-      integer4, parameter :: MPIU_SUM = MPI_SUM
-
-#if defined(PETSC_USE_COMPLEX)
-#if defined (PETSC_USE_REAL_SINGLE)
-      integer4, parameter :: MPIU_SCALAR = MPI_COMPLEX
-#else
-      integer4, parameter :: MPIU_SCALAR = MPI_DOUBLE_COMPLEX
-#endif
-#else
-#if defined (PETSC_USE_REAL_SINGLE)
-      parameter (MPIU_SCALAR = MPI_REAL)
-#else
-      parameter(MPIU_SCALAR = MPI_DOUBLE_PRECISION)
-#endif
-#endif
-#endif
-
-#if defined(PETSC_USE_64BIT_INDICES)
-      integer4, parameter :: MPIU_INTEGER = MPI_INTEGER8
-#else
-      integer4, parameter :: MPIU_INTEGER = MPI_INTEGER
-#endif
 
 !      A PETSC_NULL_FUNCTION pointer
 !
@@ -224,10 +188,6 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_OWN_POINTER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_USE_POINTER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_i
-!DEC$ ATTRIBUTES DLLEXPORT::MPIU_REAL
-!DEC$ ATTRIBUTES DLLEXPORT::MPIU_SUM
-!DEC$ ATTRIBUTES DLLEXPORT::MPIU_SCALAR
-!DEC$ ATTRIBUTES DLLEXPORT::MPIU_INTEGER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_RANDOM
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_BINARY_INT_SIZE
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_BINARY_FLOAT_SIZE
