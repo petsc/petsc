@@ -657,4 +657,6 @@ cdef class DMPlex(DM):
     # Load
 
     def topologyLoad(self, Viewer viewer):
-        CHKERR( DMPlexTopologyLoad(self.dm, viewer.vwr))
+        cdef SF sf = SF()
+        CHKERR( DMPlexTopologyLoad(self.dm, viewer.vwr, &sf.sf))
+        return sf

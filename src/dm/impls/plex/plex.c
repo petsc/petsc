@@ -1414,11 +1414,14 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 + dm     - The DM into which the topology is loaded
 - viewer - The PetscViewer for the saved topology
 
+  Output Parameters:
+. sf     - The PetscSF that pushes points in [0, N) to the associated points in the loaded plex, where N is the global number of points; NULL if unneeded
+
   Level: advanced
 
 .seealso: DMLoad(), DMView(), PetscViewerHDF5Open(), PetscViewerPushFormat()
 @*/
-PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer)
+PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *sf)
 {
   PetscBool      ishdf5;
   PetscErrorCode ierr;
@@ -1433,7 +1436,7 @@ PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer)
     PetscViewerFormat format;
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
-      ierr = DMPlexTopologyLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
+      ierr = DMPlexTopologyLoad_HDF5_Internal(dm, viewer, sf);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");

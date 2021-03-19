@@ -909,7 +909,7 @@ PetscErrorCode DMPlexLoadLabels_HDF5_Internal(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer)
+PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF *sf)
 {
   MPI_Comm        comm;
   IS              orderIS, conesIS, cellsIS, orntsIS;
@@ -974,6 +974,25 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer)
     ierr = DMPlexSetConeOrientation(dm, order[p], ornt);CHKERRQ(ierr);
   }
   ierr = PetscFree2(cone,ornt);CHKERRQ(ierr);
+  /* Create global section migration SF */
+  if (sf) {
+    PetscLayout  layout;
+    PetscInt    *globalIndices;
+
+    ierr = PetscMalloc1(pEnd, &globalIndices);CHKERRQ(ierr);
+    /* plex point == globalPointNumber in this case */
+    for (p = 0; p < pEnd; ++p) globalIndices[p] = p;
+    ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(layout, Np);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+    ierr = PetscSFCreate(comm, sf);CHKERRQ(ierr);
+    ierr = PetscSFSetFromOptions(*sf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(*sf, layout, pEnd, NULL, PETSC_OWN_POINTER, globalIndices);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
+    ierr = PetscFree(globalIndices);CHKERRQ(ierr);
+  }
+  /*  */
   ierr = ISRestoreIndices(orderIS, &order);CHKERRQ(ierr);
   ierr = ISRestoreIndices(conesIS, &cones);CHKERRQ(ierr);
   ierr = ISRestoreIndices(cellsIS, &cells);CHKERRQ(ierr);
@@ -1001,7 +1020,7 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
-  ierr = DMPlexLoadTopology_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
+  ierr = DMPlexLoadTopology_HDF5_Internal(dm, viewer, NULL);CHKERRQ(ierr);
   /* Read geometry */
   ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject) dm), &coordinates);CHKERRQ(ierr);
