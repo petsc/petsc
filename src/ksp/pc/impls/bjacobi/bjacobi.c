@@ -18,7 +18,6 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   PetscInt       N,M,start,i,sum,end;
   PetscInt       bs,i_start=-1,i_end=-1;
   PetscMPIInt    rank,size;
-  const char     *pprefix,*mprefix;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
@@ -117,15 +116,9 @@ end_1:
     if (pc->useAmat) {
       /* use block from Amat matrix, not Pmat for local MatMult() */
       ierr = MatGetDiagonalBlock(pc->mat,&mat);CHKERRQ(ierr);
-      /* make submatrix have same prefix as entire matrix */
-      ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->mat,&mprefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)mat,mprefix);CHKERRQ(ierr);
     }
     if (pc->pmat != pc->mat || !pc->useAmat) {
       ierr = MatGetDiagonalBlock(pc->pmat,&pmat);CHKERRQ(ierr);
-      /* make submatrix have same prefix as entire matrix */
-      ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)pmat,pprefix);CHKERRQ(ierr);
     } else pmat = mat;
   }
 
@@ -766,10 +759,10 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   PC_BJacobi_Singleblock *bjac;
   PetscBool              wasSetup = PETSC_TRUE;
   VecType                vectype;
+  const char             *prefix;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-    const char *prefix;
 
     if (!jac->ksp) {
       wasSetup = PETSC_FALSE;
@@ -821,11 +814,14 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ksp  = jac->ksp[0];
     bjac = (PC_BJacobi_Singleblock*)jac->data;
   }
+  ierr = KSPGetOptionsPrefix(ksp,&prefix);CHKERRQ(ierr);
   if (pc->useAmat) {
     ierr = KSPSetOperators(ksp,mat,pmat);CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(mat,prefix);CHKERRQ(ierr);
   } else {
     ierr = KSPSetOperators(ksp,pmat,pmat);CHKERRQ(ierr);
   }
+  ierr = MatSetOptionsPrefix(pmat,prefix);CHKERRQ(ierr);
   if (!wasSetup && pc->setfromoptionscalled) {
     /* If PCSetFromOptions_BJacobi is called later, KSPSetFromOptions will be called at that time. */
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -982,7 +978,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode        ierr;
   PetscInt              m,n_local,N,M,start,i;
-  const char            *prefix,*pprefix,*mprefix;
+  const char            *prefix;
   KSP                   ksp;
   Vec                   x,y;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
@@ -1092,15 +1088,11 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
      different boundary conditions for the submatrices than for the global problem) */
   ierr = PCModifySubMatrices(pc,n_local,bjac->is,bjac->is,bjac->pmat,pc->modifysubmatricesP);CHKERRQ(ierr);
 
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)pmat,&pprefix);CHKERRQ(ierr);
   for (i=0; i<n_local; i++) {
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->pmat[i]);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject)bjac->pmat[i],pprefix);CHKERRQ(ierr);
     ierr = KSPGetOptionsPrefix(jac->ksp[i],&prefix);CHKERRQ(ierr);
     if (pc->useAmat) {
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->mat[i]);CHKERRQ(ierr);
-      ierr = PetscObjectGetOptionsPrefix((PetscObject)mat,&mprefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)bjac->mat[i],mprefix);CHKERRQ(ierr);
       ierr = KSPSetOperators(jac->ksp[i],bjac->mat[i],bjac->pmat[i]);CHKERRQ(ierr);
       ierr = MatSetOptionsPrefix(bjac->mat[i],prefix);CHKERRQ(ierr);
     } else {
