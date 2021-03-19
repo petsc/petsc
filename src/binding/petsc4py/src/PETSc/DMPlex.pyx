@@ -679,3 +679,9 @@ cdef class DMPlex(DM):
 
     def labelsLoad(self, Viewer viewer):
         CHKERR( DMPlexLabelsLoad(self.dm, viewer.vwr))
+
+    def sectionLoad(self, Viewer viewer, DM sectiondm, SF sfxc):
+        cdef SF gsf = SF()
+        cdef SF lsf = SF()
+        CHKERR( DMPlexSectionLoad(self.dm, viewer.vwr, sectiondm.dm, sfxc.sf, &gsf.sf, &lsf.sf))
+        return gsf, lsf
