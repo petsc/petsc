@@ -131,7 +131,7 @@
 
       PetscInt         i,checkedin
       PetscInt         finished_tasks
-      integer          next_task
+      PetscMPIInt      next_task
       PetscMPIInt      status(MPI_STATUS_SIZE),tag,source
       PetscInt         dummy
 
@@ -160,12 +160,12 @@
          enddo
       else
          ! Multiprocessor main
-         next_task = 0
+         next_task = zero
          finished_tasks = 0
          checkedin = 0
 
          do while (finished_tasks .lt. m .or. checkedin .lt. size-1)
-            call MPI_Recv(fval,1,MPIU_SCALAR,MPI_ANY_SOURCE,               &
+            call MPI_Recv(fval,one,MPIU_SCALAR,MPI_ANY_SOURCE,               &
      &           MPI_ANY_TAG,PETSC_COMM_WORLD,status,ierr)
             tag = status(MPI_TAG)
             source = status(MPI_SOURCE)
@@ -179,7 +179,7 @@
                ! Send task to worker
                call MPI_Send(x_v(x_i),nn,MPIU_SCALAR,source,next_task,             &
      &              PETSC_COMM_WORLD,ierr)
-               next_task = next_task + 1
+               next_task = next_task + one
             else
                ! Send idle message to worker
                call MPI_Send(x_v(x_i),nn,MPIU_SCALAR,source,IDLE_TAG,              &
@@ -452,15 +452,15 @@
       tag = IDLE_TAG
       f   = 0.0
       ! Send check-in message to rank-0
-      call MPI_Send(f,1,MPIU_SCALAR,0,IDLE_TAG,PETSC_COMM_WORLD,ierr)
+      call MPI_Send(f,one,MPIU_SCALAR,zero,IDLE_TAG,PETSC_COMM_WORLD,ierr)
       CHKERRQ(ierr)
       do while (tag .ne. DIE_TAG)
-         call MPI_Recv(x,nn,MPIU_SCALAR,0,MPI_ANY_TAG,PETSC_COMM_WORLD,     &
+         call MPI_Recv(x,nn,MPIU_SCALAR,zero,MPI_ANY_TAG,PETSC_COMM_WORLD,     &
      &        status,ierr)
          CHKERRQ(ierr)
          tag = status(MPI_TAG)
          if (tag .eq. IDLE_TAG) then
-            call MPI_Send(f,1,MPIU_SCALAR,0,IDLE_TAG,PETSC_COMM_WORLD,     &
+            call MPI_Send(f,one,MPIU_SCALAR,zero,IDLE_TAG,PETSC_COMM_WORLD,     &
      &           ierr)
             CHKERRQ(ierr)
          else if (tag .ne. DIE_TAG) then
@@ -470,7 +470,7 @@
             CHKERRQ(ierr)
 
             ! Return residual to rank-0
-            call MPI_Send(f,1,MPIU_SCALAR,0,tag,PETSC_COMM_WORLD,ierr)
+            call MPI_Send(f,one,MPIU_SCALAR,zero,tag,PETSC_COMM_WORLD,ierr)
             CHKERRQ(ierr)
          end if
       enddo
@@ -503,7 +503,7 @@
 
       checkedin=0
       do while (checkedin .lt. size-1)
-         call MPI_Recv(f,1,MPIU_SCALAR,MPI_ANY_SOURCE,MPI_ANY_TAG,         &
+         call MPI_Recv(f,one,MPIU_SCALAR,MPI_ANY_SOURCE,MPI_ANY_TAG,         &
      &        PETSC_COMM_WORLD,status,ierr)
          CHKERRQ(ierr)
          checkedin=checkedin+1

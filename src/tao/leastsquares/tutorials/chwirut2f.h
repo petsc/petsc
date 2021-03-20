@@ -4,6 +4,7 @@
 !
 
 #include "petsc/finclude/petsctao.h"
+      use petscmpi  ! or mpi or mpi_f08
       use petsctao
       implicit none
 
@@ -22,11 +23,13 @@
       PetscMPIInt  rank
       PetscMPIInt  size
       PetscMPIInt  idle_tag, die_tag
+      PetscMPIInt  zero,one
       parameter (m=214)
       parameter (n=3)
       parameter (nn=n)
       parameter (idle_tag=2000)
       parameter (die_tag=3000)
+      parameter (zero=0,one=1)
 
       common /params/ t,y,rank,size
 

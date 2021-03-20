@@ -1,5 +1,6 @@
       program main              !   Solves the linear system  J x = f
 #include <petsc/finclude/petsc.h>
+      use petscmpi  ! or mpi or mpi_f08
       use petscksp
       implicit none
       Vec x,f
@@ -16,7 +17,7 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
-      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,eight,one,one,PETSC_NULL_INTEGER,da,ierr);CHKERRA(ierr)
+      call DMDACreate1d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,eight,one,one,PETSC_NULL_INTEGER,da,ierr);CHKERRA(ierr)
       call DMSetFromOptions(da,ierr)
       call DMSetUp(da,ierr)
       call DMCreateGlobalVector(da,x,ierr);CHKERRA(ierr)
