@@ -276,7 +276,7 @@ def processf90interfaces(petscdir,verbose):
                 ibuf = ibuf.replace('integer a ! MPI_Comm','MPI_Comm a ! MPI_Comm')
                 plist = [p for p in ptypes if ' '+p[1:]+' ' in ibuf]
                 if plist: ibuf = ibuf.replace(')',')\n       import '+','.join(set(plist)),1)
-              fd.write(ibuf)
+                fd.write(ibuf)
         shutil.rmtree(tmpDir)
   # FixDir(petscdir,os.path.join(petscdir,'include','petsc','finclude','ftn-auto-interfaces'),verbose)
   return
