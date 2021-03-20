@@ -73,7 +73,8 @@ class Configure(config.package.Package):
     self.addMakeRule('petsc4pyinstall','', \
                        ['@echo "*** Installing petsc4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+self.python.pyexe+' setup.py install --install-lib='+installLibPath+')  || \\\n\
+           '+newdir+archflags+self.python.pyexe+' setup.py install --install-lib='+installLibPath+' \\\n\
+               $(if $(DESTDIR),--root=\'$(DESTDIR)\') ) || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\
