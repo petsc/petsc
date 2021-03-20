@@ -214,7 +214,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
       (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
     }
     /* print line of stack trace */
-    (*PetscErrorPrintf)("#%d %s() line %d in %s\n",cnt++,fun,line,file);
+    (*PetscErrorPrintf)("#%d %s() at %s:%d\n",cnt++,fun,file,line);
     PetscStrncmp(fun,"main",4,&ismain);
     if (ismain) {
       PetscOptionsViewError();
