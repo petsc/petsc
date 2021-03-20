@@ -26,6 +26,9 @@ class Configure(config.base.Configure):
     self.arch         = framework.require('PETSc.options.arch', self)
     self.debuggers    = framework.require('config.utilities.debuggers', self)
     self.setCompilers = framework.require('config.setCompilers', self)
+    self.headers      = framework.require('config.headers', self)
+    self.functions    = framework.require('config.functions', self)
+    self.ftm          = framework.require('config.utilities.featureTestMacros', self)
     return
 
   def checkSharedDynamicPicOptions(self):
@@ -103,10 +106,18 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-serialize-functions'] and self.setCompilers.dynamicLibraries:
       self.addDefine('SERIALIZE_FUNCTIONS', 1)
 
+  def checkSymbolResolution(self):
+    '''Checks that dladdr() works'''
+    if self.headers.haveHeader('dlfcn.h') and self.functions.haveFunction('dlerror'):
+      ftm = ''
+      if self.ftm.defines.get('_GNU_SOURCE'): ftm = '#define _GNU_SOURCE\n'
+      if self.checkCompile('%s#include<stdlib.h>\n#include <dlfcn.h>\n' % ftm, 'Dl_info info;\n\nif (dladdr(exit, &info));\n'):
+        self.addDefine('HAVE_DLADDR', 1)
 
   def configure(self):
     self.executeTest(self.checkSharedDynamicPicOptions)
     self.executeTest(self.configureSharedLibraries)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureSerializedFunctions)
+    self.executeTest(self.checkSymbolResolution)
     return
