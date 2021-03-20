@@ -141,9 +141,17 @@
           <li>Add PetscCalloc to allocate zeroed memory</li>
           <li>Automatically detect YAML and JSON option files by extension or particular first line</li>
           <li>Update YAML options file processing to ignore keys starting with <code>$</code>, Add some special processing</li>
+          <li>Add PetscBagViewFromOptions()</li>
+          <li>Add PetscLogEventDeactivatePush(), PetscLogEventDeactivatePop()</li>
         </ul>
-      <h4>IS:</h4>
+      <h4>PetscViewer:</h4>
+        <ul>
+          <li>PetscViewerAndFormat now allows a payload</li>
+          <li>Change PetscViewerFlowControlStepMaster(), PetscViewerFlowControlEndMaster() to PetscViewerFlowControlStepMain(), PetscViewerFlowControlEndMain()</li>
+        </ul>
       <h4>PetscDraw:</h4>
+      <h4>AO:</h4>
+      <h4>IS:</h4>
       <h4>VecScatter / PetscSF:</h4>
         <ul>
           <li>VecScatter is now the same type as PetscSF, in other words, we have typedef PetscSF VecScatter</li>
@@ -277,18 +285,6 @@
         <li>PetscDSCopyBoundary() now takes a list of fields for which boundary copying is done</li>
         <li>Add PetscDSGet/SetJetDegree(), and -dm_ds_jet_degree is needed to enable it under a DM</li>
       </ul>
-      <h4>PetscViewer:</h4>
-      <ul>
-        <li>PetscViewerAndFormat now allows a payload</li>
-        <li>Change PetscViewerFlowControlStepMaster(), PetscViewerFlowControlEndMaster() to PetscViewerFlowControlStepMain(), PetscViewerFlowControlEndMain()</li>
-      </ul>
-      <h4>SYS:</h4>
-      <ul>
-        <li>Add PetscBagViewFromOptions()</li>
-        <li>Add PetscLogEventDeactivatePush(), PetscLogEventDeactivatePop()</li>
-      </ul>
-      <h4>AO:</h4>
-      <h4>Convest:</h4>
       <h4>Fortran:</h4>
       <ul>
         <li>Require mpi.mod. Previously if mpi.mod was not usable - mpif.h was used</li>
