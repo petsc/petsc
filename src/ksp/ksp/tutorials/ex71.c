@@ -479,7 +479,7 @@ int main(int argc,char **args)
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 1 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_bddc_corner_selection
  testset:
    nsize: 8
-   requires: hpddm slepc
+   requires: hpddm slepc define(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
    # on some architectures, this test will converge in 19 or 21 iterations
    filter: grep -v "variant HERMITIAN" | grep -v " tolerance"  | sed -e "s/CONVERGED_RTOL iterations [1-2][91]\{0,1\}$/CONVERGED_RTOL iterations 20/g"
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 1 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_type hpddm -prefix_push pc_bddc_coarse_ -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 6 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS -prefix_pop -ksp_type fgmres -ksp_max_it 50 -ksp_converged_reason
@@ -532,7 +532,7 @@ int main(int argc,char **args)
    args: -pde_type Elasticity -cells 9,7,8 -dim 3 -ksp_view -ksp_type fetidp -fetidp_ksp_type cg -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd -ksp_fetidp_fullyredundant -ksp_error_if_not_converged -fetidp_bddc_pc_bddc_monolithic
  testset:
    nsize: 8
-   requires: hpddm slepc
+   requires: hpddm slepc define(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
    args: -pde_type Elasticity -cells 12,12 -dim 2 -ksp_converged_reason -pc_type hpddm -pc_hpddm_coarse_correction balanced -pc_hpddm_levels_1_pc_type asm -pc_hpddm_levels_1_pc_asm_overlap 1 -pc_hpddm_levels_1_pc_asm_type basic -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 10 -matis_localmat_type {{aij baij sbaij}shared output} -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS
    test:
      suffix: hpddm
