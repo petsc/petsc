@@ -15,7 +15,9 @@ configure_options = [
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',
   '--with-shared-libraries=0',
-
+  '--download-slepc=1',
+  '--download-bamg=1',
+  '--download-hpddm=1',
   ]
 
 if __name__ == '__main__':
