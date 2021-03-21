@@ -14,11 +14,11 @@ class Configure(config.package.CMakePackage):
     self.functions        = ['']
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
     self.cxx              = 1
-    self.requirescxx14    = 1
     self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
     self.precisions       = ['double']
+    self.kokkos_cxxdialect = 'C++14' # requirement for which compiler is used to compile Kokkos
     return
 
   def __str__(self):
@@ -101,6 +101,7 @@ class Configure(config.package.CMakePackage):
       self.system = 'PThread'
 
     if self.cuda.found:
+      lang = 'cuda'
       args.append('-DKokkos_ENABLE_CUDA=ON')
       self.system = 'CUDA'
       self.pushLanguage('CUDA')
@@ -124,6 +125,7 @@ class Configure(config.package.CMakePackage):
       if nvccpath:
          os.environ['PATH'] = path+':'+nvccpath
     elif self.hip.found:
+      lang = 'hip'
       self.system = 'HIP'
       args.append('-DKokkos_ENABLE_HIP=ON')
       with self.Language('HIP'):
@@ -141,6 +143,20 @@ class Configure(config.package.CMakePackage):
         raise RuntimeError('You must set -with-kokkos-hip-arch=VEGA900, VEGA906, VEGA908 etc.')
       args.append('-DKokkos_ARCH_'+self.argDB['with-kokkos-hip-arch']+'=ON')
       args.append('-DKokkos_ENABLE_HIP_RELOCATABLE_DEVICE_CODE=OFF')
+    else:
+      lang = 'cxx'
+
+    # set -DCMAKE_CXX_STANDARD=
+    if not hasattr(self.compilers,lang+'dialect'):
+      raise RuntimeError('Could not determine C++ dialect for the '+lang.upper()+' Compiler')
+    else:
+      langdialect = getattr(self.compilers,lang+'dialect')
+      if langdialect < self.kokkos_cxxdialect:
+        raise RuntimeError('Kokkos requires '+self.kokkos_cxxdialect+' but the '+lang.upper()+ 'compiler only supports '+langdialect)
+      else:
+        args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_STANDARD=')
+        args.append('-DCMAKE_CXX_STANDARD="' + langdialect.split("C++",1)[1] + '"') # e.g., extract 14 from C++14
+
     return args
 
   def configureLibrary(self):

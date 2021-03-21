@@ -52,6 +52,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-dependencies=<bool>',              nargs.ArgBool(None, 1, 'Compile with -MMD or equivalent flag if possible'))
     help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',            nargs.Arg(None, 'auto', 'Dialect under which to compile C++ sources (auto,cxx14,cxx11,0)'))
     help.addArgument('Compilers', '-with-hip-dialect=<dialect>',            nargs.Arg(None, 'auto', 'Dialect under which to compile HIP sources (auto,cxx14,cxx11,0)'))
+    help.addArgument('Compilers', '-with-cuda-dialect=<dialect>',           nargs.Arg(None, 'auto', 'Dialect under which to compile CUDA sources (auto,cxx14,cxx11,0)'))
     return
 
   def getDispatchNames(self):
@@ -481,18 +482,19 @@ class Configure(config.base.Configure):
     LANG      = language.upper()
     TESTCXX14 = 0
     TESTCXX11 = 0
-    cxxdialect = self.argDB.get('with-'+lang+'-dialect','').upper().replace('X','+')
-    if cxxdialect in ['','0','NONE']: return
-    elif cxxdialect == 'AUTO':
+    with_lang_dialect = self.argDB.get('with-'+lang+'-dialect','').upper().replace('X','+') # configure value
+    if with_lang_dialect in ['','0','NONE']: return
+    elif with_lang_dialect == 'AUTO':
       TESTCXX14 = 1
       TESTCXX11 = 1
-    elif cxxdialect == 'C++14':
+    elif with_lang_dialect == 'C++14':
       TESTCXX14 = 1
-    elif cxxdialect == 'C++11':
+    elif with_lang_dialect == 'C++11':
       TESTCXX11 = 1
     else:
       raise RuntimeError('Unknown C++ dialect: with-'+lang+'-dialect=%s' % (self.argDB['with-'+lang+'-dialect']))
 
+    cxxdialect  = '' # tmp var storing test result
     # Test borrowed from Jack Poulson (Elemental)
     includes = """
           #include <random>
@@ -510,7 +512,7 @@ class Configure(config.base.Configure):
     body14 = """
           constexpr std::complex<double> I(0.0,1.0);
           auto lambda = [](auto x, auto y) {return x + y;};
-          return lambda(3,4);
+          return lambda(3,4) + (int)std::real(I);
           """
     self.setCompilers.saveLog()
     self.setCompilers.pushLanguage(language)
@@ -525,15 +527,15 @@ class Configure(config.base.Configure):
         if self.setCompilers.checkCompilerFlag(flag, includes, body+body14):
           newflag = getattr(self.setCompilers,LANG+'FLAGS') + ' ' + flag # append flag to the old
           setattr(self.setCompilers,LANG+'FLAGS',newflag)
-          self.cxxdialect = 'C++14'
+          cxxdialect = 'C++14'
           self.addDefine('HAVE_'+LANG+'_DIALECT_CXX14',1)
           self.addDefine('HAVE_'+LANG+'_DIALECT_CXX11',1)
           break
 
-    if cxxdialect == 'C++14' and self.cxxdialect != 'C++14':
+    if with_lang_dialect == 'C++14' and cxxdialect != 'C++14':
       self.logWrite(self.setCompilers.restoreLog())
       raise RuntimeError('Could not determine compiler flag for with-'+lang+'-dialect=%s,\nIf you know the flag, set it with '+LANG+'FLAGS option')
-    elif not self.cxxdialect and TESTCXX11:
+    elif not cxxdialect and TESTCXX11:
       flags_to_try = ['']
       if isGNU: flags_to_try += ['-std=gnu++11']
       else: flags_to_try += ['-std=c++11','-std=c++0x']
@@ -544,14 +546,15 @@ class Configure(config.base.Configure):
         if self.setCompilers.checkCompilerFlag(flag, includes, body):
           newflag = getattr(self.setCompilers,LANG+'FLAGS') + ' ' + flag # append flag to the old
           setattr(self.setCompilers,LANG+'FLAGS',newflag)
-          self.cxxdialect = 'C++11'
+          cxxdialect = 'C++11'
           self.addDefine('HAVE_'+LANG+'_DIALECT_CXX11',1)
           break
 
-    if cxxdialect == 'C++11' and self.cxxdialect != 'C++11':
+    if with_lang_dialect == 'C++11' and cxxdialect != 'C++11':
       self.logWrite(self.setCompilers.restoreLog())
       raise RuntimeError('Could not determine compiler flag for with-'+lang+'-dialect=%s,\nIf you know the flag, set it with '+LANG+'FLAGS option')
 
+    setattr(self,lang+'dialect',cxxdialect) # record the result
     self.setCompilers.popLanguage()
     self.logWrite(self.setCompilers.restoreLog())
     return
@@ -1484,6 +1487,10 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         self.executeTest(self.checkFortranLibraries)
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
+
+    if hasattr(self.setCompilers, 'CUDAC'):
+      self.executeTest(self.checkCxxDialect,['CUDA',False]) # Not GNU
+
     if hasattr(self.setCompilers, 'HIPC'):
       self.executeTest(self.checkCxxDialect,['HIP',False]) # Not GNU
     if hasattr(self.setCompilers, 'SYCL'):

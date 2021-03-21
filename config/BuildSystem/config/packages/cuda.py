@@ -70,12 +70,10 @@ class Configure(config.package.Package):
       raise RuntimeError('Must use either single or double precision with CUDA')
     self.checkSizeofVoidP()
     if not self.thrust.found and self.scalarTypes.scalartype == 'complex': # if no user-supplied thrust, check the system's complex ability
-      if not self.compilers.cxxdialect in ['C++11','C++14']:
-        raise RuntimeError('CUDA Error: Using CUDA with PetscComplex requirs a C++ dialect at least cxx11. Use --with-cxx-dialect=xxx to specify a proper one')
+      if not self.compilers.cxxdialect in ['C++11','C++14'] or not self.compilers.cudadialect in ['C++11','C++14']:
+        raise RuntimeError('CUDA Error: Using CUDA with PetscComplex requires a C++ dialect at least cxx11. Use --with-cxx-dialect=xxx and --with-cuda-dialect=xxx to specify a suitable compiler')
       if not self.checkThrustVersion(100908):
         raise RuntimeError('CUDA Error: The thrust library is too low to support PetscComplex. Use --download-thrust or --with-thrust-dir to give a thrust >= 1.9.8')
-    if self.compilers.cxxdialect in ['C++11','C++14']: #nvcc is a C++ compiler so it is always good to add -std=xxx. It is even crucial when using thrust complex (see MR 2822)
-      self.setCompilers.CUDAFLAGS += ' -std=' + self.compilers.cxxdialect.lower()
     return
 
   def versionToStandardForm(self,ver):
@@ -185,5 +183,5 @@ class Configure(config.package.Package):
         self.delMakeMacro('CUDAC')
         self.addMakeMacro('CUDAC','CPLUS_INCLUDE_PATH="" '+petscNvcc)
     else:
-      self.logPrint('nvcc --dryrun failed, unable to determine CUDA_CXX and CUDA_CXXFLAGS') 
+      self.logPrint('nvcc --dryrun failed, unable to determine CUDA_CXX and CUDA_CXXFLAGS')
     return
