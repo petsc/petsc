@@ -160,19 +160,23 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
   PetscDS        ds;
+  PetscWeakForm  wf;
+  DMLabel        label;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetRegionNumDS(dm, 0, NULL, NULL, &ds);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(ds, 0, f0_quad_u, f1_u);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+  ierr = DMGetRegionNumDS(dm, 0, &label, NULL, &ds);CHKERRQ(ierr);
+  ierr = PetscDSGetWeakForm(ds, &wf);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, f0_quad_u, 0, f1_u);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(ds, 0, quad_u, user);CHKERRQ(ierr);
-  ierr = DMGetRegionNumDS(dm, 1, NULL, NULL, &ds);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(ds, 0, f0_quad_u, f1_u);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(ds, 1, f0_quad_p, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(ds, 1, 1, g0_pp, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMGetRegionNumDS(dm, 1, &label, NULL, &ds);CHKERRQ(ierr);
+  ierr = PetscDSGetWeakForm(ds, &wf);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, f0_quad_u, 0, f1_u);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexResidual(wf, label, 1, 1, 0, f0_quad_p, 0, NULL);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexJacobian(wf, label, 1, 1, 1, 0, g0_pp, 0, NULL, 0, NULL, 0, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(ds, 0, quad_u, user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(ds, 1, quad_p, user);CHKERRQ(ierr);
   ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) quad_u, NULL, 1, &id, user);CHKERRQ(ierr);
