@@ -440,8 +440,8 @@ Usage of PETSc Functions and Macros
    release.
 
 #. The format strings in PETSc ASCII output routines, such as
-   ``PetscPrintf``, take a for all PETSc variables of type ``PetscInt``,
-   not a .
+   ``PetscPrintf``, take a ``%D`` for all PETSc variables of type ``PetscInt``,
+   not a ``%d``.
 
 #. All arguments of type ``PetscReal`` to PETSc ASCII output routines,
    such as ``PetscPrintf``, must be cast to ``double``, for example,
