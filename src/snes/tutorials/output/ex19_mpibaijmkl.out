@@ -69,7 +69,7 @@ SNES Object: 2 MPI processes
               total: nonzeros=448, allocated nonzeros=448
                   block size is 4
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: (sub_) 1 MPI processes
         type: seqbaij
         rows=32, cols=32, bs=4
         total: nonzeros=448, allocated nonzeros=448

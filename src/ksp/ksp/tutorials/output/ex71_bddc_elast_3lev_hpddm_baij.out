@@ -161,7 +161,7 @@ PC Object: 8 MPI processes
                     total: nonzeros=210, allocated nonzeros=210
                         block size is 1
             linear system matrix = precond matrix:
-            Mat Object:   1 MPI processes
+            Mat Object: (pc_bddc_coarse_pc_hpddm_levels_1_sub_) 1 MPI processes
               type: seqaij
               rows=20, cols=20
               total: nonzeros=400, allocated nonzeros=400

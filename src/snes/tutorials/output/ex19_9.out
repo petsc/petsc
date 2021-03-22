@@ -94,7 +94,7 @@ SNES Object: 3 MPI processes
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_x_velocity_) 1 MPI processes
+        Mat Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
@@ -139,7 +139,7 @@ SNES Object: 3 MPI processes
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_y_velocity_) 1 MPI processes
+        Mat Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
@@ -184,7 +184,7 @@ SNES Object: 3 MPI processes
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_Omega_) 1 MPI processes
+        Mat Object: (fieldsplit_Omega_sub_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
@@ -229,7 +229,7 @@ SNES Object: 3 MPI processes
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_temperature_) 1 MPI processes
+        Mat Object: (fieldsplit_temperature_sub_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
