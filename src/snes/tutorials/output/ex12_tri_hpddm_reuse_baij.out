@@ -95,7 +95,8 @@ SNES Object: 4 MPI processes
     PC Object: (pc_hpddm_levels_1_) 4 MPI processes
       type: bjacobi
         number of blocks = 4
-        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        Local solver information for first block is in the following KSP and PC objects on rank 0:
+        Use -pc_hpddm_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
       KSP Object: (pc_hpddm_levels_1_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero

@@ -213,6 +213,7 @@
          <li>Add KSPMonitorError(), used by <tt>-ksp_monitor_error</tt></li>
          <li>Add arguments to KSPMonitorSetFromOptions() to allow line graphs to be configured</li>
          <li>Deprecate KSP{Set|Get}MatSolveBlockSize(), use KSP{Set|Get}MatSolveBatchSize() instead</li>
+         <li>Reduce default KSPView() ASCII output to a single subdomain's KSP/PC information for PCASM, resp. PCBJacobi. Use -ksp_view ::ascii_info_detail to output KSP/PC information for all subdomains</li>
       </ul>
       <h4>SNES:</h4>
       <ul>
@@ -224,6 +225,7 @@
         <li>Add SNESConvergedReasonViewCancel() to remove all user-added  converged reason view functions</li>
         <li>Add SNESGetConvergedReasonString() to retrieve a human readable string for snes converged reason</li>
         <li>Add SNESFASFullSetTotal() to use total residual restriction and total solution interpolation in the initial cycle of full FAS multigrid</li>
+        <li>Deprecate -snes_nasm_sub_view, use -snes_view ::ascii_info_detail instead</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>

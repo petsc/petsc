@@ -35,7 +35,8 @@ KSP Object:
 PC Object:
   type: bjacobi
     number of blocks = 4
-    Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+    Local solver information for first block is in the following KSP and PC objects on rank 0:
+    Use -ksp_view ::ascii_info_detail to display information for all blocks
 KSP Object:
   type: preonly
   maximum iterations=10000

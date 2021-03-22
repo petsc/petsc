@@ -3,7 +3,6 @@
 #include <petsc/private/petschpddm.h> /*I "petscpc.h" I*/
 #include <petsc/private/pcimpl.h> /* this must be included after petschpddm.h so that _PCIMPL_H is not defined            */
                                   /* otherwise, it is assumed that one is compiling libhpddm_petsc => circular dependency */
-#include <petsc/private/pcasmimpl.h>
 #if defined(PETSC_HAVE_FORTRAN)
 #include <petsc/private/fortranimpl.h>
 #endif
@@ -1031,7 +1030,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       ierr = (*loadedSym)(data->levels[0]->P, data->is, ismatis ? C : data->aux, weighted, data->B, initial, data->levels);CHKERRQ(ierr);
       if (data->share) {
         Mat st[2];
-        ((PC_ASM*)data->levels[0]->pc->data)->same_local_solves = PETSC_TRUE;
         ierr = KSPGetOperators(ksp[0], st, st + 1);CHKERRQ(ierr);
         ierr = MatCopy(subA[0], st[0], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         if (subA[1] != subA[0] || st[1] != st[0]) {
