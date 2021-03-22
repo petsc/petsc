@@ -55,7 +55,7 @@ example, `MUMPS <http://mumps.enseeiht.fr/>`__ requires Fortran) you can use
 
 Prerequisites
 =============
-.. Important::
+.. important::
 
    This tutorial assumes basic knowledge on the part of the user on how to
    navigate your system using the Command-Line Interface (CLI), a.k.a. "from the
@@ -181,8 +181,7 @@ customize their PETSc installation. Common configuration options are:
 - Setting various known machine quantities for PETSc to use such as known integral sizes,
   memory alignment, or additional compiler flags.
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    You MUST specify all of your configuration options at this stage. In order to enable
    additional options or packages in the future, you will have to reconfigure your PETSc

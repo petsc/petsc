@@ -37,7 +37,7 @@ Any Useful Books On Numerical Computing?
 What Kind Of Parallel Computers Or Clusters Are Needed To Use PETSc? Or Why Do I Get Little Speedup?
 ----------------------------------------------------------------------------------------------------
 
-.. Important::
+.. important::
 
    PETSc can be used with any kind of parallel system that supports MPI BUT for any decent
    performance one needs:
@@ -974,8 +974,7 @@ How Can I Use Newton's Method Jacobian Free? Can I Difference A Different Functi
 The simplest way is with the option ``-snes_mf``, this will use finite differencing of the
 function provided to ``SNESComputeFunction()`` to approximate the action of Jacobian.
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    Since no matrix-representation of the Jacobian is provided the ``-pc_type`` used with
    this option must be ``-pc_type none``. You may provide a custom preconditioner with
@@ -1250,8 +1249,7 @@ If I Have A Sequential Program Can I Use A Parallel Direct Solver?
 ------------------------------------------------------------------
 
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    Do not expect to get great speedups! Much of the speedup gained by using parallel
    solvers comes from building the underlying matrices and vectors in parallel to begin
@@ -2181,8 +2179,7 @@ nodes - than on the (compile) front-end. **Do not use dynamic libraries & shared
 libraries**. Run ``configure`` with
 ``--with-shared-libraries=0 --with-dynamic-loading=0``.
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    This option has been removed in petsc v3.5
 
