@@ -31,7 +31,7 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    pp = os.path.join(self.installDir,'lib','python*','site-packages')
+    installLibPath = os.path.join(self.installDir, 'lib')
     if self.setCompilers.isDarwin(self.log):
       apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
     else:
@@ -73,13 +73,14 @@ class Configure(config.package.Package):
     self.addMakeRule('petsc4pyinstall','', \
                        ['@echo "*** Installing petsc4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+self.python.pyexe+' setup.py install --install-lib='+os.path.join(self.installDir,'lib')+')  || \\\n\
+           '+newdir+archflags+self.python.pyexe+' setup.py install --install-lib='+installLibPath+' \\\n\
+               $(if $(DESTDIR),--root=\'$(DESTDIR)\') ) || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\
-                          '@echo "To use petsc4py, add '+os.path.join(self.installDir,'lib')+' to PYTHONPATH"',\
+                          '@echo "To use petsc4py, add '+installLibPath+' to PYTHONPATH"',\
                           '@echo "====================================="'])
 
     np = self.make.make_test_np
@@ -90,7 +91,8 @@ class Configure(config.package.Package):
     self.addMakeMacro('PETSC4PY_NP',np)
     self.addMakeRule('petsc4pytest', '',
         ['@echo "*** Testing petsc4py on ${PETSC4PY_NP} processes ***"',
-         '@PYTHONPATH=%s:${PYTHONPATH} ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % (os.path.join(self.installDir, 'lib'), self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
+         '@PYTHONPATH=%s:${PYTHONPATH} ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
+             (installLibPath, self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
          '@echo "====================================="'])
 
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
