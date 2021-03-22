@@ -1,0 +1,18 @@
+Fine grid size 5 by 5
+  0 KSP Residual norm 4.872326903977e+00 
+  1 KSP Residual norm 6.173540128805e-02 
+  2 KSP Residual norm 1.496400603732e-03 
+  3 KSP Residual norm 6.196702309511e-16 
+KSP final norm of residual 6.54561e-15
+Number of iterations = 3
+  0 KSP Residual norm 4.872326903977e+00 
+  1 KSP Residual norm 6.173540128805e-02 
+  2 KSP Residual norm 1.496400603732e-03 
+  3 KSP Residual norm 6.196702309511e-16 
+KSP final norm of residual #0 6.54561e-15
+                           #1 6.54561e-15
+                           #2 6.54561e-15
+                           #3 6.54561e-15
+                           #4 6.54561e-15
+                           #5 6.54561e-15
+                           #6 6.54561e-15

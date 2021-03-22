@@ -113,6 +113,9 @@ struct _p_KSP {
   PetscInt      chknorm;             /* only compute/check norm if iterations is great than this */
   PetscBool     lagnorm;             /* Lag the residual norm calculation so that it is computed as part of the
                                         MPI_Allreduce() for computing the inner products for the next iteration. */
+
+  PetscInt   nmax;                   /* maximum number of right-hand sides to be handled simultaneously */
+
   /* --------User (or default) routines (most return -1 on error) --------*/
   PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP,PetscInt,PetscReal,void*); /* returns control to user after */
   PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void**);         /* */

@@ -93,8 +93,10 @@ PETSC_EXTERN PetscErrorCode KSPSolve(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPSolveTranspose(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPSetUseExplicitTranspose(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPMatSolve(KSP,Mat,Mat);
-PETSC_EXTERN PetscErrorCode KSPSetMatSolveBlockSize(KSP,PetscInt);
-PETSC_EXTERN PetscErrorCode KSPGetMatSolveBlockSize(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPSetMatSolveBatchSize(KSP,PetscInt);
+PETSC_DEPRECATED_FUNCTION("Use KSPSetMatSolveBatchSize() (since version 3.15)") PETSC_STATIC_INLINE PetscErrorCode KSPSetMatSolveBlockSize(KSP ksp,PetscInt n) {return KSPSetMatSolveBatchSize(ksp,n);}
+PETSC_EXTERN PetscErrorCode KSPGetMatSolveBatchSize(KSP,PetscInt*);
+PETSC_DEPRECATED_FUNCTION("Use KSPGetMatSolveBatchSize() (since version 3.15)") PETSC_STATIC_INLINE PetscErrorCode KSPGetMatSolveBlockSize(KSP ksp,PetscInt *n) {return KSPGetMatSolveBatchSize(ksp,n);}
 PETSC_EXTERN PetscErrorCode KSPReset(KSP);
 PETSC_EXTERN PetscErrorCode KSPResetViewers(KSP);
 PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
