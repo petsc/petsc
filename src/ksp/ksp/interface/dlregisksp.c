@@ -57,7 +57,7 @@ PetscErrorCode  PCInitializePackage(void)
   /* Initialize subpackages */
   ierr = PCGAMGInitializePackage();CHKERRQ(ierr);
   ierr = PCBDDCInitializePackage();CHKERRQ(ierr);
-#if defined(PETSC_HAVE_HPDDM)
+#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   ierr = PCHPDDMInitializePackage();CHKERRQ(ierr);
 #endif
   /* Register Classes */

@@ -76,7 +76,7 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCHPDDM);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_HPDDM)
+#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   ierr = PCHPDDMSetAuxiliaryMat(pc,is,aux,NULL,NULL);CHKERRQ(ierr);
   ierr = PCHPDDMHasNeumannMat(pc,PETSC_FALSE);CHKERRQ(ierr); /* PETSC_TRUE is fine as well, just testing */
 #endif
@@ -122,7 +122,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_HPDDM)
+#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   if (flg) {
     ierr = PCHPDDMGetSTShareSubKSP(pc,&flg);CHKERRQ(ierr);
   }
@@ -151,18 +151,18 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) define(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
       args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{bjacobi hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
    test:
-      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) define(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       suffix: geneo
       nsize: 4
       args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev {{5 15}separate output} -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_coarse_p {{1 2}shared output} -pc_hpddm_coarse_pc_type redundant -mat_type {{aij baij sbaij}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
    testset:
-      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) define(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
       args: -ksp_converged_reason -ksp_max_it 150 -pc_type hpddm -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type redundant -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_define_subdomains -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp {{false true}shared output}
       test:
@@ -178,20 +178,20 @@ int main(int argc,char **args)
         args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_st_pc_type lu -mat_type baij -pc_hpddm_levels_1_st_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps
 
    test:
-      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) define(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       suffix: fgmres_geneo_20_p_2
       nsize: 4
       args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_type fgmres -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -pc_hpddm_log_separate {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
    test:
-      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) define(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       suffix: fgmres_geneo_20_p_2_geneo
       output_file: output/ex76_fgmres_geneo_20_p_2.out
       nsize: 4
       args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_2_p 2 -pc_hpddm_levels_2_mat_type {{baij sbaij}shared output} -pc_hpddm_levels_2_eps_nev {{5 20}shared output} -pc_hpddm_levels_2_sub_pc_type cholesky -pc_hpddm_levels_2_ksp_type gmres -ksp_type fgmres -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -mat_type {{aij sbaij}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
    # PCHPDDM + KSPHPDDM test to exercise multilevel + multiple RHS in one go
    test:
-      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm slepc datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) define(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       suffix: fgmres_geneo_20_p_2_geneo_rhs
       output_file: output/ex76_fgmres_geneo_20_p_2.out
       nsize: 4
