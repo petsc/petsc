@@ -100,7 +100,7 @@ int main(int argc,char **args)
         args: -ksp_atol 1e-12
 
    test:
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc define(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
       nsize: 2
       suffix: symmetric
       args: -nmat 3 -pc_type jacobi -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_atol 1e-11 -ksp_hpddm_type bgcrodr -ksp_hpddm_recycle 20 -reset {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -ksp_hpddm_recycle_symmetric true

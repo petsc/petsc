@@ -65,7 +65,7 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      requires: defined(PETSC_USING_64BIT_PTR)
+      requires: define(PETSC_USING_64BIT_PTR)
       args: -mat_block_size {{1 2 4 5 6 8 12 15}}
 
 TEST*/
