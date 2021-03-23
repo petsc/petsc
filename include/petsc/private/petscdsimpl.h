@@ -26,7 +26,7 @@ struct _n_DSBoundary {
 };
 
 typedef struct {
-  PetscInt start;    /* Starting entry of the chunk in an array */
+  PetscInt start;    /* Starting entry of the chunk in an array (in bytes) */
   PetscInt size;     /* Current number of entries of the chunk */
   PetscInt reserved; /* Number of reserved entries in the chunk */
 } PetscChunk;
