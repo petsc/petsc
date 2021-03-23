@@ -3,8 +3,8 @@
 BuildSystem
 -----------
 
-This chapter describes the system used by PETSc for configuration
-testing, named BuildSystem. The system is written solely in Python, and
+BuildSystem is used by PETSc for configuration
+testing. Written solely in Python, it
 consists of a number of objects running in a coordinated fashion. Below
 we describe the main objects involved, and the organization of both the
 files and in-memory objects during the configure run. However, first we
@@ -16,17 +16,17 @@ What is a build?
 The build stage compiles source to object files, stores them somehow
 (usually in archives), and links shared libraries and executables. These
 are mechanical operations that reduce to applying a construction rule to
-sets of files. The `make <http://www.gnu.org/software/make/>`__ tool is
-great at this job. However, other parts of make are not as useful, and
+sets of files. The `Make <http://www.gnu.org/software/make/>`__ tool is
+great at this job. However, other parts of Make are not as useful, and
 we should distinguish the two.
 
-Make uses a single predicate, *older than*, to decide whether to apply a
+Make uses a single predicate, "older than", to decide whether to apply a
 rule. This is a disaster. A useful upgrade to make would expand the list
-of available predicates, including things like *md5sum has changed* and
-*flags have changed*. There have been attempts to use make to determine
+of available predicates, including things like "md5sum has changed" and
+"flags have changed". There have been attempts to use Make to determine
 whether a file has changed, for example by using stamp files. However,
 it cannot be done without severe contortions which make it much harder
-to see what make is doing and maintain the system. Right now, we can
+to see what Make is doing and maintain the system. Right now, we can
 combine make with the `ccache <https://ccache.samba.org/>`__ utility to
 minimize recompiling and relinking.
 
@@ -37,26 +37,13 @@ The ``configure`` program is designed to assemble all information and preconditi
 necessary for the build stage. This is a far more complicated task, heavily dependent on
 the local hardware and software environment. It is also the source of nearly every build
 problem. The most crucial aspect of a configure system is not performance, scalability, or
-even functionality, it is *debuggability*. Configuration failure is at least as common as
+even functionality, but *debuggability*. Configuration failure is at least as common as
 success, due to broken tools, operating system upgrades, hardware incompatibilities, user
 error, and a host of other reasons. Problem diagnosis is the single biggest bottleneck for
 development and maintenance time. Unfortunately, current systems are built to optimize the
 successful case rather than the unsuccessful. In PETSc, we have developed the
-``BuildSystem`` package (BS) to remedy the shortcomings of configuration systems such as
+``BuildSystem`` package to remedy the shortcomings of configuration systems such as
 Autoconf, CMake, and SCons.
-
-First, BS provides consistent namespacing for tests and test results.
-Tests are encapsulated in modules, which also hold the test results.
-Thus you get the normal Python namespacing of results. Anyone familiar
-with Autoconf will recall the painful, manual namespacing using text
-prefixes inside the flat, global namespace. Also, this consistent
-hierarchical organization allows external command lines to be built up
-in a disciplined fashion, rather than the usual practice of dumping all
-flags into global reservoirs such as the ``INCLUDE`` and ``LIBS``
-variables. This encapsulation makes it much easier to see which tests
-are responsible for donating offending flags and switches when tests
-fail, since errors can occur far away from the initial inclusion of a
-flag.
 
 Why use PETSc BuildSystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,15 +57,15 @@ from scratch. Below we list features and design considerations which lead us to 
 Namespacing
 ^^^^^^^^^^^
 
-BS wraps collections of related tests in Python modules, which also hold
+BuildSystem wraps collections of related tests in Python modules, which also hold
 the test results. Thus results are accessed using normal Python
 namespacing. As rudimentary as this sounds, no namespacing beyond the
 use of variable name prefixes is present in SCons, CMake, or Autoconf.
 Instead, a flat namespace is used, mirroring the situation in C. This
-tendency appears again when composing command lines for extenral tools,
+tendency appears again when composing command lines for external tools,
 such as the compiler and linker. In the traditional configure tools,
 options are aggregated in a single bucket variable, such as ``INCLUDE``
-or ``LIBS``, whereas in BS you trace the provenance of a flag before it
+or ``LIBS``, whereas in BuildSystem one can trace the provenance of a flag before it
 is added to the command line. CMake also makes the unfortunate decision
 to force all link options to resolve to full paths, which causes havoc
 with compiler-private libraries.
@@ -86,26 +73,26 @@ with compiler-private libraries.
 Explicit control flow
 ^^^^^^^^^^^^^^^^^^^^^
 
-The BS configure modules mention above, containing one configure object
+The BuildSystem configure modules mentioned above, containing one ``Configure`` object
 per module, are organized explicitly into a directed acyclic graph
 (DAG). The user indicates dependence, an *edge* in the dependence graph,
 with a single call, ``requires('path.to.other.test', self)``, which not
-only structures the DAG, but returns the configure object. The caller
+only structures the DAG, but returns the ``Configure`` object. The caller
 can then use this object to access the results of the tests run by the
 dependency, achieving test and result encapsulation simply.
 
-Multi-languages tests
-^^^^^^^^^^^^^^^^^^^^^
+Multi-language tests
+^^^^^^^^^^^^^^^^^^^^
 
-BS maintains an explicit language stack, so that the current language
+BuildSystem maintains an explicit language stack, so that the current language
 can be manipulated by the test environment. A compile or link can be run
 using any language, complete with the proper compilers, flags,
-libraries, etc with a single call. This kind of automation is crucial
-for cross-language tests, which are very thinly supported in current
+libraries, etc., with a single call. This automation is crucial
+for cross-language tests, which are thinly supported in current
 tools. In fact, the design of these tools inhibits this kind of check.
 The ``check_function_exists()`` call in Autoconf and CMake looks only
 for the presence of a particular symbol in a library, and fails in C++
-and on Windows, whereas the equivalent BS test can also take a
+and on Windows, whereas the equivalent BuildSystem test can also take a
 declaration. The ``try_compile()`` test in Autoconf and CMake requires
 the entire list of libraries be present in the ``LIBS`` variable,
 providing no good way to obtain libraries from other tests in a modular
@@ -116,9 +103,9 @@ straightforward method exists to add this dependency.
 Subpackages
 ^^^^^^^^^^^
 
-The most complicated, but perhaps the most useful part of BS is the
+The most complicated, yet perhaps most useful, part of BuildSystem is
 support for dependent packages. It provides an object scaffolding for
-including a 3rd party package (more than 60 are now available) so that
+including a 3rd party package (more than 100 are now available) so that
 PETSc downloads, builds, and tests the package for inclusion. The native
 configure and build system for the package is used, and special support
 exists for GNU and CMake packages. No similar system exists in the other
@@ -132,8 +119,8 @@ Batch environments
 
 Most systems, such as Autoconf and CMake, do not actually run tests in a
 batch environment, but rather require a direct specification, in CMake a
-“platform file”. This requires a human expert to write and maintain the
-platform file. Alternatively, Buildsystem submits a dynamically
+"platform file". This requires a human expert to write and maintain the
+platform file. Alternatively, BuildSystem submits a dynamically
 generated set of tests to the batch system, enabling automatic
 cross-configuration and cross-compilation.
 
@@ -151,62 +138,26 @@ depend on them may not be. Moreover, CMake mixes together information
 which is discovered automatically with that explicitly provided by the
 user, which is often not tested.
 
-Dealing with Errors
-^^^^^^^^^^^^^^^^^^^
+Concision
+^^^^^^^^^
 
-The most crucial piece of an effective configure system is good error
-reporting and recovery. Most of the configuration process involves
-errors, either in compiling, linking, or execution, but it can be
-extremely difficult to uncover the ultimate source of an error. For
-example, the configuration process might have checked the system BLAS
-library, and then tried to evaluate a package that depends on BLAS such
-as PETSc. It receives a link error and fails complaining about a problem
-with PETSc. However, close examination of the link error shows that BLAS
-with compiled without position-independent code, e.g. using the
-``-fPIC`` flag, but PETSc was built using the flag since it was intended
-for a shared library. This is sometimes hard to detect because many
-32-bit systems silently proceeed, but most 64-bit systems fail in this
-case.
+The cognitive load is usually larger for larger code bases,
+and our observation is that the addition of logic to Autoconf
+and CMake is often quite cumbersome and verbose as they do not employ a modern,
+higher level language. Although BuildSystem itself is not widely used,
+it has the advantage of being written in a widely-understood, high-level
+language.
 
-When test command lines are built up from options gleaned from many
-prior tests, it is imperative that the system keep track of which tests
-were responible for a given flag or a given decision in the configure
-process. This failure to preserve the chain of reasoning is not unique
-to configure, but is ubiquitous in software and hardware interfaces.
-When your Wifi receiver fails to connect to a hub, or your cable modem
-to the ISP router, you are very often not told the specific reason, but
-rather given a generic error message which does not help distinguish
-between the many possible failure modes. It is essential for robust
-systems that error reports allow the user to track back all the way to
-the decision or test which produced a given problem, although it might
-involve voluminous logging. Thus the system must either be designed so
-that it creates actionable diagnostics when it fails or it must have
-unfailingly good support so that human intervention can resolve the
-problem. The longevity of Autoconf I think can be explained by the
-ability of expert users to gain access to enough information, possibly
-by adding ``set -x`` to scripts and other invasive practices, to act to
-resolve problems. This ability has been nearly lost in follow-on systems
-such as SCons and CMake.
-
-Concision is also an important attribute, as the cognitive load is
-usually larger for larger code bases. The addition of logic to Autoconf
-and CMake is often quite cumbersome as they do not employ a modern,
-higher level language. For example, the Trilinos/TriBITS package from
-Sandia National Laboratory is quite similar to PETSc in the kinds of
-computations it performs. It contains 175,000 lines of CMakescript used
-to configure and build the project, whereas PETSc contains less than
-30,000 lines of Python code to handle configuration and regression
-testing and one GNU Makefile of 130 lines.
 
 High level organization
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 A minimal BuildSystem setup consists of a ``config`` directory off the
-package root, which contains all the Python necessary run (in addition
-to the BuildSystem source). At minimum, the config directory contains a
+package root, which contains all the Python necessary to run (in addition
+to the BuildSystem source). At minimum, the ``config`` directory contains
 ``configure.py``, which is executed to run the configure process, and a
 module for the package itself. For example, PETSc contains
-``config/PETSc/PETSc.py``. It is also common to include a toplevel
+``config/PETSc/petsc.py``. It is also common to include a top level
 ``configure`` file to execute the configure, as this looks like
 Autotools,
 
@@ -239,14 +190,14 @@ be
    if __name__ == '__main__':
      configure([])
 
-The PETSc ``configure.py`` is quite a bit longer than this, but it is
-doing specialized command line processing and error handling, and
+The PETSc ``configure.py`` is quite a bit longer than this, as it
+performs specialized command line processing, error handling, and
 integrating logging with the rest of PETSc.
 
 The ``config/package/Configure.py`` module determines how the tree of
-configure objects is built and how the configure information is output.
-The ``configure`` method of the nodule will be run by the ``framework``
-object created at the top level. A minimal configure method would look
+``Configure`` objects is built and how the configure information is output.
+The ``configure()`` method of the module will be run by the ``Framework``
+object created at the top level. A minimal ``configure()`` method would look
 like
 
 .. code-block:: python
@@ -263,10 +214,10 @@ like
 The ``Dump`` method runs over the tree of configure modules, and outputs
 the data necessary for building, usually employing the
 ``addMakeMacro()``, ``addMakeRule()`` and ``addDefine()`` methods. These
-method funnel output to the include and make files defined by the
+methods funnel output to the include and make files defined by the
 framework object, and set at the beginning of this ``configure()``
 method. There is also some simple information that is often used, which
-we define in the constructor,
+we define in the initializer,
 
 .. code-block:: python
 
@@ -284,7 +235,7 @@ More sophisticated configure assemblies, like PETSc, output some other
 custom information, such as information about the machine, configure
 process, and a script to recreate the configure run.
 
-The package configure module has two other main functions. First, top
+The `Package` configure module has two other main functions. First, top
 level options can be defined in the ``setupHelp()`` method,
 
 .. code-block:: python
@@ -325,7 +276,7 @@ A simple way to do this is by explicitly declaring dependencies,
 The ``projectdir`` and ``arch`` modules define the project root
 directory and a build name so that multiple independent builds can be
 managed. The ``Framework.require()`` method creates an edge in the
-dependence graph for configure modules, and returns the module object so
+dependency graph for configure modules, and returns the module object so
 that it can be queried after the configure information is determined.
 Setting the header prefix routes all the defines made inside those
 modules to our package configure header. We can also automatically
@@ -366,7 +317,7 @@ It maintains the help list for all options available in the run. The
 recursively on all the child modules. The ``cleanup()`` method performs
 the final output and logging actions,
 
--  Subtitute files
+-  Substitute files
 
 -  Output configure header
 
@@ -399,7 +350,7 @@ about MPI, and thus contains
 
 Notice that passing self for the last arguments means that the MPI
 module will run before the HYPRE module. Furthermore, we save the
-resulting object as ``self.mpi`` so that we may interogate it later.
+resulting object as ``self.mpi`` so that we may interrogate it later.
 HYPRE can initially test whether MPI was indeed found using
 ``self.mpi.found``. When HYPRE requires the list of MPI libraries in
 order to link a test object, the module can use ``self.mpi.lib``.
@@ -432,7 +383,7 @@ status and output. The routines are
      outputRun(),        checkRun()
 
 The language used for these operation is managed with a stack, similar
-to autoconf, using ``pushLanguage()`` and ``popLanguage()``. We also
+to Autoconf, using ``pushLanguage()`` and ``popLanguage()``. We also
 provide special forms used to check for valid compiler and linker flags,
 optionally adding them to the defaults.
 
@@ -449,7 +400,7 @@ generated.A #define statement can be added to the configure header using
 information in this header file. Using ``addMakeMacro()`` and
 ``addMakeRule()`` will add make macros and rules to the output makefiles
 specified in the framework. In addition we provide ``addSubstitution()``
-and ``addArgumentSubstitution()`` to mimic the bahvior of Autoconf if
+and ``addArgumentSubstitution()`` to mimic the behavior of Autoconf if
 necessary. The object may define a ``headerPrefix`` member, which will
 be appended, followed by an underscore, to every define which is output
 from it. Similarly, a ``substPrefix`` can be defined which applies to
