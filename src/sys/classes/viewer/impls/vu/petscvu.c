@@ -61,7 +61,25 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, const char **name)
+static PetscErrorCode  PetscViewerFileSetMode_VU(PetscViewer viewer, PetscFileMode mode)
+{
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
+
+  PetscFunctionBegin;
+  vu->mode = mode;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PetscViewerFileGetMode_VU(PetscViewer viewer, PetscFileMode *type)
+{
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
+
+  PetscFunctionBegin;
+  *type = vu->mode;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, const char **name)
 {
   PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
 
@@ -70,7 +88,7 @@ PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, const char **name)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
+static PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 {
   PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
   char           fname[PETSC_MAX_PATH_LEN];
@@ -109,7 +127,7 @@ PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
     }
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid file mode %d", vu->mode);
+    SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[vu->mode]);
   }
 
   if (!vu->fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s", fname);
@@ -143,6 +161,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 
   ierr = PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_VU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileGetName_C",PetscViewerFileGetName_VU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_VU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_VU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -170,28 +190,6 @@ PetscErrorCode  PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(fd,2);
   *fd = vu->fd;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-  PetscViewerVUSetMode - Sets the mode in which to open the file.
-
-  Not Collective
-
-  Input Parameters:
-+ viewer - The PetscViewer
-- mode   - The file mode
-
-  Level: intermediate
-
-.seealso: PetscViewerASCIISetMode()
-@*/
-PetscErrorCode  PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
-{
-  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
-
-  PetscFunctionBegin;
-  vu->mode = mode;
   PetscFunctionReturn(0);
 }
 

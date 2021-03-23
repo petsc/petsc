@@ -396,13 +396,21 @@ static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const cha
     PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDONLY, plist_id));
     break;
   case FILE_MODE_APPEND:
-    PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDWR, plist_id));
+  case FILE_MODE_UPDATE:
+  {
+    PetscBool flg;
+    ierr = PetscTestFile(hdf5->filename, 'r', &flg);CHKERRQ(ierr);
+    if (flg) PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDWR, plist_id));
+    else     PetscStackCallHDF5Return(hdf5->file_id,H5Fcreate,(name, H5F_ACC_EXCL, H5P_DEFAULT, plist_id));
     break;
+  }
   case FILE_MODE_WRITE:
     PetscStackCallHDF5Return(hdf5->file_id,H5Fcreate,(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id));
     break;
+  case FILE_MODE_UNDEFINED:
+    SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   default:
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+    SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[hdf5->btype]);
   }
   if (hdf5->file_id < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
   PetscStackCallHDF5(H5Pclose,(plist_id));
@@ -455,7 +463,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   v->ops->setup          = PetscViewerSetUp_HDF5;
   v->ops->view           = PetscViewerView_HDF5;
   v->ops->flush          = NULL;
-  hdf5->btype            = (PetscFileMode) -1;
+  hdf5->btype            = FILE_MODE_UNDEFINED;
   hdf5->filename         = NULL;
   hdf5->timestep         = -1;
   hdf5->groups           = NULL;
@@ -482,9 +490,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
 +  comm - MPI communicator
 .  name - name of file
 -  type - type of file
-$    FILE_MODE_WRITE - create new file for binary output
-$    FILE_MODE_READ - open existing file for binary input
-$    FILE_MODE_APPEND - open existing file for binary output
 
    Output Parameter:
 .  hdf5v - PetscViewer for HDF5 input/output to use with the specified file
@@ -495,7 +500,15 @@ $    FILE_MODE_APPEND - open existing file for binary output
 
    Level: beginner
 
-   Note:
+   Notes:
+   Reading is always available, regardless of the mode. Available modes are
++  FILE_MODE_READ - open existing HDF5 file for read only access, fail if file does not exist [H5Fopen() with H5F_ACC_RDONLY]
+.  FILE_MODE_WRITE - if file exists, fully overwrite it, else create new HDF5 file [H5FcreateH5Fcreate() with H5F_ACC_TRUNC]
+.  FILE_MODE_APPEND - if file exists, keep existing contents [H5Fopen() with H5F_ACC_RDWR], else create new HDF5 file [H5FcreateH5Fcreate() with H5F_ACC_EXCL]
+-  FILE_MODE_UPDATE - same as FILE_MODE_APPEND
+
+   In case of FILE_MODE_APPEND / FILE_MODE_UPDATE, any stored object (dataset, attribute) can be selectively ovewritten if the same fully qualified name (/group/path/to/object) is specified.
+
    This PetscViewer should be destroyed with PetscViewerDestroy().
 
 

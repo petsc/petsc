@@ -760,7 +760,7 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
         }
         break;
       default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid file mode %d", vascii->mode);
+        SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[vascii->mode]);
       }
       if (!vascii->fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open PetscViewer file: %s",fname);
     }

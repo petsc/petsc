@@ -438,6 +438,7 @@ typedef struct _n_PetscFunctionList *PetscFunctionList;
 
   Level: beginner
 
+$  FILE_MODE_UNDEFINED - initial invalid value
 $  FILE_MODE_READ - open a file at its beginning for reading
 $  FILE_MODE_WRITE - open a file at its beginning for writing (will create if the file does not exist)
 $  FILE_MODE_APPEND - open a file at end for writing
@@ -446,7 +447,7 @@ $  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and w
 
 .seealso: PetscViewerFileSetMode()
 E*/
-typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
+typedef enum {FILE_MODE_UNDEFINED=-1, FILE_MODE_READ=0, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
 
 typedef void* PetscDLHandle;
 typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
