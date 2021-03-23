@@ -61,13 +61,9 @@ with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as ve
 
 # -- General configuration ---------------------------------------------------
 
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
 extensions = [
     'sphinx_copybutton',
     'sphinx.ext.todo',
-    'sphinx.ext.graphviz',
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
     'sphinxcontrib.rsvgconverter',
@@ -136,23 +132,6 @@ r'''
 
 
 # -- General Config Options ---------------------------------------------------
-
-# Graphviz config which searches for correct installation of a DOT language parser
-# shipped with graphviz
-
-try:
-    result = subprocess.check_output(
-        "which -a dot",
-        stderr=subprocess.STDOUT,
-        shell=True,
-        universal_newlines=True)
-    result = result[:-1]
-except subprocess.CalledProcessError as e:
-    print("\nCan't find a working graphviz install!")
-else:
-    print("\nFound DOT install: {}\n".format(result))
-
-graphviz_dot = str(result)
 
 # Set default highlighting language
 highlight_language = 'c'
