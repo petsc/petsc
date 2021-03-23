@@ -287,11 +287,13 @@
       <ul>
         <li>PetscDSCopyBoundary() now takes a list of fields for which boundary copying is done</li>
         <li>Add PetscDSGet/SetJetDegree(), and -dm_ds_jet_degree is needed to enable it under a DM</li>
+        <li>Add PetscWeakForm class to manage function pointers for problem assembly</li>
       </ul>
       <h4>Fortran:</h4>
       <ul>
         <li>Require mpi.mod. Previously if mpi.mod was not usable - mpif.h was used</li>
         <li>Add configure option <tt>--with-mpi-f90module-visibility</tt> [default=1]. With <tt>0</tt> mpi.mod will not be visible in use code (via petscsys.mod) - so <tt>mpi_f08</tt> can now be used</li>
+        <li>Add PetscDLAddr() to get name for a symbol</li>
       </ul>
     </div>
 
