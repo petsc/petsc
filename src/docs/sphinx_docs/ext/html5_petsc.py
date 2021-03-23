@@ -4,6 +4,7 @@ from typing import Any, Dict
 import re
 import os
 import subprocess
+import types
 
 from docutils import nodes
 from docutils.nodes import Element, Text
@@ -16,14 +17,8 @@ if not hasattr(re,'Pattern'): re.Pattern = re._pattern_type
 
 def setup(app: Sphinx) -> None:
     _check_version(app)
-    app.set_translator('html', HTML5PETScTranslator, override=True)
-    app.set_translator('dirhtml', HTML5PETScTranslator, override=True)
 
-    # Also set the translator for ReadTheDocs's custom builders
-    # This is dangerous, since they could change the name and silently
-    # deactivate our translator
-    app.set_translator('readthedocs', HTML5PETScTranslator, override=True)
-    app.set_translator('readthedocsdirhtml', HTML5PETScTranslator, override=True)
+    app.connect('builder-inited', _setup_translators)
 
 
 def _check_version(app: Sphinx) -> None:
@@ -37,9 +32,42 @@ def _check_version(app: Sphinx) -> None:
         raise NotImplementedError(error_message)
 
 
-class HTML5PETScTranslator(HTML5Translator):
+def _setup_translators(app: Sphinx) -> None:
+    """ Use a mixin strategy to add to the HTML translator without overriding
+
+    This allows use of other extensions which modify the translator.
+
+    Duplicates the approach used here in sphinx-hoverref:
+    https://github.com/readthedocs/sphinx-hoverxref/pull/42
     """
-    A custom HTML5 translator which overrides methods to add PETSc-specific
+    if app.builder.format != 'html':
+        return
+
+    for name, klass in app.registry.translators.items():
+        translator = types.new_class(
+            'PETScHTMLTranslator',
+            (
+                PETScHTMLTranslatorMixin,
+                klass,
+            ),
+            {},
+        )
+        app.set_translator(name, translator, override=True)
+
+    translator = types.new_class(
+        'PETScHTMLTranslator',
+        (
+            PETScHTMLTranslatorMixin,
+            app.builder.default_translator_class,
+        ),
+        {},
+    )
+    app.set_translator(app.builder.name, translator, override=True)
+
+
+class PETScHTMLTranslatorMixin:
+    """
+    A custom HTML translator which overrides methods to add PETSc-specific
     custom processing to the generated HTML.
     """
 

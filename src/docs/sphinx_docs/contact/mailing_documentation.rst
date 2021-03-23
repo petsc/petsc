@@ -4,8 +4,7 @@
 Mailing Lists
 *************
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    Do not send configure and installation questions to the petsc-users mailing
    list. Always send them (and include ``configure.log`` and ``make.log``) to

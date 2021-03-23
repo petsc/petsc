@@ -67,7 +67,7 @@ extensions = [
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
     'sphinxcontrib.rsvgconverter',
-    'html5_petsc',  # Overrides HTML5Translator
+    'html5_petsc',
 ]
 
 master_doc = 'index'
@@ -82,10 +82,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-html_theme = 'sphinxdoc'
+html_theme = 'pydata_sphinx_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -161,5 +158,4 @@ def setup(app):
     # Register the builder_init_handler to be called __after__ app.builder has been initialized
     app.connect('builder-inited', builder_init_handler)
     app.add_css_file('css/pop-up.css')
-    app.add_css_file('css/colorbox.css')
     app.add_css_file('css/petsc-team-container.css')

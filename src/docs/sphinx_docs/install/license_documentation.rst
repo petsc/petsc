@@ -78,8 +78,7 @@ understood as an affirmation of the following:
 Legacy License
 ==============
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    PETSc is now distributed under a 2-clause :ref:`BSD license <doc_license>`. This
    section containing the (roughly compatible) legacy PETSc license exists for
