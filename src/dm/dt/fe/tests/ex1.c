@@ -240,12 +240,14 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
       /* TODO Replace with DMPlexGetCellFields() */
       for (k = 0; k < chunkSize*totDim; ++k) u[k] = 1.0;
       for (f = 0; f < Nf; ++f) {
-        PetscFEGeom    *geom = affineGeom ? affineGeom : geoms[f];
+        PetscHashFormKey key;
+        PetscFEGeom     *geom = affineGeom ? affineGeom : geoms[f];
         /* PetscQuadrature quad = affineQuad ? affineQuad : quads[f]; */
 
+        key.label = NULL; key.value = 0; key.field = f;
         ierr = PetscFEGeomGetChunk(geom, cS, cE, &chunkGeom);CHKERRQ(ierr);
         ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
-        ierr = PetscFEIntegrateResidual(ds, f, Ne, chunkGeom, u, NULL, NULL, NULL, 0.0, elemVec);CHKERRQ(ierr);
+        ierr = PetscFEIntegrateResidual(ds, key, Ne, chunkGeom, u, NULL, NULL, NULL, 0.0, elemVec);CHKERRQ(ierr);
         ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
       }
     }

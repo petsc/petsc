@@ -3,6 +3,7 @@
 
 #include <petscds.h>
 #include <petsc/private/petscimpl.h>
+#include <petsc/private/hashmap.h>
 
 PETSC_EXTERN PetscBool      PetscDSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscDSRegisterAll(void);
@@ -22,6 +23,89 @@ struct _n_DSBoundary {
   PetscInt   *ids;
   void       *ctx;
   DSBoundary  next;
+};
+
+typedef struct {
+  PetscInt start;    /* Starting entry of the chunk in an array */
+  PetscInt size;     /* Current number of entries of the chunk */
+  PetscInt reserved; /* Number of reserved entries in the chunk */
+} PetscChunk;
+
+typedef struct {
+  size_t  size;      /* Current number of entries used in array */
+  size_t  alloc;     /* Number of bytes allocated for array */
+  size_t  unitbytes; /* Number of bytes per entry */
+  char   *array;
+} PetscChunkBuffer;
+
+#define PetscHashFormKeyHash(key) \
+  PetscHashCombine(PetscHashCombine(PetscHashInt(((size_t)(key).label)),PetscHashInt((key).value)),PetscHashInt((key).field))
+
+#define PetscHashFormKeyEqual(k1,k2) \
+  (((k1).label == (k2).label) ? \
+   ((k1).value == (k2).value) ? \
+   ((k1).field == (k2).field) : 0 : 0)
+
+static PetscChunk _PetscInvalidChunk = {-1, -1, -1};
+
+PETSC_HASH_MAP(HMapForm, PetscHashFormKey, PetscChunk, PetscHashFormKeyHash, PetscHashFormKeyEqual, _PetscInvalidChunk)
+
+/*
+  We sort lexicographically on the structure.
+  Returns
+  -1: left < right
+   0: left = right
+   1: left > right
+*/
+PETSC_STATIC_INLINE int Compare_PetscHashFormKey_Private(const void *left, const void *right, PETSC_UNUSED void *ctx)
+{
+  PetscHashFormKey l = *(PetscHashFormKey *) left;
+  PetscHashFormKey r = *(PetscHashFormKey *) right;
+  return (l.label < r.label) ? -1 : ((l.label > r.label) ? 1 :
+           ((l.value < r.value) ? -1 : (l.value > r.value) ? 1 :
+             ((l.field < r.field) ? -1 : (l.field > r.field))));
+}
+
+typedef struct _PetscWeakFormOps *PetscWeakFormOps;
+struct _PetscWeakFormOps {
+  PetscErrorCode (*setfromoptions)(PetscWeakForm);
+  PetscErrorCode (*setup)(PetscWeakForm);
+  PetscErrorCode (*view)(PetscWeakForm,PetscViewer);
+  PetscErrorCode (*destroy)(PetscWeakForm);
+};
+
+struct _p_PetscWeakForm {
+  PETSCHEADER(struct _PetscWeakFormOps);
+  void *data; /* Implementation object */
+
+  PetscInt          Nf;    /* The number of fields in the system */
+  PetscChunkBuffer *funcs; /* Buffer holding all function pointers */
+  PetscHMapForm     obj;   /* Scalar integral (like an objective function) */
+  PetscHMapForm     f0;    /* Weak form integrands against test function for F */
+  PetscHMapForm     f1;    /* Weak form integrands against test function derivative for F */
+  PetscHMapForm     g0;    /* Weak form integrands for J = dF/du */
+  PetscHMapForm     g1;    /* Weak form integrands for J = dF/du */
+  PetscHMapForm     g2;    /* Weak form integrands for J = dF/du */
+  PetscHMapForm     g3;    /* Weak form integrands for J = dF/du */
+  PetscHMapForm     gp0;   /* Weak form integrands for preconditioner for J */
+  PetscHMapForm     gp1;   /* Weak form integrands for preconditioner for J */
+  PetscHMapForm     gp2;   /* Weak form integrands for preconditioner for J */
+  PetscHMapForm     gp3;   /* Weak form integrands for preconditioner for J */
+  PetscHMapForm     gt0;   /* Weak form integrands for dF/du_t */
+  PetscHMapForm     gt1;   /* Weak form integrands for dF/du_t */
+  PetscHMapForm     gt2;   /* Weak form integrands for dF/du_t */
+  PetscHMapForm     gt3;   /* Weak form integrands for dF/du_t */
+  PetscHMapForm     bdf0;  /* Weak form boundary integrands F_bd */
+  PetscHMapForm     bdf1;  /* Weak form boundary integrands F_bd */
+  PetscHMapForm     bdg0;  /* Weak form boundary integrands J_bd = dF_bd/du */
+  PetscHMapForm     bdg1;  /* Weak form boundary integrands J_bd = dF_bd/du */
+  PetscHMapForm     bdg2;  /* Weak form boundary integrands J_bd = dF_bd/du */
+  PetscHMapForm     bdg3;  /* Weak form boundary integrands J_bd = dF_bd/du */
+  PetscHMapForm     bdgp0; /* Weak form integrands for preconditioner for J_bd */
+  PetscHMapForm     bdgp1; /* Weak form integrands for preconditioner for J_bd */
+  PetscHMapForm     bdgp2; /* Weak form integrands for preconditioner for J_bd */
+  PetscHMapForm     bdgp3; /* Weak form integrands for preconditioner for J_bd */
+  PetscHMapForm     r;     /* Riemann solvers */
 };
 
 typedef struct _PetscDSOps *PetscDSOps;
@@ -46,15 +130,7 @@ struct _p_PetscDS {
   PetscBool             useJacPre;     /* Flag for using the Jacobian preconditioner */
   PetscBool            *implicit;      /* Flag for implicit or explicit solve for each field */
   PetscInt             *jetDegree;     /* The highest derivative for each field equation, or the k-jet that each discretization needs to tabulate */
-  PetscPointFunc       *obj;           /* Scalar integral (like an objective function) */
-  PetscPointFunc       *f;             /* Weak form integrands for F, f_0, f_1 */
-  PetscPointJac        *g;             /* Weak form integrands for J = dF/du, g_0, g_1, g_2, g_3 */
-  PetscPointJac        *gp;            /* Weak form integrands for preconditioner for J, g_0, g_1, g_2, g_3 */
-  PetscPointJac        *gt;            /* Weak form integrands for dF/du_t, g_0, g_1, g_2, g_3 */
-  PetscBdPointFunc     *fBd;           /* Weak form boundary integrands F_bd, f_0, f_1 */
-  PetscBdPointJac      *gBd;           /* Weak form boundary integrands J_bd = dF_bd/du, g_0, g_1, g_2, g_3 */
-  PetscBdPointJac      *gpBd;          /* Weak form integrands for preconditioner for J_bd, g_0, g_1, g_2, g_3 */
-  PetscRiemannFunc     *r;             /* Riemann solvers */
+  PetscWeakForm         wf;            /* The PetscWeakForm holding all pointwise functions */
   PetscPointFunc       *update;        /* Direct update of field coefficients */
   PetscSimplePointFunc *exactSol;      /* Exact solutions for each field */
   void                **exactCtx;      /* Contexts for the exact solution functions */

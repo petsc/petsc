@@ -333,6 +333,7 @@ PetscErrorCode PetscDSInitializePackage(void)
 
   /* Register Classes */
   ierr = PetscClassIdRegister("Discrete System", &PETSCDS_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Weak Form",       &PETSCWEAKFORM_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PetscDSRegisterAll();CHKERRQ(ierr);
   /* Register Events */

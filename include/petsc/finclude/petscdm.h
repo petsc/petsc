@@ -24,6 +24,7 @@
 
 #define DMAdaptor        PetscFortranAddr
 #define PetscQuadrature  PetscFortranAddr
+#define PetscWeakForm    PetscFortranAddr
 #define PetscDS          PetscFortranAddr
 #define PetscFE          PetscFortranAddr
 #define PetscSpace       PetscFortranAddr
