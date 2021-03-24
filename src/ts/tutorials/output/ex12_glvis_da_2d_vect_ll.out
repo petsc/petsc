@@ -1,4 +1,4 @@
-MFEM mesh v1.1
+MFEM mesh v1.0
 
 dimension
 2
@@ -630,7 +630,7 @@ Ordering: 1
  0.
  0.
  0.
-MFEM mesh v1.1
+MFEM mesh v1.0
 
 dimension
 2
