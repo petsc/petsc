@@ -10,7 +10,7 @@ PETSC_EXTERN PetscLogEvent PC_HPDDM_Next;
 PETSC_INTERN PetscErrorCode HPDDMLoadDL_Private(PetscBool*);
 
 namespace HPDDM {
-  template<class K> class Schwarz;       /* forward definitions of two needed HPDDM classes */
+  template<class> class Schwarz;         /* forward definitions of two needed HPDDM classes */
   class PETScOperator;
 }
 
