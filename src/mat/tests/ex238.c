@@ -1,4 +1,3 @@
-
 static char help[] = "Creates MatSeqBAIJ matrix of given BS for timing tests of MatMult().\n";
 
 #include <petscmat.h>
@@ -64,8 +63,32 @@ int main(int argc,char **args)
 
 /*TEST
 
-   test:
-      requires: define(PETSC_USING_64BIT_PTR)
-      args: -mat_block_size {{1 2 4 5 6 8 12 15}}
+   testset:
+     requires: define(PETSC_USING_64BIT_PTR)
+     output_file: output/ex238_1.out
+     test:
+       suffix: 1
+       args: -mat_block_size 1
+     test:
+       suffix: 2
+       args: -mat_block_size 2
+     test:
+       suffix: 4
+       args: -mat_block_size 4
+     test:
+       suffix: 5
+       args: -mat_block_size 5
+     test:
+       suffix: 6
+       args: -mat_block_size 6
+     test:
+       suffix: 8
+       args: -mat_block_size 8
+     test:
+       suffix: 12
+       args: -mat_block_size 12
+     test:
+       suffix: 15
+       args: -mat_block_size 15
 
 TEST*/
