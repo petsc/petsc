@@ -886,9 +886,8 @@ analyze-pipeline:
     - arch-ci-analyze-pipeline/*
     expire_in: 4 days
 
-pages:review:
+.docs-review-base:
   extends: .test
-  stage: .pre
   image: python:3.9
   only:
     variables:
@@ -906,6 +905,23 @@ pages:review:
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html
+
+docs-only-review:
+  stage: .pre
+  extends: .docs-review-base
+  only:
+    variables:
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
+
+docs-review:
+  stage: stage-2
+  extends: .docs-review-base
+  only:
+    variables:
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs($|,)/
+  except:
+    variables:
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
 
 #
 #
