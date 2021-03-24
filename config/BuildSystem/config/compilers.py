@@ -527,6 +527,8 @@ class Configure(config.base.Configure):
         if self.setCompilers.checkCompilerFlag(flag, includes, body+body14):
           newflag = getattr(self.setCompilers,LANG+'FLAGS') + ' ' + flag # append flag to the old
           setattr(self.setCompilers,LANG+'FLAGS',newflag)
+          newflag = getattr(self.setCompilers,LANG+'PPFLAGS') + ' ' + flag # append flag to the old
+          setattr(self.setCompilers,LANG+'PPFLAGS',newflag)
           cxxdialect = 'C++14'
           self.addDefine('HAVE_'+LANG+'_DIALECT_CXX14',1)
           self.addDefine('HAVE_'+LANG+'_DIALECT_CXX11',1)
@@ -546,6 +548,8 @@ class Configure(config.base.Configure):
         if self.setCompilers.checkCompilerFlag(flag, includes, body):
           newflag = getattr(self.setCompilers,LANG+'FLAGS') + ' ' + flag # append flag to the old
           setattr(self.setCompilers,LANG+'FLAGS',newflag)
+          newflag = getattr(self.setCompilers,LANG+'PPFLAGS') + ' ' + flag # append flag to the old
+          setattr(self.setCompilers,LANG+'PPFLAGS',newflag)
           cxxdialect = 'C++11'
           self.addDefine('HAVE_'+LANG+'_DIALECT_CXX11',1)
           break
