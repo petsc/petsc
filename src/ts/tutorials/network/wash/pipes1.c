@@ -322,7 +322,7 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
-  /* get num of local and global total nnodes */
+  /* get number of local and global total nnodes */
   nidx = wash->nnodes_loc;
   ierr = MPIU_Allreduce(&nidx,&nx,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
@@ -615,7 +615,7 @@ int main(int argc,char ** argv)
   DMNetworkMonitor  monitor;
   MPI_Comm          comm;
 
-  PetscInt          nedges,nvertices; /* local num of edges and vertices */
+  PetscInt          nedges,nvertices; /* local number of edges and vertices */
   PetscInt          nnodes = 6;
 
   ierr = PetscInitialize(&argc,&argv,"pOption",help);if (ierr) return ierr;
@@ -646,7 +646,7 @@ int main(int argc,char ** argv)
   /* Create a distributed wash network (user-specific) */
   ierr = WashNetworkCreate(comm,pipesCase,&wash);CHKERRQ(ierr);
   nedges      = wash->nedge;
-  nvertices   = wash->nvertex; /* local num of vertices, excluding ghosts */
+  nvertices   = wash->nvertex; /* local number of vertices, excluding ghosts */
   edgelist    = wash->edgelist;
   vtype       = wash->vtype;
   junctions   = wash->junction;
@@ -663,11 +663,11 @@ int main(int argc,char ** argv)
   /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] eStart/End: %d - %d; vStart/End: %d - %d\n",rank,eStart,eEnd,vStart,vEnd);CHKERRQ(ierr); */
 
   if (rank) { /* junctions[] and pipes[] for proc[0] are allocated in WashNetworkCreate() */
-    /* vEnd - vStart = nvertices + num of ghost vertices! */
+    /* vEnd - vStart = nvertices + number of ghost vertices! */
     ierr = PetscCalloc2(vEnd - vStart,&junctions,nedges,&pipes);CHKERRQ(ierr);
   }
 
-  /* Add Pipe component and num of variables to all local edges */
+  /* Add Pipe component and number of variables to all local edges */
   for (e = eStart; e < eEnd; e++) {
     pipes[e-eStart].nnodes = nnodes;
     ierr = DMNetworkAddComponent(networkdm,e,KeyPipe,&pipes[e-eStart],2*pipes[e-eStart].nnodes);CHKERRQ(ierr);
@@ -679,7 +679,7 @@ int main(int argc,char ** argv)
     }
   }
 
-  /* Add Junction component and num of variables to all local vertices, including ghost vertices! (current implemetation requires setting same num of variables at ghost points */
+  /* Add Junction component and number of variables to all local vertices, including ghost vertices! (current implementation requires setting the same number of variables at ghost points */
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkAddComponent(networkdm,v,KeyJunction,&junctions[v-vStart],2);CHKERRQ(ierr);
   }
@@ -736,7 +736,7 @@ int main(int argc,char ** argv)
   for (e=eStart; e<eEnd; e++) { /* each edge has only one component, pipe */
     ierr = DMNetworkGetComponent(networkdm,e,0,&type,(void**)&pipe,NULL);CHKERRQ(ierr);
 
-    wash->nnodes_loc += pipe->nnodes; /* local total num of nodes, will be used by PipesView() */
+    wash->nnodes_loc += pipe->nnodes; /* local total number of nodes, will be used by PipesView() */
     ierr = PipeSetParameters(pipe,
                              600.0,          /* length */
                              0.5,            /* diameter */
