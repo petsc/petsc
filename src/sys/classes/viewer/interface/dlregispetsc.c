@@ -79,13 +79,10 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(void);
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void);
 #endif
 
-#if defined(PETSC_USE_SINGLE_LIBRARY)
-#else
-#endif
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the draw and PetscViewer objects.
+  This one registers all the system level objects.
 
  */
 #if defined(PETSC_USE_SINGLE_LIBRARY)
