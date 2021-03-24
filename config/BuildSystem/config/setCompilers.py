@@ -1653,6 +1653,7 @@ class Configure(config.base.Configure):
     if status:
       valid = 0
       self.logPrint('Rejecting linker flag '+flag+' due to nonzero status from link')
+    output = self.filterLinkOutput(output)
     if self.containsInvalidFlag(output):
       valid = 0
       self.logPrint('Rejecting '+self.language[-1]+' linker flag '+flag+' due to \n'+output)
