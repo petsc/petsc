@@ -133,7 +133,7 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
     /* update scalars */
     alpha = nu / *mu_p;
     nu_old = nu;
-    nu = nu_old - 2*alpha*(*delta_p) + (alpha*alpha)*(*gamma_p);
+    nu = nu_old - 2.*alpha*(*delta_p) + (alpha*alpha)*(*gamma_p);
     beta = nu/nu_old;
 
     /* update vectors */
