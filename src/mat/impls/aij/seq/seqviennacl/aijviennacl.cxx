@@ -415,7 +415,11 @@ static PetscErrorCode MatBindToCPU_SeqAIJViennaCL(Mat A,PetscBool flg)
 
   PetscFunctionBegin;
   A->boundtocpu  = flg;
-  aij->inode.use = flg;
+  if (flg && aij->inode.size) {
+    aij->inode.use = PETSC_TRUE;
+  } else {
+    aij->inode.use = PETSC_FALSE;
+  }
   if (flg) {
     /* make sure we have an up-to-date copy on the CPU */
     ierr = MatViennaCLCopyFromGPU(A,(const ViennaCLAIJMatrix *)NULL);CHKERRQ(ierr);

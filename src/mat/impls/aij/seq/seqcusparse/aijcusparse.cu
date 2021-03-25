@@ -3483,7 +3483,11 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqaijcusparse_C",MatProductSetFromOptions_SeqAIJCUSPARSE);CHKERRQ(ierr);
   }
   A->boundtocpu = flg;
-  a->inode.use = flg;
+  if (flg && a->inode.size) {
+    a->inode.use = PETSC_TRUE;
+  } else {
+    a->inode.use = PETSC_FALSE;
+  }
   PetscFunctionReturn(0);
 }
 
