@@ -188,6 +188,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 @*/
 PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
+  PetscBool       has;
   HDF5ReadCtx     h=NULL;
   hid_t           memspace=0;
   size_t          unitsize;
@@ -195,6 +196,12 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscViewerHDF5HasDataset(viewer, name, &has);CHKERRQ(ierr);
+  if (!has) {
+    const char *group;
+    ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
+    SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group ? group : "/");
+  }
   ierr = PetscViewerHDF5ReadInitialize_Private(viewer, name, &h);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
