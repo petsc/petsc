@@ -532,7 +532,7 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
   if (size == 1) {
     ierr = DMPlexBuildFromCellList(network->plex,network->nEdges,network->nVertices-nmerged,2,edges);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexBuildFromCellListParallel(network->plex,network->nEdges,network->nVertices-nmerged,PETSC_DECIDE,2,edges,NULL);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellListParallel(network->plex,network->nEdges,network->nVertices-nmerged,PETSC_DECIDE,2,edges,NULL, NULL);CHKERRQ(ierr);
   }
 
   ierr = DMPlexGetChart(network->plex,&network->pStart,&network->pEnd);CHKERRQ(ierr);
@@ -695,7 +695,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   if (size == 1) {
     ierr = DMPlexBuildFromCellList(network->plex,network->nEdges,network->nVertices,2,edges);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexBuildFromCellListParallel(network->plex,network->nEdges,network->nVertices,PETSC_DECIDE,2,edges,NULL);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellListParallel(network->plex,network->nEdges,network->nVertices,PETSC_DECIDE,2,edges,NULL, NULL);CHKERRQ(ierr);
   }
 
   ierr = DMPlexGetChart(network->plex,&network->pStart,&network->pEnd);CHKERRQ(ierr);
