@@ -14,7 +14,7 @@ class Configure(config.package.Package):
 
   def setupHelp(self,help):
     import nargs
-    help.addArgument('PETSc', '-with-petsc4py=<bool>', nargs.Arg(None, 0, 'Build PETSc Python bindings (petsc4py)'))
+    help.addArgument('PETSc', '-with-petsc4py=<bool>', nargs.ArgBool(None, False, 'Build PETSc Python bindings (petsc4py)'))
     help.addArgument('PETSc', '-with-petsc4py-test-np=<np>',nargs.ArgInt(None, None, min=1, help='Number of processes to use for petsc4py tests'))
     return
 
