@@ -1029,6 +1029,7 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
   PetscInt       i;
+  KSPType        ksp_type;
 
   PetscFunctionBegin;
   if (!tao->gradient) {
@@ -1097,6 +1098,10 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
       ierr = PetscObjectReference((PetscObject)(tao->monitorcontext[i]));CHKERRQ(ierr);
     }
   }
+  ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPNASH,&bnk->is_nash);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPSTCG,&bnk->is_stcg);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPGLTR,&bnk->is_gltr);CHKERRQ(ierr);
   bnk->X_inactive = NULL;
   bnk->G_inactive = NULL;
   bnk->inactive_work = NULL;
@@ -1149,7 +1154,6 @@ PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao ta
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
-  KSPType        ksp_type;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton-Krylov method for bound constrained optimization");CHKERRQ(ierr);
@@ -1208,10 +1212,6 @@ PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao ta
   ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-  ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPNASH,&bnk->is_nash);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPSTCG,&bnk->is_stcg);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPGLTR,&bnk->is_gltr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1414,6 +1414,10 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   bnk->init_type       = BNK_INIT_INTERPOLATION;
   bnk->update_type     = BNK_UPDATE_REDUCTION;
   bnk->as_type         = BNK_AS_BERTSEKAS;
+
+  bnk->is_stcg         = PETSC_FALSE;
+  bnk->is_gltr         = PETSC_FALSE;
+  bnk->is_nash         = PETSC_FALSE;
 
   /* Create the embedded BNCG solver */
   ierr = TaoCreate(PetscObjectComm((PetscObject)tao), &bnk->bncg);CHKERRQ(ierr);

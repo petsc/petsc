@@ -199,6 +199,18 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
 }
 
 /*------------------------------------------------------------*/
+static PetscErrorCode TaoSetUp_BNTR(Tao tao)
+{
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TaoSetUp_BNK(tao);CHKERRQ(ierr);
+  if (!bnk->is_nash && !bnk->is_stcg && !bnk->is_gltr) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Must use a trust-region CG method for KSP (KSPNASH, KSPSTCG, KSPGLTR)");
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
 
 static PetscErrorCode TaoSetFromOptions_BNTR(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
@@ -208,7 +220,6 @@ static PetscErrorCode TaoSetFromOptions_BNTR(PetscOptionItems *PetscOptionsObjec
   PetscFunctionBegin;
   ierr = TaoSetFromOptions_BNK(PetscOptionsObject, tao);CHKERRQ(ierr);
   if (bnk->update_type == BNK_UPDATE_STEP) bnk->update_type = BNK_UPDATE_REDUCTION;
-  if (!bnk->is_nash && !bnk->is_stcg && !bnk->is_gltr) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Must use a trust-region CG method for KSP (KSPNASH, KSPSTCG, KSPGLTR)");
   PetscFunctionReturn(0);
 }
 
@@ -232,6 +243,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNTR(Tao tao)
   PetscFunctionBegin;
   ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
   tao->ops->solve=TaoSolve_BNTR;
+  tao->ops->setup=TaoSetUp_BNTR;
   tao->ops->setfromoptions=TaoSetFromOptions_BNTR;
 
   bnk = (TAO_BNK *)tao->data;
