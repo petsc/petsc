@@ -39,7 +39,7 @@ typedef struct {
 } PetscChunkBuffer;
 
 #define PetscHashFormKeyHash(key) \
-  PetscHashCombine(PetscHashCombine(PetscHashInt(((size_t)(key).label)),PetscHashInt((key).value)),PetscHashInt((key).field))
+  PetscHashCombine(PetscHashCombine(PetscHashPointer((key).label),PetscHashInt((key).value)),PetscHashInt((key).field))
 
 #define PetscHashFormKeyEqual(k1,k2) \
   (((k1).label == (k2).label) ? \
