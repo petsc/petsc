@@ -3,8 +3,7 @@
    This file contains routines for Parallel vector operations.
  */
 
-#include "petsc/private/petscimpl.h"
-#include <petscveckokkos.hpp>
+#include <petscvec_kokkos.hpp>
 #include <petsc/private/vecimpl.h> /* for struct Vec */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /* for VecCreate/Destroy_MPI */
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
@@ -160,13 +159,13 @@ PetscErrorCode VecDuplicate_MPIKokkos(Vec win,Vec *vv)
 
   /* Build the Vec_Kokkos struct */
   vecmpi = static_cast<Vec_MPI*>(v->data);
-  if (std::is_same<DeviceMemorySpace,HostMemorySpace>::value) {
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {
     darray = vecmpi->array;
   } else {
-    darray = static_cast<PetscScalar*>(Kokkos::kokkos_malloc<DeviceMemorySpace>(sizeof(PetscScalar)*(v->map->n+vecmpi->nghost)));
+    darray = static_cast<PetscScalar*>(Kokkos::kokkos_malloc<DefaultMemorySpace>(sizeof(PetscScalar)*(v->map->n+vecmpi->nghost)));
   }
   veckok   = new Vec_Kokkos(v->map->n,vecmpi->array,darray,darray);
-  Kokkos::deep_copy(veckok->dual_v.view_device(),0.0);
+  Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
   v->spptr       = veckok;
   v->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
   *vv = v;
@@ -247,15 +246,15 @@ PetscErrorCode VecCreate_MPIKokkos(Vec v)
   ierr = VecSet_Seq(v,0.0);CHKERRQ(ierr); /* Zero the host array */
   vecmpi = static_cast<Vec_MPI*>(v->data);
 
-  if (std::is_same<DeviceMemorySpace,HostMemorySpace>::value) {
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {
     darray = vecmpi->array;
   } else {
-    darray = static_cast<PetscScalar*>(Kokkos::kokkos_malloc<DeviceMemorySpace>(sizeof(PetscScalar)*v->map->n));
+    darray = static_cast<PetscScalar*>(Kokkos::kokkos_malloc<DefaultMemorySpace>(sizeof(PetscScalar)*v->map->n));
   }
   ierr   = PetscObjectChangeTypeName((PetscObject)v,VECMPIKOKKOS);CHKERRQ(ierr);
   ierr   = VecSetOps_MPIKokkos(v);CHKERRQ(ierr);
   veckok = new Vec_Kokkos(v->map->n,vecmpi->array,darray,darray);
-  Kokkos::deep_copy(veckok->dual_v.view_device(),0.0);
+  Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
   v->spptr = static_cast<void*>(veckok);
   v->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
   PetscFunctionReturn(0);
@@ -310,17 +309,17 @@ PetscErrorCode  VecCreateMPIKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
   ierr = VecSetSizes(w,n,N);CHKERRQ(ierr);
   ierr = VecSetBlockSize(w,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(w->map);CHKERRQ(ierr);
-  if (std::is_same<DeviceMemorySpace,HostMemorySpace>::value) {harray = const_cast<PetscScalar*>(darray);}
-  else {harray = (PetscScalar*)Kokkos::kokkos_malloc<HostMemorySpace>(sizeof(PetscScalar)*w->map->n);}
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {harray = const_cast<PetscScalar*>(darray);}
+  else {harray = (PetscScalar*)Kokkos::kokkos_malloc<Kokkos::HostSpace>(sizeof(PetscScalar)*w->map->n);}
 
   ierr   = VecCreate_MPI_Private(w,PETSC_FALSE,0,harray);CHKERRQ(ierr); /* Build a sequential vector with provided data */
   vecmpi = static_cast<Vec_MPI*>(w->data);
-  if (std::is_same<DeviceMemorySpace,HostMemorySpace>::value) vecmpi->array_allocated = harray;
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) vecmpi->array_allocated = harray;
 
   ierr   = PetscObjectChangeTypeName((PetscObject)w,VECMPIKOKKOS);CHKERRQ(ierr);
   ierr   = VecSetOps_MPIKokkos(w);CHKERRQ(ierr);
   veckok = new Vec_Kokkos(n,harray,const_cast<PetscScalar*>(darray),NULL);
-  veckok->dual_v.modify_device(); /* Mark the device is modified */
+  veckok->v_dual.modify_device(); /* Mark the device is modified */
   w->spptr = static_cast<void*>(veckok);
   w->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
   *v = w;

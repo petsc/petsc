@@ -418,9 +418,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       ierr = ISSetBlockSize(findices,f_bs);CHKERRQ(ierr);
       ierr = MatCreateSubMatrix(Pold, findices, new_eq_indices, MAT_INITIAL_MATRIX, &Pnew);CHKERRQ(ierr);
       ierr = ISDestroy(&findices);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-      ierr = MatAIJCUSPARSESetGenerateTranspose(Pnew,PETSC_TRUE);CHKERRQ(ierr);
-#endif
+      ierr = MatSetOption(Pnew,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE);CHKERRQ(ierr);
 
       ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
       ierr = MatDestroy(a_P_inout);CHKERRQ(ierr);
@@ -474,9 +472,7 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
   if ((*Gmat2)->structurally_symmetric) {
     ierr = MatProductSetType(*Gmat2,MATPRODUCT_AB);CHKERRQ(ierr);
   } else {
-#if defined(PETSC_HAVE_CUDA)
-    ierr = MatAIJCUSPARSESetGenerateTranspose(Gmat1,PETSC_TRUE);CHKERRQ(ierr);
-#endif
+    ierr = MatSetOption(Gmat1,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatProductSetType(*Gmat2,MATPRODUCT_AtB);CHKERRQ(ierr);
   }
   ierr = MatProductSetFromOptions(*Gmat2);CHKERRQ(ierr);
@@ -642,9 +638,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         ierr = MatAppendOptionsPrefix(Prol11,addp);CHKERRQ(ierr);
         /* Always generate the transpose with CUDA
            Such behaviour can be adapted with -pc_gamg_prolongator_ prefixed options */
-#if defined(PETSC_HAVE_CUDA)
-        ierr = MatAIJCUSPARSESetGenerateTranspose(Prol11,PETSC_TRUE);CHKERRQ(ierr);
-#endif
+        ierr = MatSetOption(Prol11,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE);CHKERRQ(ierr);
         ierr = MatSetFromOptions(Prol11);CHKERRQ(ierr);
         Parr[level1] = Prol11;
       } else Parr[level1] = NULL; /* failed to coarsen */

@@ -25,7 +25,7 @@ static PetscErrorCode MatMultTranspose_S(Mat S,Vec x,Vec y)
   ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
 
   /* alternate transgen true and false to test code logic */
-  ierr = MatSeqAIJCUSPARSESetGenerateTranspose(A,test_cusparse_transgen);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_FORM_EXPLICIT_TRANSPOSE,test_cusparse_transgen);CHKERRQ(ierr);
   test_cusparse_transgen = (PetscBool)!test_cusparse_transgen;
   PetscFunctionReturn(0);
 }
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   /* test special case for SeqAIJCUSPARSE to generate explicit transpose (not default) */
-  ierr = MatSeqAIJCUSPARSESetGenerateTranspose(A,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   for (i=Istart;i<Iend;i++) {

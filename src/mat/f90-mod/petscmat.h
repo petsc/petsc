@@ -65,7 +65,9 @@
       PetscEnum, parameter :: MAT_SUBSET_OFF_PROC_ENTRIES = 20
       PetscEnum, parameter :: MAT_SUBMAT_SINGLEIS = 21
       PetscEnum, parameter :: MAT_STRUCTURE_ONLY = 22
-      PetscEnum, parameter :: MAT_OPTION_MAX = 23
+      PetscEnum, parameter :: MAT_SORTED_FULL = 23
+      PetscEnum, parameter :: MAT_FORM_EXPLICIT_TRANSPOSE = 24
+      PetscEnum, parameter :: MAT_OPTION_MAX = 25
 !
 !  MatFactorShiftType
 !

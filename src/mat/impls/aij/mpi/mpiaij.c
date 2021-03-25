@@ -1675,6 +1675,7 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_USE_INODES:
   case MAT_IGNORE_ZERO_ENTRIES:
+  case MAT_FORM_EXPLICIT_TRANSPOSE:
     MatCheckPreallocated(A,1);
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);

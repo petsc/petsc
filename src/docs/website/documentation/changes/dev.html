@@ -180,6 +180,8 @@
         <li>Remove MAT_NEW_DIAGONALS from MatOption</li>
         <li>Add UNKNOW_NONZERO_PATTERN as new value for MatStructure. It indicates that the relationship is unknown, when set the AIJ matrices check if the two matrices have identical patterns and if so use the faster code</li>
         <li>Add MAT_FACTOR_QR, MatQRFactor(), MatQRFactorSymbolic(), and MatQRFactorNumeric() for QR factorizations.  Currently the only built-in implementation uses LAPACK on sequential dense matrices</li>
+        <li>Change option -mat_cusparse_transgen to -mat_form_explicit_transpose to hint PETSc to form an explicit transpose for repeated operations like MatMultTranspose. Currently implemented only for AIJCUSPARSE and AIJKOKKOS</li>
+        <li>Add a MatOption MAT_FORM_EXPLICIT_TRANSPOSE</li>
       </ul>
       <h4>PC:</h4>
       <ul>
