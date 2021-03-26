@@ -853,8 +853,8 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,size_t size,Pet
       PetscFunctionReturn(0);
     }
   }
-  if (network->ncomponent == MAX_NETCOMPONENTS) {
-    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components registered exceeds the max %D",MAX_NETCOMPONENTS);
+  if (network->ncomponent == PETSC_DMNETWORK_MAXIMUM_COMPONENTS) {
+    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components registered exceeds the max %d set with PETSC_DMNETWORK_MAXIMUM_COMPONENTS in dmnetworkimpl.h",PETSC_DMNETWORK_MAXIMUM_COMPONENTS);
   }
 
   ierr = PetscStrcpy(component->name,name);CHKERRQ(ierr);
@@ -1143,7 +1143,7 @@ PetscErrorCode DMNetworkGetVertexOffset(DM dm,PetscInt p,PetscInt *offset)
   Not Collective
 
   Input Parameters:
-+ dm - the DMNetworkObject
++ dm - the DMNetwork
 . p - the vertex/edge point
 . componentkey - component key returned while registering the component; ignored if compvalue=NULL
 . compvalue - pointer to the data structure for the component, or NULL if not required.
@@ -1174,7 +1174,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
     if (ghost) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Adding a component at a leaf(ghost) shared vertex is not supported");
   }
 
-  if (compnum == MAX_NETCOMPONENTS) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components at a point exceeds the max %D",MAX_NETCOMPONENTS);
+  if (compnum == PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components at a point exceeds the max %D\n reconfigure with ---with-dmnetwork_maximum_components_per_point <N> where N is the required maximum",PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT);
 
   header->size[compnum] = component->size;
   ierr = PetscSectionAddDof(network->DataSection,p,component->size);CHKERRQ(ierr);
