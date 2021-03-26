@@ -15,3 +15,4 @@ discretizations, solvers, etc. that you might be interested in.
   guide_to_examples_by_physics
   physics/guide_to_stokes
   meshing/guide_to_subsurface
+  Classic "Hands-on" tutorials <handson>
