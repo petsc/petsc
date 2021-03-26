@@ -36,6 +36,7 @@ Get Working
 
    manual/index
    guides/guide_to_examples
+   changes/index
 
 
 * `TAO Users Manual <https://www.mcs.anl.gov/petsc/petsc-current/docs/tao_manual.pdf>`__

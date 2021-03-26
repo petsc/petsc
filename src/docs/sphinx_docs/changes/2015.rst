@@ -1,0 +1,186 @@
+===============
+Changes: 2.0.15
+===============
+
+   Highlights of new features in version 2.0.15, added since the last
+   public release of PETSc (2.0.Beta.13). See details in the sections
+   below.
+
+   -  Added support for shared version of PETSc libraries for several
+      machines to enable faster linking and smaller executables
+   -  Added new parallel block row matrix format, improved efficiency
+      for block diagonal formats
+   -  Added a suite of routines to help manage the mappings between an
+      application-defined ordering of variables and the ordering used by
+      PETSc for matrices and vectors
+   -  Expanded users manual information for performance tuning and
+      profiling
+   -  The option -log_summary now summarize of message-passing activity
+      as well as flop rates.
+   -  Running the test suite now requires much less disk space.
+   -  Example programs are in the process of being reorganized into
+      tutorials and tests (see, e.g., petsc/src/sles/examples/tutorials
+      for tutorial-style examples for the linear solvers).
+   -  The HTML version of the PETSc man pages now provides indices
+      (organized by both concepts and routine names) to tutorial
+      examples.
+
+   .. rubric:: General
+
+   -  Added support for shared libraries for the machines PETSC_ARCH =
+      [sun4,solaris,alpha,IRIX,IRIX64,linux] to enable faster linking
+      and smaller executables. To compile the shared libraries, install
+      PETSc as usual and then execute the command make BOPT=g shared
+      from the PETSc home directory (or use whatever BOPT you like). You
+      can remove the shared libraries with the command make BOPT=g
+      deleteshared Note: Shared libraries can also be used with
+      PETSC_ARCH=freebsd and PETSC_ARCH=hpux if some minor modifications
+      are made. For detailed instructions, see the files
+      ${PETSC_DIR}/bmake/${PETSC_ARCH}/base. Please write to us at
+      petsc-maint@mcs.anl.gov if you encounter any problems when using
+      the shared libraries.
+   -  Users must now ALWAYS set the environmental variable PETSC_DIR to
+      indicate the PETSc home directory. Previously, PETSC_DIR was set
+      within the various makefiles within the PETSc installation.
+      However, since this causes problems for shared libraries on some
+      machines, the environmental variable PETSC_DIR is now used
+      instead.
+   -  Added global variables for use in debuggers:
+
+      -  PetscGlobalRank - processor's rank in MPI_COMM_WORLD
+      -  PetscGlobalSize - number of processors in MPI_COMM_WORLD
+
+   -  For complex numbers versions (e.g., BOPT=g_complex): Added a
+      global variable defining the imaginary number "i": PETSC_i
+
+   .. rubric:: TS (Time Stepping Module)
+
+   -  Changed TS_PSEUDO_POSITION_INDEPENDENT_TIMESTEP ->
+      TS_PSEUDO_POSIND -
+   -  Changed TSPseudoSetPositionIndependentTimeStep() ->
+      TSPseudoSetPosIndTimeStep(). Even Barry couldn't stand names that
+      long :-)
+
+   .. rubric:: SNES (Nonlinear Solvers):
+
+   -  The user can now set parameters used in matrix-free approximations
+      of Jacobian-vector products, with the options -snes_mf_err <err> :
+      square root of relative error in computing function -snes_mf_umin
+      <umin>: minimum iterate parameter or by calling the routine
+      SNESSetMatrixFreeParameters().
+   -  Added the option -snes_mf_operator, which allows the user to apply
+      the default matrix-free Jacobian but retain the user-provided
+      Jacobian preconditioner matrix.
+   -  Added the routine SNESGetTolerances() to extract the various
+      parameters used for convergence testing.
+   -  Initialized iteration counter to 0 for successive calls to SNES
+      solvers.
+   -  Changed the names for SNES runtime options associated with
+      particular solvers to the forms -snes_eq_ls_<parameter_name> -
+      nonlinear equations, line search method
+      -snes_eq_tr_<parameter_name> - nonlinear equations, trust region
+      method -snes_um_ls_<parameter_name>- unconstrained minimization,
+      line search method -snes_um_tr_<parameter_name> - unconstrained
+      minimization, trust region method Run program with -help for a
+      detailed list of options.
+
+   .. rubric:: SLES (Linear Solvers): See PC and KSP
+
+   -  Changed the default linear solvers from GMRES(30) with Jacobi
+      preconditioning to uniprocessor: GMRES(30) with ILU(0)
+      preconditioning multiprocessor: GMRES(30) with block Jacobi
+      preconditioning, where there is 1 block per processor, and each
+      block is solved with ILU(0) See the users manual for additional
+      options for the block Jacobi method. You can still employ the old
+      default at runtime with the option -pc_type jacobi
+
+   .. rubric:: KSP (Krylov subspace methods):
+
+   -  Added routines KSPComputeEigenvalues(),
+      KSPComputeEigenvaluesExplicitly() and runtime options
+      -ksp_compute_eigenvalues, -ksp_plot_eigenvalues,
+      -ksp_compute_eigenvalues_explictly and
+      -ksp_plot_eigenvalues_explicitly for users interested in examining
+      the eigenvalues of the preconditioned operator to better
+      understand the convergence of a chosen iterative method.
+   -  Changed KSPSetCalculateExtremeSingularValues() ->
+      KSPSetComputeExtremeSingularValues() - Changed
+      KSPSetCalculateResidual() -> KSPSetComputeResidual()
+
+   .. rubric:: PC (Preconditioners):
+
+   -  Added the routine PCSetModifySubMatrices(), which allows the user
+      to set an optional routine for modifying the entries of the
+      submatrices that arise in certain subdomain-based preconditioners
+      (ASM, block Jacobi, block Gauss-Seidel).
+
+   .. rubric:: MAT (Matrices):
+
+   -  Eliminated routine MatGetSubmatrix(); now use MatGetSubMatrices()
+      even when extracting just 1 submatrix.
+   -  Added routine MatDestroyMatrices()
+   -  Fixed bug in MatGetSubMatrices() for successive calls for matrices
+      having different nonzero structure.
+   -  Added routine MatGetBlockSize(). - Changed routine MatGetInfo() so
+      that it returns more information. See man page for details.
+   -  Changed usage of MatGetReordering() and MatRegisterOrdering(); see
+      man pages.
+   -  Changed the prefix used for matrix operation names within
+      MatShellSetOperation() and MatHasOperation(): MAT_<operation> ->
+      MATOP_<operation> For example, MAT_MULT -> MATOP_MULT.
+
+   .. rubric:: DA (Distributed Arrays):
+
+   .. rubric:: VEC (Vectors):
+
+   .. rubric:: IS (Index Sets):
+
+   -  Changed ISCreateSeq() to ISCreateGeneral()
+   -  Changed ISCreateStrideSeq() to ISCreateStride()
+   -  Added routine ISCreateBlock() to create a blocked index set. See
+      the man page for details and related routines.
+
+   .. rubric:: Draw (Graphics):
+
+   -  Added -draw_x_private_colormap option that causes PETSc to
+      allocate a separate colormap for PETSc graphics windows. This
+      prevents bad contour plots due to Netscape altering the default
+      color map.
+   -  You can now zoom in and out of contour plots using the option
+      -draw_pause -1 and left and center mouse buttons.
+   -  The option -draw_contour_grid will display the underlying grid on
+      a contour plot.
+
+   .. rubric:: VIEWERS:
+
+   -  Added routine ViewerGetFormat().
+   -  Added options -viewer_matlab_machine and -viewer_matlab_port
+   -  Changed ASCII_FORMAT_xxx to VIEWER_FORMAT_ASCII_xxx and
+      ASCII_FORMAT_INFO_DETAILED to VIEWER_FORMAT_ASCII_INFO_LONG
+   -  Changed BINARY_FORMAT_xxx to VIEWER_FORMAT_BINARY_xxx
+   -  PETSc now provides basic support for VRML viewers. Currently, one
+      can draw surface contours of vector fields with the routine
+      DFVecDrawTensorSurfaceContour(). Note that the VRML utilities will
+      be expanded and the interface will change in the near future.
+
+   .. rubric:: SYSTEM:
+
+   .. rubric:: EVENT LOGGING:
+
+   .. rubric:: FORTRAN INTERFACE:
+
+   -  Changed PETSC_NULL_CHAR to PETSC_NULL_CHARACTER - Replaced
+      PETSC_DEFAULT with
+   -  You no longer need MPE to build PETSc.
+   -  Included petsc/include/options.h within petsc/include/petsc.h -
+   -  Changed distributed array name from RA to DA. Also changed
+      DAGlobalToLocal() to DAGlobalToLocalBegin() followed by
+      DAGlobalToLocalEnd().
+   -  Changed usage of KSPBuildSolution() slightly to avoid copying when
+      not needed.
+   -  Remove first argument (rflag) from ALL options database commands,
+      i.e., OptionsGetInt(0,0,"-m",&m) => OptionsGetInt(0,"-m",&m), etc.
+   -  Changed the way memory tracing is done. When compiling with BOPT=g
+      it is the default, but you may turn it off with -notrmalloc. When
+      compiling with BOPT=O it is by default off, but one may turn it on
+      with -trmalloc or -trdump.

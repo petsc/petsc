@@ -1,0 +1,143 @@
+==============
+Changes: 2.1.0
+==============
+
+
+Changes
+-------
+(See `Features`_ below)
+
+   .. rubric:: General:
+
+   -  Simpler interface for structured grids, see
+      src/snes/examples/tutorials/ex5.c
+   -  "System routines" including PLog..., Options..., Viewer...,
+      Draw...., FList...,OList... now all begin with the string Petsc.
+      For example, PetscOptionsGetInt() and PetscLogBegin().
+   -  The calling sequence for PetscMalloc() was changed to return and
+      error code and deliver the pointer as a new final argument. Due to
+      this change, the macros CHKPTRA() and CHKPTRQ() were dropped.
+
+   .. rubric:: AO (Application Orderings):
+
+   .. rubric:: TS (Timestepping Solvers):
+
+   .. rubric:: SNES (Nonlinear Solvers):
+
+   .. rubric:: SLES (Linear Solvers):
+
+   .. rubric:: KSP (Krylov Subspace Methods):
+
+   .. rubric:: PC (Preconditioners):
+
+   .. rubric:: MAT (Matrices):
+
+   -  When using MatCreate(), you must follow with a MatSetType() or
+      MatSetFromOptions() before using the matrix.
+   -  Changed
+      ``int             MatShellSetOperation(Mat,MatOperation,void*);``
+      to
+      ``int             MatShellSetOperation(Mat,MatOperation,void(*)());``
+   -  Changed
+      ``int             MatShellGetOperation(Mat,MatOperation,void**);``
+      to
+      ``int             MatShellGetOperation(Mat,MatOperation,void(**)());``
+   -  Changed IncompleteCholesky to ICC
+
+   .. rubric:: DA (Distributed Arrays):
+
+   -  Changed the DAMG routines to DMMG routines.
+   -  DAGetColoring() now has new second argument that takes either
+      IS_COLORING_GLOBAL or IS_COLOR_GLOBAL and a new third argument
+      that takes the matrix type of either MATMPIAIJ or MATMPIBAIJ.
+
+   .. rubric:: VEC (Vectors):
+
+   -  Changed ``int VecSetOperation(Vec,VecOperation,void*);`` to
+      ``int VecSetOperation(Vec,VecOperation,void(*)());``
+
+   .. rubric:: IS (Index Sets):
+
+   .. rubric:: General:
+
+   .. rubric:: Draw (Graphics):
+
+   .. rubric:: Viewers:
+
+   .. rubric:: System:
+
+   .. rubric:: Error Handling:
+
+   -  CHKERRA() is now obselete; use CHKERRQ() instead. Changed the
+      calling sequence of SETERRQ() to eliminate the second input
+      parameter.
+
+   .. rubric:: Event Logging:
+
+   .. rubric:: Fortran Interface:
+
+
+Features
+--------
+(See `Changes`_ above)
+
+   .. rubric:: General:
+
+   -  Simpler interface for structured grids, see
+      src/snes/examples/tutorials/ex5.c
+   -  Complete infrastructure for parallel multigrid for linear and
+      nonlinear problems on structured grids. See
+      src/snes/examples/tutorials/ex19.c
+   -  Added manual pages for PETSc objects, enums etc.
+   -  Added html version of all source code and examples, accessible
+      from docs/index.html and the manual pages.
+
+   .. rubric:: AO (Application Orderings):
+
+   .. rubric:: TS (Timestepping Solvers):
+
+   .. rubric:: SNES (Nonlinear Solvers):
+
+   .. rubric:: SLES (Linear Solvers):
+
+   .. rubric:: KSP (Krylov Subspace Methods):
+
+   -  Added support for "diagonal scaling" of preconditioned system as
+      required by most ODE integrators via PCDiagonalScaleSet().
+
+   .. rubric:: PC (Preconditioners):
+
+   .. rubric:: MAT (Matrices):
+
+   -  Added the Henry Tufo/Paul Fischer libtfs scalable parallel direct
+      solver for MPIAIJ matrices.
+   -  Added routine MatFDColoringSetRecompute().
+
+   .. rubric:: DA (Distributed Arrays):
+
+   -  Added DAVecGetArray() to access the multidimensional arrays
+      directly in the global parallel indexing. See
+      src/snes/examples/tutorials/ex5.c and ex19.c
+   -  Add DAGetLocalVector()/DARestoreLocalVector() for inexpensive
+      access to local work vectors.
+
+   .. rubric:: VEC (Vectors):
+
+   -  Added DMComposite routines to help with PDE optimization and
+      multicomponent PDEs.
+
+   .. rubric:: IS (Index Sets):
+
+   .. rubric:: PF:
+
+   .. rubric:: Draw (Graphics):
+
+   .. rubric:: Viewers:
+
+   .. rubric:: System:
+
+   .. rubric:: Error Handling:
+
+   .. rubric:: Event Logging:
+
+   .. rubric:: Fortran Interface:

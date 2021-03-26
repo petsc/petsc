@@ -1,0 +1,249 @@
+============
+Changes: 3.3
+============
+
+
+   .. rubric:: config/configure.py:
+
+   -  Building PETSc using CMake is enabled automatically if CMake is
+      installed (enabling parallel builds and fast incremental builds),
+      otherwise the plain make-based system is used.
+   -  Added --with-cuda-only flag to allow compiling CUDA files without
+      requiring Thrust and Cusp
+
+   .. rubric:: Vec:
+
+   -  VecCreateSeqWithArray() and VecCreateMPIWithArray() now take a
+      blocksize argument before the local length
+   -  VecSetBlockSize() cannot be called after VecCreateSeq() or
+      VecCreateMPI() and must be called before VecSetUp() or
+      VecSetFromOptions() or before either VecSetType() or VecSetSizes()
+
+   .. rubric:: Mat:
+
+   -  MatScaleSystem() and MatUnScaleSystem() are gone, they didn't do
+      anything.
+   -  Renamed MatNullSpaceAttach() to MatSetNullSpace()
+   -  MatMult() no longer removes the nullspace set by MatSetNullSpace()
+   -  Renamed MatMatMultTranspose() for C=A^T*B to MatTransposeMatMult()
+   -  Added MatMatTransposeMult() for C=A*B^T
+   -  Added MatRARt() for C=R*A*R^T
+   -  Preallocation routines now automatically set
+      MAT_NEW_NONZERO_ALLOCATION_ERR, if you intentionally preallocate
+      less than necessary then use
+      MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE) to
+      disable the error generation.
+   -  MatSetBlockSize() must be called before MatSetUp() or
+      MatXXXXSetPreallocation() or block size defaults to 1
+   -  -mat_block_size is NOT processed by MatXXXXSetPreallocation() you
+      MUST call MatSetFromOptions() before MatSetUp() to have it
+      processed
+   -  You MUST now call MatXXXSetPreallocation() or MatSetUp() on any
+      matrix you create directly (not using DMCreateMatrix()) before
+      calling MatSetValues(), MatSetValuesBlocked() etc.
+   -  MatGetOwnershipRange() will not work without setting up the
+      matrix.
+   -  MatSetUpPreallocation() and MatPreallocated() are removed, use
+      MatSetUp()
+   -  MatPreallocateSymmetricInitialize() is removed, use
+      MatPreallocateInitialize()
+   -  MatCreateMPIAIJ(), MatCreateMPIBAIJ(), MatCreateMPISBAIJ(),
+      MatCreateMPIDense() are now MatCreateAIJ(), MatCreateBAIJ(),
+      MatCreateSBAIJ(), MatCreateDense(). Note that on a single process
+      they have always created the sequential version of the matrix so
+      this naming is more accurate.
+   -  Renamed MatMerge_SeqsToMPI() to MatCreateMPIAIJSumSeqAIJ()
+   -  Renamed MatMerge() to MatCreateMPIAIJConcatenateSeqAIJ()
+   -  Added block size in call to MatCreateIS()
+   -  MatInvertBlockDiagonal() now returns a const pointer
+
+   .. rubric:: PC:
+
+   -  Remove PCASASetDM(), use PCSetDM() instead.
+
+   -  Add PCFieldSplitSetSchurFactType(), rename
+      -pc_fieldsplit_schur_factorization_type to
+      -pc_fieldsplit_schur_fact_type.
+
+   -  Added native algebraic multigrid method -pc_type gamg. Aggregation
+      method is recommended: -pc_gamg_type agg and for elliptic
+      operators smoothing is recommended: -pc_gamg_agg_nsmooths 1.
+
+   -  PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*) added second
+      integer argument for number of local vertices.
+
+   -  Added PCISSetSubdomainScalingFactor(PC,PetscScalar).
+
+   -  .. rubric:: PCGASM:
+
+      -  Remove PCGASMSetLocalSubdomains(), use PCGASMSetSubdomains();
+         **note:** the first argument is now the list of "inner"
+         subdomains (without overlap), unlike before and for PCASM
+      -  PCGASMSetTotalSubdomains(PC,PetscInt,PetscBool); added third
+         argument to indicate whether local subdomains should be
+         constructed.
+      -  Removed PCGASMCreateSubdomains(), use
+         PCGASMCreateLocalSubdomains(Mat,PetscInt,PetscInt,IS*[],IS*[]);
+         second PetscInt argument is requested overlap
+      -  PCGASMCreateSubdomains2D(PC,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS[]*,IS[]*):
+         the 9-th and 10-th argument have been swapped: the 9-th outputs
+         the inner subdomains, the 10-th outputs the outer subdomains.
+
+   -  PCMG multigrid defaults changed to use a Chebyshev smoother with
+      block Jacobi Gauss-Seidel relaxation. This is a linear
+      preconditioner so it can be used with normal Krylov methods rather
+      than only flexible methods, as well as having fewer
+      synchronization pointst. Use
+      ``-mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi``
+      for the original behavior.
+
+   .. rubric:: KSP:
+
+   -  KSPSetOperators() will automatically set the null space present on
+      the input matrix
+   -  Renamed KSPCHEBYCHEV to KSPCHEBYSHEV
+   -  Added Hybrid CHEBYCHEV (-ksp_chebyshev_hybrid)
+   -  Added pipelined GMRES (KSPPGMRES) which performs one non-blocking
+      reduction per iteration instead of two blocking reductions.
+   -  Added flexible BiCGStab (KSPFBCGS) which tolerates a nonlinear
+      preconditioner (like KSPFGMRES).
+   -  Added improved flexible BiCGStab (KSPIFBCGS) which tolerates a
+      nonlinear preconditioner and performs one reduction every other
+      iteration (like KSPIBCGS).
+
+   .. rubric:: SNES:
+
+   -  Added SNESGetSNESLineSearch
+   -  Changed default max_its and max_funcs for non-newton SNES solvers
+      to 10000 and 30000 respectively
+   -  Changed options and command-line arguments for SNESFAS to be in
+      line with PCMG
+   -  Added quasi-Newton (SNESQN), Nonlinear GMRES (SNESNGMRES),
+      nonlinear conjugate gradients (SNESNCG), and multi-stage methods
+      (SNESMS, used as a smoother for nonlinear multigrid).
+   -  Support for Full Approximation Scheme nonlinear multigrid
+      (SNESFAS) moved from DMMG to SNES and made composable with the
+      methods above.
+   -  SNES line search type should be set by name with
+      SNESLineSearchSetType rather than with SNESLineSearchSet, see
+      below.
+
+   .. rubric:: SNESLineSearch:
+
+   -  SNESLineSearch object added
+   -  The default SNESLineSearch of a SNES may be gotten with
+      SNESGetSNESLineSearch(SNES snes, SNESLineSearch \*linesearch)
+   -  The linesearch type may be set with SNESLineSearchSetType() or
+      -snes_linesearch_type
+   -  The line search (and pre and post checks) is applied using
+      SNESLineSearchApply()
+   -  Pre/Post-check methods may be set with
+      SNESLineSearchSetPre/PostCheck()
+   -  The previous steplength may be accessed through
+      SNESLineSearchSetLambda()
+   -  The damping parameter may be set through
+      SNESLineSearchSetDamping() or -snes_linesearch_damping
+   -  Success of the line search is determined using
+      SNESLineSearchGetSuccess()
+   -  Custom linesearches may be built through
+      SNESLINESEARCHSHELL,("shell") or by registering a new linesearch
+      type with SNESLineSearchRegisterDynamic()
+   -  SNESLINESEARCHBT,("bt") replaces SNES_LS_CUBIC and
+      SNES_LS_QUADRATIC, and order may be set with
+      SNESLineSearchSetOrder() or -snes_linesearch_order
+   -  SNESLINESEARCHBASIC,("basic") replaces SNES_LS_BASIC and
+      SNES_LS_BASICNONORMS. Norms may be turned off with
+      SNESLineSearchSetComputeNorms() or -snes_linesearch_norms 0
+   -  SNESLineSearchSetTolerances() replaces SNESLSSetParams(), with the
+      former alpha parameter set with SNESLineSearchBTSetAlpha() or
+      -snes_linesearch_alpha
+   -  Added Line Search type SNESLINESEARCHL2,("l2") as the default for
+      NRICHARDSON
+   -  SNESLINESEARCHCP,("cp") added as the default line search method
+      for SNESNCG and SNESQN
+
+   .. rubric:: TS:
+
+   -  -ts_max_time changed to -ts_final_time
+   -  TSDefaultComputeJacobian() and TSDefaultComputeJacobianColor()
+      have been removed. Configure TS to use coloring with
+      SNESSetJacobian().
+   -  Added TSROSW for Rosenbrock-W methods.
+   -  Added a common, extensible system for adaptive controllers, see
+      TSGetAdapt().
+
+   .. rubric:: DM/DA:
+
+   -  Added DMCreateDecomposition(DM,PetscInt,char*[]*,IS[]*,DM[]*) for
+      use with PCFIELDSPLIT,PCASM,PCGASM
+   -  Added DMCreateDecompositionDM(DM,const char*,DM*) to create a
+      version of the DM encapsulating a named decomposition; use with
+      DMCreateDecomposition()
+   -  Added DMRedundant for managing globally coupled degrees of
+      freedom.
+   -  Removed DMCompositeAddArray(), use DMRedundantCreate() and
+      DMCompositeAddDM().
+   -  Renamed DMGetMatrix(), DMGetInterpolation(), DMGetInjection(), and
+      DMGetColoring() to DMCreateMatrix(), etc for semantic consistency.
+   -  The communicator argument to DMRefine() and DMCoarsen() can be
+      MPI_COMM_NULL, but not PETSC_NULL, because the latter may not be
+      the correct type.
+   -  Added DMCoarsenHookAdd() and DMRefineHookAdd() for shepherding
+      persistent resolution-dependent data between levels.
+   -  Added DMGetNamedGlobalVector() for storing persistent
+      resolution-dependent data.
+   -  DMDASNESSetFunctionLocal() and DMDASNESSetJacobianLocal() can be
+      used for convenient local evaluation; these routines will
+      eventually replace DMDASetLocalFunction() and
+      DMDASetLocalJacobian().
+
+   .. rubric:: DMMG:
+
+   -  DMMG is now completely removed from PETSc. Equivalent (and better)
+      functionality can now be obtained by calling SNESSetDM() or
+      KSPSetDM(). Make sure to avoid resolution-dependent data in the
+      user context. Use SNESGetDM() or KSPGetDM() in the function
+      evaluation context to obtain the grid. DMGetNamedGlobalVector(),
+      DMCoarsenHookAdd(), and DMRefineHookAdd() can be used to manage
+      persistent resolution-dependent data.
+
+   .. rubric:: PetscViewer:
+
+   -  A VTK binary viewer was added, see PETSCVIEWERVTK.
+
+   .. rubric:: SYS:
+
+   -  PetscBagLoad() now requires you previously created and registered
+      all the records in the PETSc bag, allows loading on systems with
+      different struct layout/endianness.
+   -  PetscSF added as a type-generic graph communication mechanism. The
+      current implementation requires MPI-2 one-sided and the interface
+      is currently optional.
+
+   .. rubric:: Fortran:
+
+   -  PETSC_NULL_TRUTH is now PETSC_NULL_BOOL
+   -  PetscOptionsGetEnum() now available from Fortran
+
+   .. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+
+   -  The Hypre interface was updated to 2.8.0b and now supports 64-bit
+      integers.
+   -  SuperLU_DIST interface updated to 3.1.
+   -  SuperLU interface updated to 4.3.
+   -  Sundials interface updated to 2.5.0.
+   -  FFTW interface updated to 3.3.2.
+   -  ParMetis updated to 4.0.2 and split from Metis 5.0.2 which is now
+      separate.
+
+   .. rubric:: Build:
+
+   -  If Python 2.7 is available, the config/builder2.py is now
+      available for a complete build, including dependency tracking.
+
+   .. rubric:: Examples:
+
+   -  SNES ex62 illustrates the use of DMComplex to solve the Stokes
+      equation on an unstructured mesh. The Python tests show how to use
+      block preconditioning strategies from the command line.
+   -  SNES ex52 illustrates the use of CUDA for FEM integration

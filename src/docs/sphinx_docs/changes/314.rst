@@ -1,0 +1,310 @@
+=============
+Changes: 3.14
+=============
+
+   .. rubric:: General:
+
+   -  Deprecate PetscIgnoreErrorHandler(), use PetscReturnErrorHandler()
+   -  Replace -debugger_nodes with -debugger_ranks
+   -  Change PETSCABORT() to abort instead of MPI_Abort if run under
+      -start_in_debugger
+   -  Add PETSC_MPI_THREAD_REQUIRED to control the requested threading
+      level for MPI_Init
+   -  Add CUDA-11 support, but with CUDA-11,
+      -mat_cusparse_storage_format {ELL, HYB} are not supported anymore.
+      Only CSR is supported
+   -  Add CUDA-11 option -mat_cusparse_spmv_alg {MV_ALG_DEFAULT,
+      CSRMV_ALG1 (default), CSRMV_ALG2} for users to select cuSPARSE
+      SpMV algorithms
+   -  Add CUDA-11 option -mat_cusparse_spmm_alg {ALG_DEFAULT, CSR_ALG1
+      (default), CSR_ALG2} for users to select cuSPARSE SpMM algorithms
+   -  Add CUDA-11 option -mat_cusparse_csr2csc_alg {ALG1 (default),
+      ALG2} for users to select cuSPARSE CSR to CSC conversion
+      algorithms
+   -  Remove option -cuda_initialize, whose functionality is succeeded
+      by -cuda_device xxx
+   -  Change -cuda_set_device to -cuda_device, which can now accept
+      NONE, PETSC_DEFAULT, PETSC_DECIDE in additon to non-negative
+      integers
+   -  Change PetscCUDAInitialize(comm) to PetscCUDAInitialize(comm,dev)
+   -  Add PetscCUDAInitializeCheck() to do lazy CUDA initialization
+   -  Add -hip_device, -hip_view, -hip_synchronize,
+      PetscHIPInitialize(comm,dev) and PetscHIPInitializeCheck(). Their
+      usage is similar to their CUDA counterpart
+   -  Add PetscOptionsInsertStringYAML() and -options_string_yaml for
+      YAML-formatted options on the command line
+   -  Add PETSC_OPTIONS_YAML environment variable for setting options in
+      YAML format
+   -  Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS
+      Fortran linker enables catching floating point divide by zero the
+      trapping is disabled for LAPACK routines that generate divide by
+      zero, for example, the reference implementation of ieeeck()
+   -  Add floating point exception handling support for freebsd and
+      Windows
+   -  Consistently set exception handling for divide by zero, invalid,
+      underflow, and overflow for all systems when possible
+   -  -options_monitor and -options_monitor_cancel have immediate global
+      effect, see PetscInitialize() for details
+   -  Remove PetscOptionsSetFromOptions()
+   -  Remove PetscOptionsMonitorCancel()
+   -  Remove -h and -v options. Use -help and -version instead. The
+      short options -h and -v can now be used within user codes
+   -  Import PETSc4py sources into PETSc source tree. Continue to use
+      --download-petsc4py to build petsc4py
+   -  Add an experimental Kokkos backend for PETSc GPU operations. For
+      example, one can use '--download-kokkos --download-kokkos-kernels
+      --with-kokkos-cuda-arch=TURING75' to build PETSc with a Kokkos
+      CUDA backend, and then use -vec_type kokkos -mat_type aijkokkos.
+      With that, vector and matrix operations on GPUs are done through
+      Kokkos kernels. Currently, VECKOKKOS supports all vector
+      operations, but MATAIJKOKKOS only supports MatMult() and its
+      variants. More complete support is coming
+
+   .. rubric:: Configure/Build:
+
+   -  Change --with-matlabengine-lib= to --with-matlab-engine-lib= to
+      match --with-matlab-engine, print error message for deprecated
+      form
+   -  Change --download-mpich default for optimized build to ch3:nemesis
+      and keep ch3:sock for debug build
+   -  On macOS, --with-macos-firewall-rules can be used to automate
+      addition of firewall rules during testing to prevent firewall
+      popup windows
+
+   .. rubric:: IS:
+
+   .. rubric:: PetscDraw:
+
+   .. rubric:: VecScatter / PetscSF:
+
+   -  Add a Kokkos backend to SF. Previously, SF could only handle CUDA
+      devices. Now it can handle other devices that Kokkos supports when
+      Petsc is configured with Kokkos. The command line option is:
+      -sf_backend cuda \| kokkos
+
+   .. rubric:: PF:
+
+   .. rubric:: Vec:
+
+   -  Fix memory leaks when requesting -vec_type
+      {standard|cuda|viennacl} when the vector is already of the desired
+      type
+   -  Add VecViennaCLGetCL{Context|Queue|Mem} for VECVIENNACL to access
+      the CL objects underlying the PETSc Vecs
+   -  Add VecCreate{Seq|MPI}ViennaCLWithArray and
+      VecViennaCL{Place|Reset}Array
+   -  Add VecCreate{Seq|MPI}CUDAWithArrays to create VECCUDA sharing the
+      CPU and/or GPU memory spaces
+   -  Add VecCreate{Seq|MPI}ViennaCLWithArrays to create VECVIENNACL
+      sharing the CPU and/or GPU memory spaces
+   -  Add an experimental vector type VECKOKKOS
+   -  Add VecGetOffloadMask to query a Vec's offload mask
+
+   .. rubric:: PetscSection:
+
+   -  PetscSectionGetClosurePermutation(),
+      PetscSectionSetClosurePermutation(), and
+      PetscSectionGetClosureInversePermutation() all require a new
+      argument depth and the getters require closure size to be
+      specified by the caller. This allows multiple closure permutations
+      to be specified, e.g., for mixed topology meshes and boundary
+      faces and for variable-degree spaces. The previous behavior only
+      applied to points at height zero
+
+   .. rubric:: PetscPartitioner:
+
+   .. rubric:: Mat:
+
+   -  Add MatSetLayouts()
+   -  Add MatSeqAIJSetTotalPreallocation(Mat,PetscInt) for efficient row
+      by row setting of a matrix without requiring preallocating for
+      each row
+   -  Add full support for MKL sparse matrix-matrix products in
+      MATSEQAIJMKL
+   -  Fix few bugs for MATSEQSBAIJ when missing diagonal entries
+   -  Fix few bugs when trying to reuse matrices within MatMat
+      operations
+   -  Deprecate MatFreeIntermediateDataStructures() in favor of
+      MatProductClear()
+   -  Add MatShellSetMatProductOperation() to allow users specify
+      symbolic and numeric phases for MatMat operations with MATSHELL
+      matrices
+   -  Add support for distributed dense matrices on GPUs
+      (MATMPIDENSECUDA)
+   -  Add few missing get/set/replace array operations for MATDENSE and
+      MATDENSECUDA matrices
+   -  Add MatDense{Get|Restore}ColumnVec to access memory of a dense
+      matrix as a Vec, together with read-only and write-only variants
+   -  Add MatDense{Get|Restore}SubMatrix to access memory of a
+      contiguous subset of columns of a dense matrix as a Mat
+   -  Deprecate MatSeqDenseSetLDA in favor of MatDenseSetLDA
+   -  Add support for A*B and A^t*B operations with A = AIJCUSPARSE and
+      B = DENSECUDA matrices
+   -  Add basic support for MATPRODUCT_AB (resp. MATPRODUCT_AtB) for any
+      matrices with mult (multtranpose) operation defined and B dense
+   -  Add MATSCALAPACK, a new Mat type that wraps a ScaLAPACK matrix
+   -  Add support for MUMPS-5.3.0 distributed right hand side
+   -  Add support for MatMultHermitianTranspose with SEQAIJCUSPARSE
+   -  Remove default generation of explicit matrix for MatMultTranspose
+      operations with SEQAIJCUSPARSE. Users can still require it via
+      MatSeqAIJCUSPARSESetGenerateTranspose
+   -  Add MatOrderingType external returns a NULL ordering to allow
+      solver types MATSOLVERUMFPACK and MATSOLVERCHOLMOD to use their
+      orderings
+   -  Add an experimental matrix type MATAIJKOKKOS
+
+   .. rubric:: PC:
+
+   -  Fix bugs related with reusing PCILU/PCICC/PCLU/PCCHOLESKY
+      preconditioners with SEQAIJCUSPARSE matrices
+   -  GAMG uses MAT_SPD to default to CG for the eigen estimate in
+      Chebyshev smoothers
+   -  Add PCMatApply() for applying a preconditioner to a block of
+      vectors
+   -  Add -pc_factor_mat_ordering_type external to use ordering methods
+      of MATSOLVERUMFPACK and MATSOLVERCHOLMOD
+   -  PCSetUp_LU,ILU,Cholesky,ICC() no longer compute an ordering if it
+      is not to be used by the factorization (optimization)
+
+   .. rubric:: KSP:
+
+   -  Add KSPGMRESSetBreakdownTolerance() along with option
+      -ksp_gmres_breakdown_tolerance to 3.14.3
+   -  Change KSPReasonView() to KSPConvergenceReasonView()
+   -  Change KSPReasonViewFromOptions() to
+      KSPConvergedReasonViewFromOptions()
+   -  Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence
+      when the maximum number of iterations is reached
+   -  Fix many KSP implementations to actually perform the number of
+      iterations requested
+   -  Add KSPMatSolve() for solving iteratively (currently only with
+      KSPHPDDM and KSPPREONLY) systems with multiple right-hand sides,
+      and KSP{Set|Get}MatSolveBlockSize() to set a block size limit
+   -  Chebyshev uses MAT_SPD to default to CG for the eigen estimate
+   -  Add KSPPIPECG2, a pipelined solver that reduces the number of
+      allreduces to one per two iterations and overlaps it with two PCs
+      and SPMVs using non-blocking allreduce
+
+   .. rubric:: SNES:
+
+   -  Change SNESReasonView() to SNESConvergedReasonView()
+   -  Change SNESReasonViewFromOptions() to
+      SNESConvergedReasonViewFromOptions()
+
+   .. rubric:: SNESLineSearch:
+
+   .. rubric:: TS:
+
+   -  Fix examples using automatic differentiation. One can use
+      '--download-adolc --download-colpack' to install the AD tool
+   -  Improve shift handling in TSComputeXXXJacobian()
+   -  Update TSTrajectory (type memory) to preallocate a checkpoint pool
+      to be reused across multiple TS runs
+
+   .. rubric:: TAO:
+
+   -  Add lm regularizer to TAOBRGN. This regularizer turns BRGN into a
+      Levenberg-Marquardt algorithm. TAOBRGNGetDamping() vector returns
+      the damping vector used by this regularizer
+
+   .. rubric:: DM/DA:
+
+   -  Change DMComputeExactSolution() to also compute the time
+      derivative of the exact solution
+   -  Add time derivative of the solution argument to DMAddBoundary(),
+      DMGetBoundary(), PetscDSAddBoundary(), PetscDSUpdateBoundary(),
+      PetscDSGetBoundary()
+
+   .. rubric:: DMPlex:
+
+   -  Deprecate DMPlexCreateFromCellList[Parallel]() in favor of
+      DMPlexCreateFromCellList[Parallel]Petsc() which accept PETSc
+      datatypes (PetscInt, PetscReal)
+   -  Expose DMPlexBuildFromCellList(),
+      DMPlexBuildFromCellListParallel(),
+      DMPlexBuildCoordinatesFromCellList(),
+      DMPlexBuildCoordinatesFromCellListParallel(). They now accept
+      PETSc datatypes
+   -  Add DMPlexMatSetClosureGeneral() for different row and column
+      layouts
+   -  DMPlexGet/RestoreClosureIndices() now take argument for ignoring
+      the closure permutation and for modifying the input values for
+      SetClosure()
+   -  DMPlexComputeInterpolatorNested() now takes a flag allowing nested
+      interpolation between different spaces on the same mesh
+   -  Add DMPlexInsertBoundaryValuesEssentialBdField() to insert
+      boundary values using a field only supported on the boundary
+   -  Change DMPlexCreateSubpointIS() to DMPlexGetSubpointIS()
+   -  Add PetscDSGet/SetBdJacobianPreconditioner() to assembly a PC for
+      the boundary Jacobian
+   -  Add DMSetRegionNumDS() to directly set the DS for a given region
+   -  Add PetscDSGetQuadrature() to get the quadrature shared by all
+      fields in the DS
+   -  Add several refinement methods for Plex
+   -  Add DMPlexGet/SetActivePoint() to allow user to see which mesh
+      point is being handled by projection
+   -  Add DMPlexComputeOrthogonalQuality() to compute cell-wise
+      orthogonality quality mesh statistic
+   -  Change DMPlexSetClosurePermutationTensor() to set tensor
+      permutations at every depth, instead of just height 0
+   -  Add DMComputeExactSolution() which uses PetscDS information
+   -  Change DMSNESCheckFromOptions() and DMTSCheckFromOptions() to get
+      exact solution from PetscDS
+   -  Change DMPlexSNESGetGeometryFVM() to DMPlexGetGeometryFVM()
+   -  Change DMPlexSNESGetGradientDM() to DMPlexGetGradientDM()
+   -  Change DMPlexCreateSphereMesh() to take a radius
+   -  Add DMPlexCreateBallMesh()
+   -  Change DMSNESCheckDiscretization() to also take the time
+   -  Add argument to DMPlexExtrude() to allow setting normal and add
+      options for inputs
+   -  Add DMPlexInsertTimeDerivativeBoundaryValues()
+   -  Add field number argument to DMPlexCreateRigidBody()
+
+   .. rubric:: DT:
+
+   -  Add PetscDTJacobiNorm() for the weighted L2 norm of Jacobi
+      polynomials
+   -  Add PetscDTJacobiEvalJet() and PetscDTPKDEvalJet() for evaluating
+      the derivatives of orthogonal polynomials on the segment (Jacobi)
+      and simplex (PKD)
+   -  Add PetscDTIndexToGradedOrder() and PetscDTGradedOrderToIndex()
+      for indexing multivariate monomials and derivatives in a linear
+      order
+   -  Add PetscSpaceType "sum" for constructing FE spaces as the sum or
+      concatenation of other spaces
+   -  Add PetscDSGet/SetExactSolutionTimeDerivative()
+   -  Add PetscDSSelectDiscretizations()
+   -  Add argument to DM nullspace constructors
+
+   .. rubric:: PetscViewer:
+
+   -  Deprecate the legacy ``.vtk`` (PETSC_VIEWER_ASCII_VTK) viewer.
+      Please use ``.vtr`` or ``.vts`` for structured grids (DMDA) and
+      ``.vtu`` for unstructured (DMPlex)
+
+   .. rubric:: SYS:
+
+   -  Add PetscPowInt64 returning a 64bit integer result for cases where
+      PetscPowInt result overflows 32bit representations
+   -  Add PetscTimSort[WithArray]() for improved performance when
+      sorting semi-ordered arrays of any type
+   -  Add PetscIntSortSemiOrdered[WithArray](),
+      PetscMPIIntSortSemiOrdered[WithArray](),
+      PetscRealSort[WithArrayInt]() which employ
+      PetscTimSort[WithArray]() as backends respectively to more
+      efficiently sort semi-ordered arrays of various Petsc datatypes
+   -  Add PetscMallocTraceSet/Get() to allow tracing of all PetscMalloc
+      calls
+   -  Add PetscMallocLogRequestedSizeSet/Get() to allow reporting of the
+      original requested size for mallocs, rather than the total size
+      with alignment and header
+
+   .. rubric:: AO:
+
+   .. rubric:: Convest:
+
+   -  Add argument to PetscConvEstUseTS(), so you can use
+      -ts_convergence_temporal 0 to check spatial convergence of a TS
+      model
+
+   .. rubric:: Fortran:

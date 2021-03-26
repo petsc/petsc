@@ -1,0 +1,259 @@
+============
+Changes: 3.4
+============
+
+
+   .. rubric:: General:
+
+   -  PetscGetTime() is replaced with PetscTime(), in C you must include
+      petsctime.h to use
+   -  PetscViewerBinaryMatlabOpen() and friends are all removed, simply
+      use PetscViewerBinaryOpen() followed by
+      PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)
+   -  Users should use new ``PetscFunctionBeginUser`` in there code
+      instead of ``PetscFunctionBegin`` to get more relevant
+      diagnostics.
+   -  Replaced the hodge-podge of -xxx_view -xxx_view_yyy with a single
+      consistent scheme: -xxx_view
+      [ascii,binary,draw,socket,matlab,vtk][:filename][:ascii_info,ascii_info_detail,ascii_matlab,draw_contour,etc].
+   -  In PETSc options files, the comment characters ``!`` and ``%`` are
+      no longer supported, use ``#``.
+   -  ``PetscFList`` and ``PetscOList`` have been changed to
+      ``PetscFunctionList`` and ``PetscObjectList``.
+      ``PetscFunctionListFind()`` no longer takes the path to a shared
+      library or the string name of the function. Plugins distributed as
+      shared libraries should register their implementations by calling
+      suitable ``XXRegister()`` functions from within their
+      ``PetscDLLibraryRegister_basename()``, see documentation for
+      PetscDLLibraryOpen().
+   -  MatRegisterDynamic(), PCRegisterDynamic(), KSPRegisterDynamic(),
+      etc., have been simplified to drop the string function name
+      argument, and are simply named MatRegister(), PCRegister(),
+      KSPRegister(), etc. PetscObjectComposeFunctionDynamic() also drops
+      the string function name argument and is called
+      PetscObjectComposeFunction().
+   -  The configure options ``--with-c-support`` and
+      ``--with-c++-support`` have been removed. A PETSc library built
+      using C or C++ can be called from either C or C++. The primary
+      functional reason to use ``--with-clanguage=C++`` is to use
+      ``std::complex`` data types. Other users will likely prefer
+      ``--with-clanguage=C`` (the default) because it compiles somewhat
+      faster. The --with-c-support option is no longer needed because it
+      is now the default behavior when using --with-clanguage=c++.
+
+   .. rubric:: Logging:
+
+   .. rubric:: config/configure.py:
+
+   .. rubric:: PetscSF:
+
+   -  PetscSF was split into interface and impls. The internal
+      interfaces PetscSFGetDataTypes(), PetscSFGetWindow(),
+      PetscSFFindWindow(), andd PetscSFRestoreWindow() were made
+      private. (It is unlikely that any users were calling these
+      routines.) PetscSFSetSynchronizationType() and the enum
+      PetscSFSynchronizationType were renamed to
+      PetscSFWindowSetSyncType() and PetscSFWindowSyncType respectively.
+   -  The location arguments to ``PetscSFGetRanks()`` were changed from
+      ``PetscMPIInt`` (aka ``int``) to ``PetscInt`` to (eventually)
+      support very large local memory. The "window" implementation will
+      not support such large sizes due to technical limitations of MPI
+      one sided and "basic" does not currently due to
+      PetscGatherMessageLengths().
+
+   .. rubric:: IS:
+
+   -  PetscSection was moved to IS and has become a PetscObject, thus
+      reference counting works as usual, with functions like
+      DMSetLocalSection() taking a reference to the PetscSection. The
+      caller is thus obliged to release their reference using
+      PetscSectionDestroy().
+
+   .. rubric:: PF:
+
+   .. rubric:: Vec:
+
+   -  The options -vec_view, -vec_view_matlab, -vec_view_socket,
+      -vec_view_binary, -vec_view_draw, -vec_view_lg have been replace
+      by a more general systematic scheme of -vec_view
+      [ascii,binary,draw, or socket][:filename][:format], for these
+      cases they are exactly: -vec_view -vec_view ::ascii_matlab
+      -vec_view socket -vec_view binary -vec_view draw -vec_view
+      draw::draw_lg
+   -  VecDotNorm2() now returns the square of the norm in a real number
+      (PetscReal) rather than the real part of a complex number
+      (PetscScalar)
+   -  Added VecDotRealPart()
+   -  The private header ``petsc/private/vecimpl.h`` is no longer
+      included by ``petscvec.h``. Users requiring direct access to
+      internal members of Vec may need to include the private header,
+      but may want to explain their use case to
+      ``petsc-maint@mcs.anl.gov`` so that we can provide a stable API.
+   -  VecGetArray()/VecRestoreArray() and
+      VecGhostGetLocalForm()/VecGhostRestoreLocalForm() are logically
+      collective operations because their use invalidates norms, which
+      must be known collectively. This is not a change in behavior, but
+      prior documentation did not mark them as collective. Users should
+      not rely on use such as lazy access occurring inside loops that
+      could have length zero on some processors because it could lead to
+      deadlock in a subsequent norm computation. VecGetArrayRead() and
+      VecRestoreArrayRead() are not collective.
+
+   .. rubric:: VecScatter:
+
+   .. rubric:: Mat:
+
+   -  The options -mat_view, -mat_view_info, -mat_view_info_detailed
+      -mat_view_matlab, -mat_view_socket, -mat_view_binary,
+      -mat_view_draw, -mat_view_contour have been replace by a more
+      general systematic scheme of -mat_view [ascii,binary,draw, or
+      socket][:filename][:format], for these cases they are exactly:
+      -mat_view -mat_view ::ascii_info -mat_view ::ascii_info_detail
+      -mat_view ::ascii_matlab -mat_view socket -mat_view binary
+      -mat_view draw -mat_view draw::draw_contour
+   -  ``MatGetArray()/MatRestoreArray()`` have been remove d. Use
+      ``MatDenseGetArray()/MatDenseRestoreArray()`` or
+      ``MatSeqAIJGetArray()/MatSeqAIJRestoreArray()``
+   -  PLAPACK interface has been removed.
+   -  MatGetRowIJ() and MatGetColumnIJ() have been made const-correct;
+      the index arrays have always been read-only.
+   -  MatRestoreRow() and MatRestoreRowIJ() now zero their arguments.
+      They should never have been accessed after restoring.
+   -  MatPermute() can now be used for MPIAIJ, but contrary to prior
+      documentation, the column IS should be parallel and contain only
+      owned columns.
+
+   .. rubric:: PC:
+
+   -  The default behavior for PCILU was changed from
+      -pc_factor_shift_type nonzero to -pc_factor_shift_type inblock
+      (note it is -sub_pc_factor_shift_type if the ILU is used inside
+      block Jacobi). If previously you had convergence of iterative
+      solvers with ILU and now for the same code you get zero pivot
+      errors or PC setup errors then try the option
+      -pc_factor_shift_type nonzero.
+   -  Merged PCBJacobiSetUseTrueLocal(), ``-pc_bjacobi_true_local``,
+      PCKSPSetUseTrue(), ``-pc_ksp_true``, PCCompositeSetUseTrue()
+      ``-pc_composite_true``, PCFieldSplitSetRealDiagonal
+      ``-pc_fieldpslit_real_diagonal`` to PCSetUseAmat(),
+      ``-pc_use_amat``.
+   -  Added ``PCISSetSubdomainDiagonalScaling()`` if a user wants to set
+      a custom scaling at the interface.
+   -  Added initial version of FETI-DP in PCBDDC code.
+   -  Added ``PCBDDCCreateFETIDPOperators()`` for creation of FETI-DP
+      mat and the related Dirichlet preconditioner using an already
+      existing PCBDDC object.
+   -  Added ``PCBDDCMatFETIDPGetRHS()`` for assembling of right-hand
+      side of FETI-DP linear system.
+   -  Added ``PCBDDCMatFETIDPGetSolution()`` for assembling of physical
+      solution from FETI-DP solution.
+   -  Added support to deal with linear systems with non-trivial kernels
+      via ``PCBDDCSetNullSpace()``.
+   -  Added ``PCBDDCSetMaxLevels()`` to control the maximum number of
+      levels when doing multilevel.
+   -  Added ``PCBDDCSetCoarseningRatio()`` to control the coarsening
+      ratio when doing multilevel.
+   -  Added ``PCISSetUseStiffnessScaling()`` to build partition of unity
+      using local matrices' diagonal.
+   -  Removed PETSc interface to
+      `Prometheus <http://www.columbia.edu/~ma2325/prometheus/>`__. Use
+      "-pc_type gamg -pc_gamg_type agg" as alternative.
+   -  PC_FIELDSPLIT_SCHUR_PRE_DIAG changed to
+      PC_FIELDSPLIT_SCHUR_PRE_A11.
+
+   .. rubric:: KSP:
+
+   -  Replace -ksp_view_binary with either -ksp_view_mat binary - save
+      matrix to the default binary viewer or-ksp_view_pmat binary - save
+      matrix to the default binary viewer followed by -ksp_view_rhs
+      binary - save right hand side vector to the default binary viewer.
+      Also many other combinations are possible.
+
+   .. rubric:: SNES:
+
+   -  Added added -snes_check_jacobian a very powerful way to check if
+      your Jacobian is correct for small problems, see
+      SNESUpdateCheckJacobian()
+   -  SNESVIRS "virs" changed to SNESVINEWTONRSLS vinewtonrsls to
+      clarify exactly what they do
+   -  SNESVISS "viss" changed to SNESVINEWTONSSLS vinewtonssls
+   -  SNESLS "ls" changed to SNESNEWTONLS newtonls
+   -  SNESTR "tr" changed to SNESNEWTONTR newtontr
+   -  SNESDefaultComputeJacobian(), SNESDefaultComputeJacobianColor(),
+      SNESDefaultObjectiveComputeFunctionFD(), SNESDefaultConverged()
+      changed to SNESComputeJacobianDefault(),
+      SNESComputeJacobianDefaultColor(), SNESConvergedDefault(),
+      SNESObjectiveComputeFunctionDefaultFD() to match more consistent
+      naming standards.
+   -  Added nonlinear additive Schwarz as SNESNASM "nasm"
+   -  Added helper SNES type SNESASPIN "aspin" for setting up additive
+      Schwarz preconditioned inexact Newton.
+   -  Added Anderson Mixing as SNESANDERSON "anderson"
+   -  SNESGetSNESLineSearch() and SNESSetSNESLineSearch() renamed to
+      SNESGetLineSearch() and SNESSetLineSearch().
+
+   .. rubric:: SNESLineSearch:
+
+   .. rubric:: TS:
+
+   -  Option ``-ts_monitor_solution`` changed to
+      ``-ts_monitor_draw_solution``. See
+      `TSSetFromOptions <https://www.mcs.anl.gov/petsc/petsc-main/docs/manualpages/TS/TSSetFromOptions.html>`__
+      for additional monitoring options.
+   -  TSSetExactFinalTime() now takes an enum instead of PetscBool,
+      which includes a new feature ``TS_EXACTFINALTIME_MATCHSTEP`` that
+      adjusts time step sizes to match an exact final time. See
+      `TSExactFinalTimeOption <https://www.mcs.anl.gov/petsc-main/docs/manualpages/TS/TSExactFinalTimeOption.html>`__.
+
+   .. rubric:: DM/DA:
+
+   -  DMDAGetCoordinateDA(), DMDAGet/SetCoordinates(),
+      DMDAGet/SetGhostedCoordinates(), and DMComplexGetCoordinateVec()
+      have been removed in favor of DMGetCoordinateDM(),
+      DMGet/SetCoordinates(), and DMGet/SetCoordinatesLocal()
+   -  DMDASetLocalFunction() and DMDASetLocalJacobian() have been
+      replaced with DMDASNESSetFunctionLocal() and
+      DMDASNESSetJacobianLocal() -- note that the calling sequences of
+      these functions are different and also the calling sequence of the
+      Jacobian function you provide
+   -  DMSetFunction() and DMSetJacobian() have been removed use
+      SNESSetFunction() and SNESSetJacobian() instead, note the calling
+      sequences are slightly different
+   -  DMDACreatePatchIS() for getting the indices of an arbitrary
+      subdomain on a DMDA
+   -  DMDAGet/SetOverlap(),DMDAGet/SetOffset() for manipulating DMDA
+      subdomains
+   -  DMCreateDomainDecompositionScatters() gives VecScatter objects for
+      transferring to/from subdomain DMs
+   -  DMGet/RestoreNamedLocalVector()
+
+   .. rubric:: DMComplex/DMPlex:
+
+   -  DMComplex was renamed to DMPlex.
+   -  There is now a manual section on unstructured grids.
+
+   .. rubric:: DMMesh:
+
+   -  This is deprecated in favor of DMPlex, and will be removed in 3.5.
+   -  SectionRealToVecDM() was created to removed overloading.
+
+   .. rubric:: DMMG:
+
+   .. rubric:: PetscViewer:
+
+   .. rubric:: SYS:
+
+   -  ``PetscPClose()`` has an additional argument to return a nonzero
+      error code without raising an error.
+   -  Added ``PetscSortMPIInt()`` and ``PetscSortRemoveDupsMPIInt()``.
+
+   .. rubric:: AO:
+
+   .. rubric:: Sieve:
+
+   .. rubric:: Fortran:
+
+   .. rubric:: ExternalPackages:
+
+   -  Added Elemental interface
+   -  Remove Spooles interface
