@@ -412,21 +412,21 @@ int main(int argc,char **args)
    test:
      suffix: 14_seqaijcusparse
      requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -A_mat_type aijcusparse -B_mat_type aijcusparse -mat_cusparse_transgen -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+     args: -A_mat_type aijcusparse -B_mat_type aijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
      output_file: output/ex62_1.out
 
    test:
      suffix: 14_mpiaijcusparse_seq
      nsize: 1
      requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_cusparse_transgen -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
      output_file: output/ex62_1.out
 
    test:
      suffix: 14_mpiaijcusparse
      nsize: 3
      requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
-     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_cusparse_transgen -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
      output_file: output/ex62_1.out
 
    test:
@@ -439,21 +439,21 @@ int main(int argc,char **args)
    test:
      suffix: 15_seqaijcusparse
      requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES) datafilespath
-     args: -A_mat_type aijcusparse -mat_cusparse_transgen -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
+     args: -A_mat_type aijcusparse -mat_form_explicit_transpose -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
      output_file: output/ex62_1.out
 
    test:
      suffix: 15_mpiaijcusparse_seq
      nsize: 1
      requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES) datafilespath
-     args: -A_mat_type mpiaijcusparse -mat_cusparse_transgen -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
+     args: -A_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
      output_file: output/ex62_1.out
 
    test:
      nsize: 3
      suffix: 15_mpiaijcusparse
      requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES) datafilespath
-     args: -A_mat_type mpiaijcusparse -mat_cusparse_transgen -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
+     args: -A_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
      output_file: output/ex62_1.out
 
 TEST*/

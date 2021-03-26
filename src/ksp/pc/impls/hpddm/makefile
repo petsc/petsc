@@ -1,5 +1,7 @@
 -include ../../../../../petscdir.mk
-#requirespackage  'PETSC_HAVE_HPDDM'
+#requirespackage 'PETSC_HAVE_HPDDM'
+#requiresdefine  'PETSC_HAVE_DYNAMIC_LIBRARIES'
+#requiresdefine  'PETSC_USE_SHARED_LIBRARIES'
 
 ALL: lib
 

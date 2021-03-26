@@ -1180,7 +1180,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
 }
 
 /*@
-   PetscSFGetMultiSF - gets the inner SF implemeting gathers and scatters
+   PetscSFGetMultiSF - gets the inner SF implementing gathers and scatters
 
    Collective
 

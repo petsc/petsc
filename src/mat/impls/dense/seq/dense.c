@@ -616,8 +616,8 @@ static PetscErrorCode MatSolveTranspose_SeqDense_LU(Mat A, Vec xx, Vec yy)
 
 static PetscErrorCode MatSolve_SeqDense_Cholesky(Mat A, Vec xx, Vec yy)
 {
-  PetscScalar    *y;
-  PetscBLASInt   m, k;
+  PetscScalar    *y = NULL;
+  PetscBLASInt   m = 0, k = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -629,8 +629,8 @@ static PetscErrorCode MatSolve_SeqDense_Cholesky(Mat A, Vec xx, Vec yy)
 
 static PetscErrorCode MatSolveTranspose_SeqDense_Cholesky(Mat A, Vec xx, Vec yy)
 {
-  PetscScalar    *y;
-  PetscBLASInt   m, k;
+  PetscScalar    *y = NULL;
+  PetscBLASInt   m = 0, k = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -642,8 +642,8 @@ static PetscErrorCode MatSolveTranspose_SeqDense_Cholesky(Mat A, Vec xx, Vec yy)
 
 static PetscErrorCode MatSolve_SeqDense_QR(Mat A, Vec xx, Vec yy)
 {
-  PetscScalar    *y;
-  PetscBLASInt   m, k;
+  PetscScalar    *y = NULL;
+  PetscBLASInt   m = 0, k = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

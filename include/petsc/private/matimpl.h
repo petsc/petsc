@@ -492,6 +492,8 @@ struct _p_Mat {
   PetscInt               nblocks,*bsizes;   /* support for MatSetVariableBlockSizes() */
   char                   *defaultvectype;
   Mat_Product            *product;
+  PetscBool              form_explicit_transpose; /* hint to generate an explicit mat tranpsose for operations like MatMultTranspose() */
+  PetscBool              transupdated;            /* whether or not the explicitly generated transpose is up-to-date */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);

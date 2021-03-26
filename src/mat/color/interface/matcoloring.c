@@ -79,9 +79,7 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
   PetscValidPointer(mcptr,2);
   *mcptr = NULL;
 
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
   ierr = PetscHeaderCreate(mc, MAT_COLORING_CLASSID,"MatColoring","Matrix coloring", "MatColoring",PetscObjectComm((PetscObject)m),MatColoringDestroy, MatColoringView);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)m);CHKERRQ(ierr);
   mc->mat       = m;

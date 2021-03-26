@@ -1972,6 +1972,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 +  -log_view [:filename] - Prints summary of log information
 .  -log_view :filename.py:ascii_info_detail - Saves logging information from each process as a Python file
 .  -log_view :filename.xml:ascii_xml - Saves a summary of the logging information in a nested format (see below for how to view it)
+.  -log_view :filename.txt:ascii_flamegraph - Saves logging information in a format suitable for visualising as a Flame Graph (see below for how to view it)
 .  -log_all - Saves a file Log.rank for each MPI process with details of each step of the computation
 -  -log_trace [filename] - Displays a trace of what each process is doing
 
@@ -1994,6 +1995,10 @@ $    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-acce
   window and render the XML log file contents.
 
   The nested XML format was kindly donated by Koos Huijssen and Christiaan M. Klaij  MARITIME  RESEARCH  INSTITUTE  NETHERLANDS
+
+  The Flame Graph output can be visualised using either the original Flame Graph script (https://github.com/brendangregg/FlameGraph)
+  or using speedscope (https://www.speedscope.app).
+  Old XML profiles may be converted into this format using the script ${PETSC_DIR}/lib/petsc/bin/xml2flamegraph.py.
 
   Level: beginner
 
@@ -2029,6 +2034,8 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
     ierr = PetscLogView_CSV(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_XML) {
     ierr = PetscLogView_Nested(viewer);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
+    ierr = PetscLogView_Flamegraph(viewer);CHKERRQ(ierr);
   }
   ierr = PetscStageLogPush(stageLog, lastStage);CHKERRQ(ierr);
   PetscFunctionReturn(0);

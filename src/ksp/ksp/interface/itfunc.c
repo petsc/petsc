@@ -1227,12 +1227,12 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
       ierr = MatZeroEntries(X);CHKERRQ(ierr);
     }
     ierr = PetscLogEventBegin(KSP_MatSolve, ksp, B, X, 0);CHKERRQ(ierr);
-    ierr = KSPGetMatSolveBlockSize(ksp, &Bbn);CHKERRQ(ierr);
+    ierr = KSPGetMatSolveBatchSize(ksp, &Bbn);CHKERRQ(ierr);
     /* by default, do a single solve with all columns */
     if (Bbn == PETSC_DECIDE) Bbn = N2;
-    else if (Bbn < 1)        SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D must be positive", Bbn);
+    else if (Bbn < 1) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D must be positive", Bbn);
     ierr = PetscInfo2(ksp, "KSP type %s solving using blocks of width at most %D\n", ((PetscObject)ksp)->type_name, Bbn);CHKERRQ(ierr);
-    /* if -ksp_matsolve_block_size is greater than the actual number of columns, do a single solve with all columns */
+    /* if -ksp_matsolve_batch_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
       ierr = (*ksp->ops->matsolve)(ksp, B, X);CHKERRQ(ierr);
       if (ksp->viewFinalRes) {
@@ -1284,7 +1284,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 }
 
 /*@
-     KSPSetMatSolveBlockSize - Sets the maximum number of columns treated simultaneously in KSPMatSolve().
+     KSPSetMatSolveBatchSize - Sets the maximum number of columns treated simultaneously in KSPMatSolve().
 
     Logically collective
 
@@ -1294,21 +1294,19 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 
    Level: advanced
 
-.seealso:  KSPMatSolve(), KSPGetMatSolveBlockSize(), -mat_mumps_icntl_27, -matmatmult_Bbn
+.seealso:  KSPMatSolve(), KSPGetMatSolveBatchSize(), -mat_mumps_icntl_27, -matmatmult_Bbn
 @*/
-PetscErrorCode KSPSetMatSolveBlockSize(KSP ksp, PetscInt bs)
+PetscErrorCode KSPSetMatSolveBatchSize(KSP ksp, PetscInt bs)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ksp, bs, 2);
-  ierr = PetscTryMethod(ksp, "KSPSetMatSolveBlockSize_C", (KSP, PetscInt), (ksp, bs));CHKERRQ(ierr);
+  ksp->nmax = bs;
   PetscFunctionReturn(0);
 }
 
 /*@
-     KSPGetMatSolveBlockSize - Gets the maximum number of columns treated simultaneously in KSPMatSolve().
+     KSPGetMatSolveBatchSize - Gets the maximum number of columns treated simultaneously in KSPMatSolve().
 
    Input Parameter:
 .     ksp - iterative context
@@ -1318,16 +1316,14 @@ PetscErrorCode KSPSetMatSolveBlockSize(KSP ksp, PetscInt bs)
 
    Level: advanced
 
-.seealso:  KSPMatSolve(), KSPSetMatSolveBlockSize(), -mat_mumps_icntl_27, -matmatmult_Bbn
+.seealso:  KSPMatSolve(), KSPSetMatSolveBatchSize(), -mat_mumps_icntl_27, -matmatmult_Bbn
 @*/
-PetscErrorCode KSPGetMatSolveBlockSize(KSP ksp, PetscInt *bs)
+PetscErrorCode KSPGetMatSolveBatchSize(KSP ksp, PetscInt *bs)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  *bs = PETSC_DECIDE;
-  ierr = PetscTryMethod(ksp, "KSPGetMatSolveBlockSize_C", (KSP, PetscInt*), (ksp, bs));CHKERRQ(ierr);
+  PetscValidIntPointer(bs, 2);
+  *bs = ksp->nmax;
   PetscFunctionReturn(0);
 }
 
@@ -1416,6 +1412,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   ierr = KSPResetViewers(ksp);CHKERRQ(ierr);
 
   ksp->setupstage = KSP_SETUP_NEW;
+  ksp->nmax = PETSC_DECIDE;
   PetscFunctionReturn(0);
 }
 

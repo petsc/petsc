@@ -287,9 +287,6 @@ def main(writeDirPath, token, builderName=None):
 
     currentFile = os.path.join(writeDirPath, "petsc-team-table.inc")
     emeritusFile = os.path.join(writeDirPath, "petsc-emeritus-table.inc")
-    if "CI_JOB_TOKEN" in os.environ:
-        token = os.environ["CI_JOB_TOKEN"]
-        print("Using CI_JOB_TOKEN as auth token")
     if token is None and "READTHEDOCS" not in os.environ:
         writeWarnRst(currentFile)
         writeWarnRst(emeritusFile)

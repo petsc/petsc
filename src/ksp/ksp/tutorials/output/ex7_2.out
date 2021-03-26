@@ -9,7 +9,7 @@ KSP Object: 2 MPI processes
 PC Object: 2 MPI processes
   type: bjacobi
     number of blocks = 4
-    Local solve info for each block is in the following KSP and PC objects:
+    Local solver information for each block is in the following KSP and PC objects:
   [0] number of local blocks = 2, first local block number = 0
     [0] local block number 0
     KSP Object: (sub_) 1 MPI processes
@@ -70,6 +70,9 @@ PC Object: 2 MPI processes
     PC Object: (sub_) 1 MPI processes
       type: jacobi
         type DIAGONAL
+      Vec Object: 1 MPI processes
+        type: seq
+        length=6
       linear system matrix = precond matrix:
       Mat Object: (sub_) 1 MPI processes
         type: seqaij
@@ -90,6 +93,9 @@ PC Object: 2 MPI processes
     PC Object: (sub_) 1 MPI processes
       type: jacobi
         type DIAGONAL
+      Vec Object: 1 MPI processes
+        type: seq
+        length=6
       linear system matrix = precond matrix:
       Mat Object: (sub_) 1 MPI processes
         type: seqaij

@@ -1,7 +1,7 @@
 
         Interface DMCompositeGetEntriesArray
         Subroutine DMCompositeGetEntries1(dm1, d,ierr)
-          use petscdmdef
+          import tDM
           DM dm1
           DM d(*)
           PetscErrorCode ierr
@@ -9,28 +9,28 @@
 
         Interface DMCompositeGetEntries
         Subroutine DMCompositeGetEntries1(dm1, d1,ierr)
-          use petscdmdef
+          import tDM
           DM dm1
           DM d1
           PetscErrorCode ierr
         End Subroutine
 
         Subroutine DMCompositeGetEntries2(dm1, d1,d2,ierr)
-          use petscdmdef
+          import tDM
           DM dm1
           DM d1,d2
           PetscErrorCode ierr
         End Subroutine
 
         Subroutine DMCompositeGetEntries3(dm1, d1,d2,d3,ierr)
-          use petscdmdef
+          import tDM
           DM dm1
           DM d1,d2,d3
           PetscErrorCode ierr
         End Subroutine
 
         Subroutine DMCompositeGetEntries4(dm1, d1,d2,d3,d4,ierr)
-          use petscdmdef
+          import tDM
           DM dm1
           PetscInt d2,d4
           DM d1,d3
@@ -40,7 +40,7 @@
 
       Interface DMCompositeGetAccess
         Subroutine DMCompositeGetAccessvpvp(dm1, v,d1,d2,d3,d4,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM dm1
           Vec v,d1,d3
           PetscScalar,pointer :: d2(:)
@@ -51,7 +51,7 @@
 
       Interface DMCompositeRestoreAccess
         Subroutine DMCompositeRestoreAccessvpvp(dm1, v,d1,d2,d3,d4,ierr)
-          use petscdmdef
+          import tDM,tVec
           DM dm1
           Vec v,d1,d3
           PetscScalar,pointer :: d2(:)
@@ -62,7 +62,7 @@
 
       Interface DMCompositeGetAccessArray
         Subroutine DMCompositeGetAccessArray(a,b,c,d,e,z)
-          use petscdmdef
+          import tDM,tVec
           DM a
           Vec b
           PetscInt c,d(*)
@@ -73,7 +73,7 @@
 
       Interface DMCompositeRestoreAccessArray
         Subroutine DMCompositeRestoreAccessArray(a,b,c,d,e,z)
-          use petscdmdef
+          import tDM,tVec
           DM a
           Vec b
           PetscInt c,d(*)
@@ -84,7 +84,7 @@
 
       Interface DMCompositeGetLocalAccessArray
         Subroutine DMCompositeGetLocalAccessArray(a,b,c,d,e,z)
-          use petscdmdef
+          import tDM,tVec
           DM a
           Vec b
           PetscInt c,d(*)
@@ -95,7 +95,7 @@
 
       Interface DMCompositeRestoreLocalAccessArray
         Subroutine DMCompositeRestoreLocalAccessArray(a,b,c,d,e,z)
-          use petscdmdef
+          import tDM,tVec
           DM a
           Vec b
           PetscInt c,d(*)
@@ -106,7 +106,7 @@
 
       Interface DMCompositeGetGlobalISs
         Subroutine DMCompositeGetGlobalISs(a,b,z)
-          use petscdmdef
+          import tDM,tIS
           DM a
           IS b(*)
           PetscErrorCode z

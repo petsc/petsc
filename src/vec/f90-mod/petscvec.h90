@@ -1,7 +1,7 @@
 #if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       Interface
        subroutine PetscSFBcastBegin(sf,unit,rarray,larray,op,ierr)
-          use petscisdef
+          import tPetscSF
           PetscSF :: sf
           PetscMPIInt :: unit,op
           type(*) :: rarray(:)
@@ -10,7 +10,7 @@
         end Subroutine PetscSFBcastBegin
 
       subroutine PetscSFBcastEnd(sf,unit,rarray,larray,op,ierr)
-          use petscisdef
+          import tPetscSF
           PetscSF :: sf
           PetscMPIInt :: unit,op
           type(*) :: rarray(:)
@@ -22,7 +22,7 @@
 
       Interface
       subroutine PetscSFGetGraph(sf,nroots,nleaves,ilocal,iremote,ierr)
-          use petscisdef
+          import tPetscSF,PetscSFNode
           PetscSF :: sf
           PetscInt :: nroots,nleaves
           PetscInt, pointer :: ilocal(:)
@@ -33,19 +33,19 @@
 
       Interface VecGetOwnershipRange
       subroutine VecGetOwnershipRange1(x,l,h,ierr)
-      use petscvecdef
+       import tVec
        Vec, intent(in) :: x
        PetscInt, intent(out) ::  l,h
        PetscErrorCode, intent(out) :: ierr
        end subroutine
       subroutine VecGetOwnershipRange2(x,l,h,ierr)
-      use petscvecdef
+       import tVec
        Vec, intent(in) :: x
        PetscInt, intent(out) ::  l(*),h
        PetscErrorCode, intent(out) :: ierr
        end subroutine
       subroutine VecGetOwnershipRange3(x,l,h,ierr)
-      use petscvecdef
+       import tVec
        Vec, intent(in) :: x
        PetscInt, intent(out) ::  l,h(*)
        PetscErrorCode, intent(out) :: ierr
@@ -54,14 +54,14 @@
 
       Interface VecMin
       subroutine VecMin1(x,p,val,ierr)
-      use petscvecdef
+       import tVec
        Vec, intent(in) :: x
        PetscInt, intent(out) ::  p
        PetscReal, intent(out) ::  val
        PetscErrorCode, intent(out) :: ierr
        end subroutine
       subroutine VecMin2(x,p,val,ierr)
-      use petscvecdef
+       import tVec
        Vec, intent(in) :: x
        PetscInt, intent(out) ::  p(*)
        PetscReal, intent(out) ::  val
@@ -71,14 +71,14 @@
 
       Interface VecMax
       subroutine VecMax1(x,p,val,ierr)
-      use petscvecdef
+       import tVec
        Vec, intent(in) :: x
        PetscInt, intent(out) ::  p
        PetscReal, intent(out) ::  val
        PetscErrorCode, intent(out) :: ierr
        end subroutine
       subroutine VecMax2(x,p,val,ierr)
-      use petscvecdef
+       import tVec
        Vec, intent(in) :: x
        PetscInt, intent(out) ::  p(*)
        PetscReal, intent(out) ::  val
@@ -88,7 +88,7 @@
 
       Interface
       subroutine VecScatterCreateToAll(a,b,c,z)
-      use petscvecdef
+       import tVec,tVecScatter
        Vec a
        VecScatter b
        Vec c
@@ -98,7 +98,7 @@
 
       Interface
       subroutine VecScatterCreateToZero(a,b,c,z)
-      use petscvecdef
+       import tVec,tVecScatter
        Vec a
        VecScatter b
        Vec c
@@ -108,7 +108,7 @@
 
       Interface VecSetValuesLocal
         subroutine VecSetValuesLocal0(a,b,c,d,e,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -117,7 +117,7 @@
           PetscErrorCode z
         end subroutine
         subroutine VecSetValuesLocal11(a,b,c,d,e,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -129,7 +129,7 @@
 
       Interface VecGetValues
         subroutine VecGetValues0(a,b,c,d,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -137,7 +137,7 @@
           PetscErrorCode z
         end subroutine
         subroutine VecGetValues1(a,b,c,d,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -145,7 +145,7 @@
           PetscErrorCode z
         end subroutine
         subroutine VecGetValues11(a,b,c,d,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -156,7 +156,7 @@
 
       Interface VecSetValues
         subroutine VecSetValues0(a,b,c,d,e,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -165,7 +165,7 @@
           PetscErrorCode z
         end subroutine
         subroutine VecSetValues1(a,b,c,d,e,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -174,7 +174,7 @@
           PetscErrorCode z
         end subroutine
         subroutine VecSetValues11(a,b,c,d,e,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -186,7 +186,7 @@
 
       Interface VecSetValuesBlocked
         subroutine VecSetValuesBlocked0(a,b,c,d,e,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
@@ -195,7 +195,7 @@
           PetscErrorCode z
         end subroutine
         subroutine VecSetValuesBlocked1(a,b,c,d,e,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -204,7 +204,7 @@
           PetscErrorCode z
         end subroutine
         subroutine VecSetValuesBlocked11(a,b,c,d,e,z)
-          use petscvecdef
+          import tVec
           Vec a ! Vec
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
@@ -216,7 +216,7 @@
 
       Interface
         Subroutine VecGetArrayF90(v,array,ierr)
-          use petscvecdef
+          import tVec
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           Vec     v
@@ -225,7 +225,7 @@
 
       Interface
         Subroutine VecRestoreArrayF90(v,array,ierr)
-          use petscvecdef
+          import tVec
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           Vec     v
@@ -234,7 +234,7 @@
 
       Interface
         Subroutine VecGetArrayReadF90(v,array,ierr)
-          use petscvecdef
+          import tVec
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           Vec     v
@@ -243,7 +243,7 @@
 
       Interface
         Subroutine VecRestoreArrayReadF90(v,array,ierr)
-          use petscvecdef
+          import tVec
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           Vec     v
@@ -252,7 +252,7 @@
 
       Interface
         Subroutine VecSetValuesSectionF90(v,s,p,va,mode,ierr)
-          use petscvecdef
+          import tVec,tPetscSection
           PetscScalar, pointer :: va(:)
           PetscErrorCode ierr
           Vec     v
@@ -266,7 +266,7 @@
 
       Interface
         Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
-          use petscvecdef
+          import tVec
           Vec, pointer :: vs(:)
           PetscInt m
           PetscErrorCode ierr
@@ -280,28 +280,28 @@
 !
       Interface
         Subroutine VecDestroyVecsF90(m,vs,ierr)
-          use petscvecdef
+          import tVec
           Vec, pointer :: vs(:)
           PetscInt m
           PetscErrorCode ierr
         End Subroutine
 
         subroutine VecSetType(a,b,ierr)
-         use petscvecdef
+         import tVec
          Vec a
          character(*) b
          PetscErrorCode ierr
        end subroutine
 
        subroutine VecView(a,b,ierr)
-         use petscvecdef
+         import tVec,tPetscViewer
          Vec a
          PetscViewer b
          PetscErrorCode ierr
        end subroutine
 
        subroutine VecScatterRemap(a,b,c,ierr)
-         use petscvecdef
+         import tVecScatter
          VecScatter a ! VecScatter
          PetscInt b (*) ! PetscInt
          PetscInt c (*) ! PetscInt
@@ -309,7 +309,7 @@
        end subroutine
 
        subroutine VecLoad(a,b,ierr)
-         use petscvecdef
+         import tVec,tPetscViewer
          Vec a
          PetscViewer b
          PetscErrorCode ierr

@@ -3,7 +3,6 @@
  */
 #include <petsc/private/matimpl.h>
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
-#include <../src/ksp/pc/impls/bjacobi/bjacobi.h> /* Hack to access same_local_solves */
 #include <../src/ksp/ksp/impls/cheby/chebyshevimpl.h>    /*I "petscksp.h" I*/
 
 #if defined(PETSC_HAVE_CUDA)
@@ -419,9 +418,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       ierr = ISSetBlockSize(findices,f_bs);CHKERRQ(ierr);
       ierr = MatCreateSubMatrix(Pold, findices, new_eq_indices, MAT_INITIAL_MATRIX, &Pnew);CHKERRQ(ierr);
       ierr = ISDestroy(&findices);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-      ierr = MatAIJCUSPARSESetGenerateTranspose(Pnew,PETSC_TRUE);CHKERRQ(ierr);
-#endif
+      ierr = MatSetOption(Pnew,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE);CHKERRQ(ierr);
 
       ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
       ierr = MatDestroy(a_P_inout);CHKERRQ(ierr);
@@ -475,9 +472,7 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
   if ((*Gmat2)->structurally_symmetric) {
     ierr = MatProductSetType(*Gmat2,MATPRODUCT_AB);CHKERRQ(ierr);
   } else {
-#if defined(PETSC_HAVE_CUDA)
-    ierr = MatAIJCUSPARSESetGenerateTranspose(Gmat1,PETSC_TRUE);CHKERRQ(ierr);
-#endif
+    ierr = MatSetOption(Gmat1,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatProductSetType(*Gmat2,MATPRODUCT_AtB);CHKERRQ(ierr);
   }
   ierr = MatProductSetFromOptions(*Gmat2);CHKERRQ(ierr);
@@ -643,9 +638,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         ierr = MatAppendOptionsPrefix(Prol11,addp);CHKERRQ(ierr);
         /* Always generate the transpose with CUDA
            Such behaviour can be adapted with -pc_gamg_prolongator_ prefixed options */
-#if defined(PETSC_HAVE_CUDA)
-        ierr = MatAIJCUSPARSESetGenerateTranspose(Prol11,PETSC_TRUE);CHKERRQ(ierr);
-#endif
+        ierr = MatSetOption(Prol11,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE);CHKERRQ(ierr);
         ierr = MatSetFromOptions(Prol11);CHKERRQ(ierr);
         Parr[level1] = Prol11;
       } else Parr[level1] = NULL; /* failed to coarsen */
@@ -759,10 +752,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         ierr = PCFactorSetShiftType(pc2,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
         ierr = KSPSetTolerances(k2[0],PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
         ierr = KSPSetType(k2[0], KSPPREONLY);CHKERRQ(ierr);
-        /* This flag gets reset by PCBJacobiGetSubKSP(), but our BJacobi really does the same algorithm everywhere (and in
-         * fact, all but one process will have zero dofs), so we reset the flag to avoid having PCView_BJacobi attempt to
-         * view every subdomain as though they were different. */
-        ((PC_BJacobi*)subpc->data)->same_local_solves = PETSC_TRUE;
       }
     }
 

@@ -71,7 +71,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTCreate(PetscInt n)
   return(0);
 }
 
-PETSC_STATIC_INLINE unsigned long PetscHashPointer(void *ptr)
+PETSC_STATIC_INLINE unsigned long PetscFPTHashPointer(void *ptr)
 {
 #define PETSC_FPT_HASH_FACT 79943
   return((PETSC_FPT_HASH_FACT*((size_t)ptr))%PetscFPTData->tablesize);
@@ -83,7 +83,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFPTAdd(void* key,const char* data)
 
   if (!data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null function name");
   if (!PetscFPTData) return(0);
-  hash = (PetscInt)PetscHashPointer(key);
+  hash = (PetscInt)PetscFPTHashPointer(key);
   for (i=0; i<PetscFPTData->tablesize; i++) {
     if (PetscFPTData->functionpointer[hash] == key) {
       PetscFPTData->functionname[hash] = (char*) data;
@@ -112,7 +112,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTFind(void* key,char const **data)
 
   *data = NULL;
   if (!PetscFPTData) return(0);
-  hash  = PetscHashPointer(key);
+  hash  = PetscFPTHashPointer(key);
   while (ii++ < PetscFPTData->tablesize) {
     if (!PetscFPTData->functionpointer[hash]) break;
     else if (PetscFPTData->functionpointer[hash] == key) {

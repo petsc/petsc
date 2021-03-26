@@ -215,13 +215,15 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
 PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
 {
   PetscErrorCode ierr;
-  PetscInt       m,n;
+  PetscInt       n,nn;
   Mat_Normal     *Na;
+  VecType        vtype;
 
   PetscFunctionBegin;
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(A,NULL,&nn);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,NULL,&n);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),N);CHKERRQ(ierr);
-  ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetSizes(*N,n,n,nn,nn);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
 
   ierr       = PetscNewLog(*N,&Na);CHKERRQ(ierr);
@@ -230,7 +232,7 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   Na->A      = A;
   Na->scale  = 1.0;
 
-  ierr = VecCreateMPI(PetscObjectComm((PetscObject)A),m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,NULL,&Na->w);CHKERRQ(ierr);
 
   (*N)->ops->destroy          = MatDestroy_Normal;
   (*N)->ops->mult             = MatMult_Normal;
@@ -241,12 +243,12 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   (*N)->ops->scale            = MatScale_Normal;
   (*N)->ops->diagonalscale    = MatDiagonalScale_Normal;
   (*N)->assembled             = PETSC_TRUE;
-  (*N)->cmap->N               = A->cmap->N;
-  (*N)->rmap->N               = A->cmap->N;
-  (*N)->cmap->n               = A->cmap->n;
-  (*N)->rmap->n               = A->cmap->n;
+  (*N)->preallocated          = PETSC_TRUE;
 
-  (*N)->preallocated = PETSC_TRUE;
+  ierr = MatGetVecType(A,&vtype);CHKERRQ(ierr);
+  ierr = MatSetVecType(*N,vtype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_DEVICE)
+  ierr = MatBindToCPU(*N,A->boundtocpu);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
-

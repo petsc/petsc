@@ -885,6 +885,44 @@ analyze-pipeline:
     paths:
     - arch-ci-analyze-pipeline/*
     expire_in: 4 days
+
+.docs-review-base:
+  extends: .test
+  image: python:3.9
+  only:
+    variables:
+      - $CI_MERGE_REQUEST_LABELS =~ /^doc|,doc/
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends librsvg2-bin
+    - apt-get install -y flex
+    - pip install -r src/docs/sphinx_docs/requirements.txt
+  script:
+    - cd src/docs/sphinx_docs && sphinx-build -T -E -b html -D language=en -j auto . ../../../public
+  artifacts:
+    paths:
+      - public
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html
+
+docs-only-review:
+  stage: .pre
+  extends: .docs-review-base
+  only:
+    variables:
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
+
+docs-review:
+  stage: stage-2
+  extends: .docs-review-base
+  only:
+    variables:
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs($|,)/
+  except:
+    variables:
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
+
 #
 #
 # The following tests are experimental; more tests by users at other sites may be added below this.  Experimental test

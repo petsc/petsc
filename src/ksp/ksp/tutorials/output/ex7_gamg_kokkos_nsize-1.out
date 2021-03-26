@@ -33,7 +33,8 @@ PC Object: 1 MPI processes
     PC Object: (mg_coarse_) 1 MPI processes
       type: bjacobi
         number of blocks = 1
-        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        Local solver information for first block is in the following KSP and PC objects on rank 0:
+        Use -mg_coarse_ksp_view ::ascii_info_detail to display information for all blocks
       KSP Object: (mg_coarse_sub_) 1 MPI processes
         type: preonly
         maximum iterations=1, initial guess is zero
@@ -55,14 +56,14 @@ PC Object: 1 MPI processes
                 total: nonzeros=32, allocated nonzeros=32
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_sub_) 1 MPI processes
           type: seqaijkokkos
           rows=6, cols=6
           total: nonzeros=30, allocated nonzeros=30
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: (mg_coarse_sub_) 1 MPI processes
         type: seqaijkokkos
         rows=6, cols=6
         total: nonzeros=30, allocated nonzeros=30

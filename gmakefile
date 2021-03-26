@@ -77,7 +77,7 @@ langs := F F90 cxx c
 ifneq ($(CUDAC),)
 langs += cu
 endif
-ifneq ($(HIPCC),)
+ifneq ($(HIPC),)
 langs += hip.cpp
 endif
 ifneq ($(SYCLCPP),)

@@ -65,7 +65,8 @@ SNES Object: 3 MPI processes
     PC Object: (fieldsplit_x_velocity_) 3 MPI processes
       type: bjacobi
         number of blocks = 3
-        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        Local solver information for first block is in the following KSP and PC objects on rank 0:
+        Use -fieldsplit_x_velocity_ksp_view ::ascii_info_detail to display information for all blocks
       KSP Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
@@ -87,7 +88,7 @@ SNES Object: 3 MPI processes
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_x_velocity_) 1 MPI processes
+        Mat Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
@@ -110,7 +111,8 @@ SNES Object: 3 MPI processes
     PC Object: (fieldsplit_y_velocity_) 3 MPI processes
       type: bjacobi
         number of blocks = 3
-        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        Local solver information for first block is in the following KSP and PC objects on rank 0:
+        Use -fieldsplit_y_velocity_ksp_view ::ascii_info_detail to display information for all blocks
       KSP Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
@@ -132,7 +134,7 @@ SNES Object: 3 MPI processes
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_y_velocity_) 1 MPI processes
+        Mat Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
@@ -155,7 +157,8 @@ SNES Object: 3 MPI processes
     PC Object: (fieldsplit_Omega_) 3 MPI processes
       type: bjacobi
         number of blocks = 3
-        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        Local solver information for first block is in the following KSP and PC objects on rank 0:
+        Use -fieldsplit_Omega_ksp_view ::ascii_info_detail to display information for all blocks
       KSP Object: (fieldsplit_Omega_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
@@ -177,7 +180,7 @@ SNES Object: 3 MPI processes
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_Omega_) 1 MPI processes
+        Mat Object: (fieldsplit_Omega_sub_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
@@ -200,7 +203,8 @@ SNES Object: 3 MPI processes
     PC Object: (fieldsplit_temperature_) 3 MPI processes
       type: bjacobi
         number of blocks = 3
-        Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+        Local solver information for first block is in the following KSP and PC objects on rank 0:
+        Use -fieldsplit_temperature_ksp_view ::ascii_info_detail to display information for all blocks
       KSP Object: (fieldsplit_temperature_sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
@@ -222,7 +226,7 @@ SNES Object: 3 MPI processes
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_temperature_) 1 MPI processes
+        Mat Object: (fieldsplit_temperature_sub_) 1 MPI processes
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85

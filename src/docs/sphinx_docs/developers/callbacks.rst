@@ -19,23 +19,10 @@ where different levels and different domains may (or may not) share the
 same callback function or callback context. You can control exactly what
 ``XXX``/``DM`` objects share a common ``DMXXX`` object.
 
-.. _fig_dmksp:
+.. figure:: images/callbacks1.svg
+  :name: fig_callbacks1
 
-.. graphviz ::
-    :caption: Three levels of KSP/DM share the same DMKSP
-
-    digraph {
-        ksp1[label = "KSP 1"]
-        ksp2[label = "KSP 2"]
-        ksp3[label = "KSP 3"]
-        dm1[label = "DM 1"]
-        dm2[label = "DM 2"]
-        dm3[label = "DM 3"]
-        dmksp[label = "DMKSP"]
-        ksp1 -> dm1 -> dmksp
-        ksp2 -> dm2 -> dmksp
-        ksp3 -> dm3 -> dmksp
-     }
+  Three levels of KSP/DM share the same DMKSP
 
 In the preceding figure, we depict how three levels of ``KSP``
 objects share a common ``DMKSP`` object. The code to access the inner
@@ -60,22 +47,11 @@ functions (or their contexts) without affecting the original DMKSP, call
 
 This results in the object organization as indicated in the following figure
 
-.. graphviz ::
-    :caption: Two levels of KSP/DM share the same DMKSP; one has its own private copy
+.. figure:: images/callbacks2.svg
+  :name: fig_callbacks2
 
-    digraph {
-        ksp1[label = "KSP 1"]
-        ksp2[label = "KSP 2"]
-        ksp3[label = "KSP 3"]
-        dm1[label = "DM 1"]
-        dm2[label = "DM 2"]
-        dm3[label = "DM 3"]
-        dmksp[label = "DMKSP"]
-        dmksp2[label = "DMKSP"]
-        ksp1 -> dm1 -> dmksp
-        ksp2 -> dm2 -> dmksp2
-        ksp3 -> dm3 -> dmksp
-     }
+  Two levels of KSP/DM share the same DMKSP; one has its own private copy
+
 
 The ``DMKSP`` object is essentially the list of callback functions and
 their contexts, for example,

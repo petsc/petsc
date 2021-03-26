@@ -55,6 +55,59 @@ PetscErrorCode PCMGResidualTransposeDefault(Mat mat,Vec b,Vec x,Vec r)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   PCMGMatResidualDefault - Default routine to calculate the residual.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  b   - the right-hand-side
+-  x   - the approximate solution
+
+   Output Parameter:
+.  r - location to store the residual
+
+   Level: developer
+
+.seealso: PCMGSetMatResidual()
+@*/
+PetscErrorCode  PCMGMatResidualDefault(Mat mat,Mat b,Mat x,Mat r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatMult(mat,x,MAT_REUSE_MATRIX,PETSC_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = MatAYPX(r,-1.0,b,UNKNOWN_NONZERO_PATTERN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PCMGMatResidualTransposeDefault - Default routine to calculate the residual of the transposed linear system
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  b   - the right-hand-side
+-  x   - the approximate solution
+
+   Output Parameter:
+.  r - location to store the residual
+
+   Level: developer
+
+.seealso: PCMGSetMatResidualTranspose()
+@*/
+PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat,Mat b,Mat x,Mat r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatTransposeMatMult(mat,x,MAT_REUSE_MATRIX,PETSC_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = MatAYPX(r,-1.0,b,UNKNOWN_NONZERO_PATTERN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 /*@
    PCMGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
@@ -109,6 +162,7 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (residual) mglevels[l]->residual = residual;
   if (!mglevels[l]->residual) mglevels[l]->residual = PCMGResidualDefault;
+  mglevels[l]->matresidual = PCMGMatResidualDefault;
   if (mat) {ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);}
   ierr = MatDestroy(&mglevels[l]->A);CHKERRQ(ierr);
   mglevels[l]->A = mat;
@@ -143,6 +197,7 @@ PetscErrorCode  PCMGSetResidualTranspose(PC pc,PetscInt l,PetscErrorCode (*resid
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (residualt) mglevels[l]->residualtranspose = residualt;
   if (!mglevels[l]->residualtranspose) mglevels[l]->residualtranspose = PCMGResidualTransposeDefault;
+  mglevels[l]->matresidualtranspose = PCMGMatResidualTransposeDefault;
   if (mat) {ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);}
   ierr = MatDestroy(&mglevels[l]->A);CHKERRQ(ierr);
   mglevels[l]->A = mat;

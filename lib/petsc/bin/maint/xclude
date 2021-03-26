@@ -15,6 +15,9 @@ petsc-dist/README.md
 petsc-dist/CMakeLists.txt
 petsc-dist/externalpackages
 petsc-dist/tmp
+petsc-dist/src/binding/petsc4py/build
+petsc-dist/src/binding/petsc4py/dist
+petsc-dist/src/binding/petsc4py/petsc4py.egg-info
 petsc-dist/lib/petsc/conf/petscvariables
 petsc-dist/config/BuildSystem/.hg
 petsc-dist/config/BuildSystem/.hgignore
@@ -29,7 +32,9 @@ petsc-dist/lib/petsc/bin/maint
 petsc-dist/BitKeeper
 petsc-dist/ChangeSet
 petsc-dist/arch-build
+petsc-dist/arch-pydoc
 petsc-dist/arch-fvpf
+petsc-dist/make.log
 petsc-dist/configure.log
 petsc-dist/configure.log.bkp
 petsc-dist/Rdict.log

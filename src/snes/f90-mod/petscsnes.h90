@@ -1,8 +1,7 @@
 #if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       Interface
       subroutine DMDASNESSetFunctionLocal(dm,imode,func,ctx,ierr)
-      use petscdmdef
-      use petscsnesdef
+      import tSNES,tDM
        DM, intent(in) :: dm
        InsertMode, intent(in) :: imode
        external :: func
@@ -13,8 +12,7 @@
 
       Interface
       subroutine DMSNESSetFunctionLocal(dm,func,ctx,ierr)
-      use petscdmdef
-      use petscsnesdef
+      import tSNES,tDM
        DM, intent(in) :: dm
        external :: func
        type(*)  :: ctx
@@ -24,8 +22,7 @@
 
       Interface
       subroutine DMSNESSetJacobianLocal(dm,func,ctx,ierr)
-      use petscdmdef
-      use petscsnesdef
+      import tSNES,tDM
        DM, intent(in) :: dm
        external :: func
        type(*)  :: ctx
@@ -35,7 +32,7 @@
 
       Interface
       subroutine SNESSetConvergenceTest(snes,func,cctx,destroy,ierr)
-      use petscsnesdef
+      import tSNES
        SNES :: snes
        external :: func
        type(*) :: cctx
@@ -46,7 +43,7 @@
 #endif
       Interface
       subroutine SNESSetType(a,b,ierr)
-      use petscsnesdef
+      import tSNES
        SNES, intent(in) :: a
        character(*), intent(in) :: b
        PetscErrorCode, intent(out) :: ierr
@@ -55,7 +52,7 @@
 
       Interface
       subroutine SNESGetType(a,b,ierr)
-      use petscsnesdef
+      import tSNES
        SNES, intent(in) :: a
        character(*), intent(out) :: b
        PetscErrorCode, intent(out) :: ierr
@@ -64,7 +61,7 @@
 
       Interface
       subroutine SNESView(a,b,z)
-      use petscsnesdef
+      import tSNES,tPetscViewer
        SNES a
        PetscViewer b
        PetscErrorCode z
@@ -73,7 +70,7 @@
 
       Interface
       subroutine SNESSetOptionsPrefix(snes,prefix,ierr)
-       use petscsnesdef
+       import tSNES
        SNES, intent(in) :: snes
        character(*), intent(in) :: prefix
        PetscErrorCode, intent(out) :: ierr

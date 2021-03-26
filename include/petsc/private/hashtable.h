@@ -197,6 +197,15 @@ PETSC_STATIC_INLINE PetscHash_t PetscHashInt(PetscInt key)
 #endif
 }
 
+PETSC_STATIC_INLINE PetscHash_t PetscHashPointer(void *key)
+{
+#if PETSC_SIZEOF_VOID_P == 8
+  return PetscHash_UInt64((PetscHash64_t)key);
+#else
+  return PetscHash_UInt32((PetscHash32_t)key);
+#endif
+}
+
 PETSC_STATIC_INLINE PetscHash_t PetscHashCombine(PetscHash_t seed, PetscHash_t hash)
 {
   /* https://doi.org/10.1002/asi.10170 */

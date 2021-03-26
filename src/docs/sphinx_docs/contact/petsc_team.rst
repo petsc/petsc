@@ -8,8 +8,7 @@ Current Developers
 The following people are currently active contributers to PETSc's development and
 maintenance.
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    Please do not email individual PETSc authors. E-mail to petsc-maint@mcs.anl.gov is
    automatically distributed to the authors, so our response time using this address will

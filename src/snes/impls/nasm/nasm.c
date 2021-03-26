@@ -17,7 +17,6 @@ typedef struct {
   PetscBool  usesdm;              /* use the DM for setting up the subproblems */
   PetscBool  finaljacobian;       /* compute the jacobian of the converged solution */
   PetscReal  damping;             /* damping parameter for updates from the blocks */
-  PetscBool  same_local_solves;   /* flag to determine if the solvers have been individually modified */
   PetscBool  weight_set;          /* use a weight in the overlap updates */
 
   /* logging events */
@@ -181,7 +180,7 @@ static PetscErrorCode SNESSetFromOptions_NASM(PetscOptionItems *PetscOptionsObje
 {
   PetscErrorCode    ierr;
   PCASMType         asmtype;
-  PetscBool         flg,monflg,subviewflg;
+  PetscBool         flg,monflg;
   SNES_NASM         *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
@@ -192,14 +191,7 @@ static PetscErrorCode SNESSetFromOptions_NASM(PetscOptionItems *PetscOptionsObje
   monflg = PETSC_TRUE;
   ierr   = PetscOptionsReal("-snes_nasm_damping","The new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)","SNESNASMSetDamping",nasm->damping,&nasm->damping,&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESNASMSetDamping(snes,nasm->damping);CHKERRQ(ierr);}
-  subviewflg = PETSC_FALSE;
-  ierr   = PetscOptionsBool("-snes_nasm_sub_view","Print detailed information for every processor when using -snes_view","",subviewflg,&subviewflg,&flg);CHKERRQ(ierr);
-  if (flg) {
-    nasm->same_local_solves = PETSC_FALSE;
-    if (!subviewflg) {
-      nasm->same_local_solves = PETSC_TRUE;
-    }
-  }
+  ierr   = PetscOptionsDeprecated("-snes_nasm_sub_view",NULL,"3.15","Use -snes_view ::ascii_info_detail");CHKERRQ(ierr);
   ierr   = PetscOptionsBool("-snes_nasm_finaljacobian","Compute the global jacobian of the final iterate (for ASPIN)","",nasm->finaljacobian,&nasm->finaljacobian,NULL);CHKERRQ(ierr);
   ierr   = PetscOptionsEList("-snes_nasm_finaljacobian_type","The type of the final jacobian computed.","",SNESNASMFJTypes,3,SNESNASMFJTypes[0],&nasm->fjtype,NULL);CHKERRQ(ierr);
   ierr   = PetscOptionsBool("-snes_nasm_log","Log times for subSNES solves and restriction","",monflg,&monflg,&flg);CHKERRQ(ierr);
@@ -213,13 +205,15 @@ static PetscErrorCode SNESSetFromOptions_NASM(PetscOptionItems *PetscOptionsObje
 
 static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 {
-  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  PetscInt       i,N,bsz;
-  PetscBool      iascii,isstring;
-  PetscViewer    sviewer;
-  MPI_Comm       comm;
+  SNES_NASM         *nasm = (SNES_NASM*)snes->data;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank,size;
+  PetscInt          i,N,bsz;
+  PetscBool         iascii,isstring;
+  PetscViewer       sviewer;
+  MPI_Comm          comm;
+  PetscViewerFormat format;
+  const char        *prefix;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
@@ -230,9 +224,12 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
   ierr = MPIU_Allreduce(&nasm->n,&N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  total subdomain blocks = %D\n",N);CHKERRQ(ierr);
-    if (nasm->same_local_solves) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) {
       if (nasm->subsnes) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is the same for all blocks:\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Local solver information for first block on rank 0:\n");CHKERRQ(ierr);
+        ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Use -%ssnes_view ::ascii_info_detail to display information for all blocks\n",prefix?prefix:"");CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
         if (!rank) {
@@ -249,7 +246,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] number of local blocks = %D\n",(int)rank,nasm->n);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following SNES objects:\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Local solver information for each block is in the following SNES objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
       ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
@@ -415,7 +412,6 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsn
     for (i=0; i<n; i++) {
       nasm->subsnes[i] = subsnes[i];
     }
-    nasm->same_local_solves = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -459,10 +455,7 @@ static PetscErrorCode SNESNASMGetSubdomains_NASM(SNES snes,PetscInt *n,SNES *sub
   if (oscatter) *oscatter = nasm->oscatter;
   if (iscatter) *iscatter = nasm->iscatter;
   if (gscatter) *gscatter = nasm->gscatter;
-  if (subsnes)  {
-    *subsnes  = nasm->subsnes;
-    nasm->same_local_solves = PETSC_FALSE;
-  }
+  if (subsnes)  *subsnes  = nasm->subsnes;
   PetscFunctionReturn(0);
 }
 
@@ -895,7 +888,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 
   nasm->type              = PC_ASM_BASIC;
   nasm->finaljacobian     = PETSC_FALSE;
-  nasm->same_local_solves = PETSC_TRUE;
   nasm->weight_set        = PETSC_FALSE;
 
   snes->ops->destroy        = SNESDestroy_NASM;

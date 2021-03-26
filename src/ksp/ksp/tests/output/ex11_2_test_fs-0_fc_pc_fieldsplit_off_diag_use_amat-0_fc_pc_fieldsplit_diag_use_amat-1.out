@@ -76,7 +76,8 @@ PC Object: (fc_) 4 MPI processes
       PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
         type: bjacobi
           number of blocks = 4
-          Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -fc_fieldsplit_velocity_ksp_view ::ascii_info_detail to display information for all blocks
         KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
@@ -97,7 +98,7 @@ PC Object: (fc_) 4 MPI processes
                   total: nonzeros=12308, allocated nonzeros=12308
                       block size is 1
           linear system matrix = precond matrix:
-          Mat Object: (fc_fieldsplit_velocity_) 1 MPI processes
+          Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
             type: seqaij
             rows=512, cols=512
             total: nonzeros=8140, allocated nonzeros=8140
@@ -130,7 +131,8 @@ PC Object: (fc_) 4 MPI processes
           PC Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
             type: bjacobi
               number of blocks = 4
-              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+              Local solver information for first block is in the following KSP and PC objects on rank 0:
+              Use -fc_fieldsplit_pressure_lsc_ksp_view ::ascii_info_detail to display information for all blocks
             KSP Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
@@ -153,7 +155,7 @@ PC Object: (fc_) 4 MPI processes
                       total: nonzeros=1162, allocated nonzeros=1162
                           block size is 1
               linear system matrix = precond matrix:
-              Mat Object: 1 MPI processes
+              Mat Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
                 type: seqaij
                 rows=256, cols=256
                 total: nonzeros=2068, allocated nonzeros=2068
@@ -197,7 +199,8 @@ PC Object: (fc_) 4 MPI processes
               PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
                 type: bjacobi
                   number of blocks = 4
-                  Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+                  Local solver information for first block is in the following KSP and PC objects on rank 0:
+                  Use -fc_fieldsplit_velocity_ksp_view ::ascii_info_detail to display information for all blocks
                 KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
                   type: preonly
                   maximum iterations=10000, initial guess is zero
@@ -218,7 +221,7 @@ PC Object: (fc_) 4 MPI processes
                           total: nonzeros=12308, allocated nonzeros=12308
                               block size is 1
                   linear system matrix = precond matrix:
-                  Mat Object: (fc_fieldsplit_velocity_) 1 MPI processes
+                  Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
                     type: seqaij
                     rows=512, cols=512
                     total: nonzeros=8140, allocated nonzeros=8140
@@ -328,7 +331,8 @@ PC Object: (fc_) 4 MPI processes
       PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
         type: bjacobi
           number of blocks = 4
-          Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -fc_fieldsplit_velocity_ksp_view ::ascii_info_detail to display information for all blocks
         KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
@@ -349,7 +353,7 @@ PC Object: (fc_) 4 MPI processes
                   total: nonzeros=12308, allocated nonzeros=12308
                       block size is 1
           linear system matrix = precond matrix:
-          Mat Object: (fc_fieldsplit_velocity_) 1 MPI processes
+          Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
             type: seqaij
             rows=512, cols=512
             total: nonzeros=8140, allocated nonzeros=8140
@@ -382,7 +386,8 @@ PC Object: (fc_) 4 MPI processes
           PC Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
             type: bjacobi
               number of blocks = 4
-              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+              Local solver information for first block is in the following KSP and PC objects on rank 0:
+              Use -fc_fieldsplit_pressure_lsc_ksp_view ::ascii_info_detail to display information for all blocks
             KSP Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
@@ -405,7 +410,7 @@ PC Object: (fc_) 4 MPI processes
                       total: nonzeros=1162, allocated nonzeros=1162
                           block size is 1
               linear system matrix = precond matrix:
-              Mat Object: 1 MPI processes
+              Mat Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
                 type: seqaij
                 rows=256, cols=256
                 total: nonzeros=2068, allocated nonzeros=2068
@@ -449,7 +454,8 @@ PC Object: (fc_) 4 MPI processes
               PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
                 type: bjacobi
                   number of blocks = 4
-                  Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+                  Local solver information for first block is in the following KSP and PC objects on rank 0:
+                  Use -fc_fieldsplit_velocity_ksp_view ::ascii_info_detail to display information for all blocks
                 KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
                   type: preonly
                   maximum iterations=10000, initial guess is zero
@@ -470,7 +476,7 @@ PC Object: (fc_) 4 MPI processes
                           total: nonzeros=12308, allocated nonzeros=12308
                               block size is 1
                   linear system matrix = precond matrix:
-                  Mat Object: (fc_fieldsplit_velocity_) 1 MPI processes
+                  Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
                     type: seqaij
                     rows=512, cols=512
                     total: nonzeros=8140, allocated nonzeros=8140

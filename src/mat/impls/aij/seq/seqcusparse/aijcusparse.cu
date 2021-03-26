@@ -224,35 +224,20 @@ PetscErrorCode MatCUSPARSESetFormat(Mat A,MatCUSPARSEFormatOperation op,MatCUSPA
   PetscFunctionReturn(0);
 }
 
-/*@
-   MatSeqAIJCUSPARSESetGenerateTranspose - Sets the flag to explicitly generate the transpose matrix before calling MatMultTranspose
-
-   Collective on mat
-
-   Input Parameters:
-+  A - Matrix of type SEQAIJCUSPARSE
--  transgen - the boolean flag
-
-   Level: intermediate
-
-.seealso: MATSEQAIJCUSPARSE, MatAIJCUSPARSESetGenerateTranspose()
-@*/
-PetscErrorCode MatSeqAIJCUSPARSESetGenerateTranspose(Mat A,PetscBool transgen)
+PetscErrorCode MatSetOption_SeqAIJCUSPARSE(Mat A,MatOption op,PetscBool flg)
 {
   PetscErrorCode ierr;
-  PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscObjectTypeCompare(((PetscObject)A),MATSEQAIJCUSPARSE,&flg);CHKERRQ(ierr);
-  if (flg) {
-    Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
-
-    if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-    cusp->transgen = transgen;
-    if (!transgen) { /* need to destroy the transpose matrix if present to prevent from logic errors if transgen is set to true later */
-      ierr = MatSeqAIJCUSPARSEInvalidateTranspose(A,PETSC_TRUE);CHKERRQ(ierr);
-    }
+  switch (op) {
+    case MAT_FORM_EXPLICIT_TRANSPOSE:
+      /* need to destroy the transpose matrix if present to prevent from logic errors if flg is set to true later */
+      if (A->form_explicit_transpose && !flg) {ierr = MatSeqAIJCUSPARSEInvalidateTranspose(A,PETSC_TRUE);CHKERRQ(ierr);}
+      A->form_explicit_transpose = flg;
+      break;
+    default:
+      ierr = MatSetOption_SeqAIJ(A,op,flg);CHKERRQ(ierr);
+      break;
   }
   PetscFunctionReturn(0);
 }
@@ -267,11 +252,6 @@ static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionItems *PetscOp
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"SeqAIJCUSPARSE options");CHKERRQ(ierr);
   if (A->factortype == MAT_FACTOR_NONE) {
-    PetscBool transgen = cusparsestruct->transgen;
-
-    ierr = PetscOptionsBool("-mat_cusparse_transgen","Generate explicit transpose for MatMultTranspose","MatSeqAIJCUSPARSESetGenerateTranspose",transgen,&transgen,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = MatSeqAIJCUSPARSESetGenerateTranspose(A,transgen);CHKERRQ(ierr);}
-
     ierr = PetscOptionsEnum("-mat_cusparse_mult_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV",
                             "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)cusparsestruct->format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_MULT,format);CHKERRQ(ierr);}
@@ -280,18 +260,15 @@ static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionItems *PetscOp
                             "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)cusparsestruct->format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_ALL,format);CHKERRQ(ierr);}
    #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
-    cusparsestruct->spmvAlg = CUSPARSE_CSRMV_ALG1; /* default, since we only support csr */
     ierr = PetscOptionsEnum("-mat_cusparse_spmv_alg","sets cuSPARSE algorithm used in sparse-mat dense-vector multiplication (SpMV)",
                             "cusparseSpMVAlg_t",MatCUSPARSESpMVAlgorithms,(PetscEnum)cusparsestruct->spmvAlg,(PetscEnum*)&cusparsestruct->spmvAlg,&flg);CHKERRQ(ierr);
     /* If user did use this option, check its consistency with cuSPARSE, since PetscOptionsEnum() sets enum values based on their position in MatCUSPARSESpMVAlgorithms[] */
     if (flg && CUSPARSE_CSRMV_ALG1 != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseSpMVAlg_t has been changed but PETSc has not been updated accordingly");
 
-    cusparsestruct->spmmAlg = CUSPARSE_SPMM_CSR_ALG1; /* default, only support column-major dense matrix B */
     ierr = PetscOptionsEnum("-mat_cusparse_spmm_alg","sets cuSPARSE algorithm used in sparse-mat dense-mat multiplication (SpMM)",
                             "cusparseSpMMAlg_t",MatCUSPARSESpMMAlgorithms,(PetscEnum)cusparsestruct->spmmAlg,(PetscEnum*)&cusparsestruct->spmmAlg,&flg);CHKERRQ(ierr);
     if (flg && CUSPARSE_SPMM_CSR_ALG1 != 4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseSpMMAlg_t has been changed but PETSc has not been updated accordingly");
 
-    cusparsestruct->csr2cscAlg = CUSPARSE_CSR2CSC_ALG1;
     ierr = PetscOptionsEnum("-mat_cusparse_csr2csc_alg","sets cuSPARSE algorithm used in converting CSR matrices to CSC matrices",
                             "cusparseCsr2CscAlg_t",MatCUSPARSECsr2CscAlgorithms,(PetscEnum)cusparsestruct->csr2cscAlg,(PetscEnum*)&cusparsestruct->csr2cscAlg,&flg);CHKERRQ(ierr);
     if (flg && CUSPARSE_CSR2CSC_ALG1 != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseCsr2CscAlg_t has been changed but PETSc has not been updated accordingly");
@@ -1208,7 +1185,7 @@ struct PetscScalarToPetscInt
   }
 };
 
-static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
+static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTransposeForMult(Mat A)
 {
   Mat_SeqAIJCUSPARSE           *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct *matstruct, *matstructT;
@@ -1219,13 +1196,13 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
   PetscErrorCode               ierr;
 
   PetscFunctionBegin;
-  if (!cusparsestruct->transgen || !A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->form_explicit_transpose || !A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
   if (!matstruct) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing mat struct");
   matstructT = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->matTranspose;
-  if (cusparsestruct->transupdated && !matstructT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing matTranspose struct");
-  if (cusparsestruct->transupdated) PetscFunctionReturn(0);
+  if (A->transupdated && !matstructT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing matTranspose struct");
+  if (A->transupdated) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(MAT_CUSPARSEGenerateTranspose,A,0,0,0);CHKERRQ(ierr);
   if (cusparsestruct->format != MAT_CUSPARSE_CSR) {
     ierr = MatSeqAIJCUSPARSEInvalidateTranspose(A,PETSC_TRUE);CHKERRQ(ierr);
@@ -1317,7 +1294,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
 
       /* assign the pointer */
       matstructT->mat = hybMat;
-      cusparsestruct->transupdated = PETSC_TRUE;
+      A->transupdated = PETSC_TRUE;
       /* delete temporaries */
       if (tempT) {
         if (tempT->values) delete (THRUSTARRAY*) tempT->values;
@@ -1370,19 +1347,32 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
       err = cudaMalloc(&csr2cscBuffer,csr2cscBufferSize);CHKERRCUDA(err);
      #endif
 
-      stat = cusparse_csr2csc(cusparsestruct->handle,
-                              A->rmap->n,A->cmap->n,matrix->num_entries,
-                              csr2csc_a.data().get(),cusparsestruct->rowoffsets_gpu->data().get(),matrix->column_indices->data().get(),
+      if (matrix->num_entries) {
+        /* When there are no nonzeros, this routine mistakenly returns CUSPARSE_STATUS_INVALID_VALUE in
+           mat_tests-ex62_15_mpiaijcusparse on ranks 0 and 2 with CUDA-11. But CUDA-10 is OK.
+           I checked every parameters and they were just fine. I have no clue why cusparse complains.
+
+           Per https://docs.nvidia.com/cuda/cusparse/index.html#csr2cscEx2, when nnz = 0, matrixT->row_offsets[]
+           should be filled with indexBase. So I just take a shortcut here.
+        */
+        stat = cusparse_csr2csc(cusparsestruct->handle, A->rmap->n,
+                              A->cmap->n,matrix->num_entries,
+                              csr2csc_a.data().get(),
+                              cusparsestruct->rowoffsets_gpu->data().get(),
+                              matrix->column_indices->data().get(),
                               matrixT->values->data().get(),
                              #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
                               matrixT->row_offsets->data().get(), matrixT->column_indices->data().get(), cusparse_scalartype,
                               CUSPARSE_ACTION_NUMERIC,indexBase,
-                              cusparsestruct->csr2cscAlg, csr2cscBuffer
+                              cusparsestruct->csr2cscAlg, csr2cscBuffer);CHKERRCUSPARSE(stat);
                              #else
                               matrixT->column_indices->data().get(), matrixT->row_offsets->data().get(),
-                              CUSPARSE_ACTION_NUMERIC, indexBase
+                              CUSPARSE_ACTION_NUMERIC, indexBase);CHKERRCUSPARSE(stat);
                              #endif
-);CHKERRCUSPARSE(stat);
+      } else {
+        matrixT->row_offsets->assign(matrixT->row_offsets->size(),indexBase);
+      }
+
       cusparsestruct->csr2csc_i = new THRUSTINTARRAY(matrix->num_entries);
       PetscStackCallThrust(thrust::transform(thrust::device,matrixT->values->begin(),matrixT->values->end(),cusparsestruct->csr2csc_i->begin(),PetscScalarToPetscInt()));
      #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
@@ -1398,7 +1388,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
   matstructT->cprowIndices = NULL;
   /* assign the pointer */
   ((Mat_SeqAIJCUSPARSE*)A->spptr)->matTranspose = matstructT;
-  cusparsestruct->transupdated = PETSC_TRUE;
+  A->transupdated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1987,8 +1977,8 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   /* currently CopyToGpu does not copy if the matrix is bound to CPU
      Instead of silently accepting the wrong answer, I prefer to raise the error */
   if (A->boundtocpu) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Cannot bind to CPU a CUSPARSE matrix between MatProductSymbolic and MatProductNumeric phases");
-  ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
-  cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
+  ierr   = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
+  cusp   = (Mat_SeqAIJCUSPARSE*)A->spptr;
   switch (product->type) {
   case MATPRODUCT_AB:
   case MATPRODUCT_PtAP:
@@ -1998,11 +1988,11 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
     n   = B->cmap->n;
     break;
   case MATPRODUCT_AtB:
-    if (!cusp->transgen) {
+    if (!A->form_explicit_transpose) {
       mat = cusp->mat;
       opA = CUSPARSE_OPERATION_TRANSPOSE;
     } else {
-      ierr = MatSeqAIJCUSPARSEGenerateTransposeForMult(A);CHKERRQ(ierr);
+      ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(A);CHKERRQ(ierr);
       mat  = cusp->matTranspose;
       opA  = CUSPARSE_OPERATION_NON_TRANSPOSE;
     }
@@ -2389,7 +2379,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
     m = A->cmap->n;
     n = B->cmap->n;
     k = A->rmap->n;
-    ierr = MatSeqAIJCUSPARSEGenerateTransposeForMult(A);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(A);CHKERRQ(ierr);
     Amat = Acusp->matTranspose;
     Bmat = Bcusp->mat;
     if (b->compressedrow.use) biscompressed = PETSC_TRUE;
@@ -2398,7 +2388,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
     m = A->rmap->n;
     n = B->rmap->n;
     k = A->cmap->n;
-    ierr = MatSeqAIJCUSPARSEGenerateTransposeForMult(B);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(B);CHKERRQ(ierr);
     Amat = Acusp->mat;
     Bmat = Bcusp->matTranspose;
     if (a->compressedrow.use) ciscompressed = PETSC_TRUE;
@@ -2788,11 +2778,11 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz
     matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
     if (!matstruct) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"SeqAIJCUSPARSE does not have a 'mat' (need to fix)");
   } else {
-    if (herm || !cusparsestruct->transgen) {
+    if (herm || !A->form_explicit_transpose) {
       opA = herm ? CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE : CUSPARSE_OPERATION_TRANSPOSE;
       matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
     } else {
-      if (!cusparsestruct->matTranspose) {ierr = MatSeqAIJCUSPARSEGenerateTransposeForMult(A);CHKERRQ(ierr);}
+      if (!cusparsestruct->matTranspose) {ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(A);CHKERRQ(ierr);}
       matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->matTranspose;
     }
   }
@@ -2871,7 +2861,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz
 
       stat = cusparseSpMV(cusparsestruct->handle, opA,
                                matstruct->alpha_one,
-                               matstruct->matDescr, /* built in MatSeqAIJCUSPARSECopyToGPU() or MatSeqAIJCUSPARSEGenerateTransposeForMult() */
+                               matstruct->matDescr, /* built in MatSeqAIJCUSPARSECopyToGPU() or MatSeqAIJCUSPARSEFormExplicitTransposeForMult() */
                                matstruct->cuSpMV[opA].vecXDescr,
                                beta,
                                matstruct->cuSpMV[opA].vecYDescr,
@@ -3316,13 +3306,16 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType mtyp
   if (reuse != MAT_REUSE_MATRIX && !B->spptr) {
     if (B->factortype == MAT_FACTOR_NONE) {
       Mat_SeqAIJCUSPARSE *spptr;
-
       ierr = PetscNew(&spptr);CHKERRQ(ierr);
-      spptr->format = MAT_CUSPARSE_CSR;
       stat = cusparseCreate(&spptr->handle);CHKERRCUSPARSE(stat);
       stat = cusparseSetStream(spptr->handle,PetscDefaultCudaStream);CHKERRCUSPARSE(stat);
+      spptr->format     = MAT_CUSPARSE_CSR;
+     #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+      spptr->spmvAlg    = CUSPARSE_CSRMV_ALG1;    /* default, since we only support csr */
+      spptr->spmmAlg    = CUSPARSE_SPMM_CSR_ALG1; /* default, only support column-major dense matrix B */
+      spptr->csr2cscAlg = CUSPARSE_CSR2CSC_ALG1;
+     #endif
       B->spptr = spptr;
-      spptr->deviceMat = NULL;
     } else {
       Mat_SeqAIJCUSPARSETriFactors *spptr;
 
@@ -3335,6 +3328,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType mtyp
   }
   B->ops->assemblyend    = MatAssemblyEnd_SeqAIJCUSPARSE;
   B->ops->destroy        = MatDestroy_SeqAIJCUSPARSE;
+  B->ops->setoption      = MatSetOption_SeqAIJCUSPARSE;
   B->ops->setfromoptions = MatSetFromOptions_SeqAIJCUSPARSE;
   B->ops->bindtocpu      = MatBindToCPU_SeqAIJCUSPARSE;
   B->ops->duplicate      = MatDuplicate_SeqAIJCUSPARSE;
@@ -3352,9 +3346,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
   PetscFunctionBegin;
   ierr = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SeqAIJCUSPARSE(B,MATSEQAIJCUSPARSE,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
-  ierr = MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionsObject,B);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3656,7 +3647,7 @@ PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat A, PetscBool destroy)
     delete cusp->csr2csc_i;
     cusp->csr2csc_i = NULL;
   }
-  cusp->transupdated = PETSC_FALSE;
+  A->transupdated = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -3935,8 +3926,8 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
     cerr = cudaMemcpy(Cmat->beta_one, &PETSC_CUSPARSE_ONE, sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
     ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
     ierr = MatSeqAIJCUSPARSECopyToGPU(B);CHKERRQ(ierr);
-    ierr = MatSeqAIJCUSPARSEGenerateTransposeForMult(A);CHKERRQ(ierr);
-    ierr = MatSeqAIJCUSPARSEGenerateTransposeForMult(B);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(A);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(B);CHKERRQ(ierr);
     if (!Acusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
     if (!Bcusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
 
@@ -4037,15 +4028,15 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
                                CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
                                CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype);CHKERRCUSPARSE(stat);
 #endif
-      if (Acusp->transgen && Bcusp->transgen) { /* if A and B have the transpose, generate C transpose too */
+      if (A->form_explicit_transpose && B->form_explicit_transpose) { /* if A and B have the transpose, generate C transpose too */
         PetscBool AT = Acusp->matTranspose ? PETSC_TRUE : PETSC_FALSE, BT = Bcusp->matTranspose ? PETSC_TRUE : PETSC_FALSE;
         Mat_SeqAIJCUSPARSEMultStruct *CmatT = new Mat_SeqAIJCUSPARSEMultStruct;
         CsrMatrix *CcsrT = new CsrMatrix;
         CsrMatrix *AcsrT = AT ? (CsrMatrix*)Acusp->matTranspose->mat : NULL;
         CsrMatrix *BcsrT = BT ? (CsrMatrix*)Bcusp->matTranspose->mat : NULL;
 
-        Ccusp->transgen = PETSC_TRUE;
-        Ccusp->transupdated = PETSC_TRUE;
+        (*C)->form_explicit_transpose = PETSC_TRUE;
+        (*C)->transupdated = PETSC_TRUE;
         Ccusp->rowoffsets_gpu = NULL;
         CmatT->cprowIndices = NULL;
         CmatT->mat = CcsrT;
@@ -4165,7 +4156,7 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
                                                                  thrust::make_permutation_iterator(Ccsr->values->begin(),Ccusp->cooPerm->end())));
       thrust::for_each(zibbit,ziebit,VecCUDAEquals());
       ierr = MatSeqAIJCUSPARSEInvalidateTranspose(*C,PETSC_FALSE);CHKERRQ(ierr);
-      if (Acusp->transgen && Bcusp->transgen && Ccusp->transgen) {
+      if (A->form_explicit_transpose && B->form_explicit_transpose && (*C)->form_explicit_transpose) {
         if (!Ccusp->matTranspose) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing transpose Mat_SeqAIJCUSPARSEMultStruct");
         PetscBool AT = Acusp->matTranspose ? PETSC_TRUE : PETSC_FALSE, BT = Bcusp->matTranspose ? PETSC_TRUE : PETSC_FALSE;
         CsrMatrix *AcsrT = AT ? (CsrMatrix*)Acusp->matTranspose->mat : NULL;
@@ -4174,7 +4165,7 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
         auto vT = CcsrT->values->begin();
         if (AT) vT = thrust::copy(AcsrT->values->begin(),AcsrT->values->end(),vT);
         if (BT) thrust::copy(BcsrT->values->begin(),BcsrT->values->end(),vT);
-        Ccusp->transupdated = PETSC_TRUE;
+        (*C)->transupdated = PETSC_TRUE;
       }
       cerr = WaitForCUDA();CHKERRCUDA(cerr);
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);

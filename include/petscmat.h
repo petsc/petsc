@@ -455,7 +455,8 @@ typedef enum {MAT_OPTION_MIN = -3,
               MAT_SUBMAT_SINGLEIS = 21,
               MAT_STRUCTURE_ONLY = 22,
               MAT_SORTED_FULL = 23,
-              MAT_OPTION_MAX = 24} MatOption;
+              MAT_FORM_EXPLICIT_TRANSPOSE = 24,
+              MAT_OPTION_MAX = 25} MatOption;
 
 PETSC_EXTERN const char *const *MatOptions;
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);
@@ -705,6 +706,9 @@ PETSC_EXTERN PetscErrorCode MatStashGetInfo(Mat,PetscInt*,PetscInt*,PetscInt*,Pe
 PETSC_EXTERN PetscErrorCode MatInterpolate(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatInterpolateAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatRestrict(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode MatMatInterpolate(Mat,Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMatInterpolateAdd(Mat,Mat,Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMatRestrict(Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateVecs(Mat,Vec*,Vec*);
 PETSC_DEPRECATED_FUNCTION("Use MatCreateVecs() (since version 3.6)") PETSC_STATIC_INLINE PetscErrorCode MatGetVecs(Mat mat,Vec *x,Vec *y) {return MatCreateVecs(mat,x,y);}
 PETSC_EXTERN PetscErrorCode MatCreateRedundantMatrix(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
@@ -1938,8 +1942,6 @@ typedef enum {MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, MAT_CUSPARSE_MU
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat,MatCUSPARSEFormatOperation,MatCUSPARSEStorageFormat);
-PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSESetGenerateTranspose(Mat,PetscBool);
-PETSC_EXTERN PetscErrorCode MatAIJCUSPARSESetGenerateTranspose(Mat,PetscBool);
 
 PETSC_EXTERN PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat,PetscSplitCSRDataStructure**);
 
@@ -1998,4 +2000,5 @@ PETSC_EXTERN PetscErrorCode MatPreallocatorPreallocate(Mat,PetscBool,Mat);
 
 PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat*);
+
 #endif

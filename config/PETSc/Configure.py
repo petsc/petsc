@@ -342,9 +342,9 @@ prepend-path PATH "%s"
       self.addMakeMacro('CUDAC_FLAGS',self.setCompilers.getCompilerFlags())
       self.setCompilers.popLanguage()
 
-    if hasattr(self.compilers, 'HIPCC'):
+    if hasattr(self.compilers, 'HIPC'):
       self.setCompilers.pushLanguage('HIP')
-      self.addMakeMacro('HIPCC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('HIPC_FLAGS',self.setCompilers.getCompilerFlags())
       self.setCompilers.popLanguage()
 
     if hasattr(self.compilers, 'SYCLCXX'):

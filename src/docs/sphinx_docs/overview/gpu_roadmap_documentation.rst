@@ -58,7 +58,7 @@ Basic linear algebra GPU implementations enable many solvers, including ``GAMG``
 and Jacobian creation and for matrix assembly extensions to ``MATAIJCUSPARSE`` and
 ``MATAIJKOKKOS``. **This is work in progress**.
 
-.. admonition:: Important
+.. important::
    :class: yellow
 
    We could use your help in further developing PETSc for GPUs; see PETSc Developers

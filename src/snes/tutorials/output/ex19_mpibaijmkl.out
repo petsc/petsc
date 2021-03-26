@@ -47,7 +47,8 @@ SNES Object: 2 MPI processes
   PC Object: 2 MPI processes
     type: bjacobi
       number of blocks = 2
-      Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+      Local solver information for first block is in the following KSP and PC objects on rank 0:
+      Use -ksp_view ::ascii_info_detail to display information for all blocks
     KSP Object: (sub_) 1 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
@@ -69,7 +70,7 @@ SNES Object: 2 MPI processes
               total: nonzeros=448, allocated nonzeros=448
                   block size is 4
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: (sub_) 1 MPI processes
         type: seqbaij
         rows=32, cols=32, bs=4
         total: nonzeros=448, allocated nonzeros=448

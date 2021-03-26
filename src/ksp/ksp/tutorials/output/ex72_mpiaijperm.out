@@ -19,7 +19,8 @@ KSP Object: 2 MPI processes
 PC Object: 2 MPI processes
   type: bjacobi
     number of blocks = 2
-    Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+    Local solver information for first block is in the following KSP and PC objects on rank 0:
+    Use -ksp_view ::ascii_info_detail to display information for all blocks
   KSP Object: (sub_) 1 MPI processes
     type: preonly
     maximum iterations=10000, initial guess is zero
@@ -41,7 +42,7 @@ PC Object: 2 MPI processes
             total: nonzeros=72, allocated nonzeros=72
               not using I-node routines
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: (sub_) 1 MPI processes
       type: seqaijperm
       rows=18, cols=18
       total: nonzeros=72, allocated nonzeros=72

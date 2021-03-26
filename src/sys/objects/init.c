@@ -657,13 +657,13 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
 
   ierr = PetscOptionsGetViewer(comm,NULL,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
   if (flg4) {
-    if (format == PETSC_VIEWER_ASCII_XML) {
+    if (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
       ierr = PetscLogNestedBegin();CHKERRQ(ierr);
     } else {
       ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
     }
   }
-  if (flg4 && format == PETSC_VIEWER_ASCII_XML) {
+  if (flg4 && (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH)) {
     PetscReal threshold = PetscRealConstant(0.01);
     ierr = PetscOptionsGetReal(NULL,NULL,"-log_threshold",&threshold,&flg1);CHKERRQ(ierr);
     if (flg1) {ierr = PetscLogSetThreshold((PetscLogDouble)threshold,NULL);CHKERRQ(ierr);}

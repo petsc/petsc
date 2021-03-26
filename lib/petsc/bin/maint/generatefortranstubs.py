@@ -45,7 +45,7 @@ def FixFile(filename):
   with open(filename) as ff:
     data = ff.read()
 
-  data = re.subn('\00','',data)[0]  
+  data = re.subn('\00','',data)[0]
   data = re.subn('\nvoid ','\nPETSC_EXTERN void ',data)[0]
   data = re.subn('\nPetscErrorCode ','\nPETSC_EXTERN void ',data)[0]
   data = re.subn('Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]
@@ -212,34 +212,72 @@ def processDir(petscdir, bfort, verbose, dirpath, dirnames, filenames):
                  and name != 'petsc']
   return
 
+def updatePetscTypesFromMansec(types, path):
+  for file in os.listdir(path):
+    if file.endswith('.h'):
+      with open(os.path.join(path,file)) as fd:
+        txtlst = fd.readlines()
+        lsts = [l.strip().split(' ') for l in txtlst if ' type ' in l]
+        # l[0] == ! means comment, don't include comments
+        newTypes = set(l[l.index('type')+1] for l in lsts if '!' not in l[0])
+        types.update(newTypes)
+  return types
+
+def checkHandWrittenF90Interfaces(badSrc, path):
+  import re
+  for file in os.listdir(path):
+    if file.endswith('.h90') or file.endswith('.F90'):
+      with open(os.path.join(path,file),'r') as fdr:
+        lineno = 1
+        raw = fdr.read()
+        for ibuf in re.split('\n\s*interface',raw,flags=re.IGNORECASE):
+          res = re.search('(.*)(\s+end\s+interface)',ibuf,flags=re.DOTALL|re.IGNORECASE)
+          try:
+            lines = res.group(0).split('\n')
+            useLine = [(s.strip(),idx+lineno,os.path.join(path,file)) for idx,s in enumerate(lines) if 'use petsc' in s and 'only:' not in s]
+            badSrc.extend(useLine)
+          except AttributeError:
+            # when re.search comes up empty
+            pass
+          except IndexError:
+            # "use" was not in res.group(0)
+            pass
+          lineno = lineno+ibuf.count('\n')
+  return badSrc
 
 def processf90interfaces(petscdir,verbose):
+  import shutil
   ''' Takes all the individually generated fortran interface files and merges them into one for each mansec'''
-  for mansec in ['sys','vec','mat','dm','ksp','snes','ts','tao']:
-    for submansec in os.listdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces')):
+  ptypes = set()
+  mansecs = ['sys','vec','mat','dm','ksp','snes','ts','tao']
+  mansecF90Dirs = [os.path.join(petscdir,'src',ms,'f90-mod') for ms in mansecs]
+  badSrc = []
+  for msfd in mansecF90Dirs:
+    badSrc = checkHandWrittenF90Interfaces(badSrc, msfd)
+    ptypes = updatePetscTypesFromMansec(ptypes,msfd)
+  for src in badSrc:
+    print('Importing entire package: "'+src[0]+'" line '+str(src[1])+' file '+src[2])
+  if len(badSrc): raise RuntimeError
+  for msfd in mansecF90Dirs:
+    msfad = os.path.join(msfd,'ftn-auto-interfaces')
+    for submansec in os.listdir(msfad):
       if verbose: print('Processing F90 interface for '+submansec)
-      if os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec)):
+      if os.path.isdir(os.path.join(msfad,submansec)):
         submansec = submansec[:-7]
-        f90inc = os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces','petsc'+submansec+'.h90')
-        fd = open(f90inc,'w')
-        for sfile in os.listdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir')):
-          if verbose: print('  Copying in '+sfile)
-          fdr = open(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir',sfile))
-          txt = fdr.readline()
-          while txt:
-            if 'integer z' in txt: txt = '        PetscErrorCode z\n'
-            if 'integer a ! MPI_Comm' in txt: txt = '      MPI_Comm a ! MPI_Comm\n'
-            fd.write(txt)
-            if txt.find('subroutine ') > -1 and txt.find('end subroutine') == -1:
-              while txt.endswith('&\n'):
-                txt = fdr.readline()
-                fd.write(txt)
-              fd.write('      use petsc'+mansec+'def\n')
-            txt = fdr.readline()
-          fdr.close()
-        fd.close()
-        import shutil
-        shutil.rmtree(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir'))
+        f90inc = os.path.join(msfad,'petsc'+submansec+'.h90')
+        tmpDir = os.path.join(msfad,submansec+'-tmpdir')
+        with open(f90inc,'w') as fd:
+          for sfile in os.listdir(tmpDir):
+            if verbose: print('  Copying in '+sfile)
+            with open(os.path.join(tmpDir,sfile),'r') as fdr:
+              for ibuf in fdr.read().split('      subroutine')[1:]:
+                ibuf = '      subroutine'+ibuf
+                ibuf = ibuf.replace('integer z','PetscErrorCode z')
+                ibuf = ibuf.replace('integer a ! MPI_Comm','MPI_Comm a ! MPI_Comm')
+                plist = [p for p in ptypes if ' '+p[1:]+' ' in ibuf]
+                if plist: ibuf = ibuf.replace(')',')\n       import '+','.join(set(plist)),1)
+                fd.write(ibuf)
+        shutil.rmtree(tmpDir)
   # FixDir(petscdir,os.path.join(petscdir,'include','petsc','finclude','ftn-auto-interfaces'),verbose)
   return
 

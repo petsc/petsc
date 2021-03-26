@@ -177,7 +177,7 @@ class Configure(script.Script):
 
   def delDefine(self, name):
     '''Designate that "name" should be deleted (never put in)  configuration header'''
-    if name in self.defines: 
+    if name in self.defines:
       self.logPrint('Deleting "'+name+'"')
       del self.defines[name]
     return
@@ -561,7 +561,7 @@ class Configure(script.Script):
       else:
         flagsArg = 'CXXFLAGS'
     elif language == 'HIP':
-      flagsArg = 'HIPCCFLAGS'
+      flagsArg = 'HIPFLAGS'
     elif language == 'SYCL':
       flagsArg = 'SYCLCXXFLAGS'
     elif language == 'FC':

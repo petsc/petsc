@@ -51,7 +51,8 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
           PC Object: (npc_fas_coarse_) 2 MPI processes
             type: bjacobi
               number of blocks = 2
-              Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+              Local solver information for first block is in the following KSP and PC objects on rank 0:
+              Use -npc_fas_coarse_ksp_view ::ascii_info_detail to display information for all blocks
             KSP Object: (npc_fas_coarse_sub_) 1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
@@ -73,7 +74,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
                       total: nonzeros=448, allocated nonzeros=448
                         using I-node routines: found 8 nodes, limit used is 5
               linear system matrix = precond matrix:
-              Mat Object: 1 MPI processes
+              Mat Object: (npc_fas_coarse_sub_) 1 MPI processes
                 type: seqaij
                 rows=32, cols=32, bs=4
                 total: nonzeros=448, allocated nonzeros=448

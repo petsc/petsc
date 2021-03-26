@@ -1,0 +1,18 @@
+---
+Fizz: 3
+---
+Buzz: 5
+---
+FizzBuzz: 15
+
+--- # start document
+# empty document
+... # end document
+
+--- # start document
+--- # start document (implicitly ends previous)
+
+... # end document
+---
+---
+---

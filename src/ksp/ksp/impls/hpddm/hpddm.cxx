@@ -10,8 +10,17 @@ static const char *HPDDMVariant[]           = { "left", "right", "flexible" };
 static const char *HPDDMRecycleTarget[]     = { "SM", "LM", "SR", "LR", "SI", "LI" };
 static const char *HPDDMRecycleStrategy[]   = { "A", "B" };
 
-static PetscBool citeKSP = PETSC_FALSE;
-static const char hpddmCitationKSP[] = "@inproceedings{jolivet2016block,\n\tTitle = {{Block Iterative Methods and Recycling for Improved Scalability of Linear Solvers}},\n\tAuthor = {Jolivet, Pierre and Tournier, Pierre-Henri},\n\tOrganization = {IEEE},\n\tYear = {2016},\n\tSeries = {SC16},\n\tBooktitle = {Proceedings of the 2016 International Conference for High Performance Computing, Networking, Storage and Analysis}\n}\n";
+PetscBool HPDDMCite = PETSC_FALSE;
+const char HPDDMCitation[] = "@article{jolivet2020petsc,\n"
+"  Author = {Jolivet, Pierre and Roman, Jose E. and Zampini, Stefano},\n"
+"  Title = {{KSPHPDDM} and {PCHPDDM}: Extending {PETSc} with Robust Overlapping {Schwarz} Preconditioners and Advanced {Krylov} Methods},\n"
+"  Year = {2021},\n"
+"  Publisher = {Elsevier},\n"
+"  Journal = {Computer \\& Mathematics with Applications},\n"
+"  Volume = {84},\n"
+"  Pages = {277--295},\n"
+"  Url = {https://github.com/prj-/jolivet2020petsc}\n"
+"}\n";
 
 #if defined(PETSC_HAVE_SLEPC) && defined(PETSC_USE_SHARED_LIBRARIES)
 static PetscBool loadedDL = PETSC_FALSE;
@@ -87,6 +96,8 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObje
     data->cntl[0] = HPDDM_KRYLOV_METHOD_NONE;
     data->scntl[1] = 1;
   }
+  if (ksp->nmax > std::numeric_limits<int>::max() || ksp->nmax < std::numeric_limits<int>::min()) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D not representable by an integer, which is not handled by KSPHPDDM", ksp->nmax);
+  else data->icntl[1] = static_cast<int>(ksp->nmax);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -175,6 +186,8 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
       }
     } else data->scntl[1] = 1;
   }
+  if (ksp->nmax > std::numeric_limits<int>::max() || ksp->nmax < std::numeric_limits<int>::min()) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D not representable by an integer, which is not handled by KSPHPDDM", ksp->nmax);
+  else data->icntl[1] = static_cast<int>(ksp->nmax);
   PetscFunctionReturn(0);
 }
 
@@ -214,8 +227,6 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetDeflationSpace_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationSpace_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPSetMatSolveBlockSize_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGetMatSolveBlockSize_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetType_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetType_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -266,10 +277,10 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(hpddmCitationKSP, &citeKSP);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister(HPDDMCitation, &HPDDMCite);CHKERRQ(ierr);
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQKAIJ, MATMPIKAIJ, "");CHKERRQ(ierr);
-  ierr = VecGetArray(ksp->vec_sol, &x);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(ksp->vec_sol, &x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(ksp->vec_rhs, &b);CHKERRQ(ierr);
   if (!flg) {
     ierr = KSPSolve_HPDDM_Private(ksp, b, x, 1);CHKERRQ(ierr);
@@ -301,7 +312,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
     }
   }
   ierr = VecRestoreArrayRead(ksp->vec_rhs, &b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(ksp->vec_sol, &x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(ksp->vec_sol, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -442,25 +453,6 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   ierr = KSPSolve_HPDDM_Private(ksp, b, x, n);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayWrite(X, &x);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(B, &b);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode KSPSetMatSolveBlockSize_HPDDM(KSP ksp, PetscInt bs)
-{
-  KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
-
-  PetscFunctionBegin;
-  if (bs > std::numeric_limits<int>::max() || bs < std::numeric_limits<int>::min()) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D not representable by an integer", bs);
-  else data->icntl[1] = static_cast<int>(bs);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode KSPGetMatSolveBlockSize_HPDDM(KSP ksp, PetscInt *bs)
-{
-  KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
-
-  PetscFunctionBegin;
-  *bs = static_cast<PetscInt>(data->icntl[1]);
   PetscFunctionReturn(0);
 }
 
@@ -607,8 +599,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
   }
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetDeflationSpace_C", KSPHPDDMSetDeflationSpace_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationSpace_C", KSPHPDDMGetDeflationSpace_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPSetMatSolveBlockSize_C", KSPSetMatSolveBlockSize_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGetMatSolveBlockSize_C", KSPGetMatSolveBlockSize_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetType_C", KSPHPDDMSetType_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetType_C", KSPHPDDMGetType_HPDDM);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SLEPC) && defined(PETSC_USE_SHARED_LIBRARIES)

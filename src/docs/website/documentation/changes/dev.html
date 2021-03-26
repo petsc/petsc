@@ -131,6 +131,7 @@
               <li>Any valid Git repository (including bare and with <code>--separate-git-dir</code>) is now correctly detected</li>
             </ul>
           </li>
+          <li><code>--download-yaml</code> or <code>--with-yaml</code> are no longer required for YAML support (but can still be used to avoid compiling source included with PETSc)</li>
         </ul>
       <h4>Sys:</h4>
         <ul>
@@ -138,18 +139,30 @@
           <li>Add PetscRandomGetValues and PetscRandomGetValuesReal to retrieve an array of random numbers</li>
           <li>Add PetscOptions argument to PetscOptionsInsertFileYAML()</li>
           <li>Add PetscCalloc to allocate zeroed memory</li>
+          <li>Automatically detect YAML and JSON option files by extension or particular first line</li>
+          <li>Update YAML options file processing to ignore keys starting with <code>$</code>, Add some special processing</li>
+          <li>Add PetscBagViewFromOptions()</li>
+          <li>Add PetscLogEventDeactivatePush(), PetscLogEventDeactivatePop()</li>
+          <li>Add new option to <kbd>-log_view</kbd> to view nested event timing information as a flame graph</li>
         </ul>
-      <h4>IS:</h4>
+      <h4>PetscViewer:</h4>
+        <ul>
+          <li>PetscViewerAndFormat now allows a payload</li>
+          <li>Change PetscViewerFlowControlStepMaster(), PetscViewerFlowControlEndMaster() to PetscViewerFlowControlStepMain(), PetscViewerFlowControlEndMain()</li>
+        </ul>
       <h4>PetscDraw:</h4>
+      <h4>AO:</h4>
+      <h4>IS:</h4>
       <h4>VecScatter / PetscSF:</h4>
         <ul>
           <li>VecScatter is now the same type as PetscSF, in other words, we have typedef PetscSF VecScatter</li>
           <li>Remove VecScatter types VECSCATTER{SEQ,MPI1,MPI3,MPI3NODE,SF}. One can use all PetcSF types as VecScatter types</li>
           <li>Rename PetscLayoutsCreateSF() to PetscSFCreateFromLayouts() and move its declaration from petscis.h to petscsf.h</li>
           <li>Deprecate MPIU_REPLACE; Use MPI_REPLACE instead</li>
-          <li>Deprecate PetscSFBcastAndOp variants; Use PetscSFBcast instead </li>
+          <li>Deprecate PetscSFBcastAndOp variants; Use PetscSFBcast instead</li>
           <li>Deprecate PetscSFCreateEmbeddedSF; Use PetscSFCreateEmbeddedRootSF instead</li>
           <li>Add experimental NVIDIA NVSHMEM support; For details on how to use it, contact petsc-maint@mcs.anl.gov</li>
+          <li>Add PetscSFCreateByMatchingIndices() to create SF by matching root and leaf indices</li>
         </ul>
       <h4>PF:</h4>
       <h4>Vec:</h4>
@@ -166,7 +179,9 @@
         <li>Add the option MAT_FORCE_DIAGONAL_ENTRIES for MatSetOption(). It forces allocation of all diagonal entries</li>
         <li>Remove MAT_NEW_DIAGONALS from MatOption</li>
         <li>Add UNKNOW_NONZERO_PATTERN as new value for MatStructure. It indicates that the relationship is unknown, when set the AIJ matrices check if the two matrices have identical patterns and if so use the faster code</li>
-        <li>Add MAT_FACTOR_QR, MatQRFactor(), MatQRFactorSymbolic(), and MatQRFactorNumeric() for QR factorizations.  Currently the only built-in implementation uses LAPACK on sequential dense matrices.</li>
+        <li>Add MAT_FACTOR_QR, MatQRFactor(), MatQRFactorSymbolic(), and MatQRFactorNumeric() for QR factorizations.  Currently the only built-in implementation uses LAPACK on sequential dense matrices</li>
+        <li>Change option -mat_cusparse_transgen to -mat_form_explicit_transpose to hint PETSc to form an explicit transpose for repeated operations like MatMultTranspose. Currently implemented only for AIJCUSPARSE and AIJKOKKOS</li>
+        <li>Add a MatOption MAT_FORM_EXPLICIT_TRANSPOSE</li>
       </ul>
       <h4>PC:</h4>
       <ul>
@@ -193,7 +208,6 @@
          <li>Change KSPReasonViewFromOptions() to KSPConvergedReasonViewFromOptions()</li>
          <li>Add KSPConvergedDefaultSetConvergedMaxits() to declare convergence when the maximum number of iterations is reached</li>
          <li>Fix many KSP implementations to actually perform the number of iterations requested</li>
-         <li>Add KSPMatSolve() for solving iteratively (currently only with KSPHPDDM and KSPPREONLY) systems with multiple right-hand sides, and KSP{Set|Get}MatSolveBlockSize() to set a block size limit</li>
          <li>Chebyshev uses MAT_SPD to default to CG for the eigen estimate</li>
          <li>Add KSPPIPECG2, a pipelined solver that reduces the number of allreduces to one per two iterations and overlaps it with two PCs and SPMVs using non-blocking allreduce</li>
          <li>Add KSPConvergedRateView() and KSPComputeConvergenceRate() to check the convergence rate of a linear solve</li>
@@ -201,6 +215,8 @@
          <li>Add KSPMonitorLGCreate(), and remove KSPMonitorLGResidualNorm*() and KSPMonitorLGTrueResidualNorm*()</li>
          <li>Add KSPMonitorError(), used by <tt>-ksp_monitor_error</tt></li>
          <li>Add arguments to KSPMonitorSetFromOptions() to allow line graphs to be configured</li>
+         <li>Deprecate KSP{Set|Get}MatSolveBlockSize(), use KSP{Set|Get}MatSolveBatchSize() instead</li>
+         <li>Reduce default KSPView() ASCII output to a single subdomain's KSP/PC information for PCASM, resp. PCBJacobi. Use -ksp_view ::ascii_info_detail to output KSP/PC information for all subdomains</li>
       </ul>
       <h4>SNES:</h4>
       <ul>
@@ -212,6 +228,7 @@
         <li>Add SNESConvergedReasonViewCancel() to remove all user-added  converged reason view functions</li>
         <li>Add SNESGetConvergedReasonString() to retrieve a human readable string for snes converged reason</li>
         <li>Add SNESFASFullSetTotal() to use total residual restriction and total solution interpolation in the initial cycle of full FAS multigrid</li>
+        <li>Deprecate -snes_nasm_sub_view, use -snes_view ::ascii_info_detail instead</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
@@ -272,20 +289,13 @@
       <ul>
         <li>PetscDSCopyBoundary() now takes a list of fields for which boundary copying is done</li>
         <li>Add PetscDSGet/SetJetDegree(), and -dm_ds_jet_degree is needed to enable it under a DM</li>
+        <li>Add PetscWeakForm class to manage function pointers for problem assembly</li>
       </ul>
-      <h4>PetscViewer:</h4>
-      <ul>
-        <li>PetscViewerAndFormat now allows a payload</li>
-        <li>Change PetscViewerFlowControlStepMaster(), PetscViewerFlowControlEndMaster() to PetscViewerFlowControlStepMain(), PetscViewerFlowControlEndMain()</li>
-      </ul>
-      <h4>SYS:</h4>
-      <ul>
-        <li>Add PetscBagViewFromOptions()</li>
-        <li>Add PetscLogEventDeactivatePush(), PetscLogEventDeactivatePop()</li>
-      </ul>
-      <h4>AO:</h4>
-      <h4>Convest:</h4>
       <h4>Fortran:</h4>
+      <ul>
+        <li>Add configure option <tt>--with-mpi-f90module-visibility</tt> [default=1]. With <tt>0</tt> mpi.mod will not be visible in use code (via petscsys.mod) - so <tt>mpi_f08</tt> can now be used</li>
+        <li>Add PetscDLAddr() to get name for a symbol</li>
+      </ul>
     </div>
 
     <!--end-->

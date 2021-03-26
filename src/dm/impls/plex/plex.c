@@ -8274,6 +8274,7 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
     PetscDS  ds;
     Vec      u;
     IS       cellIS;
+    PetscHashFormKey key;
     PetscInt depth;
 
     ierr = DMClone(dmFine, &dmc);CHKERRQ(ierr);
@@ -8285,7 +8286,10 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
     ierr = DMPlexGetDepth(dmc, &depth);CHKERRQ(ierr);
     ierr = DMGetStratumIS(dmc, "depth", depth, &cellIS);CHKERRQ(ierr);
     ierr = MatZeroEntries(*mass);CHKERRQ(ierr);
-    ierr = DMPlexComputeJacobian_Internal(dmc, cellIS, 0.0, 0.0, u, NULL, *mass, *mass, NULL);CHKERRQ(ierr);
+    key.label = NULL;
+    key.value = 0;
+    key.field = 0;
+    ierr = DMPlexComputeJacobian_Internal(dmc, key, cellIS, 0.0, 0.0, u, NULL, *mass, *mass, NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dmc, &u);CHKERRQ(ierr);
     ierr = DMDestroy(&dmc);CHKERRQ(ierr);
@@ -8599,6 +8603,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
     }
     else {
       annz = 0;
+      ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
       for (q = 0; q < dof; q++) {
         a = anchors[off + q];
         ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);

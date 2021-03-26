@@ -149,7 +149,7 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   /* Create finite element */
   ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);

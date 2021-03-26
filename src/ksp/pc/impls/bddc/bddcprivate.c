@@ -7231,7 +7231,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       pcbddc->mat_graph->cnloc  = n;
     }
     if (pcbddc->mat_graph->cnloc && pcbddc->mat_graph->cnloc != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local subdomain coordinates! Got %D, expected %D",pcbddc->mat_graph->cnloc,pcbddc->mat_graph->nvtxs);
-    pcbddc->mat_graph->active_coords = (PetscBool)(pcbddc->corner_selection && !pcbddc->corner_selected);
+    pcbddc->mat_graph->active_coords = (PetscBool)(pcbddc->corner_selection && pcbddc->mat_graph->cdim && !pcbddc->corner_selected);
 
     /* Setup of Graph */
     pcbddc->mat_graph->commsizelimit = 0; /* don't use the COMM_SELF variant of the graph */

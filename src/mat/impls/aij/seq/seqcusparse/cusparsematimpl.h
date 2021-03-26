@@ -248,8 +248,6 @@ struct Mat_SeqAIJCUSPARSE {
   cudaStream_t                 stream;          /* a stream for the parallel SpMV ... this is not owned and should not be deleted */
   cusparseHandle_t             handle;          /* a handle to the cusparse library ... this may not be owned (if we're working in parallel i.e. multiGPUs) */
   PetscObjectState             nonzerostate;    /* track nonzero state to possibly recreate the GPU matrix */
-  PetscBool                    transgen;        /* whether or not to generate explicit transpose for MatMultTranspose operations */
-  PetscBool                    transupdated;    /* whether or not the explicitly generated transpose is up-to-date */
  #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
   size_t                       csr2cscBufferSize; /* stuff used to compute the matTranspose above */
   void                         *csr2cscBuffer;    /* This is used as a C struct and is calloc'ed by PetscNewLog() */

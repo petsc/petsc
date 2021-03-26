@@ -371,7 +371,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   if (!da) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis ghosted DMDA");
   ierr = DMGetCoordinateDim(da,&sdim);CHKERRQ(ierr);
 
-  ierr = PetscViewerASCIIPrintf(viewer,"MFEM mesh v1.1\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"MFEM mesh v1.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"\ndimension\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",dim);CHKERRQ(ierr);
 

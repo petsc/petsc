@@ -84,7 +84,8 @@ PC Object: 8 MPI processes
         PC Object: (pc_bddc_dirichlet_mg_coarse_) 1 MPI processes
           type: bjacobi
             number of blocks = 1
-            Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+            Local solver information for first block is in the following KSP and PC objects on rank 0:
+            Use -pc_bddc_dirichlet_mg_coarse_ksp_view ::ascii_info_detail to display information for all blocks
             KSP Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI processes
               type: preonly
               maximum iterations=1, initial guess is zero
@@ -105,13 +106,13 @@ PC Object: 8 MPI processes
                       package used to perform factorization: cusparse
                       total: nonzeros=324, allocated nonzeros=324
               linear system matrix = precond matrix:
-              Mat Object: 1 MPI processes
+              Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI processes
                 type: seqaij
                 rows=18, cols=18
                 total: nonzeros=324, allocated nonzeros=324
                 total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
-          Mat Object: 1 MPI processes
+          Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI processes
             type: seqaij
             rows=18, cols=18
             total: nonzeros=324, allocated nonzeros=324
@@ -181,7 +182,8 @@ PC Object: 8 MPI processes
         PC Object: (pc_bddc_neumann_mg_coarse_) 1 MPI processes
           type: bjacobi
             number of blocks = 1
-            Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+            Local solver information for first block is in the following KSP and PC objects on rank 0:
+            Use -pc_bddc_neumann_mg_coarse_ksp_view ::ascii_info_detail to display information for all blocks
             KSP Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI processes
               type: preonly
               maximum iterations=1, initial guess is zero
@@ -202,13 +204,13 @@ PC Object: 8 MPI processes
                       package used to perform factorization: cusparse
                       total: nonzeros=324, allocated nonzeros=324
               linear system matrix = precond matrix:
-              Mat Object: 1 MPI processes
+              Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI processes
                 type: seqaij
                 rows=18, cols=18
                 total: nonzeros=324, allocated nonzeros=324
                 total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
-          Mat Object: 1 MPI processes
+          Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI processes
             type: seqaij
             rows=18, cols=18
             total: nonzeros=324, allocated nonzeros=324

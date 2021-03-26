@@ -1,7 +1,6 @@
       Interface
        subroutine DMGetStratumIS(d,str,v,i,ierr)
-          use petscdmdef
-          use petscisdef
+          import tDM,tIS
           type(tDM),      intent(in)  :: d
           character(*),   intent(in)  :: str
           PetscInt,       intent(in)  :: v
@@ -9,7 +8,7 @@
           PetscErrorCode, intent(out) :: ierr
        end Subroutine DMGetStratumIS
        subroutine DMGetStratumSize(d,str,v,s,ierr)
-          use petscdmdef
+          import tDM
           type(tDM),      intent(in)  :: d
           character(*),   intent(in)  :: str
           PetscInt,       intent(in)  :: v

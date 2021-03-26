@@ -21,13 +21,15 @@ VERSION=${version_major}.${version_minor}.${version_subminor}
 
 #Now copy the generated tarfiles over to the website
 scp ~/petsc-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
+scp ~/petsc4py-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
 scp ~/petsc-lite-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
 
 # petsc.tar.gz/petsc-lite.tar.gz links are done manually
 ssh petsc@login.mcs.anl.gov " \
   cd /mcs/ftp/pub/petsc/release-snapshots; \
-  /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz ; \
+  /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz petsc4py-${RELEASE}.tar.gz ; \
   /bin/ln -s petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
+  /bin/ln -s petsc4py-${VERSION}.tar.gz petsc4py-${RELEASE}.tar.gz; \
   /bin/ln -s petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
 
 # Update documentation/index.html documentation/installation.html download/index.html as well
@@ -44,6 +46,11 @@ ssh petsc@login.mcs.anl.gov " \
   /bin/tar -xzf /mcs/ftp/pub/petsc/release-snapshots/petsc-${VERSION}.tar.gz; \
   /bin/rm -f petsc-${RELEASE}; \
   /bin/ln -s petsc-${VERSION} petsc-${RELEASE}"
+ssh petsc@login.mcs.anl.gov " \
+  cd  /mcs/web/research/projects/petsc; \
+  /bin/tar -xzf /mcs/ftp/pub/petsc/release-snapshots/petsc4py-${VERSION}.tar.gz; \
+  /bin/rm -f petsc4py-${RELEASE}; \
+  /bin/ln -s petsc4py-${VERSION} petsc4py-${RELEASE}"
 
 #######################################
 # M lib/petsc/bin/maint/update-docs.py
@@ -59,3 +66,4 @@ ssh petsc@login.mcs.anl.gov " \
 # ? lib/petsc/bin/win32fe/win32fe.exe
 # ? lib/petsc/bin/win32fe/win32feutils.dll
 
+# git grep "PETSc Users Manual" src/binding/petsc4py

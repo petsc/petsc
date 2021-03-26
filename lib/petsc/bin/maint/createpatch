@@ -70,6 +70,12 @@ cat include/petscversion.h.bak | \
   sed -e "s/#define PETSC_VERSION_SUBMINOR .*/#define PETSC_VERSION_SUBMINOR   ${new_version_subminor}/" > include/petscversion.h
 /bin/rm -f include/petscversion.h.bak
 
+# Update patchlevel in src/binding/petsc4py/src/__init__.py
+/bin/mv src/binding/petsc4py/src/__init__.py src/binding/petsc4py/src/__init__.py.bak
+cat src/binding/petsc4py/src/__init__.py.bak | \
+  sed -e "s/__version__   =.*/__version__   = '${newver}'/" > src/binding/petsc4py/src/__init__.py
+/bin/rm -f src/binding/petsc4py/src/__init__.py.bak
+
 # Update patchlevel in download/index.html
 /bin/mv src/docs/website/download/index.html src/docs/website/download/index.html.bak
 cat src/docs/website/download/index.html.bak | \
@@ -78,7 +84,7 @@ cat src/docs/website/download/index.html.bak | \
 /bin/rm -f src/docs/website/download/index.html.bak
 
 # now create a changeset
-git commit -m"Increase patchlevel to ${newver}" include/petscversion.h src/docs/website/download/index.html
+git commit -m"Increase patchlevel to ${newver}" include/petscversion.h src/docs/website/download/index.html src/binding/petsc4py/src/__init__.py
 echo "#########################################################"
 echo "# Created patch for the following change                #"
 echo "#########################################################"

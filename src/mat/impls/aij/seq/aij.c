@@ -1395,6 +1395,9 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
     if (flg) A->ops->setvalues = MatSetValues_SeqAIJ_SortedFull;
     else     A->ops->setvalues = MatSetValues_SeqAIJ;
     break;
+  case MAT_FORM_EXPLICIT_TRANSPOSE:
+    A->form_explicit_transpose = flg;
+    break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }

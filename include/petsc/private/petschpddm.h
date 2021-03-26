@@ -17,7 +17,7 @@ namespace HPDDM {
 struct PC_HPDDM_Level {
   VecScatter                  scatter;   /* scattering from PETSc nonoverlapping numbering to HPDDM overlapping */
   Vec                         *v[2];     /* working vectors */
-  Mat                         V;         /* working matrix */
+  Mat                         V[3];      /* working matrices */
   KSP                         ksp;       /* KSP coupling the action of pc and P */
   PC                          pc;        /* inner fine-level PC, acting like a multigrid smoother */
   HPDDM::Schwarz<PetscScalar> *P;        /* coarse-level HPDDM solver */
@@ -49,6 +49,9 @@ struct KSP_HPDDM {
   unsigned short       scntl[2];
   char                 cntl [5];
 };
+
+PETSC_INTERN const char HPDDMCitation[];
+PETSC_INTERN PetscBool HPDDMCite;
 
 #include <HPDDM.hpp>
 

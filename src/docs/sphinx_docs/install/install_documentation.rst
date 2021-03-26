@@ -4,8 +4,7 @@
 Configuring PETSc FAQ
 #####################
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    Please obtain PETSc via the repository or download the latest patched tarball. See
    :ref:`download documentation <doc_download>` for more information.
@@ -112,8 +111,7 @@ Compilers
 
      > ./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    It's best to use MPI compilers as this will avoid the situation where MPI is compiled
    with one set of compilers (like ``gcc``/``gfortran``) and user specified incompatible
@@ -573,8 +571,7 @@ PETSc is able to take adavantage of GPU's and certain accelerator libraries, how
 `CUDA`_
 ^^^^^^^
 
-.. admonition:: Important
-   :class: yellow
+.. important::
 
    An NVIDIA GPU is **required** to use `CUDA`_-accelerated code. Check that your machine
    has a `CUDA`_ enabled GPU by consulting https://developer.nvidia.com/cuda-gpus.

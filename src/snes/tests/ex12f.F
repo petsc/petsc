@@ -177,12 +177,13 @@
       SNES             snes
       Vec              x,f
       type(User) ctx
-      PetscMPIInt  rank,size
+      PetscMPIInt  rank,size,zero
       PetscInt i,s,n
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(2),vxx(2),vff(2)
 
+      zero = 0
       call MPI_Comm_rank(ctx%comm,rank,ierr)
       call MPI_Comm_size(ctx%comm,size,ierr)
       h     = 1.0/(real(ctx%N) - 1.0)
@@ -192,7 +193,7 @@
       call VecGetLocalSize(ctx%xl,n,ierr)
       if (n .gt. 1000) then
         print*, 'Local work array not big enough'
-        call MPI_Abort(PETSC_COMM_WORLD,0,ierr)
+        call MPI_Abort(PETSC_COMM_WORLD,zero,ierr)
       endif
 
 !

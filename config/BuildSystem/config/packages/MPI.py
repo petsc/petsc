@@ -65,6 +65,7 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs. (should support "-n <np>" option)'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
+    help.addArgument('MPI', '-with-mpi-f90module-visibility=<bool>',             nargs.ArgBool(None, 1, 'Indicates the MPI f90 module is available via petsc module. When disabled, mpi_f08 can be used from user code'))
     return
 
   def setupDependencies(self, framework):
@@ -509,7 +510,7 @@ Unable to run hostname to check the network')
     # check if mpi.mod exists
     if self.fortran.fortranIsF90:
       self.log.write('Checking for mpi.mod\n')
-      if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
+      if self.libraries.check(self.lib,'', call = '       use mpi\n       integer(kind=selected_int_kind(5)) ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
         self.havef90module = 1
         self.addDefine('HAVE_MPI_F90MODULE', 1)
     self.compilers.FPPFLAGS = oldFlags
@@ -624,7 +625,7 @@ Unable to run hostname to check the network')
     '''Find MPI include paths from "mpicc -show" and use with CUDAC_FLAGS'''
     needInclude=False
     if hasattr(self.compilers, 'CUDAC'): needInclude=True
-    if hasattr(self.compilers, 'HIPCC'): needInclude=True
+    if hasattr(self.compilers, 'HIPC'): needInclude=True
     if not needInclude: return
     import re
     output = ''
@@ -645,7 +646,7 @@ Unable to run hostname to check the network')
             self.setCompilers.pushLanguage('CUDA')
             self.setCompilers.addCompilerFlag(arg)
             self.setCompilers.popLanguage()
-          if hasattr(self.compilers, 'HIPCC'):
+          if hasattr(self.compilers, 'HIPC'):
             self.setCompilers.pushLanguage('HIP')
             self.setCompilers.addCompilerFlag(arg)
             self.setCompilers.popLanguage()
@@ -693,6 +694,8 @@ Unable to run hostname to check the network')
     if 'with-'+self.package+'-shared' in self.argDB:
       self.argDB['with-'+self.package] = 1
     config.package.Package.configureLibrary(self)
+    if self.argDB['with-mpi-f90module-visibility']:
+      self.addDefine('HAVE_MPI_F90MODULE_VISIBILITY',1)
     if self.setCompilers.usedMPICompilers:
       if 'with-mpi-include' in self.argDB: raise RuntimeError('Do not use --with-mpi-include when using MPI compiler wrappers')
       if 'with-mpi-lib' in self.argDB: raise RuntimeError('Do not use --with-mpi-lib when using MPI compiler wrappers')

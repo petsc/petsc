@@ -36,7 +36,8 @@ KSP Object:
 PC Object:
   type: bjacobi
     number of blocks = 2
-    Local solver is the same for all blocks, as in the following KSP and PC objects on rank 0:
+    Local solver information for first block is in the following KSP and PC objects on rank 0:
+    Use -ksp_view ::ascii_info_detail to display information for all blocks
   KSP Object:(sub_)
     type: preonly
     maximum iterations=10000, initial guess is zero
@@ -54,7 +55,7 @@ PC Object:
            matrix ordering: natural
       factor fill ratio needed 1
            Factored matrix follows
-          Mat Object:
+          Mat Object: (sub_)
             type: seqaij
             rows=18, cols=18
             package used to perform factorization: petsc

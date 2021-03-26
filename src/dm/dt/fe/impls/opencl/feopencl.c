@@ -513,7 +513,7 @@ static PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom,
+static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscHashFormKey key, PetscInt Ne, PetscFEGeom *cgeom,
                                                       const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   /* Nbc = batchSize */
@@ -532,6 +532,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscInt fie
   PetscInt          N_bl;   /* The number of blocks */
   PetscInt          N_bc;   /* The batch size, N_bl*N_q*N_b */
   PetscInt          N_cb;   /* The number of batches */
+  const PetscInt    field = key.field;
   PetscInt          numFlops, f0Flops = 0, f1Flops = 0;
   PetscBool         useAux      = probAux ? PETSC_TRUE : PETSC_FALSE;
   PetscBool         useField    = PETSC_FALSE;
@@ -573,7 +574,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscInt fie
   if (N_bc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
   /* Calculate layout */
   if (Ne % (N_cb*N_bc)) { /* Remainder cells */
-    ierr = PetscFEIntegrateResidual_Basic(prob, field, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);
+    ierr = PetscFEIntegrateResidual_Basic(prob, key, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscFEOpenCLCalculateGrid(fem, Ne, N_cb*N_bc, &x, &y, &z);CHKERRQ(ierr);

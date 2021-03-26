@@ -89,7 +89,7 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 -  viewer - visualization context
 
    Options Database Keys:
-.  -ksp_view - print the ksp data structure at the end of a KSPSolve call
+.  -ksp_view - print the KSP data structure at the end of a KSPSolve call
 
    Note:
    The available visualization contexts include
@@ -98,6 +98,10 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
          output where only the first processor opens
          the file.  All other processors send their
          data to the first processor to print.
+
+   The available formats include
++     PETSC_VIEWER_DEFAULT - standard output (default)
+-     PETSC_VIEWER_ASCII_INFO_DETAIL - more verbose output for PCBJACOBI and PCASM
 
    The user can open an alternative visualization context with
    PetscViewerASCIIOpen() - output to a specified file.
@@ -723,6 +727,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->numbermonitors = 0;
   ksp->numberreasonviews = 0;
   ksp->setfromoptionscalled = 0;
+  ksp->nmax = PETSC_DECIDE;
 
   ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
   ierr                    = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);

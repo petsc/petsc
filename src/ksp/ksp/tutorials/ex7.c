@@ -247,7 +247,7 @@ int main(int argc,char **args)
    test:
       suffix: 2
       nsize: 2
-      args: -ksp_view
+      args: -ksp_view ::ascii_info_detail
 
    test:
       suffix: viennacl

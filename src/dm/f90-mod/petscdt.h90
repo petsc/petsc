@@ -51,7 +51,6 @@
 
       Interface
         Subroutine PetscFECreateDefault(c,d,n,i,str,o,f,ierr)
-          use petscdmdef
           MPI_Comm, intent(in) :: c
           PetscInt, intent(in) :: d,n
           PetscBool, intent(in) :: i

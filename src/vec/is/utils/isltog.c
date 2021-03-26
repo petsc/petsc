@@ -15,7 +15,31 @@ typedef struct {
   PetscHMapI globalht;
 } ISLocalToGlobalMapping_Hash;
 
+/*@C
+  ISGetPointRange - Returns a description of the points in an IS suitable for traversal
 
+  Not collective
+
+  Input Parameter:
+. pointIS - The IS object
+
+  Output Parameters:
++ pStart - The first index, see notes
+. pEnd   - One past the last index, see notes
+- points - The indices, see notes
+
+  Notes:
+  If the IS contains contiguous indices in an ISSTRIDE, then the indices are contained in [pStart, pEnd) and points = NULL. Otherwise, pStart = 0, pEnd = numIndices, and points is an array of the indices. This supports the following pattern
+$ ISGetPointRange(is, &pStart, &pEnd, &points);
+$ for (p = pStart; p < pEnd; ++p) {
+$   const PetscInt point = points ? points[p] : p;
+$ }
+$ ISRestorePointRange(is, &pstart, &pEnd, &points);
+
+  Level: intermediate
+
+.seealso: ISRestorePointRange(), ISGetPointSubrange(), ISGetIndices(), ISCreateStride()
+@*/
 PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
 {
   PetscInt       numCells, step = 1;
@@ -33,6 +57,29 @@ PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, con
   PetscFunctionReturn(0);
 }
 
+/*@C
+  ISRestorePointRange - Destroys the traversal description
+
+  Not collective
+
+  Input Parameters:
++ pointIS - The IS object
+. pStart  - The first index, from ISGetPointRange()
+. pEnd    - One past the last index, from ISGetPointRange()
+- points  - The indices, from ISGetPointRange()
+
+  Notes:
+  If the IS contains contiguous indices in an ISSTRIDE, then the indices are contained in [pStart, pEnd) and points = NULL. Otherwise, pStart = 0, pEnd = numIndices, and points is an array of the indices. This supports the following pattern
+$ ISGetPointRange(is, &pStart, &pEnd, &points);
+$ for (p = pStart; p < pEnd; ++p) {
+$   const PetscInt point = points ? points[p] : p;
+$ }
+$ ISRestorePointRange(is, &pstart, &pEnd, &points);
+
+  Level: intermediate
+
+.seealso: ISGetPointRange(), ISGetPointSubrange(), ISGetIndices(), ISCreateStride()
+@*/
 PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
 {
   PetscInt       step = 1;
@@ -46,6 +93,27 @@ PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd,
   PetscFunctionReturn(0);
 }
 
+/*@C
+  ISGetPointSubrange - Configures the input IS to be a subrange for the traversal information given
+
+  Not collective
+
+  Input Parameters:
++ subpointIS - The IS object to be configured
+. pStar   t  - The first index of the subrange
+. pEnd       - One past the last index for the subrange
+- points     - The indices for the entire range, from ISGetPointRange()
+
+  Output Parameters:
+. subpointIS - The IS object now configured to be a subrange
+
+  Notes:
+  The input IS will now respond properly to calls to ISGetPointRange() and return the subrange.
+
+  Level: intermediate
+
+.seealso: ISGetPointRange(), ISRestorePointRange(), ISGetIndices(), ISCreateStride()
+@*/
 PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd, const PetscInt *points)
 {
   PetscErrorCode ierr;
@@ -1938,4 +2006,3 @@ PetscErrorCode  ISLocalToGlobalMappingRegisterAll(void)
   ierr = ISLocalToGlobalMappingRegister(ISLOCALTOGLOBALMAPPINGHASH, ISLocalToGlobalMappingCreate_Hash);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
