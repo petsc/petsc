@@ -84,6 +84,26 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_theme = 'pydata_sphinx_theme'
 
+html_theme_options = {
+    "icon_links": [
+        {
+            "name": "GitLab",
+            "url": "https://gitlab.com/petsc/petsc",
+            "icon": "fab fa-gitlab",
+        },
+    ],
+    "use_edit_page_button": True,
+}
+
+# The theme uses "github" here, but it works for GitLab
+html_context = {
+    "github_url": "https://gitlab.com",
+    "github_user": "petsc",
+    "github_repo": "petsc",
+    "github_version": "main",
+    "doc_path": "src/docs/sphinx_docs",
+}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
