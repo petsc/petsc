@@ -371,8 +371,6 @@ follows:
    Here, ``name`` is the component name, ``size`` is the size of
    component data type, and ``compkey`` is an integer key that can be
    used for setting/getting the component at a vertex or an edge.
-   DMNetwork currently allows upto 36 components to be registered for a
-   network.
 
 #. A DMNetwork can consist of one or more physical subnetworks. When
    multiple physical subnetworks are used one can (optionally) provide
@@ -436,7 +434,7 @@ follows:
    either ``DMNetworkGetVertexRange()``/``DMNetworkGetEdgeRange()``, ``DMNetworkGetSubnetwork()``, or ``DMNetworkGetSharedVertices()``;
    ``compkey`` is the component key returned when registering the component
    (``DMNetworkRegisterComponent()``); ``compdata`` holds the data for the
-   component; and ``nvar`` is the number of variables associated to the added component at this network point. DMNetwork supports setting multiple components (max. 36)
+   component; and ``nvar`` is the number of variables associated to the added component at this network point. DMNetwork supports setting multiple components
    at a vertex/edge. At a shared vertex, DMNetwork currently requires the owner process of the vertex adds all the components and number of variables.
 
    DMNetwork currently assumes the component data to be stored in a
