@@ -1853,7 +1853,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
     for (i=0; i<m; i++) {
       if (idxm[i]*rbs >= M) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row block index %D (index %D) greater than row length %D",i,idxm[i],M);
     }
-    for (i=0; i<m; i++) {
+    for (i=0; i<n; i++) {
       if (idxn[i]*cbs >= N) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column block index %D (index %D) great than column length %D",i,idxn[i],N);
     }
   }
