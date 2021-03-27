@@ -65,11 +65,13 @@ template<> PETSC_VISIBILITY_PUBLIC PetscErrorCode VecRestoreKokkosView     (Vec 
 template<> PETSC_VISIBILITY_PUBLIC PetscErrorCode VecGetKokkosViewWrite    (Vec v,PetscScalarKokkosView* kv) {return VecGetKokkosView_Private(v,kv,PETSC_TRUE);}
 template<> PETSC_VISIBILITY_PUBLIC PetscErrorCode VecRestoreKokkosViewWrite(Vec v,PetscScalarKokkosView* kv) {return VecRestoreKokkosView_Private(v,kv,PETSC_TRUE);}
 
+#if !defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST) /* Get host views if the default memory space is not host space */
 template   PETSC_VISIBILITY_PUBLIC PetscErrorCode VecGetKokkosView         (Vec,ConstPetscScalarKokkosViewHost*);
 template<> PETSC_VISIBILITY_PUBLIC PetscErrorCode VecGetKokkosView         (Vec v,PetscScalarKokkosViewHost* kv) {return VecGetKokkosView_Private(v,kv,PETSC_FALSE);}
 template<> PETSC_VISIBILITY_PUBLIC PetscErrorCode VecRestoreKokkosView     (Vec v,PetscScalarKokkosViewHost* kv) {return VecRestoreKokkosView_Private(v,kv,PETSC_FALSE);}
 template<> PETSC_VISIBILITY_PUBLIC PetscErrorCode VecGetKokkosViewWrite    (Vec v,PetscScalarKokkosViewHost* kv) {return VecGetKokkosView_Private(v,kv,PETSC_TRUE);}
 template<> PETSC_VISIBILITY_PUBLIC PetscErrorCode VecRestoreKokkosViewWrite(Vec v,PetscScalarKokkosViewHost* kv) {return VecRestoreKokkosView_Private(v,kv,PETSC_TRUE);}
+#endif
 
 PetscErrorCode VecSetRandom_SeqKokkos(Vec xin,PetscRandom r)
 {
