@@ -174,14 +174,7 @@ Sphinx Documentation Guidelines
   You must include ``.. bibliography::`` blocks at the bottom of a page including citations (`example <https://gitlab.com/petsc/petsc/-/raw/main/src/docs/sphinx_docs/manual/ksp.rst>`__).
   To cite the same reference in more than one page, use `this workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing>`__ on one of them (`example <https://gitlab.com/petsc/petsc/-/raw/main/src/docs/sphinx_docs/developers/articles.rst>`__) [#bibtex_footnote]_.
 
-* When possible, please use SVG for images.  SVG is web-friendly and will be automatically converted to PDF using ``rsvg-convert`` (installable with your package manager, e.g., ``librsvg2-bin`` on Debian/Ubuntu systems).  If SVG originals are not available, it is useful to provide images in both web-friendly (such as PNG) and PDF formats.  This can be done with a wildcard extension, as in the following example, which uses ``ghost.png`` for the web but ``ghost.pdf`` when building a PDF with LaTeX.
-
-  .. code-block:: rst
-
-     .. figure:: ghost.*
-        :alt: Ghost Points
-
-        Ghost Points
+* Do **not** check in large images (or PDFs), more than a few KB, since they will be downloaded every time the repository is cloned. When possible, please use SVG for images.  SVG is web-friendly and will be automatically converted to PDF using ``rsvg-convert`` (installable with your package manager, e.g., ``librsvg2-bin`` on Debian/Ubuntu systems).
 
 * Prefer formatting styles that are easy to modify and maintain.  In particular, use of `list-table <https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table>`_ is recommended.
 
