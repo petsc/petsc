@@ -708,17 +708,6 @@ this is done with ``CFLAGS=<list of -I and other flags>`` and
 Citing PETSc
 ~~~~~~~~~~~~
 
-If you use the TS component of PETSc please cite the following:
-
-.. code-block:: none
-
-   @article{abhyankar2018petsc,
-     title={PETSc/TS: A Modern Scalable ODE/DAE Solver Library},
-     author={Abhyankar, Shrirang and Brown, Jed and Constantinescu, Emil M and Ghosh, Debojyoti and Smith, Barry F and Zhang, Hong},
-     journal={arXiv preprint arXiv:1806.01437},
-     year={2018}
-   }
-
 When citing PETSc in a publication please cite the following:
 
 .. code-block:: none
@@ -753,6 +742,31 @@ When citing PETSc in a publication please cite the following:
       Pages     = "163--202",
       Publisher = "Birkhauser Press",
       Year      = "1997"}
+
+If you use the TS component of PETSc please cite the following:
+
+.. code-block:: none
+
+   @article{abhyankar2018petsc,
+     title={PETSc/TS: A Modern Scalable ODE/DAE Solver Library},
+     author={Abhyankar, Shrirang and Brown, Jed and Constantinescu, Emil M and Ghosh, Debojyoti and Smith, Barry F and Zhang, Hong},
+     journal={arXiv preprint arXiv:1806.01437},
+     year={2018}
+   }
+
+If you utilize the TS adjoint solver please cite
+
+.. code-block:: none
+
+     @article{zhang2019,
+       author = {Zhang, Hong and Constantinescu, Emil M. and Smith, Barry F.},
+       title = {{{PETSc TSAdjoint: a discrete adjoint ODE solver for first-order and second-order sensitivity analysis}},
+       journal = {arXiv e-preprints},
+       eprint = {1912.07696},
+       archivePrefix = {arXiv},
+       year={2019}
+     }
+
 
 .. _sec_directory:
 
