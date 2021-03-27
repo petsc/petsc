@@ -60,5 +60,64 @@ Get Involved
 
     <a href="../../../src/binding/petsc4py/docs/usrman/index.html">PETSc4py documentation</a>
 
+==========================================
+Related toolkits/libraries that use PETSc
+==========================================
 
-.. todolist::
+      -  `ADflow <https://github.com/mdolab/adflow>`__ An Open-Source
+         Computational Fluid Dynamics Solver for Aerodynamic and
+         Multidisciplinary Optimization
+      -  `Chaste <https://www.cs.ox.ac.uk/chaste/>`__ Cancer, Heart and
+         Soft Tissue Environment
+      -  `code_aster <https://www.code-aster.org/V2/spip.php?rubrique2​>`__
+         open source general purpose finite element code for solid and
+         structural mechanics
+      -  `COOLFluiD <https://github.com/andrealani/COOLFluiD>`__ CFD,
+         plasma and multi-physics simulation package
+      -  `DAFoam <https://dafoam.github.io>`__ Discrete adjoint solvers
+         with `OpenFOAM <https://openfoam.com>`__ for aerodynamic
+         optimization
+      -  `DEAL.II <https://www.dealii.org/>`__ C++ based finite element
+         simulation package
+      -  `FEniCS <https://fenicsproject.org/>`__ Python based finite
+         element simulation package
+      -  `Firedrake <https://www.firedrakeproject.org/>`__ Python based
+         finite element simulation package
+      -  `Fluidity <https://fluidityproject.github.io/>`__ a finite
+         element/volume fluids code
+      -  `FreeFEM <https://freefem.org/>`__ finite element PDE solver
+         with embedded domain specific language
+      -  `hIPPYlib <https://hippylib.github.io>`__ FEniCS based toolkit
+         for solving large-scale deterministic and Bayesian inverse
+         problems governed by partial differential equations
+      -  `libMesh <https://libmesh.github.io>`__ adaptive finite element
+         library
+      -  `MFEM <https://mfem.org/>`__ lightweight, scalable C++ library
+         for finite element methods
+      -  `MLSVM <https://github.com/esadr/mlsvm>`__, Multilevel Support
+         Vector Machines with PETSc.
+      -  `MoFEM <http://mofem.eng.gla.ac.uk/mofem/html>`__, An open
+         source, parallel finite element library
+      -  `MOOSE - Multiphysics Object-Oriented Simulation
+         Environment <https://mooseframework.inl.gov/>`__ finite element
+         framework, built on top of libMesh and PETSc
+      -  `OOFEM <http://www.oofem.org>`__ object oriented finite element
+         library
+      -  `OpenFOAM <https://develop.openfoam.com/modules/external-solver>`__
+         Available as an extension for linear solvers for OpenFOAM
+      -  `OpenFVM <http://openfvm.sourceforge.net/>`__ finite volume
+         based CFD solver
+      -  `PermonSVM <http://permon.it4i.cz/permonsvm.htm>`__ support
+         vector machines and
+         `PermonQP <http://permon.it4i.cz/permonqp.htm>`__ quadratic
+         programming
+      -  `PetIGA <https://bitbucket.org/dalcinl/petiga/>`__ A framework
+         for high performance Isogeometric Analysis
+      -  `PHAML <https://math.nist.gov/phaml/>`__ The Parallel
+         Hierarchical Adaptive MultiLevel Project
+      -  `preCICE <https://www.precice.org>`__ - A fully parallel
+         coupling library for partitioned multi-physics simulations
+      -  `PyClaw <https://www.clawpack.org/pyclaw/>`__ A massively
+         parallel, high order accurate, hyperbolic PDE solver
+      -  `SLEPc <https://slepc.upv.es/>`__ Scalable Library for
+         Eigenvalue Problems
