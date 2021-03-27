@@ -6,6 +6,38 @@ PETSc for Fortran Users
 Most of the functionality of PETSc can be obtained by people who program
 purely in Fortran.
 
+Synopsis
+~~~~~~~~
+
+To use PETSc with Fortran you must use both PETSc include files and modules. 
+At the beginning of every function and module definition you need something like
+
+.. code-block:: fortran
+
+  #include "petsc/finclude/petscXXX.h"
+           use petscXXX
+
+You can declare PETSc variables using either of the following:
+
+.. code-block:: fortran
+
+    XXX variablename
+
+
+.. code-block:: fortran
+
+    type(tXXX) variablename
+
+For example,
+
+.. code-block:: fortran
+
+  #include "petsc/finclude/petscvec.h"
+           use petscvec
+
+      Vec b
+      type(tVec) x
+
 C vs. Fortran Interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

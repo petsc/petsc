@@ -43,7 +43,6 @@ Get Working
 * `Manual Pages <docs/index.html>`__
 * `Function Index <docs/manualpages/singleindex.html>`__
 * `Examples Index <docs/manualpages/help.html>`__
-* `Strategies for using Fortran <docs/manualpages/Sys/UsingFortran.html>`__
 
 ============
 Get Involved

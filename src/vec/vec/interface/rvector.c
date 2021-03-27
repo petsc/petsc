@@ -3015,7 +3015,7 @@ M*/
 
     Level: beginner
 
-.seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray(), UsingFortran, VecRestoreArrayReadF90()
+.seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray(), VecRestoreArrayReadF90()
 
 M*/
 
@@ -3077,7 +3077,7 @@ M*/
 
     Level: beginner
 
-.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray(), VecGetArrayReadF90(), UsingFortran
+.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray(), VecGetArrayReadF90()
 
 M*/
 
@@ -3115,7 +3115,7 @@ M*/
 
     Level: beginner
 
-.seealso:  VecRestoreArrayReadF90(), VecGetArray(), VecRestoreArray(), VecGetArrayRead(), VecRestoreArrayRead(), VecGetArrayF90(), UsingFortran
+.seealso:  VecRestoreArrayReadF90(), VecGetArray(), VecRestoreArray(), VecGetArrayRead(), VecRestoreArrayRead(), VecGetArrayF90()
 
 M*/
 
@@ -3149,7 +3149,7 @@ M*/
 
     Level: beginner
 
-.seealso:  VecGetArrayReadF90(), VecGetArray(), VecRestoreArray(), VecGetArrayRead(), VecRestoreArrayRead(),UsingFortran, VecRestoreArrayF90()
+.seealso:  VecGetArrayReadF90(), VecGetArray(), VecRestoreArray(), VecGetArrayRead(), VecRestoreArrayRead(), VecRestoreArrayF90()
 
 M*/
 
