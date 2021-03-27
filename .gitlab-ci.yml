@@ -20,7 +20,7 @@ variables:
   TIMEOUT: 450
 
 #
-# The most basic template that most tests will expand upon. In particular merge requests and branch pushes DO NOT trigger testing
+# The most basic template that most tests will expand upon
 #
 
 .test:
