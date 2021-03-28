@@ -1185,6 +1185,25 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
       ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
     }
+    {
+      char    **labelNames;
+      PetscInt  Nl = numLabels;
+      PetscBool flg;
+
+      ierr = PetscMalloc1(Nl, &labelNames);CHKERRQ(ierr);
+      ierr = PetscOptionsGetStringArray(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_plex_view_labels", labelNames, &Nl, &flg);CHKERRQ(ierr);
+      for (l = 0; l < Nl; ++l) {
+        DMLabel label;
+
+        ierr = DMHasLabel(dm, labelNames[l], &flg);CHKERRQ(ierr);
+        if (flg) {
+          ierr = DMGetLabel(dm, labelNames[l], &label);CHKERRQ(ierr);
+          ierr = DMLabelView(label, viewer);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(labelNames[l]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(labelNames);CHKERRQ(ierr);
+    }
     /* If no fields are specified, people do not want to see adjacency */
     if (dm->Nf) {
       PetscInt f;
