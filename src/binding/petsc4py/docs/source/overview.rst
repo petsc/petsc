@@ -29,7 +29,7 @@ communication and computation.
    D. May, L. Curfman McInnes, R. Mills, T. Munson,
    K. Rupp, P. Sanan, B. Smith,
    S. Zampini, H. Zhang, and H. Zhang,
-   *PETSc Users Manual*, ANL-95/11 - Revision 3.14, 2020.
+   *PETSc Users Manual*, ANL-95/11 - Revision 3.15, 2021.
    http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf
 
 .. [petsc-efficient] Satish Balay, Victor Eijkhout, William D. Gropp,
