@@ -18,6 +18,7 @@ Changes: Development
 .. rubric:: Configure/Build:
 -  Remove --with-kokkos-cuda-arch. One can use -with-cuda-gencodearch to specify the cuda arch for Kokkos. Usually not needed since PETSc auto detects that
 -  For --download-hdf5, disable --download-hdf5-fortran-bindings by default
+-  Add OpenCascade package to PETSc and allow --download-opencascade
 
 .. rubric:: Sys:
 -  Add GPU event timers to capture kernel execution time accurately.

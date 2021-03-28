@@ -24,7 +24,6 @@ configure_options = [
   '--download-triangle',
   '--download-chaco',
   '--download-ctetgen',
-  '--download-egads',
   '--download-cmake',
   '--download-amrex',
   '--download-hypre',
