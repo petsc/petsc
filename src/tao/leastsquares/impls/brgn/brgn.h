@@ -24,6 +24,7 @@ typedef struct {
                                                                  lambda = downhill_lambda_change * lambda on steps that decrease the objective.
                                                                  lambda = uphill_lambda_change * lambda on steps that increase the objective. */
   PetscInt       reg_type;
+  PetscBool      mat_explicit;
 } TAO_BRGN;
 
 #endif /* if !defined(__TAO_BRGN_H) */
