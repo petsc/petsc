@@ -666,10 +666,10 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
 
 
         <ul class="code">
-          <li>./configure --prefix=/home/userid/petsc-3.14.0  [other configure options]</li>
+          <li>./configure --prefix=/home/userid/petsc-3.15.0  [other configure options]</li>
         </ul>
 
-        The libraries and include files needed by the users will be located in <code>/home/userid/petsc-3.14.0/lib</code> and <code>/home/userid/petsc-3.14.0/include</code>.</p>
+        The libraries and include files needed by the users will be located in <code>/home/userid/petsc-3.15.0/lib</code> and <code>/home/userid/petsc-3.15.0/include</code>.</p>
 
         <strong>Installs in root location (uncommon).</strong>
 
@@ -684,7 +684,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>sudo mkdir /opt/petsc</li>
           <li>sudo chown user:group /opt/petsc</li>
           <li>cd /home/userid/petsc</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.14.0  [other configure options]</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.15.0  [other configure options]</li>
           <li>make</li>
           <li>make install</li>
         </ul>
@@ -700,10 +700,10 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         <strong>Installs for package managers: using DESTDIR (very uncommon)</strong>
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.14.0</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.15.0</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.14.0]</li>
+          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.15.0]</li>
         </ul>
 
         <strong>Multiple installs using --prefix [and DESTDIR]:</strong></p>
@@ -711,10 +711,10 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
         Specify a different --prefix location for each configure of different options - at configure time. For example
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.14.0-mpich --with-mpi-dir=/opt/mpich</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.15.0-mpich --with-mpi-dir=/opt/mpich</li>
           <li>make</li>
           <li>make install [DESTDIR=/tmp/petsc-pkg]</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.14.0-openmpi --with-mpi-dir=/opt/openmpi</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.15.0-openmpi --with-mpi-dir=/opt/openmpi</li>
           <li>make</li>
           <li>make install [DESTDIR=/tmp/petsc-pkg]</li>
         </ul>
@@ -794,7 +794,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>
             specify enviornment variable for csh/tcsh [can be specified in ~/.cshrc]
             <ul>
-              <li>setenv PETSC_DIR /home/balay/petsc-3.14.0</li>
+              <li>setenv PETSC_DIR /home/balay/petsc-3.15.0</li>
               <li>setenv PETSC_ARCH linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -802,7 +802,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>
             specify environment variable for bash [can be specified in ~/.bashrc]
             <ul>
-              <li>export PETSC_DIR=/home/balay/petsc-3.14.0</li>
+              <li>export PETSC_DIR=/home/balay/petsc-3.15.0</li>
               <li>export PETSC_ARCH=linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -810,7 +810,7 @@ that use Fortran (for example, MUMPS requires Fortran) you can use --with-fc=0 f
           <li>
             specify variable on commandline (bash) to build an example in src/ts/tutorials
             <ul>
-              <li>PETSC_ARCH=linux-gnu-c-debug make PETSC_DIR=/home/balay/petsc-3.14.0 ex1</li>
+              <li>PETSC_ARCH=linux-gnu-c-debug make PETSC_DIR=/home/balay/petsc-3.15.0 ex1</li>
             </ul>
           </li>
         </ul>
