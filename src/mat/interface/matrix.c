@@ -8449,7 +8449,7 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
 -  w, x - the input dense matrices
 
    Output Parameters:
-+  y - the output dense matrix
+.  y - the output dense matrix
 
    Level: intermediate
 
@@ -8530,7 +8530,7 @@ PetscErrorCode MatMatInterpolateAdd(Mat A,Mat x,Mat w,Mat *y)
 -  x - the input dense matrix
 
    Output Parameters:
-+  y - the output dense matrix
+.  y - the output dense matrix
 
 
    Level: intermediate
@@ -8562,7 +8562,7 @@ PetscErrorCode MatMatInterpolate(Mat A,Mat x,Mat *y)
 -  x - the input dense matrix
 
    Output Parameters:
-+  y - the output dense matrix
+.  y - the output dense matrix
 
 
    Level: intermediate

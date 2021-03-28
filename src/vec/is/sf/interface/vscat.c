@@ -440,6 +440,10 @@ PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
   Input Parameters:
 + name        - The name of a new user-defined creation routine
 - create_func - The creation routine itself
+
+  Level: advanced
+
+.seealso: VecRegister()
 @*/
 PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)(VecScatter))
 {
