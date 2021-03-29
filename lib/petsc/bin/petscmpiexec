@@ -39,7 +39,7 @@ endif
 
 set MPI_BUILD_HOME = `grep MPI_BUILD_HOME ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=`
 set MPI_HOME = `grep "MPI_HOME " ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=`
-set run = `grep MPIEXEC ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v "#MPIEXEC" | cut -f2 -d=`
+set run = `grep MPIEXEC ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v "#MPIEXEC" | grep -v MPIEXECEXECUTABLE | cut -f2 -d=`
 
 #echo $MPI_BUILD_HOME
 #echo $MPI_HOME
