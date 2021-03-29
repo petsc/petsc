@@ -25,11 +25,11 @@ Alternative Download
 
 Tarball contains only the source, identical to ``git`` download. Documentation available online.
 
-- `petsc-lit-3.14.2.tar.gz <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.14.2.tar.gz>`__
+- `petsc-3.15.0.tar.gz <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.15.0.tar.gz>`__
 
 Tarball includes all documentation, recommended for offline use.
 
-- `petsc-3.14.2.tar.gz <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.14.2.tar.gz>`__
+- `petsc-with-docs-3.15.0.tar.gz <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-with-docs-3.15.0.tar.gz>`__
 
 To extract the sources use:
 

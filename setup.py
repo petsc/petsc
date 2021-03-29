@@ -268,7 +268,7 @@ def tarball():
     VERSION = version()
     if '.dev' in VERSION: return None
     return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots//'
-            'petsc-lite-%s.tar.gz#egg=petsc-%s' % (VERSION, VERSION))
+            'petsc-%s.tar.gz#egg=petsc-%s' % (VERSION, VERSION))
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]
 classifiers = """

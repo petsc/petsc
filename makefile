@@ -484,7 +484,7 @@ srchtml:
 # targets to build distribution and update docs
 ###########################################################
 
-# Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
+# Creates ${HOME}/petsc.tar.gz [and petsc-with-docs.tar.gz]
 dist:
 	${PETSC_DIR}/lib/petsc/bin/maint/builddist ${PETSC_DIR} main
 

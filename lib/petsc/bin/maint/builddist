@@ -103,7 +103,7 @@ if [ ${version}foo = foo ]; then
     exit
   fi
 fi
-echo "Building ~/petsc$version.tar.gz and ~/petsc-lite$version.tar.gz"
+echo "Building ~/petsc$version.tar.gz and ~/petsc-with-docs$version.tar.gz"
 
 # create fortran stubdocs and cleanup
 cd $PETSC_DIR
@@ -180,7 +180,7 @@ find petsc$version -type d -name "*" -exec chmod a+x {} \;
 
 # Now create the tar files
 cd $tmpdir
-/bin/tar -czf ~/petsc$version.tar.gz petsc$version
+/bin/tar -czf ~/petsc-with-docs$version.tar.gz petsc$version
 
 # create lite version
 /bin/rm -rf $tmpdir/petsc$version/docs $tmpdir/petsc$version/zope $tmpdir/petsc$version/config/BuildSystem/docs $tmpdir/petsc$version/config/examples/old
@@ -192,7 +192,7 @@ cd $tmpdir/petsc$version; ${PETSC_DIR}/lib/petsc/bin/maint/generateetags.py
 cd $tmpdir/petsc$version && python setup.py egg_info && /bin/cp petsc.egg-info/PKG-INFO . && /bin/rm -rf petsc.egg-info config/pypi
 
 cd $tmpdir
-/bin/tar -czf ~/petsc-lite$version.tar.gz petsc$version
+/bin/tar -czf ~/petsc$version.tar.gz petsc$version
 
 #cleanup
 /bin/rm -rf $tmpdir
