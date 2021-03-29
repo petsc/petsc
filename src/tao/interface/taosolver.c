@@ -277,7 +277,7 @@ PetscErrorCode TaoSetUp(Tao tao)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   TaoDestroy - Destroys the TAO context that was created with
   TaoCreate()
 

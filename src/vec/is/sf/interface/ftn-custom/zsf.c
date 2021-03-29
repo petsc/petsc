@@ -8,6 +8,7 @@
 #define petscsfbcastend_      PETSCSFBCASTEND
 #define f90arraysfnodecreate_ F90ARRAYSFNODECREATE
 #define petscsfviewfromoptions_ PETSCSFVIEWFROMOPTIONS
+#define petscsfdestroy_       PETSCSFDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscsfgetgraph_      petscsfgetgraph
 #define petscsfview_          petscsfview
@@ -15,6 +16,7 @@
 #define petscsfbcastend_      petscsfbcastend
 #define f90arraysfnodecreate_ f90arraysfnodecreate
 #define petscsfviewfromoptions_ petscsfviewfromoptions
+#define petscsfdestroy_       petscsfdestroy
 #endif
 
 PETSC_EXTERN void f90arraysfnodecreate_(const PetscInt *,PetscInt *,void * PETSC_F90_2PTR_PROTO_NOVAR);
@@ -95,6 +97,13 @@ PETSC_EXTERN void petscsfviewfromoptions_(PetscSF *ao,PetscObject obj,char* type
   CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscSFViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
+}
+
+PETSC_EXTERN void petscsfdestroy_(PetscSF *x,int *ierr)
+{
+  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
+  *ierr = PetscSFDestroy(x); if (*ierr) return;
+  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
 }
 
 #endif

@@ -125,7 +125,7 @@ class Configure(config.base.Configure):
   def checkFortranTypeInitialize(self):
     '''Determines if PETSc objects in Fortran are initialized by default (doesn't work with common blocks)'''
     if self.argDB['with-fortran-type-initialize']:
-      self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = -2')
+      self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = -2') # If change -2, please also update PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL() etc.
       self.logPrint('Initializing Fortran objects')
     else:
       self.addDefine('FORTRAN_TYPE_INITIALIZE', ' ')

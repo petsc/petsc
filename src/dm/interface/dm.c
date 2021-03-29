@@ -591,7 +591,7 @@ PetscErrorCode DMDestroyLabelLinkList_Internal(DM dm)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     DMDestroy - Destroys a vector packer or DM.
 
     Collective on dm

@@ -371,7 +371,7 @@ PetscErrorCode  VecDuplicate(Vec v,Vec *newv)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    VecDestroy - Destroys a vector.
 
    Collective on Vec

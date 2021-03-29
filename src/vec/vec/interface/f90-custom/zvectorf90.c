@@ -9,6 +9,7 @@
 #define vecrestorearrayreadf90_    VECRESTOREARRAYREADF90
 #define vecduplicatevecsf90_       VECDUPLICATEVECSF90
 #define vecdestroyvecsf90_         VECDESTROYVECSF90
+#define vecdestroy_                VECDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecgetarrayf90_            vecgetarrayf90
 #define vecrestorearrayf90_        vecrestorearrayf90
@@ -16,6 +17,7 @@
 #define vecrestorearrayreadf90_    vecrestorearrayreadf90
 #define vecduplicatevecsf90_       vecduplicatevecsf90
 #define vecdestroyvecsf90_         vecdestroyvecsf90
+#define vecdestroy_                vecdestroy
 #endif
 
 PETSC_EXTERN void vecgetarrayf90_(Vec *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -78,9 +80,18 @@ PETSC_EXTERN void vecdestroyvecsf90_(int *m,F90Array1d *ptr,int *__ierr PETSC_F9
 
   *__ierr = F90Array1dAccess(ptr,MPIU_FORTRANADDR,(void**)&vecs PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   for (i=0; i<*m; i++) {
+    PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(&vecs[i]);
     *__ierr = VecDestroy(&vecs[i]);
     if (*__ierr) return;
+    PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(&vecs[i]);
   }
   *__ierr = F90Array1dDestroy(ptr,MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = PetscFree(vecs);
+}
+
+PETSC_EXTERN void vecdestroy_(Vec *x,int *ierr)
+{
+  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
+  *ierr = VecDestroy(x); if (*ierr) return;
+  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
 }

@@ -473,7 +473,7 @@ PetscErrorCode  VecScatterGetMerged(VecScatter sf,PetscBool *flg)
   if (flg) *flg = sf->vscat.beginandendtogether;
   PetscFunctionReturn(0);
 }
-/*@
+/*@C
    VecScatterDestroy - Destroys a scatter context created by VecScatterCreate()
 
    Collective on VecScatter
