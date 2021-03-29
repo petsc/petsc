@@ -4132,7 +4132,7 @@ static PetscErrorCode RefineLabel_Internal(DMPlexCellRefiner cr, DMLabel label, 
       DMPolytopeType  ct;
       DMPolytopeType *rct;
       PetscInt       *rsize, *rcone, *rornt;
-      PetscInt        Nct, n, r, pNew;
+      PetscInt        Nct, n, r, pNew=0;
 
       ierr = DMPlexGetCellType(dm, point, &ct);CHKERRQ(ierr);
       ierr = DMPlexCellRefinerRefine(cr, ct, point, NULL, &Nct, &rct, &rsize, &rcone, &rornt);CHKERRQ(ierr);

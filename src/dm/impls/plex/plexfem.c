@@ -435,7 +435,7 @@ PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM dm, const PetscReal x[]
   switch (dim) {
     case 2:
     {
-      PetscScalar yt[2], zt[2];
+      PetscScalar yt[2], zt[2] = {0.0,0.0};
 
       yt[0] = y[0]; yt[1] = y[1];
       ierr = DMPlexBasisTransformApply_Internal(dm, x, l2g, dim, yt, zt, ctx);CHKERRQ(ierr);
@@ -444,7 +444,7 @@ PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM dm, const PetscReal x[]
     break;
     case 3:
     {
-      PetscScalar yt[3], zt[3];
+      PetscScalar yt[3], zt[3] = {0.0,0.0,0.0};
 
       yt[0] = y[0]; yt[1] = y[1]; yt[2] = y[2];
       ierr = DMPlexBasisTransformApply_Internal(dm, x, l2g, dim, yt, zt, ctx);CHKERRQ(ierr);
