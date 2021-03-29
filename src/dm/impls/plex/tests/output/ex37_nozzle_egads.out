@@ -1,3 +1,4 @@
+ EGADS WARNING: OpenCASCADE 7.5.0 NOT an Authorized Release!
 DM Object: CAD Surface (sur_) 1 MPI processes
   type: plex
 CAD Surface in 2 dimensions:
@@ -13,3 +14,4 @@ Labels:
   EGADS Vertex ID: 0 strata with value/size ()
 DM CAD Surface: Surface Area = 8.240097e+03 Volume = 7.441638e+04
 DM CAD Mesh: Surface Area = 7.441638e+04 Volume = 1.344565e+06
+ EGADS Info: 159 Objects, 234 Reference in Use (of 393) at Close!
