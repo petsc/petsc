@@ -14,7 +14,6 @@ cdef extern from * nogil:
     PetscViewerType PETSCVIEWERSAWS
     PetscViewerType PETSCVIEWERGLVIS
     PetscViewerType PETSCVIEWERADIOS
-    PetscViewerType PETSCVIEWERADIOS2
     PetscViewerType PETSCVIEWEREXODUSII
 
     ctypedef enum PetscViewerFormat:

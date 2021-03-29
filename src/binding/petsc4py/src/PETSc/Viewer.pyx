@@ -14,7 +14,6 @@ class ViewerType(object):
     SAWS        = S_(PETSCVIEWERSAWS)
     GLVIS       = S_(PETSCVIEWERGLVIS)
     ADIOS       = S_(PETSCVIEWERADIOS)
-    ADIOS2      = S_(PETSCVIEWERADIOS2)
     EXODUSII    = S_(PETSCVIEWEREXODUSII)
 
 class ViewerFormat(object):
