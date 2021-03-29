@@ -553,6 +553,7 @@ linux-cxx-cmplx-pkgs-64idx:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
     LOAD_MODULES: llvm/9.0.0-7fyffox gcc/8.3.0-fjpc5ys cmake/3.14.2-rl3q676
 
+# Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
   extends:
     - .stage-3
@@ -561,6 +562,8 @@ linux-pkgs-dbg-ftn-interfaces:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
+    OMP_PROC_BIND: "false"
+    OMP_NUM_THREADS: 4
 
 linux-pkgs-cxx-mlib:
   extends:

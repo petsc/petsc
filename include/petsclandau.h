@@ -141,13 +141,11 @@ PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps *);
 
 #endif
 #if defined(PETSC_HAVE_KOKKOS)
-  /* TODO: this won't work if PETSc is built with C++ */
-#if !defined(__cplusplus)
-PETSC_EXTERN PetscErrorCode LandauKokkosJacobian(DM, const PetscInt, const PetscReal [], const PetscReal [], const PetscReal[], const PetscReal[],
-                                                 const LandauIPData *const, const PetscReal [],const PetscInt, PetscReal *, PetscReal, const PetscLogEvent[], Mat);
+PETSC_EXTERN PetscErrorCode LandauKokkosJacobian(DM, const PetscInt, PetscReal*, PetscReal*, PetscReal*, PetscReal*,
+                                                 const LandauIPData* const, PetscReal*, const PetscInt, PetscReal*, PetscReal,
+                                                 const PetscLogEvent*, Mat);
 PETSC_EXTERN PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps *);
-#endif
 #endif
 
 #endif /* PETSCLANDAU_H */

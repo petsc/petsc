@@ -31,6 +31,8 @@ configure_options = [
   '--download-elemental=1',
   '--download-spai=1',
   '--download-parms=1',
+  '--download-kokkos=1',
+  '--download-kokkos-kernels=1',
   '--download-chaco=1'
   ]
 
