@@ -141,6 +141,7 @@ typedef const char* MatSolverType;
 #define MATSOLVERPETSC            "petsc"
 #define MATSOLVERBAS              "bas"
 #define MATSOLVERCUSPARSE         "cusparse"
+#define MATSOLVERCUSPARSEBAND     "cusparseband"
 #define MATSOLVERCUDA             "cuda"
 #define MATSOLVERKOKKOS           "kokkos"
 #define MATSOLVERKOKKOSDEVICE     "kokkosdevice"
