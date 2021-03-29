@@ -249,7 +249,7 @@ prepend-path PATH "%s"
     self.logPrintDivider()
     self.setCompilers.pushLanguage('C')
     compiler = self.setCompilers.getCompiler()
-    if compiler.endswith('mpicc') or compiler.endswith('mpiicc'):
+    if [s for s in ['mpicc','mpiicc'] if os.path.basename(compiler).find(s)>=0]:
       try:
         output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
         compiler = output.split(' ')[0]
