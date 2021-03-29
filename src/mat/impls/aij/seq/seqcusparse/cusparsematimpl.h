@@ -209,6 +209,8 @@ struct Mat_SeqAIJCUSPARSETriFactors {
   THRUSTARRAY                       *workVector;
   cusparseHandle_t                  handle;   /* a handle to the cusparse library */
   PetscInt                          nnz;      /* number of nonzeros ... need this for accurate logging between ICC and ILU */
+  PetscScalar                       *a_band_d; /* GPU data for banded CSR LU factorization matrix diag(L)=1 */
+  int                               *i_band_d; /* this could be optimized away */
 };
 
 struct Mat_CusparseSpMV {
