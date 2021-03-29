@@ -565,27 +565,59 @@ PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
 
   Level: intermediate
 
-  Note: The group name being NULL, empty string, or a sequence of all slashes (e.g. "///") is always internally stored as NULL and interpreted as "/".
+  Notes:
+  This is designed to mnemonically resemble the Unix cd command.
+  + If name begins with '/', it is interpreted as an absolute path fully replacing current group, otherwise it is taken as relative to the current group.
+  . NULL, empty string, or any sequence of all slashes (e.g. "///") is interpreted as the root group "/".
+  - "." means the current group is pushed again.
+
+  Example:
+  Suppose the current group is "/a".
+  + If name is NULL, empty string, or a sequence of all slashes (e.g. "///"), then the new group will be "/".
+  . If name is ".", then the new group will be "/a".
+  . If name is "b", then the new group will be "/a/b".
+  - If name is "/b", then the new group will be "/b".
+
+  Developer Notes:
+  The root group "/" is internally stored as NULL.
 
 .seealso: PetscViewerHDF5Open(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup(),PetscViewerHDF5OpenGroup()
 @*/
 PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[])
 {
-  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-  PetscViewerHDF5GroupList *groupNode;
-  PetscErrorCode   ierr;
+  PetscViewer_HDF5          *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  PetscViewerHDF5GroupList  *groupNode;
+  size_t                    i,len;
+  char                      buf[PETSC_MAX_PATH_LEN];
+  const char                *gname;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (name) PetscValidCharPointer(name,2);
-  if (name && name[0]) {
-     size_t i,len;
-     ierr = PetscStrlen(name, &len);CHKERRQ(ierr);
-     for (i=0; i<len; i++) if (name[i] != '/') break;
-     if (i == len) name = NULL;
-  } else name = NULL;
+  ierr = PetscStrlen(name, &len);CHKERRQ(ierr);
+  gname = NULL;
+  if (len) {
+    if (len == 1 && name[0] == '.') {
+      /* use current name */
+      gname = (hdf5->groups && hdf5->groups->name) ? hdf5->groups->name : NULL;
+    } else if (name[0] == '/') {
+      /* absolute */
+      for (i=1; i<len; i++) {
+        if (name[i] != '/') {
+          gname = name;
+          break;
+        }
+      }
+    } else {
+      /* relative */
+      const char *parent = (hdf5->groups && hdf5->groups->name) ? hdf5->groups->name : "";
+      ierr = PetscSNPrintf(buf, sizeof(buf), "%s/%s", parent, name);CHKERRQ(ierr);
+      gname = buf;
+    }
+  }
   ierr = PetscNew(&groupNode);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(name, (char**) &groupNode->name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(gname, (char**) &groupNode->name);CHKERRQ(ierr);
   groupNode->next = hdf5->groups;
   hdf5->groups    = groupNode;
   PetscFunctionReturn(0);
