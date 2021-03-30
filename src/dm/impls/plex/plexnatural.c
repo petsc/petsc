@@ -146,63 +146,62 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   ierr = DMCreateGlobalVector(dm, &tmpVec);CHKERRQ(ierr);
   ierr = VecGetSize(tmpVec, &globalSize);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &tmpVec);CHKERRQ(ierr);
-  if (!globalSize) {
-    *sfNatural = NULL;
-    if (destroyFlag) {ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);}
-    PetscFunctionReturn(0);
-  }
+  if (globalSize) {
   /* Get a pruned version of migration SF */
-  ierr = DMGetGlobalSection(dm, &gSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(gSection, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart, ssize = 0; p < pEnd; ++p) {
-    PetscInt dof, off;
+    ierr = DMGetGlobalSection(dm, &gSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(gSection, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p = pStart, ssize = 0; p < pEnd; ++p) {
+      PetscInt dof, off;
 
-    ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(gSection, p, &off);CHKERRQ(ierr);
-    if ((dof > 0) && (off >= 0)) ++ssize;
-  }
-  ierr = PetscMalloc1(ssize, &spoints);CHKERRQ(ierr);
-  for (p = pStart, ssize = 0; p < pEnd; ++p) {
-    PetscInt dof, off;
+      ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(gSection, p, &off);CHKERRQ(ierr);
+      if ((dof > 0) && (off >= 0)) ++ssize;
+    }
+    ierr = PetscMalloc1(ssize, &spoints);CHKERRQ(ierr);
+    for (p = pStart, ssize = 0; p < pEnd; ++p) {
+      PetscInt dof, off;
 
-    ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(gSection, p, &off);CHKERRQ(ierr);
-    if ((dof > 0) && (off >= 0)) spoints[ssize++] = p;
+      ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(gSection, p, &off);CHKERRQ(ierr);
+      if ((dof > 0) && (off >= 0)) spoints[ssize++] = p;
+    }
+    ierr = PetscSFCreateEmbeddedLeafSF(sfMigration, ssize, spoints, &sfEmbed);CHKERRQ(ierr);
+    ierr = PetscFree(spoints);CHKERRQ(ierr);
+    /* ierr = PetscPrintf(comm, "Embedded SF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(sfEmbed, 0);CHKERRQ(ierr); */
+    /* Create the SF for seq to natural */
+    ierr = DMGetGlobalVector(dm, &gv);CHKERRQ(ierr);
+    ierr = VecGetLayout(gv,&map);CHKERRQ(ierr);
+    /* Note that entries of gv are leaves in sfSeqToNatural, entries of the seq vec are roots */
+    ierr = PetscSFCreate(comm, &sfSeqToNatural);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphWithPattern(sfSeqToNatural, map, PETSCSF_PATTERN_GATHER);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm, &gv);CHKERRQ(ierr);
+    /* ierr = PetscPrintf(comm, "Seq-to-Natural SF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(sfSeqToNatural, 0);CHKERRQ(ierr); */
+    /* Create the SF associated with this section */
+    ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+    ierr = PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_FALSE, PETSC_TRUE, &gLocSection);CHKERRQ(ierr);
+    ierr = PetscSFCreateSectionSF(sfEmbed, section, remoteOffsets, gLocSection, &sfField);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfEmbed);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&gLocSection);CHKERRQ(ierr);
+    /* ierr = PetscPrintf(comm, "Field SF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(sfField, 0);CHKERRQ(ierr); */
+    /* Invert the field SF so it's now from distributed to sequential */
+    ierr = PetscSFCreateInverseSF(sfField, &sfFieldInv);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfField);CHKERRQ(ierr);
+    /* ierr = PetscPrintf(comm, "Inverse Field SF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(sfFieldInv, 0);CHKERRQ(ierr); */
+    /* Multiply the sfFieldInv with the */
+    ierr = PetscSFComposeInverse(sfFieldInv, sfSeqToNatural, sfNatural);CHKERRQ(ierr);
+    ierr = PetscObjectViewFromOptions((PetscObject) *sfNatural, NULL, "-globaltonatural_sf_view");CHKERRQ(ierr);
+    /* Clean up */
+    ierr = PetscSFDestroy(&sfFieldInv);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfSeqToNatural);CHKERRQ(ierr);
+  } else {
+    *sfNatural = NULL;
   }
-  ierr = PetscSFCreateEmbeddedLeafSF(sfMigration, ssize, spoints, &sfEmbed);CHKERRQ(ierr);
-  ierr = PetscFree(spoints);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(comm, "Embedded SF\n");CHKERRQ(ierr);
-   ierr = PetscSFView(sfEmbed, 0);CHKERRQ(ierr); */
-  /* Create the SF for seq to natural */
-  ierr = DMGetGlobalVector(dm, &gv);CHKERRQ(ierr);
-  ierr = VecGetLayout(gv,&map);CHKERRQ(ierr);
-  /* Note that entries of gv are leaves in sfSeqToNatural, entries of the seq vec are roots */
-  ierr = PetscSFCreate(comm, &sfSeqToNatural);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphWithPattern(sfSeqToNatural, map, PETSCSF_PATTERN_GATHER);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &gv);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(comm, "Seq-to-Natural SF\n");CHKERRQ(ierr);
-   ierr = PetscSFView(sfSeqToNatural, 0);CHKERRQ(ierr); */
-  /* Create the SF associated with this section */
-  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-  ierr = PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_FALSE, PETSC_TRUE, &gLocSection);CHKERRQ(ierr);
-  ierr = PetscSFCreateSectionSF(sfEmbed, section, remoteOffsets, gLocSection, &sfField);CHKERRQ(ierr);
-  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfEmbed);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&gLocSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionDist);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(comm, "Field SF\n");CHKERRQ(ierr);
-   ierr = PetscSFView(sfField, 0);CHKERRQ(ierr); */
-  /* Invert the field SF so it's now from distributed to sequential */
-  ierr = PetscSFCreateInverseSF(sfField, &sfFieldInv);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfField);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(comm, "Inverse Field SF\n");CHKERRQ(ierr);
-   ierr = PetscSFView(sfFieldInv, 0);CHKERRQ(ierr); */
-  /* Multiply the sfFieldInv with the */
-  ierr = PetscSFComposeInverse(sfFieldInv, sfSeqToNatural, sfNatural);CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject) *sfNatural, NULL, "-globaltonatural_sf_view");CHKERRQ(ierr);
-  /* Clean up */
-  ierr = PetscSFDestroy(&sfFieldInv);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfSeqToNatural);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   if (destroyFlag) {ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
