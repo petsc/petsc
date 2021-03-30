@@ -42,6 +42,8 @@ class Configure(config.package.GNUPackage):
       args.append('--with-cuda='+self.cuda.cudaDir)
     # have OpenMPI build its own private copy of hwloc to prevent possible conflict with one used by PETSc
     args.append('--with-hwloc=internal')
+    # https://www.open-mpi.org/faq/?category=building#libevent-or-hwloc-errors-when-linking-fortran
+    args.append('--with-libevent=internal')
     return args
 
   def checkDownload(self):
