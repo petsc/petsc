@@ -115,7 +115,7 @@ static PetscErrorCode PetscSFBcastBegin_Neighbor(PetscSF sf,MPI_Datatype unit,Pe
   PetscErrorCode       ierr;
   PetscSFLink          link;
   PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
-  MPI_Comm             distcomm;
+  MPI_Comm             distcomm = MPI_COMM_NULL;
   void                 *rootbuf = NULL,*leafbuf = NULL;
   MPI_Request          *req;
 
