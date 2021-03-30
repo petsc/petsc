@@ -106,6 +106,7 @@
 #define matgetownershipis_               MATGETOWNERSHIPIS
 #define matgetownershiprangecolumn_      MATGETOWNERSHIPRANGECOLUMN
 #define matviewfromoptions_              MATVIEWFROMOPTIONS
+#define matdestroy_                      MATDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsetvalues_                    matsetvalues
 #define matsetvaluesnnnn_                matsetvaluesnnnn
@@ -208,6 +209,7 @@
 #define matgetownershipis_               matgetownershipis
 #define matgetownershiprangecolumn_      matgetownershiprangecolumn
 #define matviewfromoptions_              matviewfromoptions
+#define matdestroy_                      matdestroy
 #endif
 
 PETSC_EXTERN void matgetvalues_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[],PetscScalar v[], int *ierr)
@@ -731,7 +733,9 @@ PETSC_EXTERN void matdestroymatrices_(PetscInt *n,Mat *smat,PetscErrorCode *ierr
   PetscInt i;
 
   for (i=0; i<*n; i++) {
+    PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(&smat[i]);
     *ierr = MatDestroy(&smat[i]);if (*ierr) return;
+    PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(&smat[i]);
   }
 }
 
@@ -747,9 +751,20 @@ PETSC_EXTERN void matdestroysubmatrices_(PetscInt *n,Mat *smat,PetscErrorCode *i
 
   *ierr = PetscMalloc1(*n+1,&lsmat);
   for (i=0; i<=*n; i++) {
+      PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(&smat[i]);
       lsmat[i] = smat[i];
   }
   *ierr = MatDestroySubMatrices(*n,&lsmat);
+  for (i=0; i<=*n; i++) {
+    PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(&smat[i]);
+  }
+}
+
+PETSC_EXTERN void matdestroy_(Mat *x,int *ierr)
+{
+  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
+  *ierr = MatDestroy(x); if (*ierr) return;
+  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
 }
 
 PETSC_EXTERN void matsetoptionsprefix_(Mat *mat,char* prefix,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)

@@ -1270,7 +1270,7 @@ static PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatDestroy - Frees space taken by a matrix.
 
    Collective on Mat

@@ -30,6 +30,7 @@
 #define taogettype_                         TAOGETTYPE
 #define taosetupdate_                       TAOSETUPDATE
 #define taoviewfromoptions_                 TAOVIEWFROMOPTIONS
+#define taodestroy_                         TAODESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
 #define taosetobjectiveroutine_             taosetobjectiveroutine
@@ -58,6 +59,7 @@
 #define taogettype_                         taogettype
 #define taosetupdate_                       taosetupdate
 #define taoviewfromoptions_                 taoviewfromoptions
+#define taodestroy_                         taodestroy
 #endif
 
 static struct {
@@ -373,6 +375,13 @@ PETSC_EXTERN void taoviewfromoptions_(Tao *ao,PetscObject obj,char* type,PetscEr
   CHKFORTRANNULLOBJECT(obj);
   *ierr = TaoViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
+}
+
+PETSC_EXTERN void taodestroy_(Tao *x,int *ierr)
+{
+  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
+  *ierr = TaoDestroy(x); if (*ierr) return;
+  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
 }
 
 EXTERN_C_END

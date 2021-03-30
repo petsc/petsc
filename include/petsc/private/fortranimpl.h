@@ -108,7 +108,18 @@ if (flg) {                                   \
     "Use PETSC_NULL_FUNCTION"); *ierr = 1; return; } \
   else if (FORTRANNULLFUNCTION(a)) { a = NULL; }
 
+/* The two macros are used at the begining and end of PETSc object Fortran destroy routines XxxDestroy(). -2 is in consistent with
+   the one used in checkFortranTypeInitialize() at compilersFortran.py.
+ */
 
+/* In the begining of Fortran XxxDestroy(a), if the input object was destroyed, change it to a petsc C NULL object so that it won't crash C XxxDestory() */
+#define PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(a) do {if (*((void**)(a)) == (void*)-2) *(a) = NULL;} while (0)
+
+/* After C XxxDestroy(a) is called, change a's state from NULL to destroyed, so that it can be used/destroyed again by Fortran.
+   E.g., in VecScatterCreateToAll(x,vscat,seq,ierr), if seq = PETSC_NULL_VEC, petsc won't create seq. But if seq is a
+   destroyed object (e.g., as a result of a previous Fortran VecDestroy), petsc will create seq.
+*/
+#define PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(a) do {*((void**)(a)) = (void*)-2;} while (0)
 
 /*
     Variable type where we stash PETSc object pointers in Fortran.

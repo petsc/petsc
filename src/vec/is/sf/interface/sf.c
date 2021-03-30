@@ -241,7 +241,7 @@ PetscErrorCode PetscSFGetType(PetscSF sf, PetscSFType *type)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscSFDestroy - destroy star forest
 
    Collective

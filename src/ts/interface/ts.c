@@ -2849,7 +2849,7 @@ PetscErrorCode  TSReset(TS ts)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    TSDestroy - Destroys the timestepper context that was created
    with TSCreate().
 

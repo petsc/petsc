@@ -1416,7 +1416,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    KSPDestroy - Destroys KSP context.
 
    Collective on ksp

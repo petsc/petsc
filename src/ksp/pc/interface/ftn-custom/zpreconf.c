@@ -9,6 +9,7 @@
 #define pcappendoptionsprefix_     PCAPPENDOPTIONSPREFIX
 #define pcgetoptionsprefix_        PCGETOPTIONSPREFIX
 #define pcviewfromoptions_         PCVIEWFROMOPTIONS
+#define pcdestroy_                 PCDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcview_                    pcview
 #define pcgetoperators_            pcgetoperators
@@ -16,6 +17,7 @@
 #define pcappendoptionsprefix_     pcappendoptionsprefix
 #define pcgetoptionsprefix_        pcgetoptionsprefix
 #define pcviewfromoptions_         pcviewfromoptions
+#define pcdestroy_                 pcdestroy
 #endif
 
 PETSC_EXTERN void pcview_(PC *pc,PetscViewer *viewer, PetscErrorCode *ierr)
@@ -60,4 +62,11 @@ PETSC_EXTERN void pcviewfromoptions_(PC *ao,PetscObject obj,char* type,PetscErro
   CHKFORTRANNULLOBJECT(obj);
   *ierr = PCViewFromOptions(*ao,obj,t);if (*ierr) return;
   FREECHAR(type,t);
+}
+
+PETSC_EXTERN void pcdestroy_(PC *x,int *ierr)
+{
+  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
+  *ierr = PCDestroy(x); if (*ierr) return;
+  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
 }
