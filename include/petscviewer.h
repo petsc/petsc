@@ -240,6 +240,24 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer, PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer, const char [], ...);
 PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
 
+/*@C
+  PetscViewerVUSetMode - Sets the mode in which to open the file.
+
+  Not Collective
+
+  Input Parameters:
++ viewer - The PetscViewer
+- mode   - The file mode
+
+  Level: deprecated
+
+  Note:
+  Use PetscViewerFileSetMode() instead.
+
+.seealso: PetscViewerFileSetMode()
+@*/
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFileSetMode (since v3.15)") PETSC_STATIC_INLINE PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode) {return PetscViewerFileSetMode(viewer, mode);}
+
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaGetName(PetscViewer, const char **);

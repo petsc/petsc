@@ -1304,6 +1304,8 @@ PetscErrorCode PetscViewerFileSetMode(PetscViewer viewer,PetscFileMode mode)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveEnum(viewer,mode,2);
+  if (mode == FILE_MODE_UNDEFINED) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot set FILE_MODE_UNDEFINED");
+  else if (mode < FILE_MODE_UNDEFINED || mode > FILE_MODE_APPEND_UPDATE) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Invalid file mode %d",(int)mode);
   ierr = PetscTryMethod(viewer,"PetscViewerFileSetMode_C",(PetscViewer,PetscFileMode),(viewer,mode));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1398,6 +1400,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
   case FILE_MODE_READ:   amode = MPI_MODE_RDONLY; break;
   case FILE_MODE_WRITE:  amode = MPI_MODE_WRONLY | MPI_MODE_CREATE; break;
   case FILE_MODE_APPEND: amode = MPI_MODE_WRONLY | MPI_MODE_CREATE | MPI_MODE_APPEND; break;
+  case FILE_MODE_UNDEFINED: SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerSetUp()");
   default: SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[vbinary->filemode]);
   }
   ierr = MPI_File_open(PetscObjectComm((PetscObject)viewer),vbinary->filename,amode,MPI_INFO_NULL,&vbinary->mfdes);CHKERRMPI(ierr);
@@ -1596,7 +1599,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   vbinary->mfsub           = MPI_FILE_NULL;
 #endif
   vbinary->filename        = NULL;
-  vbinary->filemode        = (PetscFileMode)-1;
+  vbinary->filemode        = FILE_MODE_UNDEFINED;
   vbinary->fdes_info       = NULL;
   vbinary->skipinfo        = PETSC_FALSE;
   vbinary->skipoptions     = PETSC_TRUE;

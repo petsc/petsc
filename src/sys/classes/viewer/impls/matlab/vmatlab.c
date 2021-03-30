@@ -119,8 +119,9 @@ PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name
   /* only first processor opens file */
   if (!vmatlab->rank) {
     if (type == FILE_MODE_READ) vmatlab->ep = matOpen(name,"r");
-    else if (type == FILE_MODE_WRITE || type == FILE_MODE_WRITE) vmatlab->ep = matOpen(name,"w");
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
+    else if (type == FILE_MODE_WRITE) vmatlab->ep = matOpen(name,"w");
+    else if (type == FILE_MODE_UNDEFINED) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+    else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[type]);
   }
   PetscFunctionReturn(0);
 }
@@ -178,7 +179,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscFunctionBegin;
   ierr         = PetscNewLog(viewer,&e);CHKERRQ(ierr);
   ierr         = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&e->rank);CHKERRMPI(ierr);
-  e->btype     = (PetscFileMode)-1;
+  e->btype     = FILE_MODE_UNDEFINED;
   viewer->data = (void*) e;
 
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_Matlab);CHKERRQ(ierr);

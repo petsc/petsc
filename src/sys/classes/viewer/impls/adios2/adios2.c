@@ -22,8 +22,6 @@ static PetscErrorCode PetscViewerFileClose_ADIOS2(PetscViewer viewer)
   case FILE_MODE_READ:
     /* ierr = adios2_read_close(adios2->adios2_fp);CHKERRQ(ierr); */
     break;
-  case FILE_MODE_APPEND:
-    break;
   case FILE_MODE_WRITE:
     /* ierr = adios2_close(adios2->adios2_handle);CHKERRQ(ierr); */
     break;
@@ -53,7 +51,6 @@ PetscErrorCode  PetscViewerFileSetMode_ADIOS2(PetscViewer viewer, PetscFileMode 
   PetscViewer_ADIOS2 *adios2 = (PetscViewer_ADIOS2*) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   adios2->btype = type;
   PetscFunctionReturn(0);
 }
@@ -71,13 +68,13 @@ PetscErrorCode  PetscViewerFileSetName_ADIOS2(PetscViewer viewer, const char nam
   case FILE_MODE_READ:
     /* adios2->adios2_fp = adios2_read_open_file(adios2->filename,ADIOS2_READ_METHOD_BP,PetscObjectComm((PetscObject)viewer)); */
     break;
-  case FILE_MODE_APPEND:
-    break;
   case FILE_MODE_WRITE:
     /* adios2_open(&adios2->adios2_handle,"PETSc",adios2->filename,"w",PetscObjectComm((PetscObject)viewer)); */
     break;
+  case FILE_MODE_UNDEFINED:
+    SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   default:
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+    SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[adios2->btype]);
   }
   PetscFunctionReturn(0);
 }
@@ -114,10 +111,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS2(PetscViewer v)
   v->data                = (void*) adios2;
   v->ops->destroy        = PetscViewerDestroy_ADIOS2;
   v->ops->setfromoptions = PetscViewerSetFromOptions_ADIOS2;
-  v->ops->flush          = 0;
-  adios2->btype            = (PetscFileMode) -1;
-  adios2->filename         = 0;
-  adios2->timestep         = -1;
+  v->ops->flush          = NULL;
+  adios2->btype          = FILE_MODE_UNDEFINED;
+  adios2->filename       = NULL;
+  adios2->timestep       = -1;
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_ADIOS2);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_ADIOS2);CHKERRQ(ierr);
