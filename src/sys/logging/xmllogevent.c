@@ -1479,7 +1479,7 @@ static PetscErrorCode GetEventTime(const PetscNestedEventTree event,PetscLogDoub
 PetscErrorCode PetscLogView_Flamegraph(PetscViewer viewer)
 {
   int                  nEvents,nAncestors;
-  char                 *eventName;
+  char                 *eventName=NULL;
   PetscErrorCode       ierr;
   PetscNestedEventTree *tree=NULL,*ancestors=NULL,event;
   PetscLogDouble       eventTime=0,locTotalTime,globTotalTime;

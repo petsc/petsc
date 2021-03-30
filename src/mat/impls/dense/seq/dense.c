@@ -567,7 +567,7 @@ static PetscErrorCode MatSolve_SeqDense_SetUp(Mat A, Vec xx, Vec yy, PetscScalar
 static PetscErrorCode MatSolve_SeqDense_TearDown(Mat A, Vec xx, Vec yy, PetscScalar **_y, PetscBLASInt *_m, PetscBLASInt *_k)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense *) A->data;
-  PetscScalar    *y;
+  PetscScalar    *y = NULL;
   PetscBLASInt   m, k;
   PetscErrorCode ierr;
 
@@ -590,8 +590,8 @@ static PetscErrorCode MatSolve_SeqDense_TearDown(Mat A, Vec xx, Vec yy, PetscSca
 
 static PetscErrorCode MatSolve_SeqDense_LU(Mat A, Vec xx, Vec yy)
 {
-  PetscScalar    *y;
-  PetscBLASInt   m, k;
+  PetscScalar    *y = NULL;
+  PetscBLASInt   m = 0, k = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -603,8 +603,8 @@ static PetscErrorCode MatSolve_SeqDense_LU(Mat A, Vec xx, Vec yy)
 
 static PetscErrorCode MatSolveTranspose_SeqDense_LU(Mat A, Vec xx, Vec yy)
 {
-  PetscScalar    *y;
-  PetscBLASInt   m, k;
+  PetscScalar    *y = NULL;
+  PetscBLASInt   m = 0, k = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -655,8 +655,8 @@ static PetscErrorCode MatSolve_SeqDense_QR(Mat A, Vec xx, Vec yy)
 
 static PetscErrorCode MatSolveTranspose_SeqDense_QR(Mat A, Vec xx, Vec yy)
 {
-  PetscScalar    *y;
-  PetscBLASInt   m, k;
+  PetscScalar    *y = NULL;
+  PetscBLASInt   m = 0, k = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
