@@ -6,60 +6,103 @@
 #
 # See 'git help shortlog' for details
 
+Alp Dener <alp.dener@me.com>                    <adener@anl.gov>
+Alp Dener <alp.dener@me.com>                    <adener@mcs.anl.gov>
 Andy Terrel <aterrel@uchicago.edu>
 Aron Ahmadia <aron@ahmadia.net>                 <ahmadia@harley.mcs.anl.gov>
+Arthur Soprano <arthursoprano@gmail.com>        <arthur@esss.com.br>
 Barry Smith <bsmith@mcs.anl.gov>                BarryFSmith
 Blaise Bourdin <bourdin@lsu.edu>
 Brad Aagaard <baagaard@usgs.gov>                <baagaard at usgs.gov>
 Dave May <dave.mayhem23@gmail.com>              dmay <dave.mayhem23@gmail.com>
+David Ham <david.ham@imperial.ac.uk>
+Dmitry Karpeev <karpeev@gmail.com>              <karpeev@mcs.anl.gov>
+Emil Constantinescu <emconsta@mcs.anl.gov>
 Ethan Coon <ecoon@lanl.gov>
 Ethan Coon <ecoon@lanl.gov>                     <ecoon@aeneas>
+Florian Wechsung <f.wechsung@gmail.com>         <e0425375@gmail.com>
+Getnet Betrie <d.getnet@gmail.com>              <getnetdubale@yahoo.com>
 Glenn Hammond <glenn.hammond@pnnl.gov>          Glenn Hammond <unknown>
+Hansol Suh <hansol.suh.123@gmail.com>
 Hong Zhang <hzhang@mcs.anl.gov>                 hzhang <unknown>
-Mr. Hong Zhang <hongzhang@anl.gov>
-Mr. Hong Zhang <hongzhang@anl.gov>              <zhang@vt.edu>
-
+Ivan Yashchuk <ivan.yashchuk@aalto.fi>          <zoerwow@gmail.com>
 Jason Sarich <sarich@mcs.anl.gov>               <sarich@24-148-35-133.na.21stcentury.net>
 Jason Sarich <sarich@mcs.anl.gov>               <sarich@Chico.mcs.anl.gov>
-Jed Brown <jed@59A2.org>                        <jed@59A2.org>
-Jed Brown <jed@59A2.org>                        Jed Brown <unknown>
+Jed Brown <jed@jedbrown.org>                    <jed-gitlab@jedbrown.org>
+Jed Brown <jed@jedbrown.org>                    <jed@59A2.org>
+Jed Brown <jed@jedbrown.org>                    <jedbrown@mcs.anl.gov>
+Jed Brown <jed@jedbrown.org>                    Jed Brown <unknown>
 Jose Roman <jroman@dsic.upv.es>
 Jose Roman <jroman@dsic.upv.es>                 <jroman@hypercat1-1.dsic.upv.es>
+Junchao Zhang <jczhang@mcs.anl.gov>             <jczhang@anl.gov>
+Junchao Zhang <jczhang@mcs.anl.gov>             <junchao.zhang@gmail.com>
+Kaushik Kulkarni <kgk2@illinois.edu>            <kaushikcfd@gmail.com>
+Kaushik Kulkarni <kgk2@illinois.edu>            <kaushikggg@gmail.com>
+Koki Sagiyama <k.sagiyama@imperial.ac.uk>
 Kris Buschelman <buschelm@mcs.anl.gov>          <Kris@attempt2>
 Kris Buschelman <buschelm@mcs.anl.gov>          <kris@192.168.1.104>
+Lawrence Mitchell <lawrence@wence.uk>           <lawrence.mitchell@imperial.ac.uk>
+Lawrence Mitchell <lawrence@wence.uk>           <wence@gmx.li>
+Lisandro Dalcin <dalcinl@gmail.com>             <dalcinl@opteron1.ceride.gov.ar>
 Lisandro Dalcin <dalcinl@gmail.com>             <dalcinl@trantor.ceride.gov.ar>
+Loic Gouarin <loic.gouarin@gmail.com>
+Loic Gouarin <loic.gouarin@gmail.com>           <loic.gouarin@math.u-psud.fr>
 Lois Curfman McInnes <curfman@mcs.anl.gov>      <lois@new-host-2.home>
-Mark Adams <mark.adams@columbia.edu>
-Mark Adams <mark.adams@columbia.edu>            <adams@jaguarpf-login1.ccs.ornl.gov>
+Manasi <manasistr@gmail.com>
+Marius Buerkle <marius.buerkle@aist.go.jp>
+Mark Adams <mfadams@lbl.gov>                    <524115-markadams4@users.noreply.gitlab.com>
+Mark Adams <mfadams@lbl.gov>                    <adams@jaguarpf-login1.ccs.ornl.gov>
+Mark Adams <mfadams@lbl.gov>                    <cal2princeton@yahoo.com>
+Mark Adams <mfadams@lbl.gov>                    <ma2325@columbia.edu>
+Mark Adams <mfadams@lbl.gov>                    <mark.adams@columbia.edu>
 Mark Spiegelman <mspieg@ldea.columbia.edu>      <mspieg@mingus.ldeo.columbia.edu>
-Matthew Knepley <knepley@gmail.com>
 Matthew Knepley <knepley@ci.uchicago.edu>
+Matthew Knepley <knepley@gmail.com>
 Matthew Knepley <knepley@mcs.anl.gov>
+Matthew McGurn <mtmcgurn@buffalo.edu>
+Miguel Salazar De Troya <salazardetro1@llnl.gov>
+Mr. Hong Zhang <hongzhang@anl.gov>
+Mr. Hong Zhang <hongzhang@anl.gov>              <zhang@vt.edu>
+Mukkund Sunjii <mukkundsunjii@gmail.com>        <5695310-mukkund1996@users.noreply.gitlab.com>
+Patrick Farrell <patrick@pefarrell.org>         <patrick.farrell@imperial.ac.uk>
+Patrick Farrell <patrick@pefarrell.org>         <patrick.farrell@maths.ox.ac.uk>
+Peter Brune <brune@mcs.anl.gov>                 <brune@localhost>
+Peter Brune <brune@mcs.anl.gov>                 <prbrune@localhost>
 Peter Brune <brune@uchicago.edu>
 Peter Brune <brune@uchicago.edu>                <brune@cs.uchicago.edu>
 Peter Brune <brune@uchicago.edu>                <emppter@pbrune>
-Peter Brune <brune@mcs.anl.gov>                 <brune@localhost>
-Peter Brune <brune@mcs.anl.gov>                 <prbrune@localhost>
+Pierre Jolivet <pierre@joliv.et>
+Pierre Jolivet <pierre@joliv.et>                <pierre.jolivet@enseeiht.fr>
+Pierre Seize <pierreseize@gmail.com>
+Reuben Hill <reuben.w.hill@gmail.com>           <ReubenHill@users.noreply.github.com>
 Richard Tran Mills <rmills@rmills.org>          <rmills@ornl.gov>
 Richard Tran Mills <rmills@rmills.org>          <rtm@eecs.utk.edu>
+Romain Beucher <romain@rbeucher.com>            <rbeucher@thermo-geology.fr>
+Romain Beucher <romain@rbeucher.com>            <romainbeucher@thermo-geology.fr>
+Rylee Sundermann <rylee.sundermann@sdstate.edu>
+Scott Kruger <kruger@txcorp.com>                <scott.e.kruger@gmail.com>
 Semih Özmen <semihozmen@gmail.com>
 Shri Abhyankar <abhyshr@mcs.anl.gov>
 Stefano Zampini <stefano.zampini@gmail.com>
 Surtai Han <surtai.han@gmail.com>               <surtai@surtai-ubuntu-2.(none)>
+Thibault Bridelbertomeu <thibault.bridelbertomeu@gmail.com>
+Tianjiao Sun <tianjiao.sun.2010@gmail.com>
+Tianjiao Sun <tianjiao.sun.2010@gmail.com>      <ts2914@imperial.ac.uk>
 Tobin Isaac <tisaac@ices.utexas.edu>
 Todd Munson <tmunson@mcs.anl.gov>               <tmunson@akita.mcs.anl.gov>
 Todd Munson <tmunson@mcs.anl.gov>               <tmunson@shepherd.mcs.anl.gov>
+Tristan Konolige <tristan.konolige@gmail.com>   <tristan.konolige@colorado.edu>
 Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victor@administrators-computer.local>
 Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victor@albook1g5vle.cs.utk.edu>
 Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victor@tibook500ve.cs.utk.edu>
 Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victor@wireless-128-62-148-170.public.utexas.edu>
 Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victorle@tibook500ve.cs.utk.edu>
 Victor Minden <victorminden@gmail.com>          <Victor Minden victorminden@gmail.com>
-Vijay Mahadevan <vijay.m@gmail.com>
 Vijay Mahadevan <mahadevan@anl.gov>
+Vijay Mahadevan <vijay.m@gmail.com>
 Xavier Lacoste <xl64100@gmail.com>
-Xuemin Tu <xtu@math.ku.edu>                     xuemin <unknown>
 Xuemin Tu <xtu@math.ku.edu>                     <xht@xuemin-laptop.mcs.anl.gov>
+Xuemin Tu <xtu@math.ku.edu>                     xuemin <unknown>
 
 PETSc MCS <petsc@mcs.anl.gov>
 PETSc MCS <petsc@mcs.anl.gov>                   <petsc@crunch.mcs.anl.gov>
