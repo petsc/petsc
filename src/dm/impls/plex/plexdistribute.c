@@ -488,6 +488,12 @@ PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection roo
   if (size == 1) PetscFunctionReturn(0);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  if (!levels) {
+    /* Add owned points */
+    ierr = DMLabelCreate(PETSC_COMM_SELF, "Overlap label", ovLabel);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {ierr = DMLabelSetValue(*ovLabel, p, rank);CHKERRQ(ierr);}
+    PetscFunctionReturn(0);
+  }
   ierr = PetscSectionGetChart(leafSection, &sStart, &sEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
   ierr = DMLabelCreate(PETSC_COMM_SELF, "Overlap adjacency", &ovAdjByRank);CHKERRQ(ierr);
