@@ -23,7 +23,7 @@ VERSION=${version_major}.${version_minor}.${version_subminor}
 scp ~/petsc-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
 scp ~/petsc4py-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
 scp ~/petsc-with-docs-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
-ssh petsc@login.mcs.anl.gov "cd /mcs/ftp/pub/petsc/release-snapshots; ln -s ~/petsc-${VERSION}.tar.gz ~/petsc-lite-${VERSION}.tar.gz"
+ssh petsc@login.mcs.anl.gov "cd /mcs/ftp/pub/petsc/release-snapshots; ln -s petsc-${VERSION}.tar.gz petsc-lite-${VERSION}.tar.gz"
 
 # petsc.tar.gz/petsc-lite.tar.gz links are done manually
 ssh petsc@login.mcs.anl.gov " \

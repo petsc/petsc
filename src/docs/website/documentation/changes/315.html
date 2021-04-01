@@ -105,7 +105,7 @@
     <div id="main">
 
       <div align="center">
-        <h2><a name="CHANGES">CHANGES in the PETSc Development Version</a></h2>
+        <h2><a name="CHANGES">CHANGES in the PETSc 3.15 Version</a></h2>
       </div>
 
       <!-- Please use Imperative with first letter cap, e.g. Add, Improve, Change etc. WITHOUT dot at the end -->
@@ -241,11 +241,11 @@
         <li>Add TSGetNumEvents() to retrieve the number of events</li>
         <li>Add -ts_monitor_cancel</li>
         <li>Now -ts_view_solution respects the TS prefix</li>
+        <li>Add TSSetMatStructure() to indicate the relationship between the nonzero structures of the I Jacobian and the RHS Jacobian</li>
+        <li>Automatically set the MatStructure flag of TS to SAME_NONZERO_PATTERN if the RHS matrix is obtained with a MatDuplicate() from the I Jacobian</li>
       </ul>
       <h4>TAO:</h4>
         <ul>
-          <li>Add TSSetMatStructure() to indicate the relationship between the nonzero structures of the I Jacobian and the RHS Jacobian</li>
-          <li>Automatically set the MatStructure flag of TS to SAME_NONZERO_PATTERN if the RHS matrix is obtained with a MatDuplicate() from the I Jacobian</li>
           <li>Add TaoSetRecycleFlag() and TaoGetRecycleFlag() interfaces to enable some Tao algorithms to re-use iterate information from the previous TaoSolve() call</li>
           <li>Add new Augmented Lagrangian Multiplier Method (TAOALMM) for solving optimization problems with general nonlinear constraints</li>
         </ul>
