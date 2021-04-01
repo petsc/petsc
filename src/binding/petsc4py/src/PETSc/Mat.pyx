@@ -1029,6 +1029,22 @@ cdef class Mat(Object):
             rows = iarray_i(rows, &ni, &i)
             CHKERR( MatZeroRowsColumnsLocal(self.mat, ni, i, sval, xvec, bvec) )
 
+    def zeroRowsColumnsStencil(self, rows, diag=1, Vec x=None, Vec b=None):
+        cdef PetscScalar sval = asScalar(diag)
+        cdef PetscInt nrows = asInt(len(rows))
+        cdef PetscMatStencil st
+        cdef _Mat_Stencil r
+        cdef PetscMatStencil *crows = NULL 
+        CHKERR( PetscMalloc(<size_t>(nrows+1)*sizeof(st), &crows) )
+        for i in range(nrows):
+            r = rows[i]
+            crows[i] = r.stencil
+        cdef PetscVec xvec = NULL, bvec = NULL
+        if x is not None: xvec = x.vec
+        if b is not None: bvec = b.vec
+        CHKERR( MatZeroRowsColumnsStencil(self.mat, nrows, crows, sval, xvec, bvec) )
+        CHKERR( PetscFree( crows ) )
+
     def storeValues(self):
         CHKERR( MatStoreValues(self.mat) )
 
