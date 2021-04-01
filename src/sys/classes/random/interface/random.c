@@ -32,7 +32,7 @@
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    When PETSc is compiled for complex numbers this returns a complex number with random real and complex parts.
-   Use PetscGetValueReal() to get a random real number.
+   Use PetscRandomGetValueReal() to get a random real number.
 
    To get a complex number with only a random real part, first call PetscRandomSetInterval() with a equal
    low and high imaginary part. Similarly to get a complex number with only a random imaginary part call
@@ -130,7 +130,7 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    When PETSc is compiled for complex numbers this returns an array of complex numbers with random real and complex parts.
-   Use PetscGetValuesReal() to get an array of random real numbers.
+   Use PetscRandomGetValuesReal() to get an array of random real numbers.
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValue()
 @*/
