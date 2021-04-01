@@ -183,7 +183,9 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 . sp - the PetscSpace object to set options for
 
   Options Database:
-. -petscspace_degree the approximation order of the space
++ -petscspace_degree <deg> - the approximation order of the space
+. -petscspace_variables <n> - the number of different variables, e.g. x and y
+- -petscspace_components <c> - the number of components, say d for a vector field
 
   Level: intermediate
 

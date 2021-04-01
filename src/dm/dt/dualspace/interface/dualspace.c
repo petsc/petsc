@@ -274,7 +274,11 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 . sp - the PetscDualSpace object to set options for
 
   Options Database:
-. -petscspace_degree the approximation order of the space
++ -petscdualspace_order <order>      - the approximation order of the space
+. -petscspace_form_degree <deg>      - the form degree, say 0 for point evaluations, or 2 for area integrals
+. -petscdualspace_components <c>     - the number of components, say d for a vector field
+. -petscdualspace_refdim <d>         - The spatial dimension of the reference cell
+- -petscdualspace_refcell <celltype> - Reference cell type name
 
   Level: intermediate
 
