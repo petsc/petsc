@@ -1839,11 +1839,11 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 . fem - The PetscFE object
 
   Note:
-  Each object is SetFromOption() during creation, so that the object may be customized from the command line.
+  Each subobject is SetFromOption() during creation, so that the object may be customized from the command line, using the prefix specified above. See the links below for the particular options available.
 
   Level: beginner
 
-.seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
+.seealso: PetscSpaceSetFromOptions(), PetscDualSpaceSetFromOptions(), PetscFESetFromOptions(), PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
 @*/
 PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
 {
