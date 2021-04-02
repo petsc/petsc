@@ -47,7 +47,7 @@ class Configure(config.base.Configure):
     if self.useThreadSafety and self.framework.argDB['with-log']:
       raise RuntimeError('Must use --with-log=0 with --with-threadsafety')
 
-    if self.useThreadSafety and not ((self.sharedLibraries.useShared and self.setCompilers.dynamicLibraries) or self.petscConfigure.petsclib == '-lpetsc'):
+    if self.useThreadSafety and not ((self.sharedLibraries.useShared and self.setCompilers.dynamicLibraries) or self.framework.argDB['with-single-library']):
       raise RuntimeError('Must use --with-shared-libraries or --with-single-library with --with-threadsafety')
 
     self.useLog   = self.framework.argDB['with-log']
