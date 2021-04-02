@@ -160,7 +160,8 @@ PETSC_EXTERN const char *const MatFactorTypes[];
 
 PETSC_EXTERN PetscErrorCode MatGetFactor(Mat,MatSolverType,MatFactorType,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetFactorAvailable(Mat,MatSolverType,MatFactorType,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatFactorGetUseOrdering(Mat, PetscBool*);
+PETSC_EXTERN PetscErrorCode MatFactorGetCanUseOrdering(Mat, PetscBool*);
+PETSC_DEPRECATED_FUNCTION("Use MatFactorGetCanUseOrdering() (since version 3.15)") PETSC_STATIC_INLINE PetscErrorCode MatFactorGetUseOrdering(Mat A,PetscBool *b) {return MatFactorGetCanUseOrdering(A,b);}
 PETSC_EXTERN PetscErrorCode MatFactorGetSolverType(Mat,MatSolverType*);
 PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat,MatFactorType*);
 PETSC_EXTERN PetscErrorCode MatSetFactorType(Mat,MatFactorType);
@@ -1169,6 +1170,8 @@ PETSC_EXTERN PetscFunctionList MatOrderingList;
 
 PETSC_EXTERN PetscErrorCode MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 PETSC_EXTERN PetscErrorCode MatCreateLaplacian(Mat,PetscReal,PetscBool,Mat*);
+
+PETSC_EXTERN PetscErrorCode MatFactorGetPreferredOrdering(Mat,MatFactorType,MatOrderingType*);
 
 /*S
     MatFactorShiftType - Numeric Shift for factorizations

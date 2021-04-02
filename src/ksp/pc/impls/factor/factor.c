@@ -1,6 +1,33 @@
 
 #include <../src/ksp/pc/impls/factor/factor.h>  /*I "petscpc.h" I*/
 
+/*
+    If an ordering is not yet set and the matrix is available determine a default ordering
+*/
+PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (pc->pmat) {
+    PC_Factor *fact = (PC_Factor*)pc->data;
+    if (!fact->fact) {
+      ierr = MatGetFactor(pc->pmat,fact->solvertype,fact->factortype,&fact->fact);CHKERRQ(ierr);
+    }
+    if (!fact->ordering) {
+      PetscBool       canuseordering;
+      MatOrderingType otype;
+
+      ierr = MatFactorGetCanUseOrdering(fact->fact,&canuseordering);CHKERRQ(ierr);
+      if (canuseordering) {
+        ierr = MatFactorGetPreferredOrdering(fact->fact,fact->factortype,&otype);CHKERRQ(ierr);
+      } else otype = MATORDERINGEXTERNAL;
+      ierr = PetscStrallocpy(otype,(char **)&fact->ordering);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCFactorSetReuseOrdering_Factor(PC pc,PetscBool flag)
 {
   PC_Factor *lu = (PC_Factor*)pc->data;
@@ -567,14 +594,14 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
     Level: intermediate
 
     Notes:
-    nested dissection is used by default
+      Nested dissection is used by default for some of PETSc's sparse matrix formats
 
-    For Cholesky and ICC and the SBAIJ format the only reordering available is natural since only the upper half of the matrix is stored
-    and reordering this matrix is very expensive.
+     For Cholesky and ICC and the SBAIJ format the only reordering available is natural since only the upper half of the matrix is stored
+     and reordering this matrix is very expensive.
 
-    You can use SeqAIJ matrix with Cholesky and ICC and use any ordering
+      You can use a SeqAIJ matrix with Cholesky and ICC and use any ordering.
 
-    external means PETSc will not compute an ordering and the package will use its own ordering, for MATSOLVERCHOLMOD and MATSOLVERUMFPACK
+      MATORDERINGEXTERNAL means PETSc will not compute an ordering and the package will use its own ordering, usable with MATSOLVERCHOLMOD, MATSOLVERUMFPACK, and others.
 
 .seealso: MatOrderingType
 
@@ -674,13 +701,14 @@ PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorInitialize(PC pc)
+PetscErrorCode PCFactorInitialize(PC pc,MatFactorType ftype)
 {
   PetscErrorCode ierr;
-  PC_Factor       *fact = (PC_Factor*)pc->data;
+  PC_Factor      *fact = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
   ierr                       = MatFactorInfoInitialize(&fact->info);CHKERRQ(ierr);
+  fact->factortype           = ftype;
   fact->info.shifttype       = (PetscReal)MAT_SHIFT_NONE;
   fact->info.shiftamount     = 100.0*PETSC_MACHINE_EPSILON;
   fact->info.zeropivot       = 100.0*PETSC_MACHINE_EPSILON;

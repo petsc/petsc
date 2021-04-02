@@ -891,10 +891,10 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype
 
   ierr = PetscNewLog(B,&mat_mkl_cpardiso);CHKERRQ(ierr);
 
-  if (isSeqAIJ) mat_mkl_cpardiso->ConvertToTriples = MatCopy_seqaij_seqaij_MKL_CPARDISO;
-  else if (isMPIBAIJ) mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpibaij_mpibaij_MKL_CPARDISO;
+  if (isSeqAIJ)        mat_mkl_cpardiso->ConvertToTriples = MatCopy_seqaij_seqaij_MKL_CPARDISO;
+  else if (isMPIBAIJ)  mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpibaij_mpibaij_MKL_CPARDISO;
   else if (isMPISBAIJ) mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpisbaij_mpisbaij_MKL_CPARDISO;
-  else          mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO;
+  else                 mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO;
 
   if (ftype == MAT_FACTOR_LU) B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMKL_CPARDISO;
   else B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_AIJMKL_CPARDISO;

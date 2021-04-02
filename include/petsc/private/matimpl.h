@@ -450,7 +450,8 @@ struct _p_Mat {
   PetscLayout            rmap,cmap;
   void                   *data;            /* implementation-specific data */
   MatFactorType          factortype;       /* MAT_FACTOR_LU, ILU, CHOLESKY or ICC */
-  PetscBool              useordering;      /* factorization using ordering provide to routine (most PETSc implementations) */
+  PetscBool              canuseordering;   /* factorization can use ordering provide to routine (most PETSc implementations) */
+  MatOrderingType        preferredordering[MAT_FACTOR_NUM_TYPES] ;/* what is the preferred (or default) ordering for the matrix solver type */
   PetscBool              assembled;        /* is the matrix assembled? */
   PetscBool              was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */

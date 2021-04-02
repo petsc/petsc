@@ -1299,6 +1299,9 @@ PetscErrorCode MatDestroy(Mat *A)
   ierr = PetscFree((*A)->defaultvectype);CHKERRQ(ierr);
   ierr = PetscFree((*A)->bsizes);CHKERRQ(ierr);
   ierr = PetscFree((*A)->solvertype);CHKERRQ(ierr);
+  for (PetscInt i=0; i<MAT_FACTOR_NUM_TYPES; i++) {
+    ierr = PetscFree((*A)->preferredordering[i]);CHKERRQ(ierr);
+  }
   ierr = MatDestroy_Redundant(&(*A)->redundant);CHKERRQ(ierr);
   ierr = MatProductClear(*A);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
@@ -4687,7 +4690,7 @@ PetscErrorCode MatSolverTypeDestroy(void)
 }
 
 /*@C
-   MatFactorGetUseOrdering - Indicates if the factorization uses the ordering provided in MatLUFactorSymbolic(), MatCholeskyFactorSymbolic()
+   MatFactorGetCanUseOrdering - Indicates if the factorization can use the ordering provided in MatLUFactorSymbolic(), MatCholeskyFactorSymbolic()
 
    Logically Collective on Mat
 
@@ -4698,17 +4701,40 @@ PetscErrorCode MatSolverTypeDestroy(void)
 .  flg - PETSC_TRUE if uses the ordering
 
    Notes:
-      Most internal PETSc factorizations use the ordering past to the factorization routine but external
-      packages do no, thus we want to skip the ordering when it is not needed.
+      Most internal PETSc factorizations use the ordering passed to the factorization routine but external
+      packages do not, thus we want to skip generating the ordering when it is not needed or used.
 
    Level: developer
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatGetFactor(), MatLUFactorSymbolic(), MatCholeskyFactorSymbolic()
 @*/
-PetscErrorCode MatFactorGetUseOrdering(Mat mat, PetscBool *flg)
+PetscErrorCode MatFactorGetCanUseOrdering(Mat mat, PetscBool *flg)
 {
   PetscFunctionBegin;
-  *flg = mat->useordering;
+  *flg = mat->canuseordering;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatFactorGetPreferredOrdering - The preferred ordering for a particular matrix factor object
+
+   Logically Collective on Mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
+.  otype - the preferred type
+
+   Level: developer
+
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatGetFactor(), MatLUFactorSymbolic(), MatCholeskyFactorSymbolic()
+@*/
+PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOrderingType *otype)
+{
+  PetscFunctionBegin;
+  *otype = mat->preferredordering[ftype];
+  if (!*otype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatFactor did not have a preferred ordering");
   PetscFunctionReturn(0);
 }
 
@@ -4736,7 +4762,7 @@ PetscErrorCode MatFactorGetUseOrdering(Mat mat, PetscBool *flg)
 
    Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatFactorGetUseOrdering(), MatSolverTypeRegister()
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatFactorGetCanUseOrdering(), MatSolverTypeRegister()
 @*/
 PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat *f)
 {
