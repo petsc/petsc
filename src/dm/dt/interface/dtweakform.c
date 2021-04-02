@@ -40,7 +40,7 @@ static PetscErrorCode PetscChunkBufferCreateChunk(PetscChunkBuffer *buffer, Pets
     ierr = PetscFree(buffer->array);CHKERRQ(ierr);
     buffer->array = tmp;
   }
-  chunk->start    = buffer->size;
+  chunk->start    = buffer->size*buffer->unitbytes;
   chunk->size     = size;
   chunk->reserved = size;
   buffer->size   += size;
@@ -103,7 +103,7 @@ PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm 
   key.label = label; key.value = value; key.field = f;
   ierr = PetscHMapFormGet(ht, key, &chunk);CHKERRQ(ierr);
   if (chunk.size < 0) {*n = 0;          *func = NULL;}
-  else                {*n = chunk.size; *func = &((void (**)()) wf->funcs->array)[chunk.start];}
+  else                {*n = chunk.size; *func = (void (**)()) &wf->funcs->array[chunk.start];}
   PetscFunctionReturn(0);
 }
 
@@ -130,7 +130,7 @@ PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm 
     ierr = PetscChunkBufferEnlargeChunk(wf->funcs, n - chunk.size, &chunk);CHKERRQ(ierr);
     ierr = PetscHMapFormSet(ht, key, chunk);CHKERRQ(ierr);
   }
-  for (i = 0; i < n; ++i) ((void (**)()) wf->funcs->array)[chunk.start+i] = func[i];
+  for (i = 0; i < n; ++i) ((void (**)()) &wf->funcs->array[chunk.start])[i] = func[i];
   PetscFunctionReturn(0);
 }
 
@@ -147,11 +147,11 @@ PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm 
   if (chunk.size < 0) {
     ierr = PetscChunkBufferCreateChunk(wf->funcs, 1, &chunk);CHKERRQ(ierr);
     ierr = PetscHMapFormSet(ht, key, chunk);CHKERRQ(ierr);
-    ((void (**)()) wf->funcs->array)[chunk.start] = func;
+    ((void (**)()) &wf->funcs->array[chunk.start])[0] = func;
   } else {
     ierr = PetscChunkBufferEnlargeChunk(wf->funcs, 1, &chunk);CHKERRQ(ierr);
     ierr = PetscHMapFormSet(ht, key, chunk);CHKERRQ(ierr);
-    ((void (**)()) wf->funcs->array)[chunk.start+chunk.size-1] = func;
+    ((void (**)()) &wf->funcs->array[chunk.start])[chunk.size-1] = func;
   }
   PetscFunctionReturn(0);
 }
@@ -168,7 +168,7 @@ PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMap
   if (chunk.size < 0) {*func = NULL;}
   else {
     if (ind >= chunk.size) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %D not in [0, %D)", ind, chunk.size);
-    *func = ((void (**)()) wf->funcs->array)[chunk.start+ind];
+    *func = ((void (**)()) &wf->funcs->array[chunk.start])[ind];
   }
   PetscFunctionReturn(0);
 }
@@ -194,7 +194,7 @@ PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMap
     ierr = PetscChunkBufferEnlargeChunk(wf->funcs, ind - chunk.size + 1, &chunk);CHKERRQ(ierr);
     ierr = PetscHMapFormSet(ht, key, chunk);CHKERRQ(ierr);
   }
-  ((void (**)()) wf->funcs->array)[chunk.start+ind] = func;
+  ((void (**)()) &wf->funcs->array[chunk.start])[ind] = func;
   PetscFunctionReturn(0);
 }
 
