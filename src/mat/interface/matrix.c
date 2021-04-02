@@ -4237,8 +4237,7 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
 .  B - where the copy is put
 
    Notes:
-   If you use SAME_NONZERO_PATTERN then the two matrices had better have the
-   same nonzero pattern or the routine will crash.
+   If you use SAME_NONZERO_PATTERN then the two matrices must have the same nonzero pattern or the routine will crash.
 
    MatCopy() copies the matrix entries of a matrix to another existing
    matrix (after first zeroing the second matrix).  A related routine is

@@ -781,6 +781,8 @@ viewers and options are given in the ``MatView()`` man page and
     - Operation
   * - ``MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure s);``
     - :math:`Y = Y + a*X`
+  * - ``MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure s);``
+    - :math:`Y = a*Y + X`
   * - ``MatMult(Mat A,Vec x, Vec y);``
     - :math:`y = A*x`
   * - ``MatMultAdd(Mat A,Vec x, Vec y,Vec z);``
@@ -807,6 +809,21 @@ viewers and options are given in the ``MatView()`` man page and
     - :math:`A = 0`
   * - ``MatShift(Mat Y, PetscScalar a);``
     - :math:`Y =  Y + a*I`
+
+.. list-table:: Values of MatStructure
+  :name: fig_matstructure
+  :header-rows: 1
+
+  * - Name
+    - Meaning
+  * - ``SAME__NONZERO_PATTERN``
+    - the matrices have an identical nonzero pattern
+  * - ``DIFFERENT_NONZERO_PATTERN``
+    - the matrices may have a different nonzero pattern
+  * - ``SUBSET_NONZERO_PATTERN``
+    - the second matrix has a subset of the nonzeros in the first matrix
+  * - ``UNKNOWN_NONZERO_PATTERN``
+    - there is nothing known about the relation between the nonzero patterns of the two matrices
 
 The ``NormType`` argument to ``MatNorm()`` is one of ``NORM_1``,
 ``NORM_INFINITY``, and ``NORM_FROBENIUS``.
