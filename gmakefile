@@ -71,6 +71,7 @@ endif
 ifeq ($(PETSC_DLL_EXPORTS),1)
 $(OBJDIR)/%.o : CCPPFLAGS+=-Dpetsc_EXPORTS
 $(OBJDIR)/%.o : CXXCPPFLAGS+=-Dpetsc_EXPORTS
+$(OBJDIR)/%.o : CUDACPPFLAGS+=-Dpetsc_EXPORTS
 endif
 
 langs := F F90 cxx c
