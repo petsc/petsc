@@ -24,7 +24,7 @@ typedef struct _p_DMSwarmSort* DMSwarmSort;
 
 typedef struct {
   DMSwarmDataBucket db;
-
+  PetscInt  refct;
   PetscBool field_registration_initialized;
   PetscBool field_registration_finalized;
   /* DMSwarmProjectMethod *swarm_project;*/ /* swarm, geometry, result */

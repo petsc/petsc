@@ -621,6 +621,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGError(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGSNESIterations(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGKSPIterations(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorError(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat *);
+PETSC_EXTERN PetscErrorCode TSDMSwarmMonitorMoments(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat *);
 
 struct _n_TSMonitorLGCtxNetwork {
   PetscInt       nlg;

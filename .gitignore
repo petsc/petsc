@@ -90,6 +90,12 @@ GRTAGS
 GSYMS
 GTAGS
 CMakeLists.txt
+src/binding/petsc4py/.eggs
+src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc.h
+src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc_api.h
+src/binding/petsc4py/src/libpetsc4py/libpetsc4py.c
+src/binding/petsc4py/src/libpetsc4py/libpetsc4py.h
+src/binding/petsc4py/src/petsc4py.PETSc.c
 src/snes/tutorials/ex52\.h
 src/snes/tutorials/ex52_inline\.h
 src/snes/tutorials/ex56_inline\.h
