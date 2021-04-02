@@ -181,7 +181,7 @@ static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, App
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateAuxiliaryData(DM dm, DM *auxdm, Vec *la, AppCtx *user)
+static PetscErrorCode CreateAuxiliaryVec(DM dm, DM *auxdm, Vec *la, AppCtx *user)
 {
   PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
   PetscInt          dim, Nf, f;
@@ -211,10 +211,7 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) la);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, la);CHKERRQ(ierr);}
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nf, &funcs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) funcs[f] = linear;
@@ -235,10 +232,7 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   ierr = VecViewFromOptions(lx, NULL, "-local_func_view");CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = PetscFree(funcs);CHKERRQ(ierr);
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", NULL);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", NULL);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -256,10 +250,7 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) la);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, la);CHKERRQ(ierr);}
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &funcs, Nf, &afuncs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
@@ -282,10 +273,7 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &lu);CHKERRQ(ierr);
   ierr = PetscFree2(funcs, afuncs);CHKERRQ(ierr);
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", NULL);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", NULL);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -303,10 +291,7 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) la);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, la);CHKERRQ(ierr);}
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMGetNumFields(dmIn, &NfIn);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &funcs, NfIn, &afuncs);CHKERRQ(ierr);
@@ -330,10 +315,7 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmIn, &lu);CHKERRQ(ierr);
   ierr = PetscFree2(funcs, afuncs);CHKERRQ(ierr);
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", NULL);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", NULL);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +344,7 @@ int main(int argc, char **argv)
   }
   if (user.auxfield) {
     /* Volumetric Mesh Projection with Volumetric Data */
-    ierr = CreateAuxiliaryData(dm, &auxdm, &la, &user);CHKERRQ(ierr);
+    ierr = CreateAuxiliaryVec(dm, &auxdm, &la, &user);CHKERRQ(ierr);
     ierr = TestFunctionProjection(dm, auxdm, NULL, la, "Volumetric Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
     ierr = TestFieldProjection(dm, auxdm, NULL, la, "Volumetric Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
     ierr = VecDestroy(&la);CHKERRQ(ierr);
@@ -382,19 +364,19 @@ int main(int argc, char **argv)
     ierr = TestFieldProjection(subdm, NULL, NULL, NULL, "Subdomain Primary", &user);CHKERRQ(ierr);
     if (user.auxfield) {
       /* Subdomain Mesh Projection with Subdomain Data */
-      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);
       ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
       /* Subdomain Mesh Projection with Volumetric Data */
-      ierr = CreateAuxiliaryData(dm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(dm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);
       ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
       /* Volumetric Mesh Projection with Subdomain Data */
-      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(subdm, auxdm, domLabel, la, "Volumetric Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(subdm, auxdm, domLabel, la, "Volumetric Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);
@@ -412,13 +394,13 @@ int main(int argc, char **argv)
     ierr = TestFieldProjection(subdm, NULL, NULL, NULL, "Boundary Primary", &user);CHKERRQ(ierr);
     if (user.auxfield) {
       /* Boundary Mesh Projection with Boundary Data */
-      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(subdm, auxdm, NULL, la, "Boundary Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(subdm, auxdm, NULL, la, "Boundary Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);
       ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
       /* Volumetric Mesh Projection with Boundary Data */
-      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(dm, auxdm, bdLabel, la, "Volumetric Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(dm, auxdm, bdLabel, la, "Volumetric Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);

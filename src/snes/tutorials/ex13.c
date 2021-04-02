@@ -459,11 +459,9 @@ int main(int argc, char **argv)
       ierr = DMGlobalToLocalBegin(dmAdj, uAdj, INSERT_VALUES, uAdjLoc);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(dmAdj, uAdj, INSERT_VALUES, uAdjLoc);CHKERRQ(ierr);
       ierr = DMGetGlobalVector(dm, &uAdjProj);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAdj);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) uAdjLoc);CHKERRQ(ierr);
+      ierr = DMSetAuxiliaryVec(dm, NULL, 0, uAdjLoc);CHKERRQ(ierr);
       ierr = DMProjectField(dm, 0.0, u, identity, INSERT_VALUES, uAdjProj);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "dmAux", NULL);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "A", NULL);CHKERRQ(ierr);
+      ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);
       ierr = DMRestoreLocalVector(dmAdj, &uAdjLoc);CHKERRQ(ierr);
       /*   Attach auxiliary data */
       dms[0] = dm; dms[1] = dm;
@@ -494,13 +492,11 @@ int main(int argc, char **argv)
       ierr = DMGlobalToLocalBegin(dm, uErr, INSERT_VALUES, uErrLoc);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(dm, uErr, INSERT_VALUES, uErrLoc);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmErrAux, &uErr);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmAdj, "dmAux", (PetscObject) dmErrAux);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmAdj, "A", (PetscObject) uErrLoc);CHKERRQ(ierr);
+      ierr = DMSetAuxiliaryVec(dmAdj, NULL, 0, uErrLoc);CHKERRQ(ierr);
       /*   Compute cellwise error estimate */
       ierr = VecSet(errorEst, 0.0);CHKERRQ(ierr);
       ierr = DMPlexComputeCellwiseIntegralFEM(dmAdj, uAdj, errorEst, &user);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmAdj, "dmAux", NULL);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmAdj, "A", NULL);CHKERRQ(ierr);
+      ierr = DMSetAuxiliaryVec(dmAdj, NULL, 0, NULL);CHKERRQ(ierr);
       ierr = DMRestoreLocalVector(dmErrAux, &uErrLoc);CHKERRQ(ierr);
       ierr = DMDestroy(&dmErrAux);CHKERRQ(ierr);
       /*   Plot cellwise error vector */

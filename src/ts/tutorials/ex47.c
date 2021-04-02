@@ -225,7 +225,7 @@ static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = DMCreateLocalVector(dmAux, &v);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, funcs, NULL, INSERT_ALL_VALUES, v);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) v);CHKERRQ(ierr);
+  ierr = DMSetAuxiliaryVec(dm, NULL, 0, v);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -240,7 +240,6 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
   ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
   if (!feAux) PetscFunctionReturn(0);
   ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
   ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
   ierr = DMSetField(dmAux, 0, NULL, (PetscObject) feAux);CHKERRQ(ierr);
   ierr = DMCreateDS(dmAux);CHKERRQ(ierr);

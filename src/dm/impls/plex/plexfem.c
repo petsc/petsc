@@ -18,23 +18,15 @@ static PetscErrorCode DMPlexConvertPlex(DM dm, DM *plex, PetscBool copy)
   } else {
     ierr = PetscObjectQuery((PetscObject) dm, "dm_plex", (PetscObject *) plex);CHKERRQ(ierr);
     if (!*plex) {
-      ierr = DMConvert(dm,DMPLEX,plex);CHKERRQ(ierr);
+      ierr = DMConvert(dm, DMPLEX, plex);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex);CHKERRQ(ierr);
       if (copy) {
-        const char *comps[3] = {"A", "dmAux"};
-        PetscObject obj;
-        PetscInt    i;
+        DMSubDomainHookLink link;
 
-        {
-          /* Run the subdomain hook (this will copy the DMSNES/DMTS) */
-          DMSubDomainHookLink link;
-          for (link = dm->subdomainhook; link; link = link->next) {
-            if (link->ddhook) {ierr = (*link->ddhook)(dm, *plex, link->ctx);CHKERRQ(ierr);}
-          }
-        }
-        for (i = 0; i < 3; i++) {
-          ierr = PetscObjectQuery((PetscObject) dm, comps[i], &obj);CHKERRQ(ierr);
-          ierr = PetscObjectCompose((PetscObject) *plex, comps[i], obj);CHKERRQ(ierr);
+        ierr = DMCopyAuxiliaryVec(dm, *plex);CHKERRQ(ierr);
+        /* Run the subdomain hook (this will copy the DMSNES/DMTS) */
+        for (link = dm->subdomainhook; link; link = link->next) {
+          if (link->ddhook) {ierr = (*link->ddhook)(dm, *plex, link->ctx);CHKERRQ(ierr);}
         }
       }
     } else {
@@ -1912,9 +1904,9 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   ierr = ISCreateStride(PETSC_COMM_SELF,numCells,cStart,1,&cellIS);CHKERRQ(ierr);
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   /* Read Auxiliary DS information */
-  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
-  if (dmAux) {
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
+  if (locA) {
+    ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = DMGetLocalSection(dmAux, &sectionAux);CHKERRQ(ierr);
@@ -2202,7 +2194,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   /* Read Auxiliary DS information */
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     DM dmAux;
 
@@ -3802,7 +3794,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
@@ -4023,14 +4015,13 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   ierr = ISGetLocalSize(cellIS, &numCells);CHKERRQ(ierr);
   ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
-  if (dmAux) {
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &A);CHKERRQ(ierr);
+  if (A) {
+    ierr = VecGetDM(A, &dmAux);CHKERRQ(ierr);
     ierr = DMGetLocalSection(dmAux, &sectionAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
   }
@@ -4057,11 +4048,8 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   if (isMatIS)  {ierr = MatISGetLocalMat(Jac,  &J);CHKERRQ(ierr);}
   if (isMatISP) {ierr = MatISGetLocalMat(JacP, &JP);CHKERRQ(ierr);}
   if (hasFV)    {ierr = MatSetOption(JP, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);} /* No allocated space for FV stuff, so ignore the zero entries */
-  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   if (probAux) {ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);}
-  CHKMEMQ;
   /* Compute batch sizes */
   if (isFE[0]) {
     PetscFE         fe;
@@ -4137,7 +4125,6 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
         ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, A, cell, NULL, &x);CHKERRQ(ierr);
       }
     }
-    CHKMEMQ;
     for (fieldI = 0; fieldI < Nf; ++fieldI) {
       PetscFE fe;
       ierr = PetscDSGetDiscretization(prob, fieldI, (PetscObject *) &fe);CHKERRQ(ierr);
@@ -4164,7 +4151,6 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
         }
       }
     }
-    CHKMEMQ;
     /*   Add contribution from X_t */
     if (hasDyn) {for (c = 0; c < chunkSize*totDim*totDim; ++c) elemMat[c] += X_tShift*elemMatD[c];}
     /* Insert values into matrix */
@@ -4177,7 +4163,6 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
       if (assembleJac) {ierr = DMPlexMatSetClosure(dm, section, globalSection, Jac, cell, &elemMat[(c-cStart)*totDim*totDim], ADD_VALUES);CHKERRQ(ierr);}
       ierr = DMPlexMatSetClosure(dm, section, globalSection, JP, cell, &elemMat[(c-cStart)*totDim*totDim], ADD_VALUES);CHKERRQ(ierr);
     }
-    CHKMEMQ;
   }
   /* Cleanup */
   ierr = DMSNESRestoreFEGeom(coordField, cellIS, qGeom, PETSC_FALSE, &cgeomFEM);CHKERRQ(ierr);
@@ -4191,7 +4176,6 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   if (assembleJac) {ierr = MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);ierr = MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);}
   ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -4213,14 +4197,7 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
       ierr = DMConvert(dm,DMPLEX,plex);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex);CHKERRQ(ierr);
       if (copy) {
-        const char *comps[] = {"A", "dmAux"};
-        PetscObject obj;
-        PetscInt    i;
-
-        for (i = 0; i < 2; ++i) {
-          ierr = PetscObjectQuery((PetscObject) dm, comps[i], &obj);CHKERRQ(ierr);
-          ierr = PetscObjectCompose((PetscObject) *plex, comps[i], obj);CHKERRQ(ierr);
-        }
+        ierr = DMCopyAuxiliaryVec(dm, *plex);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscObjectReference((PetscObject) *plex);CHKERRQ(ierr);
@@ -4312,7 +4289,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     DM dmAux;
 
@@ -4530,7 +4507,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscHashFormKey key, IS ce
   ierr = DMGetCellDS(dm, cells ? cells[cStart] : cStart, &ds);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(ds, &totDim);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     PetscInt subcell;
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
@@ -4897,7 +4874,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscHashFormKey key
   ierr = DMGetCellDS(dm, cStart, &ds);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(ds, &totDim);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
     ierr = DMGetCellDS(dmAux, cStart, &dsAux[2]);CHKERRQ(ierr);
@@ -5068,7 +5045,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t, DMLab
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     DM dmAux;
 
@@ -5254,7 +5231,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscHashFormKey key, IS ce
 {
   DM_Plex        *mesh  = (DM_Plex *) dm->data;
   const char     *name  = "Jacobian";
-  DM              dmAux, plex, tdm;
+  DM              dmAux = NULL, plex, tdm;
   DMEnclosureType encAux;
   Vec             A, tv;
   DMField         coordField;
@@ -5290,9 +5267,9 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscHashFormKey key, IS ce
   if (hasJac && Jac == JacP) hasPrec = PETSC_FALSE;
   ierr = PetscDSHasDynamicJacobian(prob, &hasDyn);CHKERRQ(ierr);
   hasDyn = hasDyn && (X_tShift != 0.0) ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
-  if (dmAux) {
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &A);CHKERRQ(ierr);
+  if (A) {
+    ierr = VecGetDM(A, &dmAux);CHKERRQ(ierr);
     ierr = DMGetEnclosureRelation(dmAux, dm, &encAux);CHKERRQ(ierr);
     ierr = DMConvert(dmAux, DMPLEX, &plex);CHKERRQ(ierr);
     ierr = DMGetLocalSection(plex, &sectionAux);CHKERRQ(ierr);
@@ -5527,7 +5504,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, IS cellIS, PetscReal
   if (isMatISP) {ierr = DMPlexGetSubdomainSection(plex, &subSection);CHKERRQ(ierr);}
   if (hasBdPrec && hasBdJac) {ierr = PetscObjectTypeCompare((PetscObject) JacP, MATIS, &isMatIS);CHKERRQ(ierr);}
   if (isMatIS && !subSection) {ierr = DMPlexGetSubdomainSection(plex, &subSection);CHKERRQ(ierr);}
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
     ierr = DMConvert(dmAux, DMPLEX, &plexA);CHKERRQ(ierr);
