@@ -57,7 +57,6 @@ PETSC_INTERN PetscErrorCode VecView_MPI_Draw_LG(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_Socket(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_ADIOS(Vec,PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_MPI_ADIOS2(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecGetSize_MPI(Vec,PetscInt*);
 PETSC_INTERN PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [], PetscScalar []);

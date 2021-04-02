@@ -572,9 +572,6 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_ADIOS)
   PetscBool      isadios;
 #endif
-#if defined(PETSC_HAVE_ADIOS2)
-  PetscBool      isadios2;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
@@ -594,9 +591,6 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_ADIOS)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_ADIOS2)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS2,&isadios2);CHKERRQ(ierr);
-#endif
 
   if (isdraw) {
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
@@ -615,10 +609,6 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_ADIOS)
   } else if (isadios) {
     ierr = VecView_MPI_ADIOS(xin,viewer);CHKERRQ(ierr); /* Reusing VecView_MPI_ADIOS ... don't want code duplication*/
-#endif
-#if defined(PETSC_HAVE_ADIOS2)
-  } else if (isadios2) {
-    ierr = VecView_MPI_ADIOS2(xin,viewer);CHKERRQ(ierr); /* Reusing VecView_MPI_ADIOS2 ... don't want code duplication*/
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {

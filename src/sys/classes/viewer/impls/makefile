@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS      = socket ascii binary string draw vu mathematica hdf5 matlab ams vtk glvis adios adios2
+DIRS      = socket ascii binary string draw vu mathematica hdf5 matlab ams vtk glvis adios
 LOCDIR    = src/sys/classes/viewer/impls/
 MANSEC    = Sys
 SUBMANSEC = Viewer
