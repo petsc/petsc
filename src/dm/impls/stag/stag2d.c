@@ -56,10 +56,10 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
   PetscErrorCode ierr;
   DM_Stag        *stagCoord;
   DM             dmCoord;
-  Vec            coordLocal,coord;
+  Vec            coordLocal;
   PetscReal      h[2],min[2];
   PetscScalar    ***arr;
-  PetscInt       ind[2],start[2],n[2],nExtra[2],s,c;
+  PetscInt       ind[2],start_ghost[2],n_ghost[2],s,c;
   PetscInt       idownleft,idown,ileft,ielement;
 
   PetscFunctionBegin;
@@ -68,7 +68,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
   for (s=0; s<3; ++s) {
     if (stagCoord->dof[s] !=0 && stagCoord->dof[s] != 2) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 2 dimensions must have 0 or 2 dof on each stratum, but stratum %d has %d dof",s,stagCoord->dof[s]);
   }
-  ierr = DMGetLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
 
   ierr = DMStagVecGetArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
   if (stagCoord->dof[0]) {
@@ -81,14 +81,14 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
   if (stagCoord->dof[2]) {
     ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT  ,0,&ielement);CHKERRQ(ierr);
   }
-  ierr = DMStagGetCorners(dmCoord,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&nExtra[0],&nExtra[1],NULL);CHKERRQ(ierr);
+  ierr = DMStagGetGhostCorners(dmCoord,&start_ghost[0],&start_ghost[1],NULL,&n_ghost[0],&n_ghost[1],NULL);CHKERRQ(ierr);
 
   min[0] = xmin; min[1]= ymin;
   h[0] = (xmax-xmin)/stagCoord->N[0];
   h[1] = (ymax-ymin)/stagCoord->N[1];
 
-  for (ind[1]=start[1]; ind[1]<start[1] + n[1] + nExtra[1]; ++ind[1]) {
-    for (ind[0]=start[0]; ind[0]<start[0] + n[0] + nExtra[0]; ++ind[0]) {
+  for (ind[1]=start_ghost[1]; ind[1]<start_ghost[1] + n_ghost[1]; ++ind[1]) {
+    for (ind[0]=start_ghost[0]; ind[0]<start_ghost[0] + n_ghost[0]; ++ind[0]) {
       if (stagCoord->dof[0]) {
         const PetscReal offs[2] = {0.0,0.0};
         for (c=0; c<2; ++c) {
@@ -116,13 +116,9 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
     }
   }
   ierr = DMStagVecRestoreArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dmCoord,&coord);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dmCoord,coordLocal,INSERT_VALUES,coord);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dmCoord,coordLocal,INSERT_VALUES,coord);CHKERRQ(ierr);
-  ierr = DMSetCoordinates(dm,coord);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)dm,(PetscObject)coord);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
-  ierr = VecDestroy(&coord);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm,coordLocal);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)dm,(PetscObject)coordLocal);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

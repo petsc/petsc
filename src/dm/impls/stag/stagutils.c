@@ -1243,9 +1243,17 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm,PetscInt const *lx,PetscInt const 
   DMStag supports 2 different types of coordinate DM: DMSTAG and DMPRODUCT.
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
+  Local coordinates are populated (using DMSetCoordinatesLocal()), linearly
+  extrapolated to ghost cells, including those outside the physical domain.
+  This is also done in case of periodic boundaries, meaning that the same
+  global point may have different coordinates in different local representations,
+  which are equivalent assuming a periodicity implied by the arguments to this function,
+  i.e. two points are equivalent if their difference is a multiple of (xmax - xmin)
+  in the x direction, (ymax - ymin) in the y direction, and (zmax - zmin) in the z direction.
+
   Level: advanced
 
-.seealso: DMSTAG, DMPRODUCT, DMStagSetUniformCoordinatesExplicit(), DMStagSetUniformCoordinatesProduct(), DMStagSetCoordinateDMType(), DMGetCoordinateDM(), DMGetCoordinates(), DMDASetUniformCoordinates()
+.seealso: DMSTAG, DMPRODUCT, DMStagSetUniformCoordinatesExplicit(), DMStagSetUniformCoordinatesProduct(), DMStagSetCoordinateDMType(), DMGetCoordinateDM(), DMGetCoordinates(), DMDASetUniformCoordinates(), DMBoundaryType
 @*/
 PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
@@ -1279,7 +1287,11 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,P
   Notes:
   DMStag supports 2 different types of coordinate DM: either another DMStag, or a DMProduct.
   If the grid is orthogonal, using DMProduct should be more efficient.
+
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
+
+  See the manual page for DMStagSetUniformCoordinates() for information on how
+  coordinates for dummy cells outside the physical domain boundary are populated.
 
   Level: beginner
 
@@ -1325,6 +1337,9 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscRea
   The per-dimension 1-dimensional DMStag objects that comprise the product
   always have active 0-cells (vertices, element boundaries) and 1-cells
   (element centers).
+
+  See the manual page for DMStagSetUniformCoordinates() for information on how
+  coordinates for dummy cells outside the physical domain boundary are populated.
 
   Level: intermediate
 
