@@ -81,6 +81,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = PetscDSCreate(PetscObjectComm((PetscObject) v), &ds);CHKERRQ(ierr);
   ierr = DMSetRegionDS(v, NULL, NULL, ds);CHKERRQ(ierr);
   ierr = PetscDSDestroy(&ds);CHKERRQ(ierr);
+  ierr = PetscHMapAuxCreate(&v->auxData);CHKERRQ(ierr);
   v->dmBC = NULL;
   v->coarseMesh = NULL;
   v->outputSequenceNum = -1;
@@ -734,6 +735,17 @@ PetscErrorCode  DMDestroy(DM *dm)
       ierr = PetscSFDestroy(&(*dm)->sfNatural);CHKERRQ(ierr);
     }
     ierr = PetscObjectDereference((PetscObject) (*dm)->sfMigration);CHKERRQ(ierr);
+  }
+  {
+    Vec     *auxData;
+    PetscInt n, i, off = 0;
+
+    ierr = PetscHMapAuxGetSize((*dm)->auxData, &n);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &auxData);CHKERRQ(ierr);
+    ierr = PetscHMapAuxGetVals((*dm)->auxData, &off, auxData);CHKERRQ(ierr);
+    for (i = 0; i < n; ++i) {ierr = VecDestroy(&auxData[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(auxData);CHKERRQ(ierr);
+    ierr = PetscHMapAuxDestroy(&(*dm)->auxData);CHKERRQ(ierr);
   }
   if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) {
     ierr = DMSetFineDM((*dm)->coarseMesh,NULL);CHKERRQ(ierr);
@@ -9506,5 +9518,157 @@ PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
     ierr = DMDestroy(&edm);CHKERRQ(ierr);
   }
   ierr = PetscFree2(exactSol, ctxs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMGetNumAuxiliaryVec - Get the number of auxiliary vectors associated with this DM
+
+  Not collective
+
+  Input Parameter:
+. dm     - The DM
+
+  Output Parameter:
+. numAux - The nubmer of auxiliary data vectors
+
+  Level: advanced
+
+.seealso: DMGetAuxiliaryLabels(), DMGetAuxiliaryVec(), DMSetAuxiliaryVec()
+@*/
+PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscHMapAuxGetSize(dm->auxData, numAux);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMGetAuxiliaryVec - Get the auxiliary vector for region specified by the given label and value
+
+  Not collective
+
+  Input Parameters:
++ dm     - The DM
+. label  - The DMLabel
+- value  - The label value indicating the region
+
+  Output Parameter:
+. aux    - The Vec holding auxiliary field data
+
+  Level: advanced
+
+.seealso: DMSetAuxiliaryVec(), DMGetNumAuxiliaryVec()
+@*/
+PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec *aux)
+{
+  PetscHashAuxKey key;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
+  key.label = label;
+  key.value = value;
+  ierr = PetscHMapAuxGet(dm->auxData, key, aux);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSetAuxiliaryVec - Set the auxiliary vector for region specified by the given label and value
+
+  Not collective
+
+  Input Parameters:
++ dm     - The DM
+. label  - The DMLabel
+. value  - The label value indicating the region
+- aux    - The Vec holding auxiliary field data
+
+  Level: advanced
+
+.seealso: DMGetAuxiliaryVec()
+@*/
+PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec aux)
+{
+  Vec             old;
+  PetscHashAuxKey key;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
+  key.label = label;
+  key.value = value;
+  ierr = PetscHMapAuxGet(dm->auxData, key, &old);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) aux);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject) old);CHKERRQ(ierr);
+  if (!aux) {ierr = PetscHMapAuxDel(dm->auxData, key);CHKERRQ(ierr);}
+  else      {ierr = PetscHMapAuxSet(dm->auxData, key, aux);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMGetAuxiliaryLabels - Get the labels and values for all auxiliary vectors in this DM
+
+  Not collective
+
+  Input Parameter:
+. dm      - The DM
+
+  Output Parameters:
++ labels  - The DMLabels for each Vec
+- values  - The label values for each Vec
+
+  Note: The arrays passed in must be at least as large as DMGetNumAuxiliaryVec().
+
+  Level: advanced
+
+.seealso: DMGetNumAuxiliaryVec(), DMGetAuxiliaryVec(), DMSetAuxiliaryVec()
+@*/
+PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[])
+{
+  PetscHashAuxKey *keys;
+  PetscInt         n, i, off = 0;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(labels, 2);
+  PetscValidPointer(values, 3);
+  ierr = DMGetNumAuxiliaryVec(dm, &n);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &keys);CHKERRQ(ierr);
+  ierr = PetscHMapAuxGetKeys(dm->auxData, &off, keys);CHKERRQ(ierr);
+  for (i = 0; i < n; ++i) {labels[i] = keys[i].label; values[i] = keys[i].value;}
+  ierr = PetscFree(keys);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMCopyAuxiliaryVec - Copy the auxiliary data to a new DM
+
+  Not collective
+
+  Input Parameter:
+. dm    - The DM
+
+  Output Parameter:
+. dmNew - The new DM, now with the same auxiliary data
+
+  Level: advanced
+
+.seealso: DMGetNumAuxiliaryVec(), DMGetAuxiliaryVec(), DMSetAuxiliaryVec()
+@*/
+PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscHMapAuxDestroy(&dmNew->auxData);CHKERRQ(ierr);
+  ierr = PetscHMapAuxDuplicate(dm->auxData, &dmNew->auxData);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

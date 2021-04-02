@@ -20,16 +20,9 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
       ierr = DMConvert(dm,DMPLEX,plex);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex);CHKERRQ(ierr);
       if (copy) {
-        PetscInt    i;
-        PetscObject obj;
-        const char *comps[3] = {"A","dmAux","dmCh"};
-
         ierr = DMCopyDMTS(dm, *plex);CHKERRQ(ierr);
         ierr = DMCopyDMSNES(dm, *plex);CHKERRQ(ierr);
-        for (i = 0; i < 3; i++) {
-          ierr = PetscObjectQuery((PetscObject) dm, comps[i], &obj);CHKERRQ(ierr);
-          ierr = PetscObjectCompose((PetscObject) *plex, comps[i], obj);CHKERRQ(ierr);
-        }
+        ierr = DMCopyAuxiliaryVec(dm, *plex);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscObjectReference((PetscObject) *plex);CHKERRQ(ierr);

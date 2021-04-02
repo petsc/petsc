@@ -12,6 +12,18 @@ PETSC_EXTERN PetscBool DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
 typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace);
 
+typedef struct _PetscHashAuxKey
+{
+  DMLabel  label;
+  PetscInt value;
+} PetscHashAuxKey;
+
+#define PetscHashAuxKeyHash(key) PetscHashCombine(PetscHashPointer((key).label),PetscHashInt((key).value))
+
+#define PetscHashAuxKeyEqual(k1,k2) (((k1).label == (k2).label) ? ((k1).value == (k2).value) : 0)
+
+PETSC_HASH_MAP(HMapAux, PetscHashAuxKey, Vec, PetscHashAuxKeyHash, PetscHashAuxKeyEqual, NULL)
+
 typedef struct _DMOps *DMOps;
 struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer);
@@ -219,6 +231,8 @@ struct _p_DM {
   DMLocalToGlobalHookLink ltoghook;
   /* Topology */
   PetscInt                dim;                  /* The topological dimension */
+  /* Auxiliary data */
+  PetscHMapAux            auxData;              /* Auxiliary DM and Vec for region denoted by the key */
   /* Flexible communication */
   PetscSF                 sfMigration;          /* SF for point distribution created during distribution */
   PetscSF                 sf;                   /* SF for parallel point overlap */

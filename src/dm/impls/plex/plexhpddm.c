@@ -58,32 +58,29 @@ PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCod
 
   /* material parameters */
   {
-    DM  dmAux;
     Vec A;
 
-    ierr = PetscObjectQuery((PetscObject)dm, "dmAux", (PetscObject*)&dmAux);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)dm, "A", (PetscObject*)&A);CHKERRQ(ierr);
-    if (dmAux) {
-      DM ocdm, odmAux;
+    ierr = DMGetAuxiliaryVec(dm, NULL, 0, &A);CHKERRQ(ierr);
+    if (A) {
+      DM dmAux, ocdm, odmAux;
+      Vec oA;
 
+      ierr = VecGetDM(A, &dmAux);CHKERRQ(ierr);
       ierr = DMClone(odm, &odmAux);CHKERRQ(ierr);
       ierr = DMGetCoordinateDM(odm, &ocdm);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(odmAux, ocdm);CHKERRQ(ierr);
       ierr = DMCopyDisc(dmAux, odmAux);CHKERRQ(ierr);
-      if (A) {
-        Vec oA;
 
-        ierr = DMGetLocalSection(dmAux, &sec);CHKERRQ(ierr);
-        ierr = PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec);CHKERRQ(ierr);
-        ierr = VecCreate(PetscObjectComm((PetscObject)A), &oA);CHKERRQ(ierr);
-        /* TODO: what if these values changes? */
-        ierr = DMPlexDistributeField(dmAux, sf, sec, A, osec, oA);CHKERRQ(ierr);
-        ierr = DMSetLocalSection(odmAux, osec);CHKERRQ(ierr);
-        ierr = PetscSectionDestroy(&osec);CHKERRQ(ierr);
-        ierr = PetscObjectCompose((PetscObject)odm, "A", (PetscObject)oA);CHKERRQ(ierr);
-        ierr = VecDestroy(&oA);CHKERRQ(ierr);
-      }
-      ierr = PetscObjectCompose((PetscObject)odm, "dmAux", (PetscObject)odmAux);CHKERRQ(ierr);
+      ierr = DMGetLocalSection(dmAux, &sec);CHKERRQ(ierr);
+      ierr = PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec);CHKERRQ(ierr);
+      ierr = VecCreate(PetscObjectComm((PetscObject)A), &oA);CHKERRQ(ierr);
+      ierr = VecSetDM(oA, odmAux);CHKERRQ(ierr);
+      /* TODO: what if these values changes? */
+      ierr = DMPlexDistributeField(dmAux, sf, sec, A, osec, oA);CHKERRQ(ierr);
+      ierr = DMSetLocalSection(odmAux, osec);CHKERRQ(ierr);
+      ierr = PetscSectionDestroy(&osec);CHKERRQ(ierr);
+      ierr = DMSetAuxiliaryVec(odm, NULL, 0, oA);CHKERRQ(ierr);
+      ierr = VecDestroy(&oA);CHKERRQ(ierr);
       ierr = DMDestroy(&odmAux);CHKERRQ(ierr);
     }
   }
