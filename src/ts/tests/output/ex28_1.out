@@ -1,0 +1,10 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 1 dimension:
+  0-cells: 201
+  1-cells: 200
+Labels:
+  marker: 1 strata with value/size (1 (2))
+  Face Sets: 2 strata with value/size (1 (1), 2 (1))
+  depth: 2 strata with value/size (0 (201), 1 (200))
+  celltype: 2 strata with value/size (1 (200), 0 (201))

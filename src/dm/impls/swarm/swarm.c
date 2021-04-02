@@ -7,6 +7,8 @@
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
 #include "../src/dm/impls/swarm/data_bucket.h"
+#include <petscdmlabel.h>
+#include <petscsection.h>
 
 PetscLogEvent DMSWARM_Migrate, DMSWARM_SetSizes, DMSWARM_AddPoints, DMSWARM_RemovePoints, DMSWARM_Sort;
 PetscLogEvent DMSWARM_DataExchangerTopologySetup, DMSWARM_DataExchangerBegin, DMSWARM_DataExchangerEnd;
@@ -400,6 +402,28 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mass, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mass, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Returns empty matrix for use with SNES FD */
+static PetscErrorCode DMCreateMatrix_Swarm(DM sw, Mat* m){
+  Vec            field;
+  PetscInt       size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetGlobalVector(sw, &field);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(field, &size);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(sw, &field);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD, m);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(*m);CHKERRQ(ierr);
+  ierr = MatSetSizes(*m, PETSC_DECIDE, PETSC_DECIDE, size, size);
+  ierr = MatSeqAIJSetPreallocation(*m, 1, NULL);CHKERRQ(ierr);
+  ierr = MatZeroEntries(*m);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*m, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*m, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatShift(*m, 1.0);CHKERRQ(ierr);
+  ierr = MatSetDM(*m, sw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1566,6 +1590,7 @@ PetscErrorCode DMDestroy_Swarm(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (--swarm->refct > 0) PetscFunctionReturn(0);
   ierr = DMSwarmDataBucketDestroy(&swarm->db);CHKERRQ(ierr);
   if (swarm->sort_context) {
     ierr = DMSwarmSortDestroy(&swarm->sort_context);CHKERRQ(ierr);
@@ -1636,6 +1661,147 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   DMSwarmGetCellSwarm - Extracts a single cell from the DMSwarm object, returns it as a single cell DMSwarm.
+   The cell DM is filtered for fields of that cell, and the filtered DM is used as the cell DM of the new swarm object.
+
+   Important: Changes to this cell of the swarm will be lost if they are made prior to restoring this cell.
+
+   Noncollective
+
+   Input parameters:
++  sw - the DMSwarm
+-  cellID - the integer id of the cell to be extracted and filtered
+
+   Output parameters:
+.  cellswarm - The new DMSwarm
+
+   Level: beginner
+
+   Note: This presently only supports DMSWARM_PIC type
+
+.seealso: DMSwarmRestoreCellSwarm()
+@*/
+PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
+{
+  DM_Swarm      *original = (DM_Swarm*) sw->data;
+  DMLabel        label;
+  DM             dmc, subdmc;
+  PetscInt      *pids, particles, dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Configure new swarm */
+  ierr = DMSetType(cellswarm, DMSWARM);CHKERRQ(ierr);
+  ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(cellswarm, dim);CHKERRQ(ierr);
+  ierr = DMSwarmSetType(cellswarm, DMSWARM_PIC);CHKERRQ(ierr);
+  /* Destroy the unused, unconfigured data bucket to prevent stragglers in memory */
+  ierr = DMSwarmDataBucketDestroy(&((DM_Swarm*)cellswarm->data)->db);
+  ierr = DMSwarmSortGetAccess(sw);CHKERRQ(ierr);
+  ierr = DMSwarmSortGetNumberOfPointsPerCell(sw, cellID, &particles);CHKERRQ(ierr);
+  ierr = DMSwarmSortGetPointsPerCell(sw, cellID, &particles, &pids);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketCreateFromSubset(original->db, particles, pids, &((DM_Swarm*)cellswarm->data)->db);
+  ierr = DMSwarmSortRestoreAccess(sw);CHKERRQ(ierr);
+  ierr = PetscFree(pids);CHKERRQ(ierr);
+  ierr = DMSwarmGetCellDM(sw, &dmc);CHKERRQ(ierr);
+  ierr = DMLabelCreate(PetscObjectComm((PetscObject)sw), "singlecell", &label);CHKERRQ(ierr);
+  ierr = DMAddLabel(dmc, label);CHKERRQ(ierr);
+  ierr = DMLabelSetValue(label, cellID, 1);CHKERRQ(ierr);
+  ierr = DMPlexFilter(dmc, label, 1, &subdmc);CHKERRQ(ierr);
+  ierr = DMSwarmSetCellDM(cellswarm, subdmc);
+  ierr = DMLabelDestroy(&label);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMSwarmRestoreCellSwarm - Restores a DMSwarm object obtained with DMSwarmGetCellSwarm. All fields are copied back into the parent swarm.
+
+   Noncollective
+
+   Input parameters:
++  sw - the parent DMSwarm
+.  cellID - the integer id of the cell to be copied back into the parent swarm
+-  cellswarm - the cell swarm object
+
+   Level: beginner
+
+   Note: This only supports DMSWARM_PIC types of DMSwarms
+
+.seealso: DMSwarmGetCellSwarm()
+@*/
+PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
+{
+  DM                dmc;
+  PetscInt         *pids, particles, p;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSwarmSortGetAccess(sw);CHKERRQ(ierr);
+  ierr = DMSwarmSortGetPointsPerCell(sw, cellID, &particles, &pids);CHKERRQ(ierr);
+  ierr = DMSwarmSortRestoreAccess(sw);CHKERRQ(ierr);
+  /* Pointwise copy of each particle based on pid. The parent swarm may not be altered during this process. */
+  for (p=0; p<particles; ++p){
+    ierr = DMSwarmDataBucketCopyPoint(((DM_Swarm*)cellswarm->data)->db,pids[p],((DM_Swarm*)sw->data)->db,pids[p]);CHKERRQ(ierr);
+  }
+  /* Free memory, destroy cell dm */
+  ierr = DMSwarmGetCellDM(cellswarm, &dmc);
+  ierr = DMDestroy(&dmc);
+  ierr = PetscFree(pids);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode DMClone_Swarm(DM, DM *);
+
+static PetscErrorCode DMInitialize_Swarm(DM sw)
+{
+  PetscFunctionBegin;
+  sw->dim  = 0;
+  sw->ops->view                            = DMView_Swarm;
+  sw->ops->load                            = NULL;
+  sw->ops->setfromoptions                  = NULL;
+  sw->ops->clone                           = DMClone_Swarm;
+  sw->ops->setup                           = DMSetup_Swarm;
+  sw->ops->createlocalsection              = NULL;
+  sw->ops->createdefaultconstraints        = NULL;
+  sw->ops->createglobalvector              = DMCreateGlobalVector_Swarm;
+  sw->ops->createlocalvector               = DMCreateLocalVector_Swarm;
+  sw->ops->getlocaltoglobalmapping         = NULL;
+  sw->ops->createfieldis                   = NULL;
+  sw->ops->createcoordinatedm              = NULL;
+  sw->ops->getcoloring                     = NULL;
+  sw->ops->creatematrix                    = DMCreateMatrix_Swarm;
+  sw->ops->createinterpolation             = NULL;
+  sw->ops->createinjection                 = NULL;
+  sw->ops->createmassmatrix                = DMCreateMassMatrix_Swarm;
+  sw->ops->refine                          = NULL;
+  sw->ops->coarsen                         = NULL;
+  sw->ops->refinehierarchy                 = NULL;
+  sw->ops->coarsenhierarchy                = NULL;
+  sw->ops->globaltolocalbegin              = NULL;
+  sw->ops->globaltolocalend                = NULL;
+  sw->ops->localtoglobalbegin              = NULL;
+  sw->ops->localtoglobalend                = NULL;
+  sw->ops->destroy                         = DMDestroy_Swarm;
+  sw->ops->createsubdm                     = NULL;
+  sw->ops->getdimpoints                    = NULL;
+  sw->ops->locatepoints                    = NULL;
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode DMClone_Swarm(DM dm, DM *newdm)
+{
+  DM_Swarm       *swarm = (DM_Swarm *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  swarm->refct++;
+  (*newdm)->data = swarm;
+  ierr = PetscObjectChangeTypeName((PetscObject) *newdm, DMSWARM);CHKERRQ(ierr);
+  ierr = DMInitialize_Swarm(*newdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
 
  DMSWARM = "swarm" - A DM object used to represent arrays of data (fields) of arbitrary data type.
@@ -1696,50 +1862,18 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr     = PetscNewLog(dm,&swarm);CHKERRQ(ierr);
   dm->data = swarm;
-
   ierr = DMSwarmDataBucketCreate(&swarm->db);CHKERRQ(ierr);
   ierr = DMSwarmInitializeFieldRegister(dm);CHKERRQ(ierr);
-
+  swarm->refct = 1;
   swarm->vec_field_set = PETSC_FALSE;
   swarm->issetup = PETSC_FALSE;
   swarm->swarm_type = DMSWARM_BASIC;
   swarm->migrate_type = DMSWARM_MIGRATE_BASIC;
   swarm->collect_type = DMSWARM_COLLECT_BASIC;
   swarm->migrate_error_on_missing_point = PETSC_FALSE;
-
   swarm->dmcell = NULL;
   swarm->collect_view_active = PETSC_FALSE;
   swarm->collect_view_reset_nlocal = -1;
-
-  dm->dim  = 0;
-  dm->ops->view                            = DMView_Swarm;
-  dm->ops->load                            = NULL;
-  dm->ops->setfromoptions                  = NULL;
-  dm->ops->clone                           = NULL;
-  dm->ops->setup                           = DMSetup_Swarm;
-  dm->ops->createlocalsection              = NULL;
-  dm->ops->createdefaultconstraints        = NULL;
-  dm->ops->createglobalvector              = DMCreateGlobalVector_Swarm;
-  dm->ops->createlocalvector               = DMCreateLocalVector_Swarm;
-  dm->ops->getlocaltoglobalmapping         = NULL;
-  dm->ops->createfieldis                   = NULL;
-  dm->ops->createcoordinatedm              = NULL;
-  dm->ops->getcoloring                     = NULL;
-  dm->ops->creatematrix                    = NULL;
-  dm->ops->createinterpolation             = NULL;
-  dm->ops->createinjection                 = NULL;
-  dm->ops->createmassmatrix                = DMCreateMassMatrix_Swarm;
-  dm->ops->refine                          = NULL;
-  dm->ops->coarsen                         = NULL;
-  dm->ops->refinehierarchy                 = NULL;
-  dm->ops->coarsenhierarchy                = NULL;
-  dm->ops->globaltolocalbegin              = NULL;
-  dm->ops->globaltolocalend                = NULL;
-  dm->ops->localtoglobalbegin              = NULL;
-  dm->ops->localtoglobalend                = NULL;
-  dm->ops->destroy                         = DMDestroy_Swarm;
-  dm->ops->createsubdm                     = NULL;
-  dm->ops->getdimpoints                    = NULL;
-  dm->ops->locatepoints                    = NULL;
+  ierr = DMInitialize_Swarm(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

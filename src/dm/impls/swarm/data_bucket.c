@@ -461,7 +461,7 @@ PetscErrorCode DMSwarmDataBucketCreateFromSubset(DMSwarmDataBucket DBIn,const Pe
   ierr = DMSwarmDataBucketSetSizes(*DB,L,buffer);CHKERRQ(ierr);
   /* now copy the desired guys from DBIn => DB */
   for (p = 0; p < N; ++p) {
-    ierr = DMSwarmDataBucketCopyPoint(DBIn,list[p], *DB,p);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketCopyPoint(DBIn,list[p], *DB,list[p]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

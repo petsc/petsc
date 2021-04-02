@@ -1,0 +1,59 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 6
+  1-cells: 9
+  2-cells: 4
+Labels:
+  celltype: 3 strata with value/size (0 (6), 3 (4), 1 (9))
+  depth: 3 strata with value/size (0 (6), 1 (9), 2 (4))
+  marker: 1 strata with value/size (1 (12))
+  Face Sets: 1 strata with value/size (1 (6))
+DM Object: Particles 1 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 8 
+  buffer             = 0 
+  allocated          = 8 
+  nfields registered = 5 
+    [  0]     DMSwarm_pid : Mem. usage       = 6.40e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  1]    DMSwarm_rank : Mem. usage       = 3.20e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  2] DMSwarmPIC_coor : Mem. usage       = 1.28e-04 (MB) [rank0]
+                            blocksize        = 2 
+                            atomic size      = 16 [full block, bs=2]
+                            atomic size/item = 8 
+    [  3]  DMSwarm_cellid : Mem. usage       = 3.20e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  4]      kinematics : Mem. usage       = 1.28e-04 (MB) [rank0]
+                            blocksize        = 2 
+                            atomic size      = 16 [full block, bs=2]
+                            atomic size/item = 8 
+  Total mem. usage                           = 3.84e-04 (MB) (collective)
+DM Object: 1 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 8 
+  buffer             = 0 
+  allocated          = 8 
+  nfields registered = 5 
+    [  0]     DMSwarm_pid : Mem. usage       = 6.40e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  1]    DMSwarm_rank : Mem. usage       = 3.20e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  2] DMSwarmPIC_coor : Mem. usage       = 1.28e-04 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 16 
+    [  3]  DMSwarm_cellid : Mem. usage       = 3.20e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  4]      kinematics : Mem. usage       = 1.28e-04 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 16 
+  Total mem. usage                           = 3.84e-04 (MB) (collective)
