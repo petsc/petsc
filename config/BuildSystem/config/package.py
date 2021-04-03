@@ -1169,15 +1169,28 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
 
     mpicc = os.path.join(installDir,"bin",mpiccName)
     if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
+    try:
+      self.logPrint('Showing compiler and options used by newly built MPI')
+      self.executeShellCommand(mpicc + ' -show', log = self.log)[0]
+    except:
+      pass
     if hasattr(self.compilers, 'CXX'):
       mpicxx = os.path.join(installDir,"bin",mpicxxName)
       if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
+      try:
+        self.executeShellCommand(mpicxx + ' -show', log = self.log)[0]
+      except:
+        pass
     if hasattr(self.compilers, 'FC'):
       if self.fortran.fortranIsF90:
         mpifc = os.path.join(installDir,"bin",mpif90Name)
       else:
         mpifc = os.path.join(installDir,"bin",mpif77Name)
       if not os.path.isfile(mpifc): raise RuntimeError('Could not locate installed MPI compiler: '+mpifc)
+      try:
+        self.executeShellCommand(mpifc + ' -show', log = self.log)[0]
+      except:
+        pass
     # redo compiler detection
     self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
     self.compilers.__init__(self.framework)
