@@ -398,6 +398,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       } else {  // GPU like assembly for debugging
         PetscInt      fieldA,idx,q,f,g,d,nr,nc,rows0[LANDAU_MAX_Q_FACE],cols0[LANDAU_MAX_Q_FACE],rows[LANDAU_MAX_Q_FACE],cols[LANDAU_MAX_Q_FACE];
         PetscScalar   vals[LANDAU_MAX_Q_FACE*LANDAU_MAX_Q_FACE],row_scale[LANDAU_MAX_Q_FACE],col_scale[LANDAU_MAX_Q_FACE];
+        for (g=0;g<LANDAU_MAX_Q_FACE;g++) { col_scale[g]=0.; cols0[g]=0.; }
         /* assemble - from the diagonal (I,I) in this format for DMPlexMatSetClosure */
         for (fieldA = 0; fieldA < Nf ; fieldA++) {
           LandauIdx *const Idxs = &maps->gIdx[ej-cStart][fieldA][0];
