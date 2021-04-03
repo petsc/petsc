@@ -229,7 +229,7 @@ static PetscErrorCode PetscViewerGLVisGetNewWindow_Private(PetscViewer viewer,Pe
   /* if we could not estabilish a connection the first time,
      we disable the socket viewer */
   ldis = ierr ? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPIU_Allreduce(&ldis,&dis,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)viewer));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&ldis,&dis,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)viewer));CHKERRMPI(ierr);
   if (dis) {
     socket->status = PETSCVIEWERGLVIS_DISABLED;
     ierr  = PetscViewerDestroy(&window);CHKERRQ(ierr);
@@ -357,7 +357,7 @@ PetscErrorCode PetscViewerGLVisGetStatus_Private(PetscViewer viewer, PetscViewer
       if (!socket->window[i])
         lconn = PETSC_FALSE;
 
-    ierr = MPIU_Allreduce(&lconn,&conn,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)viewer));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&lconn,&conn,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)viewer));CHKERRMPI(ierr);
     if (conn) socket->status = PETSCVIEWERGLVIS_CONNECTED;
   }
   *sockstatus = socket->status;
@@ -870,7 +870,7 @@ PetscErrorCode PetscGLVisCollectiveEnd(MPI_Comm comm,PetscViewer *win)
 
   PetscFunctionBegin;
   flag = PetscGLVisBrokenPipe;
-  ierr = MPIU_Allreduce(&flag,&brokenpipe,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&flag,&brokenpipe,1,MPIU_BOOL,MPI_LOR,comm);CHKERRMPI(ierr);
   if (brokenpipe) {
     FILE *sock, *null = fopen(PETSC_DEVNULL,"w");
     ierr = PetscViewerASCIIGetPointer(*win,&sock);CHKERRQ(ierr);

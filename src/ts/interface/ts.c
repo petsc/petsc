@@ -5141,7 +5141,7 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
   err_loc[4] = (PetscReal)na_loc;
   err_loc[5] = (PetscReal)nr_loc;
 
-  ierr = MPIU_Allreduce(err_loc,err_glb,6,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(err_loc,err_glb,6,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
 
   gsum   = err_glb[0];
   gsuma  = err_glb[1];
@@ -5301,7 +5301,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
   err_loc[0] = max;
   err_loc[1] = maxa;
   err_loc[2] = maxr;
-  ierr  = MPIU_Allreduce(err_loc,err_glb,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(err_loc,err_glb,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   gmax   = err_glb[0];
   gmaxa  = err_glb[1];
   gmaxr  = err_glb[2];
@@ -5509,7 +5509,7 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
   err_loc[4] = (PetscReal)na_loc;
   err_loc[5] = (PetscReal)nr_loc;
 
-  ierr = MPIU_Allreduce(err_loc,err_glb,6,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(err_loc,err_glb,6,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
 
   gsum   = err_glb[0];
   gsuma  = err_glb[1];
@@ -5673,7 +5673,7 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
   err_loc[0] = max;
   err_loc[1] = maxa;
   err_loc[2] = maxr;
-  ierr  = MPIU_Allreduce(err_loc,err_glb,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(err_loc,err_glb,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   gmax   = err_glb[0];
   gmaxa  = err_glb[1];
   gmaxr  = err_glb[2];
@@ -5771,7 +5771,7 @@ PetscErrorCode TSGetCFLTime(TS ts,PetscReal *cfltime)
 
   PetscFunctionBegin;
   if (ts->cfltime < 0) {
-    ierr = MPIU_Allreduce(&ts->cfltime_local,&ts->cfltime,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&ts->cfltime_local,&ts->cfltime,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   }
   *cfltime = ts->cfltime;
   PetscFunctionReturn(0);

@@ -510,7 +510,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
       ierr   = MatRestoreRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
     }
     numRows = rEnd - rStart;
-    ierr    = MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr    = MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
     ierr    = PetscMalloc2(colMax,&newCols,colMax,&newVals);CHKERRQ(ierr);
     ierr    = MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
     for (r = rStart; r < rStart+maxRows; ++r) {

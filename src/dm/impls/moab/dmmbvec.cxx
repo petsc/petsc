@@ -445,7 +445,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Ran
 #endif
 
 #ifdef MOAB_HAVE_MPI
-  ierr = MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, (((PetscObject)dm)->comm));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, (((PetscObject)dm)->comm));CHKERRMPI(ierr);
 #else
   gnative_vec = lnative_vec;
 #endif
@@ -597,7 +597,7 @@ PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, char** 
 
 #ifdef MOAB_HAVE_MPI
   /* Make sure that n is consistent across all processes */
-  ierr = MPIU_Allreduce(&n, &global_n, 1, MPI_INT, MPI_MAX, pcomm->comm());CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n, &global_n, 1, MPI_INT, MPI_MAX, pcomm->comm());CHKERRMPI(ierr);
 #else
   global_n = n;
 #endif

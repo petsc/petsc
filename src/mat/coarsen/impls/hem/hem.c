@@ -773,7 +773,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
         }
         /* receive requests, send response, clear lists */
         kk     = nactive_edges;
-        ierr   = MPIU_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr); /* not correct syncronization and global */
+        ierr   = MPIU_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr); /* not correct syncronization and global */
         nSend2 = 0;
         while (1) {
 #define BF_SZ 10000

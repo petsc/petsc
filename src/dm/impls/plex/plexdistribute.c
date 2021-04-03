@@ -715,7 +715,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = DMPlexGetDepth(dm, &ldepth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
   if ((ldepth >= 0) && (depth != ldepth)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", ldepth, depth);
   ierr = PetscLogEventBegin(DMPLEX_PartStratSF,dm,0,0,0);CHKERRQ(ierr);
 
@@ -1085,7 +1085,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
   if (depthLabel) {ierr = PetscObjectStateGet((PetscObject) depthLabel, &depthState);CHKERRQ(ierr);}
   lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRMPI(ierr);
   if (sendDepth) {
     ierr = DMPlexGetDepthLabel(dmParallel, &dmParallel->depthLabel);CHKERRQ(ierr);
     ierr = DMRemoveLabelBySelf(dmParallel, &dmParallel->depthLabel, PETSC_FALSE);CHKERRQ(ierr);
@@ -1113,7 +1113,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
       /* Put in any missing strata which can occur if users are managing the depth label themselves */
       PetscInt gdepth;
 
-      ierr = MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
       if ((depth >= 0) && (gdepth != depth)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", depth, gdepth);
       for (d = 0; d <= gdepth; ++d) {
         PetscBool has;
@@ -1125,7 +1125,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     ierr = DMAddLabel(dmParallel, labelNew);CHKERRQ(ierr);
     /* Put the output flag in the new label */
     if (hasLabels) {ierr = DMGetLabelOutput(dm, name, &lisOutput);CHKERRQ(ierr);}
-    ierr = MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
     ierr = PetscObjectGetName((PetscObject) labelNew, &name);CHKERRQ(ierr);
     ierr = DMSetLabelOutput(dmParallel, name, isOutput);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);

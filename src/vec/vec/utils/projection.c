@@ -766,7 +766,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   ierr = VecRestoreArrayRead(XL,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(XU,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(DX,&dx);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&localmax,stepmax,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&localmax,stepmax,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)X));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -836,15 +836,15 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
 
   if (boundmin){
-    ierr = MPIU_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
     ierr = PetscInfo1(X,"Step Bound Info: Closest Bound: %20.19e\n",(double)*boundmin);CHKERRQ(ierr);
   }
   if (wolfemin){
-    ierr = MPIU_Allreduce(&localwolfemin,wolfemin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&localwolfemin,wolfemin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
     ierr = PetscInfo1(X,"Step Bound Info: Wolfe: %20.19e\n",(double)*wolfemin);CHKERRQ(ierr);
   }
   if (boundmax) {
-    ierr = MPIU_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
     if (*boundmax < 0) *boundmax=PETSC_INFINITY;
     ierr = PetscInfo1(X,"Step Bound Info: Max: %20.19e\n",(double)*boundmax);CHKERRQ(ierr);
   }
@@ -888,7 +888,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   }
   ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(DX,&dx);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&stepmax,step,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&stepmax,step,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)X));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 

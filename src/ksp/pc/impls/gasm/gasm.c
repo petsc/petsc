@@ -404,7 +404,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscMPIInt inwork,outwork;
       /* determine global number of subdomains and the max number of local subdomains */
       inwork     = osm->n;
-      ierr       = MPIU_Allreduce(&inwork,&outwork,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr       = MPIU_Allreduce(&inwork,&outwork,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
       osm->nmax  = outwork;
     }
     if (osm->N == PETSC_DETERMINE) {

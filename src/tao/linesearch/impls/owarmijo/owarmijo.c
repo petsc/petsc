@@ -233,7 +233,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 
     partgdx=0.0;
     ierr = ProjWork_OWLQN(armP->work,x,g_old,&partgdx);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&partgdx,&gdx,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&partgdx,&gdx,1,MPIU_REAL,MPIU_SUM,comm);CHKERRMPI(ierr);
 
     /* Check the condition of gdx */
     if (PetscIsInfOrNanReal(gdx)) {

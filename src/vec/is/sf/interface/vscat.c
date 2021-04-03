@@ -805,7 +805,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     }
 
     /* One stone (the expensive allreduce) two birds: pattern[] tells if it is ToAll or ToZero */
-    ierr   = MPIU_Allreduce(MPI_IN_PLACE,pattern,2,MPIU_INT,MPI_LAND,xcomm);CHKERRQ(ierr);
+    ierr   = MPIU_Allreduce(MPI_IN_PLACE,pattern,2,MPIU_INT,MPI_LAND,xcomm);CHKERRMPI(ierr);
 
     if (pattern[0] || pattern[1]) {
       ierr = PetscSFCreate(xcomm,&sf);CHKERRQ(ierr);
@@ -838,7 +838,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     m[1] = -bsy;
   }
   /* Get max and min of bsx,bsy over all processes in one allreduce */
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_MAX,bigcomm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_MAX,bigcomm);CHKERRMPI(ierr);
   max = m[0]; min = -m[1];
 
   /* Since we used allreduce above, all ranks will have the same min and max. min==max
@@ -850,7 +850,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     ierr = VecGetLocalSize(y,&ylen);CHKERRQ(ierr);
     m[0] = xlen%min;
     m[1] = ylen%min;
-    ierr = MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_LOR,bigcomm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_LOR,bigcomm);CHKERRMPI(ierr);
     if (!m[0] && !m[1]) can_do_block_opt = PETSC_TRUE;
   }
 

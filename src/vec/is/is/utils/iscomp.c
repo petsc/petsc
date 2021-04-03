@@ -84,7 +84,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
       ierr = PetscFree(a2);CHKERRQ(ierr);
     }
     ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -154,7 +154,7 @@ PetscErrorCode  ISEqualUnsorted(IS is1,IS is2,PetscBool  *flg)
       ierr = ISRestoreIndices(is2,&ptr2);CHKERRQ(ierr);
     }
     ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -284,7 +284,7 @@ PETSC_INTERN const char SNESCitation[];
     if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Nan or Inf norm");\
     else {\
       PetscBool domainerror;\
-      PetscErrorCode ierr = MPIU_Allreduce(&snes->domainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);\
+      PetscErrorCode ierr = MPIU_Allreduce(&snes->domainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);\
       if (domainerror)  {\
         snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
         snes->domainerror = PETSC_FALSE;\
@@ -296,7 +296,7 @@ PETSC_INTERN const char SNESCitation[];
 #define SNESCheckJacobianDomainerror(snes) do { \
   if (snes->checkjacdomainerror) {\
     PetscBool domainerror;\
-    PetscErrorCode ierr = MPIU_Allreduce(&snes->jacobiandomainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);\
+    PetscErrorCode ierr = MPIU_Allreduce(&snes->jacobiandomainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);\
     if (domainerror) {\
       snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN;\
       if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Jacobian domain error");\
@@ -315,7 +315,7 @@ PETSC_INTERN const char SNESCitation[];
     if (kspreason < 0) {\
       if (kspreason == KSP_DIVERGED_NANORINF) {\
         PetscBool domainerror;\
-        ierr = MPIU_Allreduce(&snes->domainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);\
+        ierr = MPIU_Allreduce(&snes->domainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);\
         if (domainerror)  snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;\
         else              snes->reason = SNES_DIVERGED_LINEAR_SOLVE;                  \
         PetscFunctionReturn(0);\

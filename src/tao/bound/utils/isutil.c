@@ -281,11 +281,11 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   ierr = ISDestroy(inactive);CHKERRQ(ierr);
 
   /* Collect global sizes */
-  ierr = MPIU_Allreduce(&n_isl, &N_isl, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isu, &N_isu, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isf, &N_isf, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isa, &N_isa, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isi, &N_isi, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isl, &N_isl, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&n_isu, &N_isu, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&n_isf, &N_isf, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&n_isa, &N_isa, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&n_isi, &N_isi, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
 
   /* Create index set for lower bounded variables */
   if (N_isl > 0) {
@@ -451,6 +451,6 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
     ierr = VecRestoreArrayRead(XU, &xu);CHKERRQ(ierr);
     ierr = VecRestoreArray(Xout, &xout);CHKERRQ(ierr);
   }
-  ierr = MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }

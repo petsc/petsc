@@ -1774,7 +1774,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
         ierr  = ISCreateGeneral(PetscObjectComm((PetscObject)dm), fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
         in[0] = -fieldNc[f];
         in[1] = fieldNc[f];
-        ierr  = MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+        ierr  = MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
         bs    = (-out[0] == out[1]) ? out[1] : 1;
         ierr  = ISSetBlockSize((*fields)[f], bs);CHKERRQ(ierr);
       }
@@ -4055,8 +4055,8 @@ PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
   ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(cdim, &count);CHKERRQ(ierr);
   ierr = DMGetLocalBoundingBox(dm, lmin, lmax);CHKERRQ(ierr);
-  if (gmin) {ierr = MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);}
-  if (gmax) {ierr = MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);}
+  if (gmin) {ierr = MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject) dm));CHKERRMPI(ierr);}
+  if (gmax) {ierr = MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject) dm));CHKERRMPI(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -4392,7 +4392,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
   }
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
   if (!gvalid) {
     ierr = DMView(dm, NULL);CHKERRQ(ierr);
     SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Inconsistent local and global sections");
@@ -6815,7 +6815,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(areLocalized, 2);
   ierr = DMGetCoordinatesLocalizedLocal(dm,&localized);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&localized,areLocalized,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&localized,areLocalized,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 

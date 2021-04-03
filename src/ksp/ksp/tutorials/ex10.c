@@ -130,7 +130,7 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(A,NULL,&n1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(b,&n2);CHKERRQ(ierr);
   same = (n1 == n2)? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PETSC_COMM_WORLD);CHKERRMPI(ierr);
 
   if (!same) { /* create a new vector b by padding the old one */
     ierr = VecCreate(PETSC_COMM_WORLD,&b2);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(A,NULL,&n1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(b,&n2);CHKERRQ(ierr);
   same = (n1 == n2)? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PETSC_COMM_WORLD);CHKERRMPI(ierr);
 
   if (!same) { /* create a new vector b by padding the old one */
     ierr = VecCreate(PETSC_COMM_WORLD,&b2);CHKERRQ(ierr);

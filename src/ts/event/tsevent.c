@@ -326,7 +326,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   /* Handle termination events and step restart */
   for (i=0; i<event->nevents_zero; i++) if (event->terminate[event->events_zero[i]]) terminate = PETSC_TRUE;
   inflag[0] = restart; inflag[1] = terminate;
-  ierr = MPIU_Allreduce(inflag,outflag,2,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(inflag,outflag,2,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRMPI(ierr);
   restart = outflag[0]; terminate = outflag[1];
   if (restart) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
   if (terminate) {ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);}
@@ -410,7 +410,7 @@ static PetscErrorCode TSEventDetection(TS ts)
     }
   }
   in[0] = event->status; in[1] = rollback;
-  ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   event->status = (TSEventStatus)out[0]; rollback = out[1];
   if (rollback) event->status = TSEVENT_LOCATED_INTERVAL;
   PetscFunctionReturn(0);
@@ -470,7 +470,7 @@ static PetscErrorCode TSEventLocation(TS ts,PetscReal *dt)
     }
   }
   in = event->status;
-  ierr = MPIU_Allreduce(&in,&out,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&in,&out,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   event->status = (TSEventStatus)out;
   if (event->status == TSEVENT_ZERO) {
       for (i=0; i<event->nevents; i++) event->side[i] = 0;
@@ -528,7 +528,7 @@ PetscErrorCode TSEventHandler(TS ts)
       ierr = TSSetConvergedReason(ts,TS_CONVERGED_ITERATING);CHKERRQ(ierr);
       event->iterctr++;
     }
-    ierr = MPIU_Allreduce(&dt,&dt_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&dt,&dt_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
     ierr = TSSetTimeStep(ts,dt_min);CHKERRQ(ierr);
 
     /* Found the zero crossing */

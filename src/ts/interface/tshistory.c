@@ -8,7 +8,7 @@
     PetscErrorCode _7_ierr;                                             \
     PetscInt b1[2],b2[2];                                               \
     b1[0] = -b; b1[1] = b;                                              \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,a);CHKERRQ(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,a);CHKERRMPI(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(a,PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c); \
   } while (0)
 
@@ -17,7 +17,7 @@
     PetscErrorCode _7_ierr;                                             \
     PetscMPIInt b1[2],b2[2];                                            \
     b1[0] = -(PetscMPIInt)b; b1[1] = (PetscMPIInt)b;                    \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,a);CHKERRQ(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,a);CHKERRMPI(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(a,PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",c); \
   } while (0)
 
