@@ -1283,17 +1283,28 @@ class Configure(config.base.Configure):
     raise RuntimeError('Bad compiler flag: '+flag)
 
   def generatePICGuesses(self):
-    yield ''
     if self.language[-1] == 'CUDA':
       yield '-Xcompiler -fPIC'
-    elif config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
-      yield '-fPIC'
+      return
+    if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
+      PICFlags = ['-fPIC']
     else:
-      yield '-PIC'
-      yield '-fPIC'
-      yield '-KPIC'
-      yield '-qpic'
-    return
+      PICFlags = ['-PIC','-fPIC','-KPIC','-qpic']
+    try:
+      output = self.executeShellCommand(self.getCompiler() + ' -show', log = self.log)[0]
+    except:
+      self.logPrint('Skipping checking MPI compiler command for PIC flag since MPI compiler -show causes an exception so is likly not an MPI compiler')
+      output = ''
+    output = output + ' ' + getattr(self, self.getCompilerFlagsArg(1)) + ' '
+    # Try without specific PIC flag only if the MPI compiler or user compiler flag already provides a PIC option
+    for i in PICFlags:
+      if output.find(' '+i+' ') > -1:
+        self.logPrint('Trying no specific compiler flag for PIC code since MPI compiler or current flags seem to provide such a flag with '+i)
+        yield ''
+        break
+    for i in PICFlags:
+      yield i
+    yield ''
 
   def checkPIC(self):
     '''Determine the PIC option for each compiler'''
