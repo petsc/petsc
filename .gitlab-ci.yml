@@ -111,6 +111,44 @@ c99-mlib-static-py2:
     CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
     TEST_SEARCH: snes_tutorials-ex19%
 
+petsc4py-install:
+  extends: .stage-2
+  tags:
+    - linux-stage2
+  variables:
+    PYTHON: python3
+    T_PREFIX: petsc-install
+    T_DESTDIR: petsc-destdir
+    T_PETSC4PY: src/binding/petsc4py
+    T_VALIDATE_CMD: lib/petsc/bin/maint/validate-petsc4py.sh
+  script:
+    - printf "PATH:$PATH\n"
+    - mkdir hide
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
+    - ${PYTHON} ./configure --prefix="${PWD}/${T_PREFIX}" --with-petsc4py=1 --with-debugging=0 --with-mpi-dir=/home/glci/soft/mpich-3.3.2
+    - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
+    - printf "====== Test A. Install into staging directory then into prefix directory (mimics distro package recipe) =====\n"
+    - make install DESTDIR="${PWD}/${T_DESTDIR}"
+    - test "$(find ${PWD}/${T_PREFIX} -mindepth 1 | wc -l)" -eq 0
+    - test "$(find ${PWD}/${T_DESTDIR} -mindepth 1 | wc -l)" -gt 0
+    - (cd "${PWD}/${T_DESTDIR}" && find * -exec install -v -D "{}" "/{}" \; )
+    - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
+    - rm -r "${PWD}/${T_PREFIX}" "${PWD}/${T_DESTDIR}" && mkdir "${PWD}/${T_PREFIX}"
+    - printf "====== Test B. Install directly into prefix directory =====\n"
+    - make install
+    - test "$(find ${PWD}/${T_PREFIX} -mindepth 1 | wc -l)" -gt 0
+    - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
+    - rm -r "${PWD}/${T_PREFIX}"/*/petsc4py*
+    - printf "====== Test C. Install manually with setuptools =====\n"
+    - export PETSC_DIR="${PWD}/${T_PREFIX}" && (cd "${T_PETSC4PY}" && ${PYTHON} setup.py build)
+    - export PETSC_DIR="${PWD}/${T_PREFIX}" P="${PWD}" && (cd "${T_PETSC4PY}" && ${PYTHON} setup.py install --install-lib="${P}/${T_PREFIX}/lib")
+    - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
+    - rm -r "${PWD}/${T_PREFIX}"/*/petsc4py*
+    - printf "====== Test D. Install manually with setuptools with staging =====\n"
+    - export PETSC_DIR="${PWD}/${T_PREFIX}" P="${PWD}" && (cd "${T_PETSC4PY}" && ${PYTHON} setup.py install --root="${P}/${T_DESTDIR}" --install-lib="${P}/${T_PREFIX}/lib")
+    - (cd "${PWD}/${T_DESTDIR}" && find * -exec install -v -D "{}" "/{}" \; )
+    - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
+
 checksource:
   extends: .test
   stage: .pre
