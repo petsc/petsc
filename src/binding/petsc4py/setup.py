@@ -223,21 +223,12 @@ def run_cython(source, target=None,
 def build_sources(cmd):
     from os.path import exists, isdir, join
 
-    pdepends = []
-    if 'PETSC_DIR' in os.environ:
-      pd = os.environ['PETSC_DIR']
-      pdepends = [pd+'/include/*.h',pd+'/include/petsc/private/*.h']
-      if 'PETSC_ARCH' in os.environ:
-        pda = os.environ['PETSC_ARCH']
-        pdepends.append(pd+'/'+pda+'/include/petscconf.h')
-
     # petsc4py.PETSc
     source = 'petsc4py.PETSc.pyx'
     target = 'petsc4py.PETSc.c'
     depends = ['include/*/*.pxd',
                'PETSc/*.pyx',
                'PETSc/*.pxi']
-    depends.extend(pdepends)
     includes = ['include']
     destdir_h = os.path.join('include', 'petsc4py')
     run_cython(source, target,
@@ -249,7 +240,6 @@ def build_sources(cmd):
     depends = ['include/petsc4py/*.pxd',
                'libpetsc4py/*.pyx',
                'libpetsc4py/*.pxi']
-    depends.extend(pdepends)
     includes = ['include']
     run_cython(source,
                depends=depends, includes=includes,
