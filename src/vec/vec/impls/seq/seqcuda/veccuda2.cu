@@ -515,7 +515,7 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
   const PetscScalar *xptr,*y0ptr,*y1ptr,*y2ptr,*y3ptr,*y4ptr,*y5ptr,*y6ptr,*y7ptr;
 #if !defined(PETSC_USE_COMPLEX)
   PetscInt          nv1 = ((nv % 4) == 1) ? nv-1: nv,j;
-  PetscScalar       *group_results_gpu,group_results_cpu[nv1*MDOT_WORKGROUP_NUM];
+  PetscScalar       *group_results_gpu,*group_results_cpu;
   cudaError_t       cuda_ierr;
 #endif
   PetscBLASInt      one = 1,bn = 0;
@@ -536,6 +536,7 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
 #if !defined(PETSC_USE_COMPLEX)
   // allocate scratchpad memory for the results of individual work groups:
   cuda_ierr = cudaMalloc((void**)&group_results_gpu, nv1*sizeof(PetscScalar)*MDOT_WORKGROUP_NUM);CHKERRCUDA(cuda_ierr);
+  ierr = PetscMalloc1(nv1*MDOT_WORKGROUP_NUM,&group_results_cpu);CHKERRQ(ierr);
 #endif
   ierr = VecCUDAGetArrayRead(xin,&xptr);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
@@ -657,6 +658,7 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
   }
   ierr = PetscLogFlops(nv1*MDOT_WORKGROUP_NUM);CHKERRQ(ierr);
   cuda_ierr = cudaFree(group_results_gpu);CHKERRCUDA(cuda_ierr);
+  ierr = PetscFree(group_results_cpu);CHKERRQ(ierr);
   ierr = PetscLogGpuToCpu(nv1*sizeof(PetscScalar)*MDOT_WORKGROUP_NUM);CHKERRQ(ierr);
 #endif
   ierr = PetscLogGpuFlops(PetscMax(nv*(2.0*n-1),0.0));CHKERRQ(ierr);
