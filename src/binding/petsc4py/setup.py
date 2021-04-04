@@ -70,12 +70,20 @@ metadata['requires'] = ['numpy']
 # --------------------------------------------------------------------
 
 def get_ext_modules(Extension):
-    from os   import walk, path
+    from os import walk
     from glob import glob
+    from os.path import join
+    glob_join = lambda *args: glob(join(*args))
     depends = []
     for pth, dirs, files in walk('src'):
-        depends += glob(path.join(pth, '*.h'))
-        depends += glob(path.join(pth, '*.c'))
+        depends += glob_join(pth, '*.h')
+        depends += glob_join(pth, '*.c')
+    if 'PETSC_DIR' in os.environ:
+        pd = os.environ['PETSC_DIR']
+        pa = os.environ.get('PETSC_ARCH', '')
+        depends += glob_join(pd, 'include', '*.h')
+        depends += glob_join(pd, 'include', 'petsc', 'private', '*.h')
+        depends += glob_join(pd, pa, 'include', 'petscconf.h')
     try:
         import numpy
         numpy_includes = [numpy.get_include()]
