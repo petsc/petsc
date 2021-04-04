@@ -271,7 +271,7 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 {
   Physics        phys    = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect*)phys->data;
-  PetscScalar    yexact[1];
+  PetscScalar    yexact[1] = {0.0};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
