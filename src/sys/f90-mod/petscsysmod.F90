@@ -50,13 +50,9 @@
       integer4, parameter :: MPIU_INTEGER = MPI_INTEGER
 #endif
 
-      MPI_Comm PETSC_COMM_WORLD
-      MPI_Comm PETSC_COMM_SELF
-      common /petscfortran9/ PETSC_COMM_WORLD
-      common /petscfortran10/ PETSC_COMM_SELF
-      data   PETSC_COMM_WORLD /0/
-      data   PETSC_COMM_SELF /0/
-        end module
+      MPI_Comm::PETSC_COMM_WORLD=0
+      MPI_Comm::PETSC_COMM_SELF=0
+      end module
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_REAL
