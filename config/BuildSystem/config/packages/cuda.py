@@ -119,6 +119,8 @@ class Configure(config.package.Package):
     self.pushLanguage('CUDA')
     petscNvcc = self.getCompiler()
     self.popLanguage()
+
+    genArches = ['30','32', '35', '37', '50', '52', '53', '60','61','70','71', '72', '75', '80']
     if 'with-cuda-gencodearch' in self.framework.clArgDB:
       self.gencodearch = self.argDB['with-cuda-gencodearch']
     else:
@@ -137,9 +139,25 @@ class Configure(config.package.Package):
           except:
             self.log.write('Unable to parse CUDA capability\n')
 
+    if not hasattr(self,'gencodearch'):
+      self.pushLanguage('CUDA')
+      for gen in reversed(genArches):
+        cflags = self.setCompilers.CUDAFLAGS
+        self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+gen+',code=sm_'+gen
+        try:
+          valid = self.checkCompile('')
+          if valid:
+            self.gencodearch = gen
+            self.setCompilers.CUDAFLAGS = cflags
+            break
+        except:
+          pass
+        self.setCompilers.CUDAFLAGS = cflags
+      self.popLanguage()
+
     if hasattr(self,'gencodearch'):
       if self.gencodearch == 'all':
-        for gen in ['52','60','61','70','75']:
+        for gen in genArches:
           self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+gen+',code=sm_'+gen+' '
           self.log.write(self.setCompilers.CUDAFLAGS+'\n')
       else:
