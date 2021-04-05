@@ -848,7 +848,7 @@ struct _p_PetscContainer {
 
    Level: advanced
 
-.seealso: PetscContainerDestroy(), PetscContainterSetUserDestroy()
+.seealso: PetscContainerDestroy(), PetscContainerSetUserDestroy()
 @*/
 PetscErrorCode PetscContainerUserDestroyDefault(void* ctx)
 {

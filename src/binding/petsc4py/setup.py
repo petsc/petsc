@@ -70,12 +70,20 @@ metadata['requires'] = ['numpy']
 # --------------------------------------------------------------------
 
 def get_ext_modules(Extension):
-    from os   import walk, path
+    from os import walk
     from glob import glob
+    from os.path import join
+    glob_join = lambda *args: glob(join(*args))
     depends = []
     for pth, dirs, files in walk('src'):
-        depends += glob(path.join(pth, '*.h'))
-        depends += glob(path.join(pth, '*.c'))
+        depends += glob_join(pth, '*.h')
+        depends += glob_join(pth, '*.c')
+    if 'PETSC_DIR' in os.environ:
+        pd = os.environ['PETSC_DIR']
+        pa = os.environ.get('PETSC_ARCH', '')
+        depends += glob_join(pd, 'include', '*.h')
+        depends += glob_join(pd, 'include', 'petsc', 'private', '*.h')
+        depends += glob_join(pd, pa, 'include', 'petscconf.h')
     try:
         import numpy
         numpy_includes = [numpy.get_include()]
@@ -223,21 +231,12 @@ def run_cython(source, target=None,
 def build_sources(cmd):
     from os.path import exists, isdir, join
 
-    pdepends = []
-    if 'PETSC_DIR' in os.environ:
-      pd = os.environ['PETSC_DIR']
-      pdepends = [pd+'/include/*.h',pd+'/include/petsc/private/*.h']
-      if 'PETSC_ARCH' in os.environ:
-        pda = os.environ['PETSC_ARCH']
-        pdepends.append(pd+'/'+pda+'/include/petscconf.h')
-
     # petsc4py.PETSc
     source = 'petsc4py.PETSc.pyx'
     target = 'petsc4py.PETSc.c'
     depends = ['include/*/*.pxd',
                'PETSc/*.pyx',
                'PETSc/*.pxi']
-    depends.extend(pdepends)
     includes = ['include']
     destdir_h = os.path.join('include', 'petsc4py')
     run_cython(source, target,
@@ -249,7 +248,6 @@ def build_sources(cmd):
     depends = ['include/petsc4py/*.pxd',
                'libpetsc4py/*.pyx',
                'libpetsc4py/*.pxi']
-    depends.extend(pdepends)
     includes = ['include']
     run_cython(source,
                depends=depends, includes=includes,

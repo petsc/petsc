@@ -20,10 +20,10 @@ variables:
   TIMEOUT: 450
 
 #
-# The most basic template that most tests will expand upon. In particular merge requests and branch pushes DO NOT trigger testing
+# The most basic template that most tests will expand upon
 #
 
-.test:
+.test-basic:
   interruptible: true
   only:
     refs:
@@ -35,8 +35,15 @@ variables:
       - merge_requests
   dependencies: []
 
+.test:
+  extends: .test-basic
+  except:
+    variables:
+      # Skip if the docs-only label is attached to a merge request
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
+
 check-ci-settings:
-  extends: .test
+  extends: .test-basic
   stage: .pre
   tags:
     - check-ci-settings
@@ -65,9 +72,9 @@ check-ci-settings:
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
-    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O3 -march=native' CXXOPTFLAGS='-O3 -march=native' FOPTFLAGS='-O3 -march=native' ${CONFIG_OPTS}
+    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O3 -march=native -Wno-array-bounds' CXXOPTFLAGS='-O3 -march=native -Wno-array-bounds' FOPTFLAGS='-O3 -march=native' ${CONFIG_OPTS}
     - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
-    - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+    - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS="-Werror -std=f2008" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - date
     - ccache --show-stats
@@ -109,7 +116,7 @@ c99-mlib-static-py2:
   variables:
     PYTHON: python2
     CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
-    TEST_SEARCH: snes_tutorials-ex19%
+    TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
 
 petsc4py-install:
   extends: .stage-2
@@ -158,9 +165,10 @@ checksource:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - make checkbadSource SHELL=bash
     - make -f gmakefile check_output SHELL=bash
+    - make check_petsc4py_rst
 
 pause-for-approval:
-  extends: .test
+  extends: .test-basic
   stage: .pre
   tags:
     - stage1
@@ -927,42 +935,57 @@ analyze-pipeline:
     - arch-ci-analyze-pipeline/*
     expire_in: 4 days
 
-.docs-review-base:
-  extends: .test
-  image: python:3.9
-  only:
-    variables:
-      - $CI_MERGE_REQUEST_LABELS =~ /^doc|,doc/
+
+#
+# Base job for a documentation build
+#
+.docs:
+  stage: stage-2
+  tags:
+    - name:pj02
   before_script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends librsvg2-bin
-    - apt-get install -y flex
-    - pip install -r src/docs/sphinx_docs/requirements.txt
+    - pip3 install -r src/docs/sphinx_docs/requirements.txt
+
+#
+# Build documentation and make available for review using GitLab pages
+#
+docs-review:
+  extends:
+    - .docs
+    - .test-basic
   script:
-    - cd src/docs/sphinx_docs && sphinx-build -T -E -b html -D language=en -j auto . ../../../public
-  artifacts:
-    paths:
-      - public
+    - cd src/docs/sphinx_docs &&
+      ~/.local/bin/sphinx-build -T -E -b dirhtml -D language=en -j auto . ../../../public
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html
+  artifacts:
+    paths:
+      - public
 
-docs-only-review:
-  stage: .pre
-  extends: .docs-review-base
+#
+# Deploy documentation using GitLab pages
+#
+pages:  # this job name has special meaning to GitLab
+  extends: .docs
+  interruptible: true
+  script:
+    - VERSION_NAME=$(sed 's/release-//' <<< $CI_COMMIT_REF_NAME) &&
+      DEST=../../../public/$VERSION_NAME &&
+      rm -rf $DEST &&
+      cd src/docs/sphinx_docs &&
+      ~/.local/bin/sphinx-build -T -E -b dirhtml -D language=en -j auto . $DEST
   only:
-    variables:
-      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
-
-docs-review:
-  stage: stage-2
-  extends: .docs-review-base
-  only:
-    variables:
-      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs($|,)/
-  except:
-    variables:
-      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
+    - release
+    - main
+    - /^release-\d+\.\d+$/
+    - /^testdocs/
+  artifacts:
+    paths:
+      - public
+  cache:
+    paths:
+      - public/
 
 #
 #

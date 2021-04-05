@@ -55,7 +55,7 @@ static PetscErrorCode PCDestroy_HPDDM(PC pc)
   PetscFunctionBegin;
   ierr = PCReset_HPDDM(pc);CHKERRQ(ierr);
   ierr = PetscFree(data);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)pc, 0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)pc, NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", NULL);CHKERRQ(ierr);
@@ -331,11 +331,13 @@ static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc
       ierr = KSPGetOperators(data->levels[n]->ksp, NULL, &P);CHKERRQ(ierr);
       ierr = MatGetSize(P, &m, NULL);CHKERRQ(ierr);
       accumulate[0] += m;
-      ierr = MatGetInfo(P, MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
-      accumulate[1] += info.nz_used;
+      if (P->ops->getinfo) {
+        ierr = MatGetInfo(P, MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
+        accumulate[1] += info.nz_used;
+      }
       if (n == 0) {
         m1 = m;
-        nnz1 = info.nz_used;
+        if (P->ops->getinfo) nnz1 = info.nz_used;
       }
     }
   }

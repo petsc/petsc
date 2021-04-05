@@ -459,7 +459,8 @@ PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
 .  levels - the number of levels
 -  comms - optional communicators for each level; this is to allow solving the coarser problems
            on smaller sets of processes. For processes that are not included in the computation
-           you must pass MPI_COMM_NULL.
+           you must pass MPI_COMM_NULL. Use comms = NULL to specify that all processes
+           should participate in each level of problem.
 
    Level: intermediate
 
@@ -480,10 +481,13 @@ PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
      must take special care in providing the restriction and interpolation operation. We recommend
      providing these as two step operations; first perform a standard restriction or interpolation on
      the full number of ranks for that level and then use an MPI call to copy the resulting vector
-     array entries (after calls to VecGetArray()) to the smaller or larger number of ranks, not in both
+     array entries (after calls to VecGetArray()) to the smaller or larger number of ranks, note in both
      cases the MPI calls must be made on the larger of the two communicators. Traditional MPI send and
      recieves or MPI_AlltoAllv() could be used to do the reshuffling of the vector entries.
 
+   Fortran Notes:
+     Use comms = PETSC_NULL_MPI_COMM as the equivalent of NULL in the C interface. Note PETSC_NULL_MPI_COMM
+     is not MPI_COMM_NULL. It is more like PETSC_NULL_INTEGER, PETSC_NULL_REAL etc.
 
 .seealso: PCMGSetType(), PCMGGetLevels()
 @*/

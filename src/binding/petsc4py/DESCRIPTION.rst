@@ -3,10 +3,6 @@ PETSc for Python
 
 Python bindings for PETSc.
 
-Install
--------
-See :any:`petsc4py_install`
-
 Citations
 ---------
 

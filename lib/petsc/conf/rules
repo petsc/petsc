@@ -710,6 +710,12 @@ checkbadSource:
          fi
 	@test ! -s badSourceChar.out
 
+check_petsc4py_rst:
+	@${RM} -f petsc4py_rst.log
+	@echo "Checking src/binding/petsc4py/DESCRIPTION.rst"
+	@rst2html src/binding/petsc4py/DESCRIPTION.rst > /dev/null 2> petsc4py_rst.log
+	@if test -s petsc4py_rst.log; then cat petsc4py_rst.log; exit 1; fi
+
 # TODO: checkTestCoverage: that makes sure every tutorial test has at least one test listed in the file, perhaps handled by gmakegentest.py
 # TODO: check for PetscBeginFunctionUser in non-example source
 # TODO: check for __ at start of #define or symbol
