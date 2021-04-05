@@ -33,6 +33,7 @@ void *PETSC_NULL_BOOL_Fortran      = 0;
 EXTERN_C_BEGIN
 void (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
+void *PETSC_NULL_MPI_COMM_Fortran   = 0;
 
 size_t PetscIntAddressToFortran(const PetscInt *base,const PetscInt *addr)
 {
