@@ -158,6 +158,7 @@ checksource:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - make checkbadSource SHELL=bash
     - make -f gmakefile check_output SHELL=bash
+    - make check_petsc4py_rst
 
 pause-for-approval:
   extends: .test
