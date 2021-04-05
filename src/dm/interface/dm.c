@@ -6041,7 +6041,7 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
   This is a borrowed reference, so the user should NOT destroy this vector. When the DM is
   destroyed the array will no longer be valid.
 
-  Each process has only the local coordinates (does NOT have the ghost coordinates).
+  Each process has only the locally-owned portion of the global coordinates (does NOT have the ghost coordinates).
 
   For DMDA, in two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
   and (x_0,y_0,z_0,x_1,y_1,z_1...)

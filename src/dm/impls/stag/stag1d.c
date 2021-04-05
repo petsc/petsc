@@ -54,10 +54,10 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm,PetscRe
   PetscErrorCode ierr;
   DM_Stag        *stagCoord;
   DM             dmCoord;
-  Vec            coordLocal,coord;
+  Vec            coordLocal;
   PetscReal      h,min;
   PetscScalar    **arr;
-  PetscInt       ind,start,n,nExtra,s;
+  PetscInt       start_ghost,n_ghost,s;
   PetscInt       ileft,ielement;
 
   PetscFunctionBegin;
@@ -66,7 +66,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm,PetscRe
   for (s=0; s<2; ++s) {
     if (stagCoord->dof[s] !=0 && stagCoord->dof[s] != 1) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 1 dimensions must have 0 or 1 dof on each stratum, but stratum %d has %d dof",s,stagCoord->dof[s]);
   }
-  ierr = DMGetLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
 
   ierr = DMStagVecGetArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
   if (stagCoord->dof[0]) {
@@ -75,12 +75,12 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm,PetscRe
   if (stagCoord->dof[1]) {
     ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT,0,&ielement);CHKERRQ(ierr);
   }
-  ierr = DMStagGetCorners(dmCoord,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMStagGetGhostCorners(dmCoord,&start_ghost,NULL,NULL,&n_ghost,NULL,NULL);CHKERRQ(ierr);
 
   min = xmin;
   h = (xmax-xmin)/stagCoord->N[0];
 
-  for (ind=start; ind<start + n + nExtra; ++ind) {
+  for (PetscInt ind=start_ghost; ind<start_ghost + n_ghost; ++ind) {
     if (stagCoord->dof[0]) {
       const PetscReal off = 0.0;
         arr[ind][ileft] = min + ((PetscReal)ind + off) * h;
@@ -91,13 +91,9 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm,PetscRe
     }
   }
   ierr = DMStagVecRestoreArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dmCoord,&coord);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dmCoord,coordLocal,INSERT_VALUES,coord);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dmCoord,coordLocal,INSERT_VALUES,coord);CHKERRQ(ierr);
-  ierr = DMSetCoordinates(dm,coord);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)dm,(PetscObject)coord);CHKERRQ(ierr);
-  ierr = VecDestroy(&coord);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm,coordLocal);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)dm,(PetscObject)coordLocal);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
