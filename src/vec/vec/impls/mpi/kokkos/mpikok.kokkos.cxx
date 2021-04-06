@@ -90,8 +90,6 @@ PetscErrorCode VecTDot_MPIKokkos(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-extern MPI_Op MPIU_MAXINDEX_OP, MPIU_MININDEX_OP;
-
 PetscErrorCode VecMax_MPIKokkos(Vec xin,PetscInt *idx,PetscReal *z)
 {
   PetscErrorCode ierr;

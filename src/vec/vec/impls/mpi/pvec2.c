@@ -78,8 +78,6 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-extern MPI_Op MPIU_MAXINDEX_OP, MPIU_MININDEX_OP;
-
 PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 {
   PetscErrorCode ierr;
