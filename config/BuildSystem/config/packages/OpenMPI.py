@@ -47,6 +47,11 @@ class Configure(config.package.GNUPackage):
     return args
 
   def checkDownload(self):
+    if config.setCompilers.Configure.isCygwin(self.log):
+      if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
+        raise RuntimeError('Sorry, --download-openmpi does not work with cygwin compilers. Suggest installing OpenMPI via cygwin installer')
+      else:
+        raise RuntimeError('Sorry, cannot download-install OpenMPI on Windows with Microsoft or Intel Compilers. Suggest using MS-MPI or Intel-MPI (do not use MPICH2')
     if self.argDB['download-'+self.downloadname.lower()] and  'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
       self.logWrite('Reusing package prefix install of '+self.defaultInstallDir+' for OpenMPI')
       self.installDir = self.defaultInstallDir
