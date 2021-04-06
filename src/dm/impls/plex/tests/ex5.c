@@ -988,7 +988,7 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   ierr = DMPlexComputeResidual_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, locX, NULL, 0.0, locF, user);CHKERRQ(ierr);
   ierr = VecViewFromOptions(locF, NULL, "-local_residual_view");CHKERRQ(ierr);
   ierr = MatZeroEntries(J);CHKERRQ(ierr);
-  ierr = DMPlexComputeJacobian_Hybrid_Internal(dm, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeJacobian_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user);CHKERRQ(ierr);
   ierr = MatViewFromOptions(J, NULL, "-local_jacobian_view");CHKERRQ(ierr);
 
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);

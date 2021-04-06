@@ -338,7 +338,7 @@ PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscHashFormKey, IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM, PetscHashFormKey[], IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscHashFormKey, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM, PetscHashFormKey[], IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
 
 /* Matvec with A in row-major storage, x and y can be aliased */
