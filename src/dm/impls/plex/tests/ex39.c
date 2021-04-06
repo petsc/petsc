@@ -373,6 +373,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm,UserCtx * user,DM * mesh)
 static PetscErrorCode SetupProblem(DM dm,UserCtx * user)
 {
   PetscDS        prob;
+  DMLabel        label;
   PetscErrorCode ierr;
   const PetscInt id=1;
 
@@ -409,7 +410,8 @@ static PetscErrorCode SetupProblem(DM dm,UserCtx * user)
     PetscFunctionReturn(-1);
   }
 
-  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral","marker",0,0,NULL,(void (*)(void))NULL,NULL,1,&id,user);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral",label,1,&id,0,0,NULL,(void (*)(void))NULL,NULL,user,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

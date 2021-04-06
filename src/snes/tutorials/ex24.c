@@ -267,42 +267,48 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
-  PetscDS        prob;
+  PetscDS        ds;
+  DMLabel        label;
+  PetscWeakForm  wf;
   const PetscInt id = 1;
+  PetscInt       bd;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 0, f0_q, f1_q);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 0, g0_qq, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL, g2_qu, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_uq, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(ds, 0, f0_q, f1_q);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 0, g0_qq, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 1, NULL, NULL, g2_qu, NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 1, 0, NULL, g1_uq, NULL, NULL);CHKERRQ(ierr);
   switch (user->solType)
   {
     case SOL_LINEAR:
-      ierr = PetscDSSetResidual(prob, 1, f0_linear_u, NULL);CHKERRQ(ierr);
-      ierr = PetscDSSetBdResidual(prob, 0, f0_bd_linear_q, NULL);CHKERRQ(ierr);
-      ierr = DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", "marker", 0, 0, NULL, NULL, NULL, 1, &id, user);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 0, linear_q, user);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 1, linear_u, user);CHKERRQ(ierr);
+      ierr = PetscDSSetResidual(ds, 1, f0_linear_u, NULL);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, f0_bd_linear_q, 0, NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 0, linear_q, user);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 1, linear_u, user);CHKERRQ(ierr);
       break;
     case SOL_QUADRATIC:
-      ierr = PetscDSSetResidual(prob, 1, f0_quadratic_u, NULL);CHKERRQ(ierr);
-      ierr = PetscDSSetBdResidual(prob, 0, f0_bd_quadratic_q, NULL);CHKERRQ(ierr);
-      ierr = DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", "marker", 0, 0, NULL, NULL, NULL, 1, &id, user);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 0, quadratic_q, user);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 1, quadratic_u, user);CHKERRQ(ierr);
+      ierr = PetscDSSetResidual(ds, 1, f0_quadratic_u, NULL);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, f0_bd_quadratic_q, 0, NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 0, quadratic_q, user);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 1, quadratic_u, user);CHKERRQ(ierr);
       break;
     case SOL_QUARTIC:
-      ierr = PetscDSSetResidual(prob, 1, f0_quartic_u, NULL);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 0, quartic_q, user);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 1, quartic_u, user);CHKERRQ(ierr);
+      ierr = PetscDSSetResidual(ds, 1, f0_quartic_u, NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 0, quartic_q, user);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 1, quartic_u, user);CHKERRQ(ierr);
       break;
     case SOL_QUARTIC_NEUMANN:
-      ierr = PetscDSSetResidual(prob, 1, f0_quartic_u, NULL);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 0, quartic_q, user);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 1, quartic_u, user);CHKERRQ(ierr);
-      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "Flux condition", "marker", 0, 0, NULL, (void (*)(void)) quartic_q, NULL, 1, &id, user);CHKERRQ(ierr);
+      ierr = PetscDSSetResidual(ds, 1, f0_quartic_u, NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 0, quartic_q, user);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 1, quartic_u, user);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "Flux condition", label, 1, &id, 0, 0, NULL, (void (*)(void)) quartic_q, NULL, user, NULL);CHKERRQ(ierr);
       break;
     default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid exact solution type %s", SolTypeNames[PetscMin(user->solType, SOL_UNKNOWN)]);
   }

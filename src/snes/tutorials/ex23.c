@@ -179,7 +179,8 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   ierr = PetscWeakFormSetIndexJacobian(wf, label, 1, 1, 1, 0, g0_pp, 0, NULL, 0, NULL, 0, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(ds, 0, quad_u, user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(ds, 1, quad_p, user);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) quad_u, NULL, 1, &id, user);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quad_u, NULL, user, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

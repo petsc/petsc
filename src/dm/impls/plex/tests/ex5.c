@@ -1018,7 +1018,7 @@ int main(int argc, char **argv)
 /*TEST
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
-          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -petscds_view -local_section_view \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -dm_petscds_view -local_section_view \
           -local_solution_view -local_residual_view -local_jacobian_view
     test:
       suffix: tri_0
@@ -1035,7 +1035,7 @@ int main(int argc, char **argv)
 
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
-          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -petscds_view
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -dm_petscds_view
     test:
       suffix: tet_1
       nsize: 2
@@ -1047,7 +1047,7 @@ int main(int argc, char **argv)
 
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
-          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -petscds_view
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -dm_petscds_view
     # 2D Quads
     test:
       suffix: quad_0

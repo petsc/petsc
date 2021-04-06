@@ -167,23 +167,29 @@ static PetscErrorCode CreateMesh(MPI_Comm comm,UserCtx *user,DM *mesh)
 /* Setup the system of equations that we wish to solve */
 static PetscErrorCode SetupProblem(DM dm,UserCtx *user)
 {
-  PetscDS        prob;
+  PetscDS        ds;
+  DMLabel        label;
+  PetscWeakForm  wf;
+  const PetscInt id = 1;
+  PetscInt       bd;
   PetscErrorCode ierr;
-  const PetscInt id=1;
 
   PetscFunctionBegin;
-  ierr = DMGetDS(dm,&prob);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   /* All of these are independent of the user's choice of solution */
-  ierr = PetscDSSetResidual(prob,0,f0_v,f1_v);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob,1,f0_q_linear,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob,0,0,g0_vu,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob,0,1,NULL,NULL,g2_vp,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob,1,0,NULL,g1_qu,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(ds,0,f0_v,f1_v);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(ds,1,f0_q_linear,NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds,0,0,g0_vu,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds,0,1,NULL,NULL,g2_vp,NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds,1,0,NULL,g1_qu,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral","marker",0,0,NULL,(void (*)(void))NULL,NULL,1,&id,user);CHKERRQ(ierr);
-  ierr = PetscDSSetBdResidual(prob,0,f0_bd_u_linear,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob,0,linear_u,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob,1,linear_divu,NULL);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(ds,DM_BC_NATURAL,"Boundary Integral",label,1,&id,0,0,NULL,(void (*)(void))NULL,NULL,user,&bd);CHKERRQ(ierr);
+  ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, f0_bd_u_linear, 0, NULL);CHKERRQ(ierr);
+
+  ierr = PetscDSSetExactSolution(ds,0,linear_u,NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(ds,1,linear_divu,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

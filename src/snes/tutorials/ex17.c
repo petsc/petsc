@@ -379,7 +379,9 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exact)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
   PetscDS        prob;
-  PetscInt       id;
+  PetscWeakForm  wf;
+  DMLabel        label;
+  PetscInt       id, bd;
   PetscInt       dim;
   PetscErrorCode ierr;
 
@@ -425,8 +427,12 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     break;
   case SOL_ELAS_AXIAL_DISP:
     ierr = PetscDSSetResidual(prob, 0, NULL, f1_elas_u);CHKERRQ(ierr);
-    ierr = PetscDSSetBdResidual(prob, 0, f0_elas_axial_disp_bd_u, NULL);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
+    id   = dim == 3 ? 5 : 2;
+    ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_NATURAL, "right", label, 1, &id, 0, 0, NULL, (void (*)(void)) NULL, NULL, user, &bd);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(prob, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, f0_elas_axial_disp_bd_u, 0, NULL);CHKERRQ(ierr);
     exact = axial_disp_u;
     break;
   case SOL_ELAS_UNIFORM_STRAIN:
@@ -437,25 +443,24 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   default: SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
   }
   ierr = PetscDSSetExactSolution(prob, 0, exact, user);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   if (user->solType == SOL_ELAS_AXIAL_DISP) {
     PetscInt cmp;
 
-    id   = dim == 3 ? 5 : 2;
-    ierr = DMAddBoundary(dm,   DM_BC_NATURAL,   "right",  "marker", 0, 0, NULL, (void (*)(void)) zero, NULL, 1, &id, user);CHKERRQ(ierr);
     id   = dim == 3 ? 6 : 4;
     cmp  = 0;
-    ierr = DMAddBoundary(dm,   DM_BC_ESSENTIAL, "left",   "marker", 0, 1, &cmp, (void (*)(void)) zero, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm,   DM_BC_ESSENTIAL, "left",   label, 1, &id, 0, 1, &cmp, (void (*)(void)) zero, NULL, user, NULL);CHKERRQ(ierr);
     cmp  = dim == 3 ? 2 : 1;
     id   = dim == 3 ? 1 : 1;
-    ierr = DMAddBoundary(dm,   DM_BC_ESSENTIAL, "bottom", "marker", 0, 1, &cmp, (void (*)(void)) zero, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm,   DM_BC_ESSENTIAL, "bottom", label, 1, &id, 0, 1, &cmp, (void (*)(void)) zero, NULL, user, NULL);CHKERRQ(ierr);
     if (dim == 3) {
       cmp  = 1;
       id   = 3;
-      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "front",  "marker", 0, 1, &cmp, (void (*)(void)) zero, NULL, 1, &id, user);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "front",  label, 1, &id, 0, 1, &cmp, (void (*)(void)) zero, NULL, user, NULL);CHKERRQ(ierr);
     }
   } else {
     id = 1;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exact, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) exact, NULL, user, NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

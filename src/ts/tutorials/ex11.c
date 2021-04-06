@@ -55,7 +55,7 @@ typedef struct _n_Model *Model;
 /* 'User' implements a discretization of a continuous model. */
 typedef struct _n_User *User;
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
-typedef PetscErrorCode (*SetUpBCFunction)(PetscDS,Physics);
+typedef PetscErrorCode (*SetUpBCFunction)(DM,PetscDS,Physics);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
 typedef PetscErrorCode (*SetupFields)(Physics,PetscSection);
 static PetscErrorCode ModelSolutionSetDefault(Model,SolutionFunction,void*);
@@ -281,15 +281,17 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetUpBC_Advect(PetscDS prob, Physics phys)
+static PetscErrorCode SetUpBC_Advect(DM dm, PetscDS prob, Physics phys)
 {
   PetscErrorCode ierr;
   const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
+  DMLabel        label;
 
   PetscFunctionBeginUser;
   /* Register "canned" boundary conditions and defaults for where to apply. */
-  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "inflow",  "Face Sets", 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Advect_Inflow, NULL,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "outflow", "Face Sets", 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Advect_Outflow, NULL, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "inflow",  label, ALEN(inflowids),  inflowids,  0, 0, NULL, (void (*)(void)) PhysicsBoundary_Advect_Inflow, NULL,  phys, NULL);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "outflow", label, ALEN(outflowids), outflowids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Advect_Outflow, NULL, phys, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -516,12 +518,15 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetUpBC_SW(PetscDS prob,Physics phys)
+static PetscErrorCode SetUpBC_SW(DM dm, PetscDS prob,Physics phys)
 {
   PetscErrorCode ierr;
   const PetscInt wallids[] = {100,101,200,300};
+  DMLabel        label;
+
   PetscFunctionBeginUser;
-  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", "Face Sets", 0, 0, NULL, (void (*)(void)) PhysicsBoundary_SW_Wall, NULL, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_SW_Wall, NULL, phys, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -787,17 +792,20 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetUpBC_Euler(PetscDS prob,Physics phys)
+static PetscErrorCode SetUpBC_Euler(DM dm, PetscDS prob,Physics phys)
 {
   PetscErrorCode  ierr;
   Physics_Euler   *eu = (Physics_Euler *) phys->data;
+  DMLabel         label;
+
+  ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (eu->type == EULER_LINEAR_WAVE) {
     const PetscInt wallids[] = {100,101};
-    ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", "Face Sets", 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Euler_Wall, NULL, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Euler_Wall, NULL, phys, NULL);CHKERRQ(ierr);
   }
   else {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", "Face Sets", 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Euler_Wall, NULL, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Euler_Wall, NULL, phys, NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1873,7 +1881,7 @@ int main(int argc, char **argv)
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann);CHKERRQ(ierr);
   ierr = PetscDSSetContext(prob, 0, user->model->physics);CHKERRQ(ierr);
-  ierr = (*mod->setupbc)(prob,phys);CHKERRQ(ierr);
+  ierr = (*mod->setupbc)(dm, prob,phys);CHKERRQ(ierr);
   ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   {
     char      convType[256];

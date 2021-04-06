@@ -3099,6 +3099,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exactFunc)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   PetscDS        prob;
+  DMLabel        label;
   const PetscInt id  = 1;
   PetscInt       dim, comp;
   Parameter     *ctx;
@@ -3183,13 +3184,17 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   /* Setup Boundary Conditions */
   ierr = PetscDSGetExactSolution(prob, 0, &exactFunc, (void **) &ctx);CHKERRQ(ierr);
   comp = 1;
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", "markerBottom", 0, 1, &comp, (void (*)(void)) exactFunc, NULL, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "markerBottom", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL);CHKERRQ(ierr);
   comp = 0;
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallR", "markerRight",  0, 1, &comp, (void (*)(void)) exactFunc, NULL, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "markerRight", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallR", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL);CHKERRQ(ierr);
   comp = 1;
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", "markerTop",    0, 1, &comp, (void (*)(void)) exactFunc, NULL, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "markerTop", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL);CHKERRQ(ierr);
   comp = 0;
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallL", "markerLeft",   0, 1, &comp, (void (*)(void)) exactFunc, NULL, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "markerLeft", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallL", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

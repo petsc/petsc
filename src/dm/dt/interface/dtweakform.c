@@ -15,6 +15,20 @@ static PetscErrorCode PetscChunkBufferCreate(size_t unitbytes, size_t expected, 
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscChunkBufferDuplicate(PetscChunkBuffer *buffer, PetscChunkBuffer **bufferNew)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(bufferNew);CHKERRQ(ierr);
+  ierr = PetscCalloc1(buffer->size*buffer->unitbytes, &(*bufferNew)->array);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*bufferNew)->array, buffer->array, buffer->size*buffer->unitbytes);CHKERRQ(ierr);
+  (*bufferNew)->size      = buffer->size;
+  (*bufferNew)->unitbytes = buffer->unitbytes;
+  (*bufferNew)->alloc     = buffer->size*buffer->unitbytes;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscChunkBufferDestroy(PetscChunkBuffer **buffer)
 {
   PetscErrorCode ierr;
@@ -195,6 +209,163 @@ PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMap
     ierr = PetscHMapFormSet(ht, key, chunk);CHKERRQ(ierr);
   }
   ((void (**)()) &wf->funcs->array[chunk.start])[ind] = func;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscWeakFormCopy - Copy the pointwise functions to another PetscWeakForm
+
+  Not Collective
+
+  Input Parameter:
+. wf - The original PetscWeakForm
+
+  Output Parameter:
+. wfNew - The copy PetscWeakForm
+
+  Level: intermediate
+
+.seealso: PetscWeakFormCreate(), PetscWeakFormDestroy()
+@*/
+PetscErrorCode PetscWeakFormCopy(PetscWeakForm wf, PetscWeakForm wfNew)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  wfNew->Nf = wf->Nf;
+  ierr = PetscChunkBufferDestroy(&wfNew->funcs);CHKERRQ(ierr);
+  ierr = PetscChunkBufferDuplicate(wf->funcs, &wfNew->funcs);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->obj);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->obj, &wfNew->obj);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->f0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->f0, &wfNew->f0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->f1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->f1, &wfNew->f1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->g0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->g0, &wfNew->g0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->g1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->g1, &wfNew->g1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->g2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->g2, &wfNew->g2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->g3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->g3, &wfNew->g3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->gp0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->gp0, &wfNew->gp0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->gp1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->gp1, &wfNew->gp1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->gp2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->gp2, &wfNew->gp2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->gp3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->gp3, &wfNew->gp3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->gt0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->gt0, &wfNew->gt0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->gt1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->gt1, &wfNew->gt1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->gt2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->gt2, &wfNew->gt2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->gt3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->gt3, &wfNew->gt3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdf0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdf0, &wfNew->bdf0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdf1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdf1, &wfNew->bdf1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdg0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdg0, &wfNew->bdg0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdg1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdg1, &wfNew->bdg1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdg2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdg2, &wfNew->bdg2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdg3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdg3, &wfNew->bdg3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdgp0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdgp0, &wfNew->bdgp0);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdgp1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdgp1, &wfNew->bdgp1);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdgp2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdgp2, &wfNew->bdgp2);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->bdgp3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->bdgp3, &wfNew->bdgp3);CHKERRQ(ierr);
+  ierr = PetscHMapFormDestroy(&wfNew->r);CHKERRQ(ierr);
+  ierr = PetscHMapFormDuplicate(wf->r, &wfNew->r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscWeakFormRewriteKeys_Internal(PetscWeakForm wf, PetscHMapForm hmap, DMLabel label, PetscInt Nv, const PetscInt values[])
+{
+  PetscHashFormKey *keys;
+  PetscInt          n, i, v, off = 0;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscHMapFormGetSize(hmap, &n);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &keys);CHKERRQ(ierr);
+  ierr = PetscHMapFormGetKeys(hmap, &off, keys);CHKERRQ(ierr);
+  for (i = 0; i < n; ++i) {
+    if (keys[i].label == label) {
+      PetscBool clear = PETSC_TRUE;
+      void   (**funcs)();
+      PetscInt  Nf;
+
+      ierr = PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, &Nf, &funcs);CHKERRQ(ierr);
+      for (v = 0; v < Nv; ++v) {
+        ierr = PetscWeakFormSetFunction_Private(wf, hmap, keys[i].label, values[v], keys[i].field, Nf, funcs);CHKERRQ(ierr);
+        if (values[v] == keys[i].value) clear = PETSC_FALSE;
+      }
+      if (clear) {ierr = PetscWeakFormSetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, 0, NULL);CHKERRQ(ierr);}
+    }
+  }
+  ierr = PetscFree(keys);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscWeakFormRewriteKeys - Change any key on the given label to use the new set of label values
+
+  Not Collective
+
+  Input Parameters:
++ wf     - The original PetscWeakForm
+. label  - The label to change keys for
+. Nv     - The number of new label values
+- values - The set of new values to relabel keys with
+
+  Note: This is used internally when boundary label values are specified from the command line.
+
+  Level: intermediate
+
+.seealso: PetscWeakFormCreate(), PetscWeakFormDestroy()
+@*/
+PetscErrorCode PetscWeakFormRewriteKeys(PetscWeakForm wf, DMLabel label, PetscInt Nv, const PetscInt values[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->obj,   label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->f0,    label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->f1,    label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->g0,    label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->g1,    label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->g2,    label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->g3,    label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->gp0,   label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->gp1,   label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->gp2,   label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->gp3,   label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->gt0,   label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->gt1,   label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->gt2,   label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->gt3,   label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdf0,  label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdf1,  label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdg0,  label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdg1,  label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdg2,  label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdg3,  label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdgp0, label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdgp1, label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdgp2, label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->bdgp3, label, Nv, values);CHKERRQ(ierr);
+  ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->r,     label, Nv, values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1269,9 +1440,9 @@ PetscErrorCode PetscWeakFormDestroy(PetscWeakForm *wf)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer viewer, const char tableName[], PetscHMapForm map)
+static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer viewer, PetscBool splitField, const char tableName[], PetscHMapForm map)
 {
-  PetscInt       Nk, k;
+  PetscInt       Nf = wf->Nf, Nk, k;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1287,9 +1458,13 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
     ierr = PetscViewerASCIIPrintf(viewer, "%s\n", tableName);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (k = 0; k < Nk; ++k) {
-      if (keys[k].label) {ierr = PetscObjectGetName((PetscObject) keys[k].label, &name);CHKERRQ(ierr);}
-      ierr = PetscViewerASCIIPrintf(viewer, "Key (%s, %D, %D) ", keys[k].label ? name : "None", keys[k].value, keys[k].field);CHKERRQ(ierr);
+      if (keys[k].label) {
+        ierr = PetscObjectGetName((PetscObject) keys[k].label, &name);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "(%s, %D) ", name, keys[k].value);CHKERRQ(ierr);
+      } else {ierr = PetscViewerASCIIPrintf(viewer, "");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+      if (splitField) {ierr = PetscViewerASCIIPrintf(viewer, "(%D, %D) ", keys[k].field/Nf, keys[k].field%Nf);CHKERRQ(ierr);}
+      else            {ierr = PetscViewerASCIIPrintf(viewer, "(%D) ", keys[k].field);CHKERRQ(ierr);}
       ierr = PetscWeakFormGetFunction_Private(wf, map, keys[k].label, keys[k].value, keys[k].field, &n, &funcs);CHKERRQ(ierr);
       for (i = 0; i < n; ++i) {
         if (i > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
@@ -1315,32 +1490,32 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Weak Form System with %d fields\n", wf->Nf);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Objective", wf->obj);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Residual f0", wf->f0);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Residual f1", wf->f1);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boudnary Residual f0", wf->bdf0);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boundary Residual f1", wf->bdf1);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Jacobian g0", wf->g0);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Jacobian g1", wf->g1);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Jacobian g2", wf->g2);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Jacobian g3", wf->g3);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Jacobian Preconditioner g0", wf->gp0);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Jacobian Preconditioner g1", wf->gp1);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Jacobian Preconditioner g2", wf->gp2);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Jacobian Preconditioner g3", wf->gp3);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Dynamic Jacobian g0", wf->gt0);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Dynamic Jacobian g1", wf->gt1);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Dynamic Jacobian g2", wf->gt2);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Dynamic Jacobian g3", wf->gt3);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boundary Jacobian g0", wf->bdg0);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boundary Jacobian g1", wf->bdg1);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boundary Jacobian g2", wf->bdg2);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boundary Jacobian g3", wf->bdg3);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boundary Jacobian Preconditioner g0", wf->bdgp0);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boundary Jacobian Preconditioner g1", wf->bdgp1);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boundary Jacobian Preconditioner g2", wf->bdgp2);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Boundary Jacobian Preconditioner g3", wf->bdgp3);CHKERRQ(ierr);
-  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, "Riemann Solver", wf->r);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_FALSE, "Objective", wf->obj);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_FALSE, "Residual f0", wf->f0);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_FALSE, "Residual f1", wf->f1);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_FALSE, "Boundary Residual f0", wf->bdf0);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_FALSE, "Boundary Residual f1", wf->bdf1);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Jacobian g0", wf->g0);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Jacobian g1", wf->g1);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Jacobian g2", wf->g2);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Jacobian g3", wf->g3);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Jacobian Preconditioner g0", wf->gp0);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Jacobian Preconditioner g1", wf->gp1);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Jacobian Preconditioner g2", wf->gp2);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Jacobian Preconditioner g3", wf->gp3);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Dynamic Jacobian g0", wf->gt0);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Dynamic Jacobian g1", wf->gt1);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Dynamic Jacobian g2", wf->gt2);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Dynamic Jacobian g3", wf->gt3);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Boundary Jacobian g0", wf->bdg0);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Boundary Jacobian g1", wf->bdg1);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Boundary Jacobian g2", wf->bdg2);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Boundary Jacobian g3", wf->bdg3);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Boundary Jacobian Preconditioner g0", wf->bdgp0);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Boundary Jacobian Preconditioner g1", wf->bdgp1);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Boundary Jacobian Preconditioner g2", wf->bdgp2);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE,  "Boundary Jacobian Preconditioner g3", wf->bdgp3);CHKERRQ(ierr);
+  ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_FALSE, "Riemann Solver", wf->r);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

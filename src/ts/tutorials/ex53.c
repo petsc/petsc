@@ -1355,6 +1355,7 @@ static void f0_terzaghi_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[1] = P;
 }
 
+#if 0
 static void f0_mandel_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -1454,6 +1455,7 @@ static void f0_mandel_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     f0[1] -= sigma_zz;
   }
 }
+#endif
 
 static void f0_cryer_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
@@ -1979,94 +1981,96 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exact[3])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
   PetscErrorCode (*exact_t[3])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
-  PetscDS          prob;
+  PetscDS          ds;
+  DMLabel          label;
+  PetscWeakForm    wf;
   Parameter       *param;
   PetscInt         id_mandel[2];
   PetscInt         comp[1];
   PetscInt         comp_mandel[2];
-  PetscInt         dim, id, f;
+  PetscInt         dim, id, bd, f;
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSGetSpatialDimension(ds, &dim);CHKERRQ(ierr);
   ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
   exact_t[0] = exact_t[1] = exact_t[2] = zero;
 
   /* Setup Problem Formulation and Boundary Conditions */
   switch (user->solType) {
   case SOL_QUADRATIC_LINEAR:
-    ierr = PetscDSSetResidual(prob, 0, f0_quadratic_linear_u, f1_u);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 1, f0_epsilon,            NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 2, f0_quadratic_linear_p, f1_p);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 1, g0_pe, NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 2, g0_pp, NULL,  NULL,  g3_pp);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, f0_quadratic_linear_u, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 1, f0_epsilon,            NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 2, f0_quadratic_linear_p, f1_p);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 1, g0_pe, NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 2, g0_pp, NULL,  NULL,  g3_pp);CHKERRQ(ierr);
     exact[0]   = quadratic_u;
     exact[1]   = linear_eps;
     exact[2]   = linear_linear_p;
     exact_t[2] = linear_linear_p_t;
 
     id = 1;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", "marker", 0, 0, NULL, (void (*)(void)) exact[0], NULL,                        1, &id, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure",     "marker", 2, 0, NULL, (void (*)(void)) exact[2], (void (*)(void)) exact_t[2], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", label, 1, &id, 0, 0, NULL, (void (*)(void)) exact[0], NULL, user, NULL);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure",     label, 1, &id, 2, 0, NULL, (void (*)(void)) exact[2], (void (*)(void)) exact_t[2], user, NULL);CHKERRQ(ierr);
     break;
   case SOL_TRIG_LINEAR:
-    ierr = PetscDSSetResidual(prob, 0, f0_trig_linear_u, f1_u);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 1, f0_epsilon,       NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 2, f0_trig_linear_p, f1_p);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 1, g0_pe, NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 2, g0_pp, NULL,  NULL,  g3_pp);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, f0_trig_linear_u, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 1, f0_epsilon,       NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 2, f0_trig_linear_p, f1_p);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 1, g0_pe, NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 2, g0_pp, NULL,  NULL,  g3_pp);CHKERRQ(ierr);
     exact[0]   = trig_u;
     exact[1]   = trig_eps;
     exact[2]   = trig_linear_p;
     exact_t[2] = trig_linear_p_t;
 
     id = 1;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", "marker", 0, 0, NULL, (void (*)(void)) exact[0], NULL,                        1, &id, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure",     "marker", 2, 0, NULL, (void (*)(void)) exact[2], (void (*)(void)) exact_t[2], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", label, 1, &id, 0, 0, NULL, (void (*)(void)) exact[0], NULL, user, NULL);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure",     label, 1, &id, 2, 0, NULL, (void (*)(void)) exact[2], (void (*)(void)) exact_t[2], user, NULL);CHKERRQ(ierr);
     break;
   case SOL_QUADRATIC_TRIG:
-    ierr = PetscDSSetResidual(prob, 0, f0_quadratic_trig_u, f1_u);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 1, f0_epsilon,          NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 2, f0_quadratic_trig_p, f1_p);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 1, g0_pe, NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 2, g0_pp, NULL,  NULL,  g3_pp);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, f0_quadratic_trig_u, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 1, f0_epsilon,          NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 2, f0_quadratic_trig_p, f1_p);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 1, g0_pe, NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 2, g0_pp, NULL,  NULL,  g3_pp);CHKERRQ(ierr);
     exact[0]   = quadratic_u;
     exact[1]   = linear_eps;
     exact[2]   = linear_trig_p;
     exact_t[2] = linear_trig_p_t;
 
     id = 1;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", "marker", 0, 0, NULL, (void (*)(void)) exact[0],                        NULL, 1, &id, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure",     "marker", 2, 0, NULL, (void (*)(void)) exact[2], (void (*)(void)) exact_t[2], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", label, 1, &id, 0, 0, NULL, (void (*)(void)) exact[0], NULL, user, NULL);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure",     label, 1, &id, 2, 0, NULL, (void (*)(void)) exact[2], (void (*)(void)) exact_t[2], user, NULL);CHKERRQ(ierr);
     break;
   case SOL_TERZAGHI:
-    ierr = PetscDSSetResidual(prob, 0, NULL, f1_u);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 1, f0_epsilon,     NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 2, f0_p,           f1_p);CHKERRQ(ierr);
-    ierr = PetscDSSetBdResidual(prob, 0, f0_terzaghi_bd_u, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 1, g0_pe,  NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 2, g0_pp,  NULL,  NULL,  g3_pp);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, NULL, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 1, f0_epsilon,     NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 2, f0_p,           f1_p);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 1, g0_pe,  NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 2, g0_pp,  NULL,  NULL,  g3_pp);CHKERRQ(ierr);
 
     exact[0] = terzaghi_2d_u;
     exact[1] = terzaghi_2d_eps;
@@ -2076,31 +2080,33 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     exact_t[2] = terzaghi_2d_p_t;
 
     id = 1;
-    ierr = DMAddBoundary(dm, DM_BC_NATURAL, "vertical stress", "marker", 0, 0, NULL, NULL, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_NATURAL, "vertical stress",   label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, f0_terzaghi_bd_u, 0, NULL);CHKERRQ(ierr);
+
     id = 3;
     comp[0] = 1;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed base", "marker", 0, 1, comp, (void (*)(void)) zero, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed base",      label, 1, &id, 0, 1, comp, (void (*)(void)) zero, NULL, user, NULL);CHKERRQ(ierr);
     id = 2;
     comp[0] = 0;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed side", "marker", 0, 1, comp, (void (*)(void)) zero, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed side",      label, 1, &id, 0, 1, comp, (void (*)(void)) zero, NULL, user, NULL);CHKERRQ(ierr);
     id = 4;
     comp[0] = 0;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed side", "marker", 0, 1, comp, (void (*)(void)) zero, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed side",      label, 1, &id, 0, 1, comp, (void (*)(void)) zero, NULL, user, NULL);CHKERRQ(ierr);
     id = 1;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", "marker", 2, 0, NULL, (void (*)(void)) terzaghi_drainage_pressure, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 1, &id, 2, 0, NULL, (void (*)(void)) terzaghi_drainage_pressure, NULL, user, NULL);CHKERRQ(ierr);
     break;
   case SOL_MANDEL:
-    ierr = PetscDSSetResidual(prob, 0, NULL, f1_u);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 1, f0_epsilon,     NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 2, f0_p,           f1_p);CHKERRQ(ierr);
-    ierr = PetscDSSetBdResidual(prob, 0, f0_mandel_bd_u, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 1, g0_pe,  NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 2, g0_pp,  NULL,  NULL,  g3_pp);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, NULL, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 1, f0_epsilon,     NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 2, f0_p,           f1_p);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 1, g0_pe,  NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 2, g0_pp,  NULL,  NULL,  g3_pp);CHKERRQ(ierr);
 
     ierr = mandelZeros(PETSC_COMM_WORLD, user, param);CHKERRQ(ierr);
 
@@ -2116,26 +2122,26 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     //comp[0] = 1;
     comp_mandel[0] = 0;
     comp_mandel[1] = 1;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "vertical stress", "marker", 0, 2, comp_mandel, (void (*)(void)) mandel_2d_u, NULL, 2, id_mandel, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "vertical stress", label, 2, id_mandel, 0, 2, comp_mandel, (void (*)(void)) mandel_2d_u, NULL, user, NULL);CHKERRQ(ierr);
     //ierr = DMAddBoundary(dm, DM_BC_NATURAL, "vertical stress", "marker", 0, 1, comp, NULL, 2, id_mandel, user);CHKERRQ(ierr);
     //ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed base", "marker", 0, 1, comp, (void (*)(void)) zero, 2, id_mandel, user);CHKERRQ(ierr);
+    //ierr = PetscDSSetBdResidual(ds, 0, f0_mandel_bd_u, NULL);CHKERRQ(ierr);
 
     id_mandel[0] = 2;
     id_mandel[1] = 4;
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", "marker", 2, 0, NULL, (void (*)(void)) zero, NULL, 2, id_mandel, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 2, id_mandel, 2, 0, NULL, (void (*)(void)) zero, NULL, user, NULL);CHKERRQ(ierr);
     break;
   case SOL_CRYER:
-    ierr = PetscDSSetResidual(prob, 0, NULL, f1_u);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 1, f0_epsilon,     NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 2, f0_p,           f1_p);CHKERRQ(ierr);
-    ierr = PetscDSSetBdResidual(prob, 0, f0_cryer_bd_u, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 1, g0_pe,  NULL,  NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 2, 2, g0_pp,  NULL,  NULL,  g3_pp);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, NULL, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 1, f0_epsilon,     NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 2, f0_p,           f1_p);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL,  NULL,  NULL,  g3_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 1, NULL,  NULL,  g2_ue, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 2, NULL,  NULL,  g2_up, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 0, NULL,  g1_eu, NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 1, 1, g0_ee, NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 1, g0_pe,  NULL,  NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 2, 2, g0_pp,  NULL,  NULL,  g3_pp);CHKERRQ(ierr);
 
     ierr = cryerZeros(PETSC_COMM_WORLD, user, param);CHKERRQ(ierr);
 
@@ -2144,14 +2150,17 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     exact[2] = cryer_3d_p;
 
     id = 1;
-    ierr = DMAddBoundary(dm, DM_BC_NATURAL,   "normal stress",   "marker", 0, 0, NULL, NULL,                                     NULL, 1, &id, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", "marker", 2, 0, NULL, (void (*)(void)) cryer_drainage_pressure, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_NATURAL,   "normal stress",   label, 1, &id, 0, 0, NULL, NULL,                                     NULL, user, &bd);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, f0_cryer_bd_u, 0, NULL);CHKERRQ(ierr);
+
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 1, &id, 2, 0, NULL, (void (*)(void)) cryer_drainage_pressure, NULL, user, NULL);CHKERRQ(ierr);
     break;
-  default: SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
+  default: SETERRQ2(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
   }
   for (f = 0; f < 3; ++f) {
-    ierr = PetscDSSetExactSolution(prob, f, exact[f], user);CHKERRQ(ierr);
-    ierr = PetscDSSetExactSolutionTimeDerivative(prob, f, exact_t[f], user);CHKERRQ(ierr);
+    ierr = PetscDSSetExactSolution(ds, f, exact[f], user);CHKERRQ(ierr);
+    ierr = PetscDSSetExactSolutionTimeDerivative(ds, f, exact_t[f], user);CHKERRQ(ierr);
   }
 
   /* Setup constants */
@@ -2163,7 +2172,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     constants[3] = param->M;             /* Biot modulus, Pa */
     constants[4] = param->k/param->mu_f; /* Darcy coefficient, m**2 / Pa*s */
     constants[5] = param->P_0;           /* Magnitude of Vertical Stress, Pa */
-    ierr = PetscDSSetConstants(prob, 6, constants);CHKERRQ(ierr);
+    ierr = PetscDSSetConstants(ds, 6, constants);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
