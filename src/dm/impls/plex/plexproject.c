@@ -556,7 +556,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   PetscFunctionBegin;
   if (localU) {ierr = VecGetDM(localU, &dmIn);CHKERRQ(ierr);}
   else        {dmIn = dm;}
-  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &localA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, label, numIds ? ids[0] : 0, &localA);CHKERRQ(ierr);
   if (localA) {ierr = VecGetDM(localA, &dmAux);CHKERRQ(ierr);} else {dmAux = NULL;}
   ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
   ierr = DMConvert(dmIn, DMPLEX, &plexIn);CHKERRQ(ierr);

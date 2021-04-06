@@ -322,12 +322,12 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 - func   - pointer to the function, NULL if not found
 
   Output Parameter:
-. name   - name of symbol, or NULL if name lookup is not supported. This must be PetscFree'd by the caller.
+. name   - name of symbol, or NULL if name lookup is not supported.
 
   Level: developer
 
   Notes:
-  The caller must free the returned memory.
+  The caller must free the returned name.
 
   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
   systems this requires platform-specific linker flags.

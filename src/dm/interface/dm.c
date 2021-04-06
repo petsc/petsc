@@ -9652,13 +9652,16 @@ PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
   Output Parameter:
 . aux    - The Vec holding auxiliary field data
 
+  Note: If no auxiliary vector is found for this (label, value), (NULL, 0) is checked as well.
+
   Level: advanced
 
 .seealso: DMSetAuxiliaryVec(), DMGetNumAuxiliaryVec()
 @*/
 PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec *aux)
 {
-  PetscHashAuxKey key;
+  PetscHashAuxKey key, wild = {NULL, 0};
+  PetscBool       has;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -9666,7 +9669,9 @@ PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec *aux)
   if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
   key.label = label;
   key.value = value;
-  ierr = PetscHMapAuxGet(dm->auxData, key, aux);CHKERRQ(ierr);
+  ierr = PetscHMapAuxHas(dm->auxData, key, &has);CHKERRQ(ierr);
+  if (has) {ierr = PetscHMapAuxGet(dm->auxData, key,  aux);CHKERRQ(ierr);}
+  else     {ierr = PetscHMapAuxGet(dm->auxData, wild, aux);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
