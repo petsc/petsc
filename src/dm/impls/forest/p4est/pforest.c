@@ -2197,9 +2197,7 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
 
 static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
 {
-  PetscDS        ds, dsB;
-  PetscBool      newDS;
-  void           *ctx;
+  void          *ctx;
   PetscInt       num;
   PetscReal      val;
   PetscErrorCode ierr;
@@ -2207,31 +2205,30 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   PetscFunctionBegin;
   ierr  = DMGetApplicationContext(dmA,&ctx);CHKERRQ(ierr);
   ierr  = DMSetApplicationContext(dmB,ctx);CHKERRQ(ierr);
-  ierr  = DMGetDS(dmA,&ds);CHKERRQ(ierr);
-  ierr  = DMGetDS(dmB,&dsB);CHKERRQ(ierr);
-  newDS = (PetscBool) (ds != dsB);
   ierr  = DMCopyDisc(dmA,dmB);CHKERRQ(ierr);
   ierr  = DMGetOutputSequenceNumber(dmA,&num,&val);CHKERRQ(ierr);
   ierr  = DMSetOutputSequenceNumber(dmB,num,val);CHKERRQ(ierr);
-  if (newDS) {
-    ierr = DMClearGlobalVectors(dmB);CHKERRQ(ierr);
+  if (dmB->localSection != dmA->localSection || dmB->globalSection != dmA->globalSection) {
     ierr = DMClearLocalVectors(dmB);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)dmA->localSection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&(dmB->localSection));CHKERRQ(ierr);
     dmB->localSection = dmA->localSection;
+    ierr = DMClearGlobalVectors(dmB);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)dmA->globalSection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&(dmB->globalSection));CHKERRQ(ierr);
+    dmB->globalSection = dmA->globalSection;
     ierr = PetscObjectReference((PetscObject)dmA->defaultConstraintSection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&(dmB->defaultConstraintSection));CHKERRQ(ierr);
     dmB->defaultConstraintSection = dmA->defaultConstraintSection;
     ierr = PetscObjectReference((PetscObject)dmA->defaultConstraintMat);CHKERRQ(ierr);
     ierr = MatDestroy(&(dmB->defaultConstraintMat));CHKERRQ(ierr);
     dmB->defaultConstraintMat = dmA->defaultConstraintMat;
-    ierr = PetscObjectReference((PetscObject)dmA->globalSection);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&(dmB->globalSection));CHKERRQ(ierr);
-    dmB->globalSection = dmA->globalSection;
+    if (dmA->map) {ierr = PetscLayoutReference(dmA->map, &dmB->map);CHKERRQ(ierr);}
+  }
+  if (dmB->sectionSF != dmA->sectionSF) {
     ierr = PetscObjectReference((PetscObject)dmA->sectionSF);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&dmB->sectionSF);CHKERRQ(ierr);
     dmB->sectionSF = dmA->sectionSF;
-    if (dmA->map) {ierr = PetscLayoutReference(dmA->map,&dmB->map);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

@@ -97,7 +97,9 @@ UnixCCompiler.runtime_library_dir_option = rpath_option
 
 class PetscConfig:
 
-    def __init__(self, petsc_dir, petsc_arch):
+    def __init__(self, petsc_dir, petsc_arch, dest_dir=None):
+        if dest_dir is None:
+            dest_dir = os.environ.get('DESTDIR')
         self.configdict = { }
         if not petsc_dir:
             raise DistutilsError("PETSc not found")
@@ -107,7 +109,7 @@ class PetscConfig:
         self.configdict = self._get_petsc_config(petsc_dir, petsc_arch)
         self.PETSC_DIR  = self['PETSC_DIR']
         self.PETSC_ARCH = self['PETSC_ARCH']
-        self.DESTDIR = os.environ.get('DESTDIR')
+        self.DESTDIR = dest_dir
         language_map = {'CONLY':'c', 'CXXONLY':'c++'}
         self.language = language_map[self['PETSC_LANGUAGE']]
 
