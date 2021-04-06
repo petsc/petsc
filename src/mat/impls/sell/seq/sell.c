@@ -906,6 +906,7 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetFillRatio_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetMaxSliceWidth_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetAvgSliceWidth_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetVarSliceSize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLSetSliceHeight_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2034,6 +2035,21 @@ PetscErrorCode MatSeqSELLGetAvgSliceWidth_SeqSELL(Mat mat, PetscReal *slicewidth
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode MatSeqSELLGetVarSliceSize_SeqSELL(Mat mat, PetscReal *variance)
+{
+  Mat_SeqSELL *a = (Mat_SeqSELL *)mat->data;
+  PetscReal    mean;
+  PetscInt     i, totalslices = a->totalslices, *sliidx = a->sliidx;
+
+  PetscFunctionBegin;
+  *variance = 0;
+  if (totalslices) {
+    mean = (PetscReal)sliidx[totalslices] / totalslices;
+    for (i = 1; i <= totalslices; i++) { *variance += ((PetscReal)(sliidx[i] - sliidx[i - 1]) - mean) * ((PetscReal)(sliidx[i] - sliidx[i - 1]) - mean) / totalslices; }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatSeqSELLSetSliceHeight_SeqSELL(Mat A, PetscInt sliceheight)
 {
   Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
@@ -2224,6 +2240,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLGetFillRatio_C", MatSeqSELLGetFillRatio_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLGetMaxSliceWidth_C", MatSeqSELLGetMaxSliceWidth_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLGetAvgSliceWidth_C", MatSeqSELLGetAvgSliceWidth_SeqSELL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLGetVarSliceSize_C", MatSeqSELLGetVarSliceSize_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLSetSliceHeight_C", MatSeqSELLSetSliceHeight_SeqSELL));
 
   PetscObjectOptionsBegin((PetscObject)B);

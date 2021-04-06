@@ -406,6 +406,7 @@ PETSC_EXTERN PetscErrorCode MatSeqSELLGetFillRatio(Mat, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatSeqSELLGetMaxSliceWidth(Mat, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSeqSELLGetAvgSliceWidth(Mat, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatSeqSELLSetSliceHeight(Mat, PetscInt);
+PETSC_EXTERN PetscErrorCode MatSeqSELLGetVarSliceSize(Mat, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqDense(MPI_Comm, PetscInt, PetscInt, PetscScalar[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateDense(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[], Mat *);

@@ -49,6 +49,7 @@ means that this shares some data structures with the parent including diag, ilen
   PetscReal    fillratio;       /* ratio of number of padded zeros over total number of elements  */ \
   PetscReal    avgslicewidth;   /* average slice width */ \
   PetscInt     maxslicewidth;   /* maximum slice width */ \
+  PetscReal    varslicesize;    /* variance of slice size */ \
   PetscInt    *sliperm;         /* slice permutation array, CUDA only */ \
   PetscInt     totalblocks;     /* total number of blocks, CUDA only */ \
   PetscInt    *blockidx;        /* block index, CUDA only */ \
