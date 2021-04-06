@@ -1261,6 +1261,7 @@ static PetscErrorCode MatRestoreRow_SeqDense(Mat A,PetscInt row,PetscInt *ncols,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (ncols) *ncols = 0;
   if (cols) {ierr = PetscFree(*cols);CHKERRQ(ierr);}
   if (vals) {ierr = PetscFree(*vals);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
