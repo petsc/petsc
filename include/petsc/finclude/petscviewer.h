@@ -27,5 +27,6 @@
 #define PETSCVIEWERSAWS 'saws'
 #define PETSCVIEWERGLVIS 'glvis'
 #define PETSCVIEWERADIOS 'adios'
-
+#define PETSCVIEWERADIOS2 'adios2'
+#define PETSCVIEWEREXODUSII 'exodusii'
 #endif
