@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit              = 'a02ea7456e23e63ae9e90f6d3a9403c91ecd5688' # sync with 3.14.0
-    self.download               = ['git://https://gitlab.com/knepley/bamg','https://gitlab.com/knepley/bamg/archive/'+self.gitcommit+'.tar.gz']
+    self.download               = ['git://https://gitlab.com/knepley/bamg.git','https://gitlab.com/knepley/bamg/archive/'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
     self.useddirectly           = 0
