@@ -326,8 +326,6 @@ PetscErrorCode  VecCreateMPICUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,
   PetscFunctionReturn(0);
 }
 
-extern MPI_Op MPIU_MAXINDEX_OP, MPIU_MININDEX_OP;
-
 PetscErrorCode VecMax_MPICUDA(Vec xin,PetscInt *idx,PetscReal *z)
 {
   PetscErrorCode ierr;

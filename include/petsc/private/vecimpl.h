@@ -14,6 +14,7 @@
 
 PETSC_EXTERN PetscBool VecRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
+PETSC_EXTERN MPI_Op MPIU_MAXINDEX_OP, MPIU_MININDEX_OP;
 
 /* ----------------------------------------------------------------------------*/
 
