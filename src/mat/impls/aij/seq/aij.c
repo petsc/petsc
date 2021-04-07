@@ -2341,9 +2341,9 @@ PetscErrorCode MatGetRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
 PetscErrorCode MatRestoreRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
-  *nz = 0;
+  if (nz)  *nz = 0;
   if (idx) *idx = NULL;
-  if (v) *v = NULL;
+  if (v)   *v = NULL;
   PetscFunctionReturn(0);
 }
 
