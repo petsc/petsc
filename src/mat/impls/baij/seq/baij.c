@@ -1334,6 +1334,7 @@ PetscErrorCode MatRestoreRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (nz)  *nz = 0;
   if (idx) {ierr = PetscFree(*idx);CHKERRQ(ierr);}
   if (v)   {ierr = PetscFree(*v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

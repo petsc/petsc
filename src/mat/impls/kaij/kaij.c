@@ -1180,7 +1180,9 @@ PetscErrorCode MatGetRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
 PetscErrorCode MatRestoreRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  if (nz) *nz = 0;
   ierr = PetscFree2(*idx,*v);CHKERRQ(ierr);
   ((Mat_SeqKAIJ*)A->data)->getrowactive = PETSC_FALSE;
   PetscFunctionReturn(0);

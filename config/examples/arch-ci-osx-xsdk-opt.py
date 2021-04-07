@@ -14,6 +14,8 @@ configure_options = [
   '--download-metis=1',
   '--download-suitesparse=1',
   '--with-shared-libraries=0',
+  '--download-boost=1',
+  '--download-eigen',
   ]
 
 if __name__ == '__main__':

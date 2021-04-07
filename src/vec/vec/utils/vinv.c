@@ -3,8 +3,6 @@
      Some useful vector utility functions.
 */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>          /*I "petscvec.h" I*/
-extern MPI_Op MPIU_MAXINDEX_OP;
-extern MPI_Op MPIU_MININDEX_OP;
 
 /*@
    VecStrideSet - Sets a subvector of a vector defined

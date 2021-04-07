@@ -47,7 +47,10 @@ class Configure(config.package.CMakePackage):
     args.append('-DSEACASProj_ENABLE_SEACASExodus:BOOL=ON')
     # exodiff and exotxt are convenient tools to debug exodusII functionalities
     args.append('-DSEACASProj_ENABLE_SEACASExodif:BOOL=ON')
-    args.append('-DSEACASProj_ENABLE_SEACASExotxt:BOOL=ON')
+    if hasattr(self.setCompilers, 'FC'):
+      args.append('-DSEACASProj_ENABLE_SEACASExotxt:BOOL=ON')
+    else:
+      args.append('-DSEACASProj_ENABLE_SEACASExotxt:BOOL=OFF')
     args.append('-DSEACASProj_ENABLE_TESTS:BOOL=OFF')
     args.append('-DSEACASProj_SKIP_FORTRANCINTERFACE_VERIFY_TEST:BOOL=ON')
     args.append('-DTPL_ENABLE_Matio:BOOL=OFF')
