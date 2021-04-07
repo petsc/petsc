@@ -115,9 +115,15 @@ class Configure(config.package.CMakePackage):
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       dir = self.externalpackagesdir.dir
       args.append('-DCMAKE_CXX_COMPILER='+os.path.join(dir,'git.kokkos','bin','nvcc_wrapper'))
-      if not 'with-kokkos-cuda-arch' in self.framework.clArgDB:
-        raise RuntimeError('You must set -with-kokkos-cuda-arch=PASCAL61, VOLTA70, VOLTA72, TURING75 etc.')
-      args.append('-DKokkos_ARCH_'+self.argDB['with-kokkos-cuda-arch']+'=ON')
+      if 'with-kokkos-cuda-arch' in self.framework.clArgDB:
+        gencodearch = self.argDB['with-kokkos-cuda-arch']
+      else:
+        genToName = {'30' : 'KEPLER30','32' : 'KEPLER32', '35' : 'KEPLER35', '37' : 'KEPLER37', '50': 'MAXWELL50', '52': 'MAXWELL52', '53' : 'MAXWELL53', '60' : 'PASCAL60', '61' : 'PASCAL61', '70' : 'VOLTA70', '72': 'VOLTA72', '75' : 'TURING75', '80' : 'AMPERE80'}
+        if hasattr(self.cuda,'gencodearch'):
+          gencodearch = genToName[self.cuda.gencodearch]
+        else:
+          raise RuntimeError('You must set -with-kokkos-cuda-arch=PASCAL61, VOLTA70, VOLTA72, TURING75 etc.')
+      args.append('-DKokkos_ARCH_'+gencodearch+'=ON')
       args.append('-DKokkos_ENABLE_CUDA_LAMBDA:BOOL=ON')
       #  Kokkos nvcc_wrapper REQUIRES nvcc be visible in the PATH!
       path = os.getenv('PATH')
