@@ -1221,7 +1221,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
     for (; jb<B->i[i+1]; jb++)
       colidxs[cnt++] = garray[B->j[jb]];
   }
-  if (cnt != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Internal PETSc error: cnt = %D nz = %D",cnt,nz);
+  if (cnt != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal PETSc error: cnt = %D nz = %D",cnt,nz);
   ierr = PetscViewerBinaryWriteAll(viewer,colidxs,nz,PETSC_DETERMINE,PETSC_DETERMINE,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscFree(colidxs);CHKERRQ(ierr);
 
@@ -3474,7 +3474,7 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
   bnew->maxnz = b->maxnz; /* allocated nonzeros of B */
   maij->B     = Bnew;
 
-  if (B->rmap->N != Bnew->rmap->N) SETERRQ2(PETSC_COMM_SELF,0,"BN %d != BnewN %d",B->rmap->N,Bnew->rmap->N);
+  if (B->rmap->N != Bnew->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"BN %d != BnewN %d",B->rmap->N,Bnew->rmap->N);
 
   b->singlemalloc = PETSC_FALSE; /* B arrays are shared by Bnew */
   b->free_a       = PETSC_FALSE;

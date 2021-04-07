@@ -210,7 +210,7 @@ PetscErrorCode RiemannListFind(PetscFunctionList flist,const char *name,RiemannF
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
-  if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,1,"Riemann solver \"%s\" could not be found",name);
+  if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -229,7 +229,7 @@ PetscErrorCode ReconstructListFind(PetscFunctionList flist,const char *name,Reco
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
-  if (!*r) SETERRQ1(PETSC_COMM_SELF,1,"Reconstruction \"%s\" could not be found",name);
+  if (!*r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -852,7 +852,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const Pe
       else rho = tmp;
       if (!((rho > 0) && PetscIsNormalScalar(rho))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP,"non-normal iterate rho=%g",(double)PetscRealPart(rho));
     }
-    SETERRQ1(PETSC_COMM_SELF,1,"Newton iteration for star.rho diverged after %D iterations",i);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Newton iteration for star.rho diverged after %D iterations",i);
   }
 converged:
   if (L.u-c < 0 && 0 < star.u-c) { /* 1-wave is sonic rarefaction */
@@ -1007,7 +1007,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
       else h = tmp;
       if (!((h > 0) && PetscIsNormalScalar(h))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP,"non-normal iterate h=%g",(double)h);
     }
-    SETERRQ1(PETSC_COMM_SELF,1,"Newton iteration for star.h diverged after %D iterations",i);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Newton iteration for star.h diverged after %D iterations",i);
   }
 converged:
   cstar = PetscSqrtScalar(g*star.h);
@@ -1206,9 +1206,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     ierr = TSGetTime(ts,&tnow);CHKERRQ(ierr);
     if (dt > 0.5/ctx->cfl_idt) {
-      if (1) {
-        ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
-      } else SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
+      ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1413,13 +1411,13 @@ int main(int argc,char *argv[])
 
   /* Choose the limiter from the list of registered limiters */
   ierr = PetscFunctionListFind(limiters,lname,&ctx.limit);CHKERRQ(ierr);
-  if (!ctx.limit) SETERRQ1(PETSC_COMM_SELF,1,"Limiter '%s' not found",lname);
+  if (!ctx.limit) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Limiter '%s' not found",lname);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
     ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
-    if (!r) SETERRQ1(PETSC_COMM_SELF,1,"Physics '%s' not found",physname);
+    if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);
   }

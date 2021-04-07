@@ -65,9 +65,7 @@ PetscErrorCode main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (rank>1){
-    SETERRQ(PETSC_COMM_SELF,1,"More than 2 processors detected. Example written to use max of 2 processors.\n");
-  }
+  if (rank>1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"More than 2 processors detected. Example written to use max of 2 processors.\n");
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"---- Constrained Problem -----\n");CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr); /* sets up problem, function below */

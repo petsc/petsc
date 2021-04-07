@@ -1279,7 +1279,7 @@ PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A,MatAssemblyType type)
       ierr = PetscBLASIntCast(row[i]+1,&gridx);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(col[i]+1,&gcidx);CHKERRQ(ierr);
       PetscStackCallBLAS("SCALAPACKinfog2l",SCALAPACKinfog2l_(&gridx,&gcidx,a->desc,&a->grid->nprow,&a->grid->npcol,&a->grid->myrow,&a->grid->mycol,&lridx,&lcidx,&rsrc,&csrc));
-      if (rsrc!=a->grid->myrow || csrc!=a->grid->mycol) SETERRQ(PetscObjectComm((PetscObject)A),1,"Something went wrong, received value does not belong to this process");
+      if (rsrc!=a->grid->myrow || csrc!=a->grid->mycol) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_LIB,"Something went wrong, received value does not belong to this process");
       switch (A->insertmode) {
         case INSERT_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] = val[i]; break;
         case ADD_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] += val[i]; break;

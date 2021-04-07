@@ -850,14 +850,14 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat C,PetscInt imax,PetscB
     /* copy existing entries of table_data_i into tdata[] */
     table_data_i = table_data[i];
     ierr = PetscTableGetCount(table_data_i,&tcount);CHKERRQ(ierr);
-    if (tcount != isz[i]) SETERRQ3(PETSC_COMM_SELF,0," tcount %d != isz[%d] %d",tcount,i,isz[i]);
+    if (tcount != isz[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB," tcount %d != isz[%d] %d",tcount,i,isz[i]);
 
     ierr = PetscMalloc1(tcount,&tdata);CHKERRQ(ierr);
     ierr = PetscTableGetHeadPosition(table_data_i,&tpos);CHKERRQ(ierr);
     while (tpos) {
       ierr = PetscTableGetNext(table_data_i,&tpos,&row,&j);CHKERRQ(ierr);
       tdata[--j] = --row;
-      if (j > tcount - 1) SETERRQ2(PETSC_COMM_SELF,0," j %d >= tcount %d",j,tcount);
+      if (j > tcount - 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB," j %d >= tcount %d",j,tcount);
     }
 #else
     data_i  = data[i];
@@ -1470,7 +1470,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
       sbuf_aj_i = sbuf_aj[i];
       ct1       = 2*rbuf1_i[0] + 1;
       ct2       = 0;
-      /* max1=rbuf1_i[0]; if (max1 != 1) SETERRQ1(PETSC_COMM_SELF,0,"max1 %d != 1",max1); */
+      /* max1=rbuf1_i[0]; if (max1 != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"max1 %d != 1",max1); */
 
       kmax = rbuf1[i][2];
       for (k=0; k<kmax; k++,ct1++) { /* for each row */
@@ -1863,7 +1863,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
     ierr    = MPI_Waitany(nrqs,r_waits4,&idex,r_status4+i);CHKERRMPI(ierr);
     proc    = pa[idex];
     sbuf1_i = sbuf1[proc];
-    /* jmax    = sbuf1_i[0]; if (jmax != 1)SETERRQ1(PETSC_COMM_SELF,0,"jmax %d != 1",jmax); */
+    /* jmax    = sbuf1_i[0]; if (jmax != 1)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"jmax %d != 1",jmax); */
     ct1     = 2 + 1;
     ct2     = 0; /* count of received C->j */
     ct3     = 0; /* count of received C->j that will be inserted into submat */

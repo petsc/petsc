@@ -58,7 +58,7 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidScalarPointer(emax,2);
   PetscValidScalarPointer(emin,3);
-  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Singular values not requested before KSPSetUp()");
+  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Singular values not requested before KSPSetUp()");
 
   if (ksp->ops->computeextremesingularvalues) {
     ierr = (*ksp->ops->computeextremesingularvalues)(ksp,emax,emin);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
   if (n) PetscValidScalarPointer(c,4);
   if (n<0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requested < 0 Eigenvalues");
   PetscValidIntPointer(neig,5);
-  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Eigenvalues not requested before KSPSetUp()");
+  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Eigenvalues not requested before KSPSetUp()");
 
   if (n && ksp->ops->computeeigenvalues) {
     ierr = (*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
@@ -175,7 +175,7 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->calc_ritz) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Ritz pairs not requested before KSPSetUp()");
+  if (!ksp->calc_ritz) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Ritz pairs not requested before KSPSetUp()");
   if (ksp->ops->computeritz) {ierr = (*ksp->ops->computeritz)(ksp,ritz,small,nrit,S,tetar,tetai);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

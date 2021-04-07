@@ -765,7 +765,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   ierr = PetscBLASIntCast(5*N,&lwork);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PetscObjectComm((PetscObject)ksp), -1, "No support for complex numbers.");
+  SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No support for complex numbers.");
 #endif
 
   ierr = PetscMalloc1(ldA*ldA, &A);CHKERRQ(ierr);
@@ -801,7 +801,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
       PetscBLASInt info;
       PetscBLASInt nrhs = 1;
       PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&bn, &nrhs, Ht, &bn, ipiv, t, &bn, &info));
-      if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling the Lapack routine DGESV");
+      if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_LIB, "Error while calling the Lapack routine DGESV");
     }
     /* Now form H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
     for (i = 0; i < bn; i++) A[(bn-1)*bn+i] += t[i];
@@ -1051,7 +1051,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     PetscBLASInt ijob  = 2;
     PetscBLASInt wantQ = 1, wantZ = 1;
     PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
-    if (info == 1) SETERRQ(PetscObjectComm((PetscObject)ksp), -1, "Unable to reorder the eigenvalues with the LAPACK routine: ill-conditioned problem.");
+    if (info == 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_LIB, "Unable to reorder the eigenvalues with the LAPACK routine: ill-conditioned problem.");
   }
   ierr = PetscFree(select);CHKERRQ(ierr);
 
