@@ -1,27 +1,27 @@
-DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 2 MPI processes
+DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 1 MPI processes
   type: plex
 cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 in 3 dimensions:
-  0-cells: 34 0
-  1-cells: 146 0
-  2-cells: 202 0
-  3-cells: 89 0
+  0-cells: 34
+  1-cells: 146
+  2-cells: 202
+  3-cells: 89
 Labels:
   celltype: 4 strata with value/size (0 (34), 6 (89), 3 (202), 1 (146))
   depth: 4 strata with value/size (0 (34), 1 (146), 2 (202), 3 (89))
   Cell Sets: 4 strata with value/size (1 (24), 2 (23), 5 (24), 20 (18))
-PetscViewer Object: 2 MPI processes
+PetscViewer Object: 1 MPI processes
   type: exodusii
   Filename:    FourBrickTet-large_out.exo
   exoid:       -1
   IO Mode:     1
   Mesh order:  1
-PetscViewer Object: 2 MPI processes
+PetscViewer Object: 1 MPI processes
   type: exodusii
   Filename:    FourBrickTet-large_out.exo
   exoid:       65536
   IO Mode:     1
   Mesh order:  1
-PetscSection Object: 2 MPI processes
+PetscSection Object: 1 MPI processes
   type not yet set
 3 fields
   field 0 with 3 components
@@ -497,7 +497,6 @@ Process 0:
   ( 468) dim  0 offset 670
   ( 469) dim  0 offset 670
   ( 470) dim  0 offset 670
-Process 1:
   field 1 with 6 components
 Process 0:
   (   0) dim  6 offset   0
@@ -971,7 +970,6 @@ Process 0:
   ( 468) dim  0 offset 670
   ( 469) dim  0 offset 670
   ( 470) dim  0 offset 670
-Process 1:
   field 2 with 1 components
 Process 0:
   (   0) dim  0 offset   6
@@ -1445,18 +1443,17 @@ Process 0:
   ( 468) dim  0 offset 670
   ( 469) dim  0 offset 670
   ( 470) dim  0 offset 670
-Process 1:
-DM Object: Parallel Mesh 2 MPI processes
+DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 1 MPI processes
   type: plex
-Parallel Mesh in 3 dimensions:
-  0-cells: 22 25
-  1-cells: 84 89
-  2-cells: 108 108
-  3-cells: 45 44
+cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 in 3 dimensions:
+  0-cells: 34
+  1-cells: 146
+  2-cells: 202
+  3-cells: 89
 Labels:
-  depth: 4 strata with value/size (0 (22), 1 (84), 2 (108), 3 (45))
-  celltype: 4 strata with value/size (0 (22), 1 (84), 3 (108), 6 (45))
-  Cell Sets: 2 strata with value/size (1 (24), 2 (21))
+  celltype: 4 strata with value/size (0 (34), 6 (89), 3 (202), 1 (146))
+  depth: 4 strata with value/size (0 (34), 1 (146), 2 (202), 3 (89))
+  Cell Sets: 4 strata with value/size (1 (24), 2 (23), 5 (24), 20 (18))
 Field U:
   adjacency FEM
 Field Sigma:

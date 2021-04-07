@@ -1,27 +1,38 @@
-DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 2 MPI processes
+DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 1 MPI processes
   type: plex
 cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 in 3 dimensions:
-  0-cells: 125 0
-  1-cells: 300 0
-  2-cells: 240 0
-  3-cells: 64 0
+  0-cells: 125
+  1-cells: 300
+  2-cells: 240
+  3-cells: 64
 Labels:
   celltype: 4 strata with value/size (0 (125), 7 (64), 4 (240), 1 (300))
   depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
   Cell Sets: 4 strata with value/size (1 (16), 2 (16), 5 (16), 20 (16))
-PetscViewer Object: 2 MPI processes
+PetscViewer Object: 1 MPI processes
   type: exodusii
   Filename:    FourBrickHex-large_out.exo
   exoid:       -1
   IO Mode:     1
   Mesh order:  1
-PetscViewer Object: 2 MPI processes
+PetscViewer Object: 1 MPI processes
   type: exodusii
   Filename:    FourBrickHex-large_out.exo
   exoid:       65536
   IO Mode:     1
   Mesh order:  1
-PetscSection Object: 2 MPI processes
+DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 1 MPI processes
+  type: plex
+cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 in 3 dimensions:
+  0-cells: 125
+  1-cells: 300
+  2-cells: 240
+  3-cells: 64
+Labels:
+  celltype: 4 strata with value/size (0 (125), 7 (64), 4 (240), 1 (300))
+  depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
+  Cell Sets: 4 strata with value/size (1 (16), 2 (16), 5 (16), 20 (16))
+PetscSection Object: 1 MPI processes
   type not yet set
 3 fields
   field 0 with 3 components
@@ -755,7 +766,6 @@ Process 0:
   ( 726) dim  0 offset 884
   ( 727) dim  0 offset 884
   ( 728) dim  0 offset 884
-Process 1:
   field 1 with 6 components
 Process 0:
   (   0) dim  6 offset   0
@@ -1487,7 +1497,6 @@ Process 0:
   ( 726) dim  0 offset 884
   ( 727) dim  0 offset 884
   ( 728) dim  0 offset 884
-Process 1:
   field 2 with 1 components
 Process 0:
   (   0) dim  0 offset   6
@@ -2219,21 +2228,3 @@ Process 0:
   ( 726) dim  0 offset 884
   ( 727) dim  0 offset 884
   ( 728) dim  0 offset 884
-Process 1:
-DM Object: Parallel Mesh 2 MPI processes
-  type: plex
-Parallel Mesh in 3 dimensions:
-  0-cells: 75 75
-  1-cells: 170 170
-  2-cells: 128 128
-  3-cells: 32 32
-Labels:
-  depth: 4 strata with value/size (0 (75), 1 (170), 2 (128), 3 (32))
-  celltype: 4 strata with value/size (0 (75), 1 (170), 4 (128), 7 (32))
-  Cell Sets: 2 strata with value/size (1 (16), 2 (16))
-Field U:
-  adjacency FEM
-Field Sigma:
-  adjacency FEM
-Field Alpha:
-  adjacency FEM

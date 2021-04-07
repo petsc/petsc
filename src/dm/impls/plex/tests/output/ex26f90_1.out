@@ -1,26 +1,26 @@
-DM Object: cubit(FourSquareQ-large.exo): 12/02/2017: 09:20:39 2 MPI processes
+DM Object: cubit(FourSquareQ-large.exo): 12/02/2017: 09:20:39 1 MPI processes
   type: plex
 cubit(FourSquareQ-large.exo): 12/02/2017: 09:20:39 in 2 dimensions:
-  0-cells: 49 0
-  1-cells: 84 0
-  2-cells: 36 0
+  0-cells: 49
+  1-cells: 84
+  2-cells: 36
 Labels:
   celltype: 3 strata with value/size (0 (49), 4 (36), 1 (84))
   depth: 3 strata with value/size (0 (49), 1 (84), 2 (36))
   Cell Sets: 4 strata with value/size (1 (9), 2 (9), 3 (9), 5 (9))
-PetscViewer Object: 2 MPI processes
+PetscViewer Object: 1 MPI processes
   type: exodusii
   Filename:    FourSquareQ-large_out.exo
   exoid:       -1
   IO Mode:     1
   Mesh order:  1
-PetscViewer Object: 2 MPI processes
+PetscViewer Object: 1 MPI processes
   type: exodusii
   Filename:    FourSquareQ-large_out.exo
   exoid:       65536
   IO Mode:     1
   Mesh order:  1
-PetscSection Object: 2 MPI processes
+PetscSection Object: 1 MPI processes
   type not yet set
 3 fields
   field 0 with 2 components
@@ -194,7 +194,6 @@ Process 0:
   ( 166) dim  0 offset 255
   ( 167) dim  0 offset 255
   ( 168) dim  0 offset 255
-Process 1:
   field 1 with 3 components
 Process 0:
   (   0) dim  3 offset   0
@@ -366,7 +365,6 @@ Process 0:
   ( 166) dim  0 offset 255
   ( 167) dim  0 offset 255
   ( 168) dim  0 offset 255
-Process 1:
   field 2 with 1 components
 Process 0:
   (   0) dim  0 offset   3
@@ -538,17 +536,16 @@ Process 0:
   ( 166) dim  0 offset 255
   ( 167) dim  0 offset 255
   ( 168) dim  0 offset 255
-Process 1:
-DM Object: Parallel Mesh 2 MPI processes
+DM Object: cubit(FourSquareQ-large.exo): 12/02/2017: 09:20:39 1 MPI processes
   type: plex
-Parallel Mesh in 2 dimensions:
-  0-cells: 28 28
-  1-cells: 45 45
-  2-cells: 18 18
+cubit(FourSquareQ-large.exo): 12/02/2017: 09:20:39 in 2 dimensions:
+  0-cells: 49
+  1-cells: 84
+  2-cells: 36
 Labels:
-  depth: 3 strata with value/size (0 (28), 1 (45), 2 (18))
-  celltype: 3 strata with value/size (0 (28), 1 (45), 4 (18))
-  Cell Sets: 2 strata with value/size (1 (9), 2 (9))
+  celltype: 3 strata with value/size (0 (49), 4 (36), 1 (84))
+  depth: 3 strata with value/size (0 (49), 1 (84), 2 (36))
+  Cell Sets: 4 strata with value/size (1 (9), 2 (9), 3 (9), 5 (9))
 Field U:
   adjacency FEM
 Field Sigma:
