@@ -5152,11 +5152,11 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  mat - the matrix to transpose
 -  reuse - either MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX, or MAT_INPLACE_MATRIX
 
-   Output Parameters:
+   Output Parameter:
 .  B - the transpose
 
    Notes:
@@ -5245,11 +5245,11 @@ PetscErrorCode MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  mat - the matrix to transpose and complex conjugate
--  reuse - MAT_INITIAL_MATRIX to create a new matrix, MAT_INPLACE_MATRIX to reuse the first argument to store the transpose
+-  reuse - either MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX, or MAT_INPLACE_MATRIX
 
-   Output Parameters:
+   Output Parameter:
 .  B - the Hermitian
 
    Level: intermediate

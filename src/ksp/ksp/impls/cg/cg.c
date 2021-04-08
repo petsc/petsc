@@ -11,7 +11,7 @@
         KSPDestroy_XXX()         - Destroys the Krylov context, freeing all
                                    memory it needed
     Here the "_XXX" denotes a particular implementation, in this case
-    we use _CG (e.g. KSPCreate_CG, KSPDestroy_CG). These routines are
+    we use _CG (e.g. KSPCreate_CG, KSPDestroy_CG). These routines
     are actually called via the common user interface routines
     KSPSetType(), KSPSetFromOptions(), KSPSolve(), and KSPDestroy() so the
     application code interface remains identical for all preconditioners.
