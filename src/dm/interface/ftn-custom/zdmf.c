@@ -258,6 +258,11 @@ PETSC_EXTERN void dmcreateinterpolation_(DM *dmc,DM *dmf,Mat *mat,Vec *vec, int 
   *ierr = DMCreateInterpolation(*dmc,*dmf,mat,vec);
 }
 
+PETSC_EXTERN void dmcreatesuperdm_(DM dms[], PetscInt *len, IS ***is, DM *superdm, int *ierr)
+{
+  *ierr = DMCreateSuperDM(dms, *len, *is, superdm);
+}
+
 PETSC_EXTERN void dmdestroy_(DM *x,int *ierr)
 {
   PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);

@@ -134,13 +134,18 @@
       <h4>TAO:</h4>
       <h4>DM/DA:</h4>
       <ul>
-        <li>Changed management of auxiliary data in DM from objet composition to DMGet/SetAuxiliaryVec(), DMCopyAuxiliaryVec()</li>
+        <li>Change management of auxiliary data in DM from objet composition to DMGet/SetAuxiliaryVec(), DMCopyAuxiliaryVec()</li>
       </ul>
       <h4>DMSwarm:</h4>
       <ul>
         <li> Add DMSwarmGetCellSwarm() and DMSwarmRestoreCellSwarm()</li>
       </ul>
       <h4>DMPlex:</h4>
+      <ul>
+        <li>Add a PETSCVIEWEREXODUSII viewer type for DMView/Load and VecView/Load. Note that not all DMPlex can be saved in exodusII format since this file format requires that the numbering of cell sets be compact</li>
+        <li>Add PetscViewerExodusIIOpen() convenience function</li>
+        <li>Add PetscViewerExodusIISetOrder() PetscViewerExodusIISetOrder() to generate "2nd order" elements (i.e. tri6, tet10, hex27) when using DMView with a PETSCVIEWEREXODUSII viewer</li>
+      </ul>
       <h4>FE/FV:</h4>
       <h4>DMNetwork:</h4>
       <h4>DT:</h4>

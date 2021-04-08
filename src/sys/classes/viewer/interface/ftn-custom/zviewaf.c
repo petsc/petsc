@@ -11,6 +11,7 @@
 #define petscviewerandformatdestroy_ PETSCVIEWERANDFORMATDESTROY
 #define petscviewergetsubviewer_     PETSCVIEWERGETSUBVIEWER
 #define petscviewerrestoresubviewer_ PETSCVIEWERRESTORESUBVIEWER
+#define petscviewierview_            PETSCVIEWERVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewersetformat_        petscviewersetformat
 #define petscviewersettype_          petscviewersettype
@@ -21,6 +22,7 @@
 #define petscviewerandformatdestroy_ petscviewerandformatdestroy
 #define petscviewergetsubviewer_     petscviewergetsubviewer
 #define petscviewerrestoresubviewer_ petscviewerrestoresubviewer
+#define petscviewierview_            petscviewerview
 #endif
 
 PETSC_EXTERN void  petscviewergetsubviewer_(PetscViewer *vin,MPI_Fint * comm,PetscViewer *outviewer, PetscErrorCode *ierr)
@@ -88,4 +90,12 @@ PETSC_EXTERN void petscviewerpopformat_(PetscViewer *vin, PetscErrorCode *ierr)
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin, v);
   *ierr = PetscViewerPopFormat(v);
+}
+
+PETSC_EXTERN void petscviewerview_(PetscViewer *vin, PetscViewer *viewerin, PetscErrorCode *ierr)
+{
+  PetscViewer v,viewer;
+  PetscPatchDefaultViewers_Fortran(vin, v);
+  PetscPatchDefaultViewers_Fortran(viewerin, viewer);
+  *ierr = PetscViewerView(v,viewer);
 }
