@@ -6,7 +6,7 @@ and from Fortran to C\n\n";
 #include <petscvec.h>
 /*
   Ugly stuff to insure the function names match between Fortran
-  and C. Sorry, but this is out of our PETSc hands to cleanup.
+  and C. This is out of our PETSc hands to cleanup.
 */
 /*T
    Concepts: vectors^fortran-c;

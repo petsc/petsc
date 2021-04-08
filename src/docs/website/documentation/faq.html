@@ -824,7 +824,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <h3><a name="blocks">Can I create BAIJ matrices with different size blocks for different block rows?</a></h3>
 
-      Sorry, this is not possible, the BAIJ format only supports a single fixed
+      No, this is not possible, the BAIJ format only supports a single fixed
       block size on the entire matrix. But the AIJ format automatically searches
       for matching rows and thus still takes advantage of the natural blocks in
       your matrix to obtain good performance. Unfortunately you cannot use the

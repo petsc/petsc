@@ -42,7 +42,7 @@ int mm_read_unsymmetric_sparse(const char *fname, int *M_, int *N_, int *nz_,
     if (!(mm_is_real(matcode) && mm_is_matrix(matcode) &&
             mm_is_sparse(matcode)))
     {
-        fprintf(stderr, "Sorry, this application does not support ");
+        fprintf(stderr, "This application does not support ");
         fprintf(stderr, "Market Market type: [%s]\n",
                 mm_typecode_to_str(matcode));
         return -1;
