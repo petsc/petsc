@@ -955,7 +955,7 @@ docs-review:
     - .test-basic
   script:
     - cd src/docs/sphinx_docs &&
-      ~/.local/bin/sphinx-build -T -E -b dirhtml -D language=en -j auto . ../../../public
+      ~/.local/bin/sphinx-build -T -E -b html -D language=en -j auto . ../../../public
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html
