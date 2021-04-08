@@ -11,9 +11,14 @@
 
 #if defined(PETSC_HAVE_HDF5)
 
+/*
+  HDF5 function specifications usually read:
+  Returns a non-negative value if successful; otherwise returns a negative value.
+  (see e.g. https://support.hdfgroup.org/HDF5/doc/RM/RM_H5O.html#Object-Close)
+*/
 #define PetscStackCallHDF5(func,args) do {                        \
     herr_t _status;                                               \
-    PetscStackPush(#func);_status = func args;PetscStackPop; if (_status) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)_status); \
+    PetscStackPush(#func);_status = func args;PetscStackPop; if (_status < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)_status); \
   } while (0)
 
 #define PetscStackCallHDF5Return(ret,func,args) do {              \
