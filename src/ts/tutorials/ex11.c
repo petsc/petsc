@@ -2393,11 +2393,6 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
     static PetscScalar bn[3], fn, ft, tg[3], pl, rl, pm, pr, rr, xp, ubl, ubm,
             ubr, dtt, unm, tmp, utl, utm, uxl, utr, uxr, gaml, gamm, gamr,
             xcen, rhom, rho1l, rho1m, rho1r;
-    /* Parameter adjustments */
-    --nn;
-    --flux;
-    --ur;
-    --ul;
 
     /* Function Body */
     xcen = 0.;
@@ -2409,17 +2404,17 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
     }
     dtt = 1.;
     if (*ndim == 3) {
-        if (nn[1] == 0. && nn[2] == 0.) {
+        if (nn[0] == 0. && nn[1] == 0.) {
             tg[0] = 1.;
         } else {
-            tg[0] = -nn[2];
-            tg[1] = nn[1];
+            tg[0] = -nn[1];
+            tg[1] = nn[0];
         }
 /*           tmp=dsqrt(tg(1)**2+tg(2)**2) */
 /*           tg=tg/tmp */
-        bn[0] = -nn[3] * tg[1];
-        bn[1] = nn[3] * tg[0];
-        bn[2] = nn[1] * tg[1] - nn[2] * tg[0];
+        bn[0] = -nn[2] * tg[1];
+        bn[1] = nn[2] * tg[0];
+        bn[2] = nn[0] * tg[1] - nn[1] * tg[0];
 /* Computing 2nd power */
         d__1 = bn[0];
 /* Computing 2nd power */
@@ -2432,16 +2427,16 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
             bn[k - 1] /= tmp;
         }
     } else if (*ndim == 2) {
-        tg[0] = -nn[2];
-        tg[1] = nn[1];
+        tg[0] = -nn[1];
+        tg[1] = nn[0];
 /*           tmp=dsqrt(tg(1)**2+tg(2)**2) */
 /*           tg=tg/tmp */
         bn[0] = 0.;
         bn[1] = 0.;
         bn[2] = 1.;
     }
-    rl = ul[1];
-    rr = ur[1];
+    rl = ul[0];
+    rr = ur[0];
     uxl = 0.;
     uxr = 0.;
     utl = 0.;
@@ -2450,12 +2445,12 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
     ubr = 0.;
     i__1 = *ndim;
     for (k = 1; k <= i__1; ++k) {
-        uxl += ul[k + 1] * nn[k];
-        uxr += ur[k + 1] * nn[k];
-        utl += ul[k + 1] * tg[k - 1];
-        utr += ur[k + 1] * tg[k - 1];
-        ubl += ul[k + 1] * bn[k - 1];
-        ubr += ur[k + 1] * bn[k - 1];
+        uxl += ul[k] * nn[k-1];
+        uxr += ur[k] * nn[k-1];
+        utl += ul[k] * tg[k - 1];
+        utr += ur[k] * tg[k - 1];
+        ubl += ul[k] * bn[k - 1];
+        ubr += ur[k] * bn[k - 1];
     }
     uxl /= rl;
     uxr /= rr;
@@ -2472,14 +2467,14 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
     d__2 = utl;
 /* Computing 2nd power */
     d__3 = ubl;
-    pl = (*gamma - 1.) * (ul[*ndim + 2] - rl * .5 * (d__1 * d__1 + d__2 * d__2 + d__3 * d__3));
+    pl = (*gamma - 1.) * (ul[*ndim + 1] - rl * .5 * (d__1 * d__1 + d__2 * d__2 + d__3 * d__3));
 /* Computing 2nd power */
     d__1 = uxr;
 /* Computing 2nd power */
     d__2 = utr;
 /* Computing 2nd power */
     d__3 = ubr;
-    pr = (*gamma - 1.) * (ur[*ndim + 2] - rr * .5 * (d__1 * d__1 + d__2 * d__2 + d__3 * d__3));
+    pr = (*gamma - 1.) * (ur[*ndim + 1] - rr * .5 * (d__1 * d__1 + d__2 * d__2 + d__3 * d__3));
     rho1l = rl;
     rho1r = rr;
 
@@ -2487,19 +2482,19 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
                           rho1l, &rr, &uxr, &pr, &utr, &ubr, &gamr, &rho1r, &rhom, &unm, &
                           pm, &utm, &ubm, &gamm, &rho1m);
 
-    flux[1] = rhom * unm;
+    flux[0] = rhom * unm;
     fn = rhom * unm * unm + pm;
     ft = rhom * unm * utm;
 /*           flux(2)=fn*nn(1)+ft*nn(2) */
 /*           flux(3)=fn*tg(1)+ft*tg(2) */
-    flux[2] = fn * nn[1] + ft * tg[0];
-    flux[3] = fn * nn[2] + ft * tg[1];
+    flux[1] = fn * nn[0] + ft * tg[0];
+    flux[2] = fn * nn[1] + ft * tg[1];
 /*           flux(2)=rhom*unm*(unm)+pm */
 /*           flux(3)=rhom*(unm)*utm */
     if (*ndim == 3) {
-        flux[4] = rhom * unm * ubm;
+        flux[3] = rhom * unm * ubm;
     }
-    flux[*ndim + 2] = (rhom * .5 * (unm * unm + utm * utm + ubm * ubm) + gamm / (gamm - 1.) * pm) * unm;
+    flux[*ndim + 1] = (rhom * .5 * (unm * unm + utm * utm + ubm * ubm) + gamm / (gamm - 1.) * pm) * unm;
     return iwave;
 } /* godunovflux_ */
 
