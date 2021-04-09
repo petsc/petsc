@@ -414,9 +414,9 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
   PetscStrncmp(func,"main",4,&ismain);
   if (ismain) {
     PetscMPIInt errcode;
-    errcode = (PetscMPIInt)(0 + line*1000 + ierr);
+    errcode = (PetscMPIInt)(0 + 0*line*1000 + ierr);
     if (petscwaitonerrorflg) {PetscSleep(1000);}
-    MPI_Abort(comm,errcode);
+    MPI_Abort(MPI_COMM_WORLD,errcode);
   }
 
 #if defined(PETSC_CLANGUAGE_CXX)
