@@ -1245,14 +1245,14 @@ static PetscErrorCode MatGetRow_SeqDense(Mat A,PetscInt row,PetscInt *ncols,Pets
   PetscFunctionBegin;
   *ncols = A->cmap->n;
   if (cols) {
-    ierr = PetscMalloc1(A->cmap->n+1,cols);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->cmap->n,cols);CHKERRQ(ierr);
     for (i=0; i<A->cmap->n; i++) (*cols)[i] = i;
   }
   if (vals) {
     const PetscScalar *v;
 
     ierr = MatDenseGetArrayRead(A,&v);CHKERRQ(ierr);
-    ierr = PetscMalloc1(A->cmap->n+1,vals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->cmap->n,vals);CHKERRQ(ierr);
     v   += row;
     for (i=0; i<A->cmap->n; i++) {(*vals)[i] = *v; v += mat->lda;}
     ierr = MatDenseRestoreArrayRead(A,&v);CHKERRQ(ierr);
@@ -2423,7 +2423,7 @@ static PetscErrorCode MatCreateSubMatrices_SeqDense(Mat A,PetscInt n,const IS ir
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscCalloc1(n+1,B);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n,B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
