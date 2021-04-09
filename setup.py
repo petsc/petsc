@@ -159,7 +159,7 @@ def config(prefix, dry_run=False):
         import logger
         logger.Logger.defaultLog = None
     else:
-        python = find_executable('python2') or find_executable('python')
+        python = sys.executable
         command = [python, './configure'] + options
         status = os.system(" ".join(command))
         if status != 0: raise RuntimeError(status)
