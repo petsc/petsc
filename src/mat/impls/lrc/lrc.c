@@ -37,7 +37,7 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
      sum_{all processors} work1 */
   ierr = VecGetArray(Na->work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(Na->work2,&w2);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(w1,w2,Na->nwork,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(w1,w2,Na->nwork,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N));CHKERRMPI(ierr);
   ierr = VecRestoreArray(Na->work1,&w1);CHKERRQ(ierr);
   ierr = VecRestoreArray(Na->work2,&w2);CHKERRQ(ierr);
 

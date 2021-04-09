@@ -225,7 +225,7 @@ static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A,Mat P,PetscReal fill,Mat C)
       ierr = ISBlockGetIndices(ptap->ris1,&i2);CHKERRQ(ierr);
       ierr = PetscArraycmp(i1,i2,N,&lsame);CHKERRQ(ierr);
     }
-    ierr = MPIU_Allreduce(&lsame,&same,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&lsame,&same,1,MPIU_BOOL,MPI_LAND,comm);CHKERRMPI(ierr);
     if (same) {
       ierr = ISDestroy(&ptap->ris1);CHKERRQ(ierr);
     } else {
@@ -459,7 +459,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
       if (ndmapi[i] < 0 && ndmapc[i] < 2)
         cnt++;
 
-    ierr = MPIU_Allreduce(&cnt,&i,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&cnt,&i,1,MPIU_INT,MPI_MAX,comm);CHKERRMPI(ierr);
     if (i) { /* we detected isolated separator nodes */
       Mat                    A2,A3;
       IS                     *workis,is2;
@@ -1227,7 +1227,7 @@ static PetscErrorCode MatGetInfo_IS(Mat A,MatInfoType flag,MatInfo *ginfo)
     ginfo->mallocs      = isend[4];
     ginfo->assemblies   = isend[5];
   } else if (flag == MAT_GLOBAL_MAX) {
-    ierr = MPIU_Allreduce(isend,irecv,6,MPIU_PETSCLOGDOUBLE,MPI_MAX,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(isend,irecv,6,MPIU_PETSCLOGDOUBLE,MPI_MAX,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
 
     ginfo->nz_used      = irecv[0];
     ginfo->nz_allocated = irecv[1];
@@ -1236,7 +1236,7 @@ static PetscErrorCode MatGetInfo_IS(Mat A,MatInfoType flag,MatInfo *ginfo)
     ginfo->mallocs      = irecv[4];
     ginfo->assemblies   = irecv[5];
   } else if (flag == MAT_GLOBAL_SUM) {
-    ierr = MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
 
     ginfo->nz_used      = irecv[0];
     ginfo->nz_allocated = irecv[1];
@@ -1992,7 +1992,7 @@ general_assembly:
     lb[1] = isseqaij;
     lb[2] = isseqbaij;
     lb[3] = isseqsbaij;
-    ierr = MPIU_Allreduce(lb,bb,4,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(lb,bb,4,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
     if (!bb[0] && !bb[1] && !bb[2] && !bb[3]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local matrices must have the same type");
   }
 
@@ -2169,7 +2169,7 @@ static PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
 
   PetscFunctionBegin;
   ierr = MatIsHermitian(matis->A,tol,&local_sym);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2181,7 +2181,7 @@ static PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool  *flg)
 
   PetscFunctionBegin;
   ierr = MatIsSymmetric(matis->A,tol,&local_sym);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2197,7 +2197,7 @@ static PetscErrorCode MatIsStructurallySymmetric_IS(Mat A,PetscBool  *flg)
     PetscFunctionReturn(0);
   }
   ierr = MatIsStructurallySymmetric(matis->A,&local_sym);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2479,7 +2479,7 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
       ierr = ISLocalToGlobalMappingRestoreBlockIndices(rmapping,&idxs1);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingRestoreBlockIndices(cmapping,&idxs2);CHKERRQ(ierr);
     }
-    ierr = MPIU_Allreduce(&same,&gsame,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&same,&gsame,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
     if (gsame) cmapping = rmapping;
   }
   ierr = PetscLayoutSetBlockSize(A->rmap,rbs);CHKERRQ(ierr);

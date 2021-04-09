@@ -221,7 +221,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPIU_Allreduce(&nasm->n,&N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&nasm->n,&N,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  total subdomain blocks = %D\n",N);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);

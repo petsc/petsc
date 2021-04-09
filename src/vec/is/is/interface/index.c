@@ -59,7 +59,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
     else if (idxs[i] > lbounds[1]) lbounds[1] = idxs[i];
   }
   lbounds[0] = -lbounds[0];
-  ierr = MPIU_Allreduce(lbounds,gbounds,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(lbounds,gbounds,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)subset));CHKERRMPI(ierr);
   gbounds[0] = -gbounds[0];
   N_n  = gbounds[1] - gbounds[0] + 1;
 

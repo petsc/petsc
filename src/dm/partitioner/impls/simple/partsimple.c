@@ -151,7 +151,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
   ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   if (targetSection) {
-    ierr = MPIU_Allreduce(&numVertices, &numVerticesGlobal, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&numVertices, &numVerticesGlobal, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
     ierr = PetscCalloc1(nparts,&tpwgts);CHKERRQ(ierr);
     for (np = 0; np < nparts; ++np) {
       ierr = PetscSectionGetDof(targetSection,np,&tpwgts[np]);CHKERRQ(ierr);

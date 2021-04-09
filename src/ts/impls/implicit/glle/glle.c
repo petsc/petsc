@@ -724,7 +724,7 @@ static PetscErrorCode TSGLLEVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
   for (i=0; i<n; i++) sum += PetscAbsScalar(PetscSqr(x[i]*w[i]));
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(gl->W,&w);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   ierr = VecGetSize(gl->W,&N);CHKERRQ(ierr);
   *nrm = PetscSqrtReal(gsum/(1.*N));
   PetscFunctionReturn(0);

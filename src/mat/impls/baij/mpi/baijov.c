@@ -543,7 +543,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[
     nstages_local = ismax/nmax + ((ismax % nmax) ? 1 : 0); /* local nstages */
 
     /* Make sure every processor loops through the nstages */
-    ierr = MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRMPI(ierr);
 
     /* Allocate memory to hold all the submatrices and dummy submatrices */
     ierr = PetscCalloc1(ismax+nstages,submat);CHKERRQ(ierr);

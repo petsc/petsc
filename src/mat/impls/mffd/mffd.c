@@ -1129,7 +1129,7 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   }
   ierr = VecRestoreArray(U,&u_vec);CHKERRQ(ierr);
   ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&minval,&val,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&minval,&val,1,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
   if (val <= PetscAbsScalar(*h)) {
     ierr = PetscInfo2(U,"Scaling back h from %g to %g\n",(double)PetscRealPart(*h),(double)(.99*val));CHKERRQ(ierr);
     if (PetscRealPart(*h) > 0.0) *h =  0.99*val;

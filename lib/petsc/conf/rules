@@ -683,7 +683,7 @@ checkbadSource:
 	-@echo "Two ;; -----------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
 	-@echo "CHKERRQ for an MPI error code ------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '= MPI_\w*\(.*CHKERRQ' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '= MPI[U]*_\w*\(.*CHKERRQ' -- ${GITSRC} | grep -v MPIU_File >> checkbadSource.out;true
 	-@echo "Missing if (ierr) return ierr; -----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" >> checkbadSource.out;true
 	-@echo "DOS file (with DOS newlines) -------------------------" >> checkbadSource.out

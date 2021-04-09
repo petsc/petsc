@@ -572,7 +572,7 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
   ((petsc_wait_all_ct++,petsc_sum_of_waits_ct += (PetscLogDouble) (count),0) || MPI_Waitall((count),(array_of_requests),(array_of_statuses)))
 
 #define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
-  ((petsc_allreduce_ct += PetscMPIParallelComm((comm)),0) || MPI_Allreduce((sendbuf),(recvbuf),(count),(datatype),(op),(comm)))
+  (petsc_allreduce_ct += PetscMPIParallelComm((comm)),MPI_Allreduce((sendbuf),(recvbuf),(count),(datatype),(op),(comm)))
 
 #define MPI_Bcast(buffer,count,datatype,root,comm) \
   ((petsc_allreduce_ct += PetscMPIParallelComm((comm)),0) || MPI_Bcast((buffer),(count),(datatype),(root),(comm)))
@@ -653,6 +653,7 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 
 #define MPI_Start_neighbor_alltoallv(outdegree,indegree,sendbuf,sendcnts,sdispls,sendtype,recvbuf,recvcnts,rdispls,recvtype,comm) \
   (((outdegree) || (indegree)) && MPI_Neighbor_alltoallv((sendbuf),(sendcnts),(sdispls),(sendtype),(recvbuf),(recvcnts),(rdispls),(recvtype),(comm)))
+
 #endif /* !MPIUNI_H && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
 
 #else  /* ---Logging is turned off --------------------------------------------*/

@@ -58,7 +58,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
     nstages_local = is_max/nmax + ((is_max % nmax) ? 1 : 0);
 
     /* Make sure every processor loops through the nstages */
-    ierr = MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRMPI(ierr);
 
     for (iov=0; iov<ov; ++iov) {
       /* 1) Get submats for column search */
@@ -189,7 +189,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
     table[i] = t_p  + (Mbs/PETSC_BITS_PER_BYTE+1)*i;
   }
 
-  ierr = MPIU_Allreduce(&is_max,&ois_max,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&is_max,&ois_max,1,MPIU_INT,MPI_MAX,comm);CHKERRMPI(ierr);
 
   /* 1. Send this processor's is[] to other processors */
   /*---------------------------------------------------*/
@@ -387,7 +387,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   /* 4. Receive work done on other processors, then merge */
   /*------------------------------------------------------*/
   /* get max number of messages that this processor expects to recv */
-  ierr = MPIU_Allreduce(len_s,iwork,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(len_s,iwork,size,MPI_INT,MPI_MAX,comm);CHKERRMPI(ierr);
   ierr = PetscMalloc1(iwork[rank]+1,&data2);CHKERRQ(ierr);
   ierr = PetscFree4(len_s,btable,iwork,Bowners);CHKERRQ(ierr);
 

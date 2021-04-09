@@ -609,8 +609,8 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
   dp = PetscSqrtReal(PetscAbsScalar(lambda[12]));
 
   ierr = VecMergedDot2_Private(N,M,W,&lambda[1],&lambda[6]);CHKERRQ(ierr);     /*  lambda_1 <- w'*m , lambda_4 <- n'*m  */
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&lambda[1],1,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&lambda[6],1,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,&lambda[1],1,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,&lambda[6],1,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);
 
   lambda[5] = PetscConj(lambda[1]);
   lambda[13] = PetscConj(lambda[11]);

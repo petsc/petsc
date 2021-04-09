@@ -51,7 +51,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
   } else iflags_local = (PetscMPIInt*) iflags;
 
   /* Post an allreduce to determine the numer of messages the current node will receive */
-  ierr    = MPIU_Allreduce(iflags_local,recv_buf,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr    = MPIU_Allreduce(iflags_local,recv_buf,size,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   *nrecvs = recv_buf[rank];
 
   ierr = PetscFree2(recv_buf,iflags_localm);CHKERRQ(ierr);

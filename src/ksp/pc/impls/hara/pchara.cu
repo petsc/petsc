@@ -62,7 +62,7 @@ static PetscErrorCode PCSetCoordinates_HARA(PC pc, PetscInt sdim, PetscInt nlocc
     ierr  = PetscArraycmp(pchara->coords,coords,sdim*nlocc,&reset);CHKERRQ(ierr);
     reset = (PetscBool)!reset;
   }
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&reset,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,&reset,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
   if (reset) {
     ierr = PCReset_HARA(pc);CHKERRQ(ierr);
     ierr = PetscMalloc1(sdim*nlocc,&pchara->coords);CHKERRQ(ierr);

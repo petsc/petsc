@@ -730,7 +730,7 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&m,max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&m,max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

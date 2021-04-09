@@ -354,7 +354,7 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
     n2  = ntemp;
   }
   ierr = ISSorted(is1,&lsorted);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&lsorted,&sorted,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsorted,&sorted,1,MPIU_BOOL,MPI_LAND,comm);CHKERRMPI(ierr);
   if (!sorted) {
     ierr = ISDuplicate(is1,&is1sorted);CHKERRQ(ierr);
     ierr = ISSort(is1sorted);CHKERRQ(ierr);
@@ -365,7 +365,7 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
     ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   }
   ierr = ISSorted(is2,&lsorted);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&lsorted,&sorted,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsorted,&sorted,1,MPIU_BOOL,MPI_LAND,comm);CHKERRMPI(ierr);
   if (!sorted) {
     ierr = ISDuplicate(is2,&is2sorted);CHKERRQ(ierr);
     ierr = ISSort(is2sorted);CHKERRQ(ierr);
@@ -618,8 +618,8 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
     lhigh = PetscMax(lhigh,colors[lstart]);
     ++lcount;
   }
-  ierr     = MPIU_Allreduce(&llow,&low,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr     = MPIU_Allreduce(&lhigh,&high,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr     = MPIU_Allreduce(&llow,&low,1,MPI_INT,MPI_MIN,comm);CHKERRMPI(ierr);
+  ierr     = MPIU_Allreduce(&lhigh,&high,1,MPI_INT,MPI_MAX,comm);CHKERRMPI(ierr);
   *listlen = 0;
   if (low <= high) {
     if (lcount > 0) {
@@ -651,7 +651,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
       }
       color = (PetscMPIInt)(colors[lstart] == l);
       /* Check whether a proper subcommunicator exists. */
-      ierr = MPIU_Allreduce(&color,&subsize,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&color,&subsize,1,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
 
       if (subsize == 1) subcomm = PETSC_COMM_SELF;
       else if (subsize == size) subcomm = comm;

@@ -172,7 +172,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
       }
       nd_global=0;
     }
-    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRMPI(ierr);
   }
   for (i=0;i<n;i++) {
     colors[i] = (ISColoringValue)lcolors[i];
@@ -435,7 +435,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
       ierr = PetscSFBcastBegin(sf,MPIU_INT,dcolors,ocolors,MPI_REPLACE);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(sf,MPIU_INT,dcolors,ocolors,MPI_REPLACE);CHKERRQ(ierr);
       /* find the maximum color assigned locally and allocate a mask */
-      ierr = MPIU_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRMPI(ierr);
       ierr = PetscMalloc1(mcol_global+1,&colorweights);CHKERRQ(ierr);
       /* check for conflicts */
       for (i=0;i<n;i++) {
@@ -531,7 +531,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
         }
       }
     }
-    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRMPI(ierr);
   }
   if (mo) {
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
@@ -576,7 +576,7 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscolor
     if (colors[i] > finalcolor) finalcolor=colors[i];
   }
   finalcolor_global=0;
-  ierr = MPIU_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRMPI(ierr);
   ierr = PetscLogEventBegin(MATCOLORING_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MATCOLORING_ISCreate,mc,0,0,0);CHKERRQ(ierr);

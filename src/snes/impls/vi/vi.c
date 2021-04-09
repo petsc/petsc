@@ -93,9 +93,9 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   ierr  = VecRestoreArrayRead(snes->xl,&xl);CHKERRQ(ierr);
   ierr  = VecRestoreArrayRead(snes->xu,&xu);CHKERRQ(ierr);
   ierr  = VecRestoreArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
-  ierr  = MPIU_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
-  ierr  = MPIU_Allreduce(act,fact,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
-  ierr  = MPIU_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);
+  ierr  = MPIU_Allreduce(act,fact,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);
+  ierr  = MPIU_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);
   fnorm = PetscSqrtReal(fnorm);
 
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
@@ -332,7 +332,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X, PetscReal *f
   ierr   = VecRestoreArrayRead(snes->xl,&xl);CHKERRQ(ierr);
   ierr   = VecRestoreArrayRead(snes->xu,&xu);CHKERRQ(ierr);
   ierr   = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr   = MPIU_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr   = MPIU_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);
   *fnorm = PetscSqrtReal(*fnorm);
   PetscFunctionReturn(0);
 }
@@ -495,7 +495,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
   ierr     = VecGetArrayRead(xu,&xxu);CHKERRQ(ierr);
   for (i=0; i<n; i++) cnt += ((xxl[i] != PETSC_NINFINITY) || (xxu[i] != PETSC_INFINITY));
 
-  ierr = MPIU_Allreduce(&cnt,&snes->ntruebounds,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&cnt,&snes->ntruebounds,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);
   ierr = VecRestoreArrayRead(xl,&xxl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xu,&xxu);CHKERRQ(ierr);
   PetscFunctionReturn(0);

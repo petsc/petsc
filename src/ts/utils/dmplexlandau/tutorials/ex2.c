@@ -472,7 +472,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
     ierr = TSGetSolution(ts, &X);CHKERRQ(ierr);
     ierr = VecNorm(X,NORM_2,&val);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&val,&rval,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&val,&rval,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
     if (rval != val) {
       ierr = PetscPrintf(PETSC_COMM_SELF, " ***** [%D] ERROR max |x| = %22.15e, my |x| = %22.15e diff=%e\n",rank,rval,val,rval-val);CHKERRQ(ierr);
     } else {

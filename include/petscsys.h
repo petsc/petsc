@@ -2769,10 +2769,13 @@ PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],
 
 
 #if defined(PETSC_USE_DEBUG)
-/*
-   Verify that all processes in the communicator have called this from the same line of code
- */
-PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,const char*,const char *);
+PETSC_STATIC_INLINE int PetscStrHash(const char *str)
+{
+  unsigned int c,hash = 5381;
+
+  while ((c = *str++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+  return hash;
+}
 
 /*MC
    MPIU_Allreduce - a PETSc replacement for MPI_Allreduce() that tries to determine if the call from all the MPI processes occur from the
@@ -2786,25 +2789,40 @@ PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,
      PetscErrorCode MPIU_Allreduce(void *indata,void *outdata,PetscMPIInt count,MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
 
    Input Parameters:
-+  indata - pointer to the input data to be reduced
-.  count - the number of MPI data items in indata and outdata
-.  datatype - the MPI datatype, for example MPI_INT
-.  op - the MPI operation, for example MPI_SUM
--  comm - the MPI communicator on which the operation occurs
++  a - pointer to the input data to be reduced
+.  c - the number of MPI data items in a and b
+.  d - the MPI datatype, for example MPI_INT
+.  e - the MPI operation, for example MPI_SUM
+-  fcomm - the MPI communicator on which the operation occurs
 
    Output Parameter:
-.  outdata - the reduced values
+.  b - the reduced values
 
    Notes:
-   In optimized mode this directly calls MPI_Allreduce()
+     In optimized mode this directly calls MPI_Allreduce()
+
+     This is defined as a macro that can return error codes internally so it cannot be used in a subroutine that returns void.
+
+     The error code this returns should be checked with CHKERRMPI()
 
    Level: developer
 
 .seealso: MPI_Allreduce()
 M*/
-#define MPIU_Allreduce(a,b,c,d,e,fcomm) (PetscAllreduceBarrierCheck(fcomm,c,__LINE__,PETSC_FUNCTION_NAME,__FILE__) || MPI_Allreduce(a,b,c,d,e,fcomm))
+#define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_SUCCESS; do {\
+  PetscErrorCode _4_ierr; \
+  PetscMPIInt a_b1[6],a_b2[6];\
+  a_b1[0] = -(PetscMPIInt)__LINE__;                          a_b1[1] = -a_b1[0];\
+  a_b1[2] = -(PetscMPIInt)PetscStrHash(PETSC_FUNCTION_NAME); a_b1[3] = -a_b1[2];\
+  a_b1[4] = -(PetscMPIInt)(c);                               a_b1[5] = -a_b1[4];\
+  _4_ierr = MPI_Allreduce(a_b1,a_b2,6,MPI_INT,MPI_MAX,fcomm);CHKERRMPI(_4_ierr);\
+  if (-a_b2[0] != a_b2[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called in different locations (code lines) on different processors");\
+  if (-a_b2[2] != a_b2[3]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called in different locations (functions) on different processors");\
+  if (-a_b2[4] != a_b2[5]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called with different counts %d on different processors",c);\
+  _4_ierr = MPI_Allreduce((a),(b),(c),d,e,(fcomm));CHKERRMPI(_4_ierr);\
+  } while (0)
 #else
-#define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)
+#define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce((a),(b),(c),d,e,(fcomm))
 #endif
 
 #if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)

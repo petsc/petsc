@@ -2200,7 +2200,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
       nz_local = (PetscInt)(Ainfo.nz_allocated + Binfo.nz_allocated);
 
       if (B->cmap->N > product->fill*nz_local) alg_scalable_loc = PETSC_TRUE;
-      ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRMPI(ierr);
 
       if (alg_scalable) {
         alg  = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
@@ -2262,7 +2262,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
     nz_local = (PetscInt)(Ainfo.nz_allocated + Binfo.nz_allocated);
 
     if (B->cmap->N > product->fill*nz_local) alg_scalable_loc = PETSC_TRUE;
-    ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRMPI(ierr);
 
     if (alg_scalable) {
       alg  = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
@@ -2328,7 +2328,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
       nz_local = (PetscInt)(Ainfo.nz_allocated + Pinfo.nz_allocated);
 
       if (pN > product->fill*nz_local) alg_scalable_loc = PETSC_TRUE;
-      ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRMPI(ierr);
 
       if (alg_scalable) {
         alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */

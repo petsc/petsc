@@ -183,7 +183,7 @@ PetscErrorCode MatGetDiagonalHermitian_Normal(Mat N,Vec v)
     }
     ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
   }
-  ierr   = MPIU_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N));CHKERRQ(ierr);
+  ierr   = MPIU_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N));CHKERRMPI(ierr);
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
   ierr   = VecGetArray(v,&values);CHKERRQ(ierr);
