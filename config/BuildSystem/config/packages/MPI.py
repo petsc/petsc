@@ -393,6 +393,12 @@ Unable to run hostname to check the network')
         self.addDefine('HAVE_MPI_PROCESS_SHARED_MEMORY', 1)
         self.support_mpi3_shm = 1
     if self.checkLink('#include <mpi.h>\n',
+                      'MPI_Aint size=128; int disp_unit=8,*baseptr; MPI_Win win;\n\
+                       if (MPI_Win_allocate(size,disp_unit,MPI_INFO_NULL,MPI_COMM_WORLD,&baseptr,&win));\n\
+                       if (MPI_Win_attach(win,baseptr,size));\n\
+                       if (MPI_Win_create_dynamic(MPI_INFO_NULL,MPI_COMM_WORLD,&win));\n'):
+      self.addDefine('HAVE_MPI_FEATURE_DYNAMIC_WINDOW', 1) # Use it to represent a group of MPI3 Win routines
+    if self.checkLink('#include <mpi.h>\n',
                       'int send=0,recv,counts[2]={1,1},displs[2]={1,2}; MPI_Request req;\n\
                        if (MPI_Iscatter(&send,1,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
                        if (MPI_Iscatterv(&send,counts,displs,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
