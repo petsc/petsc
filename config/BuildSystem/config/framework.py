@@ -532,6 +532,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if lines != 'conftest.c:']
       # in case -pie is always being passed to linker
       lines = [s for s in lines if s.find('-pie being ignored. It is only used when linking a main executable') < 0]
+      # Microsoft outputs these strings when linking
+      lines = [s for s in lines if s.find('Creating library ') < 0]
+      lines = [s for s in lines if s.find('performing full link') < 0]
+      lines = [s for s in lines if s.find('linking object as if no debug info') < 0]
+      # Multiple gfortran libraries present
+      lines = [s for s in lines if s.find('may conflict with libgfortran') < 0]
       if lines: output = '\n'.join(lines)
       else: output = ''
       self.log.write("Linker output after filtering:\n"+output+":\n")
