@@ -51,7 +51,6 @@ import os
 import re
 import sys
 import platform
-from functools import reduce
 # workarround for python2.2 which does not have pathsep
 if not hasattr(os.path,'pathsep'): os.path.pathsep=':'
 
@@ -178,7 +177,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
     help.addArgument('Framework', '-configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
     help.addArgument('Framework', '-ignoreCompileOutput=<bool>', nargs.ArgBool(None, 1, 'Ignore compiler output'))
-    help.addArgument('Framework', '-ignoreLinkOutput=<bool>',    nargs.ArgBool(None, 1, 'Ignore linker output'))
+    help.addArgument('Framework', '-ignoreLinkOutput=<bool>',    nargs.ArgBool(None, 0, 'Ignore linker output'))
     help.addArgument('Framework', '-ignoreWarnings=<bool>',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
     help.addArgument('Framework', '-doCleanup=<bool>',           nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
     help.addArgument('Framework', '-with-executables-search-path', nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
@@ -427,7 +426,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def filterPreprocessOutput(self,output, log = None):
     if log is None: log = self.log
-    log.write("Preprocess stderr before filtering:\n"+output+":\n")
+    log.write("Preprocess output before filtering:\n"+output+":\n")
+    if output == '\n':
+      output = ''
     # Another PGI license warning, multiline so have to discard all
     if output.find('your evaluation license will expire') > -1 and output.lower().find('error') == -1:
       output = ''
@@ -449,9 +450,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
     # pgi dumps filename on stderr - but returns 0 errorcode'
     lines = [s for s in lines if lines != 'conftest.c:']
-    if lines: output = reduce(lambda s, t: s+t, lines, '\n')
+    if lines: output = '\n'.join(lines)
     else: output = ''
-    log.write("Preprocess stderr after filtering:\n"+output+":\n")
+    log.write("Preprocess output after filtering:\n"+output+":\n")
     return output
 
   def filterCompileOutput(self, output):
@@ -465,8 +466,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if output.find('(E) Invalid statement found within an interface block. Executable statement, statement function or syntax error encountered.') >= 0: return output
     elif self.argDB['ignoreCompileOutput']:
       output = ''
+    elif output == '\n':
+      output = ''
     elif output:
-      log.write("Compiler stderr before filtering:\n"+output+":\n")
+      self.log.write("Compiler output before filtering:\n"+output+":\n")
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
         # EXCEPT warnings that those bastards say we want
@@ -498,17 +501,19 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
       # pgi dumps filename on stderr - but returns 0 errorcode'
       lines = [s for s in lines if lines != 'conftest.c:']
-      if lines: output = reduce(lambda s, t: s+t, lines, '\n')
+      if lines: output = '\n'.join(lines)
       else: output = ''
-      log.write("Compiler stderr after filtering:\n"+output+":\n")
+      self.log.write("Compiler output after filtering:\n"+output+":\n")
     return output
 
   def filterLinkOutput(self, output):
     if output.find('relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol') >= 0: return output
     elif self.argDB['ignoreLinkOutput']:
       output = ''
+    elif output == '\n':
+      output = ''
     elif output:
-      log.write("Linker stderr before filtering:\n"+output+":\n")
+      self.log.write("Linker output before filtering:\n"+output+":\n")
       hasIbmstuff = output.find('in statically linked applications requires at runtime the shared libraries from the glibc version used for linking') >= 0
       lines = output.splitlines()
       if self.argDB['ignoreWarnings'] and not hasIbmstuff:
@@ -527,9 +532,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if lines != 'conftest.c:']
       # in case -pie is always being passed to linker
       lines = [s for s in lines if s.find('-pie being ignored. It is only used when linking a main executable') < 0]
-      if lines: output = reduce(lambda s, t: s+t, lines, '\n')
+      if lines: output = '\n'.join(lines)
       else: output = ''
-      log.write("Linker stderr after filtering:\n"+output+":\n")
+      self.log.write("Linker output after filtering:\n"+output+":\n")
     return output
 
   ###############################################
