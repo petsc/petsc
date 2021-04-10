@@ -2769,11 +2769,11 @@ PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],
 
 
 #if defined(PETSC_USE_DEBUG)
-PETSC_STATIC_INLINE int PetscStrHash(const char *str)
+PETSC_STATIC_INLINE unsigned int PetscStrHash(const char *str)
 {
   unsigned int c,hash = 5381;
 
-  while ((c = *str++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+  while ((c = (unsigned int)*str++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
   return hash;
 }
 
