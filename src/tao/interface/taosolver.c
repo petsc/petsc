@@ -2855,7 +2855,7 @@ PetscErrorCode  TaoGetGradientNorm(Tao tao, Mat *M)
   PetscFunctionReturn(0);
 }
 
-/*c
+/*@
    TaoGradientNorm - Compute the norm with respect to the inner product the user has set.
 
    Collective on tao

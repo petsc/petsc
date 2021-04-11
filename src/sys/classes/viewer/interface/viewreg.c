@@ -470,7 +470,7 @@ $     PetscViewerSetType(viewer,"my_viewer_type")
    or at runtime via the option
 $     -viewer_type my_viewer_type
 
-.seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
+.seealso: PetscViewerRegisterAll()
  @*/
 PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)(PetscViewer))
 {

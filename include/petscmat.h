@@ -235,11 +235,11 @@ typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX,MAT_IGNORE_MATRIX,MAT_INPLACE_
 
 /*E
     MatCreateSubMatrixOption - Indicates if matrices obtained from a call to MatCreateSubMatrices()
-     include the matrix values. Currently it is only used by MatGetSeqNonzerostructure().
+     include the matrix values. Currently it is only used by MatGetSeqNonzeroStructure().
 
     Level: beginner
 
-.seealso: MatGetSeqNonzerostructure()
+.seealso: MatGetSeqNonzeroStructure()
 E*/
 typedef enum {MAT_DO_NOT_GET_VALUES,MAT_GET_VALUES} MatCreateSubMatrixOption;
 

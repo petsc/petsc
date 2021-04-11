@@ -14,7 +14,7 @@
 
   Level: intermediate
 
-.seealso: DMSTAG, DMDAGetBoundaryTypes()
+.seealso: DMSTAG
 @*/
 PetscErrorCode DMStagGetBoundaryTypes(DM dm,DMBoundaryType *boundaryTypeX,DMBoundaryType *boundaryTypeY,DMBoundaryType *boundaryTypeZ)
 {

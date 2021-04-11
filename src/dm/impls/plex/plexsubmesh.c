@@ -3811,7 +3811,7 @@ PetscErrorCode DMPlexGetSubpointIS(DM dm, IS *subpointIS)
 
   Level: intermediate
 
-.seealso: DMPlexGetEnclosurePoint()
+.seealso: DMGetEnclosurePoint()
 @*/
 PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
 {
