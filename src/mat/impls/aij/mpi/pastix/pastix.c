@@ -226,7 +226,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
   lu->rhsnbr = 1;
   x_seq      = lu->b_seq;
   if (lu->commSize > 1) {
-    /* PaStiX only supports centralized rhs. Scatter b into a seqential rhs vector */
+    /* PaStiX only supports centralized rhs. Scatter b into a sequential rhs vector */
     ierr = VecScatterBegin(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(x_seq,&array);CHKERRQ(ierr);

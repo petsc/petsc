@@ -19,7 +19,7 @@
   compilers - like borland, that do not have a usable MPI
   implementation]
 
-  However - providing a seqential, standards compliant MPI
+  However - providing a sequential, standards compliant MPI
   implementation is *not* the goal of MPIUNI. The development strategy
   was - to make enough changes to it so that PETSc sources, examples
   compile without errors, and runs in the uni-processor mode. This is

@@ -1,7 +1,7 @@
 /*
    This should not be included in users code.
 
-  Includes definition of structure for seqential vectors
+  Includes definition of structure for sequential vectors
 
   These are shared by dvec1.c dvec2.c dvec3.c bvec1.c bvec2.c pvec.c pbvec.c
 */

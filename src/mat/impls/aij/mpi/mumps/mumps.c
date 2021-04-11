@@ -1154,7 +1154,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
       ierr = VecGetArrayRead(b,&rarray);CHKERRQ(ierr);
       ierr = MatMumpsSetUpDistRHSInfo(A,1,rarray);CHKERRQ(ierr);
     } else {
-      mumps->id.ICNTL(20) = 0; /* dense centralized RHS; Scatter b into a seqential rhs vector*/
+      mumps->id.ICNTL(20) = 0; /* dense centralized RHS; Scatter b into a sequential rhs vector*/
       ierr = VecScatterBegin(mumps->scat_rhs,b,mumps->b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(mumps->scat_rhs,b,mumps->b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       if (!mumps->myid) {
