@@ -689,6 +689,12 @@ PETSC_EXTERN PetscErrorCode VecCreateMPIHIP(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
 #endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+PETSC_EXTERN PetscErrorCode VecCreateSeqKokkos(MPI_Comm,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPIKokkos(MPI_Comm,PetscInt,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,Vec*);
+#endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec,PetscInt*,Vec**);
 PETSC_EXTERN PetscErrorCode VecNestGetSubVec(Vec,PetscInt,Vec*);
