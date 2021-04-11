@@ -470,7 +470,7 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   comm = PETSC_COMM_SELF;
 #endif
   /* create a reference element */
-  ierr = DMPlexCreateReferenceCell(comm, dim, simplex, &K);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(comm, DMPolytopeTypeSimpleShape(dim, simplex), &K);CHKERRQ(ierr);
   ierr = DMCreateLabel(K, "identity");CHKERRQ(ierr);
   ierr = DMGetLabel(K, "identity", &identity);CHKERRQ(ierr);
   ierr = DMPlexGetChart(K, &pStart, &pEnd);CHKERRQ(ierr);

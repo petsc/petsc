@@ -113,6 +113,14 @@ Changes: Development
 -  Add ``DMPlexTopologyLoad()``, ``DMPlexCoordinatesLoad()``, and
    ``DMPlexLabelsLoad()`` for incremental loading of a ``DMPlex`` object
    from an HDF5 file
+- Add ``DMPlexIsSimplex()`` to check the shape of the first cell
+- Add ``DMPlexShape`` to describe prebuilt mesh domains
+- Add ``DMPlexCreateCoordinateSpace()`` to make an FE space for the coordinates
+- Add the automatic creation of a Plex from options, see ``DMSetFromOptions()``
+- The old options for ``DMPlexCreateBoxMesh()`` NO LONGER WORK. They have been changed to make the interface more uniform
+- Replace ``DMPlexCreateSquareBoundary()`` and ``DMPlexCreateCubeBoundary()`` with ``DMPlexCreateBoxSurfaceMesh()``
+- Remove ``DMPlexCreateReferenceCellByType()``
+- The number of refinements is no longer an argument to ``DMPlexCreateHexCylinderMesh()``
 
 .. rubric:: FE/FV:
 

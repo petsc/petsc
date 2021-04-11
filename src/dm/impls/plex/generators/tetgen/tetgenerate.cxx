@@ -27,6 +27,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
   const PetscInt         dim = 3;
   ::tetgenio             in;
   ::tetgenio             out;
+  PetscContainer         modelObj;
   DMUniversalLabel       universal;
   PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f;
   DMPlexInterpolatedFlag isInterpolated;
@@ -192,17 +193,16 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       }
     }
 
+    ierr = PetscObjectQuery((PetscObject) boundary, "EGADS Model", (PetscObject *) &modelObj);CHKERRQ(ierr);
+    if (modelObj) {
 #ifdef PETSC_HAVE_EGADS
-    {
       DMLabel        bodyLabel;
-      PetscContainer modelObj;
       PetscInt       cStart, cEnd, c, eStart, eEnd, fStart, fEnd;
       ego           *bodies;
       ego            model, geom;
       int            Nb, oclass, mtype, *senses;
 
       /* Get Attached EGADS Model from Original DMPlex */
-      ierr = PetscObjectQuery((PetscObject) boundary, "EGADS Model", (PetscObject *) &modelObj);CHKERRQ(ierr);
       ierr = PetscContainerGetPointer(modelObj, (void **) &model);CHKERRQ(ierr);
       ierr = EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses);CHKERRQ(ierr);
       /* Transfer EGADS Model to Volumetric Mesh */
@@ -257,8 +257,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
           ierr = DMPlexRestoreTransitiveClosure(*dm, c, PETSC_TRUE, &Ncl, &closure);CHKERRQ(ierr);
         }
       }
-    }
 #endif
+    }
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -270,6 +270,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
   const PetscInt         dim = 3;
   ::tetgenio             in;
   ::tetgenio             out;
+  PetscContainer         modelObj;
   DMUniversalLabel       universal;
   PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f, cStart, cEnd, c;
   DMPlexInterpolatedFlag isInterpolated;
@@ -455,17 +456,16 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       }
     }
 
+    ierr = PetscObjectQuery((PetscObject) dm, "EGADS Model", (PetscObject *) &modelObj);CHKERRQ(ierr);
+    if (modelObj) {
 #ifdef PETSC_HAVE_EGADS
-    {
       DMLabel        bodyLabel;
-      PetscContainer modelObj;
       PetscInt       cStart, cEnd, c, eStart, eEnd, fStart, fEnd;
       ego           *bodies;
       ego            model, geom;
       int            Nb, oclass, mtype, *senses;
 
       /* Get Attached EGADS Model from Original DMPlex */
-      ierr = PetscObjectQuery((PetscObject) dm, "EGADS Model", (PetscObject *) &modelObj);CHKERRQ(ierr);
       ierr = PetscContainerGetPointer(modelObj, (void **) &model);CHKERRQ(ierr);
       ierr = EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses);CHKERRQ(ierr);
       /* Transfer EGADS Model to Volumetric Mesh */
@@ -520,8 +520,8 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
           ierr = DMPlexRestoreTransitiveClosure(*dmRefined, c, PETSC_TRUE, &Ncl, &closure);CHKERRQ(ierr);
         }
       }
-    }
 #endif
+    }
     ierr = DMPlexSetRefinementUniform(*dmRefined, PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

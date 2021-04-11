@@ -822,6 +822,36 @@ PetscErrorCode  DMSetUp(DM dm)
 .   -dm_mat_type <type>  - type of matrix to create inside DM
 -   -dm_is_coloring_type - <global or local>
 
+    DMPLEX Specific creation options
++ -dm_plex_filename <str>           - File containing a mesh
+. -dm_plex_boundary_filename <str>  - File containing a mesh boundary
+. -dm_plex_shape <shape>            - The domain shape, such as DM_SHAPE_BOX, DM_SHAPE_SPHERE, etc.
+. -dm_plex_cell <ct>                - Cell shape
+. -dm_plex_reference_cell_domain <bool> - Use a reference cell domain
+. -dm_plex_dim <dim>                - Set the topological dimension
+. -dm_plex_simplex <bool>           - PETSC_TRUE for simplex elements, PETSC_FALSE for tensor elements
+. -dm_plex_interpolate <bool>       - PETSC_TRUE turns on topological interpolation (creating edges and faces)
+. -dm_plex_scale <sc>               - Scale factor for mesh coordinates
+. -dm_plex_box_faces <m,n,p>        - Number of faces along each dimension
+. -dm_plex_box_lower <x,y,z>        - Specify lower-left-bottom coordinates for the box
+. -dm_plex_box_upper <x,y,z>        - Specify upper-right-top coordinates for the box
+. -dm_plex_box_bd <bx,by,bz>        - Specify the DMBoundaryType for each direction
+. -dm_plex_sphere_radius <r>        - The sphere radius
+. -dm_plex_ball_radius <r>          - Radius of the ball
+. -dm_plex_cylinder_bd <bz>         - Boundary type in the z direction
+. -dm_plex_cylinder_num_wedges <n>  - Number of wedges around the cylinder
+. -dm_refine_pre <n>                - The number of refinements before distribution
+. -dm_refine_uniform_pre <bool>     - Flag for uniform refinement before distribution
+. -dm_refine_volume_limit_pre <v>   - The maximum cell volume after refinement before distribution
+. -dm_refine <n>                    - The number of refinements after distribution
+. -dm_extrude_layers <l>            - The number of layers to extrude
+. -dm_extrude_thickness <t>         - The thickness of the layer to be extruded
+. -dm_extrude_column_first <bool>   - Order the cells in a vertical column first
+. -dm_distribute <bool>             - Flag to redistribute a mesh among processes
+. -dm_distribute_overlap <n>        - The size of the overlap halo
+. -dm_plex_adj_cone <bool>          - Set adjacency direction
+- -dm_plex_adj_closure <bool>       - Set adjacency size
+
     DMPLEX Specific Checks
 +   -dm_plex_check_symmetry        - Check that the adjacency information in the mesh is symmetric - DMPlexCheckSymmetry()
 .   -dm_plex_check_skeleton        - Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes) - DMPlexCheckSkeleton()

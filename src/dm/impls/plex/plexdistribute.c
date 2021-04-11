@@ -1028,6 +1028,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
 static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmParallel)
 {
   MPI_Comm         comm;
+  DM               cdm, cdmParallel;
   PetscSection     originalCoordSection, newCoordSection;
   Vec              originalCoordinates, newCoordinates;
   PetscInt         bs;
@@ -1058,6 +1059,9 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
   }
   ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
   ierr = DMSetPeriodicity(dmParallel, isper, maxCell, L, bd);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dmParallel, &cdmParallel);CHKERRQ(ierr);
+  ierr = DMCopyDisc(cdm, cdmParallel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

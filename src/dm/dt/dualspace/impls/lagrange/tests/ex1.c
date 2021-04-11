@@ -313,54 +313,6 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateReferenceWedge(MPI_Comm comm, DM *refdm)
-{
-  PetscInt       dim = 3;
-  DM             rdm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMCreate(comm, &rdm);CHKERRQ(ierr);
-  ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(rdm, dim);CHKERRQ(ierr);
-  {
-    PetscInt    numPoints[4]         = {6, 9, 5, 1};
-    PetscInt    coneSize[21]         = {5,
-                                        3, 3,
-                                        4, 4, 4,
-                                        2, 2, 2, 2, 2, 2, 2, 2, 2,
-                                        0, 0, 0, 0, 0, 0};
-    PetscInt    cones[41]            = {1, 2, 3, 4, 5,
-                                        6, 7, 8,
-                                        9, 10, 11,
-                                        8, 12, 9, 13,
-                                        7, 14, 10, 12,
-                                        6, 13, 11, 14,
-                                        15, 16,  16, 17,  17, 15,
-                                        18, 19,  19, 20,  20, 18,
-                                        17, 19,  18, 15,  16, 20};
-    PetscInt    coneOrientations[41] = {0, 0, 0, 0, 0,
-                                        0, 0, 0,
-                                        0, 0, 0,
-                                        -2,  0, -2,  0,
-                                        -2,  0, -2, -2,
-                                        -2, -2, -2, -2,
-                                        0, 0, 0, 0, 0, 0,
-                                        0, 0, 0, 0, 0, 0,
-                                        0, 0, 0, 0, 0, 0};
-    PetscScalar vertexCoords[18]    = {-1.0, -1.0, -1.0,
-                                       -1.0,  1.0, -1.0,
-                                        1.0, -1.0, -1.0,
-                                       -1.0, -1.0,  1.0,
-                                        1.0, -1.0,  1.0,
-                                       -1.0,  1.0,  1.0};
-
-    ierr = DMPlexCreateFromDAG(rdm, 3, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
-  *refdm = rdm;
-  PetscFunctionReturn(0);
-}
-
 int main (int argc, char **argv)
 {
   PetscInt        dim;
@@ -386,9 +338,9 @@ int main (int argc, char **argv)
   ierr = PetscHashLagCreate(&lagTable);CHKERRQ(ierr);
 
   if (tensorCell < 2) {
-    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, dim, (PetscBool) !tensorCell, &dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, (PetscBool) !tensorCell), &dm);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexCreateReferenceWedge(PETSC_COMM_SELF, &dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DM_POLYTOPE_TRI_PRISM, &dm);CHKERRQ(ierr);
   }
   ordermin = trimmed ? 1 : 0;
   ordermax = tensorCell == 2 ? 4 : tensorCell == 1 ? 3 : dim + 2;

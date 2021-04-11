@@ -420,4 +420,12 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
   }
 }
 
+PETSC_STATIC_INLINE DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, PetscBool simplex)
+{
+  return dim == 0 ? DM_POLYTOPE_POINT :
+        (dim == 1 ? DM_POLYTOPE_SEGMENT :
+        (dim == 2 ? (simplex ? DM_POLYTOPE_TRIANGLE : DM_POLYTOPE_QUADRILATERAL) :
+        (dim == 3 ? (simplex ? DM_POLYTOPE_TETRAHEDRON : DM_POLYTOPE_HEXAHEDRON) : DM_POLYTOPE_UNKNOWN)));
+}
+
 #endif
