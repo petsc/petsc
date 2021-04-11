@@ -4,6 +4,9 @@
 #define _DMIMPL_H
 
 #include <petscdm.h>
+#ifdef PETSC_HAVE_LIBCEED
+#include <petscdmceed.h>
+#endif
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/petscdsimpl.h>
 #include <petsc/private/sectionimpl.h>     /* for inline access to atlasOff */
@@ -282,6 +285,10 @@ struct _p_DM {
   PetscInt                numbermonitors;
 
   PetscObject             dmksp,dmsnes,dmts;
+#ifdef PETSC_HAVE_LIBCEED
+  Ceed                    ceed;                 /* LibCEED context */
+  CeedElemRestriction     ceedERestrict;        /* Map from the local vector (Lvector) to the cells (Evector) */
+#endif
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert;

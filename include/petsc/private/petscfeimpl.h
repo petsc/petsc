@@ -2,6 +2,9 @@
 #define PETSCFEIMPL_H
 
 #include <petscfe.h>
+#ifdef PETSC_HAVE_LIBCEED
+#include <petscfeceed.h>
+#endif
 #include <petscds.h>
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/dmpleximpl.h>
@@ -198,6 +201,10 @@ struct _p_PetscFE {
   PetscInt        blockSize, numBlocks;  /* Blocks are processed concurrently */
   PetscInt        batchSize, numBatches; /* A batch is made up of blocks, Batches are processed in serial */
   PetscBool       setupcalled;
+#ifdef PETSC_HAVE_LIBCEED
+  Ceed            ceed;                  /* The LibCEED context, usually set by the DM */
+  CeedBasis       ceedBasis;             /* Basis for libCEED matching this element */
+#endif
 };
 
 typedef struct {

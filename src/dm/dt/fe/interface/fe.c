@@ -331,6 +331,10 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   ierr = PetscDualSpaceDestroy(&(*fem)->dualSpace);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&(*fem)->quadrature);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&(*fem)->faceQuadrature);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_LIBCEED
+  ierr = CeedBasisDestroy(&(*fem)->ceedBasis);CHKERRQ(ierr);
+  ierr = CeedDestroy(&(*fem)->ceed);CHKERRQ(ierr);
+#endif
 
   if ((*fem)->ops->destroy) {ierr = (*(*fem)->ops->destroy)(*fem);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(fem);CHKERRQ(ierr);

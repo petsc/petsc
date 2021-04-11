@@ -7,6 +7,10 @@
 #include <petscsf.h>
 #include <petscds.h>
 
+#ifdef PETSC_HAVE_LIBCEED
+#include <petscfeceed.h>
+#endif
+
 #if defined(PETSC_HAVE_VALGRIND)
 #  include <valgrind/memcheck.h>
 #endif
@@ -776,6 +780,10 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
   }
   ierr = DMMonitorCancel(*dm);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_LIBCEED
+  ierr = CeedElemRestrictionDestroy(&(*dm)->ceedERestrict);CHKERRQ(ierr);
+  ierr = CeedDestroy(&(*dm)->ceed);CHKERRQ(ierr);
+#endif
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5551,6 +5559,20 @@ PetscErrorCode DMCreateDS(DM dm)
     DMLabel  label = dm->fields[f].label;
     PetscInt l;
 
+#ifdef PETSC_HAVE_LIBCEED
+    /* Move CEED context to discretizations */
+    {
+      PetscClassId id;
+
+      ierr = PetscObjectGetClassId(dm->fields[f].disc, &id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        Ceed ceed;
+
+        ierr = DMGetCeed(dm, &ceed);CHKERRQ(ierr);
+        ierr = PetscFESetCeed((PetscFE) dm->fields[f].disc, ceed);CHKERRQ(ierr);
+      }
+    }
+#endif
     if (!label) {++Ndef; continue;}
     for (l = 0; l < Nl; ++l) if (label == labelSet[l]) break;
     if (l < Nl) continue;
