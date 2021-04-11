@@ -57,6 +57,7 @@ PETSC_INTERN PetscErrorCode VecDestroy_SeqCUDA_Private(Vec);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqCUDA_Private(Vec);
 PETSC_INTERN PetscErrorCode VecMax_SeqCUDA(Vec,PetscInt*,PetscReal*);
 PETSC_INTERN PetscErrorCode VecMin_SeqCUDA(Vec,PetscInt*,PetscReal*);
+PETSC_INTERN PetscErrorCode VecReciprocal_SeqCUDA(Vec);
 
 #if defined(PETSC_HAVE_NVSHMEM)
 PETSC_EXTERN PetscErrorCode PetscNvshmemInitializeCheck(void);

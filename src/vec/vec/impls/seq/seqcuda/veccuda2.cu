@@ -685,6 +685,38 @@ PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
+struct PetscScalarReciprocal
+{
+  __host__ __device__
+  PetscScalar operator()(PetscScalar s)
+  {
+    return (s != (PetscScalar)0.0) ? (PetscScalar)1.0/s : 0.0;
+  }
+};
+
+PetscErrorCode VecReciprocal_SeqCUDA(Vec v)
+{
+  cudaError_t    cerr;
+  PetscErrorCode ierr;
+  PetscInt       n;
+  PetscScalar    *x;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecCUDAGetArray(v,&x);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  try {
+    auto xptr = thrust::device_pointer_cast(x);
+    thrust::transform(xptr,xptr+n,xptr,PetscScalarReciprocal());
+  } catch (char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+  }
+  cerr = WaitForCUDA();CHKERRCUDA(cerr);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = VecCUDARestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecScale_SeqCUDA(Vec xin,PetscScalar alpha)
 {
   PetscScalar    *xarray;
