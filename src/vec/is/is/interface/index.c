@@ -1857,8 +1857,6 @@ PetscErrorCode  ISCopy(IS is,IS isy)
    logically independent serial ISs.
 
    The input IS must have the same type on every process.
-
-.seealso: ISSplit()
 @*/
 PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 {
