@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     import nargs
     help.addArgument('PETSc', '-with-petsc4py=<bool>', nargs.ArgBool(None, False, 'Build PETSc Python bindings (petsc4py)'))
     help.addArgument('PETSc', '-with-petsc4py-test-np=<np>',nargs.ArgInt(None, None, min=1, help='Number of processes to use for petsc4py tests'))
+    help.addArgument('PETSc', '-with-numpy-include=<dir>', nargs.Arg(None, None, 'Path to numpy headers from numpy.get_include() (default: autodetect)'))
     return
 
   def setupDependencies(self, framework):
@@ -55,6 +56,11 @@ class Configure(config.package.Package):
       newdir = ''
 
     newdir += 'MPICC=${PCC} '
+
+    # Pass to setup.py if given, otherwise setup.py will autodetect
+    numpy_include = self.argDB.get('with-numpy-include')
+    if numpy_include is not None:
+      newdir += 'NUMPY_INCLUDE="'+numpy_include+'" '
 
     #  if installing as Superuser than want to return to regular user for clean and build
     if self.installSudo:
