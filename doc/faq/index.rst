@@ -447,12 +447,14 @@ from ``$PETSC_DIR``:
    > make -f gmakefile PCC_FLAGS="-O1" $PETSC_ARCH/obj/src/mat/impls/baij/seq/baijsolvtrannat.o
    > make all
 
-How Do I Install petsc4py With The Development PETSc?
+How do I enable Python bindings (petsc4py) with PETSc?
 -----------------------------------------------------
 
 #. Install `Cython <https://cython.org/>`__.
 
-#. ``configure`` PETSc with the ``--download-petsc4py`` option.
+#. ``configure`` PETSc with the ``--with-petsc4py=1`` option.
+
+#. set ``PYTHONPATH=$PETSC_DIR/$PETSC_ARCH/lib``
 
 What Fortran Compiler Do You Recommend On macOS?
 ------------------------------------------------
