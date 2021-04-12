@@ -26,3 +26,18 @@ of `petsc4py`, then to build the `petsc4py` module along with PETSc, add the
 
 This will install PETSc and the `petsc4py` module into the PETSc directory
 under the prefix specified to the PETSc configure command.
+
+If you wish to make the module importable without having to set the
+`PYTHONPATH` environment variable, you may add a shortcut to the system-wide
+`site-packages` directory creating a special `.pth` file with exactly one line
+of Python code. This can be done by the following command, where the
+system-wide path is assumed to be `/usr/lib/pythonX/site-packages` (replace `X`
+with your python version):
+
+  $ echo \
+    "import sys, os;" \
+    "p = os.getenv('PETSC_DIR');" \
+    "a = os.getenv('PETSC_ARCH') or '';" \
+    "p = p and os.path.join(p, a, 'lib');" \
+    "p and (p in sys.path or sys.path.append(p))" \
+    > /usr/lib/pythonX/site-packages/petsc4py.pth
