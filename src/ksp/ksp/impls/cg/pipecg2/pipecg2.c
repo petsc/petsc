@@ -591,7 +591,12 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
   lambda[11]= delta[0];
   lambda[12] = dps;
 
+#if defined(PETSC_HAVE_MPI_IALLREDUCE)
   ierr = MPI_Iallreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRMPI(ierr);
+#else
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);
+  req  = MPI_REQUEST_NULL;
+#endif
 
   ierr = KSP_PCApply(ksp,W,M);CHKERRQ(ierr);                    /*  m <- Bw  */
   ierr = KSP_MatMult(ksp,Amat,M,N);CHKERRQ(ierr);               /*  n <- Am  */
@@ -654,7 +659,12 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
     gamma[0] = gamma[1];
     delta[0] = delta[1];
 
+#if defined(PETSC_HAVE_MPI_IALLREDUCE)
     ierr = MPI_Iallreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRMPI(ierr);
+#else
+    ierr = MPIU_Allreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);
+    req  = MPI_REQUEST_NULL;
+#endif
 
     ierr = KSP_PCApply(ksp,N,G[0]);CHKERRQ(ierr);                       /*  g <- Bn  */
     ierr = KSP_MatMult(ksp,Amat,G[0],H[0]);CHKERRQ(ierr);               /*  h <- Ag  */
