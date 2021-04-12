@@ -13,6 +13,19 @@ dependencies (:mod:`mpi4py` is optional but highly recommended)::
   $ python -m pip install [--user] petsc petsc4py (or pip install [--user] petsc petsc4py)
 
 
+Using **setuptools**
+--------------------
+
+You can also install dependencies manually and then invoke setuptools
+from the `petsc4py` source directory:
+
+  $ python setup.py build
+  $ python setup.py install
+
+You may use the `--install-lib` argument to the `install` command to alter the
+`site-packages` directory where the package is to be installed.
+
+
 From PETSc source
 -----------------
 
