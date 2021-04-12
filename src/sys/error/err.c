@@ -758,6 +758,19 @@ PETSC_EXTERN const char* PetscCUBLASGetErrorName(cublasStatus_t status)
     default:                             return "unknown error";
   }
 }
+PETSC_EXTERN const char* PetscCUSolverGetErrorName(cusolverStatus_t status)
+{
+  switch(status) {
+#if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
+    case CUSOLVER_STATUS_SUCCESS:          return "CUSOLVER_STATUS_SUCCESS";
+    case CUSOLVER_STATUS_NOT_INITIALIZED:  return "CUSOLVER_STATUS_NOT_INITIALIZED";
+    case CUSOLVER_STATUS_INVALID_VALUE:    return "CUSOLVER_STATUS_INVALID_VALUE";
+    case CUSOLVER_STATUS_ARCH_MISMATCH:    return "CUSOLVER_STATUS_ARCH_MISMATCH";
+    case CUSOLVER_STATUS_INTERNAL_ERROR:   return "CUSOLVER_STATUS_INTERNAL_ERROR";
+#endif
+    default:                             return "unknown error";
+  }
+}
 #endif
 
 #if defined(PETSC_HAVE_HIP)
