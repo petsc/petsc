@@ -9,7 +9,7 @@ Configuring PETSc FAQ
    Please obtain PETSc via the repository or download the latest patched tarball. See
    :ref:`download documentation <doc_download>` for more information.
 
-   See :ref:`quickstart tutorial <tut_install>` for a step-by-step walkthrough of the installation process.
+   See :ref:`quick-start tutorial <tut_install>` for a step-by-step walk-through of the installation process.
 
 .. contents:: Table of Contents
    :local:
@@ -47,7 +47,7 @@ Common Example Usages
 
      > ./configure --prefix=/home/user/soft/petsc-install --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich
 
-* If `BLAS/LAPACK`_, MPI sources (in "-devel" packages in most distros) are already
+* If `BLAS/LAPACK`_, MPI sources (in "-devel" packages in most Linux distributions) are already
   installed in default system/compiler locations and ``mpicc``, ``mpif90``, mpiexec are available
   via ``$PATH`` - configure does not require any additional options.
 
@@ -140,11 +140,11 @@ Compilers
 
      > ./configure --with-cxx=0
 
-``configure`` defaults to building PETSc in debug mode. One can switch to using optimzed
+``configure`` defaults to building PETSc in debug mode. One can switch to optimized
 mode with the ``configure`` option ``--with-debugging=0`` (we suggest using a different
 ``$PETSC_ARCH`` for debug and optimized builds, for example arch-debug and arch-opt, this
 way you can switch between debugging your code and running for performance by simply
-changing the value of ``$PETSC_ARCH``. See multiple install :ref:`documentation
+changing the value of ``$PETSC_ARCH``). See multiple install :ref:`documentation
 <doc_multi>` for further details.
 
 Additionally one can specify more suitable optimization flags with the options
@@ -208,7 +208,7 @@ The following modes can be used to download/install :ref:`external packages
 <doc_externalsoftware>` with ``configure``.
 
 - ``--download-PACKAGENAME``: Download specified package and install it, enabling PETSc to
-  use this package. **This is the recomended method to couple any external packages with PETSc**:
+  use this package. **This is the recommended method to couple any external packages with PETSc**:
 
   .. code-block:: console
 
@@ -297,7 +297,7 @@ automatically:
 
      > ./configure --download-fblaslapack
 
-- Or when configuring without a fortran compiler - i.e ``--with-fc=0``:
+- Or when configuring without a Fortran compiler - i.e ``--with-fc=0``:
 
   .. code-block:: console
 
@@ -314,8 +314,7 @@ Alternatively one can use other options like one of the following:
 Intel MKL
 ^^^^^^^^^
 
-Intel provides `BLAS/LAPACK`_ via the `MKL`_ library. It usually works from GNU/Intel
-compilers on Linux and Microsoft/Intel compilers on Microsoft Windows. One can specify it
+Intel provides `BLAS/LAPACK`_ via the `MKL`_ library. One can specify it
 to PETSc ``configure`` with ``--with-blaslapack-dir=$MKLROOT`` or
 ``--with-blaslapack-dir=/soft/com/packages/intel/13/079/mkl``.  If the above option does
 not work - one could determine the correct library list for your compilers using Intel
@@ -459,7 +458,7 @@ and then do the PETSc install as a **regular/non-root** user:
    > make
    > make install
 
-Installs For Package Managers: Using ``DESTDIR`` (Very Uncommon)
+Installs For Package Managers: Using ``DESTDIR`` (Very uncommon)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: console
@@ -471,7 +470,7 @@ Installs For Package Managers: Using ``DESTDIR`` (Very Uncommon)
 Package up ``/tmp/petsc-pkg``. The package should then be installed at
 ``/opt/petsc/my-root-petsc-install``
 
-Multiple Installs Using ``--prefix`` (Snd ``DESTDIR``)
+Multiple Installs Using ``--prefix`` (See ``DESTDIR``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Specify a different ``--prefix`` location for each configure of different options - at
@@ -652,9 +651,9 @@ ALCF - Argonne National Laboratory - theta machine - Intel KNL based system
 
   - List currently loaded modules: module list
   - List all available modules: module avail
-  - Blas/lapack will automatically be found so you do not need to provide it
+  - BLAS/LAPACK will automatically be found so you do not need to provide it
 
-    - It is best not to use built-in modules for external packages (except blas/lapack)
+    - It is best not to use built-in modules for external packages (except BLAS/LAPACK
       because they are often buggy. Most external packages can be built using
       the ``--download-packagename`` option with the intel or Gnu environment but not cray
     - You can use ``config/examples/arch-cray-xc40-knl-opt.py`` as a template for running
@@ -666,6 +665,24 @@ ALCF - Argonne National Laboratory - theta machine - Intel KNL based system
     - To get an interactive node use ``qsub -A CSC250STMS07 -n 1 -t 60 -q debug-flat-quad
       -I``
     - To run on interactive node using two MPI ranks use ``aprun -n 2 ./program options``
+
+ALCF - Argonne National Laboratory - thetagpu machine - AMD CPUs with NVIDIA GPUs (yes it is beyond silly it has theta in the name)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- Notes on usage:
+
+  - Log into theta.alcf.anl.gov
+    - Log into thetagpusn1
+      - qsub -I -t TimeInMinutes -n 1 -A AProjectName (for example, gpu_hack)
+        - The connection to the outside world does not exist so do
+          export http_proxy=http://proxy.tmi.alcf.anl.gov:3128
+          export https_proxy=http://proxy.tmi.alcf.anl.gov:3128
+
+        - There is no default BLAS/LAPACK so use a --download option for BLAS/LAPACK
+
+        - Use the configure option --with-cuda-gencodearch=80  because this machine does not have deviceQuery
+
+        - Use -with-kokkos-cuda-arch=AMPERE80
+
 
 OLCF - Oak Ridge National Laboratory - Summit machine - NVIDIA GPUs and IBM Power PC processors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
