@@ -4598,7 +4598,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFact
 
     Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatSolvePackageRegister), MatGetFactor()
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatSolverTypeRegister(), MatGetFactor()
 @*/
 PetscErrorCode MatSolverTypeGet(MatSolverType type,MatType mtype,MatFactorType ftype,PetscBool *foundtype,PetscBool *foundmtype,PetscErrorCode (**createfactor)(Mat,MatFactorType,Mat*))
 {

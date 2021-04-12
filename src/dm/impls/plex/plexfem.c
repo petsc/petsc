@@ -2060,7 +2060,7 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
 
   Level: developer
 
-.seealso: DMPlexComputeResidualFEM()
+.seealso: DMPlexSNESComputeResidualFEM()
 @*/
 PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, void *user)
 {
@@ -2111,7 +2111,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
 
   Level: developer
 
-.seealso: DMPlexComputeResidualFEM()
+.seealso: DMPlexSNESComputeResidualFEM()
 @*/
 PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
 {
@@ -4221,7 +4221,7 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
 
   Level: developer
 
-.seealso: DMPlexTSSetRHSFunctionLocal()
+.seealso: DMTSSetRHSFunctionLocal()
 @*/
 PetscErrorCode DMPlexGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
 {
@@ -4251,7 +4251,7 @@ PetscErrorCode DMPlexGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscRe
 
   Level: developer
 
-.seealso: DMPlexSNESGetGeometryFVM()
+.seealso: DMPlexGetGeometryFVM()
 @*/
 PetscErrorCode DMPlexGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
 {

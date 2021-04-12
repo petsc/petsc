@@ -474,10 +474,10 @@ PetscErrorCode  PCMatApply(PC pc,Mat X,Mat Y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidHeaderSpecific(Y, MAT_CLASSID, 2);
-  PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
-  PetscCheckSameComm(pc, 1, Y, 2);
-  PetscCheckSameComm(pc, 1, X, 3);
+  PetscValidHeaderSpecific(X, MAT_CLASSID, 2);
+  PetscValidHeaderSpecific(Y, MAT_CLASSID, 3);
+  PetscCheckSameComm(pc, 1, X, 2);
+  PetscCheckSameComm(pc, 1, Y, 3);
   if (Y == X) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "Y and X must be different matrices");
   ierr = PCGetOperators(pc, NULL, &A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);

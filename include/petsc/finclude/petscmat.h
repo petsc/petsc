@@ -152,6 +152,7 @@
 #define MATLMVMSYMBROYDEN  'lmvmsymbroyden'
 #define MATLMVMSYMBADBROYDEN 'lmvmsymbadbroyden'
 #define MATLMVMDIAGBROYDEN 'lmvmdiagbroyden'
+#define MATCONSTANTDIAGONAL 'constantdiagonal'
 #define MATHARA            'hara'
 
 !
