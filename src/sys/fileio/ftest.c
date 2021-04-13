@@ -64,7 +64,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   PetscFunctionBegin;
   /* Get the number of supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
-  numGroups = getgroups(0, gid); if (numGroups < 0) SETERRQ(PETSC_COMM_SELF,numGroups, "Unable to count supplementary group IDs");
+  numGroups = getgroups(0, gid); if (numGroups < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS, "Unable to count supplementary group IDs");
   ierr = PetscMalloc1(numGroups+1, &gid);CHKERRQ(ierr);
 #else
   numGroups = 0;
@@ -76,7 +76,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
   /* Get supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
-  err = getgroups(numGroups, gid+1); if (err < 0) SETERRQ(PETSC_COMM_SELF,err, "Unable to obtain supplementary group IDs");
+  err = getgroups(numGroups, gid+1); if (err < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS, "Unable to obtain supplementary group IDs");
 #endif
 
   /* Test for accessibility */

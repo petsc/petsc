@@ -285,9 +285,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     ierr = TSGetTime(ts,&tnow);CHKERRQ(ierr);
     if (dt > 0.5/ctx->cfl_idt) {
-      if (1) {
-        ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
-      } else SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
+      ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
     }
   }
   ierr = PetscFree4(r,min,alpha,gamma);CHKERRQ(ierr);
@@ -683,7 +681,7 @@ int main(int argc,char *argv[])
   {
     PetscErrorCode (*r)(FVCtx*);
     ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
-    if (!r) SETERRQ1(PETSC_COMM_SELF,1,"Physics '%s' not found",physname);
+    if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);
   }

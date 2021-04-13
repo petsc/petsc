@@ -165,7 +165,7 @@ int main(int argc,char **argv)
      a  ready interface to ParMeTiS).
    */
   fptr = fopen("adj.in","r");
-  if (!fptr) SETERRQ(PETSC_COMM_SELF,0,"Could not open adj.in");
+  if (!fptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Could not open adj.in");
 
   /*
      Each processor writes to the file output.<rank> where rank is the
@@ -173,7 +173,7 @@ int main(int argc,char **argv)
   */
   sprintf(part_name,"output.%d",rank);
   fptr1 = fopen(part_name,"w");
-  if (!fptr1) SETERRQ(PETSC_COMM_SELF,0,"Could no open output file");
+  if (!fptr1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Could no open output file");
   ierr = PetscMalloc1(user.Nvglobal,&user.gloInd);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Rank is %d\n",rank);CHKERRQ(ierr);
   for (inode = 0; inode < user.Nvglobal; inode++) {

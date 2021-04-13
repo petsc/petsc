@@ -447,7 +447,7 @@ PetscErrorCode RiemannListFind(PetscFunctionList flist,const char *name,RiemannF
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
-  if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,1,"Riemann solver \"%s\" could not be found",name);
+  if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -466,7 +466,7 @@ PetscErrorCode ReconstructListFind(PetscFunctionList flist,const char *name,Reco
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
-  if (!*r) SETERRQ1(PETSC_COMM_SELF,1,"Reconstruction \"%s\" could not be found",name);
+  if (!*r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -573,9 +573,7 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     ierr = TSGetTime(ts,&tnow);CHKERRQ(ierr);
     if (dt > 0.5/ctx->cfl_idt) {
-      if (1) {
-        ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
-      } else SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
+      ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

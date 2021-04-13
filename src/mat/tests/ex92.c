@@ -170,7 +170,7 @@ int main(int argc,char **args)
           ierr = ISSort(is2[i]);CHKERRQ(ierr);
           /* ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
         }
-        SETERRQ1(PETSC_COMM_SELF,1,"i=%D, is1 != is2",i);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%D, is1 != is2",i);
       }
     }
   }

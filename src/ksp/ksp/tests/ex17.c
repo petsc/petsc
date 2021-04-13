@@ -201,7 +201,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
       if (!((Ii+1)%n)) *val += alpha_h;
       ierr = MatSetValues(A,1,&Ii,1,&Ii,val,ADD_VALUES);CHKERRQ(ierr);
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)A),1,"FormTestMatrix: unknown test matrix type");
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER_INPUT,"FormTestMatrix: unknown test matrix type");
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

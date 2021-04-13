@@ -264,7 +264,7 @@ int main(int argc,char **args)
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
     }
 #if !defined(PETSC_HAVE_STRUMPACK)
-    SETERRQ(PETSC_COMM_WORLD,PETSC_,"This test requires STRUMPACK");
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires STRUMPACK");
 #endif
     ierr = PCFactorSetMatSolverType(pc,MATSOLVERSTRUMPACK);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */

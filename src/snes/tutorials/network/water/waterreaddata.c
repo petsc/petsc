@@ -67,7 +67,7 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
 
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
   if (reason < 0) {
-    SETERRQ(PETSC_COMM_SELF,0,"Pump head curve did not converge\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Pump head curve did not converge\n");
   }
 
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -312,7 +312,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     for (j=water->npipe;j < water->npipe+water->npump;j++) {
       if (water->edge[j].pump.paramid == curve_id) {
         if (pump->headcurve.npt == 3) {
-          SETERRQ3(PETSC_COMM_SELF,0,"Pump %d [%d --> %d]: No support for more than 3-pt head-flow curve",pump->id,pump->node1,pump->node2);
+          SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Pump %d [%d --> %d]: No support for more than 3-pt head-flow curve",pump->id,pump->node1,pump->node2);
         }
         pump = &water->edge[j].pump;
         pump->headcurve.flow[pump->headcurve.npt] = curve_x*GPM_CFS;
