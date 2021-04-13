@@ -114,7 +114,7 @@ int main(int argc,char **argv)
     if (!group) group = "/";  /* "/" is stored as NULL */
     ierr = PetscStrcmp(path[p], group, &has);CHKERRQ(ierr);
     if (!has) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "current group %s not equal to anticipated %s", group, path[p]);
-    ierr = PetscViewerHDF5HasGroup(viewer, &has);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5HasGroup(viewer, NULL, &has);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Has %s group? %D\n", path[p], has);CHKERRQ(ierr);
 
     for (s=0; s<ns; s++) {

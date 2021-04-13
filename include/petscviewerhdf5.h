@@ -21,6 +21,20 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t
 /* As per https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5, max. chunk size is 4GB */
 #define PETSC_HDF5_MAX_CHUNKSIZE 2147483647
 
+PETSC_STATIC_INLINE PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has)
+{
+  PetscErrorCode ierr;
+  size_t         len;
+
+  PetscFunctionBegin;
+  *has = emptyIsRelative;
+  ierr = PetscStrlen(path,&len);CHKERRQ(ierr);
+  if (len) {
+    *has = (PetscBool) (path[0] != '/');
+  }
+  PetscFunctionReturn(0);
+}
+
 PETSC_STATIC_INLINE PetscErrorCode PetscHDF5IntCast(PetscInt a,hsize_t *b)
 {
   PetscFunctionBegin;
