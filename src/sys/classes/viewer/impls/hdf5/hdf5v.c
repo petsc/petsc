@@ -28,16 +28,15 @@ static PetscErrorCode PetscViewerHDF5GetAbsolutePath_Internal(PetscViewer viewer
 
 static PetscErrorCode PetscViewerHDF5CheckNamedObject_Internal(PetscViewer viewer, PetscObject obj)
 {
-  PetscBool has;
-  const char *group;
+  PetscBool      has;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!obj->name) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Object must be named");
   ierr = PetscViewerHDF5HasObject(viewer, obj, &has);CHKERRQ(ierr);
   if (!has) {
+    const char *group;
     ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
-    SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) %s not stored in group %s", obj->name, group);
+    SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", obj->name, group ? group : "/");
   }
   PetscFunctionReturn(0);
 }
@@ -1142,7 +1141,7 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   If path starts with '/', it is taken as an absolute path overriding currently pushed group, else the dataset/group is relative to the current pushed group. NULL means the current pushed group.
   If the path exists but is not a group, PETSC_FALSE is returned.
 
-.seealso: PetscViewerHDF5HasAttribute(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup(), PetscViewerHDF5OpenGroup()
+.seealso: PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasDataset(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup(), PetscViewerHDF5OpenGroup()
 @*/
 PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], PetscBool *has)
 {
@@ -1161,6 +1160,42 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], Pe
   PetscFunctionReturn(0);
 }
 
+/*@C
+ PetscViewerHDF5HasDataset - Check whether a given dataset exists in the HDF5 file
+
+  Input Parameters:
++ viewer - The HDF5 viewer
+- path - The dataset path
+
+  Output Parameter:
+. has - Flag whether dataset exists
+
+  Level: advanced
+
+  Notes:
+  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else the dataset/group is relative to the current pushed group.
+  If path is NULL or empty, has is set to PETSC_FALSE.
+  If the path exists but is not a dataset, has is set to PETSC_FALSE as well.
+
+.seealso: PetscViewerHDF5HasObject(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasGroup(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup()
+@*/
+PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer viewer, const char path[], PetscBool *has)
+{
+  H5O_type_t     type;
+  char           *abspath;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (path) PetscValidCharPointer(path,2);
+  PetscValidBoolPointer(has,3);
+  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, path, &abspath);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, abspath, PETSC_FALSE, NULL, &type);CHKERRQ(ierr);
+  *has = (PetscBool)(type == H5O_TYPE_DATASET);
+  ierr = PetscFree(abspath);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
  PetscViewerHDF5HasObject - Check whether a dataset with the same name as given object exists in the HDF5 file under current group
 
@@ -1169,32 +1204,28 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], Pe
 - obj    - The named object
 
   Output Parameter:
-. has    - Flag for dataset existence; PETSC_FALSE for unnamed object
+. has    - Flag for dataset existence
 
   Notes:
-  If the object is unnamed, has is set to PETSC_FALSE.
+  If the object is unnamed, an error occurs.
   If the path currentGroup/objectName exists but is not a dataset, has is set to PETSC_FALSE as well.
 
   Level: advanced
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup()
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5HasDataset(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup()
 @*/
 PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, PetscBool *has)
 {
-  H5O_type_t     type;
-  char           *path;
+  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(obj,2);
   PetscValidBoolPointer(has,3);
-  *has = PETSC_FALSE;
-  if (!obj->name) PetscFunctionReturn(0);
-  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, obj->name, &path);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Traverse_Internal(viewer, path, PETSC_FALSE, has, &type);CHKERRQ(ierr);
-  *has = (type == H5O_TYPE_DATASET) ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscFree(path);CHKERRQ(ierr);
+  ierr = PetscStrlen(obj->name, &len);CHKERRQ(ierr);
+  if (!len) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Object must be named");
+  ierr = PetscViewerHDF5HasDataset(viewer, obj->name, has);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
