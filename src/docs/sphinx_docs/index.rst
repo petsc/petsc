@@ -38,7 +38,7 @@ Main Topics
    FAQ <faq/index>
    Documentation <documentation/index>
    Tutorials <tutorials/guide_to_examples>
-   Contact <contact/index>
+   Community <community/index>
    Developers <developers/index>
    About <about/index>
 
