@@ -87,8 +87,7 @@ this manual can be rather intimidating for new users. Bear in mind that PETSc ca
 efficiently before one understands all of the material presented here.
 Furthermore, the definitive reference for any PETSc function is always
 the online manual page.
-Manual pages for all PETSc functions can be accessed at
-`www.mcs.anl.gov/petsc/documentation <https://www.mcs.anl.gov/petsc/documentation/>`__.
+Manual pages for all PETSc functions can be accessed `here <docs/index.html>`__.
 The manual pages provide hyperlinked indices (organized by both concept
 and routine name) to the tutorial examples and enable easy movement
 among related topics.
@@ -115,7 +114,7 @@ examples.
 **Note to Python Programmers**: To program with PETSc in Python you need to install the
 PETSc4py package developed by Lisandro Dalcin. This can be done by
 configuring PETSc with the option ``--download-petsc4py``. See the
-`PETSc installation guide <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__ 
+:doc:`PETSc installation guide </install/index>`
 for more details.
 
 .. _sec-running:
@@ -536,7 +535,7 @@ being used, they *must* be called in the same order on each processor.
 The next example, given below,
 illustrates the solution of a linear system in parallel. This code,
 corresponding to
-`KSP Tutorial ex2 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex2.c.html>`,
+`KSP Tutorial ex2 <../../src/ksp/ksp/tutorials/ex2.c.html>`,
 handles the two-dimensional Laplacian discretized with finite
 differences, where the linear system is again solved with KSP. The code
 performs the same tasks as the sequential version within

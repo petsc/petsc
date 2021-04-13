@@ -589,7 +589,7 @@ defined as ``complex`` (or ``complex<double>`` for machines using
 templated complex class libraries). To work with complex numbers, the
 user should run ``configure`` with the additional option
 ``--with-scalar-type=complex``. The
-`installation instructions <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__
+:doc:`installation instructions </install/index>`
 provide detailed instructions for installing PETSc. You can use
 ``--with-clanguage=c`` (the default) to use the C99 complex numbers or
 ``--with-clanguage=c++`` to use the C++ complex type [#cxx_note]_.
@@ -607,10 +607,10 @@ working *only* with real numbers in a code, one should use a version of
 PETSc for real numbers for best efficiency.
 
 The program
-`KSP Tutorial ex11 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex11.c.html>`__
+`KSP Tutorial ex11 <../../src/ksp/ksp/tutorials/ex11.c.html>`__
 solves a linear system with a complex coefficient matrix. Its Fortran
 counterpart is
-`KSP Tutorial ex11f <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex11f.F90.html>`__.
+`KSP Tutorial ex11f <../../src/ksp/ksp/tutorials/ex11f.F90.html>`__.
 
 Parallel Communication
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -835,7 +835,7 @@ will prevent any windows from being opened or any drawing actions to be
 done. This is useful for running large jobs when the graphics overhead
 is too large, or for timing.
 
-The full example, `Draw Test ex3 <https://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/tests/ex3.c.html>`__,
+The full example, `Draw Test ex3 <../../src/sys/classes/draw/tests/ex3.c.html>`__,
 follows.
 
 .. _listing_draw_test_ex3:
