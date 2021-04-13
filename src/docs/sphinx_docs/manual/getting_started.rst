@@ -720,7 +720,7 @@ When citing PETSc in a publication please cite the following:
       and Patrick Sanan and Barry~F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang",
       Title  = "{PETS}c {W}eb page",
       Note   = "https://www.mcs.anl.gov/petsc",
-      Year   = "2020"}
+      Year   = "2021"}
 
    @TechReport{petsc-user-ref,
       Author = "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown
@@ -729,9 +729,9 @@ When citing PETSc in a publication please cite the following:
       and Lois Curfman McInnes and Richard Tran Mills and Todd Munson and Karl Rupp
       and Patrick Sanan and Barry~F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang",
       Title       = "{PETS}c Users Manual",
-      Number      = "ANL-95/11 - Revision 3.13",
+      Number      = "ANL-95/11 - Revision 3.15",
       Institution = "Argonne National Laboratory",
-      Year        = "2020"}
+      Year        = "2021"}
 
    @InProceedings{petsc-efficient,
       Author    = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",
