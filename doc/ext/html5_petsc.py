@@ -23,14 +23,12 @@ def setup(app: Sphinx) -> None:
 
 
 def _check_version(app: Sphinx) -> None:
-    sphinx_version_info_source = (2, 4, 4, 'final', 0)
+    sphinx_version_info_source = (3, 5, 4, 'final', 0)
     app.require_sphinx('%s.%s' % (sphinx_version_info_source[0], sphinx_version_info_source[1]))
-    if sphinx_version_info != sphinx_version_info_source:
-        error_message = ' '.join([
-            'This extension duplicates code from Sphinx %s ' % (sphinx_version_info_source,),
-            'which is incompatible with the current version %s' % (sphinx_version_info,),
-            ])
-        raise NotImplementedError(error_message)
+    if sphinx_version_info[:2] != sphinx_version_info_source[:2]:
+        print('Warning: A custom extension duplicates code from Sphinx %s ' % (sphinx_version_info_source,),
+              'which differs from the current version %s' % (sphinx_version_info,),
+              'so unexpected behavior may be observed.')
 
 
 def _setup_translators(app: Sphinx) -> None:
@@ -158,23 +156,22 @@ class PETScHTMLTranslatorMixin:
         linenos = node.get('linenos', False)
         highlight_args = node.get('highlight_args', {})
         highlight_args['force'] = node.get('force', False)
-        if lang is self.builder.config.highlight_language:
-            # only pass highlighter options for original language
-            opts = self.builder.config.highlight_options
-        else:
-            opts = {}
+        opts = self.config.highlight_options.get(lang, {})
+
+        if linenos and self.config.html_codeblock_linenos_style:
+            linenos = self.config.html_codeblock_linenos_style
 
         highlighted = self.highlighter.highlight_block(
             node.rawsource, lang, opts=opts, linenos=linenos,
-            location=(self.builder.current_docname, node.line), **highlight_args
+            location=node, **highlight_args
         )
-        starttag = self.starttag(node, 'div', suffix='',
-                                 CLASS='highlight-%s notranslate' % lang)
 
         # Custom processing to add links to PETSc man pages ####################
         highlighted = self._add_manpage_links(highlighted)
         # (end of custom processing) ###########################################
 
+        starttag = self.starttag(node, 'div', suffix='',
+                                 CLASS='highlight-%s notranslate' % lang)
         self.body.append(starttag + highlighted + '</div>\n')
         raise nodes.SkipNode
 
