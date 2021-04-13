@@ -61,6 +61,9 @@ Changes: Development
    -  Change ``PetscViewerFlowControlStepMaster()``,
       ``PetscViewerFlowControlEndMaster()`` to
       ``PetscViewerFlowControlStepMain()``, ``PetscViewerFlowControlEndMain()``
+   - HDF5: ``FILE_MODE_APPEND`` (= ``FILE_MODE_UPDATE``) now creates a new file if it does not exist yet
+   - VU: ``PetscViewerVUSetMode()`` is now deprecated;
+     please use standard ``PetscViewerFileSetMode()`` instead
 
    .. rubric:: PetscDraw:
 
@@ -117,6 +120,8 @@ Changes: Development
    -  Add ``MAT_FACTOR_QR``, ``MatQRFactor()``, ``MatQRFactorSymbolic()``, and
       ``MatQRFactorNumeric()`` for QR factorizations. Currently the only
       built-in implementation uses LAPACK on sequential dense matrices
+   - Change option ``-mat_cusparse_transgen`` to ``-mat_form_explicit_transpose`` to hint PETSc to form an explicit transpose for repeated operations like MatMultTranspose. Currently implemented only for ``AIJCUSPARSE`` and ``AIJKOKKOS``
+   - Add a ``MatOption`` ``MAT_FORM_EXPLICIT_TRANSPOSE``
 
    .. rubric:: PC:
 
@@ -171,7 +176,7 @@ Changes: Development
    -  Deprecate ``KSP{Set|Get}MatSolveBlockSize()``, use
       ``KSP{Set|Get}MatSolveBatchSize()`` instead
    -  Reduce default ``KSPView()`` ASCII output to a single subdomain's
-      KSP/PC information for ``PCASM``, resp. ``PCBJacobi``. Use 
+      KSP/PC information for ``PCASM``, resp. ``PCBJacobi``. Use
       ``-ksp_view ::ascii_info_detail`` to output KSP/PC information for all
       subdomains
 
@@ -205,14 +210,14 @@ Changes: Development
    -  Add ``TSGetNumEvents()`` to retrieve the number of events
    -  Add ``-ts_monitor_cancel``
    -  Now ``-ts_view_solution`` respects the TS prefix
-
-   .. rubric:: TAO:
-
    -  Add ``TSSetMatStructure()`` to indicate the relationship between the
       nonzero structures of the I Jacobian and the RHS Jacobian
    -  Automatically set the ``MatStructure`` flag of TS to
       ``SAME_NONZERO_PATTERN`` if the RHS matrix is obtained with a
       ``MatDuplicate()`` from the I Jacobian
+
+   .. rubric:: TAO:
+
    -  Add ``TaoSetRecycleFlag()`` and ``TaoGetRecycleFlag()`` interfaces to
       enable some Tao algorithms to re-use iterate information from the
       previous ``TaoSolve()`` call
@@ -287,9 +292,7 @@ Changes: Development
 
    .. rubric:: Fortran:
 
-   -  Require ``mpi.mod``. Previously if ``mpi.mod`` was not usable, ``mpif.h`` was
-      used
    -  Add configure option ``--with-mpi-f90module-visibility``
-      [default=1]. With ``0`` ``mpi.mod`` will not be visible in use code
+      [default=``1``]. With ``0``, ``mpi.mod`` will not be visible in use code
       (via ``petscsys.mod``) - so ``mpi_f08`` can now be used
    -  Add ``PetscDLAddr()`` to get name for a symbol
