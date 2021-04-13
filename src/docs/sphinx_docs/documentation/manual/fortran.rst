@@ -9,7 +9,7 @@ purely in Fortran.
 Synopsis
 ~~~~~~~~
 
-To use PETSc with Fortran you must use both PETSc include files and modules. 
+To use PETSc with Fortran you must use both PETSc include files and modules.
 At the beginning of every function and module definition you need something like
 
 .. code-block:: fortran
@@ -274,9 +274,9 @@ Sample Fortran Programs
 
 Sample programs that illustrate the PETSc interface for Fortran are
 given below, corresponding to
-`Vec Test ex19f <../../src/vec/vec/tests/ex19f.F.html>`__,
-`Vec Tutorial ex4f <../../src/vec/vec/tutorials/ex4f.F.html>`__,
-`Draw Test ex5f <../../src/sys/classes/draw/tests/ex5f.F.html>`__,
+`Vec Test ex19f <../../../src/vec/vec/tests/ex19f.F.html>`__,
+`Vec Tutorial ex4f <../../../src/vec/vec/tutorials/ex4f.F.html>`__,
+`Draw Test ex5f <../../../src/sys/classes/draw/tests/ex5f.F.html>`__,
 and
 `SNES Tutorial ex1f <../../src/snes/tutorials/ex1f.F90.html>`__,
 respectively. We also refer Fortran programmers to the C examples listed
@@ -287,7 +287,7 @@ differs only slightly.
 .. admonition:: Listing: ``src/vec/vec/tests/ex19f.F``
    :name: vec-test-ex19f
 
-   .. literalinclude:: ../../../vec/vec/tests/ex19f.F
+   .. literalinclude:: /../../../src/vec/vec/tests/ex19f.F
       :language: fortran
 
 .. _listing_vec_ex4f:
@@ -295,19 +295,19 @@ differs only slightly.
 .. admonition:: Listing: ``src/vec/vec/tutorials/ex4f.F``
    :name: vec-ex4f
 
-   .. literalinclude:: ../../../vec/vec/tutorials/ex4f.F
+   .. literalinclude:: /../../../src/vec/vec/tutorials/ex4f.F
       :language: fortran
 
 .. admonition:: Listing: ``src/sys/classes/draw/tests/ex5f.F``
    :name: draw-test-ex5f
 
-   .. literalinclude:: ../../../sys/classes/draw/tests/ex5f.F
+   .. literalinclude:: /../../../src/sys/classes/draw/tests/ex5f.F
       :language: fortran
 
 .. admonition:: Listing: ``src/snes/tutorials/ex1f.F90``
    :name: snes-ex1f
 
-   .. literalinclude:: ../../../snes/tutorials/ex1f.F90
+   .. literalinclude:: /../../../src/snes/tutorials/ex1f.F90
       :language: fortran
 
 .. _sec_fortranarrays:

@@ -27,52 +27,20 @@ PETSc is developed as :ref:`open-source <doc_license>`, requests and contributio
 
 
 ===========
-Get Started
+Main Topics
 ===========
 
 .. toctree::
    :maxdepth: 1
 
-   overview/index
-   install/index
-   faq/index
-
-===========
-Get Working
-===========
-
-.. toctree::
-   :maxdepth: 1
-
-   manual/index
-   guides/guide_to_examples
-
-
-* `TAO Users Manual <https://www.mcs.anl.gov/petsc/petsc-current/docs/tao_manual.pdf>`__
-* `Manual Pages <docs/index.html>`__
-* `Function Index <docs/manualpages/singleindex.html>`__
-* `Examples Index <docs/manualpages/help.html>`__
-
-============
-Get Involved
-============
-
-.. toctree::
-   :maxdepth: 1
-
-   contact/index
-   developers/index
-
-======================
-Additional Information
-======================
-
-.. toctree::
-   :maxdepth: 1
-
-   changes/index
-   citing
-   miscellaneous/index
+   Overview <overview/index>
+   Installing <install/index>
+   FAQ <faq/index>
+   Documentation <documentation/index>
+   Tutorials <tutorials/guide_to_examples>
+   Contact <contact/index>
+   Developers <developers/index>
+   About <about/index>
 
 ==========================================
 Related toolkits/libraries that use PETSc

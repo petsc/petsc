@@ -51,4 +51,4 @@ calling sequences of routines will occur. PETSc has been supported for twenty-fi
 :doc:`/contact/mailing_documentation` for
 information on contacting support.
 
-.. include :: ../common/editing-online.rst
+.. include :: /common/editing-online.rst

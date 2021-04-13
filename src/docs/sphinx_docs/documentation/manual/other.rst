@@ -843,7 +843,7 @@ follows.
 .. admonition:: Listing: ``src/classes/draw/tests/ex3.c``
    :name: snes-ex1
 
-   .. literalinclude:: ../../../sys/classes/draw/tests/ex3.c
+   .. literalinclude:: /../../../src/sys/classes/draw/tests/ex3.c
       :end-before: /*TEST
 
 

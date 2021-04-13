@@ -668,8 +668,8 @@ time for PETSc programs that use these macros.
 
     <hr>
 
-.. bibliography:: ../../tex/petsc.bib
+.. bibliography:: /../tex/petsc.bib
    :filter: docname in docnames
 
-.. bibliography:: ../../tex/petscapp.bib
+.. bibliography:: /../tex/petscapp.bib
    :filter: docname in docnames
