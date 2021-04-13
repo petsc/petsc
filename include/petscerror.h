@@ -533,7 +533,7 @@ M*/
       PetscInt       idx = 0;                                         \
       PetscMPIInt    errcode;                                         \
       PetscAbortFindSourceFile_Private(__FILE__,&idx);                \
-      errcode = (PetscMPIInt)(idx*10000000 + __LINE__*1000 + ierr);   \
+      errcode = (PetscMPIInt)(0*idx*10000000 + 0*__LINE__*1000 + ierr);   \
       if (petscwaitonerrorflg) PetscSleep(1000);                      \
       if (petscindebugger) abort();                                   \
       else MPI_Abort(comm,errcode);                                   \
