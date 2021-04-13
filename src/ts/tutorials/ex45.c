@@ -227,10 +227,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 {
   PetscDS        ds;
+  DMLabel        label;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(ds, 0, 0, g0_temp, NULL, NULL, g3_temp);CHKERRQ(ierr);
   switch (ctx->solType) {
@@ -238,19 +240,19 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
       ierr = PetscDSSetResidual(ds, 0, f0_quad_lin,  f1_temp);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 0, mms_quad_lin, ctx);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_lin_t, ctx);CHKERRQ(ierr);
-      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) mms_quad_lin, (void (*)(void)) mms_quad_lin_t, 1, &id, ctx);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_quad_lin, (void (*)(void)) mms_quad_lin_t, ctx, NULL);CHKERRQ(ierr);
       break;
     case SOL_QUADRATIC_TRIG:
       ierr = PetscDSSetResidual(ds, 0, f0_quad_trig, f1_temp);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 0, mms_quad_trig, ctx);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_trig_t, ctx);CHKERRQ(ierr);
-      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) mms_quad_trig, (void (*)(void)) mms_quad_trig_t, 1, &id, ctx);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_quad_trig, (void (*)(void)) mms_quad_trig_t, ctx, NULL);CHKERRQ(ierr);
       break;
     case SOL_TRIG_LINEAR:
       ierr = PetscDSSetResidual(ds, 0, f0_trig_lin,  f1_temp);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 0, mms_trig_lin, ctx);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_trig_lin_t, ctx);CHKERRQ(ierr);
-      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) mms_trig_lin, (void (*)(void)) mms_trig_lin_t, 1, &id, ctx);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_trig_lin, (void (*)(void)) mms_trig_lin_t, ctx, NULL);CHKERRQ(ierr);
       break;
     default: SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(ctx->solType, NUM_SOLUTION_TYPES)], ctx->solType);
   }

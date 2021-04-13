@@ -281,19 +281,27 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
-  PetscDS        prob;
+  PetscDS        ds;
+  PetscWeakForm  wf;
+  DMLabel        label;
   Parameter     *ctx;
-  PetscInt       id;
+  PetscInt       id, bd;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 0, NULL, f1_u);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 1, f0_p, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  g3_uu);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  g2_up, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
+  ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(ds, 0, NULL, f1_u);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(ds, 1, f0_p, NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL,  NULL,  g3_uu);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 1, NULL, NULL,  g2_up, NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
+
+  id   = 2;
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_NATURAL, "right wall", label, 1, &id, 0, 0, NULL, NULL, NULL, ctx, &bd);CHKERRQ(ierr);
+  ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, f0_bd_u, 0, NULL);CHKERRQ(ierr);
   /* Setup constants */
   {
     Parameter  *param;
@@ -305,21 +313,18 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     constants[1] = param->nu;
     constants[2] = param->u_0;
     constants[3] = param->alpha;
-    ierr = PetscDSSetConstants(prob, 4, constants);CHKERRQ(ierr);
+    ierr = PetscDSSetConstants(ds, 4, constants);CHKERRQ(ierr);
   }
   /* Setup Boundary Conditions */
-  ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
   id   = 3;
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall",    "marker", 0, 0, NULL, (void (*)(void)) wall_velocity, NULL, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall",    label, 1, &id, 0, 0, NULL, (void (*)(void)) wall_velocity, NULL, ctx, NULL);CHKERRQ(ierr);
   id   = 1;
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall", "marker", 0, 0, NULL, (void (*)(void)) wall_velocity, NULL, 1, &id, ctx);CHKERRQ(ierr);
-  id   = 2;
-  ierr = DMAddBoundary(dm, DM_BC_NATURAL,   "right wall",  "marker", 0, 0, NULL, (void (*)(void)) NULL,          NULL, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) wall_velocity, NULL, ctx, NULL);CHKERRQ(ierr);
   /* Setup exact solution */
   user->exactFuncs[0] = quadratic_u;
   user->exactFuncs[1] = linear_p;
-  ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0], ctx);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 1, user->exactFuncs[1], ctx);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(ds, 0, user->exactFuncs[0], ctx);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(ds, 1, user->exactFuncs[1], ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

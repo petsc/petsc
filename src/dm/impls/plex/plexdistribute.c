@@ -1729,8 +1729,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = DMLabelDestroy(&lblMigration);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
   ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
-  /* Copy BC */
-  ierr = DMCopyBoundary(dm, *dmParallel);CHKERRQ(ierr);
+  /* Copy discretization */
+  ierr = DMCopyDisc(dm, *dmParallel);CHKERRQ(ierr);
   /* Create sfNatural */
   if (dm->useNatural) {
     PetscSection section;

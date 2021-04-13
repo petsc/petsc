@@ -391,6 +391,7 @@ int main(int argc,char **args)
       const PetscInt pid[] = {2}; /* The faces with loading (x=L_x) */
       PetscFE        fe;
       PetscDS        prob;
+      DMLabel        label;
       DM             cdm = dm;
 
       ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
@@ -404,17 +405,25 @@ int main(int argc,char **args)
         ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
         ierr = PetscDSSetResidual(prob, 0, f0_u_x4, f1_u_3d);CHKERRQ(ierr);
       } else {
+        PetscWeakForm wf;
+        PetscInt      bd, i;
+
         ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d_alpha);CHKERRQ(ierr);
         ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d_alpha);CHKERRQ(ierr);
-        ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
+
+        ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_NATURAL, "traction", label, Npid, pid, 0, Ncomp, components, NULL, NULL, NULL, &bd);CHKERRQ(ierr);
+        ierr = PetscDSGetBoundary(prob, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+        for (i = 0; i < Npid; ++i) {ierr = PetscWeakFormSetIndexBdResidual(wf, label, pid[i], 0, 0, f0_bd_u_3d, 0, f1_bd_u);CHKERRQ(ierr);}
       }
       /* bcs */
       if (run_type==1) {
         PetscInt id = 1;
-        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)(void)) zero, NULL, 1, &id, NULL);CHKERRQ(ierr);
+        ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL);CHKERRQ(ierr);
       } else {
-        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", "Faces", 0, Ncomp, components, (void (*)(void)) zero, NULL, Nfid, fid, NULL);CHKERRQ(ierr);
-        ierr = DMAddBoundary(dm, DM_BC_NATURAL, "traction", "Faces", 0, Ncomp, components, NULL, NULL, Npid, pid, NULL);CHKERRQ(ierr);
+        ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, Nfid, fid, 0, Ncomp, components, (void (*)(void)) zero, NULL, NULL, NULL);CHKERRQ(ierr);
       }
       while (cdm) {
         ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);

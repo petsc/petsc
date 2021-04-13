@@ -189,27 +189,28 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
 
       if (b->field != f) continue;
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "Boundary %s (%s) %s\n", b->name, b->labelname, DMBoundaryConditionTypes[b->type]);CHKERRQ(ierr);
-      if (!b->numcomps) {
+      ierr = PetscViewerASCIIPrintf(viewer, "Boundary %s (%s) %s\n", b->name, b->lname, DMBoundaryConditionTypes[b->type]);CHKERRQ(ierr);
+      if (!b->Nc) {
         ierr = PetscViewerASCIIPrintf(viewer, "  all components\n");CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer, "  components: ");CHKERRQ(ierr);
         ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
-        for (c = 0; c < b->numcomps; ++c) {
+        for (c = 0; c < b->Nc; ++c) {
           if (c > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
           ierr = PetscViewerASCIIPrintf(viewer, "%D", b->comps[c]);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer, "  ids: ");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  values: ");CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
-      for (i = 0; i < b->numids; ++i) {
+      for (i = 0; i < b->Nv; ++i) {
         if (i > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
-        ierr = PetscViewerASCIIPrintf(viewer, "%D", b->ids[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%D", b->values[i]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscWeakFormView(b->wf, viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
@@ -322,17 +323,18 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
     ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
     ierr = PetscOptionsIntArray(optname, "List of boundary IDs", "", ids, &len, &flg);CHKERRQ(ierr);
     if (flg) {
-      b->numids = len;
-      ierr = PetscFree(b->ids);CHKERRQ(ierr);
-      ierr = PetscMalloc1(len, &b->ids);CHKERRQ(ierr);
-      ierr = PetscArraycpy(b->ids, ids, len);CHKERRQ(ierr);
+      b->Nv = len;
+      ierr = PetscFree(b->values);CHKERRQ(ierr);
+      ierr = PetscMalloc1(len, &b->values);CHKERRQ(ierr);
+      ierr = PetscArraycpy(b->values, ids, len);CHKERRQ(ierr);
+      ierr = PetscWeakFormRewriteKeys(b->wf, b->label, len, b->values);CHKERRQ(ierr);
     }
     len = 1024;
     ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", b->name);CHKERRQ(ierr);
     ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
     ierr = PetscOptionsIntArray(optname, "List of boundary field components", "", ids, &len, &flg);CHKERRQ(ierr);
     if (flg) {
-      b->numcomps = len;
+      b->Nc = len;
       ierr = PetscFree(b->comps);CHKERRQ(ierr);
       ierr = PetscMalloc1(len, &b->comps);CHKERRQ(ierr);
       ierr = PetscArraycpy(b->comps, ids, len);CHKERRQ(ierr);
@@ -518,7 +520,6 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 PetscErrorCode PetscDSDestroy(PetscDS *ds)
 {
   PetscInt       f;
-  DSBoundary     next;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -543,17 +544,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   ierr = PetscFree2((*ds)->update,(*ds)->ctx);CHKERRQ(ierr);
   ierr = PetscFree4((*ds)->exactSol,(*ds)->exactCtx,(*ds)->exactSol_t,(*ds)->exactCtx_t);CHKERRQ(ierr);
   if ((*ds)->ops->destroy) {ierr = (*(*ds)->ops->destroy)(*ds);CHKERRQ(ierr);}
-  next = (*ds)->boundary;
-  while (next) {
-    DSBoundary b = next;
-
-    next = b->next;
-    ierr = PetscFree(b->comps);CHKERRQ(ierr);
-    ierr = PetscFree(b->ids);CHKERRQ(ierr);
-    ierr = PetscFree(b->name);CHKERRQ(ierr);
-    ierr = PetscFree(b->labelname);CHKERRQ(ierr);
-    ierr = PetscFree(b);CHKERRQ(ierr);
-  }
+  ierr = PetscDSDestroyBoundary(*ds);CHKERRQ(ierr);
   ierr = PetscFree((*ds)->constants);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ds);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3114,18 +3105,21 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
   Collective on ds
 
   Input Parameters:
-+ ds          - The PetscDS object
-. type        - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
-. name        - The BC name
-. labelname   - The label defining constrained points
-. field       - The field to constrain
-. numcomps    - The number of constrained field components (0 will constrain all fields)
-. comps       - An array of constrained component numbers
-. bcFunc      - A pointwise function giving boundary values
-. bcFunc_t    - A pointwise function giving the time derviative of the boundary values, or NULL
-. numids      - The number of DMLabel ids for constrained points
-. ids         - An array of ids for constrained points
-- ctx         - An optional user context for bcFunc
++ ds       - The PetscDS object
+. type     - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
+. name     - The BC name
+. label    - The label defining constrained points
+. Nv       - The number of DMLabel values for constrained points
+. values   - An array of label values for constrained points
+. field    - The field to constrain
+. Nc       - The number of constrained field components (0 will constrain all fields)
+. comps    - An array of constrained component numbers
+. bcFunc   - A pointwise function giving boundary values
+. bcFunc_t - A pointwise function giving the time derviative of the boundary values, or NULL
+- ctx      - An optional user context for bcFunc
+
+  Output Parameters:
+- bd       - The boundary number
 
   Options Database Keys:
 + -bc_<boundary name> <num> - Overrides the boundary ids
@@ -3163,35 +3157,161 @@ $        PetscReal time, const PetscReal x[], PetscScalar bcval[])
 
   Level: developer
 
-.seealso: PetscDSGetBoundary(), PetscDSSetResidual(), PetscDSSetBdResidual()
+.seealso: PetscDSAddBoundaryByName(), PetscDSGetBoundary(), PetscDSSetResidual(), PetscDSSetBdResidual()
 @*/
-PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), void (*bcFunc_t)(void), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd)
 {
-  DSBoundary     b;
+  DSBoundary     head = ds->boundary, b;
+  PetscInt       n    = 0;
+  const char    *lname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ds, type, 2);
-  PetscValidLogicalCollectiveInt(ds, field, 5);
-  PetscValidLogicalCollectiveInt(ds, numcomps, 6);
-  PetscValidLogicalCollectiveInt(ds, numids, 9);
+  PetscValidCharPointer(name, 3);
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 4);
+  PetscValidLogicalCollectiveInt(ds, Nv, 5);
+  PetscValidLogicalCollectiveInt(ds, field, 7);
+  PetscValidLogicalCollectiveInt(ds, Nc, 8);
   ierr = PetscNew(&b);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numcomps, &b->comps);CHKERRQ(ierr);
-  if (numcomps) {ierr = PetscArraycpy(b->comps, comps, numcomps);CHKERRQ(ierr);}
-  ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
-  if (numids) {ierr = PetscArraycpy(b->ids, ids, numids);CHKERRQ(ierr);}
-  b->type            = type;
-  b->field           = field;
-  b->numcomps        = numcomps;
-  b->func            = bcFunc;
-  b->func_t          = bcFunc_t;
-  b->numids          = numids;
-  b->ctx             = ctx;
-  b->next            = ds->boundary;
-  ds->boundary       = b;
+  ierr = PetscWeakFormCreate(PETSC_COMM_SELF, &b->wf);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetNumFields(b->wf, ds->Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nv, &b->values);CHKERRQ(ierr);
+  if (Nv) {ierr = PetscArraycpy(b->values, values, Nv);CHKERRQ(ierr);}
+  ierr = PetscMalloc1(Nc, &b->comps);CHKERRQ(ierr);
+  if (Nc) {ierr = PetscArraycpy(b->comps, comps, Nc);CHKERRQ(ierr);}
+  ierr = PetscObjectGetName((PetscObject) label, &lname);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(lname, (char **) &b->lname);CHKERRQ(ierr);
+  b->type   = type;
+  b->label  = label;
+  b->Nv     = Nv;
+  b->field  = field;
+  b->Nc     = Nc;
+  b->func   = bcFunc;
+  b->func_t = bcFunc_t;
+  b->ctx    = ctx;
+  b->next   = NULL;
+  /* Append to linked list so that we can preserve the order */
+  if (!head) ds->boundary = b;
+  while (head) {
+    if (!head->next) {
+      head->next = b;
+      head       = b;
+    }
+    head = head->next;
+    ++n;
+  }
+  if (bd) {PetscValidIntPointer(bd, 12); *bd = n;}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDSAddBoundaryByName - Add a boundary condition to the model. The pointwise functions are used to provide boundary values for essential boundary conditions. In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that boundary integrals should be performaed, using the kernels from PetscDSSetBdResidual().
+
+  Collective on ds
+
+  Input Parameters:
++ ds       - The PetscDS object
+. type     - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
+. name     - The BC name
+. lname    - The naem of the label defining constrained points
+. Nv       - The number of DMLabel values for constrained points
+. values   - An array of label values for constrained points
+. field    - The field to constrain
+. Nc       - The number of constrained field components (0 will constrain all fields)
+. comps    - An array of constrained component numbers
+. bcFunc   - A pointwise function giving boundary values
+. bcFunc_t - A pointwise function giving the time derviative of the boundary values, or NULL
+- ctx      - An optional user context for bcFunc
+
+  Output Parameters:
+- bd       - The boundary number
+
+  Options Database Keys:
++ -bc_<boundary name> <num> - Overrides the boundary ids
+- -bc_<boundary name>_comp <num> - Overrides the boundary components
+
+  Note:
+  This function should only be used with DMForest currently, since labels cannot be defined before the underlygin Plex is built.
+
+  Both bcFunc abd bcFunc_t will depend on the boundary condition type. If the type if DM_BC_ESSENTIAL, Then the calling sequence is:
+
+$ bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
+
+  If the type is DM_BC_ESSENTIAL_FIELD or other _FIELD value, then the calling sequence is:
+
+$ bcFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$        PetscReal time, const PetscReal x[], PetscScalar bcval[])
+
++ dim - the spatial dimension
+. Nf - the number of fields
+. uOff - the offset into u[] and u_t[] for each field
+. uOff_x - the offset into u_x[] for each field
+. u - each field evaluated at the current point
+. u_t - the time derivative of each field evaluated at the current point
+. u_x - the gradient of each field evaluated at the current point
+. aOff - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x - the offset into a_x[] for each auxiliary field
+. a - each auxiliary field evaluated at the current point
+. a_t - the time derivative of each auxiliary field evaluated at the current point
+. a_x - the gradient of auxiliary each field evaluated at the current point
+. t - current time
+. x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
+- bcval - output values at the current point
+
+  Level: developer
+
+.seealso: PetscDSAddBoundary(), PetscDSGetBoundary(), PetscDSSetResidual(), PetscDSSetBdResidual()
+@*/
+PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type, const char name[], const char lname[], PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd)
+{
+  DSBoundary     head = ds->boundary, b;
+  PetscInt       n    = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidLogicalCollectiveEnum(ds, type, 2);
+  PetscValidCharPointer(name, 3);
+  PetscValidCharPointer(lname, 4);
+  PetscValidLogicalCollectiveInt(ds, Nv, 5);
+  PetscValidLogicalCollectiveInt(ds, field, 7);
+  PetscValidLogicalCollectiveInt(ds, Nc, 8);
+  ierr = PetscNew(&b);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
+  ierr = PetscWeakFormCreate(PETSC_COMM_SELF, &b->wf);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetNumFields(b->wf, ds->Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nv, &b->values);CHKERRQ(ierr);
+  if (Nv) {ierr = PetscArraycpy(b->values, values, Nv);CHKERRQ(ierr);}
+  ierr = PetscMalloc1(Nc, &b->comps);CHKERRQ(ierr);
+  if (Nc) {ierr = PetscArraycpy(b->comps, comps, Nc);CHKERRQ(ierr);}
+  ierr = PetscStrallocpy(lname, (char **) &b->lname);CHKERRQ(ierr);
+  b->type   = type;
+  b->label  = NULL;
+  b->Nv     = Nv;
+  b->field  = field;
+  b->Nc     = Nc;
+  b->func   = bcFunc;
+  b->func_t = bcFunc_t;
+  b->ctx    = ctx;
+  b->next   = NULL;
+  /* Append to linked list so that we can preserve the order */
+  if (!head) ds->boundary = b;
+  while (head) {
+    if (!head->next) {
+      head->next = b;
+      head       = b;
+    }
+    head = head->next;
+    ++n;
+  }
+  if (bd) {PetscValidIntPointer(bd, 12); *bd = n;}
   PetscFunctionReturn(0);
 }
 
@@ -3199,19 +3319,19 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
   PetscDSUpdateBoundary - Change a boundary condition for the model. The pointwise functions are used to provide boundary values for essential boundary conditions. In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that boundary integrals should be performaed, using the kernels from PetscDSSetBdResidual().
 
   Input Parameters:
-+ ds          - The PetscDS object
-. bd          - The boundary condition number
-. type        - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
-. name        - The BC name
-. labelname   - The label defining constrained points
-. field       - The field to constrain
-. numcomps    - The number of constrained field components
-. comps       - An array of constrained component numbers
-. bcFunc      - A pointwise function giving boundary values
-. bcFunc_t    - A pointwise function giving the time derviative of the boundary values, or NULL
-. numids      - The number of DMLabel ids for constrained points
-. ids         - An array of ids for constrained points
-- ctx         - An optional user context for bcFunc
++ ds       - The PetscDS object
+. bd       - The boundary condition number
+. type     - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
+. name     - The BC name
+. label    - The label defining constrained points
+. Nv       - The number of DMLabel ids for constrained points
+. values   - An array of ids for constrained points
+. field    - The field to constrain
+. Nc       - The number of constrained field components
+. comps    - An array of constrained component numbers
+. bcFunc   - A pointwise function giving boundary values
+. bcFunc_t - A pointwise function giving the time derviative of the boundary values, or NULL
+- ctx      - An optional user context for bcFunc
 
   Note:
   The boundary condition number is the order in which it was registered. The user can get the number of boundary conditions from PetscDSGetNumBoundary(). See PetscDSAddBoundary() for a description of the calling sequences for the callbacks.
@@ -3220,7 +3340,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 
 .seealso: PetscDSAddBoundary(), PetscDSGetBoundary(), PetscDSGetNumBoundary()
 @*/
-PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), void (*bcFunc_t)(void), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx)
 {
   DSBoundary     b = ds->boundary;
   PetscInt       n = 0;
@@ -3238,27 +3358,31 @@ PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditio
     ierr = PetscFree(b->name);CHKERRQ(ierr);
     ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
   }
-  if (labelname) {
-    ierr = PetscFree(b->labelname);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);
-  }
-  if (numcomps >= 0 && numcomps != b->numcomps) {
-    b->numcomps = numcomps;
-    ierr = PetscFree(b->comps);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numcomps, &b->comps);CHKERRQ(ierr);
-    if (numcomps) {ierr = PetscArraycpy(b->comps, comps, numcomps);CHKERRQ(ierr);}
-  }
-  if (numids >= 0 && numids != b->numids) {
-    b->numids = numids;
-    ierr = PetscFree(b->ids);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
-    if (numids) {ierr = PetscArraycpy(b->ids, ids, numids);CHKERRQ(ierr);}
-  }
   b->type = type;
-  if (field >= 0) {b->field  = field;}
-  if (bcFunc)     {b->func   = bcFunc;}
-  if (bcFunc_t)   {b->func_t = bcFunc_t;}
-  if (ctx)        {b->ctx    = ctx;}
+  if (label) {
+    const char *name;
+
+    b->label = label;
+    ierr = PetscFree(b->lname);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) label, &name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(name, (char **) &b->lname);CHKERRQ(ierr);
+  }
+  if (Nv >= 0) {
+    b->Nv = Nv;
+    ierr = PetscFree(b->values);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nv, &b->values);CHKERRQ(ierr);
+    if (Nv) {ierr = PetscArraycpy(b->values, values, Nv);CHKERRQ(ierr);}
+  }
+  if (field >= 0) b->field = field;
+  if (Nc >= 0) {
+    b->Nc = Nc;
+    ierr = PetscFree(b->comps);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nc, &b->comps);CHKERRQ(ierr);
+    if (Nc) {ierr = PetscArraycpy(b->comps, comps, Nc);CHKERRQ(ierr);}
+  }
+  if (bcFunc)   b->func   = bcFunc;
+  if (bcFunc_t) b->func_t = bcFunc_t;
+  if (ctx)      b->ctx    = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -3295,17 +3419,18 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 - bd          - The BC number
 
   Output Parameters:
-+ type        - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
-. name        - The BC name
-. labelname   - The label defining constrained points
-. field       - The field to constrain
-. numcomps    - The number of constrained field components
-. comps       - An array of constrained component numbers
-. bcFunc      - A pointwise function giving boundary values
-. bcFunc_t    - A pointwise function giving the time derviative of the boundary values
-. numids      - The number of DMLabel ids for constrained points
-. ids         - An array of ids for constrained points
-- ctx         - An optional user context for bcFunc
++ wf       - The PetscWeakForm holding the pointwise functions
+. type     - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
+. name     - The BC name
+. label    - The label defining constrained points
+. Nv       - The number of DMLabel ids for constrained points
+. values   - An array of ids for constrained points
+. field    - The field to constrain
+. Nc       - The number of constrained field components
+. comps    - An array of constrained component numbers
+. bcFunc   - A pointwise function giving boundary values
+. bcFunc_t - A pointwise function giving the time derviative of the boundary values
+- ctx      - An optional user context for bcFunc
 
   Options Database Keys:
 + -bc_<boundary name> <num> - Overrides the boundary ids
@@ -3315,10 +3440,10 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 
 .seealso: PetscDSAddBoundary()
 @*/
-PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(void), void (**func_t)(void), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], void (**func)(void), void (**func_t)(void), void **ctx)
 {
-  DSBoundary b    = ds->boundary;
-  PetscInt   n    = 0;
+  DSBoundary b = ds->boundary;
+  PetscInt   n = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
@@ -3328,50 +3453,79 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionTy
     ++n;
   }
   if (!b) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  if (wf) {
+    PetscValidPointer(wf, 3);
+    *wf = b->wf;
+  }
   if (type) {
-    PetscValidPointer(type, 3);
+    PetscValidPointer(type, 4);
     *type = b->type;
   }
   if (name) {
-    PetscValidPointer(name, 4);
+    PetscValidPointer(name, 5);
     *name = b->name;
   }
-  if (labelname) {
-    PetscValidPointer(labelname, 5);
-    *labelname = b->labelname;
+  if (label) {
+    PetscValidPointer(label, 6);
+    *label = b->label;
+  }
+  if (Nv) {
+    PetscValidIntPointer(Nv, 7);
+    *Nv = b->Nv;
+  }
+  if (values) {
+    PetscValidPointer(values, 8);
+    *values = b->values;
   }
   if (field) {
-    PetscValidPointer(field, 6);
+    PetscValidIntPointer(field, 9);
     *field = b->field;
   }
-  if (numcomps) {
-    PetscValidPointer(numcomps, 7);
-    *numcomps = b->numcomps;
+  if (Nc) {
+    PetscValidIntPointer(Nc, 10);
+    *Nc = b->Nc;
   }
   if (comps) {
-    PetscValidPointer(comps, 8);
+    PetscValidPointer(comps, 11);
     *comps = b->comps;
   }
   if (func) {
-    PetscValidPointer(func, 9);
+    PetscValidPointer(func, 12);
     *func = b->func;
   }
   if (func_t) {
-    PetscValidPointer(func_t, 10);
+    PetscValidPointer(func_t, 13);
     *func_t = b->func_t;
   }
-  if (numids) {
-    PetscValidPointer(numids, 11);
-    *numids = b->numids;
-  }
-  if (ids) {
-    PetscValidPointer(ids, 12);
-    *ids = b->ids;
-  }
   if (ctx) {
-    PetscValidPointer(ctx, 13);
+    PetscValidPointer(ctx, 14);
     *ctx = b->ctx;
   }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNew)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(bNew);CHKERRQ(ierr);
+  ierr = PetscWeakFormCreate(PETSC_COMM_SELF, &(*bNew)->wf);CHKERRQ(ierr);
+  ierr = PetscWeakFormCopy(b->wf, (*bNew)->wf);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(b->name,(char **) &((*bNew)->name));CHKERRQ(ierr);
+  ierr = PetscStrallocpy(b->lname,(char **) &((*bNew)->lname));CHKERRQ(ierr);
+  (*bNew)->type   = b->type;
+  (*bNew)->label  = b->label;
+  (*bNew)->Nv     = b->Nv;
+  ierr = PetscMalloc1(b->Nv, &(*bNew)->values);CHKERRQ(ierr);
+  ierr = PetscArraycpy((*bNew)->values, b->values, b->Nv);CHKERRQ(ierr);
+  (*bNew)->field  = b->field;
+  (*bNew)->Nc     = b->Nc;
+  ierr = PetscMalloc1(b->Nc, &(*bNew)->comps);CHKERRQ(ierr);
+  ierr = PetscArraycpy((*bNew)->comps, b->comps, b->Nc);CHKERRQ(ierr);
+  (*bNew)->func   = b->func;
+  (*bNew)->func_t = b->func_t;
+  (*bNew)->ctx    = b->ctx;
   PetscFunctionReturn(0);
 }
 
@@ -3394,24 +3548,14 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionTy
 @*/
 PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscInt fields[], PetscDS newds)
 {
-  DSBoundary     b, next, *lastnext;
+  DSBoundary     b, *lastnext;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds,    PETSCDS_CLASSID, 1);
   PetscValidHeaderSpecific(newds, PETSCDS_CLASSID, 4);
   if (ds == newds) PetscFunctionReturn(0);
-  next = newds->boundary;
-  while (next) {
-    DSBoundary b = next;
-
-    next = b->next;
-    ierr = PetscFree(b->comps);CHKERRQ(ierr);
-    ierr = PetscFree(b->ids);CHKERRQ(ierr);
-    ierr = PetscFree(b->name);CHKERRQ(ierr);
-    ierr = PetscFree(b->labelname);CHKERRQ(ierr);
-    ierr = PetscFree(b);CHKERRQ(ierr);
-  }
+  ierr = PetscDSDestroyBoundary(newds);CHKERRQ(ierr);
   lastnext = &(newds->boundary);
   for (b = ds->boundary; b; b = b->next) {
     DSBoundary bNew;
@@ -3424,22 +3568,42 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscIn
       if (f == numFields) continue;
       fieldNew = f;
     }
-    ierr = PetscNew(&bNew);CHKERRQ(ierr);
-    bNew->numcomps = b->numcomps;
-    ierr = PetscMalloc1(bNew->numcomps, &bNew->comps);CHKERRQ(ierr);
-    ierr = PetscArraycpy(bNew->comps, b->comps, bNew->numcomps);CHKERRQ(ierr);
-    bNew->numids = b->numids;
-    ierr = PetscMalloc1(bNew->numids, &bNew->ids);CHKERRQ(ierr);
-    ierr = PetscArraycpy(bNew->ids, b->ids, bNew->numids);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(b->labelname,(char **) &(bNew->labelname));CHKERRQ(ierr);
-    ierr = PetscStrallocpy(b->name,(char **) &(bNew->name));CHKERRQ(ierr);
-    bNew->ctx   = b->ctx;
-    bNew->type  = b->type;
+    ierr = DSBoundaryDuplicate_Internal(b, &bNew);CHKERRQ(ierr);
     bNew->field = fieldNew < 0 ? b->field : fieldNew;
-    bNew->func  = b->func;
-
     *lastnext = bNew;
-    lastnext = &(bNew->next);
+    lastnext  = &(bNew->next);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSDestroyBoundary - Remove all DMBoundary objects from the PetscDS
+
+  Not collective
+
+  Input Parameter:
+. ds - The PetscDS object
+
+  Level: intermediate
+
+.seealso: PetscDSCopyBoundary(), PetscDSCopyEquations()
+@*/
+PetscErrorCode PetscDSDestroyBoundary(PetscDS ds)
+{
+  DSBoundary     next = ds->boundary;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (next) {
+    DSBoundary b = next;
+
+    next = b->next;
+    ierr = PetscWeakFormDestroy(&b->wf);CHKERRQ(ierr);
+    ierr = PetscFree(b->name);CHKERRQ(ierr);
+    ierr = PetscFree(b->lname);CHKERRQ(ierr);
+    ierr = PetscFree(b->values);CHKERRQ(ierr);
+    ierr = PetscFree(b->comps);CHKERRQ(ierr);
+    ierr = PetscFree(b);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3472,7 +3636,7 @@ PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, co
   PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 4);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(newprob, &Nfn);CHKERRQ(ierr);
-  if (numFields > Nfn) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields %D to transfer must not be greater then the total number of fields %D", numFields, Nfn);
+  numFields = numFields < 0 ? Nf : numFields;
   for (fn = 0; fn < numFields; ++fn) {
     const PetscInt f = fields ? fields[fn] : fn;
     PetscObject    disc;
@@ -3576,6 +3740,7 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
   ierr = PetscDSSelectEquations(prob, Nf, NULL, newprob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /*@
   PetscDSCopyConstants - Copy all constants to the new problem
 
@@ -3602,6 +3767,41 @@ PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob)
   PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 2);
   ierr = PetscDSGetConstants(prob, &Nc, &constants);CHKERRQ(ierr);
   ierr = PetscDSSetConstants(newprob, Nc, (PetscScalar *) constants);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSCopyExactSolutions - Copy all exact solutions to the new problem
+
+  Not collective
+
+  Input Parameter:
+. ds - The PetscDS object
+
+  Output Parameter:
+. newds - The PetscDS copy
+
+  Level: intermediate
+
+.seealso: PetscDSCopyBoundary(), PetscDSCopyEquations(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds)
+{
+  PetscSimplePointFunc sol;
+  void                *ctx;
+  PetscInt             Nf, f;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(newds, PETSCDS_CLASSID, 2);
+  ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    ierr = PetscDSGetExactSolution(ds,    f, &sol, &ctx);CHKERRQ(ierr);
+    ierr = PetscDSSetExactSolution(newds, f,  sol,  ctx);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolutionTimeDerivative(ds,    f, &sol, &ctx);CHKERRQ(ierr);
+    ierr = PetscDSSetExactSolutionTimeDerivative(newds, f,  sol,  ctx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

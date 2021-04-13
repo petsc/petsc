@@ -294,22 +294,23 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 {
-  PetscDS        prob;
+  PetscDS        ds;
+  DMLabel        label;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   switch (ctx->mms) {
   case 1:
-    ierr = PetscDSSetResidual(prob, 0, f0_mms1_u, f1_u);CHKERRQ(ierr);break;
+    ierr = PetscDSSetResidual(ds, 0, f0_mms1_u, f1_u);CHKERRQ(ierr);break;
   case 2:
-    ierr = PetscDSSetResidual(prob, 0, f0_mms2_u, f1_u);CHKERRQ(ierr);break;
+    ierr = PetscDSSetResidual(ds, 0, f0_mms2_u, f1_u);CHKERRQ(ierr);break;
   }
-  ierr = PetscDSSetResidual(prob, 1, f0_p, f1_p);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 0, g0_uu, g1_uu, NULL,  g3_uu);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL, g2_up, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(ds, 1, f0_p, f1_p);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 0, g0_uu, g1_uu, NULL,  g3_uu);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 1, NULL, NULL, g2_up, NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
   switch (ctx->dim) {
   case 2:
     switch (ctx->mms) {
@@ -328,7 +329,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", ctx->dim);
   }
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], NULL, 1, &id, ctx);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], NULL, ctx, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

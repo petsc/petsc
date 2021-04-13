@@ -11,18 +11,20 @@ PETSC_EXTERN PetscErrorCode PetscDSRegisterAll(void);
 typedef struct _n_DSBoundary *DSBoundary;
 
 struct _n_DSBoundary {
-  const char *name;
-  const char *labelname;
-  DMBoundaryConditionType type;
-  PetscInt    field;
-  PetscInt    numcomps;
-  PetscInt   *comps;
-  void      (*func)(void);
-  void      (*func_t)(void);
-  PetscInt    numids;
-  PetscInt   *ids;
-  void       *ctx;
-  DSBoundary  next;
+  const char             *name;          /* A unique identifier for the condition */
+  DMLabel                 label;         /* The DMLabel indicating the mesh region over which the condition holds */
+  const char             *lname;         /* The label name if the label is missing from the DM */
+  PetscInt                Nv;            /* The nubmer of label values defining the region */
+  PetscInt               *values;        /* The labels values defining the region */
+  PetscWeakForm           wf;            /* Holds the pointwise functions defining the form (only for NATURAL conditions) */
+  DMBoundaryConditionType type;          /* The type of condition, usually either ESSENTIAL or NATURAL */
+  PetscInt                field;         /* The field constrained by the condition */
+  PetscInt                Nc;            /* The number of constrained field components */
+  PetscInt               *comps;         /* The constrained field components */
+  void                  (*func)(void);   /* Function that provides the boundary values (only for ESSENTIAL conditions) */
+  void                  (*func_t)(void); /* Function that provides the time derivative of the boundary values (only for ESSENTIAL conditions) */
+  void                   *ctx;           /* The user context for func and func_t */
+  DSBoundary              next;
 };
 
 typedef struct {

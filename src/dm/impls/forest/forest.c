@@ -174,7 +174,6 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
     ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
     ierr = DMSetPeriodicity(*tdm,isper,maxCell,L,bd);CHKERRQ(ierr);
   }
-  ierr = DMCopyBoundary(dm,*tdm);CHKERRQ(ierr);
   ierr = DMGetMatType(dm,&mtype);CHKERRQ(ierr);
   ierr = DMSetMatType(*tdm,mtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -314,6 +314,7 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[2])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
   PetscDS          ds;
+  DMLabel          label;
   const PetscInt   id = 1;
   PetscErrorCode   ierr;
 
@@ -342,7 +343,8 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
   ierr = PetscDSSetExactSolution(ds, 0, exactFuncs[0], user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(ds, 1, exactFuncs[1], user);CHKERRQ(ierr);
 
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, 1, &id, user);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, user, NULL);CHKERRQ(ierr);
 
   /* Make constant values available to pointwise functions */
   {

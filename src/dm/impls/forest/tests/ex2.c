@@ -263,8 +263,10 @@ int main(int argc, char **argv)
 
   if (use_bcs) {
     PetscInt ids[] = {1, 2, 3, 4, 5, 6};
+    DMLabel  label;
 
-    ierr = DMAddBoundary(base,DM_BC_ESSENTIAL, "bc", "marker", 0, 0, NULL, useFV ? (void(*)(void)) bc_func_fv : (void(*)(void)) funcs[0], NULL, 2 * dim, ids, useFV ? (void *) &bcCtx : NULL);CHKERRQ(ierr);
+    ierr = DMGetLabel(base, "marker", &label);CHKERRQ(ierr);
+    ierr = DMAddBoundary(base,DM_BC_ESSENTIAL, "bc", label, 2 * dim, ids, 0, 0, NULL, useFV ? (void(*)(void)) bc_func_fv : (void(*)(void)) funcs[0], NULL, useFV ? (void *) &bcCtx : NULL, NULL);CHKERRQ(ierr);
   }
   ierr = DMViewFromOptions(base,NULL,"-dm_base_view");CHKERRQ(ierr);
 

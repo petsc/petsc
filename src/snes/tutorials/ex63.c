@@ -381,7 +381,8 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   const PetscInt  dim   = user->dim;
   const PetscInt  id    = 1;
   PetscFE         fe[2];
-  PetscDS         prob;
+  PetscDS         ds;
+  DMLabel         label;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
@@ -395,11 +396,13 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
-    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
+    ierr = DMGetDS(cdm, &ds);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(ds, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(ds, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(cdm, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], NULL, 1, &id, user);CHKERRQ(ierr);
+    if (user->bcType == NEUMANN) {ierr = DMGetLabel(cdm, "boundary", &label);CHKERRQ(ierr);}
+    else                         {ierr = DMGetLabel(cdm, "marker",   &label);CHKERRQ(ierr);}
+    ierr = DMAddBoundary(cdm, user->bcType == DIRICHLET ? DM_BC_ESSENTIAL : DM_BC_NATURAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)()) user->exactFuncs[0], NULL, user, NULL);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);

@@ -463,22 +463,27 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user)
 {
-  PetscDS        prob;
+  PetscDS        ds;
+  PetscWeakForm  wf;
+  DMLabel        label;
+  PetscInt       bd;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 0, NULL, f1_u_3d);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 1, f0_p_3d, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  g3_uu_3d);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  g2_up_3d, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_pu_3d, NULL,  NULL);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(ds, 0, NULL, f1_u_3d);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(ds, 1, f0_p_3d, NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL,  NULL,  g3_uu_3d);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 1, NULL, NULL,  g2_up_3d, NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu_3d, NULL,  NULL);CHKERRQ(ierr);
 
-  ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_NATURAL, "pressure", label, 0, NULL, 0, 0, NULL, NULL, NULL, user, &bd);CHKERRQ(ierr);
+  ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, f0_bd_u_3d, 0, NULL);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexBdJacobian(wf, label, 1, 0, 0, 0, NULL, 0, g1_bd_uu_3d, 0, NULL, 0, NULL);CHKERRQ(ierr);
 
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", "Faces", 0, 0, NULL, (void (*)(void)) coordinates, NULL, 0, NULL, user);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_NATURAL, "pressure", "Faces", 0, 0, NULL, NULL, NULL, 0, NULL, user);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, 0, NULL, 0, 0, NULL, (void (*)(void)) coordinates, NULL, user, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -239,7 +239,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       break;
     default: SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %D is not supported.", dim);
   }
-  ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, *dmRefined);CHKERRQ(ierr);
   if (localized) {ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

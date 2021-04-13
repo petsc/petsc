@@ -4448,7 +4448,7 @@ PetscErrorCode DMPlexCellRefinerAdaptLabel(DM dm, DMLabel adaptLabel, DM *dmRefi
   ierr = DMGetCoordinateDM(*dmRefined, &rcdm);CHKERRQ(ierr);
   ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
   ierr = RefineDiscLabels_Internal(cr, *dmRefined);CHKERRQ(ierr);
-  ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, *dmRefined);CHKERRQ(ierr);
   ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4476,7 +4476,6 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
     ierr = DMGetCoordinateDM(*dmRefined, &rcdm);CHKERRQ(ierr);
     ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
     ierr = RefineDiscLabels_Internal(cr, *dmRefined);CHKERRQ(ierr);
-    ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
     ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
   } else {
     ierr = DMPlexRefine_Internal(dm, NULL, dmRefined);CHKERRQ(ierr);
@@ -4513,7 +4512,6 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
       ierr = DMGetCoordinateDM(dmRefined[r], &rcodm);CHKERRQ(ierr);
       ierr = DMCopyDisc(codm, rcodm);CHKERRQ(ierr);
       ierr = RefineDiscLabels_Internal(cr, dmRefined[r]);CHKERRQ(ierr);
-      ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
       ierr = DMPlexSetRegularRefinement(dmRefined[r], PETSC_TRUE);CHKERRQ(ierr);
       if (dmRefined[r]) {
@@ -4527,7 +4525,6 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
     for (r = 0; r < nlevels; ++r) {
       ierr = DMRefine(cdm, PetscObjectComm((PetscObject) dm), &dmRefined[r]);CHKERRQ(ierr);
       ierr = DMCopyDisc(cdm, dmRefined[r]);CHKERRQ(ierr);
-      ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
       if (localized) {ierr = DMLocalizeCoordinates(dmRefined[r]);CHKERRQ(ierr);}
       ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
       if (dmRefined[r]) {
