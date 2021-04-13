@@ -7,7 +7,7 @@ License
 2-clause BSD license
 ====================
 
-Copyright (c) 1991-2020, UChicago Argonne, LLC and the PETSc Development Team
+Copyright (c) 1991-2021, UChicago Argonne, LLC and the PETSc Development Team
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
