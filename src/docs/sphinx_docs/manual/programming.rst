@@ -12,4 +12,3 @@ Programming with PETSc
    sensitivity_analysis
    high_level_mg
    dmplex
-   fe
