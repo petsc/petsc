@@ -2,11 +2,20 @@
 PETSc |version| Documentation
 =============================
 
-.. raw:: html
+.. admonition:: News: New Book on PETSc
 
-   <a href="https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137">Ed Bueler, PETSc for Partial Differential Equations: Numerical Solutions in C and Python</a>
+  **PETSc for Partial Differential Equations: Numerical Solutions in C and Python**, by Ed Bueler, is available.
 
-   as a <a href="https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ">Google Play E-book</a>
+    - `Physical book from SIAM Press <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__
+    - `Google Play E-book <https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ>`__
+
+.. admonition:: News: New paper on PETSc with GPUs
+
+  `Toward Performance-Portable PETSc for GPU-based Exascale Systems <https://arxiv.org/abs/2011.00715>`__
+
+.. admonition:: News: petsc4py Support
+
+  Source code for `petsc4py <https://www.mcs.anl.gov/petsc/petsc4py-current/docs/>`__, developed by Lisandro Dalcin, is now distributed with the PETSc source and supported by the PETSc team and mailing lists.
 
 PETSc, pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is a suite of
 data structures and routines for the scalable (parallel) solution of scientific
@@ -15,6 +24,7 @@ CUDA or OpenCL, as well as hybrid MPI-GPU parallelism. PETSc (sometimes called P
 also contains the Tao optimization software library.
 
 PETSc is developed as :ref:`open-source <doc_license>`, requests and contributions are welcome.
+
 
 ===========
 Get Started
@@ -36,8 +46,6 @@ Get Working
 
    manual/index
    guides/guide_to_examples
-   changes/index
-   citing
 
 
 * `TAO Users Manual <https://www.mcs.anl.gov/petsc/petsc-current/docs/tao_manual.pdf>`__
@@ -54,11 +62,17 @@ Get Involved
 
    contact/index
    developers/index
+
+======================
+Additional Information
+======================
+
+.. toctree::
+   :maxdepth: 1
+
+   changes/index
+   citing
    miscellaneous/index
-
-.. raw:: html
-
-    <a href="../../../src/binding/petsc4py/docs/usrman/index.html">PETSc4py documentation</a>
 
 ==========================================
 Related toolkits/libraries that use PETSc
