@@ -72,7 +72,7 @@ static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt di
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode subdivide_triangle(PetscReal v1[2],PetscReal v2[2],PetscReal v3[3],PetscInt depth,PetscInt max,PetscReal xi[],PetscInt *np)
+PetscErrorCode subdivide_triangle(PetscReal v1[2],PetscReal v2[2],PetscReal v3[2],PetscInt depth,PetscInt max,PetscReal xi[],PetscInt *np)
 {
   PetscReal v12[2],v23[2],v31[2];
   PetscInt i;
