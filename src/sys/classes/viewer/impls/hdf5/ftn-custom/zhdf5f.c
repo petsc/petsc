@@ -5,16 +5,20 @@
 #define petscviewerhdf5open_            PETSCVIEWERHDF5OPEN
 #define petscviewerhdf5pushgroup_       PETSCVIEWERHDF5PUSHGROUP
 #define petscviewerhdf5getgroup_        PETSCVIEWERHDF5GETGROUP
+#define petscviewerhdf5hasdataset_      PETSCVIEWERHDF5HASDATASET
 #define petscviewerhdf5hasattribute_    PETSCVIEWERHDF5HASATTRIBUTE
 #define petscviewerhdf5writeattribute_  PETSCVIEWERHDF5WRITEATTRIBUTE
 #define petscviewerhdf5readattribute_   PETSCVIEWERHDF5READATTRIBUTE
+#define petscviewerhdf5hasgroup_        PETSCVIEWERHDF5HASGROUP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerhdf5open_            petscviewerhdf5open
 #define petscviewerhdf5pushgroup_       petscviewerhdf5pushgroup
 #define petscviewerhdf5getgroup_        petscviewerhdf5getgroup
+#define petscviewerhdf5hasdataset_      petscviewerhdf5hasdataset
 #define petscviewerhdf5hasattribute_    petscviewerhdf5hasattribute
 #define petscviewerhdf5writeattribute_  petscviewerhdf5writeattribute
 #define petscviewerhdf5readattribute_   petscviewerhdf5readattribute
+#define petscviewerhdf5hasgroup_        petscviewerhdf5hasgroup
 #endif
 
 PETSC_EXTERN void petscviewerhdf5open_(MPI_Comm *comm, char* name, PetscFileMode *type,
@@ -81,4 +85,22 @@ PETSC_EXTERN void petscviewerhdf5readattribute_(PetscViewer *viewer, char* paren
    *ierr = PetscViewerHDF5ReadAttribute(*viewer, c1, c2, *datatype, (void *) value);if (*ierr) return;
    FREECHAR(parent, c1);
    FREECHAR(name, c2);
+}
+
+PETSC_EXTERN void petscviewerhdf5hasdataset_(PetscViewer *viewer, char* path, PetscBool *has, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
+{
+   char *c1;
+
+   FIXCHAR(path, len, c1);
+   *ierr = PetscViewerHDF5HasDataset(*viewer, c1, has);if (*ierr) return;
+   FREECHAR(path, c1);
+}
+
+PETSC_EXTERN void petscviewerhdf5hasgroup_(PetscViewer *viewer, char* path, PetscBool *has, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
+{
+   char *c1;
+
+   FIXCHAR(path, len, c1);
+   *ierr = PetscViewerHDF5HasGroup(*viewer, c1, has);if (*ierr) return;
+   FREECHAR(path, c1);
 }
