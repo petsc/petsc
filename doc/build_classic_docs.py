@@ -9,7 +9,7 @@ import shutil
 
 def main():
     """ Operations to provide data from the 'classic' PETSc docs system. """
-    petsc_dir = os.path.abspath(os.path.join('..', '..', '..'))
+    petsc_dir = os.path.abspath('..')
     petsc_arch = _configure_minimal_petsc(petsc_dir)
     docs_loc = _build_classic_docs_subset(petsc_dir, petsc_arch)
     html_extra_dir = _populate_html_extra_from_classic_docs(docs_loc)

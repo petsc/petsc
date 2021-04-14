@@ -278,7 +278,7 @@ given below, corresponding to
 `Vec Tutorial ex4f <../../../src/vec/vec/tutorials/ex4f.F.html>`__,
 `Draw Test ex5f <../../../src/sys/classes/draw/tests/ex5f.F.html>`__,
 and
-`SNES Tutorial ex1f <../../src/snes/tutorials/ex1f.F90.html>`__,
+`SNES Tutorial ex1f <../../../src/snes/tutorials/ex1f.F90.html>`__,
 respectively. We also refer Fortran programmers to the C examples listed
 throughout the manual, since PETSc usage within the two languages
 differs only slightly.
@@ -287,7 +287,7 @@ differs only slightly.
 .. admonition:: Listing: ``src/vec/vec/tests/ex19f.F``
    :name: vec-test-ex19f
 
-   .. literalinclude:: /../../../src/vec/vec/tests/ex19f.F
+   .. literalinclude:: /../src/vec/vec/tests/ex19f.F
       :language: fortran
 
 .. _listing_vec_ex4f:
@@ -295,19 +295,19 @@ differs only slightly.
 .. admonition:: Listing: ``src/vec/vec/tutorials/ex4f.F``
    :name: vec-ex4f
 
-   .. literalinclude:: /../../../src/vec/vec/tutorials/ex4f.F
+   .. literalinclude:: /../src/vec/vec/tutorials/ex4f.F
       :language: fortran
 
 .. admonition:: Listing: ``src/sys/classes/draw/tests/ex5f.F``
    :name: draw-test-ex5f
 
-   .. literalinclude:: /../../../src/sys/classes/draw/tests/ex5f.F
+   .. literalinclude:: /../src/sys/classes/draw/tests/ex5f.F
       :language: fortran
 
 .. admonition:: Listing: ``src/snes/tutorials/ex1f.F90``
    :name: snes-ex1f
 
-   .. literalinclude:: /../../../src/snes/tutorials/ex1f.F90
+   .. literalinclude:: /../src/snes/tutorials/ex1f.F90
       :language: fortran
 
 .. _sec_fortranarrays:

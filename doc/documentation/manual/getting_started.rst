@@ -286,7 +286,7 @@ the code we highlight a few of the most important parts of this example.
 .. admonition:: Listing: ``src/ksp/ksp/tutorials/ex1.c``
    :name: ksp-ex1
 
-   .. literalinclude:: /../../../src/ksp/ksp/tutorials/ex1.c
+   .. literalinclude:: /../src/ksp/ksp/tutorials/ex1.c
       :end-before: /*TEST
 
 Include Files
@@ -550,7 +550,7 @@ local part of the matrix and vectors in the parallel case.
 .. admonition:: Listing: ``src/ksp/ksp/tutorials/ex2.c``
    :name: ksp-ex2
 
-   .. literalinclude:: /../../../src/ksp/ksp/tutorials/ex2.c
+   .. literalinclude:: /../src/ksp/ksp/tutorials/ex2.c
       :end-before: /*TEST
 
 .. raw:: latex
@@ -797,8 +797,8 @@ subdirectories:
 
     <hr>
 
-.. bibliography:: /../tex/petsc.bib
+.. bibliography:: /../src/docs/tex/petsc.bib
    :filter: docname in docnames
 
-.. bibliography:: /../tex/petscapp.bib
+.. bibliography:: /../src/docs/tex/petscapp.bib
    :filter: docname in docnames

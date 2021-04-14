@@ -162,7 +162,7 @@ Sphinx Documentation Guidelines
 
   .. code-block:: rst
 
-      .. literalinclude:: /../../../src/sys/error/err.c
+      .. literalinclude:: /../src/sys/error/err.c
          :start-at: PetscErrorCode PetscError(
          :end-at: PetscFunctionReturn(0)
          :append: }

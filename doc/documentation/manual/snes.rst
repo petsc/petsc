@@ -76,7 +76,7 @@ nonlinear solvers, browse the concrete example in `ex1.c <#snes-ex1>`_ or skip a
 .. admonition:: Listing: ``src/snes/tutorials/ex1.c``
    :name: snes-ex1
 
-   .. literalinclude:: /../../../src/snes/tutorials/ex1.c
+   .. literalinclude:: /../src/snes/tutorials/ex1.c
       :end-before: /*TEST
 
 To create a ``SNES`` solver, one must first call ``SNESCreate()`` as
@@ -930,7 +930,7 @@ default ``SNES`` matrix-free form.
 .. admonition:: Listing: ``src/snes/tutorials/ex3.c``
    :name: snes-ex3
 
-   .. literalinclude:: /../../../src/snes/tutorials/ex3.c
+   .. literalinclude:: /../src/snes/tutorials/ex3.c
       :end-before: /*TEST
 
 Table :any:`tab-jacobians` summarizes the various matrix situations
@@ -1216,8 +1216,8 @@ and accessed with
 
     <hr>
 
-.. bibliography:: /../tex/petsc.bib
+.. bibliography:: /../src/docs/tex/petsc.bib
    :filter: docname in docnames
 
-.. bibliography:: /../tex/petscapp.bib
+.. bibliography:: /../src/docs/tex/petscapp.bib
    :filter: docname in docnames

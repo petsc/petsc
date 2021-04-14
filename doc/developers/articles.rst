@@ -13,12 +13,12 @@ Higher-level views of PETSc can be found in :cite:`KEYPREFIX-s2011`,
 References
 ~~~~~~~~~~
 
-.. bibliography:: ../../tex/petsc.bib
+.. bibliography:: /../src/docs/tex/petsc.bib
    :filter: docname in docnames
    :keyprefix: KEYPREFIX-
    :labelprefix: ref-
 
-.. bibliography:: ../../tex/petscapp.bib
+.. bibliography:: /../src/docs/tex/petscapp.bib
    :filter: docname in docnames
    :keyprefix: KEYPREFIX-
    :labelprefix: ref-
