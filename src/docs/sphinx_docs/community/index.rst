@@ -12,7 +12,7 @@ to all of the PETSc development team, where our response time will be fastest.
 .. toctree::
    :maxdepth: 2
 
-   bugreport_documentation
-   mailing_documentation
-   meeting_documentation
+   bugs
+   mailing
+   meeting
    petsc_team

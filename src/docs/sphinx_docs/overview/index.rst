@@ -16,8 +16,8 @@ parallel distributed arrays useful for finite difference methods.
    :maxdepth: 2
 
    nutshell
-   features_documentation
-   gpu_roadmap_documentation
-   linear_solve_table_documentation
-   nonlinear_solve_table_documentation
-   tao_solve_table_documentation
+   features
+   gpu_roadmap
+   linear_solve_table
+   nonlinear_solve_table
+   tao_solve_table
