@@ -727,9 +727,6 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
       self.addDefine('HAVE_' + f.upper(),1)
-    for f in ['MPIX_Iallreduce', 'MPIX_Ibarrier']: # Unlikely to be found
-      if self.libraries.check(self.dlib, f):
-        self.addDefine('HAVE_' + f.upper(),1)
 
     oldFlags = self.compilers.CPPFLAGS # Disgusting save and restore
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
