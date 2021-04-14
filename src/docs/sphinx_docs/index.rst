@@ -2,12 +2,6 @@
 PETSc |version| Documentation
 =============================
 
-.. Important::
-
-  The PETSc docs are currently in transition,
-  and different pieces "live" in two different places. In addition to on this page,
-  much of the documentation is found `here <https://www.mcs.anl.gov/petsc/documentation/index.html>`__.
-
 .. raw:: html
 
    <a href="https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137">Ed Bueler, PETSc for Partial Differential Equations: Numerical Solutions in C and Python</a>
@@ -42,8 +36,12 @@ Get Working
 
    manual/index
    guides/guide_to_examples
-   Function Index <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/singleindex.html>
-   Examples Index <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/help.html>
+
+
+* `Manual Pages <docs/index.html>`__
+* `Function Index <docs/manualpages/singleindex.html>`__
+* `Examples Index <docs/manualpages/help.html>`__
+* `Strategies for using Fortran <docs/manualpages/Sys/UsingFortran.html>`__
 
 ============
 Get Involved

@@ -137,7 +137,7 @@ nonzero pattern (such as within a nonlinear or time-dependent problem).
 Where possible, data structures and communication
 information will be reused (instead of regenerated) during successive
 steps, thereby increasing efficiency. See
-`KSP Tutorial ex5 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex5.c.html>`__
+`KSP Tutorial ex5 <../../src/ksp/ksp/tutorials/ex5.c.html>`__
 for a simple example of solving two linear systems that use the same
 matrix data structure.
 
@@ -697,7 +697,7 @@ assembly functions (which are not collective). The index sets
 matrices, in which case the MATNEST format can be specified using
 ``-prefix_dm_mat_type nest`` and MATAIJ can be specified using
 ``-prefix_dm_mat_type aij``. See
-`SNES Tutorail ex28 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex28.c.html>`__
+`SNES Tutorail ex28 <../../src/snes/tutorials/ex28.c.html>`__
 for a simple example using this interface.
 
 .. _sec_matoptions:
@@ -853,7 +853,7 @@ discussed in the following chapters.
 
 The routine ``MatShellSetOperation()`` can be used to set any other
 matrix operations as well. The file
-``$PETSC_DIR/include/petscmat.h`` (`source <https://www.mcs.anl.gov/petsc/petsc-current/include/petscmat.h.html>`__).
+``$PETSC_DIR/include/petscmat.h`` (`source <../../include/petscmat.h.html>`__).
 provides a complete list of matrix operations, which have the form
 ``MATOP_<OPERATION>``, where ``<OPERATION>`` is the name (in all capital
 letters) of the user interface routine (for example, ``MatMult()``
@@ -998,7 +998,7 @@ Another matrix routine of interest is
 which converts the matrix ``mat`` to new matrix, ``M``, that has either
 the same or different format. Set ``newtype`` to ``MATSAME`` to copy the
 matrix, keeping the same matrix format. See
-``$PETSC_DIR/include/petscmat.h`` (`source <https://www.mcs.anl.gov/petsc/petsc-current/include/petscmat.h.html>`__)
+``$PETSC_DIR/include/petscmat.h`` (`source <../../include/petscmat.h.html>`__)
 for other available matrix types; standard ones are ``MATSEQDENSE``,
 ``MATSEQAIJ``, ``MATMPIAIJ``, ``MATSEQBAIJ`` and ``MATMPIBAIJ``.
 

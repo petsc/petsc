@@ -18,12 +18,12 @@ The Poisson equation
 is used to model electrostatics, steady-state diffusion, and other physical processes. Many PETSc examples solve this equation.
 
   Finite Difference
-    :2D: `SNES example 5 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`_
-    :3D: `KSP example 45 <https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/tutorials/ex45.c.html>`_
+    :2D: `SNES example 5 <../../src/snes/tutorials/ex5.c.html>`_
+    :3D: `KSP example 45 <../../src/ksp/ksp/tutorials/ex45.c.html>`_
 
   Finite Element
-    :2D: `SNES example 12 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex12.c.html>`_
-    :3D: `SNES example 12 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex12.c.html>`_
+    :2D: `SNES example 12 <../../src/snes/tutorials/ex12.c.html>`_
+    :3D: `SNES example 12 <../../src/snes/tutorials/ex12.c.html>`_
 
 Elastostatics
 =============
@@ -49,9 +49,9 @@ where the strain tensor :math:`\bm \varepsilon` is given by
 where :math:`\bm u` is the infinitesimal displacement of the body.
 
 Finite Element
-  :2D: `SNES example 17 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex17.c.html>`_
-  :3D: `SNES example 17 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex17.c.html>`_
-  :3D: `SNES example 56 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex56.c.html>`_
+  :2D: `SNES example 17 <../../src/snes/tutorials/ex17.c.html>`_
+  :3D: `SNES example 17 <../../src/snes/tutorials/ex17.c.html>`_
+  :3D: `SNES example 56 <../../src/snes/tutorials/ex56.c.html>`_
 
 If we allow finite strains in the body, we can express the stress-strain relation in terms of the Jacobian of the deformation gradient
 
@@ -74,7 +74,7 @@ so that
 In the example itself, everything can be expressed in terms of determinants and cofactors of :math:`F`.
 
   Finite Element
-    :3D: `SNES example 77 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex77.c.html>`_
+    :3D: `SNES example 77 <../../src/snes/tutorials/ex77.c.html>`_
 
 
 Stokes
@@ -91,8 +91,8 @@ The Stokes equations
 describe slow flow of an incompressible fluid with velocity :math:`u`, pressure :math:`p`, and body force :math:`f`.
 
   Finite Element
-    :2D: `SNES example 62 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex62.c.html>`_
-    :3D: `SNES example 62 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex62.c.html>`_
+    :2D: `SNES example 62 <../../src/snes/tutorials/ex62.c.html>`_
+    :3D: `SNES example 62 <../../src/snes/tutorials/ex62.c.html>`_
 
     See :doc:`physics/guide_to_stokes` for more.
 
@@ -111,8 +111,8 @@ The heat equation
 is used to model heat flow, time-dependent diffusion, and other physical processes.
 
   Finite Element
-    :2D: `TS example 45 <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex45.c.html>`_
-    :3D: `TS example 45 <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex45.c.html>`_
+    :2D: `TS example 45 <../../src/ts/tutorials/ex45.c.html>`_
+    :3D: `TS example 45 <../../src/ts/tutorials/ex45.c.html>`_
 
 Navier-Stokes
 =============
@@ -128,5 +128,5 @@ The incompressible Navier-Stokes equations
 are appropriate for flow of an incompressible fluid at low to moderate Reynolds number.
 
   Finite Element
-    :2D: `TS example 46 <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex46.c.html>`_
-    :3D: `TS example 46 <https://www.mcs.anl.gov/petsc/petsc-current/src/ts/tutorials/ex46.c.html>`_
+    :2D: `TS example 46 <../../src/ts/tutorials/ex46.c.html>`_
+    :3D: `TS example 46 <../../src/ts/tutorials/ex46.c.html>`_

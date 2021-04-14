@@ -373,6 +373,8 @@ alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
 alldoc2: chk_loc allcite
 	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
+
+alldoc12: alldoc1 alldoc2
 #
 # Makes links for all manual pages in $LOC/docs/manualpages/all
 allman:

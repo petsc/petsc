@@ -859,9 +859,9 @@ and write residual evaluation using
    DMDAVecRestoreArray(DM da,Vec global,&f);
 
 See
-`SNES Tutorial ex5 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`__
+`SNES Tutorial ex5 <../../src/snes/tutorials/ex5.c.html>`__
 for a complete example and see
-`SNES Tutorial ex19 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex19.c.html>`__
+`SNES Tutorial ex19 <../../src/snes/tutorials/ex19.c.html>`__
 for an example for a multi-component PDE.
 
 Grid Information
@@ -931,10 +931,10 @@ two-dimensional distributed array, divided among four processes.
    Processes)
 
 The example
-`SNES Tutorial ex5 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5.c.html>`__
+`SNES Tutorial ex5 <../../src/snes/tutorials/ex5.c.html>`__
 illustrates the use of a distributed array in the solution of a
 nonlinear problem. The analogous Fortran program is
-`SNES Tutorial ex5f <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex5f.F90.html>`__;
+`SNES Tutorial ex5f <../../src/snes/tutorials/ex5f.F90.html>`__;
 see :any:`chapter_snes` for a discussion of the
 nonlinear solvers.
 

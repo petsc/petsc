@@ -12,65 +12,22 @@ General Guidelines
 * Good documentation should be like a bonsai tree: alive, on display, frequently tended, and as small as possible (adapted from `these best practices <https://github.com/google/styleguide/blob/gh-pages/docguide/best_practices.md>`__).
 * Wrong, irrelevant, or confusing documentation is worse than no documentation.
 
-.. _docs_build:
-
-Building Main Documentation
-===========================
-
-The documentation tools listed below (except for pdflatex) are
-automatically downloaded and installed by ``configure``.
-
-* `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: a text processing tool developed by Bill Gropp.  This produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
-* `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: A text processing package. This generates the HTML versions of all the source code.
-* A version of pdflatex, for example in  `Tex Live <http://www.tug.org/texlive/>`__.  This package might already be installed on most systems. It is required to generate the users manual (part of the PETSc documentation).
-
-Note: Sowing and c2html have additional dependencies like gcc, g++, and flex and do not
-use compilers specified to PETSc configure. [Windows users please install the corresponding
-cygwin packages]
-
-Once pdflatex is in your ``$PATH``, you can build the documentation with:
-
-.. code-block:: console
-
-    > make alldoc LOC=${PETSC_DIR}
-
-(Note that this does not include :ref:`sphinx_documentation`).
-
-To get a quick preview of manual pages from a single source directory (mainly to debug the manual page syntax):
-
-.. code-block:: console
-
-    > cd $PETSC_DIR/src/snes/interface
-    > make LOC=$PETSC_DIR manualpages_buildcite
-     browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
 
 .. _sphinx_documentation:
 
-Sphinx Documentation
-====================
+Documentation with Sphinx
+=========================
 
 `Sphinx <https://www.sphinx-doc.org/en/master/>`__ is a `well-documented <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`__ and widely-used set of Python-based tools
 for building documentation. Most content is written using `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`__, a simple markup language.
 
-`ReadTheDocs <readthedocs.org>`__ generates the HTML documentation at
-https://docs.petsc.org from the `PETSc Git repository <https://gitlab.com/petsc/petsc>`__.
-A version of the documentation can be built there, corresponding to any
-Git branch, which is useful if developing a large set of documentation changes.
+We use Sphinx to coordinate building the documentation for our web page, as well
+as a PDF of the Users Manual (via LaTeX).
 
-We also use Sphinx to generate a PDF version of the User Manual, via LaTeX.
+`These slides <https://gitlab.com/psanan/petsc-sphinx-slides>`__ contain an overview of Sphinx and how we use(d) it, as of October, 2020.
 
-`These slides <https://gitlab.com/psanan/petsc-sphinx-slides>`__ contain an overview of Sphinx and how it's used in PETSc, as of October, 2020.
-
-Making changes to the Sphinx Docs from the web
-----------------------------------------------
-You can make small changes this documentation entirely through web interfaces,
-using the usual guidelines in :doc:`integration` (note the options for speedy review of docs-only changes).
-
-#. Find the page of interest, confirming the version is what you expect (usually "latest").
-#. In the small ReadTheDocs menu in the bottom right, click the link to edit on GitLab.
-#. Make your changes.
-#. Compose a commit message and name your branch.
-#. Click the button to commit changes and create a Merge Request.
+The documentation build with Sphinx involves configuring a minimal build
+of PETSc and building some of the :any:`classic docs <classic_docs_build>`.
 
 Building the Sphinx docs locally
 --------------------------------
@@ -83,7 +40,7 @@ Building the Sphinx docs locally
 
 * Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``$PETSC_DIR/src/docs/sphinx_docs``).
 
-* ``make html``
+* ``make html``. If you have not done so before, you may need to wait several minutes while the "classic" build produces a large set of manual pages and HTML versions of source files.
 
 * Open ``_build/html/index.html`` with your browser.
 
@@ -279,8 +236,8 @@ Porting LaTeX to Sphinx
 -----------------------
 
 These are instructions relevant to porting the Users manual from its previous
-LaTeX incarnation, to Sphinx (as here). This section can be removed once the
-manual and TAO manual are ported.
+LaTeX incarnation, to Sphinx (as here). This section should be removed once the
+TAO manual is ported.
 
 The first steps are to modify the LaTeX source to the point that it can
 be converted to RST by `Pandoc <pandoc.org>`__.
@@ -344,3 +301,35 @@ Next, one must examine the output, ideally comparing to the original rendered La
 
 .. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (`:footcite:`), which can be investigated if a release is ever made.
 .. [#f1] We use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/main/src/docs/sphinx_docs/ext/html5_petsc.py>`__
+
+.. _classic_docs_build:
+
+Building Classic Documentation
+==============================
+
+Some of the documentation is built by a "classic" process as described below.
+
+The documentation tools listed below (except for pdflatex) are
+automatically downloaded and installed by ``configure``.
+
+* `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: a text processing tool developed by Bill Gropp.  This produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
+* `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: A text processing package. This generates the HTML versions of all the source code.
+* A version of pdflatex, for example in  `Tex Live <http://www.tug.org/texlive/>`__.  This package might already be installed on most systems. It is required to generate the users manual (part of the PETSc documentation).
+
+Note: Sowing and c2html have additional dependencies like gcc, g++, and flex and do not
+use compilers specified to PETSc configure. [Windows users please install the corresponding
+cygwin packages]
+
+Once pdflatex is in your ``$PATH``, you can build the documentation with:
+
+.. code-block:: console
+
+    > make alldoc LOC=${PETSC_DIR}
+
+To get a quick preview of manual pages from a single source directory (mainly to debug the manual page syntax):
+
+.. code-block:: console
+
+    > cd $PETSC_DIR/src/snes/interface
+    > make LOC=$PETSC_DIR manualpages_buildcite
+    > browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
