@@ -6,6 +6,7 @@ PETSc Documentation
    :maxdepth: 1
 
    manual/index
+   changes/index
 
 * `TAO Users Manual <https://www.mcs.anl.gov/petsc/petsc-current/docs/tao_manual.pdf>`__
 * `Manual Pages <../docs/index.html>`__

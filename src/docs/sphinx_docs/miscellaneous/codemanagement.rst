@@ -116,7 +116,7 @@ Fortran notes
 -------------
 
 PETSc provides interfaces and modules for Fortran 90; see
-:doc:`/manual/fortran`.
+:doc:`/documentation/manual/fortran`.
 
 When passing floating point numbers into Fortran subroutines, always
 make sure you have them marked as double precision (e.g., pass in ``10.d0``

@@ -74,4 +74,4 @@ Releases of PETSc
    2.0.Beta.4 - public release, June 21, 1995 <20beta4>
 
 We announce new PETSc releases on the
-:doc:`petsc-announce mailing list </contact/mailing_documentation>`.
+:doc:`petsc-announce mailing list </community/mailing_documentation>`.

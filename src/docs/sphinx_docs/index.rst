@@ -39,7 +39,7 @@ Main Topics
    Tutorials <tutorials/guide_to_examples>
    Community <community/index>
    Developers <developers/index>
-   About <about/index>
+   Misc. <miscellaneous/index>
 
 ==========================================
 Related toolkits/libraries that use PETSc
