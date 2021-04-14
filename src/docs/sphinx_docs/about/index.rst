@@ -6,5 +6,4 @@ About PETSc
    :maxdepth: 1
 
    changes/index
-   citing
    miscellaneous/index

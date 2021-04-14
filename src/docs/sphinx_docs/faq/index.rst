@@ -6,7 +6,7 @@
  Frequently Asked Questions (FAQ)
 ==================================
 
-This page provides help with the most common questions about PETSc, it's design,
+This page provides help with the most common questions about PETSc and its design,
 execution, and general organization.
 
 .. contents:: Table Of Contents
@@ -325,6 +325,10 @@ try to, implement the built-in data types of ``double`` are not native types and
 "just be used" in a general piece of numerical source code. Ratherm the code has to
 rewritten to live within the limitations of QD classes. However PETSc can be built to use
 quad precision, as detailed :ref:`here <doc_faq_extendedprecision>`.
+
+How do I Cite PETSc?
+--------------------
+Use :any:`these citations <doc_index_citing_petsc>`.
 
 --------------------------------------------------
 
