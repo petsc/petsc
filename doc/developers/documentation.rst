@@ -32,13 +32,13 @@ of PETSc and building some of the :any:`classic docs <classic_docs_build>`.
 Building the Sphinx docs locally
 --------------------------------
 
-* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/main/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/main/src/docs/sphinx_docs/requirements.txt>`__ [#f1]. e.g. with pip:
+* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/main/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/main/doc/requirements.txt>`__ [#f1]. e.g. with pip:
 
   .. code-block:: console
 
-     > python -m pip install -r $PETSC_DIR/src/docs/sphinx_docs/requirements.txt
+     > python -m pip install -r $PETSC_DIR/doc/requirements.txt
 
-* Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``$PETSC_DIR/src/docs/sphinx_docs``).
+* Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``$PETSC_DIR/doc``).
 
 * ``make html``. If you have not done so before, you may need to wait several minutes while the "classic" build produces a large set of manual pages and HTML versions of source files.
 
@@ -171,8 +171,8 @@ Sphinx Documentation Guidelines
 
 * We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
-  You must include ``.. bibliography::`` blocks at the bottom of a page including citations (`example <https://gitlab.com/petsc/petsc/-/raw/main/src/docs/sphinx_docs/manual/ksp.rst>`__).
-  To cite the same reference in more than one page, use `this workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing>`__ on one of them (`example <https://gitlab.com/petsc/petsc/-/raw/main/src/docs/sphinx_docs/developers/articles.rst>`__) [#bibtex_footnote]_.
+  You must include ``.. bibliography::`` blocks at the bottom of a page including citations (`example <https://gitlab.com/petsc/petsc/-/raw/main/doc/manual/ksp.rst>`__).
+  To cite the same reference in more than one page, use `this workaround <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing>`__ on one of them (`example <https://gitlab.com/petsc/petsc/-/raw/main/doc/developers/articles.rst>`__) [#bibtex_footnote]_.
 
 * Do **not** check in large images (or PDFs), more than a few KB, since they will be downloaded every time the repository is cloned. When possible, please use SVG for images.  SVG is web-friendly and will be automatically converted to PDF using ``rsvg-convert`` (installable with your package manager, e.g., ``librsvg2-bin`` on Debian/Ubuntu systems).
 
@@ -293,7 +293,7 @@ Next, one must examine the output, ideally comparing to the original rendered La
 .. rubric:: Footnotes
 
 .. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (`:footcite:`), which can be investigated if a release is ever made.
-.. [#f1] We use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/main/src/docs/sphinx_docs/ext/html5_petsc.py>`__
+.. [#f1] We use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/main/doc/ext/html5_petsc.py>`__
 
 .. _classic_docs_build:
 

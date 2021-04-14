@@ -100,7 +100,7 @@ html_context = {
     "github_user": "petsc",
     "github_repo": "petsc",
     "github_version": "main",
-    "doc_path": "src/docs/sphinx_docs",
+    "doc_path": "doc",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
