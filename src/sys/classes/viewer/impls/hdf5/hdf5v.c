@@ -725,7 +725,7 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
 }
 
 /*@
-  PetscViewerHDF5IncrementTimestep - Increments the current timestep for the HDF5 output. Fields are stacked in time.
+  PetscViewerHDF5PushTimestepping - Activate timestepping mode for subsequent HDF5 reading and writing.
 
   Not collective
 
@@ -734,7 +734,101 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5GetTimestep()
+  Notes:
+  On first PetscViewerHDF5PushTimestepping(), the initial time step is set to 0.
+  Next timesteps can then be set using PetscViewerHDF5IncrementTimestep() or PetscViewerHDF5SetTimestep().
+  Current timestep value determines which timestep is read from or written to any dataset on the next HDF5 I/O operation [e.g. VecView()].
+  Use PetscViewerHDF5PopTimestepping() to deactivate timestepping mode; calling it by the end of the program is NOT mandatory.
+  Current timestep is remembered between PetscViewerHDF5PopTimestepping() and the next PetscViewerHDF5PushTimestepping().
+
+  If a dataset was stored with timestepping, it can be loaded only in the timestepping mode again.
+  Loading a timestepped dataset with timestepping disabled, or vice-versa results in an error.
+
+  Developer notes:
+  Timestepped HDF5 dataset has an extra dimension and attribute "timestepping" set to true.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PopTimestepping(), PetscViewerHDF5IsTimestepping(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
+@*/
+PetscErrorCode  PetscViewerHDF5PushTimestepping(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping is already pushed");
+  hdf5->timestepping = PETSC_TRUE;
+  if (hdf5->timestep < 0) hdf5->timestep = 0;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5PopTimestepping - Deactivate timestepping mode for subsequent HDF5 reading and writing.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Level: intermediate
+
+  Notes:
+  See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5IsTimestepping(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
+@*/
+PetscErrorCode  PetscViewerHDF5PopTimestepping(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
+  hdf5->timestepping = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5IsTimestepping - Ask the viewer whether it is in timestepping mode currently.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Output Parameter:
+. flg - is timestepping active?
+
+  Level: intermediate
+
+  Notes:
+  See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5PopTimestepping(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
+@*/
+PetscErrorCode  PetscViewerHDF5IsTimestepping(PetscViewer viewer, PetscBool *flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  *flg = hdf5->timestepping;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5IncrementTimestep - Increments current timestep for the HDF5 output. Fields are stacked in time.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Level: intermediate
+
+  Notes:
+  This can be called only if the viewer is in timestepping mode. See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5GetTimestep()
 @*/
 PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer)
 {
@@ -742,23 +836,26 @@ PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
   ++hdf5->timestep;
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time. A timestep
-  of -1 disables blocking with timesteps.
+  PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time.
 
-  Not collective
+  Logically collective
 
   Input Parameters:
 + viewer - the PetscViewer
-- timestep - The timestep number
+- timestep - The timestep
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
+  Notes:
+  This can be called only if the viewer is in timestepping mode. See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
 @*/
 PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep)
 {
@@ -766,6 +863,9 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidLogicalCollectiveInt(viewer, timestep, 2);
+  if (timestep < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestep %D is negative", timestep);
+  if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
   hdf5->timestep = timestep;
   PetscFunctionReturn(0);
 }
@@ -779,11 +879,14 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
 . viewer - the PetscViewer
 
   Output Parameter:
-. timestep - The timestep number
+. timestep - The timestep
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5SetTimestep()
+  Notes:
+  This can be called only if the viewer is in the timestepping mode. See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5SetTimestep()
 @*/
 PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep)
 {
@@ -791,7 +894,8 @@ PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timeste
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(timestep,2);
+  PetscValidIntPointer(timestep,2);
+  if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
   *timestep = hdf5->timestep;
   PetscFunctionReturn(0);
 }

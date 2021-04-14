@@ -17,13 +17,22 @@ Changes: Development
       taken as absolute, otherwise relative to the current group
    -  Add ``PetscViewerHDF5HasDataset()``
    -  ``PetscViewerHDF5HasAttribute()``,
-     ``PetscViewerHDF5ReadAttribute()``,
-     ``PetscViewerHDF5WriteAttribute()``,
-      ``PetscViewerHDF5HasDataset()`` and ``PetscViewerHDF5HasGroup()`` support
-      absolute paths (starting with ``/``) and paths relative to the current
-      pushed group
+      ``PetscViewerHDF5ReadAttribute()``,
+      ``PetscViewerHDF5WriteAttribute()``,
+      ``PetscViewerHDF5HasDataset()`` and
+      ``PetscViewerHDF5HasGroup()``
+      support absolute paths (starting with ``/``)
+      and paths relative to the current pushed group
    -  Add input argument to ``PetscViewerHDF5ReadAttribute()`` for default
       value that is used if attribute is not found in the HDF5 file
+   -  Add ``PetscViewerHDF5PushTimestepping()``,
+      ``PetscViewerHDF5PopTimestepping()`` and
+      ``PetscViewerHDF5IsTimestepping()`` to control timestepping mode.
+   -  One can call ``PetscViewerHDF5IncrementTimestep()``,
+      ``PetscViewerHDF5SetTimestep()`` or ``PetscViewerHDF5GetTimestep()`` only
+      if timestepping mode is active
+   -  Error if timestepped dataset is read/written out of timestepping mode, or
+      vice-versa
 
    .. rubric:: PetscDraw:
 

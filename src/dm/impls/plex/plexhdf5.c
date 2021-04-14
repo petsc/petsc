@@ -30,8 +30,10 @@ static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt s
   ierr = VecAssemblyBegin(stamp);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(stamp);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushTimestepping(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr); /* seqnum < 0 jumps out above */
   ierr = VecView(stamp, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopTimestepping(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&stamp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -50,8 +52,10 @@ PetscErrorCode DMSequenceLoad_HDF5_Internal(DM dm, const char *seqname, PetscInt
   ierr = VecSetBlockSize(stamp, 1);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) stamp, seqname);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushTimestepping(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);  /* seqnum < 0 jumps out above */
   ierr = VecLoad(stamp, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopTimestepping(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   if (!rank) {
     const PetscScalar *a;
@@ -130,7 +134,6 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, &seqnum, &seqval);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
   ierr = DMSequenceView_HDF5(dm, "time", seqnum, (PetscScalar) seqval, viewer);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = DMGetOutputDM(dm, &dmBC);CHKERRQ(ierr);
@@ -290,9 +293,15 @@ PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
   ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, &seqnum, NULL);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+  if (seqnum >= 0) {
+    ierr = PetscViewerHDF5PushTimestepping(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
+  }
   ierr = VecLoad_Plex_Local(locv, viewer);CHKERRQ(ierr);
+  if (seqnum >= 0) {
+    ierr = PetscViewerHDF5PopTimestepping(viewer);CHKERRQ(ierr);
+  }
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
@@ -309,9 +318,15 @@ PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, &seqnum, NULL);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+  if (seqnum >= 0) {
+    ierr = PetscViewerHDF5PushTimestepping(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
+  }
   ierr = VecLoad_Default(v, viewer);CHKERRQ(ierr);
+  if (seqnum >= 0) {
+    ierr = PetscViewerHDF5PopTimestepping(viewer);CHKERRQ(ierr);
+  }
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
