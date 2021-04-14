@@ -988,6 +988,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     self.setCompilers.LDFLAGS += ' -v'
     (output, returnCode) = self.outputLink('', '')
     if returnCode: raise RuntimeError('Unable to run linker to determine needed Fortran libraries')
+    output = self.filterLinkOutput(output)
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
