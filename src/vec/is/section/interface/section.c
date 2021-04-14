@@ -45,25 +45,26 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 
   ierr = PetscHeaderCreate(*s,PETSC_SECTION_CLASSID,"PetscSection","Section","IS",comm,PetscSectionDestroy,PetscSectionView);CHKERRQ(ierr);
 
-  (*s)->pStart             = -1;
-  (*s)->pEnd               = -1;
-  (*s)->perm               = NULL;
-  (*s)->pointMajor         = PETSC_TRUE;
-  (*s)->maxDof             = 0;
-  (*s)->atlasDof           = NULL;
-  (*s)->atlasOff           = NULL;
-  (*s)->bc                 = NULL;
-  (*s)->bcIndices          = NULL;
-  (*s)->setup              = PETSC_FALSE;
-  (*s)->numFields          = 0;
-  (*s)->fieldNames         = NULL;
-  (*s)->field              = NULL;
-  (*s)->useFieldOff        = PETSC_FALSE;
-  (*s)->compNames          = NULL;
-  (*s)->clObj              = NULL;
-  (*s)->clHash             = NULL;
-  (*s)->clSection          = NULL;
-  (*s)->clPoints           = NULL;
+  (*s)->pStart              = -1;
+  (*s)->pEnd                = -1;
+  (*s)->perm                = NULL;
+  (*s)->pointMajor          = PETSC_TRUE;
+  (*s)->includesConstraints = PETSC_TRUE;
+  (*s)->maxDof              = 0;
+  (*s)->atlasDof            = NULL;
+  (*s)->atlasOff            = NULL;
+  (*s)->bc                  = NULL;
+  (*s)->bcIndices           = NULL;
+  (*s)->setup               = PETSC_FALSE;
+  (*s)->numFields           = 0;
+  (*s)->fieldNames          = NULL;
+  (*s)->field               = NULL;
+  (*s)->useFieldOff         = PETSC_FALSE;
+  (*s)->compNames           = NULL;
+  (*s)->clObj               = NULL;
+  (*s)->clHash              = NULL;
+  (*s)->clSection           = NULL;
+  (*s)->clPoints            = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -737,6 +738,54 @@ PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm)
 }
 
 /*@
+  PetscSectionGetIncludesConstraints - Returns the flag indicating if constrained dofs were included when computing offsets
+
+  Not collective
+
+  Input Parameter:
+. s - the PetscSection
+
+  Output Parameter:
+. includesConstraints - the flag indicating if constrained dofs were included when computing offsets
+
+  Level: intermediate
+
+.seealso: PetscSectionSetIncludesConstraints()
+@*/
+PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection s, PetscBool *includesConstraints)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidBoolPointer(includesConstraints,2);
+  *includesConstraints = s->includesConstraints;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSectionSetIncludesConstraints - Sets the flag indicating if constrained dofs are to be included when computing offsets
+
+  Not collective
+
+  Input Parameters:
++ s  - the PetscSection
+- includesConstraints - the flag indicating if constrained dofs are to be included when computing offsets
+
+  Not collective
+
+  Level: intermediate
+
+.seealso: PetscSectionGetIncludesConstraints()
+@*/
+PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool includesConstraints)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  if (s->setup) SETERRQ(PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set includesConstraints after the section is set up");
+  s->includesConstraints = includesConstraints;
+  PetscFunctionReturn(0);
+}
+
+/*@
   PetscSectionGetDof - Return the number of degrees of freedom associated with a given point.
 
   Not collective
@@ -1107,6 +1156,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   s->setup = PETSC_TRUE;
   /* Set offsets and field offsets for all points */
   /*   Assume that all fields have the same chart */
+  if (!s->includesConstraints) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSectionSetUp is currently unsupported for includesConstraints = PETSC_TRUE");
   if (s->perm) {ierr = ISGetIndices(s->perm, &pind);CHKERRQ(ierr);}
   if (s->pointMajor) {
     for (p = 0; p < s->pEnd - s->pStart; ++p) {
@@ -1266,6 +1316,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s), &gs);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(gs, pStart, pEnd);CHKERRQ(ierr);
+  gs->includesConstraints = includeConstraints;
   ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   nlocal = nroots;              /* The local/leaf space matches global/root space */
   /* Must allocate for all points visible to SF, which may be more than this section */
