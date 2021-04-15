@@ -70,19 +70,19 @@ PETSC_EXTERN void petscviewerhdf5writeattribute_(PetscViewer *viewer, char* pare
 
    FIXCHAR(parent, plen, c1);
    FIXCHAR(name, nlen, c2);
-   *ierr = PetscViewerHDF5WriteAttribute(*viewer, c1, c2, *datatype, (const void *) value);if (*ierr) return;
+   *ierr = PetscViewerHDF5WriteAttribute(*viewer, c1, c2, *datatype, value);if (*ierr) return;
    FREECHAR(parent, c1);
    FREECHAR(name, c2);
 }
 
 PETSC_EXTERN void petscviewerhdf5readattribute_(PetscViewer *viewer, char* parent,
-    char* name, PetscDataType *datatype, void *value, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T plen,PETSC_FORTRAN_CHARLEN_T nlen)
+    char* name, PetscDataType *datatype, void *defaultValue, void *value, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T plen,PETSC_FORTRAN_CHARLEN_T nlen)
 {
    char *c1, *c2;
 
    FIXCHAR(parent, plen, c1);
    FIXCHAR(name, nlen, c2);
-   *ierr = PetscViewerHDF5ReadAttribute(*viewer, c1, c2, *datatype, (void *) value);if (*ierr) return;
+   *ierr = PetscViewerHDF5ReadAttribute(*viewer, c1, c2, *datatype, defaultValue, value);if (*ierr) return;
    FREECHAR(parent, c1);
    FREECHAR(name, c2);
 }

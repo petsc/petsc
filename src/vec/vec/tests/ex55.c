@@ -30,8 +30,7 @@ int main(int argc,char **args)
 
   /* PART 2:  Read in attribute */
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadAttribute(viewer,"Test_Vec","Test_Attr",PETSC_STRING,&attrReadVal);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer,"Test_Vec","Test_Attr",PETSC_STRING,NULL,&attrReadVal);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Attribute value read: '%s'\n\n",attrReadVal);CHKERRQ(ierr);
   ierr = PetscFree(attrReadVal);CHKERRQ(ierr);
 

@@ -63,7 +63,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   }
 
   ierr = PetscViewerHDF5PushGroup(viewer,mat_name);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadAttribute(viewer,NULL,c_name,PETSC_INT,&N);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer,NULL,c_name,PETSC_INT,NULL,&N);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSizes(viewer, i_name, NULL, &M);CHKERRQ(ierr);
   --M;  /* i has size M+1 as there is global number of nonzeros stored at the end */
 
