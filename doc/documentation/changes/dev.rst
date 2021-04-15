@@ -59,6 +59,8 @@ Changes: Development
       ``MatFactorGetCanUseOrdering()`` instead
    -  Add ``--download-htool`` to use hierarchical matrices with the new
       type ``MATHTOOL``
+   -  Add ``MATCENTERING`` special matrix type that implements action of the
+      centering matrix
 
    .. rubric:: PC:
 

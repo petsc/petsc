@@ -59,6 +59,7 @@ typedef const char* MatType;
 #define MATSEQBAIJMKL      "seqbaijmkl"
 #define MATMPIBAIJMKL      "mpibaijmkl"
 #define MATSHELL           "shell"
+#define MATCENTERING       "centering"
 #define MATDENSE           "dense"
 #define MATDENSECUDA       "densecuda"
 #define MATSEQDENSE        "seqdense"
@@ -321,6 +322,7 @@ PETSC_EXTERN PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat,PetscInt,const Pe
 PETSC_EXTERN PetscErrorCode MatXAIJSetPreallocation(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],const PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void *,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateCentering(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateNormal(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateNormalHermitian(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLRC(Mat,Mat,Vec,Mat,Mat*);
