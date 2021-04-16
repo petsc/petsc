@@ -185,7 +185,8 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
 
     for (b = prob->boundary; b; b = b->next) {
-      PetscInt c, i;
+      const char *name;
+      PetscInt    c, i;
 
       if (b->field != f) continue;
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -210,6 +211,16 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      if (b->func) {
+        ierr = PetscDLAddr(b->func, &name);CHKERRQ(ierr);
+        if (name) {ierr = PetscViewerASCIIPrintf(viewer, "  func: %s\n", name);CHKERRQ(ierr);}
+        else      {ierr = PetscViewerASCIIPrintf(viewer, "  func: %p\n", b->func);CHKERRQ(ierr);}
+      }
+      if (b->func_t) {
+        ierr = PetscDLAddr(b->func_t, &name);CHKERRQ(ierr);
+        if (name) {ierr = PetscViewerASCIIPrintf(viewer, "  func: %s\n", name);CHKERRQ(ierr);}
+        else      {ierr = PetscViewerASCIIPrintf(viewer, "  func: %p\n", b->func_t);CHKERRQ(ierr);}
+      }
       ierr = PetscWeakFormView(b->wf, viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
