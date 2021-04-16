@@ -1467,10 +1467,13 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
       else            {ierr = PetscViewerASCIIPrintf(viewer, "(%D) ", keys[k].field);CHKERRQ(ierr);}
       ierr = PetscWeakFormGetFunction_Private(wf, map, keys[k].label, keys[k].value, keys[k].field, &n, &funcs);CHKERRQ(ierr);
       for (i = 0; i < n; ++i) {
+        char *fname;
+
         if (i > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
-        ierr = PetscDLAddr(funcs[i], &name);CHKERRQ(ierr);
-        if (name) {ierr = PetscViewerASCIIPrintf(viewer, "%s", name);CHKERRQ(ierr);}
-        else      {ierr = PetscViewerASCIIPrintf(viewer, "%p", funcs[i]);CHKERRQ(ierr);}
+        ierr = PetscDLAddr(funcs[i], &fname);CHKERRQ(ierr);
+        if (fname) {ierr = PetscViewerASCIIPrintf(viewer, "%s", fname);CHKERRQ(ierr);}
+        else       {ierr = PetscViewerASCIIPrintf(viewer, "%p", funcs[i]);CHKERRQ(ierr);}
+        ierr = PetscFree(fname);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);

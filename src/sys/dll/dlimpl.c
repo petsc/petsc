@@ -312,7 +312,6 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   return(0);
 }
 
-
 /*@C
   PetscDLAddr - find the name of a symbol in a dynamic library
 
@@ -323,15 +322,17 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 - func   - pointer to the function, NULL if not found
 
   Output Parameter:
-. name   - name of symbol, or NULL if name lookup is not supported
+. name   - name of symbol, or NULL if name lookup is not supported. This must be PetscFree'd by the caller.
 
   Level: developer
 
   Notes:
+  The caller must free the returned memory.
+
   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
   systems this requires platform-specific linker flags.
 @*/
-PetscErrorCode PetscDLAddr(void (*func)(void), const char **name)
+PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
 {
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -343,7 +344,11 @@ PetscErrorCode PetscDLAddr(void (*func)(void), const char **name)
     PetscErrorCode ierr;
 
     ierr = dladdr(*(void **) &func, &info);if (!ierr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Failed to lookup symbol: %s", dlerror());
-    *name = info.dli_sname;
+#ifdef PETSC_HAVE_CXX
+    ierr = PetscDemangleSymbol(info.dli_sname, name);CHKERRQ(ierr);
+#else
+    ierr = PetscStrallocpy(info.dli_sname, name);CHKERRQ(ierr);
+#endif
   }
 #endif
   PetscFunctionReturn(0);
