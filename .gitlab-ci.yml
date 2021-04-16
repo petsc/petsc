@@ -803,7 +803,7 @@ linux-ILP64:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-ILP64
-    LOAD_MODULES: gcc/6.5.0-57usejd
+    LOAD_MODULES: mpich/2-1.5-gcc750
 
 linux-64idx-i8-uni:
   extends:

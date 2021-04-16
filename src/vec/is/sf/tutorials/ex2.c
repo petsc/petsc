@@ -109,7 +109,7 @@ int main(int argc, char **argv)
       filter: grep -v "type" | grep -v "sort"
       output_file: output/ex2_basic.out
       args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    # The nightly test suite with MPICH uses ch3:sock, which is broken when winsize == 0 in some of the processes
    test:

@@ -462,7 +462,7 @@ int main(int argc,char **argv)
       nsize: 4
       filter: grep -v "type" | grep -v "sort"
       args: -test_bcast -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
 
    test:
@@ -470,7 +470,7 @@ int main(int argc,char **argv)
       nsize: 4
       filter: grep -v "type" | grep -v "sort"
       args: -test_reduce -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: 2_basic
@@ -482,7 +482,7 @@ int main(int argc,char **argv)
       nsize: 4
       filter: grep -v "type" | grep -v "sort"
       args: -test_degree -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: 3_basic
@@ -494,7 +494,7 @@ int main(int argc,char **argv)
       nsize: 4
       filter: grep -v "type" | grep -v "sort"
       args: -test_gather -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: 4_basic
@@ -511,7 +511,7 @@ int main(int argc,char **argv)
       nsize: 4
       filter: grep -v "type" | grep -v "sort"
       args: -test_scatter -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: 5_basic
@@ -529,7 +529,7 @@ int main(int argc,char **argv)
       filter: grep -v "type" | grep -v "sort"
       # No -sf_window_flavor dynamic due to bug https://gitlab.com/petsc/petsc/issues/555
       args: -test_embed -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create allocate}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: 6_basic
@@ -541,7 +541,7 @@ int main(int argc,char **argv)
       nsize: 4
       filter: grep -v "type" | grep -v "sort"
       args: -test_invert -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: 7_basic
@@ -565,7 +565,7 @@ int main(int argc,char **argv)
       nsize: 3
       filter: grep -v "type" | grep -v "sort"
       args: -test_bcast -test_sf_distribute -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: 8_basic
@@ -583,7 +583,7 @@ int main(int argc,char **argv)
       filter: grep -v "type" | grep -v "sort"
       nsize: 4
       args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create allocate}} -test_all -test_bcastop 0 -test_fetchandop 0
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    # The nightly test suite with MPICH uses ch3:sock, which is broken when winsize == 0 in some of the processes
    test:
@@ -592,7 +592,7 @@ int main(int argc,char **argv)
       filter: grep -v "type" | grep -v "sort"
       nsize: 4
       args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor shared -test_all -test_bcastop 0 -test_fetchandop 0
-      requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !define(PETSC_HAVE_MPICH_NUMVERSION) define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !define(PETSC_HAVE_MPICH_NUMVERSION) define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: 10_basic
