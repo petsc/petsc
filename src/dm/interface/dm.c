@@ -5638,7 +5638,13 @@ PetscErrorCode DMCreateDS(DM dm)
   /* Allow k-jet tabulation */
   ierr = PetscOptionsGetInt(NULL, ((PetscObject) dm)->prefix, "-dm_ds_jet_degree", &k, &flg);CHKERRQ(ierr);
   if (flg) {
-    for (s = 0; s < dm->Nds; ++s) {ierr = PetscDSSetJetDegree(dm->probs[s].ds, 0, k);CHKERRQ(ierr);}
+    for (s = 0; s < dm->Nds; ++s) {
+      PetscDS  ds = dm->probs[s].ds;
+      PetscInt Nf, f;
+
+      ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+      for (f = 0; f < Nf; ++f) {ierr = PetscDSSetJetDegree(ds, f, k);CHKERRQ(ierr);}
+    }
   }
   /* Setup DSes */
   if (doSetup) {
