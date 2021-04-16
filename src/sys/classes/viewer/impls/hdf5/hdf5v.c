@@ -963,12 +963,21 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
 + viewer - The HDF5 viewer
 . parent - The parent dataset/group name
 . name   - The attribute name
-- datatype - The attribute type
+. datatype - The attribute type
+- defaultValue - The pointer to the default value
 
   Output Parameter:
-. value    - The attribute value
+. value    - The pointer to the read HDF5 attribute value
 
-  Notes: If the datatype is PETSC_STRING one must PetscFree() the obtained value when it is no longer needed.
+  Notes:
+  If defaultValue is NULL and the attribute is not found, an error occurs.
+  If defaultValue is not NULL and the attribute is not found, defaultValue is copied to value.
+  The pointers defaultValue and value can be the same; for instance
+$  flg = PETSC_FALSE;
+$  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"attr",PETSC_BOOL,&flg,&flg);CHKERRQ(ierr);
+  is valid, but make sure the default value is initialized.
+
+  If the datatype is PETSC_STRING, the output string is newly allocated so one must PetscFree() it when no longer needed.
 
   Level: advanced
 
@@ -977,10 +986,10 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
 
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadObjectAttribute(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasObject(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
-PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, void *value)
+PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, void *defaultValue, void *value)
 {
   char           *parentAbsPath;
-  hid_t          h5, obj, attribute, atype, dtype;
+  hid_t          h5, obj, attribute, dtype;
   PetscBool      has;
   PetscErrorCode ierr;
 
@@ -988,19 +997,35 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (parent) PetscValidCharPointer(parent, 2);
   PetscValidCharPointer(name, 3);
-  PetscValidPointer(value, 5);
+  if (defaultValue) PetscValidPointer(defaultValue, 5);
+  PetscValidPointer(value, 6);
+  ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, parent, &parentAbsPath);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Traverse_Internal(viewer, parentAbsPath, PETSC_FALSE, &has, NULL);CHKERRQ(ierr);
   if (has) {ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parentAbsPath, name, &has);CHKERRQ(ierr);}
-  if (!has) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Attribute %s/%s does not exist", parentAbsPath, name);
-  ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
+  if (!has) {
+    if (defaultValue) {
+      if (defaultValue != value) {
+        if (datatype == PETSC_STRING) {
+          ierr = PetscStrallocpy(*(char**)defaultValue, (char**)value);CHKERRQ(ierr);
+        } else {
+          size_t len;
+          PetscStackCallHDF5Return(len,H5Tget_size,(dtype));
+          ierr = PetscMemcpy(value, defaultValue, len);CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscFree(parentAbsPath);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    } else SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Attribute %s/%s does not exist and default value not provided", parentAbsPath, name);
+  }
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   PetscStackCallHDF5Return(obj,H5Oopen,(h5, parentAbsPath, H5P_DEFAULT));
   PetscStackCallHDF5Return(attribute,H5Aopen_name,(obj, name));
   if (datatype == PETSC_STRING) {
     size_t len;
+    hid_t  atype;
     PetscStackCallHDF5Return(atype,H5Aget_type,(attribute));
-    PetscStackCall("H5Tget_size",len = H5Tget_size(atype));
+    PetscStackCallHDF5Return(len,H5Tget_size,(atype));
     ierr = PetscMalloc((len+1) * sizeof(char), value);CHKERRQ(ierr);
     PetscStackCallHDF5(H5Tset_size,(dtype, len+1));
     PetscStackCallHDF5(H5Aread,(attribute, dtype, *(char**)value));
@@ -1034,7 +1059,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
 
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadAttribute() PetscViewerHDF5WriteObjectAttribute(), PetscViewerHDF5HasObjectAttribute(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
-PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObject obj, const char name[], PetscDataType datatype, void *value)
+PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObject obj, const char name[], PetscDataType datatype, void *defaultValue, void *value)
 {
   PetscErrorCode ierr;
 
@@ -1044,7 +1069,7 @@ PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObjec
   PetscValidCharPointer(name,3);
   PetscValidPointer(value, 5);
   ierr = PetscViewerHDF5CheckNamedObject_Internal(viewer, obj);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadAttribute(viewer, obj->name, name, datatype, value);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer, obj->name, name, datatype, defaultValue, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
