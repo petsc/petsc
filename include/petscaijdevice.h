@@ -63,8 +63,8 @@ PETSC_DEVICE_FUNC_DECL void MatSetValuesDevice(PetscSplitCSRDataStructure *d_mat
     PetscBool ignorezeroentries = (d_mat->diag.ignorezeroentries==0) ? PETSC_FALSE : PETSC_TRUE;
     int       *bi = d_mat->offdiag.i, *bj = d_mat->offdiag.j;
     MatScalar *ba = d_mat->offdiag.a, *aa = d_mat->diag.a;
-    int       *rp1,*rp2=NULL,nrow1,nrow2,_i,low1,high1,low2,high2,t;
-    PetscInt  lastcol1,lastcol2;
+    int       *rp1,*rp2=NULL,nrow1,nrow2=0,_i,low1,high1,low2=0,high2=0,t;
+    PetscInt  lastcol1=0,lastcol2=0;
     MatScalar *ap1,*ap2=NULL;
     PetscBool roworiented = PETSC_TRUE;
     PetscInt  i,j,rstart  = d_mat->rstart,rend = d_mat->rend;

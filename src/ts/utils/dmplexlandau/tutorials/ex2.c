@@ -706,10 +706,12 @@ int main(int argc, char **argv)
     rectx->plotting = PETSC_FALSE;
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     ierr = VecDestroy(&vec);CHKERRQ(ierr);
+    ctx->aux_bool = PETSC_FALSE; // flag for not a clean Jacobian
   }
   ierr = VecViewFromOptions(X,NULL,"-vec_view");CHKERRQ(ierr); // inital condition (monitor plots after step)
   /* go */
   ierr = PetscLogStageRegister("Solve", &stage);CHKERRQ(ierr);
+  ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
