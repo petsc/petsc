@@ -1293,7 +1293,7 @@ class Configure(config.base.Configure):
     try:
       output = self.executeShellCommand(self.getCompiler() + ' -show', log = self.log)[0]
     except:
-      self.logPrint('Skipping checking MPI compiler command for PIC flag since MPI compiler -show causes an exception so is likly not an MPI compiler')
+      self.logPrint('Skipping checking MPI compiler command for PIC flag since MPI compiler -show causes an exception so is likely not an MPI compiler')
       output = ''
     output = output + ' ' + getattr(self, self.getCompilerFlagsArg(1)) + ' '
     # Try without specific PIC flag only if the MPI compiler or user compiler flag already provides a PIC option

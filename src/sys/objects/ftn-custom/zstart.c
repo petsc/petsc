@@ -141,7 +141,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Counter_Attr_Delete_Fn(MPI_Comm,PetscMPIIn
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_InnerComm_Attr_Delete_Fn(MPI_Comm,PetscMPIInt,void*,void*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_OuterComm_Attr_Delete_Fn(MPI_Comm,PetscMPIInt,void*,void*);
 
-PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
+PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char[]);
 PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
@@ -432,7 +432,7 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
     FREECHAR(filename,t1);
     if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Freeing string in creating options database\n");return;}
   }
-  *ierr = PetscOptionsCheckInitial_Private();
+  *ierr = PetscOptionsCheckInitial_Private(NULL);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
   /* call a second time to check options database */
   *ierr = PetscErrorPrintfInitialize();

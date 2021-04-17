@@ -98,7 +98,7 @@ class CompilerOptions(config.base.Configure):
   def getCxxFlags(self, compiler, bopt):
     import config.setCompilers
 
-    if [s for s in ['mpiCC','mpicxx','mpiicxx','mpiicpc'] if os.path.basename(compiler).find(s)>=0]:
+    if [s for s in ['mpiCC','mpic++','mpicxx','mpiicxx','mpiicpc'] if os.path.basename(compiler).find(s)>=0]:
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPICXX_SHOW',output.strip().replace('\n','\\\\n'))
