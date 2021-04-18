@@ -1345,9 +1345,9 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 
   Input Parameters:
 + dm - The mesh
-. cellIS -
+. cellIS - index set for the cells or NULL to use entire depth=dim stratum
 . t  - The time
-. X_tShift - The multiplier for the Jacobian with repsect to X_t
+. X_tShift - The multiplier for the Jacobian with respect to X_t
 . X  - Local solution vector
 . X_t  - Time-derivative of the local solution vector
 . Y  - Local input vector
