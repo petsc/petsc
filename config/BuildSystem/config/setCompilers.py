@@ -224,6 +224,22 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isGcc110plus(compiler, log):
+    '''returns true if the compiler is gcc-11.0.x or later'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output +  error
+      import re
+      strmatch = re.match('gcc\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      if strmatch:
+        VMAJOR,VMINOR = strmatch.groups()
+        if (int(VMAJOR),int(VMINOR)) >= (11,0):
+          if log: log.write('Detected Gcc110plus compiler\n')
+          return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
   def isGfortran45x(compiler, log):
     '''returns true if the compiler is gfortran-4.5.x'''
     try:
@@ -1293,7 +1309,7 @@ class Configure(config.base.Configure):
     try:
       output = self.executeShellCommand(self.getCompiler() + ' -show', log = self.log)[0]
     except:
-      self.logPrint('Skipping checking MPI compiler command for PIC flag since MPI compiler -show causes an exception so is likly not an MPI compiler')
+      self.logPrint('Skipping checking MPI compiler command for PIC flag since MPI compiler -show causes an exception so is likely not an MPI compiler')
       output = ''
     output = output + ' ' + getattr(self, self.getCompilerFlagsArg(1)) + ' '
     # Try without specific PIC flag only if the MPI compiler or user compiler flag already provides a PIC option

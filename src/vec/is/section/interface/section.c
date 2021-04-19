@@ -2192,8 +2192,9 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   for (f = 0; f < s->numFields; ++f) {
     ierr = PetscSectionDestroy(&s->field[f]);CHKERRQ(ierr);
     ierr = PetscFree(s->fieldNames[f]);CHKERRQ(ierr);
-    for (c = 0; c < s->numFieldComponents[f]; ++c)
+    for (c = 0; c < s->numFieldComponents[f]; ++c) {
       ierr = PetscFree(s->compNames[f][c]);CHKERRQ(ierr);
+    }
     ierr = PetscFree(s->compNames[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree(s->numFieldComponents);CHKERRQ(ierr);

@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit         = 'v2.2-p3'
+    self.gitcommit         = 'v2.2-p4'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-chaco.git',
                               'https://bitbucket.org/petsc/pkg-chaco/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-chaco','Chaco']

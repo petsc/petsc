@@ -4,7 +4,7 @@
 
 #include <../src/sys/classes/draw/impls/x/ximpl.h>
 
-PETSC_INTERN PetscErrorCode PetscDrawGetImage_X(PetscDraw,unsigned char[][3],unsigned int*,unsigned int*,unsigned char*[]);
+PETSC_INTERN PetscErrorCode PetscDrawGetImage_X(PetscDraw,unsigned char[PETSC_DRAW_MAXCOLOR][3],unsigned int*,unsigned int*,unsigned char*[]);
 
 
 PETSC_STATIC_INLINE PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_DRAW_MAXCOLOR],int idx[],int right)

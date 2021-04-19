@@ -269,9 +269,15 @@ PETSC_EXTERN PetscFunctionList MatPartitioningList;
 
     Level: beginner
 
-   Any additions/changes here MUST also be made in src/mat/f90-mod/petscmat.h
+$  SAME_NONZERO_PATTERN  - the two matrices have identical nonzero patterns
+$  DIFFERENT_NONZERO_PATTERN - the two matrices may have different nonzero patterns
+$  SUBSET_NONZERO_PATTERN - the nonzero pattern of the second matrix is a subset of the nonzero pattern of the first matrix
+$  UNKNOWN_NONZERO_PATTERN - there is no known relationship between the nonzero patterns. In this case the implementations may try to detect a relationship to optimize the operation
 
-.seealso: MatCopy(), MatAXPY()
+   Developer Notes:
+     Any additions/changes here MUST also be made in src/mat/f90-mod/petscmat.h
+
+.seealso: MatCopy(), MatAXPY(), MatAYPX()
 E*/
 typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN,UNKNOWN_NONZERO_PATTERN} MatStructure;
 PETSC_EXTERN const char *const MatStructures[];

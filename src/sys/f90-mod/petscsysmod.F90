@@ -248,6 +248,36 @@
           PetscInt num
           PetscDataType type
           PetscErrorCode z
+          end subroutine
+        end Interface
+
+        Interface petscintview
+        subroutine petscintview(N,idx,viewer,ierr)
+          use petscsysdefdummy, only: tPetscViewer
+          PetscInt N
+          PetscInt idx(*)
+          PetscViewer viewer
+          PetscErrorCode ierr
+        end subroutine
+        end Interface
+
+        Interface petscscalarview
+        subroutine petscscalarview(N,s,viewer,ierr)
+          use petscsysdefdummy, only: tPetscViewer
+          PetscInt N
+          PetscScalar s(*)
+          PetscViewer viewer
+          PetscErrorCode ierr
+        end subroutine
+        end Interface
+
+        Interface petscrealview
+        subroutine petscrealview(N,s,viewer,ierr)
+          use petscsysdefdummy, only: tPetscViewer
+          PetscInt N
+          PetscReal s(*)
+          PetscViewer viewer
+          PetscErrorCode ierr
         end subroutine
         end Interface
 

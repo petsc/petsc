@@ -63,6 +63,6 @@ class Configure(config.package.CMakePackage):
 
     self.pushLanguage('Cxx')
     if config.setCompilers.Configure.isSolaris(self.log):
-       raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
+       raise RuntimeError('Elemental does not compile with Oracle/Solaris/Sun compilers')
     self.popLanguage()
     return args

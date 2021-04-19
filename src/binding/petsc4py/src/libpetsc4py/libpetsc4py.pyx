@@ -451,6 +451,7 @@ cdef extern from * nogil:
         SAME_NONZERO_PATTERN
         DIFFERENT_NONZERO_PATTERN
         SUBSET_NONZERO_PATTERN
+        UNKNOWN_NONZERO_PATTERN
     ctypedef enum MatReuse:
         MAT_IGNORE_MATRIX
         MAT_INITIAL_MATRIX

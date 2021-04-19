@@ -514,9 +514,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       output = ''
     elif output:
       self.log.write("Linker output before filtering:\n"+output+":\n")
-      hasIbmstuff = output.find('in statically linked applications requires at runtime the shared libraries from the glibc version used for linking') >= 0
       lines = output.splitlines()
-      if self.argDB['ignoreWarnings'] and not hasIbmstuff:
+      if self.argDB['ignoreWarnings']:
         lines = [s for s in lines if not self.warningRE.search(s)]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
@@ -528,6 +527,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # Cray GPU system at Nersc
       lines = [s for s in lines if s.find('No supported cpu target is set, CRAY_CPU_TARGET=x86-64 will be used.') < 0]
       lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
+      # Cray link warnings
+      rmidx = []
+      for i in range(len(lines)-1):
+        if ((lines[i].find('in function') >=0) and (lines[i+1].find('in statically linked applications requires at runtime the shared libraries') >=0)) \
+        or ((lines[i].find('Warning:') >=0) and (lines[i+1].find('-dynamic was already seen on command line, overriding with -shared.') >=0)):
+          rmidx.extend([i,i+1])
+      lines = [lines[i] for i in range(len(lines)) if i not in rmidx]
+
       # pgi dumps filename on stderr - but returns 0 errorcode'
       lines = [s for s in lines if lines != 'conftest.c:']
       # in case -pie is always being passed to linker
@@ -538,6 +545,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('linking object as if no debug info') < 0]
       # Multiple gfortran libraries present
       lines = [s for s in lines if s.find('may conflict with libgfortran') < 0]
+      # MacOS libraries built for different MacOS versions
+      lines = [s for s in lines if s.find(' was built for newer macOS version') < 0]
       if lines: output = '\n'.join(lines)
       else: output = ''
       self.log.write("Linker output after filtering:\n"+output+":\n")
