@@ -986,7 +986,7 @@ $  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"attr",PETSC_BOOL,&flg,&flg);
 
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadObjectAttribute(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasObject(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
-PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, void *defaultValue, void *value)
+PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *defaultValue, void *value)
 {
   char           *parentAbsPath;
   hid_t          h5, obj, attribute, dtype;
