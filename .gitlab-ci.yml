@@ -945,6 +945,7 @@ analyze-pipeline:
     - name:pj02
   before_script:
     - pip3 install -r src/docs/sphinx_docs/requirements.txt
+  allow_failure: true
 
 #
 # Build documentation and make available for review using GitLab pages
