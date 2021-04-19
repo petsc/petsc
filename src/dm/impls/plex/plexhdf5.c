@@ -507,6 +507,7 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, IS globalC
     PetscInt             pStart, pEnd, dep, numCorners, n = 0;
     PetscBool            output = PETSC_FALSE, doOutput;
 
+    if (ict == DM_POLYTOPE_FV_GHOST) continue;
     ierr = DMLabelGetStratumBounds(ctLabel, ict, &pStart, &pEnd);CHKERRQ(ierr);
     if (pStart >= 0) {
       ierr = DMLabelGetValue(depthLabel, pStart, &dep);CHKERRQ(ierr);
