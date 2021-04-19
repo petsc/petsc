@@ -871,6 +871,8 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 /*@C
  PetscViewerHDF5WriteAttribute - Write an attribute
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
 . parent - The parent dataset/group name
@@ -881,7 +883,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
   Level: advanced
 
   Notes:
-  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else the dataset/group is relative to the current pushed group. NULL means the current pushed group.
+  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else parent is relative to the current pushed group. NULL means the current pushed group.
 
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5WriteObjectAttribute(), PetscViewerHDF5ReadAttribute(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
@@ -927,6 +929,8 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 /*@C
  PetscViewerHDF5WriteObjectAttribute - Write an attribute to the dataset matching the given PetscObject by name
 
+  Collective
+
   Input Parameters:
 + viewer   - The HDF5 viewer
 . obj      - The object whose name is used to lookup the parent dataset, relative to the current group.
@@ -935,7 +939,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 - value    - The attribute value
 
   Notes:
-  This fails if currentGroup/objectName doesn't resolve to a dataset (the path doesn't exist or is not a dataset).
+  This fails if the path current_group/object_name doesn't resolve to a dataset (the path doesn't exist or is not a dataset).
   You might want to check first if it does using PetscViewerHDF5HasObject().
 
   Level: advanced
@@ -959,6 +963,8 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
 /*@C
  PetscViewerHDF5ReadAttribute - Read an attribute
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
 . parent - The parent dataset/group name
@@ -979,10 +985,9 @@ $  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"attr",PETSC_BOOL,&flg,&flg);
 
   If the datatype is PETSC_STRING, the output string is newly allocated so one must PetscFree() it when no longer needed.
 
-  Level: advanced
+  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else parent is relative to the current pushed group. NULL means the current pushed group.
 
-  Notes:
-  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else the dataset/group is relative to the current pushed group. NULL means the current pushed group.
+  Level: advanced
 
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadObjectAttribute(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasObject(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
@@ -1041,6 +1046,8 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
 
 /*@C
  PetscViewerHDF5ReadObjectAttribute - Read an attribute from the dataset matching the given PetscObject by name
+
+  Collective
 
   Input Parameters:
 + viewer   - The HDF5 viewer
@@ -1153,6 +1160,8 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
 /*@C
  PetscViewerHDF5HasGroup - Check whether the current (pushed) group exists in the HDF5 file
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
 - path - The group path
@@ -1163,8 +1172,9 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   Level: advanced
 
   Notes:
-  If path starts with '/', it is taken as an absolute path overriding currently pushed group, else the dataset/group is relative to the current pushed group. NULL means the current pushed group.
-  If the path exists but is not a group, PETSC_FALSE is returned.
+  If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group. NULL means the current pushed group.
+  If path is NULL or empty, has is set to PETSC_FALSE.
+  If path exists but is not a group, PETSC_FALSE is returned.
 
 .seealso: PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasDataset(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup(), PetscViewerHDF5OpenGroup()
 @*/
@@ -1188,6 +1198,8 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], Pe
 /*@C
  PetscViewerHDF5HasDataset - Check whether a given dataset exists in the HDF5 file
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
 - path - The dataset path
@@ -1198,9 +1210,9 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], Pe
   Level: advanced
 
   Notes:
-  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else the dataset/group is relative to the current pushed group.
+  If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group.
   If path is NULL or empty, has is set to PETSC_FALSE.
-  If the path exists but is not a dataset, has is set to PETSC_FALSE as well.
+  If path exists but is not a dataset, has is set to PETSC_FALSE as well.
 
 .seealso: PetscViewerHDF5HasObject(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasGroup(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup()
 @*/
@@ -1224,6 +1236,8 @@ PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer viewer, const char path[], 
 /*@
  PetscViewerHDF5HasObject - Check whether a dataset with the same name as given object exists in the HDF5 file under current group
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
 - obj    - The named object
@@ -1233,7 +1247,7 @@ PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer viewer, const char path[], 
 
   Notes:
   If the object is unnamed, an error occurs.
-  If the path currentGroup/objectName exists but is not a dataset, has is set to PETSC_FALSE as well.
+  If the path current_group/object_name exists but is not a dataset, has is set to PETSC_FALSE as well.
 
   Level: advanced
 
@@ -1257,6 +1271,8 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
 /*@C
  PetscViewerHDF5HasAttribute - Check whether an attribute exists
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
 . parent - The parent dataset/group name
@@ -1268,7 +1284,7 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
   Level: advanced
 
   Notes:
-  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else the dataset/group is relative to the current pushed group. NULL means the current pushed group.
+  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else parent is relative to the current pushed group. NULL means the current pushed group.
 
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5HasObjectAttribute(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5ReadAttribute(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
@@ -1291,6 +1307,8 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
 
 /*@C
  PetscViewerHDF5HasObjectAttribute - Check whether an attribute is attached to the dataset matching the given PetscObject by name
+
+  Collective
 
   Input Parameters:
 + viewer - The HDF5 viewer
