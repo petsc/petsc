@@ -1236,7 +1236,7 @@ PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
 
    Input Parameters:
 +  viewer - the viewer
-.  order - elements order
+-  order - elements order
 
    Output Parameter:
 
@@ -1264,7 +1264,7 @@ PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
 
    Input Parameters:
 +  viewer - the viewer
-.  order - elements order
+-  order - elements order
 
    Output Parameter:
 
