@@ -166,83 +166,90 @@ PetscErrorCode port_lsd_bfbt(void)
   ierr = KSPSetOptionsPrefix(ksp_A,"fc_");CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp_A,A,P);CHKERRQ(ierr);
 
-  ierr = KSPGetPC(ksp_A,&pc_A);CHKERRQ(ierr);
-  ierr = PCSetType(pc_A,PCFIELDSPLIT);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetBlockSize(pc_A,2);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc_A,"velocity",isu);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc_A,"pressure",isp);CHKERRQ(ierr);
-
   ierr = KSPSetFromOptions(ksp_A);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp_A,b,x);CHKERRQ(ierr);
-
-  /* Pull u,p out of x */
-  {
-    PetscInt    loc;
-    PetscReal   max,norm;
-    PetscScalar sum;
-    Vec         uvec,pvec;
-    VecScatter  uscat,pscat;
-    Mat         A11,A22;
-
-    /* grab matrices and create the compatable u,p vectors */
-    ierr = MatCreateSubMatrix(A,isu,isu,MAT_INITIAL_MATRIX,&A11);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix(A,isp,isp,MAT_INITIAL_MATRIX,&A22);CHKERRQ(ierr);
-
-    ierr = MatCreateVecs(A11,&uvec,NULL);CHKERRQ(ierr);
-    ierr = MatCreateVecs(A22,&pvec,NULL);CHKERRQ(ierr);
-
-    /* perform the scatter from x -> (u,p) */
-    ierr = VecScatterCreate(x,isu,uvec,NULL,&uscat);CHKERRQ(ierr);
-    ierr = VecScatterBegin(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-    ierr = VecScatterCreate(x,isp,pvec,NULL,&pscat);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"-- vector vector values --\n");CHKERRQ(ierr);
-    ierr = VecMin(uvec,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
-    ierr = VecMax(uvec,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(u)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
-    ierr = VecNorm(uvec,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(u) = %1.6f \n",(double)norm);CHKERRQ(ierr);
-    ierr = VecSum(uvec,&sum);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
-
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"-- pressure vector values --\n");CHKERRQ(ierr);
-    ierr = VecMin(pvec,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
-    ierr = VecMax(pvec,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
-    ierr = VecNorm(pvec,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(p) = %1.6f \n",(double)norm);CHKERRQ(ierr);
-    ierr = VecSum(pvec,&sum);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(p)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
-
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"-- Full vector values --\n");CHKERRQ(ierr);
-    ierr = VecMin(x,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u,p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
-    ierr = VecMax(x,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(u,p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
-    ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(u,p) = %1.6f \n",(double)norm);CHKERRQ(ierr);
-    ierr = VecSum(x,&sum);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u,p)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
-
-    ierr = VecScatterDestroy(&uscat);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&pscat);CHKERRQ(ierr);
-    ierr = VecDestroy(&uvec);CHKERRQ(ierr);
-    ierr = VecDestroy(&pvec);CHKERRQ(ierr);
-    ierr = MatDestroy(&A11);CHKERRQ(ierr);
-    ierr = MatDestroy(&A22);CHKERRQ(ierr);
-  }
-
-  /* test second solve by changing the mat associated to the MATNEST blocks */
-  {
-    ierr = replace_submats(A,isu,isp);CHKERRQ(ierr);
-    ierr = replace_submats(P,isu,isp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp_A,&pc_A);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc_A,PCLU,&test_fs);CHKERRQ(ierr);
+  if (test_fs) {
+    ierr = MatDestroy(&P);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&P);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp_A,A,P);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp_A);CHKERRQ(ierr);
     ierr = KSPSolve(ksp_A,b,x);CHKERRQ(ierr);
+  } else {
+    ierr = PCFieldSplitSetBlockSize(pc_A,2);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetIS(pc_A,"velocity",isu);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetIS(pc_A,"pressure",isp);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp_A,b,x);CHKERRQ(ierr);
+
+    /* Pull u,p out of x */
+    {
+      PetscInt    loc;
+      PetscReal   max,norm;
+      PetscScalar sum;
+      Vec         uvec,pvec;
+      VecScatter  uscat,pscat;
+      Mat         A11,A22;
+
+      /* grab matrices and create the compatable u,p vectors */
+      ierr = MatCreateSubMatrix(A,isu,isu,MAT_INITIAL_MATRIX,&A11);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(A,isp,isp,MAT_INITIAL_MATRIX,&A22);CHKERRQ(ierr);
+
+      ierr = MatCreateVecs(A11,&uvec,NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(A22,&pvec,NULL);CHKERRQ(ierr);
+
+      /* perform the scatter from x -> (u,p) */
+      ierr = VecScatterCreate(x,isu,uvec,NULL,&uscat);CHKERRQ(ierr);
+      ierr = VecScatterBegin(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      ierr = VecScatterCreate(x,isp,pvec,NULL,&pscat);CHKERRQ(ierr);
+      ierr = VecScatterBegin(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"-- vector vector values --\n");CHKERRQ(ierr);
+      ierr = VecMin(uvec,&loc,&max);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
+      ierr = VecMax(uvec,&loc,&max);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(u)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
+      ierr = VecNorm(uvec,NORM_2,&norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(u) = %1.6f \n",(double)norm);CHKERRQ(ierr);
+      ierr = VecSum(uvec,&sum);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
+
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"-- pressure vector values --\n");CHKERRQ(ierr);
+      ierr = VecMin(pvec,&loc,&max);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
+      ierr = VecMax(pvec,&loc,&max);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
+      ierr = VecNorm(pvec,NORM_2,&norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(p) = %1.6f \n",(double)norm);CHKERRQ(ierr);
+      ierr = VecSum(pvec,&sum);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(p)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
+
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"-- Full vector values --\n");CHKERRQ(ierr);
+      ierr = VecMin(x,&loc,&max);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u,p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
+      ierr = VecMax(x,&loc,&max);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(u,p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
+      ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(u,p) = %1.6f \n",(double)norm);CHKERRQ(ierr);
+      ierr = VecSum(x,&sum);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u,p)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
+
+      ierr = VecScatterDestroy(&uscat);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&pscat);CHKERRQ(ierr);
+      ierr = VecDestroy(&uvec);CHKERRQ(ierr);
+      ierr = VecDestroy(&pvec);CHKERRQ(ierr);
+      ierr = MatDestroy(&A11);CHKERRQ(ierr);
+      ierr = MatDestroy(&A22);CHKERRQ(ierr);
+    }
+
+    /* test second solve by changing the mat associated to the MATNEST blocks */
+    {
+      ierr = replace_submats(A,isu,isp);CHKERRQ(ierr);
+      ierr = replace_submats(P,isu,isp);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp_A,b,x);CHKERRQ(ierr);
+    }
   }
 
   ierr = KSPDestroy(&ksp_A);CHKERRQ(ierr);
@@ -269,13 +276,19 @@ int main(int argc,char **argv)
 /*TEST
 
     test:
-      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit  -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_pc_type cholesky -fc_fieldsplit_velocity_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_max_it 100 -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_max_it 100 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type icc -test_fs {{0 1}separate output} -fc_pc_fieldsplit_off_diag_use_amat {{0 1}separate output} -fc_pc_fieldsplit_diag_use_amat {{0 1}separate output}
+      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_pc_type cholesky -fc_fieldsplit_velocity_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_max_it 100 -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_max_it 100 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type icc -test_fs {{0 1}separate output} -fc_pc_fieldsplit_off_diag_use_amat {{0 1}separate output} -fc_pc_fieldsplit_diag_use_amat {{0 1}separate output}
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
 
     test:
       suffix: 2
       nsize: 4
-      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_ksp_rtol 1.0e-6 -fc_fieldsplit_velocity_pc_type bjacobi -fc_fieldsplit_velocity_sub_pc_type cholesky -fc_fieldsplit_velocity_sub_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_type fgmres -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short  -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_rtol 1.0e-2 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type bjacobi -fc_fieldsplit_pressure_lsc_sub_pc_type icc -test_fs {{0 1}separate output} -fc_pc_fieldsplit_off_diag_use_amat {{0 1}separate output} -fc_pc_fieldsplit_diag_use_amat {{0 1}separate output}
-      requires: datafilespath double  !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view -fc_ksp_monitor_short -fc_ksp_type fgmres -fc_ksp_max_it 4000 -fc_ksp_diagonal_scale -fc_pc_type fieldsplit -fc_pc_fieldsplit_type SCHUR -fc_pc_fieldsplit_schur_fact_type UPPER -fc_fieldsplit_velocity_ksp_type cg -fc_fieldsplit_velocity_ksp_rtol 1.0e-6 -fc_fieldsplit_velocity_pc_type bjacobi -fc_fieldsplit_velocity_sub_pc_type cholesky -fc_fieldsplit_velocity_sub_pc_factor_mat_ordering_type nd -fc_fieldsplit_pressure_ksp_type fgmres -fc_fieldsplit_pressure_ksp_constant_null_space -fc_fieldsplit_pressure_ksp_monitor_short -fc_fieldsplit_pressure_pc_type lsc -fc_fieldsplit_pressure_lsc_ksp_type cg -fc_fieldsplit_pressure_lsc_ksp_rtol 1.0e-2 -fc_fieldsplit_pressure_lsc_ksp_constant_null_space -fc_fieldsplit_pressure_lsc_ksp_converged_reason -fc_fieldsplit_pressure_lsc_pc_type bjacobi -fc_fieldsplit_pressure_lsc_sub_pc_type icc -test_fs {{0 1}separate output} -fc_pc_fieldsplit_off_diag_use_amat {{0 1}separate output} -fc_pc_fieldsplit_diag_use_amat {{0 1}separate output}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+
+    test:
+      suffix: 3
+      nsize: 2
+      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -fc_ksp_view_pre -fc_pc_type lu
+      requires: datafilespath mumps double !complex !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/
