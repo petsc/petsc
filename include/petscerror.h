@@ -597,20 +597,6 @@ M*/
 
 #endif
 
-#if defined(PETSC_HAVE_CUDA)
-#include <cusolverDn.h>
-#include <cusolverSp.h>
-PETSC_EXTERN const char* PetscCUSolverGetErrorName(cusolverStatus_t);
-#define CHKERRCUSOLVER(stat)                       \
-  do {                 \
-   if (PetscUnlikely(stat)) { \
-     const char *name = PetscCUSolverGetErrorName(stat);                     \
-     if ((stat == CUSOLVER_STATUS_NOT_INITIALIZED) || (stat == CUSOLVER_STATUS_ALLOC_FAILED) || (stat == CUSOLVER_STATUS_INTERNAL_ERROR)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuSolver error %d (%s). This indicates the GPU has run out resources",(int)stat,name); \
-     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSolver error %d (%s)",(int)stat,name); \
-   } \
-} while (0)
-#endif
-
 /* TODO: SEK:  Need to figure out the hipsolver issues */
 #if defined(PETSC_HAVE_HIP)
 #define CHKERRHIPSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HIPSOLVER error %d",err);} while (0)

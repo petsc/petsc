@@ -5,6 +5,7 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #include <cusolverDn.h>
+#include <cusolverSp.h>
 #include <petscsys.h>
 
 #define WaitForCUDA() PetscCUDASynchronize ? cudaDeviceSynchronize() : cudaSuccess;
@@ -25,6 +26,16 @@ do { \
 #else
 #define CHKERRCUDA(cerr) do {if (PetscUnlikely(cerr)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_GPU,"CUDA error %d",(int)cerr);} while (0)
 #endif
+
+PETSC_EXTERN const char* PetscCUSolverGetErrorName(cusolverStatus_t);
+#define CHKERRCUSOLVER(stat)                       \
+  do {                 \
+   if (PetscUnlikely(stat)) { \
+     const char *name = PetscCUSolverGetErrorName(stat);                     \
+     if ((stat == CUSOLVER_STATUS_NOT_INITIALIZED) || (stat == CUSOLVER_STATUS_ALLOC_FAILED) || (stat == CUSOLVER_STATUS_INTERNAL_ERROR)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuSolver error %d (%s). This indicates the GPU has run out resources",(int)stat,name); \
+     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSolver error %d (%s)",(int)stat,name); \
+   } \
+} while (0)
 
 #define CHKERRCUBLAS(stat) \
 do { \
