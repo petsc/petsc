@@ -18,6 +18,8 @@ cdef extern from * nogil:
     int PetscSectionSetFieldComponents(PetscSection,PetscInt,PetscInt)
     int PetscSectionGetChart(PetscSection,PetscInt*,PetscInt*)
     int PetscSectionSetChart(PetscSection,PetscInt,PetscInt)
+    int PetscSectionGetPermutation(PetscSection,PetscIS*)
+    int PetscSectionSetPermutation(PetscSection,PetscIS)
     int PetscSectionGetDof(PetscSection,PetscInt,PetscInt*)
     int PetscSectionSetDof(PetscSection,PetscInt,PetscInt)
     int PetscSectionAddDof(PetscSection,PetscInt,PetscInt)
