@@ -944,7 +944,11 @@ analyze-pipeline:
   tags:
     - name:pj02
   before_script:
-    - pip3 install -r doc/requirements.txt
+    - VENV=venv-petsc-docs &&
+      python3 -m venv $VENV &&
+      . $VENV/bin/activate &&
+      cd doc &&
+      pip install -r requirements.txt
   allow_failure: true
 
 #
@@ -955,8 +959,7 @@ docs-review:
     - .docs
     - .test-basic
   script:
-    - cd doc &&
-      ~/.local/bin/sphinx-build -T -E -b html -D language=en -j auto . ../public
+    - sphinx-build -T -E -b html -D language=en -j auto . ../public
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html
@@ -974,8 +977,7 @@ pages:  # this job name has special meaning to GitLab
     - VERSION_NAME=$(sed 's/release-//' <<< $CI_COMMIT_REF_NAME) &&
       DEST=../public/$VERSION_NAME &&
       rm -rf $DEST &&
-      cd doc &&
-      ~/.local/bin/sphinx-build -T -E -b dirhtml -D language=en -j auto . $DEST
+      sphinx-build -T -E -b dirhtml -D language=en -j auto . $DEST
   only:
     - release
     - main
