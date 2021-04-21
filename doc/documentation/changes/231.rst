@@ -1,0 +1,113 @@
+==============
+Changes: 2.3.1
+==============
+
+
+   .. rubric:: General:
+
+   -  -log_info is now just -info; PetscLogInfo...() is now
+      PetscInfo...()
+   -  Added TOPS solver components. [requires CCA tools like babel]
+   -  Added supported for IBM BGL with optimzed fortran kernels
+   -  bin/petscarch is removed. Use can give any name to PETSC_ARCH. [if
+      not - configure picks a default name]
+   -  PetscMap is no longer a public PETSc object
+
+   .. rubric:: Vec:
+
+   -  Changed prototypes for VecMDotBegin(), VecMDotEnd(),
+      VecMTDotBegin(), VecMTDotEnd() to confirm with PETSc prototype
+      style
+   -  ISColoringCreate() takes another argument
+
+   .. rubric:: Mat:
+
+   -  MatScaleSystem() and MatUnscaleSystem() now take arguments b,x
+      instead of x,b
+   -  Added MatSeqAIJSetPreallocationCSR(), MatGetSubMatrixRaw()
+   -  Added MatSolveTranspose() for superlu
+   -  Added support for matrix types MATCSRPERM, MATCRL - for vector
+      based machines.
+   -  Added MatMatMult for seqdense
+   -  Added MatRealPart, ImaginaryPart for AIJ, BAIJ, SBAIJ matrices
+   -  Added MatGetRowUpperTriangular() to mpisbaij matrix
+
+   .. rubric:: PC:
+
+   -  PCPrometheusSetCoordinates() changed to PCSetCoordinates()
+   -  Moved src/ksp/pc/pcimpl.h to include/petsc/private/pcimpl.h
+   -  PCPreSolve() and PCPostSolve() now consistently take arguments b,x
+      before sometimes they took x,b
+   -  PCXXXSetYYY() and -pc_xxx_yyyy are now changed to PCFactorSetYYY()
+      and -pc_factor_yyyy for XXX LU, ILU, Cholesky, and ICC
+
+   .. rubric:: KSP:
+
+   -  -ksp_view, -ksp_monitor now take an optional filename argument
+   -  Added PetscLLAddPerm() to symbolic LU factorization
+
+   .. rubric:: config/configure.py:
+
+   -  Changed --with-64-bit-ints to --with-64-bit-indices
+   -  config/configure.py now supports the arguments
+      --with-precision=longdouble and --with-precision=int, these
+      currently have limited functionality and certain things like
+      binary IO does not work.
+   -  Option --LIBS=<extra libs> for some broken compilers that require
+      that require extra system libraries to be linked with
+   -  Changed --with-fortran-kernels=<0,1> option to
+      --with-fortran-kernels=<none,generic,bgl>
+   -  Support --with-large-file-io=<bool> which indicates using files
+      larger than 2GB
+   -  --with-f90-header, --with-f90-source options merged into a single
+      option - for eg: --with-f90-interface=intel8
+   -  Added --with-is-color-value-type=<char,short>: char gives max of
+      256 colors, short gives max of 65536 colors
+   -  Configure always tries to build libraries with PIC [or equivalent
+      flag] To disable this, use: --with-pic=0
+   -  Added --with-c-language-support for comiling PETSc with 'c'
+      linkage - but with a c++ compiler.
+   -  ---download-mpich option now defaults to pm=gforker. To use mpd -
+      use the additional option --download-mpich-pm=mpd
+   -  --with-timer option is added [if the user knows MPI_Wtime() is
+      accurate/low-overhead on a machine - then use: --with-timer=mpi]
+
+   .. rubric:: SNES:
+
+   -  -snes-view, -snes_monitor now take an optional filename argument
+
+   .. rubric:: TS:
+
+   -  -ts_view, -ts_monitor now take an optional filename argument
+
+   .. rubric:: DA:
+
+   .. rubric:: DMMG:
+
+   -  Arguments to DMMGSetKSP() changed. Now the callback which forms
+      the linear system matrix can optionally fill also an alternate
+      matrix for the preconditioner.
+
+   .. rubric:: SYS:
+
+   -  PetscViewerFileType changed to PetscFileMode
+   -  PetscViewerSetFileType() changed to PetscViewerFileSetMode()
+
+   .. rubric:: Fortran:
+
+   -  remove the special libpetscfortran.a [fortran interface & c
+      interface now go into the same library]
+   -  With some f90 compilers - PETSc datatypes [like
+      PetscScalar,PetscInt] will use f90 KIND declaration - so if this
+      code is in fixed form - there could be errors with lines exceeding
+      72 char limit
+
+   .. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+
+   -  PLAPACK support added
+   -  BLOPEX support added
+   -  Updated Pvode interface to the newer Sundials package [configure
+      option --download-sundials=1
+   -  Added --download-mpe=1
+   -  fblaslapack now has complete blas - as required by some external
+      packages

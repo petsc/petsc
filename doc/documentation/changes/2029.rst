@@ -1,0 +1,174 @@
+===============
+Changes: 2.0.29
+===============
+
+
+Changes
+-------
+(See `Features`_ below)
+
+   .. rubric:: General:
+
+   .. rubric:: AO (Application Orderings):
+
+   .. rubric:: TS (Timestepping Solvers):
+
+   .. rubric:: SNES (Nonlinear Solvers):
+
+   -  The second argument to MatSNESMFSetType() is now a MatSNESMFType,
+      rather than a char*. This should not affect any user code. Current
+      built in choices are MATSNESMF_DEFAULT "default" and MATSNESMF_WP
+      "wp"
+   -  SNESGetJacobian() now has an additional optional final argument
+      that can return the function pointer
+   -  SNESGetFunction() now has an additional optional final argument
+      that can return the function pointer
+
+   .. rubric:: SLES (Linear Solvers):
+
+   .. rubric:: KSP (Krylov Subspace Methods):
+
+   .. rubric:: PC (Preconditioners):
+
+   -  PCILUSetReuseFill() changed to PCILUDTSetReuseFill() and
+      -pc_ilu_reuse_fill changed to -pc_iludt_reuse_fill Note that
+      currently these functions don't work.
+   -  PCNullSpaceXXX changed to MatNullSpaceXXX except for
+      PCNullSpaceAttach()
+   -  MGSetLevels() now takes an additional optional final argument that
+      is an array of communicators to use on the SLES on each level
+
+   .. rubric:: MAT (Matrices):
+
+   -  Changed MatDiagonalShift(Mat,Vec) to
+      MatDiagonalSet(Mat,Vec,InsertMode);
+   -  Dropped the second to last argument to MatCreateRowbs()
+   -  -mat_ordering_type now should be either -pc_ilu_mat_ordering_type,
+      -pc_lu_mat_ordering_type, -pc_icc_mat_ordering_type or
+      -pc_cholesky_mat_ordering_type
+
+   .. rubric:: DA (Distributed Arrays):
+
+   .. rubric:: VEC (Vectors):
+
+   .. rubric:: IS (Index Sets):
+
+   -  ISEqual() now is collective and returns true only if each
+      processor has the same indices
+   -  ISGetSize() now returns global parallel size, ISGetLocalSize()
+      returns local size
+
+   .. rubric:: General:
+
+   -  All include files like mat.h vec.h sles.h snes.h ts.h etc are now
+      changed to petscmat.h petscvec.h petscsles.h petscsnes.h petscts.h
+
+   .. rubric:: Draw (Graphics):
+
+   .. rubric:: Viewers:
+
+   .. rubric:: System:
+
+   -  FListDestroy now takes FList \* instead of FList
+
+   .. rubric:: Error Handling:
+
+   .. rubric:: Event Logging:
+
+   -  PLogEventBegin(), PLogEventEnd(), PLogFlops(),
+      PLogEventBarrierBegin() and PLogEventBarrierEnd() now return error
+      codes.
+
+   .. rubric:: Fortran Interface:
+
+
+Features
+--------
+(See `Changes`_ above)
+
+   .. rubric:: General:
+
+   .. rubric:: AO (Application Orderings):
+
+   .. rubric:: TS (Timestepping Solvers):
+
+   .. rubric:: SNES (Nonlinear Solvers):
+
+   .. rubric:: SLES (Linear Solvers):
+
+   .. rubric:: KSP (Krylov Subspace Methods):
+
+   -  Minres solver contibuted by: Robert Scheichl:
+      maprs@maths.bath.ac.uk
+   -  SYMMLQ solver contributed by Hong Zhang
+
+   .. rubric:: PC (Preconditioners):
+
+   -  ICC(k) and Cholesky() preconditioners are now available for the
+      new SeqSBAIJ matrices.
+   -  added -pc_ilu_damping and -pc_lu_damping, PCILUSetDamping(),
+      PCLUSetDamping() for handling singular or matrices that generate a
+      zero pivot.
+   -  Added DAMGCreate() etc to help easily write parallel multigrid
+      codes that use rectangular grids
+   -  Paulo Goldfeld contributed new PCType of nn, a version of Mandel's
+      balancing Neumann-Neumann preconditioner, see
+      src/contrib/oberman/laplacian_q1 for an example of its use
+
+   .. rubric:: MAT (Matrices):
+
+   -  added new matrix types SeqSBAIJ and MPISBAIJ for symmetric
+      matrices. These store only the upper triangular portion of the
+      matrix. We also provide ICC(k) and Cholesky factorization
+      (currently only for block size of 1) for the SeqSBAIJ matrices
+   -  augmented the SeqAIJ matrices to support -mat_aij_matlab that
+      causes the matrices to use the Matlab engine for sparse LU, and
+      ILUDT factorization and solves. Which have pivoting and thus are
+      more robust than PETSc's default.
+
+   .. rubric:: DA (Distributed Arrays):
+
+   -  added -da_noao for DACreateXXX() makes them more scalable, but
+      cannot use the natural numbering DA routines with this option.
+   -  Added DAMGCreate() etc to help easily write parallel multigrid
+      codes that use rectangular grids
+
+   .. rubric:: VEC (Vectors):
+
+   .. rubric:: IS (Index Sets):
+
+   .. rubric:: PF:
+
+   -  added the type PFMATLAB with -pf_type matlab -pf_matlab
+      matlab_commands
+
+   .. rubric:: Draw (Graphics):
+
+   .. rubric:: Viewers:
+
+   .. rubric:: System:
+
+   -  Add PetscMatlabEngineCreate() which allows calling Matlab
+      functions from PETSc on each processor. Good for graphics or
+      numerical routines that PETSc does not have. for example for the
+      local evaluation of the parallel nonlinear function required for
+      SNES; see src/snes/examples/tutorials/ex5m.c. This functionality
+      is accessed via the commands
+      PetscMatlabEngineCreate(),Put(),Get(),Evaluate() and Destroy() It
+      even imports the Matlab flop counts correctly. Obviously you need
+      enough Matlab licenses for each node. Note: Matlab itself is not
+      directly doing any parallel computing.
+   -  added PetscSetHelpVersionFunctions() for developers of other
+      libraries that use PETSc.
+   -  added PetscPoUpSelect(), see src/sys/examples/tests/ex15.c
+   -  added int PetscShowMemoryUsage(Viewer viewer,char \*message)
+   -  added PreLoadBegin(), PreLoadStage() and PreLoadEnd() to simplify
+      getting accurate timings by peloading. See
+      src/snes/examples/tutorials/ex10.c
+   -  added PetscSynchronizedFGets()
+
+   .. rubric:: Error Handling:
+
+   .. rubric:: Event Logging:
+
+   .. rubric:: Fortran Interface:

@@ -1,0 +1,180 @@
+============
+Changes: 3.6
+============
+
+
+   .. rubric:: General:
+
+   -  User makefiles must be updated. You must change the lines
+
+      -  include ${PETSC_DIR}/conf/variables and
+      -  include ${PETSC_DIR}/conf/rules
+
+      to
+
+      -  include ${PETSC_DIR}/lib/petsc/conf/variables and
+      -  include ${PETSC_DIR}/lib/petsc/conf/rules
+
+   -  PetscOptionsBool() no longer sets the value of the boolean based
+      on the value passed in
+   -  Script for running MPIUni jobs is now bin/petsc-mpiexec.uni
+   -  Removed all threadcomm support including --with-pthreadclasses and
+      --with-openmpclasses configure arguments
+   -  Updated MUMPS version to 5.0.0 - and updated metis to 5.1.0,
+      parmetis to 4.0.3-p1 - in sync with MUMPS.
+   -  Updated to hypre-2.10.0b, scotch_6.0.3, Elemental-0.85
+
+   .. rubric:: Configure/Build:
+
+   -  Add toplevel makefile targets *clean* and *distclean*. Target
+      *clean* deletes petsc libraries built by makefile target *all*.
+      Target *distclean* deletes all build files created by *configure*
+      and [*make all*]. Target *clean* in example directories continues
+      to work as before [deletes object files and executables]
+
+   .. rubric:: IS:
+
+   .. rubric:: PetscDraw:
+
+   -  PetscDrawBoxedString() changed to PetscDrawStringBoxed() added
+      PetscDrawBar object for drawing bar graphs added
+      PetscDrawStringCentered()
+
+   .. rubric:: PF:
+
+   .. rubric:: Vec:
+
+   .. rubric:: VecScatter:
+
+   .. rubric:: PetscSection:
+
+   .. rubric:: Mat:
+
+   -  MatGetVecs() replaced with MatCreateVecs() because it actually
+      does create the Vecs that need to be destroyed
+   -  MatCreateMPIAIJConcatenateSeqAIJ and
+      MatCreateMPIBAIJConcatenateSeqBAIJ replaced with
+      MatCreateMPIMatConcatenateSeqMat
+   -  MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()
+   -  Added support for MUMPS sequential solver in Schur complement mode
+   -  MatGetSubMatricesMPI() will extract parallel submatrices on
+      subcommunicators of the supplied IS objects. Unsorted, but not
+      repeated indices are okay.
+   -  Removed MatMFFDAddNullSpace() just use MatSetNullSpace()
+
+   .. rubric:: PC:
+
+   -  Removed -pc_hypre_type euclid due to bit-rot
+   -  Upgraded to SuiteSparse 4.4.1; Cholmod supports using GPUs
+      (developer repository only feature) --with-cuda
+      --download-suitesparse-gpu --with-64-bit-indices;
+      -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it
+   -  Upgraded to Superlu_DIST 4.0; Superlu_DIST supports using GPUs
+      (developer repository only feature) --with-cuda --with-openmp
+      --download-superlu_dist-gpu (developer repository only feature)
+      --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default
+      when configured for it
+   -  Added PCBDDCSetChangeOfBasisMat for user defined change of basis
+   -  PCBDDC: added adaptive selection of constraints: it is available
+      by command line options
+   -  PCJacobiSetUseAbs() now takes a PetscBool argument allowing
+      toggling the option
+   -  PCJacobiSetUseRowMax() and PCJacobiSetUseRowSum() have been merged
+      into PCJacobiSetType()
+   -  PCFactorSetUseInplace() now takes a PetscBool argument. Added
+      PCFactorGetUseInplace()
+   -  PCFactorSetAllowDiagonalFill() now takes a PetscBool argument.
+      Added PCFactorGetAllowDiagonalFill()
+   -  PCEisenstatNoDiagonalScaling() changed to
+      PCEisenstatSetNoDiagonalScaling() and takes a boolean
+   -  Added Interface to AMS solver from HYPRE for Nedelec
+      discretizations (-pc_hypre_type ams)
+   -  Added Interface to ADS solver from HYPRE for Raviart-Thomas
+      discretizations (-pc_hypre_type ads)
+   -  Contributed MKL Pardiso interface providing PCCholesky support.
+      Useable with: -pc_type cholesky -mat_type sbaij
+      -pc_factor_mat_solver_package mkl_pardiso
+   -  PCGASMSetTotalSubdomains() can now create multirank subdomains if
+      their number is less than comm size.
+   -  PCGAMGSetReuseProl() is changed to PCGAMGSetReuseInterpolation()
+
+   .. rubric:: KSP:
+
+   -  Removed KSPSetNullSpace() always use MatSetNullSpace() provided to
+      the FIRST matrix argument to KSPSetOperators(), or
+      SNESSetJacobian(), or TSSetIJacobian()
+   -  Added MatSetTransposeNullSpace() to indicate the null space of the
+      transpose operator
+   -  Removed KSPSPECEST since its functionality is replaced by the
+      esteig functionality within KSPChebyshev
+   -  Unified KSPChebyshev routines that work with estimating
+      eigenvalues with the prefix name KSPChebyshevEstEig... For example
+      KSPChebyshevSetEstimateEigenvalues() is now
+      KSPChebyshevEstEigSet() and
+      KSPChebyshevSetEstimateEigenvaluesRandom() is now
+      KSPChebyshevEstEigSetRandom() similarly
+      -ksp_chebyshev_estimate_eigenvalues_random is
+      -ksp_chebyshev_esteig_random. The previous for the (GMRES) KSP
+      used to estimate the eigenvalues is now esteig\_ not est\_
+   -  KSPGetVecs() replaced with KSPCreateVecs() because it actually
+      does create the Vecs that need to be destroyed
+
+   .. rubric:: SNES:
+
+   -  Added KSPMonitorSNES() with command line option -ksp_monitor_snes
+      and -ksp_monitor_snes_lg to monitor SNES residual norm at each
+      linear iteration SNESMonitorVI() becomes SNESVIMonitor()
+   -  Added SNESVIMonitorResidual() and -snes_vi_monitor_residual
+
+   .. rubric:: SNESLineSearch:
+
+   .. rubric:: TS:
+
+   -  The postevent routine set with TSSetEventMonitor() now takes an
+      additional PetscBool argument 'forwardsolve'. The forwardsolve
+      flag is used to distinguish between a TS forward solve
+      (forwardsolve = 1) and adjoint solve (forwardsolve = 0).
+   -  Added TSAdjointSolve() for adjoint sensitivity analysis
+   -  EquationType is introduced to distinguish between ODEs and DAEs.
+      It needs to be set accordingly before solving the problem through
+      TSSetEquationType(). It currently only affects arkimex methods.
+
+   .. rubric:: DM/DA:
+
+   -  DMCreateInjection() now returns a Mat, rather than a VecScatter
+   -  The MatType argument is removed from DMCreateMatrix(), you can use
+      DMSetMatType() to indicate the type you want used with a DM,
+      defaults to MATAIJ
+   -  You can now use DMDASetAOType() to indicate the type of AO you
+      want used with a DMDA (defaults to AOBASIC)
+
+   .. rubric:: DMPlex:
+
+   -  Can now redistribute parallel meshes
+   -  Can now increase the overlap of parallel meshes
+   -  Added new mesh formats, Fluent CAS and Gmsh
+
+   .. rubric:: PetscViewer:
+
+   -  HDF5 viewer will save Vecs and DMDA Vecs with a dimension of 1 if
+      the bs/dof of the vector is 1. To always include this dimension as
+      a specific dimension in the HDF5 file even if if it is of size 1
+      use PetscViewerHDF5SetBaseDimension2() or
+      -viewer_hdf5_base_dimension2 true
+
+   .. rubric:: SYS:
+
+   -  PetscOptionsHead() now takes a PetscOptions argument.
+   -  PetscObjectAddOptionsHandler() now takes an event handler that
+      includes a PetscOptions argument.
+      PetscObjectProcessOptionsHandlers() requires this as input.
+
+   .. rubric:: AO:
+
+   .. rubric:: Fortran:
+
+   -  Fortran include files are now in include/petsc/finclude instead of
+      include/finclude. Thus replace uses of #include "finclude/xxx.h"
+      with #include "petsc/finclude/xxx.h". Reason for change: to
+      namespace the finclude directory with PETSc for --prefix installs
+      of PETSc and for packaging systems

@@ -944,7 +944,7 @@ analyze-pipeline:
   tags:
     - name:pj02
   before_script:
-    - pip3 install -r src/docs/sphinx_docs/requirements.txt
+    - pip3 install -r doc/requirements.txt
   allow_failure: true
 
 #
@@ -955,8 +955,8 @@ docs-review:
     - .docs
     - .test-basic
   script:
-    - cd src/docs/sphinx_docs &&
-      ~/.local/bin/sphinx-build -T -E -b html -D language=en -j auto . ../../../public
+    - cd doc &&
+      ~/.local/bin/sphinx-build -T -E -b html -D language=en -j auto . ../public
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html
@@ -972,9 +972,9 @@ pages:  # this job name has special meaning to GitLab
   interruptible: true
   script:
     - VERSION_NAME=$(sed 's/release-//' <<< $CI_COMMIT_REF_NAME) &&
-      DEST=../../../public/$VERSION_NAME &&
+      DEST=../public/$VERSION_NAME &&
       rm -rf $DEST &&
-      cd src/docs/sphinx_docs &&
+      cd doc &&
       ~/.local/bin/sphinx-build -T -E -b dirhtml -D language=en -j auto . $DEST
   only:
     - release

@@ -1,0 +1,174 @@
+==============
+Changes: 2.1.1
+==============
+
+
+Changes
+-------
+(See `Features`_ below)
+
+   .. rubric:: General:
+
+   -  Scalar -> PetscScalar (and added PetscReal)
+   -  The make files are reorganized. bmake/${PETSC_ARCH}/base_variables
+      -> variables, and base.site -> packages. base ->rules.
+   -  If using makefiles from earlier version of PETSc, change
+
+      -  ``include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base``
+
+      to
+
+      -  ``include ${PETSC_DIR}/conf/base``
+
+   -  The windows build of PETSc with win32_gnu, win32_intel and
+      win32_mpich now default to using MPICH-1.2.3The complex version of
+      the PETSc libraries can only be installed with C++ compilers that
+      provide the std::complex implementation.
+
+   .. rubric:: AO (Application Orderings):
+
+   .. rubric:: TS (Timestepping Solvers):
+
+   .. rubric:: DMMG
+
+   -  Default Krylov method on outer linear solver is now FGMRES instead
+      of GMRES. Also default multigrid type is now full instead of
+      multiplicative
+
+   .. rubric:: SNES (Nonlinear Solvers):
+
+   .. rubric:: SLES (Linear Solvers):
+
+   .. rubric:: KSP (Krylov Subspace Methods):
+
+   -  All KSP methods with left preconditioning use the preconditioned
+      residual by default (before CG, CR used the unpreconditioned
+      residual). Use -ksp_norm_type
+      <none,preconditioned,unpreconditioned,natural> to change it, see
+      next bullet.
+   -  ``KSPSetInitialGuessNonzero(), KSPSetComputeSingularValues(), KSPSetComputeEigenvalues(),``
+      all now take a PetscTruth as the second argument allowing them to
+      each be toggled on or off
+   -  ``KSPSetAvoidNorms(), KSPSetUseUnpreconditionedResidual(),             KSPSetComputeResidual()``
+      have all been merged into ``KSPSetNormType()``
+
+   .. rubric:: PC (Preconditioners):
+
+   .. rubric:: MAT (Matrices):
+
+   -  Added additional local relaxation argument to ``MatRelax()``
+   -  Added additional argument to ``MatAXPY()``
+
+      -  MatSNESMFFormJacobian() has been renamed to
+         MatSNESMFComputeJacobian()
+      -  added another field to MatLUInfo and MatILUInfo
+      -  MatCreate() now requires a call to MatSetType() or
+         MatSetFromOptions()
+      -  The MatType is assigned in either of these calls.
+
+   .. rubric:: DA (Distributed Arrays):
+
+   In order to set the grid sizes with -da_grid_x, -da_grid_y,
+   -da_grid_z one must pass in negative values for the M, N, and P
+   arguments in the call to DACreateXX(). If values are not set from the
+   options database then the absolute value of the M,N,P is used as the
+   default.
+
+   -  Changed DAGetColoring() to two routines, DAGetColoring() and
+      DAGetMatrix()
+
+   .. rubric:: VEC (Vectors):
+
+   -  Changed VecCreate() to no longer take in size arguments. Use
+      VecCreate() & VecSetSizes()
+
+   .. rubric:: IS (Index Sets):
+
+   -  Changed IS_COLORING_LOCAL to IS_COLORING_GHOSTED and
+      IS_COLORING_GLOBAL to IS_COLORING_LOCAL
+
+   .. rubric:: General:
+
+   ``PetscOptionsGetDouble()`` is now ``PetscOptionsGetReal()``
+   .. rubric:: Draw (Graphics):
+
+   .. rubric:: Viewers:
+
+   .. rubric:: System:
+
+   .. rubric:: Error Handling:
+
+   .. rubric:: Event Logging:
+
+   Logging functionality is completely reworked. Now one can register
+   new stages, classes and events. Every event is associated with a
+   class. So, users would have to create a class for all userevents.
+
+   -  ``PetscLogStageRegister()`` now takes an int \* as the first
+      argument
+   -  ``PetscLogEventRegister()`` takes an int as the third argument,
+      not a char \*
+
+   .. rubric:: Fortran Interface:
+
+
+Features
+--------
+(See `Changes`_ above)
+
+   .. rubric:: General:
+
+   -  configure can now be used to build PETSc on some architectures.
+      Currently tested on linux, IRIX, solaris machines.We'd like your
+      feedback on this feature; please send ``configure_petsc.log`` and
+      ``config.log``\ when reporting problems with configure.
+   -  Added support for ESI vectors and matrices. Use BOPT=g_c++ or
+      O_c++Better
+   -  support for automatic differentiation with ADIC
+
+   .. rubric:: AO (Application Orderings):
+
+   .. rubric:: TS (Timestepping Solvers):
+
+   .. rubric:: SNES (Nonlinear Solvers):
+
+   .. rubric:: SLES (Linear Solvers):
+
+   .. rubric:: KSP (Krylov Subspace Methods):
+
+   .. rubric:: PC (Preconditioners):
+
+   -  added -pc_lu_zeropivot and -pc_ilu_zeropivot (still need function
+      interfaces)
+
+   .. rubric:: MAT (Matrices):
+
+   .. rubric:: DA (Distributed Arrays):
+
+   Added DAGetArray() and DARestoreArray() that give workspace
+   appropriate for a local function. These may be used in routines that
+   diverentiated with ADIC:-)
+   .. rubric:: VEC (Vectors):
+
+   -  Added the utility routines which do special cases of vecscatters
+      VecConvertMPIToSeqAll(),VecConvertMPIToMPIZero()
+
+   .. rubric:: IS (Index Sets):
+
+   .. rubric:: PF:
+
+   .. rubric:: Draw (Graphics):
+
+   -  added DrawEllipse()
+
+   .. rubric:: Viewers:
+
+   -  added PetscViewerASCIISetMode()
+
+   .. rubric:: System:
+
+   .. rubric:: Error Handling:
+
+   .. rubric:: Event Logging:
+
+   .. rubric:: Fortran Interface:

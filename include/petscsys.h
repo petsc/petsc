@@ -2452,32 +2452,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 
 M*/
 
-/*MC
-
-    UsingFortran - To use PETSc with Fortran you must use both PETSc include files and modules. At the beginning
-      of every function and module definition you need something like
-
-$
-$#include "petsc/finclude/petscXXX.h"
-$         use petscXXX
-
-     You can declare PETSc variables using either of the following.
-
-$    XXX variablename
-$    type(tXXX) variablename
-
-    For example,
-
-$#include "petsc/finclude/petscvec.h"
-$         use petscvec
-$
-$    Vec b
-$    type(tVec) x
-
-    Level: beginner
-
-M*/
-
 PETSC_EXTERN PetscErrorCode PetscGetArchType(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscGetHostName(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscGetUserName(char[],size_t);
