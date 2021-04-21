@@ -185,7 +185,19 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PETSCSF_DistSect,sf,0,0,0);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(rootSection, &numFields);CHKERRQ(ierr);
-  if (numFields) {ierr = PetscSectionSetNumFields(leafSection, numFields);CHKERRQ(ierr);}
+  if (numFields) {
+    IS perm;
+
+    /* PetscSectionSetNumFields() calls PetscSectionReset(), which destroys
+       leafSection->perm. To keep this permutation set by the user, we grab
+       the reference before calling PetscSectionSetNumFields() and set it
+       back after. */
+    ierr = PetscSectionGetPermutation(leafSection, &perm);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(leafSection, numFields);CHKERRQ(ierr);
+    ierr = PetscSectionSetPermutation(leafSection, perm);CHKERRQ(ierr);
+    ierr = ISDestroy(&perm);CHKERRQ(ierr);
+  }
   ierr = PetscMalloc1(numFields+2, &sub);CHKERRQ(ierr);
   sub[1] = rootSection->bc ? PETSC_TRUE : PETSC_FALSE;
   for (f = 0; f < numFields; ++f) {
