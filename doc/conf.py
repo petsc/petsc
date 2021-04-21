@@ -23,7 +23,7 @@ sys.path.append(os.path.abspath('./ext'))
 
 # -- Sphinx Version and Config -----------------------------------------------
 # Sphinx will error and refuse to build if not equal to version
-needs_sphinx='2.4.4'
+needs_sphinx='3.5'
 
 # Sphinx-build fails for any broken __internal__ links. For external use make linkcheck.
 nitpicky = True
