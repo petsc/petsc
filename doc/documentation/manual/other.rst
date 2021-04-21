@@ -143,12 +143,12 @@ which can also be used from the command line, e.g. ``-options_file my_options.op
 One can also use YAML files this way (relying on ``PetscOptionsInsertFileYAML()``).
 For example, the following file:
 
-.. literalinclude:: /../../../src/sys/tests/ex47-options.yaml
+.. literalinclude:: /../src/sys/tests/ex47-options.yaml
   :language: yaml
 
 corresponds to the following PETSc options:
 
-.. literalinclude:: /../../../src/sys/tests/output/ex47_3_options.out
+.. literalinclude:: /../src/sys/tests/output/ex47_3_options.out
   :language: none
   :start-after: #
   :end-before: #End
@@ -161,17 +161,17 @@ PETSc will also check the first line of the options file itself and
 parse the file as YAML if it matches certain criteria, for example.
 
 
-.. literalinclude:: /../../../src/sys/tests/ex47-yaml_tag
+.. literalinclude:: /../src/sys/tests/ex47-yaml_tag
   :language: yaml
 
 and
 
-.. literalinclude:: /../../../src/sys/tests/ex47-yaml_doc
+.. literalinclude:: /../src/sys/tests/ex47-yaml_doc
   :language: yaml
 
 both correspond to options
 
-.. literalinclude:: /../../../src/sys/tests/output/ex47_2_auto.out
+.. literalinclude:: /../src/sys/tests/output/ex47_2_auto.out
   :language: none
   :start-after: #
   :end-before: #End
@@ -843,7 +843,7 @@ follows.
 .. admonition:: Listing: ``src/classes/draw/tests/ex3.c``
    :name: snes-ex1
 
-   .. literalinclude:: /../../../src/sys/classes/draw/tests/ex3.c
+   .. literalinclude:: /../src/sys/classes/draw/tests/ex3.c
       :end-before: /*TEST
 
 

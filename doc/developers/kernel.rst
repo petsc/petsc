@@ -71,7 +71,7 @@ calls:
 
 The macro ``SETERRQ()`` is given by
 
-.. literalinclude:: /../../../include/petscerror.h
+.. literalinclude:: /../include/petscerror.h
    :language: c
    :start-at: #define SETERRQ
    :end-at: #define SETERRQ
@@ -85,7 +85,7 @@ from being printed by many processes.
 
 The macro ``CHKERRQ()`` is defined by
 
-.. literalinclude:: /../../../include/petscerror.h
+.. literalinclude:: /../include/petscerror.h
    :language: c
    :start-at: #define CHKERRQ
    :end-at: #define CHKERRQ
@@ -107,7 +107,7 @@ Error Handlers
 The error-handling function ``PetscError()`` calls the “current” error
 handler with the code
 
-.. literalinclude:: /../../../src/sys/error/err.c
+.. literalinclude:: /../src/sys/error/err.c
    :language: c
    :start-at: PetscErrorCode PetscError(
    :end-at: PetscFunctionReturn
@@ -164,23 +164,23 @@ and ``free()`` routines. The public interface for these is provided in
 ``petscsys.h``, while the implementation code is in ``src/sys/memory``.
 The most basic interfaces are
 
-.. literalinclude:: /../../../include/petscsys.h
+.. literalinclude:: /../include/petscsys.h
    :language: c
    :start-at: #define PetscMalloc
    :end-at: #define PetscMalloc
 
-.. literalinclude:: /../../../include/petscsys.h
+.. literalinclude:: /../include/petscsys.h
    :language: c
    :start-at: #define PetscFree
    :end-at: #define PetscFree
 
-.. literalinclude:: /../../../src/sys/memory/mal.c
+.. literalinclude:: /../src/sys/memory/mal.c
    :language: c
    :start-at: PetscErrorCode PetscMallocA(
    :end-at: PetscFunctionReturn(0)
    :append: }
 
-.. literalinclude:: /../../../src/sys/memory/mal.c
+.. literalinclude:: /../src/sys/memory/mal.c
    :language: c
    :start-at: PetscErrorCode PetscFreeA(
    :end-at: PetscFunctionReturn(0)
@@ -210,36 +210,36 @@ in the PETSc source code. They automatically manage calling
 ``PetscMallocA()`` and ``PetscFreeA()`` with the appropriate location
 information.
 
-.. literalinclude:: /../../../include/petscsys.h
+.. literalinclude:: /../include/petscsys.h
    :language: c
    :start-at: #define PetscMalloc1
    :end-at: #define PetscMalloc1
 
-.. literalinclude:: /../../../include/petscsys.h
+.. literalinclude:: /../include/petscsys.h
    :language: c
    :start-at: #define PetscMalloc2
    :end-at: #define PetscMalloc2
 
 ...
 
-.. literalinclude:: /../../../include/petscsys.h
+.. literalinclude:: /../include/petscsys.h
    :language: c
    :start-at: #define PetscMalloc7
    :end-at: #define PetscMalloc7
 
-.. literalinclude:: /../../../include/petscsys.h
+.. literalinclude:: /../include/petscsys.h
    :language: c
    :start-at: #define PetscFree
    :end-at: #define PetscFree
 
-.. literalinclude:: /../../../include/petscsys.h
+.. literalinclude:: /../include/petscsys.h
    :language: c
    :start-at: #define PetscFree2
    :end-at: #define PetscFree2
 
 ...
 
-.. literalinclude:: /../../../include/petscsys.h
+.. literalinclude:: /../include/petscsys.h
    :language: c
    :start-at: #define PetscFree7
    :end-at: #define PetscFree7
@@ -331,8 +331,8 @@ These routines are normally called by the ``PetscInitialize()`` and
 References
 ----------
 
-.. bibliography:: ../../tex/petsc.bib
+.. bibliography:: /../src/docs/tex/petsc.bib
    :filter: docname in docnames
 
-.. bibliography:: ../../tex/petscapp.bib
+.. bibliography:: /../src/docs/tex/petscapp.bib
    :filter: docname in docnames

@@ -47,13 +47,13 @@ The test functions :math:`v, q` and their derivatives are determined by the disc
 
 For example, the kernel for the continuity equation, paired with the pressure test function, is called ``f0_p`` and can be seen here
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static void f0_p(
    :end-at: }
 
 We use the components of the Jacobian of :math:`u` to build up its divergence. For the balance of momentum excluding body force, we test against the gradient of the test function, as seen in ``f1_u``,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static void f1_u(
    :end-at: }
 
@@ -68,7 +68,7 @@ An MMS solution is chosen to elucidate some property of the problem, and to chec
 
    u = \begin{pmatrix} x^2 + y^2 \\ 2 x^2 - 2 x y \end{pmatrix} \quad \mathrm{or} \quad \begin{pmatrix} 2 x^2 + y^2 + z^2 \\ 2 x^2 - 2xy \\ 2 x^2 - 2xz \end{pmatrix}
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static PetscErrorCode quadratic_u
    :end-at: return 0;
    :append: }
@@ -77,7 +77,7 @@ An MMS solution is chosen to elucidate some property of the problem, and to chec
 
    p = x + y - 1 \quad \mathrm{or} \quad x + y + z - \frac{3}{2}
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static PetscErrorCode quadratic_p
    :end-at: return 0;
    :append: }
@@ -90,41 +90,41 @@ By plugging these solutions into our equations, assuming that the velocity we ch
 
 which is implemented in our ``f0_quadratic_u`` pointwise function
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static void f0_quadratic_u
    :end-at: }
 
 We let PETSc know about these solutions
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: ierr = PetscDSSetExactSolution(ds, 0
    :end-at: ierr = PetscDSSetExactSolution(ds, 1
 
 These solutions will be captured exactly by the :math:`P_2-P_1` finite element space. We can use the ``-dmsnes_check`` option to activate function space checks. It gives the :math:`L_2` error, or *discretization* error, of the exact solution, the residual computed using the interpolation of the exact solution into our finite element space, and uses a Taylor test to check that our Jacobian matches the residual. It should converge at order 2, or be exact in the case of linear equations like Stokes. Our :math:`P_2-P_1` runs in the PETSc test section at the bottom of the source file
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: suffix: 2d_p2_p1_check
    :lines: 1-3
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: suffix: 3d_p2_p1_check
    :lines: 1-3
 
 verify these claims, as we can see from the output files
 
-.. literalinclude:: /../../../src/snes/tutorials/output/ex62_2d_p2_p1_check.out
+.. literalinclude:: /../src/snes/tutorials/output/ex62_2d_p2_p1_check.out
   :language: none
 
-.. literalinclude:: /../../../src/snes/tutorials/output/ex62_3d_p2_p1_check.out
+.. literalinclude:: /../src/snes/tutorials/output/ex62_3d_p2_p1_check.out
   :language: none
 
 We can carry out the same tests for the :math:`Q_2-Q_1` element,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: suffix: 2d_q2_q1_check
    :lines: 1-2
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: suffix: 3d_q2_q1_check
    :lines: 1-2
 
@@ -135,7 +135,7 @@ The quadratic solution, however, cannot tell us whether our discretization is at
   u = \begin{pmatrix} \sin(\pi x) + \sin(\pi y) \\ -\pi \cos(\pi x) y \end{pmatrix} \quad \mathrm{or} \quad
       \begin{pmatrix} 2 \sin(\pi x) + \sin(\pi y) + \sin(\pi z) \\ -\pi \cos(\pi x) y \\ -\pi \cos(\pi x) z \end{pmatrix}
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static PetscErrorCode trig_u
    :end-at: return 0;
    :append: }
@@ -144,7 +144,7 @@ The quadratic solution, however, cannot tell us whether our discretization is at
 
   p = \sin(2 \pi x) + \sin(2 \pi y) \quad \mathrm{or} \quad \sin(2 \pi x) + \sin(2 \pi y) + \sin(2 \pi z)
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static PetscErrorCode trig_p
    :end-at: return 0;
    :append: }
@@ -154,32 +154,32 @@ The quadratic solution, however, cannot tell us whether our discretization is at
   f = \begin{pmatrix} 2 \pi \cos(2 \pi x) + \mu \pi^2 \sin(\pi x) + \mu \pi^2 \sin(\pi y) \\ 2 \pi \cos(2 \pi y) - \mu \pi^3 \cos(\pi x) y \end{pmatrix} \quad \mathrm{or} \quad
   \begin{pmatrix} 2 \pi \cos(2 \pi x) + 2\mu \pi^2 \sin(\pi x) + \mu \pi^2 \sin(\pi y) + \mu \pi^2 \sin(\pi z) \\ 2 \pi \cos(2 \pi y) - \mu \pi^3 cos(\pi x) y \\ 2 \pi \cos(2 \pi z) - \mu \pi^3 \cos(\pi x) z \end{pmatrix}
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static void f0_quadratic_u
    :end-at: }
    :append: }
 
 We can now use ``-snes_convergence_estimate`` to determine the convergence exponent for the discretization. This options solves the problem on a series of refined meshes, calculates the error on each mesh, and determines the slope on a logarithmic scale. For example, we do this in two dimensions, refining our mesh twice using ``-convest_num_refine 2`` in the following test.
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: suffix: 2d_p2_p1_conv
    :end-before: test:
 
 However, the test needs an accurate linear solver. Sparse LU factorizations do not, in general, do full pivoting. Thus we must deal with the zero pressure block explicitly. We use the ``PCFIELDSPLIT`` preconditioner and the full Schur complement factorization, but we still need a preconditioner for the Schur complement :math:`B^T A^{-1} B`. We can have PETSc construct that matrix automatically, but the cost rises steeply as the problem size increases. Instead, we use the fact that the Schur complement is spectrally equivalent to the pressure mass matrix :math:`M_p`. We can make a preconditioning matrix, which has the diagonal blocks we will use to build the preconditioners, letting PETSc know that we get the off-diagonal blocks from the original system with ``-pc_fieldsplit_off_diag_use_amat`` and to build the Schur complement from the original matrix using ``-pc_use_amat``,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: ierr = PetscDSSetJacobianPreconditioner(ds, 0
    :end-at: ierr = PetscDSSetJacobianPreconditioner(ds, 1
 
 Putting this all together, and using exact solvers on the subblocks, we have
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: suffix: 2d_p2_p1_conv
    :end-before: test:
 
 and we see it converges, however it is superconverging in the pressure,
 
-.. literalinclude:: /../../../src/snes/tutorials/output/ex62_2d_p2_p1_conv.out
+.. literalinclude:: /../src/snes/tutorials/output/ex62_2d_p2_p1_conv.out
 
 If we refine the mesh using ``-dm_refine 3``, the convergence rates become ``[3.0, 2.1]``.
 
@@ -188,20 +188,20 @@ Dealing with Parameters
 
 Like most physical problems, the Stokes problem has a parameter, the dynamic shear viscosity, which determines what solution regime we are in. To handle these parameters in PETSc, we first define a C struct to hold them,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: typedef struct {
    :end-at: } Parameter;
 
 and then add a ``PetscBag`` object to our application context. We then setup the parameter object,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static PetscErrorCode SetupParameters
    :end-at: PetscFunctionReturn(0);
    :append: }
 
 which will allow us to set the value from the command line using ``-mu``. The ``PetscBag`` can also be persisted to disk with ``PetscBagLoad/View()``. We can make these values available as constant to our pointwise functions through the ``PetscDS`` object.
 
-.. literalinclude:: /../../../src/snes/tutorials/ex62.c
+.. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-after: /* Make constant values
    :end-at: }
 
@@ -230,7 +230,7 @@ Debugging
 
 If we can provide the ``PetscDS`` object in our problem with the exact solution function, PETSc has good support for debugging our discretization and solver. We can use the ``PetscConvEst`` object to check the convergence behavior of our element automatically. For example, if we use the ``-snes_convergence_estimate`` option, PETSc will solve our nonlinear equations on a series of refined meshes, use our exact solution to calculate the error, and then fit this line on a log-log scale to get the convergence rate,
 
-.. literalinclude:: /../../../src/snes/tutorials/ex69.c
+.. literalinclude:: /../src/snes/tutorials/ex69.c
    :start-at: suffix: p2p1_conv
    :end-before: test:
 
@@ -240,7 +240,7 @@ If we initially refine the mesh twice, ``-dm_refine 2``, we get
 
 which are the convergence rates we expect for the velocity and pressure using a :math:`P_2-P_1` discretization. For :math:`Q_1-P_0`
 
-.. literalinclude:: /../../../src/snes/tutorials/ex69.c
+.. literalinclude:: /../src/snes/tutorials/ex69.c
    :start-at: suffix: q1p0_conv
    :end-before: test:
 
@@ -250,7 +250,7 @@ we get
 
 This is a sensitive check that everything is working correctly. However, if this is wrong, where can I start? More fine-grained checks are available using the ``-dmsnes_check`` option. Using this for our :math:`P_2-P_1` example (the ``p2p1`` test), we have
 
-.. literalinclude:: /../../../src/snes/tutorials/output/ex69_p2p1.out
+.. literalinclude:: /../src/snes/tutorials/output/ex69_p2p1.out
 
 The first line records the discretization error for our exact solution. This means that we project our solution function into the finite element space and then calculate the :math:`L_2` norm of the difference between the exact solution and its projection. The norm is computed for each field separately. Next, PETSc calculates the residual using the projected exact solution as input. This should be small, and as the mesh is refined it should approach zero. Last, PETSc uses a Taylor test to try and determine how the error in the linear model scales as a function of the perturbation :math:`h`. Thus, in a nonlinear situation we would expect
 
@@ -262,7 +262,7 @@ In this case, since the viscosity does not depend on the velocity or pressure fi
 
 Suppose that we have made an error in the Jacobian. For instance, let us accidentally flip the sign of the pressure term in the momentum Jacobian.
 
-.. literalinclude:: /../../../src/snes/tutorials/ex69.c
+.. literalinclude:: /../src/snes/tutorials/ex69.c
    :start-at: static void stokes_momentum_pres_J
    :end-at: }
 
@@ -578,7 +578,7 @@ For each nonlinear step, we use ``KSPGMRES`` to solve the Newton equation, preco
 
 We form the preconditioner for the Schur complement from the (1,1) block of our preconditioning matrix, which we have set to be the viscosity-weighted mass matrix
 
-.. literalinclude:: /../../../src/snes/tutorials/ex69.c
+.. literalinclude:: /../src/snes/tutorials/ex69.c
    :start-at: static void stokes_identity_J_kx
    :end-before: /*
 
@@ -861,7 +861,7 @@ This looks alright, but the number of iterates grows with refinement. At 3 refin
 
 We can instead use geometric multigrid, and we would hope get more accurate coarse bases. The ``-dm_refine_hierarchy`` allows us to make a hierarchy of refined meshes and sets the number of multigrid levels automatically. Then all we need to specify is ``-fieldsplit_velocity_pc_type mg``, as we see in the test
 
-.. literalinclude:: /../../../src/snes/tutorials/ex69.c
+.. literalinclude:: /../src/snes/tutorials/ex69.c
    :start-at: suffix: p2p1_gmg
    :end-before: test:
 
@@ -999,8 +999,8 @@ We can make the problem harder by increasing the wave number and size of the vis
 
 Bibliography
 ------------
-.. bibliography:: /../tex/petsc.bib
+.. bibliography:: /../src/docs/tex/petsc.bib
    :filter: docname in docnames
 
-.. bibliography:: /../tex/petscapp.bib
+.. bibliography:: /../src/docs/tex/petscapp.bib
    :filter: docname in docnames

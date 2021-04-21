@@ -72,7 +72,7 @@ DO THE FOLLOWING:
 
    Expected output:
 
-   .. literalinclude:: /../../../src/ksp/ksp/tutorials/output/ex50_tut_1.out
+   .. literalinclude:: /../src/ksp/ksp/tutorials/output/ex50_tut_1.out
     :language: none
 
 
@@ -85,7 +85,7 @@ DO THE FOLLOWING:
 
    Expected output:
 
-   .. literalinclude:: /../../../src/ksp/ksp/tutorials/output/ex50_tut_2.out
+   .. literalinclude:: /../src/ksp/ksp/tutorials/output/ex50_tut_2.out
     :language: none
 
 
@@ -98,7 +98,7 @@ DO THE FOLLOWING:
 
    Expected output:
 
-   .. literalinclude:: /../../../src/ksp/ksp/tutorials/output/ex50_tut_3.out
+   .. literalinclude:: /../src/ksp/ksp/tutorials/output/ex50_tut_3.out
     :language: none
 
 
@@ -139,7 +139,7 @@ Example 2: Nonlinear ODE arising from a time-dependent one dimensional PDE
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ts/tutorials/output/ex2_tut_1.out
+         .. literalinclude:: /../src/ts/tutorials/output/ex2_tut_1.out
           :language: none
 
 
@@ -152,7 +152,7 @@ Example 2: Nonlinear ODE arising from a time-dependent one dimensional PDE
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ts/tutorials/output/ex2_tut_2.out
+         .. literalinclude:: /../src/ts/tutorials/output/ex2_tut_2.out
           :language: none
 
 
@@ -164,7 +164,7 @@ Example 2: Nonlinear ODE arising from a time-dependent one dimensional PDE
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ts/tutorials/output/ex2_tut_3.out
+         .. literalinclude:: /../src/ts/tutorials/output/ex2_tut_3.out
           :language: none
 
 
@@ -207,7 +207,7 @@ Example 3: Nonlinear PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/snes/tutorials/output/ex19_tut_1.out
+         .. literalinclude:: /../src/snes/tutorials/output/ex19_tut_1.out
           :language: none
 
 
@@ -220,7 +220,7 @@ Example 3: Nonlinear PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/snes/tutorials/output/ex19_tut_2.out
+         .. literalinclude:: /../src/snes/tutorials/output/ex19_tut_2.out
           :language: none
 
 
@@ -236,7 +236,7 @@ Example 3: Nonlinear PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/snes/tutorials/output/ex19_tut_3.out
+         .. literalinclude:: /../src/snes/tutorials/output/ex19_tut_3.out
           :language: none
 
 
@@ -253,7 +253,7 @@ Example 3: Nonlinear PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/snes/tutorials/output/ex19_tut_8.out
+         .. literalinclude:: /../src/snes/tutorials/output/ex19_tut_8.out
           :language: none
 
 
@@ -266,7 +266,7 @@ Example 3: Nonlinear PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/snes/tutorials/output/ex19_tut_4.out
+         .. literalinclude:: /../src/snes/tutorials/output/ex19_tut_4.out
           :language: none
 
 
@@ -283,7 +283,7 @@ Example 3: Nonlinear PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/snes/tutorials/output/ex19_tut_5.out
+         .. literalinclude:: /../src/snes/tutorials/output/ex19_tut_5.out
           :language: none
 
 
@@ -300,7 +300,7 @@ Example 3: Nonlinear PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/snes/tutorials/output/ex19_tut_6.out
+         .. literalinclude:: /../src/snes/tutorials/output/ex19_tut_6.out
           :language: none
 
 
@@ -316,7 +316,7 @@ Example 3: Nonlinear PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/snes/tutorials/output/ex19_tut_7.out
+         .. literalinclude:: /../src/snes/tutorials/output/ex19_tut_7.out
           :language: none
 
 
@@ -361,7 +361,7 @@ Example 4: Linear Stokes-type PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ksp/ksp/tutorials/output/ex42_tut_1.out
+         .. literalinclude:: /../src/ksp/ksp/tutorials/output/ex42_tut_1.out
            :language: none
 
 
@@ -376,7 +376,7 @@ Example 4: Linear Stokes-type PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ksp/ksp/tutorials/output/ex42_tut_2.out
+         .. literalinclude:: /../src/ksp/ksp/tutorials/output/ex42_tut_2.out
           :language: none
 
 
@@ -388,7 +388,7 @@ Example 4: Linear Stokes-type PDE on a structured grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ksp/ksp/tutorials/output/ex42_tut_3.out
+         .. literalinclude:: /../src/ksp/ksp/tutorials/output/ex42_tut_3.out
           :language: none
 
 
@@ -436,7 +436,7 @@ Example 5: Nonlinear time dependent PDE on Unstructured Grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ts/tutorials/output/ex11_tut_1.out
+         .. literalinclude:: /../src/ts/tutorials/output/ex11_tut_1.out
           :language: none
 
 
@@ -449,7 +449,7 @@ Example 5: Nonlinear time dependent PDE on Unstructured Grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ts/tutorials/output/ex11_tut_2.out
+         .. literalinclude:: /../src/ts/tutorials/output/ex11_tut_2.out
           :language: none
 
 
@@ -463,7 +463,7 @@ Example 5: Nonlinear time dependent PDE on Unstructured Grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ts/tutorials/output/ex11_tut_3.out
+         .. literalinclude:: /../src/ts/tutorials/output/ex11_tut_3.out
           :language: none
 
 
@@ -479,6 +479,6 @@ Example 5: Nonlinear time dependent PDE on Unstructured Grid
 
          Expected output:
 
-         .. literalinclude:: /../../../src/ts/tutorials/output/ex11_tut_4.out
+         .. literalinclude:: /../src/ts/tutorials/output/ex11_tut_4.out
           :language: none
 

@@ -2,9 +2,9 @@ version: 2
 
 sphinx:
   builder: dirhtml
-  configuration: src/docs/sphinx_docs/conf.py
+  configuration: doc/conf.py
 
 python:
   version: 3.8
   install:
-    - requirements: src/docs/sphinx_docs/requirements.txt
+    - requirements: doc/requirements.txt

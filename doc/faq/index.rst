@@ -2307,5 +2307,8 @@ You would also need to have access to the shared libraries on this new machine. 
 alternative is to build the exeutable without shared libraries by first deleting the
 shared libraries, and then creating the executable.
 
-.. bibliography:: ../../tex/petsc.bib
+.. bibliography:: /../src/docs/tex/petsc.bib
+   :filter: docname in docnames
+
+.. bibliography:: /../src/docs/tex/petscapp.bib
    :filter: docname in docnames

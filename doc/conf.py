@@ -43,7 +43,7 @@ todo_emit_warnings=True
 copybutton_prompt_text = r"[>]{1,3}"
 copybutton_prompt_is_regexp = True
 
-with open(os.path.join('..', '..', '..', 'include', 'petscversion.h'),'r') as version_file:
+with open(os.path.join('..', 'include', 'petscversion.h'),'r') as version_file:
     buf = version_file.read()
     petsc_release_flag = re.search(' PETSC_VERSION_RELEASE[ ]*([0-9]*)',buf).group(1)
     major_version      = re.search(' PETSC_VERSION_MAJOR[ ]*([0-9]*)',buf).group(1)
@@ -100,7 +100,7 @@ html_context = {
     "github_user": "petsc",
     "github_repo": "petsc",
     "github_version": "main",
-    "doc_path": "src/docs/sphinx_docs",
+    "doc_path": "doc",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -108,8 +108,8 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_logo = os.path.join('..','website','images','PETSc-TAO_RGB.svg')
-html_favicon = os.path.join('..','website','images','PETSc_RGB-logo.png')
+html_logo = os.path.join('..', 'src', 'docs', 'website','images','PETSc-TAO_RGB.svg')
+html_favicon = os.path.join('..', 'src', 'docs', 'website','images','PETSc_RGB-logo.png')
 
 # Extra preprocessing for included "classic" docs
 import build_classic_docs
@@ -120,7 +120,10 @@ html_extra_path = [html_extra_dir]
 
 # -- Options for LaTeX output --------------------------------------------
 
-bibtex_bibfiles = ['../tex/petsc.bib','../tex/petscapp.bib']
+bibtex_bibfiles = [
+        os.path.join('..', 'src', 'docs', 'tex', 'petsc.bib'),
+        os.path.join('..', 'src', 'docs', 'tex', 'petscapp.bib'),
+        ]
 latex_engine = 'xelatex'
 
 # Specify how to arrange the documents into LaTeX files.

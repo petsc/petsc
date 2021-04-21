@@ -126,8 +126,8 @@ This indicates that the generalized eigenvector associated with that eigenvalue 
 
     <hr>
 
-.. bibliography:: /../tex/petsc.bib
+.. bibliography:: /../src/docs/tex/petsc.bib
    :filter: docname in docnames
 
-.. bibliography:: /../tex/petscapp.bib
+.. bibliography:: /../src/docs/tex/petscapp.bib
    :filter: docname in docnames
