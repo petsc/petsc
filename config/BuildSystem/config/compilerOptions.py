@@ -312,6 +312,7 @@ class CompilerOptions(config.base.Configure):
       if not status:
         if compiler.find('win32fe') > -1:
           version = '\\n'.join(output.split('\n')[0:2])
+          version = version.replace('\r','')
         else:
           #PGI/Windows writes an empty '\r\n' on the first line of output
           if output.count('\n') > 1 and output.split('\n')[0] == '\r':
