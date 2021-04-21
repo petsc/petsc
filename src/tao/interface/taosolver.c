@@ -2861,9 +2861,9 @@ PetscErrorCode  TaoGetGradientNorm(Tao tao, Mat *M)
    Collective on tao
 
    Input Parameter:
-.  tao      - the Tao context
++  tao      - the Tao context
 .  gradient - the gradient to be computed
-.  norm     - the norm type
+-  norm     - the norm type
 
    Output Parameter:
 .  gnorm    - the gradient norm
