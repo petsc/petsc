@@ -339,7 +339,7 @@ PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
 -  val - the maximum component
 
    Notes:
-   Returns the value PETSC_MIN_REAL and p = -1 if the vector is of length 0.
+   Returns the value PETSC_MIN_REAL and negative p if the vector is of length 0.
 
    Returns the smallest index with the maximum value
    Level: intermediate
@@ -376,7 +376,7 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
    Level: intermediate
 
    Notes:
-   Returns the value PETSC_MAX_REAL and p = -1 if the vector is of length 0.
+   Returns the value PETSC_MAX_REAL and negative p if the vector is of length 0.
 
    This returns the smallest index with the minumum value
 
