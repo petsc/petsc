@@ -3,10 +3,10 @@
 */
 #define PETSC_SKIP_CXX_COMPLEX_FIX
 #include <petscconf.h>
+#include <petscvec_kokkos.hpp>
 #include <petsc/private/dmpleximpl.h>   /*I   "petscdmplex.h"   I*/
 #include <petsclandau.h>
 #include <petscts.h>
-#include <petscveckokkos.hpp>
 
 #include <Kokkos_Core.hpp>
 #include <cstdio>
@@ -97,7 +97,7 @@ extern "C"  {
     maps->vp2 = (void*)d_gidx;
     {
       Kokkos::View<P4estVertexMaps, Kokkos::HostSpace> h_maps_k(&h_maps);
-      Kokkos::View<P4estVertexMaps>                    *d_maps_k = new Kokkos::View<P4estVertexMaps>(Kokkos::create_mirror(DeviceMemorySpace(),h_maps_k));
+      Kokkos::View<P4estVertexMaps>                    *d_maps_k = new Kokkos::View<P4estVertexMaps>(Kokkos::create_mirror(Kokkos::DefaultExecutionSpace::memory_space(),h_maps_k));
       Kokkos::deep_copy (*d_maps_k, h_maps_k);
       maps->data = d_maps_k->data();
       maps->vp3 = (void*)d_maps_k;

@@ -1,6 +1,7 @@
 #if !defined(PETSCDMDA_KOKKOS_HPP)
 #define PETSCDMDA_KOKKOS_HPP
 
+#include <petscvec_kokkos.hpp>
 #include <petscdmda.h>
 
 #if defined(PETSC_HAVE_KOKKOS)

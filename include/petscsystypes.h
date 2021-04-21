@@ -226,23 +226,30 @@ M*/
 
 #if defined(PETSC_HAVE_COMPLEX)
   #if defined(__cplusplus)  /* C++ complex support */
-    #if defined(PETSC_HAVE_CUDA)
+    /* Locate a C++ complex template library */
+    #if defined(PETSC_DESIRE_KOKKOS_COMPLEX) /* Defined in petscvec_kokkos.hpp for *.kokkos.cxx files */
+      #define petsccomplexlib Kokkos
+      #include <Kokkos_Complex.hpp>
+    #elif defined(PETSC_HAVE_CUDA)
       #define petsccomplexlib thrust
       #include <thrust/complex.h>
     #else
       #define petsccomplexlib std
       #include <complex>
     #endif
+
+    /* Define PetscComplex based on the precision */
     #if defined(PETSC_USE_REAL_SINGLE)
       typedef petsccomplexlib::complex<float> PetscComplex;
     #elif defined(PETSC_USE_REAL_DOUBLE)
       typedef petsccomplexlib::complex<double> PetscComplex;
     #elif defined(PETSC_USE_REAL___FLOAT128)
       typedef petsccomplexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
-    #endif  /* PETSC_USE_REAL_ */
+    #endif
+
     #if !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
       #include <petsccxxcomplexfix.h>
-    #endif /* ! PETSC_SKIP_CXX_COMPLEX_FIX */
+    #endif
   #else /* c99 complex support */
     #include <complex.h>
     #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)

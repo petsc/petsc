@@ -1,14 +1,14 @@
 /*
    Implements the sequential Kokkos vectors.
 */
+#include <petscvec_kokkos.hpp>
+
 #include <petsc/private/sfimpl.h>
 #include <petsc/private/petscimpl.h>
 #include <petscmath.h>
 #include <petscviewer.h>
 #include <KokkosBlas.hpp>
 
-#include <petscconf.h>
-#include <petscvec_kokkos.hpp>
 #include <petscerror.h>
 #include <../src/vec/vec/impls/dvecimpl.h> /* for VecCreate_Seq_Private */
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
@@ -130,8 +130,8 @@ PetscErrorCode VecMin_SeqKokkos(Vec xin,PetscInt *p,PetscReal *val)
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   ierr = VecGetKokkosView(xin,&xv);CHKERRQ(ierr);
   Kokkos::parallel_reduce("VecMin",xin->map->n,KOKKOS_LAMBDA(PetscInt i,MinLocValue_t& lminloc) {
-    if (xv(i) < lminloc.val) {
-      lminloc.val = xv(i);
+    if (PetscRealPart(xv(i)) < lminloc.val) {
+      lminloc.val = PetscRealPart(xv(i));
       lminloc.loc = i;
     }
   },Kokkos::MinLoc<PetscReal,PetscInt>(minloc)); /* Kokkos will set minloc properly even if xin is zero-lengthed */
@@ -154,8 +154,8 @@ PetscErrorCode VecMax_SeqKokkos(Vec xin,PetscInt *p,PetscReal *val)
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   ierr = VecGetKokkosView(xin,&xv);CHKERRQ(ierr);
   Kokkos::parallel_reduce("VecMax",xin->map->n,KOKKOS_LAMBDA(PetscInt i,MaxLocValue_t& lmaxloc) {
-    if (xv(i) > lmaxloc.val) {
-      lmaxloc.val = xv(i);
+    if (PetscRealPart(xv(i)) > lmaxloc.val) {
+      lmaxloc.val = PetscRealPart(xv(i));
       lmaxloc.loc = i;
     }
   },Kokkos::MaxLoc<PetscReal,PetscInt>(maxloc));
@@ -725,7 +725,7 @@ PetscErrorCode VecConjugate_SeqKokkos(Vec xin)
   ierr = VecGetKokkosView(xin,&xv);CHKERRQ(ierr);
   Kokkos::parallel_for(xin->map->n,KOKKOS_LAMBDA(int64_t i) {xv(i) = Kokkos::conj(xv(i));});
   ierr = VecRestoreKokkosView(xin,&xv);CHKERRQ(ierr);
-  ierr = WaitForKokkos();CHKERRQ(err);
+  ierr = WaitForKokkos();CHKERRQ(ierr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 #else
   PetscFunctionBegin;
