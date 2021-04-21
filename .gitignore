@@ -186,3 +186,4 @@ compile_commands.json
 .cache/
 .vscode/
 sphinx_docs_env
+venv-petsc-docs
