@@ -1,0 +1,72 @@
+==============
+Changes: 2.1.2
+==============
+
+   .. rubric:: General:
+
+   -  Win32fe now takes --nt4 option for compatibility on NT4
+   -  Supports cygwinpaths in win32fe
+   -  Better support for borland tools
+   -  Added PetscOptionsInsertString()
+   -  Allow full path of debugger to be specified using
+      -start_in_debugger option
+   -  Better hyperlinks across documentation (including users manual)
+
+   .. rubric:: ADIC:
+
+   -  Support for global reductions on local functions
+   -  Allow coloring of periodic grids
+
+   .. rubric:: AO (Application Orderings):
+
+   .. rubric:: TS (Timestepping Solvers):
+
+   .. rubric:: DMMG:
+
+   .. rubric:: SNES (Nonlinear Solvers):
+
+   -  Removed all minimization support in PETSc. TAO package should be
+      used for this functionality.
+
+   .. rubric:: SLES (Linear Solvers):
+
+   .. rubric:: KSP (Krylov Subspace Methods):
+
+   -  Support -ksp_unpreconditioned_norm in -ksp_type cr
+
+   .. rubric:: PC (Preconditioners):
+
+   -  Added support for PCType PCMAT (PC based on a matvec)
+   -  Added support for PCType PCHYPRE (includes PILUT, EUCLID, and
+      BoomerAMG)
+   -  Cholesky - additional info from factorization
+
+   .. rubric:: MAT (Matrices):
+
+   -  SBAIJ matmult - improve performance by optimizing communication.
+   -  markdiagonal - performance optimization.
+   -  SuperLU interface improved (check page 75 in the user's manual)
+   -  DSCPACK interface inproved
+   -  Spooles interface added
+
+   .. rubric:: DA (Distributed Arrays):
+
+   .. rubric:: VEC (Vectors):
+
+   .. rubric:: IS (Index Sets):
+
+   .. rubric:: Draw (Graphics):
+
+   -  Added flag to support turning off axis resizing
+
+   .. rubric:: Viewers:
+
+   -  Allow drawing rectangles in postscript
+
+   .. rubric:: System:
+
+   .. rubric:: Error Handling:
+
+   .. rubric:: Event Logging:
+
+   .. rubric:: Fortran Interface:

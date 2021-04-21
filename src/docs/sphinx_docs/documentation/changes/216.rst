@@ -1,0 +1,102 @@
+==============
+Changes: 2.1.6
+==============
+
+
+   .. rubric:: General:
+
+   -  Added support for Cray X1
+   -  Added option '-suggest' to petscarch script. It suggests some
+      possible PETSC_ARCHes to use
+   -  Installation instructions are rewritten
+
+   .. rubric:: Vec:
+
+   -  VecNorm now caches NORM_2
+   -  Added VecStrideScale(), VecStrideGather(), VecStrideScatter()
+   -  Added VecBlockNorm(),VecBlockMax(),VecBlockMin(),VecBlockScale()
+
+   .. rubric:: Mat:
+
+   -  The interface to external packages that support direct solvers has
+      been reorganized. This is implemented using new matrix types
+      MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, MATSEQSBAIJSPOOLES,
+      MATMPISBAIJSPOOLES, MATSUPERLU, MATSUPERLU_DIST,
+      MATUMFPACK,MATESSL, MATLUSOL, MATAIJMUMPS, MATSBAIJMUMPS,
+      MATDSCPACK
+   -  Added new convenience matrix types which automatically switch
+      between Seq and MPI implementations depending on the size of the
+      communicator used during creation: MATAIJ, MATBAIJ, MATSBAIJ,
+      MATMAIJ, MATDENSE, MATBDIAG
+   -  Changed default matrix-free compute h to use WP since it uses
+      fewer reductions
+   -  Replace the datatypes MatLUInfo and MatILUInfo by MatFactorInfo
+   -  Added cholesky support to SeqAIJ
+   -  Added support for SUBSET_NONZERO_PATTERN with MatAXPY for AIJ &
+      BAIJ
+   -  Added MatIsSymmetric() for AIJ
+   -  Added LDA support in SeqDense
+   -  The ncols argument made optional in MatGetRow()
+   -  Added MAT_KEEP_ZEROED_ROWS for MPIROWBS
+   -  Removed -aij_oneindex support from AIJ code
+   -  Added MatPartitioningSetPartitionWeights() - useable with ParMetis
+   -  MatGetSubMatrices() now works for ROWBS
+
+   .. rubric:: PC:
+
+   -  Added PCICCSetDamping() or -pc_icc_damping
+   -  Added -pc_constant_null_space
+   -  Added PCILUSetShift() or -pc_ilu_shift to support damping using
+      the identity
+   -  Added PCLUSetShift() or -pc_lu_shift to support damping using the
+      identity
+   -  Added PCICCSetShift() or -pc_icc_shift to support damping using
+      the identity
+
+   .. rubric:: KSP:
+
+   -  Added a new ksp_type LGMRES
+   -  Added KSPSetComputeSingularValues() support to ksp_type FGMRES
+
+   .. rubric:: TS:
+
+   -  Added support for Runge-Kutta using ts_type TS_RUNGE_KUTTA
+
+   .. rubric:: DMMG:
+
+   -  -dmmg_jacobian_period -1 => jacobian is frozen after initial
+      construction
+
+   .. rubric:: DA:
+
+   -  Allow user preallocation of jacobian using DASetGetMatrix()
+   -  DAGetMatrix now correctly returns the requested type.
+   -  -mat_type typename overloads the requested type for DAGetMatrix
+
+   .. rubric:: SYS:
+
+   -  Added new viewer_type PETSC_VIEWER_NETCDF, PETSC_VIEWER_HDF4
+   -  PETSc error handlers now trap many more signals.
+
+   .. rubric:: Fortran:
+
+   -  PetscPushErrorHandler() and PetscPopErrorHandler() now supported
+   -  PetscPrintf() and PetscSynchronizedPrintf() now work in fortran
+      with a single string
+
+   .. rubric:: External Packages:
+
+   -  Added TSPVodeGetParameters()
+   -  Parmetis-3 support added using MatPartitionSetNParts(),
+      ISPartitionCount()
+   -  MUMPS support added, including complex (using mat_type
+      MATAIJMUMPS, MATSBAIJMUMPS)
+   -  Updated SuperLU_DIST interface to SuperLU_DIST_2.0
+   -  Added Spooles complex support
+   -  Added Spooles cholesky for SeqAIJ
+   -  ADIC: ad_GRAD_MAX is now set in the application and compiled into
+      code when compiling appplication
+   -  The following variable names - in the buildsystem are changed -
+      that correspond with SuperLU_DIST SUPERLUDIST_INCLUDE ->
+      SUPERLU_DIST_INCLUDE SUPERLUDIST_LIB -> SUPERLU_DIST_LIB
+      PETSCHAVE_SUPERLU -> PETSC_HAVE_SUPERLU

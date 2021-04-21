@@ -1,0 +1,290 @@
+============
+Changes: 3.2
+============
+
+
+   .. rubric:: General:
+
+   -  --download-c-blas-lapack is replaced with --download-f2cblaslapack
+   -  --with-precision=__float128 --download-f2cblaslapack is now
+      support for newish GNU gcc compiler
+   -  Calling sequence of PetscBinarRead.m has been changed
+   -  All XXXDestroy() functions now take a pointer to the object itself
+      so that it can be nullified after destruction.
+   -  PetscError() and SETERRQX() now take a MPI_Comm as the first
+      argument to indicate where the error is known. If you don't know
+      what communicator use then pass in PETSC_COMM_SELF
+   -  Added PetscObjectAddOptionsHandler() that allows adding new
+      routines to any object that are called to process options when
+      XXXSetFromOptions() is called.
+   -  Changed PetscTruth to PetscBool, PETSC_TRUTH to PETSC_BOOL,
+      PetscOptionsTruth to PetscOptionsBool, etc.
+   -  Introduced PetscCopyMode
+   -  Changed -log_history to -history and PetscLogOpenHistory()
+      PetscLogCloseHistory() to PetscOpenHistory(), PetscCloseHistory()
+      because "log" is reserved for related to the performance logging
+   -  Changed PetscOptionsPrint() to PetscOptionsView()
+   -  Changed PetscLogPrintSummary() to PetscLogView()
+   -  Using gcc 4.6 you can now ./configure --with-precision=__float128
+      --download-qblaslapack to get computations in quad precision.
+      gfortran 4.6 is also supported. Warning some of the PETSc printing
+      of numbers in some places will print garbage. I haven't figured
+      out a way to handle the %G format. Can be run in parallel :-)
+   -  PetscFListFind() now takes a searchlibraries flag, if this is set
+      and the function is NOT found in the function list then the
+      libraries and executable are searched (when shared or dynamic
+      libraries are used). Previously it always search the libraries and
+      executables if not found in the list.
+   -  PetscOpenMPxxx() utilities are now PetscHMPIxxx() for hierarchical
+      MPI, the previous name was bad
+
+   .. rubric:: Logging:
+
+   -  PetscCookie changed to PetscClassId in all forms.
+
+   .. rubric:: config/configure.py:
+
+   -  --with-64-bit-pointers option removed. It doesn't work properly
+      anway. The user should specify the correct 32bit or 64bit
+      compilers to configure. For eg:
+      ``configure --with-cc='gcc -m64'             --with-fc='gfortran -m64'``
+   -  Python requirement is changed from 2.2 to 2.3
+   -  Changed --with-shared to --with-shared-libraries,
+      --known-mpi-shared to --known-mpi-shared-libraries and
+      --with-dynamic to --with-dynamic-loading
+   -  'ifneeded' support removed. '--download-package=ifneeded' should
+      now be '--download-package'
+   -  The make macro PETSC_INCLUDE has been replaced by
+      PETSC_CC_INCLUDES and PETSC_FC_INCLUDES for C and Fortran,
+      respectively.
+
+   .. rubric:: IS:
+
+   -  ISBlock(),ISStride() are removed. Use
+      PetscTypeCompare((PetscObject)is,ISBLOCK,&flag),
+      PetscTypeCompare((PetscObject)is,ISSTRIDE,&flag) instead.
+   -  Added ISCreate(), ISSetType(), ISRegister() etc to match style of
+      other PETSc objects. Also added ISGeneralSetIndices(),
+      ISBlockSetIndices(), ISStrideSetStride()
+   -  ISCreateGeneral() and ISCreateBlock() now takes PetscCopyMode as
+      an argument and hence ISCreateGeneralNC() and
+      ISCreateGeneralWithArray() are not needed and removed. Use
+      ISCreateGeneral() with the argument PETSC_OWN_POINTER and
+      PETSC_USE_POINTER instead.
+   -  ISLocalToGlobalMappingCreate() now takes PetscCopyMode as an
+      additional argument and ISLocalToGlobalMappingCreateNC() is no
+      longer needed and removed
+   -  ISStrideToGeneral() is replaced with ISToGeneral() that works for
+      all basic IS types.
+   -  ISCreateBlock() now takes indexing relative to block, no longer
+      relative to element. This is to match the paradigm of
+      Vec/MatSetValuesBlocked()
+   -  ISBlockGetBlockSize() is now ISGetBlockSize(). Block sizes can be
+      set for conforming ISGENERAL and ISSTRIDE using ISSetBlockSize().
+   -  ISAllGatherIndices() is removed, use ISCreateGeneral() then
+      ISAllGather().
+
+   .. rubric:: PF:
+
+   -  The source array is marked constant in PFApply and the callback.
+
+   .. rubric:: Vec:
+
+   -  changed VecSqrt() to VecSqrtAbs()
+   -  VecLoad() and VecLoadIntoVector() have been merged into a single
+      NEW VecLoad() that takes a partially constructed vector as input
+      and loads according to any type or sizes that have previously been
+      set into the Vec.
+   -  VecDestroyVecs(PetscInt n,Vec \**) instead of
+      VecDestroyVecs(Vec**,PetscInt n), also VecDestroyVecsF90(PetscInt
+      n,{Vec, pointer :: x},PetscErrorCode ierr)
+   -  VecLoad() does NOT access the options database to check for the
+      VecType, call VecSetFromOptions() first if you wish to check it.
+   -  VecDestroyVecs() now takes the pointer to the first array and
+      zeros it on return
+   -  VecDestroy() now zeros the pointer to the destroyed vector so it
+      cannot be reused
+   -  VecDestroyVecs(PetscInt n,Vec \**) instead of
+      VecDestroyVecs(Vec**,PetscInt n)
+
+   .. rubric:: VecScatter:
+
+   -  The ghost indices for VecCreateGhostBlock() and
+      VecCreateGhostBlockWithArray() are now by block instead of by
+      entry.
+
+   .. rubric:: Mat:
+
+   -  MAT_SOLVER_XXX is now MATSOLVERXXX
+   -  MAT_PARTIONING_XXX is now MATPARTITIONINGXXX
+   -  MATCOLORING_XXX is now MATCOLORINGXXX
+   -  MATORDERING_XXX is now MATORDERINGXXX
+   -  It is an error to call MatSetOption() before the implementation
+      has been created (after MatSetSizes() and MatSetType()). Formerly,
+      options were silently ignored in this circumstance.
+   -  Added MatSetMumpsIcntl()
+   -  MatLoad() now takes a created Mat as input (and no longer a Mat
+      type), if you provide the size and type in the Mat then that is
+      used other defaults are used.
+   -  MATCRL -> MATAIJCRL, MATSEQCRL -> MATSEQAIJCRL, MATMPICRL ->
+      MATMPIAIJCRL
+   -  MatCreateSeqCRL() -> MatCreateSeqAIJCRL() MatCreateMPICRL() ->
+      MatCreateMPIAIJCRL()
+   -  MATCSRPERM -> MATAIJPERM, MATSEQCSRPERM -> MATSEQAIJPERM,
+      MATMPICSRPERM -> MATMPIAIJPERM
+   -  MatCreateSeqCSRPERM() -> MatCreateSeqAIJPERM()
+      MatCreateMPICSRPERM() -> MatCreateMPIAIJPERM()
+   -  Added MatZeroRowsColumns() and MatZeroRowsColumnsIS().
+   -  MatZeroRows() and MatZeroRowsIS() now take an x and b vector as
+      optional arguments; if these are provided then the b[idx[i]] is
+      set to diag*x[idx[i]]] for all rows listed in idx[].
+   -  MatSetLocalToGlobalMapping() and MatSetLocalToGlobalMappingBlock()
+      now take separate row and column maps. MatPreallocateSetLocal()
+      has an extra argument for the column mapping.
+   -  MatLoad() does NOT access the options database to check for the
+      MatType, call MatSetFromOptions() first if you wish to check it.
+   -  Removed MatMFFDSetFromOptions() since one can call
+      MatSetFromOptions()
+   -  MatGetLocalMat() and MatGetLocalMatCondensed() are now
+      MatMPIAIJGetLocalMat() and MatMPIAIJGetLocalMatCondensed()
+   -  MatOption MAT_USE_COMPRESSEDROW changed to
+      MAT_CHECK_COMPRESSED_ROW
+
+   .. rubric:: PC:
+
+   -  PCFieldSplitSetIS() and PCFieldSplitSetFields() now take a
+      split-name parameter which is used to define the options database
+      keys.
+   -  CHOLMOD can be used for Cholesky factorization using AIJ or
+      SBAIJ(1) matrix formats.
+   -  PCREDUNDANT now uses the inner KSP with the inner PC. Default is
+      still preonly for KSP and LU for PC so default behavior is the
+      same but now you can use for example -redundant_ksp_gmres.
+      PCRedundantGetPC() is now changed to PCRedundantGetKSP()
+   -  The header "petscmg.h" is renamed to "petscpcmg.h", "petscasa.h"
+      is renamed to "petscpcasa.h".
+   -  The preconditioner PCBFBT has been removed. The same functionality
+      is available in PCFIELDSPLIT.
+   -  PCOPENMP is now PCHMPI and its prefix is now -hmpi\_ for
+      heirarchical MPI
+   -  PCMGSetGalerkin() has a second argument of type PetscBool.
+
+   .. rubric:: KSP:
+
+   -  KSPSetPreconditionerSide() changed to KSPSetPCSide() to match name
+      of second argument
+   -  -ksp_right_pc -ksp_left_pc changed to -ksp_pc_side
+      left,right,symmetric to match KSPSetPCSide()
+   -  Added KSPGMRESGetRestart() and KSPGMRESGetCGSRefinementType()
+   -  Added KSPGMRESGetOrthogonalization()
+   -  KSPAddOptionsChecker() is replaced with
+      PetscObjectAddOptionsHandler()
+   -  Added KSPSPECEST which estimates the spectrum on the first solve
+      and uses it to configure a reduction-free method for subsequent
+      solves, intended for use when reductions are expensive such as
+      levels of multigrid.
+
+   .. rubric:: SNES:
+
+   -  Added SNESLineSearchSetMonitor() and -snes_ls_monitor.
+   -  Add SNESKSPONLY, for solving linear problems with SNES.
+   -  Added the minlambda argument to SNESLineSearchGetParams() and
+      SNESLineSearchSetParams().
+
+   .. rubric:: TS:
+
+   -  Rename TSCRANK_NICHOLSON to TSCN and TSRUNGE_KUTTA to TSRK for
+      consistency.
+   -  TSSetIFunction() and TSSetRHSFunction() have an additional
+      argument for the vector to compute the function value in. If
+      PETSC_NULL is used, then one is created by the TS.
+   -  TSSetMatrices() has been removed, use TSSetIFunction() and
+      TSSetRHSFunction(), perhaps providing Jacobian matrices and
+      TSComputeRHSFunctionLinear() and/or
+      TSComputeRHSJacobianConstant(). See
+      src/ts/examples/tutorials/ex{2,4,5,6}.c for an example.
+   -  Added TSARKIMEX: additive Runge-Kutta implicit-explicit methods
+      for multi-rate systems.
+   -  Changed TSStep() interface to only perform one step, added
+      TSSolve() to perform multiple steps with callbacks and monitors if
+      desired.
+   -  Added TSSetExactFinalTime(), replaces
+      TSSundialsSetExactFinalTime().
+
+   .. rubric:: DM/DA:
+
+   -  Change array argument of DAGetArray and related functions from
+      void*\* to void\* to avoid the need for an explicit cast (the
+      argument still has the meaning of a pointer to d-dimensionally
+      indexed array of user-defined node type, old code will still
+      compile correctly but the cast is no longer necessary).
+   -  DAGetCoordinates(), DAGetGhostedCoordinates(), and
+      DAGetCoordinateDA() now return borrowed references. The returned
+      object should not be destroyed by the user.
+   -  Added DAVecGetArrayF90()
+   -  Changed DASetVertexDivision to DASetOwnershipRanges
+   -  The SDA object and all its method have been removed
+   -  The DA, ADDA, Slice and DMComposite objects are now all
+      represented by a DM object.
+   -  Routines that began with ADDA and Slice now begin with DMADDA and
+      DMSlice
+   -  DA/ADDA/Slice/DMCompositeGetMatrix() -> DMGetMatrix(), similar for
+      all other routines that have a DM version
+   -  Removed DASetType(), DARegister() etc since they will all be
+      handled via DMSetType() etc
+   -  Added DMSetUp() that is called, for example, after all the
+      parameters are passed to the DM object to actually construct the
+      data structures; replace all calls to DASetType() with calls to
+      DMSetUp()
+   -  DAXXX() routines are now either DMXXX() or DMDAXXX() see
+      petscdmda.h for details
+   -  The operation DALocalToGlobal() which performed no communication
+      can now be performed with DMLocalToGlobalBegin/End() with
+      INSERT_VALUES.
+   -  petscda.h, petscdadef.h and petscda.h90 are now petscdmda.h,
+      petscdmdadef.h, and petscdmda.h90
+   -  DAGetISLocalToGlobalMapping() and
+      DAGetISLocalToGlobalMappingBlck() are now
+      DMGetLocalToGlobalMapping() and DMGetLocalToGlobalMappingBlock()
+      and are collective since they may be constructed lazily.
+   -  DMGetBlockSize() is added.
+   -  Changed DMDAPeriodicType to DMDABoundaryType, and changed this
+      enum to only specify one boundary (one for each dimension). This
+      enum is now one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, or
+      DMDA_BOUNDARY_PERIODIC. See DMDABoundaryType man page for more.
+   -  DMDASetPeriodicity() is now DMDASetBoundaryType(), and API is
+      changed to take three DMDABoundaryType arguments.
+   -  Changed API for DMDACreate*D(), DMDAGetInfo() to take the correct
+      number of DMDABoundaryType enums for the dimension.
+   -  DMDASetGhostedCoordinates() is added to set coordinates of
+      non-periodic ghost cells.
+
+   .. rubric:: DMMG:
+
+   .. rubric:: PetscViewer:
+
+   -  PETSC_VIEWER_XXX is now PETSCVIEWERXXX
+   -  Added PetscViewerASCIIOpenWithFILE() and PetscViewerASCIISetFILE()
+   -  Added PetscViewerASCIISynchronizedAllow() which must be called
+      before using PetscViewerASCIISynchronizedPrintf()
+
+   .. rubric:: SYS:
+
+   -  PetscOptionsAtoi(),PetscOptionsAtod(),PetscOptionsAtol() ->
+      PetscOptionsStringToInt(), PetscOptionsStringToReal(),
+      PetscOptionsStringToBool()
+   -  PetscFListFind() takes an additional argument to look up the
+      symbol in dynamically loaded libraries if not already in the list.
+   -  Added PetscBagSetOptionsPrefix(), which allows a prefix for the
+      option names of bag items.
+   -  The preloading macros as well as developer-level logging and
+      profiling functions have been namespaced, e.g. PreLoadBegin() is
+      now PetscPreLoadBegin().
+
+   .. rubric:: AO:
+
+   .. rubric:: Sieve:
+
+   .. rubric:: Fortran:
+
+   .. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:

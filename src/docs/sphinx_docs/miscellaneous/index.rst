@@ -14,3 +14,5 @@ interesting enough to share.
    prizes
    funding
    threads
+   saws
+   codemanagement
