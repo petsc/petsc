@@ -53,14 +53,14 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   DM                plex = NULL;
   PetscDS           prob;
   PetscSection      section,globsection;
-  PetscInt          numCells,totDim,ej,Nq,*Nbf,*Ncf,Nb,Ncx,Nf,d,f,fieldA,qj;
+  PetscInt          numCells,totDim,ej,Nq,*Nbf,*Ncf,Nb,Ncx,Nf,d,f,fieldA,qj,N;
   PetscQuadrature   quad;
   const PetscReal   *quadWeights;
   PetscTabulation   *Tf; // used for CPU and print info
   PetscReal         Eq_m[LANDAU_MAX_SPECIES], m_0=ctx->m_0; /* normalize mass -- not needed! */
   PetscScalar       *IPf=NULL;
+  const PetscScalar *xarray=NULL;
   PetscLogDouble    flops;
-  Vec               locX;
   PetscContainer    container;
   P4estVertexMaps   *maps=NULL;
 
@@ -68,7 +68,11 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscValidHeaderSpecific(a_X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(JacP,MAT_CLASSID,2);
   PetscValidPointer(ctx,5);
-
+  /* static PetscLogStage stage0 = 0; */
+  /* if (!stage0) { */
+  /*   ierr = PetscLogStageRegister("Preamble", &stage0);CHKERRQ(ierr); */
+  /* } */
+  /* ierr = PetscLogStagePush(stage0);CHKERRQ(ierr); */
   /* check for matrix container for GPU assembly */
   ierr = PetscLogEventBegin(ctx->events[10],0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) JacP, "assembly_maps", (PetscObject *) &container);CHKERRQ(ierr);
@@ -78,10 +82,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     if (!maps) SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"empty GPU matrix container");
   }
   ierr = DMConvert(ctx->dmv, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(plex, &locX);CHKERRQ(ierr);
-  ierr = VecZeroEntries(locX);CHKERRQ(ierr); /* zero BCs so don't set */
-  ierr = DMGlobalToLocalBegin(plex, a_X, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd  (plex, a_X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMGetLocalSection(plex, &section);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(plex, &globsection);CHKERRQ(ierr);
@@ -102,6 +102,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   }
   elemMatSize = totDim*totDim; // used for CPU and print info
   ierr = PetscLogEventEnd(ctx->events[10],0,0,0,0);CHKERRQ(ierr);
+  //ierr = PetscLogStagePop();CHKERRQ(ierr);
+  ierr = VecGetSize(a_X,&N);CHKERRQ(ierr);
   if (!ctx->init) {    /* create static point data, Jacobian called first */
     PetscReal *invJ,*ww,*xx,*yy,*zz=NULL,*mass_w,*invJ_a;
     const PetscInt  nip = Nq*numCells;
@@ -111,11 +113,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     ierr = PetscInfo(plex, "Initialize static data\n");CHKERRQ(ierr);
     /* collect f data, first time is for Jacobian, but make mass now */
     if (ctx->verbose > 1 || ctx->verbose > 0) {
-      PetscInt N,Nloc;
-      ierr = MatGetSize(JacP,&N,NULL);CHKERRQ(ierr);
-      ierr = VecGetSize(locX,&Nloc);CHKERRQ(ierr);
-      ierr = PetscPrintf(ctx->comm,"[%D]%s: %D IPs, %D cells, totDim=%D, Nb=%D, Nq=%D, elemMatSize=%D, dim=%D, Tab: Nb=%D Nf=%D Np=%D cdim=%D N=%D N+hang=%D, shift=%g\n",
-                         0,"FormLandau",Nq*numCells,numCells, totDim, Nb, Nq, elemMatSize, dim, Tf[0]->Nb, Nf, Tf[0]->Np, Tf[0]->cdim, N, Nloc, shift);CHKERRQ(ierr);
+      ierr = PetscPrintf(ctx->comm,"[%D]%s: %D IPs, %D cells, totDim=%D, Nb=%D, Nq=%D, elemMatSize=%D, dim=%D, Tab: Nb=%D Nf=%D Np=%D cdim=%D N=%D shift=%g\n",
+                         0,"FormLandau",Nq*numCells,numCells, totDim, Nb, Nq, elemMatSize, dim, Tf[0]->Nb, Nf, Tf[0]->Np, Tf[0]->cdim, N, shift);CHKERRQ(ierr);
     }
     ierr = PetscMalloc5(nip,&mass_w,nip,&ww,nip,&xx,nip,&yy,nip*dim*dim,&invJ_a);CHKERRQ(ierr);
     if (dim==3) {
@@ -148,7 +147,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       }
       if (ctx->deviceType == LANDAU_CUDA) {
 #if defined(PETSC_HAVE_CUDA)
-        ierr = LandauCudaStaticDataSet(plex,Nq,nu_alpha,nu_beta,invMass,invJ_a,mass_w,xx,yy,zz,ww,ctx->SData_d);CHKERRQ(ierr);
+        ierr = LandauCUDAStaticDataSet(plex,Nq,nu_alpha,nu_beta,invMass,invJ_a,mass_w,xx,yy,zz,ww,ctx->SData_d);CHKERRQ(ierr);
 #else
         SETERRQ1(ctx->comm,PETSC_ERR_ARG_WRONG,"-landau_device_type %s not built","cuda");
 #endif
@@ -183,28 +182,37 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       Eq_m[fieldA] = ctx->Ez * ctx->t_0 * ctx->charges[fieldA] / (ctx->v_0 * ctx->masses[fieldA]); /* normalize dimensionless */
       if (dim==2) Eq_m[fieldA] *=  2 * PETSC_PI; /* add the 2pi term that is not in Landau */
     }
-    ierr = PetscMalloc1(Nq*numCells*Nf,&IPf);CHKERRQ(ierr);
-    for (ej = 0 ; ej < numCells; ++ej) {
-      PetscScalar *coef = NULL;
-      ierr = DMPlexVecGetClosure(plex, section, locX, cStart+ej, NULL, &coef);CHKERRQ(ierr);
-      ierr = PetscMemcpy(&IPf[ej*Nb*Nf],coef,Nb*Nf*sizeof(PetscScalar));CHKERRQ(ierr); /* change if LandauIPReal != PetscScalar */
-      ierr = DMPlexVecRestoreClosure(plex, section, locX, cStart+ej, NULL, &coef);CHKERRQ(ierr);
-    } /* ej */
+    if (!ctx->gpu_assembly || !container) {
+      Vec locX;
+      ierr = DMGetLocalVector(plex, &locX);CHKERRQ(ierr);
+      ierr = VecZeroEntries(locX);CHKERRQ(ierr); /* zero BCs so don't set */
+      ierr = DMGlobalToLocalBegin(plex, a_X, INSERT_VALUES, locX);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalEnd  (plex, a_X, INSERT_VALUES, locX);CHKERRQ(ierr);
+      ierr = PetscMalloc1(Nq*numCells*Nf,&IPf);CHKERRQ(ierr);
+      for (ej = 0 ; ej < numCells; ++ej) {
+        PetscScalar *coef = NULL;
+        ierr = DMPlexVecGetClosure(plex, section, locX, cStart+ej, NULL, &coef);CHKERRQ(ierr);
+        ierr = PetscMemcpy(&IPf[ej*Nb*Nf],coef,Nb*Nf*sizeof(PetscScalar));CHKERRQ(ierr); /* change if LandauIPReal != PetscScalar */
+        ierr = DMPlexVecRestoreClosure(plex, section, locX, cStart+ej, NULL, &coef);CHKERRQ(ierr);
+      } /* ej */
+      ierr = DMRestoreLocalVector(plex, &locX);CHKERRQ(ierr);
+    } else {
+      ierr = VecGetArrayRead(a_X,&xarray);CHKERRQ(ierr);
+    }
     ierr = PetscLogEventEnd(ctx->events[1],0,0,0,0);CHKERRQ(ierr);
   } else {
     flops = (PetscLogDouble)numCells*(PetscLogDouble)Nq*(PetscLogDouble)(5*dim*dim*Nf*Nf);
   }
-  ierr = DMRestoreLocalVector(plex, &locX);CHKERRQ(ierr);
   /* do it */
   if (ctx->deviceType == LANDAU_CUDA || ctx->deviceType == LANDAU_KOKKOS) {
-    /* static PetscLogStage stage = 0; */
-    /* if (!stage) { */
-    /*   ierr = PetscLogStageRegister("Landau", &stage);CHKERRQ(ierr); */
+    /* static PetscLogStage stage0 = 0; */
+    /* if (!stage0) { */
+    /*   ierr = PetscLogStageRegister("Landau", &stage0);CHKERRQ(ierr); */
     /* } */
-    /* ierr = PetscLogStagePush(stage);CHKERRQ(ierr); */
+    /* ierr = PetscLogStagePush(stage0);CHKERRQ(ierr); */
     if (ctx->deviceType == LANDAU_CUDA) {
 #if defined(PETSC_HAVE_CUDA)
-      ierr = LandauCUDAJacobian(plex,Nq,Eq_m,IPf,ctx->SData_d,ctx->subThreadBlockSize,shift,ctx->events,JacP);CHKERRQ(ierr);
+      ierr = LandauCUDAJacobian(plex,Nq,Eq_m,IPf,N,xarray,ctx->SData_d,ctx->subThreadBlockSize,shift,ctx->events,JacP);CHKERRQ(ierr);
 #else
       SETERRQ1(ctx->comm,PETSC_ERR_ARG_WRONG,"-landau_device_type %s not built","cuda");
 #endif
@@ -218,7 +226,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     //ierr = PetscLogStagePop();CHKERRQ(ierr);
   } else { /* CPU version */
     PetscInt        ei, qi;
-    PetscScalar     *elemMat;
+    PetscScalar     *elemMat,coef_buff[LANDAU_MAX_SPECIES*LANDAU_MAX_NQ];
     PetscReal       *ff, *dudx, *dudy, *dudz, *invJ, *invJ_a = (PetscReal*)ctx->SData_d->invJ, *xx = (PetscReal*)ctx->SData_d->x, *yy = (PetscReal*)ctx->SData_d->y, *zz = (PetscReal*)ctx->SData_d->z, *ww = (PetscReal*)ctx->SData_d->w, *mass_w = (PetscReal*)ctx->SData_d->mass_w;
     const PetscInt  nip = Nq*numCells;
     const PetscReal *const BB = Tf[0]->T[0], * const DD = Tf[0]->T[1];
@@ -236,8 +244,42 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       }
       ierr = PetscMalloc5(elemMatSize, &elemMat, nip*Nf, &ff, nip*Nf, &dudx, nip*Nf, &dudy, dim==3 ? nip*Nf : 0, &dudz);CHKERRQ(ierr);
       for (ei = cStart, invJ = invJ_a; ei < cEnd; ++ei, invJ += Nq*dim*dim) {
-        PetscScalar  *coef = &IPf[ei*Nb*Nf];
+        PetscScalar *coef;
+        PetscInt     b,f,idx,q;
         PetscReal    u_x[LANDAU_MAX_SPECIES][LANDAU_DIM];
+        if (IPf) {
+          coef = &IPf[ei*Nb*Nf]; // this is const
+          /* for (f = 0; f < Nf; ++f) { */
+          /*   for (b = 0; b < Nb; ++b) { */
+          /*     PetscPrintf(ctx->comm,"%f ",coef[f*Nb+b]);CHKERRQ(ierr); */
+          /*   } */
+          /*   PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr); */
+          /* } */
+          /* PetscPrintf(ctx->comm,"*\n");CHKERRQ(ierr); */
+        } else {
+          if (!maps) SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"!maps");
+          coef = coef_buff;
+          for (f = 0; f < Nf; ++f) {
+            LandauIdx *const Idxs = &maps->gIdx[ei-cStart][f][0];
+            for (b = 0; b < Nb; ++b) {
+              idx = Idxs[b];
+              if (idx >= 0) {
+                coef[f*Nb+b] = xarray[idx];
+              } else {
+                idx = -idx - 1;
+                coef[f*Nb+b] = 0;
+                for (q = 0; q < maps->num_face; q++) {
+                  PetscInt    id = maps->c_maps[idx][q].gid;
+                  PetscScalar scale = maps->c_maps[idx][q].scale;
+                  coef[f*Nb+b] += scale*xarray[id];
+                }
+              }
+              //PetscPrintf(ctx->comm,"%f ",coef[f*Nb+b]);CHKERRQ(ierr);
+            }
+            //PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr);
+          }
+          //PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr);
+        }
         /* get f and df */
         for (qi = 0; qi < Nq; ++qi) {
           const PetscReal  *Bq = &BB[qi*Nb];
@@ -272,9 +314,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       ierr = PetscLogEventEnd(ctx->events[8],0,0,0,0);CHKERRQ(ierr);
     }
     for (ej = cStart, invJ = invJ_a; ej < cEnd; ++ej, invJ += Nq*dim*dim) {
-      ierr = PetscLogEventBegin(ctx->events[3],0,0,0,0);CHKERRQ(ierr);
       ierr = PetscMemzero(elemMat, totDim *totDim * sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(ctx->events[3],0,0,0,0);CHKERRQ(ierr);
       ierr = PetscLogEventBegin(ctx->events[4],0,0,0,0);CHKERRQ(ierr);
       ierr = PetscLogFlops((PetscLogDouble)Nq*flops);CHKERRQ(ierr);
       //printf("\t:%d.%d) Invj[0] = %e (%d)\n",ej,qj,invJ[0],(int)(invJ-invJ_a));
@@ -589,6 +629,10 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   if (IPf) {
     ierr = PetscFree(IPf);CHKERRQ(ierr);
   }
+  if (xarray) {
+    ierr = VecRestoreArrayRead(a_X,&xarray);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -1139,7 +1183,6 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscReal refineTo
     }
     ierr = PetscInfo1(sol, "Phase:%s: RE refinement\n","adaptToleranceFEM");
   }
-  /* ierr = VecDestroy(&locX);CHKERRQ(ierr); */
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   ierr = DMAdaptLabel(dm, adaptLabel, &adaptedDM);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
@@ -1376,6 +1419,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     ierr = PetscLogEventRegister(" Copy to CPU", DM_CLASSID, &ctx->events[5]);CHKERRQ(ierr); /* 5 */
     ierr = PetscLogEventRegister(" Jac-assemble", DM_CLASSID, &ctx->events[6]);CHKERRQ(ierr); /* 6 */
     ierr = PetscLogEventRegister(" Jac asmbl setup", DM_CLASSID, &ctx->events[2]);CHKERRQ(ierr); /* 2 */
+    ierr = PetscLogEventRegister(" Other", DM_CLASSID, &ctx->events[13]);CHKERRQ(ierr); /* 13 */
 
     if (rank) { /* turn off output stuff for duplicate runs - do we need to add the prefix to all this? */
       ierr = PetscOptionsClearValue(NULL,"-snes_converged_reason");CHKERRQ(ierr);
@@ -1513,7 +1557,7 @@ PetscErrorCode LandauDestroyVelocitySpace(DM *dm)
   }
   if (ctx->deviceType == LANDAU_CUDA) {
 #if defined(PETSC_HAVE_CUDA)
-    ierr = LandauCudaStaticDataClear(ctx->SData_d);CHKERRQ(ierr);
+    ierr = LandauCUDAStaticDataClear(ctx->SData_d);CHKERRQ(ierr);
 #else
     SETERRQ1(ctx->comm,PETSC_ERR_ARG_WRONG,"-landau_device_type %s not built","cuda");
 #endif
