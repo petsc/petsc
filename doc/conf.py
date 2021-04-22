@@ -34,10 +34,6 @@ project = 'PETSc'
 copyright = '1991-%d, UChicago Argonne, LLC and the PETSc Development Team' % datetime.date.today().year
 author = 'The PETSc Development Team'
 
-# Allow todo's to be emitted, turn off for build!
-todo_include_todos=True
-todo_emit_warnings=True
-
 # Little copy-and-paste button by code blocks, from sphinx_copybutton package
 # https://sphinx-copybutton.readthedocs.io/en/latest/
 copybutton_prompt_text = r"[>]{1,3}"
@@ -62,7 +58,6 @@ with open(os.path.join('..', 'include', 'petscversion.h'),'r') as version_file:
 
 extensions = [
     'sphinx_copybutton',
-    'sphinx.ext.todo',
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
     'sphinxcontrib.rsvgconverter',
