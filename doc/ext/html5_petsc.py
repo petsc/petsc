@@ -103,9 +103,15 @@ class PETScHTMLTranslatorMixin:
         """ Return the base location for the install. This varies by platform. """
         if 'GITLAB_CI' in os.environ:
             ci_environment_url = os.getenv('CI_ENVIRONMENT_URL')
-            if not ci_environment_url:
-                raise Exception('GitLab CI detected but expected environment variable not found')
-            manpage_prefix_base = ci_environment_url.rstrip('/index.html')
+            if ci_environment_url is not None:
+                manpage_prefix_base = ci_environment_url.rstrip('/index.html')
+            else:
+                # This is a brittle stopgap measure
+                ci_commit_ref_name = os.getenv('CI_COMMIT_REF_NAME')
+                if not ci_commit_ref_name:
+                    raise Exception('Could not determine version name from GitLab CI environment variables')
+                version_name = ci_commit_ref_name.replace('release-', '')
+                manpage_prefix_base = 'https://petsc.org/' + version_name
         elif 'READTHEDOCS' in os.environ:  # Temporary - remove once ReadTheDocs is abandoned
             manpage_prefix_base = 'https://www.mcs.anl.gov/petsc/petsc-main'
         else:
