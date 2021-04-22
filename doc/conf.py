@@ -34,11 +34,6 @@ project = 'PETSc'
 copyright = '1991-%d, UChicago Argonne, LLC and the PETSc Development Team' % datetime.date.today().year
 author = 'The PETSc Development Team'
 
-# Little copy-and-paste button by code blocks, from sphinx_copybutton package
-# https://sphinx-copybutton.readthedocs.io/en/latest/
-copybutton_prompt_text = r"[>]{1,3}"
-copybutton_prompt_is_regexp = True
-
 with open(os.path.join('..', 'include', 'petscversion.h'),'r') as version_file:
     buf = version_file.read()
     petsc_release_flag = re.search(' PETSC_VERSION_RELEASE[ ]*([0-9]*)',buf).group(1)
@@ -56,14 +51,6 @@ with open(os.path.join('..', 'include', 'petscversion.h'),'r') as version_file:
 
 # -- General configuration ---------------------------------------------------
 
-extensions = [
-    'sphinx_copybutton',
-    'sphinxcontrib.bibtex',
-    'sphinxcontrib.katex',
-    'sphinxcontrib.rsvgconverter',
-    'html5_petsc',
-]
-
 master_doc = 'index'
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -72,6 +59,19 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+
+# -- Extensions --------------------------------------------------------------
+extensions = [
+    'sphinx_copybutton',
+    'sphinxcontrib.bibtex',
+    'sphinxcontrib.katex',
+    'sphinxcontrib.rsvgconverter',
+    'html5_petsc',
+]
+
+copybutton_prompt_text = r"[>]{1,3}"
+copybutton_prompt_is_regexp = True
 
 
 # -- Options for HTML output -------------------------------------------------
