@@ -297,9 +297,6 @@ Next, one must examine the output, ideally comparing to the original rendered La
 * Replace included source code with "literalinclude" (see :ref:`sphinx_guidelines`)
 * (please add more common fixes here as you find them) ...
 
-.. rubric:: Footnotes
-
-.. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (`:footcite:`), which can be investigated if a release is ever made.
 
 .. _classic_docs_build:
 
@@ -332,3 +329,8 @@ To get a quick preview of manual pages from a single source directory (mainly to
     > cd $PETSC_DIR/src/snes/interface
     > make LOC=$PETSC_DIR manualpages_buildcite
     > browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
+
+
+.. rubric:: Footnotes
+
+.. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (`:footcite:`), which can be investigated if a release is ever made.
