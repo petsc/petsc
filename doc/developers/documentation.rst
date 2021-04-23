@@ -185,44 +185,6 @@ Sphinx Documentation Guidelines
 
 * Prefer formatting styles that are easy to modify and maintain.  In particular, use of `list-table <https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table>`_ is recommended.
 
-  .. code-block:: rst
-
-     .. list-table::
-        :header-rows: 1
-
-        * - Treat
-          - Quantity
-          - Description
-        * - Albatross
-          - 2.99
-          - On a stick!
-        * - Crunchy Frog
-          - 1.49
-          - If we took the bones out, it wouldn't be
-            crunchy, now would it?
-        * - Gannet Ripple
-          - 1.99
-          - On a stick!
-
-  which renders as
-
-  .. list-table::
-     :header-rows: 1
-
-     * - Treat
-       - Quantity
-       - Description
-     * - Albatross
-       - 2.99
-       - On a stick!
-     * - Crunchy Frog
-       - 1.49
-       - If we took the bones out, it wouldn't be
-         crunchy, now would it?
-     * - Gannet Ripple
-       - 1.99
-       - On a stick!
-
 * When using external links with inline URLs, prefer to use `anonymous hyperlink references <https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html#anonymous-hyperlinks>`__ with two trailing underscores, e.g.
 
   .. code-block:: rst
