@@ -29,20 +29,27 @@ as a PDF of the Users Manual (via LaTeX).
 The documentation build with Sphinx involves configuring a minimal build
 of PETSc and building some of the :any:`classic docs <classic_docs_build>`.
 
-Building the Sphinx docs locally
---------------------------------
+Building the docs locally
+-------------------------
 
-* Make sure that you have Python 3 and the required modules, as listed in the `ReadTheDocs configuration file <https://github.com/petsc/petsc/blob/main/.readthedocs.yml>`__ and `requirements file <https://github.com/petsc/petsc/blob/main/doc/requirements.txt>`__ [#f1]. e.g. with pip:
+We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__.
 
   .. code-block:: console
 
-     > python -m pip install -r $PETSC_DIR/doc/requirements.txt
+     > cd $PETSC_DIR
+     > python3 -m venv petsc-doc-env
+     > . petsc-doc-env/bin/activate
+     > pip install -r doc/requirements.txt
+     > cd doc
+     > make html  # may take several minutes
 
-* Navigate to the location of ``conf.py`` for the Sphinx docs (currently ``$PETSC_DIR/doc``).
+Then open ``_build/html/index.html`` with your browser.
 
-* ``make html``. If you have not done so before, you may need to wait several minutes while the "classic" build produces a large set of manual pages and HTML versions of source files.
+Notes:
 
-* Open ``_build/html/index.html`` with your browser.
+- The above assumes that ``python3`` is Python 3.3 or later. Check with ``python3 --version``.
+- You may need to install a package like ``python3-venv``.
+
 
 .. _sphinx_guidelines:
 
@@ -293,7 +300,6 @@ Next, one must examine the output, ideally comparing to the original rendered La
 .. rubric:: Footnotes
 
 .. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (`:footcite:`), which can be investigated if a release is ever made.
-.. [#f1] We use a precise version of Sphinx to avoid issues with our `custom extension to create inline links <https://gitlab.com/petsc/petsc/-/blob/main/doc/ext/html5_petsc.py>`__
 
 .. _classic_docs_build:
 
