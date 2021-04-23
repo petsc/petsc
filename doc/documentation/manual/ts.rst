@@ -407,10 +407,10 @@ identity matrix:
 
 An IMEX problem representation can be made implicit by setting ``TSARKIMEXSetFullyImplicit()``.
 
-In PETSc, DAEs and ODEs are formulated as :math:`F(t,u,\dot{u})=G(t,u)`, where :math:`F()` is meant to be integrated implicitly and :math:`G()` explicitly. An IMEX formulation such as :math:`M\dot{u}=f(t,u)+g(t,u)` requires the user to provide :math:`M^{-1} g(t,u)` or solve :math:`g(t,u) - M x=0` in place of :math:`G(t,u)`. General cases such as :math:`F(t,u,\dot{u})=G(t,u)` are not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods. Some use-case examples for ``TSARKIMEX`` are listed in :numref:`tab-DE-forms` and a list of methods with a summary of their properties is given in :any:`tab_IMEX_RK_PETSc`.
+In PETSc, DAEs and ODEs are formulated as :math:`F(t,u,\dot{u})=G(t,u)`, where :math:`F()` is meant to be integrated implicitly and :math:`G()` explicitly. An IMEX formulation such as :math:`M\dot{u}=f(t,u)+g(t,u)` requires the user to provide :math:`M^{-1} g(t,u)` or solve :math:`g(t,u) - M x=0` in place of :math:`G(t,u)`. General cases such as :math:`F(t,u,\dot{u})=G(t,u)` are not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods. Some use-case examples for ``TSARKIMEX`` are listed in :numref:`tab_DE_forms` and a list of methods with a summary of their properties is given in :any:`tab_IMEX_RK_PETSc`.
 
-.. _tab-DE-forms:
-.. list-table::
+.. list-table:: Use case examples for ``TSARKIMEX``
+   :name: tab_DE_forms
    :widths: 40 40 80
 
    * - :math:`\dot{u} = g(t,u)`
