@@ -29,14 +29,13 @@ class Configure(config.package.Package):
     self.mpi             = framework.require('config.packages.MPI',self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.slepc           = framework.require('config.packages.slepc',self)
-    self.mkl_sparse      = framework.require('config.packages.mkl_sparse',self)
     self.deps            = [self.blasLapack,self.cxxlibs,self.mathlib]
-    self.odeps           = [self.mpi,self.slepc,self.mkl_sparse]
+    self.odeps           = [self.mpi,self.slepc]
     return
 
   def Install(self):
     import os
-    if not self.mkl_sparse.found and self.blasLapack.mkl:
+    if self.blasLapack.mkl and not self.checkInclude(self.blasLapack.include, ['mkl_spblas.h']): # cannot use config.packages.mkl_sparse since it requires32bitint = 1
       raise RuntimeError('Cannot use HPDDM with the MKL but no \'mkl_spblas.h\', check for missing --with-blaslapack-include=/opt/intel/mkl/include (or similar)')
     buildDir = os.path.join(self.packageDir,'petsc-build')
     self.pushLanguage('Cxx')
