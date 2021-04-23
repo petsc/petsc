@@ -50,7 +50,7 @@ PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t,PetscDataType
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer,const char[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasObject(PetscViewer,PetscObject,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer,const char[],const char[],PetscDataType,void*,void*);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer,const char[],const char[],PetscDataType,const void*,void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer,const char[],const char[],PetscDataType,const void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer,const char[],const char[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer,PetscObject,const char[],PetscDataType,void*,void*);
