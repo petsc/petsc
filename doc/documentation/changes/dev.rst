@@ -122,6 +122,8 @@ Changes: Development
 - Remove ``DMPlexCreateReferenceCellByType()``
 - The number of refinements is no longer an argument to ``DMPlexCreateHexCylinderMesh()``
 - Add ``DMSetLabel()``
+- Replace ``DMPlexComputeJacobianAction()`` with ``DMSNESComputeJacobianAction()``
+- Add ``DMSNESCreateJacobianMF()``
 
 .. rubric:: FE/FV:
 

@@ -482,7 +482,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
       ierr = VecSet(res,0.);CHKERRQ(ierr);
       ierr = DMGlobalToLocalBegin(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
-      ierr = DMPlexComputeJacobianAction(dm,NULL,0,0,local,NULL,localX,localRes,NULL);CHKERRQ(ierr);
+      ierr = DMSNESComputeJacobianAction(dm,local,localX,localRes,NULL);CHKERRQ(ierr);
       ierr = DMLocalToGlobalBegin(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
       ierr = DMLocalToGlobalEnd(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
       ierr = VecNorm(res,NORM_2,&resNorm);CHKERRQ(ierr);
