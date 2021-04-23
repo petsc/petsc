@@ -51,9 +51,11 @@ with open(os.path.join('..', 'include', 'petscversion.h'),'r') as version_file:
     subminor_version   = re.search(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)',buf).group(1)
     patch_version      = re.search(' PETSC_VERSION_PATCH[ ]*([0-9]*)',buf).group(1)
 
+
+    git_describe_version = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')
     if petsc_release_flag == '0':
-        version = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')
-        release = version
+        version = git_describe_version
+        release = git_describe_version
     else:
         version = '.'.join([major_version, minor_version])
         release = '.'.join([major_version,minor_version,subminor_version])
@@ -92,6 +94,7 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
+    "footer_items": ["copyright", "sphinx-version", "last-updated"],
 }
 
 # The theme uses "github" here, but it works for GitLab
@@ -117,6 +120,8 @@ html_extra_dir = build_classic_docs.main()
 
 # Additional files that are simply copied over with an HTML build
 html_extra_path = [html_extra_dir]
+
+html_last_updated_fmt = r'%Y-%m-%dT%H:%M:%S%z (' + git_describe_version + ')'
 
 # -- Options for LaTeX output --------------------------------------------
 
