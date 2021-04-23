@@ -513,7 +513,7 @@ static PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscHashFormKey key, PetscInt Ne, PetscFEGeom *cgeom,
+static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey key, PetscInt Ne, PetscFEGeom *cgeom,
                                                       const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   /* Nbc = batchSize */

@@ -362,8 +362,8 @@ PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user)
   ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
   ierr = DMAddBoundary(dm, DM_BC_NATURAL, "pressure", label, 0, NULL, 0, 0, NULL, NULL, NULL, user, &bd);CHKERRQ(ierr);
   ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, f0_bd_u_3d, 0, NULL);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexBdJacobian(wf, label, 1, 0, 0, 0, NULL, 0, g1_bd_uu_3d, 0, NULL, 0, NULL);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_u_3d, 0, NULL);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexBdJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, g1_bd_uu_3d, 0, NULL, 0, NULL);CHKERRQ(ierr);
 
   ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, 0, NULL, 0, 0, NULL, (void (*)(void)) coordinates, NULL, user, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

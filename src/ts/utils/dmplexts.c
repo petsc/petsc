@@ -53,7 +53,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   IS             cellIS;
   DM             plex;
   PetscInt       depth;
-  PetscHashFormKey key = {NULL, 0, 0};
+  PetscFormKey key = {NULL, 0, 0};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -149,11 +149,12 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
-    PetscHashFormKey key;
+    PetscFormKey key;
 
     ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
     key.value = 0;
     key.field = 0;
+    key.part  = 0;
     if (!key.label) {
       ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
       cellIS = allcellIS;
@@ -206,11 +207,12 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
-    PetscHashFormKey key;
+    PetscFormKey key;
 
     ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
     key.value = 0;
     key.field = 0;
+    key.part  = 0;
     if (!key.label) {
       ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
       cellIS = allcellIS;

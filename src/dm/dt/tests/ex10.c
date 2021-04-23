@@ -141,7 +141,7 @@ static PetscErrorCode SetupProblem(DM dm,UserCtx *user)
   ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(ds,DM_BC_NATURAL,"Boundary Integral",label,1,&id,0,0,NULL,(void (*)(void))NULL,NULL,user,&bd);CHKERRQ(ierr);
   ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, f0_bd_u_linear, 0, NULL);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_u_linear, 0, NULL);CHKERRQ(ierr);
 
   ierr = PetscDSSetExactSolution(ds,0,linear_u,NULL);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(ds,1,linear_divu,NULL);CHKERRQ(ierr);

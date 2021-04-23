@@ -263,7 +263,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   ierr = DMAddBoundary(dm, DM_BC_NATURAL, "right wall", label, 1, &id, 0, 0, NULL, NULL, NULL, ctx, &bd);CHKERRQ(ierr);
   ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, f0_bd_u, 0, NULL);CHKERRQ(ierr);
+  ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_bd_u, 0, NULL);CHKERRQ(ierr);
   /* Setup constants */
   {
     Parameter  *param;

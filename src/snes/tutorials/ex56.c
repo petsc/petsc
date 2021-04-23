@@ -414,7 +414,7 @@ int main(int argc,char **args)
         ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
         ierr = DMAddBoundary(dm, DM_BC_NATURAL, "traction", label, Npid, pid, 0, Ncomp, components, NULL, NULL, NULL, &bd);CHKERRQ(ierr);
         ierr = PetscDSGetBoundary(prob, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-        for (i = 0; i < Npid; ++i) {ierr = PetscWeakFormSetIndexBdResidual(wf, label, pid[i], 0, 0, f0_bd_u_3d, 0, f1_bd_u);CHKERRQ(ierr);}
+        for (i = 0; i < Npid; ++i) {ierr = PetscWeakFormSetIndexBdResidual(wf, label, pid[i], 0, 0, 0, f0_bd_u_3d, 0, f1_bd_u);CHKERRQ(ierr);}
       }
       /* bcs */
       if (run_type==1) {

@@ -93,8 +93,8 @@ For more complex cases with multiple regions, we need to use the ``PetscWeakForm
   PetscInt f = 0, val = 0;
 
   PetscDSGetWeakForm(ds, &wf);
-  PetscWeakFormSetIndexResidual(ds, NULL, val, f, 0, f0_trig_inhomogeneous_u, 0, f1_u);
-  PetscWeakFormSetIndexJacobian(ds, NULL, val, f, f, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);
+  PetscWeakFormSetIndexResidual(ds, NULL, val, f, 0, 0, f0_trig_inhomogeneous_u, 0, f1_u);
+  PetscWeakFormSetIndexJacobian(ds, NULL, val, f, f, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);
 
 In `SNES Tutorial ex23 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex23.c.html>`__, we define the Poisson problem over the entire domain, but in the top half we also define a pressure. The entire problem can be specified as follows
 
@@ -102,15 +102,15 @@ In `SNES Tutorial ex23 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tut
 
   DMGetRegionNumDS(dm, 0, &label, NULL, &ds);
   PetscDSGetWeakForm(ds, &wf);
-  PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, f0_quad_u, 0, f1_u);
-  PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);
+  PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u);
+  PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);
   PetscDSSetExactSolution(ds, 0, quad_u, user);
   DMGetRegionNumDS(dm, 1, &label, NULL, &ds);
   PetscDSGetWeakForm(ds, &wf);
-  PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, f0_quad_u, 0, f1_u);
-  PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);
-  PetscWeakFormSetIndexResidual(wf, label, 1, 1, 0, f0_quad_p, 0, NULL);
-  PetscWeakFormSetIndexJacobian(wf, label, 1, 1, 1, 0, g0_pp, 0, NULL, 0, NULL, 0, NULL);
+  PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u);
+  PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);
+  PetscWeakFormSetIndexResidual(wf, label, 1, 1, 0, 0, f0_quad_p, 0, NULL);
+  PetscWeakFormSetIndexJacobian(wf, label, 1, 1, 1, 0, 0, g0_pp, 0, NULL, 0, NULL, 0, NULL);
   PetscDSSetExactSolution(ds, 0, quad_u, user);
   PetscDSSetExactSolution(ds, 1, quad_p, user);
   DMGetLabel(dm, "marker", &label);

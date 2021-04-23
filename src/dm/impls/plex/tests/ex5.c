@@ -934,7 +934,7 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscDS          probh;
   DMLabel          fault, material;
   IS               cohesiveCells;
-  PetscHashFormKey keys[3];
+  PetscFormKey keys[3];
   PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
   PetscInt         dim, Nf, cMax, cEnd, id;
   PetscErrorCode   ierr;

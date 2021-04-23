@@ -8472,7 +8472,7 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
     PetscDS  ds;
     Vec      u;
     IS       cellIS;
-    PetscHashFormKey key;
+    PetscFormKey key;
     PetscInt depth;
 
     ierr = DMClone(dmFine, &dmc);CHKERRQ(ierr);
@@ -8487,6 +8487,7 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
     key.label = NULL;
     key.value = 0;
     key.field = 0;
+    key.part  = 0;
     ierr = DMPlexComputeJacobian_Internal(dmc, key, cellIS, 0.0, 0.0, u, NULL, *mass, *mass, NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dmc, &u);CHKERRQ(ierr);

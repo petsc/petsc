@@ -1210,11 +1210,12 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
-    PetscHashFormKey key;
+    PetscFormKey key;
 
     ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
     key.value = 0;
     key.field = 0;
+    key.part  = 0;
     if (!key.label) {
       ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
       cellIS = allcellIS;
@@ -1252,23 +1253,23 @@ PetscErrorCode DMSNESComputeResidual(DM dm, Vec X, Vec F, void *user)
 
     ierr = DMGetRegionNumDS(dm, s, &label, NULL, &ds);CHKERRQ(ierr);
     {
-      PetscHMapForm     resmap[2] = {ds->wf->f0, ds->wf->f1};
+      PetscWeakFormKind resmap[2] = {PETSC_WF_F0, PETSC_WF_F1};
       PetscWeakForm     wf;
       PetscInt          Nm = 2, m, Nk = 0, k, kp, off = 0;
-      PetscHashFormKey *reskeys;
+      PetscFormKey *reskeys;
 
       /* Get unique residual keys */
       for (m = 0; m < Nm; ++m) {
         PetscInt Nkm;
-        ierr = PetscHMapFormGetSize(resmap[m], &Nkm);CHKERRQ(ierr);
+        ierr = PetscHMapFormGetSize(ds->wf->form[resmap[m]], &Nkm);CHKERRQ(ierr);
         Nk  += Nkm;
       }
       ierr = PetscMalloc1(Nk, &reskeys);CHKERRQ(ierr);
       for (m = 0; m < Nm; ++m) {
-        ierr = PetscHMapFormGetKeys(resmap[m], &off, reskeys);CHKERRQ(ierr);
+        ierr = PetscHMapFormGetKeys(ds->wf->form[resmap[m]], &off, reskeys);CHKERRQ(ierr);
       }
       if (off != Nk) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %D should be %D", off, Nk);
-      ierr = PetscHashFormKeySort(Nk, reskeys);CHKERRQ(ierr);
+      ierr = PetscFormKeySort(Nk, reskeys);CHKERRQ(ierr);
       for (k = 0, kp = 1; kp < Nk; ++kp) {
         if ((reskeys[k].label != reskeys[kp].label) || (reskeys[k].value != reskeys[kp].value)) {
           ++k;
@@ -1366,23 +1367,23 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
 
     ierr = DMGetRegionNumDS(dm, s, &label, NULL, &ds);CHKERRQ(ierr);
     {
-      PetscHMapForm     jacmap[4] = {ds->wf->g0, ds->wf->g1, ds->wf->g2, ds->wf->g3};
+      PetscWeakFormKind jacmap[4] = {PETSC_WF_G0, PETSC_WF_G1, PETSC_WF_G2, PETSC_WF_G3};
       PetscWeakForm     wf;
       PetscInt          Nm = 4, m, Nk = 0, k, kp, off = 0;
-      PetscHashFormKey *jackeys;
+      PetscFormKey *jackeys;
 
       /* Get unique Jacobian keys */
       for (m = 0; m < Nm; ++m) {
         PetscInt Nkm;
-        ierr = PetscHMapFormGetSize(jacmap[m], &Nkm);CHKERRQ(ierr);
+        ierr = PetscHMapFormGetSize(ds->wf->form[jacmap[m]], &Nkm);CHKERRQ(ierr);
         Nk  += Nkm;
       }
       ierr = PetscMalloc1(Nk, &jackeys);CHKERRQ(ierr);
       for (m = 0; m < Nm; ++m) {
-        ierr = PetscHMapFormGetKeys(jacmap[m], &off, jackeys);CHKERRQ(ierr);
+        ierr = PetscHMapFormGetKeys(ds->wf->form[jacmap[m]], &off, jackeys);CHKERRQ(ierr);
       }
       if (off != Nk) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %D should be %D", off, Nk);
-      ierr = PetscHashFormKeySort(Nk, jackeys);CHKERRQ(ierr);
+      ierr = PetscFormKeySort(Nk, jackeys);CHKERRQ(ierr);
       for (k = 0, kp = 1; kp < Nk; ++kp) {
         if ((jackeys[k].label != jackeys[kp].label) || (jackeys[k].value != jackeys[kp].value)) {
           ++k;
@@ -1451,11 +1452,12 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
-    PetscHashFormKey key;
+    PetscFormKey key;
 
     ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
     key.value = 0;
     key.field = 0;
+    key.part  = 0;
     if (!key.label) {
       ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
       cellIS = allcellIS;

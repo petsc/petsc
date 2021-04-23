@@ -3797,7 +3797,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   PetscInt         cStart, cEnd, numCells;
   PetscInt         Nf, f, totDim, totDimAux, numChunks, cellChunkSize, chunk, fStart, fEnd;
   PetscInt         maxDegree = PETSC_MAX_INT;
-  PetscHashFormKey key;
+  PetscFormKey key;
   PetscQuadrature  affineQuad = NULL, *quads = NULL;
   PetscFEGeom     *affineGeom = NULL, **geoms = NULL;
   PetscErrorCode   ierr;
@@ -3868,6 +3868,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   numChunks     = PetscMin(1,numCells);
   key.label     = NULL;
   key.value     = 0;
+  key.part      = 0;
   for (chunk = 0; chunk < numChunks; ++chunk) {
     PetscScalar     *elemVec, *fluxL = NULL, *fluxR = NULL;
     PetscReal       *vol = NULL;
@@ -4026,7 +4027,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   PetscScalar     *work, *u = NULL, *u_t = NULL, *a = NULL, *elemMat = NULL, *elemMatP = NULL, *elemMatD = NULL;
   PetscBool        hasJac, hasPrec, hasDyn, assembleJac, isMatIS, isMatISP, *isFE, hasFV = PETSC_FALSE;
   const PetscInt  *cells;
-  PetscHashFormKey key;
+  PetscFormKey key;
   PetscInt         Nf, fieldI, fieldJ, maxDegree, numCells, cStart, cEnd, numChunks, chunkSize, chunk, totDim, totDimAux = 0, sz, wsz, off = 0, offCell = 0;
   PetscErrorCode   ierr;
 
@@ -4115,6 +4116,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   ierr = MatZeroEntries(JP);CHKERRQ(ierr);
   key.label = NULL;
   key.value = 0;
+  key.part  = 0;
   for (chunk = 0; chunk < numChunks; ++chunk, offCell += chunkSize) {
     const PetscInt   Ncell = PetscMin(chunkSize, numCells - offCell);
     PetscInt         c;
@@ -4322,12 +4324,13 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     PetscQuadrature  qGeom = NULL;
     IS               pointIS;
     const PetscInt  *points;
-    PetscHashFormKey key;
+    PetscFormKey key;
     PetscInt         numFaces, face, Nq;
 
     key.label = label;
     key.value = values[v];
     key.field = field;
+    key.part  = 0;
     ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
     if (!pointIS) continue; /* No points with that id on this process */
     {
@@ -4485,7 +4488,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscHashFormKey key, IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
+PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   DM_Plex         *mesh       = (DM_Plex *) dm->data;
   const char      *name       = "Residual";
@@ -4859,7 +4862,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscHashFormKey key, IS ce
 
   4) Run both kernels for each non-hybrid field with correct dsAux, and then hybrid field as before
 */
-PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscHashFormKey key[], IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
+PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   DM_Plex         *mesh       = (DM_Plex *) dm->data;
   const char      *name       = "Hybrid Residual";
@@ -5086,11 +5089,12 @@ PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t, Petsc
     PetscQuadrature  qGeom = NULL;
     IS               pointIS;
     const PetscInt  *points;
-    PetscHashFormKey key;
+    PetscFormKey key;
     PetscInt         numFaces, face, Nq;
 
     key.label = label;
     key.value = values[v];
+    key.part  = 0;
     ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
     if (!pointIS) continue; /* No points with that id on this process */
     {
@@ -5251,7 +5255,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscHashFormKey key, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Mat Jac, Mat JacP,void *user)
+PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Mat Jac, Mat JacP,void *user)
 {
   DM_Plex        *mesh  = (DM_Plex *) dm->data;
   const char     *name  = "Jacobian";
@@ -5482,7 +5486,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscHashFormKey key, IS ce
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscHashFormKey key[], IS cellIS, PetscReal t, PetscReal X_tShift, Vec locX, Vec locX_t, Mat Jac, Mat JacP, void *user)
+PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], IS cellIS, PetscReal t, PetscReal X_tShift, Vec locX, Vec locX_t, Mat Jac, Mat JacP, void *user)
 {
   DM_Plex         *mesh          = (DM_Plex *) dm->data;
   const char      *name          = "Hybrid Jacobian";
@@ -5740,15 +5744,15 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscHashFormKey key
   DMPlexComputeJacobian_Action_Internal - Form the local portion of the Jacobian action Z = J(X) Y at the local solution X using pointwise functions specified by the user.
 
   Input Parameters:
-+ dm - The mesh
-. key - The PetscWeakFormKey indcating where integration should happen
-. cellIS -
-. t  - The time
++ dm     - The mesh
+. key    - The PetscWeakFormKey indcating where integration should happen
+. cellIS - The cells to integrate over
+. t      - The time
 . X_tShift - The multiplier for the Jacobian with repsect to X_t
-. X  - Local solution vector
-. X_t  - Time-derivative of the local solution vector
-. Y  - Local input vector
-- user - The user context
+. X      - Local solution vector
+. X_t    - Time-derivative of the local solution vector
+. Y      - Local input vector
+- user   - the user context
 
   Output Parameter:
 . Z - Local output vector
@@ -5756,12 +5760,8 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscHashFormKey key
   Note:
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
-
-  Level: developer
-
-.seealso: FormFunctionLocal()
 */
-PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscHashFormKey key, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
+PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
 {
   DM_Plex        *mesh  = (DM_Plex *) dm->data;
   const char     *name  = "Jacobian";
