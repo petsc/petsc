@@ -9,6 +9,10 @@ PETSc |version| Documentation
     - `Physical book from SIAM Press <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__
     - `Google Play E-book <https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ>`__
 
+.. admonition:: News: New paper on PETSc communication System
+
+  `The PetscSF Scalable Communication Layer <https://arxiv.org/abs/2102.13018>`__
+
 .. admonition:: News: New paper on PETSc with GPUs
 
   `Toward Performance-Portable PETSc for GPU-based Exascale Systems <https://arxiv.org/abs/2011.00715>`__
