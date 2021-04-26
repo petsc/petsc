@@ -55,6 +55,7 @@ configure_options = [
   '--download-parmmg=1',
   '--download-kokkos=1',
   '--download-kokkos-kernels=1',
+  '--download-htool=1',
   ]
 
 if __name__ == '__main__':

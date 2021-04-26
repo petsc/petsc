@@ -18,7 +18,7 @@ PetscLogEvent PC_HPDDM_Next;
 PetscLogEvent PC_HPDDM_SetUp[PETSC_HPDDM_MAXLEVELS];
 PetscLogEvent PC_HPDDM_Solve[PETSC_HPDDM_MAXLEVELS];
 
-static const char *PCHPDDMCoarseCorrectionTypes[] = { "deflated", "additive", "balanced" };
+const char *const PCHPDDMCoarseCorrectionTypes[] = { "deflated", "additive", "balanced" };
 
 static PetscErrorCode PCReset_HPDDM(PC pc)
 {
@@ -581,7 +581,7 @@ static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
 }
 
 /*@C
-     PCHPDDMShellMatApply - Variant of PCHPDDMShellApply() for blocks of vectors
+     PCHPDDMShellMatApply - Variant of PCHPDDMShellApply() for blocks of vectors.
 
    Input Parameters:
 +     pc - preconditioner context
@@ -1305,7 +1305,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 
    This PC may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral AMGe or PCBDDC with adaptive selection of constraints. A chronological bibliography of relevant publications linked with PC available in HPDDM through PCHPDDM may be found below. The interface is explained in details in [2021].
 
-   The matrix to be preconditioned (Pmat) may be unassembled (MATIS) or assembled (MATMPIAIJ, MATMPIBAIJ, or MATMPISBAIJ). For multilevel preconditioning, when using an assembled Pmat, one must provide an auxiliary local Mat (unassembled local operator for GenEO) using PCHPDDMSetAuxiliaryMat(). Calling this routine is not needed when using a MATIS Pmat (assembly done internally using MatConvert).
+   The matrix to be preconditioned (Pmat) may be unassembled (MATIS), assembled (MATMPIAIJ, MATMPIBAIJ, or MATMPISBAIJ), or hierarchical (MATHTOOL). For multilevel preconditioning, when using an assembled or hierarchical Pmat, one must provide an auxiliary local Mat (unassembled local operator for GenEO) using PCHPDDMSetAuxiliaryMat(). Calling this routine is not needed when using a MATIS Pmat, assembly done internally using MatConvert().
 
    Options Database Keys:
 +   -pc_hpddm_define_subdomains <true, default=false> - on the finest level, calls PCASMSetLocalSubdomains() with the IS supplied in PCHPDDMSetAuxiliaryMat() (only relevant with an assembled Pmat)

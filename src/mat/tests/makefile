@@ -1,10 +1,10 @@
 -include ../../../petscdir.mk
-CFLAGS		 =
-FFLAGS		 =
-CPPFLAGS         =
-FPPFLAGS         =
-LOCDIR		 = src/mat/tests/
-EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
+CFLAGS       =
+FFLAGS       =
+CPPFLAGS     =
+FPPFLAGS     =
+LOCDIR       = src/mat/tests/
+EXAMPLESC    = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                    ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
                    ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c \
                    ex30.c ex31.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c ex39.c \
@@ -25,9 +25,11 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                    ex181.c ex182.c ex183.c ex300.c ex301.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c ex198.c ex199.c ex200.c \
                    ex202.c ex203.c ex205.c ex206.c ex207.c ex208.c ex209.c ex210.c ex211.c ex213.c ex214.c ex220.c ex221.c ex222.c ex225.c ex226.c ex227.c \
                    ex228.c ex230.c ex231.cxx ex232.c ex233.c ex234.c ex237.c \
-                   ex239.c
+                   ex238.c ex239.c ex240.c ex241.c ex242.c ex243.c ex245.c
 
-EXAMPLESF	 = ex16f90.F90 ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F90 ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F90 ex201f.F ex209f.F90  ex212f.F90 ex219f.F90
+EXAMPLESF    = ex16f90.F90 ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F90 ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F90 ex201f.F ex209f.F90  ex212f.F90 ex219f.F90
+
+EXAMPLESCXX  = ex244.cxx ex246.cxx
 
 ex72: ex72.o ex72mmio.o
 

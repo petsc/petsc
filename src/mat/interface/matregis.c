@@ -90,6 +90,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_HARA(Mat);
 #endif
 
+#if defined(PETSC_HAVE_HTOOL)
+PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat);
+#endif
+
 /*@C
   MatRegisterAll - Registers all of the matrix types in PETSc
 
@@ -214,6 +218,10 @@ PetscErrorCode  MatRegisterAll(void)
 
 #if defined(PETSC_HAVE_HARA)
   ierr = MatRegister(MATHARA,           MatCreate_HARA);CHKERRQ(ierr);
+#endif
+
+#if defined(PETSC_HAVE_HTOOL)
+  ierr = MatRegister(MATHTOOL,          MatCreate_Htool);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
