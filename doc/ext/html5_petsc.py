@@ -112,8 +112,6 @@ class PETScHTMLTranslatorMixin:
                     raise Exception('Could not determine version name from GitLab CI environment variables')
                 version_name = ci_commit_ref_name.replace('release-', '')
                 manpage_prefix_base = 'https://petsc.org/' + version_name
-        elif 'READTHEDOCS' in os.environ:  # Temporary - remove once ReadTheDocs is abandoned
-            manpage_prefix_base = 'https://www.mcs.anl.gov/petsc/petsc-main'
         else:
             manpage_prefix_base = self.builder.outdir
         return manpage_prefix_base
