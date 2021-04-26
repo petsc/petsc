@@ -38,5 +38,3 @@ class Configure(config.package.Package):
     except RuntimeError as e:
       raise RuntimeError('Error running install on libceed: '+str(e))
     return self.installDir
-
-
