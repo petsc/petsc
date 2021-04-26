@@ -3,12 +3,12 @@
 /* static array length */
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
-const char *const KSPHPDDMTypes[]           = { KSPGMRES, "bgmres", KSPCG, "bcg", "gcrodr", "bgcrodr", "bfbcg", KSPPREONLY };
-static const char *HPDDMOrthogonalization[] = { "cgs", "mgs" };
-static const char *HPDDMQR[]                = { "cholqr", "cgs", "mgs" };
-static const char *HPDDMVariant[]           = { "left", "right", "flexible" };
-static const char *HPDDMRecycleTarget[]     = { "SM", "LM", "SR", "LR", "SI", "LI" };
-static const char *HPDDMRecycleStrategy[]   = { "A", "B" };
+const char *const KSPHPDDMTypes[]          = { KSPGMRES, "bgmres", KSPCG, "bcg", "gcrodr", "bgcrodr", "bfbcg", KSPPREONLY };
+const char *const HPDDMOrthogonalization[] = { "cgs", "mgs" };
+const char *const HPDDMQR[]                = { "cholqr", "cgs", "mgs" };
+const char *const HPDDMVariant[]           = { "left", "right", "flexible" };
+const char *const HPDDMRecycleTarget[]     = { "SM", "LM", "SR", "LR", "SI", "LI" };
+const char *const HPDDMRecycleStrategy[]   = { "A", "B" };
 
 PetscBool HPDDMCite = PETSC_FALSE;
 const char HPDDMCitation[] = "@article{jolivet2020petsc,\n"

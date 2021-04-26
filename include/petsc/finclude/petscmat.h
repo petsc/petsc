@@ -154,6 +154,7 @@
 #define MATLMVMDIAGBROYDEN 'lmvmdiagbroyden'
 #define MATCONSTANTDIAGONAL 'constantdiagonal'
 #define MATHARA            'hara'
+#define MATHTOOL           'htool'
 
 !
 ! MatMFFDType values

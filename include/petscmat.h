@@ -109,6 +109,7 @@ typedef const char* MatType;
 #define MATLMVMDIAGBROYDEN   "lmvmdiagbroyden"
 #define MATCONSTANTDIAGONAL  "constantdiagonal"
 #define MATHARA              "hara"
+#define MATHTOOL           "htool"
 
 /*J
     MatSolverType - String with the name of a PETSc matrix solver type.
@@ -1824,6 +1825,25 @@ PETSC_EXTERN_TYPEDEF typedef PetscScalar (*MatHaraKernel)(PetscInt,PetscReal[],P
 PETSC_EXTERN PetscErrorCode MatCreateHaraFromKernel(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscReal[],MatHaraKernel,void*,PetscReal,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateHaraFromMat(Mat,PetscInt,const PetscReal[],PetscReal,PetscInt,PetscInt,PetscInt,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatHaraSetSamplingMat(Mat,Mat,PetscInt,PetscReal);
+#endif
+
+#ifdef PETSC_HAVE_HTOOL
+PETSC_EXTERN_TYPEDEF typedef PetscScalar (*MatHtoolKernel)(PetscInt,PetscInt,PetscInt,void*);
+PETSC_EXTERN PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscReal[],const PetscReal[],MatHtoolKernel,void*,Mat*);
+PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat,MatHtoolKernel,void*);
+/*E
+     MatHtoolCompressorType - Indicates the type of compressor used by a MATHTOOL
+
+   Level: beginner
+
+    Values:
++   MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA (default) - symmetric partial adaptive cross approximation
+.   MAT_HTOOL_COMPRESSOR_FULL_ACA - full adaptive cross approximation
+-   MAT_HTOOL_COMPRESSOR_SVD - singular value decomposition
+
+.seealso: MatCreateHtoolFromKernel(), MATHTOOL
+E*/
+typedef enum { MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA, MAT_HTOOL_COMPRESSOR_FULL_ACA, MAT_HTOOL_COMPRESSOR_SVD } MatHtoolCompressorType;
 #endif
 
 /*
