@@ -638,12 +638,12 @@ cdef class DMPlex(DM):
     #
 
     def computeCellGeometryFVM(self, cell):
-        cdef PetscInt dim = 0
+        cdef PetscInt cdim = 0
         cdef PetscInt ccell = asInt(cell)
-        CHKERR( DMGetDimension(self.dm, &dim) )
+        CHKERR( DMGetCoordinateDim(self.dm, &cdim) )
         cdef PetscReal vol = 0, centroid[3], normal[3]
         CHKERR( DMPlexComputeCellGeometryFVM(self.dm, ccell, &vol, centroid, normal) )
-        return (toReal(vol), array_r(dim, centroid), array_r(dim, normal))
+        return (toReal(vol), array_r(cdim, centroid), array_r(cdim, normal))
 
     def constructGhostCells(self, labelName=None):
         cdef const char *cname = NULL
