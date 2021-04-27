@@ -539,12 +539,12 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   pointMaps[maps->num_reduced][jj].scale = 0;
                   pointMaps[maps->num_reduced][jj].gid = -1;
                 }
-                if (PetscAbs(sum-1.0)>PETSC_MACHINE_EPSILON*2.0) { // debug
+                if (PetscAbs(sum-1.0) > 10*PETSC_MACHINE_EPSILON) { // debug
                   int       d,f;
                   PetscReal tmp = 0;
-                  PetscPrintf(PETSC_COMM_SELF,"\t\t%D.%D.%D) ERROR total I = %22.16e (LANDAU_MAX_Q_FACE=%d, #face=%D)\n",eidx,q,fieldA,tmp,LANDAU_MAX_Q_FACE,maps->num_face);
+                  PetscPrintf(PETSC_COMM_SELF,"\t\t%D.%D.%D) ERROR total I = %22.16e (LANDAU_MAX_Q_FACE=%d, #face=%D)\n",eidx,q,fieldA,sum,LANDAU_MAX_Q_FACE,maps->num_face);
                   for (d = 0, tmp = 0; d < numindices; ++d){
-                    if (tmp!=0 && PetscAbs(tmp-1.0)>2*PETSC_MACHINE_EPSILON) ierr = PetscPrintf(PETSC_COMM_WORLD,"%3D) %3D: ",d,indices[d]);CHKERRQ(ierr);
+                    if (tmp!=0 && PetscAbs(tmp-1.0) > 10*PETSC_MACHINE_EPSILON) ierr = PetscPrintf(PETSC_COMM_WORLD,"%3D) %3D: ",d,indices[d]);CHKERRQ(ierr);
                     for (f = 0; f < numindices; ++f) {
                       tmp += PetscRealPart(elMat[d*numindices + f]);
                     }
