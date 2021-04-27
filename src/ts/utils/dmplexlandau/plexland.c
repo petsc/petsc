@@ -197,7 +197,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       } /* ej */
       ierr = DMRestoreLocalVector(plex, &locX);CHKERRQ(ierr);
     } else {
-      ierr = VecGetArrayRead(a_X,&xarray);CHKERRQ(ierr);
+      ierr = VecCUDAGetArrayRead(a_X,&xarray);CHKERRQ(ierr);
     }
     ierr = PetscLogEventEnd(ctx->events[1],0,0,0,0);CHKERRQ(ierr);
   } else {
@@ -630,7 +630,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     ierr = PetscFree(IPf);CHKERRQ(ierr);
   }
   if (xarray) {
-    ierr = VecRestoreArrayRead(a_X,&xarray);CHKERRQ(ierr);
+    ierr = VecCUDARestoreArrayRead(a_X,&xarray);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
