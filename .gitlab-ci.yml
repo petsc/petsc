@@ -41,6 +41,7 @@ variables:
     variables:
       # Skip if the docs-only label is attached to a merge request
       - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
+      - $PETSC_CI_SCHEDULED =~ "yes"
 
 check-ci-settings:
   extends: .test-basic
@@ -974,15 +975,12 @@ pages:  # this job name has special meaning to GitLab
   extends: .docs
   interruptible: true
   script:
-    - VERSION_NAME=$(sed 's/release-//' <<< $CI_COMMIT_REF_NAME) &&
-      DEST=../public/$VERSION_NAME &&
-      rm -rf $DEST &&
-      sphinx-build -T -E -b dirhtml -D language=en -j auto . $DEST
+    - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
+    - git checkout origin/main && sphinx-build -T -E -b dirhtml -D language=en -j auto . ../public/main
+    - git checkout origin/release && sphinx-build -T -E -b dirhtml -D language=en -j auto . ../public/release
   only:
-    - release
-    - main
-    - /^release-\d+\.\d+$/
-    - /^testdocs/
+    variables:
+      - $PETSC_CI_SCHEDULED == "yes"
   artifacts:
     paths:
       - public
