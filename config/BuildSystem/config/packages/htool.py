@@ -32,15 +32,7 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    if self.framework.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      PETSC_DIR  = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
-      PETSC_ARCH = ''
-      prefix     = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
-    else:
-      PETSC_DIR  = self.petscdir.dir
-      PETSC_ARCH = self.arch
-      prefix     = os.path.join(self.petscdir.dir,self.arch)
-    incDir = os.path.join(prefix,'include')
+    incDir = os.path.join(self.installDir,self.includedir)
     if self.installSudo:
       newuser = self.installSudo+' -u $${SUDO_USER} '
     else:
