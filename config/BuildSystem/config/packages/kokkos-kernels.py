@@ -7,7 +7,8 @@ class Configure(config.package.CMakePackage):
     self.gitcommit        = '3.2.00'
     self.versionname      = 'KOKKOS_KERNELS_VERSION'  # It looks kokkos-kernels does not yet have a macro for version number
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
-    self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
+    #TODO: See comments in kokkos.py
+    #self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
     self.liblist          = [['libkokkoskernels.a']]
     self.functions        = ['']
     # I don't know how to make it work since all KK routines are templated and always need Kokkos::View. So I cheat here and use functionCxx from Kokkos.
