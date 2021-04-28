@@ -198,12 +198,12 @@ Changes: 3.4
 
    -  Option ``-ts_monitor_solution`` changed to
       ``-ts_monitor_draw_solution``. See
-      `TSSetFromOptions <https://www.mcs.anl.gov/petsc/petsc-main/docs/manualpages/TS/TSSetFromOptions.html>`__
+      ``TSSetFromOptions``
       for additional monitoring options.
    -  TSSetExactFinalTime() now takes an enum instead of PetscBool,
       which includes a new feature ``TS_EXACTFINALTIME_MATCHSTEP`` that
       adjusts time step sizes to match an exact final time. See
-      `TSExactFinalTimeOption <https://www.mcs.anl.gov/petsc-main/docs/manualpages/TS/TSExactFinalTimeOption.html>`__.
+      ``TSExactFinalTimeOption``.
 
    .. rubric:: DM/DA:
 
