@@ -448,7 +448,7 @@ from ``$PETSC_DIR``:
    > make all
 
 How do I enable Python bindings (petsc4py) with PETSc?
------------------------------------------------------
+------------------------------------------------------
 
 #. Install `Cython <https://cython.org/>`__.
 
