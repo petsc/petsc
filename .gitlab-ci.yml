@@ -41,7 +41,7 @@ variables:
     variables:
       # Skip if the docs-only label is attached to a merge request
       - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
-      - $PETSC_CI_SCHEDULED =~ "yes"
+      - $PETSC_CI_SCHEDULED =~ /yes/
 
 check-ci-settings:
   extends: .test-basic
@@ -212,7 +212,6 @@ check-py-vermin:
     - make updatedatafiles
     - if [ -z ${DISABLE_PETSC4PY_TESTS+x} ]; then if [ -z ${ENABLE_PETSC4PY_LDPRELOAD+x} ]; then echo "NOT using LD_PRELOAD"; make petsc4pytest; else echo "using LD_PRELOAD"; LD_PRELOAD=${PWD}/${TEST_ARCH}/lib/libpetsc.so make petsc4pytest; fi; fi
     - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS}; fi
-    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov && bash <(curl -s https://codecov.io/bash) -c > /dev/null 2>&1; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
