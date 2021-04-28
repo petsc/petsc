@@ -1,0 +1,74 @@
+TSTrajectorySet: stepnum 0, time 0. (stages 0)
+Store in checkpoint number 0 (located in RAM)
+TSTrajectorySet: stepnum 1, time 0.001 (stages 0)
+Store in checkpoint number 1 (located in RAM)
+TSTrajectorySet: stepnum 2, time 0.002 (stages 0)
+TSTrajectorySet: stepnum 3, time 0.003 (stages 0)
+TSTrajectorySet: stepnum 4, time 0.004 (stages 0)
+TSTrajectorySet: stepnum 5, time 0.005 (stages 0)
+Store in checkpoint number 5 (located in RAM)
+TSTrajectorySet: stepnum 6, time 0.006 (stages 0)
+TSTrajectorySet: stepnum 7, time 0.007 (stages 0)
+TSTrajectorySet: stepnum 8, time 0.008 (stages 0)
+TSTrajectorySet: stepnum 9, time 0.009 (stages 0)
+Store in checkpoint number 9 (located in RAM)
+TSTrajectorySet: stepnum 10, time 0.01 (stages 0)
+TSTrajectorySet: stepnum 11, time 0.011 (stages 0)
+TSTrajectorySet: stepnum 12, time 0.012 (stages 0)
+Store in checkpoint number 12 (located in RAM)
+TSTrajectorySet: stepnum 13, time 0.013 (stages 0)
+TSTrajectorySet: stepnum 14, time 0.014 (stages 0)
+TSTrajectorySet: stepnum 15, time 0.015 (stages 0)
+TSTrajectoryGet: stepnum 15, stages 0
+TSTrajectoryGet: stepnum 14, stages 0
+Restore in checkpoint number 12 (located in RAM)
+TSTrajectoryGet: stepnum 13, stages 0
+Restore in checkpoint number 12 (located in RAM)
+TSTrajectoryGet: stepnum 12, stages 0
+Restore in checkpoint number 9 (located in RAM)
+Store in checkpoint number 10 (located in RAM)
+TSTrajectoryGet: stepnum 11, stages 0
+Restore in checkpoint number 10 (located in RAM)
+TSTrajectoryGet: stepnum 10, stages 0
+Restore in checkpoint number 9 (located in RAM)
+TSTrajectoryGet: stepnum 9, stages 0
+Restore in checkpoint number 5 (located in RAM)
+Store in checkpoint number 6 (located in RAM)
+Store in checkpoint number 7 (located in RAM)
+TSTrajectoryGet: stepnum 8, stages 0
+Restore in checkpoint number 7 (located in RAM)
+TSTrajectoryGet: stepnum 7, stages 0
+Restore in checkpoint number 6 (located in RAM)
+TSTrajectoryGet: stepnum 6, stages 0
+Restore in checkpoint number 5 (located in RAM)
+TSTrajectoryGet: stepnum 5, stages 0
+Restore in checkpoint number 1 (located in RAM)
+Store in checkpoint number 2 (located in RAM)
+Store in checkpoint number 3 (located in RAM)
+TSTrajectoryGet: stepnum 4, stages 0
+Restore in checkpoint number 3 (located in RAM)
+TSTrajectoryGet: stepnum 3, stages 0
+Restore in checkpoint number 2 (located in RAM)
+TSTrajectoryGet: stepnum 2, stages 0
+Restore in checkpoint number 1 (located in RAM)
+TSTrajectoryGet: stepnum 1, stages 0
+Restore in checkpoint number 0 (located in RAM)
+TSTrajectoryGet: stepnum 0, stages 0
+
+ sensitivity wrt initial conditions: d[y(tf)]/d[y0]  d[y(tf)]/d[z0]
+Vec Object: 1 MPI processes
+  type: seq
+1.00844
+5.74982e-06
+
+ sensitivity wrt initial conditions: d[z(tf)]/d[y0]  d[z(tf)]/d[z0]
+Vec Object: 1 MPI processes
+  type: seq
+1.03128
+-0.828692
+
+ sensitivity wrt parameters: d[y(tf)]/d[mu]
+-1.89784e-13
+
+ sensivitity wrt parameters: d[z(tf)]/d[mu]
+-1.29657e-11
