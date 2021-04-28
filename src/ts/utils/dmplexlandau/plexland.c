@@ -59,7 +59,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscTabulation   *Tf; // used for CPU and print info
   PetscReal         Eq_m[LANDAU_MAX_SPECIES], m_0=ctx->m_0; /* normalize mass -- not needed! */
   PetscScalar       *IPf=NULL;
-  const PetscScalar *xarray=NULL;
+  const PetscScalar *xdata=NULL;
   PetscLogDouble    flops;
   PetscContainer    container;
   P4estVertexMaps   *maps=NULL;
@@ -197,7 +197,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       } /* ej */
       ierr = DMRestoreLocalVector(plex, &locX);CHKERRQ(ierr);
     } else {
-      ierr = VecCUDAGetArrayRead(a_X,&xarray);CHKERRQ(ierr);
+      PetscMemType mtype;
+      ierr = VecGetArrayReadAndMemType(a_X,&xdata,&mtype);CHKERRQ(ierr);
     }
     ierr = PetscLogEventEnd(ctx->events[1],0,0,0,0);CHKERRQ(ierr);
   } else {
@@ -212,13 +213,13 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     /* ierr = PetscLogStagePush(stage0);CHKERRQ(ierr); */
     if (ctx->deviceType == LANDAU_CUDA) {
 #if defined(PETSC_HAVE_CUDA)
-      ierr = LandauCUDAJacobian(plex,Nq,Eq_m,IPf,N,xarray,ctx->SData_d,ctx->subThreadBlockSize,shift,ctx->events,JacP);CHKERRQ(ierr);
+      ierr = LandauCUDAJacobian(plex,Nq,Eq_m,IPf,N,xdata,ctx->SData_d,ctx->subThreadBlockSize,shift,ctx->events,JacP);CHKERRQ(ierr);
 #else
       SETERRQ1(ctx->comm,PETSC_ERR_ARG_WRONG,"-landau_device_type %s not built","cuda");
 #endif
     } else if (ctx->deviceType == LANDAU_KOKKOS) {
 #if defined(PETSC_HAVE_KOKKOS)
-      ierr = LandauKokkosJacobian(plex,Nq,Eq_m,IPf,ctx->SData_d,ctx->subThreadBlockSize,shift,ctx->events,JacP);CHKERRQ(ierr);
+      ierr = LandauKokkosJacobian(plex,Nq,Eq_m,IPf,N,xdata,ctx->SData_d,ctx->subThreadBlockSize,shift,ctx->events,JacP);CHKERRQ(ierr);
 #else
       SETERRQ1(ctx->comm,PETSC_ERR_ARG_WRONG,"-landau_device_type %s not built","kokkos");
 #endif
@@ -264,14 +265,14 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
             for (b = 0; b < Nb; ++b) {
               idx = Idxs[b];
               if (idx >= 0) {
-                coef[f*Nb+b] = xarray[idx];
+                coef[f*Nb+b] = xdata[idx];
               } else {
                 idx = -idx - 1;
                 coef[f*Nb+b] = 0;
                 for (q = 0; q < maps->num_face; q++) {
                   PetscInt    id = maps->c_maps[idx][q].gid;
                   PetscScalar scale = maps->c_maps[idx][q].scale;
-                  coef[f*Nb+b] += scale*xarray[id];
+                  coef[f*Nb+b] += scale*xdata[id];
                 }
               }
               //PetscPrintf(ctx->comm,"%f ",coef[f*Nb+b]);CHKERRQ(ierr);
@@ -629,8 +630,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   if (IPf) {
     ierr = PetscFree(IPf);CHKERRQ(ierr);
   }
-  if (xarray) {
-    ierr = VecCUDARestoreArrayRead(a_X,&xarray);CHKERRQ(ierr);
+  if (xdata) {
+    ierr = VecRestoreArrayReadAndMemType(a_X,&xdata);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

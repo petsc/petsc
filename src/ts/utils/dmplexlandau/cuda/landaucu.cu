@@ -160,7 +160,9 @@ PetscErrorCode LandauCUDAStaticDataClear(LandauGeomData *SData_d)
 #if LANDAU_DIM==3
     cerr = cudaFree(SData_d->dfdz);CHKERRCUDA(cerr);
 #endif
-    cerr = cudaFree(SData_d->IPf);CHKERRCUDA(cerr);
+    if (SData_d->IPf) {
+      cerr = cudaFree(SData_d->IPf);CHKERRCUDA(cerr);
+    }
     cerr = cudaFree(SData_d->ierr);CHKERRCUDA(cerr);
   }
   PetscFunctionReturn(0);
@@ -184,7 +186,7 @@ void landau_form_fdf(const PetscInt nip, const PetscInt dim, const PetscInt Nf, 
   const PetscReal   *Bq = &BB[myQi*Nb], *Dq = &DD[myQi*Nb*dim];
   PetscInt          f,d,b,e,q;
   PetscReal         u_x[LANDAU_MAX_SPECIES][LANDAU_DIM];
-  const PetscScalar *coef = &a_coef[myelem*Nb*Nf];
+  const PetscScalar *coef;
   PetscScalar       coef_buff[LANDAU_MAX_SPECIES*LANDAU_MAX_NQ];
 
   *ierr = 0;
@@ -551,8 +553,8 @@ void __launch_bounds__(256,1) landau_kernel_v2(const PetscInt nip, const PetscIn
                            myelem, ierr); /* compact */
 }
 
-PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[], PetscScalar a_IPf[], const PetscInt N, const PetscScalar a_xarray[], LandauGeomData *SData_d, const PetscInt num_sub_blocks, PetscReal shift,
-                                  const PetscLogEvent events[], Mat JacP)
+PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[], PetscScalar a_IPf[], const PetscInt N, const PetscScalar a_xarray[], LandauGeomData *SData_d, const PetscInt num_sub_blocks,
+                                  PetscReal shift, const PetscLogEvent events[], Mat JacP)
 {
   PetscErrorCode    ierr,*d_ierr = (PetscErrorCode*)SData_d->ierr;
   cudaError_t       cerr;
@@ -623,7 +625,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
       cerr = cudaMemcpy(SData_d->IPf, a_IPf, nip*Nf*szf, cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
       d_IPf  = (PetscScalar*)SData_d->IPf;
     } else {
-      //cerr = cudaMemcpy(SData_d->IPf, a_xarray, N*szf, cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
       d_IPf = (PetscScalar*)a_xarray;
     }
     ierr = PetscLogEventEnd(events[1],0,0,0,0);CHKERRQ(ierr);
@@ -726,8 +727,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
     // transition to use of maps for VecGetClosure
     cerr = cudaFree(SData_d->IPf);CHKERRCUDA(cerr);
     SData_d->IPf = NULL;
-    //cerr = cudaMalloc((void**)&SData_d->IPf, N*sizeof(PetscScalar));CHKERRCUDA(cerr); // Nq==Nb
-    if (!(a_IPf || a_xarray)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "transition without Jacobian");
   }
 
   PetscFunctionReturn(0);
