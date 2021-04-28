@@ -1,5 +1,24 @@
 #include <petsc/private/dmnetworkimpl.h>  /*I  "petscdmnetwork.h"  I*/
 
+/*
+  Creates the component header and value objects for a network point
+*/
+static PetscErrorCode SetUpNetworkHeaderComponentValue(DM dm,DMNetworkComponentHeader header,DMNetworkComponentValue cvalue)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Allocate arrays for component information */
+  ierr = PetscCalloc5(header->maxcomps,&header->size,header->maxcomps,&header->key,header->maxcomps,&header->offset,header->maxcomps,&header->nvar,header->maxcomps,&header->offsetvarrel);CHKERRQ(ierr);
+  ierr = PetscCalloc1(header->maxcomps,&cvalue->data);CHKERRQ(ierr);
+
+  /* The size of the header is the size of struct _p_DMNetworkComponentHeader. Since the struct contains PetscInt pointers we cannot use sizeof(struct). So, we need to explicitly calculate the size.
+   If the data header struct changes then this header size calculation needs to be updated. */
+  header->hsize = sizeof(struct _p_DMNetworkComponentHeader) + 5*header->maxcomps*sizeof(PetscInt);
+  header->hsize /= sizeof(DMNetworkComponentGenericDataType);
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMNetworkGetPlex - Gets the Plex DM associated with this network DM
 
@@ -464,9 +483,12 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
   ierr = PetscSectionSetChart(network->DataSection,network->pStart,network->pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
 
-  network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
   np = network->pEnd - network->pStart;
   ierr = PetscCalloc2(np,&network->header,np,&network->cvalue);CHKERRQ(ierr);
+  for (i=0; i<np; i++) {
+    network->header[i].maxcomps = 1;
+    ierr = SetUpNetworkHeaderComponentValue(dm,&network->header[i],&network->cvalue[i]);CHKERRQ(ierr);
+  }
 
   /* (4) Create vidxlTog: maps MERGED plex local vertex index (including ghosts) to User's global vertex index (without merging shared vertices) */
   np = network->vEnd - vStart; /* include ghost vertices */
@@ -508,7 +530,7 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
       network->header[e].ndata           = 0;
       network->header[e].offset[0]       = 0;
       network->header[e].offsetvarrel[0] = 0;
-      ierr = PetscSectionAddDof(network->DataSection,e,network->dataheadersize);CHKERRQ(ierr);
+      ierr = PetscSectionAddDof(network->DataSection,e,network->header[e].hsize);CHKERRQ(ierr);
 
       /* connected vertices */
       ierr = DMPlexGetCone(network->plex,e,&cone);CHKERRQ(ierr);
@@ -535,7 +557,7 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
     network->header[v].ndata           = 0;
     network->header[v].offset[0]       = 0;
     network->header[v].offsetvarrel[0] = 0;
-    ierr = PetscSectionAddDof(network->DataSection,v,network->dataheadersize);CHKERRQ(ierr);
+    ierr = PetscSectionAddDof(network->DataSection,v,network->header[v].hsize);CHKERRQ(ierr);
 
     /* shared vertex */
     ierr = PetscTableFind(network->svtable,vidxlTog[v-vStart]+1,&i);CHKERRQ(ierr);
@@ -630,9 +652,12 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = PetscSectionSetChart(network->DataSection,network->pStart,network->pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
 
-  network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
   np = network->pEnd - network->pStart;
   ierr = PetscCalloc2(np,&network->header,np,&network->cvalue);CHKERRQ(ierr);
+  for (i=0; i < np; i++) {
+    network->header[i].maxcomps = 1;
+    ierr = SetUpNetworkHeaderComponentValue(dm,&network->header[i],&network->cvalue[i]);CHKERRQ(ierr);
+  }
 
   /* Create edge and vertex arrays for the subnetworks */
   for (j=0; j < network->Nsubnet; j++) {
@@ -675,7 +700,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
       network->header[e].ndata           = 0;
       network->header[e].offset[0]       = 0;
       network->header[e].offsetvarrel[0] = 0;
-      ierr = PetscSectionAddDof(network->DataSection,e,network->dataheadersize);CHKERRQ(ierr);
+      ierr = PetscSectionAddDof(network->DataSection,e,network->header[e].hsize);CHKERRQ(ierr);
 
       /* connected vertices */
       ierr = DMPlexGetCone(network->plex,e,&cone);CHKERRQ(ierr);
@@ -701,7 +726,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     network->header[v].ndata           = 0;
     network->header[v].offset[0]       = 0;
     network->header[v].offsetvarrel[0] = 0;
-    ierr = PetscSectionAddDof(network->DataSection,v,network->dataheadersize);CHKERRQ(ierr);
+    ierr = PetscSectionAddDof(network->DataSection,v,network->header[e].hsize);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -841,21 +866,39 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,size_t size,Pet
 {
   PetscErrorCode        ierr;
   DM_Network            *network = (DM_Network*) dm->data;
-  DMNetworkComponent    *component=&network->component[network->ncomponent];
+  DMNetworkComponent    *component=NULL,*newcomponent=NULL;
   PetscBool             flg=PETSC_FALSE;
   PetscInt              i;
 
   PetscFunctionBegin;
+  if (!network->component) {
+    ierr = PetscCalloc1(network->max_comps_registered,&network->component);CHKERRQ(ierr);
+  }
+
   for (i=0; i < network->ncomponent; i++) {
-    ierr = PetscStrcmp(component->name,name,&flg);CHKERRQ(ierr);
+    ierr = PetscStrcmp(network->component[i].name,name,&flg);CHKERRQ(ierr);
     if (flg) {
       *key = i;
       PetscFunctionReturn(0);
     }
   }
-  if (network->ncomponent == PETSC_DMNETWORK_MAXIMUM_COMPONENTS) {
-    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components registered exceeds the max %d set with PETSC_DMNETWORK_MAXIMUM_COMPONENTS in dmnetworkimpl.h",PETSC_DMNETWORK_MAXIMUM_COMPONENTS);
+
+  if (network->ncomponent == network->max_comps_registered) {
+    /* Reached max allowed so resize component */
+    network->max_comps_registered += 2;
+    ierr = PetscCalloc1(network->max_comps_registered,&newcomponent);CHKERRQ(ierr);
+    /* Copy over the previous component info */
+    for (i=0; i < network->ncomponent; i++) {
+      ierr = PetscStrcpy(newcomponent[i].name,network->component[i].name);CHKERRQ(ierr);
+      newcomponent[i].size = network->component[i].size;
+    }
+    /* Free old one */
+    ierr = PetscFree(network->component);CHKERRQ(ierr);
+    /* Update pointer */
+    network->component = newcomponent;
   }
+
+  component = &network->component[network->ncomponent];
 
   ierr = PetscStrcpy(component->name,name);CHKERRQ(ierr);
   component->size = size/sizeof(DMNetworkComponentGenericDataType);
@@ -1158,10 +1201,12 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
   PetscErrorCode           ierr;
   DM_Network               *network = (DM_Network*)dm->data;
   DMNetworkComponent       *component = &network->component[componentkey];
-  DMNetworkComponentHeader header = &network->header[p];
-  DMNetworkComponentValue  cvalue = &network->cvalue[p];
+  DMNetworkComponentHeader header;
+  DMNetworkComponentValue  cvalue;
   PetscBool                sharedv=PETSC_FALSE;
-  PetscInt                 compnum=header->ndata;
+  PetscInt                 compnum;
+  PetscInt                 *compsize,*compkey,*compoffset,*compnvar,*compoffsetvarrel;
+  void*                    *compdata;
 
   PetscFunctionBegin;
   ierr = PetscSectionAddDof(network->DofSection,p,nvar);CHKERRQ(ierr);
@@ -1174,7 +1219,53 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
     if (ghost) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Adding a component at a leaf(ghost) shared vertex is not supported");
   }
 
-  if (compnum == PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components at a point exceeds the max %D\n reconfigure with ---with-dmnetwork_maximum_components_per_point <N> where N is the required maximum",PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT);
+  header = &network->header[p];
+  cvalue = &network->cvalue[p];
+  if (header->ndata == header->maxcomps) {
+    /* Reached limit so resize header component arrays */
+    header->maxcomps += 2;
+
+    /* Allocate arrays for component information and value */
+    ierr = PetscCalloc5(header->maxcomps,&compsize,header->maxcomps,&compkey,header->maxcomps,&compoffset,header->maxcomps,&compnvar,header->maxcomps,&compoffsetvarrel);CHKERRQ(ierr);
+    ierr = PetscMalloc1(header->maxcomps,&compdata);CHKERRQ(ierr);
+
+    /* Recalculate header size */
+    header->hsize = sizeof(struct _p_DMNetworkComponentHeader) + 5*header->maxcomps*sizeof(PetscInt);
+
+    header->hsize /= sizeof(DMNetworkComponentGenericDataType);
+
+    /* Copy over component info */
+    ierr = PetscMemcpy(compsize,header->size,header->ndata*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(compkey,header->key,header->ndata*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(compoffset,header->offset,header->ndata*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(compnvar,header->nvar,header->ndata*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(compoffsetvarrel,header->offsetvarrel,header->ndata*sizeof(PetscInt));CHKERRQ(ierr);
+
+    /* Copy over component data pointers */
+    ierr = PetscMemcpy(compdata,cvalue->data,header->ndata*sizeof(void*));CHKERRQ(ierr);
+
+    /* Free old arrays */
+    ierr = PetscFree5(header->size,header->key,header->offset,header->nvar,header->offsetvarrel);CHKERRQ(ierr);
+    ierr = PetscFree(cvalue->data);CHKERRQ(ierr);
+
+    /* Update pointers */
+    header->size = compsize;
+    header->key  = compkey;
+    header->offset = compoffset;
+    header->nvar = compnvar;
+    header->offsetvarrel = compoffsetvarrel;
+
+    cvalue->data = compdata;
+
+    /* Update DataSection Dofs */
+    /* The dofs for datasection point p equals sizeof the header (i.e. header->hsize) + sizes of the components added at point p. With the resizing of the header, we need to update the dofs for point p. Hence, we add the extra size added for the header */
+    PetscInt additional_size = (5*(header->maxcomps - header->ndata)*sizeof(PetscInt))/sizeof(DMNetworkComponentGenericDataType);
+    ierr = PetscSectionAddDof(network->DataSection,p,additional_size);CHKERRQ(ierr);
+  }
+  header = &network->header[p];
+  cvalue = &network->cvalue[p];
+
+  compnum = header->ndata;
 
   header->size[compnum] = component->size;
   ierr = PetscSectionAddDof(network->DataSection,p,component->size);CHKERRQ(ierr);
@@ -1228,12 +1319,13 @@ PetscErrorCode DMNetworkGetComponent(DM dm,PetscInt p,PetscInt compnum,PetscInt 
   if (compnum >= 0) {
     if (compkey) *compkey = header->key[compnum];
     if (component) {
-      offset += network->dataheadersize+header->offset[compnum];
+      offset += header->hsize+header->offset[compnum];
       *component = network->componentdataarray+offset;
     }
   }
 
   if (nvar) *nvar = header->nvar[compnum];
+
   PetscFunctionReturn(0);
 }
 
@@ -1301,19 +1393,31 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
 
   ierr = PetscSectionSetUp(network->DataSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(network->DataSection,&arr_size);CHKERRQ(ierr);
-  ierr = PetscMalloc1(arr_size,&network->componentdataarray);CHKERRQ(ierr);
+  ierr = PetscCalloc1(arr_size,&network->componentdataarray);CHKERRQ(ierr);
   componentdataarray = network->componentdataarray;
   for (p = network->pStart; p < network->pEnd; p++) {
     ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
     /* Copy header */
     header = &network->header[p];
-    ierr = PetscMemcpy(componentdataarray+offsetp,header,network->dataheadersize*sizeof(DMNetworkComponentGenericDataType));CHKERRQ(ierr);
+    DMNetworkComponentHeader headerinfo=(DMNetworkComponentHeader)(componentdataarray+offsetp);
+    ierr = PetscMemcpy(headerinfo,header,sizeof(struct _p_DMNetworkComponentHeader));CHKERRQ(ierr);
+    PetscInt *headerarr = (PetscInt*)(headerinfo+1);
+    ierr = PetscMemcpy(headerarr,header->size,header->maxcomps*sizeof(PetscInt));CHKERRQ(ierr);
+    headerarr += header->maxcomps;
+    ierr = PetscMemcpy(headerarr,header->key,header->maxcomps*sizeof(PetscInt));CHKERRQ(ierr);
+    headerarr += header->maxcomps;
+    ierr = PetscMemcpy(headerarr,header->offset,header->maxcomps*sizeof(PetscInt));CHKERRQ(ierr);
+    headerarr += header->maxcomps;
+    ierr = PetscMemcpy(headerarr,header->nvar,header->maxcomps*sizeof(PetscInt));CHKERRQ(ierr);
+    headerarr += header->maxcomps;
+    ierr = PetscMemcpy(headerarr,header->offsetvarrel,header->maxcomps*sizeof(PetscInt));CHKERRQ(ierr);
+
     /* Copy data */
     cvalue = &network->cvalue[p];
-    ncomp = header->ndata;
+    ncomp  = header->ndata;
 
     for (i = 0; i < ncomp; i++) {
-      offset = offsetp + network->dataheadersize + header->offset[i];
+      offset = offsetp + header->hsize + header->offset[i];
       ierr = PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(DMNetworkComponentGenericDataType));CHKERRQ(ierr);
     }
   }
@@ -1527,7 +1631,8 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   /* This routine moves the component data to the appropriate processors. It makes use of the DataSection and the componentdataarray to move the component data to appropriate processors and returns a new DataSection and new componentdataarray. */
   ierr = DMNetworkCreate(PetscObjectComm((PetscObject)*dm),&newDM);CHKERRQ(ierr);
   newDMnetwork = (DM_Network*)newDM->data;
-  newDMnetwork->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
+  newDMnetwork->max_comps_registered = oldDMnetwork->max_comps_registered;
+  ierr = PetscMalloc1(newDMnetwork->max_comps_registered,&newDMnetwork->component);CHKERRQ(ierr);
 
   /* Enable runtime options for petscpartitioner */
   ierr = DMPlexGetPartitioner(oldDMnetwork->plex,&part);CHKERRQ(ierr);
@@ -1575,16 +1680,33 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
     newDMnetwork->subnet[j].Nedge = oldDMnetwork->subnet[j].Nedge;
   }
 
+  PetscMPIInt rank;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+
   /* Get local nedges and nvtx for subnetworks */
   for (e = newDMnetwork->eStart; e < newDMnetwork->eEnd; e++) {
     ierr = PetscSectionGetOffset(newDMnetwork->DataSection,e,&offset);CHKERRQ(ierr);
-    header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);CHKERRQ(ierr);
+    header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);
+    /* Update pointers */
+    header->size          = (PetscInt*)(header + 1);
+    header->key           = header->size   + header->maxcomps;
+    header->offset        = header->key    + header->maxcomps;
+    header->nvar          = header->offset + header->maxcomps;
+    header->offsetvarrel  = header->nvar   + header->maxcomps;
+
     newDMnetwork->subnet[header->subnetid].nedge++;
   }
 
   for (v = newDMnetwork->vStart; v < newDMnetwork->vEnd; v++) {
     ierr = PetscSectionGetOffset(newDMnetwork->DataSection,v,&offset);CHKERRQ(ierr);
     header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);CHKERRQ(ierr);
+
+    /* Update pointers */
+    header->size          = (PetscInt*)(header + 1);
+    header->key           = header->size   + header->maxcomps;
+    header->offset        = header->key    + header->maxcomps;
+    header->nvar          = header->offset + header->maxcomps;
+    header->offsetvarrel  = header->nvar   + header->maxcomps;
 
     /* shared vertices: use gidx = header->index to check if v is a shared vertex */
     gidx = header->index;
@@ -2475,7 +2597,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       j;
+  PetscInt       j,np;
 
   PetscFunctionBegin;
   if (--network->refct > 0) PetscFunctionReturn(0);
@@ -2519,8 +2641,17 @@ PetscErrorCode DMDestroy_Network(DM dm)
 
   ierr = PetscTableDestroy(&network->svtable);CHKERRQ(ierr);
   ierr = PetscFree(network->subnet);CHKERRQ(ierr);
+  ierr = PetscFree(network->component);CHKERRQ(ierr);
   ierr = PetscFree(network->componentdataarray);CHKERRQ(ierr);
-  ierr = PetscFree2(network->header,network->cvalue);CHKERRQ(ierr);
+
+  if (network->header) {
+    np = network->pEnd - network->pStart;
+    for (j=0; j < np; j++) {
+      ierr = PetscFree5(network->header[j].size,network->header[j].key,network->header[j].offset,network->header[j].nvar,network->header[j].offsetvarrel);CHKERRQ(ierr);
+      ierr = PetscFree(network->cvalue[j].data);CHKERRQ(ierr);
+    }
+    ierr = PetscFree2(network->header,network->cvalue);CHKERRQ(ierr);
+  }
   ierr = PetscFree(network);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
