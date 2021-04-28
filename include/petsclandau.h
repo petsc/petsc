@@ -114,10 +114,6 @@ typedef struct {
   PetscReal      lnLam;
   PetscReal      electronShift; /* for tests */
   PetscInt       num_species;
-  /* diagnostics */
-  PetscInt       verbose;
-  PetscLogEvent  events[20];
-  DM             dmv;
   /* cache */
   Mat            J;
   Mat            M;
@@ -127,13 +123,18 @@ typedef struct {
   PetscBool      aux_bool;  /* helper */
   /* computing */
   LandauDeviceType deviceType;
-  PetscInt         subThreadBlockSize;
-  PetscInt         numConcurrency; /* number of SMs in Cuda to use */
-  MPI_Comm         comm; /* global communicator to use for errors and diagnostics */
-  LandauGeomData   *SData_d; /* static geometric data on device, but this pointer is a host pointer */
-  double           times[1];
-  PetscBool        init;
-  PetscBool        use_matrix_mass;
+  PetscInt       subThreadBlockSize;
+  PetscInt       numConcurrency; /* number of SMs in Cuda to use */
+  MPI_Comm       comm; /* global communicator to use for errors and diagnostics */
+  LandauGeomData *SData_d; /* static geometric data on device, but this pointer is a host pointer */
+  double         times[1];
+  PetscBool      init;
+  PetscBool      use_matrix_mass;
+  DM             dmv;
+  DM             plex;
+  /* diagnostics */
+  PetscInt       verbose;
+  PetscLogEvent  events[20];
 } LandauCtx;
 
 typedef int LandauIdx;
