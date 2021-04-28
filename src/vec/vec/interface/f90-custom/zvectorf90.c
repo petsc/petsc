@@ -95,3 +95,4 @@ PETSC_EXTERN void vecdestroy_(Vec *x,int *ierr)
   *ierr = VecDestroy(x); if (*ierr) return;
   PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
 }
+

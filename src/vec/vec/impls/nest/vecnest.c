@@ -708,7 +708,6 @@ static PetscErrorCode VecConcatenate_Nest(PetscInt nx, const Vec X[], Vec *Y, IS
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)(*X)), PETSC_ERR_SUP, "VecConcatenate() is not supported for VecNest");
-  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)

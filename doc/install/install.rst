@@ -666,22 +666,22 @@ ALCF - Argonne National Laboratory - theta machine - Intel KNL based system
       -I``
     - To run on interactive node using two MPI ranks use ``aprun -n 2 ./program options``
 
-ALCF - Argonne National Laboratory - thetagpu machine - AMD CPUs with NVIDIA GPUs (yes it is beyond silly it has theta in the name)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-- Notes on usage:
+ALCF - Argonne National Laboratory - thetagpu machine - AMD CPUs with NVIDIA GPUs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Notes on usage:
 
   - Log into theta.alcf.anl.gov
-    - Log into thetagpusn1
-      - qsub -I -t TimeInMinutes -n 1 -A AProjectName (for example, gpu_hack)
-        - The connection to the outside world does not exist so do
-          export http_proxy=http://proxy.tmi.alcf.anl.gov:3128
-          export https_proxy=http://proxy.tmi.alcf.anl.gov:3128
+  - Log into thetagpusn1
+  - qsub -I -t TimeInMinutes -n 1 -A AProjectName (for example, gpu_hack)
+  - The connection to the outside world does not exist so do
 
-        - There is no default BLAS/LAPACK so use a --download option for BLAS/LAPACK
+      export http_proxy=http://proxy.tmi.alcf.anl.gov:3128
+      export https_proxy=http://proxy.tmi.alcf.anl.gov:3128
 
-        - Use the configure option --with-cuda-gencodearch=80  because this machine does not have deviceQuery
-
-        - Use -with-kokkos-cuda-arch=AMPERE80
+  - There is no default BLAS/LAPACK so use a --download option for BLAS/LAPACK
+  - Use the configure option --with-cuda-gencodearch=80  because this machine does not have deviceQuery
+  - Use -with-kokkos-cuda-arch=AMPERE80
 
 
 OLCF - Oak Ridge National Laboratory - Summit machine - NVIDIA GPUs and IBM Power PC processors
