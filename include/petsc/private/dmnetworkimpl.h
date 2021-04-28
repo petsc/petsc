@@ -11,16 +11,24 @@ struct _p_DMNetworkComponentHeader {
   PetscInt index;    /* index for user input global edge and vertex */
   PetscInt subnetid; /* Id for subnetwork */
   PetscInt ndata;    /* number of components */
-  PetscInt size[PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT];
-  PetscInt key[PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT];
-  PetscInt offset[PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT];
-  PetscInt nvar[PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT]; /* Number of variables */
-  PetscInt offsetvarrel[PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT]; /* offset from the first variable of the network point */
+  PetscInt hsize;    /* Size of the header */
+  PetscInt maxcomps; /* Maximum components at this point (ndata <= maxcomps). maxcomps
+                        is set initially to a default value and is incremented every time
+                        ndata exceeds maxcomps */
+  /* The following arrays store the different attributes for each component at the given point.
+     The length of these arrays equals maxcomps. The arrays are resized every time
+     ndata exceeds maxcomps
+  */
+  PetscInt *size;    /* component data struct sizes */
+  PetscInt *key;     /* component keys */
+  PetscInt *offset;  /* component offset in the vector */
+  PetscInt *nvar;    /* number of variabes for the component */
+  PetscInt *offsetvarrel; /* relative offset from the first component at this point */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct _p_DMNetworkComponentValue *DMNetworkComponentValue;
 struct _p_DMNetworkComponentValue {
-  void* data[PETSC_DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT];
+  void* *data;
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
 
 typedef struct {
@@ -88,12 +96,10 @@ typedef struct {
   DMNetworkVertexInfo               vertex;
   DMNetworkEdgeInfo                 edge;
 
-#define PETSC_DMNETWORK_MAXIMUM_COMPONENTS 100   /* Maximum number of components that can be registered */
   PetscInt                          ncomponent;  /* Number of components that have been registered */
-  DMNetworkComponent                component[PETSC_DMNETWORK_MAXIMUM_COMPONENTS]; /* List of components that have been registered */
+  DMNetworkComponent                *component; /* List of components that have been registered */
   DMNetworkComponentHeader          header;
   DMNetworkComponentValue           cvalue;
-  PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
 
   PetscInt                          nsubnet,Nsubnet; /* Local and global number of subnetworks */
@@ -113,6 +119,7 @@ typedef struct {
                                               Jvpt[v-vStart]+2i+1: Jacobian(v,e[i]),   e[i]: i-th supporting edge
                                               Jvpt[v-vStart]+2i+2: Jacobian(v,vc[i]), vc[i]: i-th connected vertex
                                               */
+  PetscInt                          max_comps_registered; /* Max. number of components that can be registered */
 } DM_Network;
 
 #endif /* _NETWORKIMPL_H */
