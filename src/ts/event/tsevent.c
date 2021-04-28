@@ -384,8 +384,8 @@ static PetscErrorCode TSEventDetection(TS ts)
   TSEvent        event = ts->event;
   PetscReal      t;
   PetscInt       i;
-  PetscInt       rollback=0,in[2],out[2];
   PetscInt       fvalue_sign,fvalueprev_sign;
+  PetscInt       in,out;
 
   PetscFunctionBegin;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
@@ -394,25 +394,24 @@ static PetscErrorCode TSEventDetection(TS ts)
       if (!event->iterctr) event->zerocrossing[i] = PETSC_TRUE;
       event->status = TSEVENT_LOCATED_INTERVAL;
       if (event->monitor) {
-        ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected [%g - %g]\n",event->iterctr,i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected due to zero value (tol=%g) [%g - %g]\n",event->iterctr,i,(double)event->vtol[i],(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
       }
       continue;
     }
+    if (PetscAbsScalar(event->fvalue_prev[i]) < event->vtol[i]) continue; /* avoid duplicative detection if the previous endpoint is an event location */
     fvalue_sign = PetscSign(PetscRealPart(event->fvalue[i]));
     fvalueprev_sign = PetscSign(PetscRealPart(event->fvalue_prev[i]));
     if (fvalueprev_sign != 0 && (fvalue_sign != fvalueprev_sign)) {
-      rollback = 1;
       if (!event->iterctr) event->zerocrossing[i] = PETSC_TRUE;
       event->status = TSEVENT_LOCATED_INTERVAL;
       if (event->monitor) {
-        ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected [%g - %g]\n",event->iterctr,i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected due to sign change [%g - %g]\n",event->iterctr,i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
       }
     }
   }
-  in[0] = event->status; in[1] = rollback;
-  ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-  event->status = (TSEventStatus)out[0]; rollback = out[1];
-  if (rollback) event->status = TSEVENT_LOCATED_INTERVAL;
+  in = event->status;
+  ierr = MPIU_Allreduce(&in,&out,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
+  event->status = (TSEventStatus)out;
   PetscFunctionReturn(0);
 }
 
@@ -422,8 +421,8 @@ static PetscErrorCode TSEventLocation(TS ts,PetscReal *dt)
   TSEvent        event = ts->event;
   PetscInt       i;
   PetscReal      t;
-  PetscInt       fvalue_sign;
-  PetscInt       in,out;
+  PetscInt       fvalue_sign,fvalueprev_sign;
+  PetscInt       rollback=0,in[2],out[2];
 
   PetscFunctionBegin;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
@@ -433,47 +432,56 @@ static PetscErrorCode TSEventLocation(TS ts,PetscReal *dt)
       if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal((*dt)/((event->ptime_right-event->ptime_prev)/2)) < event->vtol[i]) { /* stopping criteria */
         event->status = TSEVENT_ZERO;
         event->fvalue_right[i] = event->fvalue[i];
-        event->events_zero[event->nevents_zero++] = i;
-        if (event->monitor) {
-          ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: Event %D zero crossing at time %g located in %D iterations\n",i,(double)t,event->iterctr);CHKERRQ(ierr);
-        }
-        event->zerocrossing[i] = PETSC_FALSE;
         continue;
       }
       /* Compute new time step */
       *dt = TSEventComputeStepSize(event->ptime_prev,t,event->ptime_right,event->fvalue_prev[i],event->fvalue[i],event->fvalue_right[i],event->side[i],*dt);
-      if (event->status == TSEVENT_LOCATED_INTERVAL) {
-        fvalue_sign = PetscSign(PetscRealPart(event->fvalue[i]));
-        switch (event->direction[i]) {
-        case -1:
-          if (fvalue_sign < 0) {
-            event->fvalue_right[i] = event->fvalue[i];
-            event->side[i] = 1;
-          }
-          break;
-        case 1:
-          if (fvalue_sign > 0) {
-            event->fvalue_right[i] = event->fvalue[i];
-            event->side[i] = 1;
-          }
-          break;
-        case 0:
+      fvalue_sign = PetscSign(PetscRealPart(event->fvalue[i]));
+      fvalueprev_sign = PetscSign(PetscRealPart(event->fvalue_prev[i]));
+      switch (event->direction[i]) {
+      case -1:
+        if (fvalue_sign < 0) {
+          rollback = 1;
           event->fvalue_right[i] = event->fvalue[i];
           event->side[i] = 1;
-          break;
         }
+        break;
+      case 1:
+        if (fvalue_sign > 0) {
+          rollback = 1;
+          event->fvalue_right[i] = event->fvalue[i];
+          event->side[i] = 1;
+        }
+        break;
+      case 0:
+        if (fvalue_sign != fvalueprev_sign) { /* trigger rollback only when there is a sign change */
+          rollback = 1;
+          event->fvalue_right[i] = event->fvalue[i];
+          event->side[i] = 1;
+        }
+        break;
       }
-      if (event->status == TSEVENT_PROCESSING) {
-        event->fvalue_prev[i] = event->fvalue[i];
-        event->side[i] = -1;
-      }
+      if (event->status == TSEVENT_PROCESSING) event->side[i] = -1;
     }
   }
-  in = event->status;
-  ierr = MPIU_Allreduce(&in,&out,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-  event->status = (TSEventStatus)out;
+  in[0] = event->status; in[1] = rollback;
+  ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
+  event->status = (TSEventStatus)out[0]; rollback = out[1];
+  /* If rollback is true, the status will be overwritten so that an event at the endtime of current time step will be postponed to guarantee corret order */
+  if (rollback) event->status = TSEVENT_LOCATED_INTERVAL;
   if (event->status == TSEVENT_ZERO) {
-      for (i=0; i<event->nevents; i++) event->side[i] = 0;
+    for (i=0; i < event->nevents; i++) {
+      if (event->zerocrossing[i]) {
+        if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal((*dt)/((event->ptime_right-event->ptime_prev)/2)) < event->vtol[i]) { /* stopping criteria */
+          event->events_zero[event->nevents_zero++] = i;
+          if (event->monitor) {
+            ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D zero crossing located at time %g\n",event->iterctr,i,(double)t);CHKERRQ(ierr);
+          }
+          event->zerocrossing[i] = PETSC_FALSE;
+        }
+      }
+      event->side[i] = 0;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -485,7 +493,7 @@ PetscErrorCode TSEventHandler(TS ts)
   PetscReal      t;
   Vec            U;
   PetscInt       i;
-  PetscReal      dt,dt_min;
+  PetscReal      dt,dt_min,dt_reset = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -529,8 +537,8 @@ PetscErrorCode TSEventHandler(TS ts)
       event->iterctr++;
     }
     ierr = MPIU_Allreduce(&dt,&dt_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
+    if (dt_reset > 0.0 && dt_reset < dt_min) dt_min = dt_reset;
     ierr = TSSetTimeStep(ts,dt_min);CHKERRQ(ierr);
-
     /* Found the zero crossing */
     if (event->status == TSEVENT_ZERO) {
       ierr = TSPostEvent(ts,t,U);CHKERRQ(ierr);
