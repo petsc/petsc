@@ -27,5 +27,6 @@ if __name__ == '__main__':
     '--download-codipack=1',
     '--download-adblaslapack=1',
     '--download-kokkos',
+    '--download-cmake', # need cmake-3.16+ to build Kokkos
   ]
   configure.petsc_configure(configure_options)

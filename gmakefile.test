@@ -116,8 +116,8 @@ PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DE
 
 ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
-  PETSC_COMPILE.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CXX_LINKER) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS)
-  PETSC_LINK.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CXX_LINKER) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda  $(CXX_LINKER_FLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
+  PETSC_COMPILE.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CXX_LINKER) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CUDAC_FLAGS) $(CUFLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS)
+  PETSC_LINK.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CXX_LINKER) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda $(CUDAC_FLAGS) $(CXX_LINKER_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
   PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.hip.cpp)
   PETSC_LINK.kokkos.cxx = MPICH_CXX="$(HIPC)" OMPI_CXX="$(HIPC)" $(CXXLINKER) $(HIPFLAGS) $(CXXFLAGS) $(PETSC_CCPPFLAGS) $(CPPFLAGS) $(LDFLAGS)
