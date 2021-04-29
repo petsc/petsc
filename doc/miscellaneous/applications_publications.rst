@@ -57,7 +57,7 @@ components.
   Landreman. <https://github.com/landreman/sfincs/blob/master/doc/SFINCS_calculation_of_parallel_current_in_W7X_2040x1260.jpg>`__
 
 * `HiFi modeling framework, Vyacheslav Lukin
-  <http://faculty.washington.edu/vlukin/HiFi_Framework.html>`__
+  <https://hifi-framework.webnode.com/hifi-framework/>`__
 
   * `High resolution image <https://www.nersc.gov/assets/ScienceAtNERSC/SlavaFull.png>`__
 

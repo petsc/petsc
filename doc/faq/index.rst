@@ -30,7 +30,7 @@ Any Useful Books On Numerical Computing?
 <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__
 
 `Writing Scientific Software: A Guide to Good Style
-<https://www.mcs.anl.gov/core/books/writing-scientific-software/23206704175AF868E43FE3FB399C2F53>`__
+<https://www.cambridge.org/core/books/writing-scientific-software/23206704175AF868E43FE3FB399C2F53>`__
 
 .. _doc_faq_general_parallel:
 
