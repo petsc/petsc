@@ -144,7 +144,6 @@ PETSC_INTERN PetscErrorCode VecAYPX_SeqHIP(Vec yin,PetscScalar alpha,Vec xin)
     hberr = hipblasXaxpy(hipblasv2handle,bn,&sone,xarray,one,yarray,one);CHKERRHIPBLAS(hberr);
     ierr = PetscLogGpuFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
-  err  = WaitForHIP();CHKERRHIP(err);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecHIPRestoreArray(yin,&yarray);CHKERRQ(ierr);
@@ -172,7 +171,6 @@ PETSC_EXTERN PetscErrorCode VecAXPY_SeqHIP(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecHIPGetArray(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     hberr = hipblasXaxpy(hipblasv2handle,bn,&alpha,xarray,one,yarray,one);CHKERRHIPBLAS(hberr);
-    err  = WaitForHIP();CHKERRHIP(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecHIPRestoreArray(yin,&yarray);CHKERRQ(ierr);
@@ -202,7 +200,6 @@ PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqHIP(Vec win, Vec xin, Vec yin)
     xptr = thrust::device_pointer_cast(xarray);
     yptr = thrust::device_pointer_cast(yarray);
     thrust::transform(xptr,xptr+n,yptr,wptr,thrust::divides<PetscScalar>());
-    err  = WaitForHIP();CHKERRHIP(err);
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
@@ -236,7 +233,6 @@ PETSC_INTERN PetscErrorCode VecWAXPY_SeqHIP(Vec win,PetscScalar alpha,Vec xin, V
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     err = hipMemcpy(warray,yarray,win->map->n*sizeof(PetscScalar),hipMemcpyDeviceToDevice);CHKERRHIP(err);
     hberr = hipblasXaxpy(hipblasv2handle,bn,&alpha,xarray,one,warray,one);CHKERRHIPBLAS(hberr);
-    err  = WaitForHIP();CHKERRHIP(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(2*win->map->n);CHKERRQ(ierr);
     ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -738,7 +734,6 @@ PETSC_EXTERN PetscErrorCode VecSet_SeqHIP(Vec xin,PetscScalar alpha)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
   }
-  err  = WaitForHIP();CHKERRHIP(err);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecHIPRestoreArrayWrite(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -764,7 +759,6 @@ PETSC_INTERN PetscErrorCode VecScale_SeqHIP(Vec xin,PetscScalar alpha)
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     hberr = hipblasXscal(hipblasv2handle,bn,&alpha,xarray,one);CHKERRHIPBLAS(hberr);
     ierr = VecHIPRestoreArray(xin,&xarray);CHKERRQ(ierr);
-    err  = WaitForHIP();CHKERRHIP(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   }
   ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
@@ -820,7 +814,6 @@ PETSC_EXTERN PetscErrorCode VecCopy_SeqHIP(Vec xin,Vec yin)
       } else {
         err = hipMemcpy(yarray,xarray,yin->map->n*sizeof(PetscScalar),hipMemcpyDeviceToHost);CHKERRHIP(err);
       }
-      err  = WaitForHIP();CHKERRHIP(err);
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
       if (yiship) {
@@ -879,7 +872,6 @@ PETSC_INTERN PetscErrorCode VecSwap_SeqHIP(Vec xin,Vec yin)
     ierr = VecHIPGetArray(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     hberr = hipblasXswap(hipblasv2handle,bn,xarray,one,yarray,one);CHKERRHIPBLAS(hberr);
-    err  = WaitForHIP();CHKERRHIP(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecHIPRestoreArray(xin,&xarray);CHKERRQ(ierr);
     ierr = VecHIPRestoreArray(yin,&yarray);CHKERRQ(ierr);
@@ -913,7 +905,6 @@ PETSC_INTERN PetscErrorCode VecAXPBY_SeqHIP(Vec yin,PetscScalar alpha,PetscScala
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     err = hipMemcpy(yarray,xarray,yin->map->n*sizeof(PetscScalar),hipMemcpyDeviceToDevice);CHKERRHIP(err);
     hberr = hipblasXscal(hipblasv2handle,bn,&alpha,yarray,one);CHKERRHIPBLAS(hberr);
-    err  = WaitForHIP();CHKERRHIP(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
     ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -926,7 +917,6 @@ PETSC_INTERN PetscErrorCode VecAXPBY_SeqHIP(Vec yin,PetscScalar alpha,PetscScala
     hberr = hipblasXaxpy(hipblasv2handle,bn,&alpha,xarray,one,yarray,one);CHKERRHIPBLAS(hberr);
     ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecHIPRestoreArray(yin,&yarray);CHKERRQ(ierr);
-    err  = WaitForHIP();CHKERRHIP(err);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(3.0*xin->map->n);CHKERRQ(ierr);
   }
