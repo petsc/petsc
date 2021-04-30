@@ -33,6 +33,7 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
+    self.scalarTypes         = framework.require('PETSc.options.scalarTypes',self)
     self.kokkos              = framework.require('config.packages.kokkos',self)
     self.deps                = [self.kokkos]
     self.cuda                = framework.require('config.packages.cuda',self)
@@ -57,6 +58,12 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     KokkosRoot = self.kokkos.directory
     args.append('-DKokkos_ROOT='+KokkosRoot)
+    if self.scalarTypes.scalartype == 'complex':
+      if self.scalarTypes.precision == 'double':
+        args.append('-DKokkosKernels_INST_COMPLEX_DOUBLE=ON')
+      elif self.scalarTypes.precision == 'single':
+        args.append('-DKokkosKernels_INST_COMPLEX_FLOAT=ON')
+
     # By default it installs in lib64, change it to lib
     if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
