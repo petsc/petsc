@@ -13,7 +13,7 @@ thermal T (K): e= 5.802e+07 i= 5.802e+07 imp= 0.000e+00. v_0= 2.965e+07 n_0= 1.0
 	  0) Total: charge density= -1.7043410901678e-02, momentum=  8.3909014315454e-18, energy=  2.2984838756712e+05 (m_i[0]/m_e = 3670.94, 62 cells)
 [0] DMGetDMKSP(): Creating new DMKSP
 [0] LandauFormJacobian_Internal(): Initialize static data
-[0]FormLandau: 558 IPs, 62 cells, totDim=18, Nb=9, Nq=9, elemMatSize=324, dim=2, Tab: Nb=9 Nf=2 Np=9 cdim=2 N=486 N+hang=702, shift=0.
+[0]FormLandau: 558 IPs, 62 cells, totDim=18, Nb=9, Nq=9, elemMatSize=324, dim=2, Tab: Nb=9 Nf=2 Np=9 cdim=2 N=486 shift=0.
 [0] LandauFormJacobian_Internal(): Make GPU maps 1
     0 SNES Function norm 2.261529472711e-02 
     1 SNES Function norm 1.695646144714e-04 

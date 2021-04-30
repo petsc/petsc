@@ -362,11 +362,8 @@ extern "C"  {
                       coef_buff[f*Nb+b] += scale*d_IPf[id];
                     }
                   }
-                  //printf("%f ",coef[f*Nb+b]);
                 }
-                //printf("\n");
               }
-              //printf("\n");
             }
             Kokkos::parallel_for(Kokkos::TeamThreadRange(team,0,Nq), [=] (int myQi) {
                 const PetscInt          ipidx = myQi + myelem * Nq;
@@ -472,35 +469,26 @@ extern "C"  {
                     PetscInt d2,d3;
                     for (d2 = 0; d2 < dim; d2++) {
                       gg2(d2,fieldA,myQi) = gg_temp.gg2[d2]*d_alpha[fieldA];
-                      //if (myelem==0 && fieldA==1) printf("\t\t:%d.%d) gg2[%d]=%e = %e %e\n",myelem,myQi,d2,gg2(d2,fieldA,myQi),gg_temp.gg2[d2],d_alpha[fieldA]);
-                      //gg2[d2][myQi][fieldA] += gg_temp.gg2[d2]*d_alpha[fieldA];
                       for (d3 = 0; d3 < dim; d3++) {
-                        //gg3[d2][d3][myQi][fieldA] -= gg_temp.gg3[d2][d3]*d_alpha[fieldA]*s_invMass[fieldA];
                         gg3(d2,d3,fieldA,myQi) = -gg_temp.gg3[d2][d3]*d_alpha[fieldA]*d_invMass[fieldA];
-                        //if (myelem==0 && fieldA==1) printf("\t\t\t:%d.%d) gg3[%d][%d]=%e\n",myelem,myQi,d2,d3,gg3(d2,d3,fieldA,myQi));
                       }
                     }
                   });
                 /* add electric field term once per IP */
                 Kokkos::parallel_for(Kokkos::ThreadVectorRange (team, (int)Nf), [&] (const int& fieldA) {
-                    //gg.gg2[fieldA][dim-1] += d_Eq_m[fieldA];
                     gg2(dim-1,fieldA,myQi) += d_Eq_m[fieldA];
                   });
-                // Kokkos::single(Kokkos::PerThread(team), [&]() {
                 Kokkos::parallel_for(Kokkos::ThreadVectorRange (team, (int)Nf), [=] (const int& fieldA) {
                     int d,d2,d3,dp;
-                    //printf("%d %d %d gg2[][1]=%18.10e\n",myelem,myQi,fieldA,gg.gg2[fieldA][dim-1]);
                     /* Jacobian transform - g2, g3 - per thread (2D) */
                     for (d = 0; d < dim; ++d) {
                       g2(d,fieldA,myQi) = 0;
                       for (d2 = 0; d2 < dim; ++d2) {
                         g2(d,fieldA,myQi) += invJj[d*dim+d2]*gg2(d2,fieldA,myQi);
-                        //if (myelem==0 && myQi==0) printf("\t:g2[%d][%d][%d]=%e. %e %e\n",(int)myQi,(int)fieldA,(int)d,g2(fieldA,myQi,d),invJj[d*dim+d2],gg.gg2[fieldA][d2]);
                         g3(d,d2,fieldA,myQi) = 0;
                         for (d3 = 0; d3 < dim; ++d3) {
                           for (dp = 0; dp < dim; ++dp) {
                             g3(d,d2,fieldA,myQi) += invJj[d*dim + d3]*gg3(d3,dp,fieldA,myQi)*invJj[d2*dim + dp];
-                            //printf("\t%d %d %d %d %d %d %d g3=%g wj=%g g3 = %g * %g * %g\n",myelem,myQi,fieldA,d,d2,d3,dp,g3(fieldA,myQi,d,d2),wj,invJj[d*dim + d3],gg.gg3[fieldA][d3][dp],invJj[d2*dim + dp]);
                           }
                         }
                         g3(d,d2,fieldA,myQi) *= wj;
@@ -512,7 +500,6 @@ extern "C"  {
             team.team_barrier();
           } // Jacobian
           /* assemble */
-          //Kokkos::single(Kokkos::PerTeam(team), [&]() {
           Kokkos::parallel_for(Kokkos::TeamThreadRange(team,0,Nb), [=] (int blk_i) {
               Kokkos::parallel_for(Kokkos::ThreadVectorRange(team,0,(int)Nf), [=] (int fieldA) {
                   int blk_j,qj,d,d2;
@@ -609,12 +596,12 @@ extern "C"  {
         }
         ierr = PetscLogEventEnd(events[6],0,0,0,0);CHKERRQ(ierr);
         // transition to use of maps for VecGetClosure
-        {
+        if (ctx->gpu_assembly) {
           auto IPf = static_cast<Kokkos::View<PetscScalar*, Kokkos::LayoutLeft>*>(SData_d->IPf);
           delete IPf;
           SData_d->IPf = NULL;
+          if (!(a_IPf || a_xarray)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "transition without Jacobian");
         }
-        if (!(a_IPf || a_xarray)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "transition without Jacobian");
       }
     }
     PetscFunctionReturn(0);

@@ -268,8 +268,8 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFac
     B->ops->matsolve = NULL;
     B->ops->matsolvetranspose = NULL;
   } else {
-    B->ops->solve = MatSolve_SeqAIJCUSPARSE;
-    B->ops->solvetranspose = MatSolveTranspose_SeqAIJCUSPARSE;
+    B->ops->solve = MatSolve_SeqAIJ;
+    B->ops->solvetranspose = MatSolveTranspose_SeqAIJ;
     B->ops->matsolve = NULL;
     B->ops->matsolvetranspose = NULL;
   }

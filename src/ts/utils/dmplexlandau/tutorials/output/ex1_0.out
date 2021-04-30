@@ -6,7 +6,7 @@ thermal T (K): e= 5.802e+07 i= 5.802e+07 imp= 5.802e+06. v_0= 2.965e+07 n_0= 1.0
   0) species-2: charge density=  2.9011751620055e-03 z-momentum= -2.5035450919780e-23 energy=  1.1657292078981e-01
 	  0) Total: charge density= -3.1565406492467e-03, momentum=  1.6959087032370e-17, energy=  2.4020894498512e+05 (m_i[0]/m_e = 3670.94, 56 cells)
 0 TS dt 0.1 time 0.
-[0]FormLandau: 896 IPs, 56 cells, totDim=48, Nb=16, Nq=16, elemMatSize=2304, dim=2, Tab: Nb=16 Nf=3 Np=16 cdim=2 N=1497 N+hang=1977, shift=0.
+[0]FormLandau: 896 IPs, 56 cells, totDim=48, Nb=16, Nq=16, elemMatSize=2304, dim=2, Tab: Nb=16 Nf=3 Np=16 cdim=2 N=1497 shift=0.
     0 SNES Function norm 4.980259039460e-03 
     1 SNES Function norm 1.927607512741e-05 
     2 SNES Function norm 3.036878041732e-07 

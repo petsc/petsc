@@ -67,11 +67,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscValidHeaderSpecific(a_X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(JacP,MAT_CLASSID,2);
   PetscValidPointer(ctx,5);
-  /* static PetscLogStage stage0 = 0; */
-  /* if (!stage0) { */
-  /*   ierr = PetscLogStageRegister("Preamble", &stage0);CHKERRQ(ierr); */
-  /* } */
-  /* ierr = PetscLogStagePush(stage0);CHKERRQ(ierr); */
   /* check for matrix container for GPU assembly */
   ierr = PetscLogEventBegin(ctx->events[10],0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) JacP, "assembly_maps", (PetscObject *) &container);CHKERRQ(ierr);
@@ -103,7 +98,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   }
   elemMatSize = totDim*totDim; // used for CPU and print info
   ierr = PetscLogEventEnd(ctx->events[10],0,0,0,0);CHKERRQ(ierr);
-  //ierr = PetscLogStagePop();CHKERRQ(ierr);
   ierr = VecGetSize(a_X,&N);CHKERRQ(ierr);
   if (!ctx->init) {    /* create static point data, Jacobian called first */
     PetscReal *invJ,*ww,*xx,*yy,*zz=NULL,*mass_w,*invJ_a;
@@ -207,11 +201,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   }
   /* do it */
   if (ctx->deviceType == LANDAU_CUDA || ctx->deviceType == LANDAU_KOKKOS) {
-    /* static PetscLogStage stage0 = 0; */
-    /* if (!stage0) { */
-    /*   ierr = PetscLogStageRegister("Landau", &stage0);CHKERRQ(ierr); */
-    /* } */
-    /* ierr = PetscLogStagePush(stage0);CHKERRQ(ierr); */
     if (ctx->deviceType == LANDAU_CUDA) {
 #if defined(PETSC_HAVE_CUDA)
       ierr = LandauCUDAJacobian(ctx->plex,Nq,Eq_m,IPf,N,xdata,ctx->SData_d,ctx->subThreadBlockSize,shift,ctx->events,JacP);CHKERRQ(ierr);
@@ -225,7 +214,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       SETERRQ1(ctx->comm,PETSC_ERR_ARG_WRONG,"-landau_device_type %s not built","kokkos");
 #endif
     }
-    //ierr = PetscLogStagePop();CHKERRQ(ierr);
   } else { /* CPU version */
     PetscInt        ei, qi;
     PetscScalar     *elemMat,coef_buff[LANDAU_MAX_SPECIES*LANDAU_MAX_NQ];
@@ -251,13 +239,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
         PetscReal    u_x[LANDAU_MAX_SPECIES][LANDAU_DIM];
         if (IPf) {
           coef = &IPf[ei*Nb*Nf]; // this is const
-          /* for (f = 0; f < Nf; ++f) { */
-          /*   for (b = 0; b < Nb; ++b) { */
-          /*     PetscPrintf(ctx->comm,"%f ",coef[f*Nb+b]);CHKERRQ(ierr); */
-          /*   } */
-          /*   PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr); */
-          /* } */
-          /* PetscPrintf(ctx->comm,"*\n");CHKERRQ(ierr); */
         } else {
           if (!maps) SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"!maps");
           coef = coef_buff;
@@ -276,11 +257,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   coef[f*Nb+b] += scale*xdata[id];
                 }
               }
-              //PetscPrintf(ctx->comm,"%f ",coef[f*Nb+b]);CHKERRQ(ierr);
             }
-            //PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr);
           }
-          //PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr);
         }
         /* get f and df */
         for (qi = 0; qi < Nq; ++qi) {
@@ -379,7 +357,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
             }
 #endif
           } /* IPs */
-          //if (ej==0) printf("\t:%d.%d) temp gg3=%e %e %e %e\n",ej,qj,gg3_temp[0][0],gg3_temp[1][0],gg3_temp[0][1],gg3_temp[1][1]);
           // add alpha and put in gg2/3
           for (fieldA = 0; fieldA < Nf; ++fieldA) {
             for (d2 = 0; d2 < dim; d2++) {
@@ -392,14 +369,12 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
           /* add electric field term once per IP */
           for (fieldA = 0; fieldA < Nf; ++fieldA) {
             gg2[fieldA][dim-1] += Eq_m[fieldA];
-            //printf("\t:%d.%d.%d) gg2 = %e %e\n",ej,qj,fieldA,gg2[fieldA][dim-1],Eq_m[fieldA]);
           }
           /* Jacobian transform - g2, g3 */
           for (fieldA = 0; fieldA < Nf; ++fieldA) {
             for (d = 0; d < dim; ++d) {
               g2[fieldA][d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) {
-                //printf("\t:%d.%d.%d.%d.%d) gg2 = %e += %e (%d) %e\n",ej,qj,fieldA,d,d2,g2[fieldA][d],invJj[d*dim+d2],(int)(&invJj[d*dim+d2]-invJ_a),gg2[fieldA][d2]);
                 g2[fieldA][d] += invJj[d*dim+d2]*gg2[fieldA][d2];
                 g3[fieldA][d][d2] = 0.0;
                 for (d3 = 0; d3 < dim; ++d3) {
@@ -409,7 +384,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                 }
                 g3[fieldA][d][d2] *= wj;
               }
-              //printf("\t:%d.%d.%d.%d) g2 = %e %e\n",ej,qj,fieldA,d,g2[fieldA][d],wj);
               g2[fieldA][d] *= wj;
             }
           }
@@ -454,8 +428,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       } else {  // GPU like assembly for debugging
         PetscInt      fieldA,idx,q,f,g,d,nr,nc,rows0[LANDAU_MAX_Q_FACE],cols0[LANDAU_MAX_Q_FACE]={0},rows[LANDAU_MAX_Q_FACE],cols[LANDAU_MAX_Q_FACE];
         PetscScalar   vals[LANDAU_MAX_Q_FACE*LANDAU_MAX_Q_FACE],row_scale[LANDAU_MAX_Q_FACE],col_scale[LANDAU_MAX_Q_FACE]={0};
-        //for (q = 0; q <LANDAU_MAX_Q_FACE; q++) cols0[q] = 0;
-        //for (q = 0; q < LANDAU_MAX_Q_FACE; q++) col_scale[q] = 0.0; // suppress warnings
         /* assemble - from the diagonal (I,I) in this format for DMPlexMatSetClosure */
         for (fieldA = 0; fieldA < Nf ; fieldA++) {
           LandauIdx *const Idxs = &maps->gIdx[ej-cStart][fieldA][0];
@@ -1504,12 +1476,10 @@ PetscErrorCode LandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char
 #if defined(PETSC_HAVE_KOKKOS)
   if (ctx->deviceType == LANDAU_CPU) {
     ierr = PetscObjectTypeCompareAny((PetscObject)ctx->J,&flg,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,MATAIJKOKKOS,"");CHKERRQ(ierr);
-    //if (flg) SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"with device=cpu must not use '-dm_mat_type aijkokkos -dm_vec_type kokkos' for GPU assembly and Kokkos");
   }
 #elif defined(PETSC_HAVE_CUDA)
   if (ctx->deviceType == LANDAU_CPU) {
     ierr = PetscObjectTypeCompareAny((PetscObject)ctx->J,&flg,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,MATAIJCUSPARSE,"");CHKERRQ(ierr);
-    //if (flg) SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"with device=cpu must not use '-dm_mat_type aijcusparse -dm_vec_type cuda' for GPU assembly and Cuda");
   }
 #endif
   if (ctx->gpu_assembly) { /* we need GPU object with GPU assembly */

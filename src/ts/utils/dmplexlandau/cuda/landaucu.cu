@@ -8,9 +8,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <petscmat.h>
 #include <petsccublas.h>
-#if defined(PETSC_HAVE_NVTX)
-#include <nvToolsExt.h>
-#endif
 
 // hack to avoid configure problems in CI. Delete when resolved
 #if !defined (PETSC_HAVE_CUDA_ATOMIC)
@@ -209,11 +206,8 @@ void landau_form_fdf(const PetscInt nip, const PetscInt dim, const PetscInt Nf, 
             coef_buff[f*Nb+b] += scale*a_coef[id];
           }
         }
-        //PetscPrintf(ctx->comm,"%f ",coef[f*Nb+b]);CHKERRQ(ierr);
       }
-      //PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr);
     }
-    //PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr);
   }
   /* get f and df */
   for (f = threadIdx.x; f < Nf; f += blockDim.x) {
@@ -645,9 +639,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
     d_f    = (PetscReal*)SData_d->f;
     ierr = PetscLogEventBegin(events[8],0,0,0,0);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-#if defined(PETSC_HAVE_NVTX)
-    nvtxRangePushA("f,df/dv");
-#endif
     landau_form_fdf<<<numGCells,dimBlock>>>( nip, dim, Nf, Nb, d_invJj, d_BB, d_DD, d_IPf, d_maps, d_f, d_dfdx, d_dfdy,
 #if LANDAU_DIM==3
                                              d_dfdz,
@@ -655,13 +646,8 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
                                              d_ierr);
     CHECK_LAUNCH_ERROR();
     cerr = WaitForCUDA();CHKERRCUDA(cerr);
-#if defined(PETSC_HAVE_NVTX)
-    nvtxRangePop();
-#endif
     ierr = PetscLogGpuFlops(nip*(PetscLogDouble)(2*Nb*(1+dim)));CHKERRQ(ierr);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-    //cerr = cudaMemcpy(&ierr, d_ierr, sizeof(ierr), cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
-    //CHKERRQ(ierr);
     ierr = PetscLogEventEnd(events[8],0,0,0,0);CHKERRQ(ierr);
   } else {
     d_mass_w = (PetscReal*)SData_d->mass_w;
@@ -680,9 +666,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
                                   98304);CHKERRCUDA(cerr);
     }
     // PetscPrintf(PETSC_COMM_SELF, "numGCells=%d dim.x=%d Nq=%d nThreads=%d, %d kB shared mem\n",numGCells,n,Nq,Nq*n,ii*szf/1024);
-#if defined(PETSC_HAVE_NVTX)
-    nvtxRangePushA("Kernel");
-#endif
     landau_kernel_v2<<<numGCells,dimBlock,ii*szf>>>(nip,dim,totDim,Nf,Nb,d_invJj,d_nu_alpha,d_nu_beta,d_invMass,d_Eq_m,
                                                     d_BB, d_DD, d_x, d_y, d_w,
                                                     d_elemMats, d_maps, d_mat, d_f, d_dfdx, d_dfdy,
@@ -693,9 +676,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
                                                     d_ierr);
     CHECK_LAUNCH_ERROR(); // has sync
     cerr = WaitForCUDA();CHKERRCUDA(cerr);
-#if defined(PETSC_HAVE_NVTX)
-    nvtxRangePop();
-#endif
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogEventEnd(events[4],0,0,0,0);CHKERRQ(ierr);
     //cerr = cudaMemcpy(&ierr, d_ierr, sizeof(ierr), cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
@@ -724,9 +704,12 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
     }
     ierr = PetscFree(elemMats);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(events[6],0,0,0,0);CHKERRQ(ierr);
-    // transition to use of maps for VecGetClosure
-    cerr = cudaFree(SData_d->IPf);CHKERRCUDA(cerr);
-    SData_d->IPf = NULL;
+    if (ctx->gpu_assembly) {
+      // transition to use of maps for VecGetClosure
+      cerr = cudaFree(SData_d->IPf);CHKERRCUDA(cerr);
+      SData_d->IPf = NULL;
+      if (!(a_IPf || a_xarray)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "transition without Jacobian");
+    }
   }
 
   PetscFunctionReturn(0);
