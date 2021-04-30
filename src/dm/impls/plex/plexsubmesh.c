@@ -1064,12 +1064,15 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       const PetscInt  newp   = DMPlexShiftPoint_Internal(oldp, depth, depthShift) /*oldp + depthOffset[dep]*/;
       const PetscInt  splitp = p    + pMaxNew[dep];
       const PetscInt *support;
+      DMPolytopeType  ct;
       PetscInt        coneSize, supportSize, qf, qn, qp, e;
 
       ierr = DMPlexGetConeSize(dm, oldp, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexSetConeSize(sdm, splitp, coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupportSize(dm, oldp, &supportSize);CHKERRQ(ierr);
       ierr = DMPlexSetSupportSize(sdm, splitp, supportSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCellType(dm, oldp, &ct);CHKERRQ(ierr);
+      ierr = DMPlexSetCellType(sdm, splitp, ct);CHKERRQ(ierr);
       if (dep == depth-1) {
         const PetscInt hybcell = p + pMaxNew[dep+1] + numSplitPoints[dep+1];
 
