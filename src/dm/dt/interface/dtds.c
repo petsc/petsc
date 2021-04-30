@@ -219,8 +219,8 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       }
       if (b->func_t) {
         ierr = PetscDLAddr(b->func_t, &name);CHKERRQ(ierr);
-        if (name) {ierr = PetscViewerASCIIPrintf(viewer, "  func: %s\n", name);CHKERRQ(ierr);}
-        else      {ierr = PetscViewerASCIIPrintf(viewer, "  func: %p\n", b->func_t);CHKERRQ(ierr);}
+        if (name) {ierr = PetscViewerASCIIPrintf(viewer, "  func_t: %s\n", name);CHKERRQ(ierr);}
+        else      {ierr = PetscViewerASCIIPrintf(viewer, "  func_t: %p\n", b->func_t);CHKERRQ(ierr);}
         ierr = PetscFree(name);CHKERRQ(ierr);
       }
       ierr = PetscWeakFormView(b->wf, viewer);CHKERRQ(ierr);
