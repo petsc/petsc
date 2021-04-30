@@ -23,14 +23,14 @@ PC Object: 4 MPI processes
       out-of-place factorization
       0 levels of fill
       tolerance for zero pivot 2.22045e-14
-      matrix ordering: natural
-      factor fill ratio given 1., needed 1.
+      matrix ordering: external
+      factor fill ratio given 1., needed 1.22785
         Factored matrix follows:
           Mat Object: 1 MPI processes
-            type: seqaij
+            type: seqaijkokkos
             rows=36, cols=36
-            package used to perform factorization: petsc
-            total: nonzeros=158, allocated nonzeros=158
+            package used to perform factorization: kokkos
+            total: nonzeros=194, allocated nonzeros=194
               not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: (sub_) 1 MPI processes
