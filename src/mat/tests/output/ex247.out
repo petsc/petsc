@@ -1,0 +1,2 @@
+Vector norm after MatMult() with centering matrix applied to vector of ones is 0.000000.
+Vector norm after MatMultTranspose() with centering matrix applied to vector of ones is 0.000000.
