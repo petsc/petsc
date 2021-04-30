@@ -248,7 +248,6 @@
 !  Output Parameters:
 !  A - Jacobian matrix
 !  B - optionally different preconditioning matrix
-!  flag - flag indicating matrix structure
 !
       subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
       use petscsnes
@@ -311,7 +310,6 @@
       integer           lctx
       Vec               x, f,g, y, w
       PetscReal         ynorm,gnorm,xnorm
-      PetscBool         flag
       PetscErrorCode    ierr
 
       PetscScalar       mone
@@ -327,7 +325,6 @@
       call VecNorm(y,NORM_2,ynorm,ierr)
       call SNESLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm,      &
      & ierr)
-      flag = PETSC_FALSE
       return
       end
 

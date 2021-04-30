@@ -227,7 +227,6 @@ PetscErrorCode apply_pc(PC pc,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented");
-  PetscFunctionReturn(0);
 }
 
 PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)

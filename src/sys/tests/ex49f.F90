@@ -41,7 +41,7 @@ program main
   PetscReal               r(N)
   PetscMPIInt,parameter:: two=2, five=5, seven=7
   type(uctx)::            ctx
-  PetscInt                dummyint, i
+  PetscInt                i
   PetscSizeT              sizeofentry
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

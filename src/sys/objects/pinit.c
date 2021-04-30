@@ -432,7 +432,7 @@ PetscErrorCode  PetscGetProgramName(char name[],size_t len)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-   ierr = PetscStrncpy(name,programname,len);CHKERRQ(ierr);
+  ierr = PetscStrncpy(name,programname,len);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
