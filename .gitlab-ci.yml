@@ -703,8 +703,7 @@ linux-nagfor:
   tags:
     - gce-nfs, linux-mcpu
   variables:
-    PATH: /usr/lib/ccache:/home/svcpetsc/.local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/nfs/gce/projects/petsc/soft/nag/6.1/bin
-    NAG_KUSARI_FILE: licman1.mcs.anl.gov:7733
+    LOAD_MODULES: nag/6.1
     TEST_ARCH: arch-ci-linux-nagfor
 
 linux-intel-cmplx:
