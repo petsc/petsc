@@ -52,6 +52,8 @@ Related toolkits/libraries that use PETSc
       -  `ADflow <https://github.com/mdolab/adflow>`__ An Open-Source
          Computational Fluid Dynamics Solver for Aerodynamic and
          Multidisciplinary Optimization
+      -  `BOUT++ <https://boutproject.github.io>`__ Plasma simulation
+         in curvilinear coordinate systems
       -  `Chaste <https://www.cs.ox.ac.uk/chaste/>`__ Cancer, Heart and
          Soft Tissue Environment
       -  `code_aster <https://www.code-aster.org/V2/spip.php?rubrique2​>`__

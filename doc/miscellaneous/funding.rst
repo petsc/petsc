@@ -30,7 +30,7 @@ Specific and previous funding sources:
 * Multiphase Flow Simulation, Ray Berry LDRD, `Idaho National Laboratory
   <https://inl.gov/>`__
 
-* The DOE 2000 `ACTS Toolkit <http://acts.nersc.gov/>`__
+* The DOE 2000 `ACTS Toolkit <https://www.nersc.gov/news-publications/nersc-news/nersc-center-news/1998/acts-toolkit-support-debuts-on-the-web/>`__
 
 * The DOE/FE ACTI program, late 1990's
 

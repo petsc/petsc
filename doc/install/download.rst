@@ -59,6 +59,6 @@ PETSc Development Repository
 ============================
 
 You can work with the `development version of PETSc
-<https://docs.petsc.org/en/latest/developers/index.html>`__, and decide when to update to
+<https://petsc.org/main>`__, and decide when to update to
 the latest code in the repository. This also facilitates easy submission of fixes and new
 features to the development team.

@@ -237,7 +237,7 @@ PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
     for (i=0; i<count; i++) xout[i] += xin[i];
   }
 #if defined(PETSC_HAVE_COMPLEX)
-  else if (*datatype == MPI_COMPLEX) {
+  else if (*datatype == MPIU_COMPLEX) {
     PetscComplex *xin = (PetscComplex*)in,*xout = (PetscComplex*)out;
     for (i=0; i<count; i++) xout[i] += xin[i];
   }

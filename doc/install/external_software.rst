@@ -121,6 +121,6 @@ Instrumentation of PETSc:
 PETSc documentation has been generated using:
 
 - `Sowing <http://wgropp.cs.illinois.edu/projects/software/sowing/index.html>`__
-- `c2html <http://user.cs.tu-berlin.de/~schintke/x2html/index.html>`__
+- `c2html <https://sources.debian.org/copyright/license/c2html/>`__
 - `Python <https://www.python.org/>`__
 - `Sphinx <https://www.sphinx-doc.org/en/master/>`__

@@ -983,9 +983,6 @@ pages:  # this job name has special meaning to GitLab
   artifacts:
     paths:
       - public
-  cache:
-    paths:
-      - public/
 
 #
 #
