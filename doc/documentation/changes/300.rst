@@ -3,186 +3,186 @@ Changes: 3.0.0
 ==============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  Changed the Matlab engine portion of the Matlab configure code to
-      require a separate flag --with-matlab-engine
-   -  Changed the Socket viewer to be the same as the binary viewer
-      except for its creation
-   -  Changed the Matlab Socket code to work the same as the Matlab
-      binary reader except for its creation
-   -  You can now replace the PetscVFPrintf() function pointer to
-      redirect all stdout/stderr output in Windows for example.
-   -  Removed MPICCommToFortran() and MPIFortranCommToC() since
-      MPI_Comm_c2f() and f2c() are now always available.
-   -  PetscOptionsInsertFile() now takes a MPI_Comm as the first
-      argument and a final flag argument indicating if the file  MUST be
-      located. It is also changed to be more scalable, only the 0th
-      process opens it and broadcasts the input to the other processes.
-   -  Added PetscObjectIncrementTabLevel() to allow proper indenting of
-      monitor output for imbedded solvers for multigrid levels, for
-      block Jacobi, for SNES inside TS and KSP inside SNES etc.
+-  Changed the Matlab engine portion of the Matlab configure code to
+   require a separate flag --with-matlab-engine
+-  Changed the Socket viewer to be the same as the binary viewer
+   except for its creation
+-  Changed the Matlab Socket code to work the same as the Matlab
+   binary reader except for its creation
+-  You can now replace the PetscVFPrintf() function pointer to
+   redirect all stdout/stderr output in Windows for example.
+-  Removed MPICCommToFortran() and MPIFortranCommToC() since
+   MPI_Comm_c2f() and f2c() are now always available.
+-  PetscOptionsInsertFile() now takes a MPI_Comm as the first
+   argument and a final flag argument indicating if the file  MUST be
+   located. It is also changed to be more scalable, only the 0th
+   process opens it and broadcasts the input to the other processes.
+-  Added PetscObjectIncrementTabLevel() to allow proper indenting of
+   monitor output for imbedded solvers for multigrid levels, for
+   block Jacobi, for SNES inside TS and KSP inside SNES etc.
 
-   .. rubric:: Logging:
+.. rubric:: Logging:
 
-   -  The int stage used in the PetscLogStageXXX() routines is now a
-      PetscLogStage
-   -  PetscLogEventRegister() and PetscLogStageRegister() now return the
-      result in the final argument instead of the first
-   -  PetscLogClassRegister() is changed to PetscClassIdRegister() and
-      returns the classid in the final argument, not the first
-   -  PetscEvent is now PetscLogEvent
+-  The int stage used in the PetscLogStageXXX() routines is now a
+   PetscLogStage
+-  PetscLogEventRegister() and PetscLogStageRegister() now return the
+   result in the final argument instead of the first
+-  PetscLogClassRegister() is changed to PetscClassIdRegister() and
+   returns the classid in the final argument, not the first
+-  PetscEvent is now PetscLogEvent
 
-   .. rubric:: config/configure.py:
+.. rubric:: config/configure.py:
 
-   -  Changed location of base makefiles to conf from bmake/common
-   -  Changed location of generated base makefiles to $PETSC_ARCH/conf
-      instead of bmake/$PETSC_ARCH
-   -  Changed location of generated include files to $PETSC_ARCH/include
-   -  Changed location of generated libraries (including from external
-      packages) to $PETSC_ARCH/lib
-   -  You will need to change include ${PETSC_DIR}/bmake/common/base to
-      ${PETSC_DIR}/conf/base
+-  Changed location of base makefiles to conf from bmake/common
+-  Changed location of generated base makefiles to $PETSC_ARCH/conf
+   instead of bmake/$PETSC_ARCH
+-  Changed location of generated include files to $PETSC_ARCH/include
+-  Changed location of generated libraries (including from external
+   packages) to $PETSC_ARCH/lib
+-  You will need to change include ${PETSC_DIR}/bmake/common/base to
+   ${PETSC_DIR}/conf/base
 
-   .. rubric:: IS:
+.. rubric:: IS:
 
-   -  ISPartitioningCount() now takes an additional argument, the length
-      of the count array (that is the number of partitions).
+-  ISPartitioningCount() now takes an additional argument, the length
+   of the count array (that is the number of partitions).
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   -  Added logical argument to VecSetOption() to toggle option in
-      either way
-   -  The PetscMap inside the Vec object is now allocated and reference
-      counted and shared between vectors and matrices, this will
-      decrease memory usage on systems with a large size.
+-  Added logical argument to VecSetOption() to toggle option in
+   either way
+-  The PetscMap inside the Vec object is now allocated and reference
+   counted and shared between vectors and matrices, this will
+   decrease memory usage on systems with a large size.
 
-   .. rubric:: VecScatter:
+.. rubric:: VecScatter:
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  MatSetOption() now takes a final PetscTruth flag to toggle the
-      option. The redundant options like MAT_NO_SYMMETRIC are removed
-   -  The MatSetOption() options MAT_ROWS_SORTED, MAT_COLUMNS_SORTED are
-      no longer needed and are removed.
-   -  MatConvert() now uses the matrix prefix when using option
-      -matconvert_type.
-   -  The bdiag matrix formats have been removed
-   -  MatTranspose() now takes a new second argument MatReuse; also to
-      do an inplace transpose use MAT_REUSE_MATRIX and pass the address
-      of the first argument as the third argument (you can no longer
-      pass 0).
-   -  MATPLAPACK is removed; instead so long as PETSc is
-      config/configure.py with --download-plapack the MATMPIDENSE matrix
-      will automatically use the parallel plapack solvers
-   -  The "parallel direct solver" matrix types like
-      MATAIJSPOOLES are ALL gone. Now you use
-      -pc_factor_mat_solver_package
-      spooles etc or PCFactorSetMatSolverPackage() or if working
-      directly with
-      matrices, MatGetFactor(A,MATSPOOLES,...)
-   -  Removed MatFDColoringSetRecompute(), now use
-      MatFDSetFrequency(mat,-2) to have Jacobian computed at next Newton
-      step but never again.
-   -  Removed MatFDColoringSet/GetFrequency() and -mat_fd_coloring_freq
-      since you can now use SNESSetLagJacobian() or -snes_lag_jacobian
-   -  The PetscMap inside the Mat object is now allocated and reference
-      counted and shared between vectors and matrices, this will
-      decrease memory usage on systems with a large size.
-   -  The first argument to MatXXXFactorSymbolic/Numeric() is now the
-      factored matrix
-   -  The fields global_rows,global_columns,local_rows,local_columns
-      have been removed from the MatGetInfo() data. User MatGetSize(),
-      MatGetLocalSize() to get that data
+-  MatSetOption() now takes a final PetscTruth flag to toggle the
+   option. The redundant options like MAT_NO_SYMMETRIC are removed
+-  The MatSetOption() options MAT_ROWS_SORTED, MAT_COLUMNS_SORTED are
+   no longer needed and are removed.
+-  MatConvert() now uses the matrix prefix when using option
+   -matconvert_type.
+-  The bdiag matrix formats have been removed
+-  MatTranspose() now takes a new second argument MatReuse; also to
+   do an inplace transpose use MAT_REUSE_MATRIX and pass the address
+   of the first argument as the third argument (you can no longer
+   pass 0).
+-  MATPLAPACK is removed; instead so long as PETSc is
+   config/configure.py with --download-plapack the MATMPIDENSE matrix
+   will automatically use the parallel plapack solvers
+-  The "parallel direct solver" matrix types like
+   MATAIJSPOOLES are ALL gone. Now you use
+   -pc_factor_mat_solver_package
+   spooles etc or PCFactorSetMatSolverPackage() or if working
+   directly with
+   matrices, MatGetFactor(A,MATSPOOLES,...)
+-  Removed MatFDColoringSetRecompute(), now use
+   MatFDSetFrequency(mat,-2) to have Jacobian computed at next Newton
+   step but never again.
+-  Removed MatFDColoringSet/GetFrequency() and -mat_fd_coloring_freq
+   since you can now use SNESSetLagJacobian() or -snes_lag_jacobian
+-  The PetscMap inside the Mat object is now allocated and reference
+   counted and shared between vectors and matrices, this will
+   decrease memory usage on systems with a large size.
+-  The first argument to MatXXXFactorSymbolic/Numeric() is now the
+   factored matrix
+-  The fields global_rows,global_columns,local_rows,local_columns
+   have been removed from the MatGetInfo() data. User MatGetSize(),
+   MatGetLocalSize() to get that data
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   -  PCHasApplyTranspose() was renamed to PCApplyTransposeExists().
-   -  Added much faster matrix converter to use hypre preconditioners
-      for PETSc AIJ matrices
-   -  ILU preconditioner now defaults to use shift to prevent zero pivot
-   -  ICC preconditioner now defaults to use Manteuffel shift to force
-      positive definiteness
-   -  Added -pc_factor_shift_in_blocks and PCFactorSetShiftInBlocks()
-      made default for ILU
-   -  PCApplyRichardson() now returns two additional arguments, the
-      number of iterations performed and the reason it finished.
+-  PCHasApplyTranspose() was renamed to PCApplyTransposeExists().
+-  Added much faster matrix converter to use hypre preconditioners
+   for PETSc AIJ matrices
+-  ILU preconditioner now defaults to use shift to prevent zero pivot
+-  ICC preconditioner now defaults to use Manteuffel shift to force
+   positive definiteness
+-  Added -pc_factor_shift_in_blocks and PCFactorSetShiftInBlocks()
+   made default for ILU
+-  PCApplyRichardson() now returns two additional arguments, the
+   number of iterations performed and the reason it finished.
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   -  KSPSetConvergenceTest() now takes an optional final argument,
-      destroy() that will be called to destroy the context passed in as
-      the second to last argument
-   -  KSPDefaultConverged() now has a KSPDefaultConvergedCreate() and
-      KSPDefaultConvergedDestroy() that creates the default context to
-      be passed KSPSetConvergenceTest() and the destroy to be passed in.
-   -  Added KSPIBCGS a varient of Bi-CG-stab that has only 1
-      synchronization point rather than 3 in the usual.
+-  KSPSetConvergenceTest() now takes an optional final argument,
+   destroy() that will be called to destroy the context passed in as
+   the second to last argument
+-  KSPDefaultConverged() now has a KSPDefaultConvergedCreate() and
+   KSPDefaultConvergedDestroy() that creates the default context to
+   be passed KSPSetConvergenceTest() and the destroy to be passed in.
+-  Added KSPIBCGS a varient of Bi-CG-stab that has only 1
+   synchronization point rather than 3 in the usual.
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   -  SNESSetRhs() and SNESSetSolution() were removed. Use instead
-      SNESSolve(snes, b, x) to pass right hand side (optional, can be
-      PETSC_NULL) and solution (required).
-   -  SNES now takes ownership of user-provided vector for right hand
-      side and solution passed to SNESSolve(), and until the next
-      SNESSolve() is called.
-   -  SNES now takes ownership of user-provided vector for function
-      evalutation passed to SNESSetFunction(), thus this vector can be
-      safely destroyed after this call.
-   -  SNESConverged_LS() and SNESConverged_LS() were removed. Use
-      SNESDefaultConverged() or SNESSkipConverged() as convergence test.
-   -  Option -snes_convergence_test was added, accepting values
-      default|short, for setting SNESDefaultConverged() or
-      SNESSkipConverged() as convergence test.
-   -  Option -snes_no_convergence_test was removed. Use instead
-      "-snes_convergence_test skip".
-   -  Do not use the error PETSC_ERR_ARG_DOMAIN within your
-      FormFunction() rather call SNESSetFunctionDomainError.
-   -  The line search functions now take an additional argument xnorm.
-   -  SNESSetConvergenceTest() takes another optional argument
-      PetscErrorCode (*destroy)(void*) that will be called with
-      SNESDestroy() to destroy the context.
-   -  Added SNESSetLagPreconditioner(), -snes_lag_preconditioner,
-      SNESGetLagPreconditioner()
-   -  Added SNESSetLagJacobian(), -snes_lag_jacobian,
-      SNESGetLagJacobian()
+-  SNESSetRhs() and SNESSetSolution() were removed. Use instead
+   SNESSolve(snes, b, x) to pass right hand side (optional, can be
+   PETSC_NULL) and solution (required).
+-  SNES now takes ownership of user-provided vector for right hand
+   side and solution passed to SNESSolve(), and until the next
+   SNESSolve() is called.
+-  SNES now takes ownership of user-provided vector for function
+   evalutation passed to SNESSetFunction(), thus this vector can be
+   safely destroyed after this call.
+-  SNESConverged_LS() and SNESConverged_LS() were removed. Use
+   SNESDefaultConverged() or SNESSkipConverged() as convergence test.
+-  Option -snes_convergence_test was added, accepting values
+   default|short, for setting SNESDefaultConverged() or
+   SNESSkipConverged() as convergence test.
+-  Option -snes_no_convergence_test was removed. Use instead
+   "-snes_convergence_test skip".
+-  Do not use the error PETSC_ERR_ARG_DOMAIN within your
+   FormFunction() rather call SNESSetFunctionDomainError.
+-  The line search functions now take an additional argument xnorm.
+-  SNESSetConvergenceTest() takes another optional argument
+   PetscErrorCode (*destroy)(void*) that will be called with
+   SNESDestroy() to destroy the context.
+-  Added SNESSetLagPreconditioner(), -snes_lag_preconditioner,
+   SNESGetLagPreconditioner()
+-  Added SNESSetLagJacobian(), -snes_lag_jacobian,
+   SNESGetLagJacobian()
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   .. rubric:: DA:
+.. rubric:: DA:
 
-   -  Added DAGetNeighbors()
-   -  Added DAGetOwnershipRanges()
+-  Added DAGetNeighbors()
+-  Added DAGetOwnershipRanges()
 
-   .. rubric:: DMMG:
+.. rubric:: DMMG:
 
-   -  Added DMMGSetFromOptions(), this can only be used in conjunction
-      with DMMGSetSNES(). You should call this sometime after
-      DMMGSetSNES() is called, otherwise the SNES/KSPSetFromOptions()
-      does not get called.
-   -  Removed -dmmg_snes_monitor since now -snes_monitor and
-      -snes_monitor_short will now do the proper indenting so this is no
-      longer needed
-   -  Removed -dmmg_ksp_monitor since now -ksp_monitor[_short) and
-      -mg_levels_ksp_monitor[_short) etc will handle the proper
-      indenting.
-   -  Removed -dmmg_jacobian_period since you can use -snes_lag_jacobian
+-  Added DMMGSetFromOptions(), this can only be used in conjunction
+   with DMMGSetSNES(). You should call this sometime after
+   DMMGSetSNES() is called, otherwise the SNES/KSPSetFromOptions()
+   does not get called.
+-  Removed -dmmg_snes_monitor since now -snes_monitor and
+   -snes_monitor_short will now do the proper indenting so this is no
+   longer needed
+-  Removed -dmmg_ksp_monitor since now -ksp_monitor[_short) and
+   -mg_levels_ksp_monitor[_short) etc will handle the proper
+   indenting.
+-  Removed -dmmg_jacobian_period since you can use -snes_lag_jacobian
 
-   .. rubric:: PetscViewer:
+.. rubric:: PetscViewer:
 
-   -  added PETSC_VIEWER_STDOUT_(comm) for Fortran
-   -  binary viewer now supports MPI IO for Vec loading and storing, use
-      -viewer_binary_mpiio or PetscViewerBinarySetMPIIO() to enable it.
-   -  Reworked the Matlab objects sreader and freader to be called
-      PetscOpenSocket and PetscOpenFile, now PetscBinaryWrite and
-      PetscBinaryRead can be used on the same socket connection to send
-      matrix/vectors in both directions. See
-      src/ksp/ksp/examples/tutorials/ex41.c and ex41.m
+-  added PETSC_VIEWER_STDOUT_(comm) for Fortran
+-  binary viewer now supports MPI IO for Vec loading and storing, use
+   -viewer_binary_mpiio or PetscViewerBinarySetMPIIO() to enable it.
+-  Reworked the Matlab objects sreader and freader to be called
+   PetscOpenSocket and PetscOpenFile, now PetscBinaryWrite and
+   PetscBinaryRead can be used on the same socket connection to send
+   matrix/vectors in both directions. See
+   src/ksp/ksp/examples/tutorials/ex41.c and ex41.m
 
-   .. rubric:: SYS:
+.. rubric:: SYS:
 
-   -  PetscLogFlopsNoCheck() no longer exists; you can simply call
-      PetscLogFlops() it no longer has a return in it.
+-  PetscLogFlopsNoCheck() no longer exists; you can simply call
+   PetscLogFlops() it no longer has a return in it.
 
-   .. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:

@@ -3,97 +3,97 @@ Changes: 2.2.1
 ==============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  Introduced 4 new PETSc data types: PetscInt, PetscErrorCode,
-      PetscMPIInt and PetscBLASInt. For 99% of users these are just int
-      or integer*4 and you do **not** need to change your code.
-   -  For users with more than roughly 2 billion unknowns you can run
-      configure with --with-64-bit-ints and then PetscInt will represent
-      64 bit integers, long long int in C and integer*8 in Fortran. But
-      the the other 3 types remain 32 bit (i.e. int in C and integer*4
-      in Fortran). Now you can index into vectors and matrices with
-      virtually unlimited sizes.
+-  Introduced 4 new PETSc data types: PetscInt, PetscErrorCode,
+   PetscMPIInt and PetscBLASInt. For 99% of users these are just int
+   or integer*4 and you do **not** need to change your code.
+-  For users with more than roughly 2 billion unknowns you can run
+   configure with --with-64-bit-ints and then PetscInt will represent
+   64 bit integers, long long int in C and integer*8 in Fortran. But
+   the the other 3 types remain 32 bit (i.e. int in C and integer*4
+   in Fortran). Now you can index into vectors and matrices with
+   virtually unlimited sizes.
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   -  VecSetStashInitialSize() -> VecStashSetInitialSize()
-   -  VecConvertMPIToAll() and VecConvertMPIToZero() have been replaced
-      with VecScatterCreateToAll() and VecScatterCreateToZero()
+-  VecSetStashInitialSize() -> VecStashSetInitialSize()
+-  VecConvertMPIToAll() and VecConvertMPIToZero() have been replaced
+   with VecScatterCreateToAll() and VecScatterCreateToZero()
 
-   .. rubric:: IS:
+.. rubric:: IS:
 
-   -  ISSum() now has a throughput argument instead of one in and one
-      output.
+-  ISSum() now has a throughput argument instead of one in and one
+   output.
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  MatSetStashInitialSize() -> MatStashSetInitialSize()
-   -  added MatFactorInfoInitialize()
-   -  added MatStashGetInfo()
-   -  added MatGetVecs()
-   -  added MatIsSymmetric(), MatIsTranspose() now take a tolerance flag
-      for equality (use 0.0 for identical)
-   -  added MatMPIAIJSetPreallocationCSR() and
-      MatMPIBAIJSetPreallocationCSR()
+-  MatSetStashInitialSize() -> MatStashSetInitialSize()
+-  added MatFactorInfoInitialize()
+-  added MatStashGetInfo()
+-  added MatGetVecs()
+-  added MatIsSymmetric(), MatIsTranspose() now take a tolerance flag
+   for equality (use 0.0 for identical)
+-  added MatMPIAIJSetPreallocationCSR() and
+   MatMPIBAIJSetPreallocationCSR()
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   -  ICC now uses Manteuffel shift by default
-   -  If matrix is symmetric, PC defaults to ICC when possible, if you
-      told with MatSetOption(mat,MAT_SYMMETRIC)
-   -  PCSetVector() is gone (no longer needed)
-   -  PCNullSpaceAttach() is gone, use KSPSetNullSpace()
-   -  MatGetSubmatrices() now preserves symmetric flag of original
-      matrix
-   -  hypre BoomerAMG (-pc_type hypre -pc_hypre_type boomeramg) now uses
-      one 1 cycle of multigrid as preconditioner (Previously it used
-      either a decrease in residual of 10^-7 or a maximum of 20
-      iterations
+-  ICC now uses Manteuffel shift by default
+-  If matrix is symmetric, PC defaults to ICC when possible, if you
+   told with MatSetOption(mat,MAT_SYMMETRIC)
+-  PCSetVector() is gone (no longer needed)
+-  PCNullSpaceAttach() is gone, use KSPSetNullSpace()
+-  MatGetSubmatrices() now preserves symmetric flag of original
+   matrix
+-  hypre BoomerAMG (-pc_type hypre -pc_hypre_type boomeramg) now uses
+   one 1 cycle of multigrid as preconditioner (Previously it used
+   either a decrease in residual of 10^-7 or a maximum of 20
+   iterations
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   -  Note that a relative residual tolerance now means that \||r_k|\| <
-      tol*||b|\|
-   -  Removed KSPSetRhs() and KSPSetSolution(), pass
-   -  Added KSPSetNullSpace(), KSPGetNullSpace()
+-  Note that a relative residual tolerance now means that \||r_k|\| <
+   tol*||b|\|
+-  Removed KSPSetRhs() and KSPSetSolution(), pass
+-  Added KSPSetNullSpace(), KSPGetNullSpace()
 
-   .. rubric:: DA:
+.. rubric:: DA:
 
-   -  Added DAGetGhostedCoordinates() and DAGetCoordinateDA() (see
-      src/dm/da/examples/tutorials/ex3.c)
-   -  Added DACoor2d and DACoor3d (see
-      src/dm/da/examples/tutorials/ex3.c)
-   -  DAGetInterpolation() now provides the correct interpolation for
-      nonuniform grids using the coordinate information provided with
-      DASetCoordinates(). (see src/dm/da/examples/tutorials/ex3.c)
+-  Added DAGetGhostedCoordinates() and DAGetCoordinateDA() (see
+   src/dm/da/examples/tutorials/ex3.c)
+-  Added DACoor2d and DACoor3d (see
+   src/dm/da/examples/tutorials/ex3.c)
+-  DAGetInterpolation() now provides the correct interpolation for
+   nonuniform grids using the coordinate information provided with
+   DASetCoordinates(). (see src/dm/da/examples/tutorials/ex3.c)
 
-   .. rubric:: config/configure.py:
+.. rubric:: config/configure.py:
 
-   -  --with-c/f-blas-lapack -> --download-c/f-blas-lapack=yes
-   -  --with-c/f-blas-lapack-if-needed ->
-      --download-c/f-blas-lapack=ifneeded
-   -  added --download-mpich=yes,no,ifneeded
-   -  added --download-mpich-device=
-   -  added --download-mpich-machines=[machines]
-   -  added configure including download support for hypre, parmetis
-   -  added configure support (without download) to Mumps, UMF,
-      Superlu,SuperLU_dist,DSCPACK
-   -  Made configure much more robust
+-  --with-c/f-blas-lapack -> --download-c/f-blas-lapack=yes
+-  --with-c/f-blas-lapack-if-needed ->
+   --download-c/f-blas-lapack=ifneeded
+-  added --download-mpich=yes,no,ifneeded
+-  added --download-mpich-device=
+-  added --download-mpich-machines=[machines]
+-  added configure including download support for hypre, parmetis
+-  added configure support (without download) to Mumps, UMF,
+   Superlu,SuperLU_dist,DSCPACK
+-  Made configure much more robust
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   -  Added -snes_converged_reason
-   -  Added SNESSetRhs(snes,rhs) to allow for solving F(x) = rhs
+-  Added -snes_converged_reason
+-  Added SNESSetRhs(snes,rhs) to allow for solving F(x) = rhs
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   .. rubric:: DMMG:
+.. rubric:: DMMG:
 
-   -  Added DMMGSetNullSpace()
+-  Added DMMGSetNullSpace()
 
-   .. rubric:: SYS:
+.. rubric:: SYS:
 
-   .. rubric:: Fortran:
+.. rubric:: Fortran:
 
-   .. rubric:: ExternalPackages:
+.. rubric:: ExternalPackages:

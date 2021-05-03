@@ -3,157 +3,157 @@ Changes: 3.9
 ============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  The scripts in $PETSC_DIR/bin are now in $PETSC_DIR/lib/petsc/bin
-   -  PetscStrncat() renamed to PetscStrlcat() now takes the length of
-      the original allocated space in the string instead of the part
-      left after strings have been copied or concatenated in
-   -  CUDA and ViennaCL as GPU backends can now also be used with the
-      release version (no need to use the main branch).
+-  The scripts in $PETSC_DIR/bin are now in $PETSC_DIR/lib/petsc/bin
+-  PetscStrncat() renamed to PetscStrlcat() now takes the length of
+   the original allocated space in the string instead of the part
+   left after strings have been copied or concatenated in
+-  CUDA and ViennaCL as GPU backends can now also be used with the
+   release version (no need to use the main branch).
 
-   .. rubric:: Configure/Build:
+.. rubric:: Configure/Build:
 
-   -  Option --with-cuda-arch is removed. Use CUDAFLAGS to directly
-      specify relevent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]
-   -  Added --with-avx512-kernels to specify that hand-coded kernels
-      using AVX-512 intrinsics should be used when available. Currently
-      defaults to off.
+-  Option --with-cuda-arch is removed. Use CUDAFLAGS to directly
+   specify relevent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]
+-  Added --with-avx512-kernels to specify that hand-coded kernels
+   using AVX-512 intrinsics should be used when available. Currently
+   defaults to off.
 
-   .. rubric:: IS:
+.. rubric:: IS:
 
-   .. rubric:: PetscDraw:
+.. rubric:: PetscDraw:
 
-   .. rubric:: PF:
+.. rubric:: PF:
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   -  Added VECNODE type. Vector uses on-node shared memory to store its
-      entries.
+-  Added VECNODE type. Vector uses on-node shared memory to store its
+   entries.
 
-   .. rubric:: VecScatter:
+.. rubric:: VecScatter:
 
-   -  VecScatter becomes a PETSc object. Existing vecscatters have types
-      VECSCATTERSEQ, VECSCATTERMPI1.
-   -  Added VECSCATTERMPI3. It stores vector ghost values to the on-node
-      shared memory.
-   -  Added VECSCATTERMPI3NODE. It works on vectors of type VECNODE.
+-  VecScatter becomes a PETSc object. Existing vecscatters have types
+   VECSCATTERSEQ, VECSCATTERMPI1.
+-  Added VECSCATTERMPI3. It stores vector ghost values to the on-node
+   shared memory.
+-  Added VECSCATTERMPI3NODE. It works on vectors of type VECNODE.
 
-   .. rubric:: PetscSection:
+.. rubric:: PetscSection:
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  Added MatShellTestMultTranspose() and MatShellTestMult() for
-      checking if user provided MATSHELL matches the Jacobian of a given
-      function computed with differencing.
-   -  MatSolverPackage is replaced with MatSolverType.
-   -  mat_solver_package is replaced with mat_solver_type in options,
-      e.g. ``-pc_factor_mat_solver_type`` should be used instead of
-      ``-pc_factor_mat_solver_package``.
-   -  MatShellSetOperation() and MatShellGetOperation() can now only be
-      used for MATSHELL matrices, use MatSetOperation() and
-      MatGetOperation() to set an operation for any matrix type.
-   -  Added MatMumpsGetInverse().
-   -  MatMult() for the MATAIJ type has been optimized using AVX-512
-      intrinsics; must be enabled at configure time.
-   -  Added a new Mat type MATSELL, featuring a fast MatMult() kernel on
-      AVX-512 architecture such as KNL and Skylake.
-   -  Added support for additional MKL sparse BLAS operations in
-      MATAIJMKL: MatMatMult(), MatTransposeMatMult(), MatPtAP()
-      (symmetric A only). MKL version 18, update 2 or later is required
-      for MatPtAP()/MatPtAPNumeric() and MatMatMultNumeric().
-   -  Added MatGetInertia() for SuperLU_DIST interface.
+-  Added MatShellTestMultTranspose() and MatShellTestMult() for
+   checking if user provided MATSHELL matches the Jacobian of a given
+   function computed with differencing.
+-  MatSolverPackage is replaced with MatSolverType.
+-  mat_solver_package is replaced with mat_solver_type in options,
+   e.g. ``-pc_factor_mat_solver_type`` should be used instead of
+   ``-pc_factor_mat_solver_package``.
+-  MatShellSetOperation() and MatShellGetOperation() can now only be
+   used for MATSHELL matrices, use MatSetOperation() and
+   MatGetOperation() to set an operation for any matrix type.
+-  Added MatMumpsGetInverse().
+-  MatMult() for the MATAIJ type has been optimized using AVX-512
+   intrinsics; must be enabled at configure time.
+-  Added a new Mat type MATSELL, featuring a fast MatMult() kernel on
+   AVX-512 architecture such as KNL and Skylake.
+-  Added support for additional MKL sparse BLAS operations in
+   MATAIJMKL: MatMatMult(), MatTransposeMatMult(), MatPtAP()
+   (symmetric A only). MKL version 18, update 2 or later is required
+   for MatPtAP()/MatPtAPNumeric() and MatMatMultNumeric().
+-  Added MatGetInertia() for SuperLU_DIST interface.
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   -  Added -pc_mg_distinct_smoothup and PCMGSetDistinctSmoothUp() so
-      that one can control the down and up smoothers options separately
-      from the options database
-   -  Removed -pc_mg_smoothup and -pc_mg_smoothdown and
-      PCMGSetNumberSmoothUp() and PCMGSetNumberSmoothDown(). Instead,
-      configure the solvers on the levels with -mg_levels_ksp_max_it n.
-      If separate numbers of smoothing steps are required for up and
-      down smoothers, use -pc_mg_distinct_smoothup -mg_levels_ksp_max_it
-      n -mg_levels_up_ksp_max_it m.
-   -  Added PCCHOLESKY to SuperLU_DIST interface.
+-  Added -pc_mg_distinct_smoothup and PCMGSetDistinctSmoothUp() so
+   that one can control the down and up smoothers options separately
+   from the options database
+-  Removed -pc_mg_smoothup and -pc_mg_smoothdown and
+   PCMGSetNumberSmoothUp() and PCMGSetNumberSmoothDown(). Instead,
+   configure the solvers on the levels with -mg_levels_ksp_max_it n.
+   If separate numbers of smoothing steps are required for up and
+   down smoothers, use -pc_mg_distinct_smoothup -mg_levels_ksp_max_it
+   n -mg_levels_up_ksp_max_it m.
+-  Added PCCHOLESKY to SuperLU_DIST interface.
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   -  Removed SNESHasDM() because there is always a DM in SNES.
-   -  The SNESType of SNESTEST has been removed, the testing code can
-      now be accessed with the options -snes_test_jacobian,
-      -snes_test_jacobian_display -snes_test_jacobian_display_threshold
-      and is called each time SNES computes a new Jacobian.
+-  Removed SNESHasDM() because there is always a DM in SNES.
+-  The SNESType of SNESTEST has been removed, the testing code can
+   now be accessed with the options -snes_test_jacobian,
+   -snes_test_jacobian_display -snes_test_jacobian_display_threshold
+   and is called each time SNES computes a new Jacobian.
 
-   .. rubric:: SNESLineSearch:
+.. rubric:: SNESLineSearch:
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   -  Added TSRHSJacobianTestTranspose() and TSRHSJacobianTest()
-      checking if user provide MATSHELL Jacobian with TSSetRHSJacobian()
-      matches the Jacobian of the function provided to
-      TSSetRHSFunction() computed with finite differencing. Command line
-      options -ts_rhs_jacobian_test_mult_transpose
-      -mat_shell_test_mult_transpose_view and -ts_rhs_jacobian_test_mult
-      -mat_shell_test_mult_view.
-   -  Added -ts_trajectory_dirname and -ts_trajectory_filetemplate to
-      allow users to specify the folder name and file name template for
-      disk checkpoints.
+-  Added TSRHSJacobianTestTranspose() and TSRHSJacobianTest()
+   checking if user provide MATSHELL Jacobian with TSSetRHSJacobian()
+   matches the Jacobian of the function provided to
+   TSSetRHSFunction() computed with finite differencing. Command line
+   options -ts_rhs_jacobian_test_mult_transpose
+   -mat_shell_test_mult_transpose_view and -ts_rhs_jacobian_test_mult
+   -mat_shell_test_mult_view.
+-  Added -ts_trajectory_dirname and -ts_trajectory_filetemplate to
+   allow users to specify the folder name and file name template for
+   disk checkpoints.
 
-   .. rubric:: TAO:
+.. rubric:: TAO:
 
-   -  Changed TaoDefaultMonitor() to TaoMonitorDefault() to match other
-      PETSc default monitor names, also now print with the same format
-      as other monitors %3D Tao ....
-   -  Added VecLock{Push|Pop} calls around user callbacks; use of
-      VecGetArray in user callbacks is now prohibited.
-   -  Added default matrix-free finite-differencing implementation for
-      Hessian MatMult with TaoDefaultComputeHessianMFFD(). Can be
-      selected with -tao_mf_hessian at command line.
-   -  Added Projected Gradient Descent (PGD) and Bounded Nonlinear
-      Conjugate Gradient (BNCG) algorithms for bound constrained
-      problems.
-   -  Improved support for recycling BFGS correction vectors between
-      subsequent TaoSolve() calls for the unconstrained LMVM algorithm.
-      Can be enabled using -tao_lmm_recycle at command line.
-   -  Convergence tests for all algorithms are separated out of
-      TaoMonitor() calls.
+-  Changed TaoDefaultMonitor() to TaoMonitorDefault() to match other
+   PETSc default monitor names, also now print with the same format
+   as other monitors %3D Tao ....
+-  Added VecLock{Push|Pop} calls around user callbacks; use of
+   VecGetArray in user callbacks is now prohibited.
+-  Added default matrix-free finite-differencing implementation for
+   Hessian MatMult with TaoDefaultComputeHessianMFFD(). Can be
+   selected with -tao_mf_hessian at command line.
+-  Added Projected Gradient Descent (PGD) and Bounded Nonlinear
+   Conjugate Gradient (BNCG) algorithms for bound constrained
+   problems.
+-  Improved support for recycling BFGS correction vectors between
+   subsequent TaoSolve() calls for the unconstrained LMVM algorithm.
+   Can be enabled using -tao_lmm_recycle at command line.
+-  Convergence tests for all algorithms are separated out of
+   TaoMonitor() calls.
 
-   .. rubric:: DM/DA:
+.. rubric:: DM/DA:
 
-   .. rubric:: DMPlex:
+.. rubric:: DMPlex:
 
-   -  Deprecate DMGetDefaultSection() in favor of DMGetSection()
-   -  Deprecate DMSetDefaultSection() in favor of DMSetSection()
-   -  Deprecate DMGetDefaultGlobalSection() in favor of
-      DMGetGlobalSection()
-   -  Deprecate DMSetDefaultGlobalSection() in favor of
-      DMSetGlobalSection()
+-  Deprecate DMGetDefaultSection() in favor of DMGetSection()
+-  Deprecate DMSetDefaultSection() in favor of DMSetSection()
+-  Deprecate DMGetDefaultGlobalSection() in favor of
+   DMGetGlobalSection()
+-  Deprecate DMSetDefaultGlobalSection() in favor of
+   DMSetGlobalSection()
 
-   .. rubric:: PetscViewer:
+.. rubric:: PetscViewer:
 
-   -  PetscViewerVTKFWrite() now takes a MPI_Datatype instead of a
-      PetscDataType argument.
+-  PetscViewerVTKFWrite() now takes a MPI_Datatype instead of a
+   PetscDataType argument.
 
-   .. rubric:: DMNetwork:
+.. rubric:: DMNetwork:
 
-   -  DMNetworkGetComponentDataArray and DMNetworkGetComponentTypeOffset
-      are no longer available. Use DMNetworkGetComponent instead.
-   -  Added support for sub-dmnetworks.
+-  DMNetworkGetComponentDataArray and DMNetworkGetComponentTypeOffset
+   are no longer available. Use DMNetworkGetComponent instead.
+-  Added support for sub-dmnetworks.
 
-   .. rubric:: SYS:
+.. rubric:: SYS:
 
-   -  PetscPClose() no longer returns error code from pclose() because
-      some systems cannot reliably deliver it
-   -  PetscPopUpSelect() has been removed.
+-  PetscPClose() no longer returns error code from pclose() because
+   some systems cannot reliably deliver it
+-  PetscPopUpSelect() has been removed.
 
-   .. rubric:: AO:
+.. rubric:: AO:
 
-   .. rubric:: Sieve:
+.. rubric:: Sieve:
 
-   .. rubric:: Fortran:
+.. rubric:: Fortran:
 
-   -  The F90Array routines now take a MPI_Datatype argument instead of
-      a PetscDataType. This should not affect user code.
+-  The F90Array routines now take a MPI_Datatype argument instead of
+   a PetscDataType. This should not affect user code.

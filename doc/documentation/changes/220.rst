@@ -2,64 +2,64 @@
 Changes: 2.2.0
 ==============
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  Changed petscengine.h to petscmatlab.h
-   -  Changed PetscOptionsEList() to return the index of the string
-      selected by the user (error if user enters impossible string)
+-  Changed petscengine.h to petscmatlab.h
+-  Changed PetscOptionsEList() to return the index of the string
+   selected by the user (error if user enters impossible string)
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   -  VecLoad() has a new argument giving the Vector type to be created
+-  VecLoad() has a new argument giving the Vector type to be created
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  If you use MAT_SYMMETRIC as option for MatSetOption() you will
-      likely need to also use the option MAT_SYMMETRY_ETERNAL otherwise
-      at the next MatAssembly the matrix will likly lose the symmetry
-      flag.
-   -  Added MatISGetLocalMat() to allow preallocating the local matrix.
+-  If you use MAT_SYMMETRIC as option for MatSetOption() you will
+   likely need to also use the option MAT_SYMMETRY_ETERNAL otherwise
+   at the next MatAssembly the matrix will likly lose the symmetry
+   flag.
+-  Added MatISGetLocalMat() to allow preallocating the local matrix.
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   -  changed unmodifiedGramSchmidt name to classicalGramSchmidt
-      everywhere.
-   -  Eliminated KSPGMRESIROrthogonalize() now have
-      KSPGMRESSetCGSRefinement() to decide when to use iterative
-      refinement
-   -  The SLES object has been removed from PETSc. All of this options
-      are available via the KSP object. For example, -sles_view_binary
-      ->ksp_view_binary, SLESCreate()->KSPCreate() The calling sequences
-      SLESSetUp(sles,b,x) should be replaced with KSPSetRhs(ksp,b)
-      KSPSetSolution(ksp,x) KSPSetUp(ksp). Similarly SLESSolve(sles,b,x)
-      should be replaced with KSPSetRhs(ksp,b) KSPSetSolution(ksp,x)
-      KSPSolve(ksp)
-   -  removed its argument from KSPSolve. Obtain the number of
-      iterations via KSPGetIterationNumber()
+-  changed unmodifiedGramSchmidt name to classicalGramSchmidt
+   everywhere.
+-  Eliminated KSPGMRESIROrthogonalize() now have
+   KSPGMRESSetCGSRefinement() to decide when to use iterative
+   refinement
+-  The SLES object has been removed from PETSc. All of this options
+   are available via the KSP object. For example, -sles_view_binary
+   ->ksp_view_binary, SLESCreate()->KSPCreate() The calling sequences
+   SLESSetUp(sles,b,x) should be replaced with KSPSetRhs(ksp,b)
+   KSPSetSolution(ksp,x) KSPSetUp(ksp). Similarly SLESSolve(sles,b,x)
+   should be replaced with KSPSetRhs(ksp,b) KSPSetSolution(ksp,x)
+   KSPSolve(ksp)
+-  removed its argument from KSPSolve. Obtain the number of
+   iterations via KSPGetIterationNumber()
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   -  SNESSolve() no longer returns number of iterations, use
-      SNESGetIterationNumber() to get the number of iterations required
+-  SNESSolve() no longer returns number of iterations, use
+   SNESGetIterationNumber() to get the number of iterations required
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   .. rubric:: DMMG:
+.. rubric:: DMMG:
 
-   -  Added support for -dmmg_galerkin and DMMGSetUseGalerkin() for
-      nonlinear problems (not sequential only)
+-  Added support for -dmmg_galerkin and DMMGSetUseGalerkin() for
+   nonlinear problems (not sequential only)
 
-   .. rubric:: SYS:
+.. rubric:: SYS:
 
-   -  added new PETSC_VIEWER_MATLAB for saving variables to Matlab .mat
-      files
-   -  eliminated PetscViewerXXXXType and PetscViewerXXXSetType()
-      replaced with PetscViewerFileType and PetscViewerSetFileType()
-   -  PETSC_BINARY_RDONLY,PETSC_BINARY_WRONLY,PETSC_BINARY_CREATE
-      becomes PETSC_FILE_RDONLY,PETSC_FILE_WRONLY,PETSC_FILE_CREATE
+-  added new PETSC_VIEWER_MATLAB for saving variables to Matlab .mat
+   files
+-  eliminated PetscViewerXXXXType and PetscViewerXXXSetType()
+   replaced with PetscViewerFileType and PetscViewerSetFileType()
+-  PETSC_BINARY_RDONLY,PETSC_BINARY_WRONLY,PETSC_BINARY_CREATE
+   becomes PETSC_FILE_RDONLY,PETSC_FILE_WRONLY,PETSC_FILE_CREATE
 
-   .. rubric:: Fortran:
+.. rubric:: Fortran:
 
-   .. rubric:: ExternalPackages:
+.. rubric:: ExternalPackages:

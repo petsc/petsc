@@ -3,116 +3,116 @@ Changes: 3.11
 =============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   .. rubric:: Configure/Build:
+.. rubric:: Configure/Build:
 
-   -  Configure now supports Python 3.4+ in addition to Python 2.6+.
+-  Configure now supports Python 3.4+ in addition to Python 2.6+.
 
-   .. rubric:: IS:
+.. rubric:: IS:
 
-   .. rubric:: PetscDraw:
+.. rubric:: PetscDraw:
 
-   .. rubric:: PF:
+.. rubric:: PF:
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   .. rubric:: VecScatter:
+.. rubric:: VecScatter:
 
-   -  Removed VecScatterCreateEmpty(MPI_Comm,VecScatter*)
-   -  Added a PetscSF implementation of VecScatter. One can enable it
-      with -vecscatter_type sf
+-  Removed VecScatterCreateEmpty(MPI_Comm,VecScatter*)
+-  Added a PetscSF implementation of VecScatter. One can enable it
+   with -vecscatter_type sf
 
-   .. rubric:: PetscSection:
+.. rubric:: PetscSection:
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  MatRegisterBaseName() changed to MatRegisterRootName()
-   -  Added -mat_mffd_complex to use complex number trick instead of
-      differencing to evaluate product; requires real functions but
-      complex configuration
-   -  Added initial support for HDF5 files I/O, particularly MATLAB
-      MAT-File Version 7.3, currently only for reading. See also
-      documentation of MatLoad().
+-  MatRegisterBaseName() changed to MatRegisterRootName()
+-  Added -mat_mffd_complex to use complex number trick instead of
+   differencing to evaluate product; requires real functions but
+   complex configuration
+-  Added initial support for HDF5 files I/O, particularly MATLAB
+   MAT-File Version 7.3, currently only for reading. See also
+   documentation of MatLoad().
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   -  PCGetSetUpFailedReason is now PCGetFailedReason()
+-  PCGetSetUpFailedReason is now PCGetFailedReason()
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   -  KSP_DIVERGED_PCSETUP_FAILED replaced with KSP_DIVERGED_PC_FAILED
-   -  Previously the KSP Chebyshev implementation always did one more
-      iteration than requested. For example -ksp_max_it 2 resulted in 3
-      Chebyshev iterations. This has been corrected. Due to this
-      correction your solver may seem to converge more slowely than it
-      previous has. Note that the multigrid solvers (PCMG, PCGAMG, PCML)
-      used by default Chebyshev (with 3 actual steps) in their smoother,
-      thus the multigrid solvers will now have seemingly different
-      convergence rates since they will now use only 2 actual steps. To
-      reproduce previous behavior change the number of smoother
-      iterations to match the previous actual amount, this can be done
-      with for example -mg_levels_ksp_max_it 3 (or
-      -prefix_mg_levels_ksp_max_it 3 if the KSP object has a prefix).
+-  KSP_DIVERGED_PCSETUP_FAILED replaced with KSP_DIVERGED_PC_FAILED
+-  Previously the KSP Chebyshev implementation always did one more
+   iteration than requested. For example -ksp_max_it 2 resulted in 3
+   Chebyshev iterations. This has been corrected. Due to this
+   correction your solver may seem to converge more slowely than it
+   previous has. Note that the multigrid solvers (PCMG, PCGAMG, PCML)
+   used by default Chebyshev (with 3 actual steps) in their smoother,
+   thus the multigrid solvers will now have seemingly different
+   convergence rates since they will now use only 2 actual steps. To
+   reproduce previous behavior change the number of smoother
+   iterations to match the previous actual amount, this can be done
+   with for example -mg_levels_ksp_max_it 3 (or
+   -prefix_mg_levels_ksp_max_it 3 if the KSP object has a prefix).
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   -  Added SNESKSPTRANSPOSEONLY: a linear solver only SNES that solves
-      the transposed linear system.
+-  Added SNESKSPTRANSPOSEONLY: a linear solver only SNES that solves
+   the transposed linear system.
 
-   .. rubric:: SNESLineSearch:
+.. rubric:: SNESLineSearch:
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   -  Added TSADAPTHISTORY: a new TSAdapt implementation that follows a
-      given time history, that can set with TSAdaptHistorySetHistory().
-   -  Added TSTrajectoryGetVecs() to reconstructs states and time
-      derivative vectors from a TSTrajectory.
+-  Added TSADAPTHISTORY: a new TSAdapt implementation that follows a
+   given time history, that can set with TSAdaptHistorySetHistory().
+-  Added TSTrajectoryGetVecs() to reconstructs states and time
+   derivative vectors from a TSTrajectory.
 
-   .. rubric:: TAO:
+.. rubric:: TAO:
 
-   -  Added extra void\* (context) pointer to the function prototype to
-      be passed as user-defined update function to TaoSetUpdate().
+-  Added extra void\* (context) pointer to the function prototype to
+   be passed as user-defined update function to TaoSetUpdate().
 
-   .. rubric:: DM/DA:
+.. rubric:: DM/DA:
 
-   -  Added DMStag and associated functions, for working with quantities
-      on regular staggered grids, in a manner similar to the usage of
-      DMDA for colocated quantities.
-   -  Added DMLocalToGlobal() and DMLocalToGlobal()
+-  Added DMStag and associated functions, for working with quantities
+   on regular staggered grids, in a manner similar to the usage of
+   DMDA for colocated quantities.
+-  Added DMLocalToGlobal() and DMLocalToGlobal()
 
-   .. rubric:: DMPlex:
+.. rubric:: DMPlex:
 
-   -  Reorganized PetscDS handling completely in order to support
-      multiple subdomains. DMSetDS() was removed in favor of
-      DMSetField()+DMCreateDS().
-   -  Added additional PetscSF\* return argument to DMPlexGetGatherDM()
-      (made public) and DMPlexGetRedundantDM().
+-  Reorganized PetscDS handling completely in order to support
+   multiple subdomains. DMSetDS() was removed in favor of
+   DMSetField()+DMCreateDS().
+-  Added additional PetscSF\* return argument to DMPlexGetGatherDM()
+   (made public) and DMPlexGetRedundantDM().
 
-   .. rubric:: PetscViewer:
+.. rubric:: PetscViewer:
 
-   -  Added new command line options to GLVis viewer, see
-      PetscViewerGLVisOpen() manual page for details.
-   -  PetscViewerHDF5{Has,Read,Write}Attribute():
+-  Added new command line options to GLVis viewer, see
+   PetscViewerGLVisOpen() manual page for details.
+-  PetscViewerHDF5{Has,Read,Write}Attribute():
 
-      -  take the input path as relative to the current (pushed) group
-      -  support not only dataset attributes but also group attributes
-      -  PetscViewerHDF5WriteAttribute() creates the group if it doesn't
-         exist
-      -  PetscViewerHDF5HasAttribute() returns false if the parent path
-         doesn’t exist instead of failing
+   -  take the input path as relative to the current (pushed) group
+   -  support not only dataset attributes but also group attributes
+   -  PetscViewerHDF5WriteAttribute() creates the group if it doesn't
+      exist
+   -  PetscViewerHDF5HasAttribute() returns false if the parent path
+      doesn’t exist instead of failing
 
-   -  Added PetscViewerHDF5Has{Group,Object}()
-   -  Added PetscViewerHDF5{Has,Write,Read}ObjectAttribute()
-   -  PetscViewerHDF5OpenGroup() opens the root group (/) if none is
-      pushed
+-  Added PetscViewerHDF5Has{Group,Object}()
+-  Added PetscViewerHDF5{Has,Write,Read}ObjectAttribute()
+-  PetscViewerHDF5OpenGroup() opens the root group (/) if none is
+   pushed
 
-   .. rubric:: SYS:
+.. rubric:: SYS:
 
-   PetscOptionsGetViewer() takes a NULL or PetscOptions object as the
-   second argument.
-   .. rubric:: AO:
+PetscOptionsGetViewer() takes a NULL or PetscOptions object as the
+second argument.
+.. rubric:: AO:
 
-   .. rubric:: Sieve:
+.. rubric:: Sieve:
 
-   .. rubric:: Fortran:
+.. rubric:: Fortran:
