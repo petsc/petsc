@@ -3,241 +3,241 @@ Changes: 3.12
 =============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  PetscRoundReal() has been removed, since the math routine round()
-      is not supported on all systems: perhaps use PetscCeilReal() or
-      PetscFloorReal()<\li>
-   -  The legacy and cmake compile systems (make all-legacy and
-      all-cmake) are removed
-   -  make gnumake is now make libs
-   -  PetscArraycmp() should be used instead of PetscMemcmp(), it takes
-      a count argument instead of a byte argument
-   -  PetscArraycpy() should be used instead of PetscMemcpy(), it takes
-      a count argument instead of a byte argument
-   -  PetscArrayzero() should be used instead of PetscMemzero(), it
-      takes a count argument instead of a byte argument
-   -  PetscArraymove() should be used instead of PetscMemmove(), it
-      takes a count argument instead of a byte argument
-   -  The ./configure options -with-gnu-compilers and
-      -with-vendor-compilers are removed
-   -  The ./configure option --with-avx512-kernels defaults to true now
-      so the manually optimized AVX-512 kernels are used by default
-   -  The order ./configure tests compilers has changed so there may be
-      a different compiler selected if you do not provide them
-   -  Added --with-64-bit-blas-indices that will switch to 64 bit
-      indices when using MKL libraries for BLAS/LAPACK and build
-      OpenBLAS with this support
-   -  Changed PETSC_DEPRECATED() to PETSC_DEPRECATED_FUNCTION() and
-      PETSC_DEPRECATED_TYPEDEF() to match naming of
-      PETSC_DEPRECATED_ENUM() and PETSC_DEPRECATED_MACRO
-   -  -help now causes the printing of the current value and the newly
-      set value for PetscOptionsInt(), etc
-   -  PetscFunctionListPrintTypes() takes an additional final argument
-      after the current value, the set value
-   -  PetscCalloc*() now calls the system calloc() routine instead of
-      malloc() plus memzero()
-   -  -malloc is now marked as deprecated, use -malloc_debug instead
-   -  -malloc_log and -malloc_log_threshold are now -malloc_view and
-      -malloc_view_threshold
-   -  PetscMallocDebug() is now PetscMallocSetDebug()
-   -  PetscMallocDumpLog() is now PetscMallocView(), see also
-      PetscMallocViewSet()
-   -  PetscMallocSetDumpLogThreshold() and PetscMallocSetDumpLog() are
-      now PetscMallocViewSet()
-   -  With -malloc_test or -malloc_debug allocated memory is initialized
-      with NaN to detect use of uninitialized numerical arrays
-   -  PetscMallocSet() now takes three arguments instead of two
-   -  Moved PetscCUBLASGetHandle() to a separate header file
-      petscublas.h
-   -  Moved VecCUDA*-routines from petsccuda.h into petscvec.h. Removed
-      petsccuda.h
+-  PetscRoundReal() has been removed, since the math routine round()
+   is not supported on all systems: perhaps use PetscCeilReal() or
+   PetscFloorReal()<\li>
+-  The legacy and cmake compile systems (make all-legacy and
+   all-cmake) are removed
+-  make gnumake is now make libs
+-  PetscArraycmp() should be used instead of PetscMemcmp(), it takes
+   a count argument instead of a byte argument
+-  PetscArraycpy() should be used instead of PetscMemcpy(), it takes
+   a count argument instead of a byte argument
+-  PetscArrayzero() should be used instead of PetscMemzero(), it
+   takes a count argument instead of a byte argument
+-  PetscArraymove() should be used instead of PetscMemmove(), it
+   takes a count argument instead of a byte argument
+-  The ./configure options -with-gnu-compilers and
+   -with-vendor-compilers are removed
+-  The ./configure option --with-avx512-kernels defaults to true now
+   so the manually optimized AVX-512 kernels are used by default
+-  The order ./configure tests compilers has changed so there may be
+   a different compiler selected if you do not provide them
+-  Added --with-64-bit-blas-indices that will switch to 64 bit
+   indices when using MKL libraries for BLAS/LAPACK and build
+   OpenBLAS with this support
+-  Changed PETSC_DEPRECATED() to PETSC_DEPRECATED_FUNCTION() and
+   PETSC_DEPRECATED_TYPEDEF() to match naming of
+   PETSC_DEPRECATED_ENUM() and PETSC_DEPRECATED_MACRO
+-  -help now causes the printing of the current value and the newly
+   set value for PetscOptionsInt(), etc
+-  PetscFunctionListPrintTypes() takes an additional final argument
+   after the current value, the set value
+-  PetscCalloc*() now calls the system calloc() routine instead of
+   malloc() plus memzero()
+-  -malloc is now marked as deprecated, use -malloc_debug instead
+-  -malloc_log and -malloc_log_threshold are now -malloc_view and
+   -malloc_view_threshold
+-  PetscMallocDebug() is now PetscMallocSetDebug()
+-  PetscMallocDumpLog() is now PetscMallocView(), see also
+   PetscMallocViewSet()
+-  PetscMallocSetDumpLogThreshold() and PetscMallocSetDumpLog() are
+   now PetscMallocViewSet()
+-  With -malloc_test or -malloc_debug allocated memory is initialized
+   with NaN to detect use of uninitialized numerical arrays
+-  PetscMallocSet() now takes three arguments instead of two
+-  Moved PetscCUBLASGetHandle() to a separate header file
+   petscublas.h
+-  Moved VecCUDA*-routines from petsccuda.h into petscvec.h. Removed
+   petsccuda.h
 
-   .. rubric:: Configure/Build:
+.. rubric:: Configure/Build:
 
-   -  C++ dialect is now auto-detected (C++14 first and then C++11). One
-      can disable this check using --with-cxx-dialect=0, or force it to
-      only check for C++11 using --with-cxx-dialect=C++11
-   -  New option --download-hpddm to enable PCHPDDM and KSPHPDDM
+-  C++ dialect is now auto-detected (C++14 first and then C++11). One
+   can disable this check using --with-cxx-dialect=0, or force it to
+   only check for C++11 using --with-cxx-dialect=C++11
+-  New option --download-hpddm to enable PCHPDDM and KSPHPDDM
 
-   .. rubric:: IS:
+.. rubric:: IS:
 
-   .. rubric:: PetscDraw:
+.. rubric:: PetscDraw:
 
-   .. rubric:: PF:
+.. rubric:: PF:
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   -  VecCUDAGet/RestoreArrayReadWrite() changed to
-      VecCUDAGet/RestoreArray()
-   -  VecViennaCLGet/RestoreArrayReadWrite() changed to
-      VecViennaCLGet/RestoreArray()
-   -  Added VecGet/RestoreArray/ReadInPlace() to get array of a vector
-      where it is without copying from GPU to CPU.
+-  VecCUDAGet/RestoreArrayReadWrite() changed to
+   VecCUDAGet/RestoreArray()
+-  VecViennaCLGet/RestoreArrayReadWrite() changed to
+   VecViennaCLGet/RestoreArray()
+-  Added VecGet/RestoreArray/ReadInPlace() to get array of a vector
+   where it is without copying from GPU to CPU.
 
-   .. rubric:: PetscLayout:
+.. rubric:: PetscLayout:
 
-   -  Added PetscLayoutCreateFromSizes()
-   -  Added PetscLayoutCreateFromRanges()
-   -  Calling PetscLayoutSetUp() twice with different sizes is now
-      forbidden
+-  Added PetscLayoutCreateFromSizes()
+-  Added PetscLayoutCreateFromRanges()
+-  Calling PetscLayoutSetUp() twice with different sizes is now
+   forbidden
 
-   .. rubric:: PetscSection:
+.. rubric:: PetscSection:
 
-   .. rubric:: VecScatter & PetscSF:
+.. rubric:: VecScatter & PetscSF:
 
-   -  The default VecScatter implementation is changed to PetscSF. In
-      other words, the default VecScatter shares PetscSF's MPI
-      communication code. One can use -vecscatter_type mpi1 to go back
-      to the old implementation.
-   -  Added new InsertMode MAX_VALUES and MIN_VALUES support in
-      VecScatterBegin/End and VecGhostUpdateBegin/End.
-   -  PetscSFComputeMultiRootOriginalNumbering: add output argument with
-      the number of multiroots for convenience
-   -  Added an enum type PetscSFPattern for SF graph patterns. Valid
-      values include PETSCSF_PATTERN_ALLGATHER, PETSCSF_PATTERN_GATHER
-      and PETSCSF_PATTERN_ALLTOALL.
-   -  Added PetscSFSetGraphWithPattern() to set SF graphs with
-      predefined patterns.
-   -  Added PetscSFComposeInverse() to compose a new SF by putting the
-      inverse of an SF under the another SF.
-   -  Added MPI-3.0 neighborhood collectives support. One can use
-      command line option -sf_type neighbor to let SF use MPI-3.0
-      neighborhood collectives for communication instead of the default
-      MPI_Send/Recv.
-   -  PetscSF is now CUDA-aware. The rootdata, leafdata arguments passed
-      to SF routines can be either GPU pointers or CPU pointers. Use a
-      CUDA-aware MPI and option -use_gpu_aware_mpi to enable it.
-   -  VecScatter is also CUDA-aware. You can do VecScatter on CUDA
-      vectors without copying them from GPU to CPU. Again, you need a
-      CUDA-aware MPI and option -use_gpu_aware_mpi.
-   -  Removed PetscSFCreateFromZero. Instead, users should use
-      PetscSFCreate() to create an SF, and then set its graph with
-      PetscSFSetGraphWithPattern(..,PETSCSF_PATTERN_GATHER).
-   -  Renamed PetscSFGetRanks() to PetscSFGetRootRanks().
+-  The default VecScatter implementation is changed to PetscSF. In
+   other words, the default VecScatter shares PetscSF's MPI
+   communication code. One can use -vecscatter_type mpi1 to go back
+   to the old implementation.
+-  Added new InsertMode MAX_VALUES and MIN_VALUES support in
+   VecScatterBegin/End and VecGhostUpdateBegin/End.
+-  PetscSFComputeMultiRootOriginalNumbering: add output argument with
+   the number of multiroots for convenience
+-  Added an enum type PetscSFPattern for SF graph patterns. Valid
+   values include PETSCSF_PATTERN_ALLGATHER, PETSCSF_PATTERN_GATHER
+   and PETSCSF_PATTERN_ALLTOALL.
+-  Added PetscSFSetGraphWithPattern() to set SF graphs with
+   predefined patterns.
+-  Added PetscSFComposeInverse() to compose a new SF by putting the
+   inverse of an SF under the another SF.
+-  Added MPI-3.0 neighborhood collectives support. One can use
+   command line option -sf_type neighbor to let SF use MPI-3.0
+   neighborhood collectives for communication instead of the default
+   MPI_Send/Recv.
+-  PetscSF is now CUDA-aware. The rootdata, leafdata arguments passed
+   to SF routines can be either GPU pointers or CPU pointers. Use a
+   CUDA-aware MPI and option -use_gpu_aware_mpi to enable it.
+-  VecScatter is also CUDA-aware. You can do VecScatter on CUDA
+   vectors without copying them from GPU to CPU. Again, you need a
+   CUDA-aware MPI and option -use_gpu_aware_mpi.
+-  Removed PetscSFCreateFromZero. Instead, users should use
+   PetscSFCreate() to create an SF, and then set its graph with
+   PetscSFSetGraphWithPattern(..,PETSCSF_PATTERN_GATHER).
+-  Renamed PetscSFGetRanks() to PetscSFGetRootRanks().
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  MatShift(Mat,0); will no longer silently insure there are no
-      missing diagonal entries. (Previously it would put 0 into any
-      diagonal entry that was missing)
-   -  Renamed MatComputeExplicitOperator() into MatComputeOperator() and
-      MatComputeExplicitOperatorTranpose() into
-      MatComputeOperatorTranspose(). Added extra argument to select the
-      desired matrix type
-   -  MatLoad() now supports loading dense matrices from HDF5/MAT files.
-   -  Added new Mat type, MATKAIJ, for matrices that can be expressed in
-      a particular Kronecker (tensor) product form.
-   -  Added MatCompositeSetScalings() to set separate scaling factors
-      for component matrices.
-   -  Added a Boolean option -mat_composite_merge_mvctx to merge Mvctx
-      of component matrices to optimize communication in MatMult() for
-      ADDITIVE matrices. Default is true.
-   -  Added MATSEQDENSECUDA class to use GPUs for dense linear algebra.
+-  MatShift(Mat,0); will no longer silently insure there are no
+   missing diagonal entries. (Previously it would put 0 into any
+   diagonal entry that was missing)
+-  Renamed MatComputeExplicitOperator() into MatComputeOperator() and
+   MatComputeExplicitOperatorTranpose() into
+   MatComputeOperatorTranspose(). Added extra argument to select the
+   desired matrix type
+-  MatLoad() now supports loading dense matrices from HDF5/MAT files.
+-  Added new Mat type, MATKAIJ, for matrices that can be expressed in
+   a particular Kronecker (tensor) product form.
+-  Added MatCompositeSetScalings() to set separate scaling factors
+   for component matrices.
+-  Added a Boolean option -mat_composite_merge_mvctx to merge Mvctx
+   of component matrices to optimize communication in MatMult() for
+   ADDITIVE matrices. Default is true.
+-  Added MATSEQDENSECUDA class to use GPUs for dense linear algebra.
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   -  Renamed PCComputeExplicitOperator() into PCComputeOperator().
-      Added extra argument to select the desired matrix type
-   -  Added support for PCCHOLESKY with MATSOLVERMUMPS and SBAIJ
-      matrices with bs greater than 1
-   -  Added support for PCLU with MATSOLVERMKL_PARDISO (resp.
-      MATSOLVERMKL_CPARDISO) and SEQBAIJ (resp. MPIBAIJ) matrices
-   -  Added support for PCCHOLESKY with MATSOLVERMKL_PARDISO (resp.
-      MATSOLVERMKL_CPARDISO) and SEQSBAIJ (resp. MPISBAIJ) matrices
-   -  Added new preconditioner PCHPDDM, cf.
-      src/ksp/ksp/examples/tutorials/ex71.c or
-      src/snes/examples/tutorials/ex56.c
+-  Renamed PCComputeExplicitOperator() into PCComputeOperator().
+   Added extra argument to select the desired matrix type
+-  Added support for PCCHOLESKY with MATSOLVERMUMPS and SBAIJ
+   matrices with bs greater than 1
+-  Added support for PCLU with MATSOLVERMKL_PARDISO (resp.
+   MATSOLVERMKL_CPARDISO) and SEQBAIJ (resp. MPIBAIJ) matrices
+-  Added support for PCCHOLESKY with MATSOLVERMKL_PARDISO (resp.
+   MATSOLVERMKL_CPARDISO) and SEQSBAIJ (resp. MPISBAIJ) matrices
+-  Added new preconditioner PCHPDDM, cf.
+   src/ksp/ksp/examples/tutorials/ex71.c or
+   src/snes/examples/tutorials/ex56.c
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   -  Renamed KSPComputeExplicitOperator() into KSPComputeOperator().
-      Added extra argument to select the desired matrix type
-   -  KSPCGGLTRGetMinEig(KSP,PetscReal*) ->
-      KSPGLTRGetMinEig(KSP,PetscReal*)
-   -  KSPCGGLTRGetLambda(KSP,PetscReal*) ->
-      KSPGLTRGetLambda(KSP,PetscReal*)
-   -  KSPCGNASH, KSPCGSTCG, KSPCGGLTR -> KSPNASH, KSPSTCG, KSPGLTR
-   -  Added new Krylov solver KSPHPDDM, cf.
-      src/ksp/ksp/examples/tutorials/ex75.c or
-      src/ksp/ksp/examples/tutorials/ex9.c
+-  Renamed KSPComputeExplicitOperator() into KSPComputeOperator().
+   Added extra argument to select the desired matrix type
+-  KSPCGGLTRGetMinEig(KSP,PetscReal*) ->
+   KSPGLTRGetMinEig(KSP,PetscReal*)
+-  KSPCGGLTRGetLambda(KSP,PetscReal*) ->
+   KSPGLTRGetLambda(KSP,PetscReal*)
+-  KSPCGNASH, KSPCGSTCG, KSPCGGLTR -> KSPNASH, KSPSTCG, KSPGLTR
+-  Added new Krylov solver KSPHPDDM, cf.
+   src/ksp/ksp/examples/tutorials/ex75.c or
+   src/ksp/ksp/examples/tutorials/ex9.c
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   -  Changed SNES_CONVERGED_TR_DELTA to SNES_DIVERGED_TR_DELTA with a
-      negative value to indicate diverged, unclear why it was ever
-      positive since tiny trust region would indicate trouble, not
-      converged
+-  Changed SNES_CONVERGED_TR_DELTA to SNES_DIVERGED_TR_DELTA with a
+   negative value to indicate diverged, unclear why it was ever
+   positive since tiny trust region would indicate trouble, not
+   converged
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   -  -snes_mf no longer turns the preconditioner to none; to use it
-      generally you will also need -pc_type none
+-  -snes_mf no longer turns the preconditioner to none; to use it
+   generally you will also need -pc_type none
 
-   .. rubric:: SNESLineSearch:
+.. rubric:: SNESLineSearch:
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   -  Added tangent linear models for Runge-Kutta methods
-   -  Added second-order adjoint solvers based on Runge-Kutta methods
-      and Theta methods
-   -  Improved the usage of first-order adjoint solvers in an
-      optimization context. (The TS object can be reused in the
-      optimization loop)
-   -  Changed the APIs for integrand evaluations and corresponding
-      derivative evaluations. TSSetCostIntegrand() is deprecated.
-      (Instead a quadrature TS is used to handle the callbacks)
-   -  TSTrajectory creates a unique name for folders that store the
-      checkpoint data. Users can rerun adjoint codes without worrying
-      about the folder names, and run multiple codes under the same
-      directory.
-   -  Added support for using finite-differencing (and coloring) to
-      approximate the Jacobians needed by the adjoint solvers.
-      -snes_fd_color can be used for both implicit and explicit methods.
+-  Added tangent linear models for Runge-Kutta methods
+-  Added second-order adjoint solvers based on Runge-Kutta methods
+   and Theta methods
+-  Improved the usage of first-order adjoint solvers in an
+   optimization context. (The TS object can be reused in the
+   optimization loop)
+-  Changed the APIs for integrand evaluations and corresponding
+   derivative evaluations. TSSetCostIntegrand() is deprecated.
+   (Instead a quadrature TS is used to handle the callbacks)
+-  TSTrajectory creates a unique name for folders that store the
+   checkpoint data. Users can rerun adjoint codes without worrying
+   about the folder names, and run multiple codes under the same
+   directory.
+-  Added support for using finite-differencing (and coloring) to
+   approximate the Jacobians needed by the adjoint solvers.
+   -snes_fd_color can be used for both implicit and explicit methods.
 
-   .. rubric:: DM/DA:
+.. rubric:: DM/DA:
 
-   -  Add DMGetLocalSection() to be used in preference to
-      DMGetSection().
-   -  Add DMSetLocalSection() to be used in preference to
-      DMSetSection().
-   -  DMGetDefaultSF() replaced with DMGetSectionSF().
-   -  DMSetDefaultSF() replaced with DMSetSectionSF().
-   -  DMCreateDefaultSF() replaced with DMCreateSectionSF().
-   -  DMAddLabel() now increments the reference count of the DMLabel.
-   -  DMRemoveLabel() now destroys the DMLabel if the output argument is
-      NULL.
-   -  Add DMRemoveLabelBySelf() which looks up the DMLabel by itself,
-      removes from DM and destroys.
+-  Add DMGetLocalSection() to be used in preference to
+   DMGetSection().
+-  Add DMSetLocalSection() to be used in preference to
+   DMSetSection().
+-  DMGetDefaultSF() replaced with DMGetSectionSF().
+-  DMSetDefaultSF() replaced with DMSetSectionSF().
+-  DMCreateDefaultSF() replaced with DMCreateSectionSF().
+-  DMAddLabel() now increments the reference count of the DMLabel.
+-  DMRemoveLabel() now destroys the DMLabel if the output argument is
+   NULL.
+-  Add DMRemoveLabelBySelf() which looks up the DMLabel by itself,
+   removes from DM and destroys.
 
-   .. rubric:: DMPlex:
+.. rubric:: DMPlex:
 
-   -  Rename DMPlexCreateSpectralClosurePermutation() to
-      DMPlexSetClosurePermutationTensor()
-   -  Add DMPlexFindVertices() for vertex coordinates -> DAG point
-      lookup
-   -  Add DMPlexGetOverlap() to get the partition overlap
+-  Rename DMPlexCreateSpectralClosurePermutation() to
+   DMPlexSetClosurePermutationTensor()
+-  Add DMPlexFindVertices() for vertex coordinates -> DAG point
+   lookup
+-  Add DMPlexGetOverlap() to get the partition overlap
 
-   .. rubric:: DMNetwork:
+.. rubric:: DMNetwork:
 
-   -  Changed prototypes for DMNetworkSetSizes()
+-  Changed prototypes for DMNetworkSetSizes()
 
-   .. rubric:: PetscViewer:
+.. rubric:: PetscViewer:
 
-   -  Removed PetscViewerHDF5{Get,Set}AIJNames() which are likely not
-      really needed
-   -  PetscViewerHDF5SetCollective() and -viewer_hdf5_collective can be
-      used to switch between independent and collective transfer mode.
-      Defaults now to false (independent).
+-  Removed PetscViewerHDF5{Get,Set}AIJNames() which are likely not
+   really needed
+-  PetscViewerHDF5SetCollective() and -viewer_hdf5_collective can be
+   used to switch between independent and collective transfer mode.
+   Defaults now to false (independent).
 
-   .. rubric:: SYS:
+.. rubric:: SYS:
 
-   -  Added PetscCheckDupsInt() to check if a PetscInt array has dups.
-   -  Added an argument to PetscBinaryRead() and
-      PetscBinarySynchronizedRead() to return the number of items read.
+-  Added PetscCheckDupsInt() to check if a PetscInt array has dups.
+-  Added an argument to PetscBinaryRead() and
+   PetscBinarySynchronizedRead() to return the number of items read.
 
-   .. rubric:: AO:
+.. rubric:: AO:
 
-   .. rubric:: Sieve:
+.. rubric:: Sieve:
 
-   .. rubric:: Fortran:
+.. rubric:: Fortran:

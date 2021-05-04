@@ -3,155 +3,155 @@ Changes: 3.10
 =============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  Removed --with-errorchecking configure option.
-   -  Added new command line option -viewfromoptions to disable
-      ``XXXViewFromOptions()`` calls.
+-  Removed --with-errorchecking configure option.
+-  Added new command line option -viewfromoptions to disable
+   ``XXXViewFromOptions()`` calls.
 
-   .. rubric:: Configure/Build:
+.. rubric:: Configure/Build:
 
-   -  Removed --with-viewfromoptions configure option in favor of the
-      new command line option -viewfromoptions.
+-  Removed --with-viewfromoptions configure option in favor of the
+   new command line option -viewfromoptions.
 
-   -  Following options are renamed to have more consistant names:
+-  Following options are renamed to have more consistant names:
 
-      ::
+   ::
 
-                   --with-packages-dir          -> --with-packages-download-dir
-                   --with-external-packages-dir -> --with-packages-build-dir
-                   --package-dirs               -> --with-packages-search-path
-                   --search-dirs                -> --with-executables-search-path
+                --with-packages-dir          -> --with-packages-download-dir
+                --with-external-packages-dir -> --with-packages-build-dir
+                --package-dirs               -> --with-packages-search-path
+                --search-dirs                -> --with-executables-search-path
 
-   .. rubric:: IS:
+.. rubric:: IS:
 
-   .. rubric:: PetscDraw:
+.. rubric:: PetscDraw:
 
-   .. rubric:: PF:
+.. rubric:: PF:
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   .. rubric:: VecScatter:
+.. rubric:: VecScatter:
 
-   .. rubric:: PetscSection:
+.. rubric:: PetscSection:
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  MatNullSpaceTest() now respects the options prefix of the provided
-      Mat.
-   -  Added MatMatTransposeSolve() to MUMPS interface.
-   -  Added -mat_mumps_use_omp_threads [m] option to better support
-      OpenMP in MUMPS.
-   -  Added MatPartitioningViewFromOptions().
-   -  Added MatPartitioningApplyND() to compute a nested dissection
-      ordering of a matrix.
-   -  Deprecated MatISGetMPIXAIJ() in favour of MatConvert().
-   -  Added new matrix types for limited-memory variable-metric
-      (MATLMVM) approximations of Jacobians.
-   -  Added MATAIJSELL, a sub-type of AIJ that uses SELL format
-      internally for SELL-optimized operations.
+-  MatNullSpaceTest() now respects the options prefix of the provided
+   Mat.
+-  Added MatMatTransposeSolve() to MUMPS interface.
+-  Added -mat_mumps_use_omp_threads [m] option to better support
+   OpenMP in MUMPS.
+-  Added MatPartitioningViewFromOptions().
+-  Added MatPartitioningApplyND() to compute a nested dissection
+   ordering of a matrix.
+-  Deprecated MatISGetMPIXAIJ() in favour of MatConvert().
+-  Added new matrix types for limited-memory variable-metric
+   (MATLMVM) approximations of Jacobians.
+-  Added MATAIJSELL, a sub-type of AIJ that uses SELL format
+   internally for SELL-optimized operations.
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   -  PCKSPGetKSP() now raises an error if called on a PC which is not
-      of type PCKSP
-   -  Added PCKSPSetKSP()
-   -  Added new PC based on the new LMVM matrices.
+-  PCKSPGetKSP() now raises an error if called on a PC which is not
+   of type PCKSP
+-  Added PCKSPSetKSP()
+-  Added new PC based on the new LMVM matrices.
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   -  The KSP viewing options have changed. Now
+-  The KSP viewing options have changed. Now
 
-      -  -ksp_compute_eigenvalues becomes -ksp_view_eigenvalues ascii
-      -  -ksp_plot_eigenvalues becomes -ksp_view_eigenvalues draw
-      -  -ksp_plot_eigencontours becomes -ksp_view_eigenvalues
-         draw::draw_contour
-      -  -ksp_compute_eigenvalues_explicitly becomes
-         -ksp_view_eigenvalues_explicit ascii
-      -  -ksp_plot_eigenvalues_explicitly becomes
-         -ksp_view_eigenvalues_explicit draw
-      -  -ksp_compute_singularvalues becomes -ksp_view_singularvalues
-         ascii
-      -  -ksp_final_residual becomes -ksp_view_final_residual
+   -  -ksp_compute_eigenvalues becomes -ksp_view_eigenvalues ascii
+   -  -ksp_plot_eigenvalues becomes -ksp_view_eigenvalues draw
+   -  -ksp_plot_eigencontours becomes -ksp_view_eigenvalues
+      draw::draw_contour
+   -  -ksp_compute_eigenvalues_explicitly becomes
+      -ksp_view_eigenvalues_explicit ascii
+   -  -ksp_plot_eigenvalues_explicitly becomes
+      -ksp_view_eigenvalues_explicit draw
+   -  -ksp_compute_singularvalues becomes -ksp_view_singularvalues
+      ascii
+   -  -ksp_final_residual becomes -ksp_view_final_residual
 
-   -  ``KSPLSQR``
+-  ``KSPLSQR``
 
-      -  Computes now an estimate of the operator's norm in the same way
-         as Saunders and MATLAB, and uses it in the type-specific
-         stopping criterion ``KSPLSQRConvergedDefault()``; this now
-         gives the same number of iterations as MATLAB's ``lsqr()``.
-      -  Added ``-ksp_lsqr_exact_mat_norm`` and
-         ``KSPLSQRSetExactMatNorm()`` to optionally compute and use the
-         exact Frobenius norm instead of the estimate.
-      -  ``KSPLSQRMonitorDefault()`` and ``-ksp_lsqr_monitor`` now
-         additionally print the (estimate of) the operator's norm.
-      -  Allow setting ``-ksp_convergence_test lsqr`` (it's a default
-         for ``KSPLSQR``, though).
-      -  ``KSPLSQRSetStandardErrorVec()`` is replaced by
-         ``KSPLSQRSetComputeStandardErrorVec()`` which now specifies
-         whether standard error vector should be computed instead of
-         setting the vector;
-      -  likewise, option ``-ksp_lsqr_set_standard_error`` is replaced
-         by ``-ksp_lsqr_compute_standard_error``.
-      -  Renamed ``KSPLSQRGetArnorm()`` to ``KSPLSQRGetNorms()`` and
-         removed its ``rhs_norm`` argument.
-      -  Renamed ``KSPLSQRDefaultConverged()`` to
-         ``KSPLSQRConvergedDefault()`` merged with
-         ``KSPConvergedLSQR()``.
+   -  Computes now an estimate of the operator's norm in the same way
+      as Saunders and MATLAB, and uses it in the type-specific
+      stopping criterion ``KSPLSQRConvergedDefault()``; this now
+      gives the same number of iterations as MATLAB's ``lsqr()``.
+   -  Added ``-ksp_lsqr_exact_mat_norm`` and
+      ``KSPLSQRSetExactMatNorm()`` to optionally compute and use the
+      exact Frobenius norm instead of the estimate.
+   -  ``KSPLSQRMonitorDefault()`` and ``-ksp_lsqr_monitor`` now
+      additionally print the (estimate of) the operator's norm.
+   -  Allow setting ``-ksp_convergence_test lsqr`` (it's a default
+      for ``KSPLSQR``, though).
+   -  ``KSPLSQRSetStandardErrorVec()`` is replaced by
+      ``KSPLSQRSetComputeStandardErrorVec()`` which now specifies
+      whether standard error vector should be computed instead of
+      setting the vector;
+   -  likewise, option ``-ksp_lsqr_set_standard_error`` is replaced
+      by ``-ksp_lsqr_compute_standard_error``.
+   -  Renamed ``KSPLSQRGetArnorm()`` to ``KSPLSQRGetNorms()`` and
+      removed its ``rhs_norm`` argument.
+   -  Renamed ``KSPLSQRDefaultConverged()`` to
+      ``KSPLSQRConvergedDefault()`` merged with
+      ``KSPConvergedLSQR()``.
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   -  SNESSetTolerances() and -snes_max_funcs now accept -1 to indicate
-      unlimited number of function evaluations.
+-  SNESSetTolerances() and -snes_max_funcs now accept -1 to indicate
+   unlimited number of function evaluations.
 
-   .. rubric:: SNESLineSearch:
+.. rubric:: SNESLineSearch:
 
-   .. rubric:: TAO:
+.. rubric:: TAO:
 
-   -  Added bound-constrained Newton-Krylov methods (BNLS, BNTR, BNTL).
-   -  All quasi-Newton methods updated to use the new LMVM Mat objects.
-   -  Added a bound-constrained quasi-Newton line search (BQNLS) method
-      that re-uses BNLS infrastructure to replace BLMVM on next release.
-   -  Bound-constrained conjugate gradient method expanded with new CG
-      update types and nonlinear preconditioning.
-   -  Removed ``-tao_type test``.
-   -  Gradient testing can now be accessed with the options
-      ``-tao_test_gradient``, ``-tao_test_gradient_view``, and Hessian
-      testing can be done with ``-tao_test_hessian``,
-      ``-tao_test_hessian_view`` (also works for matrix-free Hessian).
+-  Added bound-constrained Newton-Krylov methods (BNLS, BNTR, BNTL).
+-  All quasi-Newton methods updated to use the new LMVM Mat objects.
+-  Added a bound-constrained quasi-Newton line search (BQNLS) method
+   that re-uses BNLS infrastructure to replace BLMVM on next release.
+-  Bound-constrained conjugate gradient method expanded with new CG
+   update types and nonlinear preconditioning.
+-  Removed ``-tao_type test``.
+-  Gradient testing can now be accessed with the options
+   ``-tao_test_gradient``, ``-tao_test_gradient_view``, and Hessian
+   testing can be done with ``-tao_test_hessian``,
+   ``-tao_test_hessian_view`` (also works for matrix-free Hessian).
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   -  Added symplectic time integrators for separable Hamiltonian
-      systems (-ts_type basicsymplectic).
+-  Added symplectic time integrators for separable Hamiltonian
+   systems (-ts_type basicsymplectic).
 
-   .. rubric:: DM/DA:
+.. rubric:: DM/DA:
 
-   -  Renamed ``DMDAGetReducedDMDA()`` to
-      ``DMDACreateCompatibleDMDA()``.
-   -  Added DMGetCompatibility() and implementation for DMDA
+-  Renamed ``DMDAGetReducedDMDA()`` to
+   ``DMDACreateCompatibleDMDA()``.
+-  Added DMGetCompatibility() and implementation for DMDA
 
-   .. rubric:: DMPlex:
+.. rubric:: DMPlex:
 
-   -  Added an interface DM and boundary label to
-      DMPlexCreateHybridMesh()
-   -  More refined control of ``DMView()`` when
-      ``PetscViewerType=PETSCVIEWERHDF5``. ``PetscViewerFormat`` can now
-      be one of
-      ``{PETSC_VIEWER_HDF5_VIZ, PETSC_VIEWER_HDF5_XDMF, PETSC_VIEWER_HDF5_PETSC, PETSC_VIEWER_DEFAULT}``.
-   -  Parallel mesh load (i.e. mesh distributed right from beginning)
-      with ``DMLoad()``, ``PetscViewerType=PETSCVIEWERHDF5`` and
-      ``PetscViewerFormat=PETSC_VIEWER_HDF5_XDMF``, or
-      ``DMPlexCreateFromFile()`` and ``-dm_plex_create_from_hdf5_xdmf``.
+-  Added an interface DM and boundary label to
+   DMPlexCreateHybridMesh()
+-  More refined control of ``DMView()`` when
+   ``PetscViewerType=PETSCVIEWERHDF5``. ``PetscViewerFormat`` can now
+   be one of
+   ``{PETSC_VIEWER_HDF5_VIZ, PETSC_VIEWER_HDF5_XDMF, PETSC_VIEWER_HDF5_PETSC, PETSC_VIEWER_DEFAULT}``.
+-  Parallel mesh load (i.e. mesh distributed right from beginning)
+   with ``DMLoad()``, ``PetscViewerType=PETSCVIEWERHDF5`` and
+   ``PetscViewerFormat=PETSC_VIEWER_HDF5_XDMF``, or
+   ``DMPlexCreateFromFile()`` and ``-dm_plex_create_from_hdf5_xdmf``.
 
-   .. rubric:: PetscViewer:
+.. rubric:: PetscViewer:
 
-   Added argument to ``PetscViewerVTKAddField()`` to allow skipping of
-   DM check as fields are added
-   .. rubric:: SYS:
+Added argument to ``PetscViewerVTKAddField()`` to allow skipping of
+DM check as fields are added
+.. rubric:: SYS:
 
-   .. rubric:: AO:
+.. rubric:: AO:
 
-   .. rubric:: Sieve:
+.. rubric:: Sieve:
 
-   .. rubric:: Fortran:
+.. rubric:: Fortran:
