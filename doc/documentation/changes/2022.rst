@@ -3,163 +3,163 @@ Changes: 2.0.22
 ===============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  The Fortran90-specific routines such as ``VecGetArrayF90()`` now
-      work with the IBM Fortran compiler, the SGI Fortran 90 compiler,
-      and the Cray T3E Fortran compiler.
-   -  The third argument for the Fortran versions of the routines
-      ``VecGetArray()/VecRestoreArray(),``
-      ``ISGetIndices()/ISRestoreIndices(),             MatGetArray()/MatRestoreArray()``
-      and ``DAGetGlobalIndices()`` has been changed from ``integer`` to
-      ``PetscOffset``. See src/snes/examples/tutorials/ex5f.F for
-      example usage.
-   -  Changed the location of the manual pages from docs/www/www.html
-      and docs/www to ``docs/manualpages/manualpages.html`` and
-      ``docs/manualpages``.
-   -  The location of the mpiuni include files (used in the base.site
-      file when not compiling with an MPI) has moved from ``src/mpiuni``
-      to ``src/sys/src/mpiuni``
-   -  Added the option ``-log_summary_exclude <vec,mat,sles,snes>`` to
-      limit the information printed in the summary table
-   -  Added the option ``-log_info_exclude <vec,mat,sles,snes>``
-   -  Changed the calling sequences of
-      ``PetscGetTime(),             PetscGetCPUTime(), PetscGetFlops()``
-      to return error codes like all other PETSc functions.
-   -  Changed the internal structure of the PETSc objects. This will not
-      effect most users but makes PETSc more extensible for the future.
-   -  Removed the PETSc object child support and replaced it with
+-  The Fortran90-specific routines such as ``VecGetArrayF90()`` now
+   work with the IBM Fortran compiler, the SGI Fortran 90 compiler,
+   and the Cray T3E Fortran compiler.
+-  The third argument for the Fortran versions of the routines
+   ``VecGetArray()/VecRestoreArray(),``
+   ``ISGetIndices()/ISRestoreIndices(),             MatGetArray()/MatRestoreArray()``
+   and ``DAGetGlobalIndices()`` has been changed from ``integer`` to
+   ``PetscOffset``. See src/snes/examples/tutorials/ex5f.F for
+   example usage.
+-  Changed the location of the manual pages from docs/www/www.html
+   and docs/www to ``docs/manualpages/manualpages.html`` and
+   ``docs/manualpages``.
+-  The location of the mpiuni include files (used in the base.site
+   file when not compiling with an MPI) has moved from ``src/mpiuni``
+   to ``src/sys/src/mpiuni``
+-  Added the option ``-log_summary_exclude <vec,mat,sles,snes>`` to
+   limit the information printed in the summary table
+-  Added the option ``-log_info_exclude <vec,mat,sles,snes>``
+-  Changed the calling sequences of
+   ``PetscGetTime(),             PetscGetCPUTime(), PetscGetFlops()``
+   to return error codes like all other PETSc functions.
+-  Changed the internal structure of the PETSc objects. This will not
+   effect most users but makes PETSc more extensible for the future.
+-  Removed the PETSc object child support and replaced it with
 
-      -  ``PetscObjectCompose(PetscObject,char *name,PetscObject);``
-      -  ``PetscObjectQuery(PetscObject,char *name,PetscObject *);``
-      -  ``PetscObjectComposeFunction(PetscObject,char *name, void *);``
-      -  ``PetscObjectQueryFunction(PetscObject,char *name,void **);``
+   -  ``PetscObjectCompose(PetscObject,char *name,PetscObject);``
+   -  ``PetscObjectQuery(PetscObject,char *name,PetscObject *);``
+   -  ``PetscObjectComposeFunction(PetscObject,char *name, void *);``
+   -  ``PetscObjectQueryFunction(PetscObject,char *name,void **);``
 
-      These allow the user to attach objects and functions to any PETSc
-      object.
-   -  Added a feeble example that demonstrates how to manage
-      partitioning a grid in parallel in
-      ``src/mat/examples/tutorials/ex2.c``
-   -  The build command 'make all' in ${PETSC_DIR} will build the PETSc
-      libraries, including the fortran interface.
+   These allow the user to attach objects and functions to any PETSc
+   object.
+-  Added a feeble example that demonstrates how to manage
+   partitioning a grid in parallel in
+   ``src/mat/examples/tutorials/ex2.c``
+-  The build command 'make all' in ${PETSC_DIR} will build the PETSc
+   libraries, including the fortran interface.
 
-   .. rubric:: AO (Application Orderings):
+.. rubric:: AO (Application Orderings):
 
-   .. rubric:: TS (Timestepping Solvers):
+.. rubric:: TS (Timestepping Solvers):
 
-   -  The calling sequence of ``TSSetType()`` has changed; see the
-      manual page.
-   -  ``TSType`` is now a string, rather than enum type
+-  The calling sequence of ``TSSetType()`` has changed; see the
+   manual page.
+-  ``TSType`` is now a string, rather than enum type
 
-   .. rubric:: SNES (Nonlinear Solvers):
+.. rubric:: SNES (Nonlinear Solvers):
 
-   -  The calling sequence of ``SNESSetType()`` has changed; see the
-      manual page.
-   -  ``SNESType`` is now a string, rather than enum type
+-  The calling sequence of ``SNESSetType()`` has changed; see the
+   manual page.
+-  ``SNESType`` is now a string, rather than enum type
 
-   .. rubric:: SLES (Linear Solvers):
+.. rubric:: SLES (Linear Solvers):
 
-   -  See PC and KSP
+-  See PC and KSP
 
-   .. rubric:: KSP (Krylov Subspace Methods):
+.. rubric:: KSP (Krylov Subspace Methods):
 
-   -  The calling sequence of ``KSPSetType()`` has changed; see the
-      manual page.
-   -  ``KSPType`` is now a string, rather than enum type.
+-  The calling sequence of ``KSPSetType()`` has changed; see the
+   manual page.
+-  ``KSPType`` is now a string, rather than enum type.
 
-   .. rubric:: PC (Preconditioners):
+.. rubric:: PC (Preconditioners):
 
-   -  Added two new PC classes, ``PCSLES`` and ``PCCOMPOSITE`` that
-      allow use of any ``SLES`` object as a preconditioner and enable
-      combining several preconditioners.
-   -  The calling sequence of ``PCSetType()`` has changed; see the
-      manual page.
-   -  ``PCType`` is now a string, rather than enum type.
+-  Added two new PC classes, ``PCSLES`` and ``PCCOMPOSITE`` that
+   allow use of any ``SLES`` object as a preconditioner and enable
+   combining several preconditioners.
+-  The calling sequence of ``PCSetType()`` has changed; see the
+   manual page.
+-  ``PCType`` is now a string, rather than enum type.
 
-   .. rubric:: MAT (Matrices):
+.. rubric:: MAT (Matrices):
 
-   -  Added support for partitioning using the ParMETIS parallel
-      partitioning package, see the manual page for
-      ``PartitioningCreate()``
-   -  Added ``MatGetColumnVector()``
-   -  Added argument column size to ``MatGetSubMatrix()``
-   -  Changed the memory allocation algorithm in
-      ``MatLUFactorSymbolic()`` and ``MatILUFactorSymbolic()`` based on
-      a suggestion by David Hysom of ODU.
-   -  The third argument for the Fortran version of the routines
-      ``MatGetArray()/MatRestoreArray()`` has been changed from
-      ``integer`` to ``PetscOffset``.
+-  Added support for partitioning using the ParMETIS parallel
+   partitioning package, see the manual page for
+   ``PartitioningCreate()``
+-  Added ``MatGetColumnVector()``
+-  Added argument column size to ``MatGetSubMatrix()``
+-  Changed the memory allocation algorithm in
+   ``MatLUFactorSymbolic()`` and ``MatILUFactorSymbolic()`` based on
+   a suggestion by David Hysom of ODU.
+-  The third argument for the Fortran version of the routines
+   ``MatGetArray()/MatRestoreArray()`` has been changed from
+   ``integer`` to ``PetscOffset``.
 
-   .. rubric:: DA (Distributed Arrays):
+.. rubric:: DA (Distributed Arrays):
 
-   -  Changed ``DAGetDistributedVector()`` and ``DAGetLocalVector()`` to
-      ``DACreateGlobalVector()`` and ``DACreateLocalVector()``. You
-      should destroy these vectors with a usual call to
-      ``VecDestroy()``.
-   -  The third argument for the Fortran version of the routine
-      ``DAGetGlobalIndices()`` has been changed from ``integer`` to
-      ``PetscOffset``.
+-  Changed ``DAGetDistributedVector()`` and ``DAGetLocalVector()`` to
+   ``DACreateGlobalVector()`` and ``DACreateLocalVector()``. You
+   should destroy these vectors with a usual call to
+   ``VecDestroy()``.
+-  The third argument for the Fortran version of the routine
+   ``DAGetGlobalIndices()`` has been changed from ``integer`` to
+   ``PetscOffset``.
 
-   .. rubric:: VEC (Vectors):
+.. rubric:: VEC (Vectors):
 
-   -  Added
-      ``VecSetBlockSize(), VecSetValuesBlocked(),             VecSetValuesBlockedLocal(),             VecSetLocalToGlobalMappingBlocked()``
-   -  Added\ ``VecCreatedShared(),`` which creates a parallel vector in
-      shared memory on the SGI machines
-   -  Changed ``VEC_IGNORE_OFF_PROCESSOR_ENTRIES`` to
-      ``VEC_IGNORE_OFF_PROC_ENTRIES``
-   -  The third argument for the Fortran versions of the routines
-      ``VecGetArray()/VecRestoreArray(),`` has been changed from
-      ``integer`` to ``PetscOffset``. See
-      src/snes/examples/tutorials/ex5f.F for example usage.
-   -  ``VecGetArray(), VecRestoreArray()`` now work from Fortran on all
-      machines, finally after 3 long years!
-   -  Changed the calling sequence of ``VecCreate()``, now takes both
-      local and global size, see the manual page.
+-  Added
+   ``VecSetBlockSize(), VecSetValuesBlocked(),             VecSetValuesBlockedLocal(),             VecSetLocalToGlobalMappingBlocked()``
+-  Added\ ``VecCreatedShared(),`` which creates a parallel vector in
+   shared memory on the SGI machines
+-  Changed ``VEC_IGNORE_OFF_PROCESSOR_ENTRIES`` to
+   ``VEC_IGNORE_OFF_PROC_ENTRIES``
+-  The third argument for the Fortran versions of the routines
+   ``VecGetArray()/VecRestoreArray(),`` has been changed from
+   ``integer`` to ``PetscOffset``. See
+   src/snes/examples/tutorials/ex5f.F for example usage.
+-  ``VecGetArray(), VecRestoreArray()`` now work from Fortran on all
+   machines, finally after 3 long years!
+-  Changed the calling sequence of ``VecCreate()``, now takes both
+   local and global size, see the manual page.
 
-   .. rubric:: IS (Index Sets):
+.. rubric:: IS (Index Sets):
 
-   -  The third argument for the Fortran versions of the routines
-      ``ISGetIndices()/ISRestoreIndices()`` has been changed from
-      ``integer`` to ``PetscOffset``.
+-  The third argument for the Fortran versions of the routines
+   ``ISGetIndices()/ISRestoreIndices()`` has been changed from
+   ``integer`` to ``PetscOffset``.
 
-   .. rubric:: Draw (Graphics):
+.. rubric:: Draw (Graphics):
 
-   .. rubric:: Viewers:
+.. rubric:: Viewers:
 
-   .. rubric:: System:
+.. rubric:: System:
 
-   .. rubric:: Error Handling:
+.. rubric:: Error Handling:
 
-   .. rubric:: Event Logging:
+.. rubric:: Event Logging:
 
-   .. rubric:: Fortran Interface:
+.. rubric:: Fortran Interface:
 
-   -  ``PETSC_NULL`` has been replaced with ``PETSC_NULL_INTEGER``,
-      ``PETSC_NULL_SCALAR``, ``PETSC_NULL_DOUBLE`` or
-      ``PETSC_NULL_CHARACTER`` depending on the context for usage. If
-      the function expects an integer, a scalar (double or complex
-      depending if you compile with BOPT=*_complex), a double precision
-      array, or a string.
-   -  The Fortran include files are now located in the directory
-      "include/finclude/*.", rather than "include/FINCLUDE/*.h". The
-      include files that used to be in "include/finclude/*.h" (not
-      recommended) are now in "include/foldinclude/*.h"
-   -  If you have stored PETSc objects in Fortran integer arrays, such
-      as ``user(3) = vec`` you have to declare those arrays to be of
-      type ``PetscFortranAddr`` instead of as integer. Note that
-      ``PetscFortranAddr`` is simply integer on 32 bit machines and
-      integer*8 on 64 bit machines.
-   -  The Fortran90-specific routines such as ``VecGetArrayF90()`` now
-      work with the IBM Fortran compiler, the SGI Fortran 90 compiler,
-      and the Cray T3E Fortran compiler.
-   -  PETSc objects can now be passed between C and Fortran directly.
-      You do not have to use the commands
-      ``PetscCObjectToFortranObject()`` and
-      ``PetscFortranObjectToCObject()`` to translate the objects between
-      languages.
-   -  Changed Fortran object argument from type int to type
-      PetscFortranAddr in the routines ``PetscCObjectToFortranObject()``
-      and ``PetscFortranObjectToCObject().``
-   -  Added the routine ``PetscInitializeFortran()`` to assist in
-      mixed-language use of PETSc. See the manual page for details.
+-  ``PETSC_NULL`` has been replaced with ``PETSC_NULL_INTEGER``,
+   ``PETSC_NULL_SCALAR``, ``PETSC_NULL_DOUBLE`` or
+   ``PETSC_NULL_CHARACTER`` depending on the context for usage. If
+   the function expects an integer, a scalar (double or complex
+   depending if you compile with BOPT=*_complex), a double precision
+   array, or a string.
+-  The Fortran include files are now located in the directory
+   "include/finclude/*.", rather than "include/FINCLUDE/*.h". The
+   include files that used to be in "include/finclude/*.h" (not
+   recommended) are now in "include/foldinclude/*.h"
+-  If you have stored PETSc objects in Fortran integer arrays, such
+   as ``user(3) = vec`` you have to declare those arrays to be of
+   type ``PetscFortranAddr`` instead of as integer. Note that
+   ``PetscFortranAddr`` is simply integer on 32 bit machines and
+   integer*8 on 64 bit machines.
+-  The Fortran90-specific routines such as ``VecGetArrayF90()`` now
+   work with the IBM Fortran compiler, the SGI Fortran 90 compiler,
+   and the Cray T3E Fortran compiler.
+-  PETSc objects can now be passed between C and Fortran directly.
+   You do not have to use the commands
+   ``PetscCObjectToFortranObject()`` and
+   ``PetscFortranObjectToCObject()`` to translate the objects between
+   languages.
+-  Changed Fortran object argument from type int to type
+   PetscFortranAddr in the routines ``PetscCObjectToFortranObject()``
+   and ``PetscFortranObjectToCObject().``
+-  Added the routine ``PetscInitializeFortran()`` to assist in
+   mixed-language use of PETSc. See the manual page for details.

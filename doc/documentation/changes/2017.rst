@@ -3,184 +3,184 @@ Changes: 2.0.17
 ===============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  Added support for Windows NT/95 using the Microsoft Developers
-      Studio Visual C++. See the file 'Installation' for details.
-   -  Other new machines on which this release has been tested: Cray
-      T3E, SGI Origin See the file petsc/Installation for a complete
-      list.
+-  Added support for Windows NT/95 using the Microsoft Developers
+   Studio Visual C++. See the file 'Installation' for details.
+-  Other new machines on which this release has been tested: Cray
+   T3E, SGI Origin See the file petsc/Installation for a complete
+   list.
 
-   .. rubric:: TS (Timestepping Solvers):
+.. rubric:: TS (Timestepping Solvers):
 
-   -  Modified the pseudo-transient continuation updates:
-   -  Changed the default update to dt =
-      current_dt*previous_fnorm/current_fnorm.
-   -  Added the routine TSPseudoIncrementDtFromInitialDt() and the
-      corresponding option -ts_pseudo_increment_dt_from_initial_dt to
-      indicate use of the alternative update formula dt =
-      initial_dt*initial_fnorm/current_fnorm.
-   -  Changed the calling sequence of TSRegister().
+-  Modified the pseudo-transient continuation updates:
+-  Changed the default update to dt =
+   current_dt*previous_fnorm/current_fnorm.
+-  Added the routine TSPseudoIncrementDtFromInitialDt() and the
+   corresponding option -ts_pseudo_increment_dt_from_initial_dt to
+   indicate use of the alternative update formula dt =
+   initial_dt*initial_fnorm/current_fnorm.
+-  Changed the calling sequence of TSRegister().
 
-   .. rubric:: SNES (Nonlinear Solvers):
+.. rubric:: SNES (Nonlinear Solvers):
 
-   -  Added support for computing large, sparse Jacobians efficiently
-      via finite differences, see Section 5.6 (Finite Difference
-      Jacobian Approximations) of the users manual.
-   -  Added the routines SNESGetNumberLinearIterations() and
-      SNESSetConvergenceHistory(). See man pages for details.
-   -  Activated a counter of function evaluations, which is used in
-      convergence tests to terminate solver if the number of function
-      evaluations exceeds a given tolerance. Note: Users of matrix-free
-      Newton-Krylov methods may need to reset the default allowable
-      maximum (1000), via SNESSetTolerances() or -snes_max_func
-      <maxfunc>.
-   -  Changed the calling sequence of SNESRegister().
+-  Added support for computing large, sparse Jacobians efficiently
+   via finite differences, see Section 5.6 (Finite Difference
+   Jacobian Approximations) of the users manual.
+-  Added the routines SNESGetNumberLinearIterations() and
+   SNESSetConvergenceHistory(). See man pages for details.
+-  Activated a counter of function evaluations, which is used in
+   convergence tests to terminate solver if the number of function
+   evaluations exceeds a given tolerance. Note: Users of matrix-free
+   Newton-Krylov methods may need to reset the default allowable
+   maximum (1000), via SNESSetTolerances() or -snes_max_func
+   <maxfunc>.
+-  Changed the calling sequence of SNESRegister().
 
-   .. rubric:: SLES (Linear Solvers):
+.. rubric:: SLES (Linear Solvers):
 
-   -  See PC and KSP
+-  See PC and KSP
 
-   .. rubric:: KSP (Krylov Subspace Methods):
+.. rubric:: KSP (Krylov Subspace Methods):
 
-   -  Changed the calling sequence of KSPRegister().
+-  Changed the calling sequence of KSPRegister().
 
-   .. rubric:: PC (Preconditioners):
+.. rubric:: PC (Preconditioners):
 
-   -  Changed the calling sequence of PCRegister().
-   -  New Additive Schwarz variants (preconditioner type PCASM)
-   -  Added the routine PCASMSetType() (and the corresponding option
-      -pc_asm_type [basic,restrict,interpolate,none]) for setting the
-      variant of the additive Schwarz method. See the man page and users
-      manual for details.
-   -  Changed the default variant of PCASM from full restriction and
-      interpolation to full restriction only, since this version
-      requires less communication and for many problems converges faster
-      than the basic variant that uses full restriction and
-      interpolation. Users can still employ the basic ASM by calling
-      PCASMSetType(pc,PC_ASM_BASIC) or by using the option -pc_asm_type
-      basic.
-   -  Added an interface to the SPAI preconditioner implementation of
-      Steven Bernard; see src/contrib/spai. This has undergone little
-      testing and optimization; it is intended mainly for "hackers".
+-  Changed the calling sequence of PCRegister().
+-  New Additive Schwarz variants (preconditioner type PCASM)
+-  Added the routine PCASMSetType() (and the corresponding option
+   -pc_asm_type [basic,restrict,interpolate,none]) for setting the
+   variant of the additive Schwarz method. See the man page and users
+   manual for details.
+-  Changed the default variant of PCASM from full restriction and
+   interpolation to full restriction only, since this version
+   requires less communication and for many problems converges faster
+   than the basic variant that uses full restriction and
+   interpolation. Users can still employ the basic ASM by calling
+   PCASMSetType(pc,PC_ASM_BASIC) or by using the option -pc_asm_type
+   basic.
+-  Added an interface to the SPAI preconditioner implementation of
+   Steven Bernard; see src/contrib/spai. This has undergone little
+   testing and optimization; it is intended mainly for "hackers".
 
-   .. rubric:: MAT (Matrices):
+.. rubric:: MAT (Matrices):
 
-   -  Added the matrix option,
-      MatSetOption(mat,MAT_NEW_NONZERO_LOCATION_ERROR), that will cause
-      an error if a new nonzero is generated in a sparse matrix.
-      (currently implemented for AIJ and BAIJ matrices only). This is a
-      useful flag when using SAME_NONZERO_PATTERN in calling
-      SLESSetOperators() to ensure that the nonzero pattern truly does
-      remain unchanged. For examples, see the programs
-      petsc/src/snes/examples/tutorials/[ex5.c,ex5f.F].
-   -  Added the routine MatSetUnfactored(), intended primarily for use
-      with in-place ILU(0) factorization as a preconditioner for
-      matrix-free Krylov methods. See the manual page for details.
-   -  Added the routines MatConvertRegisterAll() and
-      MatLoadRegisterAll() to allow the restriction of the matrix
-      routines linked into an application code. This can decrease the
-      size of your executable and the time it takes to link your
-      program. For details, see the manual page and
-      petsc/src/snes/examples/tutorials/ex5.c
-   -  Added the routine MatSetValuesBlocked(), for more efficient
-      assembly of block AIJ formatted matrices (MATSEQBAIJ and
-      MATMPIBAIJ).
-   -  Changed the calling sequence of MatReorderingRegister();
+-  Added the matrix option,
+   MatSetOption(mat,MAT_NEW_NONZERO_LOCATION_ERROR), that will cause
+   an error if a new nonzero is generated in a sparse matrix.
+   (currently implemented for AIJ and BAIJ matrices only). This is a
+   useful flag when using SAME_NONZERO_PATTERN in calling
+   SLESSetOperators() to ensure that the nonzero pattern truly does
+   remain unchanged. For examples, see the programs
+   petsc/src/snes/examples/tutorials/[ex5.c,ex5f.F].
+-  Added the routine MatSetUnfactored(), intended primarily for use
+   with in-place ILU(0) factorization as a preconditioner for
+   matrix-free Krylov methods. See the manual page for details.
+-  Added the routines MatConvertRegisterAll() and
+   MatLoadRegisterAll() to allow the restriction of the matrix
+   routines linked into an application code. This can decrease the
+   size of your executable and the time it takes to link your
+   program. For details, see the manual page and
+   petsc/src/snes/examples/tutorials/ex5.c
+-  Added the routine MatSetValuesBlocked(), for more efficient
+   assembly of block AIJ formatted matrices (MATSEQBAIJ and
+   MATMPIBAIJ).
+-  Changed the calling sequence of MatReorderingRegister();
 
-   .. rubric:: DA (Distributed Arrays):
+.. rubric:: DA (Distributed Arrays):
 
-   -  Added additional arguments to DACreate1d(), DACreate2d(), and
-      DACreate3d() to allow the user to set the distribution of nodes on
-      each processor; set these arguments to PETSC_NULL for the standard
-      default distribution.
-   -  Modified DAGetInfo() to return the type of periodicity.
+-  Added additional arguments to DACreate1d(), DACreate2d(), and
+   DACreate3d() to allow the user to set the distribution of nodes on
+   each processor; set these arguments to PETSC_NULL for the standard
+   default distribution.
+-  Modified DAGetInfo() to return the type of periodicity.
 
-   .. rubric:: VEC (Vectors):
+.. rubric:: VEC (Vectors):
 
-   -  Added the routine VecCreateGhost() to create vectors that have
-      ghost padding at the end of the local array. This is useful for
-      gathering remote values to perform local calculations that involve
-      off-processor ghost values. This is often appropriate for codes
-      using unstructured grids. See
-      petsc/src/vec/examples/tutorials/ex9.c for possible usage.
+-  Added the routine VecCreateGhost() to create vectors that have
+   ghost padding at the end of the local array. This is useful for
+   gathering remote values to perform local calculations that involve
+   off-processor ghost values. This is often appropriate for codes
+   using unstructured grids. See
+   petsc/src/vec/examples/tutorials/ex9.c for possible usage.
 
-   .. rubric:: IS (Index Sets):
+.. rubric:: IS (Index Sets):
 
-   .. rubric:: Draw (Graphics):
+.. rubric:: Draw (Graphics):
 
-   -  Application codes should not need to use #include "draw.h" anymore
-      from C/C++, since this file is now included automatically when
-      "petsc.h" or any other PETSc include file is included.
+-  Application codes should not need to use #include "draw.h" anymore
+   from C/C++, since this file is now included automatically when
+   "petsc.h" or any other PETSc include file is included.
 
-   .. rubric:: Viewers:
+.. rubric:: Viewers:
 
-   -  VIEWER_DRAWX_WORLD, VIEWER_DRAWX_SELF, VIEWER_MATLAB_WORLD are now
-      supported from Fortran.
-   -  Added VIEWER_DRAWX_(MPI_Comm comm) from C. Useful for rapid code
-      prototyping without having to declare a Viewer.
+-  VIEWER_DRAWX_WORLD, VIEWER_DRAWX_SELF, VIEWER_MATLAB_WORLD are now
+   supported from Fortran.
+-  Added VIEWER_DRAWX_(MPI_Comm comm) from C. Useful for rapid code
+   prototyping without having to declare a Viewer.
 
-   .. rubric:: System Routines:
+.. rubric:: System Routines:
 
-   -  Since memory leaks and uninitialized memory can be serious
-      problems for large-scale application codes, we've added several
-      new tools to assist in their diagnosis. These tools are all work
-      in conjunction with the PETSc memory allocation (the default for
-      codes that are compiled in debug mode with
-      BOPT=[g,g_c++,g_complex]).
-   -  Added the runtime option -trmalloc_log, which activates logging of
-      all calls to malloc via the new routines PetscTrLog() and
-      PetscTrLogDump().
-   -  Added the routine PetscGetResidentSetSize() to determine the total
-      memory used by a process (this is activated by -trmalloc_log); see
-      the man page for details.
-   -  Added the option -trmalloc_nan for tracking down allocated memory
-      that is used before it has been initialized. This option calls the
-      new routines PetscInitializeNans() and PetscInitializeLargeInts().
-      So far these work on the Sun4 system.
+-  Since memory leaks and uninitialized memory can be serious
+   problems for large-scale application codes, we've added several
+   new tools to assist in their diagnosis. These tools are all work
+   in conjunction with the PETSc memory allocation (the default for
+   codes that are compiled in debug mode with
+   BOPT=[g,g_c++,g_complex]).
+-  Added the runtime option -trmalloc_log, which activates logging of
+   all calls to malloc via the new routines PetscTrLog() and
+   PetscTrLogDump().
+-  Added the routine PetscGetResidentSetSize() to determine the total
+   memory used by a process (this is activated by -trmalloc_log); see
+   the man page for details.
+-  Added the option -trmalloc_nan for tracking down allocated memory
+   that is used before it has been initialized. This option calls the
+   new routines PetscInitializeNans() and PetscInitializeLargeInts().
+   So far these work on the Sun4 system.
 
-   .. rubric:: Error Handling:
+.. rubric:: Error Handling:
 
-   -  The error checking macros SETERRQ() and SETERRA() now have the
-      calling sequence SETERRQ(int ierr,int pierr,char \*message); where
-      pierr is an additional integer error code passed to the error
-      handler. Currently you should just set pierr=1.
-   -  Also, SETERRQ() and SETERRA() now use the macro \__FUNC_\_ to keep
-      track of routine names. Users need not worry about this in their
-      application codes, but can take advantage of this feature if
-      desired by setting this macro before each user-defined routine
-      that may call SETERRQ(), SETERRA(), CHKERRQ(), or CHKERRA().
-      \__FUNC_\_ should be set to a string containing the routine name.
-      For example, #undef \__FUNC_\_ #define \__FUNC_\_ "MyRoutine1" int
-      MyRoutine1() { /\* code here \*/ return 0; } See
-      petsc/src/snes/examples/tutorials/ex3.c for an example.
-   -  PETSc error handlers now take two additional arguments. Consult
-      the man page for PetscPushErrorHandler() for more information.
+-  The error checking macros SETERRQ() and SETERRA() now have the
+   calling sequence SETERRQ(int ierr,int pierr,char \*message); where
+   pierr is an additional integer error code passed to the error
+   handler. Currently you should just set pierr=1.
+-  Also, SETERRQ() and SETERRA() now use the macro \__FUNC_\_ to keep
+   track of routine names. Users need not worry about this in their
+   application codes, but can take advantage of this feature if
+   desired by setting this macro before each user-defined routine
+   that may call SETERRQ(), SETERRA(), CHKERRQ(), or CHKERRA().
+   \__FUNC_\_ should be set to a string containing the routine name.
+   For example, #undef \__FUNC_\_ #define \__FUNC_\_ "MyRoutine1" int
+   MyRoutine1() { /\* code here \*/ return 0; } See
+   petsc/src/snes/examples/tutorials/ex3.c for an example.
+-  PETSc error handlers now take two additional arguments. Consult
+   the man page for PetscPushErrorHandler() for more information.
 
-   .. rubric:: Event Logging:
+.. rubric:: Event Logging:
 
-   -  Changed PLogPrintSummary(MPI_Comm,FILE \*) to
-      PLogPrintSummary(MPI_Comm,char \*).
-   -  Now the option -log_summary takes [filename] as an optional
-      argument.
+-  Changed PLogPrintSummary(MPI_Comm,FILE \*) to
+   PLogPrintSummary(MPI_Comm,char \*).
+-  Now the option -log_summary takes [filename] as an optional
+   argument.
 
-   .. rubric:: Fortran Interface:
+.. rubric:: Fortran Interface:
 
-   -  Added some limited support for direct use of Fortran90 pointers in
-      the routines Vec[Get,Restore]ArrayF90(),
-      Mat[Get,Restore]ArrayF90(), IS[Get,Restore]IndicesF90(),
-      ISBlock[Get,Restore]IndicesF90(), VecDuplicateVecsF90(),
-      VecDestroyVecsF90(), DAGetGlobalIndicesF90(). See the man pages
-      and the section 'Fortran90' in the users manal for details.
-      Unfortunately, these routines currently work only with the NAG F90
-      compiler. We hope to support other compilers as well, but we will
-      need assistance from the vendors since the Fortran90/C interface
-      is not a defined standard.
-   -  Added the macro PetscDoubleExp(a,b) = a d b (machines where double
-      precision arithmetic is used) = a e b (machines where single
-      precision arithmetic is used, e.g., Crays) This macro is intended
-      for use only if you wish to maintain a Fortran code that is
-      portable to both the Cray T3d/T3e and other Unix machines.
-   -  For mixed Fortran/C users: added the makefile flag FCONF that may
-      be used in place of the flag CONF. For an example of usage, see
-      src/vec/examples/tutorials/makefile
+-  Added some limited support for direct use of Fortran90 pointers in
+   the routines Vec[Get,Restore]ArrayF90(),
+   Mat[Get,Restore]ArrayF90(), IS[Get,Restore]IndicesF90(),
+   ISBlock[Get,Restore]IndicesF90(), VecDuplicateVecsF90(),
+   VecDestroyVecsF90(), DAGetGlobalIndicesF90(). See the man pages
+   and the section 'Fortran90' in the users manal for details.
+   Unfortunately, these routines currently work only with the NAG F90
+   compiler. We hope to support other compilers as well, but we will
+   need assistance from the vendors since the Fortran90/C interface
+   is not a defined standard.
+-  Added the macro PetscDoubleExp(a,b) = a d b (machines where double
+   precision arithmetic is used) = a e b (machines where single
+   precision arithmetic is used, e.g., Crays) This macro is intended
+   for use only if you wish to maintain a Fortran code that is
+   portable to both the Cray T3d/T3e and other Unix machines.
+-  For mixed Fortran/C users: added the makefile flag FCONF that may
+   be used in place of the flag CONF. For an example of usage, see
+   src/vec/examples/tutorials/makefile

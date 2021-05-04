@@ -3,161 +3,161 @@ Changes: 3.1
 ============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  PetscOptionsHasName() and PetscOptionsName() now return PETSC_TRUE
-      if the options are set to any value, include false or 0. You may
-      need to change some of your PetscOptionsXXName() to
-      PetscOptionsXXTruth()
-   -  Added configure option --with-single-library that causes all PETSc
-      code to be compiled into the single library libpetsc.XXX
-   -  PetscMap changed to PetscLayout and PetscMapInitialize() changed
-      to PetscLayoutCreate() and it now allocates the space of the
-      object.
-   -  In makefiles include ${PETSC_DIR}/conf/base is replaced with two
-      lines include ${PETSC_DIR}/conf/variables and  include
-      ${PETSC_DIR}/conf/rules
-   -  BlockSolve95 interface is removed
-   -  petsc.h and petscdef.h are replaced with petscsys.h and
-      petscsysdef.h; while petsc.h now includes ALL PETSc include files.
-   -  win32fe [used for MS/Intel compiler builds on windows] now
-      defaults to 'noautodetect' mode. However the previous behavior can
-      be restored by using the option '--autodetect'. For eg:
-      '--withcc=win32fe cl --autodetect'. This works primarily with old
-      VC6/VC7/Intel8 etc compilers anyway.
+-  PetscOptionsHasName() and PetscOptionsName() now return PETSC_TRUE
+   if the options are set to any value, include false or 0. You may
+   need to change some of your PetscOptionsXXName() to
+   PetscOptionsXXTruth()
+-  Added configure option --with-single-library that causes all PETSc
+   code to be compiled into the single library libpetsc.XXX
+-  PetscMap changed to PetscLayout and PetscMapInitialize() changed
+   to PetscLayoutCreate() and it now allocates the space of the
+   object.
+-  In makefiles include ${PETSC_DIR}/conf/base is replaced with two
+   lines include ${PETSC_DIR}/conf/variables and  include
+   ${PETSC_DIR}/conf/rules
+-  BlockSolve95 interface is removed
+-  petsc.h and petscdef.h are replaced with petscsys.h and
+   petscsysdef.h; while petsc.h now includes ALL PETSc include files.
+-  win32fe [used for MS/Intel compiler builds on windows] now
+   defaults to 'noautodetect' mode. However the previous behavior can
+   be restored by using the option '--autodetect'. For eg:
+   '--withcc=win32fe cl --autodetect'. This works primarily with old
+   VC6/VC7/Intel8 etc compilers anyway.
 
-   .. rubric:: Logging:
+.. rubric:: Logging:
 
-   -  PetscLogFlops(int) ->PetscLogFlops(PetscLogDouble). [check fortran
-      usage]
+-  PetscLogFlops(int) ->PetscLogFlops(PetscLogDouble). [check fortran
+   usage]
 
-   .. rubric:: config/configure.py:
+.. rubric:: config/configure.py:
 
-   -  All ./configure options that state known values, so that
-      ./configure doesn't try to test for them. Often used with the
-      --with-batch option now begin with --known-
+-  All ./configure options that state known values, so that
+   ./configure doesn't try to test for them. Often used with the
+   --with-batch option now begin with --known-
 
-   .. rubric:: IS:
+.. rubric:: IS:
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   .. rubric:: VecScatter:
+.. rubric:: VecScatter:
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  MatGetSubMatrix:
+-  MatGetSubMatrix:
 
-      -  Now takes a parallel IS for the columns, the csize argument has
-         been dropped. The local part of this IS corresponds to the
-         local columns of the new submatrix.
+   -  Now takes a parallel IS for the columns, the csize argument has
+      been dropped. The local part of this IS corresponds to the
+      local columns of the new submatrix.
 
-   -  MatGetSubMatrixRaw
+-  MatGetSubMatrixRaw
 
-      -  Removed, use MatGetSubMatrix
+   -  Removed, use MatGetSubMatrix
 
-   -  Changed name of option MAT_KEEP_ZEROED_ROWS to
-      MAT_KEEP_NONZERO_PATTERN to more clearly indicate what it does.
-   -  Added MAT_SHARE_NONZERO_PATTERN as option for MatDuplicate() this
-      allows several matrices to share the same data structures for the
-      nonzeros and thus save memory.
-   -  The function provided to MatNullSpaceSetFunction() now takes a
-      MatNullSpace() as the first argument. Added Fortran interface for
-      this function as well.
-   -  Removed MatPBRelax() merged its functionality into MatRelax()
-   -  Changed MatRelax() to MatSOR() to match MatSORType() and PCSOR
-   -  Removed requirement that rows be sorted in
-      MatCreateMPIAIJWithArrays() and MatMPIAIJSetPreallocationCSR().
-   -  Changed MATOP_DIAGONAL_SHIFT to MATOP_DIAGONAL_SET to match
-      function name MatDiagonalSet().
-   -  MATMPIROWBS i.e BlockSolve95 interface is now removed.
+-  Changed name of option MAT_KEEP_ZEROED_ROWS to
+   MAT_KEEP_NONZERO_PATTERN to more clearly indicate what it does.
+-  Added MAT_SHARE_NONZERO_PATTERN as option for MatDuplicate() this
+   allows several matrices to share the same data structures for the
+   nonzeros and thus save memory.
+-  The function provided to MatNullSpaceSetFunction() now takes a
+   MatNullSpace() as the first argument. Added Fortran interface for
+   this function as well.
+-  Removed MatPBRelax() merged its functionality into MatRelax()
+-  Changed MatRelax() to MatSOR() to match MatSORType() and PCSOR
+-  Removed requirement that rows be sorted in
+   MatCreateMPIAIJWithArrays() and MatMPIAIJSetPreallocationCSR().
+-  Changed MATOP_DIAGONAL_SHIFT to MATOP_DIAGONAL_SET to match
+   function name MatDiagonalSet().
+-  MATMPIROWBS i.e BlockSolve95 interface is now removed.
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   -  PCShell All user-provided functions now have PC as first argument
-      instead of the application context. Users should obtain the
-      context with PCShellGetContext, similar to MatShell.
-   -  Removed -pc_asm_in_place and PCASMSetUseInPlace() since the option
-      made no sense
-   -  PCApplyRichardson() has an additional argument indicating if the
-      initial guess being passed in is nonzero. SOR will save some work
-      if it is zero.
-   -  MatSetBlockSize() is no longer an error for BAIJ matrices, but the
-      argument must be the same as when the matrix was preallocated.
-   -  PCFactorSetPivoting() renamed to PCFactorSetColumnPivot()
-   -  Replaced PCFactorSetShiftNonzero(), PCFactorSetShiftPd() and
-      PCFactorSetShiftInBlocks() with PCFactorSetShiftType() and
-      PCFactorSetShiftAmount(). Replaced -pc_factor_shift_nonzero,
-      -pc_factor_shift_positive_definite and -pc_factor_shift_in_blocks
-      with -pc_factor_shift_type <shifttype> and -pc_factor_shift_amount
-      <shiftamount>.
-   -  Added PCREDISTRIBUTE for load balancing and removal of Dirichlet
-      degrees of freedom.
+-  PCShell All user-provided functions now have PC as first argument
+   instead of the application context. Users should obtain the
+   context with PCShellGetContext, similar to MatShell.
+-  Removed -pc_asm_in_place and PCASMSetUseInPlace() since the option
+   made no sense
+-  PCApplyRichardson() has an additional argument indicating if the
+   initial guess being passed in is nonzero. SOR will save some work
+   if it is zero.
+-  MatSetBlockSize() is no longer an error for BAIJ matrices, but the
+   argument must be the same as when the matrix was preallocated.
+-  PCFactorSetPivoting() renamed to PCFactorSetColumnPivot()
+-  Replaced PCFactorSetShiftNonzero(), PCFactorSetShiftPd() and
+   PCFactorSetShiftInBlocks() with PCFactorSetShiftType() and
+   PCFactorSetShiftAmount(). Replaced -pc_factor_shift_nonzero,
+   -pc_factor_shift_positive_definite and -pc_factor_shift_in_blocks
+   with -pc_factor_shift_type <shifttype> and -pc_factor_shift_amount
+   <shiftamount>.
+-  Added PCREDISTRIBUTE for load balancing and removal of Dirichlet
+   degrees of freedom.
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   -  Added KSPCGUseSingleReduction() -ksp_cg_single_reduction;
-      recommended for use with many processors when VecDot() starts to
-      take a large amount of time, Requires 2 extra work vectors.
-   -  Added KSPGCR (Generalized Conjugate Residuals), a flexible method
-      (like FGMRES) providing inexpensive residuals.
+-  Added KSPCGUseSingleReduction() -ksp_cg_single_reduction;
+   recommended for use with many processors when VecDot() starts to
+   take a large amount of time, Requires 2 extra work vectors.
+-  Added KSPGCR (Generalized Conjugate Residuals), a flexible method
+   (like FGMRES) providing inexpensive residuals.
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   -  Rename TS_EULER, TS_BEULER, etc like TSEULER for consistency with
-      other packages.
-   -  Add Theta and General Linear time integrators (TSTHETA, TSGL).
-      These can be used for solving differential algebraic equations
-      (DAE) using the new TSSetIFunction() and TSSetIJacobian().
-   -  Add TSSSP which implements optimal strong stability preserving
-      time integrators of order 2, 3, and 4 using a low-storage explicit
-      Runge-Kutta scheme.
-   -  Change TSSetPreStep() and TSSetPostStep() to run before and after
-      each step instead of before and after each solve.
+-  Rename TS_EULER, TS_BEULER, etc like TSEULER for consistency with
+   other packages.
+-  Add Theta and General Linear time integrators (TSTHETA, TSGL).
+   These can be used for solving differential algebraic equations
+   (DAE) using the new TSSetIFunction() and TSSetIJacobian().
+-  Add TSSSP which implements optimal strong stability preserving
+   time integrators of order 2, 3, and 4 using a low-storage explicit
+   Runge-Kutta scheme.
+-  Change TSSetPreStep() and TSSetPostStep() to run before and after
+   each step instead of before and after each solve.
 
-   .. rubric:: DA:
+.. rubric:: DA:
 
-   -  DAGetColoring() now takes a MatType as an additional argument,
-      should be MATAIJ or MATBAIJ
-   -  Added DARefineHierarchy(), DMMG now always uses DMRefineHierarchy
-      to generate refined grids. Added options
-      -da_refine_hierarchy_[xyz] to allow semi-coarsening at some levels
-      of the hierarchy.
-   -  DASetCoordinates() now references the vector, so the user should
-      release their reference by calling VecDestroy().
+-  DAGetColoring() now takes a MatType as an additional argument,
+   should be MATAIJ or MATBAIJ
+-  Added DARefineHierarchy(), DMMG now always uses DMRefineHierarchy
+   to generate refined grids. Added options
+   -da_refine_hierarchy_[xyz] to allow semi-coarsening at some levels
+   of the hierarchy.
+-  DASetCoordinates() now references the vector, so the user should
+   release their reference by calling VecDestroy().
 
-   .. rubric:: DMMG:
+.. rubric:: DMMG:
 
-   .. rubric:: PetscViewer:
+.. rubric:: PetscViewer:
 
-   .. rubric:: SYS:
+.. rubric:: SYS:
 
-   -  PetscSleep(), PetscDrawGetPause(), and PetscDrawSetPause() now
-      take PetscReal instead of int. Also, -draw_pause takes a real
-      value.
-   -  PetscRandomGetValueImaginary() is removed. To get a complex number
-      with only a random imaginary part first call
-      PetscRandomSetInterval() with the same low and high real part.
-      Similarly one can obtain a complex number with only a random real
-      part by setting the low and high imaginary part to be the same.
+-  PetscSleep(), PetscDrawGetPause(), and PetscDrawSetPause() now
+   take PetscReal instead of int. Also, -draw_pause takes a real
+   value.
+-  PetscRandomGetValueImaginary() is removed. To get a complex number
+   with only a random imaginary part first call
+   PetscRandomSetInterval() with the same low and high real part.
+   Similarly one can obtain a complex number with only a random real
+   part by setting the low and high imaginary part to be the same.
 
-   .. rubric:: AO:
+.. rubric:: AO:
 
-   .. rubric:: Sieve:
+.. rubric:: Sieve:
 
-   .. rubric:: Fortran:
+.. rubric:: Fortran:
 
-   -  Removed the old compiler dependent implementation of f90 interface
-      sources in favor of the new compiler independent implementation.
-      Consequently the configure option --with-f90-interface is removed.
-      And the f90 interface is automatically built - if an f90 compiler
-      is detected. [this is the default behavior before this change
-      aswell]
-   -  use petsc and use petscdef are now use petscsys and use
-      petscsysdef
+-  Removed the old compiler dependent implementation of f90 interface
+   sources in favor of the new compiler independent implementation.
+   Consequently the configure option --with-f90-interface is removed.
+   And the f90 interface is automatically built - if an f90 compiler
+   is detected. [this is the default behavior before this change
+   aswell]
+-  use petsc and use petscdef are now use petscsys and use
+   petscsysdef
 
-   .. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
 
-   -  Added MATORDERING_AMD for Tim Davis' Approximate Minimum Degree
-      package.
+-  Added MATORDERING_AMD for Tim Davis' Approximate Minimum Degree
+   package.

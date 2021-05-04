@@ -3,143 +3,143 @@ Changes: 2.3.3
 ==============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  PetscInitialize() will now also check for options in .petscrc
-      unless -skip_petscrc is used (note that since the file options are
-      checked before the command line you cannot pass -skip_petscrc on
-      the command line it must be passed in the file passed into
-      PetscInitialize().
-   -  When a filename is passed into PetscInitialize() ~/.petscrc and
-      .petscrc are checked ALSO (they used to be skipped when a filename
-      was passed in) unless -skip_petscrc is passed in the input file
-   -  PetscMapInitialize() has been split into PetscMapInitialize() that
-      is called before the Map is ever used and then PetscMapSetUp()
-      which is called after the blocksize and local or global size is
-      set and determines the ranges etc.
-   -  When a filename is passed into PetscInitialize() ~/.petscrc and
-      .petscrc are checked ALSO (they used to be skipped when a filename
-      was passed in) unless -skip_petscrc is passed in the input file
-   -  PetscMapInitialize() has been split into PetscMapInitialize() that
-      is called before the Map is ever used and then PetscMapSetUp()
-      which is called after the blocksize and local or global size is
-      set and determines the ranges etc.
-   -  Changed the use of mpirun throughout the source to mpiexec; this
-      includes petscmpirun -> petscmpiexec. Of course, PETSc will still
-      work fine with MPI implementations that use mpirun.
-   -  Add fortran interface to PetscBag routines
+-  PetscInitialize() will now also check for options in .petscrc
+   unless -skip_petscrc is used (note that since the file options are
+   checked before the command line you cannot pass -skip_petscrc on
+   the command line it must be passed in the file passed into
+   PetscInitialize().
+-  When a filename is passed into PetscInitialize() ~/.petscrc and
+   .petscrc are checked ALSO (they used to be skipped when a filename
+   was passed in) unless -skip_petscrc is passed in the input file
+-  PetscMapInitialize() has been split into PetscMapInitialize() that
+   is called before the Map is ever used and then PetscMapSetUp()
+   which is called after the blocksize and local or global size is
+   set and determines the ranges etc.
+-  When a filename is passed into PetscInitialize() ~/.petscrc and
+   .petscrc are checked ALSO (they used to be skipped when a filename
+   was passed in) unless -skip_petscrc is passed in the input file
+-  PetscMapInitialize() has been split into PetscMapInitialize() that
+   is called before the Map is ever used and then PetscMapSetUp()
+   which is called after the blocksize and local or global size is
+   set and determines the ranges etc.
+-  Changed the use of mpirun throughout the source to mpiexec; this
+   includes petscmpirun -> petscmpiexec. Of course, PETSc will still
+   work fine with MPI implementations that use mpirun.
+-  Add fortran interface to PetscBag routines
 
-   .. rubric:: config/configure.py:
+.. rubric:: config/configure.py:
 
-   -  F90 interface is now enabled by default [if the compiler is
-      detected to be a f90 compiler]. i.e --with-f90-interface options
-      is not required. The f90 interface impl used is a new universal
-      one. However if you wish to use the old compiler specific one,
-      then specify --with-f90-interface=nof90src [for configure to
-      autodetect] or specify the appropriate one - like:
-      --with-f90-interface=intel8
+-  F90 interface is now enabled by default [if the compiler is
+   detected to be a f90 compiler]. i.e --with-f90-interface options
+   is not required. The f90 interface impl used is a new universal
+   one. However if you wish to use the old compiler specific one,
+   then specify --with-f90-interface=nof90src [for configure to
+   autodetect] or specify the appropriate one - like:
+   --with-f90-interface=intel8
 
-   .. rubric:: IS:
+.. rubric:: IS:
 
-   -  changed IS_COLORING_LOCAL to IS_COLORING_GLOBAL
+-  changed IS_COLORING_LOCAL to IS_COLORING_GLOBAL
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   .. rubric:: VecScatter:
+.. rubric:: VecScatter:
 
-   -  Change prototype for VecScatterBegin() and VecScatterEnd() [now
-      the first argument is VecScatter]
+-  Change prototype for VecScatterBegin() and VecScatterEnd() [now
+   the first argument is VecScatter]
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  moved most of SNESMF implementation into mat/impls/mffd
-   -  MatMFFD is now a regular matrix type registered in
-      MatRegisterAll()
-   -  changed SNESMF to MFFD for all previous SNESMF routines, except
-      MatCreateSNESMF()
-   -  -snes_mf_option changed to -mat_mffd_option except for -snes_mf
-      and -snes_mf_operator
-   -  SNES_KSP_EW... changed to SNESKSPWE... and SNES_KSP_EW_ConvCtx to
-      SNESKSPEW
-   -  MatGetRowIJ(), MatGetColumnIJ(), MatRestoreRowIJ(),
-      MatRestoreColumnIJ() now take an extra argument
+-  moved most of SNESMF implementation into mat/impls/mffd
+-  MatMFFD is now a regular matrix type registered in
+   MatRegisterAll()
+-  changed SNESMF to MFFD for all previous SNESMF routines, except
+   MatCreateSNESMF()
+-  -snes_mf_option changed to -mat_mffd_option except for -snes_mf
+   and -snes_mf_operator
+-  SNES_KSP_EW... changed to SNESKSPWE... and SNES_KSP_EW_ConvCtx to
+   SNESKSPEW
+-  MatGetRowIJ(), MatGetColumnIJ(), MatRestoreRowIJ(),
+   MatRestoreColumnIJ() now take an extra argument
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   -  changed PCMGSetCycles() and PCMGSetCyclesOnLevel() to
-      PCMGSetCycleType() and PCMGSetCycleTypeOnLevel() that take a
-      PCMGCycleType as argument and changed -pc_mg_cycle_type 1 or 2 to
-      -pc_mg_cycles v or w
-   -  added PCMGMultiplicativeSetCycles() and
-      -pc_mg_multiplicative_cycles
-   -  PCMGSetInterpolate() --> PCMGSetInterpolation()
-   -  added PCREDUNDANT type, PCRedundantSetNumber() and
-      -pc_redundant_number
+-  changed PCMGSetCycles() and PCMGSetCyclesOnLevel() to
+   PCMGSetCycleType() and PCMGSetCycleTypeOnLevel() that take a
+   PCMGCycleType as argument and changed -pc_mg_cycle_type 1 or 2 to
+   -pc_mg_cycles v or w
+-  added PCMGMultiplicativeSetCycles() and
+   -pc_mg_multiplicative_cycles
+-  PCMGSetInterpolate() --> PCMGSetInterpolation()
+-  added PCREDUNDANT type, PCRedundantSetNumber() and
+   -pc_redundant_number
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   -  Changed KSPNormTypes to have consistant naming , i.e
+-  Changed KSPNormTypes to have consistant naming , i.e
 
-      -  KSP_NO_NORM -> KSP_NORM_NO
-      -  KSP_PRECONDITIONED_NORM -> KSP_NORM_PRECONDITIONED
-      -  KSP_UNPRECONDITIONED_NORM -> KSP_NORM_UNPRECONDITIONED
-      -  KSP_NATURAL_NORM -> KSP_NORM_NATURAL
+   -  KSP_NO_NORM -> KSP_NORM_NO
+   -  KSP_PRECONDITIONED_NORM -> KSP_NORM_PRECONDITIONED
+   -  KSP_UNPRECONDITIONED_NORM -> KSP_NORM_UNPRECONDITIONED
+   -  KSP_NATURAL_NORM -> KSP_NORM_NATURAL
 
-   -  The following function names are changed to be consistant:
+-  The following function names are changed to be consistant:
 
-      -  KSPSetMonitor -> KSPMonitorSet
-      -  KSPClearMonitor -> KSPMonitorCancel
-      -  KSPSingularValueMonitor -> KSPMonitorSingularValue
-      -  KSPDefaultMonitor -> KSPMonitorDefault
-      -  KSPTrueMonitor -> KSPMonitorTrueResidualNorm
-      -  KSPDefaultSMonitor -> KSPMonitorDefaultShort
-      -  KSPVecViewMonitor -> KSPMonitorSolution
-      -  KSPGMRESKrylovMonitor -> KSPGMRESMonitorKrylov
-      -  KSPLGMonitorCreate -> KSPMonitorLGCreate
-      -  KSPLGMonitor -> KSPMonitorLG
-      -  KSPLGMonitorDestroy -> KSPMonitorLGDestroy
-      -  KSPLGTrueMonitorCreate -> KSPMonitorLGTrueResidualNormCreate
-      -  KSPLGTrueMonitor -> KSPMonitorLGTrueResidualNorm
-      -  KSPLGTrueMonitorDestroy -> KSPMonitorLGTrueResidualNormDestroy
+   -  KSPSetMonitor -> KSPMonitorSet
+   -  KSPClearMonitor -> KSPMonitorCancel
+   -  KSPSingularValueMonitor -> KSPMonitorSingularValue
+   -  KSPDefaultMonitor -> KSPMonitorDefault
+   -  KSPTrueMonitor -> KSPMonitorTrueResidualNorm
+   -  KSPDefaultSMonitor -> KSPMonitorDefaultShort
+   -  KSPVecViewMonitor -> KSPMonitorSolution
+   -  KSPGMRESKrylovMonitor -> KSPGMRESMonitorKrylov
+   -  KSPLGMonitorCreate -> KSPMonitorLGCreate
+   -  KSPLGMonitor -> KSPMonitorLG
+   -  KSPLGMonitorDestroy -> KSPMonitorLGDestroy
+   -  KSPLGTrueMonitorCreate -> KSPMonitorLGTrueResidualNormCreate
+   -  KSPLGTrueMonitor -> KSPMonitorLGTrueResidualNorm
+   -  KSPLGTrueMonitorDestroy -> KSPMonitorLGTrueResidualNormDestroy
 
-   -  Following names are changed
+-  Following names are changed
 
-      -  KSP_CONVERGED_STCG_NEG_CURVE -> KSP_CONVERGED_CG_NEG_CURVE
-      -  KSP_CONVERGED_STCG_CONSTRAINED -> KSP_CONVERGED_CG_CONSTRAINED
+   -  KSP_CONVERGED_STCG_NEG_CURVE -> KSP_CONVERGED_CG_NEG_CURVE
+   -  KSP_CONVERGED_STCG_CONSTRAINED -> KSP_CONVERGED_CG_CONSTRAINED
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   -  TSSetRHSMatrix() and TSSetLHSMatrix() were replaced by
-      TSSetMatrices()
-   -  TSGetRHSMatrix() was replaced by TSGetMatrices()
+-  TSSetRHSMatrix() and TSSetLHSMatrix() were replaced by
+   TSSetMatrices()
+-  TSGetRHSMatrix() was replaced by TSGetMatrices()
 
-   .. rubric:: DA:
+.. rubric:: DA:
 
-   .. rubric:: DMMG:
+.. rubric:: DMMG:
 
-   .. rubric:: SYS:
+.. rubric:: SYS:
 
-   .. rubric:: AO:
+.. rubric:: AO:
 
-   -  AOData object and corresponding functionality is now removed for
-      PETSc
+-  AOData object and corresponding functionality is now removed for
+   PETSc
 
-   .. rubric:: Sieve:
+.. rubric:: Sieve:
 
-   -  Added support for 2D and 3D mesh generation and refinement
-   -  Added support for mesh partitioning and distribution
-   -  Added support for partitioning based upon arbitrary dimensional
-      entities, e.g. vertices, faces, etc.
-   -  Added support for FIAT element generation
-   -  Added support for higher order elements
-   -  Added Poisson problem example in separate repository
+-  Added support for 2D and 3D mesh generation and refinement
+-  Added support for mesh partitioning and distribution
+-  Added support for partitioning based upon arbitrary dimensional
+   entities, e.g. vertices, faces, etc.
+-  Added support for FIAT element generation
+-  Added support for higher order elements
+-  Added Poisson problem example in separate repository
 
-   .. rubric:: Fortran:
+.. rubric:: Fortran:
 
-   .. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
 
-   -  Hypre interface is updated to use version 2.0.0
-   -  Mumps interface is updated to use version 4.7.3
-   -  fftw interface is updated to use v3.2alpha2
+-  Hypre interface is updated to use version 2.0.0
+-  Mumps interface is updated to use version 4.7.3
+-  fftw interface is updated to use v3.2alpha2

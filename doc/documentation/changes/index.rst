@@ -2,24 +2,24 @@
 Changes
 =======
 
-   We will continually add new features and enhanced functionality in
-   upcoming releases; **small changes in usage and calling sequences of
-   PETSc routines will continue to occur**. Although keeping one's code
-   accordingly up-to-date can be annoying, all PETSc users will be
-   rewarded in the long run with a cleaner, better designed, and
-   easier-to-use interface.
+We will continually add new features and enhanced functionality in
+upcoming releases; **small changes in usage and calling sequences of
+PETSc routines will continue to occur**. Although keeping one's code
+accordingly up-to-date can be annoying, all PETSc users will be
+rewarded in the long run with a cleaner, better designed, and
+easier-to-use interface.
 
-   We suggest that users who want to upgrade their current PETSc
-   application codes from a particular version to the most recent
-   release proceed through the changes listed in this file in increasing
-   order of version numbers. (Note: One can determine the release number
-   of any current PETSc installation by looking in the file
-   include/petscversion.h) Many of the interface changes can be handled
-   quickly and easily by using global replacement via your favorite text
-   editor. See the file
-   :doc:`/miscellaneous/codemanagement` for
-   some tips that we find helpful in keeping our own code up to date and
-   that should be generally useful for effective code management.
+We suggest that users who want to upgrade their current PETSc
+application codes from a particular version to the most recent
+release proceed through the changes listed in this file in increasing
+order of version numbers. (Note: One can determine the release number
+of any current PETSc installation by looking in the file
+include/petscversion.h) Many of the interface changes can be handled
+quickly and easily by using global replacement via your favorite text
+editor. See the file
+:doc:`/miscellaneous/codemanagement` for
+some tips that we find helpful in keeping our own code up to date and
+that should be generally useful for effective code management.
 
 Releases of PETSc
 -----------------

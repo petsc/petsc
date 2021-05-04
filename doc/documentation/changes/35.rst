@@ -3,173 +3,173 @@ Changes: 3.5
 ============
 
 
-   .. rubric:: General:
+.. rubric:: General:
 
-   -  --download-f-blas-lapack is now --download-fblaslapack.
-   -  PETSc built with --with-precision=__float128 will now by default
-      read in binary files that have all 128 bits stored in the file, to
-      read in files with 64 bit double use the option
-      -binary_read_double
-   -  PETSc options of complex numbers must be passed as
-      [+/-][realnumber][+/-]realnumberi with no spaces, you can no
-      longer pass the real and complex part with a comma between them
-   -  PetscSynchronizedFlush() takes an additional argument, the file
-      pointer on rank 0
-   -  PetscObjectStateQuery() is now corrected with
-      PetscObjectStateGet()
-   -  A new PetscObjectState typedef is used by interface; 64-bit int to
-      prevent overflow.
-   -  The configure option ``--with-dynamic-loading`` has been removed
-      since this functionality is automatically available on systems
-      that support it. Use the runtime option
-      ``-dynamic_library_preload`` for similar functionality.
-   -  Default location of externalpackages is moved from
-      ``PETSC_DIR/externalpackages`` to
-      ``PETSC_DIR/PETSC_ARCH/externalpackages``
-   -  Added ``--with-clean`` option to delete the build files in
-      ``PETSC_DIR/PETSC_ARCH`` at the begining of the build
-   -  The ``__SDIR__`` macro (and ``__INSDIR__``) is no longer used. We
-      recommend passing full paths or paths from the project root to the
-      compiler so that error messages contain enough context.
-   -  The "type" argument to ``PetscMalloc2()`` through
-      ``PetscMalloc7()``, ``PetscNew()``, and ``PetscNewLog()`` have
-      been removed. The type is now inferred from the pointer return
-      type. ``PetscMalloc1()`` is now available for allocating arrays,
-      and ``PetscCalloc1()`` through ``PetscCalloc7()`` have been added
-      for when cleared (zeroed) memory is needed.
-   -  Moved matlab scripts like PetscBinaryRead.m PetscBinaryWrite.m
-      from bin/matlab to share/petsc/matlab
+-  --download-f-blas-lapack is now --download-fblaslapack.
+-  PETSc built with --with-precision=__float128 will now by default
+   read in binary files that have all 128 bits stored in the file, to
+   read in files with 64 bit double use the option
+   -binary_read_double
+-  PETSc options of complex numbers must be passed as
+   [+/-][realnumber][+/-]realnumberi with no spaces, you can no
+   longer pass the real and complex part with a comma between them
+-  PetscSynchronizedFlush() takes an additional argument, the file
+   pointer on rank 0
+-  PetscObjectStateQuery() is now corrected with
+   PetscObjectStateGet()
+-  A new PetscObjectState typedef is used by interface; 64-bit int to
+   prevent overflow.
+-  The configure option ``--with-dynamic-loading`` has been removed
+   since this functionality is automatically available on systems
+   that support it. Use the runtime option
+   ``-dynamic_library_preload`` for similar functionality.
+-  Default location of externalpackages is moved from
+   ``PETSC_DIR/externalpackages`` to
+   ``PETSC_DIR/PETSC_ARCH/externalpackages``
+-  Added ``--with-clean`` option to delete the build files in
+   ``PETSC_DIR/PETSC_ARCH`` at the begining of the build
+-  The ``__SDIR__`` macro (and ``__INSDIR__``) is no longer used. We
+   recommend passing full paths or paths from the project root to the
+   compiler so that error messages contain enough context.
+-  The "type" argument to ``PetscMalloc2()`` through
+   ``PetscMalloc7()``, ``PetscNew()``, and ``PetscNewLog()`` have
+   been removed. The type is now inferred from the pointer return
+   type. ``PetscMalloc1()`` is now available for allocating arrays,
+   and ``PetscCalloc1()`` through ``PetscCalloc7()`` have been added
+   for when cleared (zeroed) memory is needed.
+-  Moved matlab scripts like PetscBinaryRead.m PetscBinaryWrite.m
+   from bin/matlab to share/petsc/matlab
 
-   .. rubric:: IS:
+.. rubric:: IS:
 
-   -  ISLocalToGlobalMappingCreate() now takes a blocksize. Added
-      ISLocalToGlobalMappingApplyBlock() removed
-      ISLocalToGlobalMappingBlock() and ISLocalToGlobalMappingUnblock()
+-  ISLocalToGlobalMappingCreate() now takes a blocksize. Added
+   ISLocalToGlobalMappingApplyBlock() removed
+   ISLocalToGlobalMappingBlock() and ISLocalToGlobalMappingUnblock()
 
-   .. rubric:: PF:
+.. rubric:: PF:
 
-   .. rubric:: Vec:
+.. rubric:: Vec:
 
-   .. rubric:: VecScatter:
+.. rubric:: VecScatter:
 
-   .. rubric:: PetscSection:
+.. rubric:: PetscSection:
 
-   -  Now only the F90 binding for VecSetValuesSection() is present
+-  Now only the F90 binding for VecSetValuesSection() is present
 
-   .. rubric:: Mat:
+.. rubric:: Mat:
 
-   -  Removed third argument to MatNullSpaceRemove(). Use VecDuplicate()
-      and VecCopy() if the original Vec must be kept.
-   -  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm
-      subcomm,PetscInt mlocal_red,MatReuse reuse,Mat \*matredundant) is
-      replaced by MatRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm
-      subcomm,MatReuse reuse,Mat \*matredundant).
-   -  MatGetColoring() has been removed and replaced by the MatColoring
-      object.
+-  Removed third argument to MatNullSpaceRemove(). Use VecDuplicate()
+   and VecCopy() if the original Vec must be kept.
+-  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm
+   subcomm,PetscInt mlocal_red,MatReuse reuse,Mat \*matredundant) is
+   replaced by MatRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm
+   subcomm,MatReuse reuse,Mat \*matredundant).
+-  MatGetColoring() has been removed and replaced by the MatColoring
+   object.
 
-   .. rubric:: PC:
+.. rubric:: PC:
 
-   -  PCASA has been removed, it never worked properly
-   -  The documented, but semi-private function
-      ``PCMGResidual_Default()`` is now public and named
-      ``PCMGResidualDefault()``.
-   -  PCGAMG default smoother changed from PCJACOBI to PCSOR.
-   -  Different logic for PCBDDC APIs: added
-      PCBDDCSet/GetDirichlet/NeumannBoundariesLocal,
-      PCBDDCSetDofsSplittingLocal. Previous call to PCBDDCXXXBoundaries
-      should be replaced by PCBDDCXXXBoundariesLocal. The same holds for
-      setting the fields split. In all cases, the index sets should have
-      the same communicator as the PC.
-   -  Added PCBDDCSetChangeOfBasisLocalMat for user defined change of
-      basis
-   -  ``PCFieldSplitSchurPrecondition()`` deprecated (replaced in
-      Fortran) in favor of ``PCFieldSplitSetSchurPre()``.
+-  PCASA has been removed, it never worked properly
+-  The documented, but semi-private function
+   ``PCMGResidual_Default()`` is now public and named
+   ``PCMGResidualDefault()``.
+-  PCGAMG default smoother changed from PCJACOBI to PCSOR.
+-  Different logic for PCBDDC APIs: added
+   PCBDDCSet/GetDirichlet/NeumannBoundariesLocal,
+   PCBDDCSetDofsSplittingLocal. Previous call to PCBDDCXXXBoundaries
+   should be replaced by PCBDDCXXXBoundariesLocal. The same holds for
+   setting the fields split. In all cases, the index sets should have
+   the same communicator as the PC.
+-  Added PCBDDCSetChangeOfBasisLocalMat for user defined change of
+   basis
+-  ``PCFieldSplitSchurPrecondition()`` deprecated (replaced in
+   Fortran) in favor of ``PCFieldSplitSetSchurPre()``.
 
-   .. rubric:: KSP:
+.. rubric:: KSP:
 
-   -  ``KSPSkipConverged()`` renamed to ``KSPConvergedSkip()``.
-   -  ``KSPSetOperators()`` no longer has the ``MatStructure`` argument.
-      The Mat objects now track that information themselves. Use
-      ``KSP/PCSetReusePreconditioner()`` to prevent the recomputation of
-      the preconditioner if the operator changed in the way that
-      ``SAME_PRECONDITIONER`` did with ``KSPSetOperators()``
-   -  ``KSPDefaultConverged()``, ``KSPDefaultConvergedDestroy()``,
-      ``KSPDefaultConvergedCreate()``,
-      ``KSPDefaultConvergedSetUIRNorm()``, and
-      ``KSPDefaultConvergedSetUMIRNorm()`` are now
-      ``KSPConvergedDefault()``, ``KSPConvergedDefaultDestroy()``,
-      ``KSPConvergedDefaultCreate()``,
-      ``KSPConvergedDefaultSetUIRNorm()``, and
-      ``KSPConvergedDefaultSetUMIRNorm()``. for consistency.
+-  ``KSPSkipConverged()`` renamed to ``KSPConvergedSkip()``.
+-  ``KSPSetOperators()`` no longer has the ``MatStructure`` argument.
+   The Mat objects now track that information themselves. Use
+   ``KSP/PCSetReusePreconditioner()`` to prevent the recomputation of
+   the preconditioner if the operator changed in the way that
+   ``SAME_PRECONDITIONER`` did with ``KSPSetOperators()``
+-  ``KSPDefaultConverged()``, ``KSPDefaultConvergedDestroy()``,
+   ``KSPDefaultConvergedCreate()``,
+   ``KSPDefaultConvergedSetUIRNorm()``, and
+   ``KSPDefaultConvergedSetUMIRNorm()`` are now
+   ``KSPConvergedDefault()``, ``KSPConvergedDefaultDestroy()``,
+   ``KSPConvergedDefaultCreate()``,
+   ``KSPConvergedDefaultSetUIRNorm()``, and
+   ``KSPConvergedDefaultSetUMIRNorm()``. for consistency.
 
-   .. rubric:: SNES:
+.. rubric:: SNES:
 
-   -  The matrix arguments to the user functions provided with
-      ``SNESSetJacobian()`` and ``SNESSetPicard()`` are now Mat not
-      Mat*.
-   -  The ``MatStructure`` argument to the user functions provided with
-      ``SNESSetJacobian()`` and ``SNESSetPicard()`` are gone.
-   -  ``SNESSetInitialFunctionNorm()`` is removed as it's not necessary
-      given that the norm is cached on the Vec. Use only
-      ``SNESSetInitialFunction()``.
-   -  ``SNESSetFunctionNorm()`` and ``SNESGetFunctionNorm()`` removed.
-      ``Use SNESGetFunction()`` and ``VecNorm()`` instead.
-   -  ``SNESSkipConverged()`` renamed to ``SNESConvergedSkip()``.
-   -  ``SNESGetPC()``/``SNESSetPC()`` renamed to
-      ``SNESGetNPC()``/``SNESSetNPC()``.
-   -  ``GS`` and \_gs used for nonlinear Gauss-Sidel changed to ``NGS``
-      and \_ngs to match all the other nonlinear solver names.
+-  The matrix arguments to the user functions provided with
+   ``SNESSetJacobian()`` and ``SNESSetPicard()`` are now Mat not
+   Mat*.
+-  The ``MatStructure`` argument to the user functions provided with
+   ``SNESSetJacobian()`` and ``SNESSetPicard()`` are gone.
+-  ``SNESSetInitialFunctionNorm()`` is removed as it's not necessary
+   given that the norm is cached on the Vec. Use only
+   ``SNESSetInitialFunction()``.
+-  ``SNESSetFunctionNorm()`` and ``SNESGetFunctionNorm()`` removed.
+   ``Use SNESGetFunction()`` and ``VecNorm()`` instead.
+-  ``SNESSkipConverged()`` renamed to ``SNESConvergedSkip()``.
+-  ``SNESGetPC()``/``SNESSetPC()`` renamed to
+   ``SNESGetNPC()``/``SNESSetNPC()``.
+-  ``GS`` and \_gs used for nonlinear Gauss-Sidel changed to ``NGS``
+   and \_ngs to match all the other nonlinear solver names.
 
-   .. rubric:: SNESLineSearch:
+.. rubric:: SNESLineSearch:
 
-   .. rubric:: TS:
+.. rubric:: TS:
 
-   -  The matrix arguments to the user functions provided with
-      ``TSSetRHSJacobian()`` and ``TSSetIJacobian()`` are now Mat not
-      Mat*.
-   -  The ``MatStructure`` argument to the user functions provided with
-      ``TSSetRHSJacobian()`` and ``TSSetIJacobian()`` are gone.
+-  The matrix arguments to the user functions provided with
+   ``TSSetRHSJacobian()`` and ``TSSetIJacobian()`` are now Mat not
+   Mat*.
+-  The ``MatStructure`` argument to the user functions provided with
+   ``TSSetRHSJacobian()`` and ``TSSetIJacobian()`` are gone.
 
-   .. rubric:: DM/DA:
+.. rubric:: DM/DA:
 
-   -  DMDAGetLocalToGlobalMappingBlock() has been removed, the
-      DMDAGetLocalToGlobalMapping() now handles both block and non-block
-      cases
-   -  DMDAGetGlobalIndices(DM,PetscInt*,const PetscInt*[]) and
-      DMDARestoreGlobalIndices(DM,PetscInt*,const PetscInt*[]) are
-      removed, use DMGetLocalToGlobalMapping() to get this information
-   -  DMADDA has been removed, it never worked correctly
-   -  The MatType argument is removed from DMCreateMatrix(), you can use
-      DMSetMatType() to indicate the type you want used with a DM,
-      defaults to MATAIJ
-   -  ``DMDABoundaryType`` has become ``DMBoundaryType``, and all the
-      enumeration values have also been renamed.
+-  DMDAGetLocalToGlobalMappingBlock() has been removed, the
+   DMDAGetLocalToGlobalMapping() now handles both block and non-block
+   cases
+-  DMDAGetGlobalIndices(DM,PetscInt*,const PetscInt*[]) and
+   DMDARestoreGlobalIndices(DM,PetscInt*,const PetscInt*[]) are
+   removed, use DMGetLocalToGlobalMapping() to get this information
+-  DMADDA has been removed, it never worked correctly
+-  The MatType argument is removed from DMCreateMatrix(), you can use
+   DMSetMatType() to indicate the type you want used with a DM,
+   defaults to MATAIJ
+-  ``DMDABoundaryType`` has become ``DMBoundaryType``, and all the
+   enumeration values have also been renamed.
 
-   .. rubric:: DMPlex:
+.. rubric:: DMPlex:
 
-   .. rubric:: PetscViewer:
+.. rubric:: PetscViewer:
 
-   .. rubric:: SYS:
+.. rubric:: SYS:
 
-   .. rubric:: AO:
+.. rubric:: AO:
 
-   .. rubric:: Sieve:
+.. rubric:: Sieve:
 
-   -  Sieve/DMMesh has been removed entirely. Use DMPlex.
+-  Sieve/DMMesh has been removed entirely. Use DMPlex.
 
-   .. rubric:: Fortran:
+.. rubric:: Fortran:
 
-   -  PETSC_DEFAULT_DOUBLE_PRECISION has been replaced with
-      PETSC_DEFAULT_REAL
+-  PETSC_DEFAULT_DOUBLE_PRECISION has been replaced with
+   PETSC_DEFAULT_REAL
 
-   .. rubric:: ExternalPackages:
+.. rubric:: ExternalPackages:
 
-   -  Configure options ``--download-umfpack`` and
-      ``--download-cholmod`` to download UMFPACK and CHOLMOD have been
-      removed. Use ``--download-suitesparse`` to download these
-      packages.
-   -  Added interface to Pardiso solver in Intel MKL. To use
-      MKL_Pardiso, PETSc should be configured with
-      ``--blas-lapack-dir=LOCATION_OF_INTEL_MKL           --with-mkl_pardiso-dir=LOCATION_OF_INTEL_MKL``
-      and then run the code with
-      ``-pc_type lu -pc_factor_mat_solver_package mkl_pardiso``
+-  Configure options ``--download-umfpack`` and
+   ``--download-cholmod`` to download UMFPACK and CHOLMOD have been
+   removed. Use ``--download-suitesparse`` to download these
+   packages.
+-  Added interface to Pardiso solver in Intel MKL. To use
+   MKL_Pardiso, PETSc should be configured with
+   ``--blas-lapack-dir=LOCATION_OF_INTEL_MKL           --with-mkl_pardiso-dir=LOCATION_OF_INTEL_MKL``
+   and then run the code with
+   ``-pc_type lu -pc_factor_mat_solver_package mkl_pardiso``
