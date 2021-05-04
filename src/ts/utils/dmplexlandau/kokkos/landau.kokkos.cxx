@@ -347,8 +347,8 @@ extern "C"  {
                     for (d = 0; d < LANDAU_DIM; ++d) refSpaceDer[d] = 0.0;
                     for (b = 0; b < Nb; ++b) {
                       const PetscInt    cidx = b;
-                      d_fdf_k(0,f,ipidx) += Bq[cidx]*coef[f*Nb+cidx];
-                      for (d = 0; d < dim; ++d) refSpaceDer[d] += Dq[cidx*dim+d]*coef[f*Nb+cidx];
+                      d_fdf_k(0,f,ipidx) += Bq[cidx]*PetscRealPart(coef[f*Nb+cidx]);
+                      for (d = 0; d < dim; ++d) refSpaceDer[d] += Dq[cidx*dim+d]*PetscRealPart(coef[f*Nb+cidx]);
                     }
                     for (d = 0; d < dim; ++d) {
                       for (e = 0, d_fdf_k(d+1,f,ipidx) = 0.0; e < dim; ++e) {
