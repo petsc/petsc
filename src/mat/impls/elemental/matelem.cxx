@@ -1,5 +1,15 @@
 #include <petsc/private/petscelemental.h>
 
+const char ElementalCitation[] = "@Article{Elemental2012,\n"
+"  author  = {Jack Poulson and Bryan Marker and Jeff R. Hammond and Nichols A. Romero and Robert {v}an~{d}e~{G}eijn},\n"
+"  title   = {Elemental: A New Framework for Distributed Memory Dense Matrix Computations},\n"
+"  journal = {{ACM} Transactions on Mathematical Software},\n"
+"  volume  = {39},\n"
+"  number  = {2},\n"
+"  year    = {2013}\n"
+"}\n";
+static PetscBool ElementalCite = PETSC_FALSE;
+
 /*
     The variable Petsc_Elemental_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a Mat_Elemental_Grid
@@ -1390,6 +1400,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0);CHKERRMPI(ierr);
+    ierr = PetscCitationsRegister(ElementalCitation,&ElementalCite);CHKERRQ(ierr);
   }
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_get_attr(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRMPI(ierr);

@@ -1,5 +1,16 @@
 #include <petsc/private/petscscalapack.h>  /*I "petscmat.h" I*/
 
+const char ScaLAPACKCitation[] = "@BOOK{scalapack-user-guide,\n"
+"       AUTHOR = {L. S. Blackford and J. Choi and A. Cleary and E. D'Azevedo and\n"
+"                 J. Demmel and I. Dhillon and J. Dongarra and S. Hammarling and\n"
+"                 G. Henry and A. Petitet and K. Stanley and D. Walker and R. C. Whaley},\n"
+"       TITLE = {Sca{LAPACK} Users' Guide},\n"
+"       PUBLISHER = {SIAM},\n"
+"       ADDRESS = {Philadelphia, PA},\n"
+"       YEAR = 1997\n"
+"}\n";
+static PetscBool ScaLAPACKCite = PETSC_FALSE;
+
 #define DEFAULT_BLOCKSIZE 64
 
 /*
@@ -1737,6 +1748,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   if (Petsc_ScaLAPACK_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_ScaLAPACK_keyval,(void*)0);CHKERRMPI(ierr);
     ierr = PetscRegisterFinalize(Petsc_ScaLAPACK_keyval_free);CHKERRQ(ierr);
+    ierr = PetscCitationsRegister(ScaLAPACKCitation,&ScaLAPACKCite);CHKERRQ(ierr);
   }
   ierr = PetscCommDuplicate(PetscObjectComm((PetscObject)A),&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_get_attr(icomm,Petsc_ScaLAPACK_keyval,(void**)&grid,(int*)&flg);CHKERRMPI(ierr);
