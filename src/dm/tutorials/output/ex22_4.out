@@ -46,10 +46,6 @@ Process [3]
 200.
 300.
 300.
-subset MPI subcomm size is : 4, includes global rank : 0 
-subset MPI subcomm size is : 4, includes global rank : 1 
-subset MPI subcomm size is : 4, includes global rank : 2 
-subset MPI subcomm size is : 4, includes global rank : 3 
 
  Extracted slice vector, in natural ordering : 
 Vec Object: 4 MPI processes
