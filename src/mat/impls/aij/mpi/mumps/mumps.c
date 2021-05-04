@@ -1766,11 +1766,10 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_6","ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)","None",mumps->id.ICNTL(6),&icntl,&flg);CHKERRQ(ierr);
   if (flg) mumps->id.ICNTL(6) = icntl;
 
-  ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_7","ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 1=PETSc (sequential only), 3=Scotch, 4=PORD, 5=Metis, 7=auto(default)","None",mumps->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_7","ICNTL(7): computes a symmetric permutation in sequential analysis. 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto(default)","None",mumps->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (icntl== 1 && mumps->petsc_size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported by the PETSc/MUMPS interface for parallel matrices\n");
-    else mumps->id.ICNTL(7) = icntl;
-    /* if ordering is passed into symbolic factorization routine then  mumps->id.ICNTL(7) is automatically set to 1 so user need not set it.*/
+    if (icntl == 1 || icntl < 0 || icntl > 7) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Valid values are 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto\n");
+    mumps->id.ICNTL(7) = icntl;
   }
 
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 8 or 77)","None",mumps->id.ICNTL(8),&mumps->id.ICNTL(8),NULL);CHKERRQ(ierr);
@@ -1946,7 +1945,6 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,const MatFactor
   PetscFunctionReturn(0);
 }
 
-/* Note Petsc r(=c) permutation is used when mumps->id.ICNTL(7)==1 with centralized assembled matrix input; otherwise r and c are ignored */
 PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->data;
@@ -2898,8 +2896,8 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 .  -mat_mumps_icntl_3 -  ICNTL(3): output stream for global information, collected on the host
 .  -mat_mumps_icntl_4 -  ICNTL(4): level of printing (0 to 4)
 .  -mat_mumps_icntl_6 - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)
-.  -mat_mumps_icntl_7 - ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 1=PETSc (sequential only) 3=Scotch, 4=PORD, 5=Metis
-                        -pc_factor_mat_ordering_type <type> will automatically provide the ordering so setting this flag to 1 is not needed
+.  -mat_mumps_icntl_7 - ICNTL(7): computes a symmetric permutation in sequential analysis, 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto
+                        Use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
 .  -mat_mumps_icntl_8  - ICNTL(8): scaling strategy (-2 to 8 or 77)
 .  -mat_mumps_icntl_10  - ICNTL(10): max num of refinements
 .  -mat_mumps_icntl_11  - ICNTL(11): statistics related to an error analysis (via -ksp_view)
@@ -2929,8 +2927,6 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 .  -mat_mumps_cntl_7 - CNTL(7): precision of the dropping parameter used during BLR factorization
 -  -mat_mumps_use_omp_threads [m] - run MUMPS in MPI+OpenMP hybrid mode as if omp_set_num_threads(m) is called before calling MUMPS.
                                    Default might be the number of cores per CPU package (socket) as reported by hwloc and suggested by the MUMPS manual.
-
-   If run sequentially can use the PETSc provided ordering with the option -mat_mumps_icntl_7 1
 
   Level: beginner
 
