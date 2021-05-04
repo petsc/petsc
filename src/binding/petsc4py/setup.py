@@ -84,11 +84,15 @@ def get_ext_modules(Extension):
         depends += glob_join(pd, 'include', '*.h')
         depends += glob_join(pd, 'include', 'petsc', 'private', '*.h')
         depends += glob_join(pd, pa, 'include', 'petscconf.h')
-    try:
-        import numpy
-        numpy_includes = [numpy.get_include()]
-    except ImportError:
-        numpy_includes = []
+    numpy_include = os.environ.get('NUMPY_INCLUDE')
+    if numpy_include is not None:
+        numpy_includes = [numpy_include]
+    else:
+        try:
+            import numpy
+            numpy_includes = [numpy.get_include()]
+        except ImportError:
+            numpy_includes = []
     return [Extension('petsc4py.lib.PETSc',
                       sources=['src/PETSc.c',
                                'src/libpetsc4py.c',
