@@ -1109,8 +1109,24 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
 /* ---------------------------------------------------------------------------------------------*/
 /*
-      These are for a single block with multiple processes;
+      These are for a single block with multiple processes
 */
+static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiproc(PC pc)
+{
+  PetscErrorCode     ierr;
+  PC_BJacobi         *jac = (PC_BJacobi*)pc->data;
+  KSP                subksp = jac->ksp[0];
+  KSPConvergedReason reason;
+
+  PetscFunctionBegin;
+  ierr = KSPSetUp(subksp);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(subksp,&reason);CHKERRQ(ierr);
+  if (reason == KSP_DIVERGED_PC_FAILED) {
+    pc->failedreason = PC_SUBPC_ERROR;
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
 {
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;
@@ -1272,10 +1288,11 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->xsub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->ysub);CHKERRQ(ierr);
 
-    pc->ops->reset   = PCReset_BJacobi_Multiproc;
-    pc->ops->destroy = PCDestroy_BJacobi_Multiproc;
-    pc->ops->apply   = PCApply_BJacobi_Multiproc;
-    pc->ops->matapply= PCMatApply_BJacobi_Multiproc;
+    pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiproc;
+    pc->ops->reset         = PCReset_BJacobi_Multiproc;
+    pc->ops->destroy       = PCDestroy_BJacobi_Multiproc;
+    pc->ops->apply         = PCApply_BJacobi_Multiproc;
+    pc->ops->matapply      = PCMatApply_BJacobi_Multiproc;
   } else { /* pc->setupcalled */
     subcomm = PetscSubcommChild(mpjac->psubcomm);
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
