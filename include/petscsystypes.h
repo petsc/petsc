@@ -225,34 +225,34 @@ M*/
 #endif /* !PETSC_SKIP_COMPLEX */
 
 #if defined(PETSC_HAVE_COMPLEX)
-#  if defined(__cplusplus)  /* C++ complex support */
-#    if defined(PETSC_HAVE_CUDA)
-#      define petsccomplexlib thrust
-#      include <thrust/complex.h>
-#    else
-#      define petsccomplexlib std
-#      include <complex>
-#    endif
-#    if defined(PETSC_USE_REAL_SINGLE)
-       typedef petsccomplexlib::complex<float> PetscComplex;
-#    elif defined(PETSC_USE_REAL_DOUBLE)
-       typedef petsccomplexlib::complex<double> PetscComplex;
-#    elif defined(PETSC_USE_REAL___FLOAT128)
-       typedef petsccomplexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
-#    endif  /* PETSC_USE_REAL_ */
-#    if !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
-#      include <petsccxxcomplexfix.h>
-#    endif /* ! PETSC_SKIP_CXX_COMPLEX_FIX */
-#  else /* c99 complex support */
-#    include <complex.h>
-#    if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
-       typedef float _Complex PetscComplex;
-#    elif defined(PETSC_USE_REAL_DOUBLE)
-       typedef double _Complex PetscComplex;
-#    elif defined(PETSC_USE_REAL___FLOAT128)
-       typedef __complex128 PetscComplex;
-#    endif /* PETSC_USE_REAL_* */
-#  endif /* !__cplusplus */
+  #if defined(__cplusplus)  /* C++ complex support */
+    #if defined(PETSC_HAVE_CUDA)
+      #define petsccomplexlib thrust
+      #include <thrust/complex.h>
+    #else
+      #define petsccomplexlib std
+      #include <complex>
+    #endif
+    #if defined(PETSC_USE_REAL_SINGLE)
+      typedef petsccomplexlib::complex<float> PetscComplex;
+    #elif defined(PETSC_USE_REAL_DOUBLE)
+      typedef petsccomplexlib::complex<double> PetscComplex;
+    #elif defined(PETSC_USE_REAL___FLOAT128)
+      typedef petsccomplexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
+    #endif  /* PETSC_USE_REAL_ */
+    #if !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
+      #include <petsccxxcomplexfix.h>
+    #endif /* ! PETSC_SKIP_CXX_COMPLEX_FIX */
+  #else /* c99 complex support */
+    #include <complex.h>
+    #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
+      typedef float _Complex PetscComplex;
+    #elif defined(PETSC_USE_REAL_DOUBLE)
+      typedef double _Complex PetscComplex;
+    #elif defined(PETSC_USE_REAL___FLOAT128)
+      typedef __complex128 PetscComplex;
+    #endif /* PETSC_USE_REAL_* */
+  #endif /* !__cplusplus */
 #endif /* PETSC_HAVE_COMPLEX */
 
 /*MC
