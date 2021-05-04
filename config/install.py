@@ -142,7 +142,7 @@ class Installer(script.Script):
     except (IOError, os.error) as why:
       errors.append((srcname, dstname, str(why)))
     except shutil.Error as err:
-      errors.extend((srcname,dstname,str(err.args[0])))
+      errors.append((srcname,dstname,str(err.args[0])))
     if errors:
       raise shutil.Error(errors)
     return copies
@@ -238,7 +238,7 @@ class Installer(script.Script):
       # catch the Error from the recursive copytree so that we can
       # continue with other files
       except shutil.Error as err:
-        errors.extend((srcname,dstname,str(err.args[0])))
+        errors.append((srcname,dstname,str(err.args[0])))
     for srcname, dstname in zip(srclinks, dstlinks):
       try:
         copyFunc(srcname, dstname)
@@ -248,7 +248,7 @@ class Installer(script.Script):
       # catch the Error from the recursive copytree so that we can
       # continue with other files
       except shutil.Error as err:
-        errors.extend((srcname,dstname,str(err.args[0])))
+        errors.append((srcname,dstname,str(err.args[0])))
     try:
       shutil.copystat(src, dst)
     except OSError as e:
@@ -256,7 +256,7 @@ class Installer(script.Script):
         # Copying file access times may fail on Windows
         pass
       else:
-        errors.extend((src, dst, str(e)))
+        errors.append((src, dst, str(e)))
     if errors:
       raise shutil.Error(errors)
     return copies
