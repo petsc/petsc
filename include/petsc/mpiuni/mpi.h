@@ -168,6 +168,7 @@ MPIUni_PETSC_EXTERN void *MPIUNI_TMP;
 #define MPI_ERR_OTHER       17
 #define MPI_ERR_UNKNOWN     18
 #define MPI_ERR_INTERN      21
+#define MPI_ERR_NOSUPPORT   22
 
 #define MPI_KEYVAL_INVALID   0
 #define MPI_TAG_UB           0
@@ -942,8 +943,9 @@ typedef int MPI_Fint;
       MPI_SUCCESS)
 #define MPI_Error_string(errorcode,string,result_len) \
      (MPIUNI_ARG(errorcode),\
-      *(result_len) = 9,\
-      MPIUNI_Memcpy(string,"MPI error",10*MPI_sizeof(MPI_CHAR)))
+     (errorcode == MPI_ERR_NOSUPPORT) ? \
+       (*(result_len) = 33, MPIUNI_Memcpy(string,"MPI error, not supported by MPI-uni",33*MPI_sizeof(MPI_CHAR))) : \
+      (*(result_len) = 9, MPIUNI_Memcpy(string,"MPI error",10*MPI_sizeof(MPI_CHAR))))
 #define MPI_Error_class(errorcode,errorclass) \
      (*(errorclass) = errorcode, MPI_SUCCESS)
 #define MPI_Wtick() 1.0
