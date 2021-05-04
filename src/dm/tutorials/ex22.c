@@ -270,20 +270,24 @@ int main(int argc,char **argv)
       suffix: 2
       nsize:  2
       args: -sliceaxis Y -gp 1
+      filter: grep -v "subset MPI subcomm"
 
     test:
       suffix: 3
       nsize:  3
       args:  -sliceaxis Z -gp 2
+      filter: grep -v "subset MPI subcomm"
 
     test:
       suffix: 4
       nsize:  4
       args: -sliceaxis X -gp 2
+      filter: grep -v "subset MPI subcomm"
 
     test:
       suffix: 5
       nsize:  4
       args: -sliceaxis Z -gp 1
+      filter: grep -v "subset MPI subcomm"
 
 TEST*/
