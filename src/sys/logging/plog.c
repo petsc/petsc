@@ -87,6 +87,7 @@ PetscLogDouble petsc_ctog_sz         = 0.0;  /* The total size of CPU to GPU cop
 PetscLogDouble petsc_gtoc_sz         = 0.0;  /* The total size of GPU to CPU copies */
 PetscLogDouble petsc_gflops          = 0.0;  /* The flops done on a GPU */
 PetscLogDouble petsc_gtime           = 0.0;  /* The time spent on a GPU */
+
 #if defined(PETSC_USE_DEBUG)
 PetscBool petsc_gtime_inuse = PETSC_FALSE;
 #endif
@@ -2245,6 +2246,106 @@ M*/
 
 M*/
 
+
+#if defined(PETSC_HAVE_DEVICE)
+
+#if defined(PETSC_HAVE_CUDA)
+#include <cuda_runtime.h>
+#include <petsccublas.h>
+PETSC_EXTERN cudaEvent_t petsc_gputimer_begin;
+PETSC_EXTERN cudaEvent_t petsc_gputimer_end;
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+#include <hip/hip_runtime.h>
+#include <petschipblas.h>
+PETSC_EXTERN hipEvent_t petsc_gputimer_begin;
+PETSC_EXTERN hipEvent_t petsc_gputimer_end;
+#endif
+
+/*-------------------------------------------- GPU event Functions ----------------------------------------------*/
+/*@C
+  PetscLogGpuTimeBegin - Start timer for device
+
+  Notes:
+    When CUDA or HIP is enabled, the timer is run on the GPU, it is a separate logging of time devoted to GPU computations (excluding kernel launch times).
+    When CUDA or HIP is not available, the timer is run on the CPU, it is a separate logging of time devoted to GPU computations (including kernel launch times).
+    There is no need to call WaitForCUDA() or WaitForHIP() between PetscLogGpuTimeBegin and PetscLogGpuTimeEnd
+    This timer should NOT include times for data transfers between the GPU and CPU, nor setup actions such as allocating space.
+    The regular logging captures the time for data transfers and any CPU activites during the event
+    It is used to compute the flop rate on the GPU as it is actively engaged in running a kernel.
+
+  Developer Notes:
+    The GPU event timer captures the execution time of all the kernels launched in the default stream by the CPU between PetscLogGpuTimeBegin() and PetsLogGpuTimeEnd().
+    PetscLogGpuTimeBegin() and PetsLogGpuTimeEnd() insert the begin and end events into the default stream (stream 0). The device will record a time stamp for the event when it reaches that event in the stream. The function xxxEventSynchronize() is called in PetsLogGpuTimeEnd() to block CPU execution, but not continued GPU excution, until the timer event is recorded.
+
+  Level: intermediate
+
+.seealso:  PetscLogView(), PetscLogGpuFlops(), PetscLogGpuTimeEnd()
+@*/
+PetscErrorCode PetscLogGpuTimeBegin(void)
+{
+#if defined(PETSC_HAVE_CUDA)
+  cudaError_t    cerr;
+#elif defined(PETSC_HAVE_HIP)
+  hipError_t     cerr;
+#else
+  PetscErrorCode ierr;
+#endif
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  if (petsc_gtime_inuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeEnd()?");
+  petsc_gtime_inuse = PETSC_TRUE;
+#endif
+#if defined(PETSC_HAVE_CUDA)
+  cerr = cudaEventRecord(petsc_gputimer_begin,PetscDefaultCudaStream);CHKERRCUDA(cerr);
+#elif defined(PETSC_HAVE_HIP)
+  cerr = hipEventRecord(petsc_gputimer_begin,PetscDefaultHipStream);CHKERRHIP(cerr);
+#else
+  ierr = PetscTimeSubtract(&petsc_gtime);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscLogGpuTimeEnd - Stop timer for device
+
+  Level: intermediate
+
+.seealso:  PetscLogView(), PetscLogGpuFlops(), PetscLogGpuTimeBegin()
+@*/
+PetscErrorCode PetscLogGpuTimeEnd(void)
+{
+#if defined(PETSC_HAVE_CUDA)
+  float          gtime;
+  cudaError_t    cerr;
+#elif defined(PETSC_HAVE_HIP)
+  float          gtime;
+  hipError_t     cerr;
+#else
+  PetscErrorCode ierr;
+#endif
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  if (!petsc_gtime_inuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeBegin()?");
+  petsc_gtime_inuse = PETSC_FALSE;
+#endif
+#if defined(PETSC_HAVE_CUDA)
+  cerr = cudaEventRecord(petsc_gputimer_end,PetscDefaultCudaStream);CHKERRCUDA(cerr);
+  cerr = cudaEventSynchronize(petsc_gputimer_end);CHKERRCUDA(cerr);
+  cerr = cudaEventElapsedTime(&gtime,petsc_gputimer_begin,petsc_gputimer_end);CHKERRCUDA(cerr);
+  petsc_gtime += (PetscLogDouble)gtime/1000.0; /* convert milliseconds to seconds */
+#elif defined(PETSC_HAVE_HIP)
+  cerr = hipEventRecord(petsc_gputimer_end,PetscDefaultHipStream);CHKERRHIP(cerr);
+  cerr = hipEventSynchronize(petsc_gputimer_end);CHKERRHIP(cerr);
+  cerr = hipEventElapsedTime(&gtime,petsc_gputimer_begin,petsc_gputimer_end);CHKERRHIP(cerr);
+  petsc_gtime += (PetscLogDouble)gtime/1000.0; /* convert milliseconds to seconds */
+#else
+  ierr = PetscTimeAdd(&petsc_gtime);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+#endif /* end of PETSC_HAVE_DEVICE */
 
 #else /* end of -DPETSC_USE_LOG section */
 

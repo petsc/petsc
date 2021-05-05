@@ -120,6 +120,10 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
     }
   }
 
+#if defined(PETSC_HAVE_CUDA)
+  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr); /* For CUDA event timers */
+#endif
+
 #if defined(PETSC_HAVE_OPENCL)
   /* ViennaCL OpenCL device type configuration */
   ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_opencl_device_type",string,sizeof(string),&flg);CHKERRQ(ierr);
