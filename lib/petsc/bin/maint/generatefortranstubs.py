@@ -229,7 +229,7 @@ def checkHandWrittenF90Interfaces(badSrc, path):
       with open(os.path.join(path,file),'r') as fdr:
         lineno = 1
         raw = fdr.read()
-        for ibuf in re.split('\n\s*interface',raw,flags=re.IGNORECASE):
+        for ibuf in re.split('(?i)\n\s*interface',raw):
           res = re.search('(.*)(\s+end\s+interface)',ibuf,flags=re.DOTALL|re.IGNORECASE)
           try:
             lines = res.group(0).split('\n')
