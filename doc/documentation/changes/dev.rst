@@ -109,6 +109,9 @@ Changes: Development
    ``DMView`` with a ``PETSCVIEWEREXODUSII`` viewer
 -  Change ``DMPlexComputeBdResidualSingle()`` and
    ``DMPlexComputeBdJacobianSingle()`` to take a form key
+-  Add ``DMPlexTopologyLoad()``, ``DMPlexCoordinatesLoad()``, and
+   ``DMPlexLabelsLoad()`` for incremental loading of a ``DMPlex`` object
+   from an HDF5 file
 
 .. rubric:: FE/FV:
 
