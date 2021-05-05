@@ -1276,8 +1276,8 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   Level: advanced
 
   Notes:
-  If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group. NULL means the current pushed group.
-  If path is NULL or empty, has is set to PETSC_FALSE.
+  If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group.
+  So NULL or empty path means the current pushed group.
   If path exists but is not a group, PETSC_FALSE is returned.
 
 .seealso: PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasDataset(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup(), PetscViewerHDF5OpenGroup()
