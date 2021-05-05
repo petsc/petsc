@@ -8176,13 +8176,13 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
         ci[i] = cgneigh->centroid[i] - cg->centroid[i];
         fi[i] = fg->centroid[i] - cg->centroid[i];
         Ai[i] = fg->normal[i];
-        normci += PetscPowScalar(ci[i], 2);
-        normfi += PetscPowScalar(fi[i], 2);
-        normai += PetscPowScalar(Ai[i], 2);
+        normci += PetscPowReal(ci[i], 2);
+        normfi += PetscPowReal(fi[i], 2);
+        normai += PetscPowReal(Ai[i], 2);
       }
-      normci = PetscSqrtScalar(normci);
-      normfi = PetscSqrtScalar(normfi);
-      normai = PetscSqrtScalar(normai);
+      normci = PetscSqrtReal(normci);
+      normfi = PetscSqrtReal(normfi);
+      normai = PetscSqrtReal(normai);
 
       /* Normalize and compute for each face-cell-normal pair */
       for (i = 0; i < nc; i++) {

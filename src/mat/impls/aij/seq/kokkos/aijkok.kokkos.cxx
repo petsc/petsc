@@ -1,7 +1,7 @@
+#include <petscvec_kokkos.hpp>
 #include <petsc/private/petscimpl.h>
 #include <petscsystypes.h>
 #include <petscerror.h>
-#include <petscvec_kokkos.hpp>
 
 #include <Kokkos_Core.hpp>
 #include <KokkosBlas.hpp>

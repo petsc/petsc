@@ -90,6 +90,19 @@ PetscErrorCode VecTDot_MPIKokkos(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecMTDot_MPIKokkos(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
+{
+  PetscScalar    awork[128],*work = awork;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (nv > 128) {ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);}
+  ierr = VecMTDot_SeqKokkos(xin,nv,y,work);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+  if (nv > 128) {ierr = PetscFree(work);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecMax_MPIKokkos(Vec xin,PetscInt *idx,PetscReal *z)
 {
   PetscErrorCode ierr;
@@ -192,9 +205,6 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->setrandom              = VecSetRandom_SeqKokkos;
   v->ops->dotnorm2               = VecDotNorm2_MPIKokkos;
   v->ops->waxpy                  = VecWAXPY_SeqKokkos;
-  v->ops->dot                    = VecDot_MPIKokkos;
-  v->ops->mdot                   = VecMDot_MPIKokkos;
-  v->ops->tdot                   = VecTDot_MPIKokkos;
   v->ops->norm                   = VecNorm_MPIKokkos;
   v->ops->min                    = VecMin_MPIKokkos;
   v->ops->max                    = VecMax_MPIKokkos;
@@ -212,10 +222,18 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->placearray             = VecPlaceArray_SeqKokkos;
   v->ops->replacearray           = VecReplaceArray_SeqKokkos;
   v->ops->resetarray             = VecResetArray_SeqKokkos;
+
+  v->ops->dot                    = VecDot_MPIKokkos;
+  v->ops->tdot                   = VecTDot_MPIKokkos;
+  v->ops->mdot                   = VecMDot_MPIKokkos;
+  v->ops->mtdot                  = VecMTDot_MPIKokkos;
+
   v->ops->dot_local              = VecDot_SeqKokkos;
   v->ops->tdot_local             = VecTDot_SeqKokkos;
-  v->ops->norm_local             = VecNorm_SeqKokkos;
   v->ops->mdot_local             = VecMDot_SeqKokkos;
+  v->ops->mtdot_local            = VecMTDot_SeqKokkos;
+
+  v->ops->norm_local             = VecNorm_SeqKokkos;
   v->ops->duplicate              = VecDuplicate_MPIKokkos;
   v->ops->destroy                = VecDestroy_MPIKokkos;
   v->ops->getlocalvector         = VecGetLocalVector_SeqKokkos;

@@ -168,7 +168,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     if (beta > 0.0) {
       ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr); /* beta*U1 = Amat*V - alpha*U */
       if (!lsqr->exact_norm) {
-        lsqr->anorm = PetscSqrtScalar(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta));
+        lsqr->anorm = PetscSqrtReal(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta));
       }
     }
 

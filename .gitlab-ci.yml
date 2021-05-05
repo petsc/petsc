@@ -783,7 +783,7 @@ linux-gcc-ifc-cmplx:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
-    LOAD_MODULES: intel/19.0-nompilib
+    LOAD_MODULES: intel/19.0-nompilib cmake/3.20.0-vov726r
 
 linux-opt-cxx-quad:
   extends:

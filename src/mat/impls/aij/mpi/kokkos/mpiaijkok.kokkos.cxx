@@ -1,7 +1,7 @@
-#include <petscconf.h>
+#include <petscvec_kokkos.hpp>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/aij/seq/kokkos/aijkokkosimpl.hpp>
-#include <petscveckokkos.hpp>
+
 
 PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A,MatAssemblyType mode)
 {
