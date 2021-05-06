@@ -547,6 +547,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('may conflict with libgfortran') < 0]
       # MacOS libraries built for different MacOS versions
       lines = [s for s in lines if s.find(' was built for newer macOS version') < 0]
+      lines = [s for s in lines if s.find(' was built for newer OSX version') < 0]
       if lines: output = '\n'.join(lines)
       else: output = ''
       self.log.write("Linker output after filtering:\n"+output+":\n")
