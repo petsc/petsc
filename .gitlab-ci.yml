@@ -965,6 +965,9 @@ docs-review:
   artifacts:
     paths:
       - public
+  except:
+    variables:
+      - $PETSC_CI_SCHEDULED =~ /yes/
 
 #
 # Deploy documentation using GitLab pages
