@@ -344,6 +344,9 @@
         interface
 #include <../src/sys/f90-mod/ftn-auto-interfaces/petscsys.h90>
         end interface
+        interface PetscInitialize
+          module procedure PetscInitializeWithHelp, PetscInitializeNoHelp, PetscInitializeNoArguments
+        end interface
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_COMM_SELF
@@ -369,6 +372,34 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_INFINITY
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NINFINITY
 #endif
+
+      contains
+      subroutine PetscInitializeWithHelp(filename,help,ierr)
+          character(len=*)           :: filename
+          character(len=*)           :: help
+          PetscErrorCode             :: ierr
+
+          if (filename .ne. PETSC_NULL_CHARACTER) then
+             filename = trim(filename)
+          endif
+          call PetscInitializeF(filename,help,PETSC_TRUE,ierr)
+        end subroutine PetscInitializeWithHelp
+
+        subroutine PetscInitializeNoHelp(filename,ierr)
+          character(len=*)           :: filename
+          PetscErrorCode             :: ierr
+
+          if (filename .ne. PETSC_NULL_CHARACTER) then
+             filename = trim(filename)
+          endif
+          call PetscInitializeF(filename,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+        end subroutine PetscInitializeNoHelp
+
+        subroutine PetscInitializeNoArguments(ierr)
+          PetscErrorCode             :: ierr
+
+          call PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,PETSC_FALSE,ierr)
+        end subroutine PetscInitializeNoArguments
         end module
 
         subroutine PetscSetCOMM(c1,c2)
@@ -440,5 +471,4 @@
 
         return
         end
-
 
