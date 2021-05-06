@@ -176,9 +176,9 @@ void landau_form_fdf(const PetscInt nip, const PetscInt dim, const PetscInt Nf, 
 #endif
                      PetscErrorCode *ierr) // output
 {
-  const PetscInt    Nq = blockDim.y, myelem = blockIdx.x;
+  const PetscInt    Nq = blockDim.y, elem = blockIdx.x;
   const PetscInt    myQi = threadIdx.y;
-  const PetscInt    jpidx = myQi + myelem * Nq;
+  const PetscInt    jpidx = myQi + elem * Nq;
   const PetscReal   *invJ = &invJ_a[jpidx*dim*dim];
   const PetscReal   *Bq = &BB[myQi*Nb], *Dq = &DD[myQi*Nb*dim];
   PetscInt          f,d,b,e,q;
@@ -188,11 +188,11 @@ void landau_form_fdf(const PetscInt nip, const PetscInt dim, const PetscInt Nf, 
 
   *ierr = 0;
   if (!maps) {
-    coef = &a_coef[myelem*Nb*Nf];
+    coef = &a_coef[elem*Nb*Nf];
   } else {
     coef = coef_buff;
     for (f = 0; f < Nf; ++f) {
-      LandauIdx *const Idxs = &maps->gIdx[myelem][f][0];
+      LandauIdx *const Idxs = &maps->gIdx[elem][f][0];
       for (b = 0; b < Nb; ++b) {
         PetscInt idx = Idxs[b];
         if (idx >= 0) {
@@ -257,7 +257,7 @@ landau_inner_integral_v2(const PetscInt myQi, const PetscInt jpidx, PetscInt nip
                          const PetscReal zz[], PetscReal s_dfz[], PetscReal d_dfdz[],
 #endif
                          PetscReal d_mass_w[], PetscReal shift,
-                         PetscInt myelem, PetscErrorCode *ierr)
+                         PetscInt elem, PetscErrorCode *ierr)
 {
   int           delta,d,f,g,d2,dp,d3,fieldA,ipidx_b,nip_pad = nip; // vectorization padding not supported;
   *ierr = 0;
@@ -375,7 +375,6 @@ landau_inner_integral_v2(const PetscInt myQi, const PetscInt jpidx, PetscInt nip
       gg2[dim-1][myQi][fieldA] += Eq_m[fieldA];
     }
     __syncthreads();
-    //intf("%d %d gg2[1][1]=%g\n",myelem,qj_start,gg2[1][dim-1]);
     /* Jacobian transform - g2 */
     for (fieldA = threadIdx.x; fieldA < Nf; fieldA += blockDim.x) {
       PetscReal wj = ww[jpidx];
@@ -425,7 +424,7 @@ landau_inner_integral_v2(const PetscInt myQi, const PetscInt jpidx, PetscInt nip
                 }
               }
             } else {
-              const PetscInt jpidx = qj + myelem * Nq;
+              const PetscInt jpidx = qj + elem * Nq;
               t += BJq[f] * d_mass_w[jpidx]*shift * BJq[g];
             }
           }
@@ -437,7 +436,7 @@ landau_inner_integral_v2(const PetscInt myQi, const PetscInt jpidx, PetscInt nip
         PetscScalar            vals[LANDAU_MAX_Q_FACE*LANDAU_MAX_Q_FACE];
         PetscReal              row_scale[LANDAU_MAX_Q_FACE],col_scale[LANDAU_MAX_Q_FACE];
         PetscInt               nr,nc,rows0[LANDAU_MAX_Q_FACE],cols0[LANDAU_MAX_Q_FACE],rows[LANDAU_MAX_Q_FACE],cols[LANDAU_MAX_Q_FACE];
-        const LandauIdx *const Idxs = &d_maps->gIdx[myelem][fieldA][0];
+        const LandauIdx *const Idxs = &d_maps->gIdx[elem][fieldA][0];
         for (f = threadIdx.y; f < Nb ; f += blockDim.y) {
           idx = Idxs[f];
           if (idx >= 0) {
@@ -496,7 +495,7 @@ void __launch_bounds__(256,1) landau_kernel_v2(const PetscInt nip, const PetscIn
                                                PetscReal d_mass_w[], PetscReal shift,
                                                PetscErrorCode *ierr)
 {
-  const PetscInt  Nq = blockDim.y, myelem = blockIdx.x;
+  const PetscInt  Nq = blockDim.y, elem = blockIdx.x;
   extern __shared__ PetscReal smem[];
   int size = 0;
   PetscReal (*g2)[LANDAU_DIM][LANDAU_MAX_NQ][LANDAU_MAX_SPECIES]              = // shared mem not needed when nu_alpha, etc
@@ -531,9 +530,9 @@ void __launch_bounds__(256,1) landau_kernel_v2(const PetscInt nip, const PetscIn
     (PetscScalar (*)[LANDAU_MAX_NQ][LANDAU_MAX_NQ]) &smem[size] : NULL;
   if (d_maps) size += LANDAU_MAX_NQ*LANDAU_MAX_NQ;
   const PetscInt  myQi = threadIdx.y;
-  const PetscInt  jpidx = myQi + myelem * Nq;
+  const PetscInt  jpidx = myQi + elem * Nq;
   //const PetscInt  subblocksz = nip/nSubBlks + !!(nip%nSubBlks), ip_start = mySubBlk*subblocksz, ip_end = (mySubBlk+1)*subblocksz > nip ? nip : (mySubBlk+1)*subblocksz; /* this could be wrong with very few global IPs */
-  PetscScalar     *elemMat  = elemMats_out ? &elemMats_out[myelem*totDim*totDim] : NULL; /* my output */
+  PetscScalar     *elemMat  = elemMats_out ? &elemMats_out[elem*totDim*totDim] : NULL; /* my output */
   int tid = threadIdx.x + threadIdx.y*blockDim.x;
   const PetscReal *invJ = invJj ? &invJj[jpidx*dim*dim] : NULL;
   if (elemMat) for (int i = tid; i < totDim*totDim; i += blockDim.x*blockDim.y) elemMat[i] = 0;
@@ -544,7 +543,7 @@ void __launch_bounds__(256,1) landau_kernel_v2(const PetscInt nip, const PetscIn
                            zz, s_dfz, d_dfdz,
 #endif
                            d_mass_w, shift,
-                           myelem, ierr); /* compact */
+                           elem, ierr); /* compact */
 }
 
 PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[], PetscScalar a_IPf[], const PetscInt N, const PetscScalar a_xarray[], LandauGeomData *SData_d, const PetscInt num_sub_blocks,
@@ -665,7 +664,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
                                   cudaFuncAttributeMaxDynamicSharedMemorySize,
                                   98304);CHKERRCUDA(cerr);
     }
-    // PetscPrintf(PETSC_COMM_SELF, "numGCells=%d dim.x=%d Nq=%d nThreads=%d, %d kB shared mem\n",numGCells,n,Nq,Nq*n,ii*szf/1024);
     landau_kernel_v2<<<numGCells,dimBlock,ii*szf>>>(nip,dim,totDim,Nf,Nb,d_invJj,d_nu_alpha,d_nu_beta,d_invMass,d_Eq_m,
                                                     d_BB, d_DD, d_x, d_y, d_w,
                                                     d_elemMats, d_maps, d_mat, d_f, d_dfdx, d_dfdy,
@@ -678,8 +676,6 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
     cerr = WaitForCUDA();CHKERRCUDA(cerr);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogEventEnd(events[4],0,0,0,0);CHKERRQ(ierr);
-    //cerr = cudaMemcpy(&ierr, d_ierr, sizeof(ierr), cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
-    //CHKERRQ(ierr);
   }
   // First time assembly even with GPU assembly
   if (d_elemMats) {

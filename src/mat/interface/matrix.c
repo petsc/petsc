@@ -3174,9 +3174,6 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFacto
     interface defintion cannot be generated correctly [due to MatFactorInfo]
 
 @*/
-#if defined(PETSC_HAVE_NVTX)
-#include <nvToolsExt.h>
-#endif
 PetscErrorCode MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
 {
   MatFactorInfo  tinfo;
@@ -3196,15 +3193,10 @@ PetscErrorCode MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
     ierr = MatFactorInfoInitialize(&tinfo);CHKERRQ(ierr);
     info = &tinfo;
   }
-#if defined(PETSC_HAVE_NVTX)
-  nvtxRangePushA("LU Factor");
-#endif
+
   ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->lufactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_NVTX)
-  nvtxRangePop();
-#endif
   ierr = MatViewFromOptions(fact,NULL,"-mat_factor_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);

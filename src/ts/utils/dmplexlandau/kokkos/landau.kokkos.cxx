@@ -339,16 +339,16 @@ extern "C"  {
         ierr = PetscLogEventBegin(events[8],0,0,0,0);CHKERRQ(ierr);
         ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
         Kokkos::parallel_for("f, df", Kokkos::TeamPolicy<>(numCells, team_size, /* Kokkos::AUTO */ 16), KOKKOS_LAMBDA (const team_member team) {
-            const PetscInt    myelem = team.league_rank();
+            const PetscInt    elem = team.league_rank();
             const PetscScalar *coef;
             PetscScalar       coef_buff[LANDAU_MAX_SPECIES*LANDAU_MAX_NQ];
             // un pack IPData
             if (!d_maps) {
-              coef = &d_IPf[myelem*Nb*Nf];
+              coef = &d_IPf[elem*Nb*Nf];
             } else {
               coef = coef_buff;
               for (int f = 0; f < Nf; ++f) {
-                LandauIdx *const Idxs = &d_maps->gIdx[myelem][f][0];
+                LandauIdx *const Idxs = &d_maps->gIdx[elem][f][0];
                 for (int b = 0; b < Nb; ++b) {
                   PetscInt idx = Idxs[b];
                   if (idx >= 0) {
@@ -366,7 +366,7 @@ extern "C"  {
               }
             }
             Kokkos::parallel_for(Kokkos::TeamThreadRange(team,0,Nq), [=] (int myQi) {
-                const PetscInt          ipidx = myQi + myelem * Nq;
+                const PetscInt          ipidx = myQi + elem * Nq;
                 const PetscReal *const  invJj = &d_invJ_k(ipidx*dim*dim);
                 const PetscReal         *Bq = &d_BB[myQi*Nb], *Dq = &d_DD[myQi*Nb*dim];
                 Kokkos::parallel_for(Kokkos::ThreadVectorRange(team,0,(int)Nf), [=] (int f) {
@@ -405,7 +405,7 @@ extern "C"  {
       ierr = PetscLogFlops(nip*(PetscLogDouble)(!(a_IPf || a_xarray) ? (nip*(11*Nf+ 4*dim*dim) + 6*Nf*dim*dim*dim + 10*Nf*dim*dim + 4*Nf*dim + Nb*Nf*Nb*Nq*dim*dim*5) : Nb*Nf*Nb*Nq*4));CHKERRQ(ierr);
 #endif
       Kokkos::parallel_for("Landau elements", Kokkos::TeamPolicy<>(numCells, team_size, /*Kokkos::AUTO*/ 16).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes)), KOKKOS_LAMBDA (const team_member team) {
-          const PetscInt  myelem = team.league_rank();
+          const PetscInt  elem = team.league_rank();
           g2_scr_t        g2(team.team_scratch(KOKKOS_SHARED_LEVEL),dim,Nf,Nq); // we don't use these for mass matrix
           g3_scr_t        g3(team.team_scratch(KOKKOS_SHARED_LEVEL),dim,dim,Nf,Nq);
           if (d_IPf) {
@@ -414,7 +414,7 @@ extern "C"  {
             // get g2[] & g3[]
             Kokkos::parallel_for(Kokkos::TeamThreadRange(team,0,Nq), [=] (int myQi) {
                 using Kokkos::parallel_reduce;
-                const PetscInt                    jpidx = myQi + myelem * Nq;
+                const PetscInt                    jpidx = myQi + elem * Nq;
                 const PetscReal* const            invJj = &d_invJ_k(jpidx*dim*dim);
                 const PetscReal                   vj[3] = {d_x[jpidx], d_y[jpidx], d_z ? d_z[jpidx] : 0}, wj = d_w[jpidx];
                 landau_inner_red::TensorValueType gg_temp; // reduce on part of gg2 and g33 for IP jpidx
@@ -463,7 +463,6 @@ extern "C"  {
                     }
 #endif
                   }, Kokkos::Sum<landau_inner_red::TensorValueType>(gg_temp));
-                // if (myelem==0) printf("\t:%d.%d) temp gg3=%e %e %e %e\n",myelem,myQi,gg_temp.gg3[0][0],gg_temp.gg3[1][0],gg_temp.gg3[0][1],gg_temp.gg3[1][1]);
                 // add alpha and put in gg2/3
                 Kokkos::parallel_for(Kokkos::ThreadVectorRange (team, (int)Nf), [&] (const int& fieldA) {
                     PetscInt d2,d3;
@@ -507,7 +506,7 @@ extern "C"  {
                   for (blk_j = 0; blk_j < Nb; ++blk_j) {
                     const PetscInt j    = fieldA*Nb + blk_j; /* Element matrix column */
                     const PetscInt fOff = i*totDim + j;
-                    PetscScalar t = global_elem_mat_sz ? d_elem_mats(myelem,fOff) : 0;
+                    PetscScalar t = global_elem_mat_sz ? d_elem_mats(elem,fOff) : 0;
                     for (qj = 0 ; qj < Nq ; qj++) { // look at others integration points
                       const PetscReal *BJq = &d_BB[qj*Nb], *DIq = &d_DD[qj*Nb*dim];
                       if (d_IPf) {
@@ -518,16 +517,16 @@ extern "C"  {
                           }
                         }
                       } else {
-                        const PetscInt jpidx = qj + myelem * Nq;
+                        const PetscInt jpidx = qj + elem * Nq;
                         t += BJq[blk_i] * d_mass_w_k(jpidx) * shift * BJq[blk_j];
                       }
                     }
-                    if (global_elem_mat_sz) d_elem_mats(myelem,fOff) = t; // can set this because local element matrix[fOff]
+                    if (global_elem_mat_sz) d_elem_mats(elem,fOff) = t; // can set this because local element matrix[fOff]
                     else {
                       PetscErrorCode         ierr = 0;
                       PetscScalar            vals[LANDAU_MAX_Q_FACE*LANDAU_MAX_Q_FACE],row_scale[LANDAU_MAX_Q_FACE],col_scale[LANDAU_MAX_Q_FACE];
                       PetscInt               q,idx,nr,nc,rows0[LANDAU_MAX_Q_FACE],cols0[LANDAU_MAX_Q_FACE],rows[LANDAU_MAX_Q_FACE],cols[LANDAU_MAX_Q_FACE];
-                      const LandauIdx *const Idxs = &d_maps->gIdx[myelem][fieldA][0];
+                      const LandauIdx *const Idxs = &d_maps->gIdx[elem][fieldA][0];
                       idx = Idxs[blk_i];
                       if (idx >= 0) {
                         nr = 1;
