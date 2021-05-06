@@ -14,8 +14,7 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscinitialize_              PETSCINITIALIZE
-#define petscinitializenoarguments_   PETSCINITIALIZENOARGUMENTS
+#define petscinitializef_             PETSCINITIALIZEF
 #define petscfinalize_                PETSCFINALIZE
 #define petscend_                     PETSCEND
 #define iargc_                        IARGC
@@ -25,8 +24,7 @@
 #define petsccommandargumentcount_    PETSCCOMMANDARGUMENTCOUNT
 #define petscgetcommandargument_      PETSCGETCOMMANDARGUMENT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscinitialize_              petscinitialize
-#define petscinitializenoarguments_   petscinitializenoarguments
+#define petscinitializef_             petscinitializef
 #define petscfinalize_                petscfinalize
 #define petscend_                     petscend
 #define mpi_init_                     mpi_init
@@ -246,7 +244,7 @@ PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private();
       Since this is called from Fortran it does not return error codes
 
 */
-static void petscinitialize_internal(char* filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
+PETSC_EXTERN void petscinitializef_(char* filename,char* help,PetscBool *readarguments,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len,PETSC_FORTRAN_CHARLEN_T helplen)
 {
   int            j,i;
 #if defined (PETSC_USE_NARGS)
@@ -424,7 +422,7 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
      below.
   */
   PetscInitializeFortran();
-  if (readarguments == PETSC_TRUE) {
+  if (*readarguments) {
     PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);
     FIXCHAR(filename,len,t1);
     *ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,t1);
@@ -432,7 +430,7 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
     FREECHAR(filename,t1);
     if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Freeing string in creating options database\n");return;}
   }
-  *ierr = PetscOptionsCheckInitial_Private(NULL);
+  *ierr = PetscOptionsCheckInitial_Private(help);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
   /* call a second time to check options database */
   *ierr = PetscErrorPrintfInitialize();
@@ -482,17 +480,6 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:adios_read_init_method()\n");return;}
 #endif
 }
-
-PETSC_EXTERN void petscinitialize_(char* filename,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
-{
-  petscinitialize_internal(filename, len, PETSC_TRUE, ierr);
-}
-
-PETSC_EXTERN void petscinitializenoarguments_(PetscErrorCode *ierr)
-{
-  petscinitialize_internal(NULL, (PetscInt) 0, PETSC_FALSE, ierr);
-}
-
 
 PETSC_EXTERN void petscfinalize_(PetscErrorCode *ierr)
 {
