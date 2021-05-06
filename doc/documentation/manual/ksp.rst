@@ -2240,7 +2240,7 @@ As an alternative to using runtime flags to employ these external
 packages, procedural calls are provided for some packages. For example,
 the following procedural calls are equivalent to runtime options
 ``-ksp_type preonly`` ``-pc_type lu``
-``-pc_factor_mat_solver_type mumps`` ``-mat_mumps_icntl_7 2``:
+``-pc_factor_mat_solver_type mumps`` ``-mat_mumps_icntl_7 3``:
 
 ::
 
@@ -2249,7 +2249,7 @@ the following procedural calls are equivalent to runtime options
    PCSetType(pc,PCLU);
    PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);
    PCFactorGetMatrix(pc,&F);
-   icntl=7; ival = 2;
+   icntl=7; ival = 3;
    MatMumpsSetIcntl(F,icntl,ival);
 
 One can also create matrices with the appropriate capabilities by

@@ -70,6 +70,7 @@ Changes: Development
    type ``MATHTOOL``
 -  Add ``MATCENTERING`` special matrix type that implements action of the
    centering matrix
+-  Remove -mat_mumps_icntl_7 1 option, use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
 
 .. rubric:: PC:
 
