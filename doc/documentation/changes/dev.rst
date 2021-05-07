@@ -78,6 +78,9 @@ Changes: Development
 
 .. rubric:: SNES:
 
+-  Add ``SNESSetComputeMFFunction()``
+-  Add support for ``-snes_mf_operator`` for use with ``SNESSetPicard``
+
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:

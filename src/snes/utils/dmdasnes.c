@@ -451,5 +451,6 @@ PetscErrorCode DMDASNESSetPicardLocal(DM dm,InsertMode imode,PetscErrorCode (*fu
   dmdasnes->picardlocalctx     = ctx;
 
   ierr = DMSNESSetPicard(dm,SNESComputePicard_DMDA,SNESComputePicardJacobian_DMDA,dmdasnes);CHKERRQ(ierr);
+  ierr = DMSNESSetMFFunction(dm,SNESComputeFunction_DMDA,dmdasnes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

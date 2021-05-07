@@ -924,4 +924,15 @@ x     Restore vector
       args: -snes_monitor_short -snes_type newtonls -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -snes_linesearch_monitor -pc_type lu -snes_linesearch_type nleqerr
       requires: !single
 
+   test:
+      suffix: mf
+      args: -snes_monitor_short -pc_type lu -da_refine 4  -p 3 -ksp_rtol 1.e-12  -snes_mf_operator
+      requires: !single
+
+   test:
+      suffix: mf_picard
+      args: -snes_monitor_short -pc_type lu -da_refine 4  -p 3 -ksp_rtol 1.e-12  -snes_mf_operator -picard
+      requires: !single
+      output_file: output/ex15_mf.out
+
 TEST*/
