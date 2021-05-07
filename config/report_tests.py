@@ -112,7 +112,7 @@ def summarize_results(directory,make,ntime,etime,show_results):
             print("#   %s: %.2f sec / %.2f sec" % (re.sub('.counts','',cf), timesummary[cf], cputimesummary[cf]))
   os.chdir(startdir)
   return
-  
+
 def get_test_data(directory):
     """
     Create dictionary structure with test data
@@ -132,12 +132,12 @@ def get_test_data(directory):
         probname = ''
         for i in range(1,len(testname)):
             probname += testname[i]
-        # we split the package into its subcomponents of PETSc module (e.g.: snes) 
+        # we split the package into its subcomponents of PETSc module (e.g.: snes)
         # and test type (e.g.: tutorial)
         testname_list = testname[0].split('_')
         pkgname = testname_list[0]
         testtype = testname_list[-1]
-        # in order to correct assemble the folder path for problem outputs, we 
+        # in order to correct assemble the folder path for problem outputs, we
         # iterate over any possible subpackage names and test suffixes
         testname_short = testname_list[:-1]
         prob_subdir = os.path.join('', *testname_short)

@@ -490,7 +490,6 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
       veccuda = (Vec_CUDA*)vv->spptr;
       veccuda->stream = 0; /* using default stream */
       veccuda->GPUarray_allocated = 0;
-      vv->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
       vv->minimum_bytes_pinned_memory = 0;
 
       /* Need to parse command line for minimum size to use for pinned memory allocations on host here.
@@ -503,6 +502,7 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
     }
     veccuda = (Vec_CUDA*)vv->spptr;
     veccuda->GPUarray = (PetscScalar*)array;
+    vv->offloadmask = PETSC_OFFLOAD_GPU;
   }
   PetscFunctionReturn(0);
 }

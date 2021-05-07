@@ -129,22 +129,14 @@ used:
 
    > make -f gmakefile print-test
 
-For testing in install directories, some examples are:
+For testing of installed PETSc, use
 
 .. code-block:: console
 
-   > cd ${PREFIX_DIR}
-   > make -f share/petsc/examples/gmakefile.test test TESTDIR=mytests
+   make -f ${PETSC_DIR}/share/petsc/examples/gmakefile.test test
 
-or
-
-.. code-block:: console
-
-   > cd ${PREFIX_DIR}/share/petsc/examples
-   > make -f gmakefile test TESTDIR=$PWD/mytests
-
-where the latter is needed to make have it run in the local directory
-instead of ``$PREFIX_DIR``.
+which will create/use ``tests/*`` in the current directory for generated test files.
+You may pass an additional argument ``TESTDIR=mytests`` to place these generated files somewhere else.
 
 To learn more about the test system details, one can look at the
 :doc:`the PETSc developers documentation </developers/testing>`.
