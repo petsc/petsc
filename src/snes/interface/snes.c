@@ -2163,7 +2163,7 @@ PetscErrorCode SNESSetNGS(SNES snes,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void
 }
 
 /*
-     This is used for -snes_mf_operator; it uses a duplicate of snes->jacobian_pre because snes->jacobian_pre cannot be 
+     This is used for -snes_mf_operator; it uses a duplicate of snes->jacobian_pre because snes->jacobian_pre cannot be
    changed during the KSPSolve()
 */
 PetscErrorCode SNESPicardComputeMFFunction(SNES snes,Vec x,Vec f,void *ctx)
@@ -2246,7 +2246,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes,Vec x1,Mat J,Mat B,void *ctx)
    Input Parameters:
 +  snes - the SNES context
 .  r - vector to store function value
-.  bp - function evaluation routine 
+.  bp - function evaluation routine
 .  Amat - matrix with which A(x) x - b(x) is to be computed
 .  Pmat - matrix from which preconditioner is computed (usually the same as Amat)
 .  J  - function to compute matrix value, see SNESJacobianFunction for details on its calling sequence
