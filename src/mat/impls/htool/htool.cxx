@@ -739,7 +739,7 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm,PetscInt m,PetscInt n,Pets
   Use ./configure --download-htool to install PETSc to use Htool.
 
    Options Database Keys:
-+     -mat_type htool - matrix type to "htool" during a call to MatSetFromOptions()
+.     -mat_type htool - matrix type to "htool" during a call to MatSetFromOptions()
 
    Level: beginner
 
