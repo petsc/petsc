@@ -8,6 +8,7 @@
 #  define H5_USE_18_API
 #endif
 #include <petscviewerhdf5.h>
+#include <petsc/private/viewerimpl.h>
 
 #if defined(PETSC_HAVE_HDF5)
 

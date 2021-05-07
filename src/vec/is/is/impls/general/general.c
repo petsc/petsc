@@ -3,7 +3,6 @@
      Provides the functions for index sets (IS) defined by a list of integers.
 */
 #include <../src/vec/is/is/impls/general/general.h> /*I  "petscis.h"  I*/
-#include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
 
 static PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
