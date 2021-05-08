@@ -483,6 +483,8 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
       if (!(i == 0 || j == 0 || i == info->mx-1 || j == info->my-1)) {
         const PetscScalar u = x[j][i];
         f[j][i] = sc*PetscExpScalar(u);
+      } else {
+        f[j][i] = 0.0; /* this is zero because the A(x) x term forces the x to be zero on the boundary */
       }
     }
   }
@@ -502,6 +504,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
   PetscReal      hx,hy,hxdhy,hydhx,dhx,dhy,sc;
 
   PetscFunctionBeginUser;
+  ierr  = MatZeroEntries(B);CHKERRQ(ierr);
   hx    = 1.0/(PetscReal)(info->mx-1);
   hy    = 1.0/(PetscReal)(info->my-1);
   sc    = hx*hy*user->lambda;
@@ -643,7 +646,6 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
   if (user->jtype == JAC_NEWTON) {
     ierr = PetscLogFlops(info->xm*info->ym*(131.0));CHKERRQ(ierr);
   }
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

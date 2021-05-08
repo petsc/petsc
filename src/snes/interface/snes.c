@@ -2183,7 +2183,8 @@ PetscErrorCode SNESPicardComputeMFFunction(SNES snes,Vec x,Vec f,void *ctx)
     PetscStackPop;
     ierr = VecScale(f,-1.0);CHKERRQ(ierr);
     if (!snes->picard) {
-      ierr = MatDuplicate(snes->jacobian_pre,MAT_SHARE_NONZERO_PATTERN,&snes->picard);CHKERRQ(ierr);
+      /* Cannot share nonzero pattern because of the possible use of SNESComputeJacobianDefault() */
+      ierr = MatDuplicate(snes->jacobian_pre,MAT_DO_NOT_COPY_VALUES,&snes->picard);CHKERRQ(ierr);
     }
     PetscStackPush("SNES Picard user Jacobian");
     ierr = (*sdm->ops->computepjacobian)(snes,x,snes->picard,snes->picard,sdm->pctx);CHKERRQ(ierr);
