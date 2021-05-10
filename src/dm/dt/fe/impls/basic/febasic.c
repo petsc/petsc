@@ -563,19 +563,31 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
         cgeom.detJ  = &fgeom->suppDetJ[0][e*Np+q];
       }
       w = fegeom.detJ[0]*quadWeights[q];
-      if (debug > 1 && q < Np) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]);CHKERRQ(ierr);
+      if (debug > 1) {
+        if ((isAffine && q == 0) || (!isAffine)) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ);CHKERRQ(ierr);
+          ierr = DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ);CHKERRQ(ierr);
+          ierr = DMPrintCellVector(e, "n", dim, fegeom.n);CHKERRQ(ierr);
 #endif
+        }
       }
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       ierr = PetscFEEvaluateFieldJets_Internal(ds, Nf, face, q, Tf, &cgeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       if (dsAux) {ierr = PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, auxOnBd ? 0 : face, q, TfAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);CHKERRQ(ierr);}
       for (i = 0; i < n0; ++i) f0_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f0[q*NcI]);
       for (c = 0; c < NcI; ++c) f0[q*NcI+c] *= w;
       for (i = 0; i < n1; ++i) f1_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f1[q*NcI*dim]);
       for (c = 0; c < NcI; ++c) for (d = 0; d < dim; ++d) f1[(q*NcI+c)*dim+d] *= w;
+      if (debug) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %D quad point %d\n", e, q);CHKERRQ(ierr);
+        for (c = 0; c < NcI; ++c) {
+          if (n0) {ierr = PetscPrintf(PETSC_COMM_SELF, "  f0[%D] %g\n", c, f0[q*NcI+c]);CHKERRQ(ierr);}
+          if (n1) {
+            for (d = 0; d < dim; ++d) {ierr = PetscPrintf(PETSC_COMM_SELF, "  f1[%D,%D] %g", c, d, f1[(q*NcI + c)*dim + d]);CHKERRQ(ierr);}
+            ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+          }
+        }
+      }
     }
     ierr = PetscFEUpdateElementVec_Internal(fe, Tf[field], face, basisReal, basisDerReal, &cgeom, f0, f1, &elemVec[cOffset+fOffset]);CHKERRQ(ierr);
     cOffset    += totDim;

@@ -19,10 +19,10 @@ typedef struct _n_PetscFEGeom {
   PetscReal *suppJ[2];    /* sJ[s][Nc*Np*dE*dE]:    For faces, the Jacobian for each supporting cell s */
   PetscReal *suppInvJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the inverse Jacobian for each supporting cell s */
   PetscReal *suppDetJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the Jacobian determinant for each supporting cell s */
-  PetscInt  dim;          /* Topological dimension */
-  PetscInt  dimEmbed;     /* Real coordinate dimension */
-  PetscInt  numCells;     /* Number of mesh points represented in the arrays */
-  PetscInt  numPoints;    /* Number of evaluation points represented in the arrays */
+  PetscInt  dim;          /* dim: Topological dimension */
+  PetscInt  dimEmbed;     /* dE:  coordinate dimension */
+  PetscInt  numCells;     /* Nc:  Number of mesh points represented in the arrays */
+  PetscInt  numPoints;    /* Np:  Number of evaluation points represented in the arrays */
   PetscBool isAffine;     /* Flag for affine transforms */
 } PetscFEGeom;
 
@@ -148,6 +148,8 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace, Pe
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace, const PetscInt ****, const PetscScalar ****);
 
 PETSC_EXTERN PetscErrorCode PetscFEGeomCreate(PetscQuadrature,PetscInt,PetscInt,PetscBool,PetscFEGeom**);
+PETSC_EXTERN PetscErrorCode PetscFEGeomGetQuadrature(PetscFEGeom*,PetscQuadrature*);
+PETSC_EXTERN PetscErrorCode PetscFEGeomSetQuadrature(PetscFEGeom*,PetscQuadrature);
 PETSC_EXTERN PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom**);
 PETSC_EXTERN PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom**);
 PETSC_EXTERN PetscErrorCode PetscFEGeomComplete(PetscFEGeom*);
