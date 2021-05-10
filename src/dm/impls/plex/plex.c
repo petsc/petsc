@@ -8681,13 +8681,14 @@ static PetscErrorCode DMPlexCreateConstraintSection_Anchors(DM dm, PetscSection 
     }
   }
   ierr = PetscSectionSetUp(*cSec);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *cSec, "Constraint Section");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection section, PetscSection cSec, Mat *cMat)
 {
   PetscSection   aSec;
-  PetscInt       pStart, pEnd, p, dof, aDof, aOff, off, nnz, annz, m, n, q, a, offset, *i, *j;
+  PetscInt       pStart, pEnd, p, sStart, sEnd, dof, aDof, aOff, off, nnz, annz, m, n, q, a, offset, *i, *j;
   const PetscInt *anchors;
   PetscInt       numFields, f;
   IS             aIS;
@@ -8713,6 +8714,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
   ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   /* cSec will be a subset of aSec and section */
   ierr = PetscSectionGetChart(cSec,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section,&sStart,&sEnd);CHKERRQ(ierr);
   ierr = PetscMalloc1(m+1,&i);CHKERRQ(ierr);
   i[0] = 0;
   ierr = PetscSectionGetNumFields(section,&numFields);CHKERRQ(ierr);
@@ -8727,6 +8729,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
         annz = 0;
         for (r = 0; r < rDof; r++) {
           a = anchors[rOff + r];
+          if (a < sStart || a >= sEnd) continue;
           ierr = PetscSectionGetFieldDof(section,a,f,&aDof);CHKERRQ(ierr);
           annz += aDof;
         }
@@ -8741,7 +8744,8 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
       annz = 0;
       ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
       for (q = 0; q < dof; q++) {
-        a = anchors[off + q];
+        a = anchors[rOff + q];
+        if (a < sStart || a >= sEnd) continue;
         ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);
         annz += aDof;
       }
@@ -8767,6 +8771,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
             PetscInt s;
 
             a = anchors[rOff + r];
+            if (a < sStart || a >= sEnd) continue;
             ierr = PetscSectionGetFieldDof(section,a,f,&aDof);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldOffset(section,a,f,&aOff);CHKERRQ(ierr);
             for (s = 0; s < aDof; s++) {
@@ -8786,6 +8791,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
           PetscInt s;
 
           a = anchors[rOff + r];
+          if (a < sStart || a >= sEnd) continue;
           ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);
           ierr = PetscSectionGetOffset(section,a,&aOff);CHKERRQ(ierr);
           for (s = 0; s < aDof; s++) {
