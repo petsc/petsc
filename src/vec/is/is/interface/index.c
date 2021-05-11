@@ -841,7 +841,7 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(ident,2);
+  PetscValidBoolPointer(ident,2);
   ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -897,7 +897,7 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(start,4);
-  PetscValidIntPointer(contig,5);
+  PetscValidBoolPointer(contig,5);
   *start  = -1;
   *contig = PETSC_FALSE;
   if (is->ops->contiguous) {
@@ -934,7 +934,7 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(perm,2);
+  PetscValidBoolPointer(perm,2);
   ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1144,7 +1144,7 @@ PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(map,2);
+  PetscValidPointer(map,2);
   *map = is->map;
   PetscFunctionReturn(0);
 }
@@ -1865,7 +1865,7 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidPointer(newis,3);
+  PetscValidPointer(newis,4);
   ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)is),comm,&match);CHKERRMPI(ierr);
   if (mode != PETSC_COPY_VALUES && (match == MPI_IDENT || match == MPI_CONGRUENT)) {
     ierr   = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);

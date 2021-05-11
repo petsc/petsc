@@ -1163,7 +1163,7 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(value, 5);
+  PetscValidPointer(value, 8);
   ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetFunctional(sp, f, &n);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(n, &dim, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
@@ -1211,7 +1211,7 @@ PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScala
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidScalarPointer(pointEval, 2);
-  PetscValidScalarPointer(spValue, 5);
+  PetscValidScalarPointer(spValue, 3);
   ierr = PetscDualSpaceGetAllData(sp, NULL, &allMat);CHKERRQ(ierr);
   if (!(sp->allNodeValues)) {
     ierr = MatCreateVecs(allMat, &(sp->allNodeValues), NULL);CHKERRQ(ierr);
@@ -1252,7 +1252,7 @@ PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace sp, const Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidScalarPointer(pointEval, 2);
-  PetscValidScalarPointer(spValue, 5);
+  PetscValidScalarPointer(spValue, 3);
   ierr = PetscDualSpaceGetInteriorData(sp, NULL, &intMat);CHKERRQ(ierr);
   if (!(sp->intNodeValues)) {
     ierr = MatCreateVecs(intMat, &(sp->intNodeValues), NULL);CHKERRQ(ierr);
@@ -1559,7 +1559,7 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(value, 5);
+  PetscValidPointer(value, 8);
   ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetFunctional(sp, f, &n);CHKERRQ(ierr);
@@ -1609,7 +1609,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(subsp,2);
+  PetscValidPointer(subsp,3);
   if (!(sp->uniform)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "A non-uniform dual space does not have a single dual space at each height");
   *subsp = NULL;
   dm = sp->dm;
@@ -1679,7 +1679,7 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(bdsp,2);
+  PetscValidPointer(bdsp,3);
   *bdsp = NULL;
   dm = sp->dm;
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);

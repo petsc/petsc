@@ -712,6 +712,26 @@ checkbadSource:
          fi
 	@test ! -s badSourceChar.out
 
+lint:
+	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --verbose=${V} $(LINTER_OPTIONS)
+
+help-lint:
+	@${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --help
+	-@echo "Basic usage:"
+	-@echo "   make lint      <options>"
+	-@echo "   make test-lint <options> <test only options>"
+	-@echo
+	-@echo "Options:"
+	-@echo "  V=[1,0]                                Enable or disable verbose output"
+	-@echo "  LINTER_OPTIONS=\"--opt1 --opt2 ...\"     See above for available options"
+	-@echo
+	-@echo "Test Only Options:"
+	-@echo "  REPLACE=[1,0]                          Enable or disable replacing test output"
+	-@echo
+
+test-lint:
+	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --src-dir ${PETSC_DIR}/src/sys/tests/linter --test -j0 --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
+
 check_petsc4py_rst:
 	@${RM} -f petsc4py_rst.log
 	@echo "Checking src/binding/petsc4py/DESCRIPTION.rst"

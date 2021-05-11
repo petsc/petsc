@@ -1367,7 +1367,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(mat,3);
+  PetscValidPointer(mat,2);
   if (!dm->ops->creatematrix) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMCreateMatrix",((PetscObject)dm)->type_name);
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DM_CreateMatrix,0,0,0,0);CHKERRQ(ierr);
@@ -2253,7 +2253,6 @@ PetscErrorCode DMInterpolateSolution(DM coarse, DM fine, Mat interp, Vec coarseS
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,DM_CLASSID,1);
-  PetscValidHeaderSpecific(coarse,DM_CLASSID,2);
   if (interp) PetscValidHeaderSpecific(interp,MAT_CLASSID,3);
   PetscValidHeaderSpecific(coarseSol,VEC_CLASSID,4);
   PetscValidHeaderSpecific(fineSol,VEC_CLASSID,5);
@@ -4772,7 +4771,7 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, DMLabel *label, PetscObject *field)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(field, 3);
+  PetscValidPointer(field, 4);
   if ((f < 0) || (f >= dm->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, dm->Nf);
   if (label) *label = dm->fields[f].label;
   if (field) *field = dm->fields[f].disc;
@@ -4846,7 +4845,7 @@ PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject field)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 3);
+  if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
   PetscValidHeader(field, 3);
   ierr = DMFieldEnlarge_Static(dm, Nf+1);CHKERRQ(ierr);
   dm->fields[Nf].label = label;
@@ -5053,8 +5052,8 @@ PetscErrorCode DMGetBasicAdjacency(DM dm, PetscBool *useCone, PetscBool *useClos
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (useCone)    PetscValidBoolPointer(useCone, 3);
-  if (useClosure) PetscValidBoolPointer(useClosure, 4);
+  if (useCone)    PetscValidBoolPointer(useCone, 2);
+  if (useClosure) PetscValidBoolPointer(useClosure, 3);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   if (!Nf) {
     ierr = DMGetAdjacency(dm, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
@@ -5342,7 +5341,7 @@ PetscErrorCode DMSetRegionDS(DM dm, DMLabel label, IS fields, PetscDS ds)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
-  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 3);
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 4);
   for (s = 0; s < Nds; ++s) {
     if (dm->probs[s].label == label) {
       ierr = PetscDSDestroy(&dm->probs[s].ds);CHKERRQ(ierr);
@@ -7223,7 +7222,7 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscValidRealPointer(val,4);
+  PetscValidRealPointer(val,5);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
@@ -7341,7 +7340,7 @@ PetscErrorCode DMCreateLabelAtIndex(DM dm, PetscInt l, const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidCharPointer(name, 3);
   ierr = DMHasLabel(dm, name, &flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = DMLabelCreate(PETSC_COMM_SELF, name, &label);CHKERRQ(ierr);
@@ -8244,7 +8243,7 @@ PetscErrorCode DMUniversalLabelCreateLabels(DMUniversalLabel ul, PetscBool prese
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
   for (l = 0; l < Nl; ++l) {
     if (preserveOrder) {ierr = DMCreateLabelAtIndex(dm, ul->indices[l], ul->names[l]);CHKERRQ(ierr);}
     else               {ierr = DMCreateLabel(dm, ul->names[l]);CHKERRQ(ierr);}
@@ -8596,7 +8595,7 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(localX,VEC_CLASSID,6);
   if (!dm->ops->projectfunctionlocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMProjectFunctionLocal",((PetscObject)dm)->type_name);
   ierr = (dm->ops->projectfunctionlocal) (dm, time, funcs, ctxs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -8681,7 +8680,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(localX,VEC_CLASSID,11);
   if (!dm->ops->projectfunctionlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMProjectFunctionLabelLocal",((PetscObject)dm)->type_name);
   ierr = (dm->ops->projectfunctionlabellocal) (dm, time, label, numIds, ids, Nc, comps, funcs, ctxs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -8819,8 +8818,8 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(localU,VEC_CLASSID,6);
-  PetscValidHeaderSpecific(localX,VEC_CLASSID,9);
+  PetscValidHeaderSpecific(localU,VEC_CLASSID,8);
+  PetscValidHeaderSpecific(localX,VEC_CLASSID,11);
   if (!dm->ops->projectfieldlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMProjectFieldLabelLocal",((PetscObject)dm)->type_name);
   ierr = (dm->ops->projectfieldlabellocal)(dm, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -8893,8 +8892,8 @@ PetscErrorCode DMProjectBdFieldLabelLocal(DM dm, PetscReal time, DMLabel label, 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(localU,VEC_CLASSID,6);
-  PetscValidHeaderSpecific(localX,VEC_CLASSID,9);
+  PetscValidHeaderSpecific(localU,VEC_CLASSID,8);
+  PetscValidHeaderSpecific(localX,VEC_CLASSID,11);
   if (!dm->ops->projectbdfieldlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMProjectBdFieldLabelLocal",((PetscObject)dm)->type_name);
   ierr = (dm->ops->projectbdfieldlabellocal)(dm, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);

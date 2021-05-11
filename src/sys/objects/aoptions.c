@@ -27,9 +27,9 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,MP
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (prefix) PetscValidCharPointer(prefix,2);
-  PetscValidCharPointer(title,3);
-  if (mansec) PetscValidCharPointer(mansec,4);
+  if (prefix) PetscValidCharPointer(prefix,3);
+  PetscValidCharPointer(title,4);
+  if (mansec) PetscValidCharPointer(mansec,5);
   if (!PetscOptionsObject->alreadyprinted) {
     if (!PetscOptionsHelpPrintedSingleton) {
       ierr = PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionItems *PetscOptionsObj
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj,2);
   PetscOptionsObject->object         = obj;
   PetscOptionsObject->alreadyprinted = obj->optionsprinted;
 

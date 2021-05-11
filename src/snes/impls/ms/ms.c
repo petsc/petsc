@@ -203,12 +203,12 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   if (nstages < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have at least one stage");
   if (gamma || delta) {
     if (nregisters != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for methods written in 3-register form");
-    PetscValidRealPointer(gamma,4);
-    PetscValidRealPointer(delta,5);
+    PetscValidRealPointer(gamma,5);
+    PetscValidRealPointer(delta,6);
   } else {
     if (nregisters != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for methods written in 1-register form");
   }
-  PetscValidRealPointer(betasub,6);
+  PetscValidRealPointer(betasub,7);
 
   ierr          = SNESMSInitializePackage();CHKERRQ(ierr);
   ierr          = PetscNew(&link);CHKERRQ(ierr);

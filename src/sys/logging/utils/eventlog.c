@@ -602,7 +602,7 @@ PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog,PetscLogEv
 PetscErrorCode PetscEventPerfLogGetVisible(PetscEventPerfLog eventLog,PetscLogEvent event,PetscBool  *isVisible)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(isVisible,3);
+  PetscValidBoolPointer(isVisible,3);
   *isVisible = eventLog->eventInfo[event].visible;
   PetscFunctionReturn(0);
 }

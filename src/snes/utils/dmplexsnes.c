@@ -341,7 +341,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   PetscInt          n, N, numFound;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   if (ctx->dim < 0) SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
@@ -1096,7 +1096,7 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(ctx, 2);
+  PetscValidPointer(ctx, 1);
   ierr = VecDestroy(&(*ctx)->coords);CHKERRQ(ierr);
   ierr = PetscFree((*ctx)->points);CHKERRQ(ierr);
   ierr = PetscFree((*ctx)->cells);CHKERRQ(ierr);
@@ -1689,7 +1689,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   if (error) PetscValidRealPointer(error, 6);
 
   ierr = DMComputeExactSolution(dm, t, u, NULL);CHKERRQ(ierr);
@@ -1829,7 +1829,7 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
   if (isLinear) PetscValidBoolPointer(isLinear, 5);
-  if (convRate) PetscValidRealPointer(convRate, 5);
+  if (convRate) PetscValidRealPointer(convRate, 6);
   ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
   ierr = DMComputeExactSolution(dm, 0.0, u, NULL);CHKERRQ(ierr);
   /* Create and view matrices */

@@ -180,7 +180,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,Mat *J)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(J,3);
+  PetscValidPointer(J,2);
   if (!shell->A) {
     if (shell->Xglobal) {
       PetscInt m,M;

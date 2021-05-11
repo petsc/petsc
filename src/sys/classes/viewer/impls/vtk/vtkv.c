@@ -44,7 +44,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErr
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(dm,2);
-  PetscValidHeader(vec,4);
+  PetscValidHeader(vec,7);
   ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscErrorCode (*)(PetscObject,PetscViewer),PetscInt,PetscViewerVTKFieldType,PetscBool,PetscObject),(viewer,dm,PetscViewerVTKWriteFunction,fieldnum,fieldtype,checkdm,vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

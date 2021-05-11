@@ -3109,7 +3109,7 @@ PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
     *maxsteps = ts->max_steps;
   }
   if (maxtime) {
-    PetscValidScalarPointer(maxtime,3);
+    PetscValidRealPointer(maxtime,3);
     *maxtime = ts->max_time;
   }
   PetscFunctionReturn(0);
@@ -3126,7 +3126,7 @@ PetscErrorCode TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,maxsteps,2);
-  PetscValidLogicalCollectiveReal(ts,maxtime,2);
+  PetscValidLogicalCollectiveReal(ts,maxtime,3);
   if (maxsteps >= 0) ts->max_steps = maxsteps;
   if (maxtime != PETSC_DEFAULT) ts->max_time = maxtime;
   PetscFunctionReturn(0);
@@ -3620,7 +3620,7 @@ PetscErrorCode TSEvaluateWLTE(TS ts,NormType wnormtype,PetscInt *order,PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidType(ts,1);
-  PetscValidLogicalCollectiveEnum(ts,wnormtype,4);
+  PetscValidLogicalCollectiveEnum(ts,wnormtype,2);
   if (order) PetscValidIntPointer(order,3);
   if (order) PetscValidLogicalCollectiveInt(ts,*order,3);
   PetscValidRealPointer(wlte,4);
@@ -4412,7 +4412,7 @@ PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec U,Mat A,Mat B,void *ctx)
   PetscValidHeaderSpecific(A,MAT_CLASSID,3);
   PetscValidPointer(B,4);
   PetscValidHeaderSpecific(B,MAT_CLASSID,4);
-  PetscValidHeaderSpecific(ts,TS_CLASSID,6);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,5);
   ierr = (ts->ops->snesjacobian)(snes,U,A,B,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5392,7 +5392,7 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
   PetscValidType(U,3);
   PetscValidType(Y,4);
   PetscCheckSameComm(E,2,U,3);
-  PetscCheckSameComm(U,2,Y,3);
+  PetscCheckSameComm(U,3,Y,4);
   PetscValidPointer(norm,5);
   PetscValidPointer(norma,6);
   PetscValidPointer(normr,7);
@@ -5568,7 +5568,7 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
   PetscValidType(U,3);
   PetscValidType(Y,4);
   PetscCheckSameComm(E,2,U,3);
-  PetscCheckSameComm(U,2,Y,3);
+  PetscCheckSameComm(U,3,Y,4);
   PetscValidPointer(norm,5);
   PetscValidPointer(norma,6);
   PetscValidPointer(normr,7);

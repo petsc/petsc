@@ -2696,9 +2696,9 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (obj) PetscValidScalarPointer(obj,2);
-  if (resid) PetscValidScalarPointer(resid,3);
-  if (cnorm) PetscValidScalarPointer(cnorm,4);
+  if (obj) PetscValidRealPointer(obj,2);
+  if (resid) PetscValidRealPointer(resid,3);
+  if (cnorm) PetscValidRealPointer(cnorm,4);
   if (lits) PetscValidIntPointer(lits,5);
 
   if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;

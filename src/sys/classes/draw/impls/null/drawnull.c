@@ -209,7 +209,7 @@ PetscErrorCode  PetscDrawIsNull(PetscDraw draw,PetscBool *yes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscValidIntPointer(yes,2);
+  PetscValidBoolPointer(yes,2);
   ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,yes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

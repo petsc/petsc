@@ -456,7 +456,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
   ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   x[0] = (PetscReal) n;

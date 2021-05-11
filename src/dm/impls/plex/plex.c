@@ -3495,9 +3495,9 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 2);
-  PetscValidPointer(numCoveringPoints, 3);
-  PetscValidPointer(coveringPoints, 4);
+  PetscValidPointer(points, 3);
+  PetscValidPointer(numCoveringPoints, 4);
+  PetscValidPointer(coveringPoints, 5);
   ierr = DMGetWorkArray(dm, mesh->maxConeSize, MPIU_INT, &meet[0]);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, mesh->maxConeSize, MPIU_INT, &meet[1]);CHKERRQ(ierr);
   /* Copy in cone of first point */
@@ -3604,9 +3604,9 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(points, 2);
-  PetscValidPointer(numCoveredPoints, 3);
-  PetscValidPointer(coveredPoints, 4);
+  PetscValidPointer(points, 3);
+  PetscValidPointer(numCoveredPoints, 4);
+  PetscValidPointer(coveredPoints, 5);
 
   ierr    = DMPlexGetDepth(dm, &height);CHKERRQ(ierr);
   ierr    = PetscMalloc1(numPoints, &closures);CHKERRQ(ierr);
@@ -3766,7 +3766,7 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  PetscValidPointer(numFaceVertices,3);
+  PetscValidPointer(numFaceVertices,4);
   switch (cellDim) {
   case 0:
     *numFaceVertices = 0;
@@ -6691,7 +6691,7 @@ PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSec
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(indices, 5);
+  PetscValidPointer(indices, 7);
   ierr = DMRestoreWorkArray(dm, 0, MPIU_INT, indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

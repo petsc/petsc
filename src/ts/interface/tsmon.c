@@ -185,7 +185,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
   PetscBool      iascii,ibinary;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,5);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
@@ -233,7 +233,7 @@ PetscErrorCode TSMonitorExtreme(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
 
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,5);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   if (iascii) {

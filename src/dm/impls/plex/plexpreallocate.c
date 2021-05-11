@@ -725,9 +725,9 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 9);
-  if (dnz)  PetscValidPointer(dnz,5);  if (onz)  PetscValidPointer(onz,6);
-  if (dnzu) PetscValidPointer(dnzu,7); if (onzu) PetscValidPointer(onzu,8);
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 7);
+  if (dnz)  PetscValidPointer(dnz,3);  if (onz)  PetscValidPointer(onz,4);
+  if (dnzu) PetscValidPointer(dnzu,5); if (onzu) PetscValidPointer(onzu,6);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);

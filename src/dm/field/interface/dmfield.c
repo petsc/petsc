@@ -159,7 +159,7 @@ PetscErrorCode  DMFieldGetType(DMField field, DMFieldType *type)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(field, VEC_TAGGER_CLASSID,1);
+  PetscValidHeaderSpecific(field, DMFIELD_CLASSID,1);
   PetscValidPointer(type,2);
   ierr = DMFieldRegisterAll();CHKERRQ(ierr);
   *type = ((PetscObject)field)->type_name;
@@ -251,9 +251,9 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
   PetscValidHeaderSpecific(points,VEC_CLASSID,2);
-  if (B) PetscValidPointer(B,3);
-  if (D) PetscValidPointer(D,4);
-  if (H) PetscValidPointer(H,5);
+  if (B) PetscValidPointer(B,4);
+  if (D) PetscValidPointer(D,5);
+  if (H) PetscValidPointer(H,6);
   if (field->ops->evaluate) {
     ierr = (*field->ops->evaluate) (field, points, datatype, B, D, H);CHKERRQ(ierr);
   } else SETERRQ (PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
@@ -299,9 +299,9 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
   PetscValidHeaderSpecific(cellIS,IS_CLASSID,2);
   PetscValidHeader(points,3);
-  if (B) PetscValidPointer(B,4);
-  if (D) PetscValidPointer(D,5);
-  if (H) PetscValidPointer(H,6);
+  if (B) PetscValidPointer(B,5);
+  if (D) PetscValidPointer(D,6);
+  if (H) PetscValidPointer(H,7);
   if (field->ops->evaluateFE) {
     ierr = (*field->ops->evaluateFE) (field, cellIS, points, datatype, B, D, H);CHKERRQ(ierr);
   } else SETERRQ (PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
@@ -343,9 +343,9 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
   PetscValidHeaderSpecific(cellIS,IS_CLASSID,2);
-  if (B) PetscValidPointer(B,3);
-  if (D) PetscValidPointer(D,4);
-  if (H) PetscValidPointer(H,5);
+  if (B) PetscValidPointer(B,4);
+  if (D) PetscValidPointer(D,5);
+  if (H) PetscValidPointer(H,6);
   if (field->ops->evaluateFV) {
     ierr = (*field->ops->evaluateFV) (field, cellIS, datatype, B, D, H);CHKERRQ(ierr);
   } else SETERRQ (PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");

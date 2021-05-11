@@ -449,7 +449,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(MPI_Comm comm,PetscInt segme
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm,4);
+  PetscValidPointer(dm,6);
 
   ierr = DMCreate(comm,dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm,DMPLEX);CHKERRQ(ierr);
@@ -496,7 +496,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(MPI_Comm comm, PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 4);
+  PetscValidPointer(dm, 8);
   for (i = 0; i < dim; ++i) if (periodicity[i] != DM_BOUNDARY_NONE) SETERRQ(comm, PETSC_ERR_SUP, "Periodicity is not supported for simplex meshes");
   ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
   PetscValidLogicalCollectiveInt(boundary,dim,2);
@@ -925,7 +925,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(MPI_Comm comm, PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 7);
+  PetscValidPointer(dm, 8);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   PetscValidLogicalCollectiveInt(*dm,dim,2);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
@@ -1175,7 +1175,7 @@ PetscErrorCode DMPlexExtrude(DM idm, PetscInt layers, PetscReal height, PetscBoo
   PetscValidHeaderSpecific(idm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(idm, layers, 2);
   PetscValidLogicalCollectiveReal(idm, height, 3);
-  PetscValidLogicalCollectiveBool(idm, interpolate, 4);
+  PetscValidLogicalCollectiveBool(idm, interpolate, 6);
   ierr = DMGetDimension(idm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(idm, &cDim);CHKERRQ(ierr);
   cDimB = cDim == dim ? cDim+1 : cDim;
@@ -1697,7 +1697,7 @@ PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBoo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 3);
+  PetscValidPointer(dm, 4);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   if (n < 0) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of wedges %D cannot be negative", n);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
@@ -1833,7 +1833,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 4);
+  PetscValidPointer(dm, 5);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
@@ -2431,7 +2431,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Options");CHKERRQ(ierr);
   /* Handle DMPlex refinement before distribution */
   ierr = DMPlexGetRefinementUniform(dm, &uniformOrig);CHKERRQ(ierr);
@@ -3078,7 +3078,7 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   PetscValidLogicalCollectiveInt(*dm, dim, 2);
-  PetscValidLogicalCollectiveInt(*dm, spaceDim, 8);
+  PetscValidLogicalCollectiveInt(*dm, spaceDim, 9);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexBuildFromCellListParallel(*dm, numCells, numVertices, NVertices, numCorners, cells, &sfVert);CHKERRQ(ierr);
   if (interpolate) {

@@ -414,18 +414,18 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
   PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(Xout,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(Xout,VEC_CLASSID,6);
 
   PetscValidType(X,1);
   PetscValidType(XL,2);
   PetscValidType(XU,3);
-  PetscValidType(Xout,4);
+  PetscValidType(Xout,6);
   PetscCheckSameType(X,1,XL,2);
   PetscCheckSameType(X,1,XU,3);
-  PetscCheckSameType(X,1,Xout,4);
+  PetscCheckSameType(X,1,Xout,6);
   PetscCheckSameComm(X,1,XL,2);
   PetscCheckSameComm(X,1,XU,3);
-  PetscCheckSameComm(X,1,Xout,4);
+  PetscCheckSameComm(X,1,Xout,6);
   VecCheckSameSize(X,1,XL,2);
   VecCheckSameSize(X,1,XU,3);
   VecCheckSameSize(X,1,Xout,4);

@@ -264,8 +264,8 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (residual) PetscValidRealPointer(residual, 5);
+  PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
+  if (residual) PetscValidRealPointer(residual, 7);
   ierr = PetscObjectGetComm((PetscObject) ts, &comm);CHKERRQ(ierr);
   ierr = DMComputeExactSolution(dm, t, u, u_t);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
@@ -320,9 +320,9 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (isLinear) PetscValidBoolPointer(isLinear, 5);
-  if (convRate) PetscValidRealPointer(convRate, 5);
+  PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
+  if (isLinear) PetscValidBoolPointer(isLinear, 7);
+  if (convRate) PetscValidRealPointer(convRate, 8);
   ierr = PetscObjectGetComm((PetscObject) ts, &comm);CHKERRQ(ierr);
   ierr = DMComputeExactSolution(dm, t, u, u_t);CHKERRQ(ierr);
   /* Create and view matrices */

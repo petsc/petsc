@@ -29,9 +29,9 @@ PetscErrorCode  SNESApplyNPC(SNES snes,Vec x,Vec f,Vec y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscCheckSameComm(snes,1,x,2);
-  PetscCheckSameComm(snes,1,y,3);
+  PetscCheckSameComm(snes,1,y,4);
   ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
   if (snes->npc) {
     if (f) {

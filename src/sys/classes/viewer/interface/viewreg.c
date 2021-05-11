@@ -223,7 +223,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
   PetscBool                      flag,hashelp;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,3);
+  PetscValidCharPointer(name,4);
 
   if (viewer) *viewer = NULL;
   if (format) *format = PETSC_VIEWER_DEFAULT;

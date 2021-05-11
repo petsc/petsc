@@ -242,7 +242,7 @@ static PetscErrorCode VecPointwiseMult_Nest(Vec w,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  VecNestCheckCompatible3(w,1,x,3,y,4);
+  VecNestCheckCompatible3(w,1,x,2,y,3);
   nr = bx->nb;
   for (i=0; i<nr; i++) {
     ierr = VecPointwiseMult(bw->v[i],bx->v[i],by->v[i]);CHKERRQ(ierr);

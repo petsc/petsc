@@ -83,7 +83,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
-  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,2);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWLG_CLASSID,2);
   ierr = PetscDrawIsNull(lg->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRMPI(ierr);

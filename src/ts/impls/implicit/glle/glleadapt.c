@@ -204,7 +204,7 @@ PetscErrorCode  TSGLLEAdaptChoose(TSGLLEAdapt adapt,PetscInt n,const PetscInt or
   PetscValidPointer(cost,5);
   PetscValidIntPointer(next_sc,9);
   PetscValidPointer(next_h,10);
-  PetscValidIntPointer(finish,11);
+  PetscValidBoolPointer(finish,11);
   ierr = (*adapt->ops->choose)(adapt,n,orders,errors,cost,cur,h,tleft,next_sc,next_h,finish);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

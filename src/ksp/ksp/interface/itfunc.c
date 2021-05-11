@@ -56,8 +56,8 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidScalarPointer(emax,2);
-  PetscValidScalarPointer(emin,3);
+  PetscValidRealPointer(emax,2);
+  PetscValidRealPointer(emin,3);
   if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Singular values not requested before KSPSetUp()");
 
   if (ksp->ops->computeextremesingularvalues) {
@@ -117,8 +117,8 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (n) PetscValidScalarPointer(r,3);
-  if (n) PetscValidScalarPointer(c,4);
+  if (n) PetscValidRealPointer(r,3);
+  if (n) PetscValidRealPointer(c,4);
   if (n<0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requested < 0 Eigenvalues");
   PetscValidIntPointer(neig,5);
   if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Eigenvalues not requested before KSPSetUp()");

@@ -32,7 +32,7 @@ PetscErrorCode PCISSetUseStiffnessScaling(PC pc, PetscBool use)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveInt(pc,use,2);
+  PetscValidLogicalCollectiveBool(pc,use,2);
   ierr = PetscTryMethod(pc,"PCISSetUseStiffnessScaling_C",(PC,PetscBool),(pc,use));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

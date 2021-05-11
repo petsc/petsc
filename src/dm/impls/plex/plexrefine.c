@@ -4185,7 +4185,7 @@ PetscErrorCode DMPlexRefineUniform(DM dm, DMPlexCellRefiner cr, DM *dmRefined)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(cr, 1);
+  PetscValidHeader(cr, 2);
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), &rdm);CHKERRQ(ierr);
   ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);

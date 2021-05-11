@@ -188,8 +188,8 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (nevents) {
-    PetscValidIntPointer(direction,2);
-    PetscValidIntPointer(terminate,3);
+    PetscValidIntPointer(direction,3);
+    PetscValidBoolPointer(terminate,4);
   }
 
   ierr = PetscNewLog(ts,&event);CHKERRQ(ierr);

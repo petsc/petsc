@@ -92,7 +92,7 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(q, 2);
+  PetscValidPointer(q, 1);
   ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject) q), r);CHKERRQ(ierr);
   ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
   ierr = PetscQuadratureSetOrder(*r, order);CHKERRQ(ierr);
@@ -476,11 +476,11 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
   if (Nc >= 0)      q->Nc        = Nc;
   if (npoints >= 0) q->numPoints = npoints;
   if (points) {
-    PetscValidPointer(points, 4);
+    PetscValidPointer(points, 5);
     q->points = points;
   }
   if (weights) {
-    PetscValidPointer(weights, 5);
+    PetscValidPointer(weights, 6);
     q->weights = weights;
   }
   PetscFunctionReturn(0);

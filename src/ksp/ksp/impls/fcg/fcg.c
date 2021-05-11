@@ -345,7 +345,7 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp,PetscInt mmax)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(ksp,mmax,2);
+  PetscValidLogicalCollectiveInt(ksp,mmax,2);
   fcg->mmax = mmax;
   PetscFunctionReturn(0);
 }
@@ -403,7 +403,7 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(ksp,nprealloc,2);
+  PetscValidLogicalCollectiveInt(ksp,nprealloc,2);
   if (nprealloc > fcg->mmax+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot preallocate more than m_max+1 vectors");
   fcg->nprealloc = nprealloc;
   PetscFunctionReturn(0);

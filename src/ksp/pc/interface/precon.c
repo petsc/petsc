@@ -377,7 +377,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(newpc,1);
+  PetscValidPointer(newpc,2);
   *newpc = NULL;
   ierr = PCInitializePackage();CHKERRQ(ierr);
 

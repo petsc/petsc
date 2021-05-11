@@ -94,7 +94,7 @@ PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(useAnchors, 2);
+  PetscValidBoolPointer(useAnchors, 2);
   *useAnchors = mesh->useAnchors;
   PetscFunctionReturn(0);
 }
@@ -333,8 +333,8 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
-  if (processRanks) {PetscValidPointer(processRanks, 3);}
-  if (sfProcess)    {PetscValidPointer(sfProcess, 4);}
+  if (processRanks) {PetscValidPointer(processRanks, 7);}
+  if (sfProcess)    {PetscValidPointer(sfProcess, 8);}
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
   ierr = PetscSFGetGraph(sfPoint, NULL, &numLeaves, NULL, &remotePoints);CHKERRQ(ierr);
@@ -1896,7 +1896,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(gatherMesh,2);
+  PetscValidPointer(gatherMesh,3);
   *gatherMesh = NULL;
   if (sf) *sf = NULL;
   comm = PetscObjectComm((PetscObject)dm);
@@ -1944,7 +1944,7 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(redundantMesh,2);
+  PetscValidPointer(redundantMesh,3);
   *redundantMesh = NULL;
   comm = PetscObjectComm((PetscObject)dm);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);

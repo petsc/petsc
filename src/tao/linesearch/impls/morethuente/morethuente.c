@@ -28,7 +28,7 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
 static PetscErrorCode TaoLineSearchSetFromOptions_MT(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
+  PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,2);
   PetscFunctionReturn(0);
 }
 
@@ -59,7 +59,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidScalarPointer(f,3);
+  PetscValidRealPointer(f,3);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   PetscValidHeaderSpecific(s,VEC_CLASSID,5);
 

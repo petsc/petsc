@@ -1635,7 +1635,7 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DMLabel splitL
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmSplit, 3);
+  PetscValidPointer(dmSplit, 4);
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), &sdm);CHKERRQ(ierr);
   ierr = DMSetType(sdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -3346,7 +3346,7 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(subdm, 3);
+  PetscValidPointer(subdm, 5);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), subdm);CHKERRQ(ierr);
   ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
@@ -3647,7 +3647,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(subdm, 3);
+  PetscValidPointer(subdm, 4);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), subdm);CHKERRQ(ierr);
   ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
@@ -3824,7 +3824,7 @@ PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
   *rel = DM_ENC_NONE;
   if (!dmA || !dmB) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dmB, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
   if (dmA == dmB) {*rel = DM_ENC_EQUALITY; PetscFunctionReturn(0);}
   ierr = DMConvert(dmA, DMPLEX, &plexA);CHKERRQ(ierr);
   ierr = DMConvert(dmB, DMPLEX, &plexB);CHKERRQ(ierr);

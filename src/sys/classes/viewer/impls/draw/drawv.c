@@ -104,7 +104,7 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
     ierr = PetscDrawSetFromOptions(vdraw->draw[windownumber]);CHKERRQ(ierr);
   }
   if (draw) *draw = vdraw->draw[windownumber];
-  if (draw) PetscValidHeaderSpecific(*draw,PETSC_DRAW_CLASSID,-1);
+  if (draw) PetscValidHeaderSpecific(*draw,PETSC_DRAW_CLASSID,3);
   PetscFunctionReturn(0);
 }
 

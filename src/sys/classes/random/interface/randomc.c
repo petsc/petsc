@@ -348,7 +348,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  PetscValidPointer(r,3);
+  PetscValidPointer(r,2);
   *r = NULL;
   ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
 

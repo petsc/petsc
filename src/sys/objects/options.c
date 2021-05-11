@@ -1021,7 +1021,7 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
   PetscBool      valid;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(prefix,1);
+  PetscValidCharPointer(prefix,2);
   options = options ? options : defaultoptions;
   if (options->prefixind >= MAXPREFIXES) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES",MAXPREFIXES);
   key[0] = '-'; /* keys must start with '-' */
@@ -2257,7 +2257,7 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options,const char pre[],const c
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
-  if (ivalue) PetscValidIntPointer(ivalue,4);
+  if (ivalue) PetscValidBoolPointer(ivalue,4);
   ierr = PetscOptionsFindPair(options,pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (set) *set = PETSC_TRUE;
@@ -2674,7 +2674,7 @@ PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options,const char pre[],co
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
-  PetscValidIntPointer(dvalue,4);
+  PetscValidBoolPointer(dvalue,4);
   PetscValidIntPointer(nmax,5);
 
   ierr = PetscOptionsFindPair(options,pre,name,&svalue,&flag);CHKERRQ(ierr);
@@ -2953,7 +2953,7 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options,const char pre[],
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
-  PetscValidRealPointer(dvalue,4);
+  PetscValidScalarPointer(dvalue,4);
   PetscValidIntPointer(nmax,5);
 
   ierr = PetscOptionsFindPair(options,pre,name,&svalue,&flag);CHKERRQ(ierr);

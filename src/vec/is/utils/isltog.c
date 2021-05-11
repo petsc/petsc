@@ -601,8 +601,8 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   PetscInt       *in;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(indices,3);
-  PetscValidPointer(mapping,4);
+  if (n) PetscValidIntPointer(indices,4);
+  PetscValidPointer(mapping,6);
 
   *mapping = NULL;
   ierr = ISInitializePackage();CHKERRQ(ierr);

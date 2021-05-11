@@ -393,7 +393,7 @@ PetscErrorCode PetscDrawMovieSave(const char basename[],PetscInt count,const cha
   PetscFunctionBegin;
   PetscValidCharPointer(basename,1);
   PetscValidCharPointer(imext,3);
-  if (mvext) PetscValidCharPointer(mvext,4);
+  if (mvext) PetscValidCharPointer(mvext,5);
   if (count < 1) PetscFunctionReturn(0);
 
   ierr = PetscStrcasecmp(imext,".gif",&gifinput);CHKERRQ(ierr);
