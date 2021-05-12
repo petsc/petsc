@@ -373,8 +373,10 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_CUDA)
   ierr = MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSE,       MAT_FACTOR_LU,MatGetFactor_seqdense_cuda);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSE,       MAT_FACTOR_CHOLESKY,MatGetFactor_seqdense_cuda);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSE,       MAT_FACTOR_QR,MatGetFactor_seqdense_cuda);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSECUDA,   MAT_FACTOR_LU,MatGetFactor_seqdense_cuda);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSECUDA,   MAT_FACTOR_CHOLESKY,MatGetFactor_seqdense_cuda);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSECUDA,   MAT_FACTOR_QR,MatGetFactor_seqdense_cuda);CHKERRQ(ierr);
 #endif
 
   ierr = MatSolverTypeRegister(MATSOLVERBAS,   MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_bas);CHKERRQ(ierr);

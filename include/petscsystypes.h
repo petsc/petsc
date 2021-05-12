@@ -140,6 +140,22 @@ M*/
    typedef int PetscBLASInt;
 #endif
 
+/*MC
+   PetscCuBLASInt - datatype used to represent 'int' parameters to cuBLAS/cuSOLVER functions.
+
+   Notes:
+    As of this writing PetscCuBLASInt is always the system `int`.
+
+    PetscErrorCode PetscCuBLASIntCast(a,&b) checks if the given PetscInt a will fit in a PetscCuBLASInt, if not it
+      generates a PETSC_ERR_ARG_OUTOFRANGE error
+
+   Level: intermediate
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscCuBLASIntCast()
+
+M*/
+typedef int PetscCuBLASInt;
+
 /*E
     PetscBool  - Logical variable. Actually an int in C and a logical in Fortran.
 

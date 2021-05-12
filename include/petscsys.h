@@ -2129,6 +2129,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File,MPI_Offset,void*,Pets
 /* Limit BLAS to 32-bits */
 #define PETSC_BLAS_INT_MAX  2147483647
 #define PETSC_BLAS_INT_MIN -2147483647
+#define PETSC_CUBLAS_INT_MAX  2147483647
 
 /*@C
     PetscIntCast - casts a PetscInt64 (which is 64 bits in size) to a PetscInt (which may be 32 bits in size), generates an
@@ -2189,6 +2190,36 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 #endif
   if (a < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Passing negative integer to BLAS/LAPACK routine");
   *b =  (PetscBLASInt)(a);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    PetscCuBLASIntCast - like PetscBLASIntCast(), but for PetscCuBLASInt.
+
+   Not Collective
+
+   Input Parameter:
+.     a - the PetscInt value
+
+   Output Parameter:
+.     b - the resulting PetscCuBLASInt value
+
+   Level: advanced
+
+   Notes:
+      Errors if the integer is negative since PETSc calls to cuBLAS and friends never need to cast negative integer inputs
+
+.seealso: PetscCuBLASInt, PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscMPIIntCast(), PetscIntCast()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscBLASInt *b)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_64BIT_INDICES)
+  *b = 0;
+  if ((a) > PETSC_CUBLAS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too long for cuBLAS, which is restricted to 32 bit integers.");
+#endif
+  if (a < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Passing negative integer to cuBLAS routine");
+  *b =  (PetscCuBLASInt)(a);
   PetscFunctionReturn(0);
 }
 
