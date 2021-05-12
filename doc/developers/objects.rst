@@ -74,10 +74,10 @@ Except in rare circumstances, data structures defined here should not be
 referenced from outside this directory.
 
 Each type of object (for instance, a vector) is defined in its own
-public include file, by ``typedef _p<class>* <class>``; (for example,
+public include file, by ``typedef _p_<class>* <class>``; (for example,
 ``typedef _p_Vec* Vec;``). This organization allows the compiler to
 perform type checking on all subroutine calls while at the same time
-completely removing the details of the implementation of ``_p<class>``
+completely removing the details of the implementation of ``_p_<class>``
 from the application code. This capability is extremely important
 because it allows the library internals to be changed without altering
 or recompiling the application code.
