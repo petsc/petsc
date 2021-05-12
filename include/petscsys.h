@@ -406,7 +406,9 @@ M*/
 
 /* PetscPragmaSIMD - from CeedPragmaSIMD */
 
-#if defined(__INTEL_COMPILER) && !defined(_WIN32)
+#if defined(__NEC__)
+#  define PetscPragmaSIMD _Pragma("_NEC ivdep")
+#elif defined(__INTEL_COMPILER) && !defined(_WIN32)
 #  define PetscPragmaSIMD _Pragma("vector")
 #elif defined(__GNUC__) && __GNUC__ >= 5 && !defined(__PGI)
 #  define PetscPragmaSIMD _Pragma("GCC ivdep")
