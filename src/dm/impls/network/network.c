@@ -1602,6 +1602,10 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
 + DM - the DMNetwork object
 - overlap - the overlap of partitions, 0 is the default
 
+  Options Database Key:
++ -dmnetwork_view - Calls DMView() at the conclusion of DMSetUp()
+- -dmnetwork_view_distributed - Calls DMView() at the conclusion of DMNetworkDistribute()
+
   Notes:
   Distributes the network with <overlap>-overlapping partitioning of the edges.
 
@@ -1627,6 +1631,8 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   ierr = PetscObjectGetComm((PetscObject)*dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   if (size == 1) PetscFunctionReturn(0);
+
+  if (overlap) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"overlap %D != 0 is not supported yet",overlap);
 
   /* This routine moves the component data to the appropriate processors. It makes use of the DataSection and the componentdataarray to move the component data to appropriate processors and returns a new DataSection and new componentdataarray. */
   ierr = DMNetworkCreate(PetscObjectComm((PetscObject)*dm),&newDM);CHKERRQ(ierr);
@@ -1783,6 +1789,9 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   /* Free spaces */
   ierr = PetscSFDestroy(&pointsf);CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
+
+  /* View distributed dmnetwork */
+  ierr = DMViewFromOptions(newDM,NULL,"-dmnetwork_view_distributed");CHKERRQ(ierr);
 
   *dm  = newDM;
   PetscFunctionReturn(0);
@@ -2001,7 +2010,9 @@ PetscErrorCode DMSetUp_Network(DM dm)
   ierr = DMGetGlobalSection(network->plex,&network->GlobalDofSection);CHKERRQ(ierr);
 
   dm->setupcalled = PETSC_TRUE;
-  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
+
+  /* View dmnetwork */
+  ierr = DMViewFromOptions(dm,NULL,"-dmnetwork_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
