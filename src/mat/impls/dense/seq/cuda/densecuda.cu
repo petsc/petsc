@@ -122,11 +122,9 @@ PetscErrorCode MatSeqDenseCUDACopyFromGPU(Mat A)
     }
     ierr = PetscLogEventBegin(MAT_DenseCopyFromGPU,A,0,0,0);CHKERRQ(ierr);
     if (cA->lda > A->rmap->n) {
-      PetscInt j,m = A->rmap->n;
+      PetscInt n = A->cmap->n,m = A->rmap->n;
 
-      for (j=0; j<A->cmap->n; j++) { /* TODO: it can be done better */
-        cerr = cudaMemcpy(cA->v + j*cA->lda,dA->d_v + j*cA->lda,m*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
-      }
+      cerr = cudaMemcpy2D(cA->v,cA->lda*sizeof(PetscScalar),dA->d_v,cA->lda*sizeof(PetscScalar),m*sizeof(PetscScalar),n,cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
     } else {
       cerr = cudaMemcpy(cA->v,dA->d_v,cA->lda*sizeof(PetscScalar)*A->cmap->n,cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
     }
@@ -157,11 +155,9 @@ PetscErrorCode MatSeqDenseCUDACopyToGPU(Mat A)
     }
     ierr = PetscLogEventBegin(MAT_DenseCopyToGPU,A,0,0,0);CHKERRQ(ierr);
     if (cA->lda > A->rmap->n) {
-      PetscInt j,m = A->rmap->n;
+      PetscInt n = A->cmap->n,m = A->rmap->n;
 
-      for (j=0; j<A->cmap->n; j++) { /* TODO: it can be done better */
-        cerr = cudaMemcpy(dA->d_v + j*cA->lda,cA->v + j*cA->lda,m*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
-      }
+      cerr = cudaMemcpy2D(dA->d_v,cA->lda*sizeof(PetscScalar),cA->v,cA->lda*sizeof(PetscScalar),m*sizeof(PetscScalar),n,cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
     } else {
       cerr = cudaMemcpy(dA->d_v,cA->v,cA->lda*sizeof(PetscScalar)*A->cmap->n,cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
     }
@@ -179,7 +175,7 @@ static PetscErrorCode MatCopy_SeqDenseCUDA(Mat A,Mat B,MatStructure str)
   PetscErrorCode    ierr;
   const PetscScalar *va;
   PetscScalar       *vb;
-  PetscInt          lda1=a->lda,lda2=b->lda, m=A->rmap->n,n=A->cmap->n, j;
+  PetscInt          lda1=a->lda,lda2=b->lda,m=A->rmap->n,n=A->cmap->n;
   cudaError_t       cerr;
 
   PetscFunctionBegin;
@@ -193,15 +189,35 @@ static PetscErrorCode MatCopy_SeqDenseCUDA(Mat A,Mat B,MatStructure str)
   ierr = MatDenseCUDAGetArrayWrite(B,&vb);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   if (lda1>m || lda2>m) {
-    for (j=0; j<n; j++) {
-      cerr = cudaMemcpy(vb+j*lda2,va+j*lda1,m*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
-    }
+    cerr = cudaMemcpy2D(vb,lda2*sizeof(PetscScalar),va,lda1*sizeof(PetscScalar),m*sizeof(PetscScalar),n,cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
   } else {
     cerr = cudaMemcpy(vb,va,m*(n*sizeof(PetscScalar)),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-  ierr = MatDenseCUDARestoreArray(B,&vb);CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArrayWrite(B,&vb);CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArrayRead(A,&va);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatZeroEntries_SeqDenseCUDA(Mat A)
+{
+  Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
+  PetscErrorCode    ierr;
+  PetscScalar       *va;
+  PetscInt          lda=a->lda,m = A->rmap->n,n = A->cmap->n;
+  cudaError_t       cerr;
+
+  PetscFunctionBegin;
+  ierr = MatDenseCUDAGetArrayWrite(A,&va);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  if (lda>m) {
+    cerr = cudaMemset2D(va,lda*sizeof(PetscScalar),0,m*sizeof(PetscScalar),n);CHKERRCUDA(cerr);
+  } else {
+    cerr = cudaMemset(va,0,m*(n*sizeof(PetscScalar)));CHKERRCUDA(cerr);
+  }
+  cerr = WaitForCUDA();CHKERRCUDA(cerr);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArrayWrite(A,&va);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -950,35 +966,16 @@ PetscErrorCode MatDestroy_SeqDenseCUDA(Mat A)
 
 PetscErrorCode MatDuplicate_SeqDenseCUDA(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
+  MatDuplicateOption hcpvalues = (cpvalues == MAT_COPY_VALUES && A->offloadmask != PETSC_OFFLOAD_CPU) ? MAT_DO_NOT_COPY_VALUES : cpvalues;
 
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatDuplicateNoCreate_SeqDense(*B,A,cpvalues);CHKERRQ(ierr);
-  if (cpvalues == MAT_COPY_VALUES && A->offloadmask != PETSC_OFFLOAD_CPU) {
-    Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
-    const PetscScalar *da;
-    PetscScalar       *db;
-    cudaError_t       cerr;
-    PetscInt          ldb;
-
-    ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
-    ierr = MatDenseCUDAGetArrayWrite(*B,&db);CHKERRQ(ierr);
-    ierr = MatDenseGetLDA(*B,&ldb);CHKERRQ(ierr);
-    if (a->lda > A->rmap->n || ldb > A->rmap->n) {
-      PetscInt j,m = A->rmap->n;
-
-      for (j=0; j<A->cmap->n; j++) { /* it can be done better */
-        cerr = cudaMemcpy(db+j*ldb,da+j*a->lda,m*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
-      }
-    } else {
-      cerr = cudaMemcpy(db,da,(sizeof(PetscScalar)*A->cmap->n)*A->rmap->n,cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
-    }
-    ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
-    ierr = MatDenseCUDARestoreArrayWrite(*B,&db);CHKERRQ(ierr);
-    (*B)->offloadmask = PETSC_OFFLOAD_BOTH;
+  ierr = MatDuplicateNoCreate_SeqDense(*B,A,hcpvalues);CHKERRQ(ierr);
+  if (cpvalues == MAT_COPY_VALUES && hcpvalues != MAT_COPY_VALUES) {
+    ierr = MatCopy_SeqDenseCUDA(A,*B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1249,6 +1246,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     A->ops->getcolumnvector         = MatGetColumnVector_SeqDenseCUDA;
     A->ops->scale                   = MatScale_SeqDenseCUDA;
     A->ops->copy                    = MatCopy_SeqDenseCUDA;
+    A->ops->zeroentries             = MatZeroEntries_SeqDenseCUDA;
   } else {
     /* make sure we have an up-to-date copy on the CPU */
     ierr = MatSeqDenseCUDACopyFromGPU(A);CHKERRQ(ierr);
@@ -1281,6 +1279,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     A->ops->getcolumnvector         = MatGetColumnVector_SeqDense;
     A->ops->scale                   = MatScale_SeqDense;
     A->ops->copy                    = MatCopy_SeqDense;
+    A->ops->zeroentries             = MatZeroEntries_SeqDense;
   }
   if (a->cmat) {
     ierr = MatBindToCPU(a->cmat,flg);CHKERRQ(ierr);

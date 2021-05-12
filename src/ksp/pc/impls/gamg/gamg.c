@@ -1118,6 +1118,7 @@ PetscErrorCode PCGAMGSetEigenvalues(PC pc, PetscReal emax,PetscReal emin)
   ierr = PetscTryMethod(pc,"PCGAMGSetEigenvalues_C",(PC,PetscReal,PetscReal),(pc,emax,emin));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 static PetscErrorCode PCGAMGSetEigenvalues_GAMG(PC pc,PetscReal emax,PetscReal emin)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;

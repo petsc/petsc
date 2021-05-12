@@ -1187,7 +1187,7 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
 @*/
 PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 {
-  Mat            A, vB, vX;
+  Mat            A, P, vB, vX;
   Vec            cb, cx;
   PetscInt       m1, M1, m2, M2, n1, N1, n2, N2, Bbn = PETSC_DECIDE;
   PetscBool      match;
@@ -1207,7 +1207,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     ierr = MatAssemblyEnd(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   if (B == X) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_IDN, "B and X must be different matrices");
-  ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp, &A, &P);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B, &m2, &n2);CHKERRQ(ierr);
   ierr = MatGetSize(A, &M1, NULL);CHKERRQ(ierr);
@@ -1266,6 +1266,10 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
         ierr = MatDenseRestoreSubMatrix(X, &vX);CHKERRQ(ierr);
       }
     }
+    if (ksp->viewMat)  {ierr = ObjectView((PetscObject) A, ksp->viewerMat, ksp->formatMat);CHKERRQ(ierr);}
+    if (ksp->viewPMat) {ierr = ObjectView((PetscObject) P, ksp->viewerPMat,ksp->formatPMat);CHKERRQ(ierr);}
+    if (ksp->viewRhs)  {ierr = ObjectView((PetscObject) B, ksp->viewerRhs, ksp->formatRhs);CHKERRQ(ierr);}
+    if (ksp->viewSol)  {ierr = ObjectView((PetscObject) X, ksp->viewerSol, ksp->formatSol);CHKERRQ(ierr);}
     if (ksp->view) {
       ierr = KSPView(ksp, ksp->viewer);CHKERRQ(ierr);
     }
