@@ -701,6 +701,84 @@ static PetscErrorCode MatZeroEntries_SeqAIJKokkos(Mat A)
   PetscFunctionReturn(0);
 }
 
+/* Get a Kokkos View from a mat of type MatSeqAIJKokkos */
+PetscErrorCode MatSeqAIJGetKokkosView(Mat A,ConstPetscScalarKokkosView* kv)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJKokkos   *aijkok;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(kv,2);
+  PetscCheckTypeName(A,MATSEQAIJKOKKOS);
+  ierr   = MatSeqAIJKokkosSyncDevice(A);CHKERRQ(ierr);
+  aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  *kv    = aijkok->a_d;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A,ConstPetscScalarKokkosView* kv)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(kv,2);
+  PetscCheckTypeName(A,MATSEQAIJKOKKOS);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJGetKokkosView(Mat A,PetscScalarKokkosView* kv)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJKokkos   *aijkok;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(kv,2);
+  PetscCheckTypeName(A,MATSEQAIJKOKKOS);
+  ierr   = MatSeqAIJKokkosSyncDevice(A);CHKERRQ(ierr);
+  aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  *kv    = aijkok->a_d;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJRestoreKokkosView(Mat A,PetscScalarKokkosView* kv)
+{
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(kv,2);
+  PetscCheckTypeName(A,MATSEQAIJKOKKOS);
+  ierr = MatSeqAIJKokkosSetDeviceModified(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJGetKokkosViewWrite(Mat A,PetscScalarKokkosView* kv)
+{
+  Mat_SeqAIJKokkos   *aijkok;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(kv,2);
+  PetscCheckTypeName(A,MATSEQAIJKOKKOS);
+  aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  *kv    = aijkok->a_d;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJRestoreKokkosViewWrite(Mat A,PetscScalarKokkosView* kv)
+{
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(kv,2);
+  PetscCheckTypeName(A,MATSEQAIJKOKKOS);
+  ierr = MatSeqAIJKokkosSetDeviceModified(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Computes Y += a*X */
 static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
@@ -711,6 +789,7 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar a,Mat X,MatStructur
     ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+
   if (str != SAME_NONZERO_PATTERN && x->nz == y->nz) {
     PetscBool e;
     ierr = PetscArraycmp(x->i,y->i,Y->rmap->n+1,&e);CHKERRQ(ierr);
@@ -719,27 +798,20 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar a,Mat X,MatStructur
       if (e) str = SAME_NONZERO_PATTERN;
     }
   }
+
   if (str != SAME_NONZERO_PATTERN) {
+    /* TODO: do MatAXPY on device */
     ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else {
-    if (Y->offloadmask == PETSC_OFFLOAD_CPU && X->offloadmask == PETSC_OFFLOAD_CPU) {
-      ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    } else {
-      ierr = MatSeqAIJKokkosSyncDevice(X);CHKERRQ(ierr);
-      ierr = MatSeqAIJKokkosSyncDevice(Y);CHKERRQ(ierr);
-    }
-    Mat_SeqAIJKokkos *aijkokY = static_cast<Mat_SeqAIJKokkos*>(Y->spptr);
-    Mat_SeqAIJKokkos *aijkokX = static_cast<Mat_SeqAIJKokkos*>(X->spptr);
-    if (aijkokY && aijkokX && aijkokY->a_d.data() && aijkokX->a_d.data()) {
-      KokkosBlas::axpy(a,aijkokX->a_d,aijkokY->a_d);
-      Y->offloadmask = PETSC_OFFLOAD_GPU;
-      ierr = WaitForKokkos();CHKERRQ(ierr);
-      ierr = PetscLogGpuFlops(2.0*aijkokY->a_d.size());CHKERRQ(ierr);
-      // TODO Remove: this can be removed once we implement matmat operations with KOKKOS
-      ierr = MatSeqAIJKokkosSyncHost(Y);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"no Mat_SeqAIJKokkos ???");
+    ConstPetscScalarKokkosView xv;
+    PetscScalarKokkosView      yv;
+
+    ierr = MatSeqAIJGetKokkosView(X,&xv);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetKokkosView(Y,&yv);CHKERRQ(ierr);
+    KokkosBlas::axpy(a,xv,yv);
+    ierr = MatSeqAIJRestoreKokkosView(X,&xv);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreKokkosView(Y,&yv);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
