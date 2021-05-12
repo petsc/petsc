@@ -1432,9 +1432,10 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
                 founddir = 1
           if founddir:
             continue
-        if arg.find('f61init.o')>=0 or arg.find('quickfit.o')>=0:
+        # needed with NCC/NFORT 3.2.0 on NEC and by the FORTRAN NAG Compiler (f61init and quickfit) https://www.nag.com/nagware/np/r62_doc/manual/compiler_11_1.html
+        if arg.find('f61init.o')>=0 or arg.find('quickfit.o')>=0 or arg.find('f90_init.o')>=0 or arg.find('nousemmap.o')>=0 or arg.find('async_noio.o')>=0:
           flibs.append(arg)
-          self.logPrint('Found quickfit.o in argument, adding it')
+          self.logPrint('Found '+arg+' in argument, adding it')
           continue
         # gcc+pgf90 might require pgi.dl
         if arg.find('pgi.ld')>=0:

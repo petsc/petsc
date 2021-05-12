@@ -370,6 +370,8 @@ class Configure(config.package.Package):
       # BLIS
       yield ('User specified installation root BLIS/LAPACK', os.path.join(dir, 'libblis.a'), os.path.join(dir, 'liblapack.a'), 'unknown', 'unknown')
       yield ('User specified installation root BLIS/LAPACK', os.path.join(dir,'lib','libblis.a'), os.path.join(dir,'lib','liblapack.a'), 'unknown', 'unknown')
+      # NEC
+      yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), os.path.join(dir, 'lib', 'liblapack.a'), 'unknown', 'unknown')
       # Search for OpenBLAS
       for libdir in ['lib','']:
         if os.path.exists(os.path.join(dir,libdir)):
@@ -398,6 +400,7 @@ class Configure(config.package.Package):
 
     # Try compiler defaults
     yield ('Default compiler libraries', '', '','unknown','unknown')
+    yield ('Default NEC', 'libblas_sequential.a', 'liblapack.a','unknown','unknown')
     yield ('Default BLIS', 'libblis.a', 'liblapack.a','unknown','unknown')
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
     yield ('Default OpenBLAS', None, 'libopenblas.a','unknown','unknown')
