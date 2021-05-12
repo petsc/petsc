@@ -330,6 +330,7 @@ PETSC_EXTERN PetscErrorCode DMGetNumLabels(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetLabelName(DM, PetscInt, const char **);
 PETSC_EXTERN PetscErrorCode DMHasLabel(DM, const char [], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMGetLabel(DM, const char *, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMSetLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMGetLabelByNum(DM, PetscInt, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMAddLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMRemoveLabel(DM, const char [], DMLabel *);

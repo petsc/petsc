@@ -121,6 +121,7 @@ Changes: Development
 - Replace ``DMPlexCreateSquareBoundary()`` and ``DMPlexCreateCubeBoundary()`` with ``DMPlexCreateBoxSurfaceMesh()``
 - Remove ``DMPlexCreateReferenceCellByType()``
 - The number of refinements is no longer an argument to ``DMPlexCreateHexCylinderMesh()``
+- Add ``DMSetLabel()``
 
 .. rubric:: FE/FV:
 

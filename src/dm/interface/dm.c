@@ -7911,6 +7911,56 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
 }
 
 /*@C
+  DMSetLabel - Replaces the label of a given name, or ignores it if the name is not present
+
+  Not Collective
+
+  Input Parameters:
++ dm    - The DM object
+- label - The DMLabel, having the same name, to substitute
+
+  Note: Some of the default labels in a DMPlex will be
+$ "depth"       - Holds the depth (co-dimension) of each mesh point
+$ "celltype"    - Holds the topological type of each cell
+$ "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
+$ "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
+$ "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
+$ "Vertex Sets" - Mirrors the vertex sets defined by GMsh
+
+  Level: intermediate
+
+.seealso: DMCreateLabel(), DMHasLabel(), DMPlexGetDepthLabel(), DMPlexGetCellType()
+@*/
+PetscErrorCode DMSetLabel(DM dm, DMLabel label)
+{
+  DMLabelLink    next = dm->labels;
+  PetscBool      hasLabel, flg;
+  const char    *name, *lname;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
+  ierr = PetscObjectGetName((PetscObject) label, &name);CHKERRQ(ierr);
+  while (next) {
+    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, lname, &hasLabel);CHKERRQ(ierr);
+    if (hasLabel) {
+      ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
+      ierr = PetscStrcmp(lname, "depth", &flg);CHKERRQ(ierr);
+      if (flg) dm->depthLabel = label;
+      ierr = PetscStrcmp(lname, "celltype", &flg);CHKERRQ(ierr);
+      if (flg) dm->celltypeLabel = label;
+      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+      next->label = label;
+      break;
+    }
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
   DMRemoveLabel - Remove the label given by name from this mesh
 
   Not Collective
