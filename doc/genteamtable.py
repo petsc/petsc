@@ -280,10 +280,6 @@ def main(writeDirPath, token, builderName=None):
         import errno
         if e.errno != errno.EEXIST:
             raise
-        else:
-            print("Generate directory already exists at %s" % (writeDirPath))
-            print("Assuming table is up to date, skipping! Use 'make clean' to clear existing table")
-            return
 
     currentFile = os.path.join(writeDirPath, "petsc-team-table.inc")
     emeritusFile = os.path.join(writeDirPath, "petsc-emeritus-table.inc")
