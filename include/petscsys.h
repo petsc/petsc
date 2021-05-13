@@ -2855,6 +2855,11 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint,PetscMPIInt,MPI_In
 PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,PetscMPIInt*,void*);
 #endif
 
+/* this is a vile hack */
+#if defined(PETSC_HAVE_NECMPI)
+#define MPI_Type_free(a) (*(a) = MPI_DATATYPE_NULL,0);
+#endif
+
 /*
     List of external packages and queries on it
 */
