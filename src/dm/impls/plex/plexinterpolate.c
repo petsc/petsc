@@ -989,7 +989,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(pointSF, PETSCSF_CLASSID, 3);
+  PetscValidHeaderSpecific(pointSF, PETSCSF_CLASSID, 2);
   ierr = DMPlexIsDistributed(dm, &flg);CHKERRQ(ierr);
   if (!flg) PetscFunctionReturn(0);
   /* Set initial SF so that lower level queries work */

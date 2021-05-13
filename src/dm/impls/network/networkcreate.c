@@ -7,7 +7,7 @@ PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   ierr = PetscOptionsHead(PetscOptionsObject,"DMNetwork Options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

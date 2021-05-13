@@ -2628,7 +2628,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
   PetscInt       spnr,*ia,*ja,M,nrhs;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(spRHS,2);
+  PetscValidPointer(spRHS,2);
   ierr = PetscObjectTypeCompare((PetscObject)spRHS,MATTRANSPOSEMAT,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatTransposeGetMat(spRHS,&Bt);CHKERRQ(ierr);

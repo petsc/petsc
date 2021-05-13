@@ -89,7 +89,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(pf,1);
+  PetscValidPointer(pf,4);
   *pf = NULL;
   ierr = PFInitializePackage();CHKERRQ(ierr);
 
@@ -204,8 +204,8 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
-  PetscValidScalarPointer(x,2);
-  PetscValidScalarPointer(y,3);
+  PetscValidScalarPointer(x,3);
+  PetscValidScalarPointer(y,4);
   if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different arrays");
   if (!pf->ops->apply) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
 

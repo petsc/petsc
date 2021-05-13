@@ -67,7 +67,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(a_X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(JacP,MAT_CLASSID,2);
-  PetscValidPointer(ctx,4);
+  PetscValidPointer(ctx,5);
 
   /* check for matrix container for GPU assembly */
   ierr = PetscLogEventBegin(ctx->events[10],0,0,0,0);CHKERRQ(ierr);
@@ -1927,7 +1927,7 @@ PetscErrorCode LandauCreateMassMatrix(DM dm, Mat *Amat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (Amat) PetscValidPointer(Amat,3);
+  if (Amat) PetscValidPointer(Amat,2);
   ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
   if (!ctx) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);

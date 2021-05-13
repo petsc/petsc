@@ -1057,9 +1057,9 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer,PetscBool
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer,PETSC_VIEWER_CLASSID,1,PETSCVIEWERBINARY);
-  PetscValidLogicalCollectiveBool(viewer,((start>=0)||(start==PETSC_DETERMINE)),4);
-  PetscValidLogicalCollectiveBool(viewer,((total>=0)||(total==PETSC_DETERMINE)),5);
-  PetscValidLogicalCollectiveInt(viewer,total,5);
+  PetscValidLogicalCollectiveBool(viewer,((start>=0)||(start==PETSC_DETERMINE)),5);
+  PetscValidLogicalCollectiveBool(viewer,((total>=0)||(total==PETSC_DETERMINE)),6);
+  PetscValidLogicalCollectiveInt(viewer,total,6);
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
 
   ierr = PetscDataTypeToMPIDataType(dtype,&mdtype);CHKERRQ(ierr);

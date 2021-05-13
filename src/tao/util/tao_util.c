@@ -55,7 +55,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   PetscValidHeaderSpecific(F, VEC_CLASSID,2);
   PetscValidHeaderSpecific(L, VEC_CLASSID,3);
   PetscValidHeaderSpecific(U, VEC_CLASSID,4);
-  PetscValidHeaderSpecific(FB, VEC_CLASSID,4);
+  PetscValidHeaderSpecific(FB, VEC_CLASSID,5);
 
   ierr = VecGetOwnershipRange(X, low, high);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(F, low + 1, high + 1);CHKERRQ(ierr);

@@ -501,7 +501,7 @@ PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dua
   if (Jx) PetscValidRealPointer(Jx,4);
   if (u) PetscValidRealPointer(u,5);
   if (Ju) PetscValidRealPointer(Ju,6);
-  PetscValidPointer(subspace,7);
+  PetscValidPointer(subspace,8);
   ierr = PetscSpaceGetNumComponents(origSpace,&origNc);CHKERRQ(ierr);
   ierr = PetscSpaceGetNumVariables(origSpace,&origDim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDM(dualSubspace,&dm);CHKERRQ(ierr);

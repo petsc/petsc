@@ -663,7 +663,7 @@ PetscErrorCode  DMCompositeGather(DM dm,InsertMode imode,Vec gvec,...)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(gvec,VEC_CLASSID,3);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMCOMPOSITE,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for type %s",((PetscObject)dm)->type_name);
   if (!com->setup) {
@@ -723,7 +723,7 @@ PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvec
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(gvec,VEC_CLASSID,3);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMCOMPOSITE,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for type %s",((PetscObject)dm)->type_name);
   if (!com->setup) {
@@ -735,7 +735,7 @@ PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvec
     if (lvecs[i]) {
       PetscScalar *array;
       Vec         global;
-      PetscValidHeaderSpecific(lvecs[i],VEC_CLASSID,3);
+      PetscValidHeaderSpecific(lvecs[i],VEC_CLASSID,4);
       ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
       ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
       ierr = VecPlaceArray(global,array+next->rstart);CHKERRQ(ierr);

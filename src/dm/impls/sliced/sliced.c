@@ -319,7 +319,7 @@ PetscErrorCode  DMSlicedCreate(MPI_Comm comm,PetscInt bs,PetscInt nlocal,PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm,2);
+  PetscValidPointer(dm,8);
   ierr = DMCreate(comm,dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm,DMSLICED);CHKERRQ(ierr);
   ierr = DMSlicedSetGhosts(*dm,bs,nlocal,Nghosts,ghosts);CHKERRQ(ierr);

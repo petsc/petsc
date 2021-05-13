@@ -432,7 +432,7 @@ PetscErrorCode DMRedundantCreate(MPI_Comm comm,PetscMPIInt rank,PetscInt N,DM *d
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm,2);
+  PetscValidPointer(dm,4);
   ierr = DMCreate(comm,dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm,DMREDUNDANT);CHKERRQ(ierr);
   ierr = DMRedundantSetSize(*dm,rank,N);CHKERRQ(ierr);

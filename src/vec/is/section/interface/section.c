@@ -245,7 +245,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s1, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(s2, PETSC_SECTION_CLASSID, 2);
-  PetscValidIntPointer(congruent,3);
+  PetscValidBoolPointer(congruent,3);
   flg = PETSC_FALSE;
 
   ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)s1),PetscObjectComm((PetscObject)s2),&mflg);CHKERRMPI(ierr);
@@ -458,7 +458,7 @@ PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidPointer(compName, 3);
+  PetscValidPointer(compName, 4);
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
   if ((comp < 0) || (comp >= s->numFieldComponents[field])) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field component %D should be in [%D, %D)", comp, 0, s->numFieldComponents[field]);
   *compName = s->compNames[field][comp];
@@ -486,7 +486,7 @@ PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (compName) PetscValidCharPointer(compName, 3);
+  if (compName) PetscValidCharPointer(compName, 4);
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %D should be in [%D, %D)", field, 0, s->numFields);
   if ((comp < 0) || (comp >= s->numFieldComponents[field])) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field component %D should be in [%D, %D)", comp, 0, s->numFieldComponents[field]);
   ierr = PetscFree(s->compNames[field][comp]);CHKERRQ(ierr);

@@ -141,7 +141,7 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(G,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(G,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,G,3);
   ierr = VecLockReadPush(X);CHKERRQ(ierr);

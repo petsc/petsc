@@ -142,7 +142,7 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscValidCharPointer(text,5);
+  PetscValidCharPointer(text,6);
 
   if (draw->ops->boxedstring) {
     ierr = (*draw->ops->boxedstring)(draw,sxl,syl,sc,bc,text,w,h);CHKERRQ(ierr);

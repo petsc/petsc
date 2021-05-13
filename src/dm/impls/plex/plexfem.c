@@ -1137,10 +1137,10 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(locX, VEC_CLASSID, 2);
-  if (faceGeomFVM) {PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 4);}
-  if (cellGeomFVM) {PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 5);}
-  if (gradFVM)     {PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 6);}
+  PetscValidHeaderSpecific(locX, VEC_CLASSID, 3);
+  if (faceGeomFVM) {PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 5);}
+  if (cellGeomFVM) {PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 6);}
+  if (gradFVM)     {PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 7);}
   ierr = PetscTryMethod(dm,"DMPlexInsertBoundaryValues_C",(DM,PetscBool,Vec,PetscReal,Vec,Vec,Vec),(dm,insertEssential,locX,time,faceGeomFVM,cellGeomFVM,gradFVM));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1169,10 +1169,10 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues(DM dm, PetscBool insertE
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (locX_t)      {PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 2);}
-  if (faceGeomFVM) {PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 4);}
-  if (cellGeomFVM) {PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 5);}
-  if (gradFVM)     {PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 6);}
+  if (locX_t)      {PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 3);}
+  if (faceGeomFVM) {PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 5);}
+  if (cellGeomFVM) {PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 6);}
+  if (gradFVM)     {PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 7);}
   ierr = PetscTryMethod(dm,"DMPlexInsertTimeDerviativeBoundaryValues_C",(DM,PetscBool,Vec,PetscReal,Vec,Vec,Vec),(dm,insertEssential,locX_t,time,faceGeomFVM,cellGeomFVM,gradFVM));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2335,7 +2335,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidPointer(label, 3);
   if (vals) PetscValidPointer(vals, 5);
-  PetscValidPointer(integral, 6);
+  PetscValidPointer(integral, 7);
   ierr = PetscLogEventBegin(DMPLEX_IntegralFEM,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -3309,12 +3309,12 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(locX, VEC_CLASSID, 4);
-  if (locX_t) {PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 5);}
-  if (locA)   {PetscValidHeaderSpecific(locA, VEC_CLASSID, 6);}
-  PetscValidPointer(u, 7);
-  PetscValidPointer(u_t, 8);
-  PetscValidPointer(a, 9);
+  PetscValidHeaderSpecific(locX, VEC_CLASSID, 3);
+  if (locX_t) {PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 4);}
+  if (locA)   {PetscValidHeaderSpecific(locA, VEC_CLASSID, 5);}
+  PetscValidPointer(u, 6);
+  PetscValidPointer(u_t, 7);
+  PetscValidPointer(a, 8);
   ierr = DMPlexConvertPlex(dm, &plex, PETSC_FALSE);CHKERRQ(ierr);
   ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
@@ -3490,8 +3490,8 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   PetscValidHeaderSpecific(faceGeometry, VEC_CLASSID, 6);
   PetscValidHeaderSpecific(cellGeometry, VEC_CLASSID, 7);
   if (locGrad) {PetscValidHeaderSpecific(locGrad, VEC_CLASSID, 8);}
-  PetscValidPointer(uL, 9);
-  PetscValidPointer(uR, 10);
+  PetscValidPointer(uL, 10);
+  PetscValidPointer(uR, 11);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
@@ -3673,8 +3673,8 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(faceGeometry, VEC_CLASSID, 4);
   PetscValidHeaderSpecific(cellGeometry, VEC_CLASSID, 5);
-  PetscValidPointer(fgeom, 6);
-  PetscValidPointer(vol, 7);
+  PetscValidPointer(fgeom, 7);
+  PetscValidPointer(vol, 8);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
   ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);

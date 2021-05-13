@@ -2429,10 +2429,10 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,3);
-  PetscCheckSameComm(snes,1,x,2);
-  if (b) PetscCheckSameComm(snes,1,b,3);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  PetscCheckSameComm(snes,1,x,3);
+  if (b) PetscCheckSameComm(snes,1,b,2);
   if (b) {ierr = VecValidValues(b,2,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = PetscLogEventBegin(SNES_NGSEval,snes,x,b,0);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -4190,7 +4190,7 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (a) PetscValidScalarPointer(a,2);
+  if (a) PetscValidRealPointer(a,2);
   if (its) PetscValidIntPointer(its,3);
   if (!a) {
     if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;

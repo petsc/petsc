@@ -842,7 +842,7 @@ PetscErrorCode TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(lambda,2);
+  PetscValidPointer(lambda,3);
   ts->vecs_sensi  = lambda;
   ts->vecs_sensip = mu;
   if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand");
@@ -1226,7 +1226,7 @@ PetscErrorCode TSAdjointMonitorSensi(TS ts,PetscInt step,PetscReal ptime,Vec v,P
   PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,8);
   ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = VecView(lambda[0],viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
@@ -1378,7 +1378,7 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v
   PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,8);
   ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
@@ -1946,7 +1946,7 @@ PetscErrorCode TSCreateQuadratureTS(TS ts,PetscBool fwd,TS *quadts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(quadts,2);
+  PetscValidPointer(quadts,3);
   ierr = TSDestroy(&ts->quadraturets);CHKERRQ(ierr);
   ierr = TSCreate(PetscObjectComm((PetscObject)ts),&ts->quadraturets);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)ts->quadraturets,(PetscObject)ts,1);CHKERRQ(ierr);

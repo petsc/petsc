@@ -810,7 +810,7 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(T, 2);
+  PetscValidPointer(T, 3);
   ierr = PetscQuadratureGetData(fem->quadrature, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
   if (!fem->T) {ierr = PetscFECreateTabulation(fem, 1, npoints, points, k, &fem->T);CHKERRQ(ierr);}
   if (fem->T && k > fem->T->K) SETERRQ2(PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %D derivatives, but only tabulated %D", k, fem->T->K);
@@ -845,7 +845,7 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscInt k, PetscTabulation
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(Tf, 2);
+  PetscValidPointer(Tf, 3);
   if (!fem->Tf) {
     const PetscReal  xi0[3] = {-1., -1., -1.};
     PetscReal        v0[3], J[9], detJ;

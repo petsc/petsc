@@ -7,7 +7,7 @@ PetscErrorCode DMSetFromOptions_Patch(PetscOptionItems *PetscOptionsObject,DM dm
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   ierr = PetscOptionsHead(PetscOptionsObject,"DMPatch Options");CHKERRQ(ierr);
   /* Handle associated vectors */
   /* Handle viewing */

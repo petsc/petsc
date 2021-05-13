@@ -812,7 +812,7 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidPointer(isout,3);
+  PetscValidPointer(isout,4);
   if (nmin < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be negative",nmin);
   if (nmin > nmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be greater than nmax %D",nmin,nmax);
   ierr = ISSorted(is,&sorted);CHKERRQ(ierr);

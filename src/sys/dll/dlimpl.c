@@ -334,7 +334,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 PetscErrorCode PetscDLAddr(void (*func)(void), const char **name)
 {
   PetscFunctionBegin;
-  PetscValidCharPointer(name,3);
+  PetscValidCharPointer(name,2);
   *name = NULL;
 #if defined(PETSC_HAVE_DLADDR)
   dlerror(); /* clear any previous error */

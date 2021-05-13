@@ -469,7 +469,7 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
   PetscFunctionBegin;
   if (bs < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
-  if (n) PetscValidIntPointer(idx,3);
+  if (n) PetscValidIntPointer(idx,4);
 
   ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is),n*bs,is->map->N,bs,&map);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&is->map);CHKERRQ(ierr);
@@ -540,7 +540,7 @@ PetscErrorCode  ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(is,5);
+  PetscValidPointer(is,6);
   if (bs < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) PetscValidIntPointer(idx,4);

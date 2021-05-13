@@ -499,7 +499,7 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptions
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj,2);
   for (i=0; i<obj->noptionhandler; i++) {
     ierr = (*obj->optionhandler[i])(PetscOptionsObject,obj,obj->optionctx[i]);CHKERRQ(ierr);
   }

@@ -93,7 +93,7 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(F,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(F,VEC_CLASSID,4);
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
   ierr = VecZeroEntries(locX);CHKERRQ(ierr);

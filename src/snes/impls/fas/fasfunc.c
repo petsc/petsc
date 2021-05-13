@@ -151,7 +151,7 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
-  PetscValidIntPointer(levels,3);
+  PetscValidIntPointer(levels,2);
   fas = (SNES_FAS*)snes->data;
   *levels = fas->levels;
   PetscFunctionReturn(0);
@@ -464,7 +464,7 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
-  PetscValidPointer(smooth,3);
+  PetscValidPointer(smooth,2);
   fas  = (SNES_FAS*)snes->data;
   ierr = SNESGetOptionsPrefix(fas->fine, &optionsprefix);CHKERRQ(ierr);
   /* create the default smoother */
@@ -1138,7 +1138,7 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
-  PetscValidPointer(coarse,3);
+  PetscValidPointer(coarse,2);
   ierr = SNESFASGetCycleSNES(snes, 0, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */

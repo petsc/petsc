@@ -7646,7 +7646,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
     if (mcols != mncols) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix! Wrong number of cols %D != %D",mcols,mncols);
   }
   ierr = MatGetBlockSize(local_mat,&bs);CHKERRQ(ierr);
-  PetscValidLogicalCollectiveInt(mat,bs,0);
+  PetscValidLogicalCollectiveInt(mat,bs,1);
 
   /* prepare IS for sending if not provided */
   if (!is_sends) {

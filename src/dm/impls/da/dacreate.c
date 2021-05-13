@@ -9,7 +9,7 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,2);
 
   if (dd->M < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
   if (dd->N < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");

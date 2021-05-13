@@ -581,7 +581,7 @@ PetscErrorCode MatSetupDM(Mat mat,DM da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,2,DMDA);
   ierr = PetscTryMethod(mat,"MatSetupDM_C",(Mat,DM),(mat,da));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

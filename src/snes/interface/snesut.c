@@ -192,7 +192,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
   ierr = SNESGetSolution(snes, &snes_solution);CHKERRQ(ierr);
   ierr = VecDuplicate(snes_solution, &work1);CHKERRQ(ierr);
   ierr = VecDuplicate(snes_solution, &work2);CHKERRQ(ierr);

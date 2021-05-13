@@ -171,8 +171,8 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  PetscValidHeaderSpecificType(dmTo,DM_CLASSID,4,DMDA);
-  PetscValidHeaderSpecific(vecTo,VEC_CLASSID,5);
+  PetscValidHeaderSpecificType(dmTo,DM_CLASSID,5,DMDA);
+  PetscValidHeaderSpecific(vecTo,VEC_CLASSID,6);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMDAGetDof(dmTo,&dofToMax);CHKERRQ(ierr);
   if (-c > dofToMax) SETERRQ1(PetscObjectComm((PetscObject)dmTo),PETSC_ERR_ARG_OUTOFRANGE,"Invalid negative component value. Must be >= -%D",dofToMax);

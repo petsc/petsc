@@ -326,7 +326,7 @@ PetscErrorCode MatGetDiagonalBlock(Mat A,Mat *a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
-  PetscValidPointer(a,3);
+  PetscValidPointer(a,2);
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!A->ops->getdiagonalblock) {
     PetscMPIInt size;
@@ -1440,7 +1440,7 @@ PetscErrorCode MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidScalarPointer(v,2);
+  PetscValidScalarPointer(v,3);
   ierr = ISLocalToGlobalMappingApply(mat->rmap->mapping,1,&row,&globalrow);CHKERRQ(ierr);
   ierr = MatSetValuesRow(mat,globalrow,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1479,7 +1479,7 @@ PetscErrorCode MatSetValuesRow(Mat mat,PetscInt row,const PetscScalar v[])
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   MatCheckPreallocated(mat,1);
-  PetscValidScalarPointer(v,2);
+  PetscValidScalarPointer(v,3);
   if (PetscUnlikely(mat->insertmode == ADD_VALUES)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add and insert values");
   if (PetscUnlikely(mat->factortype)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   mat->insertmode = INSERT_VALUES;
@@ -1575,8 +1575,8 @@ PetscErrorCode MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],Pe
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidIntPointer(idxm,3);
-  PetscValidIntPointer(idxn,5);
+  PetscValidPointer(idxm,3);
+  PetscValidPointer(idxn,5);
 
   if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
@@ -1683,8 +1683,8 @@ PetscErrorCode MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil id
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidIntPointer(idxm,3);
-  PetscValidIntPointer(idxn,5);
+  PetscValidPointer(idxm,3);
+  PetscValidPointer(idxn,5);
   PetscValidScalarPointer(v,6);
 
   if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
@@ -2048,7 +2048,7 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidScalarPointer(rows,4);
+  PetscValidIntPointer(rows,4);
   PetscValidScalarPointer(v,5);
   if (PetscUnlikelyDebug(mat->factortype)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
@@ -3121,12 +3121,12 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFacto
   MatFactorInfo  tinfo;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  if (row) PetscValidHeaderSpecific(row,IS_CLASSID,2);
-  if (col) PetscValidHeaderSpecific(col,IS_CLASSID,3);
-  if (info) PetscValidPointer(info,4);
-  PetscValidType(mat,1);
-  PetscValidPointer(fact,5);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  if (row) PetscValidHeaderSpecific(row,IS_CLASSID,3);
+  if (col) PetscValidHeaderSpecific(col,IS_CLASSID,4);
+  if (info) PetscValidPointer(info,5);
+  PetscValidType(mat,2);
+  PetscValidPointer(fact,1);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!(fact)->ops->lufactorsymbolic) {
@@ -3180,10 +3180,10 @@ PetscErrorCode MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(fact,2);
-  PetscValidHeaderSpecific(fact,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  PetscValidType(mat,2);
+  PetscValidPointer(fact,1);
+  PetscValidHeaderSpecific(fact,MAT_CLASSID,1);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->rmap->N != (fact)->rmap->N || mat->cmap->N != (fact)->cmap->N) SETERRQ4(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Mat fact: global dimensions are different %D should = %D %D should = %D",mat->rmap->N,(fact)->rmap->N,mat->cmap->N,(fact)->cmap->N);
 
@@ -3295,11 +3295,11 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFacto
   MatFactorInfo  tinfo;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  if (perm) PetscValidHeaderSpecific(perm,IS_CLASSID,2);
-  if (info) PetscValidPointer(info,3);
-  PetscValidPointer(fact,4);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  PetscValidType(mat,2);
+  if (perm) PetscValidHeaderSpecific(perm,IS_CLASSID,3);
+  if (info) PetscValidPointer(info,4);
+  PetscValidPointer(fact,1);
   if (mat->rmap->N != mat->cmap->N) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
@@ -3354,10 +3354,10 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *in
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(fact,2);
-  PetscValidHeaderSpecific(fact,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  PetscValidType(mat,2);
+  PetscValidPointer(fact,1);
+  PetscValidHeaderSpecific(fact,MAT_CLASSID,1);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!(fact)->ops->choleskyfactornumeric) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s numeric factor Cholesky",((PetscObject)mat)->type_name);
   if (mat->rmap->N != (fact)->rmap->N || mat->cmap->N != (fact)->cmap->N) SETERRQ4(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Mat fact: global dim %D should = %D %D should = %D",mat->rmap->N,(fact)->rmap->N,mat->cmap->N,(fact)->cmap->N);
@@ -3509,10 +3509,10 @@ PetscErrorCode MatQRFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(fact,2);
-  PetscValidHeaderSpecific(fact,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  PetscValidType(mat,2);
+  PetscValidPointer(fact,1);
+  PetscValidHeaderSpecific(fact,MAT_CLASSID,1);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->rmap->N != (fact)->rmap->N || mat->cmap->N != (fact)->cmap->N) SETERRQ4(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Mat fact: global dimensions are different %D should = %D %D should = %D",mat->rmap->N,(fact)->rmap->N,mat->cmap->N,(fact)->cmap->N);
 
@@ -3945,12 +3945,12 @@ PetscErrorCode MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(y,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(b,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   PetscValidHeaderSpecific(x,VEC_CLASSID,4);
   PetscCheckSameComm(mat,1,b,2);
-  PetscCheckSameComm(mat,1,y,2);
-  PetscCheckSameComm(mat,1,x,3);
+  PetscCheckSameComm(mat,1,y,3);
+  PetscCheckSameComm(mat,1,x,4);
   if (x == b) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_IDN,"x and b must be different vectors");
   if (mat->cmap->N != x->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->cmap->N,x->map->N);
   if (mat->rmap->N != b->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %D %D",mat->rmap->N,b->map->N);
@@ -4073,8 +4073,8 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(y,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(b,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   PetscValidHeaderSpecific(x,VEC_CLASSID,4);
   PetscCheckSameComm(mat,1,b,2);
   PetscCheckSameComm(mat,1,y,3);
@@ -5245,7 +5245,7 @@ PetscErrorCode MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
-  PetscValidBoolPointer(flg,3);
+  PetscValidBoolPointer(flg,4);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsTranspose_C",&f);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsTranspose_C",&g);CHKERRQ(ierr);
   *flg = PETSC_FALSE;
@@ -5321,7 +5321,7 @@ PetscErrorCode MatIsHermitianTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
-  PetscValidBoolPointer(flg,3);
+  PetscValidBoolPointer(flg,4);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsHermitianTranspose_C",&f);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsHermitianTranspose_C",&g);CHKERRQ(ierr);
   if (f && g) {
@@ -5529,7 +5529,7 @@ PetscErrorCode MatNorm(Mat mat,NormType type,PetscReal *nrm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidScalarPointer(nrm,3);
+  PetscValidRealPointer(nrm,3);
 
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
@@ -6310,7 +6310,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil rows
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (numRows) PetscValidIntPointer(rows,3);
+  if (numRows) PetscValidPointer(rows,3);
 
   ierr = PetscMalloc1(numRows, &jdxm);CHKERRQ(ierr);
   for (i = 0; i < numRows; ++i) {
@@ -6409,7 +6409,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStenc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (numRows) PetscValidIntPointer(rows,3);
+  if (numRows) PetscValidPointer(rows,3);
 
   ierr = PetscMalloc1(numRows, &jdxm);CHKERRQ(ierr);
   for (i = 0; i < numRows; ++i) {
@@ -6927,12 +6927,12 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFact
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  if (row) PetscValidHeaderSpecific(row,IS_CLASSID,2);
-  if (col) PetscValidHeaderSpecific(col,IS_CLASSID,3);
-  PetscValidPointer(info,4);
-  PetscValidPointer(fact,5);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  PetscValidType(mat,2);
+  if (row) PetscValidHeaderSpecific(row,IS_CLASSID,3);
+  if (col) PetscValidHeaderSpecific(col,IS_CLASSID,4);
+  PetscValidPointer(info,5);
+  PetscValidPointer(fact,1);
   if (info->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %D",(PetscInt)info->levels);
   if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",(double)info->fill);
   if (!fact->ops->ilufactorsymbolic) {
@@ -6989,11 +6989,11 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  if (perm) PetscValidHeaderSpecific(perm,IS_CLASSID,2);
-  PetscValidPointer(info,3);
-  PetscValidPointer(fact,4);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
+  PetscValidType(mat,2);
+  if (perm) PetscValidHeaderSpecific(perm,IS_CLASSID,3);
+  PetscValidPointer(info,4);
+  PetscValidPointer(fact,1);
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (info->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %D",(PetscInt) info->levels);
   if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",(double)info->fill);
@@ -7727,7 +7727,7 @@ PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool 
   PetscValidIntPointer(n,5);
   if (ia) PetscValidIntPointer(ia,6);
   if (ja) PetscValidIntPointer(ja,7);
-  PetscValidIntPointer(done,8);
+  PetscValidBoolPointer(done,8);
   MatCheckPreallocated(mat,1);
   if (!mat->ops->getrowij) *done = PETSC_FALSE;
   else {
@@ -7770,10 +7770,10 @@ PetscErrorCode MatGetColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidIntPointer(n,4);
-  if (ia) PetscValidIntPointer(ia,5);
-  if (ja) PetscValidIntPointer(ja,6);
-  PetscValidIntPointer(done,7);
+  PetscValidIntPointer(n,5);
+  if (ia) PetscValidIntPointer(ia,6);
+  if (ja) PetscValidIntPointer(ja,7);
+  PetscValidBoolPointer(done,8);
   MatCheckPreallocated(mat,1);
   if (!mat->ops->getcolumnij) *done = PETSC_FALSE;
   else {
@@ -7822,7 +7822,7 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
   PetscValidType(mat,1);
   if (ia) PetscValidIntPointer(ia,6);
   if (ja) PetscValidIntPointer(ja,7);
-  PetscValidIntPointer(done,8);
+  PetscValidBoolPointer(done,8);
   MatCheckPreallocated(mat,1);
 
   if (!mat->ops->restorerowij) *done = PETSC_FALSE;
@@ -7868,9 +7868,9 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (ia) PetscValidIntPointer(ia,5);
-  if (ja) PetscValidIntPointer(ja,6);
-  PetscValidIntPointer(done,7);
+  if (ia) PetscValidIntPointer(ia,6);
+  if (ja) PetscValidIntPointer(ja,7);
+  PetscValidBoolPointer(done,8);
   MatCheckPreallocated(mat,1);
 
   if (!mat->ops->restorecolumnij) *done = PETSC_FALSE;
@@ -8284,7 +8284,7 @@ PetscErrorCode MatPropagateSymmetryOptions(Mat A, Mat B)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
   if (A->symmetric_eternal) { /* symmetric_eternal does not have a corresponding *set flag */
     ierr = MatSetOption(B,MAT_SYMMETRY_ETERNAL,A->symmetric_eternal);CHKERRQ(ierr);
   }
@@ -8997,7 +8997,7 @@ PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidBoolPointer(flg,2);
+  PetscValidBoolPointer(flg,3);
 
   if (!A->symmetric_set) {
     if (!A->ops->issymmetric) {
@@ -9047,7 +9047,7 @@ PetscErrorCode MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidBoolPointer(flg,2);
+  PetscValidBoolPointer(flg,3);
 
   if (!A->hermitian_set) {
     if (!A->ops->ishermitian) {
@@ -10458,9 +10458,9 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(Btdense,MAT_CLASSID,2);
-  PetscValidHeaderSpecific(coloring,MAT_TRANSPOSECOLORING_CLASSID,3);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(Btdense,MAT_CLASSID,3);
+  PetscValidHeaderSpecific(coloring,MAT_TRANSPOSECOLORING_CLASSID,1);
 
   if (!B->ops->transcoloringapplysptoden) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)B)->type_name);
   ierr = (B->ops->transcoloringapplysptoden)(coloring,B,Btdense);CHKERRQ(ierr);

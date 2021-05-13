@@ -3214,7 +3214,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
     head = head->next;
     ++n;
   }
-  if (bd) {PetscValidIntPointer(bd, 12); *bd = n;}
+  if (bd) {PetscValidIntPointer(bd, 13); *bd = n;}
   PetscFunctionReturn(0);
 }
 
@@ -3322,7 +3322,7 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
     head = head->next;
     ++n;
   }
-  if (bd) {PetscValidIntPointer(bd, 12); *bd = n;}
+  if (bd) {PetscValidIntPointer(bd, 13); *bd = n;}
   PetscFunctionReturn(0);
 }
 

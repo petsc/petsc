@@ -509,7 +509,7 @@ PetscErrorCode MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Ma
 
   PetscFunctionBegin;
   if (nmat < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in at least one matrix");
-  PetscValidPointer(mat,3);
+  PetscValidPointer(mat,4);
 
   ierr = MatGetLocalSize(mats[0],PETSC_IGNORE,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mats[nmat-1],&m,PETSC_IGNORE);CHKERRQ(ierr);

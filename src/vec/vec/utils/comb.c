@@ -346,7 +346,7 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(y,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,2);
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state != STATE_BEGIN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");

@@ -537,9 +537,9 @@ static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObje
   char           ftype[256];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   ierr = MatShellGetContext(mat,&mfctx);CHKERRQ(ierr);
-  PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,1);
+  PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,2);
   ierr = PetscObjectOptionsBegin((PetscObject)mfctx);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
   if (flg) {

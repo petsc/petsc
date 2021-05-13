@@ -551,7 +551,7 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(ksp,mmax,2);
+  PetscValidLogicalCollectiveInt(ksp,mmax,2);
   pipegcr->mmax=mmax;
   PetscFunctionReturn(0);
 }
@@ -609,7 +609,7 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(ksp,nprealloc,2);
+  PetscValidLogicalCollectiveInt(ksp,nprealloc,2);
   pipegcr->nprealloc = nprealloc;
   PetscFunctionReturn(0);
 }

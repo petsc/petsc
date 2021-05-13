@@ -413,7 +413,7 @@ PetscErrorCode PCDeflationGetPC(PC pc,PC *apc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(pc,2);
+  PetscValidPointer(pc,1);
   ierr = PetscTryMethod(pc,"PCDeflationGetPC_C",(PC,PC*),(pc,apc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

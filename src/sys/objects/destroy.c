@@ -266,7 +266,7 @@ PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj,PetscBool *match,co
   va_list        Argp;
 
   PetscFunctionBegin;
-  PetscValidPointer(match,3);
+  PetscValidPointer(match,2);
   *match = PETSC_FALSE;
   va_start(Argp,type_name);
   while (type_name && type_name[0]) {

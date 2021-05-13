@@ -137,7 +137,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidRealPointer(nrm,3);
+  PetscValidRealPointer(nrm,4);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
@@ -212,7 +212,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidRealPointer(nrm,3);
+  PetscValidRealPointer(nrm,4);
 
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
@@ -711,9 +711,9 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   PetscScalar const **y;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(s,2);
-  PetscValidHeaderSpecific(*s,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,2);
+  PetscValidPointer(s,1);
+  PetscValidHeaderSpecific(*s,VEC_CLASSID,1);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s[0],&n2);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -1293,7 +1293,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
   PetscValidHeaderSpecific(s, VEC_CLASSID,1);
   PetscValidHeaderSpecific(t, VEC_CLASSID,2);
   PetscValidScalarPointer(dp,3);
-  PetscValidScalarPointer(nm,4);
+  PetscValidRealPointer(nm,4);
   PetscValidType(s,1);
   PetscValidType(t,2);
   PetscCheckSameTypeAndComm(s,1,t,2);

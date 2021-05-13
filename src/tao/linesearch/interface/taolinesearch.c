@@ -856,7 +856,7 @@ PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch ls, Tao ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-  PetscValidHeaderSpecific(ts,TAO_CLASSID,1);
+  PetscValidHeaderSpecific(ts,TAO_CLASSID,2);
   ls->tao = ts;
   ls->usetaoroutines=PETSC_TRUE;
   PetscFunctionReturn(0);

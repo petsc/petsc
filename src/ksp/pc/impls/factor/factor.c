@@ -211,8 +211,8 @@ PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveReal(pc,dtcol,2);
-  PetscValidLogicalCollectiveInt(pc,maxrowcount,3);
+  PetscValidLogicalCollectiveReal(pc,dtcol,3);
+  PetscValidLogicalCollectiveInt(pc,maxrowcount,4);
   ierr = PetscTryMethod(pc,"PCFactorSetDropTolerance_C",(PC,PetscReal,PetscReal,PetscInt),(pc,dt,dtcol,maxrowcount));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -707,7 +707,7 @@ PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool flag)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,2);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flag,2);
   ierr = PetscTryMethod(pc,"PCFactorSetReuseFill_C",(PC,PetscBool),(pc,flag));CHKERRQ(ierr);
   PetscFunctionReturn(0);

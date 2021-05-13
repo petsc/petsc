@@ -91,7 +91,7 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
 
   PetscFunctionBegin;
   PetscValidPointer(geom,1);
-  PetscValidPointer(chunkGeom,2);
+  PetscValidPointer(chunkGeom,4);
   if (!(*chunkGeom)) {
     ierr = PetscNew(chunkGeom);CHKERRQ(ierr);
   }
