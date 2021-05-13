@@ -1592,6 +1592,151 @@ PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexGlobalVectorView - Saves a global vector
+
+  Collective on DM
+
+  Input Parameters:
++ dm        - The DM that represents the topology
+. viewer    - The PetscViewer to save data with
+. sectiondm - The DM that contains the global section on which vec is defined
+- vec       - The global vector to be saved
+
+  Level: advanced
+
+  Notes:
+  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with PetscObjectSetName(). In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+
+  Typical calling sequence
+$       DMCreate(PETSC_COMM_WORLD, &dm);
+$       DMSetType(dm, DMPLEX);
+$       PetscObjectSetName((PetscObject)dm, "topologydm_name");
+$       DMClone(dm, &sectiondm);
+$       PetscObjectSetName((PetscObject)sectiondm, "sectiondm_name");
+$       PetscSectionCreate(PETSC_COMM_WORLD, &section);
+$       DMPlexGetChart(sectiondm, &pStart, &pEnd);
+$       PetscSectionSetChart(section, pStart, pEnd);
+$       PetscSectionSetUp(section);
+$       DMSetLocalSection(sectiondm, section);
+$       PetscSectionDestroy(&section);
+$       DMGetGlobalVector(sectiondm, &vec);
+$       PetscObjectSetName((PetscObject)vec, "vec_name");
+$       DMPlexTopologyView(dm, viewer);
+$       DMPlexSectionView(dm, viewer, sectiondm);
+$       DMPlexGlobalVectorView(dm, viewer, sectiondm, vec);
+$       DMRestoreGlobalVector(sectiondm, &vec);
+$       DMDestroy(&sectiondm);
+$       DMDestroy(&dm);
+
+.seealso: DMPlexTopologyView(), DMPlexSectionView(), DMPlexLocalVectorView(), DMPlexGlobalVectorLoad(), DMPlexLocalVectorLoad()
+@*/
+PetscErrorCode DMPlexGlobalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
+{
+  PetscBool       ishdf5;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscValidHeaderSpecific(sectiondm, DM_CLASSID, 3);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID, 4);
+  /* Check consistency */
+  {
+    PetscSection  section;
+    PetscBool     includesConstraints;
+    PetscInt      m, m1;
+
+    ierr = VecGetLocalSize(vec, &m1);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(sectiondm, &section);CHKERRQ(ierr);
+    ierr = PetscSectionGetIncludesConstraints(section, &includesConstraints);CHKERRQ(ierr);
+    if (includesConstraints) {ierr = PetscSectionGetStorageSize(section, &m);CHKERRQ(ierr);}
+    else {ierr = PetscSectionGetConstrainedStorageSize(section, &m);CHKERRQ(ierr);}
+    if (m1 != m) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Global vector size (%D) != global section storage size (%D)", m1, m);
+  }
+  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = DMPlexGlobalVectorView_HDF5_Internal(dm, viewer, sectiondm, vec);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexLocalVectorView - Saves a local vector
+
+  Collective on DM
+
+  Input Parameters:
++ dm        - The DM that represents the topology
+. viewer    - The PetscViewer to save data with
+. sectiondm - The DM that contains the local section on which vec is defined; may be the same as dm
+- vec       - The local vector to be saved
+
+  Level: advanced
+
+  Notes:
+  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with PetscObjectSetName(). In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+
+  Typical calling sequence
+$       DMCreate(PETSC_COMM_WORLD, &dm);
+$       DMSetType(dm, DMPLEX);
+$       PetscObjectSetName((PetscObject)dm, "topologydm_name");
+$       DMClone(dm, &sectiondm);
+$       PetscObjectSetName((PetscObject)sectiondm, "sectiondm_name");
+$       PetscSectionCreate(PETSC_COMM_WORLD, &section);
+$       DMPlexGetChart(sectiondm, &pStart, &pEnd);
+$       PetscSectionSetChart(section, pStart, pEnd);
+$       PetscSectionSetUp(section);
+$       DMSetLocalSection(sectiondm, section);
+$       DMGetLocalVector(sectiondm, &vec);
+$       PetscObjectSetName((PetscObject)vec, "vec_name");
+$       DMPlexTopologyView(dm, viewer);
+$       DMPlexSectionView(dm, viewer, sectiondm);
+$       DMPlexLocalVectorView(dm, viewer, sectiondm, vec);
+$       DMRestoreLocalVector(sectiondm, &vec);
+$       DMDestroy(&sectiondm);
+$       DMDestroy(&dm);
+
+.seealso: DMPlexTopologyView(), DMPlexSectionView(), DMPlexGlobalVectorView(), DMPlexGlobalVectorLoad(), DMPlexLocalVectorLoad()
+@*/
+PetscErrorCode DMPlexLocalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
+{
+  PetscBool       ishdf5;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscValidHeaderSpecific(sectiondm, DM_CLASSID, 3);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID, 4);
+  /* Check consistency */
+  {
+    PetscSection  section;
+    PetscBool     includesConstraints;
+    PetscInt      m, m1;
+
+    ierr = VecGetLocalSize(vec, &m1);CHKERRQ(ierr);
+    ierr = DMGetLocalSection(sectiondm, &section);CHKERRQ(ierr);
+    ierr = PetscSectionGetIncludesConstraints(section, &includesConstraints);CHKERRQ(ierr);
+    if (includesConstraints) {ierr = PetscSectionGetStorageSize(section, &m);CHKERRQ(ierr);}
+    else {ierr = PetscSectionGetConstrainedStorageSize(section, &m);CHKERRQ(ierr);}
+    if (m1 != m) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Local vector size (%D) != local section storage size (%D)", m1, m);
+  }
+  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = DMPlexLocalVectorView_HDF5_Internal(dm, viewer, sectiondm, vec);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 {
   PetscBool      ishdf5;

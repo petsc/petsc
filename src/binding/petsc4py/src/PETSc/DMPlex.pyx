@@ -667,6 +667,12 @@ cdef class DMPlex(DM):
     def sectionView(self, Viewer viewer, DM sectiondm):
         CHKERR( DMPlexSectionView(self.dm, viewer.vwr, sectiondm.dm))
 
+    def globalVectorView(self, Viewer viewer, DM sectiondm, Vec vec):
+        CHKERR( DMPlexGlobalVectorView(self.dm, viewer.vwr, sectiondm.dm, vec.vec))
+
+    def localVectorView(self, Viewer viewer, DM sectiondm, Vec vec):
+        CHKERR( DMPlexLocalVectorView(self.dm, viewer.vwr, sectiondm.dm, vec.vec))
+
     # Load
 
     def topologyLoad(self, Viewer viewer):

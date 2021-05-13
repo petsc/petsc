@@ -886,6 +886,121 @@ PetscErrorCode DMPlexSectionView_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMPlexGlobalVectorView_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
+{
+  const char     *topologydm_name;
+  const char     *sectiondm_name;
+  const char     *vec_name;
+  PetscInt        bs;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Check consistency */
+  {
+    PetscSF   pointsf, pointsf1;
+
+    ierr = DMGetPointSF(dm, &pointsf);CHKERRQ(ierr);
+    ierr = DMGetPointSF(sectiondm, &pointsf1);CHKERRQ(ierr);
+    if (pointsf1 != pointsf) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching point SFs for dm and sectiondm");
+  }
+  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)vec, &vec_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "dms");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "vecs");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, vec_name);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(vec, &bs);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5WriteAttribute(viewer, NULL, "blockSize", PETSC_INT, (void *) &bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(vec, 1);CHKERRQ(ierr);
+  /* VecView(vec, viewer) would call (*vec->opt->view)(vec, viewer), but,    */
+  /* if vec was created with DMGet{Global, Local}Vector(), vec->opt->view    */
+  /* is set to VecView_Plex, which would save vec in a predefined location.  */
+  /* To save vec in where we want, we create a new Vec (temp) with           */
+  /* VecCreate(), wrap the vec data in temp, and call VecView(temp, viewer). */
+  {
+    Vec                temp;
+    const PetscScalar *array;
+    PetscLayout        map;
+
+    ierr = VecCreate(PetscObjectComm((PetscObject)vec), &temp);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)temp, vec_name);CHKERRQ(ierr);
+    ierr = VecGetLayout(vec, &map);CHKERRQ(ierr);
+    ierr = VecSetLayout(temp, map);CHKERRQ(ierr);
+    ierr = VecSetUp(temp);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(vec, &array);CHKERRQ(ierr);
+    ierr = VecPlaceArray(temp, array);CHKERRQ(ierr);
+    ierr = VecView(temp, viewer);CHKERRQ(ierr);
+    ierr = VecResetArray(temp);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(vec, &array);CHKERRQ(ierr);
+    ierr = VecDestroy(&temp);CHKERRQ(ierr);
+  }
+  ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexLocalVectorView_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
+{
+  MPI_Comm        comm;
+  const char     *topologydm_name;
+  const char     *sectiondm_name;
+  const char     *vec_name;
+  PetscSection    section;
+  PetscBool       includesConstraints;
+  Vec             gvec;
+  PetscInt        m, bs;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  /* Check consistency */
+  {
+    PetscSF   pointsf, pointsf1;
+
+    ierr = DMGetPointSF(dm, &pointsf);CHKERRQ(ierr);
+    ierr = DMGetPointSF(sectiondm, &pointsf1);CHKERRQ(ierr);
+    if (pointsf1 != pointsf) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching point SFs for dm and sectiondm");
+  }
+  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)vec, &vec_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "dms");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "vecs");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, vec_name);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(vec, &bs);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5WriteAttribute(viewer, NULL, "blockSize", PETSC_INT, (void *) &bs);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &gvec);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)gvec, vec_name);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(sectiondm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetIncludesConstraints(section, &includesConstraints);CHKERRQ(ierr);
+  if (includesConstraints) {ierr = PetscSectionGetStorageSize(section, &m);CHKERRQ(ierr);}
+  else {ierr = PetscSectionGetConstrainedStorageSize(section, &m);CHKERRQ(ierr);}
+  ierr = VecSetSizes(gvec, m, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetUp(gvec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(sectiondm, vec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(sectiondm, vec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+  ierr = VecView(gvec, viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&gvec);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 typedef struct {
   PetscMPIInt rank;
   DM          dm;

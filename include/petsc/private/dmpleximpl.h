@@ -257,6 +257,8 @@ PETSC_INTERN PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM, IS, PetscViewer
 PETSC_INTERN PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM, IS, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexSectionView_HDF5_Internal(DM, PetscViewer, DM);
+PETSC_INTERN PetscErrorCode DMPlexGlobalVectorView_HDF5_Internal(DM, PetscViewer, DM, Vec);
+PETSC_INTERN PetscErrorCode DMPlexLocalVectorView_HDF5_Internal(DM, PetscViewer, DM, Vec);
 PETSC_INTERN PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM, PetscViewer, PetscSF*);
 PETSC_INTERN PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM, PetscViewer);

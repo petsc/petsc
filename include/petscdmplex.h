@@ -452,6 +452,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTopologyView(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesView(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexLabelsView(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexSectionView(DM,PetscViewer,DM);
+PETSC_EXTERN PetscErrorCode DMPlexGlobalVectorView(DM,PetscViewer,DM,Vec);
+PETSC_EXTERN PetscErrorCode DMPlexLocalVectorView(DM,PetscViewer,DM,Vec);
 
 PETSC_EXTERN PetscErrorCode DMPlexTopologyLoad(DM, PetscViewer, PetscSF*);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesLoad(DM, PetscViewer);
