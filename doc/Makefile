@@ -29,10 +29,14 @@ clean-classic-docs:
 
 clean: clean-classic-docs clear-generated
 
-website-deploy:
+images:
+	git clone https://gitlab.com/petsc/images.git -b main-1 --depth=1 images
+
+website-deploy: images
 	$(SPHINXBUILD) -b dirhtml "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) -T -E -j auto
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.
-%: Makefile
+%: Makefile images
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) -j auto
+

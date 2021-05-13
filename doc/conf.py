@@ -21,6 +21,16 @@ import build_classic_docs
 import make_links_relative
 
 
+if not os.path.isdir("images"):
+    print("-----------------------------------------------------------------------------")
+    print("ERROR")
+    print("images directory does not seem to exist.")
+    print("To clone the required repository, try")
+    print("   make images")
+    print("-----------------------------------------------------------------------------")
+    raise Exception("Aborting because images missing")
+
+
 # -- Project information -------------------------------------------------------
 
 project = 'PETSc'
