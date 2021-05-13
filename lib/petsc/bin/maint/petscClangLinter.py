@@ -1211,11 +1211,11 @@ def checkMatchingClassid(linter,obj,objClassid):
   __doc__="""
   Does the classid match the particular PETSc type
   """
-  if checkIsPetscObject(linter,obj):
-    expectedClassid = classIdMap[obj.typename]
-    if objClassid.name != expectedClassid:
-      fix = SourceFix.fromCursor(objClassid,expectedClassid)
-      linter.addErrorFromCursor(obj,"Classid doesn't match. Expected '{}' found '{}'".format(expectedClassid,objClassid.name),patch=fix)
+  checkIsPetscObject(linter,obj)
+  expectedClassid = classIdMap[obj.typename]
+  if objClassid.name != expectedClassid:
+    fix = SourceFix.fromCursor(objClassid,expectedClassid)
+    linter.addErrorFromCursor(obj,"Classid doesn't match. Expected '{}' found '{}'".format(expectedClassid,objClassid.name),patch=fix)
   return
 
 def checkTraceableToParentArgs(obj,parentArgNames):

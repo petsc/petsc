@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/random/randomimpl.h>         /*I "petscsys.h" I*/
+#include <petsc/private/randomimpl.h>         /*I "petscsys.h" I*/
 
 PetscFunctionList PetscRandomList              = NULL;
 PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;

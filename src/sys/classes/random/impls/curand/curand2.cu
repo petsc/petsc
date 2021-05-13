@@ -1,4 +1,4 @@
-#include <../src/sys/classes/random/randomimpl.h>
+#include <petsc/private/randomimpl.h>
 #include <thrust/transform.h>
 #include <thrust/device_ptr.h>
 #include <thrust/iterator/counting_iterator.h>
