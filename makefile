@@ -350,7 +350,9 @@ allcite: chk_loc deletemanualpages
 
 # Build just manual pages + prerequisites
 allmanpages: chk_loc allcite
+	-${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	-${OMAKE_SELF} ACTION=manualpages tree_basic LOC=${LOC}
+	-a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
 
 # Build just manual examples + prerequisites
 allmanexamples: chk_loc allmanpages
