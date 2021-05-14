@@ -183,6 +183,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx)
   ierr = PetscOptionsBegin(comm, "", "libCEED Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   ierr = PetscOptionsGetEnum(NULL, NULL, "-dm_plex_shape", DMPlexShapes, (PetscEnum *) &shape, NULL);CHKERRQ(ierr);
+  ctx->setupgeo      = NULL;
+  ctx->setupgeofname = NULL;
+  ctx->apply         = Mass;
+  ctx->applyfname    = Mass_loc;
+  ctx->areaExact     = 0.0;
   switch (shape) {
     case DM_SHAPE_BOX_SURFACE:
       ctx->setupgeo      = SetupMassGeoCube;
@@ -194,11 +199,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx)
       ctx->setupgeofname = SetupMassGeoSphere_loc;
       ctx->areaExact     = 4.0*M_PI;
       break;
-    default: ctx->areaExact = 0.0;
+    default: break;
   }
-
-  ctx->apply      = Mass;
-  ctx->applyfname = Mass_loc;
   PetscFunctionReturn(0);
 }
 
@@ -211,6 +213,16 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+#ifdef PETSC_HAVE_LIBCEED
+  {
+    Ceed        ceed;
+    const char *usedresource;
+
+    ierr = DMGetCeed(*dm, &ceed);CHKERRQ(ierr);
+    ierr = CeedGetResource(ceed, &usedresource);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) *dm), "libCEED Backend: %s\n", usedresource);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -347,6 +359,7 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(U, &V);CHKERRQ(ierr);
   ierr = VecDuplicate(Uloc, &Vloc);CHKERRQ(ierr);
 
+  /**/
   ierr = VecZeroEntries(V);CHKERRQ(ierr);
   ierr = VecZeroEntries(Vloc);CHKERRQ(ierr);
   ierr = VecGetArray(Vloc, &v);CHKERRQ(ierr);

@@ -30,7 +30,7 @@ int main(int argc, char **argv)
    * conveying continuity requirements to a finite element assembly routines,
    * so a PetscDualSpace needs a reference element: a single element mesh,
    * whose boundary points are the interstitial points in a mesh */
-  ierr = DMPlexCreateReferenceCell(PETSC_COMM_WORLD, dim, (PetscBool) !tensorCell, &K);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(PETSC_COMM_WORLD, DMPolytopeTypeSimpleShape(dim, (PetscBool) !tensorCell), &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(dsp, K);CHKERRQ(ierr);
   /* This gives us the opportunity to change the parameters of the dual space
    * from the command line, as we do in the tests below.  When

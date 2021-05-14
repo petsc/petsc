@@ -8,35 +8,18 @@ typedef struct {
   PetscLogEvent createMeshEvent;
   PetscLogStage stages[4];
   /* Domain and mesh definition */
-  PetscInt  dim;                             /* The topological mesh dimension */
-  PetscInt  faces[3];                        /* Number of faces per dimension */
-  PetscBool simplex;                         /* Use simplices or hexes */
-  char      filename[PETSC_MAX_PATH_LEN];    /* Import mesh from file */
-  PetscInt  overlap;                         /* The cell overlap to use during partitioning */
+  PetscInt overlap; /* The cell overlap to use during partitioning */
 } AppCtx;
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt        dim;
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dim         = 2;
-  options->simplex     = PETSC_TRUE;
-  options->filename[0] = '\0';
-  options->overlap     = PETSC_FALSE;
-  options->faces[0]    = 1;
-  options->faces[1]    = 1;
-  options->faces[2]    = 1;
+  options->overlap = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex29.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Use simplices if true, otherwise hexes", "ex29.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex29.c", options->overlap, &options->overlap, NULL,0);CHKERRQ(ierr);
-  dim = options->dim;
-  ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", "ex29.c", options->faces, &dim, NULL);CHKERRQ(ierr);
-  if (dim) options->dim = dim;
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -49,11 +32,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim      = user->dim;
-  PetscInt      *faces    = user->faces;
-  PetscBool      simplex  = user->simplex;
-  const char    *filename = user->filename;
-  size_t         len;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
@@ -61,13 +39,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
-  if (len) {
-    ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateBoxMesh(comm, dim, simplex, faces, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  }
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   {
     DM               pdm = NULL;
@@ -85,7 +60,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   ierr = PetscLogStagePush(user->stages[STAGE_REFINE]);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "");CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   if (user->overlap) {
     DM odm = NULL;
@@ -99,8 +76,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
-  if (simplex){ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);}
-  else{ierr = PetscObjectSetName((PetscObject) *dm, "Tensor Product Mesh");CHKERRQ(ierr);}
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -131,13 +106,13 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: ctetgen
-    args: -dim 3 -dm_refine 2 -petscpartitioner_type simple -dm_view
+    args: -dm_plex_dim 3 -post_dm_refine 2 -petscpartitioner_type simple -dm_view
   test:
     suffix: 1
-    args: -dim 3 -simplex 0 -dm_refine 2 -petscpartitioner_type simple -dm_view
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -post_dm_refine 2 -petscpartitioner_type simple -dm_view
   test:
     suffix: quad_0
     nsize: 2
-    args: -dim 3 -simplex 0 -dm_refine 2 -petscpartitioner_type simple -dm_view -pdm_view
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -post_dm_refine 2 -petscpartitioner_type simple -dm_view -pdm_view
 
 TEST*/

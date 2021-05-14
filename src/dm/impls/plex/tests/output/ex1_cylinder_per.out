@@ -5,6 +5,7 @@ Simplicial Mesh in 3 dimensions:
   1-cells: 414
   2-cells: 384
   3-cells: 120
+Periodic mesh (NONE, NONE, PERIODIC) coordinates localized
 Labels:
   celltype: 4 strata with value/size (0 (150), 1 (414), 4 (384), 7 (120))
   depth: 4 strata with value/size (0 (150), 1 (414), 2 (384), 3 (120))

@@ -1,6 +1,6 @@
-DM Object: Mesh 1 MPI processes
+DM Object: box 1 MPI processes
   type: plex
-Mesh in 3 dimensions:
+box in 3 dimensions:
   0-cells: 8
   1-cells: 19
   2-cells: 18
@@ -24,7 +24,7 @@ Vec Object: 1 MPI processes
 Initial guess
 Vec Object: potential 1 MPI processes
   type: seq
-0.
+1.02716e-32
 0.666667
 0.666667
 1.33333

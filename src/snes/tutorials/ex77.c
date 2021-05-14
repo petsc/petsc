@@ -44,18 +44,9 @@ puts it into the Sieve ordering.
 typedef enum {RUN_FULL, RUN_TEST} RunType;
 
 typedef struct {
-  PetscInt      debug;             /* The debugging level */
-  RunType       runType;           /* Whether to run tests, or solve the full problem */
-  PetscLogEvent createMeshEvent;
-  PetscBool     showInitial, showSolution;
-  /* Domain and mesh definition */
-  PetscInt      dim;               /* The topological mesh dimension */
-  PetscBool     interpolate;       /* Generate intermediate mesh elements */
-  PetscBool     simplex;           /* Use simplices or tensor product cells */
-  PetscReal     refinementLimit;   /* The largest allowable cell volume */
-  PetscBool     testPartition;     /* Use a fixed partitioning for testing */
-  PetscReal     mu;                /* The shear modulus */
-  PetscReal     p_wall;            /* The wall pressure */
+  RunType   runType; /* Whether to run tests, or solve the full problem */
+  PetscReal mu;      /* The shear modulus */
+  PetscReal p_wall;  /* The wall pressure */
 } AppCtx;
 
 #if 0
@@ -271,86 +262,47 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->debug           = 0;
-  options->runType         = RUN_FULL;
-  options->dim             = 3;
-  options->interpolate     = PETSC_FALSE;
-  options->simplex         = PETSC_TRUE;
-  options->refinementLimit = 0.0;
-  options->mu              = 1.0;
-  options->p_wall          = 0.4;
-  options->testPartition   = PETSC_FALSE;
-  options->showInitial     = PETSC_FALSE;
-  options->showSolution    = PETSC_TRUE;
+  options->runType      = RUN_FULL;
+  options->mu           = 1.0;
+  options->p_wall       = 0.4;
 
   ierr = PetscOptionsBegin(comm, "", "Nonlinear elasticity problem options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex77.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   run  = options->runType;
   ierr = PetscOptionsEList("-run_type", "The run type", "ex77.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
-
   options->runType = (RunType) run;
-
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex77.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex77.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Use simplices or tensor product cells", "ex77.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex77.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex77.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-shear_modulus", "The shear modulus", "ex77.c", options->mu, &options->mu, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-wall_pressure", "The wall pressure", "ex77.c", options->p_wall, &options->p_wall, NULL);CHKERRQ(ierr);
-
-  ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex77.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex77.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
-
-  ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
-{
-  Vec            lv;
-  PetscInt       p;
-  PetscMPIInt    rank, size;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRMPI(ierr);
-  ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Local function\n");CHKERRQ(ierr);
-  for (p = 0; p < size; ++p) {
-    if (p == rank) {ierr = VecView(lv, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
-    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
-  }
-  ierr = DMRestoreLocalVector(dm, &lv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim             = user->dim;
-  PetscBool      interpolate     = user->interpolate;
-  PetscReal      refinementLimit = user->refinementLimit;
-  const PetscInt cells[3]        = {3, 3, 3};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, user->simplex ? NULL : cells, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
+  /* TODO The P1 coordinate space gives wrong results when compared to the affine version. Track this down */
+  if (0) {
+    ierr = DMPlexCreateBoxMesh(comm, 3, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+  } else {
+    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  }
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   /* Label the faces (bit of a hack here, until it is properly implemented for simplices) */
+  ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
   {
     DM              cdm;
     DMLabel         label;
     IS              is;
-    PetscInt        d, dim = user->dim, b, f, Nf;
+    PetscInt        d, dim, b, f, Nf;
     const PetscInt *faces;
     PetscInt        csize;
     PetscScalar    *coords = NULL;
     PetscSection    cs;
     Vec             coordinates ;
 
+    ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
     ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(*dm, 1, label);CHKERRQ(ierr);
@@ -387,77 +339,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     ierr = ISDestroy(&is);CHKERRQ(ierr);
   }
-  {
-    DM refinedMesh     = NULL;
-    DM distributedMesh = NULL;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-
-    /* Refine mesh using a volume constraint */
-    ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
-    if (user->simplex) {ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);}
-    if (refinedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = refinedMesh;
-    }
-    /* Setup test partitioning */
-    if (user->testPartition) {
-      PetscInt         triSizes_n2[2]       = {4, 4};
-      PetscInt         triPoints_n2[8]      = {3, 5, 6, 7, 0, 1, 2, 4};
-      PetscInt         triSizes_n3[3]       = {2, 3, 3};
-      PetscInt         triPoints_n3[8]      = {3, 5, 1, 6, 7, 0, 2, 4};
-      PetscInt         triSizes_n5[5]       = {1, 2, 2, 1, 2};
-      PetscInt         triPoints_n5[8]      = {3, 5, 6, 4, 7, 0, 1, 2};
-      PetscInt         triSizes_ref_n2[2]   = {8, 8};
-      PetscInt         triPoints_ref_n2[16] = {1, 5, 6, 7, 10, 11, 14, 15, 0, 2, 3, 4, 8, 9, 12, 13};
-      PetscInt         triSizes_ref_n3[3]   = {5, 6, 5};
-      PetscInt         triPoints_ref_n3[16] = {1, 7, 10, 14, 15, 2, 6, 8, 11, 12, 13, 0, 3, 4, 5, 9};
-      PetscInt         triSizes_ref_n5[5]   = {3, 4, 3, 3, 3};
-      PetscInt         triPoints_ref_n5[16] = {1, 7, 10, 2, 11, 13, 14, 5, 6, 15, 0, 8, 9, 3, 4, 12};
-      PetscInt         tetSizes_n2[2]       = {3, 3};
-      PetscInt         tetPoints_n2[6]      = {1, 2, 3, 0, 4, 5};
-      const PetscInt  *sizes = NULL;
-      const PetscInt  *points = NULL;
-      PetscInt         cEnd;
-      PetscMPIInt      rank, size;
-
-      ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-      ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-      ierr = DMPlexGetHeightStratum(*dm, 0, NULL, &cEnd);CHKERRQ(ierr);
-      if (!rank) {
-        if (dim == 2 && user->simplex && size == 2 && cEnd == 8) {
-           sizes = triSizes_n2; points = triPoints_n2;
-        } else if (dim == 2 && user->simplex && size == 3 && cEnd == 8) {
-          sizes = triSizes_n3; points = triPoints_n3;
-        } else if (dim == 2 && user->simplex && size == 5 && cEnd == 8) {
-          sizes = triSizes_n5; points = triPoints_n5;
-        } else if (dim == 2 && user->simplex && size == 2 && cEnd == 16) {
-           sizes = triSizes_ref_n2; points = triPoints_ref_n2;
-        } else if (dim == 2 && user->simplex && size == 3 && cEnd == 16) {
-          sizes = triSizes_ref_n3; points = triPoints_ref_n3;
-        } else if (dim == 2 && user->simplex && size == 5 && cEnd == 16) {
-          sizes = triSizes_ref_n5; points = triPoints_ref_n5;
-        } else if (dim == 3 && user->simplex && size == 2 && cEnd == 6) {
-          sizes = tetSizes_n2; points = tetPoints_n2;
-        } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No stored partition matching run parameters");
-      }
-      ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
-    } else {
-      ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    }
-    /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
-    }
-  }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -543,15 +425,17 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx 
 
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM              cdm   = dm;
-  const PetscInt  dim   = user->dim;
-  const PetscBool simplex = user->simplex;
+  DM              cdm = dm;
   PetscFE         fe[2], feAux[2];
+  PetscBool       simplex;
+  PetscInt        dim;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   /* Create finite element */
   ierr = PetscFECreateDefault(comm, dim, dim, simplex, "def_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "deformation");CHKERRQ(ierr);
@@ -624,21 +508,11 @@ int main(int argc, char **argv)
     initialGuess[0] = coordinates; initialGuess[1] = zero_scalar;
     ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
   }
-  if (user.showInitial) {ierr = DMVecViewLocal(dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
   if (user.runType == RUN_FULL) {
-    if (user.debug) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
-      ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    }
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-    if (user.showSolution) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
-      ierr = VecChop(u, 3.0e-9);CHKERRQ(ierr);
-      ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    }
   } else {
     PetscReal res = 0.0;
 
@@ -687,42 +561,50 @@ int main(int argc, char **argv)
   build:
     requires: !complex
 
-  test:
-    suffix: 0
-    requires: ctetgen !single
-    args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+  testset:
+    requires: ctetgen
+    args: -run_type full -dm_plex_dim 3 \
+          -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 \
+          -snes_rtol 1e-05 -snes_monitor_short -snes_converged_reason \
+          -ksp_type fgmres -ksp_rtol 1e-10 -ksp_monitor_short -ksp_converged_reason \
+          -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper \
+            -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu \
+            -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
 
-  test:
-    suffix: 1
-    requires: ctetgen superlu_dist
-    nsize: 2
-    args: -run_type full -dim 3 -dm_refine 0 -interpolate 1 -test_partition -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
-    timeoutfactor: 2
+    test:
+      suffix: 0
+      requires: !single
+      args: -dm_refine 2 \
+            -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4
 
-  test:
-    suffix: 2
-    requires: ctetgen !single
-    args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0 -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+    test:
+      suffix: 1
+      requires: superlu_dist
+      nsize: 2
+      args: -dm_distribute -dm_refine 0 -petscpartitioner_type simple \
+            -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4
+      timeoutfactor: 2
 
-  test:
-    requires: ctetgen superlu_dist
-    suffix: 4
-    nsize: 2
-    args: -run_type full -dim 3 -dm_refine 0 -interpolate 1 -test_partition -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
-    output_file: output/ex77_1.out
+    test:
+      suffix: 4
+      requires: superlu_dist
+      nsize: 2
+      args: -dm_distribute -dm_refine 0 -petscpartitioner_type simple \
+            -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4
+      output_file: output/ex77_1.out
 
-  test:
-    requires: ctetgen !single
-    suffix: 3
-    args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0 -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
-    output_file: output/ex77_2.out
+    test:
+      suffix: 2
+      requires: !single
+      args: -dm_refine 2 \
+            -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0
 
-  #TODO: this example deadlocks for me when using ParMETIS
-  test:
-    requires: ctetgen superlu_dist !single
-    suffix: 2_par
-    nsize: 4
-    args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0 -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0 -petscpartitioner_type simple
-    output_file: output/ex77_2.out
+    test:
+      suffix: 2_par
+      requires: superlu_dist !single
+      nsize: 4
+      args: -dm_distribute -dm_refine 2 -petscpartitioner_type simple \
+            -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0
+      output_file: output/ex77_2.out
 
 TEST*/

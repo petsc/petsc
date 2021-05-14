@@ -3,9 +3,8 @@ static char help[] = "TDycore Mesh Examples\n\n";
 #include <petscdmplex.h>
 
 typedef struct {
-  char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
-  PetscBool adapt;                        /* Flag for adaptation of the surface mesh */
-  PetscBool extrude;                      /* Flag for extrusion of the suraace mesh */
+  PetscBool adapt;   /* Flag for adaptation of the surface mesh */
+  PetscBool extrude; /* Flag for extrusion of the suraace mesh */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -13,12 +12,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->filename[0] = '\0';
-  options->adapt       = PETSC_FALSE;
-  options->extrude     = PETSC_TRUE;
+  options->adapt   = PETSC_FALSE;
+  options->extrude = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex10.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-adapt", "Flag for adaptation of the surface mesh", "ex10.c", options->adapt, &options->adapt, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-extrude", "Flag for extrusion of the surface mesh", "ex10.c", options->extrude, &options->extrude, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -142,14 +139,14 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim;
-  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* Create top surface */
-  ierr = PetscStrlen(user->filename, &len);CHKERRQ(ierr);
-  if (len) {ierr = DMPlexCreateFromFile(comm, user->filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else     {ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "init_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   /* Adapt surface */
   ierr = AdaptMesh(dm, user);CHKERRQ(ierr);
   /* Extrude surface to get volume mesh */
@@ -191,22 +188,22 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -dm_plex_box_dim 2 -dm_plex_box_faces 1,1 -dm_view
+    args: -init_dm_plex_dim 2 -init_dm_plex_box_faces 1,1 -dm_view
 
   test: # Regularly refine the surface before extrusion
     suffix: 1
     requires: triangle
-    args: -dm_plex_box_dim 2 -srf_dm_refine 2 -dm_view
+    args: -init_dm_plex_dim 2 -srf_dm_refine 2 -dm_view
 
   test: # Parallel run
     suffix: 2
     requires: triangle
     nsize: 5
-    args: -dm_plex_box_dim 2 -srf_dm_refine 3 -petscpartitioner_type simple -dm_distribute -dm_plex_extrude_layers 3 -dm_view
+    args: -init_dm_plex_dim 2 -srf_dm_refine 3 -petscpartitioner_type simple -dm_distribute -dm_plex_extrude_layers 3 -dm_view
 
   test: # adaptively refine the surface before extrusion
     suffix: 3
     requires: triangle
-    args: -dm_plex_box_dim 2 -dm_plex_box_faces 5,5 -adapt -volume_constraint_1 0.01 -volume_constraint_2 0.000625 -dm_plex_extrude_layers 10
+    args: -init_dm_plex_dim 2 -init_dm_plex_box_faces 5,5 -adapt -volume_constraint_1 0.01 -volume_constraint_2 0.000625 -dm_plex_extrude_layers 10
 
 TEST*/

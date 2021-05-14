@@ -99,7 +99,6 @@ struct _n_Model {
   void             *solutionctx;
   PetscReal        maxspeed;    /* estimate of global maximum speed (for CFL calculation) */
   PetscReal        bounds[2*DIM];
-  DMBoundaryType   bcs[3];
   PetscErrorCode   (*errorIndicator)(PetscInt, PetscReal, PetscInt, const PetscScalar[], const PetscScalar[], PetscReal *, void *);
   void             *errorCtx;
 };
@@ -344,7 +343,6 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys,PetscOptionIte
   /* Register "canned" functionals */
   ierr = ModelFunctionalRegister(mod,"Solution",&advect->functional.Solution,PhysicsFunctional_Advect,phys);CHKERRQ(ierr);
   ierr = ModelFunctionalRegister(mod,"Error",&advect->functional.Error,PhysicsFunctional_Advect,phys);CHKERRQ(ierr);
-  mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_GHOSTED;
   PetscFunctionReturn(0);
 }
 
@@ -561,8 +559,6 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys,PetscOptionItems *
   ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
   ierr = ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
   ierr = ModelFunctionalRegister(mod,"Energy",&sw->functional.Energy,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
-
-  mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_GHOSTED;
 
   PetscFunctionReturn(0);
 }
@@ -826,7 +822,6 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     PetscReal alpha;
     char type[64] = "linear_wave";
     PetscBool  is;
-    mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_GHOSTED;
     eu->pars[EULER_PAR_GAMMA] = 1.4;
     eu->pars[EULER_PAR_AMACH] = 2.02;
     eu->pars[EULER_PAR_RHOR] = 3.0;
@@ -841,9 +836,8 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     ierr = PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL);CHKERRQ(ierr);
     ierr = PetscStrcmp(type,"linear_wave", &is);CHKERRQ(ierr);
     if (is) {
+      /* Remember this should be periodic */
       eu->type = EULER_LINEAR_WAVE;
-      mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_PERIODIC;
-      mod->bcs[1] = DM_BOUNDARY_GHOSTED; /* debug */
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"linear_wave");CHKERRQ(ierr);
     }
     else {
@@ -1675,9 +1669,8 @@ int main(int argc, char **argv)
   TSConvergedReason reason;
   Vec               X;
   PetscViewer       viewer;
-  PetscBool         simplex = PETSC_FALSE, vtkCellGeom, splitFaces, useAMR;
-  PetscInt          overlap, adaptInterval;
-  char              filename[PETSC_MAX_PATH_LEN] = "";
+  PetscBool         vtkCellGeom, splitFaces, useAMR;
+  PetscInt          adaptInterval;
   char              physname[256]  = "advect";
   VecTagger         refineTag = NULL, coarsenTag = NULL;
   PetscErrorCode    ierr;
@@ -1704,12 +1697,8 @@ int main(int argc, char **argv)
   {
     cfl  = 0.9 * 4; /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
     ierr = PetscOptionsReal("-ufv_cfl","CFL number per step","",cfl,&cfl,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof(filename),NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-simplex","Flag to use a simplex mesh","",simplex,&simplex,NULL);CHKERRQ(ierr);
     splitFaces = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,NULL);CHKERRQ(ierr);
-    overlap = 1;
-    ierr = PetscOptionsInt("-ufv_mesh_overlap","Number of cells to overlap partitions","",overlap,&overlap,NULL);CHKERRQ(ierr);
     user->vtkInterval = 1;
     ierr = PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user->vtkInterval,&user->vtkInterval,NULL);CHKERRQ(ierr);
     user->vtkmon = PETSC_TRUE;
@@ -1762,25 +1751,23 @@ int main(int argc, char **argv)
 
   /* Create mesh */
   {
-    size_t len,i;
+    PetscInt i;
+
+    ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
+    ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
     for (i = 0; i < DIM; i++) { mod->bounds[2*i] = 0.; mod->bounds[2*i+1] = 1.;};
-    ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
     dim = DIM;
-    if (!len) { /* a null name means just do a hex box */
-      PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
-      PetscBool flg1, flg2, skew = PETSC_FALSE;
-      PetscInt nret1 = DIM;
+    { /* a null name means just do a hex box */
+      PetscInt  cells[3] = {1, 1, 1}, n = 3;
+      PetscBool flg2, skew = PETSC_FALSE;
       PetscInt nret2 = 2*DIM;
       ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");CHKERRQ(ierr);
-      ierr = PetscOptionsIntArray("-grid_size","number of cells in each direction","",cells,&nret1,&flg1);CHKERRQ(ierr);
       ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (i.e., x_min,x_max,y_min,y_max","",mod->bounds,&nret2,&flg2);CHKERRQ(ierr);
       ierr = PetscOptionsBool("-grid_skew_60","Skew grid for 60 degree shock mesh","",skew,&skew,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsIntArray("-dm_plex_box_faces", "Number of faces along each dimension", "", cells, &n, NULL);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
-      if (flg1) {
-        dim = nret1;
-        if (dim != DIM) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D in -grid_size",dim);
-      }
-      ierr = DMPlexCreateBoxMesh(comm, dim, simplex, cells, NULL, NULL, mod->bcs, PETSC_TRUE, &dm);CHKERRQ(ierr);
+      /* TODO Rewrite this with Mark, and remove grid_bounds at that time */
       if (flg2) {
         PetscInt dimEmbed, i;
         PetscInt nCoords;
@@ -1799,10 +1786,9 @@ int main(int argc, char **argv)
           for (j = 0; j < dimEmbed; j++) {
             coord[j] = mod->bounds[2 * j] + coord[j] * (mod->bounds[2 * j + 1] - mod->bounds[2 * j]);
             if (dim==2 && cells[1]==1 && j==0 && skew) {
-              if (cells[0]==2 && i==8) {
+              if (cells[0] == 2 && i == 8) {
                 coord[j] = .57735026918963; /* hack to get 60 deg skewed mesh */
-              }
-              else if (cells[0]==3) {
+              } else if (cells[0] == 3) {
                 if (i==2 || i==10) coord[j] = mod->bounds[1]/4.;
                 else if (i==4) coord[j] = mod->bounds[1]/2.;
                 else if (i==12) coord[j] = 1.57735026918963*mod->bounds[1]/2.;
@@ -1813,8 +1799,6 @@ int main(int argc, char **argv)
         ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
         ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
       }
-    } else {
-      ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
     }
   }
   ierr = DMViewFromOptions(dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
@@ -1822,21 +1806,7 @@ int main(int argc, char **argv)
 
   /* set up BCs, functions, tags */
   ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
-
   mod->errorIndicator = ErrorIndicator_Simple;
-
-  {
-    DM dmDist;
-
-    ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
-    if (dmDist) {
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm   = dmDist;
-    }
-  }
-
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
   {
     DM gdm;
@@ -2599,164 +2569,180 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
 
 /*TEST
 
-  # 2D Advection 0-10
-  test:
-    suffix: 0
-    requires: exodusii
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+  testset:
+    args: -dm_plex_adj_cone -dm_plex_adj_closure 0
 
-  test:
-    suffix: 1
-    requires: exodusii
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+    test:
+      suffix: adv_2d_tri_0
+      requires: triangle
+      TODO: how did this ever get in main when there is no support for this
+      args: -ufv_vtk_interval 0 -simplex -dm_refine 3 -dm_plex_faces 1,1 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
 
-  test:
-    suffix: 2
-    requires: exodusii
-    nsize: 2
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+    test:
+      suffix: adv_2d_tri_1
+      requires: triangle
+      TODO: how did this ever get in main when there is no support for this
+      args: -ufv_vtk_interval 0 -simplex -dm_refine 5 -dm_plex_faces 1,1 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
 
-  test:
-    suffix: 3
-    requires: exodusii
-    nsize: 2
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+    test:
+      suffix: tut_1
+      requires: exodusii
+      nsize: 1
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
 
-  test:
-    suffix: 4
-    requires: exodusii
-    nsize: 8
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
+    test:
+      suffix: tut_2
+      requires: exodusii
+      nsize: 1
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
 
-  test:
-    suffix: 5
-    requires: exodusii
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw -ts_adapt_reject_safety 1
+    test:
+      suffix: tut_3
+      requires: exodusii
+      nsize: 4
+      args: -dm_distribute -dm_distribute_overlap 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin
 
-  test:
-    suffix: 6
-    requires: exodusii
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/squaremotor-30.exo -ufv_split_faces
+    test:
+      suffix: tut_4
+      requires: exodusii
+      nsize: 4
+      args: -dm_distribute -dm_distribute_overlap 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod
 
-  test:
-    suffix: 7
-    requires: exodusii
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
+  testset:
+    args: -dm_plex_adj_cone -dm_plex_adj_closure 0 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,1
 
-  test:
-    suffix: 8
-    requires: exodusii
-    nsize: 2
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
+    # 2D Advection 0-10
+    test:
+      suffix: 0
+      requires: exodusii
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
 
-  test:
-    suffix: 9
-    requires: exodusii
-    nsize: 8
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
+    test:
+      suffix: 1
+      requires: exodusii
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
 
-  test:
-    suffix: 10
-    requires: exodusii
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
+    test:
+      suffix: 2
+      requires: exodusii
+      nsize: 2
+      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
 
-  # 2D Shallow water
-  test:
-    suffix: sw_0
-    requires: exodusii
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy
+    test:
+      suffix: 3
+      requires: exodusii
+      nsize: 2
+      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
 
-  test:
-    suffix: sw_hll
-    args: -ufv_vtk_interval 0 -bc_wall 1,2,3,4 -physics sw -ufv_cfl 3 -petscfv_type leastsquares -petsclimiter_type sin -ts_max_steps 5 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy -grid_bounds 0,5,0,5 -grid_size 25,25 -sw_riemann hll
+    test:
+      suffix: 4
+      requires: exodusii
+      nsize: 8
+      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
 
-  # 2D Advection: p4est
-  test:
-    suffix: p4est_advec_2d
-    requires: p4est
-    args: -ufv_vtk_interval 0 -f -dm_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash -dm_forest_maximum_refinement 5
+    test:
+      suffix: 5
+      requires: exodusii
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw -ts_adapt_reject_safety 1
 
-  # Advection in a box
-  test:
-    suffix: adv_2d_quad_0
-    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+    test:
+      suffix: 6
+      requires: exodusii
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/squaremotor-30.exo -ufv_split_faces
 
-  test:
-    suffix: adv_2d_quad_1
-    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
-    timeoutfactor: 3
+    test:
+      suffix: 7
+      requires: exodusii
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
-  test:
-    suffix: adv_2d_quad_p4est_0
-    requires: p4est
-    args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+    test:
+      suffix: 8
+      requires: exodusii
+      nsize: 2
+      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
-  test:
-    suffix: adv_2d_quad_p4est_1
-    requires: p4est
-    args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
-    timeoutfactor: 3
+    test:
+      suffix: 9
+      requires: exodusii
+      nsize: 8
+      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
-  test:
-    suffix: adv_2d_quad_p4est_adapt_0
-    requires: p4est !__float128 #broken for quad precision
-    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.005,inf -coarsen_vec_tagger_box 0,1.e-5 -petscfv_type leastsquares -ts_max_time 0.01
-    timeoutfactor: 3
+    test:
+      suffix: 10
+      requires: exodusii
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
 
-  test:
-    suffix: adv_2d_tri_0
-    requires: triangle
-    TODO: how did this ever get in main when there is no support for this
-    args: -ufv_vtk_interval 0 -simplex -dm_refine 3 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+    # 2D Shallow water
+    test:
+      suffix: sw_0
+      requires: exodusii
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type   leastsquares -petsclimiter_type sin -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy
 
-  test:
-    suffix: adv_2d_tri_1
-    requires: triangle
-    TODO: how did this ever get in main when there is no support for this
-    args: -ufv_vtk_interval 0 -simplex -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+    test:
+      suffix: sw_hll
+      args: -ufv_vtk_interval 0 -bc_wall 1,2,3,4 -physics sw -ufv_cfl 3 -petscfv_type leastsquares -petsclimiter_type sin -ts_max_steps 5 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy -grid_bounds 0,5,0,5 -dm_plex_box_faces 25,25 -sw_riemann hll
 
-  test:
-    suffix: adv_0
-    requires: exodusii
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
+    # 2D Advection: p4est
+    test:
+      suffix: p4est_advec_2d
+      requires: p4est
+      args: -ufv_vtk_interval 0 -dm_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash   -dm_forest_maximum_refinement 5
 
-  test:
-    suffix: shock_0
-    requires: p4est !single !complex
-    args: -ufv_vtk_interval 0 -monitor density,energy -f -grid_size 2,1 -grid_bounds -1,1.,0.,1 -bc_wall 1,2,3,4 -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -ufv_use_amr -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0,1.e-2 -refine_tag_view -coarsen_tag_view -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -grid_skew_60 -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -petscfv_type leastsquares -petsclimiter_type minmod -petscfv_compute_gradients 0 -ts_max_time 0.5 -ts_ssp_type rks2 -ts_ssp_nstages 10 -ufv_vtk_basename ${wPETSC_DIR}/ex11
-    timeoutfactor: 3
+    # Advection in a box
+    test:
+      suffix: adv_2d_quad_0
+      args: -ufv_vtk_interval 0 -dm_refine 3 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
 
-  # Test GLVis visualization of PetscFV fields
-  test:
-    suffix: glvis_adv_2d_tet
-    args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic 0
+    test:
+      suffix: adv_2d_quad_1
+      args: -ufv_vtk_interval 0 -dm_refine 3 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+      timeoutfactor: 3
 
-  test:
-    suffix: glvis_adv_2d_quad
-    args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+    test:
+      suffix: adv_2d_quad_p4est_0
+      requires: p4est
+      args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
 
-  test:
-    suffix: tut_1
-    requires: exodusii
-    nsize: 1
-    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+    test:
+      suffix: adv_2d_quad_p4est_1
+      requires: p4est
+      args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow   3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+      timeoutfactor: 3
 
-  test:
-    suffix: tut_2
-    requires: exodusii
-    nsize: 1
-    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
+    test:
+      suffix: adv_2d_quad_p4est_adapt_0
+      requires: p4est !__float128 #broken for quad precision
+      args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow   3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.005,inf -coarsen_vec_tagger_box   0,1.e-5 -petscfv_type leastsquares -ts_max_time 0.01
+      timeoutfactor: 3
 
-  test:
-    suffix: tut_3
-    requires: exodusii
-    nsize: 4
-    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin
+    test:
+      suffix: adv_0
+      requires: exodusii
+      args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
 
-  test:
-    suffix: tut_4
-    requires: exodusii
-    nsize: 4
-    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod
+    test:
+      suffix: shock_0
+      requires: p4est !single !complex
+      args: -dm_plex_box_faces 2,1 -grid_bounds -1,1.,0.,1 -grid_skew_60 \
+      -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 \
+      -ufv_use_amr -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0,1.e-2 -refine_tag_view -coarsen_tag_view \
+      -bc_wall 1,2,3,4 -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. \
+      -petscfv_type leastsquares -petsclimiter_type minmod -petscfv_compute_gradients 0 \
+      -ts_max_time 0.5 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
+      -ufv_vtk_basename ${wPETSC_DIR}/ex11 -ufv_vtk_interval 0 -monitor density,energy
+      timeoutfactor: 3
+
+    # Test GLVis visualization of PetscFV fields
+    test:
+      suffix: glvis_adv_2d_tet
+      args: -ufv_vtk_interval 0 -ufv_vtk_monitor 0 \
+            -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic 0 \
+            -ts_monitor_solution glvis: -ts_max_steps 0
+
+    test:
+      suffix: glvis_adv_2d_quad
+      args: -ufv_vtk_interval 0 -ufv_vtk_monitor 0 -bc_inflow 1,2,4 -bc_outflow 3 \
+            -dm_refine 5 -dm_plex_separate_marker \
+            -ts_monitor_solution glvis: -ts_max_steps 0
 
 TEST*/

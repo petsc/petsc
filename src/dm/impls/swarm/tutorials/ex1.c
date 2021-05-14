@@ -15,38 +15,38 @@ static PetscErrorCode crd_func(PetscInt dim, PetscReal time, const PetscReal x[]
 
 int main(int argc, char **argv)
 {
-  DM               dm, crddm, sw;
-  PetscFE          fe;
-  KSP              ksp;
-  Mat              M_p, M;
-  Vec              f, rho, rhs, crd_vec;
-  PetscInt         dim = 2, Nc = 1, timestep = 0, N, i, idx[3];
-  PetscInt         Np = 10, p, field = 0, zero = 0, bs, cells[] = {40, 20, 20};
-  PetscReal        time = 0.0,  norm;
-  PetscBool        removePoints = PETSC_TRUE, flg;
-  const PetscReal  *xx, *vv;
-  PetscReal        *wq, *coords, lo[] = {-1,-1,-1}, hi[]={1,1,1}, h[3];
-  PetscDataType    dtype;
-  PetscBool        interpolate = PETSC_TRUE;
-  PetscErrorCode   ierr;
-  PetscErrorCode   (*initu[1])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar [], void *);
+  DM              dm, crddm, sw;
+  PetscFE         fe;
+  KSP             ksp;
+  Mat             M_p, M;
+  Vec             f, rho, rhs, crd_vec;
+  PetscInt        dim, Nc = 1, timestep = 0, N, i, idx[3], faces[3];
+  PetscInt        Np = 10, p, field = 0, zero = 0, bs;
+  PetscReal       time = 0.0,  norm;
+  PetscReal       lo[3], hi[3], h[3];
+  PetscBool       removePoints = PETSC_TRUE;
+  const PetscReal *xx, *vv;
+  PetscReal       *wq, *coords;
+  PetscDataType   dtype;
+  PetscErrorCode  (*initu[1])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar [], void *);
+  PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  /* get options */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Options for Fokker-Plank collision operator", "none");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "dim (2 or 3)", "ex1.c", dim, &dim, NULL,2,3);CHKERRQ(ierr);
-  i = dim;  ierr = PetscOptionsIntArray("-dm_plex_box_faces", "Number of cells of grid", "ex1.c", cells, &i, &flg);CHKERRQ(ierr);
-  i = dim;  ierr = PetscOptionsRealArray("-dm_plex_box_lower", "Low corner of grid", "ex1.c", lo, &i, &flg);CHKERRQ(ierr);
-  i = dim;  ierr = PetscOptionsRealArray("-dm_plex_box_upper", "High corner of grid", "ex1.c", hi, &i, &flg);CHKERRQ(ierr);
-  for (i=0;i<dim;i++) {
-    h[i] = (hi[i] - lo[i])/cells[i];
-    ierr = PetscPrintf(PETSC_COMM_SELF," lo = %g hi = %g n = %D h = %g\n",lo[i],hi[i],cells[i],h[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* Create a mesh */
-  ierr = DMPlexCreateBoxMesh(PETSC_COMM_SELF, dim, PETSC_FALSE, NULL, NULL, NULL, NULL, interpolate, &dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)dm, "Potential Grid");CHKERRQ(ierr);
+  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  i    = dim;
+  ierr = PetscOptionsGetIntArray(NULL, NULL, "-dm_plex_box_faces", faces, &i, NULL);CHKERRQ(ierr);
+  ierr = DMGetBoundingBox(dm, lo, hi);CHKERRQ(ierr);
+  for (i=0;i<dim;i++) {
+    h[i] = (hi[i] - lo[i])/faces[i];
+    ierr = PetscPrintf(PETSC_COMM_SELF," lo = %g hi = %g n = %D h = %g\n",lo[i],hi[i],faces[i],h[i]);CHKERRQ(ierr);
+  }
+
   ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, "", PETSC_DECIDE, &fe);CHKERRQ(ierr);
   ierr = PetscFESetFromOptions(fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)fe, "fe");CHKERRQ(ierr);
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
   if (0) {
     ierr = MatMult(M, rho, rhs);CHKERRQ(ierr);  /* this is what you would do for an FE solve */
   } else {
-    ierr = VecCopy(rho, rhs);CHKERRQ(ierr); /* Indentity: M^1 M rho */
+    ierr = VecCopy(rho, rhs);CHKERRQ(ierr); /* Identity: M^1 M rho */
   }
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp, "ftop_");CHKERRQ(ierr);
@@ -144,7 +144,6 @@ int main(int argc, char **argv)
   ierr = DMDestroy(&crddm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  /* PetscFunctionReturn(0); */
   return ierr;
 }
 
@@ -156,8 +155,7 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: double
-    args: -dm_plex_box_faces 4,2 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -ftop_ksp_type lsqr -ftop_pc_type none -dm_view -swarm_view
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 4,2 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -ftop_ksp_type lsqr -ftop_pc_type none -dm_view
     filter: grep -v DM_ | grep -v atomic
-    filter_output: grep -v atomic
 
 TEST*/

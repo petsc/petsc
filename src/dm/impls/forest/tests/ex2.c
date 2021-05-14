@@ -143,51 +143,46 @@ int main(int argc, char **argv)
 {
   MPI_Comm       comm;
   DM             base, preForest, postForest;
-  PetscInt       dim = 2, Nf = 1;
+  PetscInt       dim, Nf = 1;
   PetscInt       step, adaptSteps = 1;
   PetscInt       preCount, postCount;
   Vec            preVec, postVecTransfer, postVecExact;
   PetscErrorCode (*funcs[1]) (PetscInt,PetscReal,const PetscReal [],PetscInt,PetscScalar [], void *) = {MultiaffineFunction};
-  char           filename[PETSC_MAX_PATH_LEN];
   void           *ctxs[1] = {NULL};
-  const PetscInt cells[] = {3, 3, 3};
   PetscReal      diff, tol = PETSC_SMALL;
-  DMBoundaryType periodicity[] = {DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE};
   PetscBool      linear = PETSC_FALSE;
   PetscBool      coords = PETSC_FALSE;
   PetscBool      useFV = PETSC_FALSE;
   PetscBool      conv = PETSC_FALSE;
-  PetscBool      distribute_base = PETSC_FALSE;
   PetscBool      transfer_from_base[2] = {PETSC_TRUE,PETSC_FALSE};
   PetscBool      use_bcs = PETSC_TRUE;
-  PetscBool      periodic = PETSC_FALSE;
   bc_func_ctx    bcCtx;
   DMLabel        adaptLabel;
-  size_t         len;
   PetscErrorCode ierr;
 
-  filename[0] = '\0';
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "DMForestTransferVec() Test Options", "DMFOREST");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The dimension (2 or 3)", "ex2.c", dim, &dim, NULL,2,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-linear","Transfer a simple linear function", "ex2.c", linear, &linear, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-coords","Transfer a simple coordinate function", "ex2.c", coords, &coords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_fv","Use a finite volume approximation", "ex2.c", useFV, &useFV, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_convert","Test conversion to DMPLEX",NULL,conv,&conv,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "Read the base mesh from file", "ex2.c", filename, filename, sizeof(filename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-distribute_base","Distribute base DM", "ex2.c", distribute_base, &distribute_base, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-transfer_from_base","Transfer a vector from base DM to DMForest", "ex2.c", transfer_from_base[0], &transfer_from_base[0], NULL);CHKERRQ(ierr);
   transfer_from_base[1] = transfer_from_base[0];
   ierr = PetscOptionsBool("-transfer_from_base_steps","Transfer a vector from base DM to the latest DMForest after the adaptivity steps", "ex2.c", transfer_from_base[1], &transfer_from_base[1], NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_bcs","Use dirichlet boundary conditions", "ex2.c", use_bcs, &use_bcs, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-adapt_steps","Number of adaptivity steps", "ex2.c", adaptSteps, &adaptSteps, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-periodic","Use periodic box mesh", "ex2.c", periodic, &periodic, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   tol = PetscMax(1.e-10,tol); /* XXX fix for quadruple precision -> why do I need to do this? */
 
-  if (periodic) periodicity[0] = periodicity[1] = periodicity[2] = DM_BOUNDARY_PERIODIC;
+  /* the base mesh */
+  ierr = DMCreate(comm, &base);CHKERRQ(ierr);
+  ierr = DMSetType(base, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(base);CHKERRQ(ierr);
+
+  ierr = AddIdentityLabel(base);CHKERRQ(ierr);
+  ierr = DMGetDimension(base, &dim);CHKERRQ(ierr);
 
   if (linear) {
     funcs[0] = LinearFunction;
@@ -202,36 +197,6 @@ int main(int argc, char **argv)
   bcCtx.Nf   = Nf;
   bcCtx.ctx  = NULL;
 
-  /* the base mesh */
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (!len) {
-    ierr = DMPlexCreateBoxMesh(comm,dim,PETSC_FALSE,cells,NULL,NULL,periodicity,PETSC_TRUE,&base);CHKERRQ(ierr);
-  } else {
-    DM tdm = NULL;
-
-    ierr = DMPlexCreateFromFile(comm,filename,PETSC_TRUE,&base);CHKERRQ(ierr);
-    ierr = DMGetDimension(base,&dim);CHKERRQ(ierr);
-    ierr = DMPlexSetCellRefinerType(base, DM_REFINER_TO_BOX);CHKERRQ(ierr);
-    ierr = DMRefine(base, PETSC_COMM_WORLD, &tdm);CHKERRQ(ierr);
-    if (tdm) {
-      ierr = DMDestroy(&base);CHKERRQ(ierr);
-      base = tdm;
-    }
-    use_bcs = PETSC_FALSE;
-  }
-  ierr = AddIdentityLabel(base);CHKERRQ(ierr);
-  if (distribute_base) {
-    DM               baseParallel;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetPartitioner(base,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(base,0,NULL,&baseParallel);CHKERRQ(ierr);
-    if (baseParallel) {
-      ierr = DMDestroy(&base);CHKERRQ(ierr);
-      base = baseParallel;
-    }
-  }
   if (useFV) {
     PetscFV      fv;
     PetscLimiter limiter;
@@ -414,179 +379,187 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  testset:
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3,3 -petscspace_type tensor
 
-     test:
-       output_file: output/ex2_2d.out
-       suffix: p4est_2d
-       args: -petscspace_type tensor -petscspace_degree 2 -dim 2
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_2d.out
+      suffix: p4est_2d
+      args: -petscspace_degree 2
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_2d.out
-       suffix: p4est_2d_deg4
-       args: -petscspace_type tensor -petscspace_degree 4 -dim 2
-       requires: p4est !single
+    test:
+      output_file: output/ex2_2d.out
+      suffix: p4est_2d_deg4
+      args: -petscspace_degree 4
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_2d.out
-       suffix: p4est_2d_deg8
-       args: -petscspace_type tensor -petscspace_degree 8 -dim 2
-       requires: p4est !single
+    test:
+      output_file: output/ex2_2d.out
+      suffix: p4est_2d_deg8
+      args: -petscspace_degree 8
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_steps2.out
-       suffix: p4est_2d_deg2_steps2
-       args: -petscspace_type tensor -petscspace_degree 2 -dim 2 -coords -adapt_steps 2
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_steps2.out
+      suffix: p4est_2d_deg2_steps2
+      args: -petscspace_degree 2 -coords -adapt_steps 2
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_steps3.out
-       suffix: p4est_2d_deg3_steps3
-       args: -petscspace_type tensor -petscspace_degree 3 -dim 2 -coords -adapt_steps 3 -petscdualspace_lagrange_node_type equispaced -petscdualspace_lagrange_node_endpoints 1
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_steps3.out
+      suffix: p4est_2d_deg3_steps3
+      args: -petscspace_degree 3 -coords -adapt_steps 3 -petscdualspace_lagrange_node_type equispaced -petscdualspace_lagrange_node_endpoints 1
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_steps3.out
-       suffix: p4est_2d_deg3_steps3_L2_periodic
-       args: -petscspace_type tensor -petscspace_degree 3 -petscdualspace_lagrange_continuity 0 -dim 2 -coords -adapt_steps 3 -periodic -use_bcs 0 -petscdualspace_lagrange_node_type equispaced
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_steps3.out
+      suffix: p4est_2d_deg3_steps3_L2_periodic
+      args: -petscspace_degree 3 -petscdualspace_lagrange_continuity 0 -coords -adapt_steps 3 -dm_plex_box_bd periodic,periodic -use_bcs 0 -petscdualspace_lagrange_node_type equispaced
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_steps3.out
-       suffix: p4est_3d_deg2_steps3_L2_periodic
-       args: -petscspace_type tensor -petscspace_degree 2 -petscdualspace_lagrange_continuity 0 -dim 3 -coords -adapt_steps 3 -periodic -use_bcs 0
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_steps3.out
+      suffix: p4est_3d_deg2_steps3_L2_periodic
+      args: -dm_plex_dim 3 -petscspace_degree 2 -petscdualspace_lagrange_continuity 0 -coords -adapt_steps 3 -dm_plex_box_bd periodic,periodic,periodic -use_bcs 0
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_steps2.out
-       suffix: p4est_3d_deg2_steps2
-       args: -petscspace_type tensor -petscspace_degree 2 -dim 3 -coords -adapt_steps 2
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_steps2.out
+      suffix: p4est_3d_deg2_steps2
+      args: -dm_plex_dim 3 -petscspace_degree 2 -coords -adapt_steps 2
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_steps3.out
-       suffix: p4est_3d_deg3_steps3
-       args: -petscspace_type tensor -petscspace_degree 3 -dim 3 -coords -adapt_steps 3 -petscdualspace_lagrange_node_type equispaced -petscdualspace_lagrange_node_endpoints 1
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_steps3.out
+      suffix: p4est_3d_deg3_steps3
+      args: -dm_plex_dim 3 -petscspace_degree 3 -coords -adapt_steps 3 -petscdualspace_lagrange_node_type equispaced -petscdualspace_lagrange_node_endpoints 1
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_2d_fv.out
-       suffix: p4est_2d_fv
-       args: -transfer_from_base 0 -use_fv -linear -dim 2 -dm_forest_partition_overlap 1
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_3d.out
+      suffix: p4est_3d
+      args: -dm_plex_dim 3 -petscspace_degree 1
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       TODO: broken (codimension adjacency)
-       output_file: output/ex2_2d_fv.out
-       suffix: p4est_2d_fv_adjcodim
-       args: -transfer_from_base 0 -use_fv -linear -dim 2 -dm_forest_partition_overlap 1 -dm_forest_adjacency_codimension 1
-       nsize: 2
-       requires: p4est !single
+    test:
+      output_file: output/ex2_3d.out
+      suffix: p4est_3d_deg3
+      args: -dm_plex_dim 3 -petscspace_degree 3
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       TODO: broken (dimension adjacency)
-       output_file: output/ex2_2d_fv.out
-       suffix: p4est_2d_fv_adjdim
-       args: -transfer_from_base 0 -use_fv -linear -dim 2 -dm_forest_partition_overlap 1 -dm_forest_adjacency_dimension 1
-       nsize: 2
-       requires: p4est !single
+    test:
+      output_file: output/ex2_2d.out
+      suffix: p4est_2d_deg2_coords
+      args: -petscspace_degree 2 -coords
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_2d_fv.out
-       suffix: p4est_2d_fv_zerocells
-       args: -transfer_from_base 0 -use_fv -linear -dim 2 -dm_forest_partition_overlap 1
-       nsize: 10
-       requires: p4est !single
+    test:
+      output_file: output/ex2_3d.out
+      suffix: p4est_3d_deg2_coords
+      args: -dm_plex_dim 3 -petscspace_degree 2 -coords
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_3d.out
-       suffix: p4est_3d
-       args: -petscspace_type tensor -petscspace_degree 1 -dim 3
-       nsize: 3
-       requires: p4est !single
+    test:
+      suffix: p4est_3d_nans
+      args: -dm_plex_dim 3 -dm_forest_partition_overlap 1 -test_convert -petscspace_degree 1
+      nsize: 2
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_3d.out
-       suffix: p4est_3d_deg3
-       args: -petscspace_type tensor -petscspace_degree 3 -dim 3
-       nsize: 3
-       requires: p4est !single
+    test:
+      TODO: not broken, but the 3D case below is broken, so I do not trust this one
+      output_file: output/ex2_steps2.out
+      suffix: p4est_2d_tfb_distributed_nc
+      args: -petscspace_degree 3 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -dm_distribute -petscpartitioner_type shell -petscpartitioner_shell_random
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_2d.out
-       suffix: p4est_2d_deg2_coords
-       args: -petscspace_type tensor -petscspace_degree 2 -dim 2 -coords
-       nsize: 3
-       requires: p4est !single
+    test:
+      TODO: broken
+      output_file: output/ex2_steps2.out
+      suffix: p4est_3d_tfb_distributed_nc
+      args: -dm_plex_dim 3 -petscspace_degree 2 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -dm_distribute -petscpartitioner_type shell -petscpartitioner_shell_random
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_3d.out
-       suffix: p4est_3d_deg2_coords
-       args: -petscspace_type tensor -petscspace_degree 2 -dim 3 -coords
-       nsize: 3
-       requires: p4est !single
+  testset:
+    args: -petscspace_type tensor
 
-     test:
-       output_file: output/ex2_3d_fv.out
-       suffix: p4est_3d_fv
-       args: -transfer_from_base 0 -use_fv -linear -dim 3 -dm_forest_partition_overlap 1
-       nsize: 3
-       requires: p4est !single
+    test:
+      TODO: broken
+      output_file: output/ex2_3d.out
+      suffix: p4est_3d_transfer_fails
+      args: -petscspace_degree 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 1 -dm_forest_initial_refinement 1 -use_bcs 0 -dm_refine -dm_plex_cell_refiner tobox
+      requires: p4est !single
 
-     test:
-       suffix: p4est_3d_nans
-       args: -dim 3 -dm_forest_partition_overlap 1 -test_convert -petscspace_type tensor -petscspace_degree 1
-       nsize: 2
-       requires: p4est !single
+    test:
+      TODO: broken
+      output_file: output/ex2_steps2_notfb.out
+      suffix: p4est_3d_transfer_fails_2
+      args: -petscspace_degree 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 0 -transfer_from_base 0 -use_bcs 0 -dm_refine -dm_plex_cell_refiner tobox
+      requires: p4est !single
 
-     test:
-       TODO: not broken, but the 3D case below is broken, so I do not trust this one
-       output_file: output/ex2_steps2.out
-       suffix: p4est_2d_tfb_distributed_nc
-       args: -petscspace_type tensor -petscspace_degree 3 -dim 2 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -distribute_base -petscpartitioner_type shell -petscpartitioner_shell_random
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_steps2.out
+      suffix: p4est_3d_multi_transfer_s2t
+      args: -petscspace_degree 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 1 -petscdualspace_lagrange_continuity 0 -use_bcs 0 -dm_refine 1 -dm_plex_cell_refiner tobox
+      requires: p4est !single -dm_coord_space 0
 
-     test:
-       TODO: broken
-       output_file: output/ex2_steps2.out
-       suffix: p4est_3d_tfb_distributed_nc
-       args: -petscspace_type tensor -petscspace_degree 2 -dim 3 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -distribute_base -petscpartitioner_type shell -petscpartitioner_shell_random
-       nsize: 3
-       requires: p4est !single
+    test:
+      output_file: output/ex2_steps2.out
+      suffix: p4est_3d_coords_transfer_s2t
+      args: -petscspace_degree 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 1 -petscdualspace_lagrange_continuity 0 -coords -use_bcs 0 -dm_refine 1 -dm_plex_cell_refiner tobox
+      requires: p4est !single -dm_coord_space 0
 
-     test:
-       TODO: broken
-       output_file: output/ex2_3d.out
-       suffix: p4est_3d_transfer_fails
-       args: -petscspace_type tensor -petscspace_degree 1 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 1 -dm_forest_initial_refinement 1
-       requires: p4est !single
+  testset:
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3,3
 
-     test:
-       TODO: broken
-       output_file: output/ex2_steps2_notfb.out
-       suffix: p4est_3d_transfer_fails_2
-       args: -petscspace_type tensor -petscspace_degree 1 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 0 -transfer_from_base 0
-       requires: p4est !single
+    test:
+      output_file: output/ex2_2d_fv.out
+      suffix: p4est_2d_fv
+      args: -transfer_from_base 0 -use_fv -linear -dm_forest_partition_overlap 1
+      nsize: 3
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_steps2.out
-       suffix: p4est_3d_multi_transfer_s2t
-       args: -petscspace_type tensor -petscspace_degree 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 1 -petscdualspace_lagrange_continuity 0 -use_bcs 0
-       requires: p4est !single
+    test:
+      TODO: broken (codimension adjacency)
+      output_file: output/ex2_2d_fv.out
+      suffix: p4est_2d_fv_adjcodim
+      args: -transfer_from_base 0 -use_fv -linear -dm_forest_partition_overlap 1 -dm_forest_adjacency_codimension 1
+      nsize: 2
+      requires: p4est !single
 
-     test:
-       output_file: output/ex2_steps2.out
-       suffix: p4est_3d_coords_transfer_s2t
-       args: -petscspace_type tensor -petscspace_degree 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 1 -petscdualspace_lagrange_continuity 0 -coords -use_bcs 0
-       requires: p4est !single
+    test:
+      TODO: broken (dimension adjacency)
+      output_file: output/ex2_2d_fv.out
+      suffix: p4est_2d_fv_adjdim
+      args: -transfer_from_base 0 -use_fv -linear -dm_forest_partition_overlap 1 -dm_forest_adjacency_dimension 1
+      nsize: 2
+      requires: p4est !single
+
+    test:
+      output_file: output/ex2_2d_fv.out
+      suffix: p4est_2d_fv_zerocells
+      args: -transfer_from_base 0 -use_fv -linear -dm_forest_partition_overlap 1
+      nsize: 10
+      requires: p4est !single
+
+    test:
+      output_file: output/ex2_3d_fv.out
+      suffix: p4est_3d_fv
+      args: -dm_plex_dim 3 -transfer_from_base 0 -use_fv -linear -dm_forest_partition_overlap 1
+      nsize: 3
+      requires: p4est !single
 
 TEST*/

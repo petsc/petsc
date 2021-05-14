@@ -19,7 +19,8 @@ int main (int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
 
-  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, 2, PETSC_FALSE, NULL, NULL, NULL, NULL, PETSC_TRUE, &base);CHKERRQ(ierr);
+  ierr = DMCreate(PETSC_COMM_WORLD, &base);CHKERRQ(ierr);
+  ierr = DMSetType(base, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(base);CHKERRQ(ierr);
 
   ierr = DMCreate(PETSC_COMM_WORLD, &forest);CHKERRQ(ierr);
@@ -72,6 +73,6 @@ int main (int argc, char **argv)
     requires: hdf5 p4est
 
   test:
-    args: -dm_plex_box_faces 3,3
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3
 
 TEST*/

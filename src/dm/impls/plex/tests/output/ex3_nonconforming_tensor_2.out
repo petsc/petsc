@@ -270,6 +270,7 @@ Process 3:
   (   4) dim  2 offset   6 0.25 0.25
   (   5) dim  2 offset   8 0.25 0.5
   (   6) dim  2 offset  10 0. 0.25
+Labels:
 Label 'celltype':
 [0]: 2 (0)
 [0]: 3 (0)

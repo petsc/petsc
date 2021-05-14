@@ -34,13 +34,7 @@ typedef struct {
 } Parameter;
 
 typedef struct {
-  /* Domain and mesh definition */
-  PetscInt  dim;               /* The topological mesh dimension */
-  PetscBool simplex;           /* Use simplices or tensor product cells */
-  PetscInt  cells[3];          /* The initial domain division */
-  /* Problem definition */
-  PetscBag  bag;               /* Holds problem parameters */
-  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscBag bag;    /* Holds problem parameters */
 } AppCtx;
 
 /*
@@ -192,26 +186,6 @@ void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   }
 }
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
-  PetscInt       n = 3;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  options->dim      = 2;
-  options->simplex  = PETSC_TRUE;
-  options->cells[0] = 3;
-  options->cells[1] = 3;
-  options->cells[2] = 3;
-
-  ierr = PetscOptionsBegin(comm, "", "Poiseuille Flow Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex62.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Use simplices or tensor product cells", "ex62.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex62.c", options->cells, &n, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode SetupParameters(AppCtx *user)
 {
   PetscBag       bag;
@@ -232,11 +206,12 @@ static PetscErrorCode SetupParameters(AppCtx *user)
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim = user->dim;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, user->cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   {
     Parameter   *param;
     Vec          coordinates;
@@ -262,19 +237,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = DMSetCoordinates(*dm, coordinates);CHKERRQ(ierr);
   }
-  {
-    DM               pdm = NULL;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
-    if (pdm) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = pdm;
-    }
-  }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -321,28 +283,28 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   id   = 1;
   ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) wall_velocity, NULL, ctx, NULL);CHKERRQ(ierr);
   /* Setup exact solution */
-  user->exactFuncs[0] = quadratic_u;
-  user->exactFuncs[1] = linear_p;
-  ierr = PetscDSSetExactSolution(ds, 0, user->exactFuncs[0], ctx);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(ds, 1, user->exactFuncs[1], ctx);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(ds, 0, quadratic_u, ctx);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(ds, 1, linear_p, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM              cdm   = dm;
-  const PetscInt  dim   = user->dim;
-  PetscFE         fe[2];
-  Parameter      *param;
-  MPI_Comm        comm;
-  PetscErrorCode  ierr;
+  DM             cdm = dm;
+  PetscFE        fe[2];
+  Parameter     *param;
+  PetscBool      simplex;
+  PetscInt       dim;
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  /* Create finite element */
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, dim, user->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, user->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
@@ -370,15 +332,14 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag);CHKERRQ(ierr);
   ierr = SetupParameters(&user);CHKERRQ(ierr);
+  ierr = PetscBagSetFromOptions(user.bag);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &user);CHKERRQ(ierr);
   /* Setup problem */
-  ierr = PetscMalloc(2 * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
   ierr = SetupDiscretization(dm, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateClosureIndex(dm, NULL);CHKERRQ(ierr);
 
@@ -390,12 +351,14 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   {
-    Parameter *param;
-    void      *ctxs[2];
+    PetscDS              ds;
+    PetscSimplePointFunc exactFuncs[2];
+    void                *ctxs[2];
 
-    ierr = PetscBagGetData(user.bag, (void **) &param);CHKERRQ(ierr);
-    ctxs[0] = ctxs[1] = param;
-    ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(ds, 0, &exactFuncs[0], &ctxs[0]);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(ds, 1, &exactFuncs[1], &ctxs[1]);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, 0.0, exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
     ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
   }
@@ -407,7 +370,6 @@ int main(int argc, char **argv)
 
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscBagDestroy(&user.bag);CHKERRQ(ierr);
@@ -421,7 +383,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_conv
     requires: !single
-    args: -simplex 0 -dm_plex_separate_marker -dm_refine 1 \
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine 1 \
       -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
       -snes_convergence_estimate -convest_num_refine 2 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
@@ -431,7 +393,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_conv_u0
     requires: !single
-    args: -simplex 0 -dm_plex_separate_marker -dm_refine 1 -u_0 0.125 \
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine 1 -u_0 0.125 \
       -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
       -snes_convergence_estimate -convest_num_refine 2 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
@@ -441,7 +403,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_conv_u0_alpha
     requires: !single
-    args: -simplex 0 -dm_plex_separate_marker -dm_refine 1 -u_0 0.125 -alpha 0.3927 \
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine 1 -u_0 0.125 -alpha 0.3927 \
       -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
       -snes_convergence_estimate -convest_num_refine 2 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
@@ -451,7 +413,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_conv_gmg_vanka
     requires: !single long_runtime
-    args: -simplex 0 -dm_plex_separate_marker -cells 2,2 -dm_refine_hierarchy 1 \
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker -dm_plex_box_faces 2,2 -dm_refine_hierarchy 1 \
       -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
       -snes_convergence_estimate -convest_num_refine 1 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
@@ -483,7 +445,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_tri_p2_p1_conv_gmg_vcycle
     requires: triangle !single
-    args: -dm_plex_separate_marker -cells 2,2 -dm_refine_hierarchy 1 \
+    args: -dm_plex_separate_marker -dm_plex_box_faces 2,2 -dm_refine_hierarchy 1 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -dmsnes_check .001 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \

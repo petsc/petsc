@@ -4,11 +4,8 @@ static char help[] = "Orient a mesh in parallel\n\n";
 
 typedef struct {
   /* Domain and mesh definition */
-  PetscInt  dim;                          /* The topological mesh dimension */
-  PetscBool cellSimplex;                  /* Use simplices or hexes */
-  char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
-  PetscBool testPartition;                /* Use a fixed partitioning for testing */
-  PetscInt  testNum;                      /* Labels the different test partitions */
+  PetscBool testPartition; /* Use a fixed partitioning for testing */
+  PetscInt  testNum;       /* Labels the different test partitions */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -16,16 +13,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim           = 2;
-  options->cellSimplex   = PETSC_TRUE;
-  options->filename[0]   = '\0';
   options->testPartition = PETSC_TRUE;
   options->testNum       = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex13.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex13.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex13.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex13.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-test_num", "The test partition number", "ex13.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -34,17 +25,17 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DM             dmDist      = NULL;
-  PetscInt       dim         = user->dim;
-  PetscBool      cellSimplex = user->cellSimplex;
-  const char    *filename    = user->filename;
-  size_t         len;
+  DM             dmDist = NULL;
+  PetscBool      simplex;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (len) {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else     {ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(*dm, &simplex);CHKERRQ(ierr);
   if (user->testPartition) {
     PetscPartitioner part;
     PetscInt        *sizes  = NULL;
@@ -54,7 +45,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
     ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
     if (!rank) {
-      if (dim == 2 && cellSimplex && size == 2) {
+      if (dim == 2 && simplex && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt triSizes_p2[2]  = {4, 4};
@@ -75,14 +66,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 2 && cellSimplex && size == 3) {
+      } else if (dim == 2 && simplex && size == 3) {
         PetscInt triSizes_p3[3]  = {3, 3, 2};
         PetscInt triPoints_p3[8] = {1, 2, 4, 3, 6, 7, 0, 5};
 
         ierr = PetscMalloc2(3, &sizes, 8, &points);CHKERRQ(ierr);
         ierr = PetscArraycpy(sizes,  triSizes_p3, 3);CHKERRQ(ierr);
         ierr = PetscArraycpy(points, triPoints_p3, 8);CHKERRQ(ierr);
-      } else if (dim == 2 && !cellSimplex && size == 2) {
+      } else if (dim == 2 && !simplex && size == 2) {
         PetscInt quadSizes_p2[2]  = {2, 2};
         PetscInt quadPoints_p2[4] = {2, 3, 0, 1};
 
@@ -101,7 +92,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = dmDist;
   }
-  ierr = PetscObjectSetName((PetscObject) *dm, cellSimplex ? "Simplicial Mesh" : "Tensor Product Mesh");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *dm, simplex ? "Simplicial Mesh" : "Tensor Product Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -148,24 +139,23 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-  test:
-    suffix: 0
+  testset:
     requires: triangle
-    args: -test_partition 0 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
-  test:
-    suffix: 1
-    requires: triangle
-    nsize: 2
-    args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
-  test:
-    suffix: 2
-    requires: triangle
-    nsize: 2
-    args: -test_num 1 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
-  test:
-    suffix: 3
-    requires: triangle
-    nsize: 3
-    args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view -orientation_view_synchronized
+    args: -dm_coord_space 0 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
+
+    test:
+      suffix: 0
+      args: -test_partition 0
+    test:
+      suffix: 1
+      nsize: 2
+    test:
+      suffix: 2
+      nsize: 2
+      args: -test_num 1
+    test:
+      suffix: 3
+      nsize: 3
+      args: -orientation_view_synchronized
 
 TEST*/

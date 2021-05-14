@@ -1,4 +1,7 @@
-Timestep: 0000 time = 0        	 L_2 Error: [1.74e-16, 8.39e-17]
+L_2 Error: [1.947e-16, 9.85463e-17]
+L_2 Residual: 0.101688
+Taylor approximation converging at order 2.00
+Timestep: 0000 time = 0        	 L_2 Error: [1.95e-16, 9.85e-17]
 0 TS dt 0.1 time 0.
     0 SNES Function norm 0.0944066 
       0 KSP Residual norm 2.4105 

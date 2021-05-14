@@ -2226,6 +2226,7 @@ Process 3:
   (  21) dim  3 offset  54 0.5 0. 0.25
   (  22) dim  3 offset  57 0. 0.5 0.25
   (  23) dim  3 offset  60 0.5 0.5 0.25
+Labels:
 Label 'celltype':
 [0]: 4 (0)
 [0]: 5 (0)

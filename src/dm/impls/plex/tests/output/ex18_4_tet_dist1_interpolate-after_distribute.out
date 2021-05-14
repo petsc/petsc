@@ -131,15 +131,7 @@ Process 1:
   (   2) dim  3 offset   3 1. 0. 0.
   (   3) dim  3 offset   6 0. 0.5 0.
   (   4) dim  3 offset   9 0. 0. 0.5
-Label 'marker':
-[0]: 1 (1)
-[0]: 2 (1)
-[0]: 3 (1)
-[0]: 4 (1)
-[1]: 1 (1)
-[1]: 2 (1)
-[1]: 3 (1)
-[1]: 4 (1)
+Labels:
 Label 'celltype':
 [0]: 1 (0)
 [0]: 2 (0)
@@ -171,6 +163,15 @@ Label 'celltype':
 [1]: 12 (1)
 [1]: 13 (1)
 [1]: 14 (1)
+Label 'marker':
+[0]: 1 (1)
+[0]: 2 (1)
+[0]: 3 (1)
+[0]: 4 (1)
+[1]: 1 (1)
+[1]: 2 (1)
+[1]: 3 (1)
+[1]: 4 (1)
 PetscSF Object: 2 MPI processes
   type: basic
   [0] Number of roots=15, leaves=7, remote ranks=1

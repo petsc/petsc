@@ -5,10 +5,7 @@ static char help[] = "Example usage of extracting single cells with their associ
 #include <petscts.h>
 
 typedef struct {
-  PetscInt  dim;                          /* The topological mesh dimension */
-  PetscBool simplex;                      /* Flag for simplices or tensor cells */
-  char      filename[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
-  PetscInt  particlesPerCell;             /* The number of partices per cell */
+  PetscInt particlesPerCell; /* The number of partices per cell */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -16,14 +13,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim              = 2;
-  options->simplex          = PETSC_TRUE;
   options->particlesPerCell = 1;
-  ierr = PetscStrcpy(options->filename, "");CHKERRQ(ierr);
+
   ierr = PetscOptionsBegin(comm, "", "CellSwarm Options", "DMSWARM");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex3.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-mesh", "Name of the mesh filename if any", "ex3.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-particles_per_cell", "Number of particles per cell", "ex3.c", options->particlesPerCell, &options->particlesPerCell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -31,29 +23,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscStrcmp(user->filename, "", &flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateFromFile(comm, user->filename, PETSC_TRUE, dm);CHKERRQ(ierr);
-    ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
-  }
-  {
-    DM distributedMesh = NULL;
-
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
-    }
-  }
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

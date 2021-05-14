@@ -1679,9 +1679,10 @@ int main(int argc, char **argv)
       nsize: 1
       args: -distribute 0 -interpolate {{none create}separate output}
     test:
+      # Detail viewing in a non-distributed mesh is broken because the DMLabelView() is collective, but the label is not shared
       suffix: 5_dist0
       nsize: 2
-      args: -distribute 0 -interpolate {{none create}separate output}
+      args: -distribute 0 -interpolate {{none create}separate output} -dm_view
     test:
       suffix: 5_dist1
       nsize: 2

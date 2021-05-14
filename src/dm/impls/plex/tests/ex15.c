@@ -10,7 +10,6 @@ int main(int argc, char **argv)
   Vec            v, nv, rv, coord;
   PetscBool      test_read = PETSC_FALSE, verbose = PETSC_FALSE, flg;
   PetscViewer    hdf5Viewer;
-  PetscInt       dim         = 2;
   PetscInt       numFields   = 1;
   PetscInt       numBC       = 0;
   PetscInt       numComp[1]  = {2};
@@ -19,6 +18,7 @@ int main(int argc, char **argv)
   IS             bcPoints[1] = {NULL};
   PetscSection   section;
   PetscReal      norm;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);if (ierr) return ierr;
@@ -27,10 +27,12 @@ int main(int argc, char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_read","Test reading from the HDF5 file","",PETSC_FALSE,&test_read,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-verbose","print the Vecs","",PETSC_FALSE,&verbose,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim","the dimension of the problem","",2,&dim,NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   numDof[0] = dim;
   ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);

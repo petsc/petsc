@@ -72,6 +72,7 @@ Process 1:
   (   2) dim  2 offset   2 0. 0.5
   (   3) dim  2 offset   4 1. -0.5
   (   4) dim  2 offset   6 1. 0.5
+Labels:
 Label 'celltype':
 [0]: 1 (0)
 [0]: 2 (0)
@@ -91,6 +92,9 @@ Label 'celltype':
 [1]: 6 (1)
 [1]: 7 (1)
 [1]: 8 (1)
+Label 'Cell Sets':
+[0]: 0 (1)
+[1]: 0 (2)
 PetscSF Object: 2 MPI processes
   type: basic
   [0] Number of roots=9, leaves=3, remote ranks=1

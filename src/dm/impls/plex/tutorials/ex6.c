@@ -3,7 +3,6 @@ static char help[] = "Spectral element access patterns with Plex\n\n";
 #include <petscdmplex.h>
 
 typedef struct {
-  PetscInt  dim; /* Topological problem dimension */
   PetscInt  Nf;  /* Number of fields */
   PetscInt *Nc;  /* Number of components per field */
   PetscInt *k;   /* Spectral order per field */
@@ -16,13 +15,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim = 2;
-  options->Nf  = 0;
-  options->Nc  = NULL;
-  options->k   = NULL;
+  options->Nf = 0;
+  options->Nc = NULL;
+  options->k  = NULL;
 
   ierr = PetscOptionsBegin(comm, "", "SEM Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "Problem dimension", "ex6.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-num_fields", "The number of fields", "ex6.c", options->Nf, &options->Nf, NULL,0);CHKERRQ(ierr);
   if (options->Nf) {
     len  = options->Nf;
@@ -200,11 +197,12 @@ static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
 
 static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
 {
-  PetscInt       f, o, i, j, k, c, d;
+  PetscInt       dim, f, o, i, j, k, c, d;
   DMLabel        depthLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetLabel(dm,"depth",&depthLabel);CHKERRQ(ierr);
   for (f = 0; f < user->Nf; f++) {
     PetscSectionSym sym;
@@ -212,7 +210,7 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
     if (user->k[f] < 3) continue; /* No symmetries needed for order < 3, because no cell, facet, edge or vertex has more than one node */
     ierr = PetscSectionSymCreateLabel(PetscObjectComm((PetscObject)s),depthLabel,&sym);CHKERRQ(ierr);
 
-    for (d = 0; d <= user->dim; d++) {
+    for (d = 0; d <= dim; d++) {
       if (d == 1) {
         PetscInt        numDof  = user->k[f] - 1;
         PetscInt        numComp = user->Nc[f];
@@ -337,22 +335,23 @@ int main(int argc, char **argv)
   PetscSection   s;
   Vec            u;
   AppCtx         user;
-  PetscInt       cells[3] = {2, 2, 2};
-  PetscInt       size = 0, f;
+  PetscInt       dim, size = 0, f;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, user.dim, PETSC_FALSE, cells, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Create a section for SEM order k */
   {
     PetscInt *numDof, d;
 
-    ierr = PetscMalloc1(user.Nf*(user.dim+1), &numDof);CHKERRQ(ierr);
+    ierr = PetscMalloc1(user.Nf*(dim+1), &numDof);CHKERRQ(ierr);
     for (f = 0; f < user.Nf; ++f) {
-      for (d = 0; d <= user.dim; ++d) numDof[f*(user.dim+1)+d] = PetscPowInt(user.k[f]-1, d)*user.Nc[f];
+      for (d = 0; d <= dim; ++d) numDof[f*(dim+1)+d] = PetscPowInt(user.k[f]-1, d)*user.Nc[f];
       size += PetscPowInt(user.k[f]+1, d)*user.Nc[f];
     }
     ierr = DMSetNumFields(dm, user.Nf);CHKERRQ(ierr);
@@ -364,13 +363,13 @@ int main(int argc, char **argv)
   /* Create spectral ordering and load in data */
   ierr = DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &u);CHKERRQ(ierr);
-  switch (user.dim) {
+  switch (dim) {
   case 2: ierr = LoadData2D(dm, 2, 2, size, u, &user);CHKERRQ(ierr);break;
   case 3: ierr = LoadData3D(dm, 2, 2, 2, size, u, &user);CHKERRQ(ierr);break;
   }
   /* Remove ordering and check some values */
-  ierr = PetscSectionSetClosurePermutation(s, (PetscObject) dm, user.dim, NULL);CHKERRQ(ierr);
-  switch (user.dim) {
+  ierr = PetscSectionSetClosurePermutation(s, (PetscObject) dm, dim, NULL);CHKERRQ(ierr);
+  switch (dim) {
   case 2:
     ierr = CheckPoint(dm, u,  0, &user);CHKERRQ(ierr);
     ierr = CheckPoint(dm, u, 13, &user);CHKERRQ(ierr);
@@ -386,7 +385,7 @@ int main(int argc, char **argv)
   }
   /* Recreate spectral ordering and read out data */
   ierr = DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, s);CHKERRQ(ierr);
-  switch (user.dim) {
+  switch (dim) {
   case 2: ierr = ReadData2D(dm, u, &user);CHKERRQ(ierr);break;
   case 3: ierr = ReadData3D(dm, u, &user);CHKERRQ(ierr);break;
   }
@@ -402,42 +401,49 @@ int main(int argc, char **argv)
 /*TEST
 
   # Spectral ordering 2D 0-5
-  test:
-    suffix: 0
-    args: -dim 2 -num_fields 1 -num_components 1 -order 2
-  test:
-    suffix: 1
-    args: -dim 2 -num_fields 1 -num_components 1 -order 3
-  test:
-    suffix: 2
-    args: -dim 2 -num_fields 1 -num_components 1 -order 5
-  test:
-    suffix: 3
-    args: -dim 2 -num_fields 1 -num_components 2 -order 2
-  test:
-    suffix: 4
-    args: -dim 2 -num_fields 2 -num_components 1,1 -order 2,2
-  test:
-    suffix: 5
-    args: -dim 2 -num_fields 2 -num_components 1,2 -order 2,3
+  testset:
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 2,2
+
+    test:
+      suffix: 0
+      args: -num_fields 1 -num_components 1 -order 2
+    test:
+      suffix: 1
+      args: -num_fields 1 -num_components 1 -order 3
+    test:
+      suffix: 2
+      args: -num_fields 1 -num_components 1 -order 5
+    test:
+      suffix: 3
+      args: -num_fields 1 -num_components 2 -order 2
+    test:
+      suffix: 4
+      args: -num_fields 2 -num_components 1,1 -order 2,2
+    test:
+      suffix: 5
+      args: -num_fields 2 -num_components 1,2 -order 2,3
+
   # Spectral ordering 3D 6-11
-  test:
-    suffix: 6
-    args: -dim 3 -num_fields 1 -num_components 1 -order 2
-  test:
-    suffix: 7
-    args: -dim 3 -num_fields 1 -num_components 1 -order 3
-  test:
-    suffix: 8
-    args: -dim 3 -num_fields 1 -num_components 1 -order 5
-  test:
-    suffix: 9
-    args: -dim 3 -num_fields 1 -num_components 2 -order 2
-  test:
-    suffix: 10
-    args: -dim 3 -num_fields 2 -num_components 1,1 -order 2,2
-  test:
-    suffix: 11
-    args: -dim 3 -num_fields 2 -num_components 1,2 -order 2,3
+  testset:
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,2
+
+    test:
+      suffix: 6
+      args: -num_fields 1 -num_components 1 -order 2
+    test:
+      suffix: 7
+      args: -num_fields 1 -num_components 1 -order 3
+    test:
+      suffix: 8
+      args: -num_fields 1 -num_components 1 -order 5
+    test:
+      suffix: 9
+      args: -num_fields 1 -num_components 2 -order 2
+    test:
+      suffix: 10
+      args: -num_fields 2 -num_components 1,1 -order 2,2
+    test:
+      suffix: 11
+      args: -num_fields 2 -num_components 1,2 -order 2,3
 
 TEST*/

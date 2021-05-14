@@ -1,6 +1,6 @@
-DM Object: Tensor Product Mesh 2 MPI processes
+DM Object: Parallel Mesh () 2 MPI processes
   type: plex
-Tensor Product Mesh in 3 dimensions:
+Parallel Mesh in 3 dimensions:
   0-cells: 125 0
   1-cells: 300 0
   2-cells: 240 0

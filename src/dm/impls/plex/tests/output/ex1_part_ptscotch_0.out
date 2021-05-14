@@ -11,10 +11,10 @@ Graph Partitioner: 2 MPI Processes
   use vertex weights: 1
   using partitioning strategy QUALITY
   using load imbalance ratio 0.01
-DM Object: Parallel Mesh 2 MPI processes
+DM Object: box 2 MPI processes
   type: plex
   Cell balance: 1.00 (max 2, min 2, empty 0)
-  Edge Cut: 2 (on node 1.000)
+  Edge Cut: 2 (on node 0.000)
 [0]Nv: 2
 [0]  1 2 [0-2)
 [0]  0 3 [2-4)
@@ -32,4 +32,4 @@ Minimum number of neighbors: 1
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
   Cell balance: 1.00 (max 2, min 2, empty 0)
-  Edge Cut: 2 (on node 1.000)
+  Edge Cut: 2 (on node 0.000)

@@ -96,6 +96,7 @@ Process 0:
   (  22) dim  2 offset  26 0.333333 1.
   (  23) dim  2 offset  28 0.666667 1.
   (  24) dim  2 offset  30 1. 1.
+Labels:
 Label 'celltype':
 [0]: 0 (4)
 [0]: 1 (4)

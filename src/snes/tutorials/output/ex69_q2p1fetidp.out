@@ -1,6 +1,6 @@
-DM Object: Mesh 5 MPI processes
+DM Object: box 5 MPI processes
   type: plex
-Mesh in 2 dimensions:
+box in 2 dimensions:
   0-cells: 9 8 9 9 8
   1-cells: 12 10 11 11 10
   2-cells: 4 3 3 3 3

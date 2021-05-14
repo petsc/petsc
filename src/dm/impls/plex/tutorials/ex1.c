@@ -4,25 +4,24 @@ static char help[] = "Define a simple field over the mesh\n\n";
 
 int main(int argc, char **argv)
 {
-  DM             dm, dmDist = NULL;
+  DM             dm;
   Vec            u;
   PetscSection   section;
   PetscViewer    viewer;
-  PetscInt       dim = 2, numFields, numBC, i;
+  PetscInt       dim, numFields, numBC, i;
   PetscInt       numComp[3];
   PetscInt       numDof[12];
   PetscInt       bcField[1];
   IS             bcPointIS[1];
-  PetscBool      interpolate = PETSC_TRUE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
-  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, interpolate, &dm);CHKERRQ(ierr);
-  /* Distribute mesh over processes */
-  ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
-  if (dmDist) {ierr = DMDestroy(&dm);CHKERRQ(ierr); dm = dmDist;}
+  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Create a scalar field u, a vector field v, and a surface vector field w */
   numFields  = 3;
   numComp[0] = 1;
@@ -72,10 +71,10 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -info :~sys
+    args: -info :~sys,mat
   test:
     suffix: 1
     requires: ctetgen
-    args: -dim 3 -info :~sys
+    args: -dm_plex_dim 3 -info :~sys,mat
 
 TEST*/
