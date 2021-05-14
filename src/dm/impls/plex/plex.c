@@ -8007,7 +8007,8 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
     const PetscInt     *cone;
     PetscInt           cellarr[2], *adj = NULL;
     PetscScalar        *cArr, *fArr;
-    PetscReal          minvalc = 1.0, minvalf = 1.0, OQ;
+    PetscReal          minvalc = 1.0, minvalf = 1.0;
+    PetscScalar        OQ;
     PetscFVCellGeom    *cg;
 
     cellarr[0] = cell;
@@ -8071,11 +8072,11 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
     /* Defer to cell if they're equal */
     OQ = PetscMin(minvalf, minvalc);
     if (OrthQualLabel) {
-      if (OQ <= atol) {
+      if (PetscRealPart(OQ) <= atol) {
         ierr = DMLabelSetValue(*OrthQualLabel, cell, DM_ADAPT_REFINE);CHKERRQ(ierr);
       }
     }
-    ierr = VecSetValuesLocal(*OrthQual, 1, (const PetscInt *) &ix, (const PetscScalar *) &OQ, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValuesLocal(*OrthQual, 1, &ix, &OQ, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(*OrthQual);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(*OrthQual);CHKERRQ(ierr);
