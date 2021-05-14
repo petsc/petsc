@@ -214,15 +214,14 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
      Logically Collective, but only process 0 runs the command
 
    Input Parameter:
-.   machine - machine to run command on or NULL to remove previous entry
+.   machine - machine to run command on or NULL for the current machine
 
    Options Database:
-.   -popen_machine <machine>
+.   -popen_machine <machine> - run the process on this machine
 
    Level: intermediate
 
 .seealso: PetscFOpen(), PetscFClose(), PetscPClose(), PetscPOpen()
-
 @*/
 PetscErrorCode  PetscPOpenSetMachine(const char machine[])
 {

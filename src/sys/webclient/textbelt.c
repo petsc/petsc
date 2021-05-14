@@ -15,7 +15,7 @@
 .   flg - PETSC_TRUE if the text was sent
 
    Options Database:
-.   -textbelt <phonenumber[,message]>
+.   -textbelt <phonenumber[,message]> - sends a message to this number when the program ends
 
    Level: intermediate
 

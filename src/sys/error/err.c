@@ -68,20 +68,12 @@ static EH eh = NULL;
 -  ctx - error handler context
 
    Options Database Key:
-.   -on_error_emacs <machinename>
+.   -on_error_emacs <machinename> - will contact machinename to open the Emacs client there
 
    Level: developer
 
    Notes:
    You must put (server-start) in your .emacs file for the emacsclient software to work
-
-   Most users need not directly employ this routine and the other error
-   handlers, but can instead use the simplified interface SETERRQ, which has
-   the calling sequence
-$     SETERRQ(PETSC_COMM_SELF,number,p,mess)
-
-   Notes for experienced users:
-   Use PetscPushErrorHandler() to set the desired error handler.
 
    Developer Note:
    Since this is an error handler it cannot call CHKERRQ(); thus we just return if an error is detected.
@@ -137,8 +129,8 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,i
 -  ctx - the error handler context
 
    Options Database Keys:
-+   -on_error_attach_debugger <noxterm,gdb or dbx>
--   -on_error_abort
++   -on_error_attach_debugger <noxterm,gdb or dbx> - starts up the debugger if an error occurs
+-   -on_error_abort - aborts the program if an error occurs
 
    Level: intermediate
 
