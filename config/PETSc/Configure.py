@@ -38,7 +38,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-xsdk-defaults',                         nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-with-display=<x11display>',                  nargs.Arg(None, '', 'Specifiy DISPLAY env variable for use with matlab test)'))
     help.addArgument('PETSc', '-with-package-scripts=<pyscripts>',           nargs.ArgFileList(None,None,'Specify configure package scripts for user provided packages'))
-    help.addArgument('PETSc', '-with-dmnetwork_maximum_components_per_point',nargs.ArgInt(None, 3, 'Number of components allowed at each DMNetwork edge or vertex'))
     return
 
   def registerPythonFile(self,filename,directory):
@@ -806,8 +805,6 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       if self.dataFilesPath.datafilespath:
         self.addMakeMacro('DATAFILESPATH',self.dataFilesPath.datafilespath)
     self.addDefine('ARCH','"'+self.installdir.petscArch+'"')
-
-    self.addDefine('DMNETWORK_MAXIMUM_COMPONENTS_PER_POINT', self.argDB['with-dmnetwork_maximum_components_per_point'])
     return
 
 #-----------------------------------------------------------------------------------------------------
