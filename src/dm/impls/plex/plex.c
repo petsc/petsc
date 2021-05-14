@@ -7829,6 +7829,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 @*/
 PetscErrorCode DMPlexCheckGeometry(DM dm)
 {
+  Vec            coordinates;
   PetscReal      detJ, J[9], refVol = 1.0;
   PetscReal      vol;
   PetscBool      periodic;
@@ -7843,6 +7844,8 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
   ierr = DMGetPeriodicity(dm, &periodic, NULL, NULL, NULL);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) refVol *= 2.0;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  /* Make sure local coordinates are created, because that step is collective */
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     DMPolytopeType ct;
     PetscInt       unsplit;
@@ -7860,6 +7863,7 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
       case DM_POLYTOPE_TRI_PRISM:
       case DM_POLYTOPE_TRI_PRISM_TENSOR:
       case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      case DM_POLYTOPE_PYRAMID:
         continue;
       default: break;
     }
