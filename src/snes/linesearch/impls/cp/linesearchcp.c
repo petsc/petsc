@@ -27,12 +27,13 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   lambda_old = 0.0;
 
   ierr = VecDot(F,Y,&fty_old);CHKERRQ(ierr);
-  if (PetscAbsScalar(fty_old) < atol) {
+  if (PetscAbsScalar(fty_old) < atol * ynorm) {
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(monitor,"    Line search terminated ended at initial point because dot(F,Y) = %g < atol = %g\n",(double)PetscAbsScalar(fty_old), (double)atol);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(monitor,"    Line search terminated at initial point because dot(F,Y) = %g < atol*||y|| = %g\n",(double)PetscAbsScalar(fty_old), (double)atol*ynorm);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
+    ierr = SNESSetConvergedReason(linesearch->snes,SNES_CONVERGED_FNORM_ABS);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -53,7 +54,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     /* check for convergence */
     if (PetscAbsReal(delLambda) < steptol*lambda) break;
     if (PetscAbsScalar(fty) / PetscAbsScalar(fty_init) < rtol) break;
-    if (PetscAbsScalar(fty) < atol && i > 0) break;
+    if (PetscAbsScalar(fty) < atol * ynorm && i > 0) break;
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g], ftys = [%g, %g]\n",(double)lambda, (double)lambda_old, (double)PetscRealPart(fty), (double)PetscRealPart(fty_old));CHKERRQ(ierr);
