@@ -920,7 +920,12 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
           incl.append(loc)
       if self.functions:
         self.logPrint('Checking for library in '+location+': '+str(lib))
-        if directory: self.logPrint('Contents: '+str(os.listdir(directory)))
+        if directory:
+          self.logPrint('Contents of '+directory+': '+str(os.listdir(directory)))
+          if os.path.isdir(os.path.join(directory, self.libdir)):
+            self.logPrint('Contents '+os.path.join(directory,self.libdir)+': '+str(os.listdir(os.path.join(directory,self.libdir))))
+          if os.path.isdir(os.path.join(directory, self.altlibdir)):
+            self.logPrint('Contents '+os.path.join(directory,self.altlibdir)+': '+str(os.listdir(os.path.join(directory,self.altlibdir))))
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
 
