@@ -29,7 +29,7 @@ PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS *inact)
 
     Simple calls the regular DM interpolation and restricts it to operation on the variables not associated with active constraints.
 
-<*/
+*/
 typedef struct {
   PetscInt n;                                              /* size of vectors in the reduced DM space */
   IS       inactive;

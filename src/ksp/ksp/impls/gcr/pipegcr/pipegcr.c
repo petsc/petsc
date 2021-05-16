@@ -420,8 +420,7 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
     (pipegcr->mmax + 1) *     sizeof(PetscInt) +    /* chunksizes */
     (pipegcr->mmax + 2) *     sizeof(Vec*) +        /* redux */
     (pipegcr->mmax + 2) *     sizeof(PetscScalar) + /* dots */
-    (pipegcr->mmax + 1) *     sizeof(PetscReal)     /* etas */
-);CHKERRQ(ierr);
+    (pipegcr->mmax + 1) *     sizeof(PetscReal)     /* etas */);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

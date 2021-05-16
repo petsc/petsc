@@ -371,7 +371,7 @@ PETSC_EXTERN PetscErrorCode DMView_GLVis(DM,PetscViewer,PetscErrorCode(*)(DM,Pet
       DMCompositeGetLocalVectors   - gives individual local work vectors and arrays
 
 
-?????   individual global vectors   ????
+    ?????   individual global vectors   ????
 
 */
 
