@@ -68,7 +68,6 @@ int main(int argc, char **argv)
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -report
 
   testset:
-    requires: exodusii
     args: -dm_plex_orthogonal_quality_label_view -dm_plex_orthogonal_quality_vec_view
 
     test:
@@ -84,10 +83,13 @@ int main(int argc, char **argv)
     test:
       suffix: mesh_1
       nsize: 1
+      requires: exodusii
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -orth_qual_atol 0.95
+
 
     test:
       suffix: mesh_2
       nsize: 2
+      requires: exodusii
       args: -dm_distribute -petscpartitioner_type simple -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -orth_qual_atol 0.95
 TEST*/
