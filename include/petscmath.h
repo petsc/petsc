@@ -684,7 +684,6 @@ M*/
    Input Parameter:
 .   v1 - the double
 
-
    Level: beginner
 
 .seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscSqr()
@@ -923,7 +922,6 @@ M*/
 
 M*/
 #define PetscGTE(x,b)  ((x) >= (PetscRealConstant(b)-PETSC_SMALL))
-
 
 PETSC_EXTERN PetscErrorCode PetscLinearRegression(PetscInt,const PetscReal[],const PetscReal[],PetscReal*,PetscReal*);
 #endif

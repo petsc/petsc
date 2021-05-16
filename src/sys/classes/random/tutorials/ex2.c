@@ -111,7 +111,6 @@ PetscErrorCode stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)
   PetscFunctionReturn(0);
 }
 
-
 PetscReal basketPayoff(PetscReal vol[], PetscReal St0[], PetscInt n, PetscReal r,PetscReal dt, PetscReal eps[])
 {
   PetscReal Stk[PETSC_MAXBSIZE], temp;

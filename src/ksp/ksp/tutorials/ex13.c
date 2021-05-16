@@ -304,7 +304,6 @@ PetscErrorCode UserFinalizeLinearSolver(UserCtx *userctx)
   return 0;
 }
 
-
 /*TEST
 
    test:

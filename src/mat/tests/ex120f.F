@@ -17,7 +17,6 @@
       return
       end
 
-
       program main
 #include <petsc/finclude/petscmat.h>
       use petscmat

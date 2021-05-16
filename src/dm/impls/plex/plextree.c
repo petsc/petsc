@@ -3212,7 +3212,6 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         const PetscScalar ***flips;
         const PetscInt *pperms;
 
-
         ierr = PetscFEGetDualSpace(fe,&dsp);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDimension(dsp,&fSize);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetSymmetries(dsp, &perms, &flips);CHKERRQ(ierr);

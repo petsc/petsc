@@ -62,7 +62,6 @@ static PetscErrorCode MatBindToCPU_MPIAIJ(Mat A,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatSetBlockSizes_MPIAIJ(Mat M, PetscInt rbs, PetscInt cbs)
 {
   PetscErrorCode ierr;
@@ -4335,8 +4334,6 @@ $     MatMPIAIJSetPreallocation(A,...);
    Options Database Keys:
 +  -mat_no_inode  - Do not use inodes
 -  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
-
-
 
    Example usage:
 

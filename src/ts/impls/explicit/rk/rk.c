@@ -1134,7 +1134,6 @@ static PetscErrorCode DMRestrictHook_TSRK(DM fine,Mat restrct,Vec rscale,Mat inj
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode DMSubDomainHook_TSRK(DM dm,DM subdm,void *ctx)
 {
   PetscFunctionBegin;

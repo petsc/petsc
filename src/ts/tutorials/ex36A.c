@@ -28,7 +28,6 @@ PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
   PetscFunctionReturn(0);
   }*/
 
-
 /*
      Defines the DAE passed to the time solver
 */

@@ -643,7 +643,6 @@ PETSC_EXTERN void matdensegetarrayread_(Mat *mat,PetscScalar *fa,size_t *ia,Pets
   *ierr = PetscScalarAddressToFortran((PetscObject)*mat,1,fa,(PetscScalar*)mm,m*n,ia); if (*ierr) return;
 }
 
-
 PETSC_EXTERN void matdenserestorearrayread_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscScalar *lx;

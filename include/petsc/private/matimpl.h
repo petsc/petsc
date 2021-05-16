@@ -528,7 +528,6 @@ PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat,PetscInt,const Petsc
 PETSC_INTERN PetscErrorCode MatView_Binary_BlockSizes(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatLoad_Binary_BlockSizes(Mat,PetscViewer);
 
-
 /*
     Object for partitioning graphs
 */

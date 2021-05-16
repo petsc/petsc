@@ -233,7 +233,6 @@ int main(int argc,char **args)
   }
 #endif
 
-
   /*
     Example of how to use external package STRUMPACK
     Note: runtime options
@@ -390,7 +389,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

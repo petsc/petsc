@@ -73,7 +73,6 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
   PetscFunctionReturn(0);
 }
 
-
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /*@C
@@ -99,5 +98,4 @@ PetscErrorCode  AORegister(const char sname[], PetscErrorCode (*function)(AO))
   ierr = PetscFunctionListAdd(&AOList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 

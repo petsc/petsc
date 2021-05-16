@@ -159,7 +159,6 @@ int main(int argc,char **args)
   ierr = VecScale(fout1,a);CHKERRQ(ierr);
   ierr = VecScale(final,a);CHKERRQ(ierr);
 
-
 /*    VecView(ini,PETSC_VIEWER_STDOUT_WORLD);   */
 /*    VecView(final,PETSC_VIEWER_STDOUT_WORLD); */
   ierr = VecAXPY(final,-1.0,ini);CHKERRQ(ierr);
@@ -185,9 +184,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
-
 
 /*TEST
 

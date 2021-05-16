@@ -125,7 +125,6 @@ PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer,MPI_Comm co
 /*MC
    PETSCVIEWERSTRING - A viewer that writes to a string
 
-
 .seealso:  PetscViewerStringOpen(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
            PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW,
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
@@ -258,8 +257,4 @@ PetscErrorCode  PetscViewerStringSetOwnString(PetscViewer viewer)
   vstr->ownstring = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-
-
-
-
 

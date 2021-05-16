@@ -2,7 +2,6 @@
 #define __TAO_NELDERMEAD_H
 #include <petsc/private/taoimpl.h>
 
-
 typedef struct {
 
   PetscReal mu_ic;
@@ -26,7 +25,6 @@ typedef struct {
   PetscInt nreflect;
   PetscInt nincontract;
   PetscInt noutcontract;
-
 
 } TAO_NelderMead;
 

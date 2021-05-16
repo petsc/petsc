@@ -161,7 +161,6 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   PetscFunctionReturn(0);
 }
 
-
 /*@C
      PetscHTTPSRequest - Send a request to an HTTPS server
 

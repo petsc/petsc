@@ -51,7 +51,6 @@ static PetscErrorCode MatCreateColInode_Private(Mat A,PetscInt *size,PetscInt **
   PetscFunctionReturn(0);
 }
 
-
 /*
       This builds symmetric version of nonzero structure,
 */
@@ -2284,7 +2283,6 @@ endofwhile:;
   PetscFunctionReturn(0);
 }
 
-
 /* ----------------------------------------------------------- */
 PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 {
@@ -2668,7 +2666,6 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*
      Makes a longer coloring[] array and calls the usual code with that
@@ -3803,8 +3800,6 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       }
     }
     ierr = PetscLogFlops(m);CHKERRQ(ierr);
-
-
 
     /*
           Apply (L + D)^-1 where D is the block diagonal

@@ -57,7 +57,6 @@ static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes,Vec x,Vec y,MatFDCo
    NOTE: FORTRAN USER CANNOT PUT IN A NEW J OR B currently.
 */
 
-
 PETSC_EXTERN void matfdcoloringsetfunctionts_(MatFDColoring *fd,void (*f)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   (*fd)->ftn_func_pointer =  (void (*)(void)) f;

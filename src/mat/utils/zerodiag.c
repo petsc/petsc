@@ -46,7 +46,6 @@
        swapped with; to make sure the previous nonzero diagonal remains
        nonzero
 
-
 @*/
 PetscErrorCode  MatReorderForNonzeroDiagonal(Mat mat,PetscReal abstol,IS ris,IS cis)
 {
@@ -142,6 +141,4 @@ found:;
   ierr = ISDestroy(&icis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 

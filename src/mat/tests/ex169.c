@@ -1,7 +1,6 @@
 
 static char help[] = "Test memory leak when duplicating a redundant matrix.\n\n";
 
-
 /*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
@@ -59,13 +58,11 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
 /*TEST
 
    test:
       nsize: 4
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
-
 
 TEST*/

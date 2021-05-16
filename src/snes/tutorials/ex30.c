@@ -24,7 +24,6 @@ static const char help[] = "Steady-state 2D subduction flow, pressure and temper
   FOR OTHER PARAMETER OPTIONS AND THEIR DEFAULT VALUES, see SetParams() in ex30.c.\n\
 ---------------------------------ex30 help---------------------------------\n";
 
-
 /*F-----------------------------------------------------------------------
 
     This PETSc 2.2.0 example by Richard F. Katz
@@ -162,7 +161,6 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,2,"pressure");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,3,"temperature");CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -172,13 +170,11 @@ int main(int argc,char **argv)
   ierr        = DMSetApplicationContext(da,user);CHKERRQ(ierr);
   ierr        = DMCreateGlobalVector(da,&(user->Xguess));CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the SNES solver with callback functions.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,(void*)user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-
 
   ierr = SNESSetConvergenceTest(snes,SNESConverged_Interactive,(void*)user,NULL);CHKERRQ(ierr);
   ierr = PetscPushSignalHandler(InteractiveHandler,(void*)user);CHKERRQ(ierr);
@@ -286,11 +282,9 @@ done:
   PetscFunctionReturn(0);
 }
 
-
 /*=====================================================================
   PHYSICS FUNCTIONS (compute the discrete residual)
   =====================================================================*/
-
 
 /*---------------------------------------------------------------------*/
 PETSC_STATIC_INLINE PetscScalar UInterp(Field **x, PetscInt i, PetscInt j)
@@ -1441,7 +1435,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   }
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

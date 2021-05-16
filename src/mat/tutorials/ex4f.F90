@@ -21,7 +21,6 @@ implicit none
    stop
   endif
 
-
   allocate(dnnz(0:m-1))
   allocate(onnz(0:m-1))
 

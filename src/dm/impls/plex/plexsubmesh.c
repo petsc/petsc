@@ -2052,7 +2052,6 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
   PetscFunctionReturn(0);
 }
 
-
 /*@
   DMPlexCreateHybridMesh - Create a mesh with hybrid cells along an internal interface
 

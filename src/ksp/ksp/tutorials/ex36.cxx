@@ -4,8 +4,6 @@
    Processors: n
 T*/
 
-
-
 /*
 Inhomogeneous Laplacian in 3-D. Modeled by the partial differential equation
 
@@ -215,7 +213,6 @@ int main(int argc, char **argv)
   return 0;
 }
 
-
 PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)
 {
   if (user->problem == 2) {
@@ -223,7 +220,6 @@ PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)
     else  return 1.0;
   } else return 1.0; /* problem = 1 */
 }
-
 
 PetscReal ComputeReactionCoefficient(PetscReal coords[3], UserContext* user)
 {
@@ -233,7 +229,6 @@ PetscReal ComputeReactionCoefficient(PetscReal coords[3], UserContext* user)
   }
   else return 5.0; /* problem = 1 */
 }
-
 
 double ExactSolution(PetscReal coords[3], UserContext* user)
 {
@@ -245,13 +240,11 @@ double ExactSolution(PetscReal coords[3], UserContext* user)
   } else return sin(PETSC_PI * coords[0]) * sin(PETSC_PI * coords[1]) * sin(PETSC_PI * coords[2]);
 }
 
-
 PetscReal exact_solution(PetscReal x, PetscReal y, PetscReal z)
 {
   PetscReal coords[3] = {x, y, z};
   return ExactSolution(coords, 0);
 }
-
 
 double ForcingFunction(PetscReal coords[3], UserContext* user)
 {
@@ -264,7 +257,6 @@ double ForcingFunction(PetscReal coords[3], UserContext* user)
     return (3.0 * PETSC_PI * PETSC_PI + reac) * exact;
   }
 }
-
 
 PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
 {
@@ -364,7 +356,6 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
   ierr = PetscQuadratureDestroy(&quadratureObj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
 {
@@ -477,7 +468,6 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
 {
   DM                dm;
@@ -539,7 +529,6 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode InitializeOptions(UserContext* user)
 {
   const char     *bcTypes[2] = {"dirichlet", "neumann"};
@@ -590,7 +579,6 @@ PetscErrorCode InitializeOptions(UserContext* user)
   user->VPERE  = (user->usetet ? 4 : 8);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

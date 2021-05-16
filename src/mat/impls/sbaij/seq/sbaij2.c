@@ -1156,7 +1156,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   }
   work = a->mult_work;
 
-
   for (i=0; i<mbs; i++) {
     n           = ii[1] - ii[0]; ncols = n*bs;
     workt       = work; idx=aj+ii[0];

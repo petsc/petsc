@@ -359,7 +359,6 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 + minDegree - The degree of the largest polynomial space contained in the space
 - maxDegree - The degree of the smallest polynomial space containing the space
 
-
   Level: intermediate
 
 .seealso: PetscSpaceSetDegree(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace

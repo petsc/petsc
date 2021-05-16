@@ -358,7 +358,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         if (dist > mdist) { mdist = dist; point2 = j; }
       }
 
-
       /* find the third point maximizing the triangle area */
       point3 = point2;
       if (cdim > 2) {
@@ -670,7 +669,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   }
   PetscFunctionReturn(0);
 }
-
 
 PETSC_STATIC_INLINE PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph graph,PetscInt pid,PetscInt* queue_tip,PetscInt n_prev,PetscInt* n_added)
 {

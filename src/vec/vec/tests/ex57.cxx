@@ -3,7 +3,6 @@
 #include <viennacl/vector.hpp>
 typedef viennacl::vector<PetscScalar> ViennaclVector;
 
-
 int main(int argc,char *argv[])
 {
   PetscErrorCode ierr;

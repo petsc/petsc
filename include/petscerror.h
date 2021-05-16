@@ -68,7 +68,6 @@
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
 
-
 /*MC
    SETERRQ - Macro to be called when an error has been detected,
 
@@ -107,7 +106,6 @@ M*/
 */
 PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS;
 PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
-
 
 /*MC
    SETERRMPI - Macro to be called when an error has been detected within an MPI callback function
@@ -484,7 +482,6 @@ M*/
 #define CHKERRV(ierr)
 #endif
 
-
 /*MC
    CHKERRABORT - Checks error code returned from PETSc function. If non-zero it aborts immediately.
 
@@ -721,7 +718,6 @@ $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can 
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscPushErrorHandler(), PetscVFPrintf(), PetscHelpPrintf()
 M*/
 PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[],...);
@@ -908,7 +904,6 @@ M*/
     PetscRegister__FUNCT__();                                           \
   } while (0)
 
-
 #define PetscStackPush(n) \
   do {                                                                  \
     PetscStackPushNoCheck(n,PETSC_FALSE,PETSC_FALSE);                   \
@@ -980,8 +975,6 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
    Note: Often one should use PetscStackCallStandard() instead. This routine is intended for external library routines that DO NOT return error codes
 
    Developer Note: this is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
-
-
 
 */
 #define PetscStackCall(name,routine) do { PetscStackPush(name);routine;PetscStackPop; } while (0)

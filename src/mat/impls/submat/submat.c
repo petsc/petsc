@@ -255,7 +255,6 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    MatSubMatrixVirtualUpdate - Updates a submatrix
 

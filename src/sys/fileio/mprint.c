@@ -594,7 +594,6 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
 @*/
@@ -638,7 +637,6 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
     Fortran Note:
     The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
-
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscFormatConvert()
 @*/
@@ -685,7 +683,6 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 }
 
 /* ---------------------------------------------------------------------------------------*/
-
 
 /*@C
     PetscSynchronizedFGets - Several processors all get the same line from a file.

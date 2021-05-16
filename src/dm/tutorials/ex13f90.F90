@@ -21,7 +21,6 @@ program main
 !     Contributed by Aasmund Ervik (asmunder at pvv.org)
 !
 
-
   use ex13f90aux
 
 #include <petsc/finclude/petscdmda.h>

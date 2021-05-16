@@ -128,7 +128,6 @@ PetscErrorCode FormFunction_Subnet(DM networkdm,Vec localX, Vec localF,PetscInt 
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 {
   PetscErrorCode ierr;
@@ -440,7 +439,6 @@ int main(int argc,char ** argv)
   Vec              X,F;
   Mat              J;
   SNES             snes;
-
 
   ierr = PetscInitialize(&argc,&argv,"poweroptions",help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);

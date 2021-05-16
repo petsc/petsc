@@ -1,5 +1,4 @@
 
-
 #include <petsc/private/kspimpl.h>      /*I "petscksp.h" I*/
 
 typedef struct {
@@ -164,7 +163,6 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
 
 /*MC
      KSPTSIRM - Implements the two-stage iteration with least-squares residual minimization method.
-
 
    Options Database Keys:
 +  -ksp_ksp_type <solver> -         the type of the inner solver (GMRES or any of its variants for instance)

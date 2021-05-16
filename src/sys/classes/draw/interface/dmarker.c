@@ -17,7 +17,6 @@ const char *const PetscDrawMarkerTypes[]     = {"CROSS","POINT","PLUS","CIRCLE",
 
    Level: beginner
 
-
 .seealso: PetscDrawPoint(), PetscDrawString(), PetscDrawSetMarkerType(), PetscDrawGetMarkerType()
 
 @*/
@@ -82,7 +81,6 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 
    Level: beginner
 
-
 .seealso: PetscDrawPoint(), PetscDrawMarker(), PetscDrawGetMarkerType()
 
 @*/
@@ -104,7 +102,6 @@ PetscErrorCode  PetscDrawSetMarkerType(PetscDraw draw,PetscDrawMarkerType mtype)
 -  mtype - either PETSC_DRAW_MARKER_CROSS (default) or PETSC_DRAW_MARKER_POINT
 
    Level: beginner
-
 
 .seealso: PetscDrawPoint(), PetscDrawMarker(), PetscDrawSetMarkerType()
 

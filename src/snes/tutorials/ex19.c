@@ -20,7 +20,6 @@ The flow can be driven with the lid or with bouyancy or both:\n\
    Processors: n
 T*/
 
-
 /*F-----------------------------------------------------------------------
 
     We thank David E. Keyes for contributing the driven cavity discretization within this example code.
@@ -151,7 +150,6 @@ int main(int argc,char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -261,7 +259,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 
      Note: FD formulae below are normalized by multiplying through by
      local volume element (i.e. hx*hy) to obtain coefficients O(1) in two dimensions.
-
 
   */
   dhx   = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
@@ -647,7 +644,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 
@@ -1098,7 +1094,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       nsize: 1
       requires: cuda
       args: -snes_monitor -dm_mat_type seqaijcusparse -dm_vec_type seqcuda -pc_type gamg -ksp_monitor -mg_levels_ksp_max_it 3
-
 
    test:
       suffix: cuda_2

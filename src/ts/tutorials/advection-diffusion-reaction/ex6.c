@@ -294,7 +294,6 @@ PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    test:

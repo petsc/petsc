@@ -194,8 +194,6 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   PetscFunctionReturn(0);
 }
 
-
-
 /*TEST
 
    test:

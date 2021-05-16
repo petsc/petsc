@@ -409,7 +409,6 @@ static PetscErrorCode ObjectiveRegularizationADMM(Tao tao, Vec z, PetscReal *J, 
   PetscFunctionReturn(0);
 }
 
-
 /* NORM_2 Case: x - mu*(x + u - z)
  * NORM_1 Case: x/(|x| + eps) - mu*(x + u - z)
  * Else: TODO */

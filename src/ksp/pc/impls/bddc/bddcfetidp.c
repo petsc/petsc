@@ -42,7 +42,6 @@ static PetscErrorCode MatDestroy_BDdelta_deluxe_nonred(Mat A)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC pc, FETIDPMat_ctx *fetidpmat_ctx)
 {
   FETIDPMat_ctx  newctx;
@@ -703,7 +702,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   ierr = VecDuplicate(pcis->vec1_D,&fetidpmat_ctx->temp_solution_D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx)
 {

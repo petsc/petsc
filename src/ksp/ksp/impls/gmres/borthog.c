@@ -54,4 +54,3 @@ PetscErrorCode  KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,PetscInt it
   PetscFunctionReturn(0);
 }
 
-

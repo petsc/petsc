@@ -1027,7 +1027,6 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydot)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode TSARKIMEXRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydot)
 {
   PetscErrorCode ierr;
@@ -1115,7 +1114,6 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine,Mat restrct,Vec rscale,Ma
   ierr = TSARKIMEXRestoreVecs(ts,coarse,&Z_c,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm,DM subdm,void *ctx)
 {

@@ -68,11 +68,9 @@ typedef struct {
    DM            dm;             /* distributed array data structure */
 } AppCtx;
 
-
 PetscErrorCode FormInitialGuess(AppCtx*, Vec);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
-
 
 int main(int argc, char **argv)
 {
@@ -129,7 +127,6 @@ int main(int argc, char **argv)
 
     ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,(void*)&user);CHKERRQ(ierr);
 
-
     /* Check for any TAO command line options */
     ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
@@ -155,7 +152,6 @@ int main(int argc, char **argv)
     PetscFinalize();
     return 0;
 }
-
 
 /* ------------------------------------------------------------------- */
 /*
@@ -195,7 +191,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* ------------------------------------------------------------------ */
 /*
@@ -316,7 +311,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
     }
   }
 
-
   /* Restore vector */
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
 
@@ -336,8 +330,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
 
   PetscFunctionReturn(0);
 }
-
-
 
 PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
 {
@@ -406,7 +398,6 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
   ierr = PetscLogFlops(9*xm*ym+49*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

@@ -41,7 +41,6 @@ static PetscErrorCode DMDAApplyBoundaryConditions(DM,Mat,Vec);
 #define P_DOFS         1 /* degrees of freedom per pressure node */
 #define GAUSS_POINTS   4
 
-
 static void EvaluateBasis_Q1(PetscScalar _xi[],PetscScalar N[])
 {
   PetscScalar xi  = _xi[0];

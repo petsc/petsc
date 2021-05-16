@@ -585,7 +585,6 @@ PetscErrorCode PetscSFLinkGetMPIBuffersAndRequests(PetscSF sf,PetscSFLink link,P
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode PetscSFLinkGetInUse(PetscSF sf,MPI_Datatype unit,const void *rootdata,const void *leafdata,PetscCopyMode cmode,PetscSFLink *mylink)
 {
   PetscErrorCode    ierr;
@@ -653,7 +652,6 @@ static PetscErrorCode PetscSFLinkMemcpy_Host(PetscSFLink link,PetscMemType dstmt
   if (n) {PetscErrorCode ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
 {

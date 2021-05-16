@@ -288,7 +288,6 @@ program ex26f90
     end if
     call DMViewFromOptions(dm,PETSC_NULL_OPTIONS,"-dm_view",ierr);CHKERRA(ierr)
 
-
     ! Get DM and IS for each field of dm
     call DMCreateSubDM(dm, 1_kPI, fieldU,  isU,  dmU,ierr);CHKERRA(ierr)
     call DMCreateSubDM(dm, 1_kPI, fieldA,  isA,  dmA,ierr);CHKERRA(ierr)
@@ -323,7 +322,6 @@ program ex26f90
     call DMGetCoordinateSection(dmUA, coordSection,ierr);CHKERRA(ierr)
     call DMGetCoordinatesLocal(dmUA, coord,ierr);CHKERRA(ierr)
     call DMPlexGetChart(dmUA, pStart, pEnd,ierr);CHKERRA(ierr)
-
 
     do p = pStart,pEnd-1
         call PetscSectionGetDof(sectionUA, p, dofUA,ierr);CHKERRA(ierr)

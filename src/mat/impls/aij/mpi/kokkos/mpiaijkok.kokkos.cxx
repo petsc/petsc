@@ -2,7 +2,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/aij/seq/kokkos/aijkokkosimpl.hpp>
 
-
 PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode   ierr;

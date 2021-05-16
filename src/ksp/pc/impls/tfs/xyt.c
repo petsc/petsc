@@ -34,7 +34,6 @@ typedef struct xyt_solver_info {
   PetscScalar tot_solve_time;
 } xyt_info;
 
-
 typedef struct matvec_info {
   PetscInt     n, m, n_global, m_global;
   PetscInt     *local2global;
@@ -147,7 +146,6 @@ PetscErrorCode XYT_free(xyt_ADT xyt_handle)
   free(xyt_handle->mvi);
   free(xyt_handle);
 
-
   /* if the check fails we nuke */
   /* if NULL pointer passed to free we nuke */
   /* if the calls to free fail that's not my problem */
@@ -200,7 +198,6 @@ PetscErrorCode XYT_stats(xyt_ADT xyt_handle)
 
   return(0);
 }
-
 
 /*************************************xyt.c************************************
 
@@ -460,7 +457,6 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
       xcol_sz[i]        = xcol_indices[2*i+1] = 0;
       xcol_vals[i]      = x_ptr;
     }
-
 
     /* add newly generated column, u_l, to Y */
     flag = 1;
@@ -780,6 +776,4 @@ static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
   A->matvec((mv_info*)A->grid_data,v,u);
   PetscFunctionReturn(0);
 }
-
-
 

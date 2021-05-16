@@ -213,7 +213,6 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventRegister("VecCopyFromSome",  VEC_CLASSID,&VEC_HIPCopyFromGPUSome);CHKERRQ(ierr);
 #endif
 
-
   /* Mark non-collective events */
   ierr = PetscLogEventSetCollective(VEC_SetValues,           PETSC_FALSE);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VIENNACL)

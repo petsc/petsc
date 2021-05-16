@@ -28,7 +28,6 @@
 
    Level: developer
 
-
 .seealso: PetscGetFullPath()
 @*/
 PetscErrorCode  PetscGetRelativePath(const char fullpath[],char path[],size_t flen)

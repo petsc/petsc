@@ -221,7 +221,6 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PetscDrawSPAddPoints - Adds several points to each of the scatter plots.
 

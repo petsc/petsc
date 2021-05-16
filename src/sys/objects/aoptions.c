@@ -1,5 +1,4 @@
 
-
 /*
    Implements the higher-level options database querying methods. These are self-documenting and can attach at runtime to
    GUI code to display the options and get values from the users.
@@ -17,7 +16,6 @@
 
     Eventually we'll attach this beast to a MPI_Comm
 */
-
 
 /*
     Handles setting up the data structure in a call to PetscOptionsBegin()
@@ -164,7 +162,6 @@ static PetscErrorCode  PetscStrdup(const char s[],char *t[])
   *t = tmp;
   PetscFunctionReturn(0);
 }
-
 
 /*
     PetscOptionsGetFromTextInput - Presents all the PETSc Options processed by the program so the user may change them at runtime
@@ -394,7 +391,6 @@ static const char *OptionsBodyBottom = "<div id=\"variablesInfo\" style=\"backgr
 +    All processes must traverse through the exact same set of option queries do to the call to PetscScanString()
 .    Internal strings have arbitrary length and string copies are not checked that they fit into string space
 -    Only works for PetscInt == int, PetscReal == double etc
-
 
 */
 PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
@@ -872,7 +868,6 @@ M*/
    #include "petscsys.h"
 PetscErrorCode  PetscOptionsInt(const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg))
 
-
    Input Parameters:
 +  opt - option name
 .  text - short string that describes the option
@@ -966,7 +961,6 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
           The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
-
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(),
@@ -1078,7 +1072,6 @@ $                 PetscOptionsScalar(..., obj->value,&obj->value,...) or
 $                 value = defaultvalue
 $                 PetscOptionsScalar(..., value,&value,&flg);
 $                 if (flg) {
-
 
    Output Parameter:
 +  value - the value to return
@@ -1254,7 +1247,6 @@ PetscErrorCode  PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject,c
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
 $                 PetscOptionsElist(..., obj->value,&value,&flg);
 $                 if (flg) {
-
 
    Output Parameter:
 +  value - the index of the value to return
@@ -1911,7 +1903,6 @@ PetscErrorCode  PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject,
    Input Parameter:
 .   head - the heading text
 
-
    Level: intermediate
 
    Notes:
@@ -1936,9 +1927,4 @@ PetscErrorCode  PetscOptionsHead(PetscOptionItems *PetscOptionsObject,const char
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
 

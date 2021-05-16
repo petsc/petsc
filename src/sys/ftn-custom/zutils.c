@@ -215,5 +215,3 @@ PETSC_EXTERN PetscBool petscisinfornanreal_(PetscReal *v)
   return (PetscBool) PetscIsInfOrNanReal(*v);
 }
 
-
-

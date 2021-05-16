@@ -1873,7 +1873,6 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMPlexGetGatherDM - Get a copy of the DMPlex that gathers all points on the
   root process of the original's communicator.

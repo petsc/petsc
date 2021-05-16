@@ -526,7 +526,6 @@ PetscErrorCode MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Ma
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode MatCompositeAddMat_Composite(Mat mat,Mat smat)
 {
   Mat_Composite     *shell = (Mat_Composite*)mat->data;
@@ -843,7 +842,6 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 
    Input Parameters:
 .  mat - the composite matrix
-
 
    Options Database Keys:
 +  -mat_composite_merge - merge in MatAssemblyEnd()
@@ -1166,8 +1164,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
   b->mergetype    = MAT_COMPOSITE_MERGE_RIGHT;
   b->structure    = DIFFERENT_NONZERO_PATTERN;
   b->merge_mvctx  = PETSC_TRUE;
-
-
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeAddMat_C",MatCompositeAddMat_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetType_C",MatCompositeSetType_Composite);CHKERRQ(ierr);

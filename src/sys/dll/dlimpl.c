@@ -134,7 +134,6 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PetscDLClose -  closes a dynamic library
 

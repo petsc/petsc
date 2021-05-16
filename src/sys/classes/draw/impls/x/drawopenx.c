@@ -66,11 +66,3 @@ PetscErrorCode  PetscDrawOpenX(MPI_Comm comm,const char display[],const char tit
   PetscFunctionReturn(0);
 }
 
-
-
-
-
-
-
-
-

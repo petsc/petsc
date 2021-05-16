@@ -358,7 +358,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat C,PetscInt imax,Petsc
   bj     = b->j;
   garray = c->garray;
 
-
   for (i=0; i<imax; i++) {
     data_i  = data[i];
     table_i = table[i];
@@ -422,7 +421,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
   bi     = b->i;
   bj     = b->j;
   garray = c->garray;
-
 
   for (i=0,ct=0,total_sz=0; i<nrqr; ++i) {
     rbuf_i =  rbuf[i];
@@ -1219,7 +1217,6 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
       smat_i->rmap        = NULL;
       smat_i->cmap        = NULL;
     }
-
 
     if (ismax) {ierr = PetscFree(lens[0]);CHKERRQ(ierr);}
     ierr = PetscFree(lens);CHKERRQ(ierr);

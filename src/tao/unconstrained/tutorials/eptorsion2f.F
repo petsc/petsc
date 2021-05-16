@@ -64,7 +64,6 @@
       PetscInt         i1
       PetscInt         dummy
 
-
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
 
@@ -94,7 +93,6 @@
      &                        '-my',my,flg,ierr)
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-par',param,flg,ierr)
-
 
 !     Set up distributed array and vectors
       call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,               &
@@ -146,13 +144,11 @@
 !     Check for any TAO command line options
       call TaoSetFromOptions(tao,ierr)
 
-
 !     SOLVE THE APPLICATION
       call TaoSolve(tao,ierr)
 
 !     Free TAO data structures
       call TaoDestroy(tao,ierr)
-
 
 !     Free PETSc data structures
       call VecDestroy(x,ierr)
@@ -160,11 +156,9 @@
       call MatDestroy(H,ierr)
       call DMDestroy(dm,ierr)
 
-
 !     Finalize TAO and PETSc
       call PetscFinalize(ierr)
       end
-
 
 ! ---------------------------------------------------------------------
 !
@@ -202,8 +196,6 @@
       call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,              &
      &                   gxm,gym,PETSC_NULL_INTEGER,ierr)
 
-
-
 !  Compute initial guess over locally owned part of mesh
       xe = xs+xm
       ye = ys+ym
@@ -219,7 +211,6 @@
       call VecAssemblyEnd(X,ierr)
       return
       end
-
 
 ! ---------------------------------------------------------------------
 !
@@ -253,7 +244,6 @@
       PetscInt         dummy
 
 !  Declarations for use with local array:
-
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
 ! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
@@ -291,7 +281,6 @@
       call DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX,ierr)
       call DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX,ierr)
 
-
 !  Get corner information
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
      &                  PETSC_NULL_INTEGER,ierr)
@@ -300,7 +289,6 @@
 
 !  Get pointer to vector data.
       call VecGetArray(localX,lx_v,lx_i,ierr)
-
 
 !  Set local loop dimensions
       xe = xs+xm
@@ -404,7 +392,6 @@
       floc = area *(p5*fquad+flin)
       call VecScale(G,area,ierr)
 
-
 !  Sum function contributions from all processes
       call MPI_Allreduce(floc,f,1,MPIU_SCALAR,MPIU_SUM,                   &
      &                   PETSC_COMM_WORLD,ierr)
@@ -422,7 +409,6 @@
       Mat             H,Hpre
       PetscErrorCode  ierr
       PetscInt        dummy
-
 
       PetscInt i,j,k
       PetscInt col(0:4),row
@@ -476,11 +462,9 @@
          enddo
       enddo
 
-
 !     Assemble matrix
       call MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,ierr)
-
 
 !     Tell the matrix we will never add a new nonzero location to the
 !     matrix.  If we do it will generate an error.
@@ -488,14 +472,11 @@
       call MatSetOption(H,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr)
       call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr)
 
-
       call PetscLogFlops(9.0d0*xm*ym + 49.0d0*xm,ierr)
 
       ierr = 0
       return
       end
-
-
 
       subroutine Monitor(tao, dummy, ierr)
       use mymodule

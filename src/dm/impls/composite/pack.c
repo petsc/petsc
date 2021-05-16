@@ -8,7 +8,6 @@
     DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the
       separate components (DMs) in a DMto build the correct matrix nonzero structure.
 
-
     Logically Collective
 
     Input Parameter:
@@ -150,7 +149,6 @@ PetscErrorCode  DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
   *nDM = com->nDM;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
     DMCompositeGetAccess - Allows one to access the individual packed vectors in their global
@@ -1172,8 +1170,6 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,char **
   PetscFunctionReturn(0);
 }
 
-
-
 /* -------------------------------------------------------------------------------------*/
 /*@C
     DMCompositeGetLocalVectors - Gets local vectors for each part of a DMComposite.
@@ -1572,7 +1568,6 @@ static PetscErrorCode DMGetLocalToGlobalMapping_Composite(DM dm)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode  ierr;
@@ -1790,7 +1785,6 @@ PetscErrorCode  DMLocalToLocalEnd_Composite(DM dm,Vec lvec,InsertMode mode,Vec g
 
 .seealso: DMType, DM, DMDACreate(), DMCreate(), DMSetType(), DMCompositeCreate()
 M*/
-
 
 PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 {

@@ -352,7 +352,6 @@ PetscErrorCode PetscLayoutReference(PetscLayout in,PetscLayout *out)
 + in - input PetscLayout
 - ltog - the local to global mapping
 
-
   Level: developer
 
   Notes:

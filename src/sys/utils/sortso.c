@@ -1076,7 +1076,6 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
   PetscTimSortWithArray(n, arr, sizeof(arr[0]), barr, sizeof(barr[0]), my_increasing_comparison_function, ctx)
 .ve
 
-
   Fortran Notes:
   To use this from fortran you must write a comparison subroutine with 4 arguments which accepts left, right, ctx and
   returns result. For example

@@ -39,14 +39,12 @@ The command line options are:\n\
       ./ex58 -pc_type mg -ksp_monitor  -snes_view -pc_mg_galerkin pmat -snes_grid_sequence 3
              -mg_levels_ksp_monitor -snes_vi_monitor -mg_levels_pc_type sor -pc_mg_type full
 
-
 */
 
 typedef struct {
   PetscScalar *bottom, *top, *left, *right;
   PetscScalar lb,ub;
 } AppCtx;
-
 
 /* -------- User-defined Routines --------- */
 
@@ -361,7 +359,6 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
       f5 = PetscSqrtScalar(1.0 + d2*d2 + d5*d5);
       f6 = PetscSqrtScalar(1.0 + d4*d4 + d6*d6);
 
-
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
            (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
       hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+
@@ -544,7 +541,6 @@ PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
   PetscFunctionReturn(0);
 }
 
-
 /* ------------------------------------------------------------------- */
 /*
    ComputeInitialGuess - Calculates the initial guess
@@ -584,7 +580,6 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

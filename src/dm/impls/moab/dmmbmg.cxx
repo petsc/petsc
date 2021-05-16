@@ -502,7 +502,6 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMRefine_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the DM object

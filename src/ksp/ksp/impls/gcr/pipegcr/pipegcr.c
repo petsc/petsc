@@ -365,7 +365,6 @@ static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
     truncstr = "Using Notay's truncation strategy";
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCD truncation strategy");
 
-
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  max previous directions = %D\n",pipegcr->mmax);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  preallocated %D directions\n",PetscMin(pipegcr->nprealloc,pipegcr->mmax+1));CHKERRQ(ierr);
@@ -377,7 +376,6 @@ static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 {
@@ -782,7 +780,6 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
 .   -ksp_pipegcr_nprealloc <N> - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
 -   -ksp_pipegcr_truncation_type <standard,notay> - which previous search directions to orthogonalize against
 
-
   Notes:
     The PIPEGCR Krylov method supports non-symmetric matrices and permits the use of a preconditioner
     which may vary from one iteration to the next. Users can can define a method to vary the
@@ -806,7 +803,6 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPPIPEFGMRES, KSPPIPECG, KSPPIPECR, KSPPIPEFCG,KSPPIPEGCRSetTruncationType(),KSPPIPEGCRSetNprealloc(),KSPPIPEGCRSetUnrollW(),KSPPIPEGCRSetMmax()
-
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)

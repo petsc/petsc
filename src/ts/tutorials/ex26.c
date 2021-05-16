@@ -176,7 +176,6 @@ int main(int argc,char **argv)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%Dx%D grid, lid velocity = %g, prandtl # = %g, grashof # = %g\n",mx,my,(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -204,7 +203,6 @@ int main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-
 
 /*
    FormInitialSolution - Forms initial approximation.
@@ -284,7 +282,6 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
 
      Note: FD formulae below are normalized by multiplying through by
      local volume element (i.e. hx*hy) to obtain coefficients O(1) in two dimensions.
-
 
   */
   dhx   = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);

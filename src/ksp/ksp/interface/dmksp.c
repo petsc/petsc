@@ -25,7 +25,6 @@ static PetscErrorCode DMKSPCreate(MPI_Comm comm,DMKSP *kdm)
   PetscFunctionReturn(0);
 }
 
-
 /* Attaches the DMKSP to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */

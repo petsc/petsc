@@ -1,7 +1,6 @@
 #include <petscksp.h>
 #include <../src/tao/quadratic/impls/gpcg/gpcg.h>        /*I "gpcg.h" I*/
 
-
 static PetscErrorCode GPCGGradProjections(Tao tao);
 static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 

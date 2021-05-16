@@ -66,7 +66,6 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
 
    Level: intermediate
 
-
 .seealso: MatZeroEntries(), MatSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
 PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
@@ -377,7 +376,6 @@ PetscErrorCode MatGetTrace(Mat mat,PetscScalar *trace)
 
    Level: advanced
 
-
 .seealso: MatImaginaryPart()
 @*/
 PetscErrorCode MatRealPart(Mat mat)
@@ -431,7 +429,6 @@ PetscErrorCode MatGetGhosts(Mat mat,PetscInt *nghosts,const PetscInt *ghosts[])
   PetscFunctionReturn(0);
 }
 
-
 /*@
    MatImaginaryPart - Moves the imaginary part of the matrix to the real part and zeros the imaginary part
 
@@ -441,7 +438,6 @@ PetscErrorCode MatGetGhosts(Mat mat,PetscInt *nghosts,const PetscInt *ghosts[])
 .  mat - the matrix
 
    Level: advanced
-
 
 .seealso: MatRealPart()
 @*/
@@ -473,7 +469,6 @@ PetscErrorCode MatImaginaryPart(Mat mat)
 -  dd - first diagonal entry that is missing (optional) on this process
 
    Level: advanced
-
 
 .seealso: MatRealPart()
 @*/
@@ -541,7 +536,6 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
          double precision (or double complex) values(maxcols) output
 .ve
    where maxcols >= maximum nonzeros in any row of the matrix.
-
 
    Caution:
    Do not try to change the contents of the output arrays (cols and vals).
@@ -694,7 +688,6 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
    Notes:
    This routine should be called after you have finished MatGetRow/MatRestoreRow().
 
-
    Level: advanced
 
 .seealso:  MatGetRowUpperTriangular()
@@ -826,7 +819,6 @@ PetscErrorCode MatResetPreallocation(Mat A)
   ierr = PetscUseMethod(A,"MatResetPreallocation_C",(Mat),(A));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
    MatSetUp - Sets up the internal matrix data structures for later use.
@@ -1406,7 +1398,6 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
   PetscFunctionReturn(0);
 }
 
-
 /*@
    MatSetValuesRowLocal - Inserts a row (block row for BAIJ matrices) of nonzero
         values into a matrix
@@ -1730,7 +1721,6 @@ PetscErrorCode MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil id
 .  dims - number of grid points in x, y, and z direction, including ghost points on your processor
 .  starts - starting point of ghost nodes on your processor in x, y, and z direction
 -  dof - number of degrees of freedom per node
-
 
    Inspired by the structured grid interface to the HYPRE package
    (www.llnl.gov/CASC/hyper)
@@ -2079,7 +2069,6 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
 
    Level: intermediate
 
-
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal(), MatGetValuesLocal()
 @*/
 PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
@@ -2101,7 +2090,6 @@ PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,
   PetscFunctionReturn(0);
 }
 
-
 /*@
    MatGetLocalToGlobalMapping - Gets the local-to-global numbering set by MatSetLocalToGlobalMapping()
 
@@ -2115,7 +2103,6 @@ PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,
 - cmapping - column mapping
 
    Level: advanced
-
 
 .seealso:  MatSetValuesLocal()
 @*/
@@ -3099,7 +3086,6 @@ $          fill - expected fill as ratio of original fill.
 $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
 $                   Run with the option -info to determine an optimal value to use
 
-
    Notes:
     See Users-Manual: ch_mat for additional information about choosing the fill factor for better efficiency.
 
@@ -3335,7 +3321,6 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFacto
 .  mat - the initial matrix
 .  info - options for factorization
 -  fact - the symbolic factor of mat
-
 
    Notes:
    Most users should employ the simplified KSP interface for linear solvers
@@ -5451,7 +5436,6 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
 
    Level: intermediate
 
-
 .seealso: MatScale(), MatShift(), MatDiagonalSet()
 @*/
 PetscErrorCode MatDiagonalScale(Mat mat,Vec l,Vec r)
@@ -5750,7 +5734,6 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
                             KNOW the matrix will ALWAYS have the property you set.
                             Note that setting this flag alone implies nothing about whether the matrix is symmetric/Hermitian;
                             the relevant flags must be set independently.
-
 
    Options For Use with MatSetValues():
    Insert a logically dense subblock, which can be
@@ -7068,7 +7051,6 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
 
    Level: advanced
 
-
 .seealso: MatDestroySubMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
 @*/
 PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
@@ -7124,7 +7106,6 @@ PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS 
 .  submat - the array of submatrices
 
    Level: advanced
-
 
 .seealso: MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
 @*/
@@ -7317,7 +7298,6 @@ PetscErrorCode MatDestroySeqNonzeroStructure(Mat *mat)
 
    Level: developer
 
-
 .seealso: MatCreateSubMatrices()
 @*/
 PetscErrorCode MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
@@ -7344,7 +7324,6 @@ PetscErrorCode MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatIncreaseOverlapSplit_Single(Mat,IS*,PetscInt);
 
 /*@
@@ -7364,7 +7343,6 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat,IS*,PetscInt);
 .  -mat_increase_overlap_scalable - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
 
    Level: developer
-
 
 .seealso: MatCreateSubMatrices()
 @*/
@@ -7392,9 +7370,6 @@ PetscErrorCode MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],PetscInt ov)
   ierr = PetscLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
 
 /*@
    MatGetBlockSize - Returns the matrix block size.
@@ -7930,7 +7905,6 @@ PetscErrorCode MatColoringPatch(Mat mat,PetscInt ncolors,PetscInt n,ISColoringVa
   PetscFunctionReturn(0);
 }
 
-
 /*@
    MatSetUnfactored - Resets a factored matrix to be treated as unfactored.
 
@@ -8042,7 +8016,6 @@ M*/
 
 M*/
 
-
 /*MC
     MatSeqAIJGetArrayF90 - Accesses a matrix array from Fortran90.
 
@@ -8103,7 +8076,6 @@ M*/
 .seealso:  MatSeqAIJGetArrayF90(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray(), MatDenseRestoreArrayF90()
 
 M*/
-
 
 /*@
     MatCreateSubMatrix - Gets a single submatrix on the same number of processors
@@ -8171,7 +8143,6 @@ M*/
     Proc2  26 27  |  0  0 28  | 29
             0  0  | 31 32 33  |  0
 .ve
-
 
 .seealso: MatCreateSubMatrices(), MatCreateSubMatricesMPI(), MatCreateSubMatrixVirtual(), MatSubMatrixVirtualUpdate()
 @*/
@@ -8337,7 +8308,6 @@ PetscErrorCode MatPropagateSymmetryOptions(Mat A, Mat B)
      to determine the appropriate value, MM, to use for size and
      MatAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
      to determine the value, BMM to use for bsize
-
 
 .seealso: MatAssemblyBegin(), MatAssemblyEnd(), Mat, MatStashGetInfo()
 
@@ -8564,7 +8534,6 @@ PetscErrorCode MatMatInterpolateAdd(Mat A,Mat x,Mat w,Mat *y)
    Output Parameters:
 .  y - the output dense matrix
 
-
    Level: intermediate
 
    Notes:
@@ -8595,7 +8564,6 @@ PetscErrorCode MatMatInterpolate(Mat A,Mat x,Mat *y)
 
    Output Parameters:
 .  y - the output dense matrix
-
 
    Level: intermediate
 
@@ -8655,7 +8623,6 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
       call MatSetTransposeNullSpace(). This allows the linear system to be solved in a least squares sense.
 
       You can remove the null space by calling this routine with an nullsp of NULL
-
 
       The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that
    the domain of a matrix A (from R^n to R^m (m rows, n columns) R^n = the direct sum of the null space of A, n(A), + the range of A^T, R(A^T).
@@ -8723,7 +8690,6 @@ PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
    Notes:
       For inconsistent singular systems (linear systems where the right hand side is not in the range of the operator) this allows the linear system to be solved in a least squares sense.
       You must also call MatSetNullSpace()
-
 
       The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that
    the domain of a matrix A (from R^n to R^m (m rows, n columns) R^n = the direct sum of the null space of A, n(A), + the range of A^T, R(A^T).
@@ -8829,7 +8795,6 @@ PetscErrorCode MatGetNearNullSpace(Mat mat,MatNullSpace *nullsp)
 
    Level: developer
 
-
 .seealso: MatICCFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 
     Developer Note: fortran interface is not autogenerated as the f90
@@ -8917,7 +8882,6 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat,Vec diag)
 
    Notes:
     Matrix must have been factored by MatCholeskyFactor()
-
 
 @*/
 PetscErrorCode MatGetInertia(Mat mat,PetscInt *nneg,PetscInt *nzero,PetscInt *npos)
@@ -9272,7 +9236,6 @@ PetscErrorCode MatCreateVecs(Mat mat,Vec *right,Vec *left)
 
    Input Parameters:
 .    info - the MatFactorInfo data structure
-
 
    Notes:
     The solvers are generally used through the KSP and PC objects, for example
@@ -9728,7 +9691,6 @@ PetscErrorCode MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode MatProduct_Private(Mat A,Mat B,MatReuse scall,PetscReal fill,MatProductType ptype, Mat *C)
 {
   PetscErrorCode ierr;
@@ -9977,7 +9939,6 @@ PetscErrorCode MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat
 
    Level: advanced
 
-
 .seealso: MatDestroy()
 @*/
 PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
@@ -10106,7 +10067,6 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   reconstructed with MatSetValues()
 
   Level: advanced
-
 
 .seealso: MatCreateSubMatrices()
 @*/
@@ -10623,7 +10583,6 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscIn
    Input Parameters:
 +    A   - the matrix to create subdomains from
 -    N   - requested number of subdomains
-
 
    Output Parameters:
 +    n   - number of subdomains resulting on this rank

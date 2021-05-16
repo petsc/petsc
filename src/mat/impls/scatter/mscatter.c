@@ -301,7 +301,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
   Developer Notes: This directly accesses information inside the VecScatter associated with the matrix-vector product
    for this matrix. This is not desirable..
 
-
 .seealso: MatScatterSetVecScatter(), MatScatterGetVecScatter(), MATSCATTER
 @*/
 PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
@@ -328,7 +327,6 @@ PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
 
    Level: advanced
 
-
 .seealso: MatCreateScatter(), MATSCATTER
 @*/
 PetscErrorCode  MatScatterSetVecScatter(Mat mat,VecScatter scatter)
@@ -349,5 +347,4 @@ PetscErrorCode  MatScatterSetVecScatter(Mat mat,VecScatter scatter)
   mscatter->scatter = scatter;
   PetscFunctionReturn(0);
 }
-
 

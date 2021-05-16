@@ -71,5 +71,3 @@ PETSC_INTERN PetscErrorCode VecDuplicate_MPI(Vec,Vec*);
 
 #endif
 
-
-

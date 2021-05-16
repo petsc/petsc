@@ -214,7 +214,6 @@ PetscErrorCode SNESConvergedDefault_VI(SNES snes,PetscInt it,PetscReal xnorm,Pet
   PetscFunctionReturn(0);
 }
 
-
 /* -------------------------------------------------------------------------- */
 /*
    SNESVIProjectOntoBounds - Projects X onto the feasible region so that Xl[i] <= X[i] <= Xu[i] for i = 1...n.
@@ -249,7 +248,6 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes,Vec X)
   ierr = VecRestoreArrayRead(snes->xu,&xu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*
    SNESVIGetActiveSetIndices - Gets the global indices for the active set variables
@@ -345,7 +343,6 @@ PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes,Vec xl, Vec xu)
   ierr = DMComputeVariableBounds(snes->dm, xl, xu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* -------------------------------------------------------------------------- */
 /*

@@ -26,7 +26,6 @@
 
   call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-n",n,flg,ierr);CHKERRA(ierr)
 
-
      !Create a vector, specifying only its global dimension.
      !When using VecCreate(), VecSetSizes() and VecSetFromOptions(),
      !the vector format (currently parallel,
@@ -37,7 +36,7 @@
      !VecCreateSeq() - uniprocessor vector
      !VecCreateMPI() - distributed vector, where the user can
                          !determine the parallel partitioning
-        !VecCreateShared() - parallel vector that uses shared memory
+     !VecCreateShared() - parallel vector that uses shared memory
                             !(available only on the SGI) otherwise,
                             !is the same as VecCreateMPI()
 
@@ -51,7 +50,6 @@
   !
   call VecSetBlockSize(x,two,ierr);CHKERRA(ierr)
   call VecSetFromOptions(x,ierr);CHKERRA(ierr)
-
 
      !Set the vectors to entries to a constant value.
 
@@ -93,14 +91,12 @@
   write(outputString,*) norm
   call PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 1: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
 
-
-     !Free work space.  All PETSc objects should be destroyed when they
-     !are no longer needed.
+  !Free work space.  All PETSc objects should be destroyed when they
+  !are no longer needed.
   call VecDestroy(x,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr);CHKERRA(ierr)
 
 end program
-
 
 !/*TEST
 !

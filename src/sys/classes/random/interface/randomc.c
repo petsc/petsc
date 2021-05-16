@@ -46,7 +46,6 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PetscRandomGetSeed - Gets the random seed.
 

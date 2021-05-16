@@ -455,7 +455,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode TaoBNCGResetUpdate(Tao tao, PetscReal gnormsq)
 {
    TAO_BNCG          *cg = (TAO_BNCG*)tao->data;

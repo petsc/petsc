@@ -11,10 +11,8 @@
 #include "viennacl/compressed_matrix.hpp"
 #include "viennacl/compressed_compressed_matrix.hpp"
 
-
 typedef viennacl::compressed_matrix<PetscScalar>   ViennaCLAIJMatrix;
 typedef viennacl::compressed_compressed_matrix<PetscScalar>   ViennaCLCompressedAIJMatrix;
-
 
 struct Mat_SeqAIJViennaCL {
   Mat_SeqAIJViennaCL() : tempvec(NULL), mat(NULL), compressed_mat(NULL) {}

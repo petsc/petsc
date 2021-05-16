@@ -246,7 +246,6 @@ static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
    KSPPIPECGRR - Pipelined conjugate gradient method with automated residual replacements.
 

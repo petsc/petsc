@@ -280,7 +280,6 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
   const PetscScalar *x;
   PetscReal         hx,hy,hxdhy,hydhx;
 
-
   mx     = user->mx;
   my     = user->my;
   lambda = user->param;
@@ -316,7 +315,6 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
   }
   return 0;
 }
-
 
 /*TEST
 

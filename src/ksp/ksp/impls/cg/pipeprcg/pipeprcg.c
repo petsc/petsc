@@ -175,7 +175,6 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
    KSPPIPEPRCG - Pipelined predict-and-recompute conjugate gradient method.
 

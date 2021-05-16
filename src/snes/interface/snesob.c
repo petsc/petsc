@@ -18,7 +18,6 @@
 .seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetObjective(), SNESGetObjective(), SNESJacobianFunction, SNESFunction
 M*/
 
-
 /*@C
    SNESSetObjective - Sets the objective function minimized by some of the SNES linesearch methods.
 
@@ -113,7 +112,6 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
   } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetObjective() before SNESComputeObjective().");
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    SNESObjectiveComputeFunctionDefaultFD - Computes the gradient of a user provided objective

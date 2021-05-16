@@ -54,7 +54,6 @@ int main(int argc,char **args)
     Ny = N; Ny *= 2*(dim[DIM-1]/2 + 1); /* add padding elements to output vector y */
     N *= dim[DIM-1];
 
-
     ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
@@ -157,7 +156,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

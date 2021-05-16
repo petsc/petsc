@@ -12,7 +12,6 @@ static char help[] ="Loads a previously saved TS.";
 */
 #include <petscts.h>
 
-
 int main(int argc,char **argv)
 {
   TS             ts;                 /* timestepping context */

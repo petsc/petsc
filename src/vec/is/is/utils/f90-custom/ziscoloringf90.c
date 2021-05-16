@@ -32,6 +32,3 @@ PETSC_EXTERN void iscoloringrestoreisf90_(ISColoring *iscoloring,PetscCopyMode m
   *__ierr = PetscFree(is);
 }
 
-
-
-

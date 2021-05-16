@@ -7,7 +7,6 @@ static char help[] = "Example of extracting an array of MPI submatrices from a g
    Processors: n
 T*/
 
-
 #include <petscmat.h>
 
 int main(int argc, char **args)
@@ -76,7 +75,6 @@ int main(int argc, char **args)
 
   ierr = PetscViewerASCIIPrintf(viewer,"Initial matrix:\n");CHKERRQ(ierr);
   ierr = MatView(A,viewer);CHKERRQ(ierr);
-
 
   /*
      Create subcomms and ISs so that each rank participates in one IS.
@@ -210,7 +208,6 @@ int main(int argc, char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

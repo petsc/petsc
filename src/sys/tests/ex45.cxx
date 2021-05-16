@@ -8,8 +8,6 @@ static char help[] = "Demonstrates call PETSc first and then Trilinos in the sam
    Example obtained from: http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html
 T*/
 
-
-
 #include <petscsys.h>
 #include <Teuchos_DefaultMpiComm.hpp> // wrapper for MPI_Comm
 #include <Tpetra_Version.hpp> // Tpetra version string
@@ -68,7 +66,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

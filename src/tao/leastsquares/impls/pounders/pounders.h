@@ -41,7 +41,6 @@ typedef struct {
   Vec           workxvec,workfvec;
   PetscMPIInt   size;
 
-
   PetscReal delta; /* Trust region radius (>0) */
   PetscReal delta0;
   PetscBool usegqt;
@@ -85,7 +84,6 @@ typedef struct {
   Mat       subH;
 
 } TAO_POUNDERS;
-
 
 PetscErrorCode gqt(PetscInt,PetscReal*,PetscInt,PetscReal*,PetscReal,PetscReal,PetscReal,PetscInt,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*,PetscReal *,PetscReal *,PetscReal*);
 

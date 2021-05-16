@@ -28,7 +28,6 @@
 S*/
 typedef char* PetscBT;
 
-
 PETSC_STATIC_INLINE PetscInt PetscBTLength(PetscInt m)
 {
   return  m/PETSC_BITS_PER_BYTE+1;
@@ -131,6 +130,5 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBTClear(PetscBT array,PetscInt index)
   array[BT_idx] = (char)(BT_c & ~BT_mask);
  return 0;
 }
-
 
 #endif

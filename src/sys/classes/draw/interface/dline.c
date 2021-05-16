@@ -137,7 +137,6 @@ PetscErrorCode  PetscDrawPopCurrentPoint(PetscDraw draw)
 
    Level: beginner
 
-
 .seealso: PetscDrawArrow(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawPoint()
 
@@ -164,7 +163,6 @@ PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal
 -  cl - the colors of the endpoints
 
    Level: beginner
-
 
 .seealso: PetscDrawLine(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawPoint()

@@ -1,7 +1,6 @@
 
 static char help[] = "VecView() with a DMDA1d vector and draw viewer.\n\n";
 
-
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscao.h>
@@ -36,7 +35,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

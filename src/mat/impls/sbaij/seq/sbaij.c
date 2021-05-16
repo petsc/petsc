@@ -587,7 +587,6 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -938,7 +937,6 @@ PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,Petsc
   *bs_max = j;
   PetscFunctionReturn(0);
 }
-
 
 /* Only add/insert a(i,j) with i<=j (blocks).
    Any a(i,j) with i>j input by user is ingored.
@@ -2081,7 +2079,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
    malloc in them to see if additional memory allocation was needed.
 
    If the nnz parameter is given then the nz parameter is ignored
-
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateSBAIJ()
 @*/

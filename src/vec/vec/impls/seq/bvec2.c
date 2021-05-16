@@ -813,7 +813,6 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
                                NULL
 };
 
-
 /*
       This is called by VecCreate_Seq() (i.e. VecCreateSeq()) and VecCreateSeqWithArray()
 */

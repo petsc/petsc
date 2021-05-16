@@ -287,7 +287,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_inplace(Mat C,Mat A,const MatFactorI
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C     =B;

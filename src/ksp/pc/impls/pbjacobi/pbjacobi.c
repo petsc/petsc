@@ -14,7 +14,6 @@ typedef struct {
   PetscInt        bs,mbs;
 } PC_PBJacobi;
 
-
 static PetscErrorCode PCApply_PBJacobi_1(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi       *jac = (PC_PBJacobi*)pc->data;
@@ -326,7 +325,6 @@ static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
 /*MC
      PCPBJACOBI - Point block Jacobi preconditioner
 
-
    Notes:
     See PCJACOBI for point Jacobi preconditioning
 
@@ -345,7 +343,6 @@ static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
    even if a block is singular as the PCJACOBI does.
 
    Level: beginner
-
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCJACOBI
 

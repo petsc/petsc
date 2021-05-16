@@ -4,7 +4,6 @@
 #include <petsc/private/matimpl.h>
 #include <petsc/private/vecimpl.h>
 
-
 /*
   MATLMVM format - a base matrix-type that represents Limited-Memory
   Variable Metric (LMVM) approximations of a Jacobian.

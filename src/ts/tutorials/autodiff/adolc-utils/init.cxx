@@ -17,7 +17,6 @@
   Output parameter:
   A   - pointer to array for which memory is allocated
 
-
   Note: Only arrays of doubles are currently accounted for in ADOL-C's myalloc2 function.
 */
 template <class T> PetscErrorCode AdolcMalloc2(PetscInt m,PetscInt n,T **A[])

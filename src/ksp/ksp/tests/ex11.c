@@ -142,7 +142,6 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode port_lsd_bfbt(void)
 {
   Mat            A,P;
@@ -261,7 +260,6 @@ PetscErrorCode port_lsd_bfbt(void)
   ierr = ISDestroy(&isp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 int main(int argc,char **argv)
 {

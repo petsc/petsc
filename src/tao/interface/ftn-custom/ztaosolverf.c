@@ -2,7 +2,6 @@
 #include <petsc/private/f90impl.h>
 #include <petsc/private/taoimpl.h>
 
-
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define taosetobjectiveroutine_             TAOSETOBJECTIVEROUTINE
 #define taosetgradientroutine_              TAOSETGRADIENTROUTINE
@@ -385,5 +384,4 @@ PETSC_EXTERN void taodestroy_(Tao *x,int *ierr)
 }
 
 EXTERN_C_END
-
 

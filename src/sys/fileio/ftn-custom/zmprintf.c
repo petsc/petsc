@@ -87,5 +87,3 @@ PETSC_EXTERN void petscsynchronizedprintf_(MPI_Comm *comm,char* fname,PetscError
 }
 #endif
 
-
-

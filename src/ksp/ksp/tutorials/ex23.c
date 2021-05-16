@@ -6,8 +6,6 @@ static char help[] = "Solves a tridiagonal linear system.\n\n";
    Processors: n
 T*/
 
-
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -83,7 +81,6 @@ int main(int argc,char **args)
      For matrix assembly, each processor contributes entries for
      the part that it owns locally.
   */
-
 
   if (!rstart) {
     rstart = 1;
@@ -193,7 +190,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

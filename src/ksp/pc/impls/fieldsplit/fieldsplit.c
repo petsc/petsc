@@ -86,7 +86,6 @@ static Mat FieldSplitSchurPre(PC_FieldSplit *jac)
   }
 }
 
-
 #include <petscdraw.h>
 static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
 {
@@ -350,7 +349,6 @@ static PetscErrorCode PCView_FieldSplit_GKB(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
 
 /* Precondition: jac->bs is set to a meaningful value */
 static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
@@ -1322,7 +1320,6 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
 {
   PC_FieldSplit      *jac = (PC_FieldSplit*)pc->data;
@@ -1454,7 +1451,6 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc,Vec x,Vec y)
 
   PetscFunctionReturn(0);
 }
-
 
 #define FieldSplitSplitSolveAddTranspose(ilink,xx,yy) \
   (VecScatterBegin(ilink->sctx,xx,ilink->y,INSERT_VALUES,SCATTER_FORWARD) || \
@@ -1788,7 +1784,6 @@ PetscErrorCode  PCFieldSplitRestrictIS(PC pc,IS isy)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -1986,7 +1981,6 @@ PetscErrorCode  PCFieldSplitSetDiagUseAmat(PC pc,PetscBool flg)
     Output Parameters:
 .   flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
 
-
     Level: intermediate
 
 .seealso: PCFieldSplitSetDiagUseAmat(), PCFieldSplitGetOffDiagUseAmat(), PCFIELDSPLIT
@@ -2049,7 +2043,6 @@ PetscErrorCode  PCFieldSplitSetOffDiagUseAmat(PC pc,PetscBool flg)
     Output Parameters:
 .   flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
 
-
     Level: intermediate
 
 .seealso: PCFieldSplitSetOffDiagUseAmat(), PCFieldSplitGetDiagUseAmat(), PCFIELDSPLIT
@@ -2070,8 +2063,6 @@ PetscErrorCode  PCFieldSplitGetOffDiagUseAmat(PC pc,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-
-
 /*@C
     PCFieldSplitSetIS - Sets the exact elements for field
 
@@ -2081,7 +2072,6 @@ PetscErrorCode  PCFieldSplitGetOffDiagUseAmat(PC pc,PetscBool *flg)
 +   pc  - the preconditioner context
 .   splitname - name of this split, if NULL the number of the split is used
 -   is - the index set that defines the vector elements in this field
-
 
     Notes:
     Use PCFieldSplitSetFields(), for fields defined by strided types.
@@ -2243,7 +2233,6 @@ PetscErrorCode  PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
    Fortran Usage: You must pass in a KSP array that is large enough to contain all the local KSPs.
       You can call PCFieldSplitGetSubKSP(pc,n,PETSC_NULL_KSP,ierr) to determine how large the
       KSP array must be.
-
 
    Level: advanced
 
@@ -2454,7 +2443,6 @@ PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat *S)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode  PCFieldSplitSetSchurPre_FieldSplit(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
@@ -2491,7 +2479,6 @@ static PetscErrorCode  PCFieldSplitGetSchurPre_FieldSplit(PC pc,PCFieldSplitSchu
 
     Options Database:
 .     -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> default is full
-
 
     Level: intermediate
 
@@ -2652,7 +2639,6 @@ static PetscErrorCode PCFieldSplitSetGKBTol_FieldSplit(PC pc,PetscReal tolerance
   PetscFunctionReturn(0);
 }
 
-
 /*@
     PCFieldSplitSetGKBMaxit -  Sets the maximum number of iterations for the generalized Golub-Kahan bidiagonalization
     preconditioner.
@@ -2778,7 +2764,6 @@ static PetscErrorCode PCFieldSplitSetGKBNu_FieldSplit(PC pc,PetscReal nu)
   jac->gkbnu = nu;
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type)
 {
@@ -2921,7 +2906,6 @@ PetscErrorCode  PCFieldSplitSetDMSplits(PC pc,PetscBool flg)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@
    PCFieldSplitGetDMSplits - Returns flag indicating whether DMCreateFieldDecomposition() should be used to define the splits, whenever possible.

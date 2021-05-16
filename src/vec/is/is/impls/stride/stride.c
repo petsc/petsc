@@ -74,7 +74,6 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
    Returns info on stride index set. This is a pseudo-public function that
    should not be needed by most users.
 
-
 .seealso: ISCreateStride(), ISGetSize(), ISSTRIDE
 @*/
 PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
@@ -307,7 +306,6 @@ static PetscErrorCode ISContiguousLocal_Stride(IS is,PetscInt gstart,PetscInt ge
   PetscFunctionReturn(0);
 }
 
-
 static struct _ISOps myops = { ISGetIndices_Stride,
                                ISRestoreIndices_Stride,
                                ISInvertPermutation_Stride,
@@ -332,7 +330,6 @@ static struct _ISOps myops = { ISGetIndices_Stride,
                                NULL,
                                ISIntervalLocal_Stride,
                                NULL};
-
 
 /*@
    ISStrideSetStride - Sets the stride information for a stride index set.

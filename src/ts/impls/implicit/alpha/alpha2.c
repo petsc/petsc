@@ -597,7 +597,6 @@ PetscErrorCode TSAlpha2SetRadius(TS ts,PetscReal radius)
   Unconditional stability requires:
     \alpha_m >= \alpha_f >= 1/2
 
-
   Input Parameter:
 + ts - timestepping context
 . \alpha_m - algorithmic paramenter

@@ -106,4 +106,3 @@ PETSC_EXTERN void petsc_null_function_(void)
   return;
 }
 
-

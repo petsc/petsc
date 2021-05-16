@@ -433,7 +433,6 @@ PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,const Petsc
   PetscFunctionReturn(0);
 }
 
-
 /* --------------------------------------------------------------------------------
    Drivers for Jacobian diagonal
    ----------------------------------------------------------------------------- */

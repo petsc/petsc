@@ -478,7 +478,6 @@ PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
 .  -hmg_inner_pc_type <hypre, gamg, ...> - What method is used to coarsen matrix
 -  -pc_hmg_use_matmaij <true | false> - Whether or not to use MatMAIJ for multicomponent problems for saving memory
 
-
    Notes:
     For multicomponent problems, we can just coarsen one submatrix associated with one particular component. In this way, the preconditioner setup
     time is significantly reduced. One typical use case is neutron transport equations. There are many variables on each mesh vertex due to the

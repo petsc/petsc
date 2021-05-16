@@ -1087,7 +1087,6 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   ierr = PetscMalloc1(numIntFacets*2, &intFacetsToPatchCell);CHKERRQ(ierr);
   ierr = PetscMalloc1(numExtFacets, &extFacetsArray);CHKERRQ(ierr);
 
-
   /* Now that we know how much space we need, run through again and actually remember the cells. */
   for (v = vStart; v < vEnd; v++) {
     PetscHashIter hi;
@@ -2283,7 +2282,6 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   Mat             vecMat;
   PetscInt        cStart, cEnd;
   DM              dm, plex;
-
 
   ierr = ISGetSize(patch->cells, &ncell);CHKERRQ(ierr);
   if (!ncell) { /* No cells to assemble over -> skip */

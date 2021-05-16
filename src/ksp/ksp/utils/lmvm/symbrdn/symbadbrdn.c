@@ -80,7 +80,6 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
   PetscReal         numer;
   PetscScalar       sjtpi, sjtyi, yjtsi, yjtqi, wtsi, wtyi, stz, ytx, ytq, wtx, stp;
 
-
   PetscFunctionBegin;
   /* Efficient shortcuts for pure BFGS and pure DFP configurations */
   if (lsb->phi == 0.0) {

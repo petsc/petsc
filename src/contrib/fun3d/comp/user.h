@@ -141,9 +141,6 @@ typedef struct gxy {                          /* GRID STRUCTURE             */
   Vec qGlo;
   VecScatter scatterGlo;*/
 
-
-
-
 } GRID;                                         /* Grids                      */
                                                 /*============================*/
 

@@ -35,7 +35,6 @@
 
     Level: developer
 
-
    Fortran Version:
    In Fortran this routine has the format
 

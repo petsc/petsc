@@ -54,7 +54,6 @@ typedef struct {
   PetscBool              CleanUpSuperLU_Dist;  /* Flag to clean up (non-global) SuperLU objects during Destroy */
 } Mat_SuperLU_DIST;
 
-
 PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F,PetscScalar *diagU)
 {
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;

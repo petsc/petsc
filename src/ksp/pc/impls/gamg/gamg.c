@@ -867,7 +867,6 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 +  pc - the preconditioner context
 -  n - the number of equations
 
-
    Options Database Key:
 .  -pc_gamg_process_eq_limit <limit>
 
@@ -1735,7 +1734,6 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 .  -pc_mg_distinct_smoothup - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
 .  -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
 -  -pc_mg_levels <levels> - Number of levels of multigrid to use.
-
 
   Notes:
     In order to obtain good performance for PCGAMG for vector valued problems you must

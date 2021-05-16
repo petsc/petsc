@@ -22,7 +22,6 @@ typedef struct {
   viennacl::linalg::chow_patel_ilu_precond< viennacl::compressed_matrix<PetscScalar> > *CHOWILUVIENNACL;
 } PC_CHOWILUVIENNACL;
 
-
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_CHOWILUVIENNACL - Prepares for the use of the CHOWILUVIENNACL preconditioner
@@ -161,7 +160,6 @@ static PetscErrorCode PCSetFromOptions_CHOWILUVIENNACL(PetscOptionItems *PetscOp
 }
 
 /* -------------------------------------------------------------------------- */
-
 
 /*MC
      PCCHOWILUViennaCL  - A smoothed agglomeration algorithm that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL

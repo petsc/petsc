@@ -98,9 +98,6 @@ space.  The command line options are:\n\
    Processors: 1
 T*/
 
-
-
-
 /*
   User-defined application context - contains data needed by the
   application-provided call-back routines, FormFunction(), and FormJacobian().
@@ -446,8 +443,6 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
   ierr = PetscLogFlops(18.0*(gxm)+5);CHKERRQ(ierr);
   return 0;
 }
-
-
 
 /*TEST
 

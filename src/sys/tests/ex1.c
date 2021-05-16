@@ -23,8 +23,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
-
 /*TEST
 
  # Testing errors so only look for errors

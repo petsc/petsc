@@ -106,7 +106,6 @@ int main(int argc,char **args)
       }
       N *= dim[i-1];
 
-
       /* Create FFTW object */
       if (!rank) printf("Use PETSc-FFTW interface...%d-DIM: %d\n",(int)DIM,(int)N);
 
@@ -153,7 +152,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

@@ -53,7 +53,6 @@ typedef struct {
   PetscScalar sp[N_SPECIES];
 } Field;
 
-
 typedef struct {
 
   Field     x_inflow;
@@ -71,7 +70,6 @@ extern PetscErrorCode FormInitialGuess(DM da,AppCtx *ctx,Vec X);
 extern PetscErrorCode FormIFunctionLocal(DMDALocalInfo*,PetscReal,Field**,Field**,Field**,AppCtx*);
 extern PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode ReactingFlowPostCheck(SNESLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*);
-
 
 PetscErrorCode SetFromOptions(AppCtx * ctx)
 {
@@ -295,7 +293,6 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Vec W, PetscBool *changed_y, PetscBool *changed_w, void *vctx)
 {
   PetscInt       i,j,l,Mx,My,xs,ys,xm,ym;
@@ -327,7 +324,6 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
   ierr = DMDAVecRestoreArray(da,W,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode FormIFunction(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,void *user)
 {

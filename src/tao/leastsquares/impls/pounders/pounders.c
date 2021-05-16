@@ -1096,7 +1096,6 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     ierr = ISCreateStride(MPI_COMM_SELF,mfqP->m,0,1,&isfloc);CHKERRQ(ierr);
     ierr = ISCreateStride(MPI_COMM_SELF,mfqP->m,0,1,&isfglob);CHKERRQ(ierr);
 
-
     ierr = VecScatterCreate(tao->solution,isxglob,mfqP->localx,isxloc,&mfqP->scatterx);CHKERRQ(ierr);
     ierr = VecScatterCreate(tao->ls_res,isfglob,mfqP->localf,isfloc,&mfqP->scatterf);CHKERRQ(ierr);
 

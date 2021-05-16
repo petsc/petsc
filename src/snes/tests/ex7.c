@@ -237,7 +237,6 @@ PetscErrorCode  Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *dummy)
   return 0;
 }
 
-
 /*TEST
 
    test:

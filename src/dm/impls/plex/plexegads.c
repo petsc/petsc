@@ -18,7 +18,6 @@
    but again it seems that there has been a deliberate effort at obfuscation, probably to raise the bar for entrants.
 */
 
-
 /*@
   DMPlexSnapToGeomModel - Given a coordinate point 'mcoords' on the mesh point 'p', return the closest coordinate point 'gcoords' on the geometry model associated with that point.
 

@@ -29,8 +29,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
-
 /*TEST
 
    test:

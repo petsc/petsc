@@ -18,7 +18,6 @@
 
    Level: advanced
 
-
 @*/
 PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
@@ -50,7 +49,6 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
                  Lower left corner is (0,0).
 
    Level: advanced
-
 
 @*/
 PetscErrorCode  PetscDrawGetViewPort(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)

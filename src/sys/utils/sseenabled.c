@@ -159,4 +159,3 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
   PetscFunctionReturn(0);
 }
 
-

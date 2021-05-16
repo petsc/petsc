@@ -767,7 +767,6 @@ PetscInt PetscNumOMPThreads;
 .   PETSC_VIEWER_SOCKET_PORT - socket number to use for socket viewer
 -   PETSC_VIEWER_SOCKET_MACHINE - machine to use for socket viewer to connect to
 
-
    Level: beginner
 
    Notes:
@@ -1328,7 +1327,6 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Total flops over all processors %g\n",flops);CHKERRQ(ierr);
   }
 #endif
-
 
 #if defined(PETSC_USE_LOG)
 #if defined(PETSC_HAVE_MPE)

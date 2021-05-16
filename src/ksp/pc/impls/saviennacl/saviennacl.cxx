@@ -21,7 +21,6 @@ typedef struct {
   viennacl::linalg::amg_precond<viennacl::compressed_matrix<PetscScalar> > *SAVIENNACL;
 } PC_SAVIENNACL;
 
-
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_SAVIENNACL - Prepares for the use of the SAVIENNACL preconditioner
@@ -160,7 +159,6 @@ static PetscErrorCode PCSetFromOptions_SAVIENNACL(PetscOptionItems *PetscOptions
 }
 
 /* -------------------------------------------------------------------------- */
-
 
 /*MC
      PCSAViennaCL  - A smoothed agglomeration algorithm that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL

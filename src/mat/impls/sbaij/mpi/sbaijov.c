@@ -206,7 +206,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
     len += 1 + is_max; /* max length of data1 for one processor */
   }
 
-
   ierr = PetscMalloc1(size*len+1,&data1);CHKERRQ(ierr);
   ierr = PetscMalloc1(size,&data1_start);CHKERRQ(ierr);
   for (i=0; i<size; i++) data1_start[i] = data1 + i*len;

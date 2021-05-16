@@ -1615,7 +1615,6 @@ PetscErrorCode  SNESSetCountersReset(SNES snes,PetscBool reset)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESSetKSP - Sets a KSP context for the SNES object to use
 
@@ -1859,7 +1858,6 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*f)(SNES,Vec,Vec
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    SNESSetInitialFunction - Sets the function vector to be used as the
    function norm at the initialization of the method.  In some
@@ -1936,7 +1934,6 @@ PetscErrorCode  SNESSetNormSchedule(SNES snes, SNESNormSchedule normschedule)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESGetNormSchedule - Gets the SNESNormSchedule used in covergence and monitoring
    of the SNES method.
@@ -1958,7 +1955,6 @@ PetscErrorCode  SNESGetNormSchedule(SNES snes, SNESNormSchedule *normschedule)
   *normschedule = snes->normschedule;
   PetscFunctionReturn(0);
 }
-
 
 /*@
   SNESSetFunctionNorm - Sets the last computed residual norm.
@@ -2084,7 +2080,6 @@ PetscErrorCode  SNESSetFunctionType(SNES snes, SNESFunctionType type)
   snes->functype = type;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    SNESGetFunctionType - Gets the SNESNormSchedule used in covergence and monitoring
@@ -2646,7 +2641,6 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 .    -snes_compare_coloring_threshold_rtol - Relative tolerance for difference in matrix entries to be displayed by -snes_compare_coloring_threshold
 .    -snes_compare_coloring_draw - Compute the finite differece Jacobian using coloring and draw differences
 -    -snes_compare_coloring_draw_contour - Compute the finite differece Jacobian using coloring and show contours of matrices and differences
-
 
    Notes:
    Most users should not need to explicitly call this routine, as it
@@ -3532,7 +3526,6 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
 .    -snes_lag_preconditioner_persists <true,false> - sets the persistence
 -    -snes_lag_preconditioner <-2,1,2,...> - sets the lag
 
-
    Notes:
     This is useful both for nonlinear preconditioning, where it's appropriate to have the Jacobian be stale by
    several solves, and for implicit time-stepping, where Jacobian lagging in the inner nonlinear solve over several
@@ -4346,7 +4339,6 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 +  snes - iterative context obtained from SNESCreate()
 -  viewer - the viewer to display the reason
 
-
    Options Database Keys:
 +  -snes_converged_reason - print reason for converged or diverged, also prints number of iterations
 -  -snes_converged_reason ::failed - only print reason and number of iterations when diverged
@@ -5047,7 +5039,6 @@ PetscErrorCode  SNESGetOptionsPrefix(SNES snes,const char *prefix[])
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   SNESRegister - Adds a method to the nonlinear solver package.
 
@@ -5427,7 +5418,6 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
   *ksp = snes->ksp;
   PetscFunctionReturn(0);
 }
-
 
 #include <petsc/private/dmimpl.h>
 /*@

@@ -8,7 +8,6 @@ T*/
 #include <petscsys.h>
 #include <petscviewer.h>
 
-
 int main(int argc,char **argv)
 {
   PetscErrorCode    ierr;
@@ -68,7 +67,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

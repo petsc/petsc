@@ -76,8 +76,6 @@ PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
     To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-
-
 .seealso: PCShellGetContext(), PCSHELL
 @*/
 PetscErrorCode  PCShellSetContext(PC pc,void *ctx)
@@ -478,7 +476,6 @@ PetscErrorCode  PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(PC))
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PCShellSetSetUp - Sets routine to use to "setup" the preconditioner whenever the
    matrix operator is changed.
@@ -512,7 +509,6 @@ PetscErrorCode  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC))
   ierr = PetscTryMethod(pc,"PCShellSetSetUp_C",(PC,PetscErrorCode (*)(PC)),(pc,setup));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    PCShellSetView - Sets routine to use as viewer of shell preconditioner

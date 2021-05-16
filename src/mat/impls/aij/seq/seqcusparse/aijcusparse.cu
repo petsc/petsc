@@ -1634,7 +1634,6 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
                         tempGPU->data().get());CHKERRCUSPARSE(stat);
                       #endif
 
-
   /* Last, reorder with the column permutation */
   thrust::copy(thrust::cuda::par.on(PetscDefaultCudaStream),thrust::make_permutation_iterator(tempGPU->begin(), cusparseTriFactors->cpermIndices->begin()),
                thrust::make_permutation_iterator(tempGPU->begin(), cusparseTriFactors->cpermIndices->end()),
@@ -1682,7 +1681,6 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec x
                       #else
                         tempGPU->data().get());CHKERRCUSPARSE(stat);
                       #endif
-
 
   /* Next, solve U */
   stat = cusparse_solve(cusparseTriFactors->handle, upTriFactor->solveOp,

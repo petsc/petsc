@@ -207,7 +207,6 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
     PetscInt npoints_curr,range = 0;
     PetscSFNode *sf_cells;
 
-
     ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(npoints_curr, &sf_cells);CHKERRQ(ierr);
 
@@ -600,7 +599,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
   ierr = DMSwarmDataExDestroy(de);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* General collection when no order, or neighbour information is provided */
 /*

@@ -39,7 +39,6 @@ static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm,DMSNES sdm)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode DMDASNESGetContext(DM dm,DMSNES sdm,DMSNES_DA  **dmdasnes)
 {
   PetscErrorCode ierr;
@@ -138,7 +137,6 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes,Vec X,PetscReal *ob,vo
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* Routine is called by example, hence must be labeled PETSC_EXTERN */
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void *ctx)
@@ -288,7 +286,6 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalIn
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    DMDASNESSetObjectiveLocal - set a local residual evaluation function
 
@@ -427,7 +424,6 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
     The user must use
     ierr = SNESSetFunction(snes,NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);
     in their code before calling this routine.
-
 
    Level: beginner
 

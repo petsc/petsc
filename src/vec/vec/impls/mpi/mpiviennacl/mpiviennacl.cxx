@@ -118,7 +118,6 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin,PetscInt nv,const Vec y[],PetscScalar
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateMPI()
 M*/
 
-
 PetscErrorCode VecDuplicate_MPIViennaCL(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
@@ -172,7 +171,6 @@ PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s,Vec t,PetscScalar *dp,PetscScalar *
   *nm  = sum[1];
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool pin)
 {
@@ -248,7 +246,6 @@ PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool pin)
   PetscFunctionReturn(0);
 }
 
-
 PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
 {
   PetscErrorCode ierr;
@@ -263,7 +260,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
   vv->offloadmask = PETSC_OFFLOAD_BOTH;
   PetscFunctionReturn(0);
 }
-
 
 PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
 {

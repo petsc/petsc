@@ -26,10 +26,6 @@ users manual for a discussion of preloading.  Input parameters include\n\
    Processors: n
 T*/
 
-
-
-
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -219,7 +215,6 @@ int main(int argc,char **args)
   } else {
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
   }
-
 
   /* Check scaling in A */
   flg  = PETSC_FALSE;
@@ -443,7 +438,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
 /*TEST
 
    build:
@@ -546,7 +540,6 @@ int main(int argc,char **args)
          nsize: 3
          args: -mat_type mpibaij -trans
 
-
    testset:
       suffix: 10
       nsize: 2
@@ -598,7 +591,6 @@ int main(int argc,char **args)
       test:
       test:
          args: -mat_type seqsbaij
-
 
    testset:
       suffix: ILU
@@ -780,7 +772,6 @@ int main(int argc,char **args)
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2
 
-
    testset:
       suffix: superlu_dist_lu
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu_dist
@@ -805,7 +796,6 @@ int main(int argc,char **args)
       suffix: umfpack
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) suitesparse
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_type umfpack -num_numfac 2 -num_rhs 2
-
 
    testset:
       suffix: zeropivot

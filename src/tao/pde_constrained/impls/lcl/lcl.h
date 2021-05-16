@@ -79,8 +79,6 @@ typedef struct {
   PetscBool verbose;
   PetscReal tau[4];
 
-
 } TAO_LCL;
-
 
 #endif

@@ -4,7 +4,6 @@
 #if !defined (PETSCVIEWERDEF_H)
 #define PETSCVIEWERDEF_H
 
-
 #define PetscViewer type(tPetscViewer)
 
 #define PetscViewerAndFormat PetscFortranAddr

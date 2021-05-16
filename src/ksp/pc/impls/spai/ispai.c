@@ -394,7 +394,6 @@ PetscErrorCode  PCSPAISetMaxNew(PC pc,int maxnew1)
                  can lead to very significant improvement in
                  performance.
 
-
   Level: intermediate
 
 .seealso: PCSPAI, PCSetType()
@@ -477,7 +476,6 @@ PetscErrorCode  PCSPAISetVerbose(PC pc,int verbose)
                  symmetric nonzero pattern -sp 1 may well lead to good
                  results, but the code will not follow the published
                  SPAI algorithm exactly.
-
 
   Level: intermediate
 
@@ -708,7 +706,6 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     ierr = MatRestoreRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
   }
 
-
   /************************************************************/
   /************** Set up the column structure *****************/
   /*********************************************************/
@@ -820,7 +817,6 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
 
   m = v->mnl;
   M = v->n;
-
 
   ierr = VecCreateMPI(comm,m,M,Pv);CHKERRQ(ierr);
 

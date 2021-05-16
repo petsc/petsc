@@ -12,7 +12,6 @@
 !  Processors: 1
 !T*/
 
-
 !
 !  --------------------------------------------------------------------------
 !
@@ -606,7 +605,6 @@
 
       call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
-
 
       return
       end

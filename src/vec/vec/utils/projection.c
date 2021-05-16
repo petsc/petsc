@@ -255,7 +255,6 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
   PetscFunctionReturn(0);
 }
 
-
 /*@
   VecWhichBetweenOrEqual - Creates an index set containing the indices
   where  VecLow <= V <= VecHigh
@@ -431,7 +430,6 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)V),n_vm,vm,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
   VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector.

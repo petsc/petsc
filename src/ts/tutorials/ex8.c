@@ -285,7 +285,6 @@ static PetscErrorCode OregoCreate(Problem p)
   PetscFunctionReturn(0);
 }
 
-
 /*
 *  User-defined monitor for comparing to exact solutions when possible
 */
@@ -315,7 +314,6 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
   ierr = PetscPrintf(mon->comm,"step %4D t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n",step,(double)t,(double)h,(double)nrm_x,(double)nrm_exact,(double)nrm_diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 int main(int argc,char **argv)
 {

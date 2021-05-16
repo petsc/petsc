@@ -188,7 +188,6 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf,const PetscInt *tom
 + num_procs   - number of remote processors
 - num_entries - number of vector entries to send or recv
 
-
   .seealso: VecScatterGetRemote_Private(), VecScatterGetRemoteOrdered_Private()
 
   Notes:
@@ -620,7 +619,6 @@ PetscErrorCode  VecScatterRemap(VecScatter sf,PetscInt tomap[],PetscInt frommap[
           Must be called before VecScatterSetUp() but before the vector scatter is used.
 
   Level: beginner
-
 
 .seealso: VecScatterCreate(), VecScatterDestroy(), VecScatterSetUp()
 @*/
@@ -1193,7 +1191,6 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
       VecScatterCreateToZero - Creates an output vector and a scatter context used to
               copy all vector values into the output vector on the zeroth processor
@@ -1282,7 +1279,6 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
 -  mode - the scattering mode, usually SCATTER_FORWARD.  The available modes are:
     SCATTER_FORWARD or SCATTER_REVERSE
 
-
    Level: intermediate
 
    Options Database: See VecScatterCreate()
@@ -1307,7 +1303,6 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
    is sequential, VecScatterBegin() can serve to gather values to a
    single processor.  Similarly, if y is parallel and x sequential, the
    routine can scatter from one processor to many processors.
-
 
 .seealso: VecScatterCreate(), VecScatterEnd()
 @*/

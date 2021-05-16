@@ -200,7 +200,6 @@
 
       end
 
-
 !================================ READR1 ====================================
 !
 !  Reads input parameters
@@ -263,8 +262,6 @@
       return
       end
 
-
-
 !================================ TECFLO =============================72
 !
 !  Writes a formatted file that contains an input file for TECPLOT
@@ -296,7 +293,6 @@
       integer isnode(1),ivnode(1),ifnode(1)
       PetscScalar  x(1),y(1),z(1),q(4,nnodes)
       integer i,j,i1,i2,i3,ic,isp,ist
-
 
       character c4*4,title*20
 
@@ -695,7 +691,6 @@
       return
       end
 
-
 !================================ DELTAT2 ============================72
 !
 ! Calculate a time step for each cell
@@ -904,7 +899,6 @@
 !
       return
       end
-
 
 !================================= FLUX ======================================
 !
@@ -2021,7 +2015,6 @@
       return
       end
 
-
 !================================= LSTGS =============================72
 !
 ! Calculates the Gradients at the nodes using weighted least squares
@@ -2288,7 +2281,6 @@
 !
       return
       end
-
 
 !=================================== GETRES ==========================72
 !

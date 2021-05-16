@@ -13,7 +13,6 @@ struct _n_TSMonitorSPEigCtx {
   PetscReal   xmin,xmax,ymin,ymax;
 };
 
-
 /*@C
    TSMonitorSPEigCtxCreate - Creates a context for use with TS to monitor the eigenvalues of the linearized operator
 
@@ -205,6 +204,4 @@ PetscErrorCode  TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 

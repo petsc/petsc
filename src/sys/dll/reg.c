@@ -183,8 +183,6 @@ PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscFunctionReturn(0);
 }
 
-
-
 /* ------------------------------------------------------------------------------*/
 struct _n_PetscFunctionList {
   void              (*routine)(void);    /* the routine */
@@ -454,7 +452,6 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
   *n              = count+1;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    PetscFunctionListPrintTypes - Prints the methods available.

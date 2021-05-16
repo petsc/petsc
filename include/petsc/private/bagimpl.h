@@ -26,5 +26,4 @@ struct _n_PetscBag {
   PetscBagItem bagitems;
 };
 
-
 #endif

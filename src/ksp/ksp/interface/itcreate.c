@@ -278,7 +278,6 @@ $                 of the preconditioned residual P^{-1}(b - A x)
 $   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual.
 $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
-
    Options Database Key:
 .   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
 
@@ -337,7 +336,6 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
    KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the MPI_Allreduce() for
    computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing
    one additional iteration.
-
 
    Logically Collective on ksp
 

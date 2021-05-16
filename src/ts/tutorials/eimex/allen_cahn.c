@@ -18,12 +18,10 @@ typedef struct {
   PetscInt    mx;           /* Discretization in x-direction */
 }AppCtx;
 
-
 static PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void *ctx);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
-
 
 int main(int argc, char **argv)
 {
@@ -104,7 +102,6 @@ int main(int argc, char **argv)
   return ierr;
 }
 
-
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   PetscErrorCode    ierr;
@@ -130,7 +127,6 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
   PetscErrorCode    ierr;
@@ -154,7 +150,6 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal a, Mat J,Mat Jpre,void *ctx)
 {
@@ -182,7 +177,6 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal
   /*  MatView(J,PETSC_VIEWER_STDOUT_WORLD);*/
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ctx)
 {

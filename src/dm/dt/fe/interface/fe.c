@@ -1156,7 +1156,6 @@ PetscErrorCode PetscFECreateHeightTrace(PetscFE fe, PetscInt height, PetscFE *tr
   PetscFunctionReturn(0);
 }
 
-
 /*@
   PetscFEGetDimension - Get the dimension of the finite element space on a cell
 

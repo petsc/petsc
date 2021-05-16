@@ -183,7 +183,6 @@ PetscErrorCode MatForwardSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatBackwardSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;

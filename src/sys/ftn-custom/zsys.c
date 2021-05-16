@@ -23,7 +23,6 @@ void flush__(int unit)
 }
 #endif
 
-
 PETSC_EXTERN void petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
 {
   *ierr  = 0;
@@ -57,6 +56,4 @@ PETSC_EXTERN void chkmemfortran_(int *line,char* file,PetscErrorCode *ierr,PETSC
   FIXCHARNOMALLOC(file,len,c1);
   *ierr = PetscMallocValidate(*line,"Userfunction",c1);
 }
-
-
 

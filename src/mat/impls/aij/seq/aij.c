@@ -3,7 +3,6 @@
   matrix storage format.
 */
 
-
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <petscblaslapack.h>
 #include <petscbt.h>
@@ -533,7 +532,6 @@ noinsert:;
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatSetValues_SeqAIJ_SortedFullNoPreallocation(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -665,7 +663,6 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A,PetscInt m,const PetscInt im
 #endif
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatGetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
@@ -2148,7 +2145,6 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -3569,7 +3565,6 @@ PetscErrorCode  MatSetRandomSkipColumnRange_SeqAIJ_Private(Mat x,PetscInt low,Pe
   PetscFunctionReturn(0);
 }
 
-
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatGetRow_SeqAIJ,
@@ -3951,7 +3946,6 @@ PetscErrorCode  MatRetrieveValues(Mat mat)
   PetscFunctionReturn(0);
 }
 
-
 /* --------------------------------------------------------------------------------*/
 /*@C
    MatCreateSeqAIJ - Creates a sparse matrix in AIJ (compressed row) format
@@ -4167,7 +4161,6 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
     ierr = PetscArraycpy(b->ipre,b->imax,B->rmap->n);CHKERRQ(ierr);
   }
 
-
   b->nz               = 0;
   b->maxnz            = nz;
   B->info.nz_unneeded = (double)b->maxnz;
@@ -4178,7 +4171,6 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
   B->assembled     = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 {
@@ -4941,7 +4933,6 @@ $        i =  {0,1,3,6}  [size = nrow+1  = 3+1]
 $        j =  {0,0,2,0,1,2}  [size = 6]; values must be sorted for each row
 $        v =  {1,2,3,4,5,6}  [size = 6]
 
-
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
@@ -5028,7 +5019,6 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
         j =  {0,0,2,0,1,2}
         v =  {1,2,3,4,5,6}
 
-
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateSeqAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
@@ -5036,7 +5026,6 @@ PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 {
   PetscErrorCode ierr;
   PetscInt       ii, *nnz, one = 1,row,col;
-
 
   PetscFunctionBegin;
   ierr = PetscCalloc1(m,&nnz);CHKERRQ(ierr);
@@ -5185,7 +5174,6 @@ PetscFunctionList MatSeqAIJList = NULL;
    Options Database Key:
 .  -mat_seqai_type  <method> - for example seqaijcrl
 
-
   Level: intermediate
 
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
@@ -5206,7 +5194,6 @@ PetscErrorCode  MatSeqAIJSetType(Mat mat, MatType matype)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   MatSeqAIJRegister -  - Adds a new sub-matrix type for sequential AIJ matrices
 
@@ -5219,14 +5206,12 @@ PetscErrorCode  MatSeqAIJSetType(Mat mat, MatType matype)
    Notes:
    MatSeqAIJRegister() may be called multiple times to add several user-defined solvers.
 
-
    Then, your matrix can be chosen with the procedural interface at runtime via the option
 $     -mat_seqaij_type my_mat
 
    Level: advanced
 
 .seealso: MatSeqAIJRegisterAll()
-
 
   Level: advanced
 @*/

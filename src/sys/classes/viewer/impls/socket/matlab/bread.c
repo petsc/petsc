@@ -1,7 +1,6 @@
 #include <petscsys.h>
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 
-
 /*
    TAKEN from src/sys/fileio/sysio.c The swap byte routines are
   included here because the MATLAB programs that use this do NOT
@@ -89,7 +88,6 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,int *dummy, PetscDataType ty
   else if (type == PETSC_CHAR)   n *= sizeof(char);
   else PETSC_MEX_ERROR("PetscBinaryRead: Unknown type");
 
-
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
     err   = read(fd,pp,wsize);
@@ -118,7 +116,6 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,int *dummy, PetscDataType ty
 .   n  - the number of items to read
 .   p - the data
 .   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
-
 
   Notes:
     does byte swapping to work on all machines.

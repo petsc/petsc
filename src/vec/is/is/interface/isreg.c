@@ -23,7 +23,6 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
    Level: beginner
 
-
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
 PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
@@ -57,7 +56,6 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
   Use ISDuplicate() to make a duplicate
 
   Level: intermediate
-
 
 .seealso: ISGetType(), ISCreate()
 @*/
@@ -113,7 +111,6 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
   PetscFunctionReturn(0);
 }
 
-
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /*@C
@@ -161,5 +158,4 @@ PetscErrorCode  ISRegister(const char sname[], PetscErrorCode (*function)(IS))
   ierr = PetscFunctionListAdd(&ISList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 

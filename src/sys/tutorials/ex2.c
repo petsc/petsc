@@ -10,8 +10,6 @@ static char help[] = "Synchronized printing.\n\n";
    Processors: n
 T*/
 
-
-
 #include <petscsys.h>
 int main(int argc,char **argv)
 {
@@ -78,7 +76,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

@@ -2634,7 +2634,6 @@ static PetscErrorCode TSSetExactFinalTimeDefault(TS ts)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    TSSetUp - Sets up the internal data structures for the later use of a timestepper.
 
@@ -5351,7 +5350,6 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec U,Vec Y,NormType wnormtype,PetscRea
   PetscFunctionReturn(0);
 }
 
-
 /*@
    TSErrorWeightedENorm2 - compute a weighted 2 error norm based on supplied absolute and relative tolerances
 
@@ -5723,7 +5721,6 @@ PetscErrorCode TSErrorWeightedENorm(TS ts,Vec E,Vec U,Vec Y,NormType wnormtype,P
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
   PetscFunctionReturn(0);
 }
-
 
 /*@
    TSSetCFLTimeLocal - Set the local CFL constraint relative to forward Euler

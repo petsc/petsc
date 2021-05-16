@@ -3,7 +3,6 @@ static char help[] = "Test VecCreate{Seq|MPI}CUDAWithArrays.\n\n";
 
 #include "petsc.h"
 
-
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

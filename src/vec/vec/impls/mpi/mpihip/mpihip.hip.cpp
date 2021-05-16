@@ -137,7 +137,6 @@ PetscErrorCode VecMDot_MPIHIP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI, VecType, VecCreateMPI(), VecSetPinnedMemoryMin()
 M*/
 
-
 PETSC_INTERN
 PetscErrorCode VecDuplicate_MPIHIP(Vec win,Vec *v)
 {

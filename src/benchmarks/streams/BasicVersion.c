@@ -94,7 +94,6 @@ static double bytes[4] = {
 
 extern double second();
 
-
 int main(int argc,char **args)
 {
   int           checktick(void);

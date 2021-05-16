@@ -6,7 +6,6 @@ static char help[] = "Demonstrates using the PetscBag Object\n\n";
    Processors: n
 T*/
 
-
 #include <petscsys.h>
 #include <petscbag.h>
 #include <petscviewer.h>
@@ -48,7 +47,6 @@ typedef struct {
   char          filename[PETSC_MAX_PATH_LEN];
   YourChoice    which;
 } Parameter;
-
 
 int main(int argc,char **argv)
 {
@@ -99,7 +97,6 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);
   ierr = PetscBagRegisterEnum  (bag,&params->which, EnumeratedChoices, (PetscEnum)THAT, "choose","Express yourself by choosing among enumerated things");CHKERRQ(ierr);
 
-
   /* This option allows loading user-provided PetscBag */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
   if (!flg) {
@@ -129,7 +126,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

@@ -6,8 +6,6 @@ static char help[] = "Reads a PETSc matrix from a file partitions it\n\n";
    Processors: n
 T*/
 
-
-
 /*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:

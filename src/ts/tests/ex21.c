@@ -117,7 +117,6 @@ static PetscErrorCode FormIJacobianLocal(DMDALocalInfo *info,PetscReal t,PetscSc
   PetscFunctionReturn(0);
 }
 
-
 int main(int argc,char **argv)
 {
   TS              ts;            /* ODE integrator */

@@ -38,5 +38,3 @@
        call VecView(vec,PETSC_VIEWER_STDOUT_WORLD,ierr)
        return
        end
-
-

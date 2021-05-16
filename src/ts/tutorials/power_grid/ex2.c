@@ -8,8 +8,6 @@ static char help[] = "Basic equation for generator stability analysis.\n";
                  \frac{d \theta}{dt} = \omega - \omega_s
 \end{eqnarray}
 
-
-
   Ensemble of initial conditions
    ./ex2 -ensemble -ts_monitor_draw_solution_phase -1,-3,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
 
@@ -18,7 +16,6 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 
   Initial conditions same as when fault is ended
    ./ex2 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
 
 F*/
 
@@ -98,7 +95,6 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode PostStep(TS ts)
 {
   PetscErrorCode ierr;
@@ -115,7 +111,6 @@ PetscErrorCode PostStep(TS ts)
   }
   PetscFunctionReturn(0);
 }
-
 
 int main(int argc,char **argv)
 {
@@ -214,7 +209,6 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   /* ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);  */
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -241,7 +235,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

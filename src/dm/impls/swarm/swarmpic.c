@@ -401,7 +401,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm,DMSwarmPICLayou
   PetscFunctionReturn(0);
 }
 
-
 extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,PetscInt,PetscReal*);
 
 /*@C
@@ -447,7 +446,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm,PetscInt np
 
   PetscFunctionReturn(0);
 }
-
 
 /* Field projection API */
 extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[]);

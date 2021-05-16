@@ -115,7 +115,6 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   ierr    = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->B->cmap->n,NULL,&tfs->xo);CHKERRQ(ierr);
   tfs->nd = a->A->cmap->n;
 
-
   /*  ierr =  MatIsSymmetric(A,tol,&issymmetric); */
   /*  if (issymmetric) { */
   ierr = PetscBarrier((PetscObject)pc);CHKERRQ(ierr);

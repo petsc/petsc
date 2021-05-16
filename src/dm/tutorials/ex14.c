@@ -218,7 +218,6 @@ int main(int argc,char **argv)
     ierr = DMRestoreGlobalVector(da,&v);CHKERRQ(ierr);
   }
 
-
   ierr = DMDestroy(&subda[0]);CHKERRQ(ierr);
   ierr = ISDestroy(&ois[0]);CHKERRQ(ierr);
   ierr = ISDestroy(&iis[0]);CHKERRQ(ierr);

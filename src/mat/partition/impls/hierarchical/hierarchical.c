@@ -250,7 +250,6 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS fineparts, ISLocalToGlobalMapping mapping, IS *sfineparts)
 {
   PetscInt            *local_indices, *global_indices,*sfineparts_indices,localsize,i;
@@ -307,7 +306,6 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS vweights, IS destination,IS *svweights,Mat *sadj,ISLocalToGlobalMapping *mapping)
 {
   IS              irows,icols;
@@ -336,7 +334,6 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS vweights
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning part, IS partitioning, PetscInt pstart, PetscInt pend, IS *destination)
 {
   MPI_Comm            comm;
@@ -364,7 +361,6 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
   ierr = ISCreateGeneral(comm,plocalsize,dest_indices,PETSC_OWN_POINTER,destination);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer viewer)
 {
@@ -397,7 +393,6 @@ PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartitioning part,IS *fineparts)
 {
@@ -461,7 +456,6 @@ PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptionItems *Pets
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 {
@@ -529,7 +523,6 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   SETERRQ(PetscObjectComm((PetscObject)adj),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis\n");
 #endif
 }
-
 
 /*MC
    MATPARTITIONINGHIERARCH - Creates a partitioning context via hierarchical partitioning strategy.

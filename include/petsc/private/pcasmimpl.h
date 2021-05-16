@@ -3,7 +3,6 @@
 
 #include <petscdm.h>
 #include <petsc/private/pcimpl.h>
-
 typedef struct {
   PetscInt   n, n_local, n_local_true;
   PetscInt   overlap;             /* overlap requested by user */

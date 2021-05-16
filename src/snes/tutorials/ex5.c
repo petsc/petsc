@@ -14,8 +14,6 @@ The command line options include:\n\
    Processors: n
 T*/
 
-
-
 /* ------------------------------------------------------------------------
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
@@ -30,7 +28,6 @@ T*/
     A finite difference approximation with the usual 5-point stencil
     is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
-
 
       This example shows how geometric multigrid can be run transparently with a nonlinear solver so long
       as SNESSetDM() is provided. Example usage
@@ -414,7 +411,6 @@ PetscErrorCode MMSForcing4(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch
 
-
  */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
@@ -541,7 +537,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat
   hxdhy  = hx/hy;
   hydhx  = hy/hx;
   sc     = hx*hy*lambda;
-
 
   /*
      Compute entries for the locally owned part of the Jacobian.
@@ -686,7 +681,6 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   sc     = hx*hy*lambda;
   hxdhy  = hx/hy;
   hydhx  = hy/hx;
-
 
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {

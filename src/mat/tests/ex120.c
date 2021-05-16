@@ -295,7 +295,6 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:

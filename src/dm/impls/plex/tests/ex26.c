@@ -133,7 +133,6 @@ int main(int argc, char **argv) {
     }
   }
 
-
   /* Create the main section containing all fields */
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(section, 3);CHKERRQ(ierr);

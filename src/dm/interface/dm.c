@@ -441,7 +441,6 @@ PetscErrorCode MatGetDM(Mat A, DM *dm)
   Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with
                   the Mat through a PetscObjectCompose() operation
 
-
 .seealso: MatGetDM(), DMCreateMatrix(), DMSetMatType()
 @*/
 PetscErrorCode MatSetDM(Mat A, DM dm)
@@ -1183,7 +1182,6 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
         For DMDA objects you can use this interpolation (more precisely the interpolation from the DMGetCoordinateDM()) to interpolate the mesh coordinate vectors
         EXCEPT in the periodic case where it does not make sense since the coordinate vectors are not periodic.
 
-
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction(), DMCreateInterpolationScale()
 
 @*/
@@ -1246,13 +1244,11 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
     Output Parameter:
 .  mat - the restriction
 
-
     Level: developer
 
     Notes:
     For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
-
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateInterpolation()
 
@@ -1826,7 +1822,6 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMCreateFieldDecomposition - Returns a list of IS objects defining a decomposition of a problem into subproblems
                           corresponding to different fields: each IS contains the global indices of the dofs of the
@@ -1985,7 +1980,6 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMCreateDomainDecomposition - Returns lists of IS objects defining a decomposition of a problem into subproblems
                           corresponding to restrictions to pairs nested subdomains: each IS contains the global
@@ -2048,7 +2042,6 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@C
   DMCreateDomainDecompositionScatters - Returns scatters to the subdomain vectors from the global vector
@@ -2483,7 +2476,6 @@ $    beginhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 .  l - local vector
 -  ctx - optional user-defined function context
 
-
    Calling sequence for endhook:
 $    endhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 
@@ -2596,7 +2588,6 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   PetscErrorCode          ierr;
   DMGlobalToLocalHookLink link;
 
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   for (link=dm->gtolhook; link; link=link->next) {
@@ -2692,7 +2683,6 @@ $    beginhook(DM fine,Vec l,InsertMode mode,Vec g,void *ctx)
 .  mode - mode
 .  g - global vector
 -  ctx - optional user-defined function context
-
 
    Calling sequence for endhook:
 $    endhook(DM fine,Vec l,InsertMode mode,Vec g,void *ctx)
@@ -3068,7 +3058,6 @@ PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-
 /*@
     DMCoarsen - Coarsens a DM object
 
@@ -3212,7 +3201,6 @@ PetscErrorCode DMCoarsenHookRemove(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,v
   PetscFunctionReturn(0);
 }
 
-
 /*@
    DMRestrict - restricts user-defined problem data to a coarser DM by running hooks registered by DMCoarsenHookAdd()
 
@@ -3253,7 +3241,6 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 .  ddhook - function to run to pass data to the decomposition DM upon its creation
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
-
 
    Calling sequence for ddhook:
 $    ddhook(DM global,DM block,void *ctx)
@@ -3415,8 +3402,6 @@ PetscErrorCode DMSetCoarsenLevel(DM dm,PetscInt level)
   dm->leveldown = level;
   PetscFunctionReturn(0);
 }
-
-
 
 /*@C
     DMRefineHierarchy - Refines a DM object, all levels at once
@@ -3695,7 +3680,6 @@ PetscErrorCode DMHasCreateRestriction(DM dm,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-
 /*@
     DMHasCreateInjection - does the DM object have a method of providing an injection?
 
@@ -3925,7 +3909,6 @@ foundconv:
   Notes:
   DMRegister() may be called multiple times to add several user-defined DMs
 
-
   Sample usage:
 .vb
     DMRegister("my_da", MyDMCreate);
@@ -4026,7 +4009,6 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
   Level: beginner
 
   Note: If the DM is a DMDA and has no coordinates, the index bounds are returned instead.
-
 
 .seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetBoundingBox()
 @*/
@@ -7104,7 +7086,6 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 + v - The Vec of points, which now contains the nearest mesh points to the given points if DM_POINTLOCATION_NEAREST is used
 - cells - The PetscSF containing the ranks and local indices of the containing points.
 
-
   Level: developer
 
   Notes:
@@ -7336,7 +7317,6 @@ PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
   dm->useNatural = useNatural;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
   DMCreateLabel - Create a label of the given name if it does not already exist

@@ -502,7 +502,6 @@ PetscErrorCode PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode PCDestroy_MG(PC pc)
 {
   PetscErrorCode ierr;
@@ -529,7 +528,6 @@ PetscErrorCode PCDestroy_MG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*
    PCApply_MG - Runs either an additive, multiplicative, Kaskadic
@@ -907,7 +905,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
   ierr = KSPGetPC(mglevels[0]->smoothd,&cpc);CHKERRQ(ierr);
 
-
   /* If user did not provide fine grid operators OR operator was not updated since last global KSPSetOperators() */
   /* so use those from global PC */
   /* Is this what we always want? What if user wants to keep old one? */
@@ -976,7 +973,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if ((mg->galerkin == PC_MG_GALERKIN_NONE) || (((mg->galerkin == PC_MG_GALERKIN_PMAT) || (mg->galerkin == PC_MG_GALERKIN_MAT)) && !dAeqdB)) {
     needRestricts = PETSC_TRUE;  /* user must compute either mat, pmat, or both so must restrict x to coarser levels */
   }
-
 
   /*
    Skipping if user has provided all interpolation/restriction needed (since DM might not be able to produce them (when coming from SNES/TS)
@@ -1104,7 +1100,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
       dB = B;
     }
   }
-
 
   /* Adapt interpolation matrices */
   if (mg->adaptInterpolation) {
@@ -1372,7 +1367,6 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
 
    Output Parameter:
 .  type - one of PC_MG_MULTIPLICATIVE, PC_MG_ADDITIVE,PC_MG_FULL, PC_MG_KASKADE
-
 
    Level: advanced
 

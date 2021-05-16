@@ -64,5 +64,3 @@ PetscErrorCode  MatPartitioningRegisterAll(void)
   PetscFunctionReturn(0);
 }
 
-
-

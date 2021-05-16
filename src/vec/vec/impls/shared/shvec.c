@@ -35,7 +35,6 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
   PetscFunctionReturn(0);
 }
 
-
 PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
@@ -72,7 +71,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 #endif
 #include <sys/shm.h>
 #include <sys/mman.h>
-
 
 static PetscMPIInt Petsc_ShmComm_keyval = MPI_KEYVAL_INVALID;
 
@@ -197,8 +195,4 @@ PetscErrorCode  VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
   ierr = VecSetType(*v,VECSHARED);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
 

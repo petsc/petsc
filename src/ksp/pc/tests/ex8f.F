@@ -140,7 +140,6 @@
 
       call KSPSetOperators(ksp,A,A,ierr)
 
-
       call KSPDestroy(ksp,ierr)
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)

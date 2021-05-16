@@ -12,7 +12,6 @@
 !  Processors: n
 !T*/
 
-
 !
 !  --------------------------------------------------------------------------
 !
@@ -293,7 +292,6 @@
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
       call SNESSetDM(snes,da,ierr);CHKERRA(ierr)
       call SNESSetFromOptions(snes,ierr);CHKERRA(ierr)
-
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
@@ -627,8 +625,6 @@
       use f90module
       implicit none
 
-
-
 !  Input/output variables:
       type (userctx) user
       PetscScalar    x(user%gxs:user%gxe,user%gys:user%gye)
@@ -692,9 +688,6 @@
 
       return
       end
-
-
-
 
 !
 !/*TEST

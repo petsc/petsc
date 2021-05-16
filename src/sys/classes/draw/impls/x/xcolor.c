@@ -81,7 +81,6 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
   if (colormap) gColormap = colormap;
   else          gColormap = DefaultColormap(display,screen);
 
-
   /* set the basic colors into the color map */
   for (i=0; i<PETSC_DRAW_BASIC_COLORS; i++) {
     XAllocNamedColor(display,gColormap,colornames[i],&colordef,&ecolordef);

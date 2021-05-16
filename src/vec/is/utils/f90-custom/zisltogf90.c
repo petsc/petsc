@@ -50,5 +50,3 @@ PETSC_EXTERN void islocaltoglobalmappingrestoreblockindicesf90_(ISLocalToGlobalM
   *ierr = ISLocalToGlobalMappingRestoreBlockIndices(*da,&fa); if (*ierr) return;
 }
 
-
-

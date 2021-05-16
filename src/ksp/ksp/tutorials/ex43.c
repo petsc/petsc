@@ -60,7 +60,6 @@ Options: \n"
 
 static PetscErrorCode DMDABCApplyFreeSlip(DM,Mat,Vec);
 
-
 #define NSD            2 /* number of spatial dimensions */
 #define NODES_PER_EL   4 /* nodes per element */
 #define U_DOFS         2 /* degrees of freedom per velocity node */
@@ -1873,7 +1872,6 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes,Mat A,Vec f)
   ierr = BCApplyZero_WEST(da_Stokes,0,A,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

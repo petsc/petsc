@@ -13,8 +13,6 @@ The command line options include:\n\
    Processors: n
 T*/
 
-
-
 /*
    Include "petscdm.h" so that we can use data management objects (DMs)
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
@@ -95,7 +93,6 @@ int main(int argc,char **argv)
   PetscInt       its,N = 5,i,maxit,maxf,xs,xm;
   PetscReal      abstol,rtol,stol,norm;
   PetscBool      flg,viewinitial = PETSC_FALSE;
-
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRMPI(ierr);
@@ -695,7 +692,6 @@ PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
   ierr = VecCopy(x,y);CHKERRQ(ierr);
   return 0;
 }
-
 
 /*TEST
 

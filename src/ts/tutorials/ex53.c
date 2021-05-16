@@ -1440,7 +1440,6 @@ static void f0_mandel_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   PetscScalar sigma_zz = -1.0*(F/aL) - ((2.0*F)/aL) * (A2/A1) * A_x + ((2.0*F)/aL) * B_x;
 
-
   if (x[1] == ymax) {
     f0[1] += sigma_zz;
   } else if (x[1] == ymin) {
@@ -1539,7 +1538,6 @@ static void f1_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   \partial_df \phi_fc \lambda \delta_{fc,df} \sum_gc \partial_dg \phi_gc \delta_{gc,dg}
   = \partial_fc \phi_fc \sum_gc \partial_gc \phi_gc
 */
-
 
 /* Standard Kernels - Jacobian */
 /* g0_ee */

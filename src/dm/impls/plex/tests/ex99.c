@@ -190,7 +190,6 @@ finish:
     args: -dm_plex_gmsh_highorder false
     args: -dm_plex_gmsh_use_marker true
 
-
   testset:
     suffix: B2 # 2D ball
     requires: define(PETSC_GMSH_EXE)
@@ -208,7 +207,6 @@ finish:
     args: -dim 1 -integral 6.283185307179586 # 2*pi
     args: -order {{2 3 4 5 6 7 8 9}} -tol 0.05
 
-
   testset:
     suffix: B3 # 3D ball
     requires: define(PETSC_GMSH_EXE)
@@ -225,7 +223,6 @@ finish:
     args: -msh {{B3tet B3hex}}
     args: -dim 2 -integral 12.566370614359172 # 4*pi
     args: -order {{2 3 4 5 6 7 8 9}} -tol 0.25
-
 
   testset:
     suffix: B_lin # linear discretizations

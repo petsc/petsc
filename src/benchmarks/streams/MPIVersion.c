@@ -139,7 +139,6 @@ int main(int argc,char **args)
     printf(HLINE);*/
   }
 
-
   /*   --- MAIN LOOP --- repeat test cases NTIMES times --- */
 
   scalar = 3.0;

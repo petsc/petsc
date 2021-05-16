@@ -27,4 +27,3 @@ PETSC_EXTERN PetscViewer petsc_viewer_stdout__(MPI_Comm *comm)
   return PETSC_VIEWER_STDOUT_(MPI_Comm_f2c(*(MPI_Fint*)&*comm));
 }
 
-

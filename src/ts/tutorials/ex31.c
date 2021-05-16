@@ -701,7 +701,6 @@ PetscErrorCode IJacobian_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscFunctionReturn(0);
 }
 
-
 /* Kulikov, 2013, Problem I */
 
 PetscErrorCode RHSFunction_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec F, void *s)
@@ -790,7 +789,6 @@ PetscErrorCode IJacobian_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec Ydot, Petsc
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* Hull, 1972, Problem C1 */
 

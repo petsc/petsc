@@ -12,7 +12,6 @@ Choose one of the two at runtime by -sa_method {track,global}. \n";
   Processors: 1
 */
 
-
 /*
    Simple example to demonstrate TSAdjoint capabilities for time dependent params
    without integral cost terms using either a tracking or global method.
@@ -249,7 +248,6 @@ PetscErrorCode AdjointMonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt
   }
 }
 
-
 int main(int argc,char **argv)
 {
   TS             ts;
@@ -450,7 +448,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return(ierr);
 }
-
 
 /*TEST
 

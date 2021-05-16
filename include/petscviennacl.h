@@ -36,5 +36,4 @@ PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCLWithArrays(MPI_Comm,PetscInt,Pet
 PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec,const viennacl::vector<PetscScalar> *);
 PETSC_EXTERN PetscErrorCode VecViennaCLResetArray(Vec);
 
-
 #endif

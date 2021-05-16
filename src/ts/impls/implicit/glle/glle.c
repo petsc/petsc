@@ -49,7 +49,6 @@ static PetscErrorCode TSGLLEGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode TSGLLERestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
 {
   PetscErrorCode ierr;
@@ -335,7 +334,6 @@ static PetscErrorCode TSGLLEViewTable_Private(PetscViewer viewer,PetscInt m,Pets
   }
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode TSGLLESchemeView(TSGLLEScheme sc,PetscBool view_details,PetscViewer viewer)
 {
@@ -1085,7 +1083,6 @@ static PetscErrorCode SNESTSFormJacobian_GLLE(SNES snes,Vec x,Mat A,Mat B,TS ts)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode TSSetUp_GLLE(TS ts)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -1400,7 +1397,6 @@ PetscErrorCode  TSGLLEFinalizePackage(void)
   Note that when the equations are cast in implicit form, we are using the stage equation to define y'_i
   in terms of y_i and known stuff (y_j for j<i and x_j for all j).
 
-
   Error estimation
 
   At present, the most attractive GL methods for stiff problems are singly diagonally implicit schemes which posses
@@ -1451,7 +1447,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLLE(TS ts)
   ts->ops->snesjacobian   = SNESTSFormJacobian_GLLE;
 
   ts->usessnes = PETSC_TRUE;
-
 
   gl->max_step_rejections = 1;
   gl->min_order           = 1;

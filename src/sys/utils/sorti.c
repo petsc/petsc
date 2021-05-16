@@ -385,7 +385,6 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
 +  n  - number of values in the array
 -  X  - array of integers
 
-
    Output Parameter:
 .  dups - True if the array has dups, otherwise false
 

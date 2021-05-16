@@ -1705,7 +1705,6 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
 .   is - if requested, the index sets that define the subdomains for this processor
 -   is_local - if requested, the index sets that define the local part of the subdomains for this processor (can be NULL)
 
-
     Notes:
     The IS numbering is in the parallel, global numbering of the vector.
 

@@ -30,9 +30,6 @@ The command line options are:\n\
    Processors: n
 T*/
 
-
-
-
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
@@ -333,7 +330,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G,void *
     }
   }
 
-
   /* Compute triangular areas along the border of the domain. */
   if (xs==0){ /* left side */
     for (j=ys; j<ys+ym; j++){
@@ -378,7 +374,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G,void *
 
   ft=ft*area;
   ierr = MPI_Allreduce(&ft,fcn,1,MPIU_REAL,MPIU_SUM,MPI_COMM_WORLD);CHKERRMPI(ierr);
-
 
   /* Restore vectors */
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
@@ -451,7 +446,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat Hptr, Mat Hessian, void *ptr)
   Vec            localX = user->localX;
   PetscBool      assembled;
 
-
   /* Set various matrix options */
   ierr = MatSetOption(Hessian,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -521,7 +515,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat Hptr, Mat Hessian, void *ptr)
         xrb = x[row+1-gxm];
       }
 
-
       d1 = (xc-xl)*rhx;
       d2 = (xc-xr)*rhx;
       d3 = (xc-xt)*rhy;
@@ -537,7 +530,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat Hptr, Mat Hessian, void *ptr)
       f4 = PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
       f5 = PetscSqrtScalar(1.0 + d2*d2 + d5*d5);
       f6 = PetscSqrtScalar(1.0 + d4*d4 + d6*d6);
-
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
         (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
@@ -639,7 +631,6 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
-
   bsize=xm+2;
   lsize=ym+2;
   rsize=ym+2;
@@ -737,7 +728,6 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   return 0;
 }
 
-
 /* ------------------------------------------------------------------- */
 /*
    MSA_Plate -  Calculates an obstacle for surface to stretch over.
@@ -800,7 +790,6 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
 
   return 0;
 }
-
 
 /* ------------------------------------------------------------------- */
 /*
@@ -895,7 +884,6 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
   ierr = MatMult(user->H,X,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

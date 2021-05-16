@@ -49,7 +49,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSavePPM(const char filename[],unsigned
 static PetscErrorCode PetscDrawImageSave_PPM(const char filename[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
 { return PetscDrawImageSavePPM(filename,palette,w,h,pixels); }
 
-
 /*
    Code to write images in PNG format
 */
@@ -118,7 +117,6 @@ static PetscErrorCode PetscDrawImageSave_PNG(const char filename[],unsigned char
 { return PetscDrawImageSavePNG(filename,palette,w,h,pixels); }
 
 #endif/*!PETSC_HAVE_LIBPNG*/
-
 
 /*
    Code to write images in GIF format

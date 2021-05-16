@@ -17,7 +17,6 @@ static PetscErrorCode TaoLineSearchDestroy_GPCG(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer viewer)
 {

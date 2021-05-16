@@ -618,7 +618,6 @@ static PetscErrorCode MatNestFindISRange(Mat A,PetscInt n,const IS list[],IS is,
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode MatNestFillEmptyMat_Private(Mat A,PetscInt i,PetscInt j,Mat *B)
 {
   Mat_Nest       *vs = (Mat_Nest*)A->data;
@@ -1610,7 +1609,6 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
   ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* If an IS was provided, there is nothing Nest needs to do, otherwise Nest will build a strided IS */
 /*

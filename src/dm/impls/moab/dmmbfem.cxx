@@ -915,7 +915,6 @@ PetscErrorCode ComputeJacobian_Internal (const PetscInt dim, const PetscInt nver
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *quadrature, PetscReal *phypts,
                                      PetscReal *phibasis, PetscReal *jacobian, PetscReal *ijacobian, PetscReal* volume)
 {

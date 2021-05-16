@@ -495,7 +495,6 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
 -  nnz - array containing the number of nonzero blocks in the various block rows
          (possibly different for each block row) or NULL
 
-
    Output Parameter:
 .  A - the matrix
 

@@ -88,5 +88,3 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
   PetscFunctionReturn(0);
 }
 
-
-

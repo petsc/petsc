@@ -2,7 +2,6 @@
 #include <petsc/private/fortranimpl.h>
 #include <petscmat.h>
 
-
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvalue_                     MATSETVALUE
 #define matsetvaluelocal_                MATSETVALUELOCAL

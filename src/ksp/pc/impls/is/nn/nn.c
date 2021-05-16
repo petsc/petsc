@@ -575,16 +575,11 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PetscFunctionReturn(0);
 }
 
-
-
-
 /*  -------   E N D   O F   T H E   C O D E   -------  */
 /*                                                     */
 /*  From now on, "footnotes" (or "historical notes").  */
 /*                                                     */
 /*  -------------------------------------------------  */
-
-
 
 /* --------------------------------------------------------------------------
    Historical note 01
@@ -602,9 +597,6 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
    the balanced residual by zero.
 */
 
-
-
-
 /* --------------------------------------------------------------------------
    Historical note 02
    -------------------------------------------------------------------------- */
@@ -612,5 +604,4 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
    We tried an alternative coarse problem, that would eliminate exactly a
    constant error. Turned out not to improve the overall convergence.
 */
-
 

@@ -264,7 +264,6 @@ static void g1_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   }
 }
 
-
 static void g2_vp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                   const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                   const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],

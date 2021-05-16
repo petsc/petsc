@@ -61,5 +61,3 @@ PetscErrorCode  PetscRandomInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-
-

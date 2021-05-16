@@ -467,7 +467,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     }
   }
 
-
   /* restrict work on active processes */
   if (sub_schurs->restrict_comm) {
     PetscSubcomm subcomm;

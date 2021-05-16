@@ -439,8 +439,6 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm,PetscInt,Pet
     for (__i=0; __i<nnz; __i++) sum -= xv[__i] * r[xi[__i]];}
 #endif
 
-
-
 /*
     PetscSparseDensePlusDot - The inner kernel of matrix-vector product \sum_i xv[i] * r[xi[i]] for CSR storage
 

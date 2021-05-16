@@ -222,7 +222,6 @@ PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
   PetscFunctionReturn(0);
 }
 
-
 /*@
   DMDAGetNumLocalSubDomains - Gets the number of local subdomains created upon decomposition.
 
@@ -386,7 +385,6 @@ PetscErrorCode  DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, P
   if (zm) *zm = dd->nonzm;
   PetscFunctionReturn(0);
 }
-
 
 /*@
   DMDASetNonOverlappingRegion - Sets the indices of the nonoverlapping region of a subdomain DM.
@@ -1025,7 +1023,6 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     ierr = PetscArraycpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n);CHKERRQ(ierr);
   }
 
-
   /* copy vector type information */
   ierr = DMSetVecType(da2,da->vectype);CHKERRQ(ierr);
 
@@ -1063,7 +1060,6 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   *daref = da2;
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode  DMCoarsen_DA(DM dmf, MPI_Comm comm,DM *dmc)
 {

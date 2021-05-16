@@ -39,5 +39,4 @@ struct _p_AO {
 
 extern PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 
-
 #endif

@@ -490,5 +490,3 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
 
 TEST*/
 
-
-

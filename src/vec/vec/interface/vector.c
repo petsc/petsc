@@ -96,7 +96,6 @@ PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 
    Level: advanced
 
-
 .seealso:  VecSetValuesLocal()
 @*/
 PetscErrorCode VecGetLocalToGlobalMapping(Vec X,ISLocalToGlobalMapping *mapping)
@@ -335,7 +334,6 @@ PetscErrorCode  VecPointwiseDivide(Vec w,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    VecDuplicate - Creates a new vector of the same type as an existing vector.
 
@@ -549,7 +547,6 @@ PetscErrorCode  VecViewFromOptions(Vec A,PetscObject obj,const char name[])
      See the manual page for VecLoad() on the exact format the binary viewer stores
      the values in the file.
 
-
    Notes for HDF5 Viewer:
      The name of the Vec (given with PetscObjectSetName() is the name that is used
      for the object in the HDF5 file. If you wish to store the same Vec into multiple
@@ -564,7 +561,6 @@ PetscErrorCode  VecViewFromOptions(Vec A,PetscObject obj,const char name[])
      with the HDF5 viewer.
 
    Level: beginner
-
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscDrawLGCreate(),
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), VecLoad(), PetscViewerCreate(),
@@ -624,7 +620,6 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
   const PetscScalar *values;
   char              type[32];
   PetscErrorCode    ierr;
-
 
   TV_add_row("Local rows", "int", &v->map->n);
   TV_add_row("Global rows", "int", &v->map->N);
@@ -941,7 +936,6 @@ PetscErrorCode  VecLoad(Vec vec, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWEREXODUSII,&isexodusii);CHKERRQ(ierr);
   if (!isbinary && !ishdf5 && !isadios && !isexodusii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-
   ierr = VecSetErrorIfLocked(vec,1);CHKERRQ(ierr);
   if (!((PetscObject)vec)->type_name && !vec->ops->create) {
     ierr = VecSetType(vec, VECSTANDARD);CHKERRQ(ierr);
@@ -956,7 +950,6 @@ PetscErrorCode  VecLoad(Vec vec, PetscViewer viewer)
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
@@ -1029,7 +1022,6 @@ PetscErrorCode VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
   PetscFunctionReturn(0);
 }
 
-
 /*@
    VecStashSetInitialSize - sets the sizes of the vec-stash, that is
    used during the assembly process to store values that belong to
@@ -1057,7 +1049,6 @@ PetscErrorCode VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
      to determine the appropriate value, MM, to use for size and
      VecAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
      to determine the value, BMM to use for bsize
-
 
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked(), VecStashView()
 
@@ -1270,7 +1261,6 @@ static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptio
 
   Level: beginner
 
-
 .seealso: VecCreate(), VecSetOptionsPrefix()
 @*/
 PetscErrorCode  VecSetFromOptions(Vec vec)
@@ -1379,7 +1369,6 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
    Level: advanced
 
 .seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMapping(), VecSetBlockSize()
-
 
 @*/
 PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
@@ -1713,7 +1702,6 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,PetscObject bobj,const char optio
 
    Level: advanced
 
-
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
 
 @*/
@@ -1962,7 +1950,6 @@ PetscErrorCode VecGetOffloadMask(Vec v,PetscOffloadMask* mask)
   *mask = v->offloadmask;
   PetscFunctionReturn(0);
 }
-
 
 #if !defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v,PETSC_UINTPTR_T* ctx)

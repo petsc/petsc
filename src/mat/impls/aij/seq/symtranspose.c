@@ -14,7 +14,6 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-
 PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *Atj[])
 {
   PetscErrorCode ierr;

@@ -78,7 +78,6 @@ int main(int argc,char **argv)
   PetscOptionsEnd();
   T         = 0.014/nphase;
 
-
   /* create vector to hold ts solution */
   /*-----------------------------------*/
   ierr = VecCreate(PETSC_COMM_WORLD, &init_sol);CHKERRQ(ierr);

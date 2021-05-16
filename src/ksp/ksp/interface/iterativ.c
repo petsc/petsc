@@ -1136,7 +1136,6 @@ PetscErrorCode  KSPConvergedSkip(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverged
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    KSPConvergedDefaultCreate - Creates and initializes the space used by the KSPConvergedDefault() function context
 
@@ -1183,7 +1182,6 @@ PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
    If the convergence test is not KSPConvergedDefault() then this is ignored.
 
    If right preconditioning is being used then B does not appear in the above formula.
-
 
    Level: intermediate
 
@@ -1829,7 +1827,6 @@ PetscErrorCode  KSPSetDMActive(KSP ksp,PetscBool flg)
 .  dm - the dm
 
    Level: intermediate
-
 
 .seealso: KSPSetDM(), KSPSetDMActive()
 @*/

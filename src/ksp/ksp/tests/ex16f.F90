@@ -70,7 +70,6 @@
       call VecNorm(u,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp1,its,ierr)
 
-
       write(6,100) norm,its
   100 format('Residual norm ',e11.4,' iterations ',i5)
 

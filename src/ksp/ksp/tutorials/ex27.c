@@ -285,8 +285,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
-
 /*TEST
 
    test:
@@ -364,7 +362,6 @@ int main(int argc,char **args)
       args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
       args: -ksp_converged_reason -ksp_rtol 1e-2 -ksp_max_it 100
       args: -solve_normal 0 -ksp_type cgls
-
 
    # Load a matrix, RHS and solution from HDF5 (Version 7.3 MAT-File). Test immediate convergence.
    testset:

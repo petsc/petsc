@@ -263,7 +263,6 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,PetscOptions options,con
   PetscFunctionReturn(0);
 }
 
-
 #if !defined(PETSC_HAVE_YAML)
 
 /*

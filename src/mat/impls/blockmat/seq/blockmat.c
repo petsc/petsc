@@ -709,7 +709,6 @@ static PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-
 static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        NULL,
                                        NULL,
@@ -992,7 +991,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 .  bs - size of each submatrix
 .  nz  - expected maximum number of nonzero blocks in row (use PETSC_DEFAULT if not known)
 -  nnz - expected number of nonzers per block row if known (use NULL otherwise)
-
 
    Output Parameter:
 .  A - the matrix

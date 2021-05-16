@@ -119,7 +119,6 @@ static void stokes_mass_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (d = 0; d < dim; ++d) g1[d*dim+d] = -1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
 }
 
-
 /* -< \nabla\cdot v, p >, J_{up} */
 static void stokes_momentum_pres_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
@@ -505,7 +504,6 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t143 = t132 + t129 - t125 + t133 + t127 - t124 - t130 - t126 + t135;
   t160 = PetscExpReal(-t20 - Rp - B);
   num4 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t21 + ((0.2e1 * t23 * (t7 + 0.5e1 * t3 - t8 - t9) * AA - 0.8e1 * B * BB * t30 * Rp) * t36 + (-0.2e1 * Rp * (-B * t8 - B * t7 - t40 + 0.2e1 * t41 + 0.3e1 * t43 + 0.2e1 * Rp * t7) * AA + 0.8e1 * t51 * kn * Rp) * t56 - 0.2e1 * t14 * (-t8 + t9 + t4 + t7) * AA + 0.8e1 * t51 * t30) * t67 + ((t12 - 0.2e1 * t2 * t71 * BB) * t77 + (t12 + 0.2e1 * t2 * t79 * BB) * t85 + (-0.2e1 * t2 * t71 * AA - t91) * t93 + (-0.2e1 * t2 * t79 * AA + t91) * t99) * t104 + ((-t120 * AA + 0.2e1 * t136 * BB) * t77 + (-t141 * AA - 0.2e1 * t143 * BB) * t85 + (0.2e1 * t136 * AA + t120 * BB) * t93 + (0.2e1 * t143 * AA - t141 * BB) * t99) * t160;
-
 
   t1 = Rm * Rm;
   t2 = Rp * Rp;
@@ -2951,10 +2949,8 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
 
   u4 = (t57 + t95 + t135 + t164) / (0.4e1 * t24 * t15 + 0.8e1 * t127 * t15 * t18 + 0.4e1 * t131 * t15 * t19);
 
-
   /****************************************************************************************/
   /****************************************************************************************/
-
 
   u5 = (PetscReal)(-2*Z*nz*PETSC_PI*u2-u3*2*nz*PETSC_PI)*PetscCosReal(nz*PETSC_PI*z); /* pressure */
 

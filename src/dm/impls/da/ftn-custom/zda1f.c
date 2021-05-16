@@ -14,4 +14,3 @@ PETSC_EXTERN void dmdacreate1d_(MPI_Comm *comm,DMBoundaryType *bx,PetscInt *M,Pe
   *ierr = DMDACreate1d(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*bx,*M,*w,*s,lc,inra);
 }
 
-

@@ -30,7 +30,6 @@
        if (n .ne. 0) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting size of zero IS'); endif
        call ISDestroy(is,ierr)
 
-
 !     Create large IS and test ISGetIndices(,ierr)
 !     fortran indices start from 1 - but IS indices start from 0
       n = 1000 + rank

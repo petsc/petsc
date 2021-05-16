@@ -464,7 +464,6 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj
 
     Level: developer
 
-
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectProcessOptionsHandlers(), PetscObjectDestroyOptionsHandlers()
 
 @*/
@@ -488,7 +487,6 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*han
 .   obj - the PETSc object
 
     Level: developer
-
 
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectDestroyOptionsHandlers()
 
@@ -516,7 +514,6 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptions
 
     Level: developer
 
-
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectProcessOptionsHandlers()
 
 @*/
@@ -535,7 +532,6 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
   obj->noptionhandler = 0;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    PetscObjectReference - Indicates to any PetscObject that it is being
@@ -714,7 +710,6 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
    PetscContainerCreate() for info on how to create an object from a
    user-provided pointer that may then be composed with PETSc objects.
 
-
 .seealso: PetscObjectQuery(), PetscContainerCreate(), PetscObjectComposeFunction(), PetscObjectQueryFunction()
 @*/
 PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
@@ -746,7 +741,6 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
    Level: advanced
 
    The reference count of neither object is increased in this call
-
 
 .seealso: PetscObjectCompose(), PetscObjectComposeFunction(), PetscObjectQueryFunction()
 @*/
@@ -883,7 +877,6 @@ PetscErrorCode  PetscContainerGetPointer(PetscContainer obj,void **ptr)
   *ptr = obj->ptr;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    PetscContainerSetPointer - Sets the pointer value contained in the container.

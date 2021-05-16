@@ -321,7 +321,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
    MATHYPRESSTRUCT - MATHYPRESSTRUCT = "hypresstruct" - A matrix type to be used for parallel sparse matrices
           based on the hypre HYPRE_SStructMatrix.
 
-
    Level: intermediate
 
    Notes:
@@ -521,7 +520,6 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
     HYPRE_Int     i,*entries,iupper[3],ilower[3];
     HYPRE_Complex *values;
 
-
     for (i= 0; i< 3; i++) {
       ilower[i] = ex->hbox.imin[i];
       iupper[i] = ex->hbox.imax[i];
@@ -539,7 +537,6 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
   PetscStackCallStandard(HYPRE_SStructMatrixAssemble,(ex->ss_mat));
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
 {

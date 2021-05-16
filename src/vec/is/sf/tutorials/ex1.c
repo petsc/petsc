@@ -464,7 +464,6 @@ int main(int argc,char **argv)
       args: -test_bcast -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create dynamic allocate}}
       requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
-
    test:
       suffix: 2
       nsize: 4

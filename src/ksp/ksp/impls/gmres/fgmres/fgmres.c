@@ -86,11 +86,9 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 .        itcount - number of iterations used.  If null, ignored.
 .        converged - 0 if not converged
 
-
     Notes:
     On entry, the value in vector VEC_VV(0) should be
     the initial residual.
-
 
  */
 PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
@@ -160,7 +158,6 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
        change the PC or its attributes before its applied */
     (*fgmres->modifypc)(ksp,ksp->its,loc_it,res_norm,fgmres->modifyctx);
 
-
     /* apply PRECONDITIONER to direction vector and store with
        preconditioned vectors in prevec */
     ierr = KSP_PCApply(ksp,VEC_VV(loc_it),PREVEC(loc_it));CHKERRQ(ierr);
@@ -168,7 +165,6 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
     ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
     /* Multiply preconditioned vector by operator - put in VEC_VV(loc_it+1) */
     ierr = KSP_MatMult(ksp,Amat,PREVEC(loc_it),VEC_VV(1+loc_it));CHKERRQ(ierr);
-
 
     /* update hessenberg matrix and do Gram-Schmidt - new direction is in
        VEC_VV(1+loc_it)*/
@@ -199,7 +195,6 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
        to be nonsingular when PREVECS are linearly independent and A is
        nonsingular (in GMRES, the nonsingularity of A implies the nonsingularity
        of HES). So we should really add a check to verify that HES is nonsingular.*/
-
 
     /* Now apply rotations to new col of hessenberg (and right side of system),
        calculate new rotation, and get new residual norm at the same time*/
@@ -254,7 +249,6 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
 /*
     KSPSolve_FGMRES - This routine applies the FGMRES method.
-
 
    Input Parameter:
 .     ksp - the Krylov space object that was set to use fgmres
@@ -576,7 +570,6 @@ static PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FC
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode KSPReset_FGMRES(KSP ksp)
 {
   KSP_FGMRES     *fgmres = (KSP_FGMRES*)ksp->data;
@@ -631,7 +624,6 @@ PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
 /*MC
      KSPFGMRES - Implements the Flexible Generalized Minimal Residual method.
                 developed by Saad with restart
-
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -697,7 +689,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
-
 
   fgmres->haptol         = 1.0e-30;
   fgmres->q_preallocate  = 0;

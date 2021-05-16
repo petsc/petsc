@@ -67,7 +67,6 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 /*
 
     KSPLGMRESCycle - Run lgmres, possibly with restart.  Return residual
@@ -84,11 +83,9 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
                   are defined.  If null, ignored.  If null, ignored.
 .        converged - 0 if not converged
 
-
     Notes:
     On entry, the value in vector VEC_VV(0) should be
     the initial residual.
-
 
  */
 PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
@@ -150,16 +147,13 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
   else ksp->rnorm = 0.0;
 
-
   /* note: (lgmres->it) is always set one less than (loc_it) It is used in
      KSPBUILDSolution_LGMRES, where it is passed to KSPLGMRESBuildSoln.
      Note that when KSPLGMRESBuildSoln is called from this function,
      (loc_it -1) is passed, so the two are equivalent */
   lgmres->it = (loc_it - 1);
 
-
   /* MAIN ITERATION LOOP BEGINNING*/
-
 
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */
@@ -203,7 +197,6 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
 
     *HH(loc_it+1,loc_it)  = tt;
     *HES(loc_it+1,loc_it) = tt;
-
 
     /* check for the happy breakdown */
     hapbnd = PetscAbsScalar(tt / *GRS(loc_it)); /* GRS(loc_it) contains the res_norm from the last iteration  */
@@ -265,7 +258,6 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
 
   ierr = KSPLGMRESBuildSoln(GRS(0),ksp->vec_sol,ksp->vec_sol,ksp,loc_it-1);CHKERRQ(ierr);
 
-
   /* LGMRES_MOD collect aug vector and A*augvector for future restarts -
      only if we will be restarting (i.e. this cycle performed it_total
      iterations)  */
@@ -284,8 +276,6 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
       }
     }
 
-
-
     ierr = VecCopy(AUG_TEMP, AUGVEC(spot));CHKERRQ(ierr);
     /*need to normalize */
     ierr = VecNorm(AUGVEC(spot), NORM_2, &tmp_norm);CHKERRQ(ierr);
@@ -300,7 +290,6 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /*now add the A*aug vector to A_AUGVEC(spot)  - this is independ. of preconditioning type*/
     /* want V*H*y - y is in GRS, V is in VEC_VV and H is in HES */
-
 
     /* first do H+*y */
     avec = lgmres->hwork;
@@ -324,7 +313,6 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
 
 /*
     KSPSolve_LGMRES - This routine applies the LGMRES method.
-
 
    Input Parameter:
 .     ksp - the Krylov space object that was set to use lgmres
@@ -448,7 +436,6 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,K
   /* now it_arnoldi indicates the number of matvecs that took place */
   lgmres->matvecs += it_arnoldi;
 
-
   /* solve the upper triangular system - GRS is the right side and HH is
      the upper triangular matrix  - put soln in nrs */
   if (*HH(it,it) == 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
@@ -476,7 +463,6 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,K
     /*first do regular krylov directions */
     ierr = VecMAXPY(VEC_TEMP,it_arnoldi,nrs,&VEC_VV(0));CHKERRQ(ierr);
     /*now add augmented portions - add contribution of aug vectors one at a time*/
-
 
     for (ii=0; ii<it_aug; ii++) {
       for (jj=0; jj<lgmres->aug_dim; jj++) {
@@ -619,9 +605,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp,PetscInt it)
     lgmres->vecs[it+VEC_OFFSET+k] = lgmres->user_work[nwork][k];
   }
 
-
   /* LGMRES_MOD - for now we are preallocating the augmentation vectors */
-
 
   /* increment the number of work vector chunks */
   lgmres->nwork_alloc++;
@@ -804,7 +788,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   /*LGMRES_MOD add extra functions here - like the one to set num of aug vectors */
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPLGMRESSetConstant_C",KSPLGMRESSetConstant_LGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPLGMRESSetAugDim_C",KSPLGMRESSetAugDim_LGMRES);CHKERRQ(ierr);
-
 
   /*defaults */
   lgmres->haptol         = 1.0e-30;

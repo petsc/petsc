@@ -349,8 +349,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat 
   PetscFunctionReturn(0);
 }
 
-
-
 PetscErrorCode Parameter_settings(AppCtx *user)
 {
   PetscErrorCode ierr;
@@ -408,7 +406,6 @@ PetscErrorCode Parameter_settings(AppCtx *user)
 
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

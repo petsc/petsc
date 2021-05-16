@@ -62,7 +62,6 @@ struct _p_DMSwarmSort {
   SwarmPoint *list;
 };
 
-
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_Push_Basic(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMScatter(DM,PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMExact(DM,PetscBool);

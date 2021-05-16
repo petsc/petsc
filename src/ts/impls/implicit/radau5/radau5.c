@@ -73,7 +73,6 @@ void SOLOUT(int *NR,double *XOLD,double *X, double *Y,double *CONT,double *LRC,i
   ierr = VecResetArray(cvode->work);CHKERRABORT(PETSC_COMM_SELF,ierr);
 }
 
-
 void radau5_(int *,void*,double*,double*,double*,double*,double*,double*,int*,void*,int*,int*,int*,void*,int*,int*,int*,void*,int*,double*,int*,int*,int*,double*,void*,int*);
 
 PetscErrorCode TSSolve_Radau5(TS ts)

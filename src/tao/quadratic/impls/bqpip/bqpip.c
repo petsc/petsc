@@ -439,7 +439,6 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
       ierr = QPIPStepLength(qp);CHKERRQ(ierr);
     }  /* End Corrector step */
 
-
     /* Take the step */
     dstep = qp->dsteplength;
 

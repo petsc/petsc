@@ -28,7 +28,6 @@
    the calling sequence
 $     SETERRQ(comm,number,p,mess)
 
-
 .seealso:  PetscReturnErrorHandler()
  @*/
 PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)

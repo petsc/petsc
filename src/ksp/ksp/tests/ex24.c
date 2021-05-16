@@ -3,7 +3,6 @@ static char help[] = "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBA
 
 #include <petscksp.h>
 
-
 int main(int argc,char **args)
 {
   Mat            C;
@@ -119,7 +118,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

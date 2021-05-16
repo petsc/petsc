@@ -242,7 +242,6 @@ PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const ch
   if (outlist) list = *outlist;
   *value = NULL;
 
-
   ierr = PetscStrchr(insymbol,'(',&s);CHKERRQ(ierr);
   if (s) {
     /* make copy of symbol so we can edit it in place */

@@ -1692,7 +1692,6 @@ int main(int argc, char **argv)
   ierr = PetscFunctionListAdd(&PhysicsList,"sw"              ,PhysicsCreate_SW);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PhysicsList,"euler"           ,PhysicsCreate_Euler);CHKERRQ(ierr);
 
-
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Mesh Options","");CHKERRQ(ierr);
   {
     cfl  = 0.9 * 4; /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
@@ -2096,8 +2095,6 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     /* static PetscScalar csqrl, csqrr, gascl1, gascl2, gascl3, gascr1, gascr2, gascr3; */
     static int iterno;
     static PetscScalar ustarl, ustarr, rarepr1, rarepr2;
-
-
 
     /* gascl1 = *gaml - 1.; */
     /* gascl2 = (*gaml + 1.) * .5; */

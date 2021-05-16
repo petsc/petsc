@@ -3,7 +3,6 @@ static char help[] = "Compares BLAS dots on different machines. Input\n\
 arguments are\n\
   -n <length> : local vector length\n\n";
 
-
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -16,7 +15,6 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   if (n < 5) n = 5;
-
 
   /* create two vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
@@ -40,8 +38,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
 
 /*TEST
 

@@ -1,6 +1,5 @@
 #include <petsc/private/fortranimpl.h>
 
-
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinfo_ PETSCINFO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)

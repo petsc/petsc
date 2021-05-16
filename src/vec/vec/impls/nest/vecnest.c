@@ -1176,7 +1176,6 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
   ierr = VecNestSetOps_Private(V->ops);CHKERRQ(ierr);
   V->petscnative = PETSC_FALSE;
 
-
   /* expose block api's */
   ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVec_C",VecNestGetSubVec_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVecs_C",VecNestGetSubVecs_Nest);CHKERRQ(ierr);

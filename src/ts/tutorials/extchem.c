@@ -32,11 +32,9 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 
     FormMoleFraction(User,massf,molef) converts the mass fraction solution of each species to the mole fraction of each species.
 
-
     These are other data sets for other possible runs
        https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/n_heptane_v3.1_therm.dat
        https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/nc7_ver3.1_mech.txt
-
 
 */
 typedef struct _User *User;
@@ -50,7 +48,6 @@ struct _User {
   PetscInt  *rows;
   char      **snames;
 };
-
 
 static PetscErrorCode PrintSpecies(User,Vec);
 static PetscErrorCode MassFractionToMoleFraction(User,Vec,Vec*);
@@ -177,7 +174,6 @@ int main(int argc,char **argv)
     ierr = TSTrajectorySetVariableNames(tj,(const char * const *)user.snames);CHKERRQ(ierr);
     ierr = TSTrajectorySetTransform(tj,(PetscErrorCode (*)(void*,Vec,Vec*))MassFractionToMoleFraction,NULL,&user);CHKERRQ(ierr);
   }
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine

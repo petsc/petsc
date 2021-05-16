@@ -27,7 +27,6 @@ int mm_write_banner(FILE *f, MM_typecode matcode);
 int mm_write_mtx_crd_size(FILE *f, int M, int N, int nz);
 int mm_write_mtx_array_size(FILE *f, int M, int N);
 
-
 /********************* MM_typecode query fucntions ***************************/
 
 #define mm_is_matrix(typecode)    ((typecode)[0]=='M')
@@ -49,7 +48,6 @@ int mm_write_mtx_array_size(FILE *f, int M, int N);
 
 int mm_is_valid(MM_typecode matcode);        /* too complex for a macro */
 
-
 /********************* MM_typecode modify fucntions ***************************/
 
 #define mm_set_matrix(typecode)    ((*typecode)[0]='M')
@@ -63,7 +61,6 @@ int mm_is_valid(MM_typecode matcode);        /* too complex for a macro */
 #define mm_set_pattern(typecode)((*typecode)[2]='P')
 #define mm_set_integer(typecode)((*typecode)[2]='I')
 
-
 #define mm_set_symmetric(typecode)((*typecode)[3]='S')
 #define mm_set_general(typecode)((*typecode)[3]='G')
 #define mm_set_skew(typecode)    ((*typecode)[3]='K')
@@ -73,9 +70,7 @@ int mm_is_valid(MM_typecode matcode);        /* too complex for a macro */
 
 #define mm_initialize_typecode(typecode) mm_clear_typecode(typecode)
 
-
 /********************* Matrix Market error codes ***************************/
-
 
 #define MM_COULD_NOT_READ_FILE    11
 #define MM_PREMATURE_EOF          12
@@ -84,7 +79,6 @@ int mm_is_valid(MM_typecode matcode);        /* too complex for a macro */
 #define MM_UNSUPPORTED_TYPE       15
 #define MM_LINE_TOO_LONG          16
 #define MM_COULD_NOT_WRITE_FILE   17
-
 
 /******************** Matrix Market internal definitions ********************
 
@@ -116,7 +110,6 @@ int mm_is_valid(MM_typecode matcode);        /* too complex for a macro */
 #define MM_SKEW_STR        "skew-symmetric"
 #define MM_PATTERN_STR  "pattern"
 
-
 /*  high level routines */
 
 int mm_write_mtx_crd(char fname[], int M, int N, int nz, int I_[], int J_[], double val[], MM_typecode matcode);
@@ -125,5 +118,4 @@ int mm_read_mtx_crd_entry(FILE *f, int *I_, int *J_, double *real, double *img, 
 int mm_read_unsymmetric_sparse(const char *fname, int *M_, int *N_, int *nz_, double **val_, int **I_, int **J_);
 
 #endif
-
 

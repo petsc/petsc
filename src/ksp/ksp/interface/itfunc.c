@@ -1056,7 +1056,6 @@ $    If nullspace(A) != nullspace(A') then left preconditioning will work but ri
        the nullspace(AB) from the search direction. While we know the nullspace(A) the nullspace(AB) equals B^-1 times the nullspace(A) but except for trivial preconditioners
        such as diagonal scaling we cannot apply the inverse of the preconditioner to a vector and thus cannot compute the nullspace(AB).
 
-
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
    then its=1.  See KSPSetTolerances() and KSPConvergedDefault()
@@ -1718,7 +1717,6 @@ PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
    Notes:
     Normally PETSc continues if a linear solver fails to converge, you can call KSPGetConvergedReason() after a KSPSolve()
     to determine if it has converged.
-
 
 .seealso: KSPGetErrorIfNotConverged(), KSP
 @*/
@@ -2496,7 +2494,6 @@ $     converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reaso
 .  reason - the reason why it has converged or diverged
 -  cctx  - optional convergence context, as set by KSPSetConvergenceTest()
 
-
    Notes:
    Must be called after the KSP type has been set so put this after
    a call to KSPSetType(), or KSPSetFromOptions().
@@ -2738,7 +2735,6 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
    Options Database Key:
 +   -ksp_diagonal_scale -
 -   -ksp_diagonal_scale_fix - scale the matrix back AFTER the solve
-
 
     Notes:
     Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b

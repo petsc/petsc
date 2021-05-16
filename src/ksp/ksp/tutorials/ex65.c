@@ -213,7 +213,6 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    test:

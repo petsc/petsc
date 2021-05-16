@@ -64,7 +64,6 @@ PetscErrorCode ex2_1(void)
   PetscFunctionReturn(0);
 }
 
-
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

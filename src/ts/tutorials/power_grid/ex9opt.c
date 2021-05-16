@@ -8,8 +8,6 @@ static char help[] = "Basic equation for generator stability analysis.\n";
                  \frac{2 H}{\omega_s}\frac{d \omega}{dt} & = & P_m - P_max \sin(\theta) -D(\omega - \omega_s)\\
 \end{eqnarray}
 
-
-
   Ensemble of initial conditions
    ./ex2 -ensemble -ts_monitor_draw_solution_phase -1,-3,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
 
@@ -18,7 +16,6 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 
   Initial conditions same as when fault is ended
    ./ex2 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
-
 
 F*/
 
@@ -460,7 +457,6 @@ PetscErrorCode FormGradient(Tao tao,Vec P,Vec G,void *ctx0)
   ierr = VecCopy(mu[0],G);CHKERRQ(ierr);
   return 0;
 }
-
 
 /*TEST
 

@@ -13,7 +13,6 @@ typedef struct {
   MatScalar *diag;
 } PC_VPBJacobi;
 
-
 static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
 {
   PC_VPBJacobi      *jac = (PC_VPBJacobi*)pc->data;
@@ -98,8 +97,6 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-
-
 /* -------------------------------------------------------------------------- */
 static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
 {
@@ -143,7 +140,6 @@ static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
 /* -------------------------------------------------------------------------- */
 /*MC
      PCVPBJACOBI - Variable size point block Jacobi preconditioner
-
 
    Notes:
     See PCJACOBI for point Jacobi preconditioning, PCPBJACOBI for fixed point block size, and PCBJACOBI for large size blocks
@@ -205,5 +201,4 @@ PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc)
   pc->ops->applysymmetricright = NULL;
   PetscFunctionReturn(0);
 }
-
 

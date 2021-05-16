@@ -287,7 +287,6 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PFRegister - Adds a method to the mathematical function package.
 
@@ -350,7 +349,6 @@ PetscErrorCode  PFGetType(PF pf,PFType *type)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PFSetType - Builds PF for a particular function
 
@@ -363,7 +361,6 @@ PetscErrorCode  PFGetType(PF pf,PFType *type)
 
    Options Database Key:
 .  -pf_type <type> - Sets PF type
-
 
   Notes:
   See "petsc/include/petscpf.h" for available methods (for instance,
@@ -505,12 +502,4 @@ PetscErrorCode  PFInitializePackage(void)
   ierr = PetscRegisterFinalize(PFFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
 

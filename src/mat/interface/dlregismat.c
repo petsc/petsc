@@ -457,5 +457,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscmat(void)
   PetscFunctionReturn(0);
 }
 
-
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

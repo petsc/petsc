@@ -1,6 +1,5 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
-
 /*@C
    TaoSetHessianRoutine - Sets the function to compute the Hessian as well as the location to store the matrix.
 

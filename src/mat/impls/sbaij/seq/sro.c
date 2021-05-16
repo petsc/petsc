@@ -24,7 +24,6 @@ C    M(I,J) IS STORED IN ROW I (AND THUS M(J,I) IS NOT STORED);  WHEREAS
 C    IF M(I,J) WILL BE IN THE STRICT LOWER TRIANGLE OF M, THEN M(J,I) IS
 C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 
-
   -- output: new index set (inew, jnew) for A and a map a2anew that maps
              values a to anew, such that all
              nonzero A_(perm(i),iperm(k)) will be stored in the upper triangle.
@@ -148,5 +147,4 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   PetscFunctionReturn(0);
 #endif
 }
-
 

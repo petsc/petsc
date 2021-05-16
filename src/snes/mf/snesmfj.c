@@ -109,7 +109,6 @@ static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
     base from the SNES context. This version will cause the base to be used for differencing
     even if the func is not SNESComputeFunction. See: MatSNESMFUseBase()
 
-
 */
 static PetscErrorCode MatAssemblyEnd_SNESMF_UseBase(Mat J,MatAssemblyType mt)
 {
@@ -247,7 +246,6 @@ PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
 
    Level: advanced
 
-
    Notes:
      You can call SNESSetJacobian() with MatMFFDComputeJacobian() if you are using matrix and not a different
      preconditioner matrix
@@ -266,7 +264,6 @@ PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
 
    Warning:
      Using a different function for the differencing will not work if you are using non-linear left preconditioning.
-
 
 .seealso: MatDestroy(), MatMFFDSetFunction(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),

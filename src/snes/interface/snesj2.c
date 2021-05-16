@@ -46,7 +46,6 @@ static PetscErrorCode SNESComputeFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
        SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free via SNESSetUseMatrixFree,
        and computing explictly with finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
 
-
 .seealso: SNESSetJacobian(), SNESTestJacobian(), SNESComputeJacobianDefault(), SNESSetUseMatrixFree(),
           MatFDColoringCreate(), MatFDColoringSetFunction()
 

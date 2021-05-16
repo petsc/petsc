@@ -1,7 +1,6 @@
 
 static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 
-
 /*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscts.h" so that we can use SNES solvers.  Note that this
@@ -15,7 +14,6 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
-
 
 /*
    User-defined routines

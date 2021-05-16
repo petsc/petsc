@@ -714,7 +714,6 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode DMPlexWriteLabels_HDF5_Static(DM dm, IS globalPointNumbers, PetscViewer viewer)
 {
   const PetscInt   *gpoint;

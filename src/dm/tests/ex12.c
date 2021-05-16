@@ -34,14 +34,12 @@ int main(int argc,char **argv)
   /* Make copy of local array for doing updates */
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
-
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRQ(ierr);
 
   /* Initialize the Array */
   ierr = VecGetLocalSize (global,&globalsize);CHKERRQ(ierr);
   ierr = VecGetArray (global,&globalptr);CHKERRQ(ierr);
-
 
   for (i=0; i<globalsize; i++) {
     j = i + mybase;

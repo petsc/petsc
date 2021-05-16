@@ -2,7 +2,6 @@
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the KSP interface instead of using PC directly.\n\n";
 
-
 #include <petscksp.h>
 
 int main(int argc,char **args)
@@ -81,10 +80,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
-
-
 
 /*TEST
 

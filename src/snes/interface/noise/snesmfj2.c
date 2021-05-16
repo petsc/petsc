@@ -133,7 +133,6 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
       ierr = VecNormEnd(a,NORM_1,&sum);CHKERRQ(ierr);
       ierr = VecNormEnd(a,NORM_2,&norm);CHKERRQ(ierr);
 
-
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {
         dot  = 1.0;

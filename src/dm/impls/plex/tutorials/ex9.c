@@ -86,7 +86,6 @@ int main(int argc, char **argv)
       requires: exodusii
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -orth_qual_atol 0.95
 
-
     test:
       suffix: mesh_2
       nsize: 2

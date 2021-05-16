@@ -646,7 +646,6 @@ PetscErrorCode PostEvaluate(TS ts)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 {
   PetscErrorCode ierr;
@@ -721,7 +720,6 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
   const PetscScalar *v0;
   PetscScalar       dPD_dVr,dPD_dVi,dQD_dVr,dQD_dVi;
   PetscScalar       dIDr_dVr,dIDr_dVi,dIDi_dVr,dIDi_dVi;
-
 
   PetscFunctionBegin;
   ierr  = MatZeroEntries(B);CHKERRQ(ierr);
@@ -909,7 +907,6 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     dIDi_dVr = (-dQD_dVr*Vr + dPD_dVr*Vi - QD)/Vm2 - ((-QD*Vr + PD*Vi)*2*Vr)/Vm4;
     dIDi_dVi = (-dQD_dVi*Vr + dPD_dVi*Vi + PD)/Vm2 - ((-QD*Vr + PD*Vi)*2*Vi)/Vm4;
 
-
     /*    fnet[2*lbus[i]]   += IDi; */
     row[0] = net_start + 2*lbus[i];
     col[0] = net_start + 2*lbus[i];  col[1] = net_start + 2*lbus[i]+1;
@@ -1024,7 +1021,6 @@ int main(int argc,char **argv)
   const PetscInt    *idx3;
   PetscScalar       *vatoli;
   PetscInt          k;
-
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
@@ -1175,7 +1171,6 @@ int main(int argc,char **argv)
     ierr = TSSetPostStage(ts,PostStage);CHKERRQ(ierr);
     ierr = TSSetPostEvaluate(ts,PostEvaluate);CHKERRQ(ierr);
   }
-
 
   if (user.setisdiff) {
     /* Create vector of absolute tolerances and set the algebraic part to infinity */

@@ -25,7 +25,6 @@ PETSC_EXTERN void dmswarmgetfield_(DM *dm, char *name, PetscInt *blocksize, Pets
   FREECHAR(name, fieldname);
 }
 
-
 PETSC_EXTERN void dmswarmrestorefield_(DM *dm, char *name, PetscInt *blocksize, PetscDataType *type, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd), PETSC_FORTRAN_CHARLEN_T lenN)
 {
   PetscScalar *v;

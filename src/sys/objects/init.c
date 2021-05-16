@@ -42,7 +42,6 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
 #endif
 
-
 /* ------------------------Nasty global variables -------------------------------*/
 /*
      Indicates if PETSc started up MPI, or it was

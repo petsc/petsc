@@ -179,7 +179,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 
   Level: intermediate
 
-
 .seealso: PetscViewerASCIIGetPointer()
 @*/
 PetscErrorCode  PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)

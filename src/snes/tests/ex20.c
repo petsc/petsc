@@ -18,8 +18,6 @@ options are:\n\
    Processors: n
 T*/
 
-
-
 /*
 
     This example models the partial differential equation
@@ -1105,7 +1103,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
           dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);
 
-
           /* bottom down interior edge */
           if (k == 0) {
 
@@ -1398,7 +1395,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   ierr = PetscLogFlops((41.0 + 8.0*POWFLOP)*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

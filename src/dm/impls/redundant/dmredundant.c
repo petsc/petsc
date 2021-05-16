@@ -373,7 +373,6 @@ static PetscErrorCode DMSetUpGLVisViewer_Redundant(PetscObject odm, PetscViewer 
 
          This DM is generally used inside a DMCOMPOSITE object. For example, it may be used to store continuation parameters for a bifurcation problem.
 
-
   Level: intermediate
 
 .seealso: DMType, DMCOMPOSITE,  DMCreate(), DMRedundantSetSize(), DMRedundantGetSize()

@@ -1,7 +1,5 @@
 ! Introductory example that illustrates printing: Fortran Example
 
-
-
 program main
 #include <petsc/finclude/petscsys.h>
       use petscsys
@@ -19,7 +17,6 @@ program main
         stop
       endif
 
-
       ! We can now change the communicator universe for PETSc
 
       call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr); CHKERRA(ierr)
@@ -36,7 +33,6 @@ program main
       ! Here a barrier is used to separate the two program states.
 
       call MPI_Barrier(PETSC_COMM_WORLD,ierr); CHKERRA(ierr)
-
 
       ! Here we simply use PetscPrintf() with the communicator PETSC_COMM_SELF,
       ! where each process is considered separately and prints independently

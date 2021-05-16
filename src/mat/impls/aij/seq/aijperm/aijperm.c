@@ -258,7 +258,6 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
@@ -470,7 +469,6 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* MatMultAdd_SeqAIJPERM() calculates yy = ww + A * xx.
  * Note that the names I used to designate the vectors differs from that

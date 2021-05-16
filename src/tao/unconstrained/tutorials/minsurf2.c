@@ -31,8 +31,6 @@ The command line options are:\n\
    Processors: n
 T*/
 
-
-
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient()
@@ -44,7 +42,6 @@ typedef struct {
   DM          dm;                      /* distributed array data structure */
   Mat         H;                       /* Hessian */
 } AppCtx;
-
 
 /* -------- User-defined Routines --------- */
 
@@ -80,7 +77,6 @@ int main(int argc, char **argv)
 
   ierr = PetscPrintf(MPI_COMM_WORLD,"\n---- Minimum Surface Area Problem -----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(MPI_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);CHKERRQ(ierr);
-
 
   /* Let PETSc determine the vector distribution */
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
@@ -125,7 +121,6 @@ int main(int argc, char **argv)
   */
   ierr = DMCreateMatrix(user.dm,&user.H);CHKERRQ(ierr);
   ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-
 
   if (fdcoloring) {
     ierr = DMCreateColoring(user.dm,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
@@ -438,7 +433,6 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   ierr = MatAssembled(Hessian,&assembled);CHKERRQ(ierr);
   if (assembled){ierr = MatZeroEntries(Hessian);CHKERRQ(ierr);}
 
-
   /* Set various matrix options */
   ierr = MatSetOption(Hessian,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -487,7 +481,6 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
         xrb = x[j-1][i+1];
       }
 
-
       d1 = (xc-xl)/hx;
       d2 = (xc-xr)/hx;
       d3 = (xc-xt)/hy;
@@ -503,7 +496,6 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
       f4 = PetscSqrtReal(1.0 + d3*d3 + d2*d2);
       f5 = PetscSqrtReal(1.0 + d2*d2 + d5*d5);
       f6 = PetscSqrtReal(1.0 + d4*d4 + d6*d6);
-
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
         (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
@@ -772,7 +764,6 @@ PetscErrorCode My_Monitor(Tao tao, void *ctx)
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

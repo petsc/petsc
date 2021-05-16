@@ -45,7 +45,6 @@ PetscErrorCode SPARSEPACKqmdupd(const PetscInt *xadj,const PetscInt *adjncy,cons
 /*       (NHDSZE, NBRHD). DEG0 CONTAINS THE NUMBER OF*/
 /*       NODES IN THE LIST.*/
 
-
   PetscFunctionBegin;
   /* Parameter adjustments */
   --nbrhd;

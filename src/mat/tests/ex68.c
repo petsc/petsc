@@ -15,7 +15,6 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-
   /* ------- Assemble matrix, --------- */
 
   ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
@@ -132,8 +131,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
 
 /*TEST
 

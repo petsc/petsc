@@ -45,7 +45,6 @@ typedef struct {
   MPI_Comm  comm;
 } UserContext;
 
-
 PetscErrorCode UserContextCreate(MPI_Comm comm,UserContext **ctx)
 {
   UserContext    *user;

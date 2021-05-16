@@ -147,7 +147,6 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(NULL,NULL,"-a",&appctx.param.a,NULL);CHKERRQ(ierr);
   appctx.param.Le = appctx.param.L/appctx.param.E;
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create GLL data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -205,7 +204,6 @@ int main(int argc,char **argv)
   }
   ierr = DMDAVecRestoreArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Create matrix data structure; set matrix evaluation routine.
@@ -360,7 +358,6 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   ierr = VecShift(u,-sum/lenglob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*
    TrueSolution() computes the true solution for the Tao optimization solve which means they are the initial conditions for the objective function.
@@ -606,7 +603,6 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
               G = -2 M(u(T) - u_d)
           below (instead of -2(u(T) - u_d)
 
-
 */
 PetscErrorCode FormFunctionGradient(Tao tao,Vec ic,PetscReal *f,Vec G,void *ctx)
 {
@@ -681,7 +677,6 @@ PetscErrorCode MonitorDestroy(void **ctx)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:
@@ -700,6 +695,5 @@ PetscErrorCode MonitorDestroy(void **ctx)
      suffix: 2
      requires: !single
      args:  -ts_adapt_dt_max 3.e-3 -E 10 -N 8 -ncoeff 5  -a .1 -tao_bqnls_mat_lmvm_scale_type none
-
 
 TEST*/

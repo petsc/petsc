@@ -39,13 +39,9 @@ Evolve the Cahn-Hillard equations: logarithmic + double well (never shrinks and 
 
 ./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -draw_pause -2   -ts_type cn    -da_refine 5   -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_linesearch_monitor -theta .00000001    -ts_monitor_draw_solution --ts_max_time 1. -degenerate -mymonitor
 
-
 Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks, never grows)
 ---------------
 ./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -draw_pause -2   -ts_type cn    -da_refine 5   -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_linesearch_monitor -theta .00000001   -ts_monitor_draw_solution --mymonitor
-
-
-
 
 */
 #include <petscdm.h>
@@ -465,7 +461,6 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   PetscReal          tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c,a,b; /* a and b are used in the cubic truncation of the log function */
   PetscReal          vbounds[] = {-1.1,1.1};
 
-
   PetscFunctionBegin;
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),800,600);CHKERRQ(ierr);
@@ -731,8 +726,6 @@ PetscErrorCode  MyDestroy(void **ptr)
   ierr = PetscDrawViewPortsDestroy(ctx->ports);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 /*TEST
 

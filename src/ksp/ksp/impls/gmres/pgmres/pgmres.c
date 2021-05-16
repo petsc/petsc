@@ -43,7 +43,6 @@ static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
     On entry, the value in vector VEC_VV(0) should be
     the initial residual.
 
-
  */
 static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 {
@@ -195,7 +194,6 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 
 /*
     KSPSolve_PGMRES - This routine applies the PGMRES method.
-
 
    Input Parameter:
 .     ksp - the Krylov space object that was set to use pgmres

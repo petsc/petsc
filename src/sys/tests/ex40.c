@@ -19,7 +19,6 @@ if (PetscUnlikely(!(expr)))               \
            PetscStringize(expr));         \
 } while (0)
 
-
 int main(int argc,char **argv)
 {
   PetscHMapI     ht = NULL, hd;
@@ -166,7 +165,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

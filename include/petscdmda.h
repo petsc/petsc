@@ -126,7 +126,6 @@ PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOFRead(DM,Vec,void *);
 
 PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*,PetscBool);
 
-
 /*MC
       DMDACoor2d - Structure for holding 2d (x and y) coordinates.
 

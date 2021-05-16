@@ -45,7 +45,6 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
   PetscFunctionReturn(0);
 }
 
-
 /*@
     PetscSplitOwnership - Given a global (or local) length determines a local
         (or global) length via a simple formula
@@ -102,7 +101,6 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@
     PetscSplitOwnershipEqual - Given a global (or local) length determines a local

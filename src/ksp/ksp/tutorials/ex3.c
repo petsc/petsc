@@ -200,7 +200,6 @@ PetscErrorCode FormElementRhs(PetscScalar x,PetscScalar y,PetscReal H,PetscScala
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    test:

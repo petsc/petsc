@@ -200,5 +200,4 @@ int main(int argc,char **args)
       args: -ksp_converged_reason -ksp_max_it 20 -ksp_converged_maxits -ksp_type {{cg pipecg groppcg}} -ksp_norm_type {{preconditioned unpreconditioned natural}separate output} -pc_type {{bjacobi none}separate output} -f ${DATAFILESPATH}/matrices/poisson_2d13p -b_in_f 0 -test_residual
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
 
-
 TEST*/

@@ -4666,7 +4666,6 @@ PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field,
   PetscFunctionReturn(0);
 }
 
-
 PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
   PetscScalar    *array, *vArray;
@@ -7413,7 +7412,6 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
   PetscFunctionReturn(0);
 }
 
-
 /*@
   DMPlexCreateRankField - Create a cell field whose value is the rank of the owner
 
@@ -8607,7 +8605,6 @@ PetscErrorCode DMPlexSetCellRefinerType(DM dm, DMPlexCellRefinerType cr)
   Output Parameters:
 + anchorSection - If not NULL, set to the section describing which points anchor the constrained points.
 - anchorIS - If not NULL, set to the list of anchors indexed by anchorSection
-
 
   Level: intermediate
 

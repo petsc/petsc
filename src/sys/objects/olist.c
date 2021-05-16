@@ -162,7 +162,6 @@ PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
     PetscObjectListFind - givn a name, find the matching object
 

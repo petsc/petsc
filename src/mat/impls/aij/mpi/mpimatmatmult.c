@@ -1060,7 +1060,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   /* get P_loc by taking all local rows of P */
   ierr = MatMPIAIJGetLocalMat(P,MAT_INITIAL_MATRIX,&ptap->P_loc);CHKERRQ(ierr);
 
-
   p_loc  = (Mat_SeqAIJ*)(ptap->P_loc)->data;
   pi_loc = p_loc->i;
 
@@ -1098,7 +1097,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
 
   /* j_temp stores indices of a result row before they are added to the linked list */
   ierr = PetscMalloc1(pN+2,&j_temp);CHKERRQ(ierr);
-
 
   /* Symbolic calc of the A_diag * p_loc_off */
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */

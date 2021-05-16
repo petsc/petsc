@@ -148,7 +148,6 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure for Jacobian
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

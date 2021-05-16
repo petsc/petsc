@@ -45,7 +45,6 @@ PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*),
     WriteRestartFile(GRID*, PetscInt),
     ReadRestartFile(GRID*);
 
-
 /* Global Variables */
 
                                                /*============================*/
@@ -133,7 +132,6 @@ int main(int argc,char **args)
   c_runge->nitfo = 0;
   ierr           = PetscOptionsGetInt(NULL,NULL,"-first_order_it",&c_runge->nitfo,&flg);CHKERRQ(ierr);
 
-
 /* Read & process the grid */
 /*  f77RDGPAR(&f_pntr.nnodes,  &f_pntr.ncell,   &f_pntr.nedge,
            &f_pntr.nccolor, &f_pntr.ncolor,
@@ -143,7 +141,6 @@ int main(int argc,char **args)
            &f_pntr.ntte,
            &f_pntr.nsface,  &f_pntr.nvface,  &f_pntr.nfface,
            &rank);*/
-
 
 /* Read the grid information */
 
@@ -191,8 +188,6 @@ int main(int argc,char **args)
   user.grid  = &f_pntr;
   user.tsCtx = &tsCtx;
 
-
-
   /*
    Preload the executable to get accurate timings. This runs the following chunk of
    code twice, first to get the executable pages into memory and the second time for
@@ -224,14 +219,12 @@ int main(int argc,char **args)
   /*ierr = SNESMonitorSet(snes,Monitor,(void*)&monP);CHKERRQ(ierr);*/
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-
 /* Initialize the flowfield */
   ierr = FormInitialGuess(snes,user.grid);CHKERRQ(ierr);
 
   /* Solve nonlinear system */
 
   ierr = Update(snes,&user);CHKERRQ(ierr);
-
 
 /* Write restart file */
   ierr = VecGetArray(user.grid->qnode, &qnode);CHKERRQ(ierr);
@@ -677,7 +670,6 @@ int ComputeTimeStep(SNES snes, int iter, void *ctx)
   double   newcfl, fnorm;
   PetscErrorCode      ierr;
   /*int     iramp = tsCtx->iramp;*/
-
 
   /*VecDuplicate(tsCtx->qold,&func);*/
   /* Set the flag to calculate the local time step in GETRES */
@@ -1156,7 +1148,6 @@ int GetLocalOrdering(GRID *grid)
     ierr      = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
   }
 
-
   /* Renumber dual volume */
   FCALLOC(nvertices, &grid->area);
   remNodes = nnodes;
@@ -1517,7 +1508,6 @@ int GetLocalOrdering(GRID *grid)
     grid->f2ntf[2*nffacetLoc+i] = tmp[j++] + 1;
   }
 
-
   ierr = PetscFree(tmp);CHKERRQ(ierr);
   ierr = PetscFree(tmp1);CHKERRQ(ierr);
   ierr = PetscFree(tmp2);CHKERRQ(ierr);
@@ -1662,7 +1652,6 @@ int GetLocalOrdering(GRID *grid)
     }
     fprintf(fptr1, "\n");
 
-
     fprintf(fptr1, "---------------------------------------------\n");
     fprintf(fptr1, "Viscous Boundary Nodes\n");
     fprintf(fptr1, "---------------------------------------------\n");
@@ -1733,7 +1722,6 @@ int GetLocalOrdering(GRID *grid)
 
   return 0;
 }
-
 
 /*---------------------------------------------------------------------*/
 int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
@@ -2537,7 +2525,6 @@ int set_up_grid(GRID *grid)
   ntte    = grid->ntte;
   /* end of stuff */
 
-
   if (ileast == 0) lnodes = 1;
   /*   printf("In set_up_grid->jvisc = %d\n",grid->jvisc); */
 
@@ -2686,7 +2673,6 @@ int set_up_grid(GRID *grid)
   /* end of stuff */
   return 0;
 }
-
 
 /*========================== WRITE_FINE_GRID ================================*/
 /*                                                                           */

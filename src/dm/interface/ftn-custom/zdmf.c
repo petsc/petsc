@@ -124,7 +124,6 @@ PETSC_EXTERN void dmsetmattype_(DM *dm,char* prefix, PetscErrorCode *ierr,PETSC_
   FREECHAR(prefix,t);
 }
 
-
 PETSC_EXTERN void dmsetvectype_(DM *dm,char* prefix, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;

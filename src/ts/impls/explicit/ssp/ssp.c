@@ -15,7 +15,6 @@ typedef struct {
   PetscBool      workout;
 } TS_SSP;
 
-
 static PetscErrorCode TSSSPGetWorkVectors(TS ts,PetscInt n,Vec **work)
 {
   TS_SSP         *ssp = (TS_SSP*)ts->data;
@@ -183,7 +182,6 @@ static PetscErrorCode TSSSPStep_RK_10_4(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   ierr       = TSSSPRestoreWorkVectors(ts,3,&work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode TSSetUp_SSP(TS ts)
 {

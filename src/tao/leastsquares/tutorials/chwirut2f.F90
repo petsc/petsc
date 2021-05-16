@@ -19,7 +19,6 @@
 !  Processors: n
 !T*/
 
-
 !
 ! ----------------------------------------------------------------------
 !
@@ -63,7 +62,6 @@
          call VecCreateSeq(PETSC_COMM_SELF,m,f,ierr)
          CHKERRA(ierr)
 
-
 !     The TAO code begins here
 
 !     Create TAO solver
@@ -81,7 +79,6 @@
          call FormStartingPoint(x)
          call TaoSetInitialVector(tao, x, ierr)
          CHKERRA(ierr)
-
 
 !     Check for TAO command line options
          call TaoSetFromOptions(tao,ierr)
@@ -109,7 +106,6 @@
 
       call PetscFinalize(ierr)
       end
-
 
 ! --------------------------------------------------------------------
 !  FormFunction - Evaluates the function f(X) and gradient G(X)
@@ -150,7 +146,6 @@
       CHKERRQ(ierr)
       call VecGetArray(f,f_v,f_i,ierr)
       CHKERRQ(ierr)
-
 
 !     Compute F(X)
       if (size .eq. 1) then
@@ -213,7 +208,6 @@
       CHKERRQ(ierr)
       return
       end
-
 
       subroutine InitializeData()
 #include "chwirut2f.h"
@@ -438,8 +432,6 @@
       return
       end
 
-
-
       subroutine TaskWorker(ierr)
 #include "chwirut2f.h"
 
@@ -477,8 +469,6 @@
       ierr = 0
       return
       end
-
-
 
       subroutine RunSimulation(x,i,f,ierr)
 #include "chwirut2f.h"

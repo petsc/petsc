@@ -15,7 +15,6 @@ Last Modification:
 *********************************bit_mask.c***********************************/
 #include <../src/ksp/pc/impls/tfs/tfs.h>
 
-
 /*********************************bit_mask.c***********************************/
 PetscErrorCode PCTFS_bm_to_proc(char *ptr, PetscInt p_mask,  PetscInt *msg_list)
 {
@@ -143,6 +142,4 @@ PetscInt PCTFS_len_buf(PetscInt item_size, PetscInt num_items)
   if ((tmp = (rt_val%(PetscInt)sizeof(double)))) rt_val += (sizeof(double) - tmp);
   return(rt_val);
 }
-
-
 

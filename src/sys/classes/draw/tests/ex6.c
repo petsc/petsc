@@ -3,7 +3,6 @@ static char help[] = "Demonstrates named colormaps\n";
 #include <petscsys.h>
 #include <petscdraw.h>
 
-
 typedef PetscReal (*Function)(PetscReal,PetscReal);
 
 typedef struct {
@@ -74,7 +73,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

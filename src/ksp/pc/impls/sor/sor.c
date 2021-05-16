@@ -118,7 +118,6 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 /* ------------------------------------------------------------------------------*/
 static PetscErrorCode  PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
 {
@@ -350,7 +349,6 @@ PetscErrorCode  PCSORSetSymmetric(PC pc,MatSORType flag)
 
    Note:
    If omega != 1, you will need to set the MAT_USE_INODES option to PETSC_FALSE on the matrix.
-
 
 .seealso: PCSORSetSymmetric(), PCSORSetIterations(), PCEisenstatSetOmega(), MatSetOption()
 @*/

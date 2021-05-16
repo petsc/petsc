@@ -349,7 +349,6 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
       x_ptr+=len;
     }
 
-
     /* uu = X^T.u_l (comm portion) */
     ierr = PCTFS_ssgl_radd  (uu, w, dim, stages);CHKERRQ(ierr);
 
@@ -738,7 +737,6 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
     }
   }
 
-
   /* level 0 is on processor case - so mark the remainder */
   for (ct=i=0; i<n; i++) {
     if (!used[i]) {
@@ -768,7 +766,6 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
 static mv_info *set_mvi(PetscInt *local2global,PetscInt n,PetscInt m,PetscErrorCode (*matvec)(mv_info*,PetscScalar*,PetscScalar*),void *grid_data)
 {
   mv_info *mvi;
-
 
   mvi               = (mv_info*)malloc(sizeof(mv_info));
   mvi->n            = n;

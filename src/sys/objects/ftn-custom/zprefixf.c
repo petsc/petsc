@@ -15,5 +15,3 @@ PETSC_EXTERN void petscobjectsetoptionsprefix_(PetscObject *obj,char* prefix,Pet
   FREECHAR(prefix,t);
 }
 
-
-

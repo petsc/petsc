@@ -17,5 +17,4 @@ typedef struct {
 
 } TaoLineSearch_GPCG;
 
-
 #endif

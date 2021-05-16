@@ -223,7 +223,6 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    DMDATSSetRHSFunctionLocal - set a local residual evaluation function
 
@@ -306,7 +305,6 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void 
   ierr = DMTSSetRHSJacobian(dm,TSComputeRHSJacobian_DMDA,dmdats);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    DMDATSSetIFunctionLocal - set a local residual evaluation function

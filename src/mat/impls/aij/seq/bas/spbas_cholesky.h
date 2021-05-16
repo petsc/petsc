@@ -15,7 +15,6 @@ PetscErrorCode spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscIn
   PetscFunctionReturn(0);
 }
 
-
 /*
   spbas_cholesky_garbage_collect:
      move the rows which have been calculated so far, as well as
@@ -109,7 +108,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
     ierr = PetscInfo1(NULL,"%6.2f %% more than the estimate\n",xtra_perc);CHKERRQ(ierr);
   }
 
-
   /**********************************************************
   2. Rescue arrays which would be lost
   Count how many rows and nonzeros will have to be rescued
@@ -199,7 +197,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
     /* Delete old array */
     ierr = PetscFree(alloc_val_old);CHKERRQ(ierr);
   }
-
 
   /*********************************************************
   4. Copy all the arrays to their proper places */

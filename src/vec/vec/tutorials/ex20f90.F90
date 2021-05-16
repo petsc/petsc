@@ -183,7 +183,6 @@
       if (rank .eq. 0) write(6,210) v
  210  format ('VecPointwiseDivide ',1pe9.2)
 
-
       dots(1) = one
       dots(2) = three
       dots(3) = two
@@ -200,7 +199,6 @@
       if (v2 .gt. -tol .and. v2 .lt. tol) v2 = 0.0
       if (rank .eq. 0) write(6,220) v,v1,v2
  220  format ('VecMAXPY ',3(1pe9.2))
-
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

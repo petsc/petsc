@@ -439,7 +439,6 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
 .  name - name of the variable
 -  help - longer string with more information about the value
 
-
    Level: beginner
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
@@ -486,7 +485,6 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
 .  mdefault - the initial value
 .  name - name of the variable
 -  help - longer string with more information about the value
-
 
    Level: beginner
 
@@ -940,7 +938,6 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
   ierr = PetscStrncpy(bag->baghelp,help,PETSC_BAG_HELP_LENGTH-1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@C
     PetscBagGetName - Gets the name of a bag of values

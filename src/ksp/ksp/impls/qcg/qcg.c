@@ -89,7 +89,6 @@ PetscErrorCode  KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode KSPSolve_QCG(KSP ksp)
 {
 /*
@@ -373,7 +372,6 @@ PetscErrorCode KSPSetFromOptions_QCG(PetscOptionItems *PetscOptionsObject,KSP ks
 $  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
 $  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
 $  other KSP converged/diverged reasons
-
 
   Notes:
   Currently we allow symmetric preconditioning with the following scaling matrices:

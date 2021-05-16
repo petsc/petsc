@@ -388,7 +388,6 @@ PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-
 /*@
     SNESNGMRESSetRestartType - Sets the restart type for SNESNGMRES.
 
@@ -507,7 +506,6 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes,SNESNGMRESRestartType r
    SIAM Journal on Scientific Computing, 21(5), 2000.
 -  2. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
-
 
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/

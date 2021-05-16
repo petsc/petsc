@@ -610,7 +610,6 @@ destroy:
            append ":yaml" to filename to force YAML options.
 -   require - if PETSC_TRUE will generate an error if the file does not exist
 
-
   Notes:
    Use  # for lines that are comments and which should be ignored.
    Usually, instead of using this command, one should list the file name in the call to PetscInitialize(), this insures that certain options

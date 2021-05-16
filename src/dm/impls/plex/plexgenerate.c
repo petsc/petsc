@@ -69,7 +69,6 @@ PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMPlexTriangleSetOptions - Set the options used for the Triangle mesh generator
 

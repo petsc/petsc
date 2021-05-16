@@ -87,7 +87,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec x,Vec xdot,PetscReal shift,Mat A,
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
     test:

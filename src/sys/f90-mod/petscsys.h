@@ -103,7 +103,6 @@
       PetscBool PetscIsInfOrNanScalar
       PetscBool PetscIsInfOrNanReal
 
-
 ! ----------------------------------------------------------------------------
 !
 !     Random numbers

@@ -6,7 +6,6 @@
 *
 */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -29,15 +28,12 @@ int mm_read_unsymmetric_sparse(const char *fname, int *M_, int *N_, int *nz_,
     if ((f = fopen(fname, "r")) == NULL)
             return -1;
 
-
     if (mm_read_banner(f, &matcode) != 0)
     {
         printf("mm_read_unsymmetric: Could not process Matrix Market banner ");
         printf(" in file [%s]\n", fname);
         return -1;
     }
-
-
 
     if (!(mm_is_real(matcode) && mm_is_matrix(matcode) &&
             mm_is_sparse(matcode)))
@@ -109,7 +105,6 @@ int mm_read_banner(FILE *f, MM_typecode *matcode)
     char storage_scheme[MM_MAX_TOKEN_LENGTH];
     char *p;
 
-
     mm_clear_typecode(matcode);
 
     if (fgets(line, MM_MAX_LINE_LENGTH, f) == NULL)
@@ -133,10 +128,8 @@ int mm_read_banner(FILE *f, MM_typecode *matcode)
         return  MM_UNSUPPORTED_TYPE;
     mm_set_matrix(matcode);
 
-
     /* second field describes whether this is a sparse matrix (in coordinate
             storgae) or a dense array */
-
 
     if (strcmp(crd, MM_SPARSE_STR) == 0)
         mm_set_sparse(matcode);
@@ -145,7 +138,6 @@ int mm_read_banner(FILE *f, MM_typecode *matcode)
             mm_set_dense(matcode);
     else
         return MM_UNSUPPORTED_TYPE;
-
 
     /* third field */
 
@@ -163,7 +155,6 @@ int mm_read_banner(FILE *f, MM_typecode *matcode)
     else
         return MM_UNSUPPORTED_TYPE;
 
-
     /* fourth field */
 
     if (strcmp(storage_scheme, MM_GENERAL_STR) == 0)
@@ -179,7 +170,6 @@ int mm_read_banner(FILE *f, MM_typecode *matcode)
         mm_set_skew(matcode);
     else
         return MM_UNSUPPORTED_TYPE;
-
 
     return 0;
 }
@@ -222,7 +212,6 @@ int mm_read_mtx_crd_size(FILE *f, int *M, int *N, int *nz)
     return 0;
 }
 
-
 int mm_read_mtx_array_size(FILE *f, int *M, int *N)
 {
     char line[MM_MAX_LINE_LENGTH];
@@ -259,8 +248,6 @@ int mm_write_mtx_array_size(FILE *f, int M, int N)
     else
         return 0;
 }
-
-
 
 /*-------------------------------------------------------------------------*/
 
@@ -327,7 +314,6 @@ int mm_read_mtx_crd_entry(FILE *f, int *ia, int *ja,
 
 }
 
-
 /************************************************************************
     mm_read_mtx_crd()  fills M, N, nz, array of values, and return
                         type code, e.g. 'MCRS'
@@ -347,7 +333,6 @@ int mm_read_mtx_crd(char *fname, int *M, int *N, int *nz, int **ia, int **ja,
     if ((f = fopen(fname, "r")) == NULL)
         return MM_COULD_NOT_READ_FILE;
 
-
     if ((ret_code = mm_read_banner(f, matcode)) != 0)
         return ret_code;
 
@@ -357,7 +342,6 @@ int mm_read_mtx_crd(char *fname, int *M, int *N, int *nz, int **ia, int **ja,
 
     if ((ret_code = mm_read_mtx_crd_size(f, M, N, nz)) != 0)
         return ret_code;
-
 
     *ia = (int *)  malloc(*nz * sizeof(int));
     *ja = (int *)  malloc(*nz * sizeof(int));
@@ -444,7 +428,6 @@ int mm_write_mtx_crd(char fname[], int M, int N, int nz, int ia[], int ja[],
     return 0;
 }
 
-
 char  *mm_typecode_to_str(MM_typecode matcode)
 {
     const char *types[4];
@@ -478,7 +461,6 @@ char  *mm_typecode_to_str(MM_typecode matcode)
         types[2] = MM_INT_STR;
     else
         return NULL;
-
 
     /* check for symmetry type */
     if (mm_is_general(matcode))

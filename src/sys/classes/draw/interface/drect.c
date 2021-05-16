@@ -4,7 +4,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-
 /*@C
    PetscDrawIndicatorFunction - Draws an indicator function (where a relationship is true) on a PetscDraw
 
@@ -45,7 +44,6 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw,PetscReal xmin,PetscRea
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    PetscDrawCoordinateToPixel - given a coordinate in a PetscDraw returns the pixel location

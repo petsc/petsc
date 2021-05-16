@@ -1777,7 +1777,6 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PetscSFComputeMultiRootOriginalNumbering - Returns original numbering of multi-roots (roots of multi-SF returned by PetscSFGetMultiSF()).
    Each multi-root is assigned index of the corresponding original root.

@@ -168,7 +168,6 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace, const 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyInterior(PetscDualSpace, const PetscScalar *, PetscScalar *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace, const PetscScalar *, PetscScalar *);
 
-
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetFormDegree(PetscDualSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetFormDegree(PetscDualSpace, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace, PetscInt *);

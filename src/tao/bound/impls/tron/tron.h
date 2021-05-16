@@ -30,7 +30,6 @@ typedef struct {
   PetscInt total_gp_its;
   PetscInt gp_iterates;
 
-
   Vec X_New;
   Vec G_New;
   Vec Work;

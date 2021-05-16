@@ -215,7 +215,6 @@ PetscErrorCode  PCSetDM(PC pc,DM dm)
 
    Level: intermediate
 
-
 .seealso: PCSetDM(), KSPSetDM(), KSPGetDM()
 @*/
 PetscErrorCode  PCGetDM(PC pc,DM *dm)

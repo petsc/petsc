@@ -660,5 +660,4 @@ int main(int argc,char **args)
      args: -sub_0_pc_bddc_interface_ext_type dirichlet
      suffix: composite_bddc_dirichlet
 
-
 TEST*/
