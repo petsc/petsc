@@ -1423,6 +1423,32 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
+  /* Copy over discretization if it exists */
+  {
+    DM                 cdmA, cdmB;
+    PetscDS            dsA, dsB;
+    PetscObject        objA, objB;
+    PetscClassId       idA, idB;
+    const PetscScalar *constants;
+    PetscInt            cdim, Nc;
+
+    ierr = DMGetCoordinateDM(dmA, &cdmA);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dmB, &cdmB);CHKERRQ(ierr);
+    ierr = DMGetField(cdmA, 0, NULL, &objA);CHKERRQ(ierr);
+    ierr = DMGetField(cdmB, 0, NULL, &objB);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(objA, &idA);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(objB, &idB);CHKERRQ(ierr);
+    if ((idA == PETSCFE_CLASSID) && (idA != idB)) {
+      ierr = DMSetField(cdmB, 0, NULL, objA);CHKERRQ(ierr);
+      ierr = DMCreateDS(cdmB);CHKERRQ(ierr);
+      ierr = DMGetDS(cdmA, &dsA);CHKERRQ(ierr);
+      ierr = DMGetDS(cdmB, &dsB);CHKERRQ(ierr);
+      ierr = PetscDSGetCoordinateDimension(dsA, &cdim);CHKERRQ(ierr);
+      ierr = PetscDSSetCoordinateDimension(dsB, cdim);CHKERRQ(ierr);
+      ierr = PetscDSGetConstants(dsA, &Nc, &constants);CHKERRQ(ierr);
+      ierr = PetscDSSetConstants(dsB, Nc, (PetscScalar *) constants);CHKERRQ(ierr);
+    }
+  }
   ierr = DMPlexGetHeightStratum(dmA, 0, &cStartA, &cEndA);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmB, 0, &cStartB, &cEndB);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);

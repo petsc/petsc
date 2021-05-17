@@ -43,6 +43,7 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM *ndm)
   /* Do not want to create the coordinate field if it does not already exist, so do not call DMGetCoordinateField() */
   ierr = DMFieldDestroy(&dm->coordinateField);CHKERRQ(ierr);
   dm->coordinateField = dmNew->coordinateField;
+  ((DM_Plex *) dmNew->data)->coordFunc = ((DM_Plex *) dm->data)->coordFunc;
   ierr = DMGetPeriodicity(dmNew, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
   ierr = DMSetPeriodicity(dm, isper, maxCell, L, bd);CHKERRQ(ierr);
   ierr = DMDestroy_Plex(dm);CHKERRQ(ierr);
@@ -1577,6 +1578,8 @@ PetscErrorCode DMPlexSetOptionsPrefix(DM dm, const char prefix[])
 }
 
 /* Remap geometry to cylinder
+   TODO: This only works for a single refinement, then it is broken
+
      Interior square: Linear interpolation is correct
      The other cells all have vertices on rays from the origin. We want to uniformly expand the spacing
      such that the last vertex is on the unit circle. So the closest and farthest vertices are at distance
@@ -2673,7 +2676,7 @@ static PetscErrorCode DMPlexCreateBoundaryLabel_Private(DM dm, const char name[]
 
 const char * const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
 
-static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOptionsObject, DM dm)
+static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOptionsObject, PetscBool *useCoordSpace, DM dm)
 {
   DMPlexShape    shape = DM_SHAPE_BOX;
   DMPolytopeType cell  = DM_POLYTOPE_TRIANGLE;
@@ -2699,6 +2702,18 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   ierr = PetscOptionsBool("-dm_plex_adj_cone", "Set adjacency direction", "DMSetBasicAdjacency", adjCone,  &adjCone, &flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_adj_closure", "Set adjacency size", "DMSetBasicAdjacency", adjClosure,  &adjClosure, &flg2);CHKERRQ(ierr);
   if (flg || flg2) {ierr = DMSetBasicAdjacency(dm, adjCone, adjClosure);CHKERRQ(ierr);}
+
+  switch (cell) {
+    case DM_POLYTOPE_POINT:
+    case DM_POLYTOPE_SEGMENT:
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    case DM_POLYTOPE_TRIANGLE:
+    case DM_POLYTOPE_QUADRILATERAL:
+    case DM_POLYTOPE_TETRAHEDRON:
+    case DM_POLYTOPE_HEXAHEDRON:
+      *useCoordSpace = PETSC_TRUE;break;
+    default: *useCoordSpace = PETSC_FALSE;break;
+  }
 
   if (fflg) {
     DM dmnew;
@@ -2740,7 +2755,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
         ierr = PetscOptionsEnumArray("-dm_plex_box_bd", "Boundary type for each dimension", "", DMBoundaryTypes, (PetscEnum *) bdt, &n, &flg);CHKERRQ(ierr);
         if (flg && (n != dim)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Box boundary types had %D values, should have been %D", n, dim);
         switch (cell) {
-          case DM_POLYTOPE_TRI_PRISM:
+          case DM_POLYTOPE_TRI_PRISM_TENSOR:
             ierr = DMPlexCreateWedgeBoxMesh_Internal(dm, faces, lower, upper, bdt, PETSC_FALSE, interpolate);CHKERRQ(ierr);
             break;
           default:
@@ -2790,9 +2805,9 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
         PetscInt       Nw  = 6;
 
         ierr = PetscOptionsEnum("-dm_plex_cylinder_bd", "Boundary type in the z direction", "", DMBoundaryTypes, (PetscEnum) bdt, (PetscEnum *) &bdt, NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsInt("-dm_plex_cylinder_num wedges", "Number of wedges around the cylinder", "", Nw, &Nw, NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsInt("-dm_plex_cylinder_num_wedges", "Number of wedges around the cylinder", "", Nw, &Nw, NULL);CHKERRQ(ierr);
         switch (cell) {
-          case DM_POLYTOPE_TRI_PRISM:
+          case DM_POLYTOPE_TRI_PRISM_TENSOR:
             ierr = DMPlexCreateWedgeCylinderMesh_Internal(dm, Nw, interpolate);CHKERRQ(ierr);
             break;
           default:
@@ -2808,7 +2823,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
+PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject, DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscBool      flg;
@@ -2877,7 +2892,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
 {
   PetscReal      volume = -1.0, extThickness = 1.0;
   PetscInt       prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
-  PetscBool      uniformOrig, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute = PETSC_FALSE, interpolate = PETSC_TRUE, extColOrder = PETSC_TRUE, isHierarchy, flg;
+  PetscBool      uniformOrig, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute = PETSC_FALSE, interpolate = PETSC_TRUE, extColOrder = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, isHierarchy, flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2885,10 +2900,11 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Options");CHKERRQ(ierr);
   /* Handle automatic creation */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim < 0) {ierr = DMPlexCreateFromOptions_Internal(PetscOptionsObject, dm);CHKERRQ(ierr);created = PETSC_TRUE;}
+  if (dim < 0) {ierr = DMPlexCreateFromOptions_Internal(PetscOptionsObject, &coordSpace, dm);CHKERRQ(ierr);created = PETSC_TRUE;}
   /* Handle DMPlex refinement before distribution */
   ierr = DMPlexGetRefinementUniform(dm, &uniformOrig);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-dm_refine_pre", "The number of refinements before distribution", "DMCreate", prerefine, &prerefine, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_refine_remap_pre", "Flag to control coordinate remapping", "DMCreate", remap, &remap, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_refine_uniform_pre", "Flag for uniform refinement before distribution", "DMCreate", uniform, &uniform, &flg);CHKERRQ(ierr);
   if (flg) {ierr = DMPlexSetRefinementUniform(dm, uniform);CHKERRQ(ierr);}
   ierr = PetscOptionsReal("-dm_refine_volume_limit_pre", "The maximum cell volume after refinement before distribution", "DMCreate", volume, &volume, &flg);CHKERRQ(ierr);
@@ -2903,10 +2919,9 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
 
     ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
     ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
-    /* Total hack since we do not pass in a pointer */
     ierr = DMPlexReplace_Static(dm, &rdm);CHKERRQ(ierr);
     ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
-    if (coordFunc) {
+    if (coordFunc && remap) {
       ierr = DMPlexRemapGeometry(dm, 0.0, coordFunc);CHKERRQ(ierr);
       ((DM_Plex*) dm->data)->coordFunc = coordFunc;
     }
@@ -2939,16 +2954,42 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   }
   /* Create coordinate space */
   if (created) {
-    PetscBool coordSpace = PETSC_TRUE;
-    PetscInt  degree     = 1;
+    DM_Plex  *mesh = (DM_Plex *) dm->data;
+    PetscInt  degree = 1;
+    PetscBool periodic, flg;
 
-    ierr = PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, &flg);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL);CHKERRQ(ierr);
-    if (coordSpace) {ierr = DMPlexCreateCoordinateSpace(dm, degree, NULL);CHKERRQ(ierr);}
+    if (coordSpace) {ierr = DMPlexCreateCoordinateSpace(dm, degree, mesh->coordFunc);CHKERRQ(ierr);}
+    if (flg && !coordSpace) {
+      DM           cdm;
+      PetscDS      cds;
+      PetscObject  obj;
+      PetscClassId id;
+
+      ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+      ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(cds, 0, &obj);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        PetscContainer dummy;
+
+        ierr = PetscContainerCreate(PETSC_COMM_SELF, &dummy);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) dummy, "coordinates");CHKERRQ(ierr);
+        ierr = DMSetField(cdm, 0, NULL, (PetscObject) dummy);CHKERRQ(ierr);
+        ierr = PetscContainerDestroy(&dummy);CHKERRQ(ierr);
+        ierr = DMClearDS(cdm);CHKERRQ(ierr);
+      }
+      mesh->coordFunc = NULL;
+    }
     ierr = DMLocalizeCoordinates(dm);CHKERRQ(ierr);
+    ierr = DMGetPeriodicity(dm, &periodic, NULL, NULL, NULL);CHKERRQ(ierr);
+    if (periodic) {ierr = DMSetPeriodicity(dm, PETSC_TRUE, NULL, NULL, NULL);CHKERRQ(ierr);}
   }
   /* Handle DMPlex refinement */
+  remap = PETSC_TRUE;
   ierr = PetscOptionsBoundedInt("-dm_refine", "The number of uniform refinements", "DMCreate", refine, &refine, NULL,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_refine_remap", "Flag to control coordinate remapping", "DMCreate", remap, &remap, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy,0);CHKERRQ(ierr);
   if (refine) {ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);}
   if (refine && isHierarchy) {
@@ -2987,7 +3028,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
       /* Total hack since we do not pass in a pointer */
       ierr = DMPlexReplace_Static(dm, &rdm);CHKERRQ(ierr);
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
-      if (coordFunc) {
+      if (coordFunc && remap) {
         ierr = DMPlexRemapGeometry(dm, 0.0, coordFunc);CHKERRQ(ierr);
         ((DM_Plex*) dm->data)->coordFunc = coordFunc;
       }

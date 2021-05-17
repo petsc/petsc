@@ -627,14 +627,14 @@ int main(int argc, char **argv)
       args: -ref_dm_refine 1
     test:
       suffix: cylinder_per
-      args: -dm_plex_cylinder_bd periodic -ref_dm_refine 1
+      args: -dm_plex_cylinder_bd periodic -ref_dm_refine 1 -ref_dm_refine_remap 0
     test:
       suffix: cylinder_wedge
-      args: -dm_coord_space 0 -dm_plex_interpolate 0 -dm_plex_cell triangular_prism -dm_view vtk:
+      args: -dm_coord_space 0 -dm_plex_interpolate 0 -dm_plex_cell tensor_triangular_prism -dm_view vtk:
     test:
       suffix: cylinder_wedge_int
       output_file: output/ex1_cylinder_wedge.out
-      args: -dm_coord_space 0 -dm_plex_cell triangular_prism -dm_view vtk:
+      args: -dm_coord_space 0 -dm_plex_cell tensor_triangular_prism -dm_view vtk:
 
   test:
     suffix: box_2d
@@ -655,11 +655,11 @@ int main(int argc, char **argv)
   test:
     requires: triangle
     suffix: box_wedge
-    args: -dm_coord_space 0 -dm_plex_dim 3 -dim 3 -dm_plex_simplex 0 -dm_plex_cell triangular_prism -dm_view vtk: -dm_plex_check_all
+    args: -dm_coord_space 0 -dm_plex_dim 3 -dim 3 -dm_plex_simplex 0 -dm_plex_cell tensor_triangular_prism -dm_view vtk: -dm_plex_check_all
 
   testset:
     requires: triangle
-    args: -dm_coord_space 0 -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_cell triangular_prism -dm_plex_box_faces 2,3,1 -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_cell_refiner tobox
+    args: -dm_coord_space 0 -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_cell tensor_triangular_prism -dm_plex_box_faces 2,3,1 -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_cell_refiner tobox
     test:
       suffix: box_wedge_s2t
     test:
