@@ -622,18 +622,8 @@ int main(int argc,char **argv)
 
    test:
       suffix: 2d
-
-      test:
-         args: -mx 10 -my 10 -nl 6 -dim 2 -cmap 0
-
-      test:
-         args: -mx 10 -my 10 -nl 6 -dim 2 -cmap 1
-
-      test:
-         args: -mx 10 -my 10 -nl 6 -dim 2 -cmap 2
-
-      test:
-         args: -mx 10 -my 10 -nl 6 -dim 2 -cmap 3
+      output_file: output/ex36_2d.out
+      args: -mx 10 -my 10 -nl 6 -dim 2 -cmap {{0 1 2 3}}
 
    test:
       suffix: 2dp1
