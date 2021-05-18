@@ -260,46 +260,29 @@ int main(int argc, char **argv)
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   if (isplex) {
-    PetscBool simplex = PETSC_TRUE;
     PetscInt  overlap = 0;
     Vec       fieldvec;
-    PetscBool interpolate = PETSC_TRUE;
-    PetscInt       inttypes[3];
-    DMBoundaryType types[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
-    PetscInt       cells[3] = {3,3,3};
-    PetscBool      flags[3] = {PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
-    PetscInt       n = 3, i;
+    PetscInt  cells[3] = {3,3,3};
+    PetscBool simplex;
     PetscFE   fe;
 
     ierr = PetscOptionsBegin(comm, "", "DMField DMPlex Options", "DM");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-simplex","Create a simplicial DMPlex","ex1.c",simplex,&simplex,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBoundedInt("-overlap","DMPlex parallel overlap","ex1.c",overlap,&overlap,NULL,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-interpolate","Interpolate the DMPlex","ex1.c",interpolate,&interpolate,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-boundary_x","type of boundary in x direction","ex1.c",DMBoundaryTypes,5,DMBoundaryTypes[types[0]],&inttypes[0],&flags[0]);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-boundary_y","type of boundary in y direction","ex1.c",DMBoundaryTypes,5,DMBoundaryTypes[types[1]],&inttypes[1],&flags[1]);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-boundary_z","type of boundary in z direction","ex1.c",DMBoundaryTypes,5,DMBoundaryTypes[types[2]],&inttypes[2],&flags[2]);CHKERRQ(ierr);
-    ierr = PetscOptionsIntArray("-cells","Cells per dimension","ex1.c",cells,&n,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    for (i = 0; i < 3; i++) {
-      if (flags[i]) {types[i] = (DMBoundaryType) inttypes[i];}
+    if (0) {
+      ierr = DMPlexCreateBoxMesh(comm,2,PETSC_TRUE,cells,NULL,NULL,NULL,PETSC_TRUE,&dm);CHKERRQ(ierr);
+    } else {
+      ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
+      ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+      ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+      CHKMEMQ;
     }
-    ierr = DMPlexCreateBoxMesh(comm,dim,simplex,cells,NULL,NULL,types,interpolate,&dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
     if (simplex) {
       ierr = PetscDTStroudConicalQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad);CHKERRQ(ierr);
     } else {
       ierr = PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad);CHKERRQ(ierr);
-    }
-    {
-      PetscPartitioner part;
-      DM               dmDist;
-
-      ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
-      ierr = PetscPartitionerSetType(part,PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
-      ierr = DMPlexDistribute(dm,overlap,NULL,&dmDist);CHKERRQ(ierr);
-      if (dmDist) {
-        ierr = DMDestroy(&dm);CHKERRQ(ierr);
-        dm = dmDist;
-      }
     }
     ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
     if (testShell) {
@@ -316,11 +299,11 @@ int main(int argc, char **argv)
       ierr = DMFieldShellSetEvaluate(field, TestShellEvaluate);CHKERRQ(ierr);
       ierr = DMFieldShellSetDestroy(field, TestShellDestroy);CHKERRQ(ierr);
     } else {
-      ierr = PetscFECreateDefault(comm,dim,nc,simplex,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+      ierr = PetscFECreateDefault(PETSC_COMM_SELF,dim,nc,simplex,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
       ierr = PetscFESetName(fe,"MyPetscFE");CHKERRQ(ierr);
       ierr = DMSetField(dm,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
-      ierr = DMCreateDS(dm);CHKERRQ(ierr);
       ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+      ierr = DMCreateDS(dm);CHKERRQ(ierr);
       ierr = DMCreateLocalVector(dm,&fieldvec);CHKERRQ(ierr);
       {
         PetscErrorCode (*func[1]) (PetscInt,PetscReal,const PetscReal [],PetscInt, PetscScalar *,void *);
@@ -371,8 +354,8 @@ int main(int argc, char **argv)
   if (numPoint) {ierr = TestEvaluate(field,numPoint,rand);CHKERRQ(ierr);}
   if (numFE) {ierr = TestEvaluateFE(field,numFE,cStart,cEnd,quad,rand);CHKERRQ(ierr);}
   if (numFV) {ierr = TestEvaluateFV(field,numFV,cStart,cEnd,rand);CHKERRQ(ierr);}
-  ierr = PetscQuadratureDestroy(&quad);CHKERRQ(ierr);
   ierr = DMFieldDestroy(&field);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&quad);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
@@ -403,56 +386,56 @@ int main(int argc, char **argv)
   test:
     suffix: ds
     requires: !complex triangle
-    args: -dm_type plex -dim 2 -num_components 2 -num_point_tests 2 -num_fe_tests 2 -num_fv_tests 2 -dmfield_view -petscspace_degree 2 -num_quad_points 1
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3 -num_components 2 -num_point_tests 2 -num_fe_tests 2 -num_fv_tests 2 -dmfield_view -petscspace_degree 2 -num_quad_points 1
 
   test:
     suffix: ds_simplex_0
     requires: !complex triangle
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_degree 0
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_degree 0
 
   test:
     suffix: ds_simplex_1
     requires: !complex triangle
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_degree 1
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_degree 1
 
   test:
     suffix: ds_simplex_2
     requires: !complex triangle
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_degree 2
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_degree 2
 
   test:
     suffix: ds_tensor_2_0
     requires: !complex
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 0 -simplex 0
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 0 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_2_1
     requires: !complex
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 1 -simplex 0
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 1 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_2_2
     requires: !complex
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 2 -simplex 0
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 2 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_3_0
     requires: !complex
-    args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 0 -simplex 0
+    args: -dm_type plex -dm_plex_dim 3 -dm_plex_box_faces 3,3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 0 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_3_1
     requires: !complex
-    args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 1 -simplex 0
+    args: -dm_type plex -dm_plex_dim 3 -dm_plex_box_faces 3,3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 1 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_3_2
     requires: !complex
-    args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 2 -simplex 0
+    args: -dm_type plex -dm_plex_dim 3 -dm_plex_box_faces 3,3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 2 -dm_plex_simplex 0
 
   test:
     suffix: shell
     requires: !complex triangle
-    args: -dm_type plex -dim 2 -num_components 2 -num_point_tests 2 -num_fe_tests 2 -num_fv_tests 2 -dmfield_view -num_quad_points 1 -test_shell
+    args: -dm_coord_space 0 -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3 -num_components 2 -num_point_tests 2 -num_fe_tests 2 -num_fv_tests 2 -dmfield_view -num_quad_points 1 -test_shell
 
 TEST*/

@@ -44,11 +44,7 @@ Process 0:
   (   3) dim  2 offset   2 0. 0.
   (   4) dim  2 offset   4 0. 1.
   (   5) dim  2 offset   6 0.5 0.5
-Label 'marker':
-[0]: 2 (1)
-[0]: 3 (1)
-[0]: 4 (1)
-[0]: 5 (1)
+Labels:
 Label 'celltype':
 [0]: 2 (0)
 [0]: 3 (0)
@@ -61,3 +57,8 @@ Label 'celltype':
 [0]: 8 (1)
 [0]: 9 (1)
 [0]: 10 (1)
+Label 'marker':
+[0]: 2 (1)
+[0]: 3 (1)
+[0]: 4 (1)
+[0]: 5 (1)

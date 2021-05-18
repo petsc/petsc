@@ -8,58 +8,18 @@ static char help[] = "Tests projection with DMSwarm using general particle shape
 #include <petscksp.h>
 
 typedef struct {
-  PetscInt  dim;                        /* The topological mesh dimension */
-  PetscBool simplex;                    /* Flag for simplices or tensor cells */
-  char      mshNam[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
-  PetscInt  nbrVerEdge;                 /* Number of vertices per edge if unit square/cube generated */
+  PetscInt dummy;
 } AppCtx;
-
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  options->dim     = 2;
-  options->simplex = PETSC_TRUE;
-  ierr = PetscStrcpy(options->mshNam, "");CHKERRQ(ierr);
-
-  ierr = PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex1.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-msh", "Name of the mesh filename if any", "ex1.c", options->mshNam, options->mshNam, sizeof(options->mshNam), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-nbrVerEdge", "Number of vertices per edge if unit square/cube generated", "ex1.c", options->nbrVerEdge, &options->nbrVerEdge, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-
-  PetscFunctionReturn(0);
-}
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
-  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscStrcmp(user->mshNam, "", &flag);CHKERRQ(ierr);
-  if (flag) {
-    PetscInt faces[3];
-
-    faces[0] = user->nbrVerEdge-1; faces[1] = user->nbrVerEdge-1; faces[2] = user->nbrVerEdge-1;
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, faces, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateFromFile(comm, user->mshNam, PETSC_TRUE, dm);CHKERRQ(ierr);
-    ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
-  }
-  {
-    DM distributedMesh = NULL;
-
-    /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
-    }
-  }
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -89,11 +49,13 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscInt        *cellid;
   const PetscReal *qpoints;
   PetscInt         Ncell, c, Nq, q, dim;
+  PetscBool        simplex;
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, user->simplex, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
@@ -181,7 +143,6 @@ int main (int argc, char * argv[]) {
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &dm, &user);CHKERRQ(ierr);
   ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "Mesh");CHKERRQ(ierr);
@@ -200,21 +161,21 @@ int main (int argc, char * argv[]) {
     suffix: proj_0
     requires: pragmatic
     TODO: broken
-    args: -dim 2 -nbrVerEdge 3 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
+    args: -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
   test:
     suffix: proj_1
     requires: pragmatic
     TODO: broken
-    args: -dim 2 -simplex 0 -nbrVerEdge 3 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
   test:
     suffix: proj_2
     requires: pragmatic
     TODO: broken
-    args: -dim 3 -nbrVerEdge 3 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
+    args: -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
   test:
     suffix: proj_3
     requires: pragmatic
     TODO: broken
-    args: -dim 2 -simplex 0 -nbrVerEdge 3 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
 
 TEST*/

@@ -42,30 +42,22 @@ typedef struct {
   PetscScalar M;     /* Biot modulus */
   PetscScalar k;     /* (isotropic) permeability */
   PetscScalar mu_f;  /* fluid dynamic viscosity */
-  PetscReal   zmax;  /* depth maximum extent */
-  PetscReal   zmin;  /* depth minimum extent */
-  PetscReal   ymax;  /* vertical maximum extent */
-  PetscReal   ymin;  /* vertical minimum extent */
-  PetscReal   xmax;  /* horizontal maximum extent */
-  PetscReal   xmin;  /* horizontal minimum extent */
   PetscScalar P_0;   /* magnitude of vertical stress */
 } Parameter;
 
 typedef struct {
   /* Domain and mesh definition */
-  char         dmType[256]; /* DM type for the solve */
-  PetscInt     dim;         /* The topological mesh dimension */
-  PetscBool    simplex;     /* Simplicial mesh */
-  PetscReal    refLimit;    /* Refine mesh with generator */
+  PetscReal    xmin[3];     /* Lower left bottom corner of bounding box */
+  PetscReal    xmax[3];     /* Upper right top corner of bounding box */
   /* Problem definition */
   SolutionType solType;     /* Type of exact solution */
   PetscBag     bag;         /* Problem parameters */
   PetscReal    t_r;         /* Relaxation time: 4 L^2 / c */
   PetscReal    dtInitial;   /* Override the choice for first timestep */
   /* Exact solution terms */
-  PetscInt    niter; /* Number of series term iterations in exact solutions */
-  PetscReal   eps;   /* Precision value for root finding */
-  PetscReal  *zeroArray; /* Array of root locations */
+  PetscInt     niter; /* Number of series term iterations in exact solutions */
+  PetscReal    eps;   /* Precision value for root finding */
+  PetscReal   *zeroArray; /* Array of root locations */
 } AppCtx;
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -433,7 +425,7 @@ static PetscErrorCode terzaghi_initial_u(PetscInt dim, PetscReal time, const Pet
     PetscScalar K_u   = param->K_u;   /* Pa */
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
-    PetscReal   L     = param->ymax - param->ymin; /* m */
+    PetscReal   L     = user->xmax[1] - user->xmin[1]; /* m */
     PetscScalar nu_u  = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G)); /* -,       Cheng (B.9)  */
     PetscReal   zstar = x[1] / L;                                /* - */
 
@@ -477,7 +469,7 @@ static PetscErrorCode terzaghi_2d_u(PetscInt dim, PetscReal time, const PetscRea
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   L     = param->ymax - param->ymin; /* m */
+    PetscReal   L     = user->xmax[1] - user->xmin[1]; /* m */
     PetscInt    N     = user->niter, m;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -517,7 +509,7 @@ static PetscErrorCode terzaghi_2d_eps(PetscInt dim, PetscReal time, const PetscR
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   L     = param->ymax - param->ymin; /* m */
+    PetscReal   L     = user->xmax[1] - user->xmin[1]; /* m */
     PetscInt    N     = user->niter, m;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -557,7 +549,7 @@ static PetscErrorCode terzaghi_2d_p(PetscInt dim, PetscReal time, const PetscRea
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   L     = param->ymax - param->ymin; /* m */
+    PetscReal   L     = user->xmax[1] - user->xmin[1]; /* m */
     PetscInt    N     = user->niter, m;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -598,7 +590,7 @@ static PetscErrorCode terzaghi_2d_u_t(PetscInt dim, PetscReal time, const PetscR
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   L     = param->ymax - param->ymin; /* m */
+    PetscReal   L     = user->xmax[1] - user->xmin[1]; /* m */
     PetscInt    N     = user->niter, m;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -638,7 +630,7 @@ static PetscErrorCode terzaghi_2d_eps_t(PetscInt dim, PetscReal time, const Pets
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   L     = param->ymax - param->ymin; /* m */
+    PetscReal   L     = user->xmax[1] - user->xmin[1]; /* m */
     PetscInt    N     = user->niter, m;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -676,7 +668,7 @@ static PetscErrorCode terzaghi_2d_p_t(PetscInt dim, PetscReal time, const PetscR
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   L     = param->ymax - param->ymin; /* m */
+    PetscReal   L     = user->xmax[1] - user->xmin[1]; /* m */
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
     PetscScalar eta   = (3.0*alpha*G) / (3.0*K_d + 4.0*G);         /* -,       Cheng (B.11) */
@@ -691,7 +683,7 @@ static PetscErrorCode terzaghi_2d_p_t(PetscInt dim, PetscReal time, const PetscR
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   L     = param->ymax - param->ymin; /* m */
+    PetscReal   L     = user->xmax[1] - user->xmin[1]; /* m */
     PetscInt    N     = user->niter, m;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -732,7 +724,7 @@ static PetscErrorCode mandel_drainage_pressure(PetscInt dim, PetscReal time, con
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   a     = 0.5*(param->xmax - param->xmin); /* m */
+    PetscReal   a     = 0.5*(user->xmax[0] - user->xmin[0]); /* m */
     PetscInt    N     = user->niter, n;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -771,7 +763,7 @@ static PetscErrorCode mandel_initial_u(PetscInt dim, PetscReal time, const Petsc
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscScalar a     = 0.5*(param->xmax - param->xmin); /* m */
+    PetscScalar a     = 0.5*(user->xmax[0] - user->xmin[0]); /* m */
     PetscInt    N     = user->niter, n;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -810,7 +802,7 @@ static PetscErrorCode mandel_initial_eps(PetscInt dim, PetscReal time, const Pet
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   a     = 0.5*(param->xmax - param->xmin); /* m */
+    PetscReal   a     = 0.5*(user->xmax[0] - user->xmin[0]); /* m */
     PetscInt    N     = user->niter, n;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -861,7 +853,7 @@ static PetscErrorCode mandel_2d_u(PetscInt dim, PetscReal time, const PetscReal 
     PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
     PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
     PetscScalar kappa = k / mu_f;
-    PetscReal   a = (param->xmax - param->xmin) / 2.0;
+    PetscReal   a = (user->xmax[0] - user->xmin[0]) / 2.0;
     PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / ( alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
 
     // Series term
@@ -909,7 +901,7 @@ static PetscErrorCode mandel_2d_eps(PetscInt dim, PetscReal time, const PetscRea
     //const PetscScalar B = (alpha*M)/(K_d + alpha*alpha * M);
 
     //const PetscScalar b = (YMAX - YMIN) / 2.0;
-    PetscScalar a = (param->xmax - param->xmin) / 2.0;
+    PetscScalar a = (user->xmax[0] - user->xmin[0]) / 2.0;
     PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / (alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
 
     // Series term
@@ -963,7 +955,7 @@ static PetscErrorCode mandel_2d_p(PetscInt dim, PetscReal time, const PetscReal 
     PetscScalar kappa = k / mu_f;
     PetscScalar B = (alpha*M)/(K_d + alpha*alpha * M);
 
-    PetscReal   a  = (param->xmax - param->xmin) / 2.0;
+    PetscReal   a  = (user->xmax[0] - user->xmin[0]) / 2.0;
     PetscReal   c  = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / (alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
     PetscScalar A1 = 3.0 / (B * (1.0 + nu_u));
     //PetscScalar A2 = (alpha * (1.0 - 2.0*nu)) / (1.0 - nu);
@@ -1004,7 +996,7 @@ static PetscErrorCode mandel_2d_u_t(PetscInt dim, PetscReal time, const PetscRea
   PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
   PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
   PetscScalar kappa = param->k / param->mu_f;
-  PetscReal   a = (param->xmax - param->xmin) / 2.0;
+  PetscReal   a = (user->xmax[0] - user->xmin[0]) / 2.0;
   PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / (alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
 
   // Series term
@@ -1052,7 +1044,7 @@ static PetscErrorCode mandel_2d_eps_t(PetscInt dim, PetscReal time, const PetscR
   //const PetscScalar B = (alpha*M)/(K_d + alpha*alpha * M);
 
   //const PetscScalar b = (YMAX - YMIN) / 2.0;
-  PetscReal   a = (param->xmax - param->xmin) / 2.0;
+  PetscReal   a = (user->xmax[0] - user->xmin[0]) / 2.0;
   PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / (alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
 
   // Series term
@@ -1100,7 +1092,7 @@ static PetscErrorCode mandel_2d_p_t(PetscInt dim, PetscReal time, const PetscRea
   PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
   PetscScalar kappa = k / mu_f;
 
-  PetscReal   a = (param->xmax - param->xmin) / 2.0;
+  PetscReal   a = (user->xmax[0] - user->xmin[0]) / 2.0;
   PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / (alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
   //PetscScalar A1 = 3.0 / (B * (1.0 + nu_u));
   //PetscScalar A2 = (alpha * (1.0 - 2.0*nu)) / (1.0 - nu);
@@ -1152,7 +1144,7 @@ static PetscErrorCode cryer_initial_u(PetscInt dim, PetscReal time, const PetscR
     PetscScalar K_u   = param->K_u;   /* Pa */
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
-    PetscReal   R_0   = param->ymax;  /* m */
+    PetscReal   R_0   = user->xmax[1];  /* m */
     PetscScalar nu_u  = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));   /* -,       Cheng (B.9)  */
 
     PetscScalar u_0   = -P_0*R_0*(1. - 2.*nu_u) / (2.*G*(1. + nu_u)); /* Cheng (7.407) */
@@ -1176,7 +1168,7 @@ static PetscErrorCode cryer_initial_eps(PetscInt dim, PetscReal time, const Pets
     PetscScalar K_u   = param->K_u;   /* Pa */
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
-    PetscReal   R_0   = param->ymax;  /* m */
+    PetscReal   R_0   = user->xmax[1];  /* m */
     PetscScalar nu_u  = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));   /* -,       Cheng (B.9)  */
 
     PetscScalar u_0   = -P_0*R_0*(1. - 2.*nu_u) / (2.*G*(1. + nu_u)); /* Cheng (7.407) */
@@ -1207,7 +1199,7 @@ static PetscErrorCode cryer_3d_u(PetscInt dim, PetscReal time, const PetscReal x
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   R_0   = param->ymax;  /* m */
+    PetscReal   R_0   = user->xmax[1];  /* m */
     PetscInt    N     = user->niter, n;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -1258,7 +1250,7 @@ static PetscErrorCode cryer_3d_eps(PetscInt dim, PetscReal time, const PetscReal
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
-    PetscReal   R_0   = param->ymax;  /* m */
+    PetscReal   R_0   = user->xmax[1];  /* m */
     PetscInt    N     = user->niter, n;
 
     PetscScalar K_d   = K_u - alpha*alpha*M;                       /* Pa,      Cheng (B.5)  */
@@ -1316,7 +1308,7 @@ static PetscErrorCode cryer_3d_p(PetscInt dim, PetscReal time, const PetscReal x
     PetscScalar M     = param->M;     /* Pa */
     PetscScalar G     = param->mu;    /* Pa */
     PetscScalar P_0   = param->P_0;   /* Pa */
-    PetscReal   R_0   = param->ymax;  /* m */
+    PetscReal   R_0   = user->xmax[1];  /* m */
     PetscScalar kappa = param->k / param->mu_f;    /* m^2 / (Pa s) */
     PetscInt    N     = user->niter, n;
 
@@ -1498,6 +1490,7 @@ static void f0_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   f0[0] += alpha*u_t[uOff[1]];
   f0[0] += u_t[uOff[2]]/M;
+  if (f0[0] != f0[0]) abort();
 }
 
 /* f1_u */
@@ -1658,32 +1651,18 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim       = 2;
-  options->simplex   = PETSC_TRUE;
-  options->refLimit  = -1.0;
   options->solType   = SOL_QUADRATIC_TRIG;
   options->niter     = 500;
   options->eps       = PETSC_SMALL;
   options->dtInitial = -1.0;
-  ierr = PetscStrncpy(options->dmType, DMPLEX, 256);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "Biot Poroelasticity Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex53.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-niter", "Number of series term iterations in exact solutions", "ex53.c", options->niter, &options->niter, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex53.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ref_limit", "Maximum cell volume for refined mesh", "ex53.c", options->refLimit, &options->refLimit, NULL);CHKERRQ(ierr);
   sol  = options->solType;
   ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex53.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolutionType) sol;
-  ierr = PetscOptionsFList("-dm_type", "Convert DMPlex to another format", "ex53.c", DMList, options->dmType, options->dmType, 256, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-eps", "Precision value for root finding", "ex53.c", options->eps, &options->eps, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dt_initial", "Override the initial timestep", "ex53.c", options->dtInitial, &options->dtInitial, NULL);CHKERRQ(ierr);
-
-  // Wrap up loose ends
-  if (options->solType == SOL_CRYER) {
-    options->dim = 3;
-  }
-
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1808,12 +1787,6 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
     ierr = PetscBagRegisterScalar(bag, &p->M,      16.0,                "M",     "Biot Modulus, Pa");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->k,      1.5,                 "k",     "Isotropic Permeability, m**2");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->mu_f,   1.0,                 "mu_f",  "Fluid Dynamic Viscosity, Pa*s");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->zmax,   1.0,                 "zmax",  "Depth Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->zmin,   0.0,                 "zmin",  "Depth Minimum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->ymax,   10.0,                "ymax",  "Vertical Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->ymin,   0.0,                 "ymin",  "Vertical Minimum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->xmax,   10.0,                "xmax",  "Horizontal Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->xmin,   0.0,                 "xmin",  "Horizontal Minimum Extent, m");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->P_0,    1.0,                 "P_0",   "Magnitude of Vertical Stress, Pa");CHKERRQ(ierr);
   } else if (ctx->solType == SOL_MANDEL) {
     // Realistic values - Mandel
@@ -1823,12 +1796,6 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
     ierr = PetscBagRegisterScalar(bag, &p->M,      4.705882352941176,   "M",     "Biot Modulus, Pa");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->k,      1.5,                 "k",     "Isotropic Permeability, m**2");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->mu_f,   1.0,                 "mu_f",  "Fluid Dynamic Viscosity, Pa*s");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->zmax,   1.0,                 "zmax",  "Depth Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->zmin,   0.0,                 "zmin",  "Depth Minimum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->ymax,   0.25,                "ymax",  "Vertical Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->ymin,   0.0,                 "ymin",  "Vertical Minimum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->xmax,   1.0,                 "xmax",  "Horizontal Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->xmin,   0.0,                 "xmin",  "Horizontal Minimum Extent, m");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->P_0,    1.0,                 "P_0",   "Magnitude of Vertical Stress, Pa");CHKERRQ(ierr);
   } else if (ctx->solType == SOL_CRYER) {
     // Realistic values - Mandel
@@ -1838,12 +1805,6 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
     ierr = PetscBagRegisterScalar(bag, &p->M,      4.705882352941176,   "M",     "Biot Modulus, Pa");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->k,      1.5,                 "k",     "Isotropic Permeability, m**2");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->mu_f,   1.0,                 "mu_f",  "Fluid Dynamic Viscosity, Pa*s");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->zmax,   1.0,                 "zmax",  "Depth Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->zmin,   0.0,                 "zmin",  "Depth Minimum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->ymax,   1.0,                 "ymax",  "Vertical Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->ymin,   0.0,                 "ymin",  "Vertical Minimum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->xmax,   1.0,                 "xmax",  "Horizontal Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->xmin,   0.0,                 "xmin",  "Horizontal Minimum Extent, m");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->P_0,    1.0,                 "P_0",   "Magnitude of Vertical Stress, Pa");CHKERRQ(ierr);
   } else {
     // Nonsense values
@@ -1853,12 +1814,6 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
     ierr = PetscBagRegisterScalar(bag, &p->M,      1.0,                 "M",     "Biot Modulus, Pa");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->k,      1.0,                 "k",     "Isotropic Permeability, m**2");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->mu_f,   1.0,                 "mu_f",  "Fluid Dynamic Viscosity, Pa*s");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->zmax,   1.0,                 "zmax",  "Depth Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->zmin,   0.0,                 "zmin",  "Depth Minimum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->ymax,   1.0,                 "ymax",  "Vertical Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->ymin,   0.0,                 "ymin",  "Vertical Minimum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->xmax,   1.0,                 "xmax",  "Horizontal Maximum Extent, m");CHKERRQ(ierr);
-    ierr = PetscBagRegisterScalar(bag, &p->xmin,   0.0,                 "xmin",  "Horizontal Minimum Extent, m");CHKERRQ(ierr);
     ierr = PetscBagRegisterScalar(bag, &p->P_0,    1.0,                 "P_0",   "Magnitude of Vertical Stress, Pa");CHKERRQ(ierr);
   }
   ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
@@ -1876,10 +1831,10 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
     switch (ctx->solType) {
       case SOL_QUADRATIC_LINEAR:
       case SOL_QUADRATIC_TRIG:
-      case SOL_TRIG_LINEAR: ctx->t_r = PetscSqr(p->xmax - p->xmin)/c; break;
-      case SOL_TERZAGHI:    ctx->t_r = PetscSqr(2.0*(p->ymax - p->ymin))/c; break;
-      case SOL_MANDEL:      ctx->t_r = PetscSqr(2.0*(p->ymax - p->ymin))/c; break;
-      case SOL_CRYER:       ctx->t_r = PetscSqr(p->ymax)/c; break;
+      case SOL_TRIG_LINEAR: ctx->t_r = PetscSqr(ctx->xmax[0] - ctx->xmin[0])/c; break;
+      case SOL_TERZAGHI:    ctx->t_r = PetscSqr(2.0*(ctx->xmax[1] - ctx->xmin[1]))/c; break;
+      case SOL_MANDEL:      ctx->t_r = PetscSqr(2.0*(ctx->xmax[1] - ctx->xmin[1]))/c; break;
+      case SOL_CRYER:       ctx->t_r = PetscSqr(ctx->xmax[1])/c; break;
       default: SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(ctx->solType, NUM_SOLUTION_TYPES)], ctx->solType);
     }
     ierr = PetscOptionsGetViewer(comm, NULL, NULL, "-param_view", &viewer, &format, &flg);CHKERRQ(ierr);
@@ -1889,7 +1844,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm, "  Max displacement: %g %g\n", p->P_0*(p->ymax - p->ymin)*(1. - 2.*nu_u)/(2.*p->mu*(1. - nu_u)), p->P_0*(p->ymax - p->ymin)*(1. - 2.*nu)/(2.*p->mu*(1. - nu)));
+      ierr = PetscPrintf(comm, "  Max displacement: %g %g\n", p->P_0*(ctx->xmax[1] - ctx->xmin[1])*(1. - 2.*nu_u)/(2.*p->mu*(1. - nu_u)), p->P_0*(ctx->xmax[1] - ctx->xmin[1])*(1. - 2.*nu)/(2.*p->mu*(1. - nu)));
       ierr = PetscPrintf(comm, "  Relaxation time: %g\n", ctx->t_r);
     }
   }
@@ -1898,82 +1853,15 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  Parameter     *param;
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
-  if (user->solType == SOL_CRYER) {
-    DM rdm;
-
-    if (!user->simplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot create ball with cubic cells");
-    if (param->xmin != 0.0 || param->ymin != 0.0) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "Cannot shift center of ball to (%g, %g)", param->xmin, param->ymin);
-    if (param->xmax != param->ymax) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "Cannot radius of ball must be equal in x and y: %g != %g", param->xmax, param->ymax);
-    ierr = DMPlexCreateBallMesh(comm, user->dim, param->xmax, dm);CHKERRQ(ierr);
-
-    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMPlexSetRefinementLimit(*dm, user->refLimit);CHKERRQ(ierr);
-    ierr = DMRefine(*dm, comm, &rdm);CHKERRQ(ierr);
-    if (rdm) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = rdm;
-    }
-    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
-  } else if (user->solType == SOL_MANDEL) {
-    PetscReal lower[2], upper[2];
-
-    lower[0] = param->xmin - (param->xmax - param->xmin) / 2.0;
-    lower[1] = param->ymin - (param->ymax - param->ymin) / 2.0;
-    upper[0] = param->xmax - (param->xmax - param->xmin) / 2.0;
-    upper[1] = param->ymax - (param->ymax - param->ymin) / 2.0;
-    //reset min / max values for mandel
-    param->xmin = lower[0];
-    param->ymin = lower[1];
-    param->xmax = upper[0];
-    param->ymax = upper[1];
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, NULL, lower, upper, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  } else {
-    Parameter *param;
-    PetscReal  lower[3], upper[3];
-
-    ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
-    lower[0] = param->xmin;
-    lower[1] = param->ymin;
-    lower[2] = param->zmin;
-    upper[0] = param->xmax;
-    upper[1] = param->ymax;
-    upper[2] = param->zmax;
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, NULL, lower, upper, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  }
-  {
-    DM               pdm = NULL;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
-    if (pdm) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = pdm;
-    }
-  }
-  ierr = PetscStrcmp(user->dmType, DMPLEX, &flg);CHKERRQ(ierr);
-  if (flg) {
-    DM ndm;
-
-    ierr = DMConvert(*dm, user->dmType, &ndm);CHKERRQ(ierr);
-    if (ndm) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = ndm;
-    }
-  }
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
-
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = DMGetBoundingBox(*dm, user->xmin, user->xmax);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2186,7 +2074,7 @@ static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt origField, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupFE(DM dm, PetscBool simplex, PetscInt Nf, PetscInt Nc[], const char *name[], PetscErrorCode (*setup)(DM, AppCtx *), void *ctx)
+static PetscErrorCode SetupFE(DM dm, PetscInt Nf, PetscInt Nc[], const char *name[], PetscErrorCode (*setup)(DM, AppCtx *), void *ctx)
 {
   AppCtx         *user = (AppCtx *) ctx;
   DM              cdm  = dm;
@@ -2194,11 +2082,13 @@ static PetscErrorCode SetupFE(DM dm, PetscBool simplex, PetscInt Nf, PetscInt Nc
   PetscQuadrature q = NULL;
   char            prefix[PETSC_MAX_PATH_LEN];
   PetscInt        dim, f;
+  PetscBool       simplex;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* Create finite element */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name[f]);CHKERRQ(ierr);
     ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc[f], simplex, name[f] ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
@@ -2388,25 +2278,26 @@ int main(int argc, char **argv)
   Vec            u;         /* Solutions */
   const char    *name[3] = {"displacement", "tracestrain", "pressure"};
   PetscReal      t;
-  PetscInt       Nc[3];
+  PetscInt       dim, Nc[3];
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = PetscBagCreate(PETSC_COMM_SELF, sizeof(Parameter), &ctx.bag);CHKERRQ(ierr);
   ierr = PetscMalloc1(ctx.niter, &ctx.zeroArray);CHKERRQ(ierr);
+  ierr = CreateMesh(PETSC_COMM_WORLD, &ctx, &dm);CHKERRQ(ierr);
   ierr = SetupParameters(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   /* Primal System */
   ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &ctx, &dm);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
 
-  Nc[0] = ctx.dim;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  Nc[0] = dim;
   Nc[1] = 1;
   Nc[2] = 1;
 
-  ierr = SetupFE(dm, ctx.simplex, 3, Nc, name, SetupPrimalProblem, &ctx);CHKERRQ(ierr);
+  ierr = SetupFE(dm, 3, Nc, name, SetupPrimalProblem, &ctx);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx);CHKERRQ(ierr);
   ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx);CHKERRQ(ierr);
@@ -2464,7 +2355,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_quad_linear
     requires: ctetgen
-    args: -dim 3 -sol_type quadratic_linear -dm_refine 1 \
+    args: -dm_plex_dim 3 -sol_type quadratic_linear -dm_refine 1 \
       -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
       -dmts_check .0001 -ts_max_steps 5 -ts_monitor_extreme
 
@@ -2486,7 +2377,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_trig_linear
     requires: ctetgen
-    args: -dim 3 -sol_type trig_linear -dm_refine 1 \
+    args: -dm_plex_dim 3 -sol_type trig_linear -dm_refine 1 \
       -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
       -dmts_check .0001 -ts_max_steps 2 -ts_monitor_extreme
 
@@ -2494,7 +2385,7 @@ int main(int argc, char **argv)
     # -dm_refine 1 -convest_num_refine 2 gets L_2 convergence rate: [2.0, 2.1, 1.9]
     suffix: 3d_trig_linear_sconv
     requires: ctetgen
-    args: -dim 3 -sol_type trig_linear -dm_refine 1 \
+    args: -dm_plex_dim 3 -sol_type trig_linear -dm_refine 1 \
       -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
       -convest_num_refine 1 -ts_convergence_estimate -ts_convergence_temporal 0 -ts_max_steps 1 -pc_type lu
 
@@ -2516,7 +2407,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_quad_trig
     requires: ctetgen
-    args: -dim 3 -sol_type quadratic_trig -dm_refine 1 \
+    args: -dm_plex_dim 3 -sol_type quadratic_trig -dm_refine 1 \
       -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
       -dmts_check .0001 -ts_max_steps 5 -ts_monitor_extreme
 
@@ -2524,63 +2415,62 @@ int main(int argc, char **argv)
     # Using -dm_refine 2 -convest_num_refine 3 gets the convergence rates to [1.0, 1.0, 1.0]
     suffix: 3d_quad_trig_tconv
     requires: ctetgen
-    args: -dim 3 -sol_type quadratic_trig -dm_refine 1 \
+    args: -dm_plex_dim 3 -sol_type quadratic_trig -dm_refine 1 \
       -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
       -convest_num_refine 1 -ts_convergence_estimate -ts_max_steps 5 -pc_type lu
 
-  test:
-    suffix: 2d_terzaghi
-    requires: triangle
-    args: -sol_type terzaghi -dm_plex_separate_marker -dm_plex_box_faces 1,8 -simplex 0 \
-      -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 -niter 16000 \
-      -ts_dt 0.0028666667 -ts_max_steps 2 -ts_monitor -dmts_check .0001 -pc_type lu
+  testset:
+    args: -sol_type terzaghi -dm_plex_simplex 0 -dm_plex_box_faces 1,8 -dm_plex_box_lower 0,0 -dm_plex_box_upper 10,10 -dm_plex_separate_marker \
+          -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 -niter 16000 \
+          -pc_type lu
 
-  test:
-    # -dm_plex_box_faces 1,64 -ts_max_steps 4 -convest_num_refine 3 gives L_2 convergence rate: [1.1, 1.1, 1.1]
-    suffix: 2d_terzaghi_tconv
-    requires: triangle
-    args: -sol_type terzaghi -dm_plex_separate_marker -dm_plex_box_faces 1,8 -simplex 0 \
-      -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 -niter 16000 \
-      -ts_dt 0.023 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1 -pc_type lu
+    test:
+      suffix: 2d_terzaghi
+      requires: double
+      args: -ts_dt 0.0028666667 -ts_max_steps 2 -ts_monitor -dmts_check .0001
 
-  test:
-    # -dm_plex_box_faces 1,16 -convest_num_refine 4 gives L_2 convergence rate: [1.7, 1.2, 1.1]
-    # if we add -displacement_petscspace_degree 3 -tracestrain_petscspace_degree 2 -pressure_petscspace_degree 2, we get [2.1, 1.6, 1.5], so I think we lose an order
-    suffix: 2d_terzaghi_sconv
-    requires: triangle
-    args: -sol_type terzaghi -dm_plex_separate_marker -dm_plex_box_faces 1,8 -simplex 0 \
-      -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 -niter 16000 \
-      -ts_dt 1e-5 -dt_initial 1e-5 -ts_max_steps 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 -pc_type lu
+    test:
+      # -dm_plex_box_faces 1,64 -ts_max_steps 4 -convest_num_refine 3 gives L_2 convergence rate: [1.1, 1.1, 1.1]
+      suffix: 2d_terzaghi_tconv
+      args: -ts_dt 0.023 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1
 
-  test:
-    suffix: 2d_mandel
-    requires: triangle
-    args: -sol_type mandel -dm_plex_separate_marker -dm_refine 1 \
-      -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
-      -ts_dt 0.0028666667 -ts_max_steps 2 -ts_monitor -dmts_check .0001 -pc_type lu
+    test:
+      # -dm_plex_box_faces 1,16 -convest_num_refine 4 gives L_2 convergence rate: [1.7, 1.2, 1.1]
+      # if we add -displacement_petscspace_degree 3 -tracestrain_petscspace_degree 2 -pressure_petscspace_degree 2, we get [2.1, 1.6, 1.5]
+      suffix: 2d_terzaghi_sconv
+      args: -ts_dt 1e-5 -dt_initial 1e-5 -ts_max_steps 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1
 
-  test:
-    # -dm_refine 5 -ts_max_steps 4 -convest_num_refine 3 gives L_2 convergence rate: [0.26, -0.0058, 0.26]
-    suffix: 2d_mandel_tconv
-    requires: triangle
-    args: -sol_type mandel -dm_plex_separate_marker -dm_refine 1 \
-      -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
-      -ts_dt 0.023 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1 -pc_type lu
+  testset:
+    args: -sol_type mandel -dm_plex_simplex 0 -dm_plex_box_lower -0.5,-0.125 -dm_plex_box_upper 0.5,0.125 -dm_plex_separate_marker -dm_refine 1 \
+          -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
+          -pc_type lu
 
-  test:
-    suffix: 3d_cryer
+    test:
+      suffix: 2d_mandel
+      requires: double
+      args: -ts_dt 0.0028666667 -ts_max_steps 2 -ts_monitor -dmts_check .0001
+
+    test:
+      # -dm_refine 5 -ts_max_steps 4 -convest_num_refine 3 gives L_2 convergence rate: [0.26, -0.0058, 0.26]
+      suffix: 2d_mandel_tconv
+      args: -ts_dt 0.023 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1
+
+  testset:
     requires: ctetgen !complex
-    args: -sol_type cryer \
-      -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
-      -ts_dt 0.0028666667 -ts_max_time 0.014333 -ts_max_steps 2 -dmts_check .0001 -pc_type svd
+    args: -sol_type cryer -dm_plex_dim 3 -dm_plex_shape ball \
+          -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1
 
-  test:
-    # Displacement and Pressure converge. The analytic expression for trace strain is inaccurate at the origin
-    # -bd_dm_refine 3 -ref_limit 0.00666667 -ts_max_steps 5 -convest_num_refine 2 gives L_2 convergence rate: [0.47, -0.43, 1.5]
-    suffix: 3d_cryer_tconv
-    requires: ctetgen !complex
-    args: -sol_type cryer -bd_dm_refine 1 -ref_limit 0.00666667 \
-      -displacement_petscspace_degree 2 -tracestrain_petscspace_degree 1 -pressure_petscspace_degree 1 \
-      -ts_dt 0.023 -ts_max_time 0.092 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1 -pc_type lu -pc_factor_shift_type nonzero
+    test:
+      suffix: 3d_cryer
+      args: -ts_dt 0.0028666667 -ts_max_time 0.014333 -ts_max_steps 2 -dmts_check .0001 \
+            -pc_type svd
+
+    test:
+      # Displacement and Pressure converge. The analytic expression for trace strain is inaccurate at the origin
+      # -bd_dm_refine 3 -ref_limit 0.00666667 -ts_max_steps 5 -convest_num_refine 2 gives L_2 convergence rate: [0.47, -0.43, 1.5]
+      suffix: 3d_cryer_tconv
+      args: -bd_dm_refine 1 -dm_refine_volume_limit_pre 0.00666667 \
+            -ts_dt 0.023 -ts_max_time 0.092 -ts_max_steps 2 -ts_convergence_estimate -convest_num_refine 1 \
+            -pc_type lu -pc_factor_shift_type nonzero
 
 TEST*/

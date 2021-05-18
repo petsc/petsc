@@ -18,10 +18,7 @@ Contributed by: Julian Andrej <juan@tf.uni-kiel.de>\n\n\n";
 */
 
 typedef struct {
-  PetscInt          dim;
-  PetscBool         simplex;
-  PetscInt          mms;
-  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscInt mms;
 } AppCtx;
 
 #define REYN 400.0
@@ -241,52 +238,21 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim     = 2;
-  options->simplex = PETSC_TRUE;
-  options->mms     = 1;
+  options->mms = 1;
 
   ierr = PetscOptionsBegin(comm, "", "Navier-Stokes Equation Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex46.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex46.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mms", "The manufactured solution to use", "ex46.c", options->mms, &options->mms, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateBCLabel(DM dm, const char name[])
-{
-  DM             plex;
-  DMLabel        label;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(plex, 1, label);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 {
-  DM             pdm = NULL;
-  const PetscInt dim = ctx->dim;
-  PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexCreateBoxMesh(comm, dim, ctx->simplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  /* If no boundary marker exists, mark the whole boundary */
-  ierr = DMHasLabel(*dm, "marker", &hasLabel);CHKERRQ(ierr);
-  if (!hasLabel) {ierr = CreateBCLabel(*dm, "marker");CHKERRQ(ierr);}
-  /* Distribute mesh over processes */
-  ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
-  if (pdm) {
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = pdm;
-  }
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -297,57 +263,60 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   PetscDS        ds;
   DMLabel        label;
   const PetscInt id = 1;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-  switch (ctx->mms) {
-  case 1:
-    ierr = PetscDSSetResidual(ds, 0, f0_mms1_u, f1_u);CHKERRQ(ierr);break;
-  case 2:
-    ierr = PetscDSSetResidual(ds, 0, f0_mms2_u, f1_u);CHKERRQ(ierr);break;
-  }
-  ierr = PetscDSSetResidual(ds, 1, f0_p, f1_p);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(ds, 0, 0, g0_uu, g1_uu, NULL,  g3_uu);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(ds, 0, 1, NULL, NULL, g2_up, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
-  switch (ctx->dim) {
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  switch (dim) {
   case 2:
     switch (ctx->mms) {
     case 1:
-      ctx->exactFuncs[0] = mms1_u_2d;
-      ctx->exactFuncs[1] = mms1_p_2d;
+      ierr = PetscDSSetResidual(ds, 0, f0_mms1_u, f1_u);CHKERRQ(ierr);
+      ierr = PetscDSSetResidual(ds, 1, f0_p, f1_p);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(ds, 0, 0, g0_uu, g1_uu, NULL,  g3_uu);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(ds, 0, 1, NULL, NULL, g2_up, NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 0, mms1_u_2d, ctx);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 1, mms1_p_2d, ctx);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms1_u_2d, NULL, ctx, NULL);CHKERRQ(ierr);
       break;
     case 2:
-      ctx->exactFuncs[0] = mms2_u_2d;
-      ctx->exactFuncs[1] = mms2_p_2d;
+      ierr = PetscDSSetResidual(ds, 0, f0_mms2_u, f1_u);CHKERRQ(ierr);
+      ierr = PetscDSSetResidual(ds, 1, f0_p, f1_p);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(ds, 0, 0, g0_uu, g1_uu, NULL,  g3_uu);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(ds, 0, 1, NULL, NULL, g2_up, NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 0, mms2_u_2d, ctx);CHKERRQ(ierr);
+      ierr = PetscDSSetExactSolution(ds, 1, mms2_p_2d, ctx);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms2_u_2d, NULL, ctx, NULL);CHKERRQ(ierr);
       break;
-    default:
-      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid MMS %D", ctx->mms);
+    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid MMS %D", ctx->mms);
     }
     break;
-  default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", ctx->dim);
+  default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", dim);
   }
-  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], NULL, ctx, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 {
-  DM              cdm = dm;
-  const PetscInt  dim = ctx->dim;
-  PetscFE         fe[2];
   MPI_Comm        comm;
+  DM              cdm = dm;
+  PetscFE         fe[2];
+  PetscInt        dim;
+  PetscBool       simplex;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
-  /* Create finite element */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, dim, ctx->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, ctx->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
@@ -358,15 +327,12 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   while (cdm) {
     PetscObject  pressure;
     MatNullSpace nsp;
-    PetscBool    hasLabel;
 
     ierr = DMGetField(cdm, 1, NULL, &pressure);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nsp);CHKERRQ(ierr);
     ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
 
-    ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
-    if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
     ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
@@ -377,14 +343,19 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 
 static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
 {
-  AppCtx        *user = (AppCtx *) ctx;
-  DM             dm;
-  PetscReal      ferrors[2];
-  PetscErrorCode ierr;
+  PetscSimplePointFunc funcs[2];
+  void                *ctxs[2];
+  DM                   dm;
+  PetscDS              ds;
+  PetscReal            ferrors[2];
+  PetscErrorCode       ierr;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMComputeL2FieldDiff(dm, crtime, user->exactFuncs, NULL, u, ferrors);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSGetExactSolution(ds, 0, &funcs[0], &ctxs[0]);CHKERRQ(ierr);
+  ierr = PetscDSGetExactSolution(ds, 1, &funcs[1], &ctxs[1]);CHKERRQ(ierr);
+  ierr = DMComputeL2FieldDiff(dm, crtime, funcs, ctxs, u, ferrors);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [%2.3g, %2.3g]\n", (int) step, (double) crtime, (double) ferrors[0], (double) ferrors[1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -401,7 +372,6 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &dm, &ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr);
-  ierr = PetscMalloc1(2, &ctx.exactFuncs);CHKERRQ(ierr);
   ierr = SetupDiscretization(dm, &ctx);CHKERRQ(ierr);
   ierr = DMPlexCreateClosureIndex(dm, NULL);CHKERRQ(ierr);
 
@@ -416,8 +386,18 @@ int main(int argc, char **argv)
   ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  ierr = DMTSCheckFromOptions(ts, u);CHKERRQ(ierr);
 
-  ierr = DMProjectFunction(dm, 0.0, ctx.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  {
+    PetscSimplePointFunc funcs[2];
+    void                *ctxs[2];
+    PetscDS              ds;
+
+    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(ds, 0, &funcs[0], &ctxs[0]);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(ds, 1, &funcs[1], &ctxs[1]);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, 0.0, funcs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  }
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
 
@@ -425,7 +405,6 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFree(ctx.exactFuncs);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -437,21 +416,24 @@ int main(int argc, char **argv)
     suffix: 2d_p2p1_r1
     requires: !single triangle
     filter: sed -e "s~ATOL~RTOL~g" -e "s~ABS~RELATIVE~g"
-    args: -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
-  test:
-    suffix: 2d_p2p1_r2
-    requires: !single triangle
-    filter: sed -e "s~ATOL~RTOL~g" -e "s~ABS~RELATIVE~g"
-    args: -dm_refine 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
+    args: -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
+          -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -ts_monitor -dmts_check \
+          -snes_monitor_short -snes_converged_reason \
+          -ksp_monitor_short -ksp_converged_reason \
+          -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full \
+            -fieldsplit_velocity_pc_type lu \
+            -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi
+
   test:
     suffix: 2d_q2q1_r1
     requires: !single
     filter: sed -e "s~ATOL~RTOL~g" -e "s~ABS~RELATIVE~g" -e "s~ 0\]~ 0.0\]~g"
-    args: -simplex 0 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
-  test:
-    suffix: 2d_q2q1_r2
-    requires: !single
-    filter: sed -e "s~ATOL~RTOL~g" -e "s~ABS~RELATIVE~g"
-    args: -simplex 0 -dm_refine 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
+    args: -dm_plex_simplex 0 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
+          -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -ts_monitor -dmts_check \
+          -snes_monitor_short -snes_converged_reason \
+          -ksp_monitor_short -ksp_converged_reason \
+          -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full \
+            -fieldsplit_velocity_pc_type lu \
+            -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi
 
 TEST*/

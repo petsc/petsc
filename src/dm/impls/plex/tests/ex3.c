@@ -9,14 +9,8 @@ static char help[] = "Check that a DM can accurately represent and interpolate f
 #include <petscsnes.h>
 
 typedef struct {
-  PetscInt  debug;             /* The debugging level */
   /* Domain and mesh definition */
-  PetscInt  dim;               /* The topological mesh dimension */
-  PetscBool simplex;           /* Flag for simplex or tensor product mesh */
-  PetscBool refcell;           /* Make the mesh only a reference cell */
   PetscBool useDA;             /* Flag DMDA tensor product mesh */
-  PetscBool interpolate;       /* Generate intermediate mesh elements */
-  PetscReal refinementLimit;   /* The largest allowable cell volume */
   PetscBool shearCoords;       /* Flag for shear transform */
   PetscBool nonaffineCoords;   /* Flag for non-affine transform */
   /* Element definition */
@@ -41,14 +35,13 @@ PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], 
 {
   AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = user->constants[d];
+  for (d = 0; d < dim; ++d) u[d] = user->constants[d];
   return 0;
 }
 PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = 0.0;
+  for (d = 0; d < dim; ++d) u[d] = 0.0;
   return 0;
 }
 
@@ -72,52 +65,46 @@ PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[],
 /* u = x^2 or u = (x^2, xy) or u = (xy, yz, zx) */
 PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
-  if (user->dim > 2)      {u[0] = coords[0]*coords[1]; u[1] = coords[1]*coords[2]; u[2] = coords[2]*coords[0];}
-  else if (user->dim > 1) {u[0] = coords[0]*coords[0]; u[1] = coords[0]*coords[1];}
-  else if (user->dim > 0) {u[0] = coords[0]*coords[0];}
+  if (dim > 2)      {u[0] = coords[0]*coords[1]; u[1] = coords[1]*coords[2]; u[2] = coords[2]*coords[0];}
+  else if (dim > 1) {u[0] = coords[0]*coords[0]; u[1] = coords[0]*coords[1];}
+  else if (dim > 0) {u[0] = coords[0]*coords[0];}
   return 0;
 }
 PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
-  if (user->dim > 2)      {u[0] = coords[1]*n[0] + coords[0]*n[1]; u[1] = coords[2]*n[1] + coords[1]*n[2]; u[2] = coords[2]*n[0] + coords[0]*n[2];}
-  else if (user->dim > 1) {u[0] = 2.0*coords[0]*n[0]; u[1] = coords[1]*n[0] + coords[0]*n[1];}
-  else if (user->dim > 0) {u[0] = 2.0*coords[0]*n[0];}
+  if (dim > 2)      {u[0] = coords[1]*n[0] + coords[0]*n[1]; u[1] = coords[2]*n[1] + coords[1]*n[2]; u[2] = coords[2]*n[0] + coords[0]*n[2];}
+  else if (dim > 1) {u[0] = 2.0*coords[0]*n[0]; u[1] = coords[1]*n[0] + coords[0]*n[1];}
+  else if (dim > 0) {u[0] = 2.0*coords[0]*n[0];}
   return 0;
 }
 
 /* u = x^3 or u = (x^3, x^2y) or u = (x^2y, y^2z, z^2x) */
 PetscErrorCode cubic(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
-  if (user->dim > 2)      {u[0] = coords[0]*coords[0]*coords[1]; u[1] = coords[1]*coords[1]*coords[2]; u[2] = coords[2]*coords[2]*coords[0];}
-  else if (user->dim > 1) {u[0] = coords[0]*coords[0]*coords[0]; u[1] = coords[0]*coords[0]*coords[1];}
-  else if (user->dim > 0) {u[0] = coords[0]*coords[0]*coords[0];}
+  if (dim > 2)      {u[0] = coords[0]*coords[0]*coords[1]; u[1] = coords[1]*coords[1]*coords[2]; u[2] = coords[2]*coords[2]*coords[0];}
+  else if (dim > 1) {u[0] = coords[0]*coords[0]*coords[0]; u[1] = coords[0]*coords[0]*coords[1];}
+  else if (dim > 0) {u[0] = coords[0]*coords[0]*coords[0];}
   return 0;
 }
 PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
-  if (user->dim > 2)      {u[0] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1]; u[1] = 2.0*coords[1]*coords[2]*n[1] + coords[1]*coords[1]*n[2]; u[2] = 2.0*coords[2]*coords[0]*n[2] + coords[2]*coords[2]*n[0];}
-  else if (user->dim > 1) {u[0] = 3.0*coords[0]*coords[0]*n[0]; u[1] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1];}
-  else if (user->dim > 0) {u[0] = 3.0*coords[0]*coords[0]*n[0];}
+  if (dim > 2)      {u[0] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1]; u[1] = 2.0*coords[1]*coords[2]*n[1] + coords[1]*coords[1]*n[2]; u[2] = 2.0*coords[2]*coords[0]*n[2] + coords[2]*coords[2]*n[0];}
+  else if (dim > 1) {u[0] = 3.0*coords[0]*coords[0]*n[0]; u[1] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1];}
+  else if (dim > 0) {u[0] = 3.0*coords[0]*coords[0]*n[0];}
   return 0;
 }
 
 /* u = tanh(x) */
 PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = PetscTanhReal(coords[d] - 0.5);
+  for (d = 0; d < dim; ++d) u[d] = PetscTanhReal(coords[d] - 0.5);
   return 0;
 }
 PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = 1.0/PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
+  for (d = 0; d < dim; ++d) u[d] = 1.0/PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
   return 0;
 }
 
@@ -127,13 +114,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->debug           = 0;
-  options->dim             = 2;
-  options->simplex         = PETSC_TRUE;
-  options->refcell         = PETSC_FALSE;
-  options->useDA           = PETSC_TRUE;
-  options->interpolate     = PETSC_TRUE;
-  options->refinementLimit = 0.0;
+  options->useDA           = PETSC_FALSE;
   options->shearCoords     = PETSC_FALSE;
   options->nonaffineCoords = PETSC_FALSE;
   options->qorder          = 0;
@@ -152,13 +133,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->constants[2]    = 3.0;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Flag for simplices or hexhedra", "ex3.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-refcell", "Make the mesh only the reference cell", "ex3.c", options->refcell, &options->refcell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_da", "Flag for DMDA mesh", "ex3.c", options->useDA, &options->useDA, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-shear_coords", "Transform coordinates with a shear", "ex3.c", options->shearCoords, &options->shearCoords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-non_affine_coords", "Transform coordinates with a non-affine transform", "ex3.c", options->nonaffineCoords, &options->nonaffineCoords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL,0);CHKERRQ(ierr);
@@ -174,8 +149,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-constants","Set the constant values", "ex3.c", options->constants, &n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  options->numComponents = options->numComponents < 0 ? options->dim : options->numComponents;
 
   PetscFunctionReturn(0);
 }
@@ -248,60 +221,35 @@ static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim             = user->dim;
-  PetscBool      interpolate     = user->interpolate;
-  PetscReal      refinementLimit = user->refinementLimit;
-  PetscBool      isPlex;
+  PetscInt       dim = 2;
+  PetscBool      simplex;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->refcell) {
-    ierr = DMPlexCreateReferenceCell(comm, dim, user->simplex, dm);CHKERRQ(ierr);
-  } else if (user->simplex || !user->useDA) {
-    DM refinedMesh = NULL;
-
-    ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, NULL, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
-    /* Refine mesh using a volume constraint */
-    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
-    ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
-    if (refinedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = refinedMesh;
+  if (user->useDA) {
+    switch (dim) {
+    case 2:
+      ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+      ierr = DMSetUp(*dm);CHKERRQ(ierr);
+      ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot create structured mesh of dimension %d", dim);
     }
-    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
   } else {
-    if (user->constraints || user->tree || !user->useDA) {
-      PetscInt cells[3] = {2, 2, 2};
+    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
 
-      ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_x",&cells[0],NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_y",&cells[1],NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_z",&cells[2],NULL);CHKERRQ(ierr);
-      ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-    } else {
-      switch (user->dim) {
-      case 2:
-        ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
-        ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-        ierr = DMSetUp(*dm);CHKERRQ(ierr);
-        ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-        break;
-      default:
-        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot create structured mesh of dimension %d", dim);
-      }
-      ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscObjectTypeCompare((PetscObject)*dm,DMPLEX,&isPlex);CHKERRQ(ierr);
-  if (isPlex) {
-    PetscPartitioner part;
-    DM               distributedMesh = NULL;
-
+    ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexIsSimplex(*dm, &simplex);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&simplex, 1, MPIU_BOOL, 0, comm);CHKERRMPI(ierr);
     if (user->tree) {
-      DM refTree;
-      DM ncdm = NULL;
+      DM refTree, ncdm = NULL;
 
-      ierr = DMPlexCreateDefaultReferenceTree(comm,user->dim,user->simplex,&refTree);CHKERRQ(ierr);
+      ierr = DMPlexCreateDefaultReferenceTree(comm,dim,simplex,&refTree);CHKERRQ(ierr);
       ierr = DMPlexSetReferenceTree(*dm,refTree);CHKERRQ(ierr);
       ierr = DMDestroy(&refTree);CHKERRQ(ierr);
       ierr = DMPlexTreeRefineCell(*dm,user->treeCell,&ncdm);CHKERRQ(ierr);
@@ -310,22 +258,15 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         *dm = ncdm;
         ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
       }
+      ierr = DMViewFromOptions(*dm,NULL,"-tree_dm_view");CHKERRQ(ierr);
     } else {
       ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
     }
-    /* Distribute mesh over processes */
-    ierr = DMPlexGetPartitioner(*dm,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
-    }
-    if (user->simplex) {
-      ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
-    }
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "dist_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL);CHKERRQ(ierr);
+    if (simplex) {ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);}
+    else         {ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);}
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = TransformCoordinates(*dm, user);CHKERRQ(ierr);
@@ -374,7 +315,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (!user->simplex && user->constraints) {
+  if (user->constraints) {
     /* test local constraints */
     DM            coordDM;
     PetscInt      fStart, fEnd, f, vStart, vEnd, v;
@@ -431,7 +372,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, NULL, (PetscObject) user->fe);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  if (!user->simplex && user->constraints) {
+  if (user->constraints) {
     /* test getting local constraint matrix that matches section */
     PetscSection aSec;
     IS           aIS;
@@ -507,22 +448,21 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 
 static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
 {
-  PetscBool      isPlex;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
-  if (isPlex) {
+  if (!user->useDA) {
     Vec          local;
     const Vec    *vecs;
     Mat          E;
     MatNullSpace sp;
     PetscBool    isNullSpace, hasConst;
-    PetscInt     n, i;
+    PetscInt     dim, n, i;
     Vec          res = NULL, localX, localRes;
     PetscDS      ds;
 
-    if (user->numComponents != user->dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, user->dim);
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    if (user->numComponents != dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, dim);
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
@@ -593,7 +533,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   MPI_Comm          comm;
   DM                dmRedist, dmfv, dmgrad, dmCell, refTree;
   PetscFV           fv;
-  PetscInt          nvecs, v, cStart, cEnd, cEndInterior;
+  PetscInt          dim, nvecs, v, cStart, cEnd, cEndInterior;
   PetscMPIInt       size;
   Vec               cellgeom, grad, locGrad;
   const PetscScalar *cgeom;
@@ -602,6 +542,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   comm = PetscObjectComm((PetscObject)dm);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   /* duplicate DM, give dup. a FV discretization */
   ierr = DMSetBasicAdjacency(dm,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
@@ -616,7 +557,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = PetscFVCreate(comm,&fv);CHKERRQ(ierr);
   ierr = PetscFVSetType(fv,PETSCFVLEASTSQUARES);CHKERRQ(ierr);
   ierr = PetscFVSetNumComponents(fv,user->numComponents);CHKERRQ(ierr);
-  ierr = PetscFVSetSpatialDimension(fv,user->dim);CHKERRQ(ierr);
+  ierr = PetscFVSetSpatialDimension(fv,dim);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
   ierr = PetscFVSetUp(fv);CHKERRQ(ierr);
   ierr = DMPlexConstructGhostCells(dmRedist,NULL,NULL,&dmfv);CHKERRQ(ierr);
@@ -628,7 +569,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   if (refTree) {ierr = DMCopyDisc(dmfv,refTree);CHKERRQ(ierr);}
   ierr = DMPlexGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd);CHKERRQ(ierr);
-  nvecs = user->dim * (user->dim+1) / 2;
+  nvecs = dim * (dim+1) / 2;
   ierr = DMPlexGetGeometryFVM(dmfv,NULL,&cellgeom,NULL);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
@@ -650,13 +591,13 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       PetscScalar     cx[3] = {0.,0.,0.};
 
       ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-      if (v < user->dim) {
+      if (v < dim) {
         cx[v] = 1.;
       } else {
-        PetscInt w = v - user->dim;
+        PetscInt w = v - dim;
 
-        cx[(w + 1) % user->dim] =  cg->centroid[(w + 2) % user->dim];
-        cx[(w + 2) % user->dim] = -cg->centroid[(w + 1) % user->dim];
+        cx[(w + 1) % dim] =  cg->centroid[(w + 2) % dim];
+        cx[(w + 2) % dim] = -cg->centroid[(w + 1) % dim];
       }
       ierr = DMPlexVecSetClosure(dmfv,NULL,locX,c,cx,INSERT_ALL_VALUES);CHKERRQ(ierr);
     }
@@ -666,11 +607,11 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
     ierr = DMGlobalToLocalEnd(dmgrad,grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
     /* compare computed gradient to exact gradient */
-    if (v >= user->dim) {
-      PetscInt w = v - user->dim;
+    if (v >= dim) {
+      PetscInt w = v - dim;
 
-      trueGrad[(w + 1) % user->dim][(w + 2) % user->dim] =  1.;
-      trueGrad[(w + 2) % user->dim][(w + 1) % user->dim] = -1.;
+      trueGrad[(w + 1) % dim][(w + 2) % dim] =  1.;
+      trueGrad[(w + 2) % dim][(w + 1) % dim] = -1.;
     }
     maxDiff = 0.;
     for (c = cStart; c < cEndInterior; c++) {
@@ -680,8 +621,8 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 
       ierr = DMPlexPointLocalRead(dmgrad, c, gradArray, &compGrad);CHKERRQ(ierr);
 
-      for (i = 0, k = 0; i < user->dim; i++) {
-        for (j = 0; j < user->dim; j++, k++) {
+      for (i = 0, k = 0; i < dim; i++) {
+        for (j = 0; j < dim; j++, k++) {
           PetscScalar diff = compGrad[k] - trueGrad[i][j];
           FrobDiff += PetscRealPart(diff * PetscConj(diff));
         }
@@ -760,7 +701,7 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
     exactFuncDers[0] = cubicDer;
     break;
   default:
-    SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d order %d", user->dim, order);
+    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for order %d", order);
   }
   ierr = ComputeError(dm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
   /* Report result */
@@ -781,9 +722,8 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   Mat             Interp;
   Vec             iu, fu, scaling;
   MPI_Comm        comm;
-  PetscInt        dim  = user->dim;
+  PetscInt        dim;
   PetscReal       error, errorDer, tol = PETSC_SMALL;
-  PetscBool       isPlex;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
@@ -791,16 +731,16 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
   ierr = DMSetCoarseDM(rdm, dm);CHKERRQ(ierr);
   ierr = DMPlexSetRegularRefinement(rdm, user->convRefine);CHKERRQ(ierr);
-  if (user->tree && isPlex) {
+  if (user->tree) {
     DM refTree;
     ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
     ierr = DMPlexSetReferenceTree(rdm,refTree);CHKERRQ(ierr);
   }
-  if (!user->simplex && !user->constraints) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
+  if (user->useDA) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
   ierr = SetupSection(rdm, user);CHKERRQ(ierr);
   /* Setup functions to approximate */
   switch (order) {
@@ -880,7 +820,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   if (user->convRefine) {
     for (r = 0; r < Nr; ++r) {
       ierr = DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
-      if (!user->simplex && user->useDA) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
+      if (user->useDA) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
       ierr = SetupSection(rdm, user);CHKERRQ(ierr);
       ierr = ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
       p    = PetscLog2Real(errorOld/error);
@@ -898,7 +838,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
     lenOld = cEnd - cStart;
     for (c = 0; c < Nr; ++c) {
       ierr = DMCoarsen(odm, PetscObjectComm((PetscObject) dm), &cdm);CHKERRQ(ierr);
-      if (!user->simplex && user->useDA) {ierr = DMDASetVertexCoordinates(cdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
+      if (user->useDA) {ierr = DMDASetVertexCoordinates(cdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
       ierr = SetupSection(cdm, user);CHKERRQ(ierr);
       ierr = ComputeError(cdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
       /* ierr = ComputeLongestEdge(cdm, &len);CHKERRQ(ierr); */
@@ -925,12 +865,19 @@ int main(int argc, char **argv)
 {
   DM             dm;
   AppCtx         user;                 /* user-defined work context */
+  PetscInt       dim = 2;
+  PetscBool      simplex = PETSC_FALSE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_WORLD, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
+  if (!user.useDA) {
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
+  }
+  user.numComponents = user.numComponents < 0 ? dim : user.numComponents;
+  ierr = PetscFECreateDefault(PETSC_COMM_WORLD, dim, user.numComponents, simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   if (user.testFEjacobian) {ierr = TestFEJacobian(dm, &user);CHKERRQ(ierr);}
   if (user.testFVgrad) {ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);}
@@ -942,7 +889,7 @@ int main(int argc, char **argv)
 
     ierr = PetscFEGetDualSpace(user.fe, &dsp);CHKERRQ(ierr);
     ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
-    if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE && k == 0) {
+    if (dim == 2 && simplex == PETSC_TRUE && user.tree == PETSC_FALSE && k == 0) {
       ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
       ierr = CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user);CHKERRQ(ierr);
     }
@@ -991,28 +938,28 @@ int main(int argc, char **argv)
   test:
     suffix: p1_3d_0
     requires: ctetgen
-    args: -dim 3 -petscspace_degree 1 -qorder 1 -convergence
+    args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: p1_3d_1
     requires: ctetgen
-    args: -dim 3 -petscspace_degree 1 -qorder 1 -porder 1
+    args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: p1_3d_2
     requires: ctetgen
-    args: -dim 3 -petscspace_degree 1 -qorder 1 -porder 2
+    args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -porder 2
   test:
     suffix: p1_3d_3
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+    args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
     filter: grep -v DEBUG
   test:
     suffix: p1_3d_4
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+    args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p1_3d_5
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+    args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 2D P_2 on a triangle
   test:
@@ -1045,101 +992,101 @@ int main(int argc, char **argv)
   test:
     suffix: p2_3d_0
     requires: ctetgen
-    args: -dim 3 -petscspace_degree 2 -qorder 2 -convergence
+    args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -convergence
   test:
     suffix: p2_3d_1
     requires: ctetgen
-    args: -dim 3 -petscspace_degree 2 -qorder 2 -porder 1
+    args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -porder 1
   test:
     suffix: p2_3d_2
     requires: ctetgen
-    args: -dim 3 -petscspace_degree 2 -qorder 2 -porder 2
+    args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -porder 2
   test:
     suffix: p2_3d_3
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
+    args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
     filter: grep -v DEBUG
   test:
     suffix: p2_3d_4
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
+    args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p2_3d_5
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
+    args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 2D Q_1 on a quadrilaterial DA
   test:
     suffix: q1_2d_da_0
     requires: mpi_type_get_envelope broken
-    args: -simplex 0 -petscspace_degree 1 -qorder 1 -convergence
+    args: -use_da 1 -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: q1_2d_da_1
     requires: mpi_type_get_envelope broken
-    args: -simplex 0 -petscspace_degree 1 -qorder 1 -porder 1
+    args: -use_da 1 -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: q1_2d_da_2
     requires: mpi_type_get_envelope broken
-    args: -simplex 0 -petscspace_degree 1 -qorder 1 -porder 2
+    args: -use_da 1 -petscspace_degree 1 -qorder 1 -porder 2
 
   # 2D Q_1 on a quadrilaterial Plex
   test:
     suffix: q1_2d_plex_0
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: q1_2d_plex_1
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -porder 1
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: q1_2d_plex_2
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -porder 2
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -qorder 1 -porder 2
   test:
     suffix: q1_2d_plex_3
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -porder 1 -shear_coords
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -qorder 1 -porder 1 -shear_coords
   test:
     suffix: q1_2d_plex_4
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -porder 2 -shear_coords
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -qorder 1 -porder 2 -shear_coords
   test:
     suffix: q1_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 0 -non_affine_coords -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 0 -non_affine_coords -convergence
   test:
     suffix: q1_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 1 -non_affine_coords -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 1 -non_affine_coords -convergence
   test:
     suffix: q1_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 2 -non_affine_coords -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 2 -non_affine_coords -convergence
 
   # 2D Q_2 on a quadrilaterial
   test:
     suffix: q2_2d_plex_0
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -convergence
   test:
     suffix: q2_2d_plex_1
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 1
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 1
   test:
     suffix: q2_2d_plex_2
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 2
   test:
     suffix: q2_2d_plex_3
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 1 -shear_coords
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 1 -shear_coords
   test:
     suffix: q2_2d_plex_4
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2 -shear_coords
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 2 -shear_coords
   test:
     suffix: q2_2d_plex_5
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 0 -non_affine_coords -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 0 -non_affine_coords -convergence
   test:
     suffix: q2_2d_plex_6
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 1 -non_affine_coords -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 1 -non_affine_coords -convergence
   test:
     suffix: q2_2d_plex_7
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 2 -non_affine_coords -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 2 -non_affine_coords -convergence
 
 
   # 2D P_3 on a triangle
@@ -1177,19 +1124,19 @@ int main(int argc, char **argv)
   test:
     suffix: q3_2d_0
     requires: mpi_type_get_envelope !single
-    args: -use_da 0 -simplex 0 -petscspace_degree 3 -qorder 3 -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -convergence
   test:
     suffix: q3_2d_1
     requires: mpi_type_get_envelope !single
-    args: -use_da 0 -simplex 0 -petscspace_degree 3 -qorder 3 -porder 1
+    args: -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -porder 1
   test:
     suffix: q3_2d_2
     requires: mpi_type_get_envelope !single
-    args: -use_da 0 -simplex 0 -petscspace_degree 3 -qorder 3 -porder 2
+    args: -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -porder 2
   test:
     suffix: q3_2d_3
     requires: mpi_type_get_envelope !single
-    args: -use_da 0 -simplex 0 -petscspace_degree 3 -qorder 3 -porder 3
+    args: -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -porder 3
 
   # 2D P_1disc on a triangle/quadrilateral
   test:
@@ -1207,16 +1154,16 @@ int main(int argc, char **argv)
   test:
     suffix: p1d_2d_3
     requires: triangle
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -convergence
     filter: sed  -e "s/convergence rate at refinement 0: 2/convergence rate at refinement 0: 1.9/g"
   test:
     suffix: p1d_2d_4
     requires: triangle
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 1
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 1
   test:
     suffix: p1d_2d_5
     requires: triangle
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
 
   # 2D BDM_1 on a triangle
   test:
@@ -1241,19 +1188,19 @@ int main(int argc, char **argv)
     requires: triangle
     args: -petscspace_degree 1 -petscdualspace_type bdm \
           -petscdualspace_lagrange_tensor 1 \
-          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -convergence
+          -dm_plex_simplex 0 -num_comp 2 -qorder 1 -convergence
   test:
     suffix: bdm1q_2d_1
     requires: triangle
     args: -petscspace_degree 1 -petscdualspace_type bdm \
           -petscdualspace_lagrange_tensor 1 \
-          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -porder 1
+          -dm_plex_simplex 0 -num_comp 2 -qorder 1 -porder 1
   test:
     suffix: bdm1q_2d_2
     requires: triangle
     args: -petscspace_degree 1 -petscdualspace_type bdm \
           -petscdualspace_lagrange_tensor 1 \
-          -use_da 0 -simplex 0 -num_comp 2 -qorder 1 -porder 2
+          -dm_plex_simplex 0 -num_comp 2 -qorder 1 -porder 2
 
   # Test high order quadrature
   test:
@@ -1275,81 +1222,81 @@ int main(int argc, char **argv)
   test:
     suffix: q1_quad_2
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 2 -porder 1
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -qorder 2 -porder 1
   test:
     suffix: q1_quad_5
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 5 -porder 1
+    args: -dm_plex_simplex 0 -petscspace_degree 1 -qorder 5 -porder 1
   test:
     suffix: q2_quad_3
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 3 -porder 1
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 3 -porder 1
   test:
     suffix: q2_quad_5
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 5 -porder 1
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 5 -porder 1
 
 
   # Nonconforming tests
   test:
     suffix: constraints
-    args: -simplex 0 -petscspace_type tensor -petscspace_degree 1 -qorder 0 -constraints
+    args: -dm_coord_space 0 -dm_plex_simplex 0 -petscspace_type tensor -petscspace_degree 1 -qorder 0 -constraints
   test:
     suffix: nonconforming_tensor_2
     nsize: 4
-    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_type tensor -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -dist_dm_distribute -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -dm_plex_simplex 0 -dm_plex_max_projection_height 1 -petscspace_type tensor -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_tensor_3
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_type tensor -petscspace_degree 1 -qorder 1 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -dist_dm_distribute -test_fe_jacobian -petscpartitioner_type simple -tree -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_plex_max_projection_height 2 -petscspace_type tensor -petscspace_degree 1 -qorder 1 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_tensor_2_fv
     nsize: 4
-    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 0 -dim 2 -num_comp 2
+    args: -dist_dm_distribute -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -dm_plex_simplex 0 -num_comp 2
   test:
     suffix: nonconforming_tensor_3_fv
     nsize: 4
-    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3
+    args: -dist_dm_distribute -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -num_comp 3
   test:
     suffix: nonconforming_tensor_2_hi
     requires: !single
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_type tensor -petscspace_degree 4 -qorder 4
+    args: -dist_dm_distribute -test_fe_jacobian -petscpartitioner_type simple -tree -dm_plex_simplex 0 -dm_plex_max_projection_height 1 -petscspace_type tensor -petscspace_degree 4 -qorder 4
   test:
     suffix: nonconforming_tensor_3_hi
     requires: !single skip
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_type tensor -petscspace_degree 4 -qorder 4
+    args: -dist_dm_distribute -test_fe_jacobian -petscpartitioner_type simple -tree -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_plex_max_projection_height 2 -petscspace_type tensor -petscspace_degree 4 -qorder 4
   test:
     suffix: nonconforming_simplex_2
     requires: triangle
     nsize: 4
-    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -dist_dm_distribute -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -dm_plex_max_projection_height 1 -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_simplex_2_hi
     requires: triangle !single
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_degree 4 -qorder 4
+    args: -dist_dm_distribute -test_fe_jacobian -petscpartitioner_type simple -tree -dm_plex_max_projection_height 1 -petscspace_degree 4 -qorder 4
   test:
     suffix: nonconforming_simplex_2_fv
     requires: triangle
     nsize: 4
-    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 1 -dim 2 -num_comp 2
+    args: -dist_dm_distribute -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -num_comp 2
   test:
     suffix: nonconforming_simplex_3
     requires: ctetgen
     nsize: 4
-    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -dist_dm_distribute -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -dm_plex_dim 3 -dm_plex_max_projection_height 2 -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_simplex_3_hi
     requires: ctetgen skip
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_degree 4 -qorder 4
+    args: -dist_dm_distribute -test_fe_jacobian -petscpartitioner_type simple -tree -dm_plex_dim 3 -dm_plex_max_projection_height 2 -petscspace_degree 4 -qorder 4
   test:
     suffix: nonconforming_simplex_3_fv
     requires: ctetgen
     nsize: 4
-    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 1 -dim 3 -num_comp 3
+    args: -dist_dm_distribute -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -dm_plex_dim 3 -num_comp 3
 
 TEST*/
 
@@ -1357,28 +1304,28 @@ TEST*/
    # 2D Q_2 on a quadrilaterial Plex
   test:
     suffix: q2_2d_plex_0
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -convergence
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -convergence
   test:
     suffix: q2_2d_plex_1
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 1
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 1
   test:
     suffix: q2_2d_plex_2
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 2
   test:
     suffix: q2_2d_plex_3
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 1 -shear_coords
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 1 -shear_coords
   test:
     suffix: q2_2d_plex_4
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2 -shear_coords
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 2 -shear_coords
   test:
     suffix: q2_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_poly_tensor 1 -qorder 2 -porder 0 -non_affine_coords
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_poly_tensor 1 -qorder 2 -porder 0 -non_affine_coords
   test:
     suffix: q2_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -non_affine_coords
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -non_affine_coords
   test:
     suffix: q2_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -non_affine_coords
+    args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -non_affine_coords
 
   test:
     suffix: p1d_2d_6

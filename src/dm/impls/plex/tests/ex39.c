@@ -1,5 +1,4 @@
-const char help[] =
-  "A test of H-div conforming discretizations on different cell types.\n";
+const char help[] = "A test of H-div conforming discretizations on different cell types.\n";
 
 #include <petscdmplex.h>
 #include <petscds.h>
@@ -193,8 +192,6 @@ const char* const SolutionTypes[] = {"linear","sinusoidal","Solution","",NULL};
 
 typedef struct
 {
-  PetscBool simplex;
-  PetscInt  dim;
   Transform mesh_transform;
   Solution  sol_form;
 } UserCtx;
@@ -206,14 +203,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm,UserCtx * user)
 
   PetscFunctionBegin;
   /* Default to  2D, unperturbed triangle mesh and Linear solution.*/
-  user->simplex        = PETSC_TRUE;
-  user->dim            = 2;
   user->mesh_transform = NONE;
   user->sol_form       = LINEAR;
 
   ierr = PetscOptionsBegin(comm,"","H-div Test Options","DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex","Whether to use simplices (true) or tensor-product (false) cells in " "the mesh","ex39.c",user->simplex,&user->simplex,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim","Number of solution dimensions","ex39.c",user->dim,&user->dim,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mesh_transform","Method used to perturb the mesh vertices. Options are skew, perturb, skew_perturb,or none","ex39.c",TransformTypes,(PetscEnum) user->mesh_transform,(PetscEnum*) &user->mesh_transform,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-sol_form","Form of the exact solution. Options are Linear or Sinusoidal","ex39.c",SolutionTypes,(PetscEnum) user->sol_form,(PetscEnum*) &user->sol_form,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -327,33 +320,12 @@ static PetscErrorCode TransformMesh(UserCtx * user,DM * mesh)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm,UserCtx * user,DM * mesh)
 {
-  PetscErrorCode   ierr;
-  DMLabel          label;
-  const char       *name  = "marker";
-  DM               dmDist = NULL;
-  PetscPartitioner part;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Create box mesh from user parameters */
-  ierr = DMPlexCreateBoxMesh(comm,user->dim,user->simplex,NULL,NULL,NULL,NULL,PETSC_TRUE,mesh);CHKERRQ(ierr);
-
-  /* Make sure the mesh gets properly distributed if running in parallel */
-  ierr = DMPlexGetPartitioner(*mesh,&part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(*mesh,0,NULL,&dmDist);CHKERRQ(ierr);
-  if (dmDist) {
-    ierr  = DMDestroy(mesh);CHKERRQ(ierr);
-    *mesh = dmDist;
-  }
-
-  /* Mark the boundaries, we will need this later when setting up the system of
-   * equations */
-  ierr = DMCreateLabel(*mesh,name);CHKERRQ(ierr);
-  ierr = DMGetLabel(*mesh,name,&label);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(*mesh,1,label);CHKERRQ(ierr);
-  ierr = DMPlexLabelComplete(*mesh,label);CHKERRQ(ierr);
-  ierr = DMLocalizeCoordinates(*mesh);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *mesh,"Mesh");CHKERRQ(ierr);
+  ierr = DMCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = DMSetType(*mesh, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*mesh);CHKERRQ(ierr);
 
   /* Perform any mesh transformations if specified by user */
   if (user->mesh_transform != NONE) {
@@ -362,10 +334,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm,UserCtx * user,DM * mesh)
 
   /* Get any other mesh options from the command line */
   ierr = DMSetApplicationContext(*mesh,user);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*mesh);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*mesh,NULL,"-dm_view");CHKERRQ(ierr);
-
-  ierr = DMDestroy(&dmDist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -420,21 +389,24 @@ static PetscErrorCode SetupDiscretization(DM mesh,PetscErrorCode (*setup)(DM,Use
 {
   DM             cdm = mesh;
   PetscFE        fevel,fepres,fedivErr;
-  const PetscInt dim = user->dim;
+  PetscInt       dim;
+  PetscBool      simplex;
   PetscErrorCode ierr;
 
 
   PetscFunctionBegin;
+  ierr = DMGetDimension(mesh, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(mesh, &simplex);CHKERRQ(ierr);
   /* Create FE objects and give them names so that options can be set from
    * command line */
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) mesh),dim,dim,user->simplex,"velocity_",-1,&fevel);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) mesh),dim,dim,simplex,"velocity_",-1,&fevel);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fevel,"velocity");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) mesh),dim,1,user->simplex,"pressure_",-1,&fepres);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) mesh),dim,1,simplex,"pressure_",-1,&fepres);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fepres,"pressure");CHKERRQ(ierr);
 
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)
-                                              mesh),dim,1,user->simplex,"divErr_",-1,&fedivErr);CHKERRQ(ierr);
+                                              mesh),dim,1,simplex,"divErr_",-1,&fedivErr);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fedivErr,"divErr");CHKERRQ(ierr);
 
   ierr = PetscFECopyQuadrature(fevel,fepres);CHKERRQ(ierr);
@@ -534,14 +506,11 @@ int main(int argc,char **argv)
   testset:
     suffix: 2d_bdm
     requires: triangle
-    args: -dim 2 \
-      -simplex true \
-      -velocity_petscfe_default_quadrature_order 1 \
+    args: -velocity_petscfe_default_quadrature_order 1 \
       -velocity_petscspace_degree 1 \
       -velocity_petscdualspace_type bdm \
       -divErr_petscspace_degree 1 \
       -divErr_petscdualspace_lagrange_continuity false \
-      -dm_refine 0 \
       -snes_error_if_not_converged \
       -ksp_rtol 1e-10 \
       -ksp_error_if_not_converged \
@@ -568,14 +537,12 @@ int main(int argc,char **argv)
   testset:
     TODO: broken
     suffix: 2d_bdmq
-    args: -dim 2 \
-      -simplex false \
+    args: -dm_plex_simplex false \
       -velocity_petscspace_degree 1 \
       -velocity_petscdualspace_type bdm \
       -velocity_petscdualspace_lagrange_tensor 1 \
       -divErr_petscspace_degree 1 \
       -divErr_petscdualspace_lagrange_continuity false \
-      -dm_refine 0 \
       -snes_error_if_not_converged \
       -ksp_rtol 1e-10 \
       -ksp_error_if_not_converged \
@@ -602,13 +569,11 @@ int main(int argc,char **argv)
   testset:
     suffix: 3d_bdm
     requires: ctetgen
-    args: -dim 3 \
-      -simplex true \
+    args: -dm_plex_dim 3 \
       -velocity_petscspace_degree 1 \
       -velocity_petscdualspace_type bdm \
       -divErr_petscspace_degree 1 \
       -divErr_petscdualspace_lagrange_continuity false \
-      -dm_refine 0 \
       -snes_error_if_not_converged \
       -ksp_rtol 1e-10 \
       -ksp_error_if_not_converged \
@@ -636,14 +601,13 @@ int main(int argc,char **argv)
     TODO: broken
     suffix: 3d_bdmq
     requires: ctetgen
-    args: -dim 3 \
-      -simplex false \
+    args: -dm_plex_dim 3 \
+      -dm_plex_simplex false \
       -velocity_petscspace_degree 1 \
       -velocity_petscdualspace_type bdm \
       -velocity_petscdualspace_lagrange_tensor 1 \
       -divErr_petscspace_degree 1 \
       -divErr_petscdualspace_lagrange_continuity false \
-      -dm_refine 0 \
       -snes_error_if_not_converged \
       -ksp_rtol 1e-10 \
       -ksp_error_if_not_converged \
@@ -669,10 +633,9 @@ int main(int argc,char **argv)
 
   test:
     suffix: quad_rt_0
-    args: -dim 2 -simplex false -mesh_transform skew \
+    args: -dm_plex_simplex false -mesh_transform skew \
           -divErr_petscspace_degree 1 \
           -divErr_petscdualspace_lagrange_continuity false \
-          -dm_refine 0 \
           -snes_error_if_not_converged \
           -ksp_rtol 1e-10 \
           -ksp_error_if_not_converged \

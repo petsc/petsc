@@ -2602,7 +2602,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
   ierr = PetscFree(elemMat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(In, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(In, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (mesh->printFEM) {
+  if (mesh->printFEM > 1) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)In), "%s:\n", name);CHKERRQ(ierr);
     ierr = MatChop(In, 1.0e-10);CHKERRQ(ierr);
     ierr = MatView(In, NULL);CHKERRQ(ierr);

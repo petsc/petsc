@@ -8,10 +8,7 @@ static char help[] = "Interpolation Tests for Plex\n\n";
 typedef enum {CENTROID, GRID, GRID_REPLICATED} PointType;
 
 typedef struct {
-  PetscInt      dim;                          /* The topological mesh dimension */
-  PetscBool     cellSimplex;                  /* Use simplices or hexes */
-  char          filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
-  PointType     pointType;                    /* Point generation mechanism */
+  PointType pointType; /* Point generation mechanism */
 } AppCtx;
 
 static PetscInt Nc = 3;
@@ -34,54 +31,23 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dim           = 3;
-  options->cellSimplex   = PETSC_TRUE;
-  options->filename[0]   = '\0';
-  options->pointType     = CENTROID;
+  options->pointType = CENTROID;
 
   ierr = PetscOptionsBegin(comm, "", "Interpolation Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex2.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex2.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   pt   = options->pointType;
   ierr = PetscOptionsEList("-point_type", "The point type", "ex2.c", pointTypes, 3, pointTypes[options->pointType], &pt, NULL);CHKERRQ(ierr);
   options->pointType = (PointType) pt;
   ierr = PetscOptionsEnd();
-
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
 {
-  PetscInt       dim         = ctx->dim;
-  PetscBool      cellSimplex = ctx->cellSimplex;
-  const char    *filename    = ctx->filename;
-  const PetscInt cells[3]    = {1, 1, 1};
-  size_t         len;
-  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (len) {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else     {ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  {
-    DM               distributedMesh = NULL;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-
-    /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
-    }
-  }
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -128,18 +94,19 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
 {
   DM             da;
   DMDALocalInfo  info;
-  PetscInt       N = 3, n = 0, spaceDim, i, j, k, *ind, d;
+  PetscInt       N = 3, n = 0, dim, spaceDim, i, j, k, *ind, d;
   PetscReal      *h;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &spaceDim);CHKERRQ(ierr);
   ierr = PetscCalloc1(spaceDim,&ind);CHKERRQ(ierr);
   ierr = PetscCalloc1(spaceDim,&h);CHKERRQ(ierr);
   h[0] = 1.0/(N-1); h[1] = 1.0/(N-1); h[2] = 1.0/(N-1);
   ierr = DMDACreate(PetscObjectComm((PetscObject) dm), &da);CHKERRQ(ierr);
-  ierr = DMSetDimension(da, ctx->dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, dim);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, N, N, N);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 1);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
@@ -175,17 +142,19 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
 
 static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
 {
-  PetscInt       N = 3, n = 0, spaceDim, i, j, k, *ind, d;
+  PetscInt       N = 3, n = 0, dim, spaceDim, i, j, k, *ind, d;
   PetscReal      *h;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
+  PetscFunctionBeginUser;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
   ierr = DMGetCoordinateDim(dm, &spaceDim);CHKERRQ(ierr);
   ierr = PetscCalloc1(spaceDim,&ind);CHKERRQ(ierr);
   ierr = PetscCalloc1(spaceDim,&h);CHKERRQ(ierr);
   h[0] = 1.0/(N-1); h[1] = 1.0/(N-1); h[2] = 1.0/(N-1);
-  *Np  = N * (ctx->dim > 1 ? N : 1) * (ctx->dim > 2 ? N : 1);
+  *Np  = N * (dim > 1 ? N : 1) * (dim > 2 ? N : 1);
   ierr = PetscCalloc1(*Np * spaceDim, pcoords);CHKERRQ(ierr);
   for (k = 0; k < N; ++k) {
     ind[2] = k;
@@ -237,8 +206,8 @@ int main(int argc, char **argv)
   PetscScalar        *vals;
   const PetscScalar  *ivals, *vcoords;
   PetscReal          *pcoords;
-  PetscBool           pointsAllProcs=PETSC_TRUE;
-  PetscInt            spaceDim, c, Np, p;
+  PetscBool           simplex, pointsAllProcs=PETSC_TRUE;
+  PetscInt            dim, spaceDim, c, Np, p;
   PetscMPIInt         rank, size;
   PetscViewer         selfviewer;
   PetscErrorCode      ierr;
@@ -246,6 +215,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &ctx, &dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &spaceDim);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
@@ -263,7 +233,8 @@ int main(int argc, char **argv)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
   ierr = VecView(interpolator->coords, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Setup Discretization */
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), ctx.dim, Nc, ctx.cellSimplex, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, Nc, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
@@ -302,7 +273,7 @@ int main(int argc, char **argv)
 #else
       const PetscReal *vcoordsReal = &vcoords[p*spaceDim];
 #endif
-      (*funcs[c])(ctx.dim, 0.0, vcoordsReal, 1, vals, NULL);
+      (*funcs[c])(dim, 0.0, vcoordsReal, 1, vals, NULL);
       if (PetscAbsScalar(ivals[p*Nc+c] - vals[c]) > PETSC_SQRT_MACHINE_EPSILON)
         SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid interpolated value %g != %g (%D, %D)", (double) PetscRealPart(ivals[p*Nc+c]), (double) PetscRealPart(vals[c]), p, c);
     }
@@ -322,60 +293,51 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
-    suffix: 0
+  testset:
     requires: ctetgen
-    args: -petscspace_degree 1
-  test:
-    suffix: 1
-    requires: ctetgen
-    args: -petscspace_degree 1 -dm_refine 2
-  test:
-    suffix: 2
-    requires: ctetgen
-    nsize: 2
-    args: -petscspace_degree 1 -petscpartitioner_type simple
-  test:
-    suffix: 3
-    requires: ctetgen
-    nsize: 2
-    args: -petscspace_degree 1 -dm_refine 2 -petscpartitioner_type simple
-  test:
-    suffix: 4
-    requires: ctetgen
-    nsize: 5
-    args: -petscspace_degree 1 -petscpartitioner_type simple
-  test:
-    suffix: 5
-    requires: ctetgen
-    nsize: 5
-    args: -petscspace_degree 1 -dm_refine 2 -petscpartitioner_type simple
-  test:
-    suffix: 6
-    requires: ctetgen
-    args: -petscspace_degree 1 -point_type grid
-  test:
-    suffix: 7
-    requires: ctetgen
-    args: -petscspace_degree 1 -dm_refine 2 -point_type grid
-  test:
-    suffix: 8
-    requires: ctetgen
-    nsize: 2
-    args: -petscspace_degree 1 -point_type grid -petscpartitioner_type simple
-  test:
-    suffix: 9
-    requires: ctetgen
-    args: -petscspace_degree 1 -point_type grid_replicated
-  test:
-    suffix: 10
-    requires: ctetgen
-    nsize: 2
-    args: -petscspace_degree 1 -point_type grid_replicated -petscpartitioner_type simple
-  test:
-    suffix: 11
-    requires: ctetgen
-    nsize: 2
-    args: -petscspace_degree 1 -dm_refine 2 -point_type grid_replicated -petscpartitioner_type simple
+    args: -dm_plex_dim 3 -petscspace_degree 1
+
+    test:
+      suffix: 0
+    test:
+      suffix: 1
+      args: -dm_refine 2
+    test:
+      suffix: 2
+      nsize: 2
+      args: -dm_distribute -petscpartitioner_type simple
+    test:
+      suffix: 3
+      nsize: 2
+      args: -dm_refine 2 -dm_distribute -petscpartitioner_type simple
+    test:
+      suffix: 4
+      nsize: 5
+      args: -dm_distribute -petscpartitioner_type simple
+    test:
+      suffix: 5
+      nsize: 5
+      args: -dm_refine 2 -dm_distribute -petscpartitioner_type simple
+    test:
+      suffix: 6
+      args: -point_type grid
+    test:
+      suffix: 7
+      args: -dm_refine 2 -point_type grid
+    test:
+      suffix: 8
+      nsize: 2
+      args: -dm_distribute -petscpartitioner_type simple -point_type grid
+    test:
+      suffix: 9
+      args: -point_type grid_replicated
+    test:
+      suffix: 10
+      nsize: 2
+      args: -dm_distribute -petscpartitioner_type simple -point_type grid_replicated
+    test:
+      suffix: 11
+      nsize: 2
+      args: -dm_refine 2 -dm_distribute -petscpartitioner_type simple -point_type grid_replicated
 
 TEST*/

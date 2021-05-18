@@ -15,7 +15,7 @@
       KSP ::         ksp
       Mat ::         M_p, M
       Vec ::         f, rho, rhs
-      PetscInt ::    dim = 2, Nc = 1, degree = 1, timestep = 0
+      PetscInt ::    dim, Nc = 1, degree = 1, timestep = 0
       PetscInt ::    Np = 100, p, field = 0, zero = 0, bs
       PetscReal ::   time = 0.0,  norm
       PetscBool ::   removePoints = PETSC_TRUE
@@ -30,7 +30,10 @@
         stop
       endif
 
-      call DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_FALSE, PETSC_NULL_INTEGER, PETSC_NULL_REAL, PETSC_NULL_REAL, PETSC_NULL_INTEGER, PETSC_TRUE, dm, ierr);CHKERRA(ierr)
+      call DMCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRA(ierr)
+      call DMSetType(dm, DMPLEX, ierr);CHKERRA(ierr)
+      call DMSetFromOptions(dm, ierr);CHKERRA(ierr)
+      call DMGetDimension(dm, dim, ierr);CHKERRA(ierr)
       call DMViewFromOptions(dm, PETSC_NULL_VEC, '-dm_view', ierr);CHKERRA(ierr)
 
 !     Create finite element space
@@ -113,7 +116,7 @@
 !  test:
 !    suffix: 0
 !    requires: double
-!    args: -dm_plex_box_faces 40,20 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -ftop_ksp_type lsqr -ftop_pc_type none -dm_view -swarm_view
+!    args: -dm_plex_simplex 0 -dm_plex_box_faces 40,20 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -ftop_ksp_type lsqr -ftop_pc_type none -dm_view -swarm_view
 !    filter: grep -v DM_ | grep -v atomic
 !    filter_output: grep -v atomic
 !

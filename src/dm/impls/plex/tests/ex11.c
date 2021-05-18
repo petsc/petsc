@@ -230,26 +230,26 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
   DMLabel          bd1, bd2, ulabel;
   DMUniversalLabel universal;
   PetscInt         pStart, pEnd, p;
-  PetscBool        run = PETSC_FALSE, flg, flg2;
-  char             filename[PETSC_MAX_PATH_LEN];
-  char             bdfilename[PETSC_MAX_PATH_LEN];
+  PetscBool        run = PETSC_FALSE, notFile;
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscOptionsGetBool(NULL, NULL, "-universal", &run, NULL);CHKERRQ(ierr);
   if (!run) PetscFunctionReturn(0);
+
+  char filename[PETSC_MAX_PATH_LEN];
+  PetscBool flg;
+
   ierr = PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL, NULL, "-bd_filename", bdfilename, sizeof(bdfilename), &flg2);CHKERRQ(ierr);
   if (flg) {
     ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm1);CHKERRQ(ierr);
-  } else if (flg2) {
-    DM bd;
-
-    ierr = DMPlexCreateFromFile(comm, bdfilename, PETSC_TRUE, &bd);CHKERRQ(ierr);
-    ierr = DMPlexGenerate(bd, NULL, PETSC_TRUE, &dm1);CHKERRQ(ierr);
-    ierr = DMDestroy(&bd);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, &dm1);CHKERRQ(ierr);
+    ierr = DMCreate(comm, &dm1);CHKERRQ(ierr);
+    ierr = DMSetType(dm1, DMPLEX);CHKERRQ(ierr);
+    ierr = DMSetFromOptions(dm1);CHKERRQ(ierr);
+  }
+  ierr = DMHasLabel(dm1, "marker", &notFile);CHKERRQ(ierr);
+  if (notFile) {
     ierr = DMCreateLabel(dm1, "Boundary Faces");CHKERRQ(ierr);
     ierr = DMGetLabel(dm1, "Boundary Faces", &bd1);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm1, 13, bd1);CHKERRQ(ierr);
@@ -265,7 +265,7 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
   ierr = DMUniversalLabelGetLabel(universal, &ulabel);CHKERRQ(ierr);
   ierr = PetscObjectViewFromOptions((PetscObject) ulabel, NULL, "-universal_view");CHKERRQ(ierr);
 
-  if (flg || flg2) {
+  if (!notFile) {
     PetscInt Nl, l;
 
     ierr = DMClone(dm1, &dm2);CHKERRQ(ierr);
@@ -280,7 +280,9 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
       if (!isdepth && !iscelltype) {ierr = DMRemoveLabel(dm2, name, NULL);CHKERRQ(ierr);}
     }
   } else {
-    ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, &dm2);CHKERRQ(ierr);
+    ierr = DMCreate(comm, &dm2);CHKERRQ(ierr);
+    ierr = DMSetType(dm2, DMPLEX);CHKERRQ(ierr);
+    ierr = DMSetFromOptions(dm2);CHKERRQ(ierr);
   }
   ierr = PetscObjectSetName((PetscObject) dm2, "Second Mesh");CHKERRQ(ierr);
   ierr = DMUniversalLabelCreateLabels(universal, PETSC_TRUE, dm2);CHKERRQ(ierr);
@@ -355,12 +357,12 @@ int main(int argc, char **argv)
     # Note that the labels differ because we have multiply-marked some points during EGADS creation
     suffix: univ_egads_sphere
     requires: egads
-    args: -universal -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_view -universal_view
+    args: -universal -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_view -universal_view
 
   test:
     # Note that the labels differ because we have multiply-marked some points during EGADS creation
     suffix: univ_egads_ball
     requires: egads ctetgen
-    args: -universal -bd_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_view -universal_view
+    args: -universal -dm_plex_boundary_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_view -universal_view
 
 TEST*/

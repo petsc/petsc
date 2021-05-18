@@ -1,6 +1,6 @@
-DM Object: Mesh 1 MPI processes
+DM Object: box 1 MPI processes
   type: plex
-Mesh in 2 dimensions:
+box in 2 dimensions:
 Supports:
 [0] Max support size: 6
 [0]: 8 ----> 17
@@ -129,23 +129,7 @@ Process 0:
   (  14) dim  2 offset  12 0. 1.
   (  15) dim  2 offset  14 0.5 1.
   (  16) dim  2 offset  16 1. 1.
-Label 'marker':
-[0]: 8 (1)
-[0]: 9 (1)
-[0]: 10 (1)
-[0]: 11 (1)
-[0]: 13 (1)
-[0]: 14 (1)
-[0]: 15 (1)
-[0]: 16 (1)
-[0]: 17 (1)
-[0]: 19 (1)
-[0]: 21 (1)
-[0]: 25 (1)
-[0]: 27 (1)
-[0]: 29 (1)
-[0]: 30 (1)
-[0]: 32 (1)
+Labels:
 Label 'celltype':
 [0]: 8 (0)
 [0]: 9 (0)
@@ -179,6 +163,32 @@ Label 'celltype':
 [0]: 29 (1)
 [0]: 30 (1)
 [0]: 31 (1)
+[0]: 32 (1)
+Label 'marker':
+[0]: 8 (1)
+[0]: 9 (1)
+[0]: 10 (1)
+[0]: 11 (1)
+[0]: 13 (1)
+[0]: 14 (1)
+[0]: 15 (1)
+[0]: 16 (1)
+[0]: 17 (1)
+[0]: 19 (1)
+[0]: 21 (1)
+[0]: 25 (1)
+[0]: 27 (1)
+[0]: 29 (1)
+[0]: 30 (1)
+[0]: 32 (1)
+Label 'Face Sets':
+[0]: 17 (1)
+[0]: 19 (1)
+[0]: 21 (1)
+[0]: 25 (1)
+[0]: 27 (1)
+[0]: 29 (1)
+[0]: 30 (1)
 [0]: 32 (1)
 DM Object: Submesh 1 MPI processes
   type: plex
@@ -261,6 +271,7 @@ Process 0:
   (   8) dim  2 offset   8 0.5 0.5
   (   9) dim  2 offset  10 1. 0.5
   (  10) dim  2 offset  12 0. 1.
+Labels:
 Label 'celltype':
 [0]: 4 (0)
 [0]: 5 (0)
@@ -386,6 +397,7 @@ Process 0:
   (   8) dim  2 offset   8 0. 1.
   (   9) dim  2 offset  10 0.5 1.
   (  10) dim  2 offset  12 1. 1.
+Labels:
 Label 'celltype':
 [0]: 4 (0)
 [0]: 5 (0)

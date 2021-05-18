@@ -2,26 +2,6 @@ static char help[] = "Create a Plex sphere from quads and create a P1 section\n\
 
 #include <petscdmplex.h>
 
-typedef struct {
-  PetscInt  dim;     /* Topological problem dimension */
-  PetscBool simplex; /* Mesh with simplices */
-} AppCtx;
-
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  options->dim     = 2;
-  options->simplex = PETSC_FALSE;
-
-  ierr = PetscOptionsBegin(comm, "", "Sphere Mesh Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "Problem dimension", "ex7.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Use simplices, or tensor product cells", "ex7.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode SetupSection(DM dm)
 {
   PetscSection   s;
@@ -48,27 +28,15 @@ int main(int argc, char **argv)
 {
   DM             dm;
   Vec            u;
-  AppCtx         ctx;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
-  ierr = DMPlexCreateSphereMesh(PETSC_COMM_WORLD, ctx.dim, ctx.simplex, 1.0, &dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, "Sphere");CHKERRQ(ierr);
-  /* Distribute mesh over processes */
-  {
-     DM dmDist = NULL;
-     PetscPartitioner part;
-     ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
-     ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-     ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
-     if (dmDist) {
-       ierr = DMDestroy(&dm);CHKERRQ(ierr);
-       dm  = dmDist;
-     }
-  }
+  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) dm, "Sphere");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+
   ierr = SetupSection(dm);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = VecSet(u, 2);CHKERRQ(ierr);
@@ -81,37 +49,38 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
-    suffix: 2d_quad
+  testset:
     requires: !__float128
-    args: -dm_view
+    args: -dm_plex_shape sphere -dm_view
 
-  test:
-    suffix: 2d_quad_parallel
-    requires: !__float128
-    args: -dm_view -petscpartitioner_type simple
-    nsize: 2
+    test:
+      suffix: 2d_quad
+      args: -dm_plex_simplex 0
 
-  test:
-    suffix: 2d_tri
-    requires: !__float128
-    args: -simplex -dm_view
+    test:
+      suffix: 2d_tri
+      args:
 
-  test:
-    suffix: 2d_tri_parallel
-    requires: !__float128
-    args: -simplex -dm_view -petscpartitioner_type simple
-    nsize: 2
+    test:
+      suffix: 3d_tri
+      args: -dm_plex_dim 3
 
-  test:
-    suffix: 3d_tri
+  testset:
     requires: !__float128
-    args: -dim 3 -simplex -dm_view
+    args: -dm_plex_shape sphere -dm_distribute -petscpartitioner_type simple -dm_view
 
-  test:
-    suffix: 3d_tri_parallel
-    requires: !__float128
-    args: -dim 3 -simplex -dm_view -petscpartitioner_type simple
-    nsize: 2
+    test:
+      suffix: 2d_quad_parallel
+      nsize: 2
+      args: -dm_plex_simplex 0
+
+    test:
+      suffix: 2d_tri_parallel
+      nsize: 2
+
+    test:
+      suffix: 3d_tri_parallel
+      nsize: 2
+      args: -dm_plex_dim 3
 
 TEST*/

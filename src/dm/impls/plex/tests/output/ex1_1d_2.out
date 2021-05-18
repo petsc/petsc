@@ -38,7 +38,9 @@ Process 0:
   (   7) dim  1 offset   4 0.4
   (   8) dim  1 offset   5 0.6
   (   9) dim  1 offset   6 0.8
+Labels:
 Label 'marker':
+Label 'Face Sets':
 Label 'celltype':
 [0]: 0 (1)
 [0]: 1 (1)

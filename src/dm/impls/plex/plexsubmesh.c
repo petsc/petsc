@@ -2123,6 +2123,15 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DML
   if (hybridLabel) *hybridLabel = hlabel;
   else             {ierr = DMLabelDestroy(&hlabel);CHKERRQ(ierr);}
   if (splitLabel)  *splitLabel  = slabel;
+  {
+    DM      cdm;
+    DMLabel ctLabel;
+
+    /* We need to somehow share the celltype label with the coordinate dm */
+    ierr = DMGetCoordinateDM(*dmHybrid, &cdm);CHKERRQ(ierr);
+    ierr = DMPlexGetCellTypeLabel(*dmHybrid, &ctLabel);CHKERRQ(ierr);
+    ierr = DMSetLabel(cdm, ctLabel);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

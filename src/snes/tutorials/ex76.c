@@ -35,14 +35,8 @@ typedef struct {
 } Parameter;
 
 typedef struct {
-
-  PetscBool     showError;     /*showSolution */
-  /* Domain and mesh definition */
-  PetscInt  dim;               /* The topological mesh dimension */
-  PetscBool simplex;           /* Use simplices or tensor product cells */
-  PetscInt  cells[3];          /* The initial domain division */
-  /* Problem definition */
-  PetscBag  bag;               /* Holds problem parameters */
+  PetscBool showError;
+  PetscBag  bag;
   SolType   solType;
 } AppCtx;
 
@@ -336,33 +330,19 @@ static void g3_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt       n = 3, sol;
+  PetscInt       sol;
   PetscErrorCode ierr;
 
 
   PetscFunctionBeginUser;
-  options->dim      = 2;
-  options->simplex  = PETSC_TRUE;
-  options->cells[0] = 3;
-  options->cells[1] = 3;
-  options->cells[2] = 3;
-  options->solType  = SOL_QUADRATIC;
-  options->showError= PETSC_FALSE;
+  options->solType   = SOL_QUADRATIC;
+  options->showError = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex62.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Use simplices or tensor product cells", "ex62.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex62.c", options->cells, &n, NULL);CHKERRQ(ierr);
-  if (options->simplex) {
-    options->cells[0] = 4 - options->dim;
-    options->cells[1] = 4 - options->dim;
-    options->cells[2] = 4 - options->dim;
-  }
   sol = options->solType;
   ierr = PetscOptionsEList("-sol_type", "The solution type", "ex62.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolType) sol;
   ierr = PetscOptionsBool("-show_error", "Output the error for verification", "ex62.c", options->showError, &options->showError, NULL);CHKERRQ(ierr);
-
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -386,11 +366,12 @@ static PetscErrorCode SetupParameters(AppCtx *user)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim = user->dim;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, user->cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   {
     Parameter   *param;
     Vec          coordinates;
@@ -416,19 +397,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = DMSetCoordinates(*dm, coordinates);CHKERRQ(ierr);
   }
-  {
-    DM               pdm = NULL;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
-    if (pdm) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = pdm;
-    }
-  }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -513,23 +481,26 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM              cdm   = dm;
-  const PetscInt  dim   = user->dim;
   PetscFE         fe[3];
   Parameter      *param;
   MPI_Comm        comm;
+  PetscInt        dim;
+  PetscBool       simplex;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   /* Create finite element */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, dim, user->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(comm, dim, 1, user->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(comm, dim, 1, user->simplex, "temp_", PETSC_DEFAULT, &fe[2]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "temp_", PETSC_DEFAULT, &fe[2]);CHKERRQ(ierr);
   ierr = PetscFECopyQuadrature(fe[0], fe[2]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[2], "temperature");CHKERRQ(ierr);
 

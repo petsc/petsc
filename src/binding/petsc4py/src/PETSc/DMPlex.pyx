@@ -64,6 +64,25 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
+    def createBoxSurfaceMesh(self, faces, lower=(0,0,0), upper=(1,1,1),
+                             interpolate=True, comm=None):
+        cdef Py_ssize_t i = 0
+        cdef PetscInt dim = 0, *cfaces = NULL
+        faces = iarray_i(faces, &dim, &cfaces)
+        assert dim >= 1 and dim <= 3
+        cdef PetscReal clower[3]
+        clower[0] = clower[1] = clower[2] = 0
+        for i from 0 <= i < dim: clower[i] = lower[i]
+        cdef PetscReal cupper[3]
+        cupper[0] = cupper[1] = cupper[2] = 1
+        for i from 0 <= i < dim: cupper[i] = upper[i]
+        cdef PetscBool cinterp = interpolate
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscDM   newdm = NULL
+        CHKERR( DMPlexCreateBoxSurfaceMesh(ccomm, dim, cfaces, clower, cupper, cinterp, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
     def createFromFile(self, filename, interpolate=True, comm=None):
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
@@ -404,26 +423,6 @@ cdef class DMPlex(DM):
         opts = str2bytes(opts, &copts)
         CHKERR( DMPlexTetgenSetOptions(self.dm, copts) )
 
-    def createSquareBoundary(self, lower, upper, edges):
-        cdef PetscInt nlow = 0, nup = 0, nedg = 0
-        cdef PetscInt *iedg = NULL
-        cdef PetscReal *ilow = NULL, *iup = NULL
-        lower = iarray_r(lower, &nlow, &ilow)
-        upper = iarray_r(upper, &nup,  &iup)
-        edges = iarray_i(edges, &nedg, &iedg)
-        CHKERR( DMPlexCreateSquareBoundary(self.dm, ilow, iup, iedg) )
-        return self
-
-    def createCubeBoundary(self, lower, upper, faces):
-        cdef PetscInt nlow = 0, nup = 0, nfac = 0
-        cdef PetscInt *ifac = NULL
-        cdef PetscReal *ilow = NULL, *iup = NULL
-        lower = iarray_r(lower, &nlow, &ilow)
-        upper = iarray_r(upper, &nup,  &iup)
-        faces = iarray_i(faces, &nfac, &ifac)
-        CHKERR( DMPlexCreateCubeBoundary(self.dm, ilow, iup, ifac) )
-        return self
-
     def markBoundaryFaces(self, label, value=None):
         cdef PetscInt ival = PETSC_DETERMINE
         if value is not None: ival = asInt(value)
@@ -547,7 +546,7 @@ cdef class DMPlex(DM):
             bcField = iarray_i(bcField, &nbc, &bcfield)
             if bcComps is not None:
                 bcComps = list(bcComps)
-                assert len(bcComps) == nbc 
+                assert len(bcComps) == nbc
                 tmp1 = oarray_p(empty_p(nbc), NULL, <void**>&bccomps)
                 for i from 0 <= i < nbc:
                     bccomps[i] = (<IS?>bcComps[<Py_ssize_t>i]).iset

@@ -619,6 +619,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  if (pStart == s->pStart && pEnd == s->pEnd) PetscFunctionReturn(0);
   /* Cannot Reset() because it destroys field information */
   s->setup = PETSC_FALSE;
   ierr = PetscSectionDestroy(&s->bc);CHKERRQ(ierr);

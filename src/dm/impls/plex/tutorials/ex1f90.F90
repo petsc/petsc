@@ -24,7 +24,6 @@
       IS, target, dimension(1) ::   bcPointIS
       IS, pointer :: pBcCompIS(:)
       IS, pointer :: pBcPointIS(:)
-      PetscBool :: interpolate,flg
       PetscErrorCode :: ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
@@ -32,11 +31,11 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
-      dim = 2
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-dim', dim,flg, ierr);CHKERRA(ierr)
-      interpolate = PETSC_TRUE
 !     Create a mesh
-      call DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_TRUE, PETSC_NULL_INTEGER, PETSC_NULL_REAL, PETSC_NULL_REAL, PETSC_NULL_INTEGER, interpolate, dm, ierr);CHKERRA(ierr)
+      call DMCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRA(ierr)
+      call DMSetType(dm, DMPLEX, ierr);CHKERRA(ierr)
+      call DMSetFromOptions(dm, ierr);CHKERRA(ierr)
+      call DMGetDimension(dm, dim, ierr);CHKERRA(ierr)
 !     Create a scalar field u, a vector field v, and a surface vector field w
       numFields  = 3
       numComp(1) = 1
@@ -108,11 +107,11 @@
 !  test:
 !    suffix: 0
 !    requires: triangle
-!    args: -info :~sys:
+!    args: -info :~sys,mat:
 !
 !  test:
 !    suffix: 1
 !    requires: ctetgen
-!    args: -dim 3 -info :~sys:
+!    args: -dm_plex_dim 3 -info :~sys,mat:
 !
 !TEST*/

@@ -168,8 +168,8 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, " FVM");CHKERRQ(ierr);
     }
     else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
-    if (Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, "%D components", Nc);CHKERRQ(ierr);}
-    else        {ierr = PetscViewerASCIIPrintf(viewer, "%D component ", Nc);CHKERRQ(ierr);}
+    if (Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, " %D components", Nc);CHKERRQ(ierr);}
+    else        {ierr = PetscViewerASCIIPrintf(viewer, " %D component ", Nc);CHKERRQ(ierr);}
     if (prob->implicit[f]) {ierr = PetscViewerASCIIPrintf(viewer, " (implicit)");CHKERRQ(ierr);}
     else                   {ierr = PetscViewerASCIIPrintf(viewer, " (explicit)");CHKERRQ(ierr);}
     if (q) {

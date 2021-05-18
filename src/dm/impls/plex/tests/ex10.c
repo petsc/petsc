@@ -18,16 +18,12 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dim               = 2;
-  options->refinementLimit   = 0.0;
-  options->numFields         = 1;
-  options->numComponents     = NULL;
-  options->numDof            = NULL;
-  options->numGroups         = 0;
+  options->numFields     = 1;
+  options->numComponents = NULL;
+  options->numDof        = NULL;
+  options->numGroups     = 0;
 
   ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex10.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The maximum volume of a refined cell", "ex10.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-num_fields", "The number of section fields", "ex10.c", options->numFields, &options->numFields, NULL,1);CHKERRQ(ierr);
   if (options->numFields) {
     len  = options->numFields;
@@ -35,10 +31,6 @@ PetscErrorCode ProcessOptions(AppCtx *options)
     ierr = PetscOptionsIntArray("-num_components", "The number of components per field", "ex10.c", options->numComponents, &len, &flg);CHKERRQ(ierr);
     if (flg && (len != options->numFields)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %D should be %D", len, options->numFields);
   }
-  len  = (options->dim+1) * PetscMax(1, options->numFields);
-  ierr = PetscMalloc1(len, &options->numDof);CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex10.c", options->numDof, &len, &flg);CHKERRQ(ierr);
-  if (flg && (len != (options->dim+1) * PetscMax(1, options->numFields))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %D should be %D", len, (options->dim+1) * PetscMax(1, options->numFields));
   ierr = PetscOptionsBoundedInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -153,25 +145,31 @@ int main(int argc, char **argv)
   DM             dm;
   PetscSection   s;
   AppCtx         user;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(&user);CHKERRQ(ierr);
   if (user.numGroups < 1) {
-    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, user.dim, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
-    if (user.refinementLimit > 0.0) {
-      DM rdm;
-      const char *name;
+    ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+    ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  } else {
+    ierr = CreateTestMesh(PETSC_COMM_WORLD, &dm, &user);CHKERRQ(ierr);
+  }
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  {
+    PetscInt  len = (dim+1) * PetscMax(1, user.numFields);
+    PetscBool flg;
 
-      ierr = DMPlexSetRefinementUniform(dm, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = DMPlexSetRefinementLimit(dm, user.refinementLimit);CHKERRQ(ierr);
-      ierr = DMRefine(dm, PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
-      ierr = PetscObjectGetName((PetscObject)  dm, &name);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) rdm,  name);CHKERRQ(ierr);
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm   = rdm;
-    }
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len, &user.numDof);CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex10.c", user.numDof, &len, &flg);CHKERRQ(ierr);
+    if (flg && (len != (dim+1) * PetscMax(1, user.numFields))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %D should be %D", len, (dim+1) * PetscMax(1, user.numFields));
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  }
+  if (user.numGroups < 1) {
     ierr = DMSetNumFields(dm, user.numFields);CHKERRQ(ierr);
     ierr = DMCreateDS(dm);CHKERRQ(ierr);
     ierr = DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
@@ -179,8 +177,6 @@ int main(int argc, char **argv)
     ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
     ierr = TestReordering(dm, &user);CHKERRQ(ierr);
   } else {
-    ierr = CreateTestMesh(PETSC_COMM_WORLD, &dm, &user);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
     ierr = DMSetNumFields(dm, user.numFields);CHKERRQ(ierr);
     ierr = DMCreateDS(dm);CHKERRQ(ierr);
     ierr = DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
@@ -200,32 +196,32 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -dim 2 -dm_plex_box_simplex 1 -num_dof 1,0,0 -mat_view
+    args: -dm_plex_simplex 1 -num_dof 1,0,0 -mat_view -dm_coord_space 0
   test:
     suffix: 1
-    args: -dim 2 -dm_plex_box_simplex 0 -num_dof 1,0,0 -mat_view
+    args: -dm_plex_simplex 0 -num_dof 1,0,0 -mat_view -dm_coord_space 0
   test:
     suffix: 2
     requires: ctetgen
-    args: -dim 3 -dm_plex_box_simplex 1 -num_dof 1,0,0,0 -mat_view
+    args: -dm_plex_dim 3 -dm_plex_simplex 1 -num_dof 1,0,0,0 -mat_view -dm_coord_space 0
   test:
     suffix: 3
-    args: -dim 3 -dm_plex_box_simplex 0 -num_dof 1,0,0,0 -mat_view
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -num_dof 1,0,0,0 -mat_view -dm_coord_space 0
   # Refined tests 4-7
   test:
     suffix: 4
     requires: triangle
-    args: -dim 2 -dm_plex_box_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0
+    args: -dm_plex_simplex 1 -dm_refine_volume_limit_pre 0.00625 -num_dof 1,0,0
   test:
     suffix: 5
-    args: -dim 2 -dm_plex_box_simplex 0 -dm_refine 1              -num_dof 1,0,0
+    args: -dm_plex_simplex 0 -dm_refine 1 -num_dof 1,0,0
   test:
     suffix: 6
     requires: ctetgen
-    args: -dim 3 -dm_plex_box_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0,0
+    args: -dm_plex_dim 3 -dm_plex_simplex 1 -dm_refine_volume_limit_pre 0.00625 -num_dof 1,0,0,0
   test:
     suffix: 7
-    args: -dim 3 -dm_plex_box_simplex 0 -dm_refine 1              -num_dof 1,0,0,0
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_refine 1 -num_dof 1,0,0,0
   # Parallel tests
   # Grouping tests
   test:

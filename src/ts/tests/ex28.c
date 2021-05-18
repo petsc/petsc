@@ -51,9 +51,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -562,11 +562,11 @@ int main(int argc,char **argv)
 
 /*TEST
    build:
-     requires: triangle !single !complex
+     requires: double !complex
    test:
      suffix: 1
-     args: -particles_per_cell 1 -output_step 10 -ts_type euler -dm_plex_box_dim 1 -dm_plex_box_faces 200 -dm_plex_box_lower -10 -dm_plex_box_upper 10 -dm_view -monitorsp
+     args: -particles_per_cell 1 -output_step 10 -ts_type euler -dm_plex_dim 1 -dm_plex_box_faces 200 -dm_plex_box_lower -10 -dm_plex_box_upper 10 -dm_view -monitorsp
    test:
      suffix: 2
-     args: -particles_per_cell 1 -output_step 50 -ts_type euler -dm_plex_box_dim 1 -dm_plex_box_faces 200 -dm_plex_box_lower -10 -dm_plex_box_upper 10 -dm_view -monitorks
+     args: -particles_per_cell 1 -output_step 50 -ts_type euler -dm_plex_dim 1 -dm_plex_box_faces 200 -dm_plex_box_lower -10 -dm_plex_box_upper 10 -dm_view -monitorks
 TEST*/

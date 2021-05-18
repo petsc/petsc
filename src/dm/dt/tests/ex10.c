@@ -103,64 +103,19 @@ static void g2_vp(PetscInt dim,PetscInt Nf,PetscInt NfAux,const PetscInt uOff[],
 
 typedef struct
 {
-  PetscBool simplex;
-  PetscInt  dim;
+  PetscInt dummy;
 } UserCtx;
 
-/* Process command line options and initialize the UserCtx struct */
-static PetscErrorCode ProcessOptions(MPI_Comm comm,UserCtx *user)
+static PetscErrorCode CreateMesh(MPI_Comm comm,UserCtx *user,DM *mesh)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Default to  2D, triangle mesh.*/
-  user->simplex = PETSC_TRUE;
-  user->dim     = 2;
-
-  ierr = PetscOptionsBegin(comm,"","PetscSpaceSum Tests","PetscSpace");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex","Whether to use simplices (true) or tensor-product (false) cells in " "the mesh","ex8.c",user->simplex,
-                          &user->simplex,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim","Number of solution dimensions","ex8.c",user->dim,&user->dim,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode CreateMesh(MPI_Comm comm,UserCtx *user,DM *mesh)
-{
-  PetscErrorCode   ierr;
-  DMLabel          label;
-  const char       *name  = "marker";
-  DM               dmDist = NULL;
-  PetscPartitioner part;
-
-  PetscFunctionBegin;
-  /* Create box mesh from user parameters */
-  ierr = DMPlexCreateBoxMesh(comm,user->dim,user->simplex,NULL,NULL,NULL,NULL,PETSC_TRUE,mesh);CHKERRQ(ierr);
-
-  /* Make sure the mesh gets properly distributed if running in parallel */
-  ierr = DMPlexGetPartitioner(*mesh,&part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(*mesh,0,NULL,&dmDist);CHKERRQ(ierr);
-  if (dmDist) {
-    ierr  = DMDestroy(mesh);CHKERRQ(ierr);
-    *mesh = dmDist;
-  }
-
-  /* Mark the boundaries, we will need this later when setting up the system of
-   * equations */
-  ierr = DMCreateLabel(*mesh,name);CHKERRQ(ierr);
-  ierr = DMGetLabel(*mesh,name,&label);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(*mesh,1,label);CHKERRQ(ierr);
-  ierr = DMPlexLabelComplete(*mesh,label);CHKERRQ(ierr);
-  ierr = DMLocalizeCoordinates(*mesh);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *mesh,"Mesh");CHKERRQ(ierr);
-
-  /* Get any other mesh options from the command line */
-  ierr = DMSetApplicationContext(*mesh,user);CHKERRQ(ierr);
+  ierr = DMCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = DMSetType(*mesh, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*mesh);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(*mesh,user);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*mesh,NULL,"-dm_view");CHKERRQ(ierr);
-
-  ierr = DMDestroy(&dmDist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -198,19 +153,22 @@ static PetscErrorCode SetupDiscretization(DM mesh,DM mesh_sum,PetscErrorCode (*s
 {
   DM             cdm = mesh,cdm_sum = mesh_sum;
   PetscFE        u,divu,u_sum,divu_sum;
-  const PetscInt dim = user->dim;
+  PetscInt       dim;
+  PetscBool      simplex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetDimension(mesh, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(mesh, &simplex);CHKERRQ(ierr);
   /* Create FE objects and give them names so that options can be set from
    * command line. Each field gets 2 instances (i.e. velocity and velocity_sum)created twice so that we can compare between approaches. */
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh),dim,dim,user->simplex,"velocity_",-1,&u);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh),dim,dim,simplex,"velocity_",-1,&u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)u,"velocity");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh_sum),dim,dim,user->simplex,"velocity_sum_",-1,&u_sum);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh_sum),dim,dim,simplex,"velocity_sum_",-1,&u_sum);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)u_sum,"velocity_sum");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh),dim,1,user->simplex,"divu_",-1,&divu);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh),dim,1,simplex,"divu_",-1,&divu);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)divu,"divu");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh_sum),dim,1,user->simplex,"divu_sum_",-1,&divu_sum);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh_sum),dim,1,simplex,"divu_sum_",-1,&divu_sum);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)divu_sum,"divu_sum");CHKERRQ(ierr);
 
   ierr = PetscFECopyQuadrature(u,divu);CHKERRQ(ierr);
@@ -259,7 +217,6 @@ int main(int argc,char **argv)
   PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD,&user);CHKERRQ(ierr);
 
   /* Set up a snes for the standard approach, one space with 2 components */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
@@ -315,9 +272,7 @@ int main(int argc,char **argv)
   test:
     suffix: 2d_lagrange
     requires: triangle
-    args: -dim 2 \
-      -simplex true \
-      -velocity_petscspace_degree 1 \
+    args: -velocity_petscspace_degree 1 \
       -velocity_petscspace_type poly \
       -velocity_petscspace_components 2\
       -velocity_petscdualspace_type lagrange \

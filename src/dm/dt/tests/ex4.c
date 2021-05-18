@@ -18,7 +18,7 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceCreate(PETSC_COMM_SELF,&sp);CHKERRQ(ierr);
-  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF,dim,tensor ? PETSC_FALSE : PETSC_TRUE,&dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, tensor ? PETSC_FALSE : PETSC_TRUE), &dm);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetType(sp,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(sp,dm);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(sp,order);CHKERRQ(ierr);

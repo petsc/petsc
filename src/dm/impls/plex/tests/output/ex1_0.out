@@ -294,6 +294,7 @@ Process 0:
   (  11) dim  3 offset  15 1. 0. 1.
   (  12) dim  3 offset  18 0. 1. 1.
   (  13) dim  3 offset  21 1. 1. 1.
+Labels:
 Label 'marker':
 [0]: 6 (1)
 [0]: 7 (1)
@@ -303,21 +304,6 @@ Label 'marker':
 [0]: 11 (1)
 [0]: 12 (1)
 [0]: 13 (1)
-Label 'celltype':
-[0]: 0 (6)
-[0]: 1 (6)
-[0]: 2 (6)
-[0]: 3 (6)
-[0]: 4 (6)
-[0]: 5 (6)
-[0]: 6 (0)
-[0]: 7 (0)
-[0]: 8 (0)
-[0]: 9 (0)
-[0]: 10 (0)
-[0]: 11 (0)
-[0]: 12 (0)
-[0]: 13 (0)
 [0] DMPlexCheckGeometry(): Cell 0 FEM Volume 1.
 [0] DMPlexCheckGeometry(): Cell 1 FEM Volume 1.
 [0] DMPlexCheckGeometry(): Cell 2 FEM Volume 1.

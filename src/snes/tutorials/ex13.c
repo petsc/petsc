@@ -169,32 +169,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  /* Create box mesh */
-  ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  /* TODO: This should be pulled into the library */
-  {
-    char      convType[256];
-    PetscBool flg;
-
-    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-    ierr = PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();
-    if (flg) {
-      DM dmConv;
-
-      ierr = DMConvert(*dm,convType,&dmConv);CHKERRQ(ierr);
-      if (dmConv) {
-        ierr = DMDestroy(dm);CHKERRQ(ierr);
-        *dm  = dmConv;
-      }
-    }
-  }
-  if (user->shear) {ierr = DMPlexShearGeometry(*dm, DM_X, NULL);CHKERRQ(ierr);}
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
-
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  if (user->shear) {ierr = DMPlexShearGeometry(*dm, DM_X, NULL);CHKERRQ(ierr);}
+  ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   if (user->spectral) {
     PetscInt  planeDir[2]   = {0,  1};
@@ -552,54 +531,54 @@ int main(int argc, char **argv)
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.9
     suffix: 2d_q1_conv
-    args: -dm_plex_box_simplex 0 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2
+    args: -dm_plex_simplex 0 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 2.9
     suffix: 2d_q2_conv
-    args: -dm_plex_box_simplex 0 -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 2
+    args: -dm_plex_simplex 0 -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 2
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 3.9
     suffix: 2d_q3_conv
-    args: -dm_plex_box_simplex 0 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
+    args: -dm_plex_simplex 0 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.9
     suffix: 2d_q1_shear_conv
-    args: -dm_plex_box_simplex 0 -shear -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2
+    args: -dm_plex_simplex 0 -shear -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 2.9
     suffix: 2d_q2_shear_conv
-    args: -dm_plex_box_simplex 0 -shear -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 2
+    args: -dm_plex_simplex 0 -shear -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 2
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 3.9
     suffix: 2d_q3_shear_conv
-    args: -dm_plex_box_simplex 0 -shear -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
+    args: -dm_plex_simplex 0 -shear -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 2
   test:
     # Using -convest_num_refine 3 we get L_2 convergence rate: 1.7
     suffix: 3d_p1_conv
     requires: ctetgen
-    args: -dm_plex_box_dim 3 -dm_refine 1 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1
+    args: -dm_plex_dim 3 -dm_refine 1 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1
   test:
     # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 2.8
     suffix: 3d_p2_conv
     requires: ctetgen
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 1
+    args: -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 1
   test:
     # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 4.0
     suffix: 3d_p3_conv
     requires: ctetgen
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 1
+    args: -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 1
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 1.8
     suffix: 3d_q1_conv
-    args: -dm_plex_box_dim 3 -dm_plex_box_simplex 0 -dm_refine 1 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_refine 1 -potential_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1
   test:
     # Using -dm_refine 2 -convest_num_refine 3 we get L_2 convergence rate: 2.8
     suffix: 3d_q2_conv
-    args: -dm_plex_box_dim 3 -dm_plex_box_simplex 0 -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 1
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -potential_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 1
   test:
     # Using -dm_refine 1 -convest_num_refine 3 we get L_2 convergence rate: 3.8
     suffix: 3d_q3_conv
-    args: -dm_plex_box_dim 3 -dm_plex_box_simplex 0 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 1
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -potential_petscspace_degree 3 -snes_convergence_estimate -convest_num_refine 1
   test:
     suffix: 2d_p1_fas_full
     requires: triangle
@@ -684,7 +663,7 @@ int main(int argc, char **argv)
     nsize: 2
     requires: kokkos_kernels
     suffix: kokkos
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 2,3,6 -dm_distribute -petscpartitioner_type simple -dm_plex_box_simplex 0 -potential_petscspace_degree 1 \
+    args: -dm_plex_dim 3 -dm_plex_box_faces 2,3,6 -dm_distribute -petscpartitioner_type simple -dm_plex_simplex 0 -potential_petscspace_degree 1 \
          -dm_refine 0 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 1000 -pc_gamg_threshold 0.0 \
          -pc_gamg_threshold_scale .5 -mg_levels_ksp_type chebyshev -mg_levels_ksp_max_it 2 -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 \
          -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ksp_monitor -snes_monitor -dm_view -dm_mat_type aijkokkos -dm_vec_type kokkos

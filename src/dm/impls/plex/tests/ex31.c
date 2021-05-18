@@ -3,60 +3,40 @@ static char FILENAME[] = "ex31.c";
 
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
-#include "petscsf.h"
-
+#include <petscsf.h>
 
 typedef struct {
-  PetscInt  dim;                          /* The topological mesh dimension */ PetscInt  faces[3];                     /* Number of faces per dimension */
-  PetscBool simplex;                      /* Use simplices or hexes */
-  PetscBool interpolate;                  /* Interpolate mesh */
-  PetscBool parallel;                     /* Use ParMetis or Metis */
-  PetscBool useInitialGuess;              /* Only active when in parallel, uses RefineKway of ParMetis */
-  PetscInt  entityDepth;                  /* depth of the entities to rebalance ( 0 => vertices) */
+  PetscBool parallel;        /* Use ParMetis or Metis */
+  PetscBool useInitialGuess; /* Only active when in parallel, uses RefineKway of ParMetis */
+  PetscInt  entityDepth;     /* depth of the entities to rebalance ( 0 => vertices) */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dim             = 3;
-  options->simplex         = PETSC_FALSE;
-  options->interpolate     = PETSC_FALSE;
-  options->entityDepth     = 0;
   options->parallel        = PETSC_FALSE;
   options->useInitialGuess = PETSC_FALSE;
   options->entityDepth     = 0;
+
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-entity_depth", "Depth of the entities to rebalance (0 => vertices)", FILENAME, options->entityDepth, &options->entityDepth, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", FILENAME, options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  if (options->dim > 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "dimension set to %d, must be <= 3", options->dim);
-  ierr = PetscOptionsBool("-simplex", "Use simplices if true, otherwise hexes", FILENAME, options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", FILENAME, options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-parallel", "Use ParMetis instead of Metis", FILENAME, options->parallel, &options->parallel, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_initial_guess", "Use RefineKway function of ParMetis", FILENAME, options->useInitialGuess, &options->useInitialGuess, NULL);CHKERRQ(ierr);
-  options->faces[0] = 1; options->faces[1] = 1; options->faces[2] = 1;
-  dim = options->dim;
-  ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, options->faces, &dim, NULL);CHKERRQ(ierr);
-  if (dim) options->dim = dim;
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim          = user->dim;
-  PetscInt      *faces        = user->faces;
-  PetscBool      simplex      = user->simplex;
-  PetscBool      interpolate  = user->interpolate;
-  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = DMPlexCreateBoxMesh(comm, dim, simplex, faces, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -74,9 +54,9 @@ int main(int argc, char **argv)
   PetscInt       pStart, pEnd, p, minBefore, maxBefore, minAfter, maxAfter, gSizeBefore, gSizeAfter;
   PetscBool      success;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);
 
@@ -143,32 +123,34 @@ int main(int argc, char **argv)
   }
 
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
   return ierr;
 }
 
 /*TEST
 
-  test:
-    # rebalance a mesh
-    suffix: 0
-    nsize: {{2 3 4}}
-    requires: parmetis
-    args: -faces {{2,3,4  5,4,3  7,11,5}} -interpolate -entity_depth {{0 1}} -parallel {{FALSE TRUE}} -use_initial_guess FALSE
+  testset:
+    args: -dm_plex_dim 3 -dm_plex_simplex 0
 
-  test:
-    # rebalance a mesh but use the initial guess (uses a random algorithm and gives different results on different machines, so just check that it runs).
-    suffix: 1
-    nsize: {{2 3 4}}
-    requires: parmetis
-    args: -faces {{2,3,4  5,4,3  7,11,5}} -interpolate -entity_depth {{0 1}} -parallel TRUE -use_initial_guess TRUE
+    test:
+      # rebalance a mesh
+      suffix: 0
+      nsize: {{2 3 4}}
+      requires: parmetis
+      args: -dm_plex_box_faces {{2,3,4  5,4,3  7,11,5}} -entity_depth {{0 1}} -parallel {{FALSE TRUE}} -use_initial_guess FALSE
 
-  test:
-    # no-op in serial
-    suffix: 2
-    nsize: {{1}}
-    requires: parmetis
-    args: -faces 2,3,4 -interpolate -entity_depth 0 -parallel FALSE -use_initial_guess FALSE
+    test:
+      # rebalance a mesh but use the initial guess (uses a random algorithm and gives different results on different machines, so just check that it runs).
+      suffix: 1
+      nsize: {{2 3 4}}
+      requires: parmetis
+      args: -dm_plex_box_faces {{2,3,4  5,4,3  7,11,5}} -entity_depth {{0 1}} -parallel TRUE -use_initial_guess TRUE
+
+    test:
+      # no-op in serial
+      suffix: 2
+      nsize: {{1}}
+      requires: parmetis
+      args: -dm_plex_box_faces 2,3,4 -entity_depth 0 -parallel FALSE -use_initial_guess FALSE
 
 TEST*/

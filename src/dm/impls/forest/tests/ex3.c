@@ -20,7 +20,8 @@ int main (int argc, char **argv)
   ierr = PetscOptionsGetBool(NULL, NULL, "-user_section", &userSection, NULL);CHKERRQ(ierr);
 
   /* Create a base DMPlex mesh */
-  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, 2, PETSC_FALSE, NULL, NULL, NULL, NULL, PETSC_TRUE, &base);CHKERRQ(ierr);
+  ierr = DMCreate(PETSC_COMM_WORLD, &base);CHKERRQ(ierr);
+  ierr = DMSetType(base, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(base);CHKERRQ(ierr);
   ierr = DMViewFromOptions(base, NULL, "-dm_view");CHKERRQ(ierr);
 
@@ -151,6 +152,6 @@ int main (int argc, char **argv)
   test:
     suffix: 0
     nsize: {{1 2 5}}
-    args: -adapt -dm_plex_box_faces 2,2
+    args: -adapt -dm_plex_simplex 0 -dm_plex_box_faces 2,2
 
 TEST*/

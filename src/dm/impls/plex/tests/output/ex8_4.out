@@ -72,6 +72,7 @@ Process 0:
   (  16) dim  3 offset  39 1.5 -0.5 -0.5
   (  17) dim  3 offset  42 1.5 0.5 -0.5
   (  18) dim  3 offset  45 1.5 0.5 0.5
+Labels:
 Label 'celltype':
 [0]: 0 (7)
 [0]: 1 (7)
@@ -92,3 +93,7 @@ Label 'celltype':
 [0]: 16 (0)
 [0]: 17 (0)
 [0]: 18 (0)
+Label 'Cell Sets':
+[0]: 0 (1)
+[0]: 1 (1)
+[0]: 2 (1)

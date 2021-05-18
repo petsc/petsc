@@ -8,9 +8,7 @@ In one half, we include an additional field.\n\n\n";
 #include <petscconvest.h>
 
 typedef struct {
-  /* Domain and mesh definition */
-  PetscInt  dim;               /* The topological mesh dimension */
-  PetscBool simplex;           /* Simplicial mesh */
+  PetscInt dummy;
 } AppCtx;
 
 static PetscErrorCode quad_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -68,21 +66,6 @@ static void g0_pp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   g0[0] = 1.0;
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  options->dim     = 2;
-  options->simplex = PETSC_TRUE;
-
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex23.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex23.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode DivideDomain(DM dm, AppCtx *user)
 {
   DMLabel        top, bottom;
@@ -114,45 +97,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  /* Create box mesh */
-  ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  /* Distribute mesh over processes */
-  {
-    DM               dmDist = NULL;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, 0, NULL, &dmDist);CHKERRQ(ierr);
-    if (dmDist) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = dmDist;
-    }
-  }
-  /* TODO: This should be pulled into the library */
-  {
-    char      convType[256];
-    PetscBool flg;
-
-    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-    ierr = PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();
-    if (flg) {
-      DM dmConv;
-
-      ierr = DMConvert(*dm,convType,&dmConv);CHKERRQ(ierr);
-      if (dmConv) {
-        ierr = DMDestroy(dm);CHKERRQ(ierr);
-        *dm  = dmConv;
-      }
-    }
-  }
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
-
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DivideDomain(*dm, user);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -190,20 +139,24 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   DMLabel         top;
   PetscFE         fe, feTop;
   PetscQuadrature q;
+  PetscInt        dim;
+  PetscBool       simplex;
   const char     *nameTop = "pressure";
   char            prefix[PETSC_MAX_PATH_LEN];
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), user->dim, 1, user->simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "top", &top);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_top_", nameTop);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), user->dim, 1, user->simplex, name ? prefix : NULL, -1, &feTop);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &feTop);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feTop, nameTop);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feTop, q);CHKERRQ(ierr);
   ierr = DMSetField(dm, 1, top, (PetscObject) feTop);CHKERRQ(ierr);
@@ -226,7 +179,6 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   /* Primal system */
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);

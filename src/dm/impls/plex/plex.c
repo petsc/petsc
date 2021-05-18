@@ -13,6 +13,36 @@ PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_Di
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 /*@
+  DMPlexIsSimplex - Is the first cell in this mesh a simplex?
+
+  Input Parameter:
+. dm      - The DMPlex object
+
+  Output Parameter:
+. simplex - Flag checking for a simplex
+
+  Note: This just gives the first range of cells found. If the mesh has several cell types, it will only give the first.
+  If the mesh has no cells, this returns PETSC_FALSE.
+
+  Level: intermediate
+
+.seealso DMPlexGetSimplexOrBoxCells(), DMPlexGetCellType(), DMPlexGetHeightStratum(), DMPolytopeTypeGetNumVertices()
+@*/
+PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
+{
+  DMPolytopeType ct;
+  PetscInt       cStart, cEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  if (cEnd <= cStart) {*simplex = PETSC_FALSE; PetscFunctionReturn(0);}
+  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+  *simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMPlexGetSimplexOrBoxCells - Get the range of cells which are neither prisms nor ghost FV cells
 
   Input Parameter:
@@ -617,7 +647,6 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 {
   DM_Plex          *mesh = (DM_Plex*) dm->data;
   DM                cdm;
-  DMLabel           markers, celltypes;
   PetscSection      coordSection;
   Vec               coordinates;
   PetscViewerFormat format;
@@ -631,7 +660,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     const char *name;
     PetscInt    dim, cellHeight, maxConeSize, maxSupportSize;
-    PetscInt    pStart, pEnd, p;
+    PetscInt    pStart, pEnd, p, numLabels, l;
     PetscMPIInt rank, size;
 
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRMPI(ierr);
@@ -673,10 +702,19 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     if (coordSection && coordinates) {
       ierr = PetscSectionVecView(coordSection, coordinates, viewer);CHKERRQ(ierr);
     }
-    ierr = DMGetLabel(dm, "marker", &markers);CHKERRQ(ierr);
-    if (markers) {ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);}
-    ierr = DMPlexGetCellTypeLabel(dm, &celltypes);CHKERRQ(ierr);
-    if (celltypes) {ierr = DMLabelView(celltypes, viewer);CHKERRQ(ierr);}
+    ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+    if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Labels:\n");CHKERRQ(ierr);}
+    for (l = 0; l < numLabels; ++l) {
+      DMLabel     label;
+      PetscBool   isdepth;
+      const char *name;
+
+      ierr = DMGetLabelName(dm, l, &name);CHKERRQ(ierr);
+      ierr = PetscStrcmp(name, "depth", &isdepth);CHKERRQ(ierr);
+      if (isdepth) continue;
+      ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+      ierr = DMLabelView(label, viewer);CHKERRQ(ierr);
+    }
     if (size > 1) {
       PetscSF sf;
 
@@ -1053,7 +1091,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt       locDepth, depth, cellHeight, dim, d;
     PetscInt       pStart, pEnd, p, gcStart, gcEnd, gcNum;
     PetscInt       numLabels, l;
-    DMPolytopeType ct0;
+    DMPolytopeType ct0 = DM_POLYTOPE_UNKNOWN;
     MPI_Comm       comm;
     PetscMPIInt    size, rank;
 
@@ -1075,7 +1113,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       PetscInt Nc[2] = {0, 0}, ict;
 
       ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-      ierr = DMPlexGetCellType(dm, pStart, &ct0);CHKERRQ(ierr);
+      if (pStart < pEnd) {ierr = DMPlexGetCellType(dm, pStart, &ct0);CHKERRQ(ierr);}
       ict  = ct0;
       ierr = MPI_Bcast(&ict, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
       ct0  = (DMPolytopeType) ict;
@@ -1100,6 +1138,25 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     }
     ierr = PetscFree3(sizes,hybsizes,ghostsizes);CHKERRQ(ierr);
+    {
+      const PetscReal      *maxCell;
+      const PetscReal      *L;
+      const DMBoundaryType *bd;
+      PetscBool             per, localized;
+
+      ierr = DMGetPeriodicity(dm, &per, &maxCell, &L, &bd);CHKERRQ(ierr);
+      ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
+      if (per) {
+        ierr = PetscViewerASCIIPrintf(viewer, "Periodic mesh (");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+        for (d = 0; d < dim; ++d) {
+          if (bd && d > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+          if (bd)    {ierr = PetscViewerASCIIPrintf(viewer, "%s", DMBoundaryTypes[bd[d]]);CHKERRQ(ierr);}
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, ") coordinates %s\n", localized ? "localized" : "not localized");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
     ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Labels:\n");CHKERRQ(ierr);}
     for (l = 0; l < numLabels; ++l) {
@@ -4092,6 +4149,7 @@ PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
   PetscValidPointer(celltype, 3);
   ierr = DMPlexGetCellTypeLabel(dm, &label);CHKERRQ(ierr);
   ierr = DMLabelGetValue(label, cell, &ct);CHKERRQ(ierr);
+  if (ct < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %D has not been assigned a cell type", cell);
   *celltype = (DMPolytopeType) ct;
   PetscFunctionReturn(0);
 }
@@ -7771,6 +7829,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 @*/
 PetscErrorCode DMPlexCheckGeometry(DM dm)
 {
+  Vec            coordinates;
   PetscReal      detJ, J[9], refVol = 1.0;
   PetscReal      vol;
   PetscBool      periodic;
@@ -7785,6 +7844,8 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
   ierr = DMGetPeriodicity(dm, &periodic, NULL, NULL, NULL);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) refVol *= 2.0;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  /* Make sure local coordinates are created, because that step is collective */
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     DMPolytopeType ct;
     PetscInt       unsplit;
@@ -7802,6 +7863,7 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
       case DM_POLYTOPE_TRI_PRISM:
       case DM_POLYTOPE_TRI_PRISM_TENSOR:
       case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+      case DM_POLYTOPE_PYRAMID:
         continue;
       default: break;
     }

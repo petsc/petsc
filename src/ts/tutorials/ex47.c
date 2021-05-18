@@ -34,12 +34,7 @@ For a vector quantity a, we likewise have
 typedef enum {PRIMITIVE, INT_BY_PARTS} WeakFormType;
 
 typedef struct {
-  /* Domain and mesh definition */
-  PetscInt          dim;               /* The topological mesh dimension */
-  PetscBool         simplex;           /* Use simplices or tensor product cells */
-  /* Problem definition */
-  WeakFormType      formType;
-  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  WeakFormType formType;
 } AppCtx;
 
 /* MMS1:
@@ -140,13 +135,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim      = 2;
-  options->simplex  = PETSC_TRUE;
   options->formType = PRIMITIVE;
 
   ierr = PetscOptionsBegin(comm, "", "Advection Equation Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex47.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex47.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   form = options->formType;
   ierr = PetscOptionsEList("-form_type", "The weak form type", "ex47.c", formTypes, 2, formTypes[options->formType], &form, NULL);CHKERRQ(ierr);
   options->formType = (WeakFormType) form;
@@ -154,40 +145,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateBCLabel(DM dm, const char name[])
-{
-  DM             plex;
-  DMLabel        label;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 {
-  DM             pdm = NULL;
-  const PetscInt dim = ctx->dim;
-  PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexCreateBoxMesh(comm, dim, ctx->simplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  /* If no boundary marker exists, mark the whole boundary */
-  ierr = DMHasLabel(*dm, "marker", &hasLabel);CHKERRQ(ierr);
-  if (!hasLabel) {ierr = CreateBCLabel(*dm, "marker");CHKERRQ(ierr);}
-  /* Distribute mesh over processes */
-  ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
-  if (pdm) {
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = pdm;
-  }
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -212,17 +176,17 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
     ierr = PetscDSSetJacobian(ds, 0, 0, g0_prim_phi, NULL, g2_ibp_phi, NULL);CHKERRQ(ierr);
     break;
   }
-  ctx->exactFuncs[0] = analytic_phi;
+  ierr = PetscDSSetExactSolution(ds, 0, analytic_phi, ctx);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], NULL, ctx, NULL);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) analytic_phi, NULL, ctx, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
 {
-  PetscErrorCode (*funcs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {velocity};
-  Vec            v;
-  PetscErrorCode ierr;
+  PetscSimplePointFunc funcs[1] = {velocity};
+  Vec                  v;
+  PetscErrorCode       ierr;
 
   PetscFunctionBeginUser;
   ierr = DMCreateLocalVector(dmAux, &v);CHKERRQ(ierr);
@@ -252,30 +216,26 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
 {
-  DM              cdm = dm;
-  const PetscInt  dim = ctx->dim;
-  PetscFE         fe,   feAux;
-  MPI_Comm        comm;
-  PetscErrorCode  ierr;
+  DM             cdm = dm;
+  PetscFE        fe,   feAux;
+  MPI_Comm       comm;
+  PetscInt       dim;
+  PetscBool      simplex;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  /* Create finite element */
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, ctx->simplex, "phi_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "phi_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "phi");CHKERRQ(ierr);
-  /* Create velocity */
-  ierr = PetscFECreateDefault(comm, dim, dim, ctx->simplex, "vel_", -1, &feAux);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, simplex, "vel_", -1, &feAux);CHKERRQ(ierr);
   ierr = PetscFECopyQuadrature(fe, feAux);CHKERRQ(ierr);
-  /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = SetupProblem(dm, ctx);CHKERRQ(ierr);
   while (cdm) {
-    PetscBool hasLabel;
-
     ierr = SetupAuxDM(cdm, feAux, ctx);CHKERRQ(ierr);
-    ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
-    if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
     ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
@@ -286,11 +246,13 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
 
 static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
 {
-  AppCtx        *user = (AppCtx *) ctx;
-  DM             dm;
-  Vec            u, r, error;
-  PetscReal      time = 0.5, res;
-  PetscErrorCode ierr;
+  DM                   dm;
+  PetscDS              ds;
+  PetscSimplePointFunc func[1];
+  void                *ctxs[1];
+  Vec                  u, r, error;
+  PetscReal            time = 0.5, res;
+  PetscErrorCode       ierr;
 
   PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
@@ -303,9 +265,11 @@ static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *
   ierr = VecViewFromOptions(r, NULL, "-res_vec_view");CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   /* Calculate error */
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSGetExactSolution(ds, 0, &func[0], &ctxs[0]);CHKERRQ(ierr);
   ierr = KSPBuildSolution(ksp, NULL, &u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &error);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, time, user->exactFuncs, NULL, INSERT_ALL_VALUES, error);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, time, func, ctxs, INSERT_ALL_VALUES, error);CHKERRQ(ierr);
   ierr = VecAXPY(error, -1.0, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) error, "error");CHKERRQ(ierr);
   ierr = VecViewFromOptions(error, NULL, "-err_vec_view");CHKERRQ(ierr);
@@ -315,14 +279,18 @@ static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *
 
 static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
 {
-  AppCtx        *user = (AppCtx *) ctx;
-  DM             dm;
-  PetscReal      error;
-  PetscErrorCode ierr;
+  DM                   dm;
+  PetscDS              ds;
+  PetscSimplePointFunc func[1];
+  void                *ctxs[1];
+  PetscReal            error;
+  PetscErrorCode       ierr;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dm, crtime, user->exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSGetExactSolution(ds, 0, &func[0], &ctxs[0]);CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dm, crtime, func, ctxs, u, &error);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: %2.5g\n", (int) step, (double) crtime, (double) error);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -340,7 +308,6 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &dm, &ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr);
-  ierr = PetscMalloc1(1, &ctx.exactFuncs);CHKERRQ(ierr);
   ierr = SetupDiscretization(dm, &ctx);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
@@ -356,7 +323,15 @@ int main(int argc, char **argv)
   ierr = TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = DMProjectFunction(dm, t, ctx.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  {
+    PetscDS              ds;
+    PetscSimplePointFunc func[1];
+    void                *ctxs[1];
+
+    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(ds, 0, &func[0], &ctxs[0]);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, t, func, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  }
   {
     SNES snes;
     KSP  ksp;
@@ -372,7 +347,6 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFree(ctx.exactFuncs);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

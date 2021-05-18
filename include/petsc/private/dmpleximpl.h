@@ -706,4 +706,21 @@ PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const Pet
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
 PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS*, Mat*, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void **);
 
+/* Functions in the vtable */
+PETSC_INTERN PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
+PETSC_INTERN PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat);
+PETSC_INTERN PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mat);
+PETSC_INTERN PetscErrorCode DMCreateLocalSection_Plex(DM dm);
+PETSC_INTERN PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);
+PETSC_INTERN PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
+PETSC_INTERN PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field);
+PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
+PETSC_INTERN PetscErrorCode DMSetUp_Plex(DM dm);
+PETSC_INTERN PetscErrorCode DMDestroy_Plex(DM dm);
+PETSC_INTERN PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
+PETSC_INTERN PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
+PETSC_INTERN PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm);
+PETSC_INTERN PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm);
+
 #endif /* _PLEXIMPL_H */

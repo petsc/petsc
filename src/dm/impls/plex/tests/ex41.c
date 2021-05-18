@@ -32,9 +32,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
   test:
     suffix: 1
     requires: triangle
-    args: -refcell 2 -dm_plex_adaptor cellrefiner -dm_plex_cell_refiner sbr -dm_view ::ascii_info_detail -adapt_dm_view ::ascii_info_detail
+    args: -dm_coord_space 0 -refcell 2 -dm_plex_adaptor cellrefiner -dm_plex_cell_refiner sbr -dm_view ::ascii_info_detail -adapt_dm_view ::ascii_info_detail
 
   test:
     suffix: 2

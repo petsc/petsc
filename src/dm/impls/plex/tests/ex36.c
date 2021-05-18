@@ -103,35 +103,20 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
 
 int main(int argc, char **argv)
 {
-  DM               dm, dist_dm, redist_dm;
+  DM               dm, redist_dm;
   PetscPartitioner part;
-  PetscSF          dist_sf, redist_sf;
+  PetscSF          redist_sf;
   Vec              cell_geom, face_geom;
-  PetscInt         overlap = 1, overlap2 = 1;
-  PetscMPIInt      rank;
-  const char      *filename = "gminc_1d.exo";
+  PetscInt         overlap2 = 1;
   PetscErrorCode   ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
-  if (0) {
-    ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, 3, PETSC_FALSE, NULL, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
-  }
-  ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
-
-  ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-overlap", &overlap, NULL);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm, overlap, &dist_sf, &dist_dm);CHKERRQ(ierr);
-  if (dist_dm) {
-     ierr = DMDestroy(&dm);CHKERRQ(ierr);
-     dm = dist_dm;
-  }
+  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
   ierr = DMPlexComputeGeometryFVM(dm, &cell_geom, &face_geom);CHKERRQ(ierr);
-
   ierr = dm_view_geometry(dm, cell_geom, face_geom);CHKERRQ(ierr);
 
   /* redistribute */
@@ -149,7 +134,6 @@ int main(int argc, char **argv)
 
   ierr = VecDestroy(&cell_geom);CHKERRQ(ierr);
   ierr = VecDestroy(&face_geom);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&dist_sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&redist_sf);CHKERRQ(ierr);
   ierr = DMDestroy(&redist_dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -162,6 +146,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     nsize: 3
-    args: -overlap 1 -overlap2 1 -dm_plex_box_faces 8,1,1 -petscpartitioner_type simple
+    args: -dm_plex_dim 3 -dm_plex_box_faces 8,1,1 -dm_plex_simplex 0 -dm_plex_adj_cone 1 -dm_plex_adj_closure 0 -dm_distribute -petscpartitioner_type simple -dm_distribute_overlap 1 -overlap2 1
 
 TEST*/

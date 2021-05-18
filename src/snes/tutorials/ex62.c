@@ -42,9 +42,6 @@ typedef struct {
 } Parameter;
 
 typedef struct {
-  /* Domain and mesh definition */
-  char     filename[PETSC_MAX_PATH_LEN];
-  /* Problem definition */
   PetscBag bag; /* Problem parameters */
   SolType  sol; /* MMS solution */
 } AppCtx;
@@ -256,8 +253,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->filename[0] = '\0';
-  options->sol         = SOL_QUADRATIC;
+  options->sol = SOL_QUADRATIC;
 
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   sol  = options->sol;
@@ -269,13 +265,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscStrlen(user->filename, &len);CHKERRQ(ierr);
-  if (len) {ierr = DMPlexCreateFromFile(comm, user->filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else     {ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -407,18 +401,15 @@ static PetscErrorCode SetupProblem(DM dm, PetscErrorCode (*setupEqn)(DM, AppCtx 
 {
   DM              cdm = dm;
   PetscQuadrature q   = NULL;
-  DMPolytopeType  ct;
   PetscBool       simplex;
-  PetscInt        dim, Nf = 2, f, Nc[2], cStart;
+  PetscInt        dim, Nf = 2, f, Nc[2];
   const char     *name[2]   = {"velocity", "pressure"};
   const char     *prefix[2] = {"vel_",     "pres_"};
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
-  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   Nc[0] = dim;
   Nc[1] = 1;
   for (f = 0; f < Nf; ++f) {
@@ -502,13 +493,13 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p2_p1_check
     requires: ctetgen
-    args: -sol quadratic -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
+    args: -sol quadratic -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
 
   test:
     suffix: 3d_p2_p1_check_parallel
     nsize: {{2 3 5}}
     requires: ctetgen
-    args: -sol quadratic -dm_refine 2 -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
+    args: -sol quadratic -dm_refine 2 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
 
   test:
     suffix: 2d_p2_p1_conv
@@ -530,23 +521,23 @@ int main(int argc, char **argv)
     suffix: 3d_p2_p1_conv
     requires: ctetgen !single
     # Using -dm_refine 2 -convest_num_refine 2 gives L_2 convergence rate: [2.8, 2.8]
-    args: -sol trig -dm_plex_box_dim 3 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1 \
+    args: -sol trig -dm_plex_dim 3 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1 \
       -ksp_atol 1e-10 -ksp_error_if_not_converged -pc_use_amat \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition a11 -pc_fieldsplit_off_diag_use_amat \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu
 
   test:
     suffix: 2d_q2_q1_check
-    args: -sol quadratic -dm_plex_box_simplex 0 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
+    args: -sol quadratic -dm_plex_simplex 0 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
 
   test:
     suffix: 3d_q2_q1_check
-    args: -sol quadratic -dm_plex_box_simplex 0 -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
+    args: -sol quadratic -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
 
   test:
     suffix: 2d_q2_q1_conv
     # Using -dm_refine 3 -convest_num_refine 1 gives L_2 convergence rate: [3.0, 2.1]
-    args: -sol trig -dm_plex_box_simplex 0 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1 -ksp_error_if_not_converged \
+    args: -sol trig -dm_plex_simplex 0 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1 -ksp_error_if_not_converged \
       -ksp_atol 1e-10 -ksp_error_if_not_converged -pc_use_amat \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition a11 -pc_fieldsplit_off_diag_use_amat \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu
@@ -555,7 +546,7 @@ int main(int argc, char **argv)
     suffix: 3d_q2_q1_conv
     requires: !single
     # Using -dm_refine 2 -convest_num_refine 2 gives L_2 convergence rate: [2.8, 2.4]
-    args: -sol trig -dm_plex_box_simplex 0 -dm_plex_box_dim 3 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1 \
+    args: -sol trig -dm_plex_simplex 0 -dm_plex_dim 3 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 1 \
       -ksp_atol 1e-10 -ksp_error_if_not_converged -pc_use_amat \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition a11 -pc_fieldsplit_off_diag_use_amat \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu
@@ -568,7 +559,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p3_p2_check
     requires: ctetgen !single
-    args: -sol quadratic -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -vel_petscspace_degree 3 -pres_petscspace_degree 2 -dmsnes_check 0.0001
+    args: -sol quadratic -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -vel_petscspace_degree 3 -pres_petscspace_degree 2 -dmsnes_check 0.0001
 
   test:
     suffix: 2d_p3_p2_conv
@@ -583,7 +574,7 @@ int main(int argc, char **argv)
     suffix: 3d_p3_p2_conv
     requires: ctetgen long_runtime
     # Using -dm_refine 1 -convest_num_refine 2 gives L_2 convergence rate: [3.6, 3.9]
-    args: -sol trig -dm_plex_box_dim 3 -dm_refine 1 -vel_petscspace_degree 3 -pres_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 2 \
+    args: -sol trig -dm_plex_dim 3 -dm_refine 1 -vel_petscspace_degree 3 -pres_petscspace_degree 2 -snes_convergence_estimate -convest_num_refine 2 \
       -ksp_atol 1e-10 -ksp_error_if_not_converged -pc_use_amat \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition a11 -pc_fieldsplit_off_diag_use_amat \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu
@@ -592,7 +583,7 @@ int main(int argc, char **argv)
     suffix: 2d_q1_p0_conv
     requires: !single
     # Using -dm_refine 3 gives L_2 convergence rate: [1.9, 1.0]
-    args: -sol quadratic -dm_plex_box_simplex 0 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -snes_convergence_estimate -convest_num_refine 2 \
+    args: -sol quadratic -dm_plex_simplex 0 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -snes_convergence_estimate -convest_num_refine 2 \
       -ksp_atol 1e-10 -ksp_error_if_not_converged -petscds_jac_pre 0 \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type gamg -fieldsplit_pressure_mg_levels_pc_type jacobi -fieldsplit_pressure_mg_coarse_pc_type svd
@@ -601,7 +592,7 @@ int main(int argc, char **argv)
     suffix: 3d_q1_p0_conv
     requires: !single
     # Using -dm_refine 2 -convest_num_refine 2 gives L_2 convergence rate: [1.7, 1.0]
-    args: -sol quadratic -dm_plex_box_simplex 0 -dm_plex_box_dim 3 -dm_refine 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -snes_convergence_estimate -convest_num_refine 1 \
+    args: -sol quadratic -dm_plex_simplex 0 -dm_plex_dim 3 -dm_refine 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -snes_convergence_estimate -convest_num_refine 1 \
       -ksp_atol 1e-10 -ksp_error_if_not_converged -petscds_jac_pre 0 \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type gamg -fieldsplit_pressure_mg_levels_pc_type jacobi -fieldsplit_pressure_mg_coarse_pc_type svd
@@ -692,7 +683,7 @@ int main(int argc, char **argv)
     suffix: 2d_q2_q1_fetidp
     requires: mumps
     nsize: 5
-    args: -sol quadratic -dm_plex_box_simplex 0 -dm_refine 2 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_simplex 0 -dm_refine 2 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_error_if_not_converged \
       -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_error_if_not_converged \
       -ksp_fetidp_saddlepoint -fetidp_ksp_type cg \
@@ -702,7 +693,7 @@ int main(int argc, char **argv)
     suffix: 3d_p2_p1_fetidp
     requires: ctetgen mumps suitesparse
     nsize: 5
-    args: -sol quadratic -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_error_if_not_converged \
       -ksp_type fetidp -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -ksp_fetidp_saddlepoint -fetidp_ksp_type cg \
@@ -717,7 +708,7 @@ int main(int argc, char **argv)
     suffix: 3d_q2_q1_fetidp
     requires: suitesparse
     nsize: 5
-    args: -sol quadratic -dm_plex_box_simplex 0 -dm_plex_box_dim 3 -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_error_if_not_converged \
       -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_error_if_not_converged \
       -ksp_fetidp_saddlepoint -fetidp_ksp_type cg \
@@ -739,7 +730,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_q1_p0_vanka
     requires: double !complex
-    args: -sol quadratic -dm_plex_box_simplex 0 -dm_refine 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_simplex 0 -dm_refine 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 \
       -ksp_type fgmres -ksp_atol 1e-5 -ksp_error_if_not_converged \
       -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
@@ -747,7 +738,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_q1_p0_vanka_denseinv
     requires: double !complex
-    args: -sol quadratic -dm_plex_box_simplex 0 -dm_refine 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_simplex 0 -dm_refine 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 \
       -ksp_type fgmres -ksp_atol 1e-5 -ksp_error_if_not_converged \
       -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
@@ -756,7 +747,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_q1_p0_gmg_vanka
     requires: double !complex
-    args: -sol quadratic -dm_plex_box_simplex 0 -dm_refine_hierarchy 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_simplex 0 -dm_refine_hierarchy 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 \
       -ksp_type fgmres -ksp_atol 1e-5 -ksp_error_if_not_converged \
       -pc_type mg \

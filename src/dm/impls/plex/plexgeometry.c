@@ -1617,6 +1617,12 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
     const PetscReal *basisDer = T->T[1];
     PetscReal        detJt;
 
+#if defined(PETSC_USE_DEBUG)
+    if (Nq != T->Np)     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Np %D != %D", Nq, T->Np);
+    if (pdim != T->Nb)   SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nb %D != %D", pdim, T->Nb);
+    if (dim != T->Nc)    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nc %D != %D", dim, T->Nc);
+    if (cdim != T->cdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "cdim %D != %D", cdim, T->cdim);
+#endif
     if (v) {
       ierr = PetscArrayzero(v, Nq*cdim);CHKERRQ(ierr);
       for (q = 0; q < Nq; ++q) {
@@ -2265,6 +2271,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
+  cEndInterior = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMPlexGetMaxSizes(dm, &maxNumFaces, NULL);CHKERRQ(ierr);
   ierr = PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);

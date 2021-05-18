@@ -27,10 +27,6 @@ enum {STAGE_LOAD, STAGE_DISTRIBUTE, STAGE_REFINE, STAGE_REDISTRIBUTE};
 
 typedef struct {
   /* Domain and mesh definition */
-  PetscInt  dim;                          /* The topological mesh dimension */
-  PetscBool cellSimplex;                  /* Use simplices or hexes */
-  PetscInt  cells[3];                     /* The initial domain division */
-  char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscInt  overlap;                      /* The cell overlap to use during partitioning */
   PetscBool testPartition;                /* Use a fixed partitioning for testing */
   PetscBool testRedundant;                /* Use a redundant partitioning for testing */
@@ -41,16 +37,9 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt       n;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dim              = 2;
-  options->cellSimplex      = PETSC_TRUE;
-  options->cells[0]         = 2;
-  options->cells[1]         = 2;
-  options->cells[2]         = 2;
-  options->filename[0]      = '\0';
   options->overlap          = 0;
   options->testPartition    = PETSC_FALSE;
   options->testRedundant    = PETSC_FALSE;
@@ -58,11 +47,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->partitionBalance = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex12.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
-  n = 3;
-  ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex12.c", options->cells, &n, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex12.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_redundant", "Use a redundant partition for testing", "ex12.c", options->testRedundant, &options->testRedundant, NULL);CHKERRQ(ierr);
@@ -80,9 +64,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             pdm             = NULL;
-  PetscInt       dim             = user->dim;
-  PetscBool      cellSimplex     = user->cellSimplex;
-  const char    *filename        = user->filename;
   PetscInt       triSizes_n2[2]  = {4, 4};
   PetscInt       triPoints_n2[8] = {0, 1, 4, 6, 2, 3, 5, 7};
   PetscInt       triSizes_n3[3]  = {3, 2, 3};
@@ -94,19 +75,22 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       quadSizes[2]    = {2, 2};
   PetscInt       quadPoints[4]   = {2, 3, 0, 1};
   PetscInt       overlap         = user->overlap >= 0 ? user->overlap : 0;
-  size_t         len;
+  PetscInt       dim;
+  PetscBool      simplex;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
-  if (len) {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else     {ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
+  ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(*dm, &simplex);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
   if (!user->testRedundant) {
     PetscPartitioner part;
@@ -119,15 +103,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       const PetscInt *points = NULL;
 
       if (!rank) {
-        if (dim == 2 && cellSimplex && size == 2) {
+        if (dim == 2 && simplex && size == 2) {
           sizes = triSizes_n2; points = triPoints_n2;
-        } else if (dim == 2 && cellSimplex && size == 3) {
+        } else if (dim == 2 && simplex && size == 3) {
           sizes = triSizes_n3; points = triPoints_n3;
-        } else if (dim == 2 && cellSimplex && size == 4) {
+        } else if (dim == 2 && simplex && size == 4) {
           sizes = triSizes_n4; points = triPoints_n4;
-        } else if (dim == 2 && cellSimplex && size == 8) {
+        } else if (dim == 2 && simplex && size == 8) {
           sizes = triSizes_n8; points = triPoints_n8;
-        } else if (dim == 2 && !cellSimplex && size == 2) {
+        } else if (dim == 2 && !simplex && size == 2) {
           sizes = quadSizes; points = quadPoints;
         }
       }
@@ -181,13 +165,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
-  ierr = PetscObjectSetName((PetscObject) *dm, cellSimplex ? "Simplicial Mesh" : "Tensor Product Mesh");CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[STAGE_REFINE]);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 int main(int argc, char **argv)
 {
@@ -208,109 +190,109 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -dm_view ascii:mesh.tex:ascii_latex
+    args: -dm_coord_space 0 -dm_view ascii:mesh.tex:ascii_latex
   test:
     suffix: 1
     requires: triangle
     nsize: 3
-    args: -test_partition -dm_view ascii::ascii_info_detail
+    args: -dm_coord_space 0 -test_partition -dm_view ascii::ascii_info_detail
   test:
     suffix: 2
     requires: triangle
     nsize: 8
-    args: -test_partition -dm_view ascii::ascii_info_detail
+    args: -dm_coord_space 0 -test_partition -dm_view ascii::ascii_info_detail
   # Parallel, level-1 overlap tests 3-4
   test:
     suffix: 3
     requires: triangle
     nsize: 3
-    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
+    args: -dm_coord_space 0 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: 4
     requires: triangle
     nsize: 8
-    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
+    args: -dm_coord_space 0 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
   # Parallel, level-2 overlap test 5
   test:
     suffix: 5
     requires: triangle
     nsize: 8
-    args: -test_partition -overlap 2 -dm_view ascii::ascii_info_detail
+    args: -dm_coord_space 0 -test_partition -overlap 2 -dm_view ascii::ascii_info_detail
   # Parallel load balancing, test 6-7
   test:
     suffix: 6
     requires: triangle
     nsize: 2
-    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
+    args: -dm_coord_space 0 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: 7
     requires: triangle
     nsize: 2
-    args: -test_partition -overlap 1 -load_balance -dm_view ascii::ascii_info_detail
+    args: -dm_coord_space 0 -test_partition -overlap 1 -load_balance -dm_view ascii::ascii_info_detail
   # Parallel redundant copying, test 8
   test:
     suffix: 8
     requires: triangle
     nsize: 2
-    args: -test_redundant -redundant_migrated_dm_view ascii::ascii_info_detail -dm_view ascii::ascii_info_detail
+    args: -dm_coord_space 0 -test_redundant -redundant_migrated_dm_view ascii::ascii_info_detail -dm_view ascii::ascii_info_detail
   test:
     suffix: lb_0
     requires: parmetis
     nsize: 4
-    args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view -prelb_dm_view ::load_balance -dm_view ::load_balance
+    args: -dm_coord_space 0 -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view -prelb_dm_view ::load_balance -dm_view ::load_balance
 
   # Same tests as above, but with balancing of the shared point partition
   test:
     suffix: 9
     requires: triangle
-    args: -dm_view ascii:mesh.tex:ascii_latex -partition_balance
+    args: -dm_coord_space 0 -dm_view ascii:mesh.tex:ascii_latex -partition_balance
   test:
     suffix: 10
     requires: triangle
     nsize: 3
-    args: -test_partition -dm_view ascii::ascii_info_detail -partition_balance
+    args: -dm_coord_space 0 -test_partition -dm_view ascii::ascii_info_detail -partition_balance
   test:
     suffix: 11
     requires: triangle
     nsize: 8
-    args: -test_partition -dm_view ascii::ascii_info_detail -partition_balance
+    args: -dm_coord_space 0 -test_partition -dm_view ascii::ascii_info_detail -partition_balance
   # Parallel, level-1 overlap tests 3-4
   test:
     suffix: 12
     requires: triangle
     nsize: 3
-    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail -partition_balance
+    args: -dm_coord_space 0 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail -partition_balance
   test:
     suffix: 13
     requires: triangle
     nsize: 8
-    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail -partition_balance
+    args: -dm_coord_space 0 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail -partition_balance
   # Parallel, level-2 overlap test 5
   test:
     suffix: 14
     requires: triangle
     nsize: 8
-    args: -test_partition -overlap 2 -dm_view ascii::ascii_info_detail -partition_balance
+    args: -dm_coord_space 0 -test_partition -overlap 2 -dm_view ascii::ascii_info_detail -partition_balance
   # Parallel load balancing, test 6-7
   test:
     suffix: 15
     requires: triangle
     nsize: 2
-    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail -partition_balance
+    args: -dm_coord_space 0 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail -partition_balance
   test:
     suffix: 16
     requires: triangle
     nsize: 2
-    args: -test_partition -overlap 1 -load_balance -dm_view ascii::ascii_info_detail -partition_balance
+    args: -dm_coord_space 0 -test_partition -overlap 1 -load_balance -dm_view ascii::ascii_info_detail -partition_balance
   # Parallel redundant copying, test 8
   test:
     suffix: 17
     requires: triangle
     nsize: 2
-    args: -test_redundant -dm_view ascii::ascii_info_detail -partition_balance
+    args: -dm_coord_space 0 -test_redundant -dm_view ascii::ascii_info_detail -partition_balance
   test:
     suffix: lb_1
     requires: parmetis
     nsize: 4
-    args: -cell_simplex 0 -cells 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view -partition_balance -prelb_dm_view ::load_balance -dm_view ::load_balance
+    args: -dm_coord_space 0 -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -petscpartitioner_type shell -petscpartitioner_shell_random -lb_petscpartitioner_type parmetis -load_balance -lb_petscpartitioner_view -partition_balance -prelb_dm_view ::load_balance -dm_view ::load_balance
 TEST*/

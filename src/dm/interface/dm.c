@@ -7,6 +7,10 @@
 #include <petscsf.h>
 #include <petscds.h>
 
+#ifdef PETSC_HAVE_LIBCEED
+#include <petscfeceed.h>
+#endif
+
 #if defined(PETSC_HAVE_VALGRIND)
 #  include <valgrind/memcheck.h>
 #endif
@@ -776,6 +780,10 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
   }
   ierr = DMMonitorCancel(*dm);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_LIBCEED
+  ierr = CeedElemRestrictionDestroy(&(*dm)->ceedERestrict);CHKERRQ(ierr);
+  ierr = CeedDestroy(&(*dm)->ceed);CHKERRQ(ierr);
+#endif
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -821,6 +829,36 @@ PetscErrorCode  DMSetUp(DM dm)
 .   -dm_vec_type <type>  - type of vector to create inside DM
 .   -dm_mat_type <type>  - type of matrix to create inside DM
 -   -dm_is_coloring_type - <global or local>
+
+    DMPLEX Specific creation options
++ -dm_plex_filename <str>           - File containing a mesh
+. -dm_plex_boundary_filename <str>  - File containing a mesh boundary
+. -dm_plex_shape <shape>            - The domain shape, such as DM_SHAPE_BOX, DM_SHAPE_SPHERE, etc.
+. -dm_plex_cell <ct>                - Cell shape
+. -dm_plex_reference_cell_domain <bool> - Use a reference cell domain
+. -dm_plex_dim <dim>                - Set the topological dimension
+. -dm_plex_simplex <bool>           - PETSC_TRUE for simplex elements, PETSC_FALSE for tensor elements
+. -dm_plex_interpolate <bool>       - PETSC_TRUE turns on topological interpolation (creating edges and faces)
+. -dm_plex_scale <sc>               - Scale factor for mesh coordinates
+. -dm_plex_box_faces <m,n,p>        - Number of faces along each dimension
+. -dm_plex_box_lower <x,y,z>        - Specify lower-left-bottom coordinates for the box
+. -dm_plex_box_upper <x,y,z>        - Specify upper-right-top coordinates for the box
+. -dm_plex_box_bd <bx,by,bz>        - Specify the DMBoundaryType for each direction
+. -dm_plex_sphere_radius <r>        - The sphere radius
+. -dm_plex_ball_radius <r>          - Radius of the ball
+. -dm_plex_cylinder_bd <bz>         - Boundary type in the z direction
+. -dm_plex_cylinder_num_wedges <n>  - Number of wedges around the cylinder
+. -dm_refine_pre <n>                - The number of refinements before distribution
+. -dm_refine_uniform_pre <bool>     - Flag for uniform refinement before distribution
+. -dm_refine_volume_limit_pre <v>   - The maximum cell volume after refinement before distribution
+. -dm_refine <n>                    - The number of refinements after distribution
+. -dm_extrude_layers <l>            - The number of layers to extrude
+. -dm_extrude_thickness <t>         - The thickness of the layer to be extruded
+. -dm_extrude_column_first <bool>   - Order the cells in a vertical column first
+. -dm_distribute <bool>             - Flag to redistribute a mesh among processes
+. -dm_distribute_overlap <n>        - The size of the overlap halo
+. -dm_plex_adj_cone <bool>          - Set adjacency direction
+- -dm_plex_adj_closure <bool>       - Set adjacency size
 
     DMPLEX Specific Checks
 +   -dm_plex_check_symmetry        - Check that the adjacency information in the mesh is symmetric - DMPlexCheckSymmetry()
@@ -5521,6 +5559,20 @@ PetscErrorCode DMCreateDS(DM dm)
     DMLabel  label = dm->fields[f].label;
     PetscInt l;
 
+#ifdef PETSC_HAVE_LIBCEED
+    /* Move CEED context to discretizations */
+    {
+      PetscClassId id;
+
+      ierr = PetscObjectGetClassId(dm->fields[f].disc, &id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        Ceed ceed;
+
+        ierr = DMGetCeed(dm, &ceed);CHKERRQ(ierr);
+        ierr = PetscFESetCeed((PetscFE) dm->fields[f].disc, ceed);CHKERRQ(ierr);
+      }
+    }
+#endif
     if (!label) {++Ndef; continue;}
     for (l = 0; l < Nl; ++l) if (label == labelSet[l]) break;
     if (l < Nl) continue;
@@ -7877,6 +7929,56 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
   if (flg) dm->depthLabel = label;
   ierr = PetscStrcmp(lname, "celltype", &flg);CHKERRQ(ierr);
   if (flg) dm->celltypeLabel = label;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMSetLabel - Replaces the label of a given name, or ignores it if the name is not present
+
+  Not Collective
+
+  Input Parameters:
++ dm    - The DM object
+- label - The DMLabel, having the same name, to substitute
+
+  Note: Some of the default labels in a DMPlex will be
+$ "depth"       - Holds the depth (co-dimension) of each mesh point
+$ "celltype"    - Holds the topological type of each cell
+$ "ghost"       - If the DM is distributed with overlap, this marks the cells and faces in the overlap
+$ "Cell Sets"   - Mirrors the cell sets defined by GMsh and ExodusII
+$ "Face Sets"   - Mirrors the face sets defined by GMsh and ExodusII
+$ "Vertex Sets" - Mirrors the vertex sets defined by GMsh
+
+  Level: intermediate
+
+.seealso: DMCreateLabel(), DMHasLabel(), DMPlexGetDepthLabel(), DMPlexGetCellType()
+@*/
+PetscErrorCode DMSetLabel(DM dm, DMLabel label)
+{
+  DMLabelLink    next = dm->labels;
+  PetscBool      hasLabel, flg;
+  const char    *name, *lname;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
+  ierr = PetscObjectGetName((PetscObject) label, &name);CHKERRQ(ierr);
+  while (next) {
+    ierr = PetscObjectGetName((PetscObject) next->label, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, lname, &hasLabel);CHKERRQ(ierr);
+    if (hasLabel) {
+      ierr = PetscObjectReference((PetscObject) label);CHKERRQ(ierr);
+      ierr = PetscStrcmp(lname, "depth", &flg);CHKERRQ(ierr);
+      if (flg) dm->depthLabel = label;
+      ierr = PetscStrcmp(lname, "celltype", &flg);CHKERRQ(ierr);
+      if (flg) dm->celltypeLabel = label;
+      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+      next->label = label;
+      break;
+    }
+    next = next->next;
+  }
   PetscFunctionReturn(0);
 }
 

@@ -174,6 +174,7 @@ Process 0:
   (   8) dim  3 offset  15 1. 1. -1.
   (   9) dim  3 offset  18 1. 1. 1.
   (  10) dim  3 offset  21 2. 1. 0.
+Labels:
 Label 'celltype':
 [0]: 3 (0)
 [0]: 4 (0)

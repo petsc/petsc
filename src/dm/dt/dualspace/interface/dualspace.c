@@ -1023,6 +1023,8 @@ PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace sp, Pe
   Output Parameter:
 . refdm - The reference cell
 
+  Note: This DM is on PETSC_COMM_SELF.
+
   Level: intermediate
 
 .seealso: PetscDualSpaceCreate(), DMPLEX
@@ -1032,7 +1034,7 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexCreateReferenceCell(PetscObjectComm((PetscObject) sp), dim, simplex, refdm);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, simplex), refdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

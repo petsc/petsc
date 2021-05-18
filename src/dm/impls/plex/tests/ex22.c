@@ -142,7 +142,7 @@ int main(int argc, char **argv)
           PetscReal    noise;
           PetscInt     i, n, order = 1;
 
-          ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF,dim,isSimplex ? PETSC_TRUE : PETSC_FALSE, &dm);CHKERRQ(ierr);
+          ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex ? PETSC_TRUE : PETSC_FALSE), &dm);CHKERRQ(ierr);
           if (isFE) {
             DM             dmCoord;
             PetscSpace     sp;

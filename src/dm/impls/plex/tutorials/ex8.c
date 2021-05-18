@@ -7,17 +7,16 @@ int main(int argc, char **argv)
   DM             dm;
   PetscSection   section;
   PetscFE        fe;
-  PetscInt       cells[3] = {2, 2, 2},dim = 2,c,cStart,cEnd,tmp;
+  PetscInt       dim,c,cStart,cEnd;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Spectral/tensor element restrictions",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim","Topological dimension",NULL,dim,&dim,NULL,1,3);CHKERRQ(ierr);
-  tmp = dim;
-  ierr = PetscOptionsIntArray("-cells","Number of cells per dimension",NULL,cells,&tmp,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
-  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD,dim,PETSC_FALSE,cells,NULL,NULL,NULL,PETSC_TRUE,&dm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PETSC_COMM_SELF,dim,1,PETSC_FALSE,NULL,PETSC_DETERMINE,&fe);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMAddField(dm,NULL,(PetscObject)fe);CHKERRQ(ierr);
@@ -43,18 +42,18 @@ int main(int argc, char **argv)
 
   test:
     suffix: 1d_q2
-    args: -dim 1 -petscspace_degree 2
+    args: -dm_plex_dim 1 -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_box_faces 2
   test:
     suffix: 2d_q1
-    args: -dim 2 -petscspace_degree 1
+    args: -dm_plex_dim 2 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 2,2
   test:
     suffix: 2d_q2
-    args: -dim 2 -petscspace_degree 2
+    args: -dm_plex_dim 2 -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_box_faces 2,2
   test:
     suffix: 2d_q3
-    args: -dim 2 -petscspace_degree 3 -cells 1,1
+    args: -dm_plex_dim 2 -petscspace_degree 3 -dm_plex_simplex 0 -dm_plex_box_faces 1,1
   test:
     suffix: 3d_q1
-    args: -dim 3 -petscspace_degree 1 -cells 1,1,1
+    args: -dm_plex_dim 3 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,1
 
 TEST*/

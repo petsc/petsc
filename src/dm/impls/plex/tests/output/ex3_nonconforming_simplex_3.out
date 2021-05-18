@@ -1073,6 +1073,7 @@ Process 3:
   (  10) dim  3 offset  21 0.5 1. 0.5
   (  11) dim  3 offset  24 0. 0.5 0.
   (  12) dim  3 offset  27 0.5 1. 0.
+Labels:
 Label 'celltype':
 [0]: 4 (0)
 [0]: 5 (0)
@@ -1527,7 +1528,7 @@ PetscSF Object: 4 MPI processes
   [2]    43 <- 43
   [2]    44 <- 44
   [3] Roots referenced by my leaves, by rank
-   MultiSF sort=rank-order
+  MultiSF sort=rank-order
 Symmetric gradient null space: PASS
 Mat Object: Reference Tree Injector 1 MPI processes
   type: seqaij

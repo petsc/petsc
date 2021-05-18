@@ -7,7 +7,7 @@ typedef enum {TRANSFORM_NONE, TRANSFORM_SHEAR, TRANSFORM_ANNULUS, TRANSFORM_SHEL
 const char * const TransformTypes[] = {"none", "shear", "annulus", "shell", "Mesh Transform", "TRANSFORM_", NULL};
 
 typedef struct {
-  char        filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
+  PetscBool   coordSpace;         /* Flag to create coordinate space */
   Transform   meshTransform;      /* Transform for initial box mesh */
   PetscReal   *transformDataReal; /* Parameters for mesh transform */
   PetscScalar *transformData;     /* Parameters for mesh transform */
@@ -21,7 +21,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->filename[0]       = '\0';
+  options->coordSpace        = PETSC_TRUE;
   options->meshTransform     = TRANSFORM_NONE;
   options->transformDataReal = NULL;
   options->transformData     = NULL;
@@ -29,7 +29,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->tol               = PETSC_SMALL;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex33.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-coord_space", "Flag to create a coordinate space", "ex33.c", options->coordSpace, &options->coordSpace, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mesh_transform", "Method to transform initial box mesh <none, shear, annulus, shell>", "ex33.c", TransformTypes, (PetscEnum) options->meshTransform, (PetscEnum *) &options->meshTransform, NULL);CHKERRQ(ierr);
   switch (options->meshTransform) {
     case TRANSFORM_NONE: break;
@@ -136,7 +136,7 @@ static PetscErrorCode DMCreateCoordinateDisc(DM dm)
   ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, dE, simplex, "geom_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, dE, simplex, "dm_coord_", -1, &fe);CHKERRQ(ierr);
   ierr = DMProjectCoordinates(dm, fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -144,22 +144,16 @@ static PetscErrorCode DMCreateCoordinateDisc(DM dm)
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
 {
-  const char    *filename = ctx->filename;
   DM             cdm;
   PetscDS        cds;
-  size_t         len;
-  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (len) {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else     {ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  if (!len) {ierr = DMCreateCoordinateDisc(*dm);CHKERRQ(ierr);}
+
+  if (ctx->coordSpace) {ierr = DMCreateCoordinateDisc(*dm);CHKERRQ(ierr);}
   switch (ctx->meshTransform) {
     case TRANSFORM_NONE:
       ierr = DMPlexRemapGeometry(*dm, 0.0, identity);CHKERRQ(ierr);
@@ -256,145 +250,156 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
-    suffix: square_0
-    args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -geom_petscspace_degree 1 -volume 4.
+  testset:
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -volume 4. -dm_coord_space 0
 
-  test:
-    suffix: square_1
-    args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -geom_petscspace_degree 2 -volume 4.
+    test:
+      suffix: square_0
+      args: -dm_coord_petscspace_degree 1
 
-  test:
-    suffix: square_2
-    args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -dm_refine 1 -geom_petscspace_degree 1 -volume 4.
+    test:
+      suffix: square_1
+      args: -dm_coord_petscspace_degree 2
 
-  test:
-    suffix: square_3
-    args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -dm_refine 1 -geom_petscspace_degree 2 -volume 4.
+    test:
+      suffix: square_2
+      args: -dm_refine 1 -dm_coord_petscspace_degree 1
 
-  test:
-    suffix: cube_0
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -geom_petscspace_degree 1 -volume 8.
+    test:
+      suffix: square_3
+      args: -dm_refine 1 -dm_coord_petscspace_degree 2
 
-  test:
-    suffix: cube_1
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -geom_petscspace_degree 2 -volume 8.
+  testset:
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -volume 8. -dm_coord_space 0
 
-  test:
-    suffix: cube_2
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -dm_refine 1 -geom_petscspace_degree 1 -volume 8.
+    test:
+      suffix: cube_0
+      args: -dm_coord_petscspace_degree 1
 
-  test:
-    suffix: cube_3
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -dm_refine 1 -geom_petscspace_degree 2 -volume 8.
+    test:
+      suffix: cube_1
+      args: -dm_coord_petscspace_degree 2
 
-  test:
-    suffix: shear_0
-    args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -geom_petscspace_degree 1 -mesh_transform shear -transform_data 3.0 -volume 4.
+    test:
+      suffix: cube_2
+      args: -dm_refine 1 -dm_coord_petscspace_degree 1
 
-  test:
-    suffix: shear_1
-    args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -geom_petscspace_degree 2 -mesh_transform shear -transform_data 3.0 -volume 4.
+    test:
+      suffix: cube_3
+      args: -dm_refine 1 -dm_coord_petscspace_degree 2
 
-  test:
-    suffix: shear_2
-    args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -dm_refine 1 -geom_petscspace_degree 1 -mesh_transform shear -transform_data 3.0 -volume 4.
+  testset:
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -volume 4. -dm_coord_space 0
 
-  test:
-    suffix: shear_3
-    args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -1.,-1. -dm_plex_box_upper 1.,1. -dm_refine 1 -geom_petscspace_degree 2 -mesh_transform shear -transform_data 3.0 -volume 4.
+    test:
+      suffix: shear_0
+      args: -dm_coord_petscspace_degree 1 -mesh_transform shear -transform_data 3.0
 
-  test:
-    suffix: shear_4
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -geom_petscspace_degree 1 -mesh_transform shear -transform_data 3.0 -volume 8.
+    test:
+      suffix: shear_1
+      args: -dm_coord_petscspace_degree 2 -mesh_transform shear -transform_data 3.0
 
-  test:
-    suffix: shear_5
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -geom_petscspace_degree 2 -mesh_transform shear -transform_data 3.0 -volume 8.
+    test:
+      suffix: shear_2
+      args: -dm_refine 1 -dm_coord_petscspace_degree 1 -mesh_transform shear -transform_data 3.0
 
-  test:
-    suffix: shear_6
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1,-1. -dm_plex_box_upper 1.,1.,1. -dm_refine 1 -geom_petscspace_degree 1 -mesh_transform shear -transform_data 3.0,4.0 -volume 8.
+    test:
+      suffix: shear_3
+      args: -dm_refine 1 -dm_coord_petscspace_degree 2 -mesh_transform shear -transform_data 3.0
 
-  test:
-    suffix: shear_7
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -dm_refine 1 -geom_petscspace_degree 2 -mesh_transform shear -transform_data 3.0,4.0 -volume 8.
+  testset:
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -volume 8. -dm_coord_space 0
 
-  test:
-    # Area: (a+b)/2 h = 3/\sqrt{2} (sqrt{2} - 1/\sqrt{2}) = 3/2
-    suffix: annulus_0
-    requires: double
-    args: -dm_plex_box_faces 1,1 -geom_petscspace_degree 1 -mesh_transform annulus -volume 1.5
+    test:
+      suffix: shear_4
+      args: -dm_coord_petscspace_degree 1 -mesh_transform shear -transform_data 3.0
 
-  test:
+    test:
+      suffix: shear_5
+      args: -dm_coord_petscspace_degree 2 -mesh_transform shear -transform_data 3.0
+
+    test:
+      suffix: shear_6
+      args: -dm_refine 1 -dm_coord_petscspace_degree 1 -mesh_transform shear -transform_data 3.0,4.0
+
+    test:
+      suffix: shear_7
+      args: -dm_refine 1 -dm_coord_petscspace_degree 2 -mesh_transform shear -transform_data 3.0,4.0
+
+  testset:
     # Area: 3/4 \pi = 2.3562
-    suffix: annulus_1
-    requires: double
-    args: -dm_plex_box_faces 1,1 -dm_refine 3 -geom_petscspace_degree 1 -mesh_transform annulus -volume 2.35619449019235 -tol .016
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -mesh_transform annulus -volume 2.35619449019235 -dm_coord_space 0
 
-  test:
-    # Area: 3/4 \pi = 2.3562
-    suffix: annulus_2
-    requires: double
-    args: -dm_plex_box_faces 1,1 -dm_refine 3 -geom_petscspace_degree 2 -mesh_transform annulus -volume 2.35619449019235 -tol .0038
+    test:
+      # Area: (a+b)/2 h = 3/\sqrt{2} (sqrt{2} - 1/\sqrt{2}) = 3/2
+      suffix: annulus_0
+      requires: double
+      args: -dm_coord_petscspace_degree 1 -volume 1.5
 
-  test:
-    # Area: 3/4 \pi = 2.3562
-    suffix: annulus_3
-    requires: double
-    args: -dm_plex_box_faces 1,1 -dm_refine 3 -geom_petscspace_degree 3 -mesh_transform annulus -volume 2.35619449019235 -tol 2.2e-6
+    test:
+      suffix: annulus_1
+      requires: double
+      args: -dm_refine 3 -dm_coord_petscspace_degree 1 -tol .016
 
-  test:
-    # Area: 3/4 \pi = 2.3562
-    suffix: annulus_4
-    requires: double
-    args: -dm_plex_box_faces 1,1 -dm_refine 2 -geom_petscspace_degree 2 -petscfe_default_quadrature_order 2 -mesh_transform annulus -volume 2.35619449019235 -tol .00012
+    test:
+      suffix: annulus_2
+      requires: double
+      args: -dm_refine 3 -dm_coord_petscspace_degree 2 -tol .0038
 
-  test:
-    # Area: 3/4 \pi = 2.3562
-    suffix: annulus_5
-    requires: double
-    args: -dm_plex_box_faces 1,1 -dm_refine 2 -geom_petscspace_degree 3 -petscfe_default_quadrature_order 3 -mesh_transform annulus -volume 2.35619449019235 -tol 1.2e-7
+    test:
+      suffix: annulus_3
+      requires: double
+      args: -dm_refine 3 -dm_coord_petscspace_degree 3 -tol 2.2e-6
 
-  test:
-    suffix: shell_0
-    requires: double
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -dm_refine 1 -geom_petscspace_degree 1 -petscfe_default_quadrature_order 1 -mesh_transform shell -volume 5.633164922 -tol 1.0e-7
+    test:
+      suffix: annulus_4
+      requires: double
+      args: -dm_refine 2 -dm_coord_petscspace_degree 2 -petscfe_default_quadrature_order 2 -tol .00012
 
-  test:
+    test:
+      suffix: annulus_5
+      requires: double
+      args: -dm_refine 2 -dm_coord_petscspace_degree 3 -petscfe_default_quadrature_order 3 -tol 1.2e-7
+
+  testset:
     # Volume: 4/3 \pi (8 - 1)/2 = 14/3 \pi = 14.66076571675238
-    suffix: shell_1
-    requires: double
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -dm_refine 2 -geom_petscspace_degree 1 -petscfe_default_quadrature_order 1 -mesh_transform shell -volume 14.66076571675238 -tol 3.1
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -mesh_transform shell -volume 14.66076571675238 -dm_coord_space 0
 
-  test:
-    # Volume: 4/3 \pi (8 - 1)/2 = 14/3 \pi = 14.66076571675238
-    suffix: shell_2
-    requires: double
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -dm_refine 2 -geom_petscspace_degree 2 -petscfe_default_quadrature_order 2 -mesh_transform shell -volume 14.66076571675238 -tol .1
+    test:
+      suffix: shell_0
+      requires: double
+      args: -dm_refine 1 -dm_coord_petscspace_degree 1 -petscfe_default_quadrature_order 1 -volume 5.633164922 -tol 1.0e-7
 
-  test:
-    # Volume: 4/3 \pi (8 - 1)/2 = 14/3 \pi = 14.66076571675238
-    suffix: shell_3
-    requires: double
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -dm_refine 2 -geom_petscspace_degree 3 -petscfe_default_quadrature_order 3 -mesh_transform shell -volume 14.66076571675238 -tol .02
+    test:
+      suffix: shell_1
+      requires: double
+      args: -dm_refine 2 -dm_coord_petscspace_degree 1 -petscfe_default_quadrature_order 1 -tol 3.1
 
-  test:
-    # Volume: 4/3 \pi (8 - 1)/2 = 14/3 \pi = 14.66076571675238
-    suffix: shell_4
-    requires: double
-    args: -dm_plex_box_dim 3 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1.,-1.,-1. -dm_plex_box_upper 1.,1.,1. -dm_refine 2 -geom_petscspace_degree 4 -petscfe_default_quadrature_order 4 -mesh_transform shell -volume 14.66076571675238 -tol .006
+    test:
+      suffix: shell_2
+      requires: double
+      args: -dm_refine 2 -dm_coord_petscspace_degree 2 -petscfe_default_quadrature_order 2 -tol .1
+
+    test:
+      suffix: shell_3
+      requires: double
+      args: -dm_refine 2 -dm_coord_petscspace_degree 3 -petscfe_default_quadrature_order 3 -tol .02
+
+    test:
+      suffix: shell_4
+      requires: double
+      args: -dm_refine 2 -dm_coord_petscspace_degree 4 -petscfe_default_quadrature_order 4 -tol .006
 
   test:
     # Volume: 1.0
     suffix: gmsh_q2
     requires: double
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/quads-q2.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
+    args: -coord_space 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/quads-q2.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
 
   test:
     # Volume: 1.0
     suffix: gmsh_q3
     requires: double
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/quads-q3.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
+    args: -coord_space 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/quads-q3.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
 
 TEST*/
