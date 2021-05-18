@@ -1492,7 +1492,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   Output Parameter:
 . layout - The point layout for the section
 
-  Note: This is usually caleld for the default global section.
+  Note: This is usually called for the default global section.
 
   Level: advanced
 
@@ -1642,7 +1642,7 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 }
 
 /*@
-  PetscSectionSetFieldOffset - Set the offset into an array or local Vec for the dof associated with the given point.
+  PetscSectionSetFieldOffset - Set the offset into an array or local Vec for the dof associated with the given field at a point.
 
   Not collective
 
@@ -1656,7 +1656,7 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 
   Level: intermediate
 
-.seealso: PetscSectionGetOffset(), PetscSectionCreate(), PetscSectionSetUp()
+.seealso: PetscSectionGetFieldOffset(), PetscSectionSetOffset(), PetscSectionCreate(), PetscSectionSetUp()
 @*/
 PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt offset)
 {
