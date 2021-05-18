@@ -1,5 +1,5 @@
 #include <petscsys.h>             /*I   "petscsys.h"   I*/
-#include <petschipblas.h>          /* Needed to provide CHKERRHIP() */
+#include <petscdevice.h>          /* Needed to provide CHKERRHIP() */
 
 PETSC_EXTERN PetscErrorCode PetscHIPHostMalloc(size_t a,PetscBool clear,int lineno,const char function[],const char filename[],void **result)
 {

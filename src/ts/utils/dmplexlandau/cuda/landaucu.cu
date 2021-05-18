@@ -7,7 +7,7 @@
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <petscmat.h>
-#include <petsccublas.h>
+#include <petscdevice.h>
 
 #include "../land_tensors.h"
 #include <petscaijdevice.h>

@@ -13,7 +13,7 @@ Changes: Development
 
 -  Change ``MPIU_Allreduce()`` to always returns a MPI error code that
    should be checked with ``CHKERRMPI(ierr)``
--  Add support for ESSL 5.2 and later; drop support for ESSL <=5.1.
+-  Add support for ESSL 5.2 and later; drop support for ESSL <=5.1
 
 .. rubric:: Configure/Build:
 -  Remove --with-kokkos-cuda-arch. One can use -with-cuda-gencodearch to specify the cuda arch for Kokkos. Usually not needed since PETSc auto detects that
@@ -21,7 +21,18 @@ Changes: Development
 -  Add OpenCascade package to PETSc and allow --download-opencascade
 
 .. rubric:: Sys:
--  Add GPU event timers to capture kernel execution time accurately.
+-  Add ``PetscDevice`` class to manage discovered GPU devices
+-  Add ``PetscDeviceKind``
+-  Add ``PetscDeviceCreate()``, ``PetscDeviceConfigure()``, and ``PetscDeviceDestroy()``
+-  Add ``PetscDeviceContext`` class to manage asynchronous GPU compute support via a fork-join model
+-  Add ``PetscStreamType`` and ``PetscDeviceContextJoinMode``
+-  Add ``PetscDeviceContextCreate()``, ``PetscDeviceContextDestroy()``, ``PetscDeviceContextSetDevice()``, ``PetscDeviceContextGetDevice()``,
+   ``PetscDeviceContextSetStreamType()``, ``PetscDeviceContextGetStreamType()``, ``PetscDeviceContextSetUp()``, ``PetscDeviceContextDuplicate()``,
+   ``PetscDeviceContextQueryIdle()``, ``PetscDeviceContextWaitForContext()``, ``PetscDeviceContextFork()``, ``PetscDeviceContextJoin()``,
+   ``PetscDeviceContextSynchronize()``, ``PetscDeviceContextGetCurrentContext()``, ``PetscDeviceContextSetCurrentContext()``, and
+   ``PetscDeviceContextSetFromOptions()``
+-  Deprecate ``petsccublas.h`` and ``petschipblas.h`` in favor of ``petscdevice.h`` and ``petscdevicetypes.h``
+-  Add GPU event timers to capture kernel execution time accurately
 -  Remove ``WaitForCUDA()`` and ``WaitForHIP()`` before ``PetscLogGpuTimeEnd()``
 -  Add MPIU_REAL_INT and MPIU_SCALAR_INT datatypes to be used for reduction operations
 -  Add MPIU_MAXLOC and MPIU_MINLOC operations

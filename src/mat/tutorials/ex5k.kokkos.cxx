@@ -2,7 +2,6 @@ static char help[] = "Test of Kokkos matrix assemble with 1D Laplacian. Kokkos v
 
 #include <petscconf.h>
 #include <petscmat.h>
-//#include <petsccublas.h>
 
 /*
     Include Kokkos files
