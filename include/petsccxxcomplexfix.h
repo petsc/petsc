@@ -35,12 +35,9 @@
      This include file defines a few additional operator overload methods for the C++ complex classes to handle
      these cases naturally within PETSc code.
 
-     This file is included automatically by PETSc include files. In the small number of cases where these additional methods
-     may conflict with other code one may add
-
-     #define PETSC_SKIP_CXX_COMPLEX_FIX
-
-     before including any PETSc include files to prevent these methods from being provided.
+     This file is included in petscsystypes.h when feasible. In the small number of cases where these additional methods
+     may conflict with other code one may add '#define PETSC_SKIP_CXX_COMPLEX_FIX 1' before including any PETSc include
+     files to prevent these methods from being provided.
 */
 
 #if defined(__GNUC__) && (__GNUC__ >= 4)

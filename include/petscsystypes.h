@@ -216,6 +216,14 @@ M*/
 
           Complex numbers are automatically available if PETSc was able to find a working complex implementation
 
+
+    Petsc has a 'fix' for complex numbers to support expressions such as std::complex<PetscReal> + PetscInt, which are not supported by the standard
+    C++ library, but are convenient for petsc users. If the C++ compiler is able to compile code in petsccxxcomplexfix.h (This is checked by
+    configure), we include petsccxxcomplexfix.h to provide this convenience.
+
+    If the fix causes conflicts, or one really does not want this fix for a particular C++ file, one can define PETSC_SKIP_CXX_COMPLEX_FIX
+    at the beginning of the C++ file to skip the fix.
+
    Level: beginner
 
 .seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PETSC_i
@@ -263,7 +271,8 @@ M*/
       typedef petsccomplexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
     #endif
 
-    #if !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
+    /* Include a PETSc C++ complex 'fix'. Check PetscComplex manual page for details */
+    #if defined(PETSC_HAVE_CXX_COMPLEX_FIX) && !defined(PETSC_SKIP_CXX_COMPLEX_FIX)
       #include <petsccxxcomplexfix.h>
     #endif
   #else /* c99 complex support */
