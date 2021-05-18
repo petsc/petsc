@@ -202,6 +202,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
 
   (*F)->ops->destroy           = MatDestroy_matlab;
   (*F)->ops->getinfo           = MatGetInfo_External;
+  (*F)->trivialsymbolic        = PETSC_TRUE;
   (*F)->ops->lufactorsymbolic  = MatLUFactorSymbolic_Matlab;
   (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
 

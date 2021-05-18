@@ -841,6 +841,7 @@ static PetscErrorCode MatGetFactor_scalapack_scalapack(Mat A,MatFactorType ftype
   PetscFunctionBegin;
   /* Create the factorization matrix */
   ierr = MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->mb,a->nb,a->M,a->N,a->rsrc,a->csrc,&B);CHKERRQ(ierr);
+  B->trivialsymbolic = PETSC_TRUE;
   B->factortype = ftype;
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERSCALAPACK,&B->solvertype);CHKERRQ(ierr);

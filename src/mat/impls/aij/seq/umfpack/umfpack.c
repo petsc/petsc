@@ -205,9 +205,6 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo
   PetscFunctionReturn(0);
 }
 
-/*
-   Note the r permutation is ignored
-*/
 static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
