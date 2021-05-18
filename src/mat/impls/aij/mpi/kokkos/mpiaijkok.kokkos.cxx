@@ -305,7 +305,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure **B)
       nnz = jacb->i[n];
       if (jacb->compressedrow.use) {
         const Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_i_k (jacb->i,n+1);
-        aijkokB->i_uncompressed_d = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DeviceMemorySpace(),h_i_k));
+        aijkokB->i_uncompressed_d = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_i_k));
         Kokkos::deep_copy (*aijkokB->i_uncompressed_d, h_i_k);
         h_mat.offdiag.i = aijkokB->i_uncompressed_d->data();
         //err = cudaMalloc((void **)&h_mat.offdiag.i,               (n+1)*sizeof(int));CHKERRCUDA(err); // kernel input
@@ -317,7 +317,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure **B)
       h_mat.offdiag.a = aijkokB->a_d.data();
       {
         Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_colmap_k (aij->colmap,A->cmap->N);
-        aijkokB->colmap_d = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DeviceMemorySpace(),h_colmap_k));
+        aijkokB->colmap_d = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_colmap_k));
         Kokkos::deep_copy (*aijkokB->colmap_d, h_colmap_k);
         h_mat.colmap = aijkokB->colmap_d->data();
       }
