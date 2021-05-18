@@ -973,7 +973,7 @@ class WorkerPool(mp.queues.JoinableQueue):
       assert clx.conf.loaded, "Must initialize libClang first"
       clangLib = clx.conf.get_filename()
     if self.parallel:
-      workerArgs = (clangLib,checkFunctionMap,classIdMap,compilerFlags,clangOptions,self.verbose,self.errorQueue,self.returnQueue,self,self.lock,)
+      workerArgs = (clangLib,checkFunctionMap,classIdMap,compilerFlags,clangOptions,self.verbose,self.errorQueue,self.returnQueue,self,self.lock)
       for i in range(self.numWorkers):
         workerName = "[{}]".format(i)
         worker     = mp.Process(target=queueMain,args=workerArgs,name=workerName,daemon=True)
@@ -1045,7 +1045,6 @@ class WorkerPool(mp.queues.JoinableQueue):
       # send stop-signal to child processes
       for _ in range(self.numWorkers):
         self.put(QueueSignal.EXIT_QUEUE)
-      self.join()
       while not self.returnQueue.empty():
         signal,returnData = self.returnQueue.get()
         if signal == QueueSignal.ERRORS_LEFT:
@@ -1060,6 +1059,12 @@ class WorkerPool(mp.queues.JoinableQueue):
           raise ValueError("Unknown data returned by returnQueue {}, {}".format(signal,returnData))
       self.returnQueue.close()
       self.close()
+      for worker in self.workers:
+        # spin until every child exits, we need to do this otherwise the final summary
+        # output is totally garbled
+        worker.join()
+        if sys.version_info >= (3,7):
+          worker.close()
     self.errorsLeft  = [e for e in self.errorsLeft if e] # remove any None's
     self.errorsFixed = [e for e in self.errorsFixed if e]
     self.warnings    = [w for w in self.warnings if w]
@@ -1620,19 +1625,31 @@ def osRemoveSilent(filename):
       raise # re-raise exception if a different error occurred
   return
 
+def subprocessRun(*args,**kwargs):
+  __doc__="""
+  lightweight wrapper to hoist the ugly version check out of the regular code
+  """
+  import subprocess,sys
+
+  if sys.version_info >= (3,7):
+    output = subprocess.run(*args,**kwargs)
+  else:
+    if kwargs.pop("capture_output",None):
+      kwargs.setdefault("stdout",subprocess.PIPE)
+      kwargs.setdefault("stderr",subprocess.PIPE)
+    output = subprocess.run(*args,**kwargs)
+  return output
+
 def tryToFindLibclangDir():
   __doc__="""
   Crudely tries to find libclang directory first using ctypes.util.find_library(), then llvm-config, and then finally checks a few places on macos
   """
-  import subprocess,ctypes.util
+  import ctypes.util
 
   llvmLibDir = ctypes.util.find_library("clang")
   if not llvmLibDir:
     try:
-      if sys.version_info >= (3,7):
-        output = subprocess.run(["llvm-config","--libdir"],capture_output=True,universal_newlines=True,check=True)
-      else:
-        output = subprocess.run(["llvm-config","--libdir"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,universal_newlines=True,check=True)
+      output = subprocessRun(["llvm-config","--libdir"],capture_output=True,universal_newlines=True,check=True)
       llvmLibDir = output.stdout.strip()
     except FileNotFoundError:
       # FileNotFoundError: [Errno 2] No such file or directory: 'llvm-config'
@@ -1641,10 +1658,7 @@ def tryToFindLibclangDir():
 
       if platform.system().lower() == "darwin":
         try:
-          if sys.version_info >= (3,7):
-            output = subprocess.run(["xcode-select","-p"],capture_output=True,universal_newlines=True,check=True)
-          else:
-            output = subprocess.run(["xcode-select","-p"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,universal_newlines=True,check=True)
+          output = subprocessRun(["xcode-select","-p"],capture_output=True,universal_newlines=True,check=True)
           xcodeDir = output.stdout.strip()
           if xcodeDir == "/Applications/Xcode.app/Contents/Developer": # default Xcode path
             llvmLibDir = os.path.join(xcodeDir,"Toolchains","XcodeDefault.xctoolchain","usr","lib")
@@ -1713,16 +1727,12 @@ def getPetscExtraIncludes(petscDir,petscArch):
   return extraIncludes
 
 def getClangSysIncludes():
-  import subprocess
   __doc__="""
   Get system clangs set of default include search directories.
 
   Because for some reason these are hardcoded by the compilers and so libclang does not have them.
   """
-  if sys.version_info >= (3,7):
-    output = subprocess.run(["clang","-E","-x","c++","/dev/null","-v"],capture_output=True,check=True,universal_newlines=True)
-  else:
-    output = subprocess.run(["clang","-E","-x","c++","/dev/null","-v"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True,universal_newlines=True)
+  output = subprocessRun(["clang","-E","-x","c++","/dev/null","-v"],capture_output=True,check=True,universal_newlines=True)
   # goes to stderr because of /dev/null
   includes = output.stderr.split("#include <...> search starts here:\n")[1]
   includes = includes.split("End of search list.")[0].replace("(framework directory)","")
@@ -2001,17 +2011,14 @@ def main(petscDir,petscArch,srcDir=None,clangDir=None,clangLib=None,verbose=Fals
       with open(mangledFile,"w") as fd:
         fd.write(patch)
     if applyPatches:
-      import subprocess,glob
+      import glob
 
       if verbose: print(rootPrintPrefix,"Applying patches from patch directory",patchDir)
       rootDir   = "".join(["-d",os.path.abspath(os.path.sep)])
       patchGlob = "".join([patchDir,os.path.sep,"*",manglePostfix])
       for patchFile in glob.iglob(patchGlob):
         if verbose: print(rootPrintPrefix,"Applying patch",patchFile)
-        if sys.version_info >= (3,7):
-          output = subprocess.run(["patch",rootDir,"-p0","--unified","-i",patchFile],check=True,universal_newlines=True,capture_output=True)
-        else:
-          output = subprocess.run(["patch",rootDir,"-p0","--unified","-i",patchFile],stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True,universal_newlines=True)
+        output = subprocessRun(["patch",rootDir,"-p0","--unified","-i",patchFile],check=True,universal_newlines=True,capture_output=True)
         if verbose: print(output.stdout)
   returnCode = 0
   if warnings and verbose:
