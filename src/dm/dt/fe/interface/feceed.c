@@ -3,6 +3,19 @@
 #ifdef PETSC_HAVE_LIBCEED
 #include <petscfeceed.h>
 
+/*@C
+  PetscFESetCeed - Set the Ceed object
+
+  Not Collective
+
+  Input Parameters:
++ fe   - The PetscFE
+- ceed - The Ceed object
+
+  Level: intermediate
+
+.seealso: PetscFEGetCeedBasis(), DMGetCeed()
+@*/
 PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
 {
   PetscErrorCode ierr;
@@ -14,6 +27,23 @@ PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscFEGetCeedBasis - Get the Ceed object mirroring this FE
+
+  Not Collective
+
+  Input Parameter:
+. fe - The PetscFE
+
+  Output Parameter:
+. basis - The CeedBasis
+
+  Note: This is a borrowed reference, so it is not freed.
+
+  Level: intermediate
+
+.seealso: PetscFESetCeed(), DMGetCeed()
+@*/
 PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
 {
   PetscSpace      sp;
