@@ -8110,7 +8110,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
   DMPlexComputeOrthogonalQuality - Compute cell-wise orthogonal quality mesh statistic. Optionally tags all cells with
   orthogonal quality below given tolerance.
 
-  Collective
+  Collective on dm
 
   Input Parameters:
 + dm   - The DMPlex object
@@ -8149,40 +8149,43 @@ supported.
 @*/
 PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol, Vec *OrthQual, DMLabel *OrthQualLabel)
 {
-  PetscInt                nc, cellHeight, cStart, cEnd, cell;
+  PetscInt                nc, cellHeight, cStart, cEnd, cell, cellIter = 0;
+  PetscInt                *idx;
+  PetscScalar             *oqVals;
   const PetscScalar       *cellGeomArr, *faceGeomArr;
+  PetscReal               *ci, *fi, *Ai;
   MPI_Comm                comm;
   Vec                     cellgeom, facegeom;
   DM                      dmFace, dmCell;
   IS                      glob;
-  DMPlexInterpolatedFlag  interpFlag;
   ISLocalToGlobalMapping  ltog;
   PetscViewer             vwr;
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (fv) {PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 2);}
   PetscValidPointer(OrthQual, 4);
+  if (PetscUnlikelyDebug(atol < 0.0 || atol > 1.0)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %g not in [0,1]",(double)atol);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &nc);CHKERRQ(ierr);
-  if (nc < 2) {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM must have dimension >= 2 (current %D)", nc);
-  }
-  ierr = DMPlexIsInterpolated(dm, &interpFlag);CHKERRQ(ierr);
-  if (interpFlag != DMPLEX_INTERPOLATED_FULL) {
-    PetscMPIInt  rank;
+  if (nc < 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM must have dimension >= 2 (current %D)", nc);
+  {
+    DMPlexInterpolatedFlag interpFlag;
 
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM must be fully interpolated, DM on rank %d is not fully interpolated", rank);
+    ierr = DMPlexIsInterpolated(dm, &interpFlag);CHKERRQ(ierr);
+    if (interpFlag != DMPLEX_INTERPOLATED_FULL) {
+      PetscMPIInt rank;
+
+      ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM must be fully interpolated, DM on rank %d is not fully interpolated", rank);
+    }
   }
   if (OrthQualLabel) {
     PetscValidPointer(OrthQualLabel, 5);
     ierr = DMCreateLabel(dm, "Orthogonal_Quality");CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "Orthogonal_Quality", OrthQualLabel);CHKERRQ(ierr);
-  } else {
-    *OrthQualLabel = NULL;
-  }
-
+  } else {*OrthQualLabel = NULL;}
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &glob);CHKERRQ(ierr);
@@ -8200,39 +8203,40 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
   ierr = VecGetArrayRead(facegeom, &faceGeomArr);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
   ierr = VecGetDM(facegeom, &dmFace);CHKERRQ(ierr);
-  for (cell = cStart; cell < cEnd; cell++) {
-    PetscInt           cellneigh, cellneighiter = 0, nf, adjSize = PETSC_DETERMINE, ix = cell-cStart;
-    const PetscInt     *cone;
+  ierr = PetscMalloc5(cEnd-cStart, &idx, cEnd-cStart, &oqVals, nc, &ci, nc, &fi, nc, &Ai);CHKERRQ(ierr);
+  for (cell = cStart; cell < cEnd; cellIter++,cell++) {
+    PetscInt           cellneigh, cellneighiter = 0, adjSize = PETSC_DETERMINE;
     PetscInt           cellarr[2], *adj = NULL;
     PetscScalar        *cArr, *fArr;
     PetscReal          minvalc = 1.0, minvalf = 1.0;
-    PetscScalar        OQ;
     PetscFVCellGeom    *cg;
 
+    idx[cellIter] = cell-cStart;
     cellarr[0] = cell;
     /* Make indexing into cellGeom easier */
     ierr = DMPlexPointLocalRead(dmCell, cell, cellGeomArr, &cg);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &adjSize, &adj);CHKERRQ(ierr);
-    ierr = DMPlexGetConeSize(dm, cell, &nf);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
     /* Technically 1 too big, but easier than fiddling with empty adjacency array */
     ierr = PetscCalloc2(adjSize, &cArr, adjSize, &fArr);CHKERRQ(ierr);
-    for (cellneigh = 0; cellneigh < adjSize; cellneigh++) {
-      PetscInt         numcovpts, i, neigh = adj[cellneigh];
-      const PetscInt   *covpts;
+    for (cellneigh = 0; cellneigh < adjSize; cellneighiter++,cellneigh++) {
+      PetscInt         i;
+      const PetscInt   neigh = adj[cellneigh];
       PetscReal        normci = 0, normfi = 0, normai = 0;
-      PetscReal        *ci, *fi, *Ai;
       PetscFVCellGeom  *cgneigh;
       PetscFVFaceGeom  *fg;
 
       /* Don't count ourselves in the neighbor list */
       if (neigh == cell) continue;
-      ierr = PetscMalloc3(nc, &ci, nc, &fi, nc, &Ai);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dmCell, neigh, cellGeomArr, &cgneigh);CHKERRQ(ierr);
       cellarr[1] = neigh;
-      ierr = DMPlexGetMeet(dm, 2, cellarr, &numcovpts, &covpts);CHKERRQ(ierr);
-      ierr = DMPlexPointLocalRead(dmFace, covpts[0], faceGeomArr, &fg);CHKERRQ(ierr);
-      ierr = DMPlexRestoreMeet(dm, 2, cellarr, &numcovpts, &covpts);CHKERRQ(ierr);
+      {
+        PetscInt       numcovpts;
+        const PetscInt *covpts;
+
+        ierr = DMPlexGetMeet(dm, 2, cellarr, &numcovpts, &covpts);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRead(dmFace, covpts[0], faceGeomArr, &fg);CHKERRQ(ierr);
+        ierr = DMPlexRestoreMeet(dm, 2, cellarr, &numcovpts, &covpts);CHKERRQ(ierr);
+      }
 
       /* Compute c_i, f_i and their norms */
       for (i = 0; i < nc; i++) {
@@ -8262,30 +8266,25 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
       if (PetscRealPart(fArr[cellneighiter]) < minvalf) {
         minvalf = PetscRealPart(fArr[cellneighiter]);
       }
-      cellneighiter++;
-      ierr = PetscFree3(ci, fi, Ai);CHKERRQ(ierr);
     }
     ierr = PetscFree(adj);CHKERRQ(ierr);
     ierr = PetscFree2(cArr, fArr);CHKERRQ(ierr);
     /* Defer to cell if they're equal */
-    OQ = PetscMin(minvalf, minvalc);
+    oqVals[cellIter] = PetscMin(minvalf, minvalc);
     if (OrthQualLabel) {
-      if (PetscRealPart(OQ) <= atol) {
-        ierr = DMLabelSetValue(*OrthQualLabel, cell, DM_ADAPT_REFINE);CHKERRQ(ierr);
-      }
+      if (PetscRealPart(oqVals[cellIter]) <= atol) {ierr = DMLabelSetValue(*OrthQualLabel, cell, DM_ADAPT_REFINE);CHKERRQ(ierr);}
     }
-    ierr = VecSetValuesLocal(*OrthQual, 1, &ix, &OQ, INSERT_VALUES);CHKERRQ(ierr);
   }
+  ierr = VecSetValuesLocal(*OrthQual, cEnd-cStart, idx, oqVals, INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(*OrthQual);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(*OrthQual);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellgeom, &cellGeomArr);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(facegeom, &faceGeomArr);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm, NULL, NULL, "-dm_plex_orthogonal_quality_label_view", &vwr, NULL, NULL);CHKERRQ(ierr);
   if (OrthQualLabel) {
-    if (vwr) {
-      ierr = DMLabelView(*OrthQualLabel, vwr);CHKERRQ(ierr);
-    }
+    if (vwr) {ierr = DMLabelView(*OrthQualLabel, vwr);CHKERRQ(ierr);}
   }
+  ierr = PetscFree5(idx, oqVals, ci, fi, Ai);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&vwr);CHKERRQ(ierr);
   ierr = VecViewFromOptions(*OrthQual, NULL, "-dm_plex_orthogonal_quality_vec_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
