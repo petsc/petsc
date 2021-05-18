@@ -1,4 +1,4 @@
-#include <../src/sys/classes/random/randomimpl.h>
+#include <petsc/private/randomimpl.h>
 #include <curand.h>
 
 #define CHKERRCURAND(stat) \

@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/random/randomimpl.h>
+#include <petsc/private/randomimpl.h>
 
 PetscErrorCode  PetscRandomSeed_Rand(PetscRandom r)
 {

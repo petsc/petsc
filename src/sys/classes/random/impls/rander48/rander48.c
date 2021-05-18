@@ -1,4 +1,4 @@
-#include <../src/sys/classes/random/randomimpl.h>
+#include <petsc/private/randomimpl.h>
 
 typedef struct {
   unsigned short seed[3];

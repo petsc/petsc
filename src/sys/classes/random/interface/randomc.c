@@ -12,7 +12,7 @@
     one to reinitialize and set the seed.
  */
 
-#include <../src/sys/classes/random/randomimpl.h>                              /*I "petscsys.h" I*/
+#include <petsc/private/randomimpl.h>                              /*I "petscsys.h" I*/
 #include <petscviewer.h>
 
 /* Logging support */
