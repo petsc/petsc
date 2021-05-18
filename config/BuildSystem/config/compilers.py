@@ -563,6 +563,35 @@ class Configure(config.base.Configure):
     self.logWrite(self.setCompilers.restoreLog())
     return
 
+  def checkCxxComplexFix(self):
+    """Determine if the CXX compiler supports utilities provided by petsccxxcomplexfix.h"""
+    includes = """
+      #include <iostream>
+      #include <complex>
+      #define Type         int
+      #define PetscReal    double
+      #define PetscComplex std::complex<double>
+      /* The two lines, from petsccxxcomplexfix.h, can cause the combination "C++14 + GCC-4.x libstdc++ library" to fail, complaining imag()
+         is not marked const. If the compiler can compile these two lines, it should be able to compile other lines.
+      */
+      static inline PetscComplex operator-(const Type& lhs, const PetscComplex& rhs) { return PetscReal(lhs) - const_cast<PetscComplex&>(rhs); }
+      static inline PetscComplex operator/(const Type& lhs, const PetscComplex& rhs) { return PetscReal(lhs) / const_cast<PetscComplex&>(rhs); }
+      """
+    body = """
+      Type x = 2;
+      PetscComplex y(1.0,1.0),z,w;
+      z = x - y;
+      w = x / y;
+      std::cout << z << w;
+      """
+    self.pushLanguage('Cxx')
+    if self.checkCompile(includes,body):
+      self.logPrint('the CXX compiler supports petsccxxcomplexfix.h')
+      self.addDefine('HAVE_CXX_COMPLEX_FIX',1)
+    else:
+      self.logPrint('the CXX compiler does not support petsccxxcomplexfix.h')
+    self.popLanguage()
+
   def checkCxxLibraries(self):
     '''Determines the libraries needed to link with C++ from C and Fortran'''
     skipcxxlibraries = 1
@@ -1478,6 +1507,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       self.executeTest(self.checkCxxDialect,['Cxx',self.isGCXX])
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxInline)
+      self.executeTest(self.checkCxxComplexFix)
       if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
       # To skip Sun C++ compiler warnings/errors
