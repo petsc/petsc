@@ -438,6 +438,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   ierr     = PetscNewLog(B,&lusol);CHKERRQ(ierr);
   B->spptr = lusol;
 
+  B->trivialsymbolic       = PETSC_TRUE;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy          = MatDestroy_LUSOL;
 

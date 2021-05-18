@@ -455,9 +455,6 @@ PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
   PetscFunctionReturn(0);
 }
 
-/*
-   Note the r permutation is ignored
-*/
 static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)(F->data);
@@ -578,6 +575,7 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscStrallocpy("superlu",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
+  B->trivialsymbolic = PETSC_TRUE;
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_SuperLU;
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_SuperLU;

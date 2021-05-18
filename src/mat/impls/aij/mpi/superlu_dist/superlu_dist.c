@@ -580,6 +580,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   */
   set_default_options_dist(&options);
 
+  B->trivialsymbolic = PETSC_TRUE;
   if (ftype == MAT_FACTOR_LU) {
     B->factortype = MAT_FACTOR_LU;
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;

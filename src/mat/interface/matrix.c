@@ -3140,9 +3140,9 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFacto
     info = &tinfo;
   }
 
-  ierr = PetscLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);}
   ierr = (fact->ops->lufactorsymbolic)(fact,mat,row,col,info);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventEnd(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);}
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3194,9 +3194,11 @@ PetscErrorCode MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
     info = &tinfo;
   }
 
-  ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);}
+  else {ierr = PetscLogEventBegin(MAT_LUFactor,mat,fact,0,0);CHKERRQ(ierr);}
   ierr = (fact->ops->lufactornumeric)(fact,mat,info);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);}
+  else {ierr = PetscLogEventEnd(MAT_LUFactor,mat,fact,0,0);CHKERRQ(ierr);}
   ierr = MatViewFromOptions(fact,NULL,"-mat_factor_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3314,9 +3316,9 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFacto
     info = &tinfo;
   }
 
-  ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);}
   ierr = (fact->ops->choleskyfactorsymbolic)(fact,mat,perm,info);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventEnd(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);}
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3367,9 +3369,11 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *in
     info = &tinfo;
   }
 
-  ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);}
+  else {ierr = PetscLogEventBegin(MAT_CholeskyFactor,mat,fact,0,0);CHKERRQ(ierr);}
   ierr = (fact->ops->choleskyfactornumeric)(fact,mat,info);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);}
+  else {ierr = PetscLogEventEnd(MAT_CholeskyFactor,mat,fact,0,0);CHKERRQ(ierr);}
   ierr = MatViewFromOptions(fact,NULL,"-mat_factor_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3470,9 +3474,9 @@ PetscErrorCode MatQRFactorSymbolic(Mat fact,Mat mat,IS col,const MatFactorInfo *
     info = &tinfo;
   }
 
-  ierr = PetscLogEventBegin(MAT_QRFactorSymbolic,fact,mat,col,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventBegin(MAT_QRFactorSymbolic,fact,mat,col,0);CHKERRQ(ierr);}
   ierr = PetscUseMethod(fact,"MatQRFactorSymbolic_C", (Mat,Mat,IS,const MatFactorInfo*), (fact, mat, col, info));CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_QRFactorSymbolic,fact,mat,col,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventEnd(MAT_QRFactorSymbolic,fact,mat,col,0);CHKERRQ(ierr);}
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3522,9 +3526,11 @@ PetscErrorCode MatQRFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
     info = &tinfo;
   }
 
-  ierr = PetscLogEventBegin(MAT_QRFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventBegin(MAT_QRFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);}
+  else  {ierr = PetscLogEventBegin(MAT_QRFactor,mat,fact,0,0);CHKERRQ(ierr);}
   ierr = PetscUseMethod(fact,"MatQRFactorNumeric_C", (Mat,Mat,const MatFactorInfo*), (fact, mat, info));CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_QRFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventEnd(MAT_QRFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);}
+  else {ierr = PetscLogEventEnd(MAT_QRFactor,mat,fact,0,0);CHKERRQ(ierr);}
   ierr = MatViewFromOptions(fact,NULL,"-mat_factor_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -6944,9 +6950,9 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFact
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,2);
 
-  ierr = PetscLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);}
   ierr = (fact->ops->ilufactorsymbolic)(fact,mat,row,col,info);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventEnd(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -7005,9 +7011,9 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   MatCheckPreallocated(mat,2);
 
-  ierr = PetscLogEventBegin(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventBegin(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);}
   ierr = (fact->ops->iccfactorsymbolic)(fact,mat,perm,info);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  if (!fact->trivialsymbolic) {ierr = PetscLogEventEnd(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

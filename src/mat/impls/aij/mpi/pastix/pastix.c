@@ -439,8 +439,6 @@ PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F,Mat A,IS r,IS c,const MatFact
   PetscFunctionReturn(0);
 }
 
-
-/* Note the Petsc r permutation is ignored */
 PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
   Mat_Pastix *lu = (Mat_Pastix*)(F)->data;
@@ -542,6 +540,7 @@ static PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *
   ierr = PetscStrallocpy("pastix",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
 
+  B->trivialsymbolic       = PETSC_TRUE;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJPASTIX;
   B->ops->view             = MatView_PaStiX;
   B->ops->getinfo          = MatGetInfo_PaStiX;
@@ -581,6 +580,7 @@ static PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *
   ierr = PetscStrallocpy("pastix",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
 
+  B->trivialsymbolic       = PETSC_TRUE;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJPASTIX;
   B->ops->view             = MatView_PaStiX;
   B->ops->getinfo          = MatGetInfo_PaStiX;
@@ -619,6 +619,7 @@ static PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat
   ierr = PetscStrallocpy("pastix",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
 
+  B->trivialsymbolic             = PETSC_TRUE;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJPASTIX;
   B->ops->view                   = MatView_PaStiX;
   B->ops->getinfo                = MatGetInfo_PaStiX;

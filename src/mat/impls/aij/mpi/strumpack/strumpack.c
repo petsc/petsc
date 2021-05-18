@@ -486,6 +486,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
+  B->trivialsymbolic = PETSC_TRUE;
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_STRUMPACK;
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_STRUMPACK;
