@@ -1,5 +1,4 @@
 #define PETSC_SKIP_SPINLOCK
-#define PETSC_SKIP_CXX_COMPLEX_FIX
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 
 #include <petscconf.h>
