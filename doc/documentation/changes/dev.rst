@@ -122,6 +122,8 @@ Changes: Development
 
 .. rubric:: DMNetwork:
 
+-  Add ``DMNetworkCreateIS()`` and ``DMNetworkCreateLocalIS()``
+
 .. rubric:: DT:
 
 -  Add ``PetscWeakFormCopy()`` and ``PetscWeakFormRewriteKeys()``

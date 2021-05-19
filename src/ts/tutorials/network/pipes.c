@@ -1,10 +1,9 @@
 static char help[] = "This example demonstrates DMNetwork. It is used for testing parallel generation of dmnetwork, then redistribute. \n\\n";
 /*
-  Example: mpiexec -n <np> ./pipes1 -ts_max_steps 10
+  Example: mpiexec -n <np> ./pipes -ts_max_steps 10
 */
 
 #include "wash.h"
-#include <petscdmplex.h>
 
 /*
   WashNetworkDistribute - proc[0] distributes sequential wash object
@@ -308,88 +307,120 @@ PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
+PetscErrorCode PipesView(DM networkdm,PetscInt KeyPipe,Vec X)
 {
-  PetscErrorCode       ierr;
-  Pipe                 pipe;
-  PetscInt             key,Start,End;
-  PetscMPIInt          rank;
-  PetscInt             nx,nnodes,nidx,*idx1,*idx2,*idx1_h,*idx2_h,idx_start,i,k,k1,xstart,j1;
-  Vec                  Xq,Xh,localX;
-  IS                   is1_q,is2_q,is1_h,is2_h;
-  VecScatter           ctx_q,ctx_h;
+  PetscErrorCode ierr;
+  PetscInt       i,numkeys=1,*blocksize,*numselectedvariable,**selectedvariables,n;
+  IS             isfrom_q,isfrom_h,isfrom;
+  Vec            Xto;
+  VecScatter     ctx;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
 
-  /* get number of local and global total nnodes */
-  nidx = wash->nnodes_loc;
-  ierr = MPIU_Allreduce(&nidx,&nx,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-
-  ierr = VecCreate(PETSC_COMM_WORLD,&Xq);CHKERRQ(ierr);
-  if (rank == 0) { /* all entries of Xq are in proc[0] */
-    ierr = VecSetSizes(Xq,nx,PETSC_DECIDE);CHKERRQ(ierr);
-  } else {
-    ierr = VecSetSizes(Xq,0,PETSC_DECIDE);CHKERRQ(ierr);
+  /* 1. Create isfrom_q for q-variable of pipes */
+  ierr = PetscMalloc3(numkeys,&blocksize,numkeys,&numselectedvariable,numkeys,&selectedvariables);CHKERRQ(ierr);
+  for (i=0; i<numkeys; i++) {
+    blocksize[i]           = 2;
+    numselectedvariable[i] = 1;
+    ierr = PetscMalloc1(numselectedvariable[i],&selectedvariables[i]);CHKERRQ(ierr);
+    selectedvariables[i][0] = 0; /* q-variable */
   }
-  ierr = VecSetFromOptions(Xq);CHKERRQ(ierr);
-  ierr = VecSet(Xq,0.0);CHKERRQ(ierr);
-  ierr = VecDuplicate(Xq,&Xh);CHKERRQ(ierr);
+  ierr = DMNetworkCreateIS(networkdm,numkeys,&KeyPipe,blocksize,numselectedvariable,selectedvariables,&isfrom_q);CHKERRQ(ierr);
 
-  ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  /* 2. Create Xto and isto */
+  ierr = ISGetLocalSize(isfrom_q, &n);CHKERRQ(ierr);
+  ierr = VecCreate(comm,&Xto);CHKERRQ(ierr);
+  ierr = VecSetSizes(Xto,n,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(Xto);CHKERRQ(ierr);
+  ierr = VecSet(Xto,0.0);CHKERRQ(ierr);
 
-  /* set idx1 and idx2 */
-  ierr = PetscCalloc4(nidx,&idx1,nidx,&idx2,nidx,&idx1_h,nidx,&idx2_h);CHKERRQ(ierr);
+  /* 3. Create scatter */
+  ierr = VecScatterCreate(X,isfrom_q,Xto,NULL,&ctx);CHKERRQ(ierr);
 
-  ierr = DMNetworkGetEdgeRange(networkdm,&Start, &End);CHKERRQ(ierr);
+  /* 4. Scatter to Xq */
+  ierr = VecScatterBegin(ctx,X,Xto,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,X,Xto,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  ierr = ISDestroy(&isfrom_q);CHKERRQ(ierr);
 
-  ierr = VecGetOwnershipRange(X,&xstart,NULL);CHKERRQ(ierr);
-  k1 = 0;
-  j1 = 0;
-  for (i = Start; i < End; i++) {
-    ierr = DMNetworkGetComponent(networkdm,i,0,&key,(void**)&pipe,NULL);CHKERRQ(ierr);
-    nnodes = pipe->nnodes;
-    idx_start = pipe->id*nnodes;
-    for (k=0; k<nnodes; k++) {
-      idx1[k1] = xstart + j1*2*nnodes + 2*k;
-      idx2[k1] = idx_start + k;
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Xq:\n");CHKERRQ(ierr);
+  ierr = VecView(Xto,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-      idx1_h[k1] = xstart + j1*2*nnodes + 2*k + 1;
-      idx2_h[k1] = idx_start + k;
-      k1++;
-    }
-    j1++;
+  /* 5. Create isfrom_h for h-variable of pipes; Create scatter; Scatter to Xh */
+  for (i=0; i<numkeys; i++) {
+    selectedvariables[i][0] = 1; /* h-variable */
   }
+  ierr = DMNetworkCreateIS(networkdm,numkeys,&KeyPipe,blocksize,numselectedvariable,selectedvariables,&isfrom_h);CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx1,PETSC_COPY_VALUES,&is1_q);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx2,PETSC_COPY_VALUES,&is2_q);CHKERRQ(ierr);
-  ierr = VecScatterCreate(X,is1_q,Xq,is2_q,&ctx_q);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx_q,X,Xq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx_q,X,Xq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterCreate(X,isfrom_h,Xto,NULL,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(ctx,X,Xto,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,X,Xto,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  ierr = ISDestroy(&isfrom_h);CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx1_h,PETSC_COPY_VALUES,&is1_h);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx2_h,PETSC_COPY_VALUES,&is2_h);CHKERRQ(ierr);
-  ierr = VecScatterCreate(X,is1_h,Xh,is2_h,&ctx_h);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx_h,X,Xh,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx_h,X,Xh,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Xh:\n");CHKERRQ(ierr);
+  ierr = VecView(Xto,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecDestroy(&Xto);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Xq: \n");CHKERRQ(ierr);
-  ierr = VecView(Xq,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Xh: \n");CHKERRQ(ierr);
-  ierr = VecView(Xh,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* 6. Create isfrom for all pipe variables; Create scatter; Scatter to Xpipes */
+  for (i=0; i<numkeys; i++) {
+    blocksize[i] = -1; /* select all the variables of the i-th component */
+  }
+  ierr = DMNetworkCreateIS(networkdm,numkeys,&KeyPipe,blocksize,NULL,NULL,&isfrom);CHKERRQ(ierr);
+  ierr = ISDestroy(&isfrom);CHKERRQ(ierr);
+  ierr = DMNetworkCreateIS(networkdm,numkeys,&KeyPipe,NULL,NULL,NULL,&isfrom);CHKERRQ(ierr);
 
-  ierr = VecScatterDestroy(&ctx_q);CHKERRQ(ierr);
-  ierr = PetscFree4(idx1,idx2,idx1_h,idx2_h);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1_q);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2_q);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isfrom, &n);CHKERRQ(ierr);
+  ierr = VecCreate(comm,&Xto);CHKERRQ(ierr);
+  ierr = VecSetSizes(Xto,n,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(Xto);CHKERRQ(ierr);
+  ierr = VecSet(Xto,0.0);CHKERRQ(ierr);
 
-  ierr = VecScatterDestroy(&ctx_h);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1_h);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2_h);CHKERRQ(ierr);
+  ierr = VecScatterCreate(X,isfrom,Xto,NULL,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(ctx,X,Xto,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,X,Xto,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  ierr = ISDestroy(&isfrom);CHKERRQ(ierr);
 
-  ierr = VecDestroy(&Xq);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xh);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Xpipes:\n");CHKERRQ(ierr);
+  ierr = VecView(Xto,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* 7. Free spaces */
+  for (i=0; i<numkeys; i++) {
+    ierr = PetscFree(selectedvariables[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree3(blocksize,numselectedvariable,selectedvariables);CHKERRQ(ierr);
+  ierr = VecDestroy(&Xto);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ISJunctionsView(DM networkdm,PetscInt KeyJunc)
+{
+  PetscErrorCode ierr;
+  PetscInt       numkeys=1;
+  IS             isfrom;
+  MPI_Comm       comm;
+  PetscMPIInt    rank;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+
+  /* Create a global isfrom for all junction variables */
+  ierr = DMNetworkCreateIS(networkdm,numkeys,&KeyJunc,NULL,NULL,NULL,&isfrom);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"ISJunctions:\n");CHKERRQ(ierr);
+  ierr = ISView(isfrom,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISDestroy(&isfrom);CHKERRQ(ierr);
+
+  /* Create a local isfrom for all junction variables */
+  ierr = DMNetworkCreateLocalIS(networkdm,numkeys,&KeyJunc,NULL,NULL,NULL,&isfrom);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] ISLocalJunctions:\n",rank);CHKERRQ(ierr);
+    ierr = ISView(isfrom,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&isfrom);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -610,7 +641,7 @@ int main(int argc,char ** argv)
   TS                ts;
   PetscInt          steps=1;
   TSConvergedReason reason;
-  PetscBool         viewpipes,monipipes=PETSC_FALSE,userJac=PETSC_TRUE,viewdm=PETSC_FALSE,viewX=PETSC_FALSE;
+  PetscBool         viewpipes,viewjuncs,monipipes=PETSC_FALSE,userJac=PETSC_TRUE,viewdm=PETSC_FALSE,viewX=PETSC_FALSE;
   PetscInt          pipesCase=0;
   DMNetworkMonitor  monitor;
   MPI_Comm          comm;
@@ -802,12 +833,19 @@ int main(int argc,char ** argv)
     ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
 
-  /* View solution q and h */
-  /* --------------------- */
+  /* View solutions */
+  /* -------------- */
   viewpipes = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL, "-pipe_view", &viewpipes,NULL);CHKERRQ(ierr);
   if (viewpipes) {
-    ierr = PipesView(X,networkdm,wash);CHKERRQ(ierr);
+    ierr = PipesView(networkdm,KeyPipe,X);CHKERRQ(ierr);
+  }
+
+  /* Test IS */
+  viewjuncs = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL, "-isjunc_view", &viewjuncs,NULL);CHKERRQ(ierr);
+  if (viewjuncs) {
+    ierr = ISJunctionsView(networkdm,KeyJunction);CHKERRQ(ierr);
   }
 
   /* Free spaces */
@@ -852,48 +890,48 @@ int main(int argc,char ** argv)
    test:
       args: -ts_monitor -case 1 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -options_left no -viewX
       localrunfiles: pOption
-      output_file: output/pipes1_1.out
+      output_file: output/pipes_1.out
 
    test:
       suffix: 2
       nsize: 2
       args: -ts_monitor -case 1 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -petscpartitioner_type simple -options_left no -viewX
       localrunfiles: pOption
-      output_file: output/pipes1_2.out
+      output_file: output/pipes_2.out
 
    test:
       suffix: 3
       nsize: 2
       args: -ts_monitor -case 0 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -petscpartitioner_type simple -options_left no -viewX
       localrunfiles: pOption
-      output_file: output/pipes1_3.out
+      output_file: output/pipes_3.out
 
    test:
       suffix: 4
       args: -ts_monitor -case 2 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -options_left no -viewX
       localrunfiles: pOption
-      output_file: output/pipes1_4.out
+      output_file: output/pipes_4.out
 
    test:
       suffix: 5
       nsize: 3
       args: -ts_monitor -case 2 -ts_max_steps 10 -pc_factor_mat_solver_type mumps -petscpartitioner_type simple -options_left no -viewX
       localrunfiles: pOption
-      output_file: output/pipes1_5.out
+      output_file: output/pipes_5.out
 
    test:
       suffix: 6
       nsize: 2
       args: -ts_monitor -case 1 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -petscpartitioner_type simple -options_left no -wash_distribute 0 -viewX
       localrunfiles: pOption
-      output_file: output/pipes1_6.out
+      output_file: output/pipes_6.out
 
    test:
       suffix: 7
       nsize: 2
       args: -ts_monitor -case 2 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -petscpartitioner_type simple -options_left no -wash_distribute 0 -viewX
       localrunfiles: pOption
-      output_file: output/pipes1_7.out
+      output_file: output/pipes_7.out
 
    test:
       suffix: 8
@@ -901,6 +939,20 @@ int main(int argc,char ** argv)
       requires: parmetis
       args: -ts_monitor -case 2 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -petscpartitioner_type parmetis -options_left no -wash_distribute 1
       localrunfiles: pOption
-      output_file: output/pipes1_8.out
+      output_file: output/pipes_8.out
+
+   test:
+      suffix: 9
+      nsize: 2
+      args: -case 0 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -petscpartitioner_type simple -options_left no -wash_distribute 0 -pipe_view
+      localrunfiles: pOption
+      output_file: output/pipes_9.out
+
+   test:
+      suffix: 10
+      nsize: 2
+      args: -case 0 -ts_max_steps 1 -pc_factor_mat_solver_type mumps -petscpartitioner_type simple -options_left no -wash_distribute 0 -isjunc_view
+      localrunfiles: pOption
+      output_file: output/pipes_10.out
 
 TEST*/

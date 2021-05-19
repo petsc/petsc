@@ -1,9 +1,16 @@
+-include ../../../../petscdir.mk
+CFLAGS           =
+FFLAGS           =
+CPPFLAGS         =
+FPPFLAGS         =
+EXAMPLESC        = pipes.c pipeInterface.c pipeImpls.c
+LOCDIR           = src/ts/tutorials/network/
 
-LOCDIR		 = src/ts/tutorials/network/
-DIRS		 = wash
-MANSEC           = TS
+OBJECTS_PIPE = pipeInterface.o pipeImpls.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
 
+pipes: pipes.o $(OBJECTS_PIPE)
+
+include ${PETSC_DIR}/lib/petsc/conf/test
