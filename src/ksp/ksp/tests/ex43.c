@@ -74,9 +74,6 @@ int main(int argc,char **argv)
 
 /*TEST
 
-   build:
-      requires: cuda
-
    test:
       requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
       args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format ell -vec_type cuda -pc_type ilu
@@ -86,15 +83,23 @@ int main(int argc,char **argv)
       requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format hyb -vec_type cuda -ksp_type cg -pc_type icc
 
-   test:
-      suffix: 3
-      requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format csr -vec_type cuda -ksp_type bicg -pc_type ilu
+   testset:
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -ksp_type bicg -pc_type ilu
 
-   test:
-      suffix: 4
-      requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format csr -vec_type cuda -ksp_type bicg -pc_type ilu -pc_factor_mat_ordering_type nd
+      test:
+         suffix: 3
+         requires: cuda
+         args: -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format csr -vec_type cuda
+      test:
+         suffix: 4
+         requires: cuda
+         args: -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format csr -vec_type cuda -pc_factor_mat_ordering_type nd
+      test: # Test MatSolveTranspose
+         suffix: 3_kokkos
+         requires: kokkos_kernels
+         args: -mat_type seqaijkokkos -pc_factor_mat_solver_type kokkos -vec_type kokkos
+         output_file: output/ex43_3.out
 
    testset:
       nsize: 2
@@ -136,5 +141,11 @@ int main(int argc,char **argv)
       requires: viennacl datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijviennacl -pc_type none -vec_type viennacl
       output_file: output/ex43_7.out
+
+   test:
+      suffix: 10
+      nsize: 2
+      requires: kokkos_kernels datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type aijkokkos -vec_type kokkos
 
 TEST*/
