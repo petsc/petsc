@@ -90,6 +90,7 @@ Related toolkits/libraries that use PETSc
          framework, built on top of libMesh and PETSc
       -  `OOFEM <http://www.oofem.org>`__ object oriented finite element
          library
+      -  `OpenCarp <https://opencarp.org/>`__ Cardiac Electrophysiology Simulator
       -  `OpenFOAM <https://develop.openfoam.com/modules/external-solver>`__
          Available as an extension for linear solvers for OpenFOAM
       -  `OpenFVM <http://openfvm.sourceforge.net/>`__ finite volume
