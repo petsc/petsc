@@ -2892,7 +2892,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
 {
   PetscReal      volume = -1.0, extThickness = 1.0;
   PetscInt       prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
-  PetscBool      uniformOrig, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute = PETSC_FALSE, interpolate = PETSC_TRUE, extColOrder = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, isHierarchy, flg;
+  PetscBool      uniformOrig, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute = PETSC_FALSE, interpolate = PETSC_TRUE, extColOrder = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3063,6 +3063,17 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
         ((DM_Plex*) dm->data)->coordFunc = coordFunc;
       }
     }
+  }
+  /* Handle ghost cells */
+  ierr = PetscOptionsBool("-dm_plex_create_fv_ghost_cells", "Flag to create finite volume ghost cells on the boundary", "DMCreate", ghostCells, &ghostCells, NULL);CHKERRQ(ierr);
+  if (ghostCells) {
+    DM   gdm;
+    char lname[PETSC_MAX_PATH_LEN];
+
+    lname[0] = '\0';
+    ierr = PetscOptionsString("-dm_plex_fv_ghost_cells_label", "Label name for ghost cells boundary", "DMCreate", lname, lname, sizeof(lname), &flg);CHKERRQ(ierr);
+    ierr = DMPlexConstructGhostCells(dm, flg ? lname : NULL, NULL, &gdm);CHKERRQ(ierr);
+    ierr = DMPlexReplace_Static(dm, &gdm);CHKERRQ(ierr);
   }
   /* Handle */
   ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
