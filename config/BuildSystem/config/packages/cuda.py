@@ -173,15 +173,13 @@ class Configure(config.package.Package):
         try:
           valid = self.checkCompile()
         except Exception as e:
-          self.log.write('checkCompile on CUDA compile with gencode failed '+str(e)+'
-')
+          self.log.write('checkCompile on CUDA compile with gencode failed '+str(e)+'\n')
           self.popLanguage()
           self.setCompilers.CUDAFLAGS = cflags
           continue
         else:
           self.popLanguage()
-          self.log.write('Flag from checkCompile on CUDA compile with gencode '+str(valid)+'
-')
+          self.log.write('Flag from checkCompile on CUDA compile with gencode '+str(valid)+'\n')
           if not valid:
             self.setCompilers.CUDAFLAGS = cflags
             continue
