@@ -74,7 +74,7 @@ class Configure(config.package.Package):
           # how can we get the slepc lib? Eventually, we may want to use the variables from the framework
           #cxxflags += self.headers.toStringNoDupes(self.slepc.dinclude)
           #ldflags += self.libraries.toString(self.slepc.dlib)
-          dinclude = [incDir,self.headers.toString(self.dinclude),os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include'),os.path.join(self.petscdir.dir,'include'),os.path.join(self.packageDir,'include')]
+          dinclude = [incDir]+self.dinclude+[os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include'),os.path.join(self.petscdir.dir,'include'),os.path.join(self.packageDir,'include')]
           dlib = [os.path.join(libDir,'libslepc.'+self.setCompilers.sharedLibraryExt)]
           cxxflags += ' '+self.headers.toStringNoDupes(dinclude)
           ldflags += ' '+self.libraries.toStringNoDupes(dlib)
