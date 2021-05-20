@@ -1540,7 +1540,10 @@ PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
 PETSC_EXTERN PetscErrorCode PetscDLOpen(const char[],PetscDLMode,PetscDLHandle *);
 PETSC_EXTERN PetscErrorCode PetscDLClose(PetscDLHandle *);
 PETSC_EXTERN PetscErrorCode PetscDLSym(PetscDLHandle,const char[],void **);
-PETSC_EXTERN PetscErrorCode PetscDLAddr(void (*)(void), const char **);
+PETSC_EXTERN PetscErrorCode PetscDLAddr(void (*)(void), char **);
+#ifdef PETSC_HAVE_CXX
+PETSC_EXTERN PetscErrorCode PetscDemangleSymbol(const char *, char **);
+#endif
 
 #if defined(PETSC_USE_DEBUG)
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void*,PetscStack**);

@@ -242,7 +242,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
       /* TODO Replace with DMPlexGetCellFields() */
       for (k = 0; k < chunkSize*totDim; ++k) u[k] = 1.0;
       for (f = 0; f < Nf; ++f) {
-        PetscHashFormKey key;
+        PetscFormKey key;
         PetscFEGeom     *geom = affineGeom ? affineGeom : geoms[f];
         /* PetscQuadrature quad = affineQuad ? affineQuad : quads[f]; */
 

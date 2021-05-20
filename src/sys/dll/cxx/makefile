@@ -1,15 +1,16 @@
-
+#requiresdefine 'PETSC_HAVE_CXX'
 ALL: lib
+
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-SOURCEC	  = dlimpl.c dl.c   reg.c
+SOURCECXX = demangle.cxx
 SOURCEF	  =
 SOURCEH	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS      = cxx
-LOCDIR	  = src/sys/dll/
+DIRS      =
+LOCDIR	  = src/sys/dll/cxx
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

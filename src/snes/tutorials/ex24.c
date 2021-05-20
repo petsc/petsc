@@ -275,7 +275,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
       ierr = PetscDSSetResidual(ds, 1, f0_linear_u, NULL);CHKERRQ(ierr);
       ierr = DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd);CHKERRQ(ierr);
       ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-      ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, f0_bd_linear_q, 0, NULL);CHKERRQ(ierr);
+      ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_linear_q, 0, NULL);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 0, linear_q, user);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 1, linear_u, user);CHKERRQ(ierr);
       break;
@@ -283,7 +283,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
       ierr = PetscDSSetResidual(ds, 1, f0_quadratic_u, NULL);CHKERRQ(ierr);
       ierr = DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd);CHKERRQ(ierr);
       ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-      ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, f0_bd_quadratic_q, 0, NULL);CHKERRQ(ierr);
+      ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_quadratic_q, 0, NULL);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 0, quadratic_q, user);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 1, quadratic_u, user);CHKERRQ(ierr);
       break;

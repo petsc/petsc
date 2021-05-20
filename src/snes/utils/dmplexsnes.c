@@ -1,7 +1,6 @@
 #include <petsc/private/dmpleximpl.h>   /*I "petscdmplex.h" I*/
 #include <petsc/private/snesimpl.h>     /*I "petscsnes.h"   I*/
 #include <petscds.h>
-#include <petscblaslapack.h>
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/petscfeimpl.h>
 
@@ -1211,11 +1210,12 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
-    PetscHashFormKey key;
+    PetscFormKey key;
 
     ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
     key.value = 0;
     key.field = 0;
+    key.part  = 0;
     if (!key.label) {
       ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
       cellIS = allcellIS;
@@ -1253,23 +1253,23 @@ PetscErrorCode DMSNESComputeResidual(DM dm, Vec X, Vec F, void *user)
 
     ierr = DMGetRegionNumDS(dm, s, &label, NULL, &ds);CHKERRQ(ierr);
     {
-      PetscHMapForm     resmap[2] = {ds->wf->f0, ds->wf->f1};
+      PetscWeakFormKind resmap[2] = {PETSC_WF_F0, PETSC_WF_F1};
       PetscWeakForm     wf;
       PetscInt          Nm = 2, m, Nk = 0, k, kp, off = 0;
-      PetscHashFormKey *reskeys;
+      PetscFormKey *reskeys;
 
       /* Get unique residual keys */
       for (m = 0; m < Nm; ++m) {
         PetscInt Nkm;
-        ierr = PetscHMapFormGetSize(resmap[m], &Nkm);CHKERRQ(ierr);
+        ierr = PetscHMapFormGetSize(ds->wf->form[resmap[m]], &Nkm);CHKERRQ(ierr);
         Nk  += Nkm;
       }
       ierr = PetscMalloc1(Nk, &reskeys);CHKERRQ(ierr);
       for (m = 0; m < Nm; ++m) {
-        ierr = PetscHMapFormGetKeys(resmap[m], &off, reskeys);CHKERRQ(ierr);
+        ierr = PetscHMapFormGetKeys(ds->wf->form[resmap[m]], &off, reskeys);CHKERRQ(ierr);
       }
       if (off != Nk) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %D should be %D", off, Nk);
-      ierr = PetscHashFormKeySort(Nk, reskeys);CHKERRQ(ierr);
+      ierr = PetscFormKeySort(Nk, reskeys);CHKERRQ(ierr);
       for (k = 0, kp = 1; kp < Nk; ++kp) {
         if ((reskeys[k].label != reskeys[kp].label) || (reskeys[k].value != reskeys[kp].value)) {
           ++k;
@@ -1331,185 +1331,90 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 }
 
 /*@
-  DMPlexComputeJacobianAction - Form the local portion of the Jacobian action Z = J(X) Y at the local solution X using pointwise functions specified by the user.
+  DMSNESComputeJacobianAction - Compute the action of the Jacobian J(X) on Y
 
   Input Parameters:
-+ dm - The mesh
-. cellIS -
-. t  - The time
-. X_tShift - The multiplier for the Jacobian with repsect to X_t
-. X  - Local solution vector
-. X_t  - Time-derivative of the local solution vector
-. Y  - Local input vector
++ dm   - The DM
+. X    - Local solution vector
+. Y    - Local input vector
 - user - The user context
 
   Output Parameter:
-. Z - Local output vector
-
-  Note:
-  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
-  like a GPU, or vectorize on a multicore machine.
+. F    - lcoal output vector
 
   Level: developer
 
-.seealso: FormFunctionLocal()
+  Notes:
+  Users will typically use DMSNESCreateJacobianMF() followed by MatMult() instead of calling this routine directly.
+
+.seealso: DMSNESCreateJacobianMF()
 @*/
-PetscErrorCode DMPlexComputeJacobianAction(DM dm, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
+PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *user)
 {
-  DM_Plex          *mesh  = (DM_Plex *) dm->data;
-  const char       *name  = "Jacobian";
-  DM                dmAux = NULL, plex, plexAux = NULL;
-  DMEnclosureType   encAux;
-  Vec               A;
-  PetscDS           prob, probAux = NULL;
-  PetscQuadrature   quad;
-  PetscSection      section, globalSection, sectionAux;
-  PetscScalar      *elemMat, *elemMatD, *u, *u_t, *a = NULL, *y, *z;
-  PetscInt          Nf, fieldI, fieldJ;
-  PetscInt          totDim, totDimAux = 0;
-  const PetscInt   *cells;
-  PetscInt          cStart, cEnd, numCells, c;
-  PetscBool         hasDyn;
-  DMField           coordField;
-  PetscHashFormKey  key;
-  PetscErrorCode    ierr;
+  DM             plex;
+  IS             allcellIS;
+  PetscInt       Nds, s;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMSNESConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
-  if (!cellIS) {
-    PetscInt depth;
+  ierr = DMPlexGetAllCells_Internal(plex, &allcellIS);CHKERRQ(ierr);
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  for (s = 0; s < Nds; ++s) {
+    PetscDS ds;
+    DMLabel label;
+    IS      cellIS;
 
-    ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-    ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
-    if (!cellIS) {ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);}
-  } else {
-    ierr = PetscObjectReference((PetscObject) cellIS);CHKERRQ(ierr);
-  }
-  key.label = NULL;
-  key.value = 0;
-  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMGetGlobalSection(dm, &globalSection);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(cellIS, &numCells);CHKERRQ(ierr);
-  ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
-  ierr = DMGetCellDS(dm, cells ? cells[cStart] : cStart, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscDSHasDynamicJacobian(prob, &hasDyn);CHKERRQ(ierr);
-  hasDyn = hasDyn && (X_tShift != 0.0) ? PETSC_TRUE : PETSC_FALSE;
-  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &A);CHKERRQ(ierr);
-  if (A) {
-    ierr = VecGetDM(A, &dmAux);CHKERRQ(ierr);
-    ierr = DMGetEnclosureRelation(dmAux, dm, &encAux);CHKERRQ(ierr);
-    ierr = DMConvert(dmAux, DMPLEX, &plexAux);CHKERRQ(ierr);
-    ierr = DMGetLocalSection(plexAux, &sectionAux);CHKERRQ(ierr);
-    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
-    ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
-  }
-  ierr = VecSet(Z, 0.0);CHKERRQ(ierr);
-  ierr = PetscMalloc6(numCells*totDim,&u,X_t ? numCells*totDim : 0,&u_t,numCells*totDim*totDim,&elemMat,hasDyn ? numCells*totDim*totDim : 0, &elemMatD,numCells*totDim,&y,totDim,&z);CHKERRQ(ierr);
-  if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
-  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    const PetscInt cell = cells ? cells[c] : c;
-    const PetscInt cind = c - cStart;
-    PetscScalar   *x = NULL,  *x_t = NULL;
-    PetscInt       i;
+    ierr = DMGetRegionNumDS(dm, s, &label, NULL, &ds);CHKERRQ(ierr);
+    {
+      PetscWeakFormKind jacmap[4] = {PETSC_WF_G0, PETSC_WF_G1, PETSC_WF_G2, PETSC_WF_G3};
+      PetscWeakForm     wf;
+      PetscInt          Nm = 4, m, Nk = 0, k, kp, off = 0;
+      PetscFormKey *jackeys;
 
-    ierr = DMPlexVecGetClosure(dm, section, X, cell, NULL, &x);CHKERRQ(ierr);
-    for (i = 0; i < totDim; ++i) u[cind*totDim+i] = x[i];
-    ierr = DMPlexVecRestoreClosure(dm, section, X, cell, NULL, &x);CHKERRQ(ierr);
-    if (X_t) {
-      ierr = DMPlexVecGetClosure(dm, section, X_t, cell, NULL, &x_t);CHKERRQ(ierr);
-      for (i = 0; i < totDim; ++i) u_t[cind*totDim+i] = x_t[i];
-      ierr = DMPlexVecRestoreClosure(dm, section, X_t, cell, NULL, &x_t);CHKERRQ(ierr);
-    }
-    if (dmAux) {
-      PetscInt subcell;
-      ierr = DMGetEnclosurePoint(dmAux, dm, encAux, cell, &subcell);CHKERRQ(ierr);
-      ierr = DMPlexVecGetClosure(plexAux, sectionAux, A, subcell, NULL, &x);CHKERRQ(ierr);
-      for (i = 0; i < totDimAux; ++i) a[cind*totDimAux+i] = x[i];
-      ierr = DMPlexVecRestoreClosure(plexAux, sectionAux, A, subcell, NULL, &x);CHKERRQ(ierr);
-    }
-    ierr = DMPlexVecGetClosure(dm, section, Y, cell, NULL, &x);CHKERRQ(ierr);
-    for (i = 0; i < totDim; ++i) y[cind*totDim+i] = x[i];
-    ierr = DMPlexVecRestoreClosure(dm, section, Y, cell, NULL, &x);CHKERRQ(ierr);
-  }
-  ierr = PetscArrayzero(elemMat, numCells*totDim*totDim);CHKERRQ(ierr);
-  if (hasDyn)  {ierr = PetscArrayzero(elemMatD, numCells*totDim*totDim);CHKERRQ(ierr);}
-  for (fieldI = 0; fieldI < Nf; ++fieldI) {
-    PetscFE  fe;
-    PetscInt Nb;
-    /* Conforming batches */
-    PetscInt numChunks, numBatches, numBlocks, Ne, blockSize, batchSize;
-    /* Remainder */
-    PetscInt Nr, offset, Nq;
-    PetscQuadrature qGeom = NULL;
-    PetscInt    maxDegree;
-    PetscFEGeom *cgeomFEM, *chunkGeom = NULL, *remGeom = NULL;
-
-    ierr = PetscDSGetDiscretization(prob, fieldI, (PetscObject *) &fe);CHKERRQ(ierr);
-    ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
-    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
-    ierr = DMFieldGetDegree(coordField,cellIS,NULL,&maxDegree);CHKERRQ(ierr);
-    if (maxDegree <= 1) {ierr = DMFieldCreateDefaultQuadrature(coordField,cellIS,&qGeom);CHKERRQ(ierr);}
-    if (!qGeom) {
-      ierr = PetscFEGetQuadrature(fe,&qGeom);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject)qGeom);CHKERRQ(ierr);
-    }
-    ierr = PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMSNESGetFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
-    blockSize = Nb;
-    batchSize = numBlocks * blockSize;
-    ierr = PetscFESetTileSizes(fe, blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
-    numChunks = numCells / (numBatches*batchSize);
-    Ne        = numChunks*numBatches*batchSize;
-    Nr        = numCells % (numBatches*batchSize);
-    offset    = numCells - Nr;
-    ierr = PetscFEGeomGetChunk(cgeomFEM,0,offset,&chunkGeom);CHKERRQ(ierr);
-    ierr = PetscFEGeomGetChunk(cgeomFEM,offset,numCells,&remGeom);CHKERRQ(ierr);
-    for (fieldJ = 0; fieldJ < Nf; ++fieldJ) {
-      key.field = fieldI*Nf + fieldJ;
-      ierr = PetscFEIntegrateJacobian(prob, PETSCFE_JACOBIAN, key, Ne, chunkGeom, u, u_t, probAux, a, t, X_tShift, elemMat);CHKERRQ(ierr);
-      ierr = PetscFEIntegrateJacobian(prob, PETSCFE_JACOBIAN, key, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
-      if (hasDyn) {
-        ierr = PetscFEIntegrateJacobian(prob, PETSCFE_JACOBIAN_DYN, key, Ne, chunkGeom, u, u_t, probAux, a, t, X_tShift, elemMatD);CHKERRQ(ierr);
-        ierr = PetscFEIntegrateJacobian(prob, PETSCFE_JACOBIAN_DYN, key, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, X_tShift, &elemMatD[offset*totDim*totDim]);CHKERRQ(ierr);
+      /* Get unique Jacobian keys */
+      for (m = 0; m < Nm; ++m) {
+        PetscInt Nkm;
+        ierr = PetscHMapFormGetSize(ds->wf->form[jacmap[m]], &Nkm);CHKERRQ(ierr);
+        Nk  += Nkm;
       }
-    }
-    ierr = PetscFEGeomRestoreChunk(cgeomFEM,offset,numCells,&remGeom);CHKERRQ(ierr);
-    ierr = PetscFEGeomRestoreChunk(cgeomFEM,0,offset,&chunkGeom);CHKERRQ(ierr);
-    ierr = DMSNESRestoreFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
-    ierr = PetscQuadratureDestroy(&qGeom);CHKERRQ(ierr);
-  }
-  if (hasDyn) {
-    for (c = 0; c < numCells*totDim*totDim; ++c) elemMat[c] += X_tShift*elemMatD[c];
-  }
-  for (c = cStart; c < cEnd; ++c) {
-    const PetscInt     cell = cells ? cells[c] : c;
-    const PetscInt     cind = c - cStart;
-    const PetscBLASInt M = totDim, one = 1;
-    const PetscScalar  a = 1.0, b = 0.0;
+      ierr = PetscMalloc1(Nk, &jackeys);CHKERRQ(ierr);
+      for (m = 0; m < Nm; ++m) {
+        ierr = PetscHMapFormGetKeys(ds->wf->form[jacmap[m]], &off, jackeys);CHKERRQ(ierr);
+      }
+      if (off != Nk) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %D should be %D", off, Nk);
+      ierr = PetscFormKeySort(Nk, jackeys);CHKERRQ(ierr);
+      for (k = 0, kp = 1; kp < Nk; ++kp) {
+        if ((jackeys[k].label != jackeys[kp].label) || (jackeys[k].value != jackeys[kp].value)) {
+          ++k;
+          if (kp != k) jackeys[k] = jackeys[kp];
+        }
+      }
+      Nk = k;
 
-    PetscStackCallBLAS("BLASgemv", BLASgemv_("N", &M, &M, &a, &elemMat[cind*totDim*totDim], &M, &y[cind*totDim], &one, &b, z, &one));
-    if (mesh->printFEM > 1) {
-      ierr = DMPrintCellMatrix(c, name, totDim, totDim, &elemMat[cind*totDim*totDim]);CHKERRQ(ierr);
-      ierr = DMPrintCellVector(c, "Y",  totDim, &y[cind*totDim]);CHKERRQ(ierr);
-      ierr = DMPrintCellVector(c, "Z",  totDim, z);CHKERRQ(ierr);
+      ierr = PetscDSGetWeakForm(ds, &wf);CHKERRQ(ierr);
+      for (k = 0; k < Nk; ++k) {
+        DMLabel  label = jackeys[k].label;
+        PetscInt val   = jackeys[k].value;
+
+        if (!label) {
+          ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
+          cellIS = allcellIS;
+        } else {
+          IS pointIS;
+
+          ierr = DMLabelGetStratumIS(label, val, &pointIS);CHKERRQ(ierr);
+          ierr = ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS);CHKERRQ(ierr);
+          ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+        }
+        ierr = DMPlexComputeJacobian_Action_Internal(plex, jackeys[k], cellIS, 0.0, 0.0, X, NULL, Y, F, user);CHKERRQ(ierr);
+        ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(jackeys);CHKERRQ(ierr);
     }
-    ierr = DMPlexVecSetClosure(dm, section, Z, cell, z, ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = PetscFree6(u,u_t,elemMat,elemMatD,y,z);CHKERRQ(ierr);
-  if (mesh->printFEM) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)Z), "Z:\n");CHKERRQ(ierr);
-    ierr = VecView(Z, NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(a);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
-  ierr = DMDestroy(&plexAux);CHKERRQ(ierr);
+  ierr = ISDestroy(&allcellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1547,11 +1452,12 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
-    PetscHashFormKey key;
+    PetscFormKey key;
 
     ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
     key.value = 0;
     key.field = 0;
+    key.part  = 0;
     if (!key.label) {
       ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
       cellIS = allcellIS;
@@ -1574,6 +1480,82 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
   }
   ierr = ISDestroy(&allcellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+struct _DMSNESJacobianMFCtx
+{
+  DM    dm;
+  Vec   X;
+  void *ctx;
+};
+
+static PetscErrorCode DMSNESJacobianMF_Destroy_Private(Mat A)
+{
+  struct _DMSNESJacobianMFCtx *ctx;
+  PetscErrorCode               ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A, (void **) &ctx);CHKERRQ(ierr);
+  ierr = MatShellSetContext(A, NULL);CHKERRQ(ierr);
+  ierr = DMDestroy(&ctx->dm);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->X);CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMSNESJacobianMF_Mult_Private(Mat A, Vec Y, Vec Z)
+{
+  struct _DMSNESJacobianMFCtx *ctx;
+  PetscErrorCode               ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A, (void **) &ctx);CHKERRQ(ierr);
+  ierr = DMSNESComputeJacobianAction(ctx->dm, ctx->X, Y, Z, ctx->ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSNESCreateJacobianMF - Create a Mat which computes the action of the Jacobian matrix-free
+
+  Collective on dm
+
+  Input Parameters:
++ dm   - The DM
+. X    - The evaluation point for the Jacobian
+- user - A user context, or NULL
+
+  Output Parameter:
+. J    - The Mat
+
+  Level: advanced
+
+  Notes:
+  Vec X is kept in Mat J, so updating X then updates the evaluation point.
+
+.seealso: DMSNESComputeJacobianAction()
+@*/
+PetscErrorCode DMSNESCreateJacobianMF(DM dm, Vec X, void *user, Mat *J)
+{
+  struct _DMSNESJacobianMFCtx *ctx;
+  PetscInt                     n, N;
+  PetscErrorCode               ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject) dm), J);CHKERRQ(ierr);
+  ierr = MatSetType(*J, MATSHELL);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
+  ierr = VecGetSize(X, &N);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J, n, n, N, N);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) X);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1, &ctx);CHKERRQ(ierr);
+  ctx->dm  = dm;
+  ctx->X   = X;
+  ctx->ctx = user;
+  ierr = MatShellSetContext(*J, ctx);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J, MATOP_DESTROY, (void (*)(void)) DMSNESJacobianMF_Destroy_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J, MATOP_MULT,    (void (*)(void)) DMSNESJacobianMF_Mult_Private);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

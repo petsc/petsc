@@ -122,6 +122,8 @@ Changes: Development
 - Remove ``DMPlexCreateReferenceCellByType()``
 - The number of refinements is no longer an argument to ``DMPlexCreateHexCylinderMesh()``
 - Add ``DMSetLabel()``
+- Replace ``DMPlexComputeJacobianAction()`` with ``DMSNESComputeJacobianAction()``
+- Add ``DMSNESCreateJacobianMF()``
 
 .. rubric:: FE/FV:
 
@@ -133,7 +135,7 @@ Changes: Development
 
 .. rubric:: DT:
 
--  Add ``PetscWeakFormCopy()`` and ``PetscWeakFormRewriteKeys()``
+-  Add ``PetscWeakFormCopy()``, ``PetscWeakFormClear()``, ``PetscWeakFormRewriteKeys()`` and ``PetscWeakFormClearIndex()``
 -  Add ``PetscDSDestroyBoundary()`` and ``PetscDSCopyExactSolutions()``
 
 .. rubric:: Fortran:

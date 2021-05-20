@@ -1970,7 +1970,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     id = 1;
     ierr = DMAddBoundary(dm, DM_BC_NATURAL, "vertical stress",   label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd);CHKERRQ(ierr);
     ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, f0_terzaghi_bd_u, 0, NULL);CHKERRQ(ierr);
+    ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_terzaghi_bd_u, 0, NULL);CHKERRQ(ierr);
 
     id = 3;
     comp[0] = 1;
@@ -2040,7 +2040,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     id = 1;
     ierr = DMAddBoundary(dm, DM_BC_NATURAL,   "normal stress",   label, 1, &id, 0, 0, NULL, NULL,                                     NULL, user, &bd);CHKERRQ(ierr);
     ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, f0_cryer_bd_u, 0, NULL);CHKERRQ(ierr);
+    ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_cryer_bd_u, 0, NULL);CHKERRQ(ierr);
 
     ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 1, &id, 2, 0, NULL, (void (*)(void)) cryer_drainage_pressure, NULL, user, NULL);CHKERRQ(ierr);
     break;

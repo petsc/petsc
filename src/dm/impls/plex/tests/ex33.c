@@ -3,8 +3,8 @@ static char help[] = "Tests for high order geometry\n\n";
 #include <petscdmplex.h>
 #include <petscds.h>
 
-typedef enum {TRANSFORM_NONE, TRANSFORM_SHEAR, TRANSFORM_ANNULUS, TRANSFORM_SHELL} Transform;
-const char * const TransformTypes[] = {"none", "shear", "annulus", "shell", "Mesh Transform", "TRANSFORM_", NULL};
+typedef enum {TRANSFORM_NONE, TRANSFORM_SHEAR, TRANSFORM_FLARE, TRANSFORM_ANNULUS, TRANSFORM_SHELL} Transform;
+const char * const TransformTypes[] = {"none", "shear", "flare", "annulus", "shell", "Mesh Transform", "TRANSFORM_", NULL};
 
 typedef struct {
   PetscBool   coordSpace;         /* Flag to create coordinate space */
@@ -39,6 +39,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
       for (i = 0; i < n; ++i) options->transformDataReal[i] = 1.0;
       ierr = PetscOptionsRealArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformDataReal, &n, NULL);CHKERRQ(ierr);
       break;
+    case TRANSFORM_FLARE:
+      n = 4;
+      ierr = PetscMalloc1(n, &options->transformData);CHKERRQ(ierr);
+      for (i = 0; i < n; ++i) options->transformData[i] = 1.0;
+      options->transformData[0] = (PetscScalar) 0;
+      ierr = PetscOptionsScalarArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformData, &n, NULL);CHKERRQ(ierr);
+      break;
     case TRANSFORM_ANNULUS:
       n = 2;
       ierr = PetscMalloc1(n, &options->transformData);CHKERRQ(ierr);
@@ -70,6 +77,24 @@ static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscInt       c;
 
   for (c = 0; c < Nc; ++c) f0[c] = u[c];
+}
+
+/* Flare applies the transformation, assuming we fix x_f,
+
+   x_i = x_i * alpha_i x_f
+*/
+static void f0_flare(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                     PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar coords[])
+{
+  const PetscInt Nc = uOff[1]-uOff[0];
+  const PetscInt cf = (PetscInt) PetscRealPart(constants[0]);
+  PetscInt       c;
+
+  for (c = 0; c < Nc; ++c) {
+    coords[c] = u[c] * (c == cf ? 1.0 : constants[c+1]*u[cf]);
+  }
 }
 
 /*
@@ -160,6 +185,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
       break;
     case TRANSFORM_SHEAR:
       ierr = DMPlexShearGeometry(*dm, DM_X, ctx->transformDataReal);CHKERRQ(ierr);
+      break;
+    case TRANSFORM_FLARE:
+      ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
+      ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
+      ierr = PetscDSSetConstants(cds, 4, ctx->transformData);CHKERRQ(ierr);
+      ierr = DMPlexRemapGeometry(*dm, 0.0, f0_flare);CHKERRQ(ierr);
       break;
     case TRANSFORM_ANNULUS:
       ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
@@ -325,6 +356,18 @@ int main(int argc, char **argv)
     test:
       suffix: shear_7
       args: -dm_refine 1 -dm_coord_petscspace_degree 2 -mesh_transform shear -transform_data 3.0,4.0
+
+  testset:
+    args: -dm_coord_space 0 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower 1.,-1. -dm_plex_box_upper 3.,1. \
+          -dm_coord_petscspace_degree 1 -mesh_transform flare -volume 8.
+
+    test:
+      suffix: flare_0
+      args:
+
+    test:
+      suffix: flare_1
+      args: -dm_refine 2
 
   testset:
     # Area: 3/4 \pi = 2.3562
