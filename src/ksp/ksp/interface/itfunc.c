@@ -622,7 +622,7 @@ PetscErrorCode KSPConvergedRateView(KSP ksp, PetscViewer viewer)
 {
   PetscViewerFormat format;
   PetscBool         isAscii;
-  PetscReal         rrate, rRsq, erate, eRsq;
+  PetscReal         rrate, rRsq, erate = 0.0, eRsq = 0.0;
   PetscInt          its;
   const char       *prefix, *reason = KSPConvergedReasons[ksp->reason];
   PetscErrorCode    ierr;
