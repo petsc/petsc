@@ -725,6 +725,18 @@ cdef class Mat(Object):
         CHKERR( MatTranspose(self.mat, reuse, &out.mat) )
         return out
 
+    def hermitianTranspose(self, Mat out=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        if out is None: out = self
+        if out.mat == self.mat:
+            reuse = MAT_INPLACE_MATRIX
+        elif out.mat == NULL:
+            reuse = MAT_INITIAL_MATRIX
+        else:
+            reuse = MAT_REUSE_MATRIX
+        CHKERR( MatHermitianTranspose(self.mat, reuse, &out.mat) )
+        return out
+
     def realPart(self, Mat out=None):
         if out is None:
             out = self
