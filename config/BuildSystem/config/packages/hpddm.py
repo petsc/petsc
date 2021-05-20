@@ -35,8 +35,8 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    if self.blasLapack.mkl and not self.checkInclude(self.blasLapack.include, ['mkl_spblas.h']): # cannot use config.packages.mkl_sparse since it requires32bitint = 1
-      raise RuntimeError('Cannot use HPDDM with the MKL but no \'mkl_spblas.h\', check for missing --with-blaslapack-include=/opt/intel/mkl/include (or similar)')
+    if self.blasLapack.mkl and not self.blasLapack.mkl_spblas_h:
+      raise RuntimeError('Cannot use HPDDM with the MKL as \'mkl_spblas.h\' was not found, check for missing --with-blaslapack-include=/opt/intel/mkl/include (or similar)')
     buildDir = os.path.join(self.packageDir,'petsc-build')
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
