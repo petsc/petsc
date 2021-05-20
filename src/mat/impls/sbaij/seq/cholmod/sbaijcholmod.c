@@ -168,7 +168,7 @@ static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,PetscBool values,cholmod_spa
 #define GET_ARRAY_READ 0
 #define GET_ARRAY_WRITE 1
 
-static PetscErrorCode VecWrapCholmod(Vec X,PetscInt rw,cholmod_dense *Y)
+PetscErrorCode VecWrapCholmod(Vec X,PetscInt rw,cholmod_dense *Y)
 {
   PetscErrorCode ierr;
   PetscScalar    *x;
@@ -199,7 +199,7 @@ static PetscErrorCode VecWrapCholmod(Vec X,PetscInt rw,cholmod_dense *Y)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecUnWrapCholmod(Vec X,PetscInt rw,cholmod_dense *Y)
+PetscErrorCode VecUnWrapCholmod(Vec X,PetscInt rw,cholmod_dense *Y)
 {
   PetscErrorCode    ierr;
 
@@ -218,7 +218,7 @@ static PetscErrorCode VecUnWrapCholmod(Vec X,PetscInt rw,cholmod_dense *Y)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDenseWrapCholmod(Mat X,PetscInt rw,cholmod_dense *Y)
+PetscErrorCode MatDenseWrapCholmod(Mat X,PetscInt rw,cholmod_dense *Y)
 {
   PetscErrorCode ierr;
   PetscScalar    *x;
@@ -250,7 +250,7 @@ static PetscErrorCode MatDenseWrapCholmod(Mat X,PetscInt rw,cholmod_dense *Y)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDenseUnWrapCholmod(Mat X,PetscInt rw,cholmod_dense *Y)
+PetscErrorCode MatDenseUnWrapCholmod(Mat X,PetscInt rw,cholmod_dense *Y)
 {
   PetscErrorCode    ierr;
 
@@ -276,8 +276,17 @@ PETSC_INTERN PetscErrorCode  MatDestroy_CHOLMOD(Mat F)
   Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->data;
 
   PetscFunctionBegin;
-  ierr = !cholmod_X_free_factor(&chol->factor,chol->common);CHKERRQ(ierr);
-  ierr = !cholmod_X_finish(chol->common);CHKERRQ(ierr);
+  if (chol->spqrfact) {
+    ierr = !SuiteSparseQR_C_free(&chol->spqrfact, chol->common);CHKERRQ(ierr);
+  }
+  if (chol->factor) {
+    ierr = !cholmod_X_free_factor(&chol->factor,chol->common);CHKERRQ(ierr);
+  }
+  if (chol->common->itype == CHOLMOD_INT) {
+    ierr = !cholmod_finish(chol->common);CHKERRQ(ierr);
+  } else {
+    ierr = !cholmod_l_finish(chol->common);CHKERRQ(ierr);
+  }
   ierr = PetscFree(chol->common);CHKERRQ(ierr);
   ierr = PetscFree(chol->matrix);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)F,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);

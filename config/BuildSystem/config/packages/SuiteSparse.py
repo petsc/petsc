@@ -10,12 +10,12 @@ class Configure(config.package.Package):
     self.gitcommit         = 'v'+self.version
     self.download          = ['git://https://github.com/DrTimothyAldenDavis/SuiteSparse','https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/'+self.gitcommit+'.tar.gz']
     self.download_solaris  = ['https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v5.6.0.tar.gz']
-    self.liblist           = [['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a'],
-                             ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a','librt.a'],
-                             ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a'],
-                             ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a','librt.a']]
-    self.functions         = ['umfpack_dl_wsolve','cholmod_l_solve','klu_l_solve']
-    self.includes          = ['umfpack.h','cholmod.h','klu.h']
+    self.liblist           = [['libspqr.a','libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a'],
+                             ['libspqr.a','libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a','librt.a'],
+                             ['libspqr.a','libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a'],
+                             ['libspqr.a','libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a','librt.a']]
+    self.functions         = ['umfpack_dl_wsolve','cholmod_l_solve','klu_l_solve','SuiteSparseQR_C_solve']
+    self.includes          = ['umfpack.h','cholmod.h','klu.h','SuiteSparseQR_C.h']
     self.hastests          = 1
     self.hastestsdatafiles = 1
     self.precisions        = ['double']
@@ -155,6 +155,7 @@ class Configure(config.package.Package):
           output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD            && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
           output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK            && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
           output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU                && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SPQR               && '+makewithargs+' clean && '+makewithargs+' library && '+self.installSudo+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
         else:
           output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' *h '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' libsuitesparseconfig.* '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
           output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD                && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','amd.h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
@@ -165,6 +166,7 @@ class Configure(config.package.Package):
           output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD            && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libcholmod.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
           output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK            && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libumfpack.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
           output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU                && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libklu.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SPQR               && '+makewithargs+' clean && '+makewithargs+' static && '+self.installSudo+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.installSudo+self.programs.cp+' '+os.path.join('Lib','libspqr.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
 
         self.addDefine('HAVE_SUITESPARSE',1)
       except RuntimeError as e:

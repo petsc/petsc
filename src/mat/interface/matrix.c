@@ -4515,7 +4515,8 @@ PetscErrorCode MatFactorGetSolverType(Mat mat, MatSolverType *type)
 typedef struct _MatSolverTypeForSpecifcType* MatSolverTypeForSpecifcType;
 struct _MatSolverTypeForSpecifcType {
   MatType                        mtype;
-  PetscErrorCode                 (*createfactor[MAT_FACTOR_NUM_TYPES])(Mat,MatFactorType,Mat*);
+  /* no entry for MAT_FACTOR_NONE */
+  PetscErrorCode                 (*createfactor[MAT_FACTOR_NUM_TYPES-1])(Mat,MatFactorType,Mat*);
   MatSolverTypeForSpecifcType next;
 };
 
