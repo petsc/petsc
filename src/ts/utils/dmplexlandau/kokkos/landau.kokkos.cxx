@@ -1,7 +1,6 @@
 /*
   Implements the Kokkos kernel
 */
-#define PETSC_SKIP_CXX_COMPLEX_FIX
 #include <petscconf.h>
 #include <petscvec_kokkos.hpp>
 #include <petsc/private/dmpleximpl.h>   /*I   "petscdmplex.h"   I*/
