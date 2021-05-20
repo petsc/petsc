@@ -989,7 +989,6 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(
   cublasHandle_t    cublasv2handle;
   PetscBool         Aiscuda,Biscuda;
   cublasStatus_t    berr;
-  cudaError_t       cerr;
 
   PetscFunctionBegin;
   /* we may end up with SEQDENSE as one of the arguments */
@@ -1193,7 +1192,6 @@ PetscErrorCode MatScale_SeqDenseCUDA(Mat Y,PetscScalar alpha)
   cublasHandle_t cublasv2handle;
   cublasStatus_t berr;
   PetscErrorCode ierr;
-  cudaError_t    cerr;
 
   PetscFunctionBegin;
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
@@ -1226,7 +1224,6 @@ PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y,PetscScalar alpha,Mat X,MatStructure s
   cublasHandle_t    cublasv2handle;
   cublasStatus_t    berr;
   PetscErrorCode    ierr;
-  cudaError_t       cerr;
 
   PetscFunctionBegin;
   if (!X->rmap->n || !X->cmap->n) PetscFunctionReturn(0);
