@@ -1036,7 +1036,7 @@ cdef class Mat(Object):
         cdef PetscInt nrows = asInt(len(rows))
         cdef PetscMatStencil st
         cdef _Mat_Stencil r
-        cdef PetscMatStencil *crows = NULL 
+        cdef PetscMatStencil *crows = NULL
         CHKERR( PetscMalloc(<size_t>(nrows+1)*sizeof(st), &crows) )
         for i in range(nrows):
             r = rows[i]
