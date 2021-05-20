@@ -97,6 +97,15 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
           if (i < 2) {ierr = PetscSleep(3);CHKERRQ(ierr);}
         }
         if (cerr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize the GPU");
+#if defined(PETSC_CUDA_GENERATION)
+        {
+          struct cudaDeviceProp dp;
+          int                   gen;
+          cerr = cudaGetDeviceProperties(&dp,devId);CHKERRCUPM(cerr);
+          gen  = 10*dp.major+dp.minor;
+          if (gen < PETSC_CUDA_GENERATION) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"PETSc compiled for NVIDIA generation %d but hardware is generation %d",PETSC_CUDA_GENERATION,gen);
+        }
+#endif
       } else if (cerr == cupmErrorSetOnActiveProcess) {
         /* It implies user has initialized device runtime outside of petsc. We do nothing to respect the device choice. */
       }

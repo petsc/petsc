@@ -129,39 +129,79 @@ class Configure(config.package.Package):
       if hasattr(self,'deviceQuery'):
         try:
           (out, err, ret) = Configure.executeShellCommand(self.deviceQuery + ' | grep "CUDA Capability"',timeout = 60, log = self.log, threads = 1)
-        except:
-          self.log.write('deviceQuery failed\n')
+        except Exception as e:
+          self.log.write('deviceQuery failed '+str(e)+'\n')
         else:
           try:
             out = out.split('\n')[0]
             sm = out[-3:]
             self.gencodearch = str(int(10*float(sm)))
           except:
-            self.log.write('Unable to parse CUDA capability\n')
+            self.log.write('Unable to parse CUDA capability from NVIDIA deviceQuery() demo\n')
+
+    if not hasattr(self,'gencodearch') and not self.argDB['with-batch']:
+        includes = '#include <stdio.h>\n\
+                    #include <cuda_runtime.h>\n\
+                    #include <cuda_runtime_api.h>\n\
+                    #include <cuda_device_runtime_api.h>'
+        body = 'cudaDeviceProp dp;\
+                cudaGetDeviceProperties(&dp, 0);\
+                printf("%d\\n",10*dp.major+dp.minor);\
+                return(0);'
+        self.pushLanguage('CUDA')
+        try:
+          (output,status) = self.outputRun(includes, body)
+        except Exception as e:
+          self.log.write('outputRun failed for CUDA generation '+str(e)+'\n')
+          self.popLanguage()
+        else:
+          self.popLanguage()
+          self.log.write('outputRun output with CUDA generation '+output+' status '+str(status)+'\n')
+          try:
+            gen = int(output)
+          except:
+            pass
+          else:
+            self.log.write('outputRun produced valid CUDA generation '+str(gen)+'\n')
+            self.gencodearch = str(gen)
 
     if not hasattr(self,'gencodearch'):
-      self.pushLanguage('CUDA')
       for gen in reversed(genArches):
+        self.pushLanguage('CUDA')
         cflags = self.setCompilers.CUDAFLAGS
         self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+gen+',code=sm_'+gen
         try:
-          valid = self.checkCompile('')
-          if valid:
+          valid = self.checkCompile()
+        except Exception as e:
+          self.log.write('checkCompile on CUDA compile with gencode failed '+str(e)+'
+')
+          self.popLanguage()
+          self.setCompilers.CUDAFLAGS = cflags
+          continue
+        else:
+          self.popLanguage()
+          self.log.write('Flag from checkCompile on CUDA compile with gencode '+str(valid)+'
+')
+          if not valid:
+            self.setCompilers.CUDAFLAGS = cflags
+            continue
+          else:
+            self.logPrintBox('***** WARNING: Cannot check if gencode '+str(gen)+' works for your hardware, assuming it does.\n\
+You may need to run ./configure with-cuda-gencodearch=numerical value (such as 70)\n\
+to set the right generation for your hardware.')
             self.gencodearch = gen
             self.setCompilers.CUDAFLAGS = cflags
             break
-        except:
-          pass
-        self.setCompilers.CUDAFLAGS = cflags
-      self.popLanguage()
 
     if hasattr(self,'gencodearch'):
       if self.gencodearch == 'all':
         for gen in genArches:
           self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+gen+',code=sm_'+gen+' '
           self.log.write(self.setCompilers.CUDAFLAGS+'\n')
+        self.addDefine('CUDA_GENERATION','0')
       else:
         self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+self.gencodearch+',code=sm_'+self.gencodearch+' '
+        self.addDefine('CUDA_GENERATION',self.gencodearch)
 
     self.addDefine('HAVE_CUDA','1')
     if not self.version_tuple:

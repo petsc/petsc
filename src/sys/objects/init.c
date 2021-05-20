@@ -23,6 +23,8 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 
 #if defined(PETSC_HAVE_CUDA)
   #include <cuda_runtime.h>
+  #include <cuda_runtime_api.h>
+  #include <cuda_device_runtime_api.h>
   #include <petsccublas.h>
 #endif
 
