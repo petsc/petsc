@@ -281,7 +281,7 @@ int main(int argc, char **argv)
   test:
     suffix: aijmkl_comp
     nsize: 4
-    requires: mkl
+    requires: mkl_sparse
     output_file: output/ex13_comparison.out
     args: -dm_plex_box_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
       -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -dm_distribute -petscpartitioner_type simple \
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
   test:
     suffix: aijmkl_seq
     nsize: 1
-    requires: mkl
+    requires: mkl_sparse
     TODO: broken (INDEFINITE PC)
     args: -dm_plex_box_dim 3 -dm_plex_box_faces 4,4,4 -dm_refine 1 -petscpartitioner_type simple -potential_petscspace_degree 1 -dm_distribute -dm_plex_box_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_sym_graph 0 -pc_gamg_threshold -1 -pc_gamg_square_graph 10 -pc_gamg_process_eq_limit 400 -pc_gamg_reuse_interpolation -pc_gamg_coarse_eq_limit 10 -mg_levels_esteig_ksp_type cg -mg_levels_pc_type jacobi -ksp_type cg -ksp_norm_type unpreconditioned -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl -dm_vec_type standard
 
