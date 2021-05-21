@@ -152,6 +152,8 @@ PETSC_EXTERN PetscErrorCode PetscFEGeomGetQuadrature(PetscFEGeom*,PetscQuadratur
 PETSC_EXTERN PetscErrorCode PetscFEGeomSetQuadrature(PetscFEGeom*,PetscQuadrature);
 PETSC_EXTERN PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom**);
 PETSC_EXTERN PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom**);
+PETSC_EXTERN PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom*,PetscInt,PetscInt,const PetscReal[],PetscFEGeom*);
+PETSC_EXTERN PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom*);
 PETSC_EXTERN PetscErrorCode PetscFEGeomComplete(PetscFEGeom*);
 PETSC_EXTERN PetscErrorCode PetscFEGeomDestroy(PetscFEGeom**);
 

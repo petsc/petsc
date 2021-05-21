@@ -132,6 +132,7 @@ Changes: Development
 -  Change ``PetscFEIntegrateBdResidual()`` and
    ``PetscFEIntegrateBdJacobian()`` to take both ``PetscWeakForm`` and form
    key
+- Add ``PetscFEGeomGetPoint()`` and ``PetscFEGeomGetCellPoint`` to package up geometry handling
 
 .. rubric:: DMNetwork:
 
