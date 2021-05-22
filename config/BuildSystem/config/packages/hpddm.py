@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = '83649864f2e9c60ab3db719a98bcb57c66c36c62' # main apr-26-2021
+    self.gitcommit              = '01bd3df5a5dcb657a257ee118af98ef15a78b816' # main may-20-2021
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '2.0.8'
     self.versionname            = 'HPDDM_VERSION'
@@ -34,8 +34,8 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    if self.blasLapack.mkl and not self.checkInclude(self.blasLapack.include, ['mkl_spblas.h']): # cannot use config.packages.mkl_sparse since it requires32bitint = 1
-      raise RuntimeError('Cannot use HPDDM with the MKL but no \'mkl_spblas.h\', check for missing --with-blaslapack-include=/opt/intel/mkl/include (or similar)')
+    if self.blasLapack.mkl and not self.blasLapack.mkl_spblas_h:
+      raise RuntimeError('Cannot use HPDDM with the MKL as \'mkl_spblas.h\' was not found, check for missing --with-blaslapack-include=/opt/intel/mkl/include (or similar)')
     buildDir = os.path.join(self.packageDir,'petsc-build')
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
@@ -73,7 +73,7 @@ class Configure(config.package.Package):
           # how can we get the slepc lib? Eventually, we may want to use the variables from the framework
           #cxxflags += self.headers.toStringNoDupes(self.slepc.dinclude)
           #ldflags += self.libraries.toString(self.slepc.dlib)
-          dinclude = [incDir,self.headers.toString(self.dinclude),os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include'),os.path.join(self.petscdir.dir,'include'),os.path.join(self.packageDir,'include')]
+          dinclude = [incDir]+self.dinclude+[os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include'),os.path.join(self.petscdir.dir,'include'),os.path.join(self.packageDir,'include')]
           dlib = [os.path.join(libDir,'libslepc.'+self.setCompilers.sharedLibraryExt)]
           cxxflags += ' '+self.headers.toStringNoDupes(dinclude)
           ldflags += ' '+self.libraries.toStringNoDupes(dlib)
@@ -87,15 +87,6 @@ class Configure(config.package.Package):
             cxxflags += ' -Dpetsc_EXPORTS'
             # need to explicitly link to PETSc and BLAS on Windows
             ldflags += ' '+self.libraries.toStringNoDupes([os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt),self.libraries.toStringNoDupes(self.blasLapack.lib)])
-          self.addMakeRule('hpddmcopy','',\
-                             ['@echo "*** Copying HPDDM ***"',\
-                              '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\
-                              '@'+cpstr+' > ${PETSC_ARCH}/lib/petsc/conf/hpddm.log 2>&1 || \\\n\
-                   (echo "**************************ERROR*************************************" && \\\n\
-                   echo "Error copying HPDDM. Check ${PETSC_ARCH}/lib/petsc/conf/hpddm.log" && \\\n\
-                   echo "********************************************************************" && \\\n\
-                   touch '+os.path.join('${PETSC_ARCH}','lib','petsc','conf','hpddm.errorflg')+' && \\\n\
-                   exit 1)'])
           self.addMakeRule('hpddmbuild',slepcbuilddep,\
                              ['@echo "*** Building and installing HPDDM ***"',\
                               '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\

@@ -781,7 +781,7 @@ linux-pkgs-64idx:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-64idx
-    LOAD_MODULES: cmake/3.15.5-fh74toq
+    LOAD_MODULES: cmake/3.15.5-fh74toq intel-mkl/19.5
 
 linux-64idx-i8:
   extends:
