@@ -443,7 +443,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
     if (prob->isHybrid && (f < Nf-1)) prob->totDim += Nb;
   }
   /* Allocate works space */
-  if (prob->isHybrid) NsMax = 2;
+  NsMax = 2; /* Even non-hybrid discretizations can be used in a hybrid integration, so we need this extra workspace */
   ierr = PetscMalloc3(NsMax*prob->totComp,&prob->u,NsMax*prob->totComp,&prob->u_t,NsMax*prob->totComp*dimEmbed + (hasH ? NsMax*prob->totComp*dimEmbed*dimEmbed : 0),&prob->u_x);CHKERRQ(ierr);
   ierr = PetscMalloc5(dimEmbed,&prob->x,NbMax*NcMax,&prob->basisReal,NbMax*NcMax*dimEmbed,&prob->basisDerReal,NbMax*NcMax,&prob->testReal,NbMax*NcMax*dimEmbed,&prob->testDerReal);CHKERRQ(ierr);
   ierr = PetscMalloc6(NsMax*NqMax*NcMax,&prob->f0,NsMax*NqMax*NcMax*dimEmbed,&prob->f1,
