@@ -7,11 +7,13 @@
 /* ========================================================================== */
 /*
    petscconf.h is contained in ${PETSC_ARCH}/include/petscconf.h it is
-   found automatically by the compiler due to the -I${PETSC_DIR}/${PETSC_ARCH}/include.
-   For --prefix installs the ${PETSC_ARCH}/ does not exist and petscconf.h is in the same
+   found automatically by the compiler due to the -I${PETSC_DIR}/${PETSC_ARCH}/include that
+   PETSc's makefiles add to the compiler rules.
+   For --prefix installs the directory ${PETSC_ARCH} does not exist and petscconf.h is in the same
    directory as the other PETSc include files.
 */
 #include <petscconf.h>
+#include <petscconf_poison.h>
 #include <petscfix.h>
 
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP) || defined(PETSC_HAVE_KOKKOS)
