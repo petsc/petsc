@@ -610,15 +610,20 @@ class Configure(config.base.Configure):
       self.popLanguage()
       raise RuntimeError(msg)
     oldlibs = self.LIBS
-    self.LIBS += ' -lpetsc-ufod4vtr9mqHvKIQiVAm'
-    if self.checkLink(linkLanguage=linkLanguage):
-      msg = language + ' compiler ' + self.getCompiler()+ ''' is broken! It is returning a zero error when the linking failed! Either
+    if linkLanguage: llang = linkLanguage
+    else: llang = language
+    compiler = self.framework.getCompilerObject(llang)
+    if not hasattr(compiler,'linkerrorcodecheck'):
+      self.LIBS += ' -lpetsc-ufod4vtr9mqHvKIQiVAm'
+      if self.checkLink(linkLanguage=linkLanguage):
+        msg = language + ' compiler ' + self.getCompiler()+ ''' is broken! It is returning a zero error when the linking failed! Either
  1) switch to another compiler suite or
  2) report this entire error message to your compiler/linker suite vendor and ask for fix for this issue.'''
-      self.popLanguage()
+        self.popLanguage()
+        self.LIBS = oldlibs
+        raise RuntimeError(msg)
       self.LIBS = oldlibs
-      raise RuntimeError(msg)
-    self.LIBS = oldlibs
+      compiler.linkerrorcodecheck = 1
     if not self.argDB['with-batch']:
       if not self.checkRun(linkLanguage=linkLanguage):
         msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your compiler \''+ self.getCompiler()+'\'?\n'
