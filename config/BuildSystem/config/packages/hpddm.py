@@ -88,15 +88,6 @@ class Configure(config.package.Package):
             cxxflags += ' -Dpetsc_EXPORTS'
             # need to explicitly link to PETSc and BLAS on Windows
             ldflags += ' '+self.libraries.toStringNoDupes([os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt),self.libraries.toStringNoDupes(self.blasLapack.lib)])
-          self.addMakeRule('hpddmcopy','',\
-                             ['@echo "*** Copying HPDDM ***"',\
-                              '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\
-                              '@'+cpstr+' > ${PETSC_ARCH}/lib/petsc/conf/hpddm.log 2>&1 || \\\n\
-                   (echo "**************************ERROR*************************************" && \\\n\
-                   echo "Error copying HPDDM. Check ${PETSC_ARCH}/lib/petsc/conf/hpddm.log" && \\\n\
-                   echo "********************************************************************" && \\\n\
-                   touch '+os.path.join('${PETSC_ARCH}','lib','petsc','conf','hpddm.errorflg')+' && \\\n\
-                   exit 1)'])
           self.addMakeRule('hpddmbuild',slepcbuilddep,\
                              ['@echo "*** Building and installing HPDDM ***"',\
                               '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\
