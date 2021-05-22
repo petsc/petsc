@@ -1469,7 +1469,26 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
 
     self.logPrint('Libraries needed to link Fortran code with the C linker: '+str(self.flibs), 3, 'compilers')
     self.logPrint('Libraries needed to link Fortran main with the C linker: '+str(self.fmainlibs), 3, 'compilers')
-    # check that these monster libraries can be used with C as the linker
+
+    self.logPrint('Check that Fortran libraries can be used with Fortran as the linker', 4, 'compilers')
+    oldLibs = self.setCompilers.LIBS
+    self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])+' '+self.setCompilers.LIBS
+    try:
+      self.setCompilers.checkCompiler('FC')
+    except RuntimeError as e:
+      self.logPrint('Fortran libraries cannot directly be used with Fortran as the linker, try with -Wl,-z -Wl,muldefs', 4, 'compilers')
+      self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+      try:
+        self.setCompilers.pushLanguage('FC')
+        # this is needed with NEC Fortran compiler
+        self.setCompilers.addLinkerFlag('-Wl,-z -Wl,muldefs')
+        self.setCompilers.popLanguage()
+      except RuntimeError as e:
+        self.logPrint('Fortran libraries still cannot directly be used with Fortran as the linker', 4, 'compilers')
+        self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+        raise RuntimeError('Fortran libraries cannot be used with Fortran as linker')
+    self.setCompilers.LIBS = oldLibs
+
     self.logPrint('Check that Fortran libraries can be used with C as the linker', 4, 'compilers')
     oldLibs = self.setCompilers.LIBS
     self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])+' '+self.setCompilers.LIBS
@@ -1478,7 +1497,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       self.setCompilers.checkCompiler('C')
     except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
-      self.logPrint('Fortran libraries cannot directly be used with C as the liner, try without -lcrt2.o', 4, 'compilers')
+      self.logPrint('Fortran libraries cannot directly be used with C as the linker, try without -lcrt2.o', 4, 'compilers')
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       # try removing this one
       if '-lcrt2.o' in self.flibs: self.flibs.remove('-lcrt2.o')
@@ -1507,7 +1526,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     else:
       self.logWrite(self.setCompilers.restoreLog())
 
-    # check these monster libraries work from C++
     if hasattr(self.setCompilers, 'CXX'):
       self.logPrint('Check that Fortran libraries can be used with C++ as linker', 4, 'compilers')
       self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])+' '+oldLibs
