@@ -703,6 +703,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         f.write('#endif\n')
     return
 
+  def outputPoison(self, f, name):
+    '''Outputs a poison version of name to prevent accidental usage, see outputHeader'''
+    if (name.startswith('PETSC_HAVE_LIB') and not name in ['PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG','PETSC_HAVE_LIBCEED']) or (name.startswith('PETSC_HAVE_') and name.endswith('LIB')): return
+    if name.startswith('PETSC_USE_') or name.startswith('PETSC_HAVE_') or name.startswith('PETSC_SKIP_'): 
+        f.write('#pragma GCC poison PETSC_%s\n' % name)
+
   def outputMakeMacro(self, f, name, value):
     f.write(name+' = '+str(value)+'\n')
     return
@@ -765,6 +771,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if petscconf and 'HIP_PLATFORM' in item:
         cond = '!defined(__HIP__)'
       self.outputDefine(f, *defineDict[item], condition=cond)
+
+  def outputPoisons(self, defineDict, f):
+    for item in sorted(defineDict):
+      self.outputPoison(f, defineDict[item][0])
 
   def outputPkgVersion(self, f, child):
     '''If the child contains a tuple named "version_tuple", the entries are output in the config package header.'''
@@ -887,6 +897,24 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.processDefines(defineDict, child, prefix)
     if (petscconf):
       self.processPackageListDefine(defineDict)
+      dir = os.path.dirname(name)
+      if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+      if self.file_create_pause: time.sleep(1)
+      f2 = open(name[0:-2]+'_poison.h', 'w')
+      self.pushLanguage('C')
+      if self.checkCompile('#pragma GCC poison TEST'):
+        self.popLanguage()
+        if hasattr(self.compilers, 'CXX'):
+          self.pushLanguage('C++')
+          if self.checkCompile('#pragma GCC poison TEST'):
+            self.outputPoisons(defineDict, f2)
+          self.popLanguage()
+        else:
+          self.outputPoisons(defineDict, f2)
+      else:
+        self.popLanguage()
+      f2.close()
     self.outputDefines(defineDict, f,petscconf)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
