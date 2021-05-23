@@ -89,6 +89,7 @@ int main(int argc,char **argv)
       requires: kokkos_kernels
 
    testset:
+      diff_args: -j
       requires: hip
       filter: grep -v type
       args: -vec_type hip
