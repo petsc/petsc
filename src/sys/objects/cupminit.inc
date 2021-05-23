@@ -229,6 +229,7 @@ PetscErrorCode PetscCUPMInitialize(MPI_Comm comm,PetscInt device)
     cerr = cupmEventCreate(&petsc_gputimer_begin);CHKERRCUPM(cerr);
     cerr = cupmEventCreate(&petsc_gputimer_end);CHKERRCUPM(cerr);
   }
+  ierr = PetscCUPMInitializeCheck();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
