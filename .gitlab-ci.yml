@@ -762,7 +762,7 @@ linux-pkgs-64idx:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-64idx
     LOAD_MODULES: cmake/3.15.5-fh74toq intel-mkl/19.5
