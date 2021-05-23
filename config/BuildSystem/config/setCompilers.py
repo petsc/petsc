@@ -110,7 +110,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-CUDAC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the CUDA linker flags'))
 
     help.addArgument('Compilers', '-HIPPP=<prog>', nargs.Arg(None, None, 'Specify the HIP preprocessor'))
-    help.addArgument('Compilers', '-HIPPPFLAGS=<string>', nargs.Arg(None, '-Wno-deprecated-gpu-targets', 'Specify the HIPpreprocessor options'))
+    help.addArgument('Compilers', '-HIPPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the HIP preprocessor options'))
     help.addArgument('Compilers', '-with-hipc=<prog>', nargs.Arg(None, None, 'Specify the HIP compiler'))
     help.addArgument('Compilers', '-HIPC=<prog>',         nargs.Arg(None, None, 'Specify the HIP compiler'))
     help.addArgument('Compilers', '-HIPFLAGS=<string>',   nargs.Arg(None, None, 'Specify the HIP compiler options'))
@@ -896,11 +896,28 @@ class Configure(config.base.Configure):
     return
 
   def generateHIPPreprocessorGuesses(self):
-    ''' Placeholder for now '''
+    '''Determines the HIP preprocessor from --with-hipcpp, then HIPPP, then the HIP compiler'''
+    if 'with-hipcpp' in self.argDB:
+      yield self.argDB['with-cudacpp']
+    elif 'HIPPP' in self.argDB:
+      yield self.argDB['HIPPP']
+    else:
+      if hasattr(self, 'HIPC'):
+        yield self.HIPC+' -E'
     return
 
   def checkHIPPreprocessor(self):
-    ''' Placeholder for now '''
+    '''Locate a functional HIP preprocessor'''
+    for compiler in self.generateHIPPreprocessorGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'HIPPP'):
+          self.pushLanguage('HIP')
+          if not self.checkPreprocess('#include <stdlib.h>\n__global__ void testFunction() {return;};'):
+            raise RuntimeError('Cannot preprocess HIP with '+self.HIPPP+'.')
+          self.popLanguage()
+          return
+      except RuntimeError as e:
+        self.popLanguage()
     return
 
   def generateSYCLCompilerGuesses(self):
