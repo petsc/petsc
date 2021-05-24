@@ -43,14 +43,14 @@ class Configure(config.package.CMakePackage):
     self.flibs           = framework.require('config.packages.flibs',self)
     self.cxxlibs         = framework.require('config.packages.cxxlibs',self)
     self.mathlib         = framework.require('config.packages.mathlib',self)
-    self.deps            = [self.mpi,self.blasLapack,self.flibs,self.cxxlibs,self.mathlib]
+    self.deps            = [self.blasLapack,self.flibs,self.cxxlibs,self.mathlib]
     self.openmp          = framework.require('config.packages.openmp',self)
     self.pthread         = framework.require('config.packages.pthread',self)
     self.cuda            = framework.require('config.packages.cuda',self)
     self.hip             = framework.require('config.packages.hip',self)
     self.hwloc           = framework.require('config.packages.hwloc',self)
     self.mpi             = framework.require('config.packages.MPI',self)
-    self.odeps           = [self.openmp,self.hwloc,self.cuda,self.hip,self.pthread]
+    self.odeps           = [self.mpi,self.openmp,self.hwloc,self.cuda,self.hip,self.pthread]
     return
 
   def versionToStandardForm(self,ver):

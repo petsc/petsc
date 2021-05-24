@@ -62,6 +62,7 @@ class Configure(config.package.Package):
     if not self.found:
       raise RuntimeError('C Compiler has no support for OpenMP')
     self.setCompilers.addCompilerFlag(ompflag)
+    self.setCompilers.addLinkerFlag(ompflag)
     self.setCompilers.popLanguage()
 
     if hasattr(self.compilers, 'FC'):

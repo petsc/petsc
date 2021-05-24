@@ -845,8 +845,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
         }
       }
       if (!flg) {
-        fprintf(stderr,"PETSc Error --- MPICH library version \n%s does not match what PETSc was compiled with %s, aborting\n",mpilibraryversion,MPICH_VERSION);
-        return PETSC_ERR_MPI_LIB_INCOMP;
+        PetscInfo1(NULL,"PETSc warning --- MPICH library version \n%s does not match what PETSc was compiled with %.\n",mpilibraryversion,MPICH_VESION);
+        flg = PETSC_TRUE;
       }
     }
 #endif
@@ -869,8 +869,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
         }
       }
       if (!flg) {
-        fprintf(stderr,"PETSc Error --- Open MPI library version \n%s does not match what PETSc was compiled with %d.%d, aborting\n",mpilibraryversion,OMPI_MAJOR_VERSION,OMPI_MINOR_VERSION);
-        return PETSC_ERR_MPI_LIB_INCOMP;
+        PetscInfo3(NULL,"PETSc warning --- Open MPI library version \n%s does not match what PETSc was compiled with %d.%d.\n",mpilibraryversion,OMPI_MAJOR_VERSION,OMPI_MINOR_VERSION);
+        flg = PETSC_TRUE;
       }
     }
 #endif

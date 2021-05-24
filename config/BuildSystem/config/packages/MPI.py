@@ -629,6 +629,7 @@ Unable to run hostname to check the network')
 
   def findMPIInc(self):
     '''Find MPI include paths from "mpicc -show" and use with CUDAC_FLAGS'''
+    self.includepaths = ''
     needInclude=False
     if hasattr(self.compilers, 'CUDAC'): needInclude=True
     if hasattr(self.compilers, 'HIPC'): needInclude=True
@@ -656,9 +657,15 @@ Unable to run hostname to check the network')
             self.setCompilers.pushLanguage('HIP')
             self.setCompilers.addCompilerFlag(arg)
             self.setCompilers.popLanguage()
+          self.includepaths += arg + ' '
           continue
     except StopIteration:
       pass
+    if hasattr(self.setCompilers,'CUDA_CXXFLAGS'):
+      self.setCompilers.CUDA_CXXFLAGS += ' ' + self.includepaths
+    else:
+      self.setCompilers.CUDA_CXXFLAGS = self.includepaths
+    self.addMakeMacro('CUDA_CXXFLAGS',self.setCompilers.CUDA_CXXFLAGS)
     return
 
   def log_print_mpi_h_line(self,buf):

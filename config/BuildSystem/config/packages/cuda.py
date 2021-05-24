@@ -10,8 +10,10 @@ class Configure(config.package.Package):
     self.requiresversion   = 1
     self.functions         = ['cublasInit', 'cufftDestroy']
     self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','curand.h','thrust/version.h']
-    self.liblist           = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a','libcusolver.a','libcurand.a'],
-                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib','cusolver.lib','curand.lib']]
+    self.basicliblist      = [['libcudart.a'],
+                              ['cudart.lib']]
+    self.mathliblist       = [['libcufft.a', 'libcublas.a','libcusparse.a','libcusolver.a','libcurand.a'],
+                              ['cufft.lib','cublas.lib','cusparse.lib','cusolver.lib','curand.lib']]
     self.precisions        = ['single','double']
     self.cxx               = 0
     self.complex           = 1
@@ -45,8 +47,37 @@ class Configure(config.package.Package):
     return
 
   def getSearchDirectories(self):
+    for i in config.package.Package.getSearchDirectories(self): yield i
     yield self.cudaDir
     return
+
+  def generateLibList(self, directory):
+    '''NVHPC separated the libraries into a different math_libs directory and the directory with the basic CUDA library'''
+    '''Thus configure needs to support finding both sets of libraries and include files given a single directory that points to CUDA directory'''
+    '''Note the difficulty comes from the fact that math libraries are ABOVE the CUDA version in the directory tree'''
+
+    verdir = os.path.dirname(directory)
+    ver = os.path.basename(verdir)
+    mdir = os.path.join('..','..','math_libs',ver)
+    if os.path.isdir(os.path.join(verdir,mdir,'include')):
+      self.includedir = [os.path.join(mdir,'include'), 'include']
+
+    # first try the standard list with all libraries in one directory
+    self.liblist = [self.basicliblist[0]+self.mathliblist[0]]+[self.basicliblist[1]+self.mathliblist[1]]
+    liblist = config.package.Package.generateLibList(self, directory)
+
+    # create list with math libraries separate
+    lib = os.path.basename(directory)
+    ver = os.path.basename(os.path.dirname(directory))
+    newdirectory = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(directory))),'math_libs',ver,lib)
+    if os.path.isdir(newdirectory):
+      self.liblist = [self.basicliblist[0]]
+      subliblist = config.package.Package.generateLibList(self, directory)
+      self.liblist = [self.mathliblist[0]]
+      mathsubliblist = config.package.Package.generateLibList(self, newdirectory)
+      liblist = [liblist[0],liblist[1],mathsubliblist[0] + subliblist[0]]
+
+    return liblist
 
   def checkSizeofVoidP(self):
     '''Checks if the CUDA compiler agrees with the C compiler on what size of void * should be'''
@@ -106,9 +137,9 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     self.setCudaDir()
-    config.package.Package.configureLibrary(self)
     if not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Using CUDA requires PETSc to be configure with a C++ compiler')
+    config.package.Package.configureLibrary(self)
     self.checkNVCCDoubleAlign()
     self.configureTypes()
     # includes from --download-thrust should override the prepackaged version in cuda - so list thrust.include before cuda.include on the compile command.
@@ -232,6 +263,7 @@ to set the right generation for your hardware.')
         self.addMakeMacro('CUDA_CXXFLAGS',self.setCompilers.CUDA_CXXFLAGS)
       else:
         self.logPrint('No CUDA_CXXFLAGS available')
+      self.addMakeMacro('CUDA_CXX',self.setCompilers.CUDA_CXX)
 
       # Intel compiler environment breaks GNU compilers, fix it just enough to allow g++ to run
       if self.setCompilers.CUDA_CXX == 'gcc' and config.setCompilers.Configure.isIntel(self.compilers.CXX,self.log):

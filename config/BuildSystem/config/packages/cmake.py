@@ -25,6 +25,7 @@ class Configure(config.package.GNUPackage):
     help.addArgument('CMAKE', '-with-ctest-exec=<executable>',                nargs.Arg(None, None, 'Ctest executable to look for'))
     return
 
+  # Due to -DCMAKE_USE_OPENSSL=OFF usage below, currently -download-cmake-configure-arguments will only work with bootstrap cmake-options and not regular options
   def formGNUConfigureArgs(self):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Cmake will chose its own compilers if they are not provided explicitly here'''

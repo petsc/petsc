@@ -110,8 +110,10 @@ PetscErrorCode PetscCUPMInitializeCheck(void)
         /* It implies user has initialized device runtime outside of petsc. We do nothing to respect the device choice. */
       }
     }
-    ierr = PetscOptionsGetBool(NULL,NULL,"-petsc_default_use_null_stream",&useNull,NULL);
-    if (!useNull) {cerr = cupmStreamCreate(&PetscDefaultCupmStream);CHKERRCUPM(cerr);}
+    if (!PetscDefaultCupmStream) { /* user may have set the default stream already */
+      ierr = PetscOptionsGetBool(NULL,NULL,"-petsc_default_use_null_stream",&useNull,NULL);
+      if (!useNull) {cerr = cupmStreamCreate(&PetscDefaultCupmStream);CHKERRCUPM(cerr);}
+    }
     ierr = PetscCUPMBLASInitializeHandle();CHKERRQ(ierr);
     ierr = PetscCUPMSOLVERDnInitializeHandle();CHKERRQ(ierr);
     PetscCUPMInitialized = PETSC_TRUE;
