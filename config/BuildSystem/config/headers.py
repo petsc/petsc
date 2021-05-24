@@ -87,6 +87,8 @@ class Configure(config.base.Configure):
     '''Checks if a particular include file can be found along particular include paths'''
     if not isinstance(hfiles, list):
       hfiles = [hfiles]
+    if not isinstance(incl, list):
+      inclu = [incl]
     self.log.write('Checking for header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
     for hfile in hfiles:
       flagsArg = self.getPreprocessorFlagsArg()
