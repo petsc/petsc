@@ -160,7 +160,6 @@ PetscErrorCode MatForwardSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[1+idx] = s2;
   }
 
-
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*(a->nz) - A->cmap->n);CHKERRQ(ierr);

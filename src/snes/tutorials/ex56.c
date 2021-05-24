@@ -596,7 +596,6 @@ int main(int argc,char **args)
     requires: !single
     args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type fetidp -fetidp_ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type sbaij -fetidp_bddc_pc_bddc_monolithic -attach_mat_nearnullspace
 
-
   testset:
     nsize: 4
     requires: !single
