@@ -571,17 +571,21 @@ class Configure(config.package.Package):
           pathlist = [os.path.join(self.argDB['with-blaslapack-dir'],'include'),
                       os.path.join(self.argDB['with-blaslapack-dir'],'..','include'),
                       os.path.join(self.argDB['with-blaslapack-dir'],'..','..','include')]
-          for path in pathlist:
-            if os.path.isdir(path) and self.checkInclude([path], ['mkl_spblas.h']):
-              self.include = [path]
-              self.mkl_spblas_h = 1
-              self.logPrint('MKL mkl_spblas.h found at:'+path)
-              break
+        elif 'with-blaslapack-include' in self.argDB:
+          pathlist = self.include
+        else:
+          pathlist = []
+        for path in pathlist:
+          if os.path.isdir(path) and self.checkInclude([path], ['mkl_spblas.h']):
+            self.include = [path]
+            self.mkl_spblas_h = 1
+            self.logPrint('MKL mkl_spblas.h found at:'+path)
+            break
 
-          if not self.mkl_spblas_h:
-            self.logPrint('Unable to find MKL include directory!')
-          else:
-            self.logPrint('MKL include path set to ' + str(self.include))
+        if not self.mkl_spblas_h:
+          self.logPrint('Unable to find MKL include directory!')
+        else:
+          self.logPrint('MKL include path set to ' + str(self.include))
       self.versionname    = 'INTEL_MKL_VERSION'
       self.versioninclude = 'mkl_version.h'
       self.versiontitle   = 'Intel MKL Version'
