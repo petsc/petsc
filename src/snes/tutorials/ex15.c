@@ -96,18 +96,17 @@ int main(int argc,char **argv)
 {
   SNES                snes;                    /* nonlinear solver */
   Vec                 x,r,b;                   /* solution, residual, rhs vectors */
-  Mat                 A,B;                     /* Jacobian and preconditioning matrices */
   AppCtx              user;                    /* user-defined work context */
   PetscInt            its;                     /* iterations for convergence */
   SNESConvergedReason reason;                  /* Check convergence */
   PetscBool           alloc_star;              /* Only allocate for the STAR stencil  */
   PetscBool           write_output;
   char                filename[PETSC_MAX_PATH_LEN] = "ex15.vts";
-  PetscReal           bratu_lambda_max             = 6.81,bratu_lambda_min = 0.;
-  DM                  da,dastar;               /* distributed array data structure */
-  PreCheck            precheck = NULL;    /* precheck context for version in this file */
-  PetscInt            use_precheck;      /* 0=none, 1=version in this file, 2=SNES-provided version */
-  PetscReal           precheck_angle;    /* When manually setting the SNES-provided precheck function */
+  PetscReal           bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  DM                  da;                      /* distributed array data structure */
+  PreCheck            precheck = NULL;         /* precheck context for version in this file */
+  PetscInt            use_precheck;            /* 0=none, 1=version in this file, 2=SNES-provided version */
+  PetscReal           precheck_angle;          /* When manually setting the SNES-provided precheck function */
   PetscErrorCode      ierr;
   SNESLineSearch      linesearch;
 
@@ -134,8 +133,13 @@ int main(int argc,char **argv)
     ierr = PetscOptionsReal("-source","Constant source term","",user.source,&user.source,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-jtype","Jacobian approximation to assemble","",JacTypes,(PetscEnum)user.jtype,(PetscEnum*)&user.jtype,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-picard","Solve with defect-correction Picard iteration","",&user.picard);CHKERRQ(ierr);
-    if (user.picard) {user.jtype = JAC_PICARD; user.p = 3;}
-    ierr = PetscOptionsBool("-alloc_star","Allocate for STAR stencil (5-point)","",alloc_star,&alloc_star,NULL);CHKERRQ(ierr);
+    if (user.picard) {
+      user.jtype = JAC_PICARD;
+      if (user.p != 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Picard iteration is only supported for p == 3");
+      /* the Picard linearization only requires a 5 point stencil, while the Newton linearization requires a 9 point stencil */
+      /* hence allocating the 5 point stencil gives the same convergence as the 9 point stencil since the extra stencil points are not used */
+      ierr = PetscOptionsBool("-alloc_star","Allocate for STAR stencil (5-point)","",alloc_star,&alloc_star,NULL);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsInt("-precheck","Use a pre-check correction intended for use with Picard iteration 1=this version, 2=library","",use_precheck,&use_precheck,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-initial","Initial conditions type (-1: default, 0: zero-valued, 1: peaked guess)","",user.initial,&user.initial,NULL);CHKERRQ(ierr);
     if (use_precheck == 2) {    /* Using library version, get the angle */
@@ -158,12 +162,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,alloc_star ? DMDA_STENCIL_STAR : DMDA_STENCIL_BOX,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&dastar);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dastar);CHKERRQ(ierr);
-  ierr = DMSetUp(dastar);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DM; then duplicate for remaining
@@ -174,10 +175,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create matrix data structure; set Jacobian evaluation routine
-
-     Set Jacobian matrix data structure and default Jacobian evaluation
-     routine. User can override with:
+     User can override with:
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
                 (unless user explicitly sets preconditioner)
      -snes_mf_operator : form preconditioning matrix as set by the user,
@@ -185,9 +183,6 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* B can be type of MATAIJ,MATBAIJ or MATSBAIJ */
-  ierr = DMCreateMatrix(alloc_star ? dastar : da,&B);CHKERRQ(ierr);
-  A    = B;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
@@ -255,16 +250,11 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  if (A != B) {
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-  }
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = DMDestroy(&dastar);CHKERRQ(ierr);
   ierr = PreCheckDestroy(&precheck);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
@@ -489,6 +479,8 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
       if (!(i == 0 || j == 0 || i == info->mx-1 || j == info->my-1)) {
         const PetscScalar u = x[j][i];
         f[j][i] = sc*PetscExpScalar(u);
+      } else {
+        f[j][i] = 0.0; /* this is zero because the A(x) x term forces the x to be zero on the boundary */
       }
     }
   }
@@ -508,6 +500,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
   PetscReal      hx,hy,hxdhy,hydhx,dhx,dhy,sc;
 
   PetscFunctionBeginUser;
+  ierr  = MatZeroEntries(B);CHKERRQ(ierr);
   hx    = 1.0/(PetscReal)(info->mx-1);
   hy    = 1.0/(PetscReal)(info->my-1);
   sc    = hx*hy*user->lambda;
@@ -649,7 +642,6 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
   if (user->jtype == JAC_NEWTON) {
     ierr = PetscLogFlops(info->xm*info->ym*(131.0));CHKERRQ(ierr);
   }
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -894,7 +886,14 @@ x     Restore vector
    test:
       suffix: 3
       nsize: 2
-      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -picard -precheck 1
+      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -picard -precheck 1 -p 3
+      requires: !single
+
+   test:
+      suffix: 3_star
+      nsize: 2
+      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -picard -precheck 1 -p 3 -alloc_star
+      output_file: output/ex15_3.out
       requires: !single
 
    test:
@@ -918,5 +917,27 @@ x     Restore vector
       suffix: nleqerr
       args: -snes_monitor_short -snes_type newtonls -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -snes_linesearch_monitor -pc_type lu -snes_linesearch_type nleqerr
       requires: !single
+
+   test:
+      suffix: mf
+      args: -snes_monitor_short -pc_type lu -da_refine 4  -p 3 -ksp_rtol 1.e-12  -snes_mf_operator
+      requires: !single
+
+   test:
+      suffix: mf_picard
+      args: -snes_monitor_short -pc_type lu -da_refine 4  -p 3 -ksp_rtol 1.e-12  -snes_mf_operator -picard
+      requires: !single
+      output_file: output/ex15_mf.out
+
+   test:
+      suffix: fd_picard
+      args: -snes_monitor_short -pc_type lu -da_refine 2  -p 3 -ksp_rtol 1.e-12  -snes_fd -picard
+      requires: !single
+
+   test:
+      suffix: fd_color_picard
+      args: -snes_monitor_short -pc_type lu -da_refine 4  -p 3 -ksp_rtol 1.e-12  -snes_fd_color -picard
+      requires: !single
+      output_file: output/ex15_mf.out
 
 TEST*/

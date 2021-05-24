@@ -473,7 +473,6 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
     ctx->current_f_allocated = PETSC_FALSE;
   } else if (!ctx->current_f_allocated) {
     ierr = MatCreateVecs(J,NULL,&ctx->current_f);CHKERRQ(ierr);
-
     ctx->current_f_allocated = PETSC_TRUE;
   }
   if (!ctx->w) {

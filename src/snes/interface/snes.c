@@ -1850,11 +1850,13 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*f)(SNES,Vec,Vec
     PetscCheckSameComm(snes,1,r,2);
     ierr = PetscObjectReference((PetscObject)r);CHKERRQ(ierr);
     ierr = VecDestroy(&snes->vec_func);CHKERRQ(ierr);
-
     snes->vec_func = r;
   }
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMSNESSetFunction(dm,f,ctx);CHKERRQ(ierr);
+  if (f == SNESPicardComputeFunction) {
+    ierr = DMSNESSetMFFunction(dm,SNESPicardComputeMFFunction,ctx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2155,6 +2157,43 @@ PetscErrorCode SNESSetNGS(SNES snes,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void
   PetscFunctionReturn(0);
 }
 
+/*
+     This is used for -snes_mf_operator; it uses a duplicate of snes->jacobian_pre because snes->jacobian_pre cannot be
+   changed during the KSPSolve()
+*/
+PetscErrorCode SNESPicardComputeMFFunction(SNES snes,Vec x,Vec f,void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+  DMSNES         sdm;
+
+  PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+  if (!sdm->ops->computepjacobian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard Jacobian.");
+  /*  A(x)*x - b(x) */
+  if (sdm->ops->computepfunction) {
+    PetscStackPush("SNES Picard user function");
+    ierr = (*sdm->ops->computepfunction)(snes,x,f,sdm->pctx);CHKERRQ(ierr);
+    PetscStackPop;
+    ierr = VecScale(f,-1.0);CHKERRQ(ierr);
+    if (!snes->picard) {
+      /* Cannot share nonzero pattern because of the possible use of SNESComputeJacobianDefault() */
+      ierr = MatDuplicate(snes->jacobian_pre,MAT_DO_NOT_COPY_VALUES,&snes->picard);CHKERRQ(ierr);
+    }
+    PetscStackPush("SNES Picard user Jacobian");
+    ierr = (*sdm->ops->computepjacobian)(snes,x,snes->picard,snes->picard,sdm->pctx);CHKERRQ(ierr);
+    PetscStackPop;
+    ierr = MatMultAdd(snes->picard,x,f,f);CHKERRQ(ierr);
+  } else {
+    PetscStackPush("SNES Picard user Jacobian");
+    ierr = (*sdm->ops->computepjacobian)(snes,x,snes->picard,snes->picard,sdm->pctx);CHKERRQ(ierr);
+    PetscStackPop;
+    ierr = MatMult(snes->picard,x,f);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr;
@@ -2164,36 +2203,46 @@ PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->ops->computepfunction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard function.");
   if (!sdm->ops->computepjacobian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard Jacobian.");
   /*  A(x)*x - b(x) */
-  PetscStackPush("SNES Picard user function");
-  ierr = (*sdm->ops->computepfunction)(snes,x,f,sdm->pctx);CHKERRQ(ierr);
-  PetscStackPop;
-  PetscStackPush("SNES Picard user Jacobian");
-  ierr = (*sdm->ops->computepjacobian)(snes,x,snes->jacobian,snes->jacobian_pre,sdm->pctx);CHKERRQ(ierr);
-  PetscStackPop;
-  ierr = VecScale(f,-1.0);CHKERRQ(ierr);
-  ierr = MatMultAdd(snes->jacobian,x,f,f);CHKERRQ(ierr);
+  if (sdm->ops->computepfunction){
+    PetscStackPush("SNES Picard user function");
+    ierr = (*sdm->ops->computepfunction)(snes,x,f,sdm->pctx);CHKERRQ(ierr);
+    PetscStackPop;
+    ierr = VecScale(f,-1.0);CHKERRQ(ierr);
+    PetscStackPush("SNES Picard user Jacobian");
+    ierr = (*sdm->ops->computepjacobian)(snes,x,snes->jacobian,snes->jacobian_pre,sdm->pctx);CHKERRQ(ierr);
+    PetscStackPop;
+    ierr = MatMultAdd(snes->jacobian_pre,x,f,f);CHKERRQ(ierr);
+  } else {
+    PetscStackPush("SNES Picard user Jacobian");
+    ierr = (*sdm->ops->computepjacobian)(snes,x,snes->jacobian,snes->jacobian_pre,sdm->pctx);CHKERRQ(ierr);
+    PetscStackPop;
+    ierr = MatMult(snes->jacobian_pre,x,f);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SNESPicardComputeJacobian(SNES snes,Vec x1,Mat J,Mat B,void *ctx)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   /* the jacobian matrix should be pre-filled in SNESPicardComputeFunction */
+  /* must assembly if matrix-free to get the last SNES solution */
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-   SNESSetPicard - Use SNES to solve the semilinear-system A(x) x = b(x) via a Picard type iteration (Picard linearization)
+   SNESSetPicard - Use SNES to solve the system A(x) x = bp(x) + b via a Picard type iteration (Picard linearization)
 
    Logically Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context
 .  r - vector to store function value
-.  b - function evaluation routine
+.  bp - function evaluation routine
 .  Amat - matrix with which A(x) x - b(x) is to be computed
 .  Pmat - matrix from which preconditioner is computed (usually the same as Amat)
 .  J  - function to compute matrix value, see SNESJacobianFunction for details on its calling sequence
@@ -2218,11 +2267,13 @@ $     Note that when an exact solver is used this corresponds to the "classic" P
    believe it is the iteration  A(x^{n}) x^{n+1} = b(x^{n}) hence we use the name Picard. If anyone has an authoritative  reference that defines the Picard iteration
    different please contact us at petsc-dev@mcs.anl.gov and we'll have an entirely new argument :-).
 
+   When used with -snes_mf_operator this will run matrix-free Newton's method where the matrix-vector product is of the true Jacobian of A(x)x - b(x).
+
    Level: intermediate
 
 .seealso: SNESGetFunction(), SNESSetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESGetPicard(), SNESLineSearchPreCheckPicard(), SNESJacobianFunction
 @*/
-PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*b)(SNES,Vec,Vec,void*),Mat Amat, Mat Pmat, PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx)
+PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*bp)(SNES,Vec,Vec,void*),Mat Amat, Mat Pmat, PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -2230,7 +2281,8 @@ PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*b)(SNES,Vec,Vec,v
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
-  ierr = DMSNESSetPicard(dm,b,J,ctx);CHKERRQ(ierr);
+  ierr = DMSNESSetPicard(dm,bp,J,ctx);CHKERRQ(ierr);
+  ierr = DMSNESSetMFFunction(dm,SNESPicardComputeMFFunction,ctx);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,r,SNESPicardComputeFunction,ctx);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,Amat,Pmat,SNESPicardComputeJacobian,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2340,12 +2392,11 @@ PetscErrorCode  SNESGetRhs(SNES snes,Vec *rhs)
 
    Notes:
    SNESComputeFunction() is typically used within nonlinear solvers
-   implementations, so most users would not generally call this routine
-   themselves.
+   implementations, so users would not generally call this routine themselves.
 
    Level: developer
 
-.seealso: SNESSetFunction(), SNESGetFunction()
+.seealso: SNESSetFunction(), SNESGetFunction(), SNESComputeMFFunction()
 @*/
 PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 {
@@ -2383,6 +2434,66 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   if (snes->vec_rhs) {
     ierr = VecAXPY(y,-1.0,snes->vec_rhs);CHKERRQ(ierr);
   }
+  snes->nfuncs++;
+  /*
+     domainerror might not be set on all processes; so we tag vector locally with Inf and the next inner product or norm will
+     propagate the value to all processes
+  */
+  if (snes->domainerror) {
+    ierr = VecSetInf(y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESComputeMFFunction - Calls the function that has been set with SNESSetMFFunction().
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  x - input vector
+
+   Output Parameter:
+.  y - function vector, as set by SNESSetMFFunction()
+
+   Notes:
+       SNESComputeMFFunction() is used within the matrix vector products called by the matrix created with MatCreateSNESMF()
+   so users would not generally call this routine themselves.
+
+       Since this function is intended for use with finite differencing it does not subtract the right hand side vector provided with SNESSolve()
+    while SNESComputeFunction() does. As such, this routine cannot be used with  MatMFFDSetBase() with a provided F function value even if it applies the
+    same function as SNESComputeFunction() if a SNESSolve() right hand side vector is use because the two functions difference would include this right hand side function.
+
+   Level: developer
+
+.seealso: SNESSetFunction(), SNESGetFunction(), SNESComputeFunction(), MatCreateSNESMF
+@*/
+PetscErrorCode  SNESComputeMFFunction(SNES snes,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+  DMSNES         sdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
+  PetscCheckSameComm(snes,1,x,2);
+  PetscCheckSameComm(snes,1,y,3);
+  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
+  ierr = VecLockReadPush(x);CHKERRQ(ierr);
+  PetscStackPush("SNES user function");
+  /* ensure domainerror is false prior to computefunction evaluation (may not have been reset) */
+  snes->domainerror = PETSC_FALSE;
+  ierr = (*sdm->ops->computemffunction)(snes,x,y,sdm->mffunctionctx);CHKERRQ(ierr);
+  PetscStackPop;
+  ierr = VecLockReadPop(x);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   snes->nfuncs++;
   /*
      domainerror might not be set on all processes; so we tag vector locally with Inf and the next inner product or norm will
@@ -3223,6 +3334,7 @@ PetscErrorCode  SNESReset(SNES snes)
   ierr = VecDestroy(&snes->vec_func);CHKERRQ(ierr);
   ierr = MatDestroy(&snes->jacobian);CHKERRQ(ierr);
   ierr = MatDestroy(&snes->jacobian_pre);CHKERRQ(ierr);
+  ierr = MatDestroy(&snes->picard);CHKERRQ(ierr);
   ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);
   ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);
 

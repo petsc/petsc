@@ -316,6 +316,34 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),v
 }
 
 /*@C
+   DMSNESSetMFFunction - set SNES residual evaluation function used in applying the matrix-free Jacobian with -snes_mf_operator
+
+   Logically Collective on dm
+
+   Input Arguments:
++  dm - DM to be used with SNES
+-  f - residual evaluation function; see SNESFunction for details
+
+   Level: advanced
+
+.seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESSetJacobian(), SNESFunction, DMSNESSetFunction()
+@*/
+PetscErrorCode DMSNESSetMFFunction(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMSNES         sdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (f || ctx) {
+    ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
+  }
+  if (f) sdm->ops->computemffunction = f;
+  if (ctx) sdm->mffunctionctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    DMSNESGetFunction - get SNES residual evaluation function
 
    Not Collective

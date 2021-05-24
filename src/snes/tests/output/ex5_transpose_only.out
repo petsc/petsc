@@ -64,7 +64,7 @@ SNES Object: 1 MPI processes
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=1
-  total number of function evaluations=9
+  total number of function evaluations=4
   norm schedule ALWAYS
   KSP Object: 1 MPI processes
     type: gmres

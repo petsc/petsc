@@ -53,6 +53,7 @@ struct _p_SNES {
 
   Mat  jacobian;                 /* Jacobian matrix */
   Mat  jacobian_pre;             /* preconditioner matrix */
+  Mat  picard;                   /* copy of preconditioner matrix needed for Picard with -snes_mf_operator */
   void *initialguessP;           /* user-defined initial guess context */
   KSP  ksp;                      /* linear solver context */
   SNESLineSearch linesearch;     /* line search context */
@@ -176,6 +177,7 @@ typedef struct _p_DMSNES *DMSNES;
 typedef struct _DMSNESOps *DMSNESOps;
 struct _DMSNESOps {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
+  PetscErrorCode (*computemffunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat,Mat,void*);
 
   /* objective */
@@ -195,6 +197,7 @@ struct _DMSNESOps {
 struct _p_DMSNES {
   PETSCHEADER(struct _DMSNESOps);
   void *functionctx;
+  void *mffunctionctx;
   void *gsctx;
   void *pctx;
   void *jacobianctx;

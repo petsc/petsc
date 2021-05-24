@@ -10,6 +10,10 @@ static PetscErrorCode SNESComputeFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
 {
   return SNESComputeFunction(snes,x,f);
 }
+static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
+{
+  return SNESComputeMFFunction(snes,x,f);
+}
 
 /*@C
     SNESComputeJacobianDefaultColor - Computes the Jacobian using
@@ -35,7 +39,7 @@ static PetscErrorCode SNESComputeFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 .  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
 .  -snes_mf_operator - Use matrix free application of Jacobian
--  -snes_mf - Use matrix free Jacobian with not explicit Jacobian represenation
+-  -snes_mf - Use matrix free Jacobian with no explicit Jacobian represenation
 
     Notes:
         If the coloring is not provided through the context, this will first try to get the
@@ -43,14 +47,14 @@ static PetscErrorCode SNESComputeFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
         get the coloring from the matrix.  This requires that the matrix have nonzero entries
         precomputed.
 
-       SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free via SNESSetUseMatrixFree,
-       and computing explictly with finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
+       SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free via SNESSetUseMatrixFree(),
+       and computing explictly with finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation
+       and the MatFDColoring object, see src/ts/tutorials/autodiff/ex16adj_tl.cxx
 
 .seealso: SNESSetJacobian(), SNESTestJacobian(), SNESComputeJacobianDefault(), SNESSetUseMatrixFree(),
           MatFDColoringCreate(), MatFDColoringSetFunction()
 
 @*/
-
 PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat J,Mat B,void *ctx)
 {
   MatFDColoring  color = (MatFDColoring)ctx;
@@ -60,6 +64,7 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat J,Mat B,voi
   ISColoring     iscoloring;
   PetscBool      hascolor;
   PetscBool      solvec,matcolor = PETSC_FALSE;
+  DMSNES         dms;
 
   PetscFunctionBegin;
   if (color) PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,5);
@@ -72,11 +77,6 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat J,Mat B,voi
     ierr = PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_fd_color_use_mat",&matcolor,NULL);CHKERRQ(ierr);
     if (hascolor && !matcolor) {
       ierr = DMCreateColoring(dm,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(B,iscoloring,&color);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))SNESComputeFunctionCtx,NULL);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
-      ierr = MatFDColoringSetUp(B,iscoloring,color);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     } else {
       ierr = MatColoringCreate(B,&mc);CHKERRQ(ierr);
       ierr = MatColoringSetDistance(mc,2);CHKERRQ(ierr);
@@ -84,12 +84,17 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat J,Mat B,voi
       ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
       ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
       ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(B,iscoloring,&color);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))SNESComputeFunctionCtx,NULL);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
-      ierr = MatFDColoringSetUp(B,iscoloring,color);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     }
+    ierr = MatFDColoringCreate(B,iscoloring,&color);CHKERRQ(ierr);
+    ierr = DMGetDMSNES(dm,&dms);CHKERRQ(ierr);
+    if (dms->ops->computemffunction) {
+      ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))SNESComputeMFFunctionCtx,NULL);CHKERRQ(ierr);
+    } else {
+      ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))SNESComputeFunctionCtx,NULL);CHKERRQ(ierr);
+    }
+    ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
+    ierr = MatFDColoringSetUp(B,iscoloring,color);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)B,"SNESMatFDColoring",(PetscObject)color);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)color);CHKERRQ(ierr);
   }
