@@ -106,7 +106,6 @@ PetscErrorCode  AODestroy(AO *ao)
   PetscFunctionReturn(0);
 }
 
-
 #include <../src/vec/is/is/impls/general/general.h>
 /* ---------------------------------------------------------------------*/
 

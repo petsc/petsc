@@ -43,5 +43,4 @@ PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PetscOptionItems *PetscOptio
 PETSC_INTERN PetscErrorCode PCView_Factor(PC,PetscViewer);
 PETSC_INTERN PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC);
 
-
 #endif

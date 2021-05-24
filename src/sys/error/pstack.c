@@ -72,7 +72,6 @@ PetscErrorCode PetscStackSAWsViewOff(void)
 
 #  endif
 
-
 PetscErrorCode PetscStackCreate(void)
 {
   PetscStack *petscstack_in;
@@ -98,7 +97,6 @@ PetscErrorCode PetscStackCreate(void)
 #endif
   return 0;
 }
-
 
 PetscErrorCode  PetscStackView(FILE *file)
 {

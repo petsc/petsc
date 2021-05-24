@@ -89,7 +89,6 @@ int main(int argc,char **args)
   }
   ierr = PetscPrintf(PETSC_COMM_SELF, "; total size %d \n",N);CHKERRQ(ierr);
 
-
   if (function == RANDOM) {
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
@@ -174,7 +173,6 @@ int main(int argc,char **args)
   ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|z|_2 = %g\n",norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|z-zz| = %g\n",enorm);CHKERRQ(ierr);
-
 
   /* free spaces */
   ierr = DMRestoreGlobalVector(da,&x);CHKERRQ(ierr);

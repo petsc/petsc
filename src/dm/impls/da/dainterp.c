@@ -1143,11 +1143,9 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
   ierr = DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL);CHKERRQ(ierr);
 
-
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
   ierr = PetscMalloc1(m_f,&cols);CHKERRQ(ierr);
-
 
   for (i=i_start_c; i<i_start_c+m_c; i++) {
     PetscInt i_f = i*ratioi;
@@ -1291,7 +1289,6 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&k_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(dac,&ltog_c);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
-
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;

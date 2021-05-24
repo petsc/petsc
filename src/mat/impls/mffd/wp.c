@@ -18,7 +18,6 @@
    Options Database Keys:
 .   -mat_mffd_compute_normu -Compute the norm of u everytime see MatMFFDWPSetComputeNormU()
 
-
    Level: intermediate
 
    Notes:
@@ -223,6 +222,4 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)
   ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDWPSetComputeNormU_C",MatMFFDWPSetComputeNormU_P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 

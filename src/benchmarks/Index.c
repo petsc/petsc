@@ -2,7 +2,6 @@
 #include <petscsys.h>
 #include <petsctime.h>
 
-
 extern int BlastCache(void);
 extern int test1(void);
 extern int test2(void);
@@ -174,7 +173,6 @@ int test2(void)
   for (i=0; i<2000; i++) y[z[i]] = x[zi[i]];
   ierr = PetscTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
-
 
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);

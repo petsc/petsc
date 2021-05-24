@@ -95,5 +95,3 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_SAWs(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-
-

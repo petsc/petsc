@@ -58,7 +58,6 @@ double MPI_Wtime(void)
   return(ptime);
 }
 
-
 /* ------------------------------------------------------------------
     The usual Unix time routines.
 */

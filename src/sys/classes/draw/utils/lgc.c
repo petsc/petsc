@@ -55,7 +55,6 @@ PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    PetscDrawLGSPDraw - Redraws a line graph.
 
@@ -124,7 +123,6 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
     PetscDrawLGCreate - Creates a line graph data structure.
@@ -319,7 +317,6 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
   lg->len = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
 }
-
 
 /*@
    PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more

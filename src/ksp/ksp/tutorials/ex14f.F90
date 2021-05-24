@@ -27,7 +27,6 @@
 !   Processors: n
 !T*/
 
-
 !  ------------------------------------------------------------------------
 !
 !    Solid Fuel Ignition (SFI) problem.  This problem is modeled by
@@ -136,7 +135,6 @@
        call DMCreateLocalVector(da,localX,ierr)
        call VecDuplicate(X,F,ierr)
        call VecDuplicate(X,Y,ierr)
-
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create matrix data structure for Jacobian
@@ -540,7 +538,6 @@
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       return
       end
-
 
 ! -------------------------------------------------------------------
 !

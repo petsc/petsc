@@ -228,7 +228,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscBool        twod;
   PetscErrorCode   ierr;
 
-
   PetscFunctionBegin;
   if (stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR || bz == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
@@ -1370,7 +1369,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   dd->ao        = NULL;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    DMDACreate3d - Creates an object that will manage the communication of three-dimensional

@@ -127,7 +127,3 @@ PETSC_EXTERN PetscErrorCode PFCreate_String(PF pf,void *value)
   PetscFunctionReturn(0);
 }
 
-
-
-
-

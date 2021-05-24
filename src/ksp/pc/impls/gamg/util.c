@@ -53,7 +53,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,Petsc
   PetscFunctionReturn(0);
 }
 
-
 /* -------------------------------------------------------------------------- */
 /*
    PCGAMGCreateGraph - create simple scaled scalar graph from matrix

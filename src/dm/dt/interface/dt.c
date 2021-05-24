@@ -1053,7 +1053,6 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
     alpha = 2 * degsum + d;
     PetscDTJacobiRecurrence_Internal(n,alpha,0.,cnm1,cnm1x,cnm2);
 
-
     scales[degidx] = initscale;
     for (e = 0, degsum = 0; e < dim; e++) {
       PetscInt  f;

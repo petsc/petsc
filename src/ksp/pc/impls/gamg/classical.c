@@ -167,7 +167,6 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists)
 {
   PetscErrorCode   ierr;
@@ -939,7 +938,6 @@ PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
   pc_gamg->data_sz        = 0;
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode PCGAMGClassicalFinalizePackage(void)
 {

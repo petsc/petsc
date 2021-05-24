@@ -1017,7 +1017,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
     B    = fact;
     ierr = MatSeqSBAIJSetPreallocation(B,1,0,ui);CHKERRQ(ierr);
 
-
     b  = (Mat_SeqSBAIJ*)B->data;
     uj = b->j;
     for (i=0; i<am; i++) {

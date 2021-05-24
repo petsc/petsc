@@ -18,7 +18,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat,PetscInt,IS*)
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat,PetscInt,PetscMPIInt,PetscMPIInt *,PetscInt *, PetscInt *,PetscInt **,PetscInt **);
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat,PetscInt,IS*,PetscInt,PetscInt *);
 
-
 PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,PetscInt imax,IS is[],PetscInt ov)
 {
   PetscErrorCode ierr;
@@ -44,7 +43,6 @@ PetscErrorCode MatIncreaseOverlap_MPIAIJ_Scalable(Mat C,PetscInt imax,IS is[],Pe
   }
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt nidx,IS is[])
 {
@@ -430,7 +428,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
   PetscFunctionReturn(0);
 }
 
-
 /*
   Sample message format:
   If a processor A wants processor B to process some elements corresponding
@@ -674,7 +671,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   ierr = MatIncreaseOverlap_MPIAIJ_Receive(C,nrqr,rbuf,xdata,isz1);CHKERRQ(ierr);
   ierr = PetscFree(rbuf[0]);CHKERRQ(ierr);
   ierr = PetscFree(rbuf);CHKERRQ(ierr);
-
 
   /* Send the data back */
   /* Do a global reduction to know the buffer space req for incoming messages */
@@ -948,7 +944,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,PetscInt nrqr,Pets
   bi     = b->i;
   bj     = b->j;
   garray = c->garray;
-
 
   for (i=0,ct=0,total_sz=0; i<nrqr; ++i) {
     rbuf_i =  rbuf[i];

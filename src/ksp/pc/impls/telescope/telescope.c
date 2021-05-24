@@ -1352,7 +1352,6 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 
    The entries on rank 1 and 3 (ranks which do not have a color = 0 in c') have no values
 
-
    [2] Copy the values from ranks 0, 2 (indices with respect to comm c) into the vector xred which is defined on communicator c'.
    Ranks 0 and 2 are the only ranks in the subcomm which have a color = 0.
 

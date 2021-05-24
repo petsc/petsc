@@ -52,7 +52,6 @@
       call PetscFinalize(ierr)
       end
 
-
       subroutine FormFunction(snes, x, f, user, ierr)
       use ex21fmodule
       SNES snes

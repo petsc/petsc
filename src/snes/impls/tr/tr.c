@@ -250,7 +250,6 @@ static PetscErrorCode SNESNewtonTRPostCheck(SNES snes,Vec X,Vec Y,Vec W,PetscBoo
    SNESSolve_NEWTONTR - Implements Newton's Method with a very simple trust
    region approach for solving systems of nonlinear equations.
 
-
 */
 static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 {
@@ -311,7 +310,6 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
-
 
   for (i=0; i<maxits; i++) {
 

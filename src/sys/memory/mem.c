@@ -52,7 +52,6 @@
 
 .seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetMaximumUsage(), PetscMallocGetCurrentUsage(), PetscMemorySetGetMaximumUsage(), PetscMemoryView()
 
-
 @*/
 PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 {
@@ -140,7 +139,6 @@ PetscLogDouble PetscMemoryMaximumUsage        = 0;
 .seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(), PetscMallocGetCurrentUsage(),
           PetscMemorySetGetMaximumUsage()
 
-
 @*/
 PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
 {
@@ -164,7 +162,6 @@ PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
 
 .seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(), PetscMallocGetCurrentUsage(),
           PetscMemoryGetMaximumUsage()
-
 
 @*/
 PetscErrorCode  PetscMemorySetGetMaximumUsage(void)

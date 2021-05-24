@@ -18,7 +18,6 @@
 #define dmdagetcorners011011_          dmdagetcorners011011
 #endif
 
-
 PETSC_EXTERN void dmdasetfieldname_(DM *da,PetscInt *nf,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;

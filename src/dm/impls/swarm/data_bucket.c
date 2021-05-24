@@ -533,7 +533,6 @@ PetscErrorCode DMSwarmDataFieldCopyPoint(const PetscInt pid_x,const DMSwarmDataF
   PetscFunctionReturn(0);
 }
 
-
 /* zero only the datafield at this point */
 PetscErrorCode DMSwarmDataFieldZeroPoint(const DMSwarmDataField field,const PetscInt index)
 {

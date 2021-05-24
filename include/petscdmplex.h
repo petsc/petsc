@@ -129,7 +129,6 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeCellTypes(DM);
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell(DMPolytopeType, PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexReorderCell(DM, PetscInt, PetscInt[]);
 
-
 /* Topological Operations */
 PETSC_EXTERN PetscErrorCode DMPlexGetMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 PETSC_EXTERN PetscErrorCode DMPlexGetFullMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);

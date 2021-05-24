@@ -288,10 +288,6 @@ program ex62f90
     call PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, "-dm_section_view",ierr);CHKERRQ(ierr)
     call PetscSectionDestroy(section,ierr);CHKERRA(ierr)
 
-
-
-
-
     ! Get DM and IS for each field of dm
     call DMCreateSubDM(dm, 1_kPI, fieldU,  isU,  dmU,ierr);CHKERRA(ierr)
     call DMCreateSubDM(dm, 1_kPI, fieldA,  isA,  dmA,ierr);CHKERRA(ierr)
@@ -327,7 +323,6 @@ program ex62f90
     call DMGetCoordinatesLocal(dmUA, coord,ierr);CHKERRA(ierr)
     call DMPlexGetChart(dmUA, pStart, pEnd,ierr);CHKERRA(ierr)
 
-
     do p = pStart,pEnd-1
         call PetscSectionGetDof(sectionUA, p, dofUA,ierr);CHKERRA(ierr)
         if (dofUA > 0) then
@@ -350,7 +345,6 @@ program ex62f90
     call DMLocalToGlobalEnd(dmUA, UALoc, INSERT_VALUES, UA,ierr);CHKERRA(ierr)
     call DMRestoreLocalVector(dmUA, UALoc,ierr);CHKERRA(ierr)
 
-
     !Update X
     call VecISCopy(X, isUA, SCATTER_FORWARD, UA,ierr);CHKERRA(ierr)
     ! Restrict to U and Alpha
@@ -362,7 +356,6 @@ program ex62f90
     ! restrict to UA2
     call VecISCopy(X, isUA, SCATTER_REVERSE, UA2,ierr);CHKERRA(ierr)
     call VecViewFromOptions(UA2, PETSC_NULL_OPTIONS, "-ua2_vec_view",ierr);CHKERRA(ierr)
-
 
     ! Writing nodal variables to ExodusII file
     call DMSetOutputSequenceNumber(dmU,0_kPI,time,ierr);CHKERRA(ierr)
@@ -406,7 +399,6 @@ program ex62f90
         write(IOBuffer,'("UAlpha2 ||Vin - Vout|| = ",ES12.5)') norm
     end if
     call DMRestoreGlobalVector(dmUA2, tmpVec,ierr);CHKERRA(ierr)
-
 
     ! Building and saving Sigma
     !   We set sigma_0 = rank (to see partitioning)
@@ -458,7 +450,6 @@ program ex62f90
        write(IOBuffer,'("Sigma ||Vin - Vout|| = ",ES12.5)') norm
     end if
     call DMRestoreGlobalVector(dmS, tmpVec,ierr);CHKERRA(ierr)
-
 
     call DMRestoreGlobalVector(dmUA2, UA2,ierr);CHKERRA(ierr)
     call DMRestoreGlobalVector(dmUA, UA,ierr);CHKERRA(ierr)

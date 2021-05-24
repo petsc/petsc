@@ -41,7 +41,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscLimiterLimit(PetscLimiter, PetscReal, PetscReal *);
 
-
 PETSC_EXTERN PetscErrorCode PetscFVInitializePackage(void);
 
 PETSC_EXTERN PetscClassId PETSCFV_CLASSID;

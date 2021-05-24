@@ -88,7 +88,6 @@ PetscErrorCode  TaoShellGetContext(Tao tao,void **ctx)
     The context can only be an integer or a PetscObject
       unfortunately it cannot be a Fortran array or derived type.
 
-
 .seealso: TaoCreateShell(), TaoShellGetContext()
 @*/
 PetscErrorCode  TaoShellSetContext(Tao tao,void *ctx)

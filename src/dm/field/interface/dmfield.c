@@ -228,7 +228,6 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
              If the field is complex and datatype is PETSC_REAL, the real part of the
              field is returned.
 
-
   Output Parameter:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
       If B is not NULL, the values of the field are written in this array, varying first by component,
@@ -275,7 +274,6 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
              If the field is complex and datatype is PETSC_REAL, the real part of the
              field is returned.
 
-
   Output Parameter:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
       If B is not NULL, the values of the field are written in this array, varying first by component,
@@ -319,7 +317,6 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
 - datatype - The PetscDataType of the output arrays: either PETSC_REAL or PETSC_SCALAR.
              If the field is complex and datatype is PETSC_REAL, the real part of the
              field is returned.
-
 
   Output Parameter:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.

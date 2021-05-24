@@ -294,7 +294,6 @@ PetscErrorCode  PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
 */
 static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
-
 /*@C
    PETSC_MATLAB_ENGINE_ - Creates a MATLAB engine on each process in a communicator.
 
@@ -414,9 +413,4 @@ PetscErrorCode  PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,
   ierr = PetscInfo1(0,"Got MATLAB array %s\n",name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
 

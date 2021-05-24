@@ -343,7 +343,6 @@ PetscErrorCode  PetscStageLogPop(PetscStageLog stageLog)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   PetscStageLogGetClassRegLog - This function returns the PetscClassRegLog for the given stage.
 
@@ -414,7 +413,6 @@ PetscErrorCode  PetscStageLogGetClassPerfLog(PetscStageLog stageLog, int stage, 
   *classLog = stageLog->stageInfo[stage].classLog;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
   PetscStageLogSetActive - This function determines whether events will be logged during this state.

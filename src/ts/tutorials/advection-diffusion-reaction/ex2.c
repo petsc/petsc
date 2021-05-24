@@ -14,7 +14,6 @@ static char help[] = "Reaction Equation from Chemistry\n";
 
 */
 
-
 /*
    Include "petscts.h" so that we can use TS solvers.  Note that this
    file automatically includes:
@@ -182,7 +181,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

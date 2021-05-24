@@ -8,7 +8,6 @@
  * */
 PETSC_HASH_MAP(HMapIV, PetscInt, PetscScalar, PetscHashInt, PetscHashEqual, -1)
 
-
 /*MC
   PetscHMapIVAddValue - Add value to the value of a given key if the key exists,
   otherwise, insert a new (key,value) entry in the hash table

@@ -426,8 +426,6 @@ PETSC_EXTERN PetscErrorCode MatAssemblyBegin(Mat,MatAssemblyType);
 PETSC_EXTERN PetscErrorCode MatAssemblyEnd(Mat,MatAssemblyType);
 PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
 
-
-
 /*E
     MatOption - Options that may be set for a matrix and its behavior or storage
 
@@ -566,7 +564,6 @@ typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES,MAT_SHARE_NONZERO_PATTERN} 
 
 PETSC_EXTERN PetscErrorCode MatConvert(Mat,MatType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatDuplicate(Mat,MatDuplicateOption,Mat*);
-
 
 PETSC_EXTERN PetscErrorCode MatCopy(Mat,Mat,MatStructure);
 PETSC_EXTERN PetscErrorCode MatView(Mat,PetscViewer);
@@ -1068,7 +1065,6 @@ do { PetscInt __i; \
           MatPreallocateSymmetricSetLocalBlock()
 M*/
 #define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) 0; do {if (A) {ierr = MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);} else {ierr =  MatPreallocateSet(row,ncols,cols,dnz,onz);CHKERRQ(ierr);}} while (0)
-
 
 /*MC
    MatPreallocateFinalize - Ends the block of code that will count the number of nonzeros per
@@ -1919,7 +1915,6 @@ PETSC_DEPRECATED_FUNCTION("Use MatSTRUMPACKSetHSSMinSepSize() (since version 3.9
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat,PetscInt);
 #endif
-
 
 PETSC_EXTERN PetscErrorCode MatBindToCPU(Mat,PetscBool);
 PETSC_DEPRECATED_FUNCTION("Use MatBindToCPU (since v3.13)") PETSC_STATIC_INLINE PetscErrorCode MatPinToCPU(Mat A,PetscBool flg) {return MatBindToCPU(A,flg);}

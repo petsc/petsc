@@ -7,7 +7,6 @@
 !  Processors: n
 !T*/
 
-
 !
 !  The model problem:
 !     Solve Helmholtz equation on the unit square: (0,1) x (0,1)

@@ -125,7 +125,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
 /*TEST
 
    build:
@@ -140,7 +139,6 @@ int main(int argc,char **args)
       nsize: 3
       args: -n 1000
       output_file: output/ex127.out
-
 
    test:
       suffix: superlu_dist

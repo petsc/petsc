@@ -2265,7 +2265,6 @@ M*/
            off-diagonal portion of the local submatrix that is right of the diagonal
            (possibly different for each block row) or NULL.
 
-
    Options Database Keys:
 +   -mat_no_unroll - uses code that does not unroll the loops in the
                      block calculations (much slower)
@@ -2458,7 +2457,6 @@ PetscErrorCode  MatCreateSBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,P
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat            mat;
@@ -2597,7 +2595,6 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat mat,PetscViewer viewer)
 
 .seealso: MatSetOption()
 @XXXXX*/
-
 
 PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A,Vec v,PetscInt idx[])
 {
@@ -2851,7 +2848,6 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
 {
   PetscErrorCode ierr;
 
-
   PetscFunctionBegin;
   if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
@@ -2861,7 +2857,6 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
   ierr = MatMPISBAIJSetPreallocationCSR(*mat,bs,i,j,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    MatMPISBAIJSetPreallocationCSR - Creates a sparse parallel matrix in SBAIJ format using the given nonzero structure and (optional) numerical values

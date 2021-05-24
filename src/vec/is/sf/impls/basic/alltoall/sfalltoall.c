@@ -221,4 +221,3 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-

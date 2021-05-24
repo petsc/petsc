@@ -401,7 +401,6 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
   PetscFunctionReturn(0);
 }
 
-
 /*@
   PetscDualSpaceDestroy - Destroys a PetscDualSpace object
 
@@ -777,7 +776,6 @@ PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *i
 .  uniform - PETSC_TRUE if (a) the dual space is the same for each point in a stratum of the reference DMPlex, and
              (b) every symmetry of each point in the reference DMPlex is also a symmetry of the point's dual space.
 
-
    Level: advanced
 
    Note: all of the usual spaces on simplex or tensor-product elements will be uniform, only reference cells
@@ -793,7 +791,6 @@ PetscErrorCode PetscDualSpaceGetUniform(PetscDualSpace sp, PetscBool *uniform)
   *uniform = sp->uniform;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
   PetscDualSpaceGetNumDof - Get the number of degrees of freedom for each spatial (topological) dimension

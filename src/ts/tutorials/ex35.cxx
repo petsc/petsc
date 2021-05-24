@@ -194,7 +194,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
 /*
   IJacobian - Compute IJacobian = dF/dU + a dF/dUdot
 */
@@ -250,7 +249,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   UserCtx           user = (UserCtx)ptr;
@@ -289,7 +287,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   ierr = DMMoabVecRestoreArray(dm, F, &f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
@@ -354,7 +351,6 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   ierr = DMRestoreLocalVector(dm, &Xloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {

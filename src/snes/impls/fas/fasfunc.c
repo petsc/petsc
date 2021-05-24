@@ -1,6 +1,5 @@
 #include <../src/snes/impls/fas/fasimpls.h> /*I  "petscsnes.h"  I*/
 
-
 /* -------------- functions called on the fine level -------------- */
 
 /*@
@@ -31,7 +30,6 @@ PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@
 SNESFASGetType - Sets the update and correction type used for FAS.
@@ -131,7 +129,6 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESFASGetLevels - Gets the number of levels in a FAS, including fine and coarse grids
 
@@ -156,7 +153,6 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
   *levels = fas->levels;
   PetscFunctionReturn(0);
 }
-
 
 /*@
    SNESFASGetCycleSNES - Gets the SNES corresponding to a particular
@@ -267,7 +263,6 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESFASSetContinuation - Sets the FAS cycle to default to exact Newton solves on the upsweep
 
@@ -313,7 +308,6 @@ PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESFASSetCycles - Sets the number of FAS multigrid cycles to use each time a grid is visited.  Use SNESFASSetCyclesOnLevel() for more
    complicated cycling.
@@ -350,7 +344,6 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@
    SNESFASSetMonitor - Sets the method-specific cycle monitoring
@@ -519,7 +512,6 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESFASCycleGetSmoother - Gets the smoother on a particular cycle level.
 
@@ -605,7 +597,6 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESFASCycleGetCorrection - Gets the coarse correction FAS context for this level
 
@@ -663,7 +654,6 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESFASCycleGetRestriction - Gets the restriction on this level
 
@@ -690,7 +680,6 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
   *mat = fas->restrct;
   PetscFunctionReturn(0);
 }
-
 
 /*@
    SNESFASCycleGetInjection - Gets the injection on this level
@@ -913,7 +902,6 @@ PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESFASSetInjection - Sets the function to be used to inject the solution
    from level l to l-1.
@@ -948,7 +936,6 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
   fas->inject = mat;
   PetscFunctionReturn(0);
 }
-
 
 /*@
    SNESFASGetInjection - Gets the matrix used to calculate the

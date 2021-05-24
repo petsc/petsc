@@ -24,7 +24,6 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    Output Parameter:
 .  v - time counter
 
-
    Usage:
      PetscLogDouble v;
      PetscTime(&v);

@@ -28,7 +28,6 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
   PetscFunctionReturn(0);
 }
 
-
 /*@
     VecGhostGetLocalForm - Obtains the local ghosted representation of
     a parallel vector (obtained with VecCreateGhost(), VecCreateGhostWithArray()

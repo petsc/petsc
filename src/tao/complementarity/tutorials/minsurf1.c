@@ -24,9 +24,6 @@ The command line options are:\n\
    Processors: 1
 T*/
 
-
-
-
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
@@ -36,7 +33,6 @@ typedef struct {
   PetscInt  mx, my;
   PetscReal *bottom, *top, *left, *right;
 } AppCtx;
-
 
 /* -------- User-defined Routines --------- */
 
@@ -336,7 +332,6 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
         xrb = x[row+1-mx];
       }
 
-
       d1 = (xc-xl)/hx;
       d2 = (xc-xr)/hx;
       d3 = (xc-xt)/hy;
@@ -352,7 +347,6 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
       f4 = PetscSqrtScalar(1.0 + d3*d3 + d2*d2);
       f5 = PetscSqrtScalar(1.0 + d2*d2 + d5*d5);
       f6 = PetscSqrtScalar(1.0 + d4*d4 + d6*d6);
-
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+(-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
       hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+(-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
@@ -540,7 +534,6 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

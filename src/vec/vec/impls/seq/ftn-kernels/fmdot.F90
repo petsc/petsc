@@ -64,7 +64,6 @@
       return
       end
 
-
       subroutine FortranMDot1(x,y1,n,sum1)
       implicit none
       PetscScalar  sum1,x(*),y1(*)

@@ -1245,7 +1245,6 @@ M*/
 .   m5 - 5th memory to free
 -   m6 - 6th memory to free
 
-
    Level: developer
 
    Notes:
@@ -1273,7 +1272,6 @@ M*/
 .   m5 - 5th memory to free
 .   m6 - 6th memory to free
 -   m7 - 7th memory to free
-
 
    Level: developer
 
@@ -1308,7 +1306,6 @@ PETSC_EXTERN PetscErrorCode PetscMallocResetCUDAHost(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetHIPHost(void);
 PETSC_EXTERN PetscErrorCode PetscMallocResetHIPHost(void);
 #endif
-
 
 #define MPIU_PETSCLOGDOUBLE  MPI_DOUBLE
 #define MPIU_2PETSCLOGDOUBLE MPI_2DOUBLE_PRECISION
@@ -1411,7 +1408,6 @@ PETSC_EXTERN PetscErrorCode PetscClassIdRegister(const char[],PetscClassId *);
 PETSC_EXTERN PetscErrorCode PetscObjectGetId(PetscObject,PetscObjectId*);
 PETSC_EXTERN PetscErrorCode PetscObjectCompareId(PetscObject,PetscObjectId,PetscBool*);
 
-
 /*
    Routines that get memory usage information from the OS
 */
@@ -1445,7 +1441,6 @@ PETSC_EXTERN PetscErrorCode PetscPythonPrintError(void);
 PETSC_EXTERN PetscErrorCode PetscPythonMonitorSet(PetscObject,const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscMonitorCompare(PetscErrorCode (*)(void),void *,PetscErrorCode (*)(void**),PetscErrorCode (*)(void),void *,PetscErrorCode (*)(void**),PetscBool *);
-
 
 /*
      These are so that in extern C code we can caste function pointers to non-extern C
@@ -2460,7 +2455,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
     PETSC_VERSION - This manual page provides information about how PETSc documents and uses its version information. This information is available to both C/C++
                     and Fortran compilers when petscsys.h is included.
 
-
     The current PETSc version and the API for accessing it are defined in petscversion.h
 
     The complete version number is given as the triple  PETSC_VERSION_MAJOR.PETSC_VERSION_MINOR.PETSC_VERSION_SUBMINOR (in short hand x.y.z)
@@ -2713,7 +2707,6 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer,void*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer,size_t*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
 
-
 /* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
  * possible. */
@@ -2776,7 +2769,6 @@ PETSC_EXTERN PetscErrorCode PetscTellMyCell(MPI_Comm,const char[],const char[],P
 
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[],const char[],char[],size_t,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],size_t);
-
 
 #if defined(PETSC_USE_DEBUG)
 PETSC_STATIC_INLINE unsigned int PetscStrHash(const char *str)

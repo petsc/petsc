@@ -38,4 +38,3 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_ND(Mat mat,MatOrderingType type,IS *r
   PetscFunctionReturn(0);
 }
 
-

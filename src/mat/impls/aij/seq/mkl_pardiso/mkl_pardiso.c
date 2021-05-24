@@ -53,7 +53,6 @@ void pardiso_64init(void *pt, INT_TYPE *mtype, INT_TYPE iparm [])
  #define MKL_PARDISO_INIT pardisoinit
 #endif
 
-
 /*
  *  Internal data structure.
  *  For more information check mkl_pardiso manual.
@@ -233,7 +232,6 @@ PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A,PetscBool sym,MatReuse reuse,P
   ierr = MatSeqAIJRestoreArrayRead(A,(const PetscScalar**)&aav);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, PetscScalar *X)
 {
@@ -964,7 +962,6 @@ PetscErrorCode MatView_MKL_PARDISO(Mat A, PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatGetInfo_MKL_PARDISO(Mat A, MatInfoType flag, MatInfo *info)
 {

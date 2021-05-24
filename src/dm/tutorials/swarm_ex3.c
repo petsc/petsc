@@ -8,7 +8,6 @@ static char help[] = "Tests DMSwarm with DMShell\n\n";
 #include <petscdmswarm.h>
 #include <petsc/private/dmimpl.h>
 
-
 PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
 {
   PetscInt       p,n,bs,npoints,si,sj,milocal,mjlocal,mx,my;
@@ -139,7 +138,6 @@ PetscErrorCode ex3_1(void)
   PetscInt       *iarray;
   PetscRandom    rand;
   PetscErrorCode ierr;
-
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 

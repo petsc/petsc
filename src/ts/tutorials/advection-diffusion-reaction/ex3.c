@@ -1,5 +1,4 @@
 
-
 static char help[] ="Model Equations for Advection-Diffusion\n";
 
 /*
@@ -124,7 +123,6 @@ int main(int argc,char **argv)
      Run the timestepping solver
   */
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -349,7 +347,6 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat AA,Mat BB,void *ctx)
     }
   }
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Complete the matrix assembly process and set some options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -369,7 +366,6 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat AA,Mat BB,void *ctx)
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   return 0;
 }
-
 
 /*TEST
 

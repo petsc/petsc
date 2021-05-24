@@ -110,8 +110,6 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
 
    Developer Note: this needs to generate the exact same string on all ranks that share the object. The current algorithm may not always work.
 
-
-
 .seealso: PetscObjectGetName(), PetscObjectSetName()
 @*/
 PetscErrorCode  PetscObjectName(PetscObject obj)
@@ -138,8 +136,6 @@ PetscErrorCode  PetscObjectName(PetscObject obj)
   }
   PetscFunctionReturn(0);
 }
-
-
 
 PetscErrorCode  PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
 {

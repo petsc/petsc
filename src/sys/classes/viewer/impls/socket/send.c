@@ -159,7 +159,6 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PetscSocketEstablish - starts a listener on a socket
 
@@ -297,7 +296,6 @@ $    -viewer_socket_port <port>
      .mat file. Use PetscMatlabEngineCreate() or PETSC_MATLAB_ENGINE_(), PETSC_MATLAB_ENGINE_SELF, or PETSC_MATLAB_ENGINE_WORLD
      for communicating with a MATLAB Engine
 
-
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerSetType(),
           PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD,
           PETSC_VIEWER_SOCKET_SELF, PetscViewerBinaryWrite(), PetscViewerBinaryRead(), PetscViewerBinaryWriteStringArray(),
@@ -369,7 +367,6 @@ static PetscErrorCode  PetscViewerBinaryGetFlowControl_Socket(PetscViewer viewer
 
 /*MC
    PETSCVIEWERSOCKET - A viewer that writes to a Unix socket
-
 
 .seealso:  PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSC_VIEWER_DRAW_(),PETSC_VIEWER_DRAW_SELF, PETSC_VIEWER_DRAW_WORLD,
            PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW,
@@ -468,7 +465,6 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
   is attached to a communicator, in this case the attribute is a PetscViewer.
 */
 PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
-
 
 /*@C
      PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.

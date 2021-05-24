@@ -1,5 +1,4 @@
 
-
 static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illustrating how to use TS on a structured domain. \n";
 /*
    u_t = uxx + uyy

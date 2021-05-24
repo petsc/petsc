@@ -79,7 +79,6 @@ static PetscErrorCode ourlocaltolocalend(DM dm,Vec g,InsertMode mode,Vec l)
   PetscObjectUseFortranCallbackSubType(dm,_cb.localtolocalend,(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),(&dm,&g,&mode,&l,&ierr));
 }
 
-
 PETSC_EXTERN void dmshellsetcreatematrix_(DM *dm,void (*func)(DM*,Mat*,PetscErrorCode*,PETSC_FORTRAN_CHARLEN_T len),PetscErrorCode *ierr)
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.creatematrix,(PetscVoidFunction)func,NULL);if (*ierr) return;

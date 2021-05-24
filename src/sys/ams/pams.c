@@ -91,7 +91,6 @@ PetscErrorCode  PetscSAWsBlock(void)
          Thus must be cast with a (PetscObject), for example,
          PetscObjectSetName((PetscObject)mat,name);
 
-
    Level: advanced
 
 .seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsSetBlock()

@@ -84,7 +84,6 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
 
-
   ierr = PetscLogEventEnd(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
 
   /* PART 2:  Read in vector in binary format */
@@ -186,6 +185,5 @@ int main(int argc,char **args)
        requires: hdf5
        nsize: 4
        args: -hdf5 -sizes_set
-
 
 TEST*/

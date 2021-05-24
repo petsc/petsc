@@ -146,7 +146,6 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
@@ -1238,7 +1237,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   const char           *prefix;
   PetscBool            wasSetup = PETSC_TRUE;
   VecType              vectype;
-
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);

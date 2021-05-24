@@ -6,8 +6,6 @@ static char help[] = "Large-deformation Elasticity Buckling Example";
    Processors: n
 T*/
 
-
-
 /*F-----------------------------------------------------------------------
 
     This example solves the 3D large deformation elasticity problem
@@ -69,8 +67,6 @@ PetscScalar grad[3*NVALS];
 
 typedef PetscScalar Field[3];
 typedef PetscScalar CoordField[3];
-
-
 
 typedef PetscScalar JacField[9];
 
@@ -201,7 +197,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 PetscInt OnBoundary(PetscInt i,PetscInt j,PetscInt k,PetscInt mx,PetscInt my,PetscInt mz)
 {
@@ -730,7 +725,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void *ptr)
 {
   /* values for each basis function at each quadrature point */
@@ -1053,7 +1047,6 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
   ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

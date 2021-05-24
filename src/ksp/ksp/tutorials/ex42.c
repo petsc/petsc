@@ -475,7 +475,6 @@ static void FormStressOperatorQ13D(PetscScalar Ke[],PetscScalar coords[],PetscSc
       B[5][3*i] = 0.0;    B[5][3*i+1] = d_dz_i;  B[5][3*i+2] = d_dy_i; /* e_yz */
     }
 
-
     tildeD[0] = 2.0*gp_weight[p]*J_p*eta[p];
     tildeD[1] = 2.0*gp_weight[p]*J_p*eta[p];
     tildeD[2] = 2.0*gp_weight[p]*J_p*eta[p];
@@ -1276,7 +1275,6 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e \n",PetscRealPart(h),PetscRealPart(p_L2),PetscRealPart(u_L2),PetscRealPart(u_H1));CHKERRQ(ierr);
 
-
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMDAVecRestoreArray(stokes_da,X_analytic_local,&stokes_analytic);CHKERRQ(ierr);
@@ -2022,7 +2020,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

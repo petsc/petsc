@@ -51,7 +51,6 @@ program main
       CHKERRA(ierr)
       n=2*size
 
-
       ! Set flag if we are doing a nonsymmetric problem; the default is symmetric.
 
       call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-mat_nonsym",mat_nonsymmetric,flg,ierr)

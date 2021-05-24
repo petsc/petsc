@@ -474,7 +474,6 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
      MATSOLVERPASTIX  - A solver package providing direct solvers (LU) for distributed
   and sequential matrices via the external package PaStiX.
@@ -496,7 +495,6 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 .seealso: PCFactorSetMatSolverType(), MatSolverType
 
 M*/
-
 
 PetscErrorCode MatGetInfo_PaStiX(Mat A,MatInfoType flag,MatInfo *info)
 {

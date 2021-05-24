@@ -231,7 +231,6 @@ PetscErrorCode TSMonitorExtreme(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
   PetscBool      iascii;
   PetscReal      max,min;
 
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,5);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -1203,8 +1202,6 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
   ierr = PetscFree2(x, y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 /*@C
    TSMonitorError - Monitors progress of the TS solvers by printing the 2 norm of the error at each timestep

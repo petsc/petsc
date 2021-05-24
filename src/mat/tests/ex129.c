@@ -195,7 +195,6 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat *C)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode ComputeMatrix(DM da,Mat B)
 {
   PetscErrorCode ierr;
@@ -276,8 +275,6 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 /*TEST
 

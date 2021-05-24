@@ -51,7 +51,6 @@ _mkdtemp_action(int dfd, char *path, void *ctx __unused, void *result __unused)
 static const char padchar[] =
 "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-
 static int
 find_temp_path(int dfd, char *path, int slen, int stat_base_dir,
                 find_temp_path_action_t action, void *action_ctx, void *action_result)

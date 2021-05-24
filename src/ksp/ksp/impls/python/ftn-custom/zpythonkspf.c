@@ -7,7 +7,6 @@
 #define ksppythonsettype_            ksppythonsettype
 #endif
 
-
 PETSC_EXTERN void ksppythonsettype_(KSP *ksp, char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;

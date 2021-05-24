@@ -94,7 +94,6 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"PetscIntSortSemiOrdered()   with %D integers, %D duplicate(s) per unique value took %g seconds\n",n,d,time1/r);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Speedup of PetscIntSortSemiOrdered() was %g (0:1 = slower, >1 means faster)\n",time/time1);CHKERRQ(ierr);
 
-
   for (i=0; i<n; i++) { /* Init X[] */
     ierr = PetscRandomGetValueReal(rdm,&val);CHKERRQ(ierr);
     X[i] = val*PETSC_MAX_INT;

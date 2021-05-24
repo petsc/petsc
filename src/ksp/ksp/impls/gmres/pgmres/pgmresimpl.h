@@ -26,5 +26,3 @@ typedef struct {
                                                         othog basis vectors */
 #endif
 
-
-

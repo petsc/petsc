@@ -7,7 +7,6 @@
 ! Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
 ! Fortan tranlation by Arko Bhattacharjee <a.bhattacharjee@mpie.de>
 
-
 program main
 #include <petsc/finclude/petscvec.h>
   use petscvec
@@ -33,7 +32,6 @@ program main
 
   call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
   call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr);CHKERRA(ierr)
-
 
   ! Create a parallel vector.
   ! Here we set up our x vector which will be given values below.
@@ -65,7 +63,6 @@ program main
   call VecAssemblyBegin(xend,ierr);CHKERRA(ierr)
   call VecAssemblyEnd(xend,ierr);CHKERRA(ierr)
 
-
   ! Set the x vector elements.
   ! i*h will return 0 for i=0 and 1 for i=N-1.
   ! The function evaluated (2x/(1+x^2)) is defined above.
@@ -81,28 +78,22 @@ program main
   end do
   call VecRestoreArrayF90(x,xarray,ierr);CHKERRA(ierr)
 
-
   ! Evaluates the integral.  First the sum of all the points is taken.
   ! That result is multiplied by the step size for the trapezoid rule.
   ! Then half the value at each endpoint is subtracted,
-   !this is part of the composite trapezoid rule.
-
+  ! this is part of the composite trapezoid rule.
 
   call VecSum(x,myResult,ierr);CHKERRA(ierr)
   myResult = myResult*h
   call VecDot(x,xend,dummy,ierr);CHKERRA(ierr)
   myResult = myResult-h*dummy
 
-
-
   !Return the value of the integral.
-
 
   write(output,'(a,f9.6,a)') 'ln(2) is',real(myResult),'\n'           ! PetscScalar might be complex
   call PetscPrintf(PETSC_COMM_WORLD,trim(output),ierr);CHKERRA(ierr)
   call VecDestroy(x,ierr);CHKERRA(ierr)
   call VecDestroy(xend,ierr);CHKERRA(ierr)
-
 
   call PetscFinalize(ierr);CHKERRA(ierr)
 

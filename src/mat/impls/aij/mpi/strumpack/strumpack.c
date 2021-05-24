@@ -39,7 +39,6 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F,MatSTRUMPACKReordering reordering)
 {
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;

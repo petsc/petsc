@@ -29,7 +29,6 @@ PETSC_EXTERN void petscsfview_(PetscSF *sf, PetscViewer *vin, PetscErrorCode *ie
   *ierr = PetscSFView(*sf, v);
 }
 
-
 PETSC_EXTERN void  petscsfgetgraph_(PetscSF *sf,PetscInt *nroots,PetscInt *nleaves, F90Array1d  *ailocal, F90Array1d  *airemote, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(pilocal) PETSC_F90_2PTR_PROTO(piremote))
 {
   const PetscInt    *ilocal;
@@ -51,7 +50,6 @@ PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit, const void *rp
   *ierr = PetscSFBcastBegin(*sf, dtype, rptr, lptr, cop);
 }
 
-
 PETSC_EXTERN void petscsfbcastend_(PetscSF *sf, MPI_Fint *unit, const void *rptr, void *lptr, MPI_Fint *op, PetscErrorCode *ierr)
 {
   MPI_Datatype dtype;
@@ -69,7 +67,6 @@ PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rpt
   const void   *rootdata;
   void         *leafdata;
   MPI_Op       cop = MPI_Op_f2c(*op);
-
 
   *ierr = PetscMPIFortranDatatypeToC(*unit,&dtype);if (*ierr) return;
   *ierr = F90Array1dAccess(rptr, dtype, (void**) &rootdata PETSC_F90_2PTR_PARAM(rptrd));if (*ierr) return;

@@ -10,7 +10,6 @@ typedef struct {
   Vec         xl,yl;       /* auxiliary sequential vectors for matmult operation */
 } Mat_LRC;
 
-
 PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 {
   Mat_LRC           *Na = (Mat_LRC*)N->data;

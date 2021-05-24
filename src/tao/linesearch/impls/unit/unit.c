@@ -74,4 +74,3 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-

@@ -47,7 +47,6 @@ PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,
   PetscFunctionReturn(0);
 }
 
-
 /* The following are different routines used to modify the preconditioner */
 
 /*@
@@ -127,7 +126,4 @@ PetscErrorCode  KSPFGMRESModifyPCKSP(KSP ksp,PetscInt total_its,PetscInt loc_its
   }
   PetscFunctionReturn(0);
 }
-
-
-
 

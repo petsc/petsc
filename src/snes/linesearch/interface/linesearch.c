@@ -257,7 +257,6 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESLineSearchReset - Undoes the SNESLineSearchSetUp() and deletes any Vecs or Mats allocated by the line search.
 

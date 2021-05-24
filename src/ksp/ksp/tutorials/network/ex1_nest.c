@@ -1,6 +1,5 @@
 static char help[] = "This example is based on ex1 using MATNEST. \n";
 
-
 /* T
   Concepts: DMNetwork
   Concepts: KSP
@@ -333,7 +332,6 @@ int main(int argc,char ** argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

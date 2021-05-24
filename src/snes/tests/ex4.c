@@ -5,8 +5,6 @@ static char help[] = "Tests TSLINESEARCHL2 handing of Inf/Nan.\n\n";
    Concepts: SNES^basic example
 T*/
 
-
-
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -90,7 +88,6 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,r,FormFunction2,NULL);CHKERRQ(ierr);
   ierr = SNESSetObjective(snes,FormObjective,NULL);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian2,NULL);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -228,9 +225,6 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   }
   return 0;
 }
-
-
-
 
 /*TEST
 

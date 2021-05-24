@@ -12,5 +12,3 @@ PETSC_EXTERN PetscErrorCode VecDumpSPAI(Vec,FILE*);
 
 #endif
 
-
-

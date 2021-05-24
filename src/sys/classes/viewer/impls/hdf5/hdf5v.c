@@ -149,7 +149,6 @@ static PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer,
   Options Database:
 .  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
 
-
   Notes:
     Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
          of one when the dimension is lower. Others think the option is crazy.
@@ -221,7 +220,6 @@ static PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, Petsc
 
   Options Database:
 .  -viewer_hdf5_sp_output - turns on (true) or off (false) output in single precision
-
 
   Notes:
     Setting this option does not make any difference if PETSc is compiled with single precision
@@ -445,7 +443,6 @@ static PetscErrorCode PetscViewerSetUp_HDF5(PetscViewer viewer)
 /*MC
    PETSCVIEWERHDF5 - A viewer that writes to an HDF5 file
 
-
 .seealso:  PetscViewerHDF5Open(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
            PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
@@ -515,7 +512,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
    In case of FILE_MODE_APPEND / FILE_MODE_UPDATE, any stored object (dataset, attribute) can be selectively ovewritten if the same fully qualified name (/group/path/to/object) is specified.
 
    This PetscViewer should be destroyed with PetscViewerDestroy().
-
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(),
           PetscViewerHDF5SetSPOutput(), PetscViewerHDF5GetBaseDimension2(), VecView(), MatView(), VecLoad(),

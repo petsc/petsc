@@ -46,6 +46,3 @@ PETSC_EXTERN PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *me
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-

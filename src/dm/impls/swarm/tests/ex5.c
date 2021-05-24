@@ -192,7 +192,6 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscInt          Np, p, dim, d;
   PetscErrorCode    ierr;
 
-
   PetscFunctionBeginUser;
   /* The DM is not currently pushed down to the splits */
   dim  = ((AppCtx *) ctx)->dim;
@@ -375,7 +374,6 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

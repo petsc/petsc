@@ -132,7 +132,6 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 
    Level: intermediate
 
-
 .seealso: PetscDrawTensorContourPatch(), PetscDrawScalePopup()
 
 @*/

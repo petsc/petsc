@@ -113,7 +113,6 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
 
 .seealso: ISDestroy(), ISView(), ISDifference(), ISExpand()
 
-
 @*/
 PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
 {
@@ -240,7 +239,6 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
    Level: intermediate
 
 .seealso: ISDestroy(), ISView(), ISDifference(), ISSum()
-
 
 @*/
 PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
@@ -427,7 +425,6 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 /*@
    ISConcatenate - Forms a new IS by locally concatenating the indices from an IS list without reordering.
 
-
    Collective.
 
    Input Parameter:
@@ -444,7 +441,6 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
    Level: intermediate
 
 .seealso: ISDifference(), ISSum(), ISExpand()
-
 
 @*/
 PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS *isout)
@@ -491,7 +487,6 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
    ISListToPair     -    convert an IS list to a pair of ISs of equal length defining an equivalent integer multimap.
                         Each IS on the input list is assigned an integer j so that all of the indices of that IS are
                         mapped to j.
-
 
   Collective.
 
@@ -552,7 +547,6 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
   ierr = ISCreateGeneral(comm,len,yinds,PETSC_OWN_POINTER,yis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
    ISPairToList   -   convert an IS pair encoding an integer map to a list of ISs.
@@ -681,7 +675,6 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    ISEmbed   -   embed IS a into IS b by finding the locations in b that have the same indices as in a.
                  If c is the IS of these locations, we have a = b*c, regarded as a composition of the
@@ -737,7 +730,6 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   PetscFunctionReturn(0);
 }
 
-
 /*@
   ISSortPermutation  -  calculate the permutation of the indices into a nondecreasing order.
 
@@ -749,7 +741,6 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 
   Output argument:
 . h    -  permutation or NULL, if f is nondecreasing and always == PETSC_FALSE.
-
 
   Note: Indices in f are unchanged. f[h[i]] is the i-th smallest f index.
         If always == PETSC_FALSE, an extra check is peformed to see whether

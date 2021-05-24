@@ -30,8 +30,6 @@ program main
     SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!")
   endif
 
-
-
   call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr);CHKERRA(ierr)
 
   ! ----------------------------------------------------------------------

@@ -116,7 +116,6 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar diag)
   return 0;
 }
 
-
 /*TEST
 
    test:

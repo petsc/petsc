@@ -322,7 +322,6 @@ PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A,MatSolverType *type)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
   MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices
   via the external package UMFPACK.

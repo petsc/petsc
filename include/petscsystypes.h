@@ -172,7 +172,6 @@ typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 /*MC
    PetscReal - PETSc type that represents a real number version of PetscScalar
 
-
    Notes:
    For MPI calls that require datatypes, use MPIU_REAL as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX, etc. for operations.
           They will automatically work correctly regardless of the size of PetscReal.
@@ -621,7 +620,6 @@ M*/
 
 M*/
 
-
 /*S
    PetscSubcomm - A decomposition of an MPI communicator into subcommunicators
 
@@ -651,7 +649,6 @@ $     PETSC_SUBCOMM_INTERLACED - the first communicator contains rank 0,3, the s
    Developer Notes:
    This is used in objects such as PCREDUNDANT to manage the subcommunicators on which the redundant computations
       are performed.
-
 
 .seealso: PetscSubcommCreate(), PetscSubcommSetNumber(), PetscSubcommSetType(), PetscSubcommView(), PetscSubcommSetFromOptions()
 

@@ -59,7 +59,6 @@ typedef struct {
   PetscScalar *alloc_val;
 } spbas_matrix;
 
-
 /*
   spbas_compress_pattern:
      calculate a compressed sparseness pattern for a sparseness pattern

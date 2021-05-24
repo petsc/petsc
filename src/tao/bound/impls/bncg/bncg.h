@@ -2,7 +2,6 @@
     Context for bound-constrained nonlinear conjugate gradient method
  */
 
-
 #ifndef __TAO_BNCG_H
 #define __TAO_BNCG_H
 

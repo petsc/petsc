@@ -2824,7 +2824,6 @@ static PetscErrorCode DMPlexCellRefinerRefine_SBR(DMPlexCellRefiner cr, DMPolyto
   PetscInt       val;
   PetscErrorCode ierr;
 
-
   PetscFunctionBeginHot;
   if (p < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
   ierr = DMLabelGetValue(rtype, p, &val);CHKERRQ(ierr);

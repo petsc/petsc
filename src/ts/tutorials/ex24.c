@@ -135,7 +135,6 @@ static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,voi
   PetscFunctionReturn(0);
 }
 
-
 /* ------------------------------------------------------------------- */
 /*
    FormIFunction - Evaluates nonlinear function, F(X,Xdot) = Xdot + grad(objective(X))

@@ -76,4 +76,3 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner part)
   PetscFunctionReturn(0);
 }
 
-

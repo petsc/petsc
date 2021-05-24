@@ -392,7 +392,6 @@ static PetscErrorCode ISToGeneral_Block(IS inis)
   PetscFunctionReturn(0);
 }
 
-
 static struct _ISOps myops = { ISGetIndices_Block,
                                ISRestoreIndices_Block,
                                ISInvertPermutation_Block,
@@ -433,7 +432,6 @@ static struct _ISOps myops = { ISGetIndices_Block,
 .   n - the length of the index set (the number of blocks)
 .  idx - the list of integers, one for each block, the integers contain the index of the first index of each block divided by the block size
 -  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported
-
 
    Notes:
    When the communicator is not MPI_COMM_SELF, the operations on the

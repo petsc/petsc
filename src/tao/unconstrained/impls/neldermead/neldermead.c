@@ -1,7 +1,6 @@
 #include <../src/tao/unconstrained/impls/neldermead/neldermead.h>
 #include <petscvec.h>
 
-
 /*------------------------------------------------------------*/
 static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
 {
@@ -22,7 +21,6 @@ static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*------------------------------------------------------------*/
 static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, PetscReal f)

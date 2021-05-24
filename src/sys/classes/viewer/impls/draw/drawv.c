@@ -53,7 +53,6 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 
     Level: intermediate
 
-
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
 PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,PetscDraw *draw)
@@ -119,7 +118,6 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
 
     Level: developer
 
-
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PetscViewerDrawBaseSet()
 @*/
 PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt windownumber)
@@ -150,7 +148,6 @@ PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt windownumber)
 -   windownumber - value to set the base
 
     Level: developer
-
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PetscViewerDrawBaseAdd()
 @*/
@@ -404,8 +401,6 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
    correct for character data!  Thus, PETSC_NULL_CHARACTER can be
    used for the display and title input parameters.
 
-
-
 .seealso: PetscDrawCreate(), PetscViewerDestroy(), PetscViewerDrawGetDraw(), PetscViewerCreate(), PETSC_VIEWER_DRAW_,
           PETSC_VIEWER_DRAW_WORLD, PETSC_VIEWER_DRAW_SELF
 @*/
@@ -545,7 +540,6 @@ PetscErrorCode PetscViewerView_Draw(PetscViewer viewer,PetscViewer v)
 
 /*MC
    PETSCVIEWERDRAW - A viewer that generates graphics, either to the screen or a file
-
 
 .seealso:  PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PETSC_VIEWER_DRAW_(),PETSC_VIEWER_DRAW_SELF, PETSC_VIEWER_DRAW_WORLD,
            PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY,
@@ -690,7 +684,6 @@ PetscErrorCode  PetscViewerDrawSetPause(PetscViewer viewer,PetscReal pause)
   PetscFunctionReturn(0);
 }
 
-
 /*@
     PetscViewerDrawSetHold - Holds previous image when drawing new image
 
@@ -816,7 +809,6 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
 .   nbounds - number of plots that can be made with this viewer, for example the dof passed to DMDACreate()
 -   bounds - the actual bounds, the size of this is 2*nbounds, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
 
-
     Options Database:
 .   -draw_bounds  minF0,maxF0,minF1,maxF1
 
@@ -827,7 +819,6 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
       bounds are moved to the bound value before plotting. In this way the color index from color to physical value remains the same for all plots generated with
       this viewer. Otherwise the color to physical value meaning changes with each new image if this is not set.
 
-
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
 PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,const PetscReal *bounds)
@@ -835,7 +826,6 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,con
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
   PetscErrorCode   ierr;
-
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -863,7 +853,6 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,con
 -   bounds - the actual bounds, the size of this is 2*nbounds, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
 
     Level: intermediate
-
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawSetBounds()
 @*/

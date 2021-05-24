@@ -17,8 +17,6 @@
    Processors: n
 T*/
 
-
-
 typedef struct {
   PetscInt n; /* Number of total variables */
   PetscInt m; /* Number of constraints */
@@ -50,7 +48,6 @@ typedef struct {
   Mat Div, Divwork;
   Mat DSG;
   Mat Diag,Ones;
-
 
   Vec q;
   Vec ur; /* reference */
@@ -491,7 +488,6 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
 
     /* Twork = sdiag(Twork) * Swork */
     ierr = VecPointwiseMult(user->Twork,user->Swork,user->Twork);CHKERRQ(ierr);
-
 
     /* Swork = pointwisemult(Sdiag,Twork) */
     ierr = VecPointwiseMult(user->Swork,user->Twork,user->Sdiag);CHKERRQ(ierr);
@@ -1306,9 +1302,6 @@ PetscErrorCode EllipticMonitor(Tao tao, void *ptr)
   ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%g ||y-yt||=%g\n",(double)unorm,(double)ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
 
 /*TEST
 

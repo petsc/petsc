@@ -37,8 +37,6 @@ The command line options include:\n\
    Processors: n
 T*/
 
-
-
 /* ------------------------------------------------------------------------
 
    PDE Solved : L(u) + lambda*u*u + alpha*u = 0 where L(u) is the Laplacian.
@@ -48,7 +46,6 @@ T*/
    of a node. The off diagonal terms will get a weight of -1.
 
    -----------------------------------------------------------------------*/
-
 
 #define MAX_ELEM      500  /* Maximum number of elements */
 #define MAX_VERT      100  /* Maximum number of vertices */
@@ -720,8 +717,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   /* MatView(jac,PETSC_VIEWER_STDOUT_SELF); */
   return 0;
 }
-
-
 
 /*TEST
 

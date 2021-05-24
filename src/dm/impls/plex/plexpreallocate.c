@@ -845,7 +845,6 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
 
   ierr = PetscSFGetRootRanks();CHKERRQ(ierr);
 
-
   ierr = PetscMalloc2(maxClosureSize*maxClosureSize,&cellmat,npoints,&owner);CHKERRQ(ierr);
   for (c=cStart; c<cEnd; c++) {
     ierr = PetscArrayzero(cellmat,maxClosureSize*maxClosureSize);CHKERRQ(ierr);

@@ -52,7 +52,6 @@
        University of Wisconsin  Madison, 1999.
 */
 
-
 static PetscErrorCode TaoSetUp_ASILS(Tao tao)
 {
   TAO_SSLS       *asls = (TAO_SSLS *)tao->data;

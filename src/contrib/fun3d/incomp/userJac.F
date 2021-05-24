@@ -111,7 +111,6 @@
       PetscScalar unormb,unormbp,unormbu
       PetscScalar unormbv,unormbw
 
-
 !
 ! Loop over the edges and fill the matrix
 ! First just zero it out
@@ -860,8 +859,4 @@
       endif
       return
       end
-
-
-
-
 

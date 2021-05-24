@@ -21,7 +21,6 @@
       return
       end
 
-
       subroutine FortranNormSqrUnroll(x,n,sum1)
       implicit none
       PetscScalar x(*)

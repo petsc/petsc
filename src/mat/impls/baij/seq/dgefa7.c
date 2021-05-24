@@ -152,4 +152,3 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_7(MatScalar *a,PetscRea
   PetscFunctionReturn(0);
 }
 
-

@@ -731,7 +731,6 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
     PetscStackCallStandard(HYPRE_BoomerAMGSetNumPaths,(jac->hsolver,jac->agg_num_paths));
   }
 
-
   ierr = PetscOptionsReal("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->strongthreshold < 0.0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Strong threshold %g must be great than or equal zero",(double)jac->strongthreshold);
@@ -1011,7 +1010,6 @@ static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc,Vec b,Vec y,Vec w,
   PetscStackCallStandard(HYPRE_BoomerAMGSetMaxIter,(jac->hsolver,jac->maxiter));
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 {
@@ -2350,7 +2348,6 @@ static PetscErrorCode PCApplyRichardson_PFMG(PC pc,Vec b,Vec y,Vec w,PetscReal r
   PetscStackCallStandard(HYPRE_StructPFMGSetMaxIter,(jac->hsolver,jac->its));
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode PCSetUp_PFMG(PC pc)
 {

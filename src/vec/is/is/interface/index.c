@@ -172,7 +172,6 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    ISCreateSubIS - Create a sub index set from a global index set selecting some components.
 
@@ -403,7 +402,6 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
 .    IS_PERMUTATION - the [local part of the] index set is a permutation of the integers {0, 1, ..., N-1}, where N is the size of the [local part of the] index set
 .    IS_INTERVAL - the [local part of the] index set is equal to a contiguous range of integers {f, f + 1, ..., f + N-1}
 -    IS_IDENTITY - the [local part of the] index set is equal to the integers {0, 1, ..., N-1}
-
 
    Notes:
    If type is IS_GLOBAL, all processes that share the index set must pass the same value in flg
@@ -949,7 +947,6 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 
    Level: intermediate
 
-
    The debug version of the libraries (./configure --with-debugging=1) checks if the
   index set is actually a permutation. The optimized version just believes you.
 
@@ -1090,7 +1087,6 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 
    Level: beginner
 
-
 @*/
 PetscErrorCode  ISGetSize(IS is,PetscInt *size)
 {
@@ -1182,13 +1178,10 @@ $          PetscErrorCode  ierr
 $          IS       i
 $          call ISGetIndicesF90(i,array,ierr)
 
-
-
    See the Fortran chapter of the users manual and
    petsc/src/is/[tutorials,tests] for details.
 
    Level: intermediate
-
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
@@ -1220,7 +1213,6 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
    Notes:
     Empty index sets return min=PETSC_MAX_INT and max=PETSC_MIN_INT.
     In parallel, it returns the min and max of the local portion of the IS
-
 
 .seealso: ISGetIndices(), ISRestoreIndices(), ISGetIndicesF90()
 @*/
@@ -1507,7 +1499,6 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
    ISGetNonlocalIS - Gather all nonlocal indices for this IS and present
                      them as another sequential index set.
 
-
    Collective on IS
 
    Input Parameter:
@@ -1550,7 +1541,6 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    ISRestoreNonlocalIS - Restore the IS obtained with ISGetNonlocalIS().
 
@@ -1561,7 +1551,6 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 -  complement - index set of is's nonlocal indices
 
    Level: intermediate
-
 
 .seealso: ISGetNonlocalIS(), ISGetNonlocalIndices(), ISRestoreNonlocalIndices()
 @*/
@@ -1680,7 +1669,6 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 
    Level: intermediate
 
-
 .seealso: ISSortRemoveDups(), ISSorted()
 @*/
 PetscErrorCode  ISSort(IS is)
@@ -1703,7 +1691,6 @@ PetscErrorCode  ISSort(IS is)
 . is - the index set
 
   Level: intermediate
-
 
 .seealso: ISSort(), ISSorted()
 @*/
@@ -1729,7 +1716,6 @@ PetscErrorCode ISSortRemoveDups(IS is)
 .  is - the index set
 
    Level: intermediate
-
 
 .seealso: ISSorted()
 @*/
@@ -1981,7 +1967,6 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 
 .seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
-
 M*/
 
 /*MC
@@ -1999,7 +1984,6 @@ M*/
 
     Output Parameter:
 .   ierr - error code
-
 
     Example of Usage:
 .vb

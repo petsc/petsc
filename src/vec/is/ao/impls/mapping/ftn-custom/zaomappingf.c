@@ -19,4 +19,3 @@ PETSC_EXTERN void aocreatemapping_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp
   *ierr = AOCreateMapping(MPI_Comm_f2c(*(MPI_Fint*)comm),*napp,myapp,mypetsc,aoout);
 }
 
-

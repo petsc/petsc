@@ -24,7 +24,6 @@ int main(int argc,char **argv)
   return 0;
 }
 
-
 /*
 
     Because this example may produce different output on different machines we filter out everything.

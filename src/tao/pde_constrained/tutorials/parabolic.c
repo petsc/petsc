@@ -17,8 +17,6 @@
    Processors: n
 T*/
 
-
-
 typedef struct {
   PetscInt n; /*  Number of variables */
   PetscInt m; /*  Number of constraints per time step */
@@ -81,7 +79,6 @@ typedef struct {
   PetscInt ksp_its;
   PetscInt ksp_its_initial;
 } AppCtx;
-
 
 PetscErrorCode FormFunction(Tao, Vec, PetscReal*, void*);
 PetscErrorCode FormGradient(Tao, Vec, Vec, void*);
@@ -651,7 +648,6 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat)
 {
   PetscErrorCode ierr;
@@ -676,7 +672,6 @@ PetscErrorCode Scatter_i(Vec y, Vec *yi, VecScatter *scat, PetscInt nt)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat)
 {
@@ -876,7 +871,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
   ierr = MatAssemblyBegin(user->Grad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->Grad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
 
   /* Generate arithmetic averaging matrix Av */
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Av);CHKERRQ(ierr);
@@ -1332,7 +1326,6 @@ PetscErrorCode ParabolicMonitor(Tao tao, void *ptr)
   ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%g ||y-yt||=%g\n",(double)unorm,(double)ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

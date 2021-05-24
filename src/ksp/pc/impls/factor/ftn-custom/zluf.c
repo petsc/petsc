@@ -1,7 +1,6 @@
 #include <petsc/private/fortranimpl.h>
 #include <petscpc.h>
 
-
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define pcfactorsetmatorderingtype_  PCFACTORSETMATORDERINGTYPE
 #define pcfactorsetmatsolvertype_ PCFACTORSETMATSOLVERTYPE

@@ -83,7 +83,6 @@ typedef struct _PCGAMGHashTable {
   PetscInt size;
 } PCGAMGHashTable;
 
-
 PETSC_INTERN PetscErrorCode PCGAMGHashTableCreate(PetscInt, PCGAMGHashTable*);
 PETSC_INTERN PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable*);
 PETSC_INTERN PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable*,PetscInt,PetscInt);

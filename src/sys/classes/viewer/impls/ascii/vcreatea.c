@@ -160,7 +160,6 @@ PetscViewer  PETSC_VIEWER_STDERR_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
-
 PetscMPIInt Petsc_Viewer_keyval = MPI_KEYVAL_INVALID;
 /*
    Called with MPI_Comm_free() is called on a communicator that has a viewer as an attribute. The viewer is not actually destroyed because that is managed by

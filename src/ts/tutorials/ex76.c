@@ -193,7 +193,6 @@ static PetscErrorCode cubic_T_t(PetscInt Dim, PetscReal time, const PetscReal X[
   return 0;
 }
 
-
 static void f0_cubic_v(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -517,7 +516,6 @@ static void g1_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   }
 }
 
-
 static void g2_vp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                   const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                   const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -585,7 +583,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       sol;
   PetscErrorCode ierr;
-
 
   PetscFunctionBeginUser;
   options->solType = SOL_QUADRATIC;

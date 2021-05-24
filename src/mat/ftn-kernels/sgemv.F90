@@ -25,7 +25,6 @@
       return
       end
 
-
       subroutine MSGemvp(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
@@ -43,7 +42,6 @@
       return
       end
 
-
       subroutine MSGemvm(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
@@ -60,7 +58,6 @@
 
       return
       end
-
 
       subroutine MSGemvt(bs,ncols,A,x,y)
       implicit none
@@ -88,7 +85,6 @@
       PetscScalar sum
       PetscInt    i,j,k
 
-
       do 10, i=1,bs
         do 20, j=1,bs
           sum = A(i,j)
@@ -102,7 +98,6 @@
       return
       end
 
-
       subroutine MSGemmi(bs,A,C,B)
       implicit none
       PetscInt    bs
@@ -110,7 +105,6 @@
       PetscScalar sum
 
       PetscInt    i,j,k
-
 
       do 10, i=1,bs
         do 20, j=1,bs

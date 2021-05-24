@@ -12,7 +12,6 @@ typedef struct {
 
 const char *const PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",NULL};
 
-
 /*
       DMDAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
@@ -121,7 +120,6 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   for (i=1; i<m-istart-1; i++) xsurf[cnt++ + 24*Nsurf] = 1;
   xsurf[cnt++ + 25*Nsurf] = 1;
 
-
   /* interpolations only sum to 1 when using direct solver */
 #if defined(PETSC_USE_DEBUG_foo)
   for (i=0; i<Nsurf; i++) {
@@ -132,7 +130,6 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
 #endif
   ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
   /* ierr = MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
-
 
   /*
        I are the indices for all the needed vertices (in global numbering)
@@ -230,7 +227,6 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
   /* ierr =MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 #endif
-
 
   /*         total vertices             total faces                                  total edges */
   Ntotal = (mp + 1)*(np + 1)*(pp + 1) + mp*np*(pp+1) + mp*pp*(np+1) + np*pp*(mp+1) + mp*(np+1)*(pp+1) + np*(mp+1)*(pp+1) +  pp*(mp+1)*(np+1);
@@ -414,7 +410,6 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
   /* ierr = MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
-
   /*
        I are the indices for all the needed vertices (in global numbering)
        Iint are the indices for the interior values, I surf for the surface values
@@ -514,7 +509,6 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   /* ierr =MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 #endif
 
-
   /*         total faces    */
   Ntotal =  mp*np*(pp+1) + mp*pp*(np+1) + np*pp*(mp+1);
 
@@ -571,7 +565,6 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);
 
-
 #if defined(PETSC_USE_DEBUG_foo)
   {
     Vec         x,y;
@@ -602,7 +595,6 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   PetscFunctionReturn(0);
 }
 
-
 /*@
    PCExoticSetType - Sets the type of coarse grid interpolation to use
 
@@ -627,7 +619,6 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
      Both interpolations are suitable for only scalar problems.
 
    Level: intermediate
-
 
 .seealso: PCEXOTIC, PCExoticType()
 @*/
@@ -755,7 +746,6 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC p
   PetscFunctionReturn(0);
 }
 
-
 /*MC
      PCEXOTIC - Two level overlapping Schwarz preconditioner with exotic (non-standard) coarse grid spaces
 
@@ -823,7 +813,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
   ex->type     = PC_EXOTIC_FACE;
   mg           = (PC_MG*) pc->data;
   mg->innerctx = ex;
-
 
   pc->ops->setfromoptions = PCSetFromOptions_Exotic;
   pc->ops->view           = PCView_Exotic;

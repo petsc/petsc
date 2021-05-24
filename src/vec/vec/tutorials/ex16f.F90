@@ -21,15 +21,13 @@ implicit none
 
   call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-n",n,flg,ierr);CHKERRA(ierr)
 
-
   !Create multi-component vector with 2 components
   call VecCreate(PETSC_COMM_WORLD,v,ierr);CHKERRA(ierr)
   call VecSetSizes(v,PETSC_DECIDE,n,ierr);CHKERRA(ierr)
   call VecSetBlockSize(v,four,ierr);CHKERRA(ierr)
   call VecSetFromOptions(v,ierr);CHKERRA(ierr)
 
-
-  !Create double-component vectors
+  ! Create double-component vectors
 
   call VecCreate(PETSC_COMM_WORLD,s,ierr);CHKERRA(ierr)
   call VecSetSizes(s,PETSC_DECIDE,n/two,ierr);CHKERRA(ierr)
@@ -49,7 +47,6 @@ implicit none
      call VecSetValues(v,one,i,myValue,INSERT_VALUES,ierr);CHKERRA(ierr)
   end do
 
-
   ! Get the components from the multi-component vector to the other vectors
 
   call VecStrideGatherAll(v,vecs,INSERT_VALUES,ierr);CHKERRA(ierr)
@@ -60,7 +57,6 @@ implicit none
   call VecStrideScatterAll(vecs,v,ADD_VALUES,ierr);CHKERRA(ierr)
 
   call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-
 
   !Free work space.All PETSc objects should be destroyed when they are no longer needed.
 

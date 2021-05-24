@@ -6,7 +6,6 @@ static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustr
    At t=0: u(x,y) = exp(c*r*r*r), if r=PetscSqrtReal((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
            u(x,y) = 0.0           if r >= .125
 
-
    Boundary conditions:
    Drichlet BC:
    At x=0, x=1, y=0, y=1: u = 0.0
@@ -366,6 +365,5 @@ PetscErrorCode FormInitialSolution(Vec U,void *ptr)
       suffix: 5
       nsize: 1
       args: -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 -Jtype 1 -ts_monitor
-
 
 TEST*/

@@ -1056,7 +1056,6 @@ M*/
 +  e - integer associated with the event obtained from PetscLogEventRegister()
 -  o1,o2,o3,o4 - objects associated with the event, or 0
 
-
    Fortran Synopsis:
    void PetscLogEventBegin(int e,PetscErrorCode ierr)
 
@@ -1093,7 +1092,6 @@ M*/
    Input Parameters:
 +  e - integer associated with the event obtained with PetscLogEventRegister()
 -  o1,o2,o3,o4 - objects associated with the event, or 0
-
 
    Fortran Synopsis:
    void PetscLogEventEnd(int e,PetscErrorCode ierr)
@@ -1144,7 +1142,6 @@ PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
   ierr = PetscEventRegLogGetEvent(stageLog->eventLog, name, event);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
 /*@C
@@ -2070,8 +2067,6 @@ PetscErrorCode PetscLogViewFromOptions(void)
   PetscFunctionReturn(0);
 }
 
-
-
 /*----------------------------------------------- Counter Functions -------------------------------------------------*/
 /*@C
    PetscGetFlops - Returns the number of flops used on this processor
@@ -2112,7 +2107,6 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
    PetscLogFlops - Adds floating point operations to the global counter.
 
@@ -2124,7 +2118,6 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 
    Input Parameter:
 .  f - flop counter
-
 
    Usage:
 .vb
@@ -2187,7 +2180,6 @@ M*/
 
 .seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadEnd(), PetscPreLoadStage()
 
-
 M*/
 
 /*MC
@@ -2245,7 +2237,6 @@ M*/
 .seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadBegin(), PetscPreLoadEnd()
 
 M*/
-
 
 #if defined(PETSC_HAVE_DEVICE)
 
@@ -2357,7 +2348,6 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 
 #endif /* PETSC_USE_LOG*/
 
-
 PetscClassId PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
 PetscClassId PETSC_OBJECT_CLASSID  = 0;
 
@@ -2418,7 +2408,6 @@ PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,Pe
    creation (and should not significantly slow the programs).
 
    Level: advanced
-
 
 .seealso: PetscLogDump(), PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogEventActivate(),
           PetscLogEventDeactivate()

@@ -7,7 +7,6 @@
       use petscmat
       implicit none
 
-
       Mat A
       Vec x, y
       PetscErrorCode ierr

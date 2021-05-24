@@ -606,7 +606,6 @@ static PetscErrorCode SNESNASMGetDamping_NASM(SNES snes,PetscReal *dmp)
   PetscFunctionReturn(0);
 }
 
-
 /*
   Input Parameters:
 + snes - The solver
@@ -651,7 +650,6 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     }
   }
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
-
 
   if (nasm->eventsubsolve) {ierr = PetscLogEventBegin(nasm->eventsubsolve,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {

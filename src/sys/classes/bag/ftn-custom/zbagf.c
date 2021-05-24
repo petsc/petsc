@@ -1,5 +1,4 @@
 
-
 #include <petsc/private/fortranimpl.h>
 #include <petscbag.h>
 
@@ -10,7 +9,6 @@
 #endif
 
 /* ---------------------------------------------------------------------*/
-
 
 PETSC_EXTERN void petscbagregisterenumprivate_(PetscBag *bag,void *addr,const char *const*list,
             PetscEnum *def,char* name,char* help,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2)
@@ -23,5 +21,4 @@ PETSC_EXTERN void petscbagregisterenumprivate_(PetscBag *bag,void *addr,const ch
   FREECHAR(name,c1);
   FREECHAR(help,c2);
 }
-
 

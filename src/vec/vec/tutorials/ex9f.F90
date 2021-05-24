@@ -61,7 +61,6 @@
 !         |-------------------------------------------------|
 !
 
-
       if (rank .eq. 0) then
         ifrom(1) = 11
         ifrom(2) = 6
@@ -83,7 +82,6 @@
         call VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,        &
      &       nghost,ifrom,gxs,ierr)
       endif
-
 
 !      Test VecDuplicate
 
@@ -120,7 +118,6 @@
        call VecDestroy(gx,ierr)
        call PetscFinalize(ierr)
        end
-
 
 !/*TEST
 !

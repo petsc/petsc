@@ -192,7 +192,6 @@ PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
 PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
 #endif
 
-
 /* SF only supports CUDA and Kokkos devices. Even VIENNACL is a device, its device pointers are invisible to SF.
    Through VecGetArray(), we copy data of VECVIENNACL from device to host and pass host pointers to SF.
  */

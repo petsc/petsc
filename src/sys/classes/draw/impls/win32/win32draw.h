@@ -53,6 +53,4 @@ typedef struct  {
 
 } PetscDraw_Win32;
 
-
-
 #endif

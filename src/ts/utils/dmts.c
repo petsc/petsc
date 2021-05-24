@@ -748,7 +748,6 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,TSForcingFunction f,void *ctx)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    DMTSGetForcingFunction - get TS forcing function evaluation function
 

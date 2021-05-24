@@ -69,7 +69,6 @@ int main(int argc,char **argv)
   */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -340,7 +339,6 @@ PetscErrorCode MyKSPConvergedReasonView(KSP ksp,void *ctx)
   ierr = PetscViewerASCIISubtractTab(viewer,3);CHKERRQ(ierr);
   return 0;
 }
-
 
 /*TEST
 

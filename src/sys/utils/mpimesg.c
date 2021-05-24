@@ -1,7 +1,6 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"  I*/
 
-
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
 
@@ -58,7 +57,6 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   PetscGatherMessageLengths - Computes info about messages that a MPI-node will receive,
   including (from-id,length) pairs for each message.
@@ -71,7 +69,6 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 . nrecvs    - number of messages being received
 - ilengths  - an array of integers of length sizeof(comm)
               a non zero ilengths[i] represent a message to i of length ilengths[i]
-
 
   Output Parameters:
 + onodes    - list of node-ids from which messages are expected
@@ -207,7 +204,6 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
 
   /* Post waits on sends and receivs */
   if (nrecvs+nsends) {ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRMPI(ierr);}
-
 
   /* Pack up the received data */
   ierr = PetscMalloc1(nrecvs+1,onodes);CHKERRQ(ierr);

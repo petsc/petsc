@@ -19,7 +19,6 @@
 !  Processors: 1
 !T*/
 
-
 !
 ! ----------------------------------------------------------------------
 !
@@ -67,11 +66,9 @@
       m = 214
       n = 3
 
-
 !  Allocate vectors for the solution and gradient
       call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)
       call VecCreateSeq(PETSC_COMM_SELF,m,f,ierr)
-
 
 !  The TAO code begins here
 
@@ -89,7 +86,6 @@
       call FormStartingPoint(x)
       call TaoSetInitialVector(tao, x, ierr)
       CHKERRA(ierr)
-
 
 !  Check for TAO command line options
       call TaoSetFromOptions(tao,ierr)
@@ -121,7 +117,6 @@
 
       end
 
-
 ! --------------------------------------------------------------------
 !  FormFunction - Evaluates the function f(X) and gradient G(X)
 !
@@ -150,17 +145,14 @@
       call VecGetArrayF90(x,x_v,ierr);CHKERRQ(ierr)
       call VecGetArrayF90(f,f_v,ierr);CHKERRQ(ierr)
 
-
 !     Compute F(X)
       do i=0,m-1
          f_v(i+1) = y(i) - exp(-x_v(1)*t(i))/(x_v(2) + x_v(3)*t(i))
       enddo
 
-
 !     Restore vectors
       call VecRestoreArrayF90(X,x_v,ierr);CHKERRQ(ierr)
       call VecRestoreArrayF90(F,f_v,ierr);CHKERRQ(ierr)
-
 
       return
       end

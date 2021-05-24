@@ -31,7 +31,6 @@ struct _n_User {
   PetscReal next_output;
 };
 
-
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -74,7 +73,6 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
   }
   PetscFunctionReturn(0);
 }
-
 
 int main(int argc,char **argv)
 {

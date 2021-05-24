@@ -155,7 +155,6 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    On certain machines, in particular the IBM PowerPC, floating point
    trapping may be VERY slow!
 
-
 .seealso: PetscFPTrapPush(), PetscFPTrapPop(), PetscDetermineInitialFPTrap()
 @*/
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
@@ -680,6 +679,4 @@ PetscErrorCode  PetscDetermineInitialFPTrap(void)
   PetscFunctionReturn(0);
 }
 #endif
-
-
 

@@ -118,5 +118,4 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateMassMatrixSquare(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cellswarm);
 PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM cellswarm);
 
-
 #endif

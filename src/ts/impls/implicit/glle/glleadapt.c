@@ -221,7 +221,6 @@ PetscErrorCode  TSGLLEAdaptCreate(MPI_Comm comm,TSGLLEAdapt *inadapt)
   PetscFunctionReturn(0);
 }
 
-
 /*
 *  Implementations
 */
@@ -272,7 +271,6 @@ typedef struct {
   PetscReal desired_h;
 } TSGLLEAdapt_Size;
 
-
 static PetscErrorCode TSGLLEAdaptChoose_Size(TSGLLEAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
   TSGLLEAdapt_Size *sz = (TSGLLEAdapt_Size*)adapt->data;
@@ -315,7 +313,6 @@ typedef struct {
   PetscInt  count_at_order;
   PetscReal desired_h;
 } TSGLLEAdapt_Both;
-
 
 static PetscErrorCode TSGLLEAdaptChoose_Both(TSGLLEAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {

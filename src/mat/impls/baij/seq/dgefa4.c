@@ -390,4 +390,3 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(float *a)
 
 #endif
 
-

@@ -1,5 +1,4 @@
 
-
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -13,7 +12,6 @@
 #include <petsc/private/vecimpl.h>
 
 #include <../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h>
-
 
 #include <algorithm>
 #include <vector>
@@ -276,7 +274,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
    the parameter nz (or the array nnz).  By setting these parameters accurately,
    performance during matrix assembly can be increased substantially.
 
-
    Collective
 
    Input Parameters:
@@ -324,7 +321,6 @@ PetscErrorCode  MatCreateSeqAIJViennaCL(MPI_Comm comm,PetscInt m,PetscInt n,Pets
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
 {
   PetscErrorCode ierr;
@@ -352,7 +348,6 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
   ierr     = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
 {
@@ -405,7 +400,6 @@ static PetscErrorCode MatSeqAIJGetArray_SeqAIJViennaCL(Mat A,PetscScalar *array[
   A->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode MatSeqAIJRestoreArray_SeqAIJViennaCL(Mat A,PetscScalar *array[])
 {
@@ -487,7 +481,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
   PetscFunctionReturn(0);
 }
 
-
 /*MC
    MATSEQAIJVIENNACL - MATAIJVIENNACL = "aijviennacl" = "seqaijviennacl" - A matrix type to be used for sparse matrices.
 
@@ -503,7 +496,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
 
 .seealso: MatCreateSeqAIJViennaCL(), MATAIJVIENNACL, MatCreateAIJViennaCL()
 M*/
-
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void)
 {

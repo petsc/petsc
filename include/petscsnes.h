@@ -76,7 +76,6 @@ PETSC_EXTERN PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
 
-
 PETSC_EXTERN PetscErrorCode SNESRegister(const char[],PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESGetKSP(SNES,KSP*);
@@ -515,7 +514,6 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec))
 
 /* --------- Routines specifically for line search methods --------------- */
 
-
 /*S
      SNESLineSearch - Abstract PETSc object that manages line-search operations
 
@@ -642,7 +640,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSolutionUpdate(SNESLineSearch,P
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchAppendOptionsPrefix(SNESLineSearch, const char prefix[]);
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetOptionsPrefix(SNESLineSearch, const char *prefix[]);
-
 
 /* Shell interface functions */
 PETSC_EXTERN PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch,SNESLineSearchUserFunc,void*);

@@ -10,7 +10,6 @@
 S*/
 typedef struct _p_DMPlexCellRefiner *DMPlexCellRefiner;
 
-
 /*E
   DMPlexCellRefinerType - This describes the strategy used to refine cells.
 

@@ -1,11 +1,9 @@
 
 static char help[] = "Plots the various potentials used in the examples.\n";
 
-
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>
-
 
 int main(int argc,char **argv)
 {
@@ -17,7 +15,6 @@ int main(int argc,char **argv)
   const char *const         legend[] = {"(1 - u^2)^2","1 - u^2","-(1 - u)log(1 - u)"};
   PetscDrawAxis             axis;
   PetscDrawViewPorts        *ports;
-
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;

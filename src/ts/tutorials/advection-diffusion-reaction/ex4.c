@@ -91,7 +91,6 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,&appctx);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -255,9 +254,6 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   ierr = DMDAVecRestoreArrayWrite(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
 
 /*TEST
 

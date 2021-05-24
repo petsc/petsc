@@ -73,7 +73,6 @@ int main(int argc,char **args)
     for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(&islocal1[i]);CHKERRQ(ierr);}
     for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(&islocal2[i]);CHKERRQ(ierr);}
 
-
     ierr = PetscFree(is1);CHKERRQ(ierr);
     ierr = PetscFree(is2);CHKERRQ(ierr);
     ierr = PetscFree(islocal1);CHKERRQ(ierr);
@@ -83,8 +82,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
 
 /*TEST
 

@@ -290,7 +290,6 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec x, Mat JE, Mat JEpre, void *ctx
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:

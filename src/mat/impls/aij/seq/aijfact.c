@@ -971,7 +971,6 @@ PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,const MatFactorInfo *info)
 }
 /* ----------------------------------------------------------- */
 
-
 PetscErrorCode MatSolve_SeqAIJ_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a    = (Mat_SeqAIJ*)A->data;
@@ -1557,7 +1556,6 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
     for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
     tmp[i] = s1;
   }
-
 
   /* backward solve the L^T */
   for (i=n-1; i>=0; i--) {

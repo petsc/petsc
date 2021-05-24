@@ -367,7 +367,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    test:

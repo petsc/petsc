@@ -141,7 +141,6 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 #if defined(new)
 /*
   DMDAGetDiagonal_MFFD - Gets the diagonal for a matrix free matrix where local
@@ -442,7 +441,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     }
     ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
   }
-
 
   /* determine who lies on each side of us stored in    n6 n7 n8
                                                         n3    n5
@@ -772,7 +770,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 .  -da_refine_x <rx> - refinement ratio in x direction
 .  -da_refine_y <ry> - refinement ratio in y direction
 -  -da_refine <n> - refine the DMDA n times before creating
-
 
    Level: beginner
 

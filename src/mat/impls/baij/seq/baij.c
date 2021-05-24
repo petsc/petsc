@@ -889,7 +889,6 @@ PetscErrorCode MatSOR_SeqBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   PetscFunctionReturn(0);
 }
 
-
 /*
     Special version for direct calls from Fortran (Used in PETSc-fun3d)
 */
@@ -1084,7 +1083,6 @@ PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat A)
   }
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool blockcompressed,PetscInt *nn,const PetscInt *inia[],const PetscInt *inja[],PetscBool  *done)
 {
@@ -1720,7 +1718,6 @@ PetscErrorCode MatView_SeqBAIJ(Mat A,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatGetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
@@ -3554,7 +3551,6 @@ PetscErrorCode  MatSeqBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
   ierr = PetscTryMethod(B,"MatSeqBAIJSetPreallocationCSR_C",(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,bs,i,j,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
      MatCreateSeqBAIJWithArrays - Creates an sequential BAIJ matrix using matrix elements provided by the user.

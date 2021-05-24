@@ -17,7 +17,6 @@ typedef struct {
   PetscInt hopt_resets;      /* number of times we've reset the hopt estimate */
 } DIFFPAR_MORE;
 
-
 PETSC_INTERN PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
 PETSC_INTERN PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
 PETSC_INTERN PetscErrorCode SNESNoise_dnest_(PetscInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);

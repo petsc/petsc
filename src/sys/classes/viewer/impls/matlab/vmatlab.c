@@ -2,7 +2,6 @@
 #include <petsc/private/viewerimpl.h>
 #include <mat.h>
 
-
 typedef struct {
   MATFile       *ep;
   PetscMPIInt   rank;
@@ -214,7 +213,6 @@ $    FILE_MODE_WRITE - open existing file for MATLAB output
      This only saves Vecs it cannot be used to save Mats. We recommend using the PETSCVIEWERBINARY to save objects to be loaded into MATLAB
      instead of this routine.
 
-
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PETSCVIEWERBINARY, PetscViewerBinaryOpen()
           VecView(), MatView(), VecLoad(), MatLoad()
 @*/
@@ -293,8 +291,4 @@ PetscViewer  PETSC_VIEWER_MATLAB_(MPI_Comm comm)
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_REPEAT," ");PetscFunctionReturn(NULL);}
   PetscFunctionReturn(viewer);
 }
-
-
-
-
 

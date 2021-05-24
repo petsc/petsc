@@ -183,7 +183,6 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
     The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
     remove redundancy and be clearer and simplier.
 
-
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdateSubMatrices(), MatCreateTranspose(), MatGetSchurComplement(),
           MatSchurComplementGetPmat()
 
@@ -416,7 +415,6 @@ PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A
   ierr = KSPSetOperators(Na->ksp,A00,Ap00);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@C
   MatSchurComplementGetSubMatrices - Get the individual submatrices in the Schur complement

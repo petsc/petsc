@@ -810,7 +810,6 @@ static PetscErrorCode DMPlexMapToGlobalPoint(DM dm, PetscInt localPoint, PetscSF
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode DMPlexPointIsShared(DM dm, PetscInt p, PetscBool *isShared)
 {
   PetscSF         sf;

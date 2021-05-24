@@ -31,7 +31,6 @@ int main(int argc,char **args)
   D     =4;
   dim[0]=N0;dim[1]=N1;dim[2]=N2;dim[3]=N3/2+1;
 
-
   alloc_local = fftw_mpi_local_size_transposed(D,dim,PETSC_COMM_WORLD,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
   printf("The value alloc_local is %ld from process %d\n",alloc_local,rank);
@@ -45,7 +44,6 @@ int main(int argc,char **args)
   in1=(double*)fftw_malloc(sizeof(double)*alloc_local*2);
   in2=(double*)fftw_malloc(sizeof(double)*alloc_local*2);
   out=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-
 
   N=2*N0*N1*N2*(N3/2+1);N_factor=N0*N1*N2*N3;
   n=2*local_n0*N1*N2*(N3/2+1);n1=local_n1*N0*2*N1*N2;
@@ -65,7 +63,6 @@ int main(int argc,char **args)
 /*    VecAssemblyBegin(fin); */
 /*    VecAssemblyEnd(fin); */
 /*    VecView(fin,PETSC_VIEWER_STDOUT_WORLD); */
-
 
   VecGetArray(fin,&x_arr);
   VecGetArray(fout1,&z_arr);

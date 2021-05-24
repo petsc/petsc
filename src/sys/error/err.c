@@ -86,7 +86,6 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,mess)
    Developer Note:
    Since this is an error handler it cannot call CHKERRQ(); thus we just return if an error is detected.
 
-
 .seealso: PetscError(), PetscPushErrorHandler(), PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscTraceBackErrorHandler(), PetscReturnErrorHandler()
  @*/

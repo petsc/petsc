@@ -23,8 +23,6 @@
       Call PetscFinalize(ierr)
       end program ex10f90
 
-
-
 !
 !/*TEST
 !

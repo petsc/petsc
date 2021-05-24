@@ -10,7 +10,6 @@ The command line options include:\n\
   -kappa <1e-3>: diffusivity in odd regions\n\
 \n";
 
-
 /*F
     The $p$-Bratu problem is a combination of the $p$-Laplacian (nonlinear diffusion) and the Brutu solid fuel ignition problem.
     This problem is modeled by the partial differential equation
@@ -208,7 +207,6 @@ int main(int argc,char **argv)
     ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
     ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
   }
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -412,7 +410,6 @@ PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,P
          : kappa(ctx,x,y)*PetscPowScalar(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-4)) * 0.5 * (ctx->p-2.);
 }
 
-
 /* ------------------------------------------------------------------- */
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
@@ -423,7 +420,6 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
   PetscInt       i,j;
   PetscScalar    eu;
   PetscErrorCode ierr;
-
 
   PetscFunctionBeginUser;
   hx     = 1.0/(PetscReal)(info->mx-1);
@@ -881,7 +877,6 @@ x     Restore vector
   }
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

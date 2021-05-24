@@ -1838,7 +1838,6 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_10(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-
 /*--------------------------------------------------------------------------------------------*/
 PetscErrorCode MatMult_SeqMAIJ_11(Mat A,Vec xx,Vec yy)
 {
@@ -2071,7 +2070,6 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_11(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*--------------------------------------------------------------------------------------------*/
 PetscErrorCode MatMult_SeqMAIJ_16(Mat A,Vec xx,Vec yy)

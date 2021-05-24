@@ -129,7 +129,6 @@ PetscErrorCode  PetscDrawViewFromOptions(PetscDraw A,PetscObject obj,const char 
 
    Level: beginner
 
-
 .seealso: PetscDrawSetType(), PetscDrawSetFromOptions(), PetscDrawDestroy(), PetscDrawSetType(), PetscDrawLGCreate(), PetscDrawSPCreate(),
           PetscDrawViewPortsCreate(), PetscDrawViewPortsSet(), PetscDrawAxisCreate(), PetscDrawHGCreate(), PetscDrawBarCreate(),
           PetscViewerDrawGetDraw(), PetscDrawSetFromOptions(), PetscDrawSetSave(), PetscDrawSetSaveMovie(), PetscDrawSetSaveFinalImage(),
@@ -319,7 +318,6 @@ $     PetscDrawSetType(ksp,"my_draw_type")
    or at runtime via the option
 $     -draw_type my_draw_type
 
-
 .seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy(), PetscDrawType, PetscDrawSetType()
 @*/
 PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(PetscDraw))
@@ -381,7 +379,6 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 
    Notes:
     Must be called after PetscDrawCreate() before the PetscDraw is used.
-
 
 .seealso: PetscDrawCreate(), PetscDrawSetType(), PetscDrawSetSave(), PetscDrawSetSaveFinalImage(), PetscDrawPause(), PetscDrawSetPause()
 

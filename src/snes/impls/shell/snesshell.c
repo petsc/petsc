@@ -120,7 +120,6 @@ PetscErrorCode  SNESShellGetContext(SNES snes,void **ctx)
     The context can only be an integer or a PetscObject
       unfortunately it cannot be a Fortran array or derived type.
 
-
 .seealso: SNESCreateShell(), SNESShellGetContext()
 @*/
 PetscErrorCode  SNESShellSetContext(SNES snes,void *ctx)

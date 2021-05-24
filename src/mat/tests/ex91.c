@@ -105,7 +105,6 @@ int main(int argc,char **args)
   ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
   ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
 
-
   for (i=0; i<nd; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
     size = (int)(PetscRealPart(rval)*m);
@@ -207,7 +206,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

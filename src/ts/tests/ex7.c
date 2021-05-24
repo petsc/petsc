@@ -9,7 +9,6 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
     Same as ex6.c except the user provided functions take input values as a single vector instead of two vectors
 */
 
-
 /*
    f(U,V) = U + V
 

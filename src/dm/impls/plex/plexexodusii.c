@@ -193,7 +193,6 @@ static PetscErrorCode PetscViewerExodusIISetOrder_ExodusII(PetscViewer viewer, P
 /*MC
    PETSCVIEWEREXODUSII - A viewer that writes to an Exodus II file
 
-
 .seealso:  PetscViewerExodusIIOpen(), PetscViewerCreate(), PETSCVIEWERBINARY, PETSCVIEWERHDF5, DMView(),
            PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
 
@@ -784,7 +783,6 @@ PetscErrorCode VecView_PlexExodusII_Internal(Vec v, PetscViewer viewer)
   MPI_Comm           comm;
   PetscMPIInt        rank;
 
-
   int                exoid,offsetN = 0, offsetZ = 0;
   const char        *vecname;
   PetscInt           step;
@@ -835,7 +833,6 @@ PetscErrorCode VecLoad_PlexExodusII_Internal(Vec v, PetscViewer viewer)
   DM                 dm;
   MPI_Comm           comm;
   PetscMPIInt        rank;
-
 
   int                exoid,offsetN = 0, offsetZ = 0;
   const char        *vecname;
@@ -1227,8 +1224,6 @@ PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
   PetscFunctionReturn(0);
 }
 
-
-
 /*@
    PetscViewerExodusIISetOrder - Set the elements order in the exodusII file.
 
@@ -1243,7 +1238,6 @@ PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
    Level: beginner
 
    Note:
-
 
 .seealso: PetscViewerExodusIIGetId(), PetscViewerExodusIIGetOrder(), PetscViewerExodusIISetOrder()
 @*/
@@ -1271,7 +1265,6 @@ PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
    Level: beginner
 
    Note:
-
 
 .seealso: PetscViewerExodusIIGetId(), PetscViewerExodusIIGetOrder(), PetscViewerExodusIISetOrder()
 @*/
@@ -1305,7 +1298,6 @@ $    FILE_MODE_APPEND - open existing file for binary output
 
    Note:
    This PetscViewer should be destroyed with PetscViewerDestroy().
-
 
 .seealso: PetscViewerPushFormat(), PetscViewerDestroy(),
           DMLoad(), PetscFileMode, PetscViewer, PetscViewerSetType(), PetscViewerFileSetMode(), PetscViewerFileSetName()

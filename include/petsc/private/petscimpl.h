@@ -180,7 +180,6 @@ PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
 PETSC_INTERN PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions,PetscBool*);
 
-
 PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #if !defined(PETSC_CLANG_STATIC_ANALYZER)
 /*

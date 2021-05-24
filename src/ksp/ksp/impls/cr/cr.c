@@ -140,7 +140,6 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
      KSPCR - This code implements the (preconditioned) conjugate residuals method
 

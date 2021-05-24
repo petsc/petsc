@@ -257,7 +257,6 @@ int main(int argc,char **argv)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatView(PtAP_squared,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-
   ierr = MatDestroy(&PtAP_squared);CHKERRQ(ierr);
   ierr = MatDestroy(&PtAP_copy);CHKERRQ(ierr);
   ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
@@ -267,7 +266,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 
@@ -285,7 +283,5 @@ int main(int argc,char **argv)
       suffix: 3
       nsize: 4
       args: -m 6 -n 6 -stencil 2d5point -matmatmult_via seqmpi
-
-
 
 TEST*/

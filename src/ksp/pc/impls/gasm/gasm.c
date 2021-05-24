@@ -335,7 +335,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   char           **subdomain_names = NULL;
   PetscInt       *numbering;
 
-
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
@@ -949,7 +948,6 @@ static PetscErrorCode PCSetFromOptions_GASM(PetscOptionItems *PetscOptionsObject
 +   pc  - the preconditioner
 -   N   - total number of subdomains
 
-
     Level: beginner
 
 .seealso: PCGASMSetSubdomains(), PCGASMSetOverlap()
@@ -1126,7 +1124,6 @@ static PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KS
     on another MPI process.
 
     By default the GASM preconditioner uses 1 (local) subdomain per processor.
-
 
     Level: advanced
 
@@ -1316,7 +1313,6 @@ PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KS
      To set the options on the solvers separate for each block call PCGASMGetSubKSP()
          and set the options directly on the resulting KSP object (you can access its PC
          with KSPGetPC())
-
 
    Level: beginner
 
@@ -1564,7 +1560,6 @@ PETSC_INTERN PetscErrorCode  PCGASMCreateStraddlingSubdomains(Mat A,PetscInt N,P
          outer subdomains will be automatically generated from these according to the requested amount of
          overlap; this is currently supported only with local subdomains.
 
-
 .seealso: PCGASMSetSubdomains(), PCGASMDestroySubdomains()
 @*/
 PetscErrorCode  PCGASMCreateSubdomains(Mat A,PetscInt N,PetscInt *n,IS *iis[])
@@ -1682,7 +1677,6 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
 +  Nsub - the number of local subdomains created
 .  iis  - array of index sets defining inner (nonoverlapping) subdomains
 -  ois  - array of index sets defining outer (overlapping, if overlap > 0) subdomains
-
 
    Level: advanced
 
@@ -1854,7 +1848,6 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
 +   n   - the number of subdomains for this processor (default value = 1)
 .   iis - the index sets that define the inner subdomains (without overlap) supported on this processor (can be NULL)
 -   ois - the index sets that define the outer subdomains (with overlap) supported on this processor (can be NULL)
-
 
     Notes:
     The user is responsible for destroying the ISs and freeing the returned arrays.

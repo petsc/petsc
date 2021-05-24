@@ -190,7 +190,6 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
       When -start_in_debugger -debugger_ranks x,y,z is used this prevents the processes NOT listed in x,y,z from calling MPI_Abort and
       killing the user's debugging sessions.
 
-
 .seealso: PetscSetDebugger(), PetscAttachDebugger()
 @*/
 PetscErrorCode  PetscWaitOnError()
@@ -473,7 +472,6 @@ $    PetscTraceBackErrorHandler()
 $    PetscAttachDebuggerErrorHandler()
 $    PetscAbortErrorHandler()
    or you may write your own.
-
 
 .seealso:  PetscSetDebuggerFromString(), PetscSetDebugger(), PetscSetDefaultDebugger(), PetscError(), PetscPushErrorHandler(), PetscPopErrorHandler(), PetscTraceBackErrorHandler(),
            PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscEmacsClientErrorHandler(), PetscReturnErrorHandler(), PetscSetDebugTermainal()

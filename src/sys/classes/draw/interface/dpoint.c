@@ -16,7 +16,6 @@
 
    Level: beginner
 
-
 .seealso: PetscDrawPointPixel(), PetscDrawPointSetSize(), PetscDrawLine(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawString(), PetscDrawArrow()
 
@@ -43,7 +42,6 @@ PetscErrorCode  PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 -  c - the color of the point
 
    Level: beginner
-
 
 .seealso: PetscDrawPoint(), PetscDrawPointSetSize()
 

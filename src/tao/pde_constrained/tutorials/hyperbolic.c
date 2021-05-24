@@ -17,8 +17,6 @@
    Processors: 1
 T*/
 
-
-
 typedef struct {
   PetscInt n; /*  Number of variables */
   PetscInt m; /*  Number of constraints */
@@ -76,7 +74,6 @@ typedef struct {
   PetscInt ksp_its;
   PetscInt ksp_its_initial;
 } AppCtx;
-
 
 PetscErrorCode FormFunction(Tao, Vec, PetscReal*, void*);
 PetscErrorCode FormGradient(Tao, Vec, Vec, void*);
@@ -640,7 +637,6 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
 
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat)
 {
@@ -1258,7 +1254,6 @@ PetscErrorCode HyperbolicMonitor(Tao tao, void *ptr)
   ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%g ||y-yt||=%g\n",(double)unorm,(double)ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

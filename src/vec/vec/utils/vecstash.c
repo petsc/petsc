@@ -150,7 +150,6 @@ PetscErrorCode VecStashGetInfo_Private(VecStash *stash,PetscInt *nstash,PetscInt
   PetscFunctionReturn(0);
 }
 
-
 /*
    VecStashSetInitialSize_Private - Sets the initial size of the stash
 

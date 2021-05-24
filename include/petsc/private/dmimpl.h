@@ -1,5 +1,4 @@
 
-
 #if !defined(_DMIMPL_H)
 #define _DMIMPL_H
 
@@ -337,7 +336,6 @@ PETSC_EXTERN PetscErrorCode DMView_GLVis(DM,PetscViewer,PetscErrorCode(*)(DM,Pet
        DMCompositeAddDM(dm,(DM)dm_velocities);
        DMCompositeAddDM(dm,(DM)dm_p);
 
-
     Access parts of composite vectors (Composite only)
     ---------------------------------
       DMCompositeGetAccess  - access the global vector as subvectors and array (for redundant arrays)
@@ -370,8 +368,7 @@ PETSC_EXTERN PetscErrorCode DMView_GLVis(DM,PetscViewer,PetscErrorCode(*)(DM,Pet
       DMGetGlobal/Local
       DMCompositeGetLocalVectors   - gives individual local work vectors and arrays
 
-
-?????   individual global vectors   ????
+    ?????   individual global vectors   ????
 
 */
 

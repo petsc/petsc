@@ -617,7 +617,6 @@ int main(int argc,char **args)
       suffix: kokkos
       requires: kokkos_kernels
       args: -ex56_dm_mat_type aijkokkos -ex56_dm_vec_type kokkos
-
   # Don't run AIJMKL caes with complex scalars because of convergence issues.
   # Note that we need to test both single and multiple MPI rank cases, because these use different sparse MKL routines to implement the PtAP operation.
   test:
@@ -633,6 +632,5 @@ int main(int argc,char **args)
     requires: define(PETSC_HAVE_MKL_SPARSE_OPTIMIZE) !single !complex
     args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -mat_block_size 3 -ex56_dm_view -run_type 1 -mat_seqaij_type seqaijmkl
     timeoutfactor: 2
-
 
 TEST*/

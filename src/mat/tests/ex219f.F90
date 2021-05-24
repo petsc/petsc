@@ -14,7 +14,6 @@ program newnonzero
  m=n
  call MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,m,1,PETSC_NULL_INTEGER,0,PETSC_NULL_INTEGER,A,ierr)
 
-
  call MatGetOwnershipRange(A,nl1,nl2,ierr)
  do i=nl1,nl2-1
    idxn(1)=i

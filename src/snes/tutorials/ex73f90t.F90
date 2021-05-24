@@ -22,7 +22,6 @@
 !  Processors: n
 !T*/
 
-
 !
 !  --------------------------------------------------------------------------
 !
@@ -475,7 +474,6 @@
       return
       end subroutine InitialGuessLocal
 
-
 ! ---------------------------------------------------------------------
 !
 !  FormJacobian - Evaluates Jacobian matrix.
@@ -620,7 +618,6 @@
       return
       end subroutine FormJacobianLocal
 
-
 ! ---------------------------------------------------------------------
 !
 !  FormFunction - Evaluates nonlinear function, F(x).
@@ -672,7 +669,6 @@
       call DMCompositeRestoreAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr);CHKERRQ(ierr)
       return
       end subroutine formfunction
-
 
 ! ---------------------------------------------------------------------
 !

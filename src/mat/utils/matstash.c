@@ -43,7 +43,6 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   ierr = PetscMalloc1(2*stash->size,&stash->flg_v);CHKERRQ(ierr);
   for (i=0; i<2*stash->size; i++) stash->flg_v[i] = -1;
 
-
   nopt = stash->size;
   ierr = PetscMalloc1(nopt,&opt);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray(NULL,NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);

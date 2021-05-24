@@ -403,7 +403,6 @@ PetscErrorCode  PetscDrawBarGetDraw(PetscDrawBar bar,PetscDraw *draw)
 
     Level: intermediate
 
-
 .seealso:  PetscDrawBarDestroy(), PetscDrawBarCreate(), PetscDrawBarSort()
 @*/
 PetscErrorCode  PetscDrawBarSetFromOptions(PetscDrawBar bar)

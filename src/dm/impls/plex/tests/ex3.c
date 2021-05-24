@@ -1088,7 +1088,6 @@ int main(int argc, char **argv)
     requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 2 -non_affine_coords -convergence
 
-
   # 2D P_3 on a triangle
   test:
     suffix: p3_2d_0
@@ -1235,7 +1234,6 @@ int main(int argc, char **argv)
     suffix: q2_quad_5
     requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 5 -porder 1
-
 
   # Nonconforming tests
   test:

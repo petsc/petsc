@@ -12,7 +12,6 @@
 
    Level: intermediate
 
-
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerCreate(), PetscViewerDestroy(),
           PetscViewerSetType()
 @*/
@@ -27,5 +26,4 @@ PetscErrorCode  PetscViewerFlush(PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
 

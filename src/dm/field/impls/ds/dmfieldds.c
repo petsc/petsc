@@ -694,7 +694,6 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
   PetscClassId   id;
   PetscErrorCode ierr;
 
-
   PetscFunctionBegin;
   dm = field->dm;
   dsfield = (DMField_DS *) field->data;

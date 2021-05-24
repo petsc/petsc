@@ -257,7 +257,6 @@ PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A,MatSolverType *type)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
   MATSOLVERKLU = "klu" - A matrix type providing direct solvers (LU) for sequential matrices
   via the external package KLU.

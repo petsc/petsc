@@ -28,7 +28,6 @@
        PetscErrorCode ierr
        Vec     x,y
 
-
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
        if (ierr /= 0) then
          print*,'PetscInitialize failed'

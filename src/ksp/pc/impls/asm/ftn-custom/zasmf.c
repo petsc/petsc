@@ -43,7 +43,6 @@ PETSC_EXTERN void pcasmcreatesubdomains_(Mat *mat,PetscInt *n,IS *subs,PetscErro
   *ierr = PetscFree(insubs);
 }
 
-
 PETSC_EXTERN void pcasmdestroysubdomains_(Mat *mat,PetscInt *n,IS *subs,PetscErrorCode *ierr)
 {
   PetscInt i;

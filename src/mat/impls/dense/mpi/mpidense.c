@@ -2025,7 +2025,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat B)
 
   Level: beginner
 
-
 .seealso: MATSEQDENSE,MATMPIDENSE,MATDENSECUDA
 M*/
 

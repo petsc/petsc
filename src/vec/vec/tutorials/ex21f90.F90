@@ -57,7 +57,6 @@
       nullify(ptr)
       end subroutine
 
-
       program main
 #include <petsc/finclude/petscvec.h>
       use petscvec
@@ -135,7 +134,6 @@
         write(*,*) abs(xarray(i)%a),abs(xarray(i)%b),abs(xarray(i)%c)
       end do
       call VecRestoreArrayMyStruct(x,xarray,ierr);CHKERRA(ierr)
-
 
       call VecDestroy(x,ierr);CHKERRA(ierr)
       call VecDestroy(y,ierr);CHKERRA(ierr)

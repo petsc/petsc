@@ -698,7 +698,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 .  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
 -  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
 
-
    Output Parameter:
 .  J - the matrix-free matrix
 
@@ -709,7 +708,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 .  -mat_mffd_check_positivity - possibly decrease h until U + h*a has only positive values
 -  -mat_mffd_complex - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
                        (requires real valued functions but that PETSc be configured for complex numbers)
-
 
    Level: advanced
 
@@ -871,7 +869,6 @@ PetscErrorCode  MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscI
     matrix inside your compute Jacobian routine.
     This function is necessary to compute the diagonal of the matrix.
 
-
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction(), MatGetDiagonal()
 @*/
@@ -898,7 +895,6 @@ PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec
 .  -mat_mffd_period <period>
 
    Level: advanced
-
 
 .seealso: MatCreateSNESMF(),MatMFFDGetH(),
           MatMFFDSetHHistory(), MatMFFDResetHHistory()

@@ -49,7 +49,6 @@ int main(int argc,char **argv)
 
   ierr = doit(da,global);CHKERRQ(ierr);
 
-
   ierr = VecView(global,0);CHKERRQ(ierr);
 
   /* Free memory */

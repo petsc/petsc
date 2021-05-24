@@ -239,7 +239,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:

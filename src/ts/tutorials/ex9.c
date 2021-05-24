@@ -48,7 +48,6 @@ PETSC_STATIC_INLINE PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c) {retu
 
 PETSC_STATIC_INLINE PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
 
-
 /* ----------------------- Lots of limiters, these could go in a separate library ------------------------- */
 typedef struct _LimitInfo {
   PetscReal hx;
@@ -155,7 +154,6 @@ static void Limit_CadaTorrilhon3R100(LimitInfo info,const PetscScalar *jL,const 
   Limit_CadaTorrilhon3R(100,info,jL,jR,lmt);
 }
 
-
 /* --------------------------------- Finite Volume data structures ----------------------------------- */
 
 typedef enum {FVBC_PERIODIC, FVBC_OUTFLOW} FVBCType;
@@ -261,8 +259,6 @@ static PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
   ierr = PetscFree(vctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 /* --------------------------------- Advection ----------------------------------- */
 
@@ -1226,7 +1222,6 @@ static PetscErrorCode SmallMatMultADB(PetscScalar *C,PetscInt bs,const PetscScal
   }
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,void *vctx)
 {

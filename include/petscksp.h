@@ -175,7 +175,6 @@ PETSC_EXTERN PetscFunctionList PCMGCoarseList;
 PETSC_EXTERN PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char[], PetscErrorCode (*)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **));
 PETSC_EXTERN PetscErrorCode PCMGGetCoarseSpaceConstructor(const char[], PetscErrorCode (**)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **));
 
-
 PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP,Vec,Vec,Vec*);
 
@@ -664,7 +663,6 @@ M*/
     Notes:
     Run with -ksp_error_if_not_converged to stop the program when the error is detected and print an error message with details.
 
-
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
 
 M*/
@@ -860,7 +858,6 @@ PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec,
                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                      PetscReal, const PetscReal [], PetscInt, const PetscScalar[], PetscScalar []), InsertMode, Vec);
-
 
 PETSC_EXTERN PetscErrorCode DMAdaptInterpolator(DM, DM, Mat, KSP, PetscInt, Vec[], Vec[], Mat *, void *);
 PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, PetscInt, Vec[], Vec[], PetscReal);

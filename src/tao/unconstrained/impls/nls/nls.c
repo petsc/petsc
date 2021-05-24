@@ -801,7 +801,6 @@ static PetscErrorCode TaoSetFromOptions_NLS(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 {

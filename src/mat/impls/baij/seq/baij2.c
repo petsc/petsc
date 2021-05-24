@@ -2775,7 +2775,6 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatEqual_SeqBAIJ(Mat A,Mat B,PetscBool * flg)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)B->data;
@@ -2896,7 +2895,6 @@ PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {

@@ -50,7 +50,6 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[],const ch
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[],char pythonlib[],size_t pl)
 {
   const char     cmdline1[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
@@ -111,7 +110,6 @@ static void      (*PyErr_Fetch)(PyObject**,PyObject**,PyObject**);
 static void      (*PyErr_NormalizeException)(PyObject**,PyObject**, PyObject**);
 static void      (*PyErr_Display)(PyObject*,PyObject*,PyObject*);
 static void      (*PyErr_Restore)(PyObject*,PyObject*,PyObject*);
-
 
 #define PetscDLPyLibOpen(libname) \
   PetscDLLibraryAppend(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,libname)

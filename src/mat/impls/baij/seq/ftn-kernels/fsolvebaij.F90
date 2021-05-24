@@ -64,7 +64,6 @@
             x(idx+3) = s4
  20      continue
 
-
 !
 !     Backward solve the upper triangular
 !

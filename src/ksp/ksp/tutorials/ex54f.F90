@@ -17,7 +17,6 @@
 !   Concepts: KSP^solving a system of linear equations
 !T*/
 
-
 ! -----------------------------------------------------------------------
       program main
 #include <petsc/finclude/petscksp.h>
@@ -204,7 +203,6 @@
 
       call KSPSolve(ksp,bvec,xvec,ierr)
       CHKERRA(ierr)
-
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      output

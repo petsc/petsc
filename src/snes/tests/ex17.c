@@ -6,8 +6,6 @@ Concepts: SNES^basic uniprocessor example, block objects
 Processors: 1
 T*/
 
-
-
 /*
 Include "petscsnes.h" so that we can use SNES solvers.  Note that this
 file automatically includes:
@@ -55,7 +53,6 @@ static PetscErrorCode FormJacobian1_block(SNES,Vec,Mat,Mat,void*);
 static PetscErrorCode FormFunction1_block(SNES,Vec,Vec,void*);
 static PetscErrorCode FormJacobian2_block(SNES,Vec,Mat,Mat,void*);
 static PetscErrorCode FormFunction2_block(SNES,Vec,Vec,void*);
-
 
 static PetscErrorCode assembled_system(void)
 {
@@ -207,7 +204,6 @@ static PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
   ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
   ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
 
-
   /*
   Restore vectors
   */
@@ -263,7 +259,6 @@ static PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* ------------------------------------------------------------------- */
 static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)

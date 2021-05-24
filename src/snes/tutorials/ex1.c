@@ -5,8 +5,6 @@ static char help[] = "Newton's method for a two-variable system, sequential.\n\n
    Concepts: SNES^basic example
 T*/
 
-
-
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -138,7 +136,6 @@ int main(int argc,char **argv)
     ierr = SNESGetFunction(snes,&f,0,0);CHKERRQ(ierr);
     ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -307,9 +304,6 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   }
   return 0;
 }
-
-
-
 
 /*TEST
 

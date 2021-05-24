@@ -7,7 +7,6 @@ static PetscReal phi(PetscReal*,PetscInt,PetscReal,PetscReal*,PetscReal,PetscRea
 static PetscInt project(PetscInt,PetscReal*,PetscReal,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,TAO_DF*);
 static PetscErrorCode solve(TAO_DF*);
 
-
 /*------------------------------------------------------------*/
 /* The main solver function
 
@@ -44,7 +43,6 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
   head->next = NULL;
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode TaoSolve_BMRM(Tao tao)
 {
@@ -199,7 +197,6 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   ierr = VecScatterDestroy(&bmrm->scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* ---------------------------------------------------------- */
 
@@ -609,7 +606,6 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
   return innerIter;
 }
 
-
 PetscErrorCode solve(TAO_DF *df)
 {
   PetscErrorCode ierr;
@@ -657,7 +653,6 @@ PetscErrorCode solve(TAO_DF *df)
     g[i] = t[i] + f[i];
   }
 
-
   /* y = -(x_{k} - g_{k}) */
   for (i = 0; i < dim; i++){
     y[i] = g[i] - x[i];
@@ -699,7 +694,6 @@ PetscErrorCode solve(TAO_DF *df)
 
     /* Project x_{k} - alpha*g_{k} */
     projcount += project(dim, a, b, tempv, l, u, y, &lam_ext, df);
-
 
     /* gd = \inner{d_{k}}{g_{k}}
         d = P(x_{k} - alpha*g_{k}) - x_{k}

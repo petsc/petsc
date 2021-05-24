@@ -99,7 +99,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C = B;

@@ -1,7 +1,6 @@
 
 static char help[] = "Tests various routines in MatMPIBAIJ format.\n";
 
-
 #include <petscmat.h>
 #define IMAX 15
 int main(int argc,char **args)
@@ -121,7 +120,6 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
 
-
   for (i=0; i<IMAX; i++) {
     /* Create random row numbers ad col numbers */
     ierr    = PetscRandomGetValue(rand,&v);CHKERRQ(ierr);
@@ -135,7 +133,6 @@ int main(int argc,char **args)
 
     ierr = MatGetValues(A,2,rows,2,cols,vals1);CHKERRQ(ierr);
     ierr = MatGetValues(B,2,rows,2,cols,vals2);CHKERRQ(ierr);
-
 
     for (j=0; j<4; j++) {
       if (vals1[j] != vals2[j]) {
@@ -205,7 +202,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

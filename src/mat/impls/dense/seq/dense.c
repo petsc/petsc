@@ -1056,7 +1056,6 @@ PetscErrorCode MatQRFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const MatFacto
   PetscFunctionReturn(0);
 }
 
-
 /* uses LAPACK */
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
 {

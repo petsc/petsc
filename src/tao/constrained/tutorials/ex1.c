@@ -447,7 +447,6 @@ PetscErrorCode FormEqualityJacobian(Tao tao,Vec X,Mat JE,Mat JEpre,void *ctx)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:

@@ -1,7 +1,6 @@
 #include <../src/tao/bound/impls/tron/tron.h>
 #include <../src/tao/matrix/submatfree.h>
 
-
 /* TRON Routines */
 static PetscErrorCode TronGradientProjections(Tao,TAO_TRON*);
 /*------------------------------------------------------------*/

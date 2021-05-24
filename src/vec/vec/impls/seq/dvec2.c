@@ -6,8 +6,6 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/kernels/petscaxpy.h>
 
-
-
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 #include <../src/vec/vec/impls/seq/ftn-kernels/fmdot.h>
 PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
@@ -486,7 +484,6 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   ierr = PetscLogFlops(PetscMax(nv*(2.0*xin->map->n-1),0.0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode VecMax_Seq(Vec xin,PetscInt *idx,PetscReal *z)
 {

@@ -515,7 +515,6 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt,PetscReal *max_ignore)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    TSAdaptSetClip - Sets the admissible decrease/increase factor in step size
 

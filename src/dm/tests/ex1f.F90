@@ -17,7 +17,6 @@ program main
   type(tDM) :: da
   type(tVec) :: gVec!, naturalVec
 
-
   call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
   call mpi_comm_rank(PETSC_COMM_WORLD, myid, ierr)
   call mpi_comm_size(PETSC_COMM_WORLD, commsize, ierr)

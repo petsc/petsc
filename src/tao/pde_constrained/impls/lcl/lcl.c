@@ -327,7 +327,6 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       adec = lclP->eps1 * r2;
     }
 
-
     /*
        Check descent for aug. lagrangian
        r' (GUk - Ak'*yk - rho*Ak'*con) <= -eps1 ||r||^(2+eps2)

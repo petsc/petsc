@@ -6,8 +6,6 @@ static char help[] = "Partition a tiny grid using hierarchical partitioning.\n\n
    Processors: 4
 T*/
 
-
-
 /*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
@@ -94,7 +92,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

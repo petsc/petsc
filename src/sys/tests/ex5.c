@@ -3,7 +3,6 @@ static char help[] = "Tests retrieving unused PETSc options.\n\n";
 
 #include <petscsys.h>
 
-
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

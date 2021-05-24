@@ -303,7 +303,6 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,PetscCopyMode mode,IS 
   PetscFunctionReturn(0);
 }
 
-
 /*@
     ISColoringCreate - Generates an ISColoring context from lists (provided
     by each processor) of colors for each node.
@@ -505,7 +504,6 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    }
    PetscFunctionReturn(0);
 }
-
 
 /*@
     ISPartitioningToNumbering - Takes an ISPartitioning and on each processor
@@ -746,7 +744,6 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
 
     Notes:
     ISAllGatherColors() is clearly not scalable for large index sets.
-
 
     Level: intermediate
 

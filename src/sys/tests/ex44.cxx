@@ -6,8 +6,6 @@ static char help[] = "Demonstrates call PETSc and Chombo in the same program.\n\
    Processors: n
 T*/
 
-
-
 #include <petscsys.h>
 #include "Box.H"
 
@@ -31,7 +29,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

@@ -168,7 +168,6 @@
       call PetscFinalize(ierr)
       end
 
-
 ! --------------------  Evaluate Function F(x) ---------------------
 
       subroutine FormFunction(snes,x,f,ctx,ierr)

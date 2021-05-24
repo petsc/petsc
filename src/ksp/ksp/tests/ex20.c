@@ -87,7 +87,6 @@ int main(int argc,char **args)
 
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 
-
   /* Free work space */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);

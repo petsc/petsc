@@ -14,7 +14,6 @@ do { if (PetscUnlikely((color)<0||(color)>=256)) SETERRQ1(PETSC_COMM_SELF,PETSC_
 #define ITRANS(draw,img,i)  ((draw)->coor_xl + (((PetscReal)(i))*((draw)->coor_xr - (draw)->coor_xl)/((img)->w-1) - (draw)->port_xl)/((draw)->port_xr - (draw)->port_xl))
 #define JTRANS(draw,img,j)  ((draw)->coor_yl + (((PetscReal)(j))/((img)->h-1) + (draw)->port_yl - 1)*((draw)->coor_yr - (draw)->coor_yl)/((draw)->port_yl - (draw)->port_yr))
 
-
 static PetscErrorCode PetscDrawSetViewport_Image(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -536,7 +535,6 @@ static const unsigned char BasicColors[PETSC_DRAW_BASIC_COLORS][3] = {
   { 255, 240, 245 }, /* lavenderblush */
   { 221, 160, 221 }, /* plum */
 };
-
 
 /*MC
    PETSC_DRAW_IMAGE - PETSc graphics device that uses a raster buffer

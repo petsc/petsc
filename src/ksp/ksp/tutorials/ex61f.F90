@@ -127,7 +127,6 @@
 
       call split_indices(NCASES,nthreads,ibeg,iend)
 
-
 !$omp parallel do                                                        &
 !$omp private(ith,ierr)                                                  &
 !$omp private(col_f_mat,col_f_vecb,col_f_vecx,col_f_ksp)
@@ -136,7 +135,6 @@
          col_f_vecb => Mcol_f_vecb(ith)
          col_f_vecx => Mcol_f_vecx(ith)
          col_f_ksp => Mcol_f_ksp(ith)
-
 
          call MatCreateSeqAIJ( PETSC_COMM_SELF, nrow,ncol, nz_per_row,PETSC_NULL_INTEGER, col_f_mat, ierr)
          call assert(ierr.eq.0,'matcreateseqaij return ',ierr)
@@ -191,7 +189,6 @@
 !      ---------------------------------
        ilist(1:nz) = ilist(1:nz) - 1
        jlist(1:nz) = jlist(1:nz) - 1
-
 
 !      --------------
 !      setup matrices
@@ -253,8 +250,6 @@
 !$omp    end critical
          call assert(ierr.eq.0,'VecPlaceArray col_f_vecb return ',ierr)
 
-
-
 !  -----------------------------------------------------------
 !  key test, need to solve multiple linear systems in parallel
 !  -----------------------------------------------------------
@@ -264,10 +259,8 @@
          call KSPSetUp(col_f_ksp,ierr)
          call assert(ierr.eq.0,'KSPSetup return ierr ',ierr)
 
-
          call KSPSolve(col_f_ksp,col_f_vecb,col_f_vecx,ierr)
          call assert(ierr.eq.0,'KSPSolve return ierr ',ierr)
-
 
 !        ------------
 !        check answer
@@ -295,7 +288,6 @@
          col_f_vecb => Mcol_f_vecb(ith)
          col_f_vecx => Mcol_f_vecx(ith)
          col_f_ksp => Mcol_f_ksp(ith)
-
 
          call MatDestroy(col_f_mat, ierr)
          call assert(ierr.eq.0,'matdestroy return ',ierr)

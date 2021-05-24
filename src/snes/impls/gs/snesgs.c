@@ -12,7 +12,6 @@
 .  stol -  convergence tolerance in terms of the norm of the change in the solution between steps,  || delta x || < stol*|| x ||
 -  maxit - maximum number of iterations
 
-
    Options Database Keys:
 +    -snes_ngs_atol <abstol> - Sets abstol
 .    -snes_ngs_rtol <rtol> - Sets rtol

@@ -27,7 +27,6 @@ PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    MatPythonCreate - Create a Mat object implemented in Python.
 

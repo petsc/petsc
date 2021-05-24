@@ -87,7 +87,6 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
     On entry, the value in vector VEC_VV(0) should be
     the initial residual.
 
-
 */
 static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 {
@@ -353,7 +352,6 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 
 /*
     KSPSolve_PIPEFGMRES - This routine applies the PIPEFGMRES method.
-
 
    Input Parameter:
 .     ksp - the Krylov space object that was set to use pipefgmres
@@ -666,7 +664,6 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 .   -ksp_pipefgmres_shift - the shift to use (defaults to 1. See KSPPIPEFGMRESSetShift()
                              vectors are allocated as needed)
 -   -ksp_gmres_krylov_monitor - plot the Krylov space generated
-
 
    Level: intermediate
 

@@ -18,7 +18,6 @@
 #include "viennacl/ocl/backend.hpp"
 #endif
 
-
 PETSC_EXTERN PetscErrorCode VecViennaCLGetArray(Vec v, ViennaCLVector **a)
 {
   PetscErrorCode ierr;
@@ -88,8 +87,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector *
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 {
@@ -210,7 +207,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
   PetscFunctionReturn(0);
 }
 
-
 /*
     Allocates space for the vector array on the GPU if it does not exist.
     Does NOT change the PetscViennaCLFlag for the vector
@@ -232,7 +228,6 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
   }
   PetscFunctionReturn(0);
 }
-
 
 /* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
 PetscErrorCode VecViennaCLCopyToGPU(Vec v)
@@ -260,8 +255,6 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
   PetscFunctionReturn(0);
 }
 
-
-
 /*
      VecViennaCLCopyFromGPU - Copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU
 */
@@ -287,7 +280,6 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
   }
   PetscFunctionReturn(0);
 }
-
 
 /* Copy on CPU */
 static PetscErrorCode VecCopy_SeqViennaCL_Private(Vec xin,Vec yin)
@@ -347,7 +339,6 @@ static PetscErrorCode VecResetArray_SeqViennaCL_Private(Vec vin)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
    VECSEQVIENNACL - VECSEQVIENNACL = "seqviennacl" - The basic sequential vector, modified to use ViennaCL
 
@@ -358,7 +349,6 @@ static PetscErrorCode VecResetArray_SeqViennaCL_Private(Vec vin)
 
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq()
 M*/
-
 
 PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
 {
@@ -387,7 +377,6 @@ PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode VecAXPY_SeqViennaCL(Vec yin,PetscScalar alpha,Vec xin)
 {
   const ViennaCLVector  *xgpu;
@@ -412,7 +401,6 @@ PetscErrorCode VecAXPY_SeqViennaCL(Vec yin,PetscScalar alpha,Vec xin)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec win, Vec xin, Vec yin)
 {
@@ -440,7 +428,6 @@ PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec win, Vec xin, Vec yin)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode VecWAXPY_SeqViennaCL(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 {
@@ -487,7 +474,6 @@ PetscErrorCode VecWAXPY_SeqViennaCL(Vec win,PetscScalar alpha,Vec xin, Vec yin)
   PetscFunctionReturn(0);
 }
 
-
 /*
  * Operation x = x + sum_i alpha_i * y_i for vectors x, y_i and scalars alpha_i
  *
@@ -511,7 +497,6 @@ PetscErrorCode VecMAXPY_SeqViennaCL(Vec xin, PetscInt nv,const PetscScalar *alph
   ViennaCLWaitForGPU();
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode VecDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
 {
@@ -538,8 +523,6 @@ PetscErrorCode VecDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
   } else *z = 0.0;
   PetscFunctionReturn(0);
 }
-
-
 
 /*
  * Operation z[j] = dot(x, y[j])
@@ -589,7 +572,6 @@ PetscErrorCode VecMTDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscSca
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode VecSet_SeqViennaCL(Vec xin,PetscScalar alpha)
 {
   ViennaCLVector *xgpu;
@@ -636,7 +618,6 @@ PetscErrorCode VecScale_SeqViennaCL(Vec xin, PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode VecTDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscErrorCode ierr;
@@ -647,7 +628,6 @@ PetscErrorCode VecTDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
   ViennaCLWaitForGPU();
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
 {
@@ -719,7 +699,6 @@ PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode VecSwap_SeqViennaCL(Vec xin,Vec yin)
 {
   PetscErrorCode ierr;
@@ -742,7 +721,6 @@ PetscErrorCode VecSwap_SeqViennaCL(Vec xin,Vec yin)
   }
   PetscFunctionReturn(0);
 }
-
 
 // y = alpha * x + beta * y
 PetscErrorCode VecAXPBY_SeqViennaCL(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
@@ -790,7 +768,6 @@ PetscErrorCode VecAXPBY_SeqViennaCL(Vec yin,PetscScalar alpha,PetscScalar beta,V
   }
   PetscFunctionReturn(0);
 }
-
 
 /* operation  z = alpha * x + beta *y + gamma *z*/
 PetscErrorCode VecAXPBYPCZ_SeqViennaCL(Vec zin,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec xin,Vec yin)
@@ -899,7 +876,6 @@ PetscErrorCode VecPointwiseMult_SeqViennaCL(Vec win,Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
 {
   PetscErrorCode       ierr;
@@ -961,7 +937,6 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode VecSetRandom_SeqViennaCL(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
@@ -1008,7 +983,6 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    VecCreateSeqViennaCL - Creates a standard, sequential array-style vector.
 
@@ -1039,7 +1013,6 @@ PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
   ierr = VecSetType(*v,VECSEQVIENNACL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    VecCreateSeqViennaCLWithArray - Creates a viennacl sequential array-style vector,
@@ -1209,7 +1182,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLResetArray(Vec vin)
   ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*  VecDotNorm2 - computes the inner product of two vectors and the 2-norm squared of the second vector
  *
@@ -1388,7 +1360,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
 
   Caller should cast (*ctx) to (const cl_context). Caller is responsible for
   invoking clReleaseContext().
-
 
   Input Parameters:
 .  v    - the vector
@@ -1578,7 +1549,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
   PetscFunctionReturn(0);
 #endif
 }
-
 
 /*@C
   VecViennaCLGetCLMem - Provides access to the the CL buffer inside a Vec.

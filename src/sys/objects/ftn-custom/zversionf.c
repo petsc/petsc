@@ -10,7 +10,6 @@
 #define petscgetversionnumber_ petscgetversionnumber
 #endif
 
-
 /* Definitions of Fortran Wrapper routines */
 #if defined(__cplusplus)
 extern "C" {

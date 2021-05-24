@@ -158,7 +158,6 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
 {
   PetscFunctionBegin;
@@ -356,7 +355,6 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode 
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   TaoSetInequalityConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
 
@@ -399,7 +397,6 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    TaoComputeEqualityConstraints - Compute the variable bounds using the
    routine set by TaoSetEqualityConstraintsRoutine().
@@ -435,7 +432,6 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    TaoComputeInequalityConstraints - Compute the variable bounds using the

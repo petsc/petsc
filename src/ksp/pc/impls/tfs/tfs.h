@@ -32,7 +32,6 @@ File Description:
 #define XZ         4
 #define YZ         5
 
-
 #define THRESH          0.2
 #define N_HALF          4096
 #define PRIV_BUF_SZ     45
@@ -57,7 +56,6 @@ File Description:
 
 #define C              0
 
-
 #define MAX_VEC        1674
 #define FORMAT         30
 #define MAX_COL_LEN    100
@@ -77,7 +75,6 @@ File Description:
 #define EPS   1.0e-14
 #define EPS2  1.0e-07
 
-
 #define MPI   1
 #define NX    2
 
@@ -94,9 +91,6 @@ File Description:
 #define MULT_NEG_ONE(a) (a) *= -1;
 #define NEG(a)          (a) |= BIT_31;
 #define POS(a)          (a) &= INT_MAX;
-
-
-
 
 /**********************************types.h*************************************
 
@@ -258,7 +252,6 @@ Last Modification: 3.20.01
 
 typedef struct xxt_CDT *xxt_ADT;
 
-
 /*************************************xxt.h************************************
 Function: XXT_new()
 
@@ -267,7 +260,6 @@ Description: This function allocates and returns an xxt handle
 Usage: xxt_handle = xxt_new();
 **************************************xxt.h***********************************/
 PETSC_INTERN xxt_ADT XXT_new(void);
-
 
 /*************************************xxt.h************************************
 Function: XXT_free()
@@ -278,7 +270,6 @@ Description: This function frees the storage associated with an xxt handle
 Usage: XXT_free(xxt_handle);
 **************************************xxt.h***********************************/
 PETSC_INTERN PetscInt XXT_free(xxt_ADT);
-
 
 /*************************************xxt.h************************************
 Function: XXT_factor
@@ -316,7 +307,6 @@ PETSC_INTERN PetscErrorCode XXT_factor(xxt_ADT,     /* prev. allocated xxt  hand
                            PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*),    /* b_loc=A_local.x_loc         */
                            void*);       /* grid data for matvec        */
 
-
 /*************************************xxt.h************************************
 Function: XXT_solve
 
@@ -338,7 +328,6 @@ Input : handle
 **************************************xxt.h***********************************/
 PETSC_INTERN PetscErrorCode XXT_stats(xxt_ADT);
 
-
 /*************************************xxt.h************************************
 Function: XXT_sp_1()
 
@@ -350,7 +339,6 @@ Usage: implement later
 
 void XXT_sp_1(xxt_handle,parameter 1 value)
 **************************************xxt.h***********************************/
-
 
 /*************************************xyt.h************************************
 Module Name: xyt
@@ -372,7 +360,6 @@ Last Modification: 3.20.01
 
 typedef struct xyt_CDT *xyt_ADT;
 
-
 /*************************************xyt.h************************************
 Function: XYT_new()
 
@@ -382,7 +369,6 @@ Usage: xyt_handle = xyt_new();
 **************************************xyt.h***********************************/
 PETSC_INTERN xyt_ADT XYT_new(void);
 
-
 /*************************************xyt.h************************************
 Function: XYT_free()
 
@@ -391,7 +377,6 @@ Description: This function frees the storage associated with an xyt handle
 Usage: XYT_free(xyt_handle);
 **************************************xyt.h***********************************/
 PETSC_INTERN PetscErrorCode XYT_free(xyt_ADT);
-
 
 /*************************************xyt.h************************************
 Function: XYT_factor
@@ -430,7 +415,6 @@ PETSC_INTERN PetscErrorCode XYT_factor(xyt_ADT,     /* prev. allocated xyt  hand
                            PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*), /* b_loc=A_local.x_loc         */
                            void*);       /* grid data for matvec        */
 
-
 /*************************************xyt.h************************************
 Function: XYT_solve
 
@@ -442,14 +426,12 @@ Usage: XYT_solve(xyt_handle, double *x, double *b)
 **************************************xyt.h***********************************/
 PETSC_INTERN PetscErrorCode XYT_solve(xyt_ADT,PetscScalar*,PetscScalar*);
 
-
 /*************************************xyt.h************************************
 Function: XYT_stats
 
 Input : handle
 **************************************xyt.h***********************************/
 PETSC_INTERN PetscErrorCode XYT_stats(xyt_ADT);
-
 
 /********************************bit_mask.h************************************
 

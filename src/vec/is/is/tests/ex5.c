@@ -10,7 +10,6 @@ int main(int argc,char **argv)
   PetscInt               nlocal,local[5],nneigh,*neigh,**ineigh,*numneigh;
   ISLocalToGlobalMapping mapping;
 
-
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   if (size != 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with three processors");

@@ -312,7 +312,6 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-
 PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP;

@@ -88,7 +88,6 @@ PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
 {
   PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
@@ -174,7 +173,6 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
 
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
 {

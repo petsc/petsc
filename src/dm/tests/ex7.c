@@ -48,7 +48,6 @@ int main(int argc,char **argv)
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = VecDuplicate(local,&local_copy);CHKERRQ(ierr);
 
-
   /* zero out vectors so that ghostpoints are zero */
   value = 0;
   ierr  = VecSet(local,value);CHKERRQ(ierr);
@@ -65,10 +64,8 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
-
   ierr = DMLocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
   ierr = DMLocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
-
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-save",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
@@ -94,7 +91,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

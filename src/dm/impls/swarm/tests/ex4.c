@@ -222,7 +222,6 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
   PetscInt           dim, Np, p;
   PetscErrorCode     ierr;
 
-
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) ts, &comm);CHKERRQ(ierr);
   ierr = TSGetDM(ts, &sdm);CHKERRQ(ierr);
@@ -252,7 +251,6 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
   ierr = VecRestoreArray(E, &e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*---------------------Create particle RHS Functions--------------------------*/
 static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
@@ -356,7 +354,6 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U , Mat J, Mat P, void
   const PetscScalar *u;
   PetscScalar        vals[4] = {0., 1., -PetscSqr(user->omega), 0.};
   PetscErrorCode     ierr;
-
 
   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
   //ierr = PetscPrintf(PETSC_COMM_WORLD, "# Particles (Np) = %d \n" , Np);CHKERRQ(ierr);
@@ -475,14 +472,12 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create Particle-Mesh
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = CreateMesh(comm, &dm, &user);CHKERRQ(ierr);
   ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(sw, &user);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Setup timestepping solver
@@ -496,7 +491,6 @@ int main(int argc,char **argv)
   ierr = TSSetMaxSteps(ts, 100);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   if (user.monitor) {ierr = TSMonitorSet(ts, Monitor, &user, NULL);CHKERRQ(ierr);}
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Prepare to solve
@@ -542,7 +536,6 @@ int main(int argc,char **argv)
 
   ierr = TSComputeInitialCondition(ts, u);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Clean up workspace

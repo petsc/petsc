@@ -98,7 +98,6 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode  PetscSetDisplay(void)
 {
   PetscErrorCode ierr;

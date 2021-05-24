@@ -128,7 +128,6 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
   PetscFunctionReturn(0);
 }
 
-
 /* -------------------------------------------------------------------------- */
 /*
    PCISSetUp -

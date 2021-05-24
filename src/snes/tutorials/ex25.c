@@ -17,7 +17,6 @@ T*/
 
          - Div((1 + ||GRAD T||^2)^(1/2) (GRAD T)) = 0.
 
-
     in the unit square, which is uniformly discretized in each of x and
     y in this simple encoding.  The degrees of freedom are vertex centered
 
@@ -107,7 +106,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **t,PetscScalar
   }
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

@@ -35,8 +35,6 @@ The command line options are:\n\
    Processors: n
 T*/
 
-
-
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
@@ -114,7 +112,6 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(user.dm,&x);CHKERRQ(ierr); /* Solution */
   ierr = VecDuplicate(x,&user.B);CHKERRQ(ierr); /* Linear objective */
 
-
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
   ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
   ierr = DMCreateMatrix(user.dm,&user.A);CHKERRQ(ierr);
@@ -134,7 +131,6 @@ int main(int argc, char **argv)
   */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
-
 
   /* Set the initial vector */
   ierr = VecSet(x, zero);CHKERRQ(ierr);
@@ -186,7 +182,6 @@ int main(int argc, char **argv)
   return ierr;
 }
 
-
 static PetscReal p(PetscReal xi, PetscReal ecc)
 {
   PetscReal t=1.0+ecc*PetscCosScalar(xi);
@@ -208,7 +203,6 @@ PetscErrorCode ComputeB(AppCtx* user)
   hx=two*pi/(nx+1.0);
   hy=two*user->b/(ny+1.0);
   ehxhy = ecc*hx*hy;
-
 
   /*
      Get local grid boundaries
@@ -328,12 +322,10 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
   ierr = VecAXPY(G, one, user->B);CHKERRQ(ierr);
   *fcn = f1/2.0 + f2;
 
-
   ierr = PetscLogFlops((91 + 10.0*ym) * xm);CHKERRQ(ierr);
   return 0;
 
 }
-
 
 /*
    FormHessian computes the quadratic term in the quadratic objective function
@@ -463,7 +455,6 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 
 }
-
 
 /*TEST
 

@@ -49,8 +49,3 @@ PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
   PetscFunctionReturn(0);
 }
 
-
-
-
-
-

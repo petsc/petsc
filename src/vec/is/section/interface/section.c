@@ -2890,7 +2890,6 @@ PetscErrorCode  PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType 
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   PetscSectionSymGetType - Gets the section symmetry type name (as a string) from the PetscSectionSym.
 

@@ -179,8 +179,6 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat J,Mat B,void *ctx)
   return 0;
 }
 
-
-
 /*TEST
 
    build:

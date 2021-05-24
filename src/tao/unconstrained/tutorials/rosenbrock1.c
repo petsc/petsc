@@ -22,9 +22,6 @@ or the chained Rosenbrock function:\n\
    Processors: 1
 T*/
 
-
-
-
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines that evaluate the function,
@@ -252,7 +249,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
   ierr = PetscLogFlops(9.0*user->n/2.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

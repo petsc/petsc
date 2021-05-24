@@ -53,7 +53,6 @@ PetscErrorCode PCDeflationSetInitOnly(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode PCDeflationSetLevels_Deflation(PC pc,PetscInt current,PetscInt max)
 {
   PC_Deflation   *def = (PC_Deflation*)pc->data;

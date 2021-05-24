@@ -14,7 +14,6 @@ typedef struct {
   PetscBool usediag;     /* indicates preconditioner should include diagonal scaling*/
 } PC_Eisenstat;
 
-
 static PetscErrorCode PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;

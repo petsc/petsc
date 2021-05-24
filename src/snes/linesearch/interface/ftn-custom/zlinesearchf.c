@@ -53,7 +53,6 @@ PETSC_EXTERN void sneslinesearchsettype_(SNESLineSearch *linesearch,char* type,P
   FREECHAR(type,t);
 }
 
-
 PETSC_EXTERN void sneslinesearchsetprecheck_(SNESLineSearch *linesearch,void (*func)(SNESLineSearch*,Vec*,Vec*,PetscBool*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*linesearch,3);

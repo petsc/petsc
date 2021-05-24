@@ -120,7 +120,6 @@ static void f0_quadratic_w(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[0] -= (3*X[0]*X[0] + X[1]*X[1] - 2*X[0]*X[1]);
 }
 
-
 /*
   CASE: cubic
   In 2D we use exact solution:
@@ -160,7 +159,6 @@ static PetscErrorCode quadratic_T(PetscInt Dim, PetscReal time, const PetscReal 
   T[0] = X[0]*X[0]/2.0 + X[1]*X[1]/2.0;
   return 0;
 }
-
 
 static void f0_cubic_v(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
@@ -307,7 +305,6 @@ static void g0_wu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (d = 0; d < dim; ++d) g0[d] = u_x[uOff_x[2]+d];
 }
 
-
 static void g1_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                   const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                   const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -332,7 +329,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       sol;
   PetscErrorCode ierr;
-
 
   PetscFunctionBeginUser;
   options->solType   = SOL_QUADRATIC;

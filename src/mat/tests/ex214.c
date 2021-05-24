@@ -216,7 +216,6 @@ int main(int argc,char **args)
 
 /*TEST
 
-
    test:
      requires: mumps double !complex
 

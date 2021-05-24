@@ -69,7 +69,6 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",(double)normf,(double)norm1,(double)normi);CHKERRQ(ierr);
   ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-
   /* Test MatAXPY */
   if (mat && !rect) {
     PetscScalar alpha = 1.0;

@@ -42,7 +42,6 @@ static PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
-
 int main(int argc, char **argv)
 {
   TS                ts;
@@ -166,7 +165,6 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {

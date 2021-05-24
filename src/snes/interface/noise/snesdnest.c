@@ -20,7 +20,6 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval,double *h__,double *f
   PetscInt i__1;
   double   d__1, d__2, d__3, d__4;
 
-
   /* Local variables */
   static double   emin, emax;
   static PetscInt dsgn[6];

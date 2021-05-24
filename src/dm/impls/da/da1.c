@@ -123,7 +123,6 @@ static PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode  DMSetUp_DA_1D(DM da)
 {
   DM_DA            *dd   = (DM_DA*)da->data;
@@ -309,7 +308,6 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    DMDACreate1d - Creates an object that will manage the communication of  one-dimensional

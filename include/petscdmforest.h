@@ -56,7 +56,6 @@ PETSC_EXTERN PetscErrorCode DMForestGetInitialRefinement(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMForestGetCellChart(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMForestGetCellSF(DM, PetscSF *);
 
-
 /* flag each cell with an adaptivity count: should match the cell section */
 PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityLabel(DM, DMLabel*);

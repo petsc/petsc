@@ -795,7 +795,6 @@ PetscErrorCode MatSetOption_MPISELL(Mat A,MatOption op,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatDiagonalScale_MPISELL(Mat mat,Vec ll,Vec rr)
 {
   Mat_MPISELL    *sell=(Mat_MPISELL*)mat->data;
@@ -886,7 +885,6 @@ PetscErrorCode MatSetUp_MPISELL(Mat A)
   ierr =  MatMPISELLSetPreallocation(A,PETSC_DEFAULT,NULL,PETSC_DEFAULT,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 extern PetscErrorCode MatConjugate_SeqSELL(Mat);
 
@@ -1491,7 +1489,6 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
 -  -mat_sell_oneindex - Internally use indexing starting at 1
         rather than 0.  Note that when calling MatSetValues(),
         the user still MUST index entries starting at 0!
-
 
    Example usage:
 

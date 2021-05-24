@@ -17,8 +17,6 @@ linear solvers on the individual blocks.\n\n";
    Processors: n
 T*/
 
-
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -116,7 +114,6 @@ int main(int argc,char **args)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
 
-
   /* -------------------------------------------------------------------
                    Define the problem decomposition
      ------------------------------------------------------------------- */
@@ -140,7 +137,6 @@ int main(int argc,char **args)
     Set runtime options
   */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-
 
   /* -------------------------------------------------------------------
                Set the linear solvers for the subblocks
@@ -235,7 +231,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

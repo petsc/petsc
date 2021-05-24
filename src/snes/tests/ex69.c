@@ -136,7 +136,6 @@ int main(int argc,char **argv)
   }
   ierr = SNESSolve(user.snes,NULL,x);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
@@ -151,7 +150,6 @@ int main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-
 
 /*
    FormInitialGuess - Forms initial approximation.
@@ -239,7 +237,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 
      Note: FD formulae below are normalized by multiplying through by
      local volume element (i.e. hx*hy) to obtain coefficients O(1) in two dimensions.
-
 
   */
   dhx   = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
@@ -405,7 +402,6 @@ PetscErrorCode SNESComputeJacobian_MyShell(SNES snes,Vec X,Mat A,Mat B,void *ctx
   }
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

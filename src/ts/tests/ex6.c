@@ -7,7 +7,6 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
         F(U,V)  = 0
 */
 
-
 /*
    f(U,V) = U + V
 */

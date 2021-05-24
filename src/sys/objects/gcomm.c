@@ -24,7 +24,6 @@
 $       comm = PetscObjectComm((PetscObject)obj);
         instead use PetscObjectGetComm()
 
-
 .seealso: PetscObjectGetComm()
 @*/
 MPI_Comm  PetscObjectComm(PetscObject obj)
@@ -48,7 +47,6 @@ MPI_Comm  PetscObjectComm(PetscObject obj)
 .  comm - the MPI communicator
 
    Level: advanced
-
 
 .seealso: PetscObjectComm()
 @*/
@@ -134,7 +132,6 @@ PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
 +  obj - any PETSc object where we are changing the tab
 .  oldobj - the object providing the tab
 -  tab - the increment that is added to the old objects tab
-
 
    Level: developer
 

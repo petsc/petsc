@@ -174,7 +174,6 @@
       KSP    ksp
       PetscInt Ntot,five,one
 
-
 !  Here we assume use of a grid of size m x n, with all points on the
 !  interior of the domain, i.e., we do not include the points corresponding
 !  to homogeneous Dirichlet boundary conditions.  We assume that the domain
@@ -225,7 +224,6 @@
       PetscErrorCode ierr
       type(User) userctx
       PetscScalar rho(*),userb(*),userx(*)
-
 
       common /param/ hx2,hy2
       PetscReal hx2,hy2

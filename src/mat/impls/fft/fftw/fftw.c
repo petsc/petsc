@@ -385,7 +385,6 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode VecDuplicate_FFTW_fin(Vec fin,Vec *fin_new)
 {
   PetscErrorCode ierr;
@@ -418,7 +417,6 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
   ierr = MatCreateVecsFFTW_FFTW(A,NULL,NULL,bout_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
    MatCreateVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
@@ -1335,7 +1333,4 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
 

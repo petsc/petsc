@@ -476,7 +476,6 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
         key = (row/bs)*Nbs+(col/bs)+1;
         h1  = HASH(size,key,tmp);
 
-
         idx = h1;
         if (PetscDefined(USE_DEBUG)) {
           insert_ct++;
@@ -2607,7 +2606,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                 /*144*/MatCreateMPIMatConcatenateSeqMat_MPIBAIJ
 };
 
-
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat,MatType,MatReuse,Mat*);
 
@@ -2955,7 +2953,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
 
   /* stuff for MatCreateSubMatrices_MPIBAIJ_local() */
   b->ijonly = PETSC_FALSE;
-
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpibaij_mpiadj_C",MatConvert_MPIBAIJ_MPIAdj);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpibaij_mpiaij_C",MatConvert_MPIBAIJ_MPIAIJ);CHKERRQ(ierr);
@@ -3506,7 +3503,6 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-
 
   if (!barray) {
     ierr         = PetscMalloc1(bs2,&barray);CHKERRQ(ierr);

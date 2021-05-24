@@ -107,7 +107,6 @@ typedef struct {
   Mat         DRDU,DRDP;
 } Userctx;
 
-
 /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
 PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar *Fr, PetscScalar *Fi)
 {
@@ -339,7 +338,6 @@ PetscErrorCode DICDPFiniteDifference(Vec X,Vec *DICDP, Userctx *user)
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* Computes F = [-f(x,y);g(x,y)] */
 PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
@@ -720,7 +718,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     idx        = idx + 9;
   }
 
-
   for (i=0; i<nbus; i++) {
     ierr   = MatGetRow(user->Ybus,2*i,&ncols,&cols,&yvals);CHKERRQ(ierr);
     row[0] = net_start + 2*i;
@@ -743,7 +740,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 
   ierr = MatAssemblyBegin(J,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-
 
   ierr = VecGetArray(user->V0,&v0);CHKERRQ(ierr);
   for (i=0; i < nload; i++) {
@@ -772,7 +768,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 
     dIDi_dVr = (-dQD_dVr*Vr + dPD_dVr*Vi - QD)/Vm2 - ((-QD*Vr + PD*Vi)*2*Vr)/Vm4;
     dIDi_dVi = (-dQD_dVi*Vr + dPD_dVi*Vi + PD)/Vm2 - ((-QD*Vr + PD*Vi)*2*Vi)/Vm4;
-
 
     /*    fnet[2*lbus[i]]   += IDi; */
     row[0] = net_start + 2*lbus[i];
@@ -1244,7 +1239,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   /* ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr); */
 
-
   /* Prefault period */
   ctx->alg_flg = PETSC_FALSE;
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
@@ -1344,7 +1338,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   ierr = MatAssemblyBegin(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
 
   /*   Set number of steps for the adjoint integration */
   ierr = TSAdjointSetSteps(ts,steps2);CHKERRQ(ierr);

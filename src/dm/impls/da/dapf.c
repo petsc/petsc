@@ -1,7 +1,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-
 /*@C
    DMDACreatePF - Creates an appropriately dimensioned PF mathematical function object
       from a DMDA.
@@ -31,5 +30,4 @@ PetscErrorCode  DMDACreatePF(DM da,PF *pf)
   ierr = PFCreate(PetscObjectComm((PetscObject)da),da->dim,dd->w,pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 

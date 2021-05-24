@@ -145,9 +145,7 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
 /*TEST
-
 
    test:
       suffix: 11_A
@@ -194,7 +192,6 @@ int main(int argc,char **args)
       output_file: output/ex5_21.out
       requires: cuda
 
-
    test:
       nsize: 3
       suffix: 2_aijcusparse_2
@@ -203,7 +200,6 @@ int main(int argc,char **args)
       args: -sf_type {{basic neighbor}} -vecscatter_packongpu {{0 1}}
       output_file: output/ex5_23.out
       requires: cuda
-
 
    test:
       nsize: 3

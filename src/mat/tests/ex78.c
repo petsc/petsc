@@ -33,7 +33,6 @@ solu
 0 1.0
 */
 
-
 #include <petscmat.h>
 
 int main(int argc,char **args)

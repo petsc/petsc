@@ -39,7 +39,6 @@ int main(int argc,char **argv)
   PetscScalar       v2;
   PetscScalar       *xx;
 
-
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-second_order",&second_order,NULL);CHKERRQ(ierr);
@@ -108,7 +107,6 @@ int main(int argc,char **argv)
     ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-
 
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
@@ -190,7 +188,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat prejac,void *dummy)
   ierr  = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   return 0;
 }
-
 
 /*TEST
 

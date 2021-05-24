@@ -1,7 +1,6 @@
 
 static char help[] = "Tests various routines in MatMPIBAIJ format.\n";
 
-
 #include <petscmat.h>
 
 int main(int argc,char **args)
@@ -73,8 +72,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
 
 /*TEST
 

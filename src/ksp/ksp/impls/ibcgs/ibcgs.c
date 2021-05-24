@@ -176,7 +176,6 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     */
     ierr = VecWAXPY(Tn,-alphan,Qn,Un_1);CHKERRQ(ierr);
 
-
     /*
         phin = r0'sn
         pin  = r0'qn
@@ -292,7 +291,6 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   ierr = KSPUnwindPreconditioner(ksp,Xn,Tn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*MC
      KSPIBCGS - Implements the IBiCGStab (Improved Stabilized version of BiConjugate Gradient) method

@@ -132,7 +132,6 @@
 !  SNESSetFromOptions() is called _after_ any other customization
 !  routines.
 
-
       call SNESSetFromOptions(snes,ierr)
 
       call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
@@ -302,7 +301,6 @@
 
       return
       end
-
 
       subroutine MyLineSearch(linesearch, lctx, ierr)
       use petscsnes

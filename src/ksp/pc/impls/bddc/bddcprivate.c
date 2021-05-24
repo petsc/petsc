@@ -6705,7 +6705,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Checking change of basis computation for subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
     }
 
-
     /* Now we loop on the constraints which need a change of basis */
     /*
        Change of basis matrix is evaluated similarly to the FIRST APPROACH in

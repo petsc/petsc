@@ -19,7 +19,6 @@ PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec *gg)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
 {
   PetscErrorCode ierr;
@@ -94,6 +93,4 @@ PetscErrorCode  DMDACreateNaturalVector(DM da,Vec *g)
   }
   PetscFunctionReturn(0);
 }
-
-
 

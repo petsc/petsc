@@ -172,7 +172,6 @@
       if (rank .eq. 0) write(6,210) v
  210  format ('VecPointwiseDivide ',1pe9.2)
 
-
       dots(1) = one
       dots(2) = three
       dots(3) = two

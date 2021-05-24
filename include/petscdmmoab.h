@@ -20,7 +20,6 @@
 #define MBERRV(mbif,rval) do{if (rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,emsg.c_str());} } while (0)
 #define MBERRVM(mbif,msg,rval) do{if (rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while (0)
 
-
 /* define enums for options to read and write MOAB files in parallel */
 typedef enum {READ_PART, READ_DELETE, BCAST_DELETE} MoabReadMode;
 static const char *const MoabReadModes[] = {"READ_PART", "READ_DELETE", "BCAST_DELETE", "MoabReadMode", "", 0};

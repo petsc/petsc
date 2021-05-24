@@ -103,7 +103,6 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
 PETSC_INTERN PetscErrorCode PetscLogView_Nested(PetscViewer);
 PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
 
-
 /*@C
   PetscLogNestedBegin - Turns on nested logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
@@ -167,7 +166,6 @@ PetscErrorCode PetscLogNestedEnd(void)
   nNestedEventsAllocated = 0;
   PetscFunctionReturn(0);
 }
-
 
 /*
  UTILITIES: FIND STUFF IN SORTED ARRAYS

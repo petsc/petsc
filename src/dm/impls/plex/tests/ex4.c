@@ -73,7 +73,6 @@ PetscErrorCode CreateSimplex_1D(MPI_Comm comm, DM *dm)
   PetscFunctionReturn(0);
 }
 
-
 /* Two triangles
         4
       / | \

@@ -47,7 +47,6 @@ typedef const char* TSType;
 #define TSMPRK            "mprk"
 #define TSDISCGRAD        "discgrad"
 
-
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 

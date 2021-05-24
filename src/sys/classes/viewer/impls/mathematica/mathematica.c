@@ -50,7 +50,6 @@ PetscErrorCode  PetscViewerMathematicaInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode PetscViewerInitializeMathematicaWorld_Private()
 {
   PetscErrorCode ierr;

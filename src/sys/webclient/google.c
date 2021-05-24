@@ -14,7 +14,6 @@
 #define PETSC_GOOGLE_CLIENT_ST  "vOds_A71I3_S_aHMq_kZAI0t"
 #define PETSC_GOOGLE_API_KEY    "AIzaSyDRZsOcySpWVzsUvIBL2UG3J2tcg-MXbyk"
 
-
 /*@C
      PetscGoogleDriveRefresh - Get a new authorization token for accessing Google drive from PETSc from a refresh token
 
@@ -261,7 +260,6 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@C
      PetscURLShorten - Uses Google's service to get a short url for a long url

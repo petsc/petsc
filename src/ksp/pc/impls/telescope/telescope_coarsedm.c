@@ -40,7 +40,6 @@ typedef struct {
   void            *dmksp_context_user;
 } PC_Telescope_CoarseDMCtx;
 
-
 PetscErrorCode PCTelescopeSetUp_scatters_CoarseDM(PC pc,PC_Telescope sred,PC_Telescope_CoarseDMCtx *ctx)
 {
   PetscErrorCode ierr;

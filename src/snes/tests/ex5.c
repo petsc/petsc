@@ -71,7 +71,6 @@ int main(int argc,char **argv)
   */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -157,7 +156,6 @@ int main(int argc,char **argv)
   ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
-
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

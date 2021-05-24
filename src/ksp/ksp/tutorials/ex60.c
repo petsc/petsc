@@ -13,8 +13,6 @@ Accepts an option -diagfunc [1,2,3] to select from different eigenvalue distribu
    Processors: n
 T*/
 
-
-
 /*
   Solve (in parallel) a diagonal linear system.
 
@@ -215,7 +213,6 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

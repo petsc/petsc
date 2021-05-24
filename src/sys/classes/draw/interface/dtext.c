@@ -16,7 +16,6 @@
 
    Level: beginner
 
-
 .seealso: PetscDrawStringVertical(), PetscDrawStringCentered(), PetscDrawStringBoxed(), PetscDrawStringSetSize(),
           PetscDrawStringGetSize(), PetscDrawLine(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawPoint()
@@ -87,7 +86,6 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
 
    Level: beginner
 
-
 .seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringBoxed(), PetscDrawStringSetSize(),
           PetscDrawStringGetSize()
 
@@ -126,7 +124,6 @@ PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl
 .   w,h - width and height of resulting box (optional)
 
    Level: beginner
-
 
 .seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringCentered(), PetscDrawStringSetSize(),
           PetscDrawStringGetSize()

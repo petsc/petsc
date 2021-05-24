@@ -17,7 +17,6 @@ const char *kernelSrc =                                       "\n" \
 "}                                                             \n" \
                                                               "\n" ;
 
-
 int main(int argc,char **argv)
 {
   PetscErrorCode    ierr;
@@ -37,7 +36,6 @@ int main(int argc,char **argv)
   ierr = VecSetType(x, VECVIENNACL);CHKERRQ(ierr);
   ierr = VecSet(x, 42.0);CHKERRQ(ierr);
 
-
   ierr = VecViennaCLGetCLContext(x, &clctxptr);CHKERRQ(ierr);
   ierr = VecViennaCLGetCLQueue(x, &clqueueptr);CHKERRQ(ierr);
   ierr = VecViennaCLGetCLMem(x, &clmemptr);CHKERRQ(ierr);
@@ -45,7 +43,6 @@ int main(int argc,char **argv)
   const cl_context       ctx   = ((const cl_context)clctxptr);
   const cl_command_queue queue = ((const cl_command_queue)clqueueptr);
   const cl_mem           mem   = ((const cl_mem)clmemptr);
-
 
   prg = clCreateProgramWithSource(ctx, 1, (const char **) & kernelSrc, NULL, NULL);
   clBuildProgram(prg, 0, NULL, NULL, NULL, NULL);

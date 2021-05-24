@@ -660,7 +660,6 @@ PetscErrorCode DMSwarmCreateMassMatrixSquare(DM dmCoarse, DM dmFine, Mat *mass)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    DMSwarmCreateGlobalVectorFromField - Creates a Vec object sharing the array associated with a given field
 

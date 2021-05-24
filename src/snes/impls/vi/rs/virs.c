@@ -29,7 +29,7 @@ PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS *inact)
 
     Simple calls the regular DM interpolation and restricts it to operation on the variables not associated with active constraints.
 
-<*/
+*/
 typedef struct {
   PetscInt n;                                              /* size of vectors in the reduced DM space */
   IS       inactive;
@@ -255,7 +255,6 @@ static PetscErrorCode DMDestroyVI(DM dm)
 
 /* --------------------------------------------------------------------------------------------------------*/
 
-
 PetscErrorCode SNESCreateIndexSets_VINEWTONRSLS(SNES snes,Vec X,Vec F,IS *ISact,IS *ISinact)
 {
   PetscErrorCode ierr;
@@ -295,7 +294,6 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   KSP                    kspnew;
   PC                     pcnew;
   MatSolverType          stype;
-
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)snes),&kspnew);CHKERRQ(ierr);
   kspnew->pc_side = snesksp->pc_side;
@@ -369,7 +367,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
-
   for (i=0; i<maxits; i++) {
 
     IS         IS_act; /* _act -> active set _inact -> inactive set */
@@ -406,7 +403,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     } else {
       ierr = ISComplement(IS_act,X->map->rstart,X->map->rend,&vi->IS_inact);CHKERRQ(ierr);
     }
-
 
     /* Create inactive set submatrix */
     ierr = MatCreateSubMatrix(snes->jacobian,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
@@ -487,8 +483,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     /*      ierr = ISView(vi->IS_inact,0);CHKERRQ(ierr); */
     /*      ierr = ISView(IS_act,0);CHKERRQ(ierr);*/
     /*      ierr = MatView(snes->jacobian_pre,0); */
-
-
 
     ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);

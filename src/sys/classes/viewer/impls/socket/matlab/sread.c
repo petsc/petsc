@@ -26,7 +26,6 @@ PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *p
   cnt = (int) mxGetScalar(prhs[1]);
   dt  = (PetscDataType) mxGetScalar(prhs[2]);
 
-
   if (dt == PETSC_DOUBLE) {
     plhs[0] = mxCreateDoubleMatrix(1,cnt,mxREAL);
     ierr    = PetscBinaryRead(fd,mxGetPr(plhs[0]),cnt,NULL,(PetscDataType)dt);if (ierr) PETSC_MEX_ERROR("Unable to receive double items.");

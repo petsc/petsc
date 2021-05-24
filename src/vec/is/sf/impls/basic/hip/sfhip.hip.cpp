@@ -2,7 +2,6 @@
 #include <hip/hip_runtime.h>
 #include <petschipblas.h> /* For CHKERRHIP */
 
-
 /* Map a thread id to an index in root/leaf space through a series of 3D subdomains. See PetscSFPackOpt. */
 __device__ static inline PetscInt MapTidToIndex(const PetscInt *opt,PetscInt tid)
 {
@@ -291,15 +290,11 @@ __device__ static llint atomicMult(llint* address,llint val)
 
 template<typename Type> struct AtomicMult {__device__ Type operator() (Type& x,Type y) const {return atomicMult(&x,y);}};
 
-
 /*
   Atomic Min/Max operations
 
   See CUDA version for comments.
  */
-
-
-
 
 #if defined(PETSC_USE_REAL_DOUBLE)
 __device__ static double atomicMin(double* address, double val)
@@ -369,7 +364,6 @@ __device__ static llint atomicMax(llint* address,llint val)
   } while (assumed != old);
   return (llint)old;
 }
-
 
 template<typename Type> struct AtomicMin {__device__ Type operator() (Type& x,Type y) const {return atomicMin(&x,y);}};
 template<typename Type> struct AtomicMax {__device__ Type operator() (Type& x,Type y) const {return atomicMax(&x,y);}};

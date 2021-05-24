@@ -503,7 +503,6 @@ if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PetscObjectCom
             /* Attempt to use the BFGS direction */
             ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
 
-
             /* Check for success (descent direction) */
             ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
             if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {

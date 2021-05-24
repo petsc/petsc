@@ -55,7 +55,6 @@ typedef struct _n_ISColoring* ISColoring;
 
    Level: developer
 
-
 .seealso:  PetscLayoutCreate(), PetscLayoutDestroy()
 S*/
 typedef struct _n_PetscLayout* PetscLayout;

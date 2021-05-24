@@ -28,7 +28,6 @@ PetscErrorCode SPARSEPACKrevrse(const PetscInt *n,PetscInt *perm)
   PetscFunctionReturn(0);
 }
 
-
 /*****************************************************************/
 /*********     GENND ..... GENERAL NESTED DISSECTION     *********/
 /*****************************************************************/

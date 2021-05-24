@@ -22,7 +22,6 @@
       PetscInt         ten,two,one
       external         FormFunctionLocal
 
-
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
          print*,'PetscInitialize failed'
@@ -54,7 +53,6 @@
       call DMDestroy(da,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end
-
 
       subroutine FormFunctionLocal(in,x,f,dummy,ierr)
       implicit none

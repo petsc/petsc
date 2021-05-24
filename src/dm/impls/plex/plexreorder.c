@@ -60,7 +60,6 @@ $     MATORDERINGRCM - Reverse Cuthill-McKee
 $     MATORDERINGQMD - Quotient Minimum Degree
 - label - [Optional] Label used to segregate ordering into sets, or NULL
 
-
   Output Parameter:
 . perm - The point permutation as an IS, perm[old point number] = new point number
 

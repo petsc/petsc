@@ -153,7 +153,6 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_
 
     Use PetscViewerBinaryAddMPIIOOffset() to increase this value after you have written a view.
 
-
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryAddMPIIOOffset()
 @*/
 PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer,MPI_Offset *off)
@@ -184,7 +183,6 @@ PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer,MPI_Offset *of
 
     Use PetscViewerBinaryGetMPIIOOffset() to get the value that you should pass to MPI_File_set_view() or MPI_File_{write|read}_at[_all]()
 
-
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
 PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer,MPI_Offset off)
@@ -214,7 +212,6 @@ PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer,MPI_Offset off
 
     Fortran Note:
     This routine is not supported in Fortran.
-
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
@@ -295,7 +292,6 @@ static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer,Pet
 
     Fortran Note:
     This routine is not supported in Fortran.
-
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
@@ -418,8 +414,6 @@ static PetscErrorCode  PetscViewerBinaryGetFlowControl_Binary(PetscViewer viewer
     Developer Notes:
     This must be called on all processes because Dave May changed
     the source code that this may be trigger a PetscViewerSetUp() call if it was not previously triggered.
-
-
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
 @*/
@@ -763,7 +757,6 @@ static PetscErrorCode PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,
   }
   PetscFunctionReturn(0);
 }
-
 
 #if defined(PETSC_HAVE_MPIIO)
 static PetscErrorCode PetscViewerFileClose_BinaryMPIIO(PetscViewer v)
@@ -1204,7 +1197,6 @@ PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer,const void *data,Pet
 +  viewer - the binary viewer
 -  data - location of the array of strings
 
-
    Level: intermediate
 
     Notes:
@@ -1441,7 +1433,6 @@ static PetscErrorCode PetscViewerFileSetUp_BinarySTDIO(PetscViewer viewer)
   if (vbinary->storecompressed) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP_SYS,"Cannot run gzip on this machine");
 #endif
 
-
   fname = vbinary->filename;
   if (vbinary->filemode == FILE_MODE_READ) { /* possibly get the file from remote site or compressed file */
     ierr  = PetscFileRetrieve(PetscObjectComm((PetscObject)viewer),fname,bname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
@@ -1563,7 +1554,6 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOp
 
 /*MC
    PETSCVIEWERBINARY - A viewer that saves to binary files
-
 
 .seealso:  PetscViewerBinaryOpen(), PETSC_VIEWER_STDOUT_(),PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_STDOUT_WORLD, PetscViewerCreate(), PetscViewerASCIIOpen(),
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB, PETSCVIEWERDRAW,

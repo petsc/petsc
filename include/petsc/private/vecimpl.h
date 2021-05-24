@@ -213,7 +213,6 @@ PETSC_EXTERN PetscErrorCode VecHIPAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecHIPCopyFromGPU(Vec v);
 #endif
 
-
 /*
      Common header shared by array based vectors,
    currently Vec_Seq and Vec_MPI

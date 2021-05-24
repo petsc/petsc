@@ -65,7 +65,6 @@ PetscErrorCode test_3d(const char filename[],PetscInt dof,PetscBool namefields)
   return 0;
 }
 
-
 /*
   Write 2D DMDA vector with coordinates in VTK format
 */

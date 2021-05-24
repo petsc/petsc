@@ -51,7 +51,6 @@ static PetscErrorCode ExactSolution(PetscReal t, Vec U)
   PetscFunctionReturn(0);
 }
 
-
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */

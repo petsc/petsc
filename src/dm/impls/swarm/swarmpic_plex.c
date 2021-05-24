@@ -3,7 +3,6 @@
 #include <petscdmswarm.h>
 #include "../src/dm/impls/swarm/data_bucket.h"
 
-
 PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,PetscInt,PetscReal*xi);
 
 static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt dim, PetscBool isSimplex, PetscInt qorder, PetscFE *fem)
@@ -105,7 +104,6 @@ PetscErrorCode subdivide_triangle(PetscReal v1[2],PetscReal v2[2],PetscReal v3[2
   ierr = subdivide_triangle(v12,v23,v31,depth+1,max,xi,np);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm,DM dmc,PetscInt nsub)
 {

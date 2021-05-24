@@ -718,7 +718,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS perm,con
   PetscFunctionBegin;
   mat_mkl_cpardiso->matstruc = DIFFERENT_NONZERO_PATTERN;
 
-
   /* Set MKL_CPARDISO options from the options database */
   ierr = PetscSetMKL_CPARDISOFromOptions(F,A);CHKERRQ(ierr);
   ierr = (*mat_mkl_cpardiso->ConvertToTriples)(A,MAT_INITIAL_MATRIX,&mat_mkl_cpardiso->nz,&mat_mkl_cpardiso->ia,&mat_mkl_cpardiso->ja,&mat_mkl_cpardiso->a);CHKERRQ(ierr);

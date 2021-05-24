@@ -93,7 +93,6 @@ static PetscErrorCode PetscViewerFileGetName_ADIOS(PetscViewer viewer,const char
 /*MC
    PETSCVIEWERADIOS - A viewer that writes to an ADIOS file
 
-
 .seealso:  PetscViewerADIOSOpen(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
            PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
@@ -144,7 +143,6 @@ $    FILE_MODE_APPEND - open existing file for binary output
 
    Note:
    This PetscViewer should be destroyed with PetscViewerDestroy().
-
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5Open(),
           VecView(), MatView(), VecLoad(), PetscViewerSetType(), PetscViewerFileSetMode(), PetscViewerFileSetName()

@@ -755,7 +755,6 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
    Output Parameter:
 .  y - output vector
 
-
    Notes:
     this routine is used internally so that the same Krylov code can be used to solve A x = b and A' x = b, with a preconditioner
       defined by B'. This is why this has the funny form that it computes tr(B) * tr(A)
@@ -1306,7 +1305,6 @@ $           set size, type, etc of Amat and Pmat
     you do not need to attach a PC to it (the KSP object manages the PC object for you).
     Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
     it can be created for you?
-
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/

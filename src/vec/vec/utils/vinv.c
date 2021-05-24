@@ -23,7 +23,6 @@
 
    Level: advanced
 
-
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
 PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
@@ -68,7 +67,6 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
    This will only work if the desire subvector is a stride subvector
 
    Level: advanced
-
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
@@ -123,7 +121,6 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
    This will only work if the desire subvector is a stride subvector
 
    Level: advanced
-
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -198,7 +195,6 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
    This will only work if the desire subvector is a stride subvector.
 
    Level: advanced
-
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
@@ -277,7 +273,6 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
    This will only work if the desire subvector is a stride subvector.
 
-
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
 PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
@@ -344,9 +339,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    The dimension of scales must be the same as the vector block size
 
-
    Level: advanced
-
 
 .seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -398,7 +391,6 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
    This will only work if the desire subvector is a stride subvector
 
    Level: advanced
-
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -477,7 +469,6 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 
    Level: advanced
 
-
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
 PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
@@ -537,7 +528,6 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
    information, or use a vector created from a multicomponent DMDA.
 
    The dimension of nrm must be the same as the vector block size
-
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
@@ -874,7 +864,6 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
    Notes:
    One must call VecSetBlockSize() on both vectors before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
-
 
    The parallel layout of the vector and the subvector must be the same;
 
@@ -1278,7 +1267,6 @@ PetscErrorCode  VecSqrtAbs(Vec v)
   Notes:
     conj(x) is the complex conjugate of x when x is complex
 
-
 .seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
 
 @*/
@@ -1546,8 +1534,6 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 .  flg - PETSC_TRUE if the vectors are equal; PETSC_FALSE otherwise.
 
    Level: intermediate
-
-
 @*/
 PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
 {
@@ -1653,6 +1639,3 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   PetscFunctionReturn(0);
 #endif
 }
-
-
-

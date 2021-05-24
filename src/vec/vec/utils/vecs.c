@@ -40,4 +40,3 @@ PetscErrorCode VecsDuplicate(Vecs x,Vecs *y)
   PetscFunctionReturn(0);
 }
 
-

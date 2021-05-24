@@ -448,7 +448,6 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     ierr = VecDestroy(&scale);CHKERRQ(ierr);
   }
 
-
   ierr = DMCreateInterpolation(dac,daf,&INTERP,NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
@@ -614,7 +613,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

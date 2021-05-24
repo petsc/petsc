@@ -131,7 +131,6 @@ PetscErrorCode GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
 {
   FILE           *fp=NULL;
