@@ -2626,6 +2626,7 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
     for (v = 1; v < Nv; ++v) {ierr = DMPlexSetCellType(rdm, v, DM_POLYTOPE_POINT);CHKERRQ(ierr);}
   }
   ierr = DMPlexInterpolateInPlace_Internal(rdm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) rdm, DMPolytopeTypes[ct]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
