@@ -9778,3 +9778,135 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
   ierr = PetscHMapAuxDuplicate(dm->auxData, &dmNew->auxData);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@C
+  DMPolytopeMatchOrientation - Determine an orientation that takes the source face arrangement to the target face arrangement
+
+  Not collective
+
+  Input Parameters:
++ ct         - The DMPolytopeType
+. sourceCone - The source arrangement of faces
+- targetCone - The target arrangement of faces
+
+  Output Parameters:
++ ornt  - The orientation which will take the source arrangement to the target arrangement
+- found - Flag indicating that a suitable orientation was found
+
+  Level: advanced
+
+.seealso: DMPolytopeGetOrientation(), DMPolytopeMatchVertexOrientation()
+@*/
+PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt, PetscBool *found)
+{
+  const PetscInt cS = DMPolytopeTypeGetConeSize(ct);
+  const PetscInt nO = DMPolytopeTypeGetNumArrangments(ct)/2;
+  PetscInt       o, c;
+
+  PetscFunctionBegin;
+  if (!nO) {*ornt = 0; *found = PETSC_TRUE; PetscFunctionReturn(0);}
+  for (o = -nO; o < nO; ++o) {
+    const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, o);
+
+    for (c = 0; c < cS; ++c) if (sourceCone[arr[c*2]] != targetCone[c]) break;
+    if (c == cS) {*ornt = o; break;}
+  }
+  *found = o == nO ? PETSC_FALSE : PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPolytopeGetOrientation - Determine an orientation that takes the source face arrangement to the target face arrangement
+
+  Not collective
+
+  Input Parameters:
++ ct         - The DMPolytopeType
+. sourceCone - The source arrangement of faces
+- targetCone - The target arrangement of faces
+
+  Output Parameters:
+. ornt  - The orientation which will take the source arrangement to the target arrangement
+
+  Note: This function will fail if no suitable orientation can be found.
+
+  Level: advanced
+
+.seealso: DMPolytopeMatchOrientation(), DMPolytopeGetVertexOrientation()
+@*/
+PetscErrorCode DMPolytopeGetOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt)
+{
+  PetscBool      found;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPolytopeMatchOrientation(ct, sourceCone, targetCone, ornt, &found);CHKERRQ(ierr);
+  if (!found) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find orientation for %s", DMPolytopeTypes[ct]);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPolytopeMatchVertexOrientation - Determine an orientation that takes the source vertex arrangement to the target vertex arrangement
+
+  Not collective
+
+  Input Parameters:
++ ct         - The DMPolytopeType
+. sourceVert - The source arrangement of vertices
+- targetVert - The target arrangement of vertices
+
+  Output Parameters:
++ ornt  - The orientation which will take the source arrangement to the target arrangement
+- found - Flag indicating that a suitable orientation was found
+
+  Level: advanced
+
+.seealso: DMPolytopeGetOrientation(), DMPolytopeMatchOrientation()
+@*/
+PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType ct, const PetscInt sourceVert[], const PetscInt targetVert[], PetscInt *ornt, PetscBool *found)
+{
+  const PetscInt cS = DMPolytopeTypeGetNumVertices(ct);
+  const PetscInt nO = DMPolytopeTypeGetNumArrangments(ct)/2;
+  PetscInt       o, c;
+
+  PetscFunctionBegin;
+  if (!nO) {*ornt = 0; *found = PETSC_TRUE; PetscFunctionReturn(0);}
+  for (o = -nO; o < nO; ++o) {
+    const PetscInt *arr = DMPolytopeTypeGetVertexArrangment(ct, o);
+
+    for (c = 0; c < cS; ++c) if (sourceVert[arr[c]] != targetVert[c]) break;
+    if (c == cS) {*ornt = o; break;}
+  }
+  *found = o == nO ? PETSC_FALSE : PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPolytopeGetVertexOrientation - Determine an orientation that takes the source vertex arrangement to the target vertex arrangement
+
+  Not collective
+
+  Input Parameters:
++ ct         - The DMPolytopeType
+. sourceCone - The source arrangement of vertices
+- targetCone - The target arrangement of vertices
+
+  Output Parameters:
+. ornt  - The orientation which will take the source arrangement to the target arrangement
+
+  Note: This function will fail if no suitable orientation can be found.
+
+  Level: advanced
+
+.seealso: DMPolytopeMatchVertexOrientation(), DMPolytopeGetOrientation()
+@*/
+PetscErrorCode DMPolytopeGetVertexOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt)
+{
+  PetscBool      found;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPolytopeMatchVertexOrientation(ct, sourceCone, targetCone, ornt, &found);CHKERRQ(ierr);
+  if (!found) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find orientation for %s", DMPolytopeTypes[ct]);
+  PetscFunctionReturn(0);
+}

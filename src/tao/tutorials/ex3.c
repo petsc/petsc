@@ -127,7 +127,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
       ierr = DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
       if (detJ < 0) {
-        ierr = DMPlexReverseCell(*dm, 0);CHKERRQ(ierr);
+        ierr = DMPlexOrientPoint(*dm, 0, -1);CHKERRQ(ierr);
         ierr = DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
         if (detJ < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Something is wrong");
       }

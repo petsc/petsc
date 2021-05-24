@@ -174,6 +174,9 @@ Changes: Development
 - Change ``DMPlexComputeBdResidualSingle()`` to take ``PetscFormKey`` instead of explicit label/value/field arguments
 - Add ``DMPlexInflateToGeomModel()`` which pushes refined points out to a geometric boundary
 - Separate EGADS and EGADSLite functionality, add ``DMPlexCreateEGADSLiteFromFile()``
+- Remove ``DMPlexReverseCell()`` and ``DMPlexOrientCell()`` in favor of ``DMPlexOrientPoint()``
+- Remove ``DMPlexCompareOrientations()`` in favor of ``DMPolytopeMatchOrientation()``
+- Add ``DMPlexGetCompressedClosure()`` and ``DMPlexRestoreCompressedClosure()``
 
 .. rubric:: FE/FV:
 

@@ -1042,6 +1042,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRMPI(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRMPI(ierr);
 #endif
+  ierr = MPI_Type_contiguous(4,MPI_INT,&MPI_4INT);CHKERRMPI(ierr);
+  ierr = MPI_Type_commit(&MPI_4INT);CHKERRMPI(ierr);
+  ierr = MPI_Type_contiguous(4,MPIU_INT,&MPIU_4INT);CHKERRMPI(ierr);
+  ierr = MPI_Type_commit(&MPIU_4INT);CHKERRMPI(ierr);
 
   /*
      Attributes to be set on PETSc communicators
@@ -1218,6 +1222,8 @@ PetscErrorCode  PetscFreeMPIResources(void)
 #if defined(PETSC_USE_64BIT_INDICES)
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRMPI(ierr);
 #endif
+  ierr = MPI_Type_free(&MPI_4INT);CHKERRMPI(ierr);
+  ierr = MPI_Type_free(&MPIU_4INT);CHKERRMPI(ierr);
   ierr = MPI_Op_free(&MPIU_MAXSUM_OP);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }

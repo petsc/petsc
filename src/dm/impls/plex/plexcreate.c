@@ -853,7 +853,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           PetscInt faceL   = firstXFace + (fz*numYEdges+fy)*numXVertices +   fx;
           PetscInt faceR   = firstXFace + (fz*numYEdges+fy)*numXVertices + ((fx+1)%numXVertices);
                             /* B,  T,  F,  K,  R,  L */
-          PetscInt ornt[6] = {-4,  0,  0, -1,  0, -4}; /* ??? */
+          PetscInt ornt[6] = {-2,  0,  0, -3,  0, -2}; /* ??? */
           PetscInt cone[6];
 
           /* no boundary twisting in 3D */
@@ -875,7 +875,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           PetscInt edgeR   = firstZEdge + (((fy+1)%numYVertices)*numXVertices+fx)*numZEdges + fz;
           PetscInt edgeB   = firstYEdge + (fz                   *numXVertices+fx)*numYEdges + fy;
           PetscInt edgeT   = firstYEdge + (((fz+1)%numZVertices)*numXVertices+fx)*numYEdges + fy;
-          PetscInt ornt[4] = {0, 0, -2, -2};
+          PetscInt ornt[4] = {0, 0, -1, -1};
           PetscInt cone[4];
 
           if (dim == 3) {
@@ -906,7 +906,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           PetscInt edgeR   = firstZEdge + (fy*numXVertices+((fx+1)%numXVertices))*numZEdges + fz;
           PetscInt edgeB   = firstXEdge + (fz                   *numYVertices+fy)*numXEdges + fx;
           PetscInt edgeT   = firstXEdge + (((fz+1)%numZVertices)*numYVertices+fy)*numXEdges + fx;
-          PetscInt ornt[4] = {0, 0, -2, -2};
+          PetscInt ornt[4] = {0, 0, -1, -1};
           PetscInt cone[4];
 
           if (dim == 3) {
@@ -937,11 +937,11 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           PetscInt edgeR   = firstYEdge + (fz*numXVertices+((fx+1)%numXVertices))*numYEdges + fy;
           PetscInt edgeB   = firstXEdge + (fz*numYVertices+  fy)*numXEdges + fx;
           PetscInt edgeT   = firstXEdge + (fz*numYVertices+((fy+1)%numYVertices))*numXEdges + fx;
-          PetscInt ornt[4] = {0, 0, -2, -2};
+          PetscInt ornt[4] = {0, 0, -1, -1};
           PetscInt cone[4];
 
           if (dim == 2) {
-            if (bdX == DM_BOUNDARY_TWIST && fx == numXEdges-1) {edgeR += numYEdges-1-2*fy; ornt[1] = -2;}
+            if (bdX == DM_BOUNDARY_TWIST && fx == numXEdges-1) {edgeR += numYEdges-1-2*fy; ornt[1] = -1;}
             if (bdY == DM_BOUNDARY_TWIST && fy == numYEdges-1) {edgeT += numXEdges-1-2*fx; ornt[2] =  0;}
             if (bdX != DM_BOUNDARY_NONE && fx == numXEdges-1 && cutLabel) {ierr = DMLabelSetValue(cutLabel, face, 2);CHKERRQ(ierr);}
             if (bdY != DM_BOUNDARY_NONE && fy == numYEdges-1 && cutLabel) {ierr = DMLabelSetValue(cutLabel, face, 2);CHKERRQ(ierr);}
@@ -2148,27 +2148,27 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
         /* Cell 1 */
         cone[0] = 18; cone[1] = 19; cone[2] = 14; cone[3] = 20;
         ierr = DMPlexSetCone(dm, 1, cone);CHKERRQ(ierr);
-        ornt[0] = 0; ornt[1] = 0; ornt[2] = -2; ornt[3] = 0;
+        ornt[0] = 0; ornt[1] = 0; ornt[2] = -1; ornt[3] = 0;
         ierr = DMPlexSetConeOrientation(dm, 1, ornt);CHKERRQ(ierr);
         /* Cell 2 */
         cone[0] = 21; cone[1] = 22; cone[2] = 18; cone[3] = 23;
         ierr = DMPlexSetCone(dm, 2, cone);CHKERRQ(ierr);
-        ornt[0] = 0; ornt[1] = 0; ornt[2] = -2; ornt[3] = 0;
+        ornt[0] = 0; ornt[1] = 0; ornt[2] = -1; ornt[3] = 0;
         ierr = DMPlexSetConeOrientation(dm, 2, ornt);CHKERRQ(ierr);
         /* Cell 3 */
         cone[0] = 19; cone[1] = 22; cone[2] = 24; cone[3] = 15;
         ierr = DMPlexSetCone(dm, 3, cone);CHKERRQ(ierr);
-        ornt[0] = -2; ornt[1] = -2; ornt[2] = 0; ornt[3] = -2;
+        ornt[0] = -1; ornt[1] = -1; ornt[2] = 0; ornt[3] = -1;
         ierr = DMPlexSetConeOrientation(dm, 3, ornt);CHKERRQ(ierr);
         /* Cell 4 */
         cone[0] = 16; cone[1] = 24; cone[2] = 21; cone[3] = 25;
         ierr = DMPlexSetCone(dm, 4, cone);CHKERRQ(ierr);
-        ornt[0] = -2; ornt[1] = -2; ornt[2] = -2; ornt[3] = 0;
+        ornt[0] = -1; ornt[1] = -1; ornt[2] = -1; ornt[3] = 0;
         ierr = DMPlexSetConeOrientation(dm, 4, ornt);CHKERRQ(ierr);
         /* Cell 5 */
         cone[0] = 20; cone[1] = 17; cone[2] = 25; cone[3] = 23;
         ierr = DMPlexSetCone(dm, 5, cone);CHKERRQ(ierr);
-        ornt[0] = -2; ornt[1] = -2; ornt[2] = -2; ornt[3] = -2;
+        ornt[0] = -1; ornt[1] = -1; ornt[2] = -1; ornt[3] = -1;
         ierr = DMPlexSetConeOrientation(dm, 5, ornt);CHKERRQ(ierr);
         /* Edges */
         cone[0] =  6; cone[1] =  7;
@@ -2490,6 +2490,18 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
     }
     break;
     case DM_POLYTOPE_SEGMENT:
+    {
+      PetscInt    numPoints[2]        = {2, 1};
+      PetscInt    coneSize[3]         = {2, 0, 0};
+      PetscInt    cones[2]            = {1, 2};
+      PetscInt    coneOrientations[2] = {0, 0};
+      PetscScalar vertexCoords[2]     = {-1.0,  1.0};
+
+      ierr = DMSetDimension(rdm, 1);CHKERRQ(ierr);
+      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    }
+    break;
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
     {
       PetscInt    numPoints[2]        = {2, 1};
       PetscInt    coneSize[3]         = {2, 0, 0};

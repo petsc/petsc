@@ -2819,11 +2819,15 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 
   Output Parameter:
 . coneOrientation - An array of orientations which are on the in-edges for point p. An orientation is an
-                    integer giving the prescription for cone traversal. If it is negative, the cone is
-                    traversed in the opposite direction. Its value 'o', or if negative '-(o+1)', gives
-                    the index of the cone point on which to start.
+                    integer giving the prescription for cone traversal.
 
   Level: beginner
+
+  Notes:
+  The number indexes the symmetry transformations for the cell type (see manual). Orientation 0 is always
+  the identity transformation. Negative orientation indicates reflection so that -(o+1) is the reflection
+  of o, however it is not necessarily the inverse. To get the inverse, use DMPolytopeTypeComposeOrientationInv()
+  with the identity.
 
   Fortran Notes:
   Since it returns an array, this routine is only available in Fortran 90, and you must
@@ -2831,7 +2835,7 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
   You must also call DMPlexRestoreConeOrientation() after you finish using the returned array.
   DMPlexRestoreConeOrientation() is not needed/available in C.
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetCone(), DMPlexSetChart()
+.seealso: DMPolytopeTypeComposeOrientation(), DMPolytopeTypeComposeOrientationInv(), DMPlexCreate(), DMPlexGetCone(), DMPlexSetCone(), DMPlexSetChart()
 @*/
 PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneOrientation[])
 {
@@ -2860,15 +2864,13 @@ PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneO
   Input Parameters:
 + mesh - The DMPlex
 . p - The point, which must lie in the chart set with DMPlexSetChart()
-- coneOrientation - An array of orientations which are on the in-edges for point p. An orientation is an
-                    integer giving the prescription for cone traversal. If it is negative, the cone is
-                    traversed in the opposite direction. Its value 'o', or if negative '-(o+1)', gives
-                    the index of the cone point on which to start.
-
+- coneOrientation - An array of orientations
   Output Parameter:
 
-  Note:
+  Notes:
   This should be called after all calls to DMPlexSetConeSize() and DMSetUp().
+
+  The meaning of coneOrientation is detailed in DMPlexGetConeOrientation().
 
   Level: beginner
 
@@ -2944,6 +2946,9 @@ PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt co
 - coneOrientation - The point orientation to insert
 
   Level: beginner
+
+  Notes:
+  The meaning of coneOrientation values is detailed in DMPlexGetConeOrientation().
 
 .seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp()
 @*/
@@ -3135,27 +3140,317 @@ PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, Petsc
   PetscFunctionReturn(0);
 }
 
+/* Converts an orientation o in the current numbering to the previous scheme used in Plex */
+PetscInt DMPolytopeConvertNewOrientation_Internal(DMPolytopeType ct, PetscInt o)
+{
+  switch (ct) {
+    case DM_POLYTOPE_SEGMENT:
+      if (o == -1) return -2;
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+      if (o == -3) return -1;
+      if (o == -2) return -3;
+      if (o == -1) return -2;
+      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+      if (o == -4) return -2;
+      if (o == -3) return -1;
+      if (o == -2) return -4;
+      if (o == -1) return -3;
+      break;
+    default: return o;
+  }
+  return o;
+}
+
+/* Converts an orientation o in the previous scheme used in Plex to the current numbering */
+PetscInt DMPolytopeConvertOldOrientation_Internal(DMPolytopeType ct, PetscInt o)
+{
+  switch (ct) {
+    case DM_POLYTOPE_SEGMENT:
+      if ((o == -2) || (o == 1)) return -1;
+      if (o == -1) return 0;
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+      if (o == -3) return -2;
+      if (o == -2) return -1;
+      if (o == -1) return -3;
+      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+      if (o == -4) return -2;
+      if (o == -3) return -1;
+      if (o == -2) return -4;
+      if (o == -1) return -3;
+      break;
+    default: return o;
+  }
+  return o;
+}
+
+/* Takes in a mesh whose orientations are in the previous scheme and converts them all to the current numbering */
+PetscErrorCode DMPlexConvertOldOrientations_Internal(DM dm)
+{
+  PetscInt       pStart, pEnd, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    const PetscInt *cone, *ornt;
+    PetscInt        coneSize, c;
+
+    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dm, p, &ornt);CHKERRQ(ierr);
+    for (c = 0; c < coneSize; ++c) {
+      DMPolytopeType ct;
+      const PetscInt o = ornt[c];
+
+      ierr = DMPlexGetCellType(dm, cone[c], &ct);CHKERRQ(ierr);
+      switch (ct) {
+        case DM_POLYTOPE_SEGMENT:
+          if ((o == -2) || (o == 1)) {ierr = DMPlexInsertConeOrientation(dm, p, c, -1);CHKERRQ(ierr);}
+          if (o == -1) {ierr = DMPlexInsertConeOrientation(dm, p, c, 0);CHKERRQ(ierr);}
+          break;
+        case DM_POLYTOPE_TRIANGLE:
+          if (o == -3) {ierr = DMPlexInsertConeOrientation(dm, p, c, -2);CHKERRQ(ierr);}
+          if (o == -2) {ierr = DMPlexInsertConeOrientation(dm, p, c, -1);CHKERRQ(ierr);}
+          if (o == -1) {ierr = DMPlexInsertConeOrientation(dm, p, c, -3);CHKERRQ(ierr);}
+          break;
+        case DM_POLYTOPE_QUADRILATERAL:
+          if (o == -4) {ierr = DMPlexInsertConeOrientation(dm, p, c, -2);CHKERRQ(ierr);}
+          if (o == -3) {ierr = DMPlexInsertConeOrientation(dm, p, c, -1);CHKERRQ(ierr);}
+          if (o == -2) {ierr = DMPlexInsertConeOrientation(dm, p, c, -4);CHKERRQ(ierr);}
+          if (o == -1) {ierr = DMPlexInsertConeOrientation(dm, p, c, -3);CHKERRQ(ierr);}
+          break;
+        default: break;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Static(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
+{
+  DMPolytopeType  ct = DM_POLYTOPE_UNKNOWN;
+  PetscInt       *closure;
+  const PetscInt *tmp = NULL, *tmpO = NULL;
+  PetscInt        off = 0, tmpSize, t;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBeginHot;
+  if (ornt) {
+    ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
+    if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN) ct = DM_POLYTOPE_UNKNOWN;
+  }
+  if (*points) {
+    closure = *points;
+  } else {
+    PetscInt maxConeSize, maxSupportSize;
+    ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, 2*(PetscMax(maxConeSize, maxSupportSize)+1), MPIU_INT, &closure);CHKERRQ(ierr);
+  }
+  if (useCone) {
+    ierr = DMPlexGetConeSize(dm, p, &tmpSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, p, &tmp);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dm, p, &tmpO);CHKERRQ(ierr);
+  } else {
+    ierr = DMPlexGetSupportSize(dm, p, &tmpSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, p, &tmp);CHKERRQ(ierr);
+  }
+  if (ct == DM_POLYTOPE_UNKNOWN) {
+    closure[off++] = p;
+    closure[off++] = 0;
+    for (t = 0; t < tmpSize; ++t) {
+      closure[off++] = tmp[t];
+      closure[off++] = tmpO ? tmpO[t] : 0;
+    }
+  } else {
+    const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, ornt);CHKERRQ(ierr);
+
+    /* We assume that cells with a valid type have faces with a valid type */
+    closure[off++] = p;
+    closure[off++] = ornt;
+    for (t = 0; t < tmpSize; ++t) {
+      DMPolytopeType ft;
+
+      ierr = DMPlexGetCellType(dm, tmp[t], &ft);CHKERRQ(ierr);
+      closure[off++] = tmp[arr[t]];
+      closure[off++] = tmpO ? DMPolytopeTypeComposeOrientation(ft, ornt, tmpO[t]) : 0;
+    }
+  }
+  if (numPoints) *numPoints = tmpSize+1;
+  if (points)    *points    = closure;
+  PetscFunctionReturn(0);
+}
+
+/* We need a special tensor verison becasue we want to allow duplicate points in the endcaps for hybrid cells */
+static PetscErrorCode DMPlexTransitiveClosure_Tensor_Internal(DM dm, PetscInt point, DMPolytopeType ct, PetscInt o, PetscBool useCone, PetscInt *numPoints, PetscInt **points)
+{
+  const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, o);
+  const PetscInt *cone, *ornt;
+  PetscInt       *pts,  *closure = NULL;
+  DMPolytopeType  ft;
+  PetscInt        maxConeSize, maxSupportSize, coneSeries, supportSeries, maxSize;
+  PetscInt        dim, coneSize, c, d, clSize, cl;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBeginHot;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
+  ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+  ierr = DMPlexGetConeOrientation(dm, point, &ornt);CHKERRQ(ierr);
+  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+  coneSeries    = (maxConeSize    > 1) ? ((PetscPowInt(maxConeSize,    dim+1)-1)/(maxConeSize-1))    : dim+1;
+  supportSeries = (maxSupportSize > 1) ? ((PetscPowInt(maxSupportSize, dim+1)-1)/(maxSupportSize-1)) : dim+1;
+  maxSize       = PetscMax(coneSeries, supportSeries);
+  if (*points) {pts  = *points;}
+  else         {ierr = DMGetWorkArray(dm, 2*maxSize, MPIU_INT, &pts);CHKERRQ(ierr);}
+  c    = 0;
+  pts[c++] = point;
+  pts[c++] = o;
+  ierr = DMPlexGetCellType(dm, cone[arr[0*2+0]], &ft);CHKERRQ(ierr);
+  ierr = DMPlexGetTransitiveClosure_Internal(dm, cone[arr[0*2+0]], DMPolytopeTypeComposeOrientation(ft, arr[0*2+1], ornt[0]), useCone, &clSize, &closure);CHKERRQ(ierr);
+  for (cl = 0; cl < clSize*2; cl += 2) {pts[c++] = closure[cl]; pts[c++] = closure[cl+1];}
+  ierr = DMPlexGetTransitiveClosure_Internal(dm, cone[arr[1*2+0]], DMPolytopeTypeComposeOrientation(ft, arr[1*2+1], ornt[1]), useCone, &clSize, &closure);CHKERRQ(ierr);
+  for (cl = 0; cl < clSize*2; cl += 2) {pts[c++] = closure[cl]; pts[c++] = closure[cl+1];}
+  ierr = DMPlexRestoreTransitiveClosure(dm, cone[0], useCone, &clSize, &closure);CHKERRQ(ierr);
+  for (d = 2; d < coneSize; ++d) {
+    ierr = DMPlexGetCellType(dm, cone[arr[d*2+0]], &ft);CHKERRQ(ierr);
+    pts[c++] = cone[arr[d*2+0]];
+    pts[c++] = DMPolytopeTypeComposeOrientation(ft, arr[d*2+1], ornt[d]);
+  }
+  if (dim >= 3) {
+    for (d = 2; d < coneSize; ++d) {
+      const PetscInt  fpoint = cone[arr[d*2+0]];
+      const PetscInt *fcone, *fornt;
+      PetscInt        fconeSize, fc, i;
+
+      ierr = DMPlexGetCellType(dm, fpoint, &ft);CHKERRQ(ierr);
+      const PetscInt *farr = DMPolytopeTypeGetArrangment(ft, DMPolytopeTypeComposeOrientation(ft, arr[d*2+1], ornt[d]));
+      ierr = DMPlexGetConeSize(dm, fpoint, &fconeSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, fpoint, &fcone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeOrientation(dm, fpoint, &fornt);CHKERRQ(ierr);
+      for (fc = 0; fc < fconeSize; ++fc) {
+        const PetscInt cp = fcone[farr[fc*2+0]];
+        const PetscInt co = farr[fc*2+1];
+
+        for (i = 0; i < c; i += 2) if (pts[i] == cp) break;
+        if (i == c) {
+          ierr = DMPlexGetCellType(dm, cp, &ft);CHKERRQ(ierr);
+          pts[c++] = cp;
+          pts[c++] = DMPolytopeTypeComposeOrientation(ft, co, fornt[farr[fc*2+0]]);
+        }
+      }
+    }
+  }
+  *numPoints = c/2;
+  *points    = pts;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
+{
+  DMPolytopeType ct;
+  PetscInt      *closure, *fifo;
+  PetscInt       closureSize = 0, fifoStart = 0, fifoSize = 0;
+  PetscInt       maxConeSize, maxSupportSize, coneSeries, supportSeries;
+  PetscInt       depth, maxSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  if (depth == 1) {
+    ierr = DMPlexGetTransitiveClosure_Depth1_Static(dm, p, ornt, useCone, numPoints, points);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
+  if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN) ct = DM_POLYTOPE_UNKNOWN;
+  if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) {
+    ierr = DMPlexTransitiveClosure_Tensor_Internal(dm, p, ct, ornt, useCone, numPoints, points);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+  coneSeries    = (maxConeSize    > 1) ? ((PetscPowInt(maxConeSize,    depth+1)-1)/(maxConeSize-1))    : depth+1;
+  supportSeries = (maxSupportSize > 1) ? ((PetscPowInt(maxSupportSize, depth+1)-1)/(maxSupportSize-1)) : depth+1;
+  maxSize       = PetscMax(coneSeries, supportSeries);
+  ierr = DMGetWorkArray(dm, 3*maxSize, MPIU_INT, &fifo);CHKERRQ(ierr);
+  if (*points) {closure = *points;}
+  else         {ierr = DMGetWorkArray(dm, 2*maxSize, MPIU_INT, &closure);CHKERRQ(ierr);}
+  closure[closureSize++] = p;
+  closure[closureSize++] = ornt;
+  fifo[fifoSize++]       = p;
+  fifo[fifoSize++]       = ornt;
+  fifo[fifoSize++]       = ct;
+  /* Should kick out early when depth is reached, rather than checking all vertices for empty cones */
+  while (fifoSize - fifoStart) {
+    const PetscInt       q    = fifo[fifoStart++];
+    const PetscInt       o    = fifo[fifoStart++];
+    const DMPolytopeType qt   = (DMPolytopeType) fifo[fifoStart++];
+    const PetscInt      *qarr = DMPolytopeTypeGetArrangment(qt, o);
+    const PetscInt      *tmp, *tmpO;
+    PetscInt             tmpSize, t;
+
+    if (PetscDefined(USE_DEBUG)) {
+      PetscInt nO = DMPolytopeTypeGetNumArrangments(qt)/2;
+      if (o && (o >= nO || o < -nO)) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid orientation %D not in [%D,%D) for %s %D", o, -nO, nO, DMPolytopeTypes[qt], q);
+    }
+    if (useCone) {
+      ierr = DMPlexGetConeSize(dm, q, &tmpSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, q, &tmp);CHKERRQ(ierr);
+      ierr = DMPlexGetConeOrientation(dm, q, &tmpO);CHKERRQ(ierr);
+    } else {
+      ierr = DMPlexGetSupportSize(dm, q, &tmpSize);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, q, &tmp);CHKERRQ(ierr);
+      tmpO = NULL;
+    }
+    for (t = 0; t < tmpSize; ++t) {
+      const PetscInt ip = useCone && qarr ? qarr[t*2]   : t;
+      const PetscInt io = useCone && qarr ? qarr[t*2+1] : 0;
+      const PetscInt cp = tmp[ip];
+      ierr = DMPlexGetCellType(dm, cp, &ct);CHKERRQ(ierr);
+      const PetscInt co = tmpO ? DMPolytopeTypeComposeOrientation(ct, io, tmpO[ip]) : 0;
+      PetscInt       c;
+
+      /* Check for duplicate */
+      for (c = 0; c < closureSize; c += 2) {
+        if (closure[c] == cp) break;
+      }
+      if (c == closureSize) {
+        closure[closureSize++] = cp;
+        closure[closureSize++] = co;
+        fifo[fifoSize++]       = cp;
+        fifo[fifoSize++]       = co;
+        fifo[fifoSize++]       = ct;
+      }
+    }
+  }
+  ierr = DMRestoreWorkArray(dm, 3*maxSize, MPIU_INT, &fifo);CHKERRQ(ierr);
+  if (numPoints) *numPoints = closureSize/2;
+  if (points)    *points    = closure;
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMPlexGetTransitiveClosure - Return the points on the transitive closure of the in-edges or out-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
-+ mesh - The DMPlex
-. p - The point, which must lie in the chart set with DMPlexSetChart()
-. useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
-- points - If points is NULL on input, internal storage will be returned, otherwise the provided array is used
++ dm      - The DMPlex
+. p       - The mesh point
+. useCone - PETSC_TRUE for the closure, otherwise return the star
+- points  - If points is NULL on input, internal storage will be returned, otherwise the provided array is used
 
   Output Parameters:
 + numPoints - The number of points in the closure, so points[] is of size 2*numPoints
-- points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
+- points    - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
 
   Note:
   If using internal storage (points is NULL on input), each call overwrites the last output.
 
   Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must
-  include petsc.h90 in your code.
+  Since it returns an array, this routine is only available in Fortran 90, and you must include petsc.h90 in your code.
 
   The numPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
@@ -3165,268 +3460,13 @@ PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, Petsc
 @*/
 PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
 {
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
-  PetscInt       *closure, *fifo;
-  const PetscInt *tmp = NULL, *tmpO = NULL;
-  PetscInt        tmpSize, t;
-  PetscInt        depth       = 0, maxSize;
-  PetscInt        closureSize = 2, fifoSize = 0, fifoStart = 0;
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr    = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  /* This is only 1-level */
-  if (useCone) {
-    ierr = DMPlexGetConeSize(dm, p, &tmpSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, p, &tmp);CHKERRQ(ierr);
-    ierr = DMPlexGetConeOrientation(dm, p, &tmpO);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexGetSupportSize(dm, p, &tmpSize);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, p, &tmp);CHKERRQ(ierr);
-  }
-  if (depth == 1) {
-    if (*points) {
-      closure = *points;
-    } else {
-      maxSize = 2*(PetscMax(mesh->maxConeSize, mesh->maxSupportSize)+1);
-      ierr = DMGetWorkArray(dm, maxSize, MPIU_INT, &closure);CHKERRQ(ierr);
-    }
-    closure[0] = p; closure[1] = 0;
-    for (t = 0; t < tmpSize; ++t, closureSize += 2) {
-      closure[closureSize]   = tmp[t];
-      closure[closureSize+1] = tmpO ? tmpO[t] : 0;
-    }
-    if (numPoints) *numPoints = closureSize/2;
-    if (points)    *points    = closure;
-    PetscFunctionReturn(0);
-  }
-  {
-    PetscInt c, coneSeries, s,supportSeries;
-
-    c = mesh->maxConeSize;
-    coneSeries = (c > 1) ? ((PetscPowInt(c,depth+1)-1)/(c-1)) : depth+1;
-    s = mesh->maxSupportSize;
-    supportSeries = (s > 1) ? ((PetscPowInt(s,depth+1)-1)/(s-1)) : depth+1;
-    maxSize = 2*PetscMax(coneSeries,supportSeries);
-  }
-  ierr    = DMGetWorkArray(dm, maxSize, MPIU_INT, &fifo);CHKERRQ(ierr);
-  if (*points) {
-    closure = *points;
-  } else {
-    ierr = DMGetWorkArray(dm, maxSize, MPIU_INT, &closure);CHKERRQ(ierr);
-  }
-  closure[0] = p; closure[1] = 0;
-  for (t = 0; t < tmpSize; ++t, closureSize += 2, fifoSize += 2) {
-    const PetscInt cp = tmp[t];
-    const PetscInt co = tmpO ? tmpO[t] : 0;
-
-    closure[closureSize]   = cp;
-    closure[closureSize+1] = co;
-    fifo[fifoSize]         = cp;
-    fifo[fifoSize+1]       = co;
-  }
-  /* Should kick out early when depth is reached, rather than checking all vertices for empty cones */
-  while (fifoSize - fifoStart) {
-    const PetscInt q   = fifo[fifoStart];
-    const PetscInt o   = fifo[fifoStart+1];
-    const PetscInt rev = o >= 0 ? 0 : 1;
-    const PetscInt off = rev ? -(o+1) : o;
-
-    if (useCone) {
-      ierr = DMPlexGetConeSize(dm, q, &tmpSize);CHKERRQ(ierr);
-      ierr = DMPlexGetCone(dm, q, &tmp);CHKERRQ(ierr);
-      ierr = DMPlexGetConeOrientation(dm, q, &tmpO);CHKERRQ(ierr);
-    } else {
-      ierr = DMPlexGetSupportSize(dm, q, &tmpSize);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, q, &tmp);CHKERRQ(ierr);
-      tmpO = NULL;
-    }
-    for (t = 0; t < tmpSize; ++t) {
-      const PetscInt i  = ((rev ? tmpSize-t : t) + off)%tmpSize;
-      const PetscInt cp = tmp[i];
-      /* Must propogate orientation: When we reverse orientation, we both reverse the direction of iteration and start at the other end of the chain. */
-      /* HACK: It is worse to get the size here, than to change the interpretation of -(*+1)
-       const PetscInt co = tmpO ? (rev ? -(tmpO[i]+1) : tmpO[i]) : 0; */
-      PetscInt       co = tmpO ? tmpO[i] : 0;
-      PetscInt       c;
-
-      if (rev) {
-        PetscInt childSize, coff;
-        ierr = DMPlexGetConeSize(dm, cp, &childSize);CHKERRQ(ierr);
-        coff = tmpO[i] < 0 ? -(tmpO[i]+1) : tmpO[i];
-        co   = childSize ? -(((coff+childSize-1)%childSize)+1) : 0;
-      }
-      /* Check for duplicate */
-      for (c = 0; c < closureSize; c += 2) {
-        if (closure[c] == cp) break;
-      }
-      if (c == closureSize) {
-        closure[closureSize]   = cp;
-        closure[closureSize+1] = co;
-        fifo[fifoSize]         = cp;
-        fifo[fifoSize+1]       = co;
-        closureSize           += 2;
-        fifoSize              += 2;
-      }
-    }
-    fifoStart += 2;
-  }
-  if (numPoints) *numPoints = closureSize/2;
-  if (points)    *points    = closure;
-  ierr = DMRestoreWorkArray(dm, maxSize, MPIU_INT, &fifo);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-  DMPlexGetTransitiveClosure_Internal - Return the points on the transitive closure of the in-edges or out-edges for this point in the DAG with a specified initial orientation
-
-  Not collective
-
-  Input Parameters:
-+ mesh - The DMPlex
-. p - The point, which must lie in the chart set with DMPlexSetChart()
-. orientation - The orientation of the point
-. useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
-- points - If points is NULL on input, internal storage will be returned, otherwise the provided array is used
-
-  Output Parameters:
-+ numPoints - The number of points in the closure, so points[] is of size 2*numPoints
-- points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
-
-  Note:
-  If using internal storage (points is NULL on input), each call overwrites the last output.
-
-  Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must
-  include petsc.h90 in your code.
-
-  The numPoints argument is not present in the Fortran 90 binding since it is internal to the array.
-
-  Level: beginner
-
-.seealso: DMPlexRestoreTransitiveClosure(), DMPlexCreate(), DMPlexSetCone(), DMPlexSetChart(), DMPlexGetCone()
-@*/
-PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
-{
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
-  PetscInt       *closure, *fifo;
-  const PetscInt *tmp = NULL, *tmpO = NULL;
-  PetscInt        tmpSize, t;
-  PetscInt        depth       = 0, maxSize;
-  PetscInt        closureSize = 2, fifoSize = 0, fifoStart = 0;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr    = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  /* This is only 1-level */
-  if (useCone) {
-    ierr = DMPlexGetConeSize(dm, p, &tmpSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, p, &tmp);CHKERRQ(ierr);
-    ierr = DMPlexGetConeOrientation(dm, p, &tmpO);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexGetSupportSize(dm, p, &tmpSize);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, p, &tmp);CHKERRQ(ierr);
-  }
-  if (depth == 1) {
-    if (*points) {
-      closure = *points;
-    } else {
-      maxSize = 2*(PetscMax(mesh->maxConeSize, mesh->maxSupportSize)+1);
-      ierr = DMGetWorkArray(dm, maxSize, MPIU_INT, &closure);CHKERRQ(ierr);
-    }
-    closure[0] = p; closure[1] = ornt;
-    for (t = 0; t < tmpSize; ++t, closureSize += 2) {
-      const PetscInt i = ornt >= 0 ? (t+ornt)%tmpSize : (-(ornt+1) + tmpSize-t)%tmpSize;
-      closure[closureSize]   = tmp[i];
-      closure[closureSize+1] = tmpO ? tmpO[i] : 0;
-    }
-    if (numPoints) *numPoints = closureSize/2;
-    if (points)    *points    = closure;
-    PetscFunctionReturn(0);
-  }
-  {
-    PetscInt c, coneSeries, s,supportSeries;
-
-    c = mesh->maxConeSize;
-    coneSeries = (c > 1) ? ((PetscPowInt(c,depth+1)-1)/(c-1)) : depth+1;
-    s = mesh->maxSupportSize;
-    supportSeries = (s > 1) ? ((PetscPowInt(s,depth+1)-1)/(s-1)) : depth+1;
-    maxSize = 2*PetscMax(coneSeries,supportSeries);
-  }
-  ierr    = DMGetWorkArray(dm, maxSize, MPIU_INT, &fifo);CHKERRQ(ierr);
-  if (*points) {
-    closure = *points;
-  } else {
-    ierr = DMGetWorkArray(dm, maxSize, MPIU_INT, &closure);CHKERRQ(ierr);
-  }
-  closure[0] = p; closure[1] = ornt;
-  for (t = 0; t < tmpSize; ++t, closureSize += 2, fifoSize += 2) {
-    const PetscInt i  = ornt >= 0 ? (t+ornt)%tmpSize : (-(ornt+1) + tmpSize-t)%tmpSize;
-    const PetscInt cp = tmp[i];
-    PetscInt       co = tmpO ? tmpO[i] : 0;
-
-    if (ornt < 0) {
-      PetscInt childSize, coff;
-      ierr = DMPlexGetConeSize(dm, cp, &childSize);CHKERRQ(ierr);
-      coff = co < 0 ? -(tmpO[i]+1) : tmpO[i];
-      co   = childSize ? -(((coff+childSize-1)%childSize)+1) : 0;
-    }
-    closure[closureSize]   = cp;
-    closure[closureSize+1] = co;
-    fifo[fifoSize]         = cp;
-    fifo[fifoSize+1]       = co;
-  }
-  /* Should kick out early when depth is reached, rather than checking all vertices for empty cones */
-  while (fifoSize - fifoStart) {
-    const PetscInt q   = fifo[fifoStart];
-    const PetscInt o   = fifo[fifoStart+1];
-    const PetscInt rev = o >= 0 ? 0 : 1;
-    const PetscInt off = rev ? -(o+1) : o;
-
-    if (useCone) {
-      ierr = DMPlexGetConeSize(dm, q, &tmpSize);CHKERRQ(ierr);
-      ierr = DMPlexGetCone(dm, q, &tmp);CHKERRQ(ierr);
-      ierr = DMPlexGetConeOrientation(dm, q, &tmpO);CHKERRQ(ierr);
-    } else {
-      ierr = DMPlexGetSupportSize(dm, q, &tmpSize);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, q, &tmp);CHKERRQ(ierr);
-      tmpO = NULL;
-    }
-    for (t = 0; t < tmpSize; ++t) {
-      const PetscInt i  = ((rev ? tmpSize-t : t) + off)%tmpSize;
-      const PetscInt cp = tmp[i];
-      /* Must propogate orientation: When we reverse orientation, we both reverse the direction of iteration and start at the other end of the chain. */
-      /* HACK: It is worse to get the size here, than to change the interpretation of -(*+1)
-       const PetscInt co = tmpO ? (rev ? -(tmpO[i]+1) : tmpO[i]) : 0; */
-      PetscInt       co = tmpO ? tmpO[i] : 0;
-      PetscInt       c;
-
-      if (rev) {
-        PetscInt childSize, coff;
-        ierr = DMPlexGetConeSize(dm, cp, &childSize);CHKERRQ(ierr);
-        coff = tmpO[i] < 0 ? -(tmpO[i]+1) : tmpO[i];
-        co   = childSize ? -(((coff+childSize-1)%childSize)+1) : 0;
-      }
-      /* Check for duplicate */
-      for (c = 0; c < closureSize; c += 2) {
-        if (closure[c] == cp) break;
-      }
-      if (c == closureSize) {
-        closure[closureSize]   = cp;
-        closure[closureSize+1] = co;
-        fifo[fifoSize]         = cp;
-        fifo[fifoSize+1]       = co;
-        closureSize           += 2;
-        fifoSize              += 2;
-      }
-    }
-    fifoStart += 2;
-  }
-  if (numPoints) *numPoints = closureSize/2;
-  if (points)    *points    = closure;
-  ierr = DMRestoreWorkArray(dm, maxSize, MPIU_INT, &fifo);CHKERRQ(ierr);
+  if (numPoints) PetscValidIntPointer(numPoints, 4);
+  if (points)    PetscValidPointer(points, 5);
+  ierr = DMPlexGetTransitiveClosure_Internal(dm, p, 0, useCone, numPoints, points);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3436,18 +3476,17 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
   Not collective
 
   Input Parameters:
-+ mesh - The DMPlex
-. p - The point, which must lie in the chart set with DMPlexSetChart()
-. useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
-. numPoints - The number of points in the closure, so points[] is of size 2*numPoints, zeroed on exit
-- points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...], zeroed on exit
++ dm        - The DMPlex
+. p         - The mesh point
+. useCone   - PETSC_TRUE for the closure, otherwise return the star
+. numPoints - The number of points in the closure, so points[] is of size 2*numPoints
+- points    - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
 
   Note:
   If not using internal storage (points is not NULL on input), this call is unnecessary
 
   Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must
-  include petsc.h90 in your code.
+  Since it returns an array, this routine is only available in Fortran 90, and you must include petsc.h90 in your code.
 
   The numPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
@@ -3459,12 +3498,10 @@ PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCo
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (numPoints) PetscValidIntPointer(numPoints,4);
-  if (points) PetscValidPointer(points,5);
-  ierr = DMRestoreWorkArray(dm, 0, MPIU_INT, points);CHKERRQ(ierr);
   if (numPoints) *numPoints = 0;
+  ierr = DMRestoreWorkArray(dm, 0, MPIU_INT, points);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4941,11 +4978,16 @@ PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
 . dm        - The DMPlex object
 
   Output Parameter:
-. coneOrientations - The cone orientation for each point
+. coneOrientations - The array of cone orientations for all points
 
   Level: developer
 
-.seealso: DMPlexGetConeSection()
+  Notes:
+  The PetscSection returned by DMPlexGetConeSection() partitions coneOrientations into cone orientations of particular points as returned by DMPlexGetConeOrientation().
+
+  The meaning of coneOrientations values is detailed in DMPlexGetConeOrientation().
+
+.seealso: DMPlexGetConeSection(), DMPlexGetConeOrientation()
 @*/
 PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 {
@@ -5398,51 +5440,6 @@ PETSC_STATIC_INLINE PetscErrorCode CompressPoints_Private(PetscSection section, 
   return 0;
 }
 
-static PetscErrorCode DMPlexTransitiveClosure_Hybrid_Internal(DM dm, PetscInt point, PetscInt np, PetscInt *numPoints, PetscInt **points)
-{
-  const PetscInt *cone, *ornt;
-  PetscInt       *pts,  *closure = NULL;
-  PetscInt        dim, coneSize, c, d, clSize, cl;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBeginHot;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
-  ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
-  ierr = DMPlexGetConeOrientation(dm, point, &ornt);CHKERRQ(ierr);
-  ierr = DMPlexGetTransitiveClosure(dm, cone[0], PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, np*2, MPIU_INT, &pts);CHKERRQ(ierr);
-  c    = 0;
-  pts[c*2+0] = point;
-  pts[c*2+1] = 0;
-  ++c;
-  for (cl = 0; cl < clSize*2; cl += 2, ++c) {pts[c*2+0] = closure[cl]; pts[c*2+1] = closure[cl+1];}
-  ierr = DMPlexGetTransitiveClosure(dm, cone[1], PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
-  for (cl = 0; cl < clSize*2; cl += 2, ++c) {pts[c*2+0] = closure[cl]; pts[c*2+1] = closure[cl+1];}
-  ierr = DMPlexRestoreTransitiveClosure(dm, cone[0], PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
-  if (dim >= 2) {
-    for (d = 2; d < coneSize; ++d, ++c) {pts[c*2+0] = cone[d]; pts[c*2+1] = ornt[d];}
-  }
-  if (dim >= 3) {
-    for (d = 2; d < coneSize; ++d) {
-      const PetscInt  fpoint = cone[d];
-      const PetscInt *fcone;
-      PetscInt        fconeSize, fc, i;
-
-      ierr = DMPlexGetConeSize(dm, fpoint, &fconeSize);CHKERRQ(ierr);
-      ierr = DMPlexGetCone(dm, fpoint, &fcone);CHKERRQ(ierr);
-      for (fc = 0; fc < fconeSize; ++fc) {
-        for (i = 0; i < c; ++i) if (pts[i*2] == fcone[fc]) break;
-        if (i == c) {pts[c*2+0] = fcone[fc]; pts[c*2+1] = 0; ++c;}
-      }
-    }
-  }
-  if (c != np) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid closure for hybrid point %D, size %D != %D", point, c, np);
-  *numPoints = np;
-  *points    = pts;
-  PetscFunctionReturn(0);
-}
-
 /* Compressed closure does not apply closure permutation */
 PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
 {
@@ -5461,24 +5458,7 @@ PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt 
     np   = dof/2;
     pts  = (PetscInt *) &cla[off];
   } else {
-    DMPolytopeType ct;
-
-    /* Do not make the label if it does not exist */
-    if (!dm->celltypeLabel) {ct = DM_POLYTOPE_POINT;}
-    else                    {ierr = DMPlexGetCellType(dm, point, &ct);CHKERRQ(ierr);}
-    switch (ct) {
-      case DM_POLYTOPE_SEG_PRISM_TENSOR:
-        ierr = DMPlexTransitiveClosure_Hybrid_Internal(dm, point, 9, &np, &pts);CHKERRQ(ierr);
-        break;
-      case DM_POLYTOPE_TRI_PRISM_TENSOR:
-        ierr = DMPlexTransitiveClosure_Hybrid_Internal(dm, point, 21, &np, &pts);CHKERRQ(ierr);
-        break;
-      case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-        ierr = DMPlexTransitiveClosure_Hybrid_Internal(dm, point, 27, &np, &pts);CHKERRQ(ierr);
-        break;
-      default:
-        ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &np, &pts);CHKERRQ(ierr);
-    }
+    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &np, &pts);CHKERRQ(ierr);
     ierr = CompressPoints_Private(section, &np, pts);CHKERRQ(ierr);
   }
   *numPoints = np;
@@ -8260,6 +8240,9 @@ static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPol
   PetscFunctionBegin;
   *unsplit = 0;
   switch (ct) {
+    case DM_POLYTOPE_POINT_PRISM_TENSOR:
+      ptpoints[npt++] = c;
+      break;
     case DM_POLYTOPE_SEG_PRISM_TENSOR:
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
@@ -8429,7 +8412,16 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
         }
         if (fnumCorners != faceSizes[f]) SETERRQ7(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D of type %s (cone idx %D) of cell %D of type %s has %D vertices but should have %D", cone[f], DMPolytopeTypes[fct], f, c, DMPolytopeTypes[ct], fnumCorners, faceSizes[f]);
         for (v = 0; v < fnumCorners; ++v) {
-          if (fclosure[v] != faces[fOff+v]) SETERRQ8(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D of type %s (cone idx %d) of cell %D of type %s vertex %D, %D != %D", cone[f], DMPolytopeTypes[fct], f, c, DMPolytopeTypes[ct], v, fclosure[v], faces[fOff+v]);
+          if (fclosure[v] != faces[fOff+v]) {
+            PetscInt v1;
+
+            ierr = PetscPrintf(PETSC_COMM_SELF, "face closure:");CHKERRQ(ierr);
+            for (v1 = 0; v1 < fnumCorners; ++v1) {ierr = PetscPrintf(PETSC_COMM_SELF, " %D", fclosure[v1]);CHKERRQ(ierr);}
+            ierr = PetscPrintf(PETSC_COMM_SELF, "\ncell face:");CHKERRQ(ierr);
+            for (v1 = 0; v1 < fnumCorners; ++v1) {ierr = PetscPrintf(PETSC_COMM_SELF, " %D", faces[fOff+v1]);CHKERRQ(ierr);}
+            ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+            SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D of type %s (cone idx %d, ornt %D) of cell %D of type %s vertex %D, %D != %D", cone[f], DMPolytopeTypes[fct], f, ornt[f], c, DMPolytopeTypes[ct], v, fclosure[v], faces[fOff+v]);
+          }
         }
         ierr = DMPlexRestoreTransitiveClosure(dm, cone[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
         fOff += faceSizes[f];
@@ -8574,6 +8566,20 @@ PetscErrorCode DMPlexCheckPointSF(DM dm)
       }
     }
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexCheckAll_Internal(DM dm, PetscInt cellHeight)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSkeleton(dm, cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexCheckFaces(dm, cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexCheckGeometry(dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckInterfaceCones(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
