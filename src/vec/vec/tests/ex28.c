@@ -171,6 +171,16 @@ int main(int argc,char **argv)
         requires: cuda
 
      test:
+        suffix: 2_hip
+        args: -splitreduction_async -vec_type hip
+        requires: hip
+
+     test:
+        suffix: hip
+        args: -vec_type hip
+        requires: hip
+
+     test:
         suffix: 2_kokkos
         args: -splitreduction_async -vec_type kokkos
         requires: kokkos_kernels

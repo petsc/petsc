@@ -301,4 +301,9 @@ int main(int argc, char **args)
         suffix: kokkos
         args: -vec_type kokkos
 
+      test:
+        requires: hip
+        suffix: hip
+        args: -vec_type hip
+
 TEST*/
