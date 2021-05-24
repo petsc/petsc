@@ -13,13 +13,16 @@ and eventually adaptivity.\n\n\n";
 #include <petscds.h>
 #include <petscconvest.h>
 
-typedef enum {SOL_VLAP_QUADRATIC, SOL_ELAS_QUADRATIC, SOL_VLAP_TRIG, SOL_ELAS_TRIG, SOL_ELAS_AXIAL_DISP, SOL_ELAS_UNIFORM_STRAIN, NUM_SOLUTION_TYPES} SolutionType;
-const char *solutionTypes[NUM_SOLUTION_TYPES+1] = {"vlap_quad", "elas_quad", "vlap_trig", "elas_trig", "elas_axial_disp", "elas_uniform_strain", "unknown"};
+typedef enum {SOL_VLAP_QUADRATIC, SOL_ELAS_QUADRATIC, SOL_VLAP_TRIG, SOL_ELAS_TRIG, SOL_ELAS_AXIAL_DISP, SOL_ELAS_UNIFORM_STRAIN, SOL_MASS_QUADRATIC, NUM_SOLUTION_TYPES} SolutionType;
+const char *solutionTypes[NUM_SOLUTION_TYPES+1] = {"vlap_quad", "elas_quad", "vlap_trig", "elas_trig", "elas_axial_disp", "elas_uniform_strain", "mass_quad", "unknown"};
+
+typedef enum {DEFORM_NONE, DEFORM_SHEAR, DEFORM_STEP, NUM_DEFORM_TYPES} DeformType;
+const char *deformTypes[NUM_DEFORM_TYPES+1] = {"none", "shear", "step", "unknown"};
 
 typedef struct {
   /* Domain and mesh definition */
   char         dmType[256]; /* DM type for the solve */
-  PetscBool    shear;       /* Shear the domain */
+  DeformType   deform;      /* Domain deformation type */
   /* Problem definition */
   SolutionType solType;     /* Type of exact solution */
   /* Solver definition */
@@ -99,6 +102,21 @@ static void f0_elas_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   for (d = 0; d < dim-1; ++d) f0[d] += 2.0*mu;
   f0[dim-1] += 2.0*lambda + 4.0*mu;
+}
+
+static void f0_mass_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  if (dim == 2) {
+    f0[0] -= x[0]*x[0];
+    f0[1] -= x[1]*x[1] - 2.0*x[0]*x[1];
+  } else {
+    f0[0] -= x[0]*x[0];
+    f0[1] -= x[1]*x[1] - 2.0*x[0]*x[1];
+    f0[2] -= x[2]*x[2] - 2.0*x[1]*x[2];
+  }
 }
 
 static PetscErrorCode trig_2d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -234,6 +252,17 @@ static PetscErrorCode uniform_strain_u(PetscInt dim, PetscReal time, const Petsc
   return 0;
 }
 
+static void f0_mass_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                      PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscInt Nc = dim;
+  PetscInt       c;
+
+  for (c = 0; c < Nc; ++c) f0[c] = u[c];
+}
+
 static void f1_vlap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -261,6 +290,17 @@ static void f1_elas_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
       f1[c*dim+c] += lambda*u_x[d*dim+d];
     }
   }
+}
+
+static void g0_mass_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                       PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  const PetscInt Nc = dim;
+  PetscInt       c;
+
+  for (c = 0; c < Nc; ++c) g0[c*Nc + c] = 1.0;
 }
 
 static void g3_vlap_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -305,23 +345,55 @@ static void g3_elas_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt       sol;
+  PetscInt       sol = 0, def = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->shear            = PETSC_FALSE;
+  options->deform           = DEFORM_NONE;
   options->solType          = SOL_VLAP_QUADRATIC;
   options->useNearNullspace = PETSC_TRUE;
   ierr = PetscStrncpy(options->dmType, DMPLEX, 256);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "Linear Elasticity Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-shear", "Shear the domain", "ex17.c", options->shear, &options->shear, NULL);CHKERRQ(ierr);
-  sol  = options->solType;
+  ierr = PetscOptionsEList("-deform_type", "Type of domain deformation", "ex17.c", deformTypes, NUM_DEFORM_TYPES, deformTypes[options->deform], &def, NULL);CHKERRQ(ierr);
+  options->deform = (DeformType) def;
   ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex17.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolutionType) sol;
   ierr = PetscOptionsBool("-near_nullspace", "Use the rigid body modes as an AMG near nullspace", "ex17.c", options->useNearNullspace, &options->useNearNullspace, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-dm_type", "Convert DMPlex to another format", "ex17.c", DMList, options->dmType, options->dmType, 256, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexDistortGeometry(DM dm)
+{
+  DM             cdm;
+  DMLabel        label;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  PetscReal      mid = 0.5;
+  PetscInt       cdim, d, vStart, vEnd, v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(coordinates, &coords);CHKERRQ(ierr);
+  for (v = vStart; v < vEnd; ++v) {
+    PetscScalar *pcoords, shift;
+    PetscInt     val;
+
+    ierr = DMLabelGetValue(label, v, &val);CHKERRQ(ierr);
+    if (val >= 0) continue;
+    ierr = DMPlexPointLocalRef(cdm, v, coords, &pcoords);CHKERRQ(ierr);
+    shift = 0.2 * PetscAbsScalar(pcoords[0] - mid);
+    shift = PetscRealPart(pcoords[0]) > mid ? shift : -shift;
+    for (d = 1; d < cdim; ++d) pcoords[d] += shift;
+  }
+  ierr = VecRestoreArrayWrite(coordinates, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -333,7 +405,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  if (user->shear) {ierr = DMPlexShearGeometry(*dm, DM_X, NULL);CHKERRQ(ierr);}
+  switch (user->deform) {
+    case DEFORM_NONE:  break;
+    case DEFORM_SHEAR: ierr = DMPlexShearGeometry(*dm, DM_X, NULL);CHKERRQ(ierr);break;
+    case DEFORM_STEP:  ierr = DMPlexDistortGeometry(*dm);CHKERRQ(ierr);break;
+    default: SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid deformation type: %s (%D)", deformTypes[PetscMin(user->deform, NUM_DEFORM_TYPES)], user->deform);
+  }
   ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -342,7 +419,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exact)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
-  PetscDS        prob;
+  PetscDS        ds;
   PetscWeakForm  wf;
   DMLabel        label;
   PetscInt       id, bd;
@@ -350,63 +427,74 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSGetWeakForm(ds, &wf);CHKERRQ(ierr);
+  ierr = PetscDSGetSpatialDimension(ds, &dim);CHKERRQ(ierr);
   switch (user->solType) {
-  case SOL_VLAP_QUADRATIC:
-    ierr = PetscDSSetResidual(prob, 0, f0_vlap_quadratic_u, f1_vlap_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_vlap_uu);CHKERRQ(ierr);
+  case SOL_MASS_QUADRATIC:
+    ierr = PetscDSSetResidual(ds, 0, f0_mass_u, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, g0_mass_uu, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscWeakFormSetIndexResidual(wf, NULL, 0, 0,  0, 1, f0_mass_quadratic_u, 0, NULL);CHKERRQ(ierr);
     switch (dim) {
     case 2: exact = quadratic_2d_u;break;
     case 3: exact = quadratic_3d_u;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    }
+    break;
+  case SOL_VLAP_QUADRATIC:
+    ierr = PetscDSSetResidual(ds, 0, f0_vlap_quadratic_u, f1_vlap_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_vlap_uu);CHKERRQ(ierr);
+    switch (dim) {
+    case 2: exact = quadratic_2d_u;break;
+    case 3: exact = quadratic_3d_u;break;
+    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
   case SOL_ELAS_QUADRATIC:
-    ierr = PetscDSSetResidual(prob, 0, f0_elas_quadratic_u, f1_elas_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, f0_elas_quadratic_u, f1_elas_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
     switch (dim) {
     case 2: exact = quadratic_2d_u;break;
     case 3: exact = quadratic_3d_u;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
   case SOL_VLAP_TRIG:
-    ierr = PetscDSSetResidual(prob, 0, f0_vlap_trig_u, f1_vlap_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_vlap_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, f0_vlap_trig_u, f1_vlap_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_vlap_uu);CHKERRQ(ierr);
     switch (dim) {
     case 2: exact = trig_2d_u;break;
     case 3: exact = trig_3d_u;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
   case SOL_ELAS_TRIG:
-    ierr = PetscDSSetResidual(prob, 0, f0_elas_trig_u, f1_elas_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, f0_elas_trig_u, f1_elas_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
     switch (dim) {
     case 2: exact = trig_2d_u;break;
     case 3: exact = trig_3d_u;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
   case SOL_ELAS_AXIAL_DISP:
-    ierr = PetscDSSetResidual(prob, 0, NULL, f1_elas_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, NULL, f1_elas_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
     id   = dim == 3 ? 5 : 2;
     ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
     ierr = DMAddBoundary(dm, DM_BC_NATURAL, "right", label, 1, &id, 0, 0, NULL, (void (*)(void)) NULL, NULL, user, &bd);CHKERRQ(ierr);
-    ierr = PetscDSGetBoundary(prob, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_elas_axial_disp_bd_u, 0, NULL);CHKERRQ(ierr);
     exact = axial_disp_u;
     break;
   case SOL_ELAS_UNIFORM_STRAIN:
-    ierr = PetscDSSetResidual(prob, 0, NULL, f1_elas_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(ds, 0, NULL, f1_elas_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
     exact = uniform_strain_u;
     break;
-  default: SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
+  default: SETERRQ2(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
   }
-  ierr = PetscDSSetExactSolution(prob, 0, exact, user);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(ds, 0, exact, user);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   if (user->solType == SOL_ELAS_AXIAL_DISP) {
     PetscInt cmp;
@@ -548,20 +636,20 @@ int main(int argc, char **argv)
       args: -sol_type elas_quad -dm_plex_simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
     test:
       suffix: 2d_q1_quad_elas_shear
-      args: -sol_type elas_quad -dm_plex_simplex 0 -shear -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
+      args: -sol_type elas_quad -dm_plex_simplex 0 -deform_type shear -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
     test:
       suffix: 2d_q2_quad_elas
       args: -sol_type elas_quad -dm_plex_simplex 0 -displacement_petscspace_degree 2 -dmsnes_check .0001
     test:
       suffix: 2d_q2_quad_elas_shear
-      args: -sol_type elas_quad -dm_plex_simplex 0 -shear -displacement_petscspace_degree 2 -dmsnes_check
+      args: -sol_type elas_quad -dm_plex_simplex 0 -deform_type shear -displacement_petscspace_degree 2 -dmsnes_check
     test:
       suffix: 2d_q3_quad_elas
       args: -sol_type elas_quad -dm_plex_simplex 0 -displacement_petscspace_degree 3 -dmsnes_check .0001
     test:
       suffix: 2d_q3_quad_elas_shear
       requires: !single
-      args: -sol_type elas_quad -dm_plex_simplex 0 -shear -displacement_petscspace_degree 3 -dmsnes_check
+      args: -sol_type elas_quad -dm_plex_simplex 0 -deform_type shear -displacement_petscspace_degree 3 -dmsnes_check
 
     test:
       suffix: 3d_p1_quad_vlap
@@ -645,19 +733,19 @@ int main(int argc, char **argv)
       args: -sol_type elas_trig -dm_plex_simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
     test:
       suffix: 2d_q1_trig_elas_shear
-      args: -sol_type elas_trig -dm_plex_simplex 0 -shear -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
+      args: -sol_type elas_trig -dm_plex_simplex 0 -deform_type shear -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
     test:
       suffix: 2d_q2_trig_elas
       args: -sol_type elas_trig -dm_plex_simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
     test:
       suffix: 2d_q2_trig_elas_shear
-      args: -sol_type elas_trig -dm_plex_simplex 0 -shear -displacement_petscspace_degree 2 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
+      args: -sol_type elas_trig -dm_plex_simplex 0 -deform_type shear -displacement_petscspace_degree 2 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
     test:
       suffix: 2d_q3_trig_elas
       args: -sol_type elas_trig -dm_plex_simplex 0 -displacement_petscspace_degree 3 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
     test:
       suffix: 2d_q3_trig_elas_shear
-      args: -sol_type elas_trig -dm_plex_simplex 0 -shear -displacement_petscspace_degree 3 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
+      args: -sol_type elas_trig -dm_plex_simplex 0 -deform_type shear -displacement_petscspace_degree 3 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
 
     test:
       suffix: 3d_p1_trig_vlap
@@ -749,5 +837,25 @@ int main(int argc, char **argv)
       suffix: 2d_q3_uniform_elas
       requires: !single
       args: -sol_type elas_uniform_strain -dm_plex_simplex 0 -displacement_petscspace_degree 3 -dm_refine 2 -dmsnes_check .0001 -pc_type lu
+    test:
+      suffix: 2d_p1_uniform_elas_step
+      requires: triangle
+      args: -sol_type elas_uniform_strain -deform_type step -displacement_petscspace_degree 1 -dm_refine 2 -dmsnes_check .0001 -pc_type lu
+
+  testset:
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -deform_type step -displacement_petscspace_degree 1 -dmsnes_check .0001 -pc_type lu
+
+    test:
+      suffix: 2d_q1_uniform_elas_step
+      args: -sol_type elas_uniform_strain -dm_refine 2
+    test:
+      suffix: 2d_q1_quad_vlap_step
+      args:
+    test:
+      suffix: 2d_q2_quad_vlap_step
+      args: -displacement_petscspace_degree 2
+    test:
+      suffix: 2d_q1_quad_mass_step
+      args: -sol_type mass_quad
 
 TEST*/

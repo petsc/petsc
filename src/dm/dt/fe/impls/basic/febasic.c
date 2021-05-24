@@ -382,9 +382,8 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
   PetscReal         *x;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt           dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
-  PetscBool          isAffine;
   const PetscReal   *quadPoints, *quadWeights;
-  PetscInt           qNc, Nq, q, Np, dE;
+  PetscInt           qdim, qNc, Nq, q, dE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -413,45 +412,29 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
     ierr = PetscDSGetTabulation(dsAux, &TAux);CHKERRQ(ierr);
     if (T[0]->Np != TAux[0]->Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
   }
-  ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quad, &qdim, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
   if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
-  Np = cgeom->numPoints;
   dE = cgeom->dimEmbed;
-  isAffine = cgeom->isAffine;
+  if (cgeom->dim != qdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %D != %D quadrature dim", cgeom->dim, qdim);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom fegeom;
 
-    fegeom.dim      = cgeom->dim;
-    fegeom.dimEmbed = cgeom->dimEmbed;
-    if (isAffine) {
-      fegeom.v    = x;
-      fegeom.xi   = cgeom->xi;
-      fegeom.J    = &cgeom->J[e*Np*dE*dE];
-      fegeom.invJ = &cgeom->invJ[e*Np*dE*dE];
-      fegeom.detJ = &cgeom->detJ[e*Np];
-    }
+    fegeom.v = x; /* workspace */
     ierr = PetscArrayzero(f0, Nq*T[field]->Nc);CHKERRQ(ierr);
     ierr = PetscArrayzero(f1, Nq*T[field]->Nc*dE);CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
       PetscReal w;
       PetscInt  c, d;
 
-      if (isAffine) {
-        CoordinatesRefToReal(dE, dim, fegeom.xi, &cgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*dim], x);
-      } else {
-        fegeom.v    = &cgeom->v[(e*Np+q)*dE];
-        fegeom.J    = &cgeom->J[(e*Np+q)*dE*dE];
-        fegeom.invJ = &cgeom->invJ[(e*Np+q)*dE*dE];
-        fegeom.detJ = &cgeom->detJ[e*Np+q];
-      }
+      ierr = PetscFEGeomGetPoint(cgeom, e, q, &quadPoints[q*cgeom->dim], &fegeom);CHKERRQ(ierr);
       w = fegeom.detJ[0]*quadWeights[q];
-      if (debug > 1 && q < Np) {
+      if (debug > 1 && q < cgeom->numPoints) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
         ierr = DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ);CHKERRQ(ierr);
 #endif
       }
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d wt %g\n", q, quadWeights[q]);CHKERRQ(ierr);}
       ierr = PetscFEEvaluateFieldJets_Internal(ds, Nf, 0, q, T, &fegeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       if (dsAux) {ierr = PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, 0, q, TAux, &fegeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);CHKERRQ(ierr);}
       for (i = 0; i < n0; ++i) f0_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, numConstants, constants, &f0[q*T[field]->Nc]);
@@ -459,7 +442,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
       for (i = 0; i < n1; ++i) f1_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, numConstants, constants, &f1[q*T[field]->Nc*dim]);
       for (c = 0; c < T[field]->Nc; ++c) for (d = 0; d < dim; ++d) f1[(q*T[field]->Nc+c)*dim+d] *= w;
     }
-    ierr = PetscFEUpdateElementVec_Internal(fe, T[field], 0, basisReal, basisDerReal, &fegeom, f0, f1, &elemVec[cOffset+fOffset]);CHKERRQ(ierr);
+    ierr = PetscFEUpdateElementVec_Internal(fe, T[field], 0, basisReal, basisDerReal, e, cgeom, f0, f1, &elemVec[cOffset+fOffset]);CHKERRQ(ierr);
     cOffset    += totDim;
     cOffsetAux += totDimAux;
   }
@@ -481,9 +464,9 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
   PetscReal         *x;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt           dim, dimAux, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NcI;
-  PetscBool          isAffine, auxOnBd = PETSC_FALSE;
+  PetscBool          auxOnBd = PETSC_FALSE;
   const PetscReal   *quadPoints, *quadWeights;
-  PetscInt           qNc, Nq, q, Np, dE;
+  PetscInt           qdim, qNc, Nq, q, dE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -515,56 +498,28 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
     if (Tf[0]->Np != TfAux[0]->Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
   }
   NcI = Tf[field]->Nc;
-  ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quad, &qdim, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
   if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
-  Np = fgeom->numPoints;
   dE = fgeom->dimEmbed;
-  isAffine = fgeom->isAffine;
+  /* TODO FIX THIS */
+  fgeom->dim = dim-1;
+  if (fgeom->dim != qdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %D != %D quadrature dim", fgeom->dim, qdim);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
-    fegeom.n = NULL;
-    fegeom.v = NULL;
-    fegeom.J = NULL;
-    fegeom.detJ = NULL;
-    fegeom.dim      = fgeom->dim;
-    fegeom.dimEmbed = fgeom->dimEmbed;
-    cgeom.dim       = fgeom->dim;
-    cgeom.dimEmbed  = fgeom->dimEmbed;
-    if (isAffine) {
-      fegeom.v    = x;
-      fegeom.xi   = fgeom->xi;
-      fegeom.J    = &fgeom->J[e*Np*dE*dE];
-      fegeom.invJ = &fgeom->invJ[e*Np*dE*dE];
-      fegeom.detJ = &fgeom->detJ[e*Np];
-      fegeom.n    = &fgeom->n[e*Np*dE];
 
-      cgeom.J     = &fgeom->suppJ[0][e*Np*dE*dE];
-      cgeom.invJ  = &fgeom->suppInvJ[0][e*Np*dE*dE];
-      cgeom.detJ  = &fgeom->suppDetJ[0][e*Np];
-    }
+    fegeom.v = x; /* Workspace */
     ierr = PetscArrayzero(f0, Nq*NcI);CHKERRQ(ierr);
     ierr = PetscArrayzero(f1, Nq*NcI*dE);CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
       PetscReal w;
       PetscInt  c, d;
 
-      if (isAffine) {
-        CoordinatesRefToReal(dE, dim-1, fegeom.xi, &fgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*(dim-1)], x);
-      } else {
-        fegeom.v    = &fgeom->v[(e*Np+q)*dE];
-        fegeom.J    = &fgeom->J[(e*Np+q)*dE*dE];
-        fegeom.invJ = &fgeom->invJ[(e*Np+q)*dE*dE];
-        fegeom.detJ = &fgeom->detJ[e*Np+q];
-        fegeom.n    = &fgeom->n[(e*Np+q)*dE];
-
-        cgeom.J     = &fgeom->suppJ[0][(e*Np+q)*dE*dE];
-        cgeom.invJ  = &fgeom->suppInvJ[0][(e*Np+q)*dE*dE];
-        cgeom.detJ  = &fgeom->suppDetJ[0][e*Np+q];
-      }
+      ierr = PetscFEGeomGetPoint(fgeom, e, q, &quadPoints[q*fgeom->dim], &fegeom);CHKERRQ(ierr);
+      ierr = PetscFEGeomGetCellPoint(fgeom, e, q, &cgeom);CHKERRQ(ierr);
       w = fegeom.detJ[0]*quadWeights[q];
       if (debug > 1) {
-        if ((isAffine && q == 0) || (!isAffine)) {
+        if ((fgeom->isAffine && q == 0) || (!fgeom->isAffine)) {
           ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
           ierr = DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ);CHKERRQ(ierr);
@@ -589,7 +544,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
         }
       }
     }
-    ierr = PetscFEUpdateElementVec_Internal(fe, Tf[field], face, basisReal, basisDerReal, &cgeom, f0, f1, &elemVec[cOffset+fOffset]);CHKERRQ(ierr);
+    ierr = PetscFEUpdateElementVec_Internal(fe, Tf[field], face, basisReal, basisDerReal, e, fgeom, f0, f1, &elemVec[cOffset+fOffset]);CHKERRQ(ierr);
     cOffset    += totDim;
     cOffsetAux += totDimAux;
   }
@@ -621,9 +576,9 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscForm
   PetscReal         *x;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt           dim, dimAux, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NcI, NcS;
-  PetscBool          isCohesiveField, isAffine, auxOnBd = PETSC_FALSE;
+  PetscBool          isCohesiveField, auxOnBd = PETSC_FALSE;
   const PetscReal   *quadPoints, *quadWeights;
-  PetscInt           qNc, Nq, q, Np, dE;
+  PetscInt           qdim, qNc, Nq, q, dE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -660,42 +615,24 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscForm
   isCohesiveField = field == Nf-1 ? PETSC_TRUE : PETSC_FALSE;
   NcI = Tf[field]->Nc;
   NcS = isCohesiveField ? NcI : 2*NcI;
-  ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quad, &qdim, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
   if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
-  Np = fgeom->numPoints;
   dE = fgeom->dimEmbed;
-  isAffine = fgeom->isAffine;
+  if (fgeom->dim != qdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %D != %D quadrature dim", fgeom->dim, qdim);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom;
     const PetscInt face = fgeom->face[e][0];
 
-    fegeom.dim      = fgeom->dim;
-    fegeom.dimEmbed = fgeom->dimEmbed;
-    if (isAffine) {
-      fegeom.v    = x;
-      fegeom.xi   = fgeom->xi;
-      fegeom.J    = &fgeom->J[e*dE*dE];
-      fegeom.invJ = &fgeom->invJ[e*dE*dE];
-      fegeom.detJ = &fgeom->detJ[e];
-      fegeom.n    = &fgeom->n[e*dE];
-    }
+    fegeom.v = x; /* Workspace */
     ierr = PetscArrayzero(f0, Nq*NcS);CHKERRQ(ierr);
     ierr = PetscArrayzero(f1, Nq*NcS*dE);CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
       PetscReal w;
       PetscInt  c, d;
 
-      if (isAffine) {
-        CoordinatesRefToReal(dE, dim, fegeom.xi, &fgeom->v[e*dE], fegeom.J, &quadPoints[q*dim], x);
-      } else {
-        fegeom.v    = &fgeom->v[(e*Np+q)*dE];
-        fegeom.J    = &fgeom->J[(e*Np+q)*dE*dE];
-        fegeom.invJ = &fgeom->invJ[(e*Np+q)*dE*dE];
-        fegeom.detJ = &fgeom->detJ[e*Np+q];
-        fegeom.n    = &fgeom->n[(e*Np+q)*dE];
-      }
+      ierr = PetscFEGeomGetPoint(fgeom, e, q, &quadPoints[q*fgeom->dim], &fegeom);CHKERRQ(ierr);
       w = fegeom.detJ[0]*quadWeights[q];
-      if (debug > 1 && q < Np) {
+      if (debug > 1 && q < fgeom->numPoints) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
         ierr = DMPrintCellMatrix(e, "invJ", dim, dE, fegeom.invJ);CHKERRQ(ierr);
@@ -710,8 +647,8 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscForm
       for (i = 0; i < n1; ++i) f1_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f1[q*NcS*dim]);
       for (c = 0; c < NcS; ++c) for (d = 0; d < dim; ++d) f1[(q*NcS+c)*dim+d] *= w;
     }
-    if (isCohesiveField) {PetscFEUpdateElementVec_Internal(fe, Tf[field], 0, basisReal, basisDerReal, &fegeom, f0, f1, &elemVec[cOffset+fOffset*2]);}
-    else                 {PetscFEUpdateElementVec_Hybrid_Internal(fe, Tf[field], 0, basisReal, basisDerReal, &fegeom, f0, f1, &elemVec[cOffset+fOffset*2]);}
+    if (isCohesiveField) {PetscFEUpdateElementVec_Internal(fe, Tf[field], 0, basisReal, basisDerReal, e, fgeom, f0, f1, &elemVec[cOffset+fOffset*2]);}
+    else                 {PetscFEUpdateElementVec_Hybrid_Internal(fe, Tf[field], 0, basisReal, basisDerReal, fgeom, f0, f1, &elemVec[cOffset+fOffset*2]);}
     cOffset    += totDim;
     cOffsetAux += totDimAux;
   }
