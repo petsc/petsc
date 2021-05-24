@@ -106,10 +106,10 @@ int main(int argc, char **argv)
 
   test:
     suffix: ref_trip_tobox
-    args: -dm_plex_reference_cell_domain -dm_plex_cell triangular_prism -dm_plex_cell_refiner tobox -dm_coord_space 0 -dm_refine 2 -dm_plex_check_all
+    args: -dm_plex_reference_cell_domain -dm_plex_cell triangular_prism -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
 
   test:
     suffix: ref_ttrip_tobox
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_triangular_prism -dm_plex_cell_refiner tobox -dm_coord_space 0 -dm_refine 2 -dm_plex_check_all
+    args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_triangular_prism -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
 
 TEST*/

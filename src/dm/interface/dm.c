@@ -855,6 +855,8 @@ PetscErrorCode  DMSetUp(DM dm)
 . -dm_extrude_layers <l>            - The number of layers to extrude
 . -dm_extrude_thickness <t>         - The thickness of the layer to be extruded
 . -dm_extrude_column_first <bool>   - Order the cells in a vertical column first
+. -dm_plex_create_fv_ghost_cells    - Flag to create finite volume ghost cells on the boundary
+. -dm_plex_fv_ghost_cells_label <name> - Label name for ghost cells boundary
 . -dm_distribute <bool>             - Flag to redistribute a mesh among processes
 . -dm_distribute_overlap <n>        - The size of the overlap halo
 . -dm_plex_adj_cone <bool>          - Set adjacency direction
