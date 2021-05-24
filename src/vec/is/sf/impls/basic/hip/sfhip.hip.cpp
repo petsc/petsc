@@ -483,7 +483,7 @@ static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,PetscS
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *data,const void *buf)
 {
-  hipError_t        cerr;
+  hipError_t         cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
   const PetscInt     *iarray=opt ? opt->array : NULL;
@@ -499,15 +499,15 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *data,void *buf)
 {
-  hipError_t        cerr;
+  hipError_t         cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
-/*  const PetscInt     *iarray=opt ? opt->array : NULL; */
+  const PetscInt     *iarray=opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-/*  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_FetchAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(Type*)data,(Type*)buf); */
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_FetchAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(Type*)data,(Type*)buf);
   cerr = hipGetLastError();CHKERRHIP(cerr);
   PetscFunctionReturn(0);
 }
@@ -515,7 +515,7 @@ static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcStart,PetscSFPackOpt srcOpt,const PetscInt *srcIdx,const void *src,PetscInt dstStart,PetscSFPackOpt dstOpt,const PetscInt *dstIdx,void *dst)
 {
-  hipError_t        cerr;
+  hipError_t         cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
   PetscInt           srcx=0,srcy=0,srcX=0,srcY=0,dstx=0,dsty=0,dstX=0,dstY=0;
@@ -531,7 +531,7 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcS
   if (dstOpt)       {dstx = dstOpt->dx[0]; dsty = dstOpt->dy[0]; dstX = dstOpt->X[0]; dstY = dstOpt->Y[0]; dstStart = dstOpt->start[0]; dstIdx = NULL;}
   else if (!dstIdx) {dstx = dstX = count; dsty = dstY = 1;}
 
-/*  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_ScatterAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,srcx,srcy,srcX,srcY,srcStart,srcIdx,(const Type*)src,dstx,dsty,dstX,dstY,dstStart,dstIdx,(Type*)dst); */
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_ScatterAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,srcx,srcy,srcX,srcY,srcStart,srcIdx,(const Type*)src,dstx,dsty,dstX,dstY,dstStart,dstIdx,(Type*)dst);
   cerr = hipGetLastError();CHKERRHIP(cerr);
   PetscFunctionReturn(0);
 }
