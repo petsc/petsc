@@ -762,7 +762,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
   ierr = ISGetLocalSize(iy,&iysize);CHKERRQ(ierr);
   ierr = VecGetSize(x,&xlen);CHKERRQ(ierr);
   ierr = VecGetSize(y,&ylen);CHKERRQ(ierr);
-  if (ixsize != iysize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Scatter sizes of ix and iy don't match locally");
+  if (ixsize != iysize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Scatter sizes of ix and iy don't match locally ix=%D iy=%D",ixsize,iysize);
   ierr = ISGetMinMax(ix,&min,&max);CHKERRQ(ierr);
   if (min < 0 || max >= xlen) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scatter indices in ix are out of range");
   ierr = ISGetMinMax(iy,&min,&max);CHKERRQ(ierr);

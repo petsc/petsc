@@ -65,6 +65,7 @@ static PetscErrorCode VecCopy_Nest(Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeName(y,VECNEST);
   VecNestCheckCompatible2(x,1,y,2);
   for (i=0; i<bx->nb; i++) {
     ierr = VecCopy(bx->v[i],by->v[i]);CHKERRQ(ierr);
