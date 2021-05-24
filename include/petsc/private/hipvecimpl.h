@@ -51,10 +51,12 @@ PETSC_INTERN PetscErrorCode VecGetArray_SeqHIP(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecRestoreArray_SeqHIP(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArrayAndMemType_SeqHIP(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecRestoreArrayAndMemType_SeqHIP(Vec,PetscScalar**);
-PETSC_INTERN PetscErrorCode VecCopy_SeqHIP_Private(Vec xin,Vec yin);
-PETSC_INTERN PetscErrorCode VecSetRandom_SeqHIP_Private(Vec xin,PetscRandom r);
-PETSC_INTERN PetscErrorCode VecDestroy_SeqHIP_Private(Vec v);
-PETSC_INTERN PetscErrorCode VecResetArray_SeqHIP_Private(Vec vin);
+PETSC_INTERN PetscErrorCode VecCopy_SeqHIP_Private(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecDestroy_SeqHIP_Private(Vec);
+PETSC_INTERN PetscErrorCode VecResetArray_SeqHIP_Private(Vec);
+PETSC_INTERN PetscErrorCode VecMax_SeqHIP(Vec,PetscInt*,PetscReal*);
+PETSC_INTERN PetscErrorCode VecMin_SeqHIP(Vec,PetscInt*,PetscReal*);
+PETSC_INTERN PetscErrorCode VecReciprocal_SeqHIP(Vec);
 
 /* complex single */
 #if defined(PETSC_USE_COMPLEX)
