@@ -1190,7 +1190,7 @@ PetscErrorCode DMPlexGetAllCells_Internal(DM plex, IS *cellIS)
 }
 
 /*@
-  DMPlexSNESComputeResidualFEM - Form the local residual F from the local input X using pointwise functions specified by the user
+  DMPlexSNESComputeResidualFEM - Sums the local residual into vector F from the local input X using pointwise functions specified by the user
 
   Input Parameters:
 + dm - The mesh
@@ -1199,6 +1199,9 @@ PetscErrorCode DMPlexGetAllCells_Internal(DM plex, IS *cellIS)
 
   Output Parameter:
 . F  - Local output vector
+
+  Notes:
+  The residual is summed into F; the caller is responsible for using VecZeroEntries() or otherwise ensuring that any data in F is intentional.
 
   Level: developer
 
@@ -1342,9 +1345,9 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 
   Input Parameters:
 + dm - The mesh
-. cellIS -
+. cellIS - index set for the cells or NULL to use entire depth=dim stratum
 . t  - The time
-. X_tShift - The multiplier for the Jacobian with repsect to X_t
+. X_tShift - The multiplier for the Jacobian with respect to X_t
 . X  - Local solution vector
 . X_t  - Time-derivative of the local solution vector
 . Y  - Local input vector
@@ -1359,7 +1362,7 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 
   Level: developer
 
-.seealso: FormFunctionLocal()
+.seealso: DMPlexSNESComputeResidualFEM()
 @*/
 PetscErrorCode DMPlexComputeJacobianAction(DM dm, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
 {
