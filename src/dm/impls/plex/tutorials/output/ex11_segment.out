@@ -1,0 +1,28 @@
+segment orientation -1
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (-2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\draw[color=gray] (2_0) -- (1_0);
+\path (0.) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+segment orientation 0
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (-2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\draw[color=gray] (1_0) -- (2_0);
+\path (0.) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
