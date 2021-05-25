@@ -339,7 +339,7 @@ deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 
 # Builds all the documentation - should be done every night
-alldoc: allcite allpdf sphinx-docs-all alldoc1 alldoc2 docsetdate
+alldoc: allcite sphinx-docs-all alldoc1 alldoc2 docsetdate
 
 # Build just citations
 allcite: chk_loc deletemanualpages
@@ -347,10 +347,6 @@ allcite: chk_loc deletemanualpages
 	-${OMAKE_SELF} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
-
-# Build just TAO PDF manual + prerequisites
-allpdf: chk_loc allcite
-	-cd src/docs/tao_tex/manual; ${OMAKE_SELF} manual.pdf LOC=${LOC}
 
 # Build just manual pages + prerequisites
 allmanpages: chk_loc allcite

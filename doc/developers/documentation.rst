@@ -22,15 +22,16 @@ Documentation with Sphinx
 for building documentation. Most content is written using `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`__, a simple markup language.
 
 We use Sphinx to coordinate building the documentation for our web page, as well
-as a PDF of the Users Manual (via LaTeX).
+as a PDF of the Users Manual. To create this PDF, you must have a working
+LaTeX installation.
 
 `These slides <https://gitlab.com/psanan/petsc-sphinx-slides>`__ contain an overview of Sphinx and how we use(d) it, as of October, 2020.
 
 The documentation build with Sphinx involves configuring a minimal build
 of PETSc and building some of the :any:`classic docs <classic_docs_build>`.
 
-Building the docs locally
--------------------------
+Building the HTML docs locally
+------------------------------
 
 We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__.
 
@@ -194,72 +195,6 @@ Sphinx Documentation Guidelines
 * Use restraint in adding new Sphinx extensions, in particular those which aren't
   widely-used and well-supported, or those with hidden system dependencies.
 
-Porting LaTeX to Sphinx
------------------------
-
-These are instructions relevant to porting the Users manual from its previous
-LaTeX incarnation, to Sphinx (as here). This section should be removed once the
-TAO manual is ported.
-
-The first steps are to modify the LaTeX source to the point that it can
-be converted to RST by `Pandoc <pandoc.org>`__.
-
-* Copy the target file, say ``cp manual.tex manual_consolidated.tex``
-* copy all files used with ``\input`` into place, using e.g. ``part1.tex`` instead of ``part1tmp.tex`` (as we don't need the HTML links)
-* Remove essentially all of the preamble, leaving only ``\documentclass{book}`` followed by ``\begin{document}``
-* Save a copy of this file, say ``manual_to_process.tex``.
-* Perform some global cleanup operations, as with this script
-
-  .. code-block:: bash
-
-      #!/usr/bin/env bash
-
-      target=${1:-manual_to_process.tex}
-      sed=gsed  # change this to sed on a GNU/Linux system
-
-      # \trl{foo} --> \verb|foo|
-      # \lstinline{foo} --> \lstinline|foo|
-      # only works if there are no }'s inside, so we take care of special cases beforehand,
-      # of the form \trl{${PETSC_DIR}/${PETSC_ARCH}/bar/baz} and \trl{${FOO}/bar/baz}
-
-      ${sed} -i 's/\\trl{${PETSC_DIR}\/${PETSC_ARCH}\([^}]*\)}/\\verb|${PETSC_DIR}\/${PETSC_ARCH}\1|/g' ${target}
-      ${sed} -i 's/\\trl{${\([^}]*\)}\([^}]*\)}/\\verb|${\1}\2|/g' ${target}
-
-      ${sed} -i       's/\\trl{\([^}]*\)}/\\verb|\1|/g' ${target}
-      ${sed} -i 's/\\lstinline{\([^}]*\)}/\\verb|\1|/g' ${target}
-
-      ${sed} -i 's/\\lstinline|/\\verb|/g' ${target}
-
-      ${sed} -i 's/tightitemize/itemize/g' ${target}
-      ${sed} -i 's/tightenumerate/enumerate/g' ${target}
-
-      ${sed} -i 's/lstlisting/verbatim/g' ${target}
-      ${sed} -i 's/bashlisting/verbatim/g' ${target}
-      ${sed} -i 's/makelisting/verbatim/g' ${target}
-      ${sed} -i 's/outputlisting/verbatim/g' ${target}
-      ${sed} -i 's/pythonlisting/verbatim/g' ${target}
-
-* Fix any typos like this (wrong right brace) : ``PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB}``
-  These will produce very unhelpful Pandoc error messages at the end of the file like
-  ``Error at "source" (line 4873, column 10): unexpected end of input %%% End:``
-* Convert to ``.rst`` with pandoc (tested with v2.9.2), e.g. ``pandoc -s -t rst -f latex manual_to_process.tex -o manual.rst``.
-* Move to Sphinx docs tree (perhaps renaming or splitting up) and build.
-
-Next, one must examine the output, ideally comparing to the original rendered LaTeX, and make fixes on the ``.rst`` file, including but not limited to:
-
-* Check links
-* Add correct code block languages when not C, e.g. replace ``::`` with ``.. code-block:: console``
-* Re-add citations with ``:cite:`` and add per-chapter bibliography sections (see existing examples)
-* Fix footnotes
-* Fix section labels and links
-* Fix links with literals in the link text
-* Itemized lists
-* Replace Tikz images or convert to standalone and render
-* Replace/fix tables
-* Replace included source code with "literalinclude" (see :ref:`sphinx_guidelines`)
-* (please add more common fixes here as you find them) ...
-
-
 .. _classic_docs_build:
 
 Building Classic Documentation
@@ -267,18 +202,15 @@ Building Classic Documentation
 
 Some of the documentation is built by a "classic" process as described below.
 
-The documentation tools listed below (except for pdflatex) are
+The documentation tools listed below can be
 automatically downloaded and installed by ``configure``.
 
 * `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: a text processing tool developed by Bill Gropp.  This produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
 * `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: A text processing package. This generates the HTML versions of all the source code.
-* A version of pdflatex, for example in  `Tex Live <http://www.tug.org/texlive/>`__.  This package might already be installed on most systems. It is required to generate the users manual (part of the PETSc documentation).
 
 Note: Sowing and c2html have additional dependencies like gcc, g++, and flex and do not
 use compilers specified to PETSc configure. [Windows users please install the corresponding
 cygwin packages]
-
-Once pdflatex is in your ``$PATH``, you can build the documentation with:
 
 .. code-block:: console
 

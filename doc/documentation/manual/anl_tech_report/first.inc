@@ -3,7 +3,7 @@
 \hfill  {\large {\bf ANL-95/11 Rev \techreportversion{}}}
 
 \vspace*{2in}
-\noindent {\huge{\bf PETSc Users Manual}}
+\noindent {\huge{\bf PETSc/TAO Users Manual}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}

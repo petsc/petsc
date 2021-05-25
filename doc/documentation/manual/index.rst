@@ -1,5 +1,5 @@
-PETSc Users Manual
-==================
+PETSc/TAO Users Manual
+======================
 
 **Argonne National Laboratory**
 
@@ -17,7 +17,9 @@ Prepared by
 **J. Brown** :sup:`10`,
 **P. Brune** :sup:`1`,
 **K. Buschelman** :sup:`1`,
+**E. Constantinescu** :sup:`1`,
 **L. Dalcin** :sup:`4`,
+**A. Denchfield** :sup:`1`,
 **A. Dener** :sup:`1`,
 **V. Eijkhout** :sup:`6`,
 **W. Gropp** :sup:`11`,
@@ -31,6 +33,7 @@ Prepared by
 **K. Rupp** :sup:`1`,
 **P. Sanan** :sup:`8`,
 **B. Smith** :sup:`1`,
+**H. Suh** :sup:`1`,
 **S. Zampini** :sup:`4`,
 **H. Zhang** :sup:`5`, and
 **H. Zhang** :sup:`1`
