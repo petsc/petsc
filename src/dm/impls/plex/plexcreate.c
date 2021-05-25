@@ -2541,9 +2541,9 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
     {
       PetscInt    numPoints[2]        = {4, 1};
       PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
-      PetscInt    cones[4]            = {1, 3, 2, 4};
+      PetscInt    cones[4]            = {1, 2, 3, 4};
       PetscInt    coneOrientations[4] = {0, 0, 0, 0};
-      PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  -1.0, -1.0, 1.0};
+      PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, -1.0, 1.0};
 
       ierr = DMSetDimension(rdm, 3);CHKERRQ(ierr);
       ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
@@ -2553,10 +2553,10 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
     {
       PetscInt    numPoints[2]        = {8, 1};
       PetscInt    coneSize[9]         = {8, 0, 0, 0, 0, 0, 0, 0, 0};
-      PetscInt    cones[8]            = {1, 4, 3, 2, 5, 6, 7, 8};
+      PetscInt    cones[8]            = {1, 2, 3, 4, 5, 6, 7, 8};
       PetscInt    coneOrientations[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-      PetscScalar vertexCoords[24]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, 1.0, -1.0,
-                                         -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0, 1.0,  1.0,  -1.0, 1.0,  1.0};
+      PetscScalar vertexCoords[24]    = {-1.0, -1.0, -1.0,  -1.0,  1.0, -1.0,  1.0, 1.0, -1.0,   1.0, -1.0, -1.0,
+                                         -1.0, -1.0,  1.0,   1.0, -1.0,  1.0,  1.0, 1.0,  1.0,  -1.0,  1.0,  1.0};
 
       ierr = DMSetDimension(rdm, 3);CHKERRQ(ierr);
       ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
@@ -2566,10 +2566,10 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
     {
       PetscInt    numPoints[2]        = {6, 1};
       PetscInt    coneSize[7]         = {6, 0, 0, 0, 0, 0, 0};
-      PetscInt    cones[6]            = {1, 3, 2, 4, 5, 6};
+      PetscInt    cones[6]            = {1, 2, 3, 4, 5, 6};
       PetscInt    coneOrientations[6] = {0, 0, 0, 0, 0, 0};
-      PetscScalar vertexCoords[18]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,
-                                         -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  -1.0, 1.0,  1.0};
+      PetscScalar vertexCoords[18]    = {-1.0, -1.0, -1.0, -1.0,  1.0, -1.0,   1.0, -1.0, -1.0,
+                                         -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  -1.0,  1.0,  1.0};
 
       ierr = DMSetDimension(rdm, 3);CHKERRQ(ierr);
       ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
@@ -2605,9 +2605,9 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
     {
       PetscInt    numPoints[2]        = {5, 1};
       PetscInt    coneSize[6]         = {5, 0, 0, 0, 0, 0};
-      PetscInt    cones[5]            = {1, 4, 3, 2, 5};
+      PetscInt    cones[5]            = {1, 2, 3, 4, 5};
       PetscInt    coneOrientations[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-      PetscScalar vertexCoords[24]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, 1.0, -1.0,
+      PetscScalar vertexCoords[24]    = {-1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  1.0, 1.0, -1.0,  1.0, -1.0, -1.0,
                                           0.0,  0.0,  1.0};
 
       ierr = DMSetDimension(rdm, 3);CHKERRQ(ierr);
