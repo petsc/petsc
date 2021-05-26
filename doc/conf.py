@@ -75,6 +75,12 @@ extensions = [
 copybutton_prompt_text = r"[>]{1,3}"
 copybutton_prompt_is_regexp = True
 
+bibtex_bibfiles = [
+        os.path.join('..', 'src', 'docs', 'tex', 'petsc.bib'),
+        os.path.join('..', 'src', 'docs', 'tex', 'petscapp.bib'),
+        os.path.join('..', 'src', 'docs', 'tao_tex', 'tao.bib'),
+        os.path.join('..', 'src', 'docs', 'tao_tex', 'manual', 'mathprog.bib'),
+        ]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -120,12 +126,6 @@ html_last_updated_fmt = r'%Y-%m-%dT%H:%M:%S%z (' + git_describe_version + ')'
 
 # -- Options for LaTeX output --------------------------------------------
 
-bibtex_bibfiles = [
-        os.path.join('..', 'src', 'docs', 'tex', 'petsc.bib'),
-        os.path.join('..', 'src', 'docs', 'tex', 'petscapp.bib'),
-        os.path.join('..', 'src', 'docs', 'tao_tex', 'tao.bib'),
-        os.path.join('..', 'src', 'docs', 'tao_tex', 'manual', 'mathprog.bib'),
-        ]
 latex_engine = 'xelatex'
 
 # Specify how to arrange the documents into LaTeX files.
