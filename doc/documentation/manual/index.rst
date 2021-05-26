@@ -5,8 +5,6 @@ PETSc/TAO Users Manual
 
 **Mathematics and Computer Science Division**
 
-Highly recommended resource: Ed Bueler, `PETSc for Partial Differential Equations: Numerical Solutions in C and Python <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__ or as a `Google Play E-book <https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ>`__.
-
 --------------
 
 Prepared by
