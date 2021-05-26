@@ -123,21 +123,23 @@ html_last_updated_fmt = r'%Y-%m-%dT%H:%M:%S%z (' + git_describe_version + ')'
 bibtex_bibfiles = [
         os.path.join('..', 'src', 'docs', 'tex', 'petsc.bib'),
         os.path.join('..', 'src', 'docs', 'tex', 'petscapp.bib'),
+        os.path.join('..', 'src', 'docs', 'tao_tex', 'tao.bib'),
+        os.path.join('..', 'src', 'docs', 'tao_tex', 'manual', 'mathprog.bib'),
         ]
 latex_engine = 'xelatex'
 
 # Specify how to arrange the documents into LaTeX files.
 # This allows building only the manual.
 latex_documents = [
-        ('manual/index', 'manual.tex', 'PETSc Users Manual', author, 'manual', False)
+        ('documentation/manual/index', 'manual.tex', 'PETSc/TAO Users Manual', author, 'manual', False)
         ]
 
 latex_additional_files = [
-    'manual/anl_tech_report/ArgonneLogo.pdf',
-    'manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
-    'manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
-    'manual/anl_tech_report/first.inc',
-    'manual/anl_tech_report/last.inc',
+    'documentation/manual/anl_tech_report/ArgonneLogo.pdf',
+    'documentation/manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
+    'documentation/manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
+    'documentation/manual/anl_tech_report/first.inc',
+    'documentation/manual/anl_tech_report/last.inc',
 ]
 
 latex_elements = {

@@ -1,5 +1,5 @@
-Programming with PETSc
-======================
+Programming with PETSc/TAO
+==========================
 
 .. toctree::
    :maxdepth: 2
@@ -10,5 +10,6 @@ Programming with PETSc
    snes
    ts
    sensitivity_analysis
+   tao
    high_level_mg
    dmplex
