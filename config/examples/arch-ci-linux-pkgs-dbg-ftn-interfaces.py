@@ -9,6 +9,7 @@ configure_options = [
   '--with-cxx=clang++',
   '--with-fc=gfortran',
   '--with-debugging=1',
+  '--debugLevel=4',
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',

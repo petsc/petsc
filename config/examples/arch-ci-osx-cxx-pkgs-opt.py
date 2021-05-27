@@ -15,6 +15,7 @@ configure_options = [
   '--with-clanguage=cxx',
   '--with-debugging=0',
   '--with-visibility=0', # CXXFLAGS disables this option
+  '--debugLevel=4',
 
   #'--prefix=petsc-install', temporarily disable for gitlab-ci
 
