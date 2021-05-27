@@ -204,7 +204,7 @@ static PetscErrorCode CECreate(Problem p)
 }
 
 /*
-*  Stiff 3-variable oscillatory system from chemical reactions. problem OREGO in Hairer&Wanner
+   Stiff 3-variable oscillatory system from chemical reactions. problem OREGO in Hairer&Wanner
 */
 static PetscErrorCode OregoFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
@@ -286,7 +286,7 @@ static PetscErrorCode OregoCreate(Problem p)
 }
 
 /*
-*  User-defined monitor for comparing to exact solutions when possible
+   User-defined monitor for comparing to exact solutions when possible
 */
 typedef struct {
   MPI_Comm comm;

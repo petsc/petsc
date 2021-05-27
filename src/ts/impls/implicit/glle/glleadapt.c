@@ -222,7 +222,7 @@ PetscErrorCode  TSGLLEAdaptCreate(MPI_Comm comm,TSGLLEAdapt *inadapt)
 }
 
 /*
-*  Implementations
+   Implementations
 */
 
 static PetscErrorCode TSGLLEAdaptDestroy_JustFree(TSGLLEAdapt adapt)

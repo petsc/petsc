@@ -104,7 +104,7 @@ typedef struct gxy {                          /* GRID STRUCTURE             */
   int  *ia, *iau, *ja, *fhelp;               /* Stuff for ILU(0)           */
 
 /*
-* stuff to read in daves grid file
+  stuff to read in Dave's grid file
 */
   int nnbound,nvbound,nfbound,nnfacet,nvfacet,nffacet,ntte;
   int *ncolorn,*countn,*ncolorv,*countv,*ncolorf,*countf;

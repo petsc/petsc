@@ -263,7 +263,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 }
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%      Function to solve a linear system using KSP                                           %%
+      Function to solve a linear system using KSP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
@@ -292,21 +292,20 @@ PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
 }
 
 /***********************************************************************
- * Function to return value of basis function or derivative of basis   *
- *              function.                                              *
+  Function to return value of basis function or derivative of basis function.
  ***********************************************************************
- *                                                                     *
- *       Arguments:                                                    *
- *         x       = array of xpoints or nodal values                  *
- *         xx      = point at which the basis function is to be        *
- *                     evaluated.                                      *
- *         il      = interval containing xx.                           *
- *         iq      = indicates which of the two basis functions in     *
- *                     interval intrvl should be used                  *
- *         nll     = array containing the endpoints of each interval.  *
- *         id      = If id ~= 2, the value of the basis function       *
- *                     is calculated; if id = 2, the value of the      *
- *                     derivative of the basis function is returned.   *
+
+        Arguments:
+          x       = array of xpoints or nodal values
+          xx      = point at which the basis function is to be
+                      evaluated.
+          il      = interval containing xx.
+          iq      = indicates which of the two basis functions in
+                      interval intrvl should be used
+          nll     = array containing the endpoints of each interval.
+          id      = If id ~= 2, the value of the basis function
+                      is calculated; if id = 2, the value of the
+                      derivative of the basis function is returned.
  ***********************************************************************/
 
 PetscScalar bspl(PetscScalar *x, PetscScalar xx,PetscInt il,PetscInt iq,PetscInt nll[][2],PetscInt id)
@@ -314,20 +313,20 @@ PetscScalar bspl(PetscScalar *x, PetscScalar xx,PetscInt il,PetscInt iq,PetscInt
   PetscScalar x1,x2,bfcn;
   PetscInt    i1,i2,iq1,iq2;
 
-  /*** Determine which basis function in interval intrvl is to be used in ***/
+  /* Determine which basis function in interval intrvl is to be used in */
   iq1 = iq;
   if (iq1==0) iq2 = 1;
   else iq2 = 0;
 
-  /***  Determine endpoint of the interval intrvl ***/
+  /*    Determine endpoint of the interval intrvl   */
   i1=nll[il][iq1];
   i2=nll[il][iq2];
 
-  /*** Determine nodal values at the endpoints of the interval intrvl ***/
+  /*   Determine nodal values at the endpoints of the interval intrvl   */
   x1=x[i1];
   x2=x[i2];
 
-  /*** Evaluate basis function ***/
+  /*   Evaluate basis function   */
   if (id == 2) bfcn=(1.0)/(x1-x2);
   else bfcn=(xx-x2)/(x1-x2);
   return bfcn;

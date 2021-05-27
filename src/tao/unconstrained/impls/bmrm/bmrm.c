@@ -619,7 +619,7 @@ PetscErrorCode solve(TAO_DF *df)
   PetscReal      **Q = df->Q, *f = df->f, *t = df->t;
   PetscInt       dim = df->dim, *ipt = df->ipt, *ipt2 = df->ipt2, *uv = df->uv;
 
-  /*** variables for the adaptive nonmonotone linesearch ***/
+  /* variables for the adaptive nonmonotone linesearch */
   PetscInt    L, llast;
   PetscReal   fr, fbest, fv, fc, fv0;
 
@@ -678,7 +678,7 @@ PetscErrorCode solve(TAO_DF *df)
   fv0   = 0.0;
   for (i = 0; i < dim; i++) fv0 += x[i] * (0.5*t[i] + f[i]);
 
-  /*** adaptive nonmonotone linesearch ***/
+  /* adaptive nonmonotone linesearch */
   L     = 2;
   fr    = ALPHA_MAX;
   fbest = fv0;
@@ -686,7 +686,7 @@ PetscErrorCode solve(TAO_DF *df)
   llast = 0;
   akold = bkold = 0.0;
 
-  /***      Iterator begins     ***/
+  /*     Iterator begins     */
   for (innerIter = 1; innerIter <= df->maxPGMIter; innerIter++) {
 
     /* tempv = -(x_{k} - alpha*g_{k}) */
@@ -801,7 +801,7 @@ PetscErrorCode solve(TAO_DF *df)
     akold = ak;
     bkold = bk;
 
-    /*** stopping criterion based on KKT conditions ***/
+    /* stopping criterion based on KKT conditions */
     /* at optimal, gradient of lagrangian w.r.t. x is zero */
 
     bk = 0.0;

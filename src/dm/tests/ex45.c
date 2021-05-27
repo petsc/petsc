@@ -2,11 +2,11 @@
 
   Detected bug in DMCreateMatrix() for skinny domains with periodic boundary conditions in overestimating nonzero preallocation
 
-* Creation Date : 08-12-2016
+  Creation Date : 08-12-2016
 
-* Last Modified : Thu 08 Dec 2016 10:46:02 AM CET
+  Last Modified : Thu 08 Dec 2016 10:46:02 AM CET
 
-* Created By : Davide Monsorno
+  Created By : Davide Monsorno
 
 _._._._._._._._._._._._._._._._._._._._._.*/
 

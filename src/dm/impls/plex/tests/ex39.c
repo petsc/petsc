@@ -8,18 +8,18 @@ const char help[] = "A test of H-div conforming discretizations on different cel
 #include <petsc/private/petscfeimpl.h>
 
 /*
-* We are using the system
-*
-* \vec{u} = \vec{\hat{u}}
-* p = \div{\vec{u}} in low degree approximation space
-* d = \div{\vec{u}} - p == 0 in higher degree approximation space
-*
-* That is, we are using the field d to compute the error between \div{\vec{u}}
-* computed in a space 1 degree higher than p and the value of p which is
-* \div{u} computed in the low degree space. If H-div
-* elements are implemented correctly then this should be identically zero since
-* the divergence of a function in H(div) should be exactly representable in L_2
-* by definition.
+  We are using the system
+
+  \vec{u} = \vec{\hat{u}}
+  p = \div{\vec{u}} in low degree approximation space
+  d = \div{\vec{u}} - p == 0 in higher degree approximation space
+
+  That is, we are using the field d to compute the error between \div{\vec{u}}
+  computed in a space 1 degree higher than p and the value of p which is
+  \div{u} computed in the low degree space. If H-div
+  elements are implemented correctly then this should be identically zero since
+  the divergence of a function in H(div) should be exactly representable in L_2
+  by definition.
 */
 static PetscErrorCode zero_func(PetscInt dim,PetscReal time,const PetscReal x[],PetscInt Nc,PetscScalar *u,void *ctx)
 {

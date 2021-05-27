@@ -2506,7 +2506,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
   }
 
 /* Set local to global mapping for setting the matrix elements in
-* local ordering : first set row by row mapping
+   local ordering : first set row by row mapping
 */
   ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);
   ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
@@ -2797,9 +2797,6 @@ int write_fine_grid(GRID *grid)
   /*fprintf(output,"grid.yn      = %p\n",grid->yn);
   fprintf(output,"grid.zn      = %p\n",grid->zn);
   fprintf(output,"grid.rl      = %p\n",grid->rl);*/
-/*
-* close output file
-*/
   fclose(output);
   PetscFunctionReturn(0);
 }

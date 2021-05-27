@@ -487,10 +487,10 @@ PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
 }
 
 /*
-*) Zeros out pack data counters
-*) Ensures mesaage length is set
-*) Checks send counts properly initialized
-*) allocates space for pack data
+ *) Zeros out pack data counters
+ *) Ensures mesaage length is set
+ *) Checks send counts properly initialized
+ *) allocates space for pack data
 */
 PetscErrorCode DMSwarmDataExPackInitialize(DMSwarmDataEx de,size_t unit_message_size)
 {
