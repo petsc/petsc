@@ -235,9 +235,25 @@ extern "C" {
     if cxxLink: linklang = 'Cxx'
     else: linklang = self.language[-1]
     self.pushLanguage(compileLang)
-    found = 0
-    if self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
-      found = 1
+
+    found = 1
+    if libName and libName[0].startswith('/'):
+      dir = os.path.dirname(libName[0])
+      lib = os.path.basename(libName[0])[:-1]
+      self.logPrint('Checking directory of requested libraries:'+dir+' for first library:'+lib)
+      found = 0
+      try:
+        files = os.listdir(dir)
+      except:
+        self.logPrint('Directory of requested libraries '+dir+' does not exist')
+      else:
+        self.logPrint('Files in directory:'+str(files))
+        for i in files:
+          if i.startswith(lib):
+            found = 1
+            break
+
+    if found and self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
       # define the symbol as found
       if functionDefine: [self.addDefine(self.getDefineNameFunc(fname), 1) for f, fname in enumerate(funcs)]
       # add to list of found libraries
@@ -245,6 +261,8 @@ extern "C" {
         for lib in libName:
           shortlib = self.getShortLibName(lib)
           if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
+    else:
+      found = 0
     self.setCompilers.LIBS = oldLibs
     self.popLanguage()
     return found
