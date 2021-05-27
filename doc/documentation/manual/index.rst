@@ -1,6 +1,11 @@
 PETSc/TAO Users Manual
 ======================
 
+.. raw:: latex
+
+  \thispagestyle{plain}
+  {\Huge\textbf{PETSc/TAO Users Manual}}
+
 **Argonne National Laboratory**
 
 **Mathematics and Computer Science Division**
@@ -56,9 +61,14 @@ Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 
 --------------
 
+.. raw:: latex
+
+   \sphinxtableofcontents
+
 .. toctree::
    :maxdepth: 3
 
    introduction
    programming
    additional
+

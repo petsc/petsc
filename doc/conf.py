@@ -146,7 +146,6 @@ latex_elements = {
     'maketitle': r'\newcommand{\techreportversion}{%s}' % version +
 r'''
 \input{first.inc}
-\sphinxmaketitle
 ''',
     'printindex': r'''
 \printindex
@@ -155,7 +154,8 @@ r'''
     'fontpkg': r'''
 \setsansfont{DejaVu Sans}
 \setmonofont{DejaVu Sans Mono}
-'''
+''',
+    'tableofcontents' : r''
 }
 
 
