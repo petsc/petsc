@@ -57,7 +57,6 @@ struct timezone { int tz_minuteswest;
 
           This is known to work on Cray, SGI, IBM, and Sun machines.
 
-
        4) Mail the results to mccalpin@cs.virginia.edu
           Be sure to include:
                  a) computer hardware model number and software revision
