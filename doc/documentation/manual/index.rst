@@ -1,11 +1,14 @@
 PETSc/TAO Users Manual
 ======================
 
+.. raw:: latex
+
+  \thispagestyle{plain}
+  {\Huge\textbf{PETSc/TAO Users Manual}}
+
 **Argonne National Laboratory**
 
 **Mathematics and Computer Science Division**
-
-Highly recommended resource: Ed Bueler, `PETSc for Partial Differential Equations: Numerical Solutions in C and Python <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__ or as a `Google Play E-book <https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ>`__.
 
 --------------
 
@@ -58,9 +61,14 @@ Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 
 --------------
 
+.. raw:: latex
+
+   \sphinxtableofcontents
+
 .. toctree::
    :maxdepth: 3
 
    introduction
    programming
    additional
+
