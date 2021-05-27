@@ -39,7 +39,7 @@
 // ***********************************************************************
 //
 
-/**
+/*
    \file   quick_solve.cpp
    \author Eric Bavier <etbavie@sandia.gov>
    \date   Thu Jul 14 16:24:46 MDT 2011

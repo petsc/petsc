@@ -27,12 +27,12 @@ struct KSP_CG_PIPE_L_s {
   PetscBool   show_rstrt; /* flag to show restart information in output (default: not shown) */
 };
 
-/**
- * KSPSetUp_PIPELCG - Sets up the workspace needed by the PIPELCG method.
- *
- * This is called once, usually automatically by KSPSolve() or KSPSetUp()
- * but can be called directly by KSPSetUp()
- */
+/*
+  KSPSetUp_PIPELCG - Sets up the workspace needed by the PIPELCG method.
+
+  This is called once, usually automatically by KSPSolve() or KSPSetUp()
+  but can be called directly by KSPSetUp()
+*/
 static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -423,9 +423,9 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/**
- * KSPSolve_PIPELCG - This routine actually applies the pipelined(l) conjugate gradient method
- */
+/*
+  KSPSolve_PIPELCG - This routine actually applies the pipelined(l) conjugate gradient method
+*/
 static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 {
   PetscErrorCode ierr=0;

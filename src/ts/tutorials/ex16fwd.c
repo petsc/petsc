@@ -59,7 +59,7 @@ struct _n_User {
 };
 
 /*
-*  User-defined routines
+   User-defined routines
 */
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 {

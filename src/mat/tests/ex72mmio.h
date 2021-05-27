@@ -1,9 +1,9 @@
 /*
-*   Matrix Market I/O library for ANSI C
-*
-*   See https://math.nist.gov/MatrixMarket/ for details.
-*
-*
+   Matrix Market I/O library for ANSI C
+
+   See https://math.nist.gov/MatrixMarket/ for details.
+
+
 */
 
 #ifndef MM_IO_H

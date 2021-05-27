@@ -4,7 +4,7 @@
 #include <petscsf.h>
 #include <petscds.h>
 
-/** hierarchy routines */
+/* hierarchy routines */
 
 /*@
   DMPlexSetReferenceTree - set the reference tree for hierarchically non-conforming meshes.

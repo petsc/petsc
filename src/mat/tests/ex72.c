@@ -6,17 +6,17 @@ Usage:  ./ex72 -fin <infile> -fout <outfile> \n\
 The option -aij_only allows to use MATAIJ for all cases.\n\\n";
 
 /*
-*   NOTES:
-*
-*   1) Matrix Market files are always 1-based, i.e. the index of the first
-*      element of a matrix is (1,1), not (0,0) as in C.  ADJUST THESE
-*      OFFSETS ACCORDINGLY offsets accordingly when reading and writing
-*      to files.
-*
-*   2) ANSI C requires one to use the "l" format modifier when reading
-*      double precision floating point numbers in scanf() and
-*      its variants.  For example, use "%lf", "%lg", or "%le"
-*      when reading doubles, otherwise errors will occur.
+   NOTES:
+
+   1) Matrix Market files are always 1-based, i.e. the index of the first
+      element of a matrix is (1,1), not (0,0) as in C.  ADJUST THESE
+      OFFSETS ACCORDINGLY offsets accordingly when reading and writing
+      to files.
+
+   2) ANSI C requires one to use the "l" format modifier when reading
+      double precision floating point numbers in scanf() and
+      its variants.  For example, use "%lf", "%lg", or "%le"
+      when reading doubles, otherwise errors will occur.
 */
 #include <petscmat.h>
 #include "ex72mmio.h"

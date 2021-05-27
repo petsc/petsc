@@ -444,10 +444,10 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
           uyy  = -hx * (e_N*uy_N - e_S*uy_S);
         if (sc) eu = PetscExpScalar(u);
         else    eu = 0.;
-        /** For p=2, these terms decay to:
-        * uxx = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx
-        * uyy = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy
-        **/
+        /* For p=2, these terms decay to:
+         uxx = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx
+         uyy = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy
+        */
         f[j][i] = uxx + uyy - sc*eu;
       }
     }
@@ -591,11 +591,11 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
           ierr     = MatSetValuesStencil(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
           break;
         case JAC_NEWTON:
-          /** The Jacobian is
-          *
-          * -div [ eta (grad u) + deta (grad u0 . grad u) grad u0 ] - (eE u0) u
-          *
-          **/
+          /* The Jacobian is
+
+           -div [ eta (grad u) + deta (grad u0 . grad u) grad u0 ] - (eE u0) u
+
+          */
           col[0].j = j-1; col[0].i = i-1;
           col[1].j = j-1; col[1].i = i;
           col[2].j = j-1; col[2].i = i+1;

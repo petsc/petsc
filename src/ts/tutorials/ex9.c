@@ -232,11 +232,11 @@ PetscErrorCode ReconstructListFind(PetscFunctionList flist,const char *name,Reco
 }
 
 /* --------------------------------- Physics ----------------------------------- */
-/**
-* Each physical model consists of Riemann solver and a function to determine the basis to use for reconstruction.  These
-* are set with the PhysicsCreate_XXX function which allocates private storage and sets these methods as well as the
-* number of fields and their names, and a function to deallocate private storage.
-**/
+/*
+  Each physical model consists of Riemann solver and a function to determine the basis to use for reconstruction.  These
+  are set with the PhysicsCreate_XXX function which allocates private storage and sets these methods as well as the
+  number of fields and their names, and a function to deallocate private storage.
+*/
 
 /* First a few functions useful to several different physics */
 static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
