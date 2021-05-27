@@ -1473,7 +1473,7 @@ static PetscErrorCode PetscLogNestedTreePrintFlamegraph(PetscViewer viewer,Petsc
    * is the total time spent in the event minus the amount spent in child events. */
   locTime = selfPerfInfo.time + otherPerfInfo.time;
   ierr = MPIU_Allreduce(&locTime,&globTime,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRMPI(ierr);
-  if (globTime/totalTime > THRESHOLD) {
+  if (globTime/totalTime > THRESHOLD && tree[iStart].own) {
     /* Iterate over parent events in the stack and write them */
     for (i=0; i<=eventStack->top; i++) {
       ierr = PetscGetNestedEventName(tree,eventStack->stack[i],&name);CHKERRQ(ierr);
