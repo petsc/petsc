@@ -158,7 +158,7 @@ petsc4py-install:
     - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
 
 checksource:
-  extends: .test
+  extends: .test-basic
   stage: .pre
   tags:
     - stage1
@@ -187,7 +187,7 @@ pause-for-approval:
   allow_failure: false
 
 check-py-vermin:
-  extends: .test
+  extends: .test-basic
   stage: .pre
   tags:
     - stage1
