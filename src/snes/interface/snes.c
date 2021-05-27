@@ -2272,7 +2272,7 @@ $     Note that when an exact solver is used this corresponds to the "classic" P
 
    When used with -snes_fd_coloring this will compute the Jacobian via coloring and thus represent a faster implementation of Newton's method. But the
    the nonzero structure of the Jacobian is, in general larger than that of the Picard matrix A so you must provide in A the needed nonzero structure for the correct
-   coloring. When using DMDA this may mean creating the matrix A with DMCreateMatrix() using a wider stencil than strictly needed for A or with a DMDA_STENCIL_BOX. 
+   coloring. When using DMDA this may mean creating the matrix A with DMCreateMatrix() using a wider stencil than strictly needed for A or with a DMDA_STENCIL_BOX.
    See the commment in src/snes/tutorials/ex15.c.
 
    Level: intermediate
