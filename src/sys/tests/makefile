@@ -23,10 +23,8 @@ testex55:
         elif [ "${MPIEXEC}" = "/bin/false" ]; then \
            echo "*mpiexec not found*. Please run src/sys/tests/ex55.py manually"; \
 	else \
-           if [[ -d ${PETSC_DIR}/${PETSC_ARCH}/lib/mpi4py &&  "X${PYTHONPATH}" == "X" ]]; then \
-             export PYTHONPATH=${PETSC_DIR}/${PETSC_ARCH}/lib; \
-             echo "Setting PYTHONPATH to $${PYTHONPATH} to locate mpi4py for test"; \
-           fi; \
+           export PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH}; \
+           echo "Using PYTHONPATH=$${PYTHONPATH} to locate mpi4py for test"; \
            ${MPIEXEC} -n 2 ${PYTHON} ./ex55.py > ex55_1.tmp  2>&1;\
 	   if (${DIFF} output/ex55_1.testout ex55_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ mpi4py python example src/sys/tests/ex55.py run successfully with 2 MPI process"; \

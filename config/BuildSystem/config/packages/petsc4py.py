@@ -102,7 +102,7 @@ class Configure(config.package.Package):
     self.addMakeMacro('PETSC4PY_NP',np)
     self.addMakeRule('petsc4pytest', '',
         ['@echo "*** Testing petsc4py on ${PETSC4PY_NP} processes ***"',
-         '@PYTHONPATH=%s:${PYTHONPATH} ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
+         '@PYTHONPATH=%s:${PETSC_MPI4PY_PYTHONPATH}:${PYTHONPATH} ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
              (installLibPath, self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
          '@echo "====================================="'])
 
