@@ -389,7 +389,11 @@ prepend-path PATH "%s"
     self.logPrintDivider()
     self.framework.packages.reverse()
     petscincludes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
-    petscincludes_install = [os.path.join(self.installdir.dir, 'include')] if self.framework.argDB['prefix'] else petscincludes
+    if self.framework.argDB['prefix']:
+      petscincludes_install = [os.path.join(self.installdir.dir, 'include')]
+      petscincludes.extend(petscincludes_install) # add the prefix include dir to petscincludes
+    else:
+      petscincludes_install = petscincludes
     includes = []
     self.packagelibs = []
     for i in self.framework.packages:
