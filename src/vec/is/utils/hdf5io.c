@@ -6,7 +6,7 @@
 
 struct _n_HDF5ReadCtx {
   hid_t     file, group, dataset, dataspace;
-  int       lenInd, bsInd, rdim;
+  int       lenInd, bsInd, complexInd, rdim;
   hsize_t   *dims;
   PetscBool complexVal, dim2;
 };
@@ -95,10 +95,22 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   if (hdf5->timestepping) ++ctx->lenInd;
 
   /* Get block dimension index */
-  ctx->bsInd = ctx->rdim-1;
-  if (ctx->complexVal) --ctx->bsInd;
+  if (ctx->complexVal) {
+    ctx->bsInd = ctx->rdim-2;
+    ctx->complexInd = ctx->rdim-1;
+  } else {
+    ctx->bsInd = ctx->rdim-1;
+    ctx->complexInd = -1;
+  }
   if (ctx->lenInd > ctx->bsInd) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_PLIB, "Calculated block dimension index = %D < %D = length dimension index.",ctx->bsInd,ctx->lenInd);
   if (ctx->bsInd > ctx->rdim - 1) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Calculated block dimension index = %D > %D = total number of dimensions - 1.",ctx->bsInd,ctx->rdim-1);
+  if (ctx->complexVal && ctx->dims[ctx->complexInd] != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Complex numbers must have exactly 2 parts (%D)",ctx->dims[ctx->complexInd]);
+
+  if (hdf5->horizontal) {
+    PetscInt t;
+    /* support horizontal 1D arrays (MATLAB vectors) - swap meaning of blocks and entries */
+    t = ctx->lenInd; ctx->lenInd = ctx->bsInd; ctx->bsInd = t;
+  }
 
   /* Get block size */
   ctx->dim2 = PETSC_FALSE;
@@ -111,13 +123,6 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
 
   /* Get global size */
   len = ctx->dims[ctx->lenInd];
-  if (hdf5->horizontal) {
-    PetscInt t;
-    /* support horizontal 1D arrays (MATLAB vectors) - swap meaning of blocks and entries */
-    if (ctx->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Complex and horizontal at the same time not allowed.");
-    t = len; len = bs; bs = t;
-    t = ctx->lenInd; ctx->lenInd = ctx->bsInd; ctx->bsInd = t;
-  }
   N = (PetscInt) len*bs;
 
   /* Set global size, blocksize and type if not yet set */
@@ -161,7 +166,6 @@ static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer vie
     ierr = PetscHDF5IntCast(n/bs, &count[ctx->lenInd]);CHKERRQ(ierr);
     ierr = PetscHDF5IntCast(low/bs, &offset[ctx->lenInd]);CHKERRQ(ierr);
   }
-  if (ctx->complexVal && count[ctx->bsInd+1] != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Complex numbers must have exactly 2 parts (%D)",count[ctx->bsInd+1]);
   PetscStackCallHDF5Return(*memspace,H5Screate_simple,(ctx->rdim, count, NULL));
   PetscStackCallHDF5(H5Sselect_hyperslab,(ctx->dataspace, H5S_SELECT_SET, offset, NULL, count, NULL));
   ierr = PetscFree2(count, offset);CHKERRQ(ierr);
