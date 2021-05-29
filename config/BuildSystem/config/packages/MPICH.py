@@ -4,8 +4,9 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.4.1-petsc1.tar.gz']
-    self.downloaddirnames  = ['mpich']
+    self.download         = ['https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.4.2.tar.gz']
+    self.downloaddirnames = ['mpich']
     self.skippackagewithoptions = 1
     self.isMPI = 1
     return
