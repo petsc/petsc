@@ -106,9 +106,9 @@ PetscErrorCode  PetscStackView(FILE *file)
 
   if (petscstack->currentsize <= 1) {
      if (file == PETSC_STDOUT) {
-       (*PetscErrorPrintf)("No error traceback is avaiable, the problem could be in the main program. \n");
+       (*PetscErrorPrintf)("No error traceback is available, the problem could be in the main program. \n");
      } else {
-       fprintf(file,"No error traceback is avaiable, the problem could be in the main program. \n");
+       fprintf(file,"No error traceback is available, the problem could be in the main program. \n");
      }
   } else {
     if (file == PETSC_STDOUT) {

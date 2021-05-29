@@ -25,9 +25,8 @@ class Configure(config.package.Package):
     self.mpi          = framework.require('config.packages.MPI',self)
     self.blasLapack   = framework.require('config.packages.BlasLapack',self)
     self.openmp       = framework.require('config.packages.openmp',self)
-    self.hpddm        = framework.require('config.packages.hpddm',self)
     self.deps         = [self.blasLapack,self.cxxlibs,self.mathlib,self.mpi]
-    self.odeps        = [self.openmp,self.hpddm]
+    self.odeps        = [self.openmp]
     return
 
   def Install(self):
