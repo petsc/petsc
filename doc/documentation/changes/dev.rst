@@ -15,6 +15,7 @@ Changes: Development
    should be checked with ``CHKERRMPI(ierr)``
 
 .. rubric:: Configure/Build:
+-  Remove --with-kokkos-cuda-arch. One can use -with-cuda-gencodearch to specify the cuda arch for Kokkos. Usually not needed since PETSc auto detects that
 
 .. rubric:: Sys:
 -  Add GPU event timers to capture kernel execution time accurately.
